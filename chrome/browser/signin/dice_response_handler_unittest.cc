@@ -154,8 +154,8 @@ class DiceResponseHandlerTest : public testing::Test,
         std::make_unique<signin::DiceAccountReconcilorDelegate>(
             &signin_client_, signin::AccountConsistencyMethod::kDisabled);
     account_reconcilor_ = std::make_unique<AccountReconcilor>(
-        &token_service_, &signin_manager_, &signin_client_, nullptr,
-        std::move(account_reconcilor_delegate));
+        &token_service_, identity_test_env_.identity_manager(), &signin_client_,
+        nullptr, std::move(account_reconcilor_delegate));
     about_signin_internals_.Initialize(&signin_client_);
     account_tracker_service_.Initialize(&pref_service_, base::FilePath());
     account_reconcilor_->AddObserver(this);

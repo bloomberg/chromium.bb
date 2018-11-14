@@ -39,6 +39,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -116,17 +117,17 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
  public:
   DummyAccountReconcilorWithDelegate(
       ProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
+      identity::IdentityManager* identity_manager,
       SigninClient* client,
       GaiaCookieManagerService* cookie_manager_service,
       signin::AccountConsistencyMethod account_consistency)
       : AccountReconcilor(
             token_service,
-            signin_manager,
+            identity_manager,
             client,
             cookie_manager_service,
             CreateAccountReconcilorDelegate(client,
-                                            signin_manager,
+                                            identity_manager,
                                             account_consistency)) {
     Initialize(false /* start_reconcile_if_tokens_available */);
   }
@@ -135,13 +136,13 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
   // gmock can't work with move only parameters.
   DummyAccountReconcilorWithDelegate(
       ProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
+      identity::IdentityManager* identity_manager,
       SigninClient* client,
       GaiaCookieManagerService* cookie_manager_service,
       signin::AccountReconcilorDelegate* delegate)
       : AccountReconcilor(
             token_service,
-            signin_manager,
+            identity_manager,
             client,
             cookie_manager_service,
             std::unique_ptr<signin::AccountReconcilorDelegate>(delegate)) {
@@ -151,12 +152,12 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
   static std::unique_ptr<signin::AccountReconcilorDelegate>
   CreateAccountReconcilorDelegate(
       SigninClient* signin_client,
-      SigninManagerBase* signin_manager,
+      identity::IdentityManager* identity_manager,
       signin::AccountConsistencyMethod account_consistency) {
     switch (account_consistency) {
       case signin::AccountConsistencyMethod::kMirror:
         return std::make_unique<signin::MirrorAccountReconcilorDelegate>(
-            signin_manager);
+            identity_manager);
       case signin::AccountConsistencyMethod::kDisabled:
       case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
         return std::make_unique<signin::AccountReconcilorDelegate>();
@@ -180,14 +181,14 @@ class MockAccountReconcilor
  public:
   explicit MockAccountReconcilor(
       ProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
+      identity::IdentityManager* identity_manager,
       SigninClient* client,
       GaiaCookieManagerService* cookie_manager_service,
       signin::AccountConsistencyMethod account_consistency);
 
   explicit MockAccountReconcilor(
       ProfileOAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
+      identity::IdentityManager* identity_manager,
       SigninClient* client,
       GaiaCookieManagerService* cookie_manager_service,
       std::unique_ptr<signin::AccountReconcilorDelegate> delegate);
@@ -200,26 +201,26 @@ class MockAccountReconcilor
 
 MockAccountReconcilor::MockAccountReconcilor(
     ProfileOAuth2TokenService* token_service,
-    SigninManagerBase* signin_manager,
+    identity::IdentityManager* identity_manager,
     SigninClient* client,
     GaiaCookieManagerService* cookie_manager_service,
     signin::AccountConsistencyMethod account_consistency)
     : testing::StrictMock<DummyAccountReconcilorWithDelegate>(
           token_service,
-          signin_manager,
+          identity_manager,
           client,
           cookie_manager_service,
           account_consistency) {}
 
 MockAccountReconcilor::MockAccountReconcilor(
     ProfileOAuth2TokenService* token_service,
-    SigninManagerBase* signin_manager,
+    identity::IdentityManager* identity_manager,
     SigninClient* client,
     GaiaCookieManagerService* cookie_manager_service,
     std::unique_ptr<signin::AccountReconcilorDelegate> delegate)
     : testing::StrictMock<DummyAccountReconcilorWithDelegate>(
           token_service,
-          signin_manager,
+          identity_manager,
           client,
           cookie_manager_service,
           delegate.release()) {}
@@ -258,6 +259,8 @@ class AccountReconcilorTest : public ::testing::Test {
 
   std::string PickAccountIdForAccount(const std::string& gaia_id,
                                       const std::string& username);
+  std::string SeedAccountInfo(const std::string& gaia_id,
+                              const std::string& username);
 
   void SimulateAddAccountToCookieCompleted(
       GaiaCookieManagerService::Observer* observer,
@@ -291,6 +294,7 @@ class AccountReconcilorTest : public ::testing::Test {
   AccountTrackerService account_tracker_;
   FakeGaiaCookieManagerService cookie_manager_service_;
   FakeSigninManagerForTesting signin_manager_;
+  identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<MockAccountReconcilor> mock_reconcilor_;
   base::HistogramTester histogram_tester_;
   GURL get_check_connection_info_url_;
@@ -342,13 +346,17 @@ AccountReconcilorTest::AccountReconcilorTest()
       cookie_manager_service_(&token_service_,
                               &test_signin_client_),
 #if defined(OS_CHROMEOS)
-      signin_manager_(&test_signin_client_, &account_tracker_) {
+      signin_manager_(&test_signin_client_, &account_tracker_),
 #else
       signin_manager_(&test_signin_client_,
                       &token_service_,
                       &account_tracker_,
-                      &cookie_manager_service_) {
+                      &cookie_manager_service_),
 #endif
+      identity_test_env_(&account_tracker_,
+                         &token_service_,
+                         &signin_manager_,
+                         &cookie_manager_service_) {
   AccountTrackerService::RegisterPrefs(pref_service_.registry());
   ProfileOAuth2TokenService::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
@@ -371,8 +379,8 @@ AccountReconcilorTest::AccountReconcilorTest()
 MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
   if (!mock_reconcilor_) {
     mock_reconcilor_ = std::make_unique<MockAccountReconcilor>(
-        &token_service_, &signin_manager_, &test_signin_client_,
-        &cookie_manager_service_, account_consistency_);
+        &token_service_, identity_test_env_.identity_manager(),
+        &test_signin_client_, &cookie_manager_service_, account_consistency_);
   }
 
   return mock_reconcilor_.get();
@@ -381,8 +389,8 @@ MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor() {
 MockAccountReconcilor* AccountReconcilorTest::GetMockReconcilor(
     std::unique_ptr<signin::AccountReconcilorDelegate> delegate) {
   mock_reconcilor_ = std::make_unique<MockAccountReconcilor>(
-      &token_service_, &signin_manager_, &test_signin_client_,
-      &cookie_manager_service_, std::move(delegate));
+      &token_service_, identity_test_env_.identity_manager(),
+      &test_signin_client_, &cookie_manager_service_, std::move(delegate));
 
   return mock_reconcilor_.get();
 }
@@ -400,7 +408,7 @@ AccountReconcilorTest::~AccountReconcilorTest() {
 std::string AccountReconcilorTest::ConnectProfileToAccount(
     const std::string& gaia_id,
     const std::string& username) {
-  const std::string account_id = PickAccountIdForAccount(gaia_id, username);
+  const std::string account_id = SeedAccountInfo(gaia_id, username);
 #if !defined(OS_CHROMEOS)
   signin_manager()->set_password("password");
 #endif
@@ -413,6 +421,12 @@ std::string AccountReconcilorTest::PickAccountIdForAccount(
     const std::string& gaia_id,
     const std::string& username) {
   return account_tracker()->PickAccountIdForAccount(gaia_id, username);
+}
+
+std::string AccountReconcilorTest::SeedAccountInfo(
+    const std::string& gaia_id,
+    const std::string& username) {
+  return account_tracker()->SeedAccountInfo(gaia_id, username);
 }
 
 void AccountReconcilorTest::SimulateAddAccountToCookieCompleted(
@@ -887,8 +901,7 @@ TEST_P(AccountReconcilorTestTable, TableRowTest) {
   std::vector<Token> tokens_before_reconcile =
       ParseTokenString(GetParam().tokens);
   for (const Token& token : tokens_before_reconcile) {
-    std::string account_id =
-        PickAccountIdForAccount(token.gaia_id, token.email);
+    std::string account_id = SeedAccountInfo(token.gaia_id, token.email);
     if (token.is_authenticated)
       ConnectProfileToAccount(token.gaia_id, token.email);
     else
@@ -1002,8 +1015,7 @@ TEST_P(AccountReconcilorTestDiceMultilogin, TableRowTest) {
       ParseTokenString(GetParam().tokens);
   Token primary_account;
   for (const Token& token : tokens_before_reconcile) {
-    std::string account_id =
-        PickAccountIdForAccount(token.gaia_id, token.email);
+    std::string account_id = SeedAccountInfo(token.gaia_id, token.email);
     if (token.is_authenticated) {
       primary_account = token;
       ConnectProfileToAccount(token.gaia_id, token.email);
@@ -1122,8 +1134,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceTokenServiceRegistration) {
 // Tests that reconcile starts even when Sync is not enabled.
 TEST_P(AccountReconcilorDiceEndpointParamTest, DiceReconcileWithoutSignin) {
   // Add a token in Chrome but do not sign in.
-  const std::string account_id =
-      PickAccountIdForAccount("12345", "user@gmail.com");
+  const std::string account_id = SeedAccountInfo("12345", "user@gmail.com");
   token_service()->UpdateCredentials(account_id, "refresh_token");
   cookie_manager_service()->SetListAccountsResponseNoAccounts();
 
@@ -1175,10 +1186,8 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceReconcileNoop) {
 TEST_P(AccountReconcilorDiceEndpointParamTest,
        DiceReconcileReuseGaiaFirstAccount) {
   // Add accounts 1 and 2 to the token service.
-  const std::string account_id_1 =
-      PickAccountIdForAccount("12345", "user@gmail.com");
-  const std::string account_id_2 =
-      PickAccountIdForAccount("67890", "other@gmail.com");
+  const std::string account_id_1 = SeedAccountInfo("12345", "user@gmail.com");
+  const std::string account_id_2 = SeedAccountInfo("67890", "other@gmail.com");
   token_service()->UpdateCredentials(account_id_1, "refresh_token");
   token_service()->UpdateCredentials(account_id_2, "refresh_token");
 
@@ -1187,8 +1196,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest,
   ASSERT_EQ(account_id_2, token_service()->GetAccounts()[1]);
 
   // Add accounts 2 and 3 to the Gaia cookie.
-  const std::string account_id_3 =
-      PickAccountIdForAccount("9999", "foo@gmail.com");
+  const std::string account_id_3 = SeedAccountInfo("9999", "foo@gmail.com");
   cookie_manager_service()->SetListAccountsResponseTwoAccounts(
       "other@gmail.com", "67890", "foo@gmail.com", "9999");
 
@@ -1229,10 +1237,8 @@ TEST_P(AccountReconcilorDiceEndpointParamTest,
 // lost.
 TEST_P(AccountReconcilorDiceEndpointParamTest, DiceLastKnownFirstAccount) {
   // Add accounts to the token service and the Gaia cookie in a different order.
-  const std::string account_id_1 =
-      PickAccountIdForAccount("12345", "user@gmail.com");
-  const std::string account_id_2 =
-      PickAccountIdForAccount("67890", "other@gmail.com");
+  const std::string account_id_1 = SeedAccountInfo("12345", "user@gmail.com");
+  const std::string account_id_2 = SeedAccountInfo("67890", "other@gmail.com");
   cookie_manager_service()->SetListAccountsResponseTwoAccounts(
       "other@gmail.com", "67890", "user@gmail.com", "12345");
   token_service()->UpdateCredentials(account_id_1, "refresh_token");
@@ -1331,7 +1337,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, UnverifiedAccountMerge) {
 
   // Add a token to Chrome.
   const std::string chrome_account_id =
-      PickAccountIdForAccount("67890", "other@gmail.com");
+      SeedAccountInfo("67890", "other@gmail.com");
   token_service()->UpdateCredentials(chrome_account_id, "refresh_token");
 
   if (!IsMultiloginEnabled()) {
@@ -1373,8 +1379,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceMigrationAfterNoop) {
   pref_service()->SetBoolean(prefs::kTokenServiceDiceCompatible, true);
 
   // Chrome account is consistent with the cookie.
-  const std::string account_id =
-      PickAccountIdForAccount("12345", "user@gmail.com");
+  const std::string account_id = SeedAccountInfo("12345", "user@gmail.com");
   token_service()->UpdateCredentials(account_id, "refresh_token");
   cookie_manager_service()->SetListAccountsResponseOneAccount("user@gmail.com",
                                                               "12345");
@@ -1404,8 +1409,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest,
   SetAccountConsistency(signin::AccountConsistencyMethod::kDiceMigration);
 
   // Chrome account is consistent with the cookie.
-  const std::string account_id =
-      PickAccountIdForAccount("12345", "user@gmail.com");
+  const std::string account_id = SeedAccountInfo("12345", "user@gmail.com");
   token_service()->UpdateCredentials(account_id, "refresh_token");
   cookie_manager_service()->SetListAccountsResponseOneAccount("user@gmail.com",
                                                               "12345");
@@ -1477,8 +1481,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, MigrationClearSecondaryTokens) {
   // Add a tokens in Chrome, signin to Sync, but no Gaia cookies.
   const std::string account_id_1 =
       ConnectProfileToAccount("12345", "user@gmail.com");
-  const std::string account_id_2 =
-      PickAccountIdForAccount("67890", "other@gmail.com");
+  const std::string account_id_2 = SeedAccountInfo("67890", "other@gmail.com");
   token_service()->UpdateCredentials(account_id_2, "refresh_token");
   cookie_manager_service()->SetListAccountsResponseNoAccounts();
   ASSERT_TRUE(token_service()->RefreshTokenIsAvailable(account_id_1));
@@ -1524,10 +1527,8 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, MigrationClearAllTokens) {
   pref_service()->SetBoolean(prefs::kTokenServiceDiceCompatible, true);
 
   // Add a tokens in Chrome but no Gaia cookies.
-  const std::string account_id_1 =
-      PickAccountIdForAccount("12345", "user@gmail.com");
-  const std::string account_id_2 =
-      PickAccountIdForAccount("67890", "other@gmail.com");
+  const std::string account_id_1 = SeedAccountInfo("12345", "user@gmail.com");
+  const std::string account_id_2 = SeedAccountInfo("67890", "other@gmail.com");
   token_service()->UpdateCredentials(account_id_1, "refresh_token");
   token_service()->UpdateCredentials(account_id_2, "refresh_token");
   cookie_manager_service()->SetListAccountsResponseNoAccounts();
@@ -1562,7 +1563,7 @@ TEST_F(AccountReconcilorTest, DiceDeleteCookie) {
   token_service()->UpdateCredentials(primary_account_id, "refresh_token");
   signin_manager()->SignIn("12345", "user@gmail.com", "password");
   const std::string secondary_account_id =
-      PickAccountIdForAccount("67890", "other@gmail.com");
+      SeedAccountInfo("67890", "other@gmail.com");
   token_service()->UpdateCredentials(secondary_account_id, "refresh_token");
 
   ASSERT_TRUE(token_service()->RefreshTokenIsAvailable(primary_account_id));
@@ -1686,8 +1687,7 @@ TEST_P(AccountReconcilorTestMirrorMultilogin, TableRowTest) {
   std::vector<Token> tokens_before_reconcile =
       ParseTokenString(GetParam().tokens);
   for (const Token& token : tokens_before_reconcile) {
-    std::string account_id =
-        PickAccountIdForAccount(token.gaia_id, token.email);
+    std::string account_id = SeedAccountInfo(token.gaia_id, token.email);
     if (token.is_authenticated)
       ConnectProfileToAccount(token.gaia_id, token.email);
     else
@@ -2013,8 +2013,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, StartReconcileNoopWithDots) {
 TEST_P(AccountReconcilorMirrorEndpointParamTest, StartReconcileNoopMultiple) {
   const std::string account_id =
       ConnectProfileToAccount("67890", "user@gmail.com");
-  const std::string account_id2 =
-      PickAccountIdForAccount("12345", "other@gmail.com");
+  const std::string account_id2 = SeedAccountInfo("12345", "other@gmail.com");
   cookie_manager_service()->SetListAccountsResponseTwoAccounts(
       "user@gmail.com", "67890", "other@gmail.com", "12345");
   token_service()->UpdateCredentials(account_id2, "refresh_token");
@@ -2042,8 +2041,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, StartReconcileAddToCookie) {
   cookie_manager_service()->SetListAccountsResponseOneAccount("user@gmail.com",
                                                               "67890");
 
-  const std::string account_id2 =
-      PickAccountIdForAccount("12345", "other@gmail.com");
+  const std::string account_id2 = SeedAccountInfo("12345", "other@gmail.com");
   token_service()->UpdateCredentials(account_id2, "refresh_token");
 
   if (!IsMultiloginEnabled()) {
@@ -2153,8 +2151,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   cookie_manager_service()->SetListAccountsResponseOneAccount("user@gmail.com",
                                                               "12345");
 
-  const std::string account_id2 =
-      PickAccountIdForAccount("67890", "other@gmail.com");
+  const std::string account_id2 = SeedAccountInfo("67890", "other@gmail.com");
   token_service()->UpdateCredentials(account_id2, "refresh_token");
 
   if (!IsMultiloginEnabled()) {
@@ -2263,10 +2260,8 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
        StartReconcileAddToCookieTwice) {
   const std::string account_id =
       ConnectProfileToAccount("67890", "user@gmail.com");
-  const std::string account_id2 =
-      PickAccountIdForAccount("12345", "other@gmail.com");
-  const std::string account_id3 =
-      PickAccountIdForAccount("34567", "third@gmail.com");
+  const std::string account_id2 = SeedAccountInfo("12345", "other@gmail.com");
+  const std::string account_id3 = SeedAccountInfo("34567", "third@gmail.com");
 
   cookie_manager_service()->SetListAccountsResponseOneAccount("user@gmail.com",
                                                               "67890");
@@ -2355,8 +2350,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
 TEST_P(AccountReconcilorMirrorEndpointParamTest, StartReconcileBadPrimary) {
   const std::string account_id =
       ConnectProfileToAccount("12345", "user@gmail.com");
-  const std::string account_id2 =
-      PickAccountIdForAccount("67890", "other@gmail.com");
+  const std::string account_id2 = SeedAccountInfo("67890", "other@gmail.com");
 
   token_service()->UpdateCredentials(account_id2, "refresh_token");
   cookie_manager_service()->SetListAccountsResponseTwoAccounts(
@@ -2496,8 +2490,7 @@ TEST_P(AccountReconcilorMethodParamTest,
   SetAccountConsistency(GetParam());
   const std::string account_id =
       ConnectProfileToAccount("12345", "user@gmail.com");
-  const std::string account_id2 =
-      PickAccountIdForAccount("67890", "other@gmail.com");
+  const std::string account_id2 = SeedAccountInfo("67890", "other@gmail.com");
   token_service()->UpdateCredentials(account_id2, "refresh_token");
   cookie_manager_service()->SetListAccountsResponseWithParams(
       {{"user@gmail.com", "12345", false /* valid */, false /* signed_out */,
@@ -2563,8 +2556,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, NoLoopWithBadPrimary) {
   // Connect profile to a primary account and then add a secondary account.
   const std::string account_id1 =
       ConnectProfileToAccount("12345", "user@gmail.com");
-  const std::string account_id2 =
-      PickAccountIdForAccount("67890", "other@gmail.com");
+  const std::string account_id2 = SeedAccountInfo("67890", "other@gmail.com");
   token_service()->UpdateCredentials(account_id2, "refresh_token");
 
   if (!IsMultiloginEnabled()) {
@@ -2622,8 +2614,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, WontMergeAccountsWithError) {
   // Connect profile to a primary account and then add a secondary account.
   const std::string account_id1 =
       ConnectProfileToAccount("12345", "user@gmail.com");
-  const std::string account_id2 =
-      PickAccountIdForAccount("67890", "other@gmail.com");
+  const std::string account_id2 = SeedAccountInfo("67890", "other@gmail.com");
   token_service()->UpdateCredentials(account_id2, "refresh_token");
 
   // Mark the secondary account in auth error state.

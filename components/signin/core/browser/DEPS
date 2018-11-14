@@ -7,6 +7,7 @@ include_rules = [
   "+google/cacheinvalidation",
   "+jni",
   "+mojo/public",
+  "+services/identity/public",
   "+services/network/public",
   "+services/network/test",
   "+third_party/re2",

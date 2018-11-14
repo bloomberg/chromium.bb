@@ -169,6 +169,7 @@ static_library("browser") {
     "//components/os_crypt",
     "//components/webdata/common",
     "//crypto",
+    "//services/identity/public/cpp",
     "//services/network/public/cpp",
     "//skia",
     "//sql",
@@ -293,6 +294,7 @@ source_set("unit_tests") {
     "//components/webdata/common",
     "//google_apis:test_support",
     "//net:test_support",
+    "//services/identity/public/cpp:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
