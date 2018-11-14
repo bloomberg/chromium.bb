@@ -1912,16 +1912,15 @@ void AutofillMetrics::FormEventLogger::Log(
 }
 
 AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(
-    ukm::UkmRecorder* ukm_recorder)
-    : ukm_recorder_(ukm_recorder) {}
+    ukm::UkmRecorder* ukm_recorder,
+    const ukm::SourceId source_id)
+    : ukm_recorder_(ukm_recorder), source_id_(source_id) {}
 
 void AutofillMetrics::FormInteractionsUkmLogger::OnFormsParsed(
-    const GURL& url,
     const ukm::SourceId source_id) {
   if (ukm_recorder_ == nullptr)
     return;
 
-  url_ = url;
   source_id_ = source_id;
 }
 
@@ -2130,7 +2129,7 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
 }
 
 bool AutofillMetrics::FormInteractionsUkmLogger::CanLog() const {
-  return ukm_recorder_ && url_.is_valid();
+  return ukm_recorder_ != nullptr;
 }
 
 int64_t AutofillMetrics::FormInteractionsUkmLogger::MillisecondsSinceFormParsed(
