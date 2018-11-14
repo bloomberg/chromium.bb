@@ -88,11 +88,21 @@ bool IsSimilarToIntABNF(const std::string& header_value) {
   return true;
 }
 
-// |lower_case_media_type| should be lower case.
-bool IsCORSSafelistedLowerCaseContentType(
-    const std::string& lower_case_media_type) {
-  DCHECK_EQ(lower_case_media_type, base::ToLowerASCII(lower_case_media_type));
-  std::string mime_type = ExtractMIMETypeFromMediaType(lower_case_media_type);
+// https://fetch.spec.whatwg.org/#cors-unsafe-request-header-byte
+bool IsCorsUnsafeRequestHeaderByte(char c) {
+  return (c < 0x20 && c != 0x09) || c == 0x22 || c == 0x28 || c == 0x29 ||
+         c == 0x3a || c == 0x3c || c == 0x3e || c == 0x3f || c == 0x40 ||
+         c == 0x5b || c == 0x5c || c == 0x5d || c == 0x7b || c == 0x7d ||
+         c >= 0x7f;
+}
+
+// |value| should be lower case.
+bool IsCORSSafelistedLowerCaseContentType(const std::string& value) {
+  DCHECK_EQ(value, base::ToLowerASCII(value));
+  if (std::any_of(value.begin(), value.end(), IsCorsUnsafeRequestHeaderByte))
+    return false;
+
+  std::string mime_type = ExtractMIMETypeFromMediaType(value);
   return mime_type == "application/x-www-form-urlencoded" ||
          mime_type == "multipart/form-data" || mime_type == "text/plain";
 }
@@ -388,12 +398,8 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
     return lower_value == "on";
 
   if (lower_name == "accept") {
-    return (value.end() == std::find_if(value.begin(), value.end(), [](char c) {
-              return (c < 0x20 && c != 0x09) || c == 0x22 || c == 0x28 ||
-                     c == 0x29 || c == 0x3a || c == 0x3c || c == 0x3e ||
-                     c == 0x3f || c == 0x40 || c == 0x5b || c == 0x5c ||
-                     c == 0x5d || c == 0x7b || c == 0x7d || c >= 0x7f;
-            }));
+    return !std::any_of(value.begin(), value.end(),
+                        IsCorsUnsafeRequestHeaderByte);
   }
 
   if (lower_name == "accept-language" || lower_name == "content-language") {
