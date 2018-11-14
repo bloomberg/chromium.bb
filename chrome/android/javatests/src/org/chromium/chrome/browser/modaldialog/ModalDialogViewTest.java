@@ -10,6 +10,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.withChild;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -90,6 +91,16 @@ public class ModalDialogViewTest {
     @Test
     @MediumTest
     @Feature({"ModalDialog", "RenderTest"})
+    public void testRender_TitleAndTitleIcon() throws IOException {
+        createModel(mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
+                            .with(ModalDialogProperties.TITLE_ICON, mActivityTestRule.getActivity(),
+                                    R.drawable.ic_add));
+        mRenderTestRule.render(mModalDialogView.getView(), "title_and_title_icon");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ModalDialog", "RenderTest"})
     public void testRender_TitleAndMessage() throws IOException {
         createModel(
                 mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
@@ -137,9 +148,9 @@ public class ModalDialogViewTest {
     public void testInitialStates() {
         // Verify that the default states are correct when properties are not set.
         createModel(mModelBuilder);
-        onView(withId(R.id.title)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.title_container)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.scrollable_title_container)).check(matches(not(isDisplayed())));
         onView(withId(R.id.modal_dialog_scroll_view)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.scrollable_title)).check(matches(not(isDisplayed())));
         onView(withId(R.id.message)).check(matches(not(isDisplayed())));
         onView(withId(R.id.custom)).check(matches(not(isDisplayed())));
         onView(withId(R.id.button_bar)).check(matches(not(isDisplayed())));
@@ -154,18 +165,24 @@ public class ModalDialogViewTest {
         // Verify that the title set from builder is displayed.
         PropertyModel model = createModel(
                 mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title));
-        onView(withId(R.id.title)).check(matches(allOf(isDisplayed(), withText(R.string.title))));
+        onView(allOf(withId(R.id.title), withParent(withId(R.id.title_container))))
+                .check(matches(allOf(isDisplayed(), withText(R.string.title))));
+        onView(withId(R.id.title_container)).check(matches(isDisplayed()));
         onView(withId(R.id.modal_dialog_scroll_view)).check(matches(not(isDisplayed())));
 
         // Set an empty title and verify that title is not shown.
         ThreadUtils.runOnUiThreadBlocking(() -> model.set(ModalDialogProperties.TITLE, ""));
-        onView(withId(R.id.title)).check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.title), withParent(withId(R.id.title_container))))
+                .check(matches(not(isDisplayed())));
+        onView(withId(R.id.title_container)).check(matches(not(isDisplayed())));
         onView(withId(R.id.modal_dialog_scroll_view)).check(matches(not(isDisplayed())));
 
         // Set a String title and verify that title is displayed.
         ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.TITLE, "My Test Title"));
-        onView(withId(R.id.title)).check(matches(allOf(isDisplayed(), withText("My Test Title"))));
+        onView(allOf(withId(R.id.title), withParent(withId(R.id.title_container))))
+                .check(matches(allOf(isDisplayed(), withText("My Test Title"))));
+        onView(withId(R.id.title_container)).check(matches(isDisplayed()));
         onView(withId(R.id.modal_dialog_scroll_view)).check(matches(not(isDisplayed())));
     }
 
@@ -177,19 +194,46 @@ public class ModalDialogViewTest {
         PropertyModel model = createModel(
                 mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
                         .with(ModalDialogProperties.TITLE_SCROLLABLE, true));
-        onView(withId(R.id.title)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.modal_dialog_scroll_view)).check(matches(isDisplayed()));
-        onView(withId(R.id.scrollable_title))
+        onView(allOf(withId(R.id.title), withParent(withId(R.id.scrollable_title_container))))
                 .check(matches(allOf(isDisplayed(), withText(R.string.title))));
+        onView(withId(R.id.title_container)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.scrollable_title_container)).check(matches(isDisplayed()));
+        onView(withId(R.id.modal_dialog_scroll_view)).check(matches(isDisplayed()));
         onView(withId(R.id.message)).check(matches(not(isDisplayed())));
 
         // Set title to not scrollable and verify that non-scrollable title is displayed.
         ThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.TITLE_SCROLLABLE, false));
-        onView(withId(R.id.title)).check(matches(allOf(isDisplayed(), withText(R.string.title))));
+        onView(allOf(withId(R.id.title), withParent(withId(R.id.title_container))))
+                .check(matches(allOf(isDisplayed(), withText(R.string.title))));
+        onView(withId(R.id.title_container)).check(matches(isDisplayed()));
+        onView(withId(R.id.scrollable_title_container)).check(matches(not(isDisplayed())));
         onView(withId(R.id.modal_dialog_scroll_view)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.scrollable_title)).check(matches(not(isDisplayed())));
         onView(withId(R.id.message)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ModalDialog"})
+    public void testTitleIcon() {
+        // Verify that the icon set from builder is displayed.
+        PropertyModel model = createModel(mModelBuilder.with(ModalDialogProperties.TITLE_ICON,
+                mActivityTestRule.getActivity(), R.drawable.ic_add));
+        onView(allOf(withId(R.id.title), withParent(withId(R.id.title_container))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.title_icon), withParent(withId(R.id.title_container))))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.title_container)).check(matches(isDisplayed()));
+        onView(withId(R.id.scrollable_title_container)).check(matches(not(isDisplayed())));
+
+        // Set icon to null and verify that icon is not shown.
+        ThreadUtils.runOnUiThreadBlocking(() -> model.set(ModalDialogProperties.TITLE_ICON, null));
+        onView(allOf(withId(R.id.title), withParent(withId(R.id.title_container))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.title_icon), withParent(withId(R.id.title_container))))
+                .check(matches(not(isDisplayed())));
+        onView(withId(R.id.title_container)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.scrollable_title_container)).check(matches(not(isDisplayed())));
     }
 
     @Test
@@ -199,16 +243,16 @@ public class ModalDialogViewTest {
         // Verify that the message set from builder is displayed.
         PropertyModel model = createModel(
                 mModelBuilder.with(ModalDialogProperties.MESSAGE, mResources, R.string.more));
-        onView(withId(R.id.title)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.title_container)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.scrollable_title_container)).check(matches(not(isDisplayed())));
         onView(withId(R.id.modal_dialog_scroll_view)).check(matches(isDisplayed()));
-        onView(withId(R.id.scrollable_title)).check(matches(not(isDisplayed())));
         onView(withId(R.id.message)).check(matches(allOf(isDisplayed(), withText(R.string.more))));
 
         // Set an empty message and verify that message is not shown.
         ThreadUtils.runOnUiThreadBlocking(() -> model.set(ModalDialogProperties.MESSAGE, ""));
-        onView(withId(R.id.title)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.title_container)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.scrollable_title_container)).check(matches(not(isDisplayed())));
         onView(withId(R.id.modal_dialog_scroll_view)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.scrollable_title)).check(matches(not(isDisplayed())));
         onView(withId(R.id.message)).check(matches(not(isDisplayed())));
     }
 

@@ -22,7 +22,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,9 +133,9 @@ public class AutofillNameFixFlowPrompt implements ModalDialogView.Controller {
             String confirmButtonLabel, int drawableId) {
         mDelegate = delegate;
         LayoutInflater inflater = LayoutInflater.from(context);
-        View v = inflater.inflate(R.layout.autofill_name_fixflow, null);
+        View customView = inflater.inflate(R.layout.autofill_name_fixflow, null);
 
-        mUserNameInput = (EditText) v.findViewById(R.id.cc_name_edit);
+        mUserNameInput = (EditText) customView.findViewById(R.id.cc_name_edit);
         mUserNameInput.setText(inferredName, BufferType.EDITABLE);
 
         SpannableStringBuilder legalMessageText = new SpannableStringBuilder();
@@ -147,17 +151,24 @@ public class AutofillNameFixFlowPrompt implements ModalDialogView.Controller {
             }
             legalMessageText.append(legalMessageText);
         }
-        TextView legalMessageView = (TextView) v.findViewById(R.id.cc_name_legal_message);
+        TextView legalMessageView = (TextView) customView.findViewById(R.id.cc_name_legal_message);
         legalMessageView.setText(legalMessageText);
         legalMessageView.setMovementMethod(LinkMovementMethod.getInstance());
 
-        ModalDialogView.Params params = new ModalDialogView.Params();
-        params.title = title;
-        params.customView = v;
-        params.negativeButtonTextId = R.string.cancel;
-        params.positiveButtonText = confirmButtonLabel;
-        params.cancelOnTouchOutside = true;
-        mDialog = new ModalDialogView(this, params);
+        PropertyModel model =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CONTROLLER, this)
+                        .with(ModalDialogProperties.TITLE, title)
+                        .with(ModalDialogProperties.TITLE_ICON, context, drawableId)
+                        .with(ModalDialogProperties.CUSTOM_VIEW, customView)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, confirmButtonLabel)
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, context.getResources(),
+                                R.string.cancel)
+                        .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                        .build();
+
+        mDialog = new ModalDialogView(context);
+        PropertyModelChangeProcessor.create(model, mDialog, new ModalDialogViewBinder());
 
         // Hitting the "submit" button on the software keyboard should submit.
         mUserNameInput.setOnEditorActionListener((view, actionId, event) -> {

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.modaldialog;
 
+import android.graphics.drawable.Drawable;
 import android.view.View;
 
 import org.chromium.chrome.browser.modelutil.PropertyKey;
@@ -21,6 +22,10 @@ public class ModalDialogProperties {
 
     /** The title of the dialog. */
     public static final WritableObjectPropertyKey<String> TITLE = new WritableObjectPropertyKey<>();
+
+    /** The title icon of the dialog. */
+    public static final WritableObjectPropertyKey<Drawable> TITLE_ICON =
+            new WritableObjectPropertyKey<>();
 
     /** The message of the dialog. */
     public static final WritableObjectPropertyKey<String> MESSAGE =
@@ -54,7 +59,8 @@ public class ModalDialogProperties {
     public static final WritableBooleanPropertyKey TITLE_SCROLLABLE =
             new WritableBooleanPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {CONTROLLER, TITLE, MESSAGE,
-            CUSTOM_VIEW, POSITIVE_BUTTON_TEXT, POSITIVE_BUTTON_DISABLED, NEGATIVE_BUTTON_TEXT,
-            NEGATIVE_BUTTON_DISABLED, CANCEL_ON_TOUCH_OUTSIDE, TITLE_SCROLLABLE};
+    public static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {CONTROLLER, TITLE, TITLE_ICON, MESSAGE, CUSTOM_VIEW,
+                    POSITIVE_BUTTON_TEXT, POSITIVE_BUTTON_DISABLED, NEGATIVE_BUTTON_TEXT,
+                    NEGATIVE_BUTTON_DISABLED, CANCEL_ON_TOUCH_OUTSIDE, TITLE_SCROLLABLE};
 }
