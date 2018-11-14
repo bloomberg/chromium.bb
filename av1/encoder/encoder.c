@@ -4179,7 +4179,8 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
       const int qthresh = (rate_factor_delta <= 1.0)
                               ? oxcf->superres_qthresh
                               : oxcf->superres_kf_qthresh;
-      av1_set_target_rate(cpi, cpi->oxcf.width, cpi->oxcf.height);
+      if (oxcf->rc_mode == AOM_VBR || oxcf->rc_mode == AOM_CQ)
+        av1_set_target_rate(cpi, cpi->oxcf.width, cpi->oxcf.height);
       int bottom_index, top_index;
       const int q = av1_rc_pick_q_and_bounds(
           cpi, cpi->oxcf.width, cpi->oxcf.height, &bottom_index, &top_index);
@@ -4187,7 +4188,7 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
         new_denom = SCALE_NUMERATOR;
       } else {
         const uint8_t min_denom = SCALE_NUMERATOR + 1;
-        const uint8_t denom_step = (MAXQ - qthresh + 1) >> 3;
+        const uint8_t denom_step = (MAXQ - qthresh + 4) >> 3;
 
         if (q == qthresh) {
           new_denom = min_denom;
