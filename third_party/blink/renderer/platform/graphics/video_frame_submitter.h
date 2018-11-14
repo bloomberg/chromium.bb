@@ -73,10 +73,10 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // cc::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const WTF::Vector<viz::ReturnedResource>& resources) override;
-  void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      ::gfx::mojom::blink::PresentationFeedbackPtr feedback) final;
-  void OnBeginFrame(const viz::BeginFrameArgs&) override;
+  void OnBeginFrame(
+      const viz::BeginFrameArgs&,
+      WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>)
+      override;
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(
       const WTF::Vector<viz::ReturnedResource>& resources) override;
