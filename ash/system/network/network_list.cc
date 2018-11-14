@@ -128,6 +128,8 @@ class NetworkListView::SectionHeaderRowView : public views::View,
     network_row_title_view_->SetSubtitle(subtitle_id);
   }
 
+  void SetToggleVisibility(bool visible) { toggle_->SetVisible(visible); }
+
   virtual void SetToggleState(bool toggle_enabled, bool is_on) {
     toggle_->SetEnabled(toggle_enabled);
     toggle_->set_accepts_events(toggle_enabled);
@@ -300,7 +302,13 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
               NetworkTypePattern::Cellular());
       bool cellular_enabled =
           cellular_state == NetworkStateHandler::TECHNOLOGY_ENABLED;
-      SetToggleState(default_toggle_enabled, cellular_enabled);
+
+      if (!cellular_device->IsSimAbsent()) {
+        SetToggleVisibility(true);
+        SetToggleState(default_toggle_enabled, cellular_enabled);
+      } else {
+        SetToggleVisibility(false);
+      }
 
       int subtitle = 0;
       if (!cellular_device ||
