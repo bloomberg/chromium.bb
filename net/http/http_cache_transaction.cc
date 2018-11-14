@@ -1527,7 +1527,7 @@ int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetch() {
 int HttpCache::Transaction::DoCacheToggleUnusedSincePrefetchComplete(
     int result) {
   TRACE_EVENT0(
-      kNetTracingCategory,
+      NetTracingCategory(),
       "HttpCacheTransaction::DoCacheToggleUnusedSincePrefetchComplete");
   // Restore the original value for this transaction.
   response_.unused_since_prefetch = !response_.unused_since_prefetch;

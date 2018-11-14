@@ -64,7 +64,8 @@ const char kAsyncId2Str[] = "0x6";
 const int kFlowId = 7;
 const char kFlowIdStr[] = "0x7";
 
-const  char kRecordAllCategoryFilter[] = "*";
+constexpr const char kRecordAllCategoryFilter[] = "*";
+constexpr const char kAllCategory[] = "all";
 
 class TraceEventTestFixture : public testing::Test {
  public:
@@ -391,7 +392,7 @@ std::vector<const DictionaryValue*> FindTraceEntries(
   return hits;
 }
 
-const char kControlCharacters[] = "\001\002\003\n\r";
+constexpr const char kControlCharacters[] = "\001\002\003\n\r";
 
 void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
   {
@@ -486,8 +487,8 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
         "all", "tracked object 1", 0x42, "hello");
     TRACE_EVENT_OBJECT_DELETED_WITH_ID("all", "tracked object 1", 0x42);
 
-    TraceScopedTrackableObject<int> trackable("all", "tracked object 2",
-                                              0x2128506);
+    TraceScopedTrackableObject<int, kAllCategory> trackable("tracked object 2",
+                                                            0x2128506);
     trackable.snapshot("world");
 
     TRACE_EVENT_OBJECT_CREATED_WITH_ID(

@@ -440,7 +440,7 @@ bool NetworkQualityEstimator::IsHangingRequest(
 }
 
 void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
-  TRACE_EVENT0(kNetTracingCategory,
+  TRACE_EVENT0(NetTracingCategory(),
                "NetworkQualityEstimator::NotifyHeadersReceived");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -578,7 +578,7 @@ void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
 
 void NetworkQualityEstimator::NotifyRequestCompleted(const URLRequest& request,
                                                      int net_error) {
-  TRACE_EVENT0(kNetTracingCategory,
+  TRACE_EVENT0(NetTracingCategory(),
                "NetworkQualityEstimator::NotifyRequestCompleted");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

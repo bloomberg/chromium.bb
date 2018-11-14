@@ -17,9 +17,9 @@ namespace android {
 
 namespace {
 
-const char kJavaCategory[] = "Java";
-const char kToplevelCategory[] = "toplevel";
-const char kLooperDispatchMessage[] = "Looper.dispatchMessage";
+constexpr const char kJavaCategory[] = "Java";
+constexpr const char kToplevelCategory[] = "toplevel";
+constexpr const char kLooperDispatchMessage[] = "Looper.dispatchMessage";
 
 // Boilerplate for safely converting Java data to TRACE_EVENT data.
 class TraceEventDataConverter {

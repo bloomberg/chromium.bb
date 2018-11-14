@@ -694,7 +694,7 @@ int UDPSocketPosix::AllowAddressSharingForMulticast() {
 }
 
 void UDPSocketPosix::ReadWatcher::OnFileCanReadWithoutBlocking(int) {
-  TRACE_EVENT0(kNetTracingCategory,
+  TRACE_EVENT0(NetTracingCategory(),
                "UDPSocketPosix::ReadWatcher::OnFileCanReadWithoutBlocking");
   if (!socket_->read_callback_.is_null())
     socket_->DidCompleteRead();

@@ -65,8 +65,7 @@ void DoGlobalDumpWithoutCallback(
 }  // namespace
 
 // static
-const char* const MemoryDumpManager::kTraceCategory =
-    TRACE_DISABLED_BY_DEFAULT("memory-infra");
+constexpr const char* MemoryDumpManager::kTraceCategory;
 
 // static
 const int MemoryDumpManager::kMaxConsecutiveFailuresCount = 3;

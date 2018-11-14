@@ -33,7 +33,6 @@
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/trace_event/category_registry.h"
 #include "base/trace_event/event_name_filter.h"
 #include "base/trace_event/heap_profiler.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"

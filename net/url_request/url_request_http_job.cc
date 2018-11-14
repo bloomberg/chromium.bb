@@ -848,7 +848,7 @@ void URLRequestHttpJob::ProcessExpectCTHeader() {
 }
 
 void URLRequestHttpJob::OnStartCompleted(int result) {
-  TRACE_EVENT0(kNetTracingCategory, "URLRequestHttpJob::OnStartCompleted");
+  TRACE_EVENT0(NetTracingCategory(), "URLRequestHttpJob::OnStartCompleted");
   RecordTimer();
 
   // If the job is done (due to cancellation), can just ignore this
@@ -942,7 +942,7 @@ void URLRequestHttpJob::OnHeadersReceivedCallback(int result) {
 }
 
 void URLRequestHttpJob::OnReadCompleted(int result) {
-  TRACE_EVENT0(kNetTracingCategory, "URLRequestHttpJob::OnReadCompleted");
+  TRACE_EVENT0(NetTracingCategory(), "URLRequestHttpJob::OnReadCompleted");
   read_in_progress_ = false;
 
   DCHECK_NE(ERR_IO_PENDING, result);

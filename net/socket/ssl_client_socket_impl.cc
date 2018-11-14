@@ -1219,7 +1219,7 @@ void SSLClientSocketImpl::OnHandshakeIOComplete(int result) {
 }
 
 int SSLClientSocketImpl::DoHandshakeLoop(int last_io_result) {
-  TRACE_EVENT0(kNetTracingCategory, "SSLClientSocketImpl::DoHandshakeLoop");
+  TRACE_EVENT0(NetTracingCategory(), "SSLClientSocketImpl::DoHandshakeLoop");
   int rv = last_io_result;
   do {
     // Default to STATE_NONE for next state.

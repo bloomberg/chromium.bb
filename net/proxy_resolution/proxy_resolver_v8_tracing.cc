@@ -560,7 +560,7 @@ void Job::ExecuteNonBlocking() {
 }
 
 int Job::ExecuteProxyResolver() {
-  TRACE_EVENT0(kNetTracingCategory, "Job::ExecuteProxyResolver");
+  TRACE_EVENT0(NetTracingCategory(), "Job::ExecuteProxyResolver");
   int result = ERR_UNEXPECTED;  // Initialized to silence warnings.
 
   switch (operation_) {

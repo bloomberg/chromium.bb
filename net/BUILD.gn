@@ -103,7 +103,6 @@ if (is_linux) {
 
 source_set("constants") {
   sources = [
-    "base/trace_constants.cc",
     "base/trace_constants.h",
   ]
   deps = [

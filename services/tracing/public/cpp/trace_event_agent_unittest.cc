@@ -23,7 +23,7 @@
 namespace tracing {
 
 namespace {
-const char kTestCategory[] = "TraceEventAgentTestCategory";
+constexpr const char kTestCategory[] = "TraceEventAgentTestCategory";
 const char kTestMetadataKey[] = "TraceEventAgentTestMetadata";
 }  // namespace
 

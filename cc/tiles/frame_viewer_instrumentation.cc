@@ -9,13 +9,10 @@
 namespace cc {
 namespace frame_viewer_instrumentation {
 
-const char kCategoryLayerTree[] =
-    TRACE_DISABLED_BY_DEFAULT("cc.debug") "," TRACE_DISABLED_BY_DEFAULT(
-        "viz.quads") "," TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers");
-
 namespace {
 
-const char kCategory[] = "cc," TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
+constexpr const char kCategory[] =
+    "cc," TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
 const char kTileData[] = "tileData";
 const char kLayerId[] = "layerId";
 const char kTileId[] = "tileId";
@@ -69,7 +66,7 @@ ScopedRasterTask::~ScopedRasterTask() {
 
 bool IsTracingLayerTreeSnapshots() {
   bool category_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kCategoryLayerTree, &category_enabled);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(CategoryLayerTree(), &category_enabled);
   return category_enabled;
 }
 

@@ -100,7 +100,7 @@ constexpr std::initializer_list<uint32_t> kLatencyAccelerationThresholds = {
     RatioThreshold(0), RatioThreshold(1), RatioThreshold(2), RatioThreshold(4),
 };
 
-const char kTraceCategories[] = "gpu,benchmark";
+constexpr const char kTraceCategories[] = "gpu,benchmark";
 
 // uint32_t should be plenty of range for real world values, but clip individual
 // entries to make sure no single value dominates and also to avoid overflow

@@ -46,17 +46,18 @@ gfx::PointF ComputeEventLocation(const blink::WebInputEvent& event) {
   return gfx::PointF();
 }
 
+constexpr const char kTracingCategory[] = "input,latency";
+
 }  // namespace
 
 class TracingUmaTracker {
  public:
-  TracingUmaTracker(const char* metric_name, const char* tracing_category)
+  explicit TracingUmaTracker(const char* metric_name)
       : id_(next_id_++),
         start_time_(base::TimeTicks::Now()),
-        metric_name_(metric_name),
-        tracing_category_(tracing_category) {
+        metric_name_(metric_name) {
     TRACE_EVENT_ASYNC_BEGIN0(
-        tracing_category_, metric_name_,
+        kTracingCategory, metric_name_,
         TRACE_ID_WITH_SCOPE(metric_name_, TRACE_ID_LOCAL(id_)));
   }
   ~TracingUmaTracker() = default;
@@ -69,7 +70,7 @@ class TracingUmaTracker {
 
   void Stop() {
     TRACE_EVENT_ASYNC_END0(
-        tracing_category_, metric_name_,
+        kTracingCategory, metric_name_,
         TRACE_ID_WITH_SCOPE(metric_name_, TRACE_ID_LOCAL(id_)));
   }
 
@@ -80,7 +81,6 @@ class TracingUmaTracker {
   // These variables must be string literals and live for the duration
   // of the program since tracing stores pointers.
   const char* metric_name_;
-  const char* tracing_category_;
 
   static int next_id_;
 
@@ -157,8 +157,8 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
     request.root_view = root_view->GetWeakPtr();
     request.event = ui::WebInputEventTraits::Clone(event);
     request.latency = latency;
-    request.tracker = std::make_unique<TracingUmaTracker>(
-        "Event.AsyncTargeting.TimeInQueue", "input,latency");
+    request.tracker =
+        std::make_unique<TracingUmaTracker>("Event.AsyncTargeting.TimeInQueue");
     requests_.push(std::move(request));
     return;
   }
@@ -235,8 +235,7 @@ void RenderWidgetTargeter::QueryClientInternal(
     request_in_flight_ = true;
     async_depth_++;
   }
-  TracingUmaTracker tracker("Event.AsyncTargeting.ResponseTime",
-                            "input,latency");
+  TracingUmaTracker tracker("Event.AsyncTargeting.ResponseTime");
   auto& hit_test_timeout =
       is_verifying ? async_verify_hit_test_timeout_ : async_hit_test_timeout_;
   hit_test_timeout.reset(new OneShotTimeoutMonitor(

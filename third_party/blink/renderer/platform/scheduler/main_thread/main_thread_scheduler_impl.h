@@ -815,49 +815,51 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     TaskCostEstimator loading_task_cost_estimator;
     TaskCostEstimator timer_task_cost_estimator;
     IdleTimeEstimator idle_time_estimator;
-    TraceableState<UseCase, kTracingCategoryNameDefault> current_use_case;
+    TraceableState<UseCase, TracingCategoryName::kDefault> current_use_case;
     Policy current_policy;
     base::TimeTicks current_policy_expiration_time;
     base::TimeTicks estimated_next_frame_begin;
     base::TimeTicks current_task_start_time;
     base::TimeDelta compositor_frame_interval;
-    TraceableCounter<base::TimeDelta, kTracingCategoryNameDebug>
+    TraceableCounter<base::TimeDelta, TracingCategoryName::kDebug>
         longest_jank_free_task_duration;
-    TraceableCounter<int, kTracingCategoryNameInfo>
+    TraceableCounter<int, TracingCategoryName::kInfo>
         renderer_pause_count;  // Renderer is paused if non-zero.
-    TraceableState<ExpensiveTaskPolicy, kTracingCategoryNameInfo>
+    TraceableState<ExpensiveTaskPolicy, TracingCategoryName::kInfo>
         expensive_task_policy;
-    TraceableState<v8::RAILMode, kTracingCategoryNameInfo>
+    TraceableState<v8::RAILMode, TracingCategoryName::kInfo>
         rail_mode_for_tracing;  // Don't use except for tracing.
-    TraceableState<bool, kTracingCategoryNameDebug> renderer_hidden;
-    TraceableState<bool, kTracingCategoryNameTopLevel> renderer_backgrounded;
-    TraceableState<bool, kTracingCategoryNameDefault>
+    TraceableState<bool, TracingCategoryName::kDebug> renderer_hidden;
+    TraceableState<bool, TracingCategoryName::kTopLevel> renderer_backgrounded;
+    TraceableState<bool, TracingCategoryName::kDefault>
         keep_active_fetch_or_worker;
-    TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
+    TraceableCounter<base::TimeDelta, TracingCategoryName::kInfo>
         loading_task_estimated_cost;
-    TraceableCounter<base::TimeDelta, kTracingCategoryNameInfo>
+    TraceableCounter<base::TimeDelta, TracingCategoryName::kInfo>
         timer_task_estimated_cost;
-    TraceableState<bool, kTracingCategoryNameInfo> loading_tasks_seem_expensive;
-    TraceableState<bool, kTracingCategoryNameInfo> timer_tasks_seem_expensive;
-    TraceableState<bool, kTracingCategoryNameDefault>
+    TraceableState<bool, TracingCategoryName::kInfo>
+        loading_tasks_seem_expensive;
+    TraceableState<bool, TracingCategoryName::kInfo> timer_tasks_seem_expensive;
+    TraceableState<bool, TracingCategoryName::kDefault>
         blocking_input_expected_soon;
-    TraceableState<bool, kTracingCategoryNameDebug>
+    TraceableState<bool, TracingCategoryName::kDebug>
         have_seen_a_begin_main_frame;
-    TraceableState<bool, kTracingCategoryNameDebug>
+    TraceableState<bool, TracingCategoryName::kDebug>
         have_reported_blocking_intervention_in_current_policy;
-    TraceableState<bool, kTracingCategoryNameDebug>
+    TraceableState<bool, TracingCategoryName::kDebug>
         have_reported_blocking_intervention_since_navigation;
-    TraceableState<bool, kTracingCategoryNameDebug>
+    TraceableState<bool, TracingCategoryName::kDebug>
         has_visible_render_widget_with_touch_handler;
-    TraceableState<bool, kTracingCategoryNameDebug>
+    TraceableState<bool, TracingCategoryName::kDebug>
         begin_frame_not_expected_soon;
-    TraceableState<bool, kTracingCategoryNameDebug> in_idle_period_for_testing;
-    TraceableState<bool, kTracingCategoryNameInfo> use_virtual_time;
-    TraceableState<bool, kTracingCategoryNameTopLevel> is_audio_playing;
-    TraceableState<bool, kTracingCategoryNameDebug>
+    TraceableState<bool, TracingCategoryName::kDebug>
+        in_idle_period_for_testing;
+    TraceableState<bool, TracingCategoryName::kInfo> use_virtual_time;
+    TraceableState<bool, TracingCategoryName::kTopLevel> is_audio_playing;
+    TraceableState<bool, TracingCategoryName::kDebug>
         compositor_will_send_main_frame_not_expected;
-    TraceableState<bool, kTracingCategoryNameDebug> has_navigated;
-    TraceableState<bool, kTracingCategoryNameDebug> pause_timers_for_webview;
+    TraceableState<bool, TracingCategoryName::kDebug> has_navigated;
+    TraceableState<bool, TracingCategoryName::kDebug> pause_timers_for_webview;
     std::unique_ptr<base::SingleSampleMetric> max_queueing_time_metric;
     base::TimeDelta max_queueing_time;
     base::TimeTicks background_status_changed_at;
@@ -866,14 +868,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         rail_mode_observers;                                      // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                        // Not owned.
     MainThreadMetricsHelper metrics_helper;
-    TraceableState<WebRendererProcessType, kTracingCategoryNameTopLevel>
+    TraceableState<WebRendererProcessType, TracingCategoryName::kTopLevel>
         process_type;
     TraceableState<base::Optional<TaskDescriptionForTracing>,
-                   kTracingCategoryNameInfo>
+                   TracingCategoryName::kInfo>
         task_description_for_tracing;  // Don't use except for tracing.
     TraceableState<
         base::Optional<base::sequence_manager::TaskQueue::QueuePriority>,
-        kTracingCategoryNameInfo>
+        TracingCategoryName::kInfo>
         task_priority_for_tracing;  // Only used for tracing.
     base::ObserverList<VirtualTimeObserver>::Unchecked virtual_time_observers;
     base::Time initial_virtual_time;
@@ -917,17 +919,19 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     base::TimeTicks last_idle_period_end_time;
     base::TimeTicks fling_compositor_escalation_deadline;
     UserModel user_model;
-    TraceableState<bool, kTracingCategoryNameInfo>
+    TraceableState<bool, TracingCategoryName::kInfo>
         awaiting_touch_start_response;
-    TraceableState<bool, kTracingCategoryNameInfo> in_idle_period;
-    TraceableState<bool, kTracingCategoryNameInfo>
+    TraceableState<bool, TracingCategoryName::kInfo> in_idle_period;
+    TraceableState<bool, TracingCategoryName::kInfo>
         begin_main_frame_on_critical_path;
-    TraceableState<bool, kTracingCategoryNameInfo>
+    TraceableState<bool, TracingCategoryName::kInfo>
         last_gesture_was_compositor_driven;
-    TraceableState<bool, kTracingCategoryNameInfo> default_gesture_prevented;
-    TraceableState<bool, kTracingCategoryNameInfo> have_seen_a_blocking_gesture;
-    TraceableState<bool, kTracingCategoryNameInfo> waiting_for_meaningful_paint;
-    TraceableState<bool, kTracingCategoryNameInfo>
+    TraceableState<bool, TracingCategoryName::kInfo> default_gesture_prevented;
+    TraceableState<bool, TracingCategoryName::kInfo>
+        have_seen_a_blocking_gesture;
+    TraceableState<bool, TracingCategoryName::kInfo>
+        waiting_for_meaningful_paint;
+    TraceableState<bool, TracingCategoryName::kInfo>
         have_seen_input_since_navigation;
   };
 

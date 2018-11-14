@@ -21,10 +21,16 @@ namespace scheduler {
 // DISCLAIMER
 // Using these constants in TRACE_EVENTs is discouraged nor should you pass any
 // non-literal string as a category, unless familiar with tracing internals.
-PLATFORM_EXPORT extern const char kTracingCategoryNameTopLevel[];
-PLATFORM_EXPORT extern const char kTracingCategoryNameDefault[];
-PLATFORM_EXPORT extern const char kTracingCategoryNameInfo[];
-PLATFORM_EXPORT extern const char kTracingCategoryNameDebug[];
+// The constants are implemented as static members of a class to have an unique
+// address and not violate ODR.
+struct PLATFORM_EXPORT TracingCategoryName {
+  static constexpr const char kTopLevel[] = "toplevel";
+  static constexpr const char kDefault[] = "renderer.scheduler";
+  static constexpr const char kInfo[] =
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler");
+  static constexpr const char kDebug[] =
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug");
+};
 
 namespace internal {
 

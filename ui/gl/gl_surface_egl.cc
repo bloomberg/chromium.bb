@@ -156,7 +156,7 @@ bool g_egl_display_texture_share_group_supported = false;
 bool g_egl_create_context_client_arrays_supported = false;
 bool g_egl_android_native_fence_sync_supported = false;
 
-const char kSwapEventTraceCategories[] = "gpu";
+constexpr const char kSwapEventTraceCategories[] = "gpu";
 
 constexpr size_t kMaxTimestampsSupportable = 9;
 

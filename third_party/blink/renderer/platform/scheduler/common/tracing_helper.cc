@@ -10,12 +10,10 @@
 namespace blink {
 namespace scheduler {
 
-const char kTracingCategoryNameTopLevel[] = "toplevel";
-const char kTracingCategoryNameDefault[] = "renderer.scheduler";
-const char kTracingCategoryNameInfo[] =
-    TRACE_DISABLED_BY_DEFAULT("renderer.scheduler");
-const char kTracingCategoryNameDebug[] =
-    TRACE_DISABLED_BY_DEFAULT("renderer.scheduler.debug");
+constexpr const char TracingCategoryName::kTopLevel[];
+constexpr const char TracingCategoryName::kDefault[];
+constexpr const char TracingCategoryName::kInfo[];
+constexpr const char TracingCategoryName::kDebug[];
 
 namespace internal {
 
@@ -24,19 +22,19 @@ void ValidateTracingCategory(const char* category) {
   // portable way to use string literals as a template argument.
   // Unfortunately, static_assert won't work with templates either because
   // inequality (!=) of linker symbols is undefined in compile-time.
-  DCHECK(category == kTracingCategoryNameTopLevel ||
-         category == kTracingCategoryNameDefault ||
-         category == kTracingCategoryNameInfo ||
-         category == kTracingCategoryNameDebug);
+  DCHECK(category == TracingCategoryName::kTopLevel ||
+         category == TracingCategoryName::kDefault ||
+         category == TracingCategoryName::kInfo ||
+         category == TracingCategoryName::kDebug);
 }
 
 }  // namespace internal
 
 void WarmupTracingCategories() {
   // No need to warm-up toplevel category here.
-  TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameDefault);
-  TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameInfo);
-  TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameDebug);
+  TRACE_EVENT_WARMUP_CATEGORY(TracingCategoryName::kDefault);
+  TRACE_EVENT_WARMUP_CATEGORY(TracingCategoryName::kInfo);
+  TRACE_EVENT_WARMUP_CATEGORY(TracingCategoryName::kDebug);
 }
 
 std::string PointerToString(const void* pointer) {

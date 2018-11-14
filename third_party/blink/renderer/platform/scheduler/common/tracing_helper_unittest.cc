@@ -35,7 +35,7 @@ const char* SignOfInt(int value) {
 }
 
 class TraceableStateForTest
-    : public TraceableState<int, kTracingCategoryNameDefault> {
+    : public TraceableState<int, TracingCategoryName::kDefault> {
  public:
   TraceableStateForTest(TraceableVariableController* controller)
       : TraceableState(0, "State", controller, controller, SignOfInt) {
@@ -74,10 +74,10 @@ TEST(TracingHelperTest, TraceableState) {
 
 TEST(TracingHelperTest, TraceableStateOperators) {
   TraceableVariableController controller;
-  TraceableState<int, kTracingCategoryNameDebug> x(-1, "X", &controller,
-                                                   &controller, SignOfInt);
-  TraceableState<int, kTracingCategoryNameDebug> y(1, "Y", &controller,
-                                                   &controller, SignOfInt);
+  TraceableState<int, TracingCategoryName::kDebug> x(-1, "X", &controller,
+                                                     &controller, SignOfInt);
+  TraceableState<int, TracingCategoryName::kDebug> y(1, "Y", &controller,
+                                                     &controller, SignOfInt);
   EXPECT_EQ(0, x + y);
   EXPECT_FALSE(x == y);
   EXPECT_TRUE(x != y);

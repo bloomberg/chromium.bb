@@ -10,12 +10,15 @@
 
 namespace vr {
 
+namespace {
+constexpr const char kGpuTracingCategory[] = "gpu";
+}  // namespace
+
 uint32_t ScopedGpuTrace::s_trace_id_ = 0;
 
-ScopedGpuTrace::ScopedGpuTrace(const char* categoray, const char* name)
+ScopedGpuTrace::ScopedGpuTrace(const char* name)
     : start_time_(base::TimeTicks::Now()),
       fence_(gl::GLFenceAndroidNativeFenceSync::CreateForGpuFence()),
-      categoray_(categoray),
       name_(name),
       trace_id_(s_trace_id_++) {}
 
@@ -30,11 +33,11 @@ ScopedGpuTrace::~ScopedGpuTrace() {
     return;
 
   TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(
-      categoray_, name_, trace_id_, base::PlatformThread::CurrentId(),
+      kGpuTracingCategory, name_, trace_id_, base::PlatformThread::CurrentId(),
       start_time_);
-  TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0(categoray_, name_, trace_id_,
-                                             base::PlatformThread::CurrentId(),
-                                             end_time);
+  TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0(
+      kGpuTracingCategory, name_, trace_id_, base::PlatformThread::CurrentId(),
+      end_time);
 }
 
 }  // namespace vr

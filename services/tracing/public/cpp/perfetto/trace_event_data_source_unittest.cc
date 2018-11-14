@@ -28,7 +28,7 @@ namespace tracing {
 
 namespace {
 
-const char kCategoryGroup[] = "foo";
+constexpr const char kCategoryGroup[] = "foo";
 
 class MockProducerClient : public ProducerClient {
  public:

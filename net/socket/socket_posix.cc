@@ -455,7 +455,7 @@ void SocketPosix::DetachFromThread() {
 }
 
 void SocketPosix::OnFileCanReadWithoutBlocking(int fd) {
-  TRACE_EVENT0(kNetTracingCategory,
+  TRACE_EVENT0(NetTracingCategory(),
                "SocketPosix::OnFileCanReadWithoutBlocking");
   if (!accept_callback_.is_null()) {
     AcceptCompleted();

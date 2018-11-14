@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
+#include "base/trace_event/builtin_categories.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/heap_profiler.h"
 #include "base/trace_event/trace_category.h"
@@ -234,25 +235,41 @@
 // No barriers are needed, because this code is designed to operate safely
 // even when the unsigned char* points to garbage data (which may be the case
 // on processors without cache coherency).
-#define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_CUSTOM_VARIABLES( \
-    category_group, atomic, category_group_enabled) \
-    category_group_enabled = \
-        reinterpret_cast<const unsigned char*>(TRACE_EVENT_API_ATOMIC_LOAD( \
-            atomic)); \
-    if (UNLIKELY(!category_group_enabled)) { \
-      category_group_enabled = \
-          TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group); \
-      TRACE_EVENT_API_ATOMIC_STORE(atomic, \
-          reinterpret_cast<TRACE_EVENT_API_ATOMIC_WORD>( \
-              category_group_enabled)); \
-    }
+#define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_CUSTOM_VARIABLES(    \
+    category_group, atomic, category_group_enabled)                 \
+  category_group_enabled = reinterpret_cast<const unsigned char*>(  \
+      TRACE_EVENT_API_ATOMIC_LOAD(atomic));                         \
+  if (UNLIKELY(!category_group_enabled)) {                          \
+    category_group_enabled =                                        \
+        TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group); \
+    TRACE_EVENT_API_ATOMIC_STORE(                                   \
+        atomic, reinterpret_cast<TRACE_EVENT_API_ATOMIC_WORD>(      \
+                    category_group_enabled));                       \
+  }
 
-#define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group) \
+#define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_MAYBE_AT_COMPILE_TIME(        \
+    category_group, k_category_group_enabled, category_group_enabled)        \
+  if (k_category_group_enabled) {                                            \
+    category_group_enabled = k_category_group_enabled;                       \
+  } else {                                                                   \
     static TRACE_EVENT_API_ATOMIC_WORD INTERNAL_TRACE_EVENT_UID(atomic) = 0; \
-    const unsigned char* INTERNAL_TRACE_EVENT_UID(category_group_enabled); \
-    INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_CUSTOM_VARIABLES(category_group, \
-        INTERNAL_TRACE_EVENT_UID(atomic), \
-        INTERNAL_TRACE_EVENT_UID(category_group_enabled));
+    INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_CUSTOM_VARIABLES(                 \
+        category_group, INTERNAL_TRACE_EVENT_UID(atomic),                    \
+        category_group_enabled);                                             \
+  }
+
+#define INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group)                 \
+  static_assert(                                                               \
+      base::trace_event::BuiltinCategories::IsAllowedCategory(category_group), \
+      "Unknown tracing category is used. Please register your "                \
+      "category in base/trace_event/builtin_categories.h");                    \
+  constexpr const unsigned char* INTERNAL_TRACE_EVENT_UID(                     \
+      k_category_group_enabled) =                                              \
+      base::trace_event::TraceLog::GetBuiltinCategoryEnabled(category_group);  \
+  const unsigned char* INTERNAL_TRACE_EVENT_UID(category_group_enabled);       \
+  INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO_MAYBE_AT_COMPILE_TIME(                \
+      category_group, INTERNAL_TRACE_EVENT_UID(k_category_group_enabled),      \
+      INTERNAL_TRACE_EVENT_UID(category_group_enabled));
 
 // Implementation detail: internal macro to return unoverridden
 // base::TimeTicks::Now(). This is important because in headless VirtualTime can
@@ -1153,26 +1170,23 @@ class TRACE_EVENT_API_CLASS_EXPORT ScopedTraceBinaryEfficient {
 namespace base {
 namespace trace_event {
 
-template<typename IDType> class TraceScopedTrackableObject {
+template <typename IDType, const char* category>
+class TraceScopedTrackableObject {
  public:
-  TraceScopedTrackableObject(const char* category_group, const char* name,
-      IDType id)
-    : category_group_(category_group),
-      name_(name),
-      id_(id) {
-    TRACE_EVENT_OBJECT_CREATED_WITH_ID(category_group_, name_, id_);
+  TraceScopedTrackableObject(const char* name, IDType id)
+      : name_(name), id_(id) {
+    TRACE_EVENT_OBJECT_CREATED_WITH_ID(category, name_, id_);
   }
 
   template <typename ArgType> void snapshot(ArgType snapshot) {
-    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(category_group_, name_, id_, snapshot);
+    TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(category, name_, id_, snapshot);
   }
 
   ~TraceScopedTrackableObject() {
-    TRACE_EVENT_OBJECT_DELETED_WITH_ID(category_group_, name_, id_);
+    TRACE_EVENT_OBJECT_DELETED_WITH_ID(category, name_, id_);
   }
 
  private:
-  const char* category_group_;
   const char* name_;
   IDType id_;
 

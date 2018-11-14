@@ -16,6 +16,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/auto_open_close_event.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/layers/video_frame_provider.h"
 #include "media/base/video_renderer_sink.h"
@@ -23,12 +24,6 @@
 #include "media/blink/webmediaplayer_params.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "ui/gfx/geometry/size.h"
-
-namespace base {
-namespace trace_event {
-class AutoOpenCloseEvent;
-}
-}
 
 namespace viz {
 class SurfaceId;
@@ -159,6 +154,9 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   }
 
  private:
+  // TracingCategory name for |auto_open_close_|.
+  static constexpr const char kTracingCategory[] = "media,rail";
+
   // Ran on the |task_runner_| to initalize |submitter_|;
   void InitializeSubmitter();
 
@@ -227,7 +225,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   VideoRendererSink::RenderCallback* callback_ GUARDED_BY(callback_lock_);
 
   // AutoOpenCloseEvent for begin/end events.
-  std::unique_ptr<base::trace_event::AutoOpenCloseEvent> auto_open_close_;
+  std::unique_ptr<base::trace_event::AutoOpenCloseEvent<kTracingCategory>>
+      auto_open_close_;
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter_;
 
   base::WeakPtrFactory<VideoFrameCompositor> weak_ptr_factory_;

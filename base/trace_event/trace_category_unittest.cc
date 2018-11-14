@@ -57,6 +57,11 @@ class TraceCategoryTest : public testing::Test {
     GetOrCreateCategoryByName("__test_race", &cat);
     EXPECT_NE(nullptr, cat);
   }
+
+  static constexpr TraceCategory* GetBuiltinCategoryByName(
+      const char* category_group) {
+    return CategoryRegistry::GetBuiltinCategoryByName(category_group);
+  }
 };
 
 TEST_F(TraceCategoryTest, Basic) {
@@ -149,6 +154,19 @@ TEST_F(TraceCategoryTest, MAYBE_ThreadRaces) {
       num_times_seen++;
   }
   ASSERT_EQ(1, num_times_seen);
+}
+
+// Tests getting trace categories by name at compile-time.
+TEST_F(TraceCategoryTest, GetCategoryAtCompileTime) {
+  static_assert(GetBuiltinCategoryByName("nonexistent") == nullptr,
+                "nonexistent found");
+#if defined(OS_WIN) && defined(COMPONENT_BUILD)
+  static_assert(GetBuiltinCategoryByName("toplevel") == nullptr,
+                "toplevel found");
+#else
+  static_assert(GetBuiltinCategoryByName("toplevel") != nullptr,
+                "toplevel not found");
+#endif
 }
 
 }  // namespace trace_event

@@ -202,7 +202,7 @@ std::unique_ptr<ResultHelper> DoVerifyOnWorkerThread(
     int flags,
     const scoped_refptr<CRLSet>& crl_set,
     const CertificateList& additional_trust_anchors) {
-  TRACE_EVENT0(kNetTracingCategory, "DoVerifyOnWorkerThread");
+  TRACE_EVENT0(NetTracingCategory(), "DoVerifyOnWorkerThread");
   auto verify_result = std::make_unique<ResultHelper>();
   MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives
       allow_base_sync_primitives;
@@ -312,7 +312,7 @@ class CertVerifierJob {
 
   void OnJobCompleted(uint32_t config_id,
                       std::unique_ptr<ResultHelper> verify_result) {
-    TRACE_EVENT0(kNetTracingCategory, "CertVerifierJob::OnJobCompleted");
+    TRACE_EVENT0(NetTracingCategory(), "CertVerifierJob::OnJobCompleted");
     std::unique_ptr<CertVerifierJob> keep_alive =
         cert_verifier_->RemoveJob(this);
 
