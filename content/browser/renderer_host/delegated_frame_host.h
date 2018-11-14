@@ -222,6 +222,10 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   viz::LocalSurfaceId first_local_surface_id_after_navigation_;
 
+#ifdef OS_CHROMEOS
+  bool seen_first_activation_ = false;
+#endif
+
   base::WeakPtrFactory<DelegatedFrameHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedFrameHost);
