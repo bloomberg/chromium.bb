@@ -2950,7 +2950,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
 
   // Increment |touch_down_contexts_| on a pointer down. This variable
   // is used to debounce the WM_MOUSEACTIVATE events.
-  if (message == WM_POINTERDOWN) {
+  if (message == WM_POINTERDOWN || message == WM_NCPOINTERDOWN) {
     touch_down_contexts_++;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
@@ -3004,10 +3004,24 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
     if (event_type == ui::ET_TOUCH_RELEASED)
       id_generator_.ReleaseNumber(pointer_id);
 
-    // Mark all touch released events handled. These will usually turn into tap
+    // Mark touch released events handled. These will usually turn into tap
     // gestures, and doing this avoids propagating the event to other windows.
-    const bool always_mark_handled = event_type == ui::ET_TOUCH_RELEASED;
-    SetMsgHandled(always_mark_handled || event.handled());
+    if (delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN) {
+      // WM_NCPOINTERUP must be DefWindowProc'ed in order for the system caption
+      // buttons to work correctly.
+      if (message == WM_POINTERUP)
+        event.SetHandled();
+    } else {
+      // Messages on HTCAPTION should be DefWindowProc'ed, as we let Windows
+      // take care of dragging the window and double-tapping to maximize.
+      const bool on_titlebar =
+          SendMessage(hwnd(), WM_NCHITTEST, 0, l_param) == HTCAPTION;
+      // Unlike above, we must mark both WM_POINTERUP and WM_NCPOINTERUP as
+      // handled, in order for the custom caption buttons to work correctly.
+      if (event_type == ui::ET_TOUCH_RELEASED && !on_titlebar)
+        event.SetHandled();
+    }
+    SetMsgHandled(event.handled());
   }
   return 0;
 }
