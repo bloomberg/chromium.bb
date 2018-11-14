@@ -276,13 +276,14 @@ void AsyncLayerTreeFrameSink::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck();
 }
 
-void AsyncLayerTreeFrameSink::OnBeginFrame(
-    const viz::BeginFrameArgs& args,
-    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
-  for (const auto& pair : feedbacks) {
-    client_->DidPresentCompositorFrame(pair.first, pair.second);
-  }
+void AsyncLayerTreeFrameSink::DidPresentCompositorFrame(
+    uint32_t presentation_token,
+    const gfx::PresentationFeedback& feedback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  client_->DidPresentCompositorFrame(presentation_token, feedback);
+}
 
+void AsyncLayerTreeFrameSink::OnBeginFrame(const viz::BeginFrameArgs& args) {
   DCHECK_LE(pipeline_reporting_frame_times_.size(), 25u);
   if (args.trace_id != -1) {
     base::TimeTicks current_time = base::TimeTicks::Now();

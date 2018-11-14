@@ -526,7 +526,6 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->HandleTickmarksVisibilityChange();
   target_tree->HandleScrollbarShowRequestsFromMain();
   target_tree->AddPresentationCallbacks(std::move(presentation_callbacks_));
-  presentation_callbacks_.clear();
 }
 
 void LayerTreeImpl::HandleTickmarksVisibilityChange() {

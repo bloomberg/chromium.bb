@@ -46,7 +46,6 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   // BeginFrameSource does not call into |this| after it's deleted.
   callback_received_begin_frame_ = true;
   callback_received_receive_ack_ = true;
-  presentation_feedbacks_.clear();
   SetNeedsBeginFrame(false);
 
   // For display root surfaces the surface is no longer going to be visible.
@@ -72,7 +71,6 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   // No video capture clients should remain after calling
   // UnregisterCompositorFrameSinkSupport().
   DCHECK(capture_clients_.empty());
-  DCHECK(!added_frame_observer_);
 }
 
 void CompositorFrameSinkSupport::SetUpHitTest(
@@ -542,9 +540,9 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
     uint32_t presentation_token,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(presentation_token);
-  DCHECK(!presentation_feedbacks_.count(presentation_token));
-  presentation_feedbacks_.emplace(presentation_token, feedback);
-  UpdateNeedsBeginFramesInternal();
+  if (client_) {
+    client_->DidPresentCompositorFrame(presentation_token, feedback);
+  }
 }
 
 void CompositorFrameSinkSupport::DidRejectCompositorFrame(
@@ -587,16 +585,14 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
     HandleCallback();
   }
 
-  if (client_ &&
-      (client_needs_begin_frame_ || !presentation_feedbacks_.empty())) {
+  if (client_ && client_needs_begin_frame_) {
     BeginFrameArgs copy_args = args;
     copy_args.trace_id = ComputeTraceId();
     TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
                            TRACE_ID_GLOBAL(copy_args.trace_id),
                            TRACE_EVENT_FLAG_FLOW_OUT, "step",
                            "IssueBeginFrame");
-    client_->OnBeginFrame(copy_args, std::move(presentation_feedbacks_));
-    presentation_feedbacks_.clear();
+    client_->OnBeginFrame(copy_args);
   }
 }
 
@@ -615,9 +611,9 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
     return;
 
   // We require a begin frame if there's a callback pending, or if the client
-  // requested it, or if the client needs to get some presentation feedbacks.
+  // requested it.
   bool needs_begin_frame =
-      client_needs_begin_frame_ || !presentation_feedbacks_.empty() ||
+      client_needs_begin_frame_ ||
       (compositor_frame_callback_ && !callback_received_begin_frame_);
 
   if (needs_begin_frame == added_frame_observer_)

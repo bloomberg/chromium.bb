@@ -63,10 +63,10 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   // viz::mojom::blink::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const WTF::Vector<viz::ReturnedResource>& resources) final;
-  void OnBeginFrame(
-      const viz::BeginFrameArgs&,
-      WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>)
-      final;
+  void DidPresentCompositorFrame(
+      uint32_t presentation_token,
+      ::gfx::mojom::blink::PresentationFeedbackPtr feedback) final;
+  void OnBeginFrame(const viz::BeginFrameArgs&) final;
   void OnBeginFramePausedChanged(bool paused) final{};
   void ReclaimResources(
       const WTF::Vector<viz::ReturnedResource>& resources) final;
