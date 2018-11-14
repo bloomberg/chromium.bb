@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_metrics.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -37,6 +38,14 @@ class CastDialogView : public views::BubbleDialogDelegateView,
                        public CastDialogController::Observer,
                        public ui::SimpleMenuModel::Delegate {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnDialogModelUpdated(CastDialogView* dialog_view) = 0;
+    virtual void OnDialogWillClose(CastDialogView* dialog_view) = 0;
+  };
+
+  enum SourceType { kTab, kDesktop, kLocalFile };
+
   // Shows the singleton dialog anchored to the Cast toolbar icon. Requires that
   // BrowserActionsContainer exists for |browser|.
   static void ShowDialogWithToolbarAction(CastDialogController* controller,
@@ -53,6 +62,8 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   static void HideDialog();
 
   static bool IsShowing();
+
+  static CastDialogView* GetInstance();
 
   // Returns nullptr if the dialog is currently not shown.
   static views::Widget* GetCurrentDialogWidget();
@@ -86,6 +97,9 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   // Called by tests.
   const std::vector<CastDialogSinkButton*>& sink_buttons_for_test() const {
     return sink_buttons_;
@@ -107,8 +121,6 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   FRIEND_TEST_ALL_PREFIXES(CastDialogViewTest, DisableUnsupportedSinks);
   FRIEND_TEST_ALL_PREFIXES(CastDialogViewTest, ShowAndHideDialog);
   FRIEND_TEST_ALL_PREFIXES(CastDialogViewTest, ShowSourcesMenu);
-
-  enum SourceType { kTab, kDesktop, kLocalFile };
 
   // Instantiates and shows the singleton dialog. The dialog must not be
   // currently shown.
@@ -211,6 +223,8 @@ class CastDialogView : public views::BubbleDialogDelegateView,
 
   // This value is set if the user has chosen a local file to cast.
   base::Optional<base::string16> local_file_name_;
+
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<CastDialogView> weak_factory_;
 

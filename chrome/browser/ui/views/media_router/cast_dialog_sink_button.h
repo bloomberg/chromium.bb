@@ -35,6 +35,7 @@ class CastDialogSinkButton : public HoverButton {
   const UIMediaSink& sink() const { return sink_; }
 
  private:
+  friend class MediaRouterUiForTest;
   FRIEND_TEST_ALL_PREFIXES(CastDialogSinkButtonTest, OverrideStatusText);
   FRIEND_TEST_ALL_PREFIXES(CastDialogSinkButtonTest,
                            SetStatusLabelForActiveSink);
