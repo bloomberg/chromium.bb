@@ -12,6 +12,8 @@ static_library("core") {
     "archive_manager.h",
     "archive_validator.cc",
     "archive_validator.h",
+    "auto_fetch.cc",
+    "auto_fetch.h",
     "background_snapshot_controller.cc",
     "background_snapshot_controller.h",
     "client_id.cc",
@@ -152,6 +154,7 @@ source_set("unit_tests") {
   sources = [
     "archive_manager_unittest.cc",
     "archive_validator_unittest.cc",
+    "auto_fetch_unittest.cc",
     "background_snapshot_controller_unittest.cc",
     "client_policy_controller_unittest.cc",
     "model/add_page_task_unittest.cc",

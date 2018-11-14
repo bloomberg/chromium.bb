@@ -59,6 +59,7 @@ class OfflinePageAutoFetcherService : public KeyedService {
 
   void TrySchedule(bool user_requested,
                    const GURL& url,
+                   int android_tab_id,
                    TryScheduleCallback callback);
   void CancelSchedule(const GURL& url);
 
@@ -90,12 +91,14 @@ class OfflinePageAutoFetcherService : public KeyedService {
 
   void TryScheduleStep1(bool user_requested,
                         const GURL& url,
+                        int android_tab_id,
                         TryScheduleCallback callback,
                         TaskToken token);
   void TryScheduleStep2(
       TaskToken token,
       bool user_requested,
       const GURL& url,
+      int android_tab_id,
       TryScheduleCallback callback,
       RequestCoordinator* coordinator,
       std::vector<std::unique_ptr<SavePageRequest>> all_requests);

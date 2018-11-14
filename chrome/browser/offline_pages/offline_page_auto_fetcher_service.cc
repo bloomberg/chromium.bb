@@ -4,10 +4,15 @@
 
 #include "chrome/browser/offline_pages/offline_page_auto_fetcher_service.h"
 
+#include <string>
 #include <utility>
 
+#include "base/optional.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
+#include "components/offline_pages/core/auto_fetch.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_id.h"
@@ -21,17 +26,24 @@ namespace offline_pages {
 namespace {
 constexpr int kMaximumInFlight = 3;
 
-ClientId URLToClientId(const GURL& url) {
-  // By using namespace.URL as the client ID, we ensure that only a single
-  // request for a page can be in flight.
-
+bool URLMatches(const GURL& a, const GURL& b) {
   // We strip the fragment, because when loading an offline page, only the most
   // recent page saved with the URL (fragment stripped) can be loaded.
   GURL::Replacements remove_fragment;
   remove_fragment.ClearRef();
-  GURL url_to_match = url.ReplaceComponents(remove_fragment);
+  return a.ReplaceComponents(remove_fragment) ==
+         b.ReplaceComponents(remove_fragment);
+}
 
-  return ClientId(kAutoAsyncNamespace, url_to_match.spec());
+SavePageRequest* FindRequest(
+    const std::vector<std::unique_ptr<SavePageRequest>>& all_requests,
+    const GURL& url) {
+  for (const auto& request : all_requests) {
+    if (request->client_id().name_space == kAutoAsyncNamespace &&
+        URLMatches(request->url(), url))
+      return request.get();
+  }
+  return nullptr;
 }
 }  // namespace
 
@@ -64,10 +76,11 @@ OfflinePageAutoFetcherService::~OfflinePageAutoFetcherService() {}
 
 void OfflinePageAutoFetcherService::TrySchedule(bool user_requested,
                                                 const GURL& url,
+                                                int android_tab_id,
                                                 TryScheduleCallback callback) {
-  StartOrEnqueue(
-      base::BindOnce(&OfflinePageAutoFetcherService::TryScheduleStep1,
-                     GetWeakPtr(), user_requested, url, std::move(callback)));
+  StartOrEnqueue(base::BindOnce(
+      &OfflinePageAutoFetcherService::TryScheduleStep1, GetWeakPtr(),
+      user_requested, url, android_tab_id, std::move(callback)));
 }
 
 void OfflinePageAutoFetcherService::CancelSchedule(const GURL& url) {
@@ -78,6 +91,7 @@ void OfflinePageAutoFetcherService::CancelSchedule(const GURL& url) {
 void OfflinePageAutoFetcherService::TryScheduleStep1(
     bool user_requested,
     const GURL& url,
+    int android_tab_id,
     TryScheduleCallback callback,
     TaskToken token) {
   // Return an early failure if the URL is not suitable.
@@ -89,30 +103,29 @@ void OfflinePageAutoFetcherService::TryScheduleStep1(
 
   // We need to do some checks on in-flight requests before scheduling the
   // fetch. So first, get the list of all requests, and proceed to step 2.
-  request_coordinator_->GetAllRequests(base::BindOnce(
-      &OfflinePageAutoFetcherService::TryScheduleStep2, GetWeakPtr(),
-      std::move(token), user_requested, url, std::move(callback),
-      // Unretained is OK because coordinator is calling us back.
-      base::Unretained(request_coordinator_)));
+  request_coordinator_->GetAllRequests(
+      base::BindOnce(&OfflinePageAutoFetcherService::TryScheduleStep2,
+                     GetWeakPtr(), std::move(token), user_requested, url,
+                     android_tab_id, std::move(callback),
+                     // Unretained is OK because coordinator is calling us back.
+                     base::Unretained(request_coordinator_)));
 }
 
 void OfflinePageAutoFetcherService::TryScheduleStep2(
     TaskToken token,
     bool user_requested,
     const GURL& url,
+    int android_tab_id,
     TryScheduleCallback callback,
     RequestCoordinator* coordinator,
     std::vector<std::unique_ptr<SavePageRequest>> all_requests) {
   // If a request for this page is already scheduled, report scheduling as
   // successful without doing anything.
-  const ClientId url_client_id = URLToClientId(url);
-  for (const auto& request : all_requests) {
-    if (url_client_id == request->client_id()) {
-      std::move(callback).Run(
-          OfflinePageAutoFetcherScheduleResult::kAlreadyScheduled);
-      TaskComplete(std::move(token));
-      return;
-    }
+  if (FindRequest(all_requests, url)) {
+    std::move(callback).Run(
+        OfflinePageAutoFetcherScheduleResult::kAlreadyScheduled);
+    TaskComplete(std::move(token));
+    return;
   }
 
   // Respect kMaximumInFlight.
@@ -134,7 +147,8 @@ void OfflinePageAutoFetcherService::TryScheduleStep2(
   // Finally, schedule a new request, and proceed to step 3.
   RequestCoordinator::SavePageLaterParams params;
   params.url = url;
-  params.client_id = url_client_id;
+  auto_fetch::ClientIdMetadata metadata(android_tab_id);
+  params.client_id = auto_fetch::MakeClientId(metadata);
   params.user_requested = false;
   params.availability =
       RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER;
@@ -170,15 +184,13 @@ void OfflinePageAutoFetcherService::CancelScheduleStep2(
     RequestCoordinator* coordinator,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
   // Cancel the request if it's found in the list of all requests.
-  const ClientId url_client_id = URLToClientId(url);
-  for (const auto& request : requests) {
-    if (url_client_id == request->client_id()) {
-      coordinator->RemoveRequests(
-          {request->request_id()},
-          base::BindOnce(&OfflinePageAutoFetcherService::CancelScheduleStep3,
-                         GetWeakPtr(), std::move(token)));
-      return;
-    }
+  SavePageRequest* matching_request = FindRequest(requests, url);
+  if (matching_request) {
+    coordinator->RemoveRequests(
+        {matching_request->request_id()},
+        base::BindOnce(&OfflinePageAutoFetcherService::CancelScheduleStep3,
+                       GetWeakPtr(), std::move(token)));
+    return;
   }
   TaskComplete(std::move(token));
 }

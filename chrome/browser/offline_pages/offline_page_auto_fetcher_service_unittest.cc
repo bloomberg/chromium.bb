@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/test_request_queue_store.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,6 +21,7 @@
 
 namespace offline_pages {
 namespace {
+const int kTabId = 1;
 using OfflinePageAutoFetcherScheduleResult =
     chrome::mojom::OfflinePageAutoFetcherScheduleResult;
 
@@ -71,7 +73,8 @@ TEST_F(OfflinePageAutoFetcherServiceTest, TryScheduleSuccess) {
       result_callback;
   EXPECT_CALL(result_callback,
               Run(OfflinePageAutoFetcherScheduleResult::kScheduled));
-  service_->TrySchedule(false, GURL("http://foo.com"), result_callback.Get());
+  service_->TrySchedule(false, GURL("http://foo.com"), kTabId,
+                        result_callback.Get());
   browser_thread_bundle_.RunUntilIdle();
   EXPECT_EQ(1ul, GetRequestsSync().size());
 }
@@ -82,7 +85,8 @@ TEST_F(OfflinePageAutoFetcherServiceTest, AttemptInvalidURL) {
       result_callback;
   EXPECT_CALL(result_callback,
               Run(OfflinePageAutoFetcherScheduleResult::kOtherError));
-  service_->TrySchedule(false, GURL("ftp://foo.com"), result_callback.Get());
+  service_->TrySchedule(false, GURL("ftp://foo.com"), kTabId,
+                        result_callback.Get());
   browser_thread_bundle_.RunUntilIdle();
   EXPECT_EQ(0ul, GetRequestsSync().size());
 }
@@ -98,8 +102,10 @@ TEST_F(OfflinePageAutoFetcherServiceTest, TryScheduleDuplicate) {
               Run(OfflinePageAutoFetcherScheduleResult::kAlreadyScheduled))
       .Times(1);
   // The page should only be saved once, because the fragment is ignored.
-  service_->TrySchedule(false, GURL("http://foo.com#A"), result_callback.Get());
-  service_->TrySchedule(false, GURL("http://foo.com#Z"), result_callback.Get());
+  service_->TrySchedule(false, GURL("http://foo.com#A"), kTabId,
+                        result_callback.Get());
+  service_->TrySchedule(false, GURL("http://foo.com#Z"), kTabId,
+                        result_callback.Get());
   browser_thread_bundle_.RunUntilIdle();
   EXPECT_EQ(1ul, GetRequestsSync().size());
 }
@@ -120,15 +126,20 @@ TEST_F(OfflinePageAutoFetcherServiceTest, AttemptAutoScheduleMoreThanMaximum) {
       .Times(1);
 
   // Three requests within quota.
-  service_->TrySchedule(false, GURL("http://foo.com/1"), result_callback.Get());
-  service_->TrySchedule(false, GURL("http://foo.com/2"), result_callback.Get());
-  service_->TrySchedule(false, GURL("http://foo.com/3"), result_callback.Get());
+  service_->TrySchedule(false, GURL("http://foo.com/1"), kTabId,
+                        result_callback.Get());
+  service_->TrySchedule(false, GURL("http://foo.com/2"), kTabId,
+                        result_callback.Get());
+  service_->TrySchedule(false, GURL("http://foo.com/3"), kTabId,
+                        result_callback.Get());
 
   // Quota is exhausted.
-  service_->TrySchedule(false, GURL("http://foo.com/4"), result_callback.Get());
+  service_->TrySchedule(false, GURL("http://foo.com/4"), kTabId,
+                        result_callback.Get());
 
   // User-requested, quota is not enforced.
-  service_->TrySchedule(true, GURL("http://foo.com/5"), result_callback.Get());
+  service_->TrySchedule(true, GURL("http://foo.com/5"), kTabId,
+                        result_callback.Get());
 
   browser_thread_bundle_.RunUntilIdle();
 }
@@ -141,15 +152,20 @@ TEST_F(OfflinePageAutoFetcherServiceTest,
   EXPECT_CALL(result_callback,
               Run(OfflinePageAutoFetcherScheduleResult::kScheduled))
       .Times(4);
-  service_->TrySchedule(true, GURL("http://foo.com/1"), result_callback.Get());
-  service_->TrySchedule(true, GURL("http://foo.com/2"), result_callback.Get());
-  service_->TrySchedule(true, GURL("http://foo.com/3"), result_callback.Get());
-  service_->TrySchedule(true, GURL("http://foo.com/4"), result_callback.Get());
+  service_->TrySchedule(true, GURL("http://foo.com/1"), kTabId,
+                        result_callback.Get());
+  service_->TrySchedule(true, GURL("http://foo.com/2"), kTabId,
+                        result_callback.Get());
+  service_->TrySchedule(true, GURL("http://foo.com/3"), kTabId,
+                        result_callback.Get());
+  service_->TrySchedule(true, GURL("http://foo.com/4"), kTabId,
+                        result_callback.Get());
   browser_thread_bundle_.RunUntilIdle();
 }
 
 TEST_F(OfflinePageAutoFetcherServiceTest, CancelSuccess) {
-  service_->TrySchedule(false, GURL("http://foo.com"), base::DoNothing());
+  service_->TrySchedule(false, GURL("http://foo.com"), kTabId,
+                        base::DoNothing());
   browser_thread_bundle_.RunUntilIdle();
   service_->CancelSchedule(GURL("http://foo.com"));
   browser_thread_bundle_.RunUntilIdle();
@@ -157,7 +173,8 @@ TEST_F(OfflinePageAutoFetcherServiceTest, CancelSuccess) {
 }
 
 TEST_F(OfflinePageAutoFetcherServiceTest, CancelNotExist) {
-  service_->TrySchedule(false, GURL("http://foo.com"), base::DoNothing());
+  service_->TrySchedule(false, GURL("http://foo.com"), kTabId,
+                        base::DoNothing());
   browser_thread_bundle_.RunUntilIdle();
   service_->CancelSchedule(GURL("http://NOT-FOO.com"));
   browser_thread_bundle_.RunUntilIdle();
