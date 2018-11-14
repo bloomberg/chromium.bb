@@ -427,14 +427,14 @@ TEST_F(LoginBubbleTest, TestShowSelectionMenu) {
   EXPECT_FALSE(bubble_->IsVisible());
 }
 
-TEST_F(LoginBubbleTest, LongUserNameLaidOutCorrectly) {
+TEST_F(LoginBubbleTest, LongUserNameAndEmailLaidOutCorrectly) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   EXPECT_FALSE(bubble_->IsVisible());
 
   bubble_->ShowUserMenu(
       base::UTF8ToUTF16("NedHasAReallyLongName StarkHasAReallyLongName"),
-      base::UTF8ToUTF16("reallylonggaianame@gmail.com"),
+      base::UTF8ToUTF16("reallyreallyextralonggaianame@gmail.com"),
       user_manager::UserType::USER_TYPE_REGULAR, false /*is_owner*/, container_,
       bubble_opener_, true /*show_remove_user*/, base::OnceClosure(),
       base::OnceClosure());
