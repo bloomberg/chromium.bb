@@ -17,10 +17,10 @@
 #include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/character_encoding.h"
 #include "base/json/json_reader.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -594,11 +594,6 @@ using plugins::ChromeContentBrowserClientPluginsPart;
 
 namespace {
 
-// Cached version of the locale so we can return the locale on the I/O
-// thread.
-base::LazyInstance<std::string>::DestructorAtExit
-    g_io_thread_application_locale = LAZY_INSTANCE_INITIALIZER;
-
 const storage::QuotaSettings* g_default_quota_settings;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -657,6 +652,13 @@ enum AppLoadedInTabSource {
 
   APP_LOADED_IN_TAB_SOURCE_MAX
 };
+
+// Cached version of the locale so we can return the locale on the I/O
+// thread.
+std::string& GetIOThreadApplicationLocale() {
+  static base::NoDestructor<std::string> s;
+  return *s;
+}
 
 // Returns a copy of the given url with its host set to given host and path set
 // to given path. Other parts of the url will be the same.
@@ -827,7 +829,7 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
 
 void SetApplicationLocaleOnIOThread(const std::string& locale) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  g_io_thread_application_locale.Get() = locale;
+  GetIOThreadApplicationLocale() = locale;
 }
 
 // An implementation of the SSLCertReporter interface used by
@@ -1091,7 +1093,7 @@ void ChromeContentBrowserClient::SetApplicationLocale(
   // before any threads are created or registered. When there are no threads,
   // we can just set the string without worrying about threadsafety.
   if (!BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    g_io_thread_application_locale.Get() = locale;
+    GetIOThreadApplicationLocale() = locale;
     return;
   }
 
@@ -2200,7 +2202,7 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
 
 std::string ChromeContentBrowserClient::GetApplicationLocale() {
   if (BrowserThread::CurrentlyOn(BrowserThread::IO))
-    return g_io_thread_application_locale.Get();
+    return GetIOThreadApplicationLocale();
   return g_browser_process->GetApplicationLocale();
 }
 

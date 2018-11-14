@@ -11,11 +11,11 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -265,28 +265,27 @@ void ConvertStringVectorToGURLVector(
   std::transform(src.begin(), src.end(), ret->begin(), &UrlFromString);
 }
 
-static base::LazyInstance<base::FilePath>::DestructorAtExit
-    master_prefs_path_for_testing = LAZY_INSTANCE_INITIALIZER;
+base::FilePath& GetMasterPrefsPathForTesting() {
+  static base::NoDestructor<base::FilePath> s;
+  return *s;
+}
 
 // Loads master preferences from the master preference file into the installer
 // master preferences. Returns the pointer to installer::MasterPreferences
-// object if successful; otherwise, returns NULL.
-installer::MasterPreferences* LoadMasterPrefs() {
+// object if successful; otherwise, returns nullptr.
+std::unique_ptr<installer::MasterPreferences> LoadMasterPrefs() {
   base::FilePath master_prefs_path;
-  if (!master_prefs_path_for_testing.Get().empty()) {
-    master_prefs_path = master_prefs_path_for_testing.Get();
-  } else {
+  if (!GetMasterPrefsPathForTesting().empty())
+    master_prefs_path = GetMasterPrefsPathForTesting();
+  else
     master_prefs_path = base::FilePath(first_run::internal::MasterPrefsPath());
-  }
-  if (master_prefs_path.empty())
-    return NULL;
-  installer::MasterPreferences* install_prefs =
-      new installer::MasterPreferences(master_prefs_path);
-  if (!install_prefs->read_from_file()) {
-    delete install_prefs;
-    return NULL;
-  }
 
+  if (master_prefs_path.empty())
+    return nullptr;
+  auto install_prefs =
+      std::make_unique<installer::MasterPreferences>(master_prefs_path);
+  if (!install_prefs->read_from_file())
+    return nullptr;
   return install_prefs;
 }
 
@@ -489,7 +488,7 @@ bool ShouldDoPersonalDataManagerFirstRun() {
 }
 
 void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs) {
-  master_prefs_path_for_testing.Get() = master_prefs;
+  GetMasterPrefsPathForTesting() = master_prefs;
 }
 
 ProcessMasterPreferencesResult ProcessMasterPreferences(
@@ -497,8 +496,8 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
 
-  std::unique_ptr<installer::MasterPreferences> install_prefs(
-      LoadMasterPrefs());
+  std::unique_ptr<installer::MasterPreferences> install_prefs =
+      LoadMasterPrefs();
 
   if (install_prefs.get()) {
     if (!internal::ShowPostInstallEULAIfNeeded(install_prefs.get()))

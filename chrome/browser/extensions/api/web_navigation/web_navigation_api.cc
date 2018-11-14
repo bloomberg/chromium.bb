@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_constants.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api_helpers.h"
@@ -39,10 +39,13 @@ namespace web_navigation = api::web_navigation;
 
 namespace {
 
-typedef std::map<content::WebContents*, WebNavigationTabObserver*>
-    TabObserverMap;
-static base::LazyInstance<TabObserverMap>::DestructorAtExit g_tab_observer =
-    LAZY_INSTANCE_INITIALIZER;
+using TabObserverMap =
+    std::map<content::WebContents*, WebNavigationTabObserver*>;
+
+TabObserverMap& GetTabObserverMap() {
+  static base::NoDestructor<TabObserverMap> s;
+  return *s;
+}
 
 }  // namespace
 
@@ -121,7 +124,6 @@ void WebNavigationEventRouter::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-
     case chrome::NOTIFICATION_TAB_ADDED:
       TabAdded(content::Details<content::WebContents>(details).ptr());
       break;
@@ -212,7 +214,7 @@ void WebNavigationEventRouter::TabDestroyed(content::WebContents* tab) {
 WebNavigationTabObserver::WebNavigationTabObserver(
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents) {
-  g_tab_observer.Get().insert(TabObserverMap::value_type(web_contents, this));
+  GetTabObserverMap().insert(TabObserverMap::value_type(web_contents, this));
   navigation_state_.FrameHostCreated(web_contents->GetMainFrame());
 }
 
@@ -221,8 +223,8 @@ WebNavigationTabObserver::~WebNavigationTabObserver() {}
 // static
 WebNavigationTabObserver* WebNavigationTabObserver::Get(
     content::WebContents* web_contents) {
-  auto i = g_tab_observer.Get().find(web_contents);
-  return i == g_tab_observer.Get().end() ? NULL : i->second;
+  auto i = GetTabObserverMap().find(web_contents);
+  return i == GetTabObserverMap().end() ? NULL : i->second;
 }
 
 void WebNavigationTabObserver::RenderFrameDeleted(
@@ -400,7 +402,7 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
 }
 
 void WebNavigationTabObserver::WebContentsDestroyed() {
-  g_tab_observer.Get().erase(web_contents());
+  GetTabObserverMap().erase(web_contents());
   registrar_.RemoveAll();
 }
 
