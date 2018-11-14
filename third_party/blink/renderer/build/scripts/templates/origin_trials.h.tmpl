@@ -17,7 +17,7 @@ class ExecutionContext;
 
 // A namespace with dynamic tests for experimental features which can be
 // enabled by the origin trials framework via origin trial tokens.
-namespace OriginTrials {
+namespace origin_trials {
 
 {% for feature in features %}
 {% if feature.origin_trial_feature_name %}
@@ -33,7 +33,7 @@ CORE_EXPORT bool {{feature.name}}Enabled(const ExecutionContext*);
 
 CORE_EXPORT Vector<AtomicString> GetImpliedTrials(const String& trial_name);
 
-} // namespace OriginTrials
+}  // namespace origin_trials
 
 }  // namespace blink
 

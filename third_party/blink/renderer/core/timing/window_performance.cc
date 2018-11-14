@@ -338,7 +338,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             TimeTicks processing_start,
                                             TimeTicks processing_end,
                                             bool cancelable) {
-  DCHECK(OriginTrials::EventTimingEnabled(GetExecutionContext()));
+  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
 
   DCHECK(!start_time.is_null());
   DCHECK(!processing_start.is_null());
@@ -368,7 +368,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
 
 void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
                                            TimeTicks timestamp) {
-  DCHECK(OriginTrials::EventTimingEnabled(GetExecutionContext()));
+  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
 
   DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
   for (const auto& entry : event_timings_) {
@@ -412,7 +412,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
 
 void WindowPerformance::DispatchFirstInputTiming(
     PerformanceEventTiming* entry) {
-  DCHECK(OriginTrials::EventTimingEnabled(GetExecutionContext()));
+  DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
   first_input_detected_ = true;
 
   if (!entry)

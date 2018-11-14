@@ -260,7 +260,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
   // Unknown type.
   if (context_type == CanvasRenderingContext::kContextTypeUnknown ||
       (context_type == CanvasRenderingContext::kContextXRPresent &&
-       !OriginTrials::WebXREnabled(&GetDocument()))) {
+       !origin_trials::WebXREnabled(&GetDocument()))) {
     return nullptr;
   }
 
@@ -310,7 +310,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
   }
 
   if (attributes.low_latency &&
-      OriginTrials::LowLatencyCanvasEnabled(&GetDocument())) {
+      origin_trials::LowLatencyCanvasEnabled(&GetDocument())) {
     CreateLayer();
     SetNeedsUnbufferedInputEvents(true);
     frame_dispatcher_ = std::make_unique<CanvasResourceDispatcher>(

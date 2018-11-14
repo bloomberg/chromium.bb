@@ -236,6 +236,7 @@ _CONFIG = [
             'media_constraints_impl::.+',
             'media_element_parser_helpers::.+',
             'network_utils::.+',
+            'origin_trials::.+',
             'paint_filter_builder::.+',
             'root_scroller_util::.+',
             'scheduler::.+',

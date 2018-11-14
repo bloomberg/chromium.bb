@@ -140,7 +140,7 @@ DispatchEventResult EventDispatcher::Dispatch() {
     return DispatchEventResult::kNotCanceled;
   }
   std::unique_ptr<EventTiming> eventTiming;
-  if (OriginTrials::EventTimingEnabled(&node_->GetDocument())) {
+  if (origin_trials::EventTimingEnabled(&node_->GetDocument())) {
     LocalFrame* frame = node_->GetDocument().GetFrame();
     if (frame && frame->DomWindow()) {
       UseCounter::Count(node_->GetDocument(),

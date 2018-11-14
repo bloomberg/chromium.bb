@@ -504,7 +504,7 @@ static bool WasmThreadsEnabledCallback(v8::Local<v8::Context> context) {
   if (!execution_context)
     return false;
 
-  return OriginTrials::WebAssemblyThreadsEnabled(execution_context);
+  return origin_trials::WebAssemblyThreadsEnabled(execution_context);
 }
 
 v8::Local<v8::Value> NewRangeException(v8::Isolate* isolate,
