@@ -1358,9 +1358,13 @@ bool TestRecipeReplayer::PlaceFocusOnElement(content::RenderFrameHost* frame,
   if (focused) {
     return true;
   } else {
-    ADD_FAILURE() << "Failed to place focus on the element: " << element_xpath
-                  << "!";
-    return false;
+    // Failing focusing on an element through script, use the less preferred
+    // method of left mouse clicking the element.
+    int x, y;
+    if (!GetCenterCoordinateOfTargetElement(frame, element_xpath, x, y))
+      return false;
+
+    return SimulateLeftMouseClickAt(frame, gfx::Point(x, y));
   }
 }
 
