@@ -199,6 +199,7 @@ public class ModalDialogView implements View.OnClickListener {
         setTitleScrollable(mParams.titleScrollable);
         setMessage(mParams.message);
         setCustomView(mParams.customView);
+        setCancelOnTouchOutside(mParams.cancelOnTouchOutside);
 
         Resources resources = mDialogView.getResources();
         assert(mParams.positiveButtonTextId == 0 || mParams.positiveButtonText == null);
