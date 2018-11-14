@@ -116,6 +116,7 @@ class FakeBrowserDMTokenStorage : public BrowserDMTokenStorage {
     std::move(callback).Run(storage_enabled_);
   }
   std::string RetrieveDMToken() override { return dm_token_; }
+  bool ShouldDisplayErrorMessageOnFailure() override { return true; }
 
   void SetEnrollmentToken(const std::string& enrollment_token) {
     enrollment_token_ = enrollment_token;
@@ -135,6 +136,11 @@ class FakeBrowserDMTokenStorage : public BrowserDMTokenStorage {
     NOTREACHED();
     return std::string();
   }
+  bool InitEnrollmentErrorOption() override {
+    NOTREACHED();
+    return true;
+  }
+
   void SaveDMToken(const std::string& dm_token) override { NOTREACHED(); }
 
   void EnableStorage(bool storage_enabled) {

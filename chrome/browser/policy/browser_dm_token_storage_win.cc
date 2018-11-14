@@ -190,6 +190,11 @@ std::string BrowserDMTokenStorageWin::InitDMToken() {
   return dm_token;
 }
 
+bool BrowserDMTokenStorageWin::InitEnrollmentErrorOption() {
+  // TODO(crbug/904983): Load the policy value for this option.
+  return true;
+}
+
 void BrowserDMTokenStorageWin::SaveDMToken(const std::string& token) {
   base::PostTaskAndReplyWithResult(
       com_sta_task_runner_.get(), FROM_HERE,

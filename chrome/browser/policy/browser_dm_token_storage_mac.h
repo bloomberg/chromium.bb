@@ -31,6 +31,7 @@ class BrowserDMTokenStorageMac : public BrowserDMTokenStorage {
   std::string InitClientId() override;
   std::string InitEnrollmentToken() override;
   std::string InitDMToken() override;
+  bool InitEnrollmentErrorOption() override;
   void SaveDMToken(const std::string& token) override;
   void DeletePolicyDirectory() override;
 

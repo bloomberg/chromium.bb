@@ -134,6 +134,11 @@ std::string BrowserDMTokenStorageLinux::InitDMToken() {
   return token;
 }
 
+bool BrowserDMTokenStorageLinux::InitEnrollmentErrorOption() {
+  // TODO(crbug/904983): Load the policy value for this option.
+  return true;
+}
+
 void BrowserDMTokenStorageLinux::SaveDMToken(const std::string& token) {
   std::string client_id = RetrieveClientId();
   base::PostTaskWithTraitsAndReplyWithResult(
