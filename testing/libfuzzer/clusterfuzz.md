@@ -47,7 +47,7 @@ goes into general corpus directory. Seed corpus is read-only.
 
 [Buildbot]: https://build.chromium.org/p/chromium.fyi/buildslaves/slave43-c1
 [chromium_libfuzzer.py]: https://code.google.com/p/chromium/codesearch#chromium/build/scripts/slave/recipes/chromium_libfuzzer.py
-[ClusterFuzz Fuzzer Status]: https://clusterfuzz.com/v2/fuzzer-stats
+[ClusterFuzz Fuzzer Status]: https://clusterfuzz.com/fuzzer-stats
 [ClusterFuzz libFuzzer Logs]: https://console.cloud.google.com/storage/browser/clusterfuzz-libfuzzer-logs
 [Corpus GCS Bucket]: https://console.cloud.google.com/storage/clusterfuzz-corpus/libfuzzer
 [fuzzer_test.gni]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzer_test.gni
