@@ -200,6 +200,8 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   sf->intra_angle_estimation = 1;
   sf->selective_ref_frame = 1;
   sf->prune_wedge_pred_diff_based = 1;
+  sf->disable_wedge_search_var_thresh = 0;
+  sf->disable_wedge_search_edge_thresh = 0;
 
   if (speed >= 1) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_1;
@@ -237,6 +239,8 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->prune_single_motion_modes_by_simple_trans = 1;
 
     sf->full_pixel_motion_search_based_split = 1;
+    sf->disable_wedge_search_var_thresh = 0;
+    sf->disable_wedge_search_edge_thresh = 0;
   }
 
   if (speed >= 2) {
@@ -257,6 +261,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     // sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
     sf->allow_partition_search_skip = 1;
     sf->disable_wedge_search_var_thresh = 100;
+    sf->disable_wedge_search_edge_thresh = 0;
     sf->fast_wedge_sign_estimate = 1;
     sf->disable_dual_filter = 1;
     sf->use_jnt_comp_flag = JNT_COMP_DISABLED;
@@ -448,6 +453,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->disable_filter_search_var_thresh = 0;
   sf->allow_partition_search_skip = 0;
   sf->use_accurate_subpel_search = USE_8_TAPS;
+  sf->disable_wedge_search_edge_thresh = 0;
   sf->disable_wedge_search_var_thresh = 0;
   sf->fast_wedge_sign_estimate = 0;
   sf->prune_wedge_pred_diff_based = 0;

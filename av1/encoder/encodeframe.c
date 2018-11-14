@@ -609,10 +609,15 @@ static void rd_pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
     x->source_variance =
         av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
   }
-  x->edge_strength =
-      edge_strength(&x->plane[0].src, bsize,
-                    xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd);
-
+  // If the threshold for disabling wedge search is zero, it means the feature
+  // should not be used. Use a value that will always succeed in the check.
+  if (cpi->sf.disable_wedge_search_edge_thresh == 0) {
+    x->edge_strength = UINT16_MAX;
+  } else {
+    x->edge_strength =
+        edge_strength(&x->plane[0].src, bsize,
+                      xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd);
+  }
   // Save rdmult before it might be changed, so it can be restored later.
   orig_rdmult = x->rdmult;
 
