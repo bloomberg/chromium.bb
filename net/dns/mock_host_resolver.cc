@@ -269,8 +269,9 @@ int MockHostResolverBase::ResolveFromCache(const RequestInfo& info,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   next_request_id_++;
   int rv = ResolveFromIPLiteralOrCache(
-      info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
-      HostResolverSource::ANY, info.allow_cached_response(), addresses);
+      info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
+      info.host_resolver_flags(), HostResolverSource::ANY,
+      info.allow_cached_response(), addresses);
   return rv;
 }
 
@@ -283,9 +284,9 @@ int MockHostResolverBase::ResolveStaleFromCache(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   next_request_id_++;
   int rv = ResolveFromIPLiteralOrCache(
-      info.host_port_pair(), info.address_family(), info.host_resolver_flags(),
-      HostResolverSource::ANY, info.allow_cached_response(), addresses,
-      stale_info);
+      info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
+      info.host_resolver_flags(), HostResolverSource::ANY,
+      info.allow_cached_response(), addresses, stale_info);
   return rv;
 }
 
@@ -346,8 +347,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
   num_resolve_++;
   AddressList addresses;
   int rv = ResolveFromIPLiteralOrCache(
-      request->request_host(),
-      DnsQueryTypeToAddressFamily(request->parameters().dns_query_type),
+      request->request_host(), request->parameters().dns_query_type,
       request->host_resolver_flags(), request->parameters().source,
       request->parameters().allow_cached_response, &addresses);
   if (rv == OK && !request->parameters().is_speculative)
@@ -387,7 +387,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
 
 int MockHostResolverBase::ResolveFromIPLiteralOrCache(
     const HostPortPair& host,
-    AddressFamily requested_address_family,
+    DnsQueryType dns_query_type,
     HostResolverFlags flags,
     HostResolverSource source,
     bool allow_cache,
@@ -396,8 +396,9 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
   IPAddress ip_address;
   if (ip_address.AssignFromIPLiteral(host.host())) {
     // This matches the behavior HostResolverImpl.
-    if (requested_address_family != ADDRESS_FAMILY_UNSPECIFIED &&
-        requested_address_family != GetAddressFamily(ip_address)) {
+    if (dns_query_type != DnsQueryType::UNSPECIFIED &&
+        dns_query_type !=
+            AddressFamilyToDnsQueryType(GetAddressFamily(ip_address))) {
       return ERR_NAME_NOT_RESOLVED;
     }
 
@@ -408,7 +409,7 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
   }
   int rv = ERR_DNS_CACHE_MISS;
   if (cache_.get() && allow_cache) {
-    HostCache::Key key(host.host(), requested_address_family, flags, source);
+    HostCache::Key key(host.host(), dns_query_type, flags, source);
     const HostCache::Entry* entry;
     if (stale_info)
       entry = cache_->LookupStale(key, tick_clock_->NowTicks(), stale_info);
@@ -434,7 +435,9 @@ int MockHostResolverBase::ResolveProc(const HostPortPair& host,
   int rv = rules_map_[source]->Resolve(host.host(), requested_address_family,
                                        flags, &addr, nullptr);
   if (cache_.get()) {
-    HostCache::Key key(host.host(), requested_address_family, flags, source);
+    HostCache::Key key(host.host(),
+                       AddressFamilyToDnsQueryType(requested_address_family),
+                       flags, source);
     // Storing a failure with TTL 0 so that it overwrites previous value.
     base::TimeDelta ttl;
     if (rv == OK)

@@ -21,6 +21,7 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_source.h"
+#include "net/dns/public/dns_query_type.h"
 
 namespace base {
 class Value;
@@ -88,9 +89,9 @@ class NET_EXPORT HostResolver {
     // If cancelled before |callback| is invoked, it will never be invoked.
     virtual int Start(CompletionOnceCallback callback) = 0;
 
-    // Result of the request. Should only be called after Start() signals
-    // completion, either by invoking the callback or by returning a result
-    // other than |ERR_IO_PENDING|.
+    // Address record (A or AAAA) results of the request. Should only be called
+    // after Start() signals completion, either by invoking the callback or by
+    // returning a result other than |ERR_IO_PENDING|.
     //
     // TODO(crbug.com/821021): Implement other GetResults() methods for requests
     // that return other data (eg DNS TXT requests).
@@ -186,17 +187,6 @@ class NET_EXPORT HostResolver {
     // Indicates a request for myIpAddress (to differentiate from other requests
     // for localhost, currently used by Chrome OS).
     bool is_my_ip_address_;
-  };
-
-  // DNS query type for a ResolveHostRequest.
-  // See:
-  // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
-  //
-  // TODO(crbug.com/846423): Add support for non-address types.
-  enum class DnsQueryType {
-    UNSPECIFIED,
-    A,
-    AAAA,
   };
 
   // Parameter-grouping struct for additional optional parameters for
@@ -379,7 +369,6 @@ class NET_EXPORT HostResolver {
   //
   // TODO(crbug.com/821021): Delete these methods once all usage has been
   // converted to the new CreateRequest() API.
-  static DnsQueryType AddressFamilyToDnsQueryType(AddressFamily address_family);
   static ResolveHostParameters RequestInfoToResolveHostParameters(
       const RequestInfo& request_info,
       RequestPriority priority);

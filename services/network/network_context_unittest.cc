@@ -59,6 +59,7 @@
 #include "net/dns/host_resolver_impl.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/dns_query_type.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -3183,7 +3184,7 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
   base::RunLoop run_loop;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->dns_query_type = net::HostResolver::DnsQueryType::A;
+  optional_parameters->dns_query_type = net::DnsQueryType::A;
   optional_parameters->source = net::HostResolverSource::DNS;
   mojom::ResolveHostClientPtr response_client_ptr;
   TestResolveHostClient response_client(&response_client_ptr, &run_loop);

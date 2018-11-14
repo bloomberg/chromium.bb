@@ -20,6 +20,7 @@
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/dns_hosts.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/public/dns_query_type.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 
 namespace mojo {
@@ -72,12 +73,12 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
 
 template <>
 struct EnumTraits<network::mojom::ResolveHostParameters::DnsQueryType,
-                  net::HostResolver::DnsQueryType> {
+                  net::DnsQueryType> {
   static network::mojom::ResolveHostParameters::DnsQueryType ToMojom(
-      net::HostResolver::DnsQueryType input);
+      net::DnsQueryType input);
   static bool FromMojom(
       network::mojom::ResolveHostParameters::DnsQueryType input,
-      net::HostResolver::DnsQueryType* output);
+      net::DnsQueryType* output);
 };
 
 template <>

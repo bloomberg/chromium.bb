@@ -188,6 +188,7 @@ source_set("host_resolver") {
 
   deps = [
     "//net:net_deps",
+    "//net/dns/public",
   ]
   public_deps = [
     "//net:net_public_deps",
@@ -236,6 +237,7 @@ source_set("host_resolver_impl") {
   deps = [
     ":host_resolver",
     "//net:net_deps",
+    "//net/dns/public",
   ]
   public_deps = [
     "//net:net_public_deps",

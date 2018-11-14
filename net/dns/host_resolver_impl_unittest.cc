@@ -36,6 +36,7 @@
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_test_util.h"
+#include "net/dns/dns_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/mock_mdns_client.h"
 #include "net/dns/mock_mdns_socket_factory.h"
@@ -725,8 +726,10 @@ class HostResolverImplTest : public TestWithScopedTaskEnvironment {
 
   const HostCache::Entry* GetCacheEntry(const Request& req) {
     DCHECK(resolver_.get() && resolver_->GetHostCache());
-    const HostCache::Key key(req.info().hostname(), req.info().address_family(),
-                             req.info().host_resolver_flags());
+    const HostCache::Key key(
+        req.info().hostname(),
+        AddressFamilyToDnsQueryType(req.info().address_family()),
+        req.info().host_resolver_flags(), HostResolverSource::ANY);
     return resolver_->GetHostCache()->LookupStale(key, base::TimeTicks(),
                                                   nullptr);
   }
@@ -782,11 +785,11 @@ TEST_F(HostResolverImplTest, DnsQueryType) {
 
   HostResolver::ResolveHostParameters parameters;
 
-  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  parameters.dns_query_type = DnsQueryType::A;
   ResolveHostResponseHelper v4_response(resolver_->CreateRequest(
       HostPortPair("host", 80), NetLogWithSource(), parameters));
 
-  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  parameters.dns_query_type = DnsQueryType::AAAA;
   ResolveHostResponseHelper v6_response(resolver_->CreateRequest(
       HostPortPair("host", 80), NetLogWithSource(), parameters));
 
@@ -827,14 +830,14 @@ TEST_F(HostResolverImplTest, LocalhostIPV4IPV6Lookup) {
 TEST_F(HostResolverImplTest, LocalhostIPV4IPV6Lookup_ResolveHost) {
   HostResolver::ResolveHostParameters parameters;
 
-  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  parameters.dns_query_type = DnsQueryType::A;
   ResolveHostResponseHelper v6_v4_response(resolver_->CreateRequest(
       HostPortPair("localhost6", 80), NetLogWithSource(), parameters));
   EXPECT_THAT(v6_v4_response.result_error(), IsOk());
   EXPECT_THAT(v6_v4_response.request()->GetAddressResults().value().endpoints(),
               testing::IsEmpty());
 
-  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  parameters.dns_query_type = DnsQueryType::AAAA;
   ResolveHostResponseHelper v6_v6_response(resolver_->CreateRequest(
       HostPortPair("localhost6", 80), NetLogWithSource(), parameters));
   EXPECT_THAT(v6_v6_response.result_error(), IsOk());
@@ -848,14 +851,14 @@ TEST_F(HostResolverImplTest, LocalhostIPV4IPV6Lookup_ResolveHost) {
       v6_unsp_response.request()->GetAddressResults().value().endpoints(),
       testing::ElementsAre(CreateExpected("::1", 80)));
 
-  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  parameters.dns_query_type = DnsQueryType::A;
   ResolveHostResponseHelper v4_v4_response(resolver_->CreateRequest(
       HostPortPair("localhost", 80), NetLogWithSource(), parameters));
   EXPECT_THAT(v4_v4_response.result_error(), IsOk());
   EXPECT_THAT(v4_v4_response.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected("127.0.0.1", 80)));
 
-  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  parameters.dns_query_type = DnsQueryType::AAAA;
   ResolveHostResponseHelper v4_v6_response(resolver_->CreateRequest(
       HostPortPair("localhost", 80), NetLogWithSource(), parameters));
   EXPECT_THAT(v4_v6_response.result_error(), IsOk());
@@ -2440,10 +2443,10 @@ TEST_F(HostResolverImplTest, AddressFamilyWithRawIPs) {
 // passed in.
 TEST_F(HostResolverImplTest, AddressFamilyWithRawIPs_ResolveHost) {
   HostResolver::ResolveHostParameters v4_parameters;
-  v4_parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  v4_parameters.dns_query_type = DnsQueryType::A;
 
   HostResolver::ResolveHostParameters v6_parameters;
-  v6_parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  v6_parameters.dns_query_type = DnsQueryType::AAAA;
 
   ResolveHostResponseHelper v4_v4_request(resolver_->CreateRequest(
       HostPortPair("127.0.0.1", 80), NetLogWithSource(), v4_parameters));
@@ -3125,7 +3128,7 @@ TEST_F(HostResolverImplTest, Mdns_AaaaOnly) {
   EXPECT_CALL(*socket_factory_ptr, OnSendTo(_)).Times(2);
 
   HostResolver::ResolveHostParameters parameters;
-  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  parameters.dns_query_type = DnsQueryType::AAAA;
   parameters.source = HostResolverSource::MULTICAST_DNS;
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -3150,7 +3153,7 @@ TEST_F(HostResolverImplTest, Mdns_Nsec) {
   EXPECT_CALL(*socket_factory_ptr, OnSendTo(_)).Times(2);
 
   HostResolver::ResolveHostParameters parameters;
-  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  parameters.dns_query_type = DnsQueryType::AAAA;
   parameters.source = HostResolverSource::MULTICAST_DNS;
 
   ResolveHostResponseHelper response(resolver_->CreateRequest(
@@ -4093,7 +4096,7 @@ TEST_F(HostResolverImplDnsTest, ServeFromHosts_ResolveHost) {
   // Requests with specified DNS query type.
   HostResolver::ResolveHostParameters parameters;
 
-  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  parameters.dns_query_type = DnsQueryType::A;
   ResolveHostResponseHelper response_specified_ipv4(resolver_->CreateRequest(
       HostPortPair("nx_ipv4", 80), NetLogWithSource(), parameters));
   EXPECT_THAT(response_specified_ipv4.result_error(), IsOk());
@@ -4103,7 +4106,7 @@ TEST_F(HostResolverImplDnsTest, ServeFromHosts_ResolveHost) {
                   .endpoints(),
               testing::ElementsAre(CreateExpected("127.0.0.1", 80)));
 
-  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  parameters.dns_query_type = DnsQueryType::AAAA;
   ResolveHostResponseHelper response_specified_ipv6(resolver_->CreateRequest(
       HostPortPair("nx_ipv6", 80), NetLogWithSource(), parameters));
   EXPECT_THAT(response_specified_ipv6.result_error(), IsOk());
@@ -5491,10 +5494,10 @@ TEST_F(HostResolverImplDnsTest, NoIPv6OnWifi_ResolveHost) {
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("h1", 80), NetLogWithSource(), base::nullopt));
   HostResolver::ResolveHostParameters parameters;
-  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  parameters.dns_query_type = DnsQueryType::A;
   ResolveHostResponseHelper v4_response(resolver_->CreateRequest(
       HostPortPair("h1", 80), NetLogWithSource(), parameters));
-  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  parameters.dns_query_type = DnsQueryType::AAAA;
   ResolveHostResponseHelper v6_response(resolver_->CreateRequest(
       HostPortPair("h1", 80), NetLogWithSource(), parameters));
 
@@ -5520,10 +5523,10 @@ TEST_F(HostResolverImplDnsTest, NoIPv6OnWifi_ResolveHost) {
 
   ResolveHostResponseHelper no_wifi_response(resolver_->CreateRequest(
       HostPortPair("h1", 80), NetLogWithSource(), base::nullopt));
-  parameters.dns_query_type = HostResolver::DnsQueryType::A;
+  parameters.dns_query_type = DnsQueryType::A;
   ResolveHostResponseHelper no_wifi_v4_response(resolver_->CreateRequest(
       HostPortPair("h1", 80), NetLogWithSource(), parameters));
-  parameters.dns_query_type = HostResolver::DnsQueryType::AAAA;
+  parameters.dns_query_type = DnsQueryType::AAAA;
   ResolveHostResponseHelper no_wifi_v6_response(resolver_->CreateRequest(
       HostPortPair("h1", 80), NetLogWithSource(), parameters));
 
@@ -5554,7 +5557,8 @@ TEST_F(HostResolverImplDnsTest, NotFoundTTL) {
   EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
   EXPECT_THAT(request->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_THAT(request->NumberOfAddresses(), 0);
-  HostCache::Key key(request->info().hostname(), ADDRESS_FAMILY_UNSPECIFIED, 0);
+  HostCache::Key key(request->info().hostname(), DnsQueryType::UNSPECIFIED, 0,
+                     HostResolverSource::ANY);
   HostCache::EntryStaleness staleness;
   const HostCache::Entry* cache_entry =
       resolver_->GetHostCache()->Lookup(key, base::TimeTicks::Now());
@@ -5567,8 +5571,8 @@ TEST_F(HostResolverImplDnsTest, NotFoundTTL) {
   EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
   EXPECT_THAT(request->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_THAT(request->NumberOfAddresses(), 0);
-  HostCache::Key nxkey(request->info().hostname(), ADDRESS_FAMILY_UNSPECIFIED,
-                       0);
+  HostCache::Key nxkey(request->info().hostname(), DnsQueryType::UNSPECIFIED, 0,
+                       HostResolverSource::ANY);
   cache_entry =
       resolver_->GetHostCache()->Lookup(nxkey, base::TimeTicks::Now());
   EXPECT_TRUE(!!cache_entry);
@@ -5586,7 +5590,8 @@ TEST_F(HostResolverImplDnsTest, NotFoundTTL_ResolveHost) {
       HostPortPair("empty", 80), NetLogWithSource(), base::nullopt));
   EXPECT_THAT(no_data_response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(no_data_response.request()->GetAddressResults());
-  HostCache::Key key("empty", ADDRESS_FAMILY_UNSPECIFIED, 0);
+  HostCache::Key key("empty", DnsQueryType::UNSPECIFIED, 0,
+                     HostResolverSource::ANY);
   HostCache::EntryStaleness staleness;
   const HostCache::Entry* cache_entry =
       resolver_->GetHostCache()->Lookup(key, base::TimeTicks::Now());
@@ -5600,7 +5605,8 @@ TEST_F(HostResolverImplDnsTest, NotFoundTTL_ResolveHost) {
   EXPECT_THAT(no_domain_response.result_error(),
               IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(no_domain_response.request()->GetAddressResults());
-  HostCache::Key nxkey("nodomain", ADDRESS_FAMILY_UNSPECIFIED, 0);
+  HostCache::Key nxkey("nodomain", DnsQueryType::UNSPECIFIED, 0,
+                       HostResolverSource::ANY);
   cache_entry =
       resolver_->GetHostCache()->Lookup(nxkey, base::TimeTicks::Now());
   EXPECT_TRUE(!!cache_entry);
@@ -5693,7 +5699,7 @@ TEST_F(HostResolverImplDnsTest, CanonicalName_V4Only_CreateRequest) {
   ChangeDnsConfig(CreateValidDnsConfig());
   set_allow_fallback_to_proctask(false);
   HostResolver::ResolveHostParameters params;
-  params.dns_query_type = HostResolver::DnsQueryType::A;
+  params.dns_query_type = DnsQueryType::A;
   params.include_canonical_name = true;
   ResolveHostResponseHelper response(resolver_->CreateRequest(
       HostPortPair("alias", 80), NetLogWithSource(), params));
@@ -6187,7 +6193,7 @@ TEST_F(HostResolverImplDnsTest, ModeForHistogram) {
             HostResolverImpl::MODE_FOR_HISTOGRAM_ASYNC_DNS);
 
   // Test upgradability is detected for async DNS.
-  const static std::vector<const char*> upgradable_servers(
+  static const std::vector<const char*> upgradable_servers(
       {// Google Public DNS
        "8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844",
        // Cloudflare DNS

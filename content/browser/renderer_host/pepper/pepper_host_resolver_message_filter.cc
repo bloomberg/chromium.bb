@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/task/post_task.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/address_list.h"
+#include "net/dns/public/dns_query_type.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -27,6 +29,7 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 using ppapi::host::NetErrorToPepperError;
 using ppapi::host::ReplyMessageContext;
@@ -39,13 +42,13 @@ void PrepareRequestInfo(const PP_HostResolver_Private_Hint& hint,
                         network::mojom::ResolveHostParameters* params) {
   switch (hint.family) {
     case PP_NETADDRESSFAMILY_PRIVATE_IPV4:
-      params->dns_query_type = net::HostResolver::DnsQueryType::A;
+      params->dns_query_type = net::DnsQueryType::A;
       break;
     case PP_NETADDRESSFAMILY_PRIVATE_IPV6:
-      params->dns_query_type = net::HostResolver::DnsQueryType::AAAA;
+      params->dns_query_type = net::DnsQueryType::AAAA;
       break;
     default:
-      params->dns_query_type = net::HostResolver::DnsQueryType::UNSPECIFIED;
+      params->dns_query_type = net::DnsQueryType::UNSPECIFIED;
   }
 
   if (hint.flags & PP_HOST_RESOLVER_PRIVATE_FLAGS_CANONNAME)
