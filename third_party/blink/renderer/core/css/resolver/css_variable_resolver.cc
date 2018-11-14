@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
@@ -109,11 +110,31 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
 
   CSSVariableData* variable_data = GetVariable(name, registration);
 
-  if (!variable_data)
-    return registration ? registration->InitialVariableData() : nullptr;
+  if (!variable_data) {
+    // For unregistered properties, not having a CSSVariableData here means
+    // that it either never existed, or we have resolved it earlier, but
+    // resolution failed. Either way, we return nullptr to signify that this is
+    // an invalid variable.
+    if (!registration)
+      return nullptr;
+    // For registered properties, it's more complicated. Here too, it can mean
+    // that it never existed, or that resolution failed earlier, but now we need
+    // to know which; in the former case we must provide the initial value, and
+    // in the latter case the variable is invalid.
+    return IsRegisteredVariableInvalid(name, *registration)
+               ? nullptr
+               : registration->InitialVariableData();
+  }
 
-  scoped_refptr<CSSVariableData> resolved_data =
-      ResolveCustomPropertyIfNeeded(name, variable_data, options);
+  bool cycle_detected = false;
+  scoped_refptr<CSSVariableData> resolved_data = ResolveCustomPropertyIfNeeded(
+      name, variable_data, options, cycle_detected);
+
+  if (!resolved_data && cycle_detected) {
+    if (options.absolutize)
+      SetInvalidVariable(name, registration);
+    return nullptr;
+  }
 
   if (resolved_data) {
     if (IsVariableDisallowed(*resolved_data, options, registration))
@@ -198,9 +219,10 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
   bool success = ResolveTokenRange(variable_data.Tokens(), options, result);
   variables_seen_.erase(name);
 
-  if (!success || !cycle_start_points_.IsEmpty()) {
-    cycle_start_points_.erase(name);
+  if (!cycle_start_points_.IsEmpty())
     cycle_detected = true;
+  if (!success || cycle_detected) {
+    cycle_start_points_.erase(name);
     return nullptr;
   }
   cycle_detected = false;
@@ -220,14 +242,14 @@ scoped_refptr<CSSVariableData>
 CSSVariableResolver::ResolveCustomPropertyIfNeeded(
     AtomicString name,
     CSSVariableData* variable_data,
-    const Options& options) {
+    const Options& options,
+    bool& cycle_detected) {
   DCHECK(variable_data);
   bool resolve_urls = ShouldResolveRelativeUrls(name, *variable_data);
   if (!variable_data->NeedsVariableResolution() && !resolve_urls)
     return variable_data;
-  bool unused_cycle_detected;
   return ResolveCustomProperty(name, *variable_data, options, resolve_urls,
-                               unused_cycle_detected);
+                               cycle_detected);
 }
 
 void CSSVariableResolver::ResolveRelativeUrls(
@@ -318,6 +340,25 @@ void CSSVariableResolver::SetRegisteredVariable(
     DCHECK(non_inherited_variables_);
     non_inherited_variables_->SetRegisteredVariable(name, value);
   }
+}
+
+void CSSVariableResolver::SetInvalidVariable(
+    const AtomicString& name,
+    const PropertyRegistration* registration) {
+  // TODO(andruud): Use RemoveVariable instead, but currently it also does
+  // a lookup in the registered map, which seems wasteful.
+  SetVariable(name, registration, nullptr);
+  if (registration) {
+    const CSSValue* value = CSSInvalidVariableValue::Create();
+    SetRegisteredVariable(name, *registration, value);
+  }
+}
+
+bool CSSVariableResolver::IsRegisteredVariableInvalid(
+    const AtomicString& name,
+    const PropertyRegistration& registration) {
+  const CSSValue* value = GetRegisteredVariable(name, registration);
+  return value && value->IsInvalidVariableValue();
 }
 
 bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
