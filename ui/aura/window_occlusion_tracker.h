@@ -65,6 +65,31 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
     DISALLOW_COPY_AND_ASSIGN(ScopedPause);
   };
 
+  // Exclude the window from occlusion tracking so that a window behind the
+  // given window is still considered visible. The excluded window itself and
+  // its descendant windows, if tracked, are considered visible. This is useful
+  // for a window being dragged or resized to avoid unnecessary occlusion state
+  // change triggered by these operation, because the window bounds are
+  // temporary until it is finished.
+  // Note that this is intended to be used by window manager and not by mus
+  // client process.
+  class AURA_EXPORT ScopedExclude : public aura::WindowObserver {
+   public:
+    explicit ScopedExclude(Window* window);
+    ~ScopedExclude() override;
+
+    Window* window() { return window_; }
+
+   private:
+    // aura::WindowObserver:
+    void OnWindowDestroying(aura::Window* window) override;
+
+    void Shutdown();
+
+    Window* window_;
+    DISALLOW_COPY_AND_ASSIGN(ScopedExclude);
+  };
+
   // Start tracking the occlusion state of |window|.
   void Track(Window* window);
 
@@ -154,6 +179,9 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // Returns true if |window| is in |animated_windows_|.
   bool WindowIsAnimated(Window* window) const;
 
+  // Returns true if |window| is in |excluded_windows_|.
+  bool WindowIsExcluded(Window* window) const;
+
   // If the root of |window| is not dirty and |predicate| is true, marks the
   // root of |window| as dirty. Then, calls MaybeComputeOcclusion().
   // |predicate| is not evaluated if the root of |window| is already dirty when
@@ -162,8 +190,12 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   void MarkRootWindowAsDirtyAndMaybeComputeOcclusionIf(Window* window,
                                                        Predicate predicate);
 
-  // Marks |root_window| as dirty.
-  void MarkRootWindowAsDirty(RootWindowState* root_window_state);
+  // Marks |root_window_state| as dirty.
+  void MarkRootWindowStateAsDirty(RootWindowState* root_window_state);
+
+  // Marks |root_window| as dirty. Returns false if none of the descendent
+  // windows in |root_window| are tracked.
+  bool MarkRootWindowAsDirty(aura::Window* root_window);
 
   // Returns true if |window| or one of its parents is in |animated_windows_|.
   bool WindowOrParentIsAnimated(Window* window) const;
@@ -206,6 +238,11 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   void Pause();
   void Unpause();
 
+  // Exclucde/Unexclude a window from occlusion tracking. See comment on
+  // ScopedExclude.
+  void Exclude(Window* window);
+  void Unexclude(Window* window);
+
   // ui::LayerAnimationObserver:
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
   void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
@@ -246,6 +283,10 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // computed after it was animated. It is removed when the animation ends or is
   // aborted.
   base::flat_set<Window*> animated_windows_;
+
+  // Windows that are excluded from occlustion tracking. See comment on
+  // ScopedExclude.
+  base::flat_set<Window*> excluded_windows_;
 
   // Root Windows of Windows in |tracked_windows_|.
   base::flat_map<Window*, RootWindowState> root_windows_;

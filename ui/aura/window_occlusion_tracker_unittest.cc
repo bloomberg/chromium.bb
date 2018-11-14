@@ -37,6 +37,8 @@ class MockWindowDelegate : public test::ColorTestWindowDelegate {
 
   void set_window(Window* window) { window_ = window; }
 
+  void SetName(const std::string& name) { window_->SetName(name); }
+
   void set_expectation(Window::OcclusionState occlusion_state,
                        const SkRegion& occluded_region) {
     expected_occlusion_state_ = occlusion_state;
@@ -49,6 +51,7 @@ class MockWindowDelegate : public test::ColorTestWindowDelegate {
 
   void OnWindowOcclusionChanged(Window::OcclusionState occlusion_state,
                                 const SkRegion& occluded_region) override {
+    SCOPED_TRACE(window_->GetName());
     ASSERT_TRUE(window_);
     EXPECT_NE(occlusion_state, Window::OcclusionState::UNKNOWN);
     EXPECT_EQ(occlusion_state, expected_occlusion_state_);
@@ -2014,6 +2017,137 @@ TEST_F(WindowOcclusionTrackerTest, WindowCanBeOccludedByMultipleWindows) {
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE,
                               window_a_occlusion);
   CreateUntrackedWindow(gfx::Rect(5, 5, 2, 3));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+}
+
+// Verify that the excluded window is indeed ignored by occlusion tracking.
+TEST_F(WindowOcclusionTrackerTest, ExcludeWindow) {
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  delegate_a->SetName("WindowA");
+
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  Window* window_b = CreateUntrackedWindow(gfx::Rect(0, 0, 100, 100), nullptr);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  MockWindowDelegate* delegate_bb = new MockWindowDelegate();
+  delegate_bb->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  CreateTrackedWindow(delegate_bb, gfx::Rect(0, 0, 10, 10), window_b);
+  EXPECT_FALSE(delegate_bb->is_expecting_call());
+
+  delegate_bb->SetName("WindowBB");
+
+  delegate_bb->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  Window* window_c = CreateUntrackedWindow(gfx::Rect(0, 0, 100, 100), nullptr);
+  EXPECT_FALSE(delegate_bb->is_expecting_call());
+
+  {
+    // |window_b| is excluded, so its child's occlusion state becomes VISIBlE.
+    delegate_bb->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+    EXPECT_TRUE(delegate_bb->is_expecting_call());
+    WindowOcclusionTracker::ScopedExclude scoped(window_b);
+    EXPECT_FALSE(delegate_bb->is_expecting_call());
+
+    // Moving |window_c| out from |window_a| will make |window_a| visible
+    // because |window_b| is ignored.
+    SkRegion window_a_occlusion(SkIRect::MakeXYWH(100, 100, 100, 100));
+    delegate_a->set_expectation(Window::OcclusionState::VISIBLE,
+                                window_a_occlusion);
+    SkRegion window_bb_occlusion;
+    window_bb_occlusion.op(SkIRect::MakeXYWH(100, 100, 100, 100),
+                           SkRegion::kUnion_Op);
+    delegate_bb->set_expectation(Window::OcclusionState::VISIBLE,
+                                 window_bb_occlusion);
+    window_c->SetBounds(gfx::Rect(100, 100, 100, 100));
+
+    // Un-excluding wil make |window_bb| OCCLUDED.
+    delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+    delegate_bb->set_expectation(Window::OcclusionState::VISIBLE,
+                                 window_bb_occlusion);
+  }
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  EXPECT_FALSE(delegate_bb->is_expecting_call());
+
+  {
+    delegate_bb->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+    SkRegion window_a_occlusion(SkIRect::MakeXYWH(100, 100, 100, 100));
+    delegate_a->set_expectation(Window::OcclusionState::VISIBLE,
+                                window_a_occlusion);
+    EXPECT_TRUE(delegate_bb->is_expecting_call());
+    WindowOcclusionTracker::ScopedExclude scoped(window_b);
+    EXPECT_FALSE(delegate_bb->is_expecting_call());
+    EXPECT_FALSE(delegate_a->is_expecting_call());
+
+    // Moving |window_b| will not affect the occlusion status.
+    window_b->SetBounds(gfx::Rect(5, 5, 100, 100));
+
+    // Un-excluding will update the occlustion status.
+    // A's occlustion status includes all windows above a.
+    window_a_occlusion.setEmpty();
+    window_a_occlusion.op(SkIRect::MakeXYWH(5, 5, 100, 100),
+                          SkRegion::kUnion_Op);
+    window_a_occlusion.op(SkIRect::MakeXYWH(100, 100, 100, 100),
+                          SkRegion::kUnion_Op);
+    delegate_a->set_expectation(Window::OcclusionState::VISIBLE,
+                                window_a_occlusion);
+
+    SkRegion window_bb_occlusion(SkIRect::MakeXYWH(100, 100, 100, 100));
+    delegate_bb->set_expectation(Window::OcclusionState::VISIBLE,
+                                 window_bb_occlusion);
+  }
+
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  EXPECT_FALSE(delegate_bb->is_expecting_call());
+
+  {
+    delegate_bb->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+    SkRegion window_a_occlusion(SkIRect::MakeXYWH(100, 100, 100, 100));
+    delegate_a->set_expectation(Window::OcclusionState::VISIBLE,
+                                window_a_occlusion);
+    EXPECT_TRUE(delegate_bb->is_expecting_call());
+    WindowOcclusionTracker::ScopedExclude scoped(window_b);
+    EXPECT_FALSE(delegate_bb->is_expecting_call());
+    EXPECT_FALSE(delegate_a->is_expecting_call());
+
+    // Deleting the excluded window will un-exclude itself and recomputes the
+    // occlustion state, but should not affect the state on existing windows
+    // because it's already excluded.
+    delete window_b;
+    EXPECT_FALSE(scoped.window());
+  }
+
+  MockWindowDelegate* delegate_d = new MockWindowDelegate();
+  delegate_d->set_expectation(Window::OcclusionState::VISIBLE, SkRegion());
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+
+  auto* window_d = CreateTrackedWindow(delegate_d, gfx::Rect(0, 0, 10, 10));
+  window_d->SetName("WindowD");
+
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  EXPECT_FALSE(delegate_d->is_expecting_call());
+
+  {
+    // Make sure excluding the tracked window also works.
+    SkRegion window_a_occlusion(SkIRect::MakeXYWH(100, 100, 100, 100));
+    delegate_a->set_expectation(Window::OcclusionState::VISIBLE,
+                                window_a_occlusion);
+    WindowOcclusionTracker::ScopedExclude scoped(window_d);
+    EXPECT_FALSE(delegate_a->is_expecting_call());
+
+    // Changing opacity/bounds shouldn't change the occlusion state.
+    window_d->layer()->SetOpacity(0.5f);
+    window_d->SetBounds(gfx::Rect(0, 0, 20, 20));
+
+    // A is now visible even if |window_d| is un-excluded becaues
+    // window_d is not fully opaque.
+  }
+
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED, SkRegion());
+  window_d->layer()->SetOpacity(1.f);
   EXPECT_FALSE(delegate_a->is_expecting_call());
 }
 
