@@ -11,7 +11,6 @@ import datetime
 import mock
 import random
 
-from chromite.lib.const import waterfall
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -147,7 +146,7 @@ class TestCLActionLogic(cros_test_lib.TestCase):
 
     for m in test_metadata:
       build_id = self.fake_db.InsertBuild(
-          m.GetValue('bot-config'), waterfall.WATERFALL_INTERNAL,
+          m.GetValue('bot-config'),
           m.GetValue('build-number'), m.GetValue('bot-config'),
           'bot-hostname')
       m.UpdateWithDict({'build_id': build_id})
