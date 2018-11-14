@@ -340,6 +340,9 @@ public class RenderTestRule extends TestWatcher {
     private static Pair<ComparisonResult, Bitmap> compareBitmapToGolden(
             Bitmap render, Bitmap golden) {
         if (golden == null) return Pair.create(ComparisonResult.GOLDEN_NOT_FOUND, null);
+        // This comparison is much, much faster than doing a pixel-by-pixel comparison, so try this
+        // first and only fall back to the pixel comparison if it fails.
+        if (render.sameAs(golden)) return Pair.create(ComparisonResult.MATCH, null);
 
         Bitmap diff = Bitmap.createBitmap(Math.max(render.getWidth(), golden.getWidth()),
                 Math.max(render.getHeight(), golden.getHeight()), render.getConfig());
