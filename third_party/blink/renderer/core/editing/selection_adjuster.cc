@@ -127,8 +127,9 @@ class GranularityAdjuster final {
         // kNextWordIfOnBoundary);
         const VisiblePositionTemplate<Strategy> visible_start =
             CreateVisiblePosition(passed_start);
-        return StartOfWord(visible_start, ChooseWordSide(visible_start))
-            .DeepEquivalent();
+        const PositionTemplate<Strategy> word_start = StartOfWordPosition(
+            passed_start.GetPosition(), ChooseWordSide(visible_start));
+        return CreateVisiblePosition(word_start).DeepEquivalent();
       }
       case TextGranularity::kSentence:
         return StartOfSentence(CreateVisiblePosition(passed_start))
