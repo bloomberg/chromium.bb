@@ -132,8 +132,8 @@ class LegacyCallStackProfileBuilder
   // The collected stack samples in proto buffer message format.
   CallStackProfile proto_profile_;
 
-  // The current sample being recorded.
-  Sample sample_;
+  // The process milestones to use for the next sample.
+  uint32_t process_milestones_;
 
   // The indexes of samples, indexed by the sample.
   std::map<Sample, int> sample_index_;
