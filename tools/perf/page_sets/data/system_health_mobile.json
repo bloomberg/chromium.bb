@@ -129,6 +129,9 @@
         "load:media:flickr": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
+        "load:media:flickr:2018": {
+            "DEFAULT": "system_health_mobile_3d332e7f0f.wprgo"
+        },
         "load:media:google_images": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
