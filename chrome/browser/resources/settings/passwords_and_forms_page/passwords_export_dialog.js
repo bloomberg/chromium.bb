@@ -54,7 +54,9 @@ Polymer({
     showErrorDialog_: Boolean,
   },
 
-  listeners: {'cancel': 'close'},
+  listeners: {
+    'cancel': 'close',
+  },
 
   /**
    * The interface for callbacks to the browser.
@@ -169,6 +171,7 @@ Polymer({
     this.showStartDialog_ = false;
     this.showProgressDialog_ = false;
     this.showErrorDialog_ = false;
+    this.fire('passwords-export-dialog-close');
   },
 
   /**
