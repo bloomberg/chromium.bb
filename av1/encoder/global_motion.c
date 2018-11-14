@@ -15,6 +15,8 @@
 #include <math.h>
 #include <assert.h>
 
+#include "config/aom_dsp_rtcd.h"
+
 #include "av1/encoder/global_motion.h"
 
 #include "av1/common/convolve.h"
@@ -487,6 +489,21 @@ static INLINE void solve_2x2_system(const double *M, const double *b,
   const double mult_b1 = det_inv * b[1];
   output_vec[0] = M_3 * mult_b0 - M[1] * mult_b1;
   output_vec[1] = -M[2] * mult_b0 + M_0 * mult_b1;
+}
+
+static INLINE void image_difference(const uint8_t *src, int src_stride,
+                                    const uint8_t *ref, int ref_stride,
+                                    int16_t *dst, int dst_stride, int height,
+                                    int width) {
+  const int block_unit = 8;
+  // Take difference in 8x8 blocks to make use of optimized diff function
+  for (int i = 0; i < height; i += block_unit) {
+    for (int j = 0; j < width; j += block_unit) {
+      aom_subtract_block(block_unit, block_unit, dst + i * dst_stride + j,
+                         dst_stride, src + i * src_stride + j, src_stride,
+                         ref + i * ref_stride + j, ref_stride);
+    }
+  }
 }
 
 // Compute an image gradient using a sobel filter.
