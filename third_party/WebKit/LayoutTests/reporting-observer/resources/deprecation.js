@@ -38,5 +38,5 @@ async_test(function(test) {
 
   // Use two deprecated features to generate two deprecation reports.
   window.webkitStorageInfo;
-  window.webkitURL;
+  window.webkitRequestAnimationFrame(() => {});
 }, "Deprecation reports");

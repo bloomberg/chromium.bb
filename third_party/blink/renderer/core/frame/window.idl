@@ -187,6 +187,9 @@
     // https://github.com/WICG/aom/blob/HEAD/explainer.md
     [RuntimeEnabled=AccessibilityObjectModel, CallWith=ScriptState] Promise<ComputedAccessibleNode> getComputedAccessibleNode(Element element);
 
+    // TODO(yhirano): Move this to url.idl when LegacyWindowAlias is supported.
+    attribute URLConstructor webkitURL;
+
     // Non-standard APIs
     [MeasureAs=WindowClientInformation, Replaceable] readonly attribute Navigator clientInformation;
     [Replaceable, MeasureAs=WindowEvent, Custom=Getter, NotEnumerable] readonly attribute Event event;
@@ -205,7 +208,6 @@
     [MeasureAs=StyleMedia] readonly attribute StyleMedia styleMedia;
     [DeprecateAs=PrefixedRequestAnimationFrame] long webkitRequestAnimationFrame(FrameRequestCallback callback);
     [DeprecateAs=PrefixedCancelAnimationFrame, ImplementedAs=cancelAnimationFrame] void webkitCancelAnimationFrame(long id);
-    [DeprecateAs=PrefixedWindowURL] attribute URLConstructor webkitURL;
     [MeasureAs=PrefixedMutationObserverConstructor] attribute MutationObserverConstructor WebKitMutationObserver;
 
     // Event handler attributes

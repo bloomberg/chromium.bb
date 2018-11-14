@@ -35,7 +35,7 @@ async_test(function(test) {
       // is set to false by default.
       assert_equals(reports.length, 1);
       assert_equals(reports[0].type, "deprecation");
-      assert_equals(reports[0].body.id, "PrefixedWindowURL");
+      assert_equals(reports[0].body.id, "PrefixedRequestAnimationFrame");
     });
 
     test.done();
@@ -45,7 +45,7 @@ async_test(function(test) {
   // and one after calling observe().
   causeIntervention();
   observer2.observe();
-  window.webkitURL;  // id = "PrefixedWindowURL"
+  webkitRequestAnimationFrame(() => {});  // id = "PrefixedCancelAnimationFrame"
   observer2.disconnect();
 }, "Buffered reports not observed");
 </script>
