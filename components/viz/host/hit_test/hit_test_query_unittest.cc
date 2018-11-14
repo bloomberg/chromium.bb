@@ -1002,7 +1002,8 @@ TEST_F(HitTestQueryTest, RootHitTestAskFlag) {
   gfx::Transform transform_e_to_e;
   active_data_.push_back(AggregatedHitTestRegion(
       e_id, HitTestRegionFlags::kHitTestAsk | HitTestRegionFlags::kHitTestMouse,
-      e_bounds, transform_e_to_e, 0));  // e
+      e_bounds, transform_e_to_e, 0,
+      AsyncHitTestReasons::kOverlappedRegion));  // e
   SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.
@@ -1055,7 +1056,8 @@ TEST_F(HitTestQueryTest, ChildHitTestAskFlag) {
   active_data_.push_back(AggregatedHitTestRegion(
       c2_id,
       HitTestRegionFlags::kHitTestAsk | HitTestRegionFlags::kHitTestMouse,
-      c2_bounds_in_e, transform_e_to_c2, 0));  // c2
+      c2_bounds_in_e, transform_e_to_c2, 0,
+      AsyncHitTestReasons::kOverlappedRegion));  // c2
   SendHitTestData();
 
   // All points are in e's coordinate system when we reach this case.

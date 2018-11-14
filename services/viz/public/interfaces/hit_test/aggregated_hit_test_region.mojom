@@ -14,6 +14,8 @@ struct AggregatedHitTestRegion {
 
   uint32 flags;
 
+  uint32 async_hit_test_reasons;
+
   gfx.mojom.Rect rect;
 
   uint32 child_count;

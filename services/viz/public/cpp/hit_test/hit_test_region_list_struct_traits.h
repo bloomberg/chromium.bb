@@ -22,6 +22,9 @@ struct StructTraits<viz::mojom::HitTestRegionDataView, viz::HitTestRegion> {
   static uint32_t flags(const viz::HitTestRegion& region) {
     return region.flags;
   }
+  static uint32_t async_hit_test_reasons(const viz::HitTestRegion& region) {
+    return region.async_hit_test_reasons;
+  }
   static const gfx::Rect& rect(const viz::HitTestRegion& region) {
     return region.rect;
   }
@@ -38,6 +41,9 @@ struct StructTraits<viz::mojom::HitTestRegionListDataView,
                     viz::HitTestRegionList> {
   static uint32_t flags(const viz::HitTestRegionList& list) {
     return list.flags;
+  }
+  static uint32_t async_hit_test_reasons(const viz::HitTestRegionList& list) {
+    return list.async_hit_test_reasons;
   }
   static const gfx::Rect& bounds(const viz::HitTestRegionList& list) {
     return list.bounds;

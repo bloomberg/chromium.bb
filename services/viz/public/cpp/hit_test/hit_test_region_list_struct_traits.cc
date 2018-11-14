@@ -17,6 +17,7 @@ bool StructTraits<viz::mojom::HitTestRegionDataView, viz::HitTestRegion>::Read(
   if (!data.ReadTransform(&out->transform))
     return false;
   out->flags = data.flags();
+  out->async_hit_test_reasons = data.async_hit_test_reasons();
   return true;
 }
 
@@ -32,6 +33,7 @@ bool StructTraits<
   if (!data.ReadTransform(&out->transform))
     return false;
   out->flags = data.flags();
+  out->async_hit_test_reasons = data.async_hit_test_reasons();
   return true;
 }
 

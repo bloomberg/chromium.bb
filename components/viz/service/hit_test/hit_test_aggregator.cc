@@ -175,6 +175,7 @@ void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
   int32_t child_count = region_index - 1;
   UMA_HISTOGRAM_COUNTS_1000("Event.VizHitTest.HitTestRegions", region_index);
   SetRegionAt(0, surface_id.frame_sink_id(), hit_test_region_list->flags,
+              hit_test_region_list->async_hit_test_reasons,
               hit_test_region_list->bounds, hit_test_region_list->transform,
               child_count);
 }
@@ -192,6 +193,7 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
   }
 
   uint32_t flags = region.flags;
+  uint32_t reasons = region.async_hit_test_reasons;
   gfx::Transform transform = region.transform;
 
   if (region.flags & HitTestRegionFlags::kHitTestChildSurface) {
@@ -213,6 +215,7 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
       // targeting for this embedded client.
       flags |= (HitTestRegionFlags::kHitTestAsk |
                 HitTestRegionFlags::kHitTestNotActive);
+      reasons |= AsyncHitTestReasons::kRegionNotActive;
     } else {
       // Rather than add a node in the tree for this hit_test_region_list
       // element we can simplify the tree by merging the flags and transform
@@ -221,6 +224,7 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
         transform.PreconcatTransform(hit_test_region_list->transform);
 
       flags |= hit_test_region_list->flags;
+      reasons |= hit_test_region_list->async_hit_test_reasons;
 
       bool enabled;
       TRACE_EVENT_CATEGORY_GROUP_ENABLED(
@@ -250,19 +254,21 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
   }
   DCHECK_GE(region_index - parent_index - 1, 0u);
   int32_t child_count = region_index - parent_index - 1;
-  SetRegionAt(parent_index, region.frame_sink_id, flags, region.rect, transform,
-              child_count);
+  SetRegionAt(parent_index, region.frame_sink_id, flags, reasons, region.rect,
+              transform, child_count);
   return region_index;
 }
 
 void HitTestAggregator::SetRegionAt(size_t index,
                                     const FrameSinkId& frame_sink_id,
                                     uint32_t flags,
+                                    uint32_t async_hit_test_reasons,
                                     const gfx::Rect& rect,
                                     const gfx::Transform& transform,
                                     int32_t child_count) {
-  hit_test_data_[index] = AggregatedHitTestRegion(frame_sink_id, flags, rect,
-                                                  transform, child_count);
+  hit_test_data_[index] =
+      AggregatedHitTestRegion(frame_sink_id, flags, rect, transform,
+                              child_count, async_hit_test_reasons);
   hit_test_data_size_++;
 
   hit_test_debug_ |= flags & kHitTestDebug;
