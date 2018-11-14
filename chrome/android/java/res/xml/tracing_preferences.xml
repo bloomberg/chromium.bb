@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- TODO(eseckler): Add configuration options for categories and tracing mode. -->
+    <org.chromium.chrome.browser.preferences.ButtonPreference
+        android:key="start_recording"/>
+    <org.chromium.chrome.browser.preferences.TextMessagePreference
+        android:key="tracing_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</PreferenceScreen>
