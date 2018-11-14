@@ -41,6 +41,10 @@ extern NSString* const AccessoryCreditCardAccessibilityIdentifier;
 // shown above the keyboard on iPhone and above the manual fill view.
 @interface ManualFillAccessoryViewController : UIViewController
 
+// Changing this property hides and shows the password button.
+@property(nonatomic, assign, getter=isPasswordButtonHidden)
+    BOOL passwordButtonHidden;
+
 // Instances an object with the desired delegate.
 //
 // @param delegate The delegate for this object.

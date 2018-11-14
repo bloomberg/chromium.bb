@@ -41,24 +41,28 @@ static NSTimeInterval MFAnimationDuration = 0.20;
 
 @interface ManualFillAccessoryViewController ()
 
+// Delegate to handle interactions.
 @property(nonatomic, readonly, weak)
     id<ManualFillAccessoryViewControllerDelegate>
         delegate;
 
+// The button to close manual fallback.
 @property(nonatomic, strong) UIButton* keyboardButton;
+
+// The button to open the passwords section.
 @property(nonatomic, strong) UIButton* passwordButton;
+
+// The button to open the credit cards section.
 @property(nonatomic, strong) UIButton* cardsButton;
+
+// The button to open the profiles section.
 @property(nonatomic, strong) UIButton* accountButton;
 
 @end
 
 @implementation ManualFillAccessoryViewController
 
-@synthesize delegate = _delegate;
-@synthesize keyboardButton = _keyboardButton;
-@synthesize passwordButton = _passwordButton;
-@synthesize cardsButton = _cardsButton;
-@synthesize accountButton = _accountButton;
+#pragma mark - Public
 
 - (instancetype)initWithDelegate:
     (id<ManualFillAccessoryViewControllerDelegate>)delegate {
@@ -68,6 +72,24 @@ static NSTimeInterval MFAnimationDuration = 0.20;
   }
   return self;
 }
+
+- (void)reset {
+  [self resetTintColors];
+  self.keyboardButton.hidden = YES;
+  self.keyboardButton.alpha = 0.0;
+}
+
+#pragma mark - Setters
+
+- (void)setPasswordButtonHidden:(BOOL)passwordButtonHidden {
+  if (passwordButtonHidden == _passwordButtonHidden) {
+    return;
+  }
+  _passwordButton.hidden = passwordButtonHidden;
+  _passwordButtonHidden = passwordButtonHidden;
+}
+
+#pragma mark - Private
 
 - (void)loadView {
   self.view = [[UIView alloc] init];
@@ -100,6 +122,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
                 forControlEvents:UIControlEventTouchUpInside];
   self.passwordButton.accessibilityIdentifier =
       manual_fill::AccessoryPasswordAccessibilityIdentifier;
+  self.passwordButton.hidden = self.isPasswordButtonHidden;
   [icons addObject:self.passwordButton];
 
   if (autofill::features::IsAutofillManualFallbackEnabled()) {
@@ -147,12 +170,6 @@ static NSTimeInterval MFAnimationDuration = 0.20;
         constraintEqualToAnchor:stackView.trailingAnchor
                        constant:ManualFillIconsRightInset],
   ]];
-  self.keyboardButton.hidden = YES;
-  self.keyboardButton.alpha = 0.0;
-}
-
-- (void)reset {
-  [self resetTintColors];
   self.keyboardButton.hidden = YES;
   self.keyboardButton.alpha = 0.0;
 }

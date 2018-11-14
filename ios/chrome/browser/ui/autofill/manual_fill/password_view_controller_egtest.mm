@@ -249,6 +249,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
   [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGrey waitForWebViewContainingText:"hello!"];
+  SaveExamplePasswordForm();
 }
 
 - (void)tearDown {
@@ -643,6 +644,33 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
           @"window.frames[0].document.getElementById('%s').value === '%s'",
           kFormElementUsername, kExampleUsername];
   XCTAssertTrue(WaitForJavaScriptCondition(javaScriptCondition));
+}
+
+// Tests that the password icon is hidden when no passwords are available.
+- (void)testPasswordIconIsNotVisibleWhenPasswordStoreEmpty {
+  ClearPasswordStore();
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Wait for the keyboard to appear.
+  [GREYKeyboard waitForKeyboardToAppear];
+
+  // Assert the password icon is not visible.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_notVisible()];
+
+  // Store one password.
+  SaveExamplePasswordForm();
+
+  // Tap another field to trigger form activity.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementPassword)];
+
+  // Assert the password icon is visible now.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 @end
