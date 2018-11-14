@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_view_controller.h"
 
 #include "base/ios/ios_util.h"
+#include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -37,6 +38,8 @@ NSString* const AddressTableViewAccessibilityIdentifier =
 // TODO(crbug.com/845472): look at replacing ManualFillXXXConsumer with
 // ManualFillItemsConsumer.
 - (void)presentAddresses:(NSArray<ManualFillAddressItem*>*)addresses {
+  UMA_HISTOGRAM_COUNTS_100("ManualFallback.PresentedOptions.Profiles",
+                           addresses.count);
   [self presentDataItems:(NSArray<TableViewItem*>*)addresses];
 }
 
