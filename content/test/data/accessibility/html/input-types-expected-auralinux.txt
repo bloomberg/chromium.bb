@@ -18,7 +18,7 @@
 ++++++[push button] name='File:'
 ++++[label]
 ++++++[text] name='Image: '
-++++++[push button] name='Image:'
+++++++[push button] name='Image:' default
 ++++[label]
 ++++++[text] name='Number: '
 ++++++[spin button] name='Number:' selectable-text text-input-type:number
@@ -37,7 +37,7 @@
 ++++++[entry] name='Search:' selectable-text text-input-type:search
 ++++[label]
 ++++++[text] name='Submit: '
-++++++[push button] name='Submit:'
+++++++[push button] name='Submit:' default
 ++++[label]
 ++++++[text] name='Tel: '
 ++++++[entry] name='Tel:' selectable-text text-input-type:tel

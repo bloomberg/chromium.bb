@@ -353,9 +353,9 @@ TEST_F('ChromeVoxBackgroundTest', 'BrailleRouting', function() {
   this.runWithLoadedTree(
       function() {/*!
         <p>start</p>
-        <button id="btn1">Click me</button>
+        <button type="button" id="btn1">Click me</button>
         <p>Some text</p>
-        <button id="btn2">Focus me</button>
+        <button type="button" id="btn2">Focus me</button>
         <p>Some more text</p>
         <input type="text" id ="text" value="Edit me">
         <script>
