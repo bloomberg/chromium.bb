@@ -5,7 +5,6 @@
 #include "components/favicon/core/large_icon_service_impl.h"
 
 #include <algorithm>
-#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -13,7 +12,6 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial_params.h"
@@ -27,7 +25,6 @@
 #include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
-#include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "net/base/network_change_notifier.h"
@@ -238,7 +235,7 @@ const DomainToOrganizationIdMap* DomainToOrganizationIdMap::GetInstance() {
 
 int DomainToOrganizationIdMap::GetCanonicalOrganizationId(
     const GURL& url) const {
-  auto it = data_.find(LargeIconService::GetOrganizationNameForUma(url));
+  auto it = data_.find(LargeIconServiceImpl::GetOrganizationNameForUma(url));
   return it == data_.end() ? kInvalidOrganizationId : it->second;
 }
 
@@ -452,7 +449,7 @@ void OnFetchIconFromGoogleServerComplete(
 
 }  // namespace
 
-LargeIconService::LargeIconService(
+LargeIconServiceImpl::LargeIconServiceImpl(
     FaviconService* favicon_service,
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher)
     : favicon_service_(favicon_service),
@@ -466,10 +463,10 @@ LargeIconService::LargeIconService(
   // a DCHECK(image_fetcher_) here.
 }
 
-LargeIconService::~LargeIconService() {}
+LargeIconServiceImpl::~LargeIconServiceImpl() {}
 
 base::CancelableTaskTracker::TaskId
-LargeIconService::GetLargeIconOrFallbackStyle(
+LargeIconServiceImpl::GetLargeIconOrFallbackStyle(
     const GURL& page_url,
     int min_source_size_in_pixel,
     int desired_size_in_pixel,
@@ -481,7 +478,7 @@ LargeIconService::GetLargeIconOrFallbackStyle(
 }
 
 base::CancelableTaskTracker::TaskId
-LargeIconService::GetLargeIconImageOrFallbackStyle(
+LargeIconServiceImpl::GetLargeIconImageOrFallbackStyle(
     const GURL& page_url,
     int min_source_size_in_pixel,
     int desired_size_in_pixel,
@@ -492,7 +489,7 @@ LargeIconService::GetLargeIconImageOrFallbackStyle(
       favicon_base::LargeIconCallback(), image_callback, tracker);
 }
 
-void LargeIconService::
+void LargeIconServiceImpl::
     GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
         std::unique_ptr<FaviconServerFetcherParams> params,
         bool may_page_url_be_private,
@@ -541,18 +538,18 @@ void LargeIconService::
 
   favicon_service_->CanSetOnDemandFavicons(
       params->page_url(), params->icon_type(),
-      base::BindOnce(&LargeIconService::OnCanSetOnDemandFaviconComplete,
+      base::BindOnce(&LargeIconServiceImpl::OnCanSetOnDemandFaviconComplete,
                      weak_ptr_factory_.GetWeakPtr(), server_request_url,
                      params->page_url(), params->icon_type(),
                      traffic_annotation, callback));
 }
 
-void LargeIconService::TouchIconFromGoogleServer(const GURL& icon_url) {
+void LargeIconServiceImpl::TouchIconFromGoogleServer(const GURL& icon_url) {
   favicon_service_->TouchOnDemandFavicon(icon_url);
 }
 
 // static
-std::string LargeIconService::GetOrganizationNameForUma(const GURL& url) {
+std::string LargeIconServiceImpl::GetOrganizationNameForUma(const GURL& url) {
   const size_t registry_length =
       net::registry_controlled_domains::GetRegistryLength(
           url, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
@@ -562,7 +559,7 @@ std::string LargeIconService::GetOrganizationNameForUma(const GURL& url) {
           url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   if (registry_length == 0 || registry_length == std::string::npos ||
       registry_length >= organization.size()) {
-    return "";
+    return std::string();
   }
 
   // Strip final registry as well as the preceding dot.
@@ -571,7 +568,7 @@ std::string LargeIconService::GetOrganizationNameForUma(const GURL& url) {
 }
 
 base::CancelableTaskTracker::TaskId
-LargeIconService::GetLargeIconOrFallbackStyleImpl(
+LargeIconServiceImpl::GetLargeIconOrFallbackStyleImpl(
     const GURL& page_url,
     int min_source_size_in_pixel,
     int desired_size_in_pixel,
@@ -588,9 +585,9 @@ LargeIconService::GetLargeIconOrFallbackStyleImpl(
   int max_size_in_pixel =
       std::max(desired_size_in_pixel, min_source_size_in_pixel);
   // TODO(beaudoin): For now this is just a wrapper around
-  //   GetLargestRawFaviconForPageURL. Add the logic required to select the best
-  //   possible large icon. Also add logic to fetch-on-demand when the URL of
-  //   a large icon is known but its bitmap is not available.
+  //   GetLargestRawFaviconForPageURL. Add the logic required to select the
+  //   best possible large icon. Also add logic to fetch-on-demand when the
+  //   URL of a large icon is known but its bitmap is not available.
   return favicon_service_->GetLargestRawFaviconForPageURL(
       page_url, large_icon_types_, max_size_in_pixel,
       base::BindRepeating(&LargeIconWorker::OnIconLookupComplete, worker,
@@ -598,7 +595,7 @@ LargeIconService::GetLargeIconOrFallbackStyleImpl(
       tracker);
 }
 
-void LargeIconService::OnCanSetOnDemandFaviconComplete(
+void LargeIconServiceImpl::OnCanSetOnDemandFaviconComplete(
     const GURL& server_request_url,
     const GURL& page_url,
     favicon_base::IconType icon_type,

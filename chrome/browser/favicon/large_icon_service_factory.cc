@@ -50,7 +50,7 @@ KeyedService* LargeIconServiceFactory::BuildServiceInstanceFor(
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
-  return new favicon::LargeIconService(
+  return new favicon::LargeIconServiceImpl(
       favicon_service,
       std::make_unique<image_fetcher::ImageFetcherImpl>(
           std::make_unique<suggestions::ImageDecoderImpl>(),
