@@ -26,6 +26,7 @@
 #include "components/history/core/browser/sync/typed_url_model_type_controller.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/sync/password_data_type_controller.h"
+#include "components/password_manager/core/browser/sync/password_model_type_controller.h"
 #include "components/password_manager/core/browser/sync/password_syncable_service_based_model_type_controller.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/features/reading_list_switches.h"
@@ -322,7 +323,12 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // Password sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::PASSWORDS)) {
-    if (base::FeatureList::IsEnabled(switches::kSyncPseudoUSSPasswords)) {
+    if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+      controllers.push_back(
+          std::make_unique<password_manager::PasswordModelTypeController>(
+              password_store_->CreateSyncControllerDelegate(), sync_client_));
+    } else if (base::FeatureList::IsEnabled(
+                   switches::kSyncPseudoUSSPasswords)) {
       controllers.push_back(
           std::make_unique<password_manager::
                                PasswordSyncableServiceBasedModelTypeController>(

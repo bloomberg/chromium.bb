@@ -38,6 +38,8 @@ struct PasswordForm;
 }
 
 namespace syncer {
+class ModelTypeControllerDelegate;
+class ProxyModelTypeControllerDelegate;
 class SyncableService;
 }
 
@@ -265,6 +267,11 @@ class PasswordStore : protected PasswordStoreSync,
   virtual bool IsAbleToSavePasswords() const;
 
   base::WeakPtr<syncer::SyncableService> GetPasswordSyncableService();
+
+  // For sync codebase only: instantiates a proxy controller delegate to
+  // interact with PasswordSyncBridge. Must be called from the UI thread.
+  std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
+  CreateSyncControllerDelegate();
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -675,6 +682,11 @@ class PasswordStore : protected PasswordStoreSync,
   void UpdateAffiliatedWebLoginsImpl(
       const autofill::PasswordForm& updated_android_form,
       const std::vector<std::string>& affiliated_web_realms);
+
+  // Returns the sync controller delegate for syncing passwords. It must be
+  // called on the background sequence.
+  base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetSyncControllerDelegateOnBackgroundSequence();
 
   // Schedules UpdateAffiliatedWebLoginsImpl() to run on the background
   // sequence. Should be called from the main sequence.
