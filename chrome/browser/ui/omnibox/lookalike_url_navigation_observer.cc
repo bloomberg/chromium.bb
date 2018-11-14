@@ -73,7 +73,7 @@ void LookalikeUrlNavigationObserver::DidFinishNavigation(
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   SiteEngagementService* service = SiteEngagementService::Get(profile);
-  if (service->IsEngagementAtLeast(url, blink::mojom::EngagementLevel::LOW))
+  if (service->IsEngagementAtLeast(url, blink::mojom::EngagementLevel::MEDIUM))
     return;
 
   const base::StringPiece host = url.host_piece();
@@ -154,7 +154,7 @@ std::string LookalikeUrlNavigationObserver::GetMatchingSiteEngagementDomain(
   for (const auto& detail : engagement_details) {
     // Ignore sites with an engagement score lower than LOW.
     if (!service->IsEngagementAtLeast(detail.origin,
-                                      blink::mojom::EngagementLevel::LOW))
+                                      blink::mojom::EngagementLevel::MEDIUM))
       continue;
 
     // If the user has engaged with eTLD+1 of this site, don't show any
