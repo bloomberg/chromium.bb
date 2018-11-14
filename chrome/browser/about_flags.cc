@@ -177,6 +177,10 @@
 #include "extensions/common/switches.h"
 #endif  // ENABLE_EXTENSIONS
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "pdf/pdf_features.h"
+#endif
+
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_switches.h"
 #endif  // USE_OZONE
@@ -3846,9 +3850,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVizHitTestDrawQuadDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableVizHitTestDrawQuad)},
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+    {"pdf-form-save", flag_descriptions::kPdfFormSaveName,
+     flag_descriptions::kPdfFormSaveDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(chrome_pdf::features::kSaveEditedPDFForm)},
+
     {"pdf-isolation", flag_descriptions::kPdfIsolationName,
      flag_descriptions::kPdfIsolationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPdfIsolation)},
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_PRINTING)
     {"use-pdf-compositor-service-for-print",

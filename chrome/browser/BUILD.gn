@@ -4294,6 +4294,7 @@ jumbo_split_static_library("browser") {
     deps += [
       "//components/pdf/browser",
       "//media:media_buildflags",
+      "//pdf:features",
       "//ppapi/buildflags",
       "//ppapi/proxy:ipc",
       "//services/device/public/mojom",

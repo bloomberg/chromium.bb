@@ -1543,10 +1543,6 @@ const char kPasswordsMigrateLinuxToLoginDBDescription[] =
     "Performs a one-off irreversible migration of passwords from the "
     "gnome-keyring or kwallet into the profile directory.";
 
-const char kPdfIsolationName[] = "PDF Isolation";
-const char kPdfIsolationDescription[] =
-    "Render PDF files from different origins in different plugin processes.";
-
 const char kPerMethodCanMakePaymentQuotaName[] =
     "Per-method canMakePayment() quota.";
 const char kPerMethodCanMakePaymentQuotaDescription[] =
@@ -3792,6 +3788,18 @@ const char kPnaclSubzeroDescription[] =
     "Force the use of PNaCl's fast Subzero translator for all pexe files.";
 
 #endif  // BUILDFLAG(ENABLE_NACL)
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+
+const char kPdfFormSaveName[] = "Save PDF Forms";
+const char kPdfFormSaveDescription[] =
+    "Enable saving PDFs with filled form data.";
+
+const char kPdfIsolationName[] = "PDF Isolation";
+const char kPdfIsolationDescription[] =
+    "Render PDF files from different origins in different plugin processes.";
+
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 

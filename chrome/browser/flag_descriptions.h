@@ -13,6 +13,7 @@
 #include "components/nacl/common/buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
+#include "ppapi/buildflags/buildflags.h"
 
 // This file declares strings used in chrome://flags. These messages are not
 // translated, because instead of end-users they target Chromium developers and
@@ -937,9 +938,6 @@ extern const char kPasswordsKeyboardAccessoryDescription[];
 
 extern const char kPasswordsMigrateLinuxToLoginDBName[];
 extern const char kPasswordsMigrateLinuxToLoginDBDescription[];
-
-extern const char kPdfIsolationName[];
-extern const char kPdfIsolationDescription[];
 
 extern const char kPerMethodCanMakePaymentQuotaName[];
 extern const char kPerMethodCanMakePaymentQuotaDescription[];
@@ -2299,6 +2297,16 @@ extern const char kPnaclSubzeroName[];
 extern const char kPnaclSubzeroDescription[];
 
 #endif  // BUILDFLAG(ENABLE_NACL)
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+
+extern const char kPdfFormSaveName[];
+extern const char kPdfFormSaveDescription[];
+
+extern const char kPdfIsolationName[];
+extern const char kPdfIsolationDescription[];
+
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
