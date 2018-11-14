@@ -874,7 +874,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Estos cargos pueden ser únicos o recurrentes, y es posible que no sean evidentes.</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Esta tarjeta y su dirección de facturación se guardarán en tu Cuenta de Google para que puedas confirmar compras en diferentes dispositivos de manera más rápida.}other{Estas tarjetas y sus direcciones de facturación se guardarán en tu Cuenta de Google para que puedas confirmar compras en diferentes dispositivos de manera más rápida.}}</translation>
 <translation id="7050187094878475250">Intentaste acceder a <ph name="DOMAIN" />, pero el certificado de servidor tenía un período de validez demasiado extenso para ser fiable.</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7064851114919012435">Información de contacto</translation>
@@ -961,7 +960,6 @@ Detalles adicionales:
 <translation id="7549584377607005141">Esta página web necesita los datos ingresados anteriormente para mostrarse correctamente. Puedes volver a enviar los datos, pero ten en cuenta que se repetirán las acciones que la página haya realizado anteriormente.</translation>
 <translation id="7552846755917812628">Intenta las siguientes sugerencias:</translation>
 <translation id="7554791636758816595">Nueva pestaña</translation>
-<translation id="7560085949372856518">En el siguiente paso, puedes elegir qué tarjetas guardar en tu Cuenta de Google.</translation>
 <translation id="7564049878696755256">Es posible que hayas perdido el acceso a tu cuenta de <ph name="ORG_NAME" /> o sufrido un robo de identidad. Chrome te recomienda que cambies la contraseña ahora.</translation>
 <translation id="7567204685887185387">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el certificado de seguridad podría haberse emitido de forma fraudulenta. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="7569952961197462199">¿Confirmas que quieres quitar la tarjeta de crédito de Chrome?</translation>
@@ -1130,7 +1128,6 @@ Detalles adicionales:
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8728672262656704056">Estás en modo incógnito</translation>
 <translation id="8730621377337864115">Listo</translation>
-<translation id="8733831205558190772">Todas tus tarjetas en un solo lugar</translation>
 <translation id="8738058698779197622">Para establecer una conexión segura, el reloj debe estar configurado correctamente. Esto se debe a que los certificados que usan los sitios web para su identificación solo son válidos por períodos de tiempo específicos. Debido a que la configuración del reloj del dispositivo es incorrecta, Chromium no puede verificar estos certificados.</translation>
 <translation id="8740359287975076522">No se encontró <ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt;. Se está diagnosticando el problema.</translation>
 <translation id="874846938927089722">Tarjetas de crédito y prepago aceptadas</translation>

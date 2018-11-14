@@ -873,7 +873,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">These charges could be one-off or recurring and may not be obvious.</translation>
 <translation id="7029809446516969842">Passwords</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{This card and its billing address will be saved to your Google account for faster checkout across devices.}other{These cards and their billing addresses will be saved to your Google account for faster checkout across devices.}}</translation>
 <translation id="7050187094878475250">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate whose validity period is too long to be trustworthy.</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="7064851114919012435">Contact info</translation>
@@ -960,7 +959,6 @@ Additional details:
 <translation id="7549584377607005141">This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed.</translation>
 <translation id="7552846755917812628">Try the following tips:</translation>
 <translation id="7554791636758816595">New Tab</translation>
-<translation id="7560085949372856518">In the next step, you can choose which cards to save to your Google account.</translation>
 <translation id="7564049878696755256">You could lose access to your <ph name="ORG_NAME" /> account or experience identity theft. Chrome recommends changing your password now.</translation>
 <translation id="7567204685887185387">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might have been issued fraudulently. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="7569952961197462199">Remove credit card from Chrome?</translation>
@@ -1128,7 +1126,6 @@ Additional details:
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8728672262656704056">You’ve gone incognito</translation>
 <translation id="8730621377337864115">Done</translation>
-<translation id="8733831205558190772">All your cards in one place</translation>
 <translation id="8738058698779197622">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; could not be found. Diagnosing the problem.</translation>
 <translation id="874846938927089722">Accepted Credit and Prepaid Cards</translation>

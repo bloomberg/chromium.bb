@@ -873,7 +873,6 @@
 <translation id="7012363358306927923">中國銀聯</translation>
 <translation id="7016992613359344582">這些費用可能只收取一次，也可能週期性收取，而且您可能不會注意到這筆費用。</translation>
 <translation id="7029809446516969842">密碼</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{系統會將這張卡片和相應的帳單地址儲存至你的 Google 帳戶，讓你在不同裝置上都能享有便捷的結帳體驗。}other{系統會將這些卡片和相應的帳單地址儲存至你的 Google 帳戶，讓你在不同裝置上都能享有便捷的結帳體驗。}}</translation>
 <translation id="7050187094878475250">您嘗試連線至 <ph name="DOMAIN" />，但伺服器提供的憑證有效期限太長，因此難以信任。</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7064851114919012435">聯絡資訊</translation>
@@ -960,7 +959,6 @@
 <translation id="7549584377607005141">這個網頁需要使用你先前輸入的資料才能正確顯示。你可以重新傳送這些資料，不過這麼做會重複執行這個網頁先前執行過的任何動作。</translation>
 <translation id="7552846755917812628">嘗試按照下列提示操作：</translation>
 <translation id="7554791636758816595">新增分頁</translation>
-<translation id="7560085949372856518">在下一個步驟中，你可以選擇要將哪些卡片儲存至 Google 帳戶。</translation>
 <translation id="7564049878696755256">你可能會失去 <ph name="ORG_NAME" /> 帳戶存取權，或身分遭到冒用。Chrome 建議你立即變更密碼。</translation>
 <translation id="7567204685887185387">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證是以欺詐方式發行。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="7569952961197462199">要從 Chrome 中移除信用卡嗎？</translation>
@@ -1128,7 +1126,6 @@
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8728672262656704056">你已進入無痕模式</translation>
 <translation id="8730621377337864115">完成</translation>
-<translation id="8733831205558190772">集中管理所有卡片</translation>
 <translation id="8738058698779197622">你必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於你裝置的時鐘不正確，因此 Chromium 無法驗證這些憑證。</translation>
 <translation id="8740359287975076522">找不到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 位址&lt;/abbr&gt;，正在診斷問題。</translation>
 <translation id="874846938927089722">接受的信用卡和預付卡</translation>

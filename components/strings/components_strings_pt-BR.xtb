@@ -873,7 +873,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Essas cobranças podem ser únicas ou recorrentes e talvez não sejam óbvias.</translation>
 <translation id="7029809446516969842">Senhas</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Este cartão e o endereço de faturamento dele serão salvos na sua Conta do Google para agilizar os pagamentos nos dispositivos.}one{Este cartão e o endereço de faturamento dele serão salvos na sua Conta do Google para agilizar os pagamentos nos dispositivos.}other{Estes cartões e os endereços de faturamento deles serão salvos na sua Conta do Google para agilizar os pagamentos nos dispositivos.}}</translation>
 <translation id="7050187094878475250">Você tentou acessar <ph name="DOMAIN" />, mas o servidor apresentou um certificado cujo período de validade é extremamente longo, o que não é confiável.</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7064851114919012435">Dados de contato</translation>
@@ -960,7 +959,6 @@ Mais detalhes:
 <translation id="7549584377607005141">Esta página da Web requer os dados inseridos anteriormente para ser exibida de modo correto. É possível enviá-los novamente mas, ao fazer isso, você repete qualquer ação realizada anteriormente na página.</translation>
 <translation id="7552846755917812628">Tente seguir estas dicas:</translation>
 <translation id="7554791636758816595">Nova guia</translation>
-<translation id="7560085949372856518">Na próxima etapa, escolha quais cards serão salvos na sua Conta do Google.</translation>
 <translation id="7564049878696755256">Você pode perder o acesso à sua conta de <ph name="ORG_NAME" /> ou ter sua identidade roubada. O Chrome recomenda que sua senha seja alterada agora.</translation>
 <translation id="7567204685887185387">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança pode ter sido emitido de forma fraudulenta. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="7569952961197462199">Remover cartão de crédito do Chrome?</translation>
@@ -1129,7 +1127,6 @@ Mais detalhes:
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8728672262656704056">Você está navegando sem deixar rastros</translation>
 <translation id="8730621377337864115">Concluído</translation>
-<translation id="8733831205558190772">Todos os seus cartões em um só lugar</translation>
 <translation id="8738058698779197622">Para estabelecer uma conexão segura, o relógio precisa ser ajustado corretamente. Isso ocorre porque os certificados que os websites usam para se identificar são válidos apenas por períodos específicos. Como o relógio do seu dispositivo está incorreto, o Chromium não pode verificar esses certificados.</translation>
 <translation id="8740359287975076522">Não foi possível encontrar o &lt;abbr id="dnsDefinition"&gt;endereço DNS&lt;/abbr&gt; de <ph name="HOST_NAME" />. Diagnosticando o problema.</translation>
 <translation id="874846938927089722">Cartões de crédito e pré-pagos aceitos</translation>

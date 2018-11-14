@@ -874,7 +874,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Caj ini mungkin caj sekali atau caj berulang dan mungkin tidak ketara.</translation>
 <translation id="7029809446516969842">Kata laluan</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Kad ini dan alamat pengebilannya akan disimpan ke Akaun Google anda untuk mempercepat proses pembayaran pada semua peranti.}other{Kad ini dan alamat pengebilannya akan disimpan ke Akaun Google anda untuk mempercepat proses pembayaran pada semua peranti.}}</translation>
 <translation id="7050187094878475250">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil yang tempoh sahnya terlalu panjang untuk boleh dipercayai.</translation>
 <translation id="7053983685419859001">Sekat</translation>
 <translation id="7064851114919012435">Maklumat hubungan</translation>
@@ -961,7 +960,6 @@ Butiran tambahan:
 <translation id="7549584377607005141">Halaman web ini memerlukan data yang anda masukkan sebelum ini agar dapat dipaparkan dengan betul. Anda boleh menghantar data ini semula, tetapi dengan berbuat demikian anda akan mengulangi sebarang tindakan terdahulu yang telah dilakukan oleh halaman ini.</translation>
 <translation id="7552846755917812628">Cuba petua berikut:</translation>
 <translation id="7554791636758816595">Tab Baharu</translation>
-<translation id="7560085949372856518">Dalam langkah seterusnya, anda boleh memilih kad yang mahu disimpan ke Akaun Google anda.</translation>
 <translation id="7564049878696755256">Anda boleh kehilangan akses kepada akaun <ph name="ORG_NAME" /> anda atau mengalami kecurian identiti. Chrome mengesyorkan supaya kata laluan anda ditukar sekarang.</translation>
 <translation id="7567204685887185387">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya mungkin telah dikeluarkan melalui penipuan. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="7569952961197462199">Alih keluar kad kredit daripada Chrome?</translation>
@@ -1130,7 +1128,6 @@ Butiran tambahan:
 <translation id="8725066075913043281">Cuba lagi</translation>
 <translation id="8728672262656704056">Anda menggunakan mod inkognito</translation>
 <translation id="8730621377337864115">Selesai</translation>
-<translation id="8733831205558190772">Semua kad anda di satu tempat</translation>
 <translation id="8738058698779197622">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Ini kerana sijil yang digunakan oleh tapak web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Chromium tidak boleh mengesahkan sijil-sijil ini.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Alamat DNS&lt;/abbr&gt; <ph name="HOST_NAME" /> tidak ditemui. Masalah sedang didiagnosis.</translation>
 <translation id="874846938927089722">Kad Kredit dan Prabayar yang Diterima</translation>

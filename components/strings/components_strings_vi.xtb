@@ -873,7 +873,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Các khoản phí này có thể là khoản thu một lần hoặc định kỳ và có thể không rõ ràng.</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Thẻ này và địa chỉ thanh toán của thẻ sẽ được lưu vào Tài khoản Google để thanh toán nhanh hơn trên các thiết bị.}other{Những thẻ này và địa chỉ thanh toán của thẻ sẽ được lưu vào Tài khoản Google để thanh toán nhanh hơn trên các thiết bị.}}</translation>
 <translation id="7050187094878475250">Bạn đã cố gắng truy cập <ph name="DOMAIN" /> nhưng máy chủ đã hiển thị chứng chỉ có thời gian hiệu lực quá dài để có thể tin cậy.</translation>
 <translation id="7053983685419859001">Chặn</translation>
 <translation id="7064851114919012435">Thông tin liên hệ</translation>
@@ -960,7 +959,6 @@ Thông tin chi tiết bổ sung:
 <translation id="7549584377607005141">Trang web này yêu cầu dữ liệu mà bạn đã nhập trước đó để được hiển thị đúng cách. Bạn có thể gửi lại dữ liệu này nhưng làm như vậy bạn sẽ lặp lại mọi hoạt động mà trang này đã thực hiện trước đó.</translation>
 <translation id="7552846755917812628">Thử các mẹo sau:</translation>
 <translation id="7554791636758816595">Tab mới</translation>
-<translation id="7560085949372856518">Ở bước tiếp theo, bạn có thể chọn sẽ lưu thẻ nào vào Tài khoản Google của mình.</translation>
 <translation id="7564049878696755256">Bạn có thể mất quyền truy cập vào tài khoản <ph name="ORG_NAME" /> của mình hoặc bị đánh cắp danh tính. Chrome khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
 <translation id="7567204685887185387">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có thể đã bị gian lận khi phát hành. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="7569952961197462199">Xóa thẻ tín dụng khỏi Chrome?</translation>
@@ -1129,7 +1127,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8728672262656704056">Bạn đã chuyển sang chế độ ẩn danh</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>
-<translation id="8733831205558190772">Tất cả thẻ của bạn ở cùng một nơi</translation>
 <translation id="8738058698779197622">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chromium không thể xác minh các chứng chỉ này.</translation>
 <translation id="8740359287975076522">Không thể tìm thấy &lt;abbr id="dnsDefinition"&gt;địa chỉ DNS&lt;/abbr&gt; của <ph name="HOST_NAME" />. Đang chẩn đoán sự cố.</translation>
 <translation id="874846938927089722">Thẻ tín dụng và thẻ trả trước được chấp nhận</translation>

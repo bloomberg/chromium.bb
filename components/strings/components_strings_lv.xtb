@@ -872,7 +872,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Šie naudas pieprasījumi var būt vienreizēji vai atkārtoti, un tie var nebūt uzreiz pamanāmi.</translation>
 <translation id="7029809446516969842">Paroles</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Šī karte un tās norēķinu adrese tiks saglabāta jūsu Google kontā, lai paātrinātu norēķināšanos dažādās ierīcēs.}zero{Šīs kartes un to norēķinu adreses tiks saglabātas jūsu Google kontā, lai paātrinātu norēķināšanos dažādās ierīcēs.}one{Šī karte un tās norēķinu adrese tiks saglabāta jūsu Google kontā, lai paātrinātu norēķināšanos dažādās ierīcēs.}other{Šīs kartes un to norēķinu adreses tiks saglabātas jūsu Google kontā, lai paātrinātu norēķināšanos dažādās ierīcēs.}}</translation>
 <translation id="7050187094878475250">Jūs mēģinājāt sasniegt domēnu <ph name="DOMAIN" />, bet serveris uzrādīja sertifikātu, kura derīguma periods ir pārāk ilgs, lai būtu uzticams.</translation>
 <translation id="7053983685419859001">Bloķēt</translation>
 <translation id="7064851114919012435">Kontaktinformācija</translation>
@@ -959,7 +958,6 @@ Papildu informācija:
 <translation id="7549584377607005141">Lai tīmekļa lapu varētu attēlot pareizi, tai nepieciešami jūsu iepriekš ievadītie dati. Varat atkārtoti nosūtīt šos datus, taču tādā gadījumā tiks atkārtota ikviena darbība, ko pirms tam veica lapa.</translation>
 <translation id="7552846755917812628">Izmantojiet tālāk sniegtos padomus.</translation>
 <translation id="7554791636758816595">Jauna cilne</translation>
-<translation id="7560085949372856518">Nākamajā darbībā varēsiet izvēlēties, kuras kartes saglabāt Google kontā.</translation>
 <translation id="7564049878696755256">Varat zaudēt piekļuvi savam <ph name="ORG_NAME" /> kontam, vai jūsu identitāte var tikt nozagta. Chrome iesaka nekavējoties nomainīt paroli.</translation>
 <translation id="7567204685887185387">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts, iespējams, ir izveidots krāpnieciski. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
 <translation id="7569952961197462199">Vai noņemt kredītkarti no pārlūka Chrome?</translation>
@@ -1128,7 +1126,6 @@ Papildu informācija:
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
 <translation id="8728672262656704056">Jūs esat atvēris inkognito režīmu</translation>
 <translation id="8730621377337864115">Gatavs</translation>
-<translation id="8733831205558190772">Visas kartes vienuviet</translation>
 <translation id="8738058698779197622">Lai izveidotu drošu savienojumu, ir jāiestata pareizs pulksteņa laiks. Tas ir nepieciešams, jo sertifikāti, kurus vietnes izmanto, lai tiktu identificētas, ir derīgi tikai noteiktos laika periodos. Tā kā jūsu ierīces pulkstenis nav pareizi iestatīts, Chromium nevar verificēt šos sertifikātus.</translation>
 <translation id="8740359287975076522">Nevarēja atrast <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS adresi&lt;/abbr&gt;. Notiek problēmas diagnosticēšana.</translation>
 <translation id="874846938927089722">Atbalstītās kredītkartes un priekšapmaksas kartes</translation>

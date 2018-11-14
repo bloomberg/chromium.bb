@@ -873,7 +873,6 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7016992613359344582">Te bremenitve so lahko enkratne ali ponavljajoče se in morda niso očitne.</translation>
 <translation id="7029809446516969842">Gesla</translation>
-<translation id="7041710477964360998">{NUM_CARDS,plural, =1{Ta kartica in njen naslov za izstavitev računa bosta shranjena v Google Račun zaradi hitrejšega dokončanja nakupov v vseh napravah.}one{Te kartice in njihovi naslovi za izstavitev računa bodo shranjeni v Google Račun zaradi hitrejšega dokončanja nakupov v vseh napravah.}two{Te kartice in njihovi naslovi za izstavitev računa bodo shranjeni v Google Račun zaradi hitrejšega dokončanja nakupov v vseh napravah.}few{Te kartice in njihovi naslovi za izstavitev računa bodo shranjeni v Google Račun zaradi hitrejšega dokončanja nakupov v vseh napravah.}other{Te kartice in njihovi naslovi za izstavitev računa bodo shranjeni v Google Račun zaradi hitrejšega dokončanja nakupov v vseh napravah.}}</translation>
 <translation id="7050187094878475250">Poskusili ste odpreti <ph name="DOMAIN" />, vendar je strežnik uporabil potrdilo, ki ima predolgo obdobje veljavnosti, da bi bilo verodostojno.</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7064851114919012435">Podatki o stiku</translation>
@@ -960,7 +959,6 @@ Dodatne podrobnosti:
 <translation id="7549584377607005141">Za pravilen prikaz te strani so potrebni podatki, ki ste jih vnesli prej. Podatke lahko pošljete še enkrat, vendar se bodo s tem ponovila vsa prejšnja dejanja strani.</translation>
 <translation id="7552846755917812628">Poskusite te nasvete:</translation>
 <translation id="7554791636758816595">Nov zavihek</translation>
-<translation id="7560085949372856518">V naslednjem koraku lahko izberete, katere kartice želite shraniti v Google Račun.</translation>
 <translation id="7564049878696755256">Izgubite lahko dostop do računa za <ph name="ORG_NAME" /> ali postanete žrtev kraje identitete. Chrome priporoča, da spremenite geslo.</translation>
 <translation id="7567204685887185387">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda izdano z goljufijo. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="7569952961197462199">Želite odstraniti kreditno kartico iz Chroma?</translation>
@@ -1128,7 +1126,6 @@ Dodatne podrobnosti:
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8728672262656704056">Uporabljate način brez beleženja zgodovine</translation>
 <translation id="8730621377337864115">Končano</translation>
-<translation id="8733831205558190772">Vse kartice na enem mestu</translation>
 <translation id="8738058698779197622">Če želite vzpostaviti varno povezavo, mora biti ura pravilno nastavljena. Potrdila, ki jih uporabljajo spletna mesta za prepoznavanje, namreč veljajo samo določen čas. Ker je ura sistema nepravilna, Chromium teh potrdil ne more preveriti.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Naslova DNS&lt;/abbr&gt; spletnega mesta <ph name="HOST_NAME" /> ni bilo mogoče najti. Poteka diagnosticiranje težave.</translation>
 <translation id="874846938927089722">Sprejete kreditne in predplačniške kartice</translation>
