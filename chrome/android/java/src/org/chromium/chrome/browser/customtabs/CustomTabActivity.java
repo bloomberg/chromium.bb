@@ -63,7 +63,7 @@ import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiController;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
@@ -188,8 +188,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
 
     private WebappCustomTabTimeSpentLogger mWebappTimeSpentLogger;
-
-    private AutofillAssistantUiController mAutofillAssistantUiController;
 
     @Nullable
     private ModuleEntryPoint mModuleEntryPoint;
@@ -700,10 +698,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                     getActivityTab().getWebContents());
         }
 
-        if (mAutofillAssistantUiController == null
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
-                && AutofillAssistantUiController.isConfigured(getInitialIntent().getExtras())) {
-            mAutofillAssistantUiController = new AutofillAssistantUiController(this);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
+                && AutofillAssistantFacade.isConfigured(getInitialIntent().getExtras())) {
+            AutofillAssistantFacade.start(this);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && useSeparateTask()) {

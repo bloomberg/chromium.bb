@@ -77,7 +77,6 @@ class UiControllerAndroid : public UiController,
              const base::android::JavaParamRef<jobject>& jcaller,
              const base::android::JavaParamRef<jstring>& initialUrlString);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void GiveUp(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnScriptSelected(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,

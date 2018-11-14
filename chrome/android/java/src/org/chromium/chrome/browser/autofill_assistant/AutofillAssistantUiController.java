@@ -11,37 +11,22 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.LocaleUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Queue;
 
 /**
  * Bridge to native side autofill_assistant::UiControllerAndroid. It allows native side to control
@@ -60,24 +45,18 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private static final String AUTH_TOKEN_TYPE =
             "oauth2:https://www.googleapis.com/auth/userinfo.profile";
 
-    /** Display the final message for that long before shutting everything down. */
-    private static final long GRACEFUL_SHUTDOWN_DELAY_MS = 5000;
-
-    private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
-
     private final WebContents mWebContents;
-    private final UiDelegateHolder mUiDelegateHolder;
     private final String mInitialUrl;
 
     // TODO(crbug.com/806868): Move mCurrentDetails and mStatusMessage to a Model (refactor to MVC).
-    AutofillAssistantUiDelegate.Details mCurrentDetails =
+    private AutofillAssistantUiDelegate.Details mCurrentDetails =
             AutofillAssistantUiDelegate.Details.getEmptyDetails();
     private String mStatusMessage;
 
-    /**
-     * Native pointer to the UIController.
-     */
+    /** Native pointer to the UIController. */
     private final long mUiControllerAndroid;
+
+    private UiDelegateHolder mUiDelegateHolder;
 
     /**
      * Indicates whether {@link mAccount} has been initialized.
@@ -96,70 +75,30 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private boolean mShouldFetchAccessToken;
 
     /**
-     * Returns true if all conditions are satisfied to construct an AutofillAssistantUiController.
-     *
-     * @return True if a controller can be constructed.
-     */
-    public static boolean isConfigured(Bundle intentExtras) {
-        return getBooleanParameter(intentExtras, PARAMETER_ENABLED)
-                && !AutofillAssistantStudy.getUrl().isEmpty()
-                && ContextUtils.getAppSharedPreferences().getBoolean(
-                           AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, true);
-    }
-
-    @Override
-    public void onInitOk() {
-        nativeStart(mUiControllerAndroid, mInitialUrl);
-    }
-
-    /**
      * Construct Autofill Assistant UI controller.
      *
      * @param activity The CustomTabActivity of the controller associated with.
      */
-    public AutofillAssistantUiController(CustomTabActivity activity) {
-        // Set mUiDelegate before nativeInit, as it can be accessed through native methods from
-        // nativeInit already.
-        mUiDelegateHolder = new UiDelegateHolder(new AutofillAssistantUiDelegate(activity, this));
-        chooseAccountAsync(activity.getInitialIntent().getExtras());
-
-        Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
-        parameters.remove(PARAMETER_ENABLED);
-
-        maybeUpdateDetails(makeDetailsFromParameters(parameters));
-
-        Tab activityTab = activity.getActivityTab();
-        mWebContents = activityTab.getWebContents();
+    public AutofillAssistantUiController(
+            CustomTabActivity activity, Map<String, String> parameters) {
+        mWebContents = activity.getActivityTab().getWebContents();
         mInitialUrl = activity.getInitialIntent().getDataString();
-
         mUiControllerAndroid =
                 nativeInit(mWebContents, parameters.keySet().toArray(new String[parameters.size()]),
                         parameters.values().toArray(new String[parameters.size()]),
                         LocaleUtils.getDefaultLocaleString(), getCountryIso());
 
-        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.startOrSkipInitScreen());
+        chooseAccountAsync(activity.getInitialIntent().getExtras());
+    }
 
-        // Shut down Autofill Assistant when the tab is detached from the activity.
-        activityTab.addObserver(new EmptyTabObserver() {
-            @Override
-            public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-                if (!isAttached) {
-                    activityTab.removeObserver(this);
-                    mUiDelegateHolder.shutdown();
-                }
-            }
-        });
+    void setUiDelegateHolder(UiDelegateHolder uiDelegateHolder) {
+        mUiDelegateHolder = uiDelegateHolder;
+    }
 
-        // Shut down Autofill Assistant when the selected tab (foreground tab) is changed.
-        TabModel currentTabModel = activity.getTabModelSelector().getCurrentModel();
-        currentTabModel.addObserver(new EmptyTabModelObserver() {
-            @Override
-            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-                currentTabModel.removeObserver(this);
-
-                nativeGiveUp(mUiControllerAndroid);
-            }
-        });
+    @Override
+    public void onInitOk() {
+        assert mUiDelegateHolder != null;
+        nativeStart(mUiControllerAndroid, mInitialUrl);
     }
 
     @Override
@@ -202,58 +141,23 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         return nativeOnRequestDebugContext(mUiControllerAndroid);
     }
 
-    /** Return the value if the given boolean parameter from the extras. */
-    private static boolean getBooleanParameter(Bundle extras, String parameterName) {
-        return extras.getBoolean(INTENT_EXTRA_PREFIX + parameterName, false);
-    }
-
-    /** Returns a map containing the extras starting with {@link #INTENT_EXTRA_PREFIX}. */
-    private static Map<String, String> extractParameters(Bundle extras) {
-        Map<String, String> result = new HashMap<>();
-        for (String key : extras.keySet()) {
-            if (key.startsWith(INTENT_EXTRA_PREFIX)) {
-                result.put(key.substring(INTENT_EXTRA_PREFIX.length()), extras.get(key).toString());
-            }
-        }
-        return result;
-    }
-
-    // TODO(crbug.com/806868): Create a fallback when there are no parameters for details.
-    private static AutofillAssistantUiDelegate.Details makeDetailsFromParameters(
-            Map<String, String> parameters) {
-        String title = "";
-        String description = "";
-        Date date = null;
-        for (String key : parameters.keySet()) {
-            if (key.contains("E_NAME")) {
-                title = parameters.get(key);
-                continue;
-            }
-
-            if (key.contains("R_NAME")) {
-                description = parameters.get(key);
-                continue;
-            }
-
-            if (key.contains("DATETIME")) {
-                try {
-                    // The parameter contains the timezone shift from the current location, that we
-                    // don't care about.
-                    date = new SimpleDateFormat(RFC_3339_FORMAT_WITHOUT_TIMEZONE, Locale.ROOT)
-                                   .parse(parameters.get(key));
-                } catch (ParseException e) {
-                    // Ignore.
-                }
-            }
-        }
-
-        return new AutofillAssistantUiDelegate.Details(
-                title, /* url= */ "", date, description, /* isFinal= */ false);
-    }
-
     @Override
     public void onClickOverlay() {
         // TODO(crbug.com/806868): Notify native side.
+    }
+
+    /**
+     * Immediately and unconditionally destroys the UI Controller.
+     *
+     * <p>Call {@link UiDelegateHolder#shutdown} to shutdown Autofill Assistant properly and safely.
+     *
+     * <p>Destroy is different from shutdown in that {@code unsafeDestroy} just deletes the native
+     * controller and all the objects it owns, without changing the state of the UI. When that
+     * happens, everything stops irrevocably on the native side. Doing this at the wrong time will
+     * cause crashes.
+     */
+    void unsafeDestroy() {
+        nativeDestroy(mUiControllerAndroid);
     }
 
     @CalledByNative
@@ -349,9 +253,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                             // A failed payment request flow indicates that the UI was either
                             // dismissed or the back button was clicked. In that case we gracefully
                             // shut down.
-                            onHideOverlay();
-                            uiDelegate.showGiveUpMessage();
-                            onShutdownGracefully();
+                            mUiDelegateHolder.giveUp();
                         }
                     }));
         });
@@ -362,7 +264,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
      *
      * @return false if details were rejected.
      */
-    private boolean maybeUpdateDetails(AutofillAssistantUiDelegate.Details newDetails) {
+    boolean maybeUpdateDetails(AutofillAssistantUiDelegate.Details newDetails) {
         if (!mCurrentDetails.isSimilarTo(newDetails)) {
             return false;
         }
@@ -422,131 +324,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
                 uiDelegate -> { uiDelegate.updateTouchableArea(enabled, boxes); });
     }
 
-    /**
-     * Class holder for the AutofillAssistantUiDelegate to make sure we don't make UI changes when
-     * we are in a pause state (i.e. few seconds before stopping completely).
-     */
-    private class UiDelegateHolder {
-        private final AutofillAssistantUiDelegate mUiDelegate;
-
-        private boolean mShouldQueueUiOperations = false;
-        private boolean mHasBeenShutdown = false;
-        private boolean mIsShuttingDown = false;
-        private SnackbarManager.SnackbarController mDismissSnackbar;
-        private final Queue<Callback<AutofillAssistantUiDelegate>> mPendingUiOperations =
-                new ArrayDeque<>();
-
-        private UiDelegateHolder(AutofillAssistantUiDelegate uiDelegate) {
-            mUiDelegate = uiDelegate;
-        }
-
-        /**
-         * Perform a UI operation:
-         *  - directly if we are not in a pause state.
-         *  - later if the shutdown is cancelled.
-         *  - never if Autofill Assistant is shut down.
-         */
-        public void performUiOperation(Callback<AutofillAssistantUiDelegate> operation) {
-            if (mHasBeenShutdown || mIsShuttingDown) {
-                return;
-            }
-
-            if (mShouldQueueUiOperations) {
-                mPendingUiOperations.add(operation);
-                return;
-            }
-
-            operation.onResult(mUiDelegate);
-        }
-
-        /**
-         * Handles the dismiss operation.
-         *
-         * In normal mode, hides the UI, pauses UI operations and, unless undone within the time
-         * delay, eventually destroy everything. In graceful shutdown mode, shutdown immediately.
-         */
-        public void dismiss(int stringResourceId, Object... formatArgs) {
-            assert !mHasBeenShutdown;
-
-            if (mIsShuttingDown) {
-                shutdown();
-                return;
-            }
-
-            if (mDismissSnackbar != null) {
-                // Remove duplicate calls.
-                return;
-            }
-
-            pauseUiOperations();
-            mUiDelegate.hide();
-            mDismissSnackbar = new SnackbarManager.SnackbarController() {
-                @Override
-                public void onAction(Object actionData) {
-                    // Shutdown was cancelled.
-                    mDismissSnackbar = null;
-                    mUiDelegate.show();
-                    unpauseUiOperations();
-                }
-
-                @Override
-                public void onDismissNoAction(Object actionData) {
-                    shutdown();
-                }
-            };
-            mUiDelegate.showAutofillAssistantStoppedSnackbar(
-                    mDismissSnackbar, stringResourceId, formatArgs);
-        }
-
-        /** Enters graceful shutdown mode once we can again perform UI operations. */
-        public void enterGracefulShutdownMode() {
-            mUiDelegateHolder.performUiOperation(uiDelegate -> {
-                mIsShuttingDown = true;
-                mPendingUiOperations.clear();
-                uiDelegate.enterGracefulShutdownMode();
-                ThreadUtils.postOnUiThreadDelayed(this ::shutdown, GRACEFUL_SHUTDOWN_DELAY_MS);
-            });
-        }
-
-        /**
-         * Hides the UI and destroys everything.
-         *
-         * <p>Shutdown is final: After this call from the C++ side, as it's been deleted and no UI
-         * operation can run.
-         */
-        public void shutdown() {
-            if (mHasBeenShutdown) {
-                return;
-            }
-
-            mHasBeenShutdown = true;
-            mPendingUiOperations.clear();
-            if (mDismissSnackbar != null) {
-                mUiDelegate.dismissSnackbar(mDismissSnackbar);
-            }
-            mUiDelegate.hide();
-            nativeDestroy(mUiControllerAndroid);
-        }
-
-        /**
-         * Pause all UI operations such that they can potentially be ran later using {@link
-         * #unpauseUiOperations()}.
-         */
-        private void pauseUiOperations() {
-            mShouldQueueUiOperations = true;
-        }
-
-        /**
-         * Unpause and trigger all UI operations received by {@link #performUiOperation(Callback)}
-         * since the last {@link #pauseUiOperations()}.
-         */
-        private void unpauseUiOperations() {
-            mShouldQueueUiOperations = false;
-            while (!mPendingUiOperations.isEmpty()) {
-                mPendingUiOperations.remove().onResult(mUiDelegate);
-            }
-        }
-    }
 
     @CalledByNative
     private void fetchAccessToken() {
@@ -656,7 +433,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             String[] parameterValues, String locale, String countryCode);
     private native void nativeStart(long nativeUiControllerAndroid, String initialUrl);
     private native void nativeDestroy(long nativeUiControllerAndroid);
-    private native void nativeGiveUp(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);
