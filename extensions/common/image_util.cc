@@ -6,13 +6,18 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <algorithm>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -176,20 +181,24 @@ bool IsIconSufficientlyVisible(const SkBitmap& bitmap) {
   // The minimum "percent" of pixels that must be visible for the icon to be
   // considered OK.
   constexpr double kMinPercentVisiblePixels = 0.05;
-  const unsigned int total_pixels = bitmap.height() * bitmap.width();
-  unsigned int visible_pixels = 0;
+  const int total_pixels = bitmap.height() * bitmap.width();
+  // Pre-calculate the minimum number of visible pixels so we can exit early.
+  // Since we expect most icons to be visible, this will perform better for
+  // the common case.
+  const int minimum_visible_pixels =
+      std::max(kMinPercentVisiblePixels * total_pixels, 1.0);
+
+  int visible_pixels = 0;
   for (int y = 0; y < bitmap.height(); ++y) {
     for (int x = 0; x < bitmap.width(); ++x) {
       if (SkColorGetA(bitmap.getColor(x, y)) >= kAlphaThreshold) {
-        ++visible_pixels;
+        if (++visible_pixels == minimum_visible_pixels) {
+          return true;
+        }
       }
     }
   }
-  // TODO(crbug.com/805600): Add UMA stats when we move to a more
-  // sophisticated analysis of the image and the background display
-  // color.
-  return static_cast<double>(visible_pixels) / total_pixels >=
-         kMinPercentVisiblePixels;
+  return false;
 }
 
 bool IsIconAtPathSufficientlyVisible(const base::FilePath& path) {
@@ -200,8 +209,23 @@ bool IsIconAtPathSufficientlyVisible(const base::FilePath& path) {
   return IsIconSufficientlyVisible(icon);
 }
 
+struct ScopedUmaMicrosecondHistogramTimer {
+  ScopedUmaMicrosecondHistogramTimer() : timer() {}
+
+  ~ScopedUmaMicrosecondHistogramTimer() {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Extensions.IsRenderedIconSufficientlyVisibleTime", timer.Elapsed(),
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(5),
+        50);
+  }
+
+  const base::ElapsedTimer timer;
+};
+
 bool IsRenderedIconSufficientlyVisible(const SkBitmap& icon,
                                        SkColor background_color) {
+  const ScopedUmaMicrosecondHistogramTimer timer;
+
   // If any of a pixel's RGB values is greater than this number, the pixel is
   // considered visible.
   constexpr unsigned int kThreshold = 15;
@@ -209,6 +233,11 @@ bool IsRenderedIconSufficientlyVisible(const SkBitmap& icon,
   // considered OK.
   constexpr double kMinPercentVisiblePixels = 0.05;
   const int total_pixels = icon.height() * icon.width();
+  // Pre-calculate the minimum number of visible pixels so we can exit early.
+  // Since we expect most icons to be visible, this will perform better for
+  // the common case.
+  const int minimum_visible_pixels =
+      std::max(kMinPercentVisiblePixels * total_pixels, 1.0);
 
   // Draw the icon onto a canvas, then draw the background color onto the
   // resulting bitmap, using SkBlendMode::kDifference. Then, check the RGB
@@ -226,12 +255,13 @@ bool IsRenderedIconSufficientlyVisible(const SkBitmap& icon,
       SkColor pixel = bitmap.getColor(x, y);
       if (SkColorGetR(pixel) > kThreshold || SkColorGetB(pixel) > kThreshold ||
           SkColorGetG(pixel) > kThreshold) {
-        ++visible_pixels;
+        if (++visible_pixels == minimum_visible_pixels) {
+          return true;
+        }
       }
     }
   }
-  return static_cast<double>(visible_pixels) / total_pixels >=
-         kMinPercentVisiblePixels;
+  return false;
 }
 
 bool IsRenderedIconAtPathSufficientlyVisible(const base::FilePath& path,
