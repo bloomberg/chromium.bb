@@ -86,12 +86,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
 }
 
 // Tests the frame color for a bookmark app when a theme is applied.
-//
-// Disabled because it hits a DCHECK in BrowserView.
-// TODO(mgiuca): Remove this DCHECK, since it seems legitimate.
-// https://crbug.com/879030.
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
-                       DISABLED_BookmarkAppFrameColorCustomTheme) {
+                       BookmarkAppFrameColorCustomTheme) {
   // The theme color should not affect the window, but the theme must not be the
   // default GTK theme for Linux so we install one anyway.
   InstallExtension(test_data_dir_.AppendASCII("theme"), 1);
@@ -104,12 +100,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
 
 // Tests the frame color for a bookmark app when a theme is applied, with the
 // app itself having no theme color.
-//
-// Disabled because it hits a DCHECK in BrowserView.
-// TODO(mgiuca): Remove this DCHECK, since it seems legitimate.
-// https://crbug.com/879030.
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
-                       DISABLED_BookmarkAppFrameColorCustomThemeNoThemeColor) {
+                       BookmarkAppFrameColorCustomThemeNoThemeColor) {
   InstallExtension(test_data_dir_.AppendASCII("theme"), 1);
   app_theme_color_.reset();
   InstallAndLaunchBookmarkApp();
