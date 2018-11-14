@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/extensions/browsertest_util.h"
+#include "components/update_client/protocol_handler.h"
 #include "components/update_client/url_loader_post_interceptor.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/updater/update_service.h"
@@ -30,22 +31,33 @@ class TestChromeUpdateClientConfig
     : public extensions::ChromeUpdateClientConfig {
  public:
   TestChromeUpdateClientConfig(content::BrowserContext* context,
+                               bool use_JSON,
                                const std::vector<GURL>& update_url,
                                const std::vector<GURL>& ping_url)
       : extensions::ChromeUpdateClientConfig(context),
+        use_JSON_(use_JSON),
         update_url_(update_url),
         ping_url_(ping_url) {}
 
+  // Overrides for update_client::Configurator.
   std::vector<GURL> UpdateUrl() const final { return update_url_; }
 
   std::vector<GURL> PingUrl() const final { return ping_url_; }
 
   bool EnabledCupSigning() const final { return false; }
 
+  std::unique_ptr<update_client::ProtocolHandlerFactory>
+  GetProtocolHandlerFactory() const final {
+    if (use_JSON_)
+      return std::make_unique<update_client::ProtocolHandlerFactoryJSON>();
+    return std::make_unique<update_client::ProtocolHandlerFactoryXml>();
+  }
+
  protected:
   ~TestChromeUpdateClientConfig() override = default;
 
  private:
+  bool use_JSON_ = false;
   std::vector<GURL> update_url_;
   std::vector<GURL> ping_url_;
 
@@ -105,9 +117,10 @@ class UpdateClientCompleteEventWaiter
 
 }  // namespace
 
-ExtensionUpdateClientBaseTest::ExtensionUpdateClientBaseTest()
+ExtensionUpdateClientBaseTest::ExtensionUpdateClientBaseTest(bool use_JSON)
     : https_server_for_update_(net::EmbeddedTestServer::TYPE_HTTPS),
-      https_server_for_ping_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+      https_server_for_ping_(net::EmbeddedTestServer::TYPE_HTTPS),
+      use_JSON_(use_JSON) {}
 
 ExtensionUpdateClientBaseTest::~ExtensionUpdateClientBaseTest() {}
 
@@ -123,12 +136,12 @@ ConfigFactoryCallback
 ExtensionUpdateClientBaseTest::ChromeUpdateClientConfigFactory() const {
   return base::BindRepeating(
       [](const std::vector<GURL>& update_url, const std::vector<GURL>& ping_url,
-         content::BrowserContext* context)
+         bool use_JSON, content::BrowserContext* context)
           -> scoped_refptr<ChromeUpdateClientConfig> {
         return base::MakeRefCounted<TestChromeUpdateClientConfig>(
-            context, update_url, ping_url);
+            context, use_JSON, update_url, ping_url);
       },
-      GetUpdateUrls(), GetPingUrls());
+      GetUpdateUrls(), GetPingUrls(), use_JSON_);
 }
 
 void ExtensionUpdateClientBaseTest::SetUp() {

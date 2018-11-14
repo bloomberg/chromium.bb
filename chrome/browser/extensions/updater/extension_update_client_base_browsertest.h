@@ -5,6 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_UPDATE_CLIENT_BASE_BROWSERTEST_H_
 #define CHROME_BROWSER_EXTENSIONS_UPDATER_EXTENSION_UPDATE_CLIENT_BASE_BROWSERTEST_H_
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/updater/chrome_update_client_config.h"
@@ -35,7 +40,7 @@ class ExtensionUpdateClientBaseTest : public ExtensionBrowserTest {
  public:
   using ConfigFactoryCallback = ChromeUpdateClientConfig::FactoryCallback;
 
-  ExtensionUpdateClientBaseTest();
+  explicit ExtensionUpdateClientBaseTest(bool use_JSON);
   ~ExtensionUpdateClientBaseTest() override;
 
   // ExtensionBrowserTest:
@@ -81,6 +86,8 @@ class ExtensionUpdateClientBaseTest : public ExtensionBrowserTest {
 
   net::EmbeddedTestServer https_server_for_update_;
   net::EmbeddedTestServer https_server_for_ping_;
+
+  bool use_JSON_ = false;
 
  private:
   bool OnRequest(content::URLLoaderInterceptor::RequestParams* params);

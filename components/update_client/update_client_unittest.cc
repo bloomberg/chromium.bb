@@ -3710,8 +3710,8 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
       /*
       "<event eventtype="14" eventresult="1" downloader="unknown" "
       "url="http://localhost/download/runaction_test_win.crx3"
-      "downloaded="1843" "
-      "total="1843" download_time_ms="1000" previousversion="0.0" "
+      "downloaded=1843 "
+      "total=1843 download_time_ms="1000" previousversion="0.0" "
       "nextversion="1.0"/>"
       */
       const auto& event0 = events()[0];
@@ -3720,9 +3720,9 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
       EXPECT_EQ("unknown", event0.FindKey("downloader")->GetString());
       EXPECT_EQ("http://localhost/download/runaction_test_win.crx3",
                 event0.FindKey("url")->GetString());
-      EXPECT_EQ("1843", event0.FindKey("downloaded")->GetString());
-      EXPECT_EQ("1843", event0.FindKey("total")->GetString());
-      EXPECT_EQ("1000", event0.FindKey("download_time_ms")->GetString());
+      EXPECT_EQ(1843, event0.FindKey("downloaded")->GetDouble());
+      EXPECT_EQ(1843, event0.FindKey("total")->GetDouble());
+      EXPECT_EQ(1000, event0.FindKey("download_time_ms")->GetDouble());
       EXPECT_EQ("0.0", event0.FindKey("previousversion")->GetString());
       EXPECT_EQ("1.0", event0.FindKey("nextversion")->GetString());
 

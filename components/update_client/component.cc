@@ -20,6 +20,7 @@
 #include "components/update_client/action_runner.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/configurator.h"
+#include "components/update_client/protocol_definition.h"
 #include "components/update_client/protocol_serializer.h"
 #include "components/update_client/task_traits.h"
 #include "components/update_client/update_client.h"
@@ -372,15 +373,15 @@ base::Value Component::MakeEventDownloadMetrics(
   event.SetKey("url", base::Value(dm.url.spec()));
 
   // -1 means that the  byte counts are not known.
-  if (dm.total_bytes != -1)
-    event.SetKey("total", base::Value(base::NumberToString(dm.total_bytes)));
-  if (dm.downloaded_bytes != -1) {
+  if (dm.total_bytes != -1 && dm.total_bytes < kProtocolMaxInt)
+    event.SetKey("total", base::Value(static_cast<double>(dm.total_bytes)));
+  if (dm.downloaded_bytes != -1 && dm.total_bytes < kProtocolMaxInt) {
     event.SetKey("downloaded",
-                 base::Value(base::NumberToString(dm.downloaded_bytes)));
+                 base::Value(static_cast<double>(dm.downloaded_bytes)));
   }
-  if (dm.download_time_ms) {
+  if (dm.download_time_ms && dm.total_bytes < kProtocolMaxInt) {
     event.SetKey("download_time_ms",
-                 base::Value(base::NumberToString(dm.download_time_ms)));
+                 base::Value(static_cast<double>(dm.download_time_ms)));
   }
   DCHECK(previous_version().IsValid());
   event.SetKey("previousversion", base::Value(previous_version().GetString()));

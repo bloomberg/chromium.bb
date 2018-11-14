@@ -25,6 +25,8 @@ class ProtocolParser {
         Package(const Package& other);
         ~Package();
 
+        // |fingerprint| is optional. It identifies the package, preferably
+        // with a modified sha256 hash of the package in hex format.
         std::string fingerprint;
 
         // Attributes for the full update.

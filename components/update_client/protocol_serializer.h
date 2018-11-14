@@ -71,7 +71,6 @@ protocol_request::Ping MakeProtocolPing(const std::string& app_id,
 
 class ProtocolSerializer {
  public:
-  static std::unique_ptr<ProtocolSerializer> Create();
   virtual ~ProtocolSerializer() = default;
   virtual std::string Serialize(
       const protocol_request::Request& request) const = 0;
