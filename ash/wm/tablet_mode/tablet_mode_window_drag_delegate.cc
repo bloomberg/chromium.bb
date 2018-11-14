@@ -79,6 +79,11 @@ TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() {
 void TabletModeWindowDragDelegate::StartWindowDrag(
     aura::Window* dragged_window,
     const gfx::Point& location_in_screen) {
+  // TODO(oshima): Consider doing the same for normal window dragging as well
+  // crbug.com/904631.
+  DCHECK(!occlusion_excluder_);
+  occlusion_excluder_.emplace(dragged_window);
+
   dragged_window_ = dragged_window;
   initial_location_in_screen_ = location_in_screen;
 
@@ -199,6 +204,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
 
   // For child class to do its special handling if any.
   EndedWindowDrag(location_in_screen);
+  occlusion_excluder_.reset();
   dragged_window_ = nullptr;
   did_move_ = false;
 }
