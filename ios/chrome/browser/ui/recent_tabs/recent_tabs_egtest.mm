@@ -105,10 +105,7 @@ id<GREYMatcher> TitleOfTestPage() {
 
   // Close the tab containing the test page and wait for the stack view to
   // appear.
-  chrome_test_util::CloseCurrentTab();
-  // TODO(crbug.com/783192): ChromeEarlGrey should have a method to close the
-  // current tab and synchronize with the UI.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGrey closeCurrentTab];
 
   // Open the Recent Tabs panel and check that the test page is present.
   OpenRecentTabsPanel();
@@ -151,7 +148,7 @@ id<GREYMatcher> TitleOfTestPage() {
   [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
 
   // Close tab.
-  chrome_test_util::CloseCurrentTab();
+  [ChromeEarlGrey closeCurrentTab];
 }
 
 // Tests that the sign-in promo can be reloaded correctly.

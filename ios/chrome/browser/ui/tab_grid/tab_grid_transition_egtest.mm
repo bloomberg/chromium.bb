@@ -177,15 +177,14 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 
 // Tests entering the tab switcher by closing the last normal tab.
 - (void)testEnterSwitcherByClosingLastNormalTab {
-  chrome_test_util::CloseAllTabsInCurrentMode();
+  [ChromeEarlGrey closeAllTabsInCurrentMode];
 }
 
 // Tests entering the tab switcher by closing the last incognito tab.
 - (void)testEnterSwitcherByClosingLastIncognitoTab {
   [ChromeEarlGreyUI openNewIncognitoTab];
   [GetNormalTabModel() closeAllTabs];
-
-  chrome_test_util::CloseAllTabsInCurrentMode();
+  [ChromeEarlGrey closeAllTabsInCurrentMode];
 }
 
 // Tests exiting the switcher by tapping the switcher button.

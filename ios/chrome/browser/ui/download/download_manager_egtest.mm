@@ -169,9 +169,7 @@ bool WaitForDownloadButton() {
   [ChromeEarlGrey loadURL:GURL(kChromeUITermsURL)];
   const char kTermsText[] = "Google Chrome Terms of Service";
   [ChromeEarlGrey waitForWebViewContainingText:kTermsText];
-  chrome_test_util::CloseCurrentTab();
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
+  [ChromeEarlGrey closeCurrentTab];
   GREYAssert(WaitForOpenInButton(), @"Open in... button did not show up");
 }
 

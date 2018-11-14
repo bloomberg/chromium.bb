@@ -64,6 +64,17 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Opens a new incognito tab and waits for the new tab animation to complete.
 + (void)openNewIncognitoTab;
 
+// Closes all tabs in the current mode (incognito or normal), and waits for the
+// UI to complete. If current mode is Incognito, mode will be switched to 
+// normal after closing all tabs.
++ (void)closeAllTabsInCurrentMode;
+
+// Closes all incognito tabs and waits for the UI to complete.
++ (void)closeAllIncognitoTabs;
+
+// Closes the current tab and waits for the UI to complete.
++ (void)closeCurrentTab;
+
 // Waits for the page to finish loading within a timeout, or a GREYAssert is
 // induced.
 + (void)waitForPageToFinishLoading;

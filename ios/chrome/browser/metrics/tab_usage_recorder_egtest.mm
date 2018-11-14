@@ -94,11 +94,7 @@ void NewMainTabWithURL(const GURL& url, const std::string& word) {
 
 // Opens 2 new tabs with different URLs.
 void OpenTwoTabs() {
-  chrome_test_util::CloseAllTabsInCurrentMode();
-  // TODO(crbug.com/783192): ChromeEarlGrey should have a method to close all
-  // tabs and synchronize with the UI.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
+  [ChromeEarlGrey closeAllTabsInCurrentMode];
   const GURL url1 = web::test::HttpServer::MakeUrl(kTestUrl1);
   const GURL url2 = web::test::HttpServer::MakeUrl(kTestUrl2);
   NewMainTabWithURL(url1, kURL1FirstWord);
@@ -179,10 +175,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
   // This test opens three tabs.
   const int numberOfTabs = 3;
-  chrome_test_util::CloseAllTabsInCurrentMode();
-  // TODO(crbug.com/783192): ChromeEarlGrey should have a method to close all
-  // tabs and synchronize with the UI.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [ChromeEarlGrey closeAllTabsInCurrentMode];
 
   // Open three tabs with http:// urls.
   for (NSUInteger i = 0; i < numberOfTabs; i++) {
@@ -345,11 +338,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
     GREYFail(error);
   };
 
-  chrome_test_util::CloseAllTabsInCurrentMode();
-  // TODO(crbug.com/783192): ChromeEarlGrey should have a method to close all
-  // tabs and synchronize with the UI.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
+  [ChromeEarlGrey closeAllTabsInCurrentMode];
   GURL URL = web::test::HttpServer::MakeUrl(kTestUrl1);
   NewMainTabWithURL(URL, kURL1FirstWord);
   OpenNewIncognitoTabUsingUIAndEvictMainTabs();

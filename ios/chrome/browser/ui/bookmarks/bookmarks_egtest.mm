@@ -2119,7 +2119,7 @@ id<GREYMatcher> SearchIconButton() {
                  @"Incognito tab count should be 1");
 
   // Close the incognito tab to go back to normal mode.
-  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
+  [ChromeEarlGrey closeAllIncognitoTabs];
 
   // The following verifies the selected bookmarks are open in the same order as
   // in folder.

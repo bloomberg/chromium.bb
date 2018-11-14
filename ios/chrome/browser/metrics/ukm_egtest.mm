@@ -151,12 +151,12 @@ void OpenNewIncognitoTab() {
 
 void CloseCurrentIncognitoTab() {
   NSUInteger incognito_tab_count = GetIncognitoTabCount();
-  chrome_test_util::CloseCurrentTab();
+  [ChromeEarlGrey closeCurrentTab];
   [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count - 1)];
 }
 
 void CloseAllIncognitoTabs() {
-  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
+  [ChromeEarlGrey closeAllIncognitoTabs];
   [ChromeEarlGrey waitForIncognitoTabCount:0];
 
   // The user is dropped into the tab grid after closing the last incognito tab.
@@ -302,7 +302,7 @@ void SignOut() {
   OpenNewRegularTab();
   AssertUKMEnabled(false);
 
-  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
+  [ChromeEarlGrey closeAllIncognitoTabs];
   [ChromeEarlGrey waitForIncognitoTabCount:0];
   AssertUKMEnabled(true);
 

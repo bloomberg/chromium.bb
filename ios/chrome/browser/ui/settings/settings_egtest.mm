@@ -614,7 +614,7 @@ bool IsCertificateCleared() {
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
+  [ChromeEarlGrey closeAllIncognitoTabs];
 }
 
 // Verifies the UI elements are accessible on the Settings page.

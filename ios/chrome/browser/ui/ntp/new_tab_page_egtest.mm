@@ -65,7 +65,7 @@ void WaitForHistoryToDisappear() {
   [ChromeEarlGrey openNewIncognitoTab];
   WaitForHistoryToDisappear();
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
+  [ChromeEarlGrey closeAllIncognitoTabs];
 }
 
 @end
