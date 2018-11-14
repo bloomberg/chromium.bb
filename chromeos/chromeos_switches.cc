@@ -558,6 +558,13 @@ const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 // of fake networks desired, e.g. 'tether-stub=2'.
 const char kTetherStub[] = "tether-stub";
 
+// Tells the Chromebook to scan for a tethering host even if there is already a
+// wired connection. This allows end-to-end tests to be deployed over ethernet
+// without that connection preventing scans and thereby blocking the testing of
+// cases with no preexisting connection. Should be used only for testing.
+const char kTetherHostScansIgnoreWiredConnections[] =
+    "tether-host-scans-ignore-wired-connecitons";
+
 // List of locales supported by voice interaction.
 const char kVoiceInteractionLocales[] = "voice-interaction-supported-locales";
 
@@ -701,6 +708,11 @@ bool ShouldShowShelfHoverPreviews() {
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
+}
+
+bool ShouldTetherHostScansIgnoreWiredConnections() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kTetherHostScansIgnoreWiredConnections);
 }
 
 bool ShouldShowPlayStoreInDemoMode() {

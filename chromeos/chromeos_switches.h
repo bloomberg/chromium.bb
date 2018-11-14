@@ -155,6 +155,7 @@ CHROMEOS_EXPORT extern const char kShowPlayInDemoMode[];
 CHROMEOS_EXPORT extern const char kStubCrosSettings[];
 CHROMEOS_EXPORT extern const char kTestEncryptionMigrationUI[];
 CHROMEOS_EXPORT extern const char kTetherStub[];
+CHROMEOS_EXPORT extern const char kTetherHostScansIgnoreWiredConnections[];
 CHROMEOS_EXPORT extern const char kVoiceInteractionLocales[];
 CHROMEOS_EXPORT extern const char kWaitForInitialPolicyFetchForTest[];
 CHROMEOS_EXPORT extern const char kWakeOnWifiPacket[];
@@ -216,8 +217,13 @@ CHROMEOS_EXPORT bool ShouldHideActiveAppsFromShelf();
 CHROMEOS_EXPORT bool ShouldShowShelfHoverPreviews();
 
 // Returns true if Instant Tethering should support hosts which use the
-// background advertisement model
+// background advertisement model.
 CHROMEOS_EXPORT bool IsInstantTetheringBackgroundAdvertisingSupported();
+
+// Returns true if the Chromebook should ignore its wired connections when
+// deciding whether to run scans for tethering hosts. Should be used only for
+// testing.
+CHROMEOS_EXPORT bool ShouldTetherHostScansIgnoreWiredConnections();
 
 // Returns true if Play Store should be available in Demo Mode.
 // TODO(michaelpg): Remove after M71 branch to re-enable Play Store by default.
