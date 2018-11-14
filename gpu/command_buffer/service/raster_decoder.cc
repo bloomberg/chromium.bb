@@ -912,7 +912,10 @@ RasterDecoderImpl::RasterDecoderImpl(
   DCHECK(raster_decoder_context_state_);
 }
 
-RasterDecoderImpl::~RasterDecoderImpl() {}
+RasterDecoderImpl::~RasterDecoderImpl() {
+  if (supports_oop_raster_)
+    transfer_cache()->DeleteAllEntriesForDecoder(raster_decoder_id_);
+}
 
 base::WeakPtr<DecoderContext> RasterDecoderImpl::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
