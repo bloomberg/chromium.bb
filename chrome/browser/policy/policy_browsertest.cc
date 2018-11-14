@@ -21,6 +21,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -4166,8 +4167,8 @@ class PolicyWebStoreIconTest : public PolicyTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PolicyWebStoreIconTest);
   base::test::ScopedFeatureList scoped_feature_list;
+  DISALLOW_COPY_AND_ASSIGN(PolicyWebStoreIconTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PolicyWebStoreIconTest, AppsWebStoreIconHidden) {
@@ -4249,8 +4250,8 @@ class PolicyWebStoreIconHiddenTest : public PolicyTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PolicyWebStoreIconHiddenTest);
   base::test::ScopedFeatureList scoped_feature_list;
+  DISALLOW_COPY_AND_ASSIGN(PolicyWebStoreIconHiddenTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PolicyWebStoreIconHiddenTest, NTPWebStoreIconHidden) {
@@ -5444,10 +5445,31 @@ void ComponentUpdaterPolicyTest::VerifyExpectations(bool update_disabled) {
       << post_interceptor_->GetRequestsAsString();
   ASSERT_EQ(1, post_interceptor_->GetCount())
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_NE(std::string::npos,
-            post_interceptor_->GetRequestBody(0).find(base::StringPrintf(
-                "<updatecheck%s/>",
-                update_disabled ? " updatedisabled=\"true\"" : "")));
+
+  const auto& request = post_interceptor_->GetRequestBody(0);
+
+  // Handle XML and JSON protocols.
+  if (base::StartsWith(request, "<?xml", base::CompareCase::SENSITIVE)) {
+    EXPECT_NE(std::string::npos,
+              request.find(base::StringPrintf(
+                  "<updatecheck%s/>",
+                  update_disabled ? " updatedisabled=\"true\"" : "")));
+  } else if (base::StartsWith(request, R"({"request":{)",
+                              base::CompareCase::SENSITIVE)) {
+    const auto root = base::JSONReader().Read(request);
+    ASSERT_TRUE(root);
+    const auto* update_check =
+        root->FindKey("request")->FindKey("app")->GetList()[0].FindKey(
+            "updatecheck");
+    ASSERT_TRUE(update_check);
+    if (update_disabled) {
+      EXPECT_EQ(true, update_check->FindKey("updatedisabled")->GetBool());
+    } else {
+      EXPECT_FALSE(update_check->FindKey("updatedisabled"));
+    }
+  } else {
+    NOTREACHED();
+  }
 }
 
 void ComponentUpdaterPolicyTest::DefaultPolicy_GroupPolicySupported() {

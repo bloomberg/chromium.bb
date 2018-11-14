@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/persisted_data.h"
-#include "components/update_client/protocol_serializer_xml.h"
 #include "components/update_client/update_query_params.h"
 #include "components/update_client/updater_state.h"
 
@@ -56,10 +55,6 @@ std::string GetServicePack() {
 }
 
 }  // namespace
-
-std::unique_ptr<ProtocolSerializer> ProtocolSerializer::Create() {
-  return std::make_unique<ProtocolSerializerXml>();
-}
 
 base::flat_map<std::string, std::string> BuildUpdateCheckExtraRequestHeaders(
     const std::string& prod_id,

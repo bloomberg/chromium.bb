@@ -181,6 +181,8 @@ std::string ProtocolSerializerXml::Serialize(
             base::StringAppendF(&msg, "\"%s\"", value.GetString().c_str());
           else if (value.is_int())
             base::StringAppendF(&msg, "\"%d\"", value.GetInt());
+          else if (value.is_double())
+            base::StringAppendF(&msg, "\"%.0f\"", value.GetDouble());
           else
             NOTREACHED();
         }

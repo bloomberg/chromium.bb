@@ -13,11 +13,8 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/values.h"
 #include "build/build_config.h"
-
-namespace base {
-class Value;
-}
 
 namespace update_client {
 
@@ -25,6 +22,10 @@ namespace update_client {
 // * Version 3.1: it changes how the run actions are serialized.
 // * Version 3.0: it is the version implemented by the desktop updaters.
 constexpr char kProtocolVersion[] = "3.1";
+
+// Due to implementation constraints of the JSON parser and serializer,
+// precision of integer numbers greater than 2^53 is lost.
+constexpr int64_t kProtocolMaxInt = 1LL << 53;
 
 namespace protocol_request {
 

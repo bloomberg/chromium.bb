@@ -38,6 +38,7 @@ TestConfigurator::TestConfigurator()
       ondemand_time_(0),
       enabled_cup_signing_(false),
       enabled_component_updates_(true),
+      use_JSON_(false),
       test_shared_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)) {
@@ -182,6 +183,10 @@ void TestConfigurator::SetAppGuid(const std::string& app_guid) {
   app_guid_ = app_guid;
 }
 
+void TestConfigurator::SetUseJSON(bool use_JSON) {
+  use_JSON_ = use_JSON;
+}
+
 PrefService* TestConfigurator::GetPrefService() const {
   return nullptr;
 }
@@ -204,6 +209,8 @@ std::string TestConfigurator::GetAppGuid() const {
 
 std::unique_ptr<ProtocolHandlerFactory>
 TestConfigurator::GetProtocolHandlerFactory() const {
+  if (use_JSON_)
+    return std::make_unique<ProtocolHandlerFactoryJSON>();
   return std::make_unique<ProtocolHandlerFactoryXml>();
 }
 

@@ -34,6 +34,13 @@ class ProtocolHandlerFactoryXml final : public ProtocolHandlerFactory {
   std::unique_ptr<ProtocolSerializer> CreateSerializer() const override;
 };
 
+class ProtocolHandlerFactoryJSON final : public ProtocolHandlerFactory {
+ public:
+  // Overrides for ProtocolHandlerFactory.
+  std::unique_ptr<ProtocolParser> CreateParser() const override;
+  std::unique_ptr<ProtocolSerializer> CreateSerializer() const override;
+};
+
 }  // namespace update_client
 
 #endif  // COMPONENTS_UPDATE_CLIENT_PROTOCOL_HANDLER_H_
