@@ -7,6 +7,11 @@
 #include "arm_features.h"
 
 #include "zutil.h"
+
+int ZLIB_INTERNAL arm_cpu_enable_crc32 = 0;
+int ZLIB_INTERNAL arm_cpu_enable_pmull = 0;
+
+#if !defined(_MSC_VER)
 #include <pthread.h>
 #include <stdint.h>
 
@@ -18,9 +23,6 @@
 #else
 #error ### No ARM CPU features detection in your platform/OS
 #endif
-
-int ZLIB_INTERNAL arm_cpu_enable_crc32 = 0;
-int ZLIB_INTERNAL arm_cpu_enable_pmull = 0;
 
 static pthread_once_t cpu_check_inited_once = PTHREAD_ONCE_INIT;
 
@@ -58,3 +60,31 @@ void ZLIB_INTERNAL arm_check_features(void)
 {
     pthread_once(&cpu_check_inited_once, init_arm_features);
 }
+#else
+#include <windows.h>
+
+static BOOL CALLBACK _arm_check_features(PINIT_ONCE once,
+                                         PVOID param,
+                                         PVOID *context);
+static INIT_ONCE cpu_check_inited_once = INIT_ONCE_STATIC_INIT;
+
+
+void ZLIB_INTERNAL arm_check_features(void)
+{
+    InitOnceExecuteOnce(&cpu_check_inited_once, _arm_check_features,
+                        NULL, NULL);
+}
+
+static BOOL CALLBACK _arm_check_features(PINIT_ONCE once,
+                                         PVOID param,
+                                         PVOID *context)
+{
+    if (IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE))
+        arm_cpu_enable_crc32 = 1;
+
+    if (IsProcessorFeaturePresent(PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE))
+        arm_cpu_enable_pmull = 1;
+
+    return TRUE;
+}
+#endif /* _MSC_VER */
