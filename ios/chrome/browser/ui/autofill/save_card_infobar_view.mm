@@ -183,9 +183,11 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
     // TODO(crbug.com/904521): Investigate why this is needed.
     self.bottomAnchorConstraint.priority = UILayoutPriorityDefaultLow;
   }
+  [super willMoveToSuperview:newSuperview];
 }
 
 - (void)didMoveToSuperview {
+  [super didMoveToSuperview];
   if (!self.superview)
     return;
 
@@ -194,21 +196,28 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   self.bottomAnchorConstraint.priority = UILayoutPriorityDefaultHigh;
 }
 
-- (void)layoutSubviews {
-  // Set a bottom margin equal to the height of the secondary toolbar, if any.
-  // Deduct the bottom safe area inset as it is already included in the height
-  // of the secondary toolbar.
-  // TODO(crbug.com/894449): This won't update the infobar's position after the
-  // secondary toolbar reappears. Consider adding a constraint to the
-  // |layoutGuide| in |didMoveToSuperview|.
-  NamedGuide* layoutGuide =
-      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self];
-  self.bottomAnchorConstraint.constant = layoutGuide.layoutFrame.size.height;
-
-  [super layoutSubviews];
-}
-
 - (CGSize)sizeThatFits:(CGSize)size {
+  // Calculate the safe area and current Toolbar height. Set the
+  // bottomAnchorConstraint constant to this height to create the bottom
+  // padding.
+  CGFloat bottomSafeAreaInset = SafeAreaInsetsForView(self).bottom;
+  CGFloat toolbarHeight = 0;
+  UILayoutGuide* guide =
+      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self];
+  UILayoutGuide* guideNoFullscreen =
+      [NamedGuide guideWithName:kSecondaryToolbarNoFullscreenGuide view:self];
+  if (guide && guideNoFullscreen) {
+    CGFloat toolbarHeightCurrent = guide.layoutFrame.size.height;
+    CGFloat toolbarHeightMax = guideNoFullscreen.layoutFrame.size.height;
+    if (toolbarHeightMax > 0) {
+      CGFloat fullscreenProgress = toolbarHeightCurrent / toolbarHeightMax;
+      CGFloat toolbarHeightInSafeArea = toolbarHeightMax - bottomSafeAreaInset;
+      toolbarHeight += fullscreenProgress * toolbarHeightInSafeArea;
+    }
+  }
+  self.bottomAnchorConstraint.constant = toolbarHeight + bottomSafeAreaInset;
+
+  // Now that the constraint constant has been set calculate the fitting size.
   CGSize computedSize = [self systemLayoutSizeFittingSize:size];
   return CGSizeMake(size.width, computedSize.height);
 }
