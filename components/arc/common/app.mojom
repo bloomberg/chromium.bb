@@ -156,6 +156,8 @@ enum AppDataRequestState {
   APP_DATA_SEARCH_PROXY_NOT_AVAILABLE = 7,
   // Failed to call globalQuery to GmsCore.
   FAILED_TO_CALL_GLOBALQUERY = 8,
+  // Failed to sign into GmsCore.
+  NOT_SIGNED_IN = 9,
 };
 
 // Describes the category type of app shortcut item.
