@@ -394,6 +394,7 @@ html[dir=rtl] .mv-favicon {
 
 .md-tile-container.reorder .md-tile {
   background-color: white;
+  border-radius: 4px;
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3),
       0 4px 8px 3px rgba(60, 64, 67, 0.15);
   transition-duration: 200ms;
@@ -408,7 +409,7 @@ html[dir=rtl] .mv-favicon {
   padding: var(--md-tile-padding-vertical) var(--md-tile-padding-horizontal);
 }
 
-body.using-theme .md-tile {
+body.using-theme .md-tile-container .md-tile {
   /* The theme title pill adds 2*4px of vertical padding. */
   padding-bottom: calc(var(--md-tile-padding-vertical) - 2*4px);
 }
@@ -519,7 +520,7 @@ body.mac-chromeos .md-title {
 }
 
 /* Apply when a custom background is set */
-body.dark-theme .md-title {
+body.dark-theme .md-tile-container:not(.reorder) .md-title {
   color: rgb(248, 249, 250);
   text-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
 }
@@ -531,7 +532,7 @@ body.using-theme .md-title-container {
   padding: 4px;
 }
 
-body.using-theme .md-title {
+body.using-theme .md-tile-container:not(.reorder) .md-title {
   color: rgba(33, 32, 36, 0.86);
   text-shadow: unset;
 }
@@ -547,6 +548,11 @@ body.using-theme .md-title {
   right: 0;
   top: 0;
   width: var(--md-menu-size);
+}
+
+html[dir=rtl] .md-menu {
+  left: 0;
+  right: auto;
 }
 
 body:not(.reordering) .md-menu:active,
@@ -584,21 +590,18 @@ body:not(.reordering) .md-menu:focus:not(.mouse-navigation) {
   width: var(--md-edit-menu-size);
 }
 
-body.dark-theme .md-menu::after {
-  background-color: white;
-}
-
-html[dir=rtl] .md-menu {
-  left: 0;
-  right: auto;
-}
-
 body:not(.reordering) .md-menu:hover::after,
 body:not(.reordering) .md-menu:focus::after {
   background-color: rgba(33, 32, 36, 0.71);
 }
 
+body.dark-theme .md-tile-container:not(.reorder) .md-menu::after,
+body.dark-theme:not(.reordering) .md-menu:focus:not(.mouse-navigation)::after {
+  background-color: white;
+}
+
+body.dark-theme:not(.reordering) .md-menu:active::after,
 body.dark-theme:not(.reordering) .md-menu:hover::after,
-body.dark-theme:not(.reordering) .md-menu:focus::after {
+body.dark-theme:not(.reordering) .md-menu.mouse-navigation:focus::after {
   background-color: rgb(218, 220, 224);
 }

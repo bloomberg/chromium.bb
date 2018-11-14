@@ -643,15 +643,21 @@ function setupReorder(tile) {
   // Starts the reorder flow after the user has held the mouse button down for
   // |REORDER_TIMEOUT_DELAY|.
   tile.addEventListener('mousedown', (event) => {
-    // Do not reorder if the edit menu was clicked.
-    if (event.button == 0 /* LEFT CLICK */ &&
+    // Do not reorder if the edit menu was clicked or if ctrl/shift/alt/meta is
+    // also held down.
+    if (event.button == 0 /* LEFT CLICK */ && !event.ctrlKey &&
+        !event.shiftKey && !event.altKey && !event.metaKey &&
         !event.target.classList.contains(CLASSES.MD_MENU)) {
       let timeout = -1;
 
       // Cancel the timeout if the user drags the mouse off the tile and
-      // releases.
+      // releases or if the mouse if released.
       let dragend = document.addEventListener('dragend', () => {
         window.clearTimeout(timeout);
+      }, {once: true});
+      let mouseup = document.addEventListener('mouseup', () => {
+        if (event.button == 0 /* LEFT CLICK */)
+          window.clearTimeout(timeout);
       }, {once: true});
 
       // Wait for |REORDER_TIMEOUT_DELAY| before starting the reorder flow.
@@ -659,6 +665,7 @@ function setupReorder(tile) {
         if (!reordering)
           startReorder(tile);
         document.removeEventListener('dragend', dragend);
+        document.removeEventListener('mouseup', mouseup);
       }, REORDER_TIMEOUT_DELAY);
     }
   });
