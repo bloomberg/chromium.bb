@@ -15,6 +15,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PiiElider;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.MainDex;
@@ -137,7 +138,8 @@ public class PureJavaExceptionReporter {
         addPairedString(GMS_CORE_VERSION, buildInfo.gmsVersionCode);
         addPairedString(INSTALLER_PACKAGE_NAME, buildInfo.installerPackageName);
         addPairedString(ABI_NAME, buildInfo.abiString);
-        addPairedString(EXCEPTION_INFO, Log.getStackTraceString(javaException));
+        addPairedString(EXCEPTION_INFO,
+                PiiElider.sanitizeStacktrace(Log.getStackTraceString(javaException)));
         addPairedString(EARLY_JAVA_EXCEPTION, "true");
         addPairedString(PACKAGE,
                 String.format("%s v%s (%s)", BuildConfig.FIREBASE_APP_ID, buildInfo.versionCode,
