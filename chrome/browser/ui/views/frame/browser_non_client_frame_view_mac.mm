@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_mac.h"
 
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/hit_test.h"
@@ -32,6 +34,9 @@ constexpr int kFramePaddingLeft = 75;
 
 FullscreenToolbarStyle GetUserPreferredToolbarStyle(
     const PrefService* pref_service) {
+  // In Kiosk mode, we don't show top Chrome UI.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+    return FullscreenToolbarStyle::TOOLBAR_NONE;
   return pref_service->GetBoolean(prefs::kShowFullscreenToolbar)
              ? FullscreenToolbarStyle::TOOLBAR_PRESENT
              : FullscreenToolbarStyle::TOOLBAR_HIDDEN;
