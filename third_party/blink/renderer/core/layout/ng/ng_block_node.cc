@@ -181,6 +181,9 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
 
   LayoutBlockFlow* block_flow =
       box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_) : nullptr;
+  if (RuntimeEnabledFeatures::TrackLayoutPassesPerBlockEnabled() && block_flow)
+    block_flow->IncrementLayoutPassCount();
+
   NGLayoutInputNode first_child = FirstChild();
   scoped_refptr<NGLayoutResult> layout_result;
   if (block_flow) {
