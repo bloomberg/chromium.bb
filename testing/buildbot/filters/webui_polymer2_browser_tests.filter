@@ -254,7 +254,6 @@ PrintPreviewDestinationDialogTest.*
 PrintPreviewDestinationItemTest.*
 PrintPreviewDestinationListTest.*
 PrintPreviewDestinationSearchTest.*
-PrintPreviewDestinationSettingsTest.*
 PrintPreviewHeaderTest.*
 PrintPreviewKeyEventTest.*
 PrintPreviewLinkContainerTest.*
