@@ -48,7 +48,10 @@ public class FeedNetworkBridge implements NetworkClient {
     }
 
     @Override
-    public void close() {}
+    public void close() {
+        assert mNativeBridge != 0;
+        nativeCancelRequests(mNativeBridge);
+    }
 
     @CalledByNative
     private static HttpResponse createHttpResponse(int code, byte[] body) {
@@ -59,4 +62,5 @@ public class FeedNetworkBridge implements NetworkClient {
     private native void nativeDestroy(long nativeFeedNetworkBridge);
     private native void nativeSendNetworkRequest(long nativeFeedNetworkBridge, String url,
             String requestType, byte[] body, Callback<HttpResponse> resultCallback);
+    private native void nativeCancelRequests(long nativeFeedNetworkBridge);
 }

@@ -30,6 +30,7 @@ import org.chromium.base.VisibleForTesting;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** A network client that returns configurable responses
  *  modified from com.google.android.libraries.feed.mocknetworkclient.MockServerNetworkClient
@@ -39,6 +40,7 @@ public class TestNetworkClient implements NetworkClient {
 
     private final ExtensionRegistryLite mExtensionRegistry;
     private final long mResponseDelay;
+    private final AtomicBoolean mAlreadyClosed = new AtomicBoolean(false);
 
     private MockServer mMockServer;
 
@@ -46,7 +48,7 @@ public class TestNetworkClient implements NetworkClient {
         Configuration config = new Configuration.Builder().build();
         mExtensionRegistry = ExtensionRegistryLite.newInstance();
         mExtensionRegistry.add(FeedRequest.feedRequest);
-        // TODO(aluo): Add ability to delay responses
+        // TODO(aluo): Add ability to delay responses.
         mResponseDelay = config.getValueOrDefault(ConfigKey.MOCK_SERVER_DELAY_MS, 0L);
         mMockServer = MockServer.getDefaultInstance();
     }
@@ -83,7 +85,7 @@ public class TestNetworkClient implements NetworkClient {
 
     @Override
     public void send(HttpRequest httpRequest, Consumer<HttpResponse> responseConsumer) {
-        // TODO(aluo): Add ability to respond with HTTP Errors
+        // TODO(aluo): Add ability to respond with HTTP Errors.
         try {
             Request request = getRequest(httpRequest);
             ByteString requestToken =
@@ -114,12 +116,11 @@ public class TestNetworkClient implements NetworkClient {
 
     private void delayedAccept(HttpResponse httpResponse, Consumer<HttpResponse> responseConsumer) {
         if (mResponseDelay <= 0) {
-            responseConsumer.accept(httpResponse);
-            return;
+            maybeAccept(httpResponse, responseConsumer);
+        } else {
+            ThreadUtils.postOnUiThreadDelayed(
+                    () -> maybeAccept(httpResponse, responseConsumer), mResponseDelay);
         }
-
-        ThreadUtils.postOnUiThreadDelayed(
-                () -> responseConsumer.accept(httpResponse), mResponseDelay);
     }
 
     private Request getRequest(HttpRequest httpRequest) throws IOException {
@@ -138,7 +139,9 @@ public class TestNetworkClient implements NetworkClient {
     }
 
     @Override
-    public void close() {}
+    public void close() {
+        mAlreadyClosed.set(true);
+    }
 
     private HttpResponse createHttpResponse(Response response) {
         try {
@@ -151,6 +154,12 @@ public class TestNetworkClient implements NetworkClient {
             return new HttpResponse(200, newResponse);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void maybeAccept(HttpResponse httpResponse, Consumer<HttpResponse> responseConsumer) {
+        if (!mAlreadyClosed.get()) {
+            responseConsumer.accept(httpResponse);
         }
     }
 }

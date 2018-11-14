@@ -68,6 +68,9 @@ class FeedSchedulerBridge {
   // Cancels previously scheduled background task.
   void CancelWakeUp();
 
+  void FixedTimerHandlingDone(
+      base::android::ScopedJavaGlobalRef<jobject> j_callback);
+
   // Reference to the Java half of this bridge. Always valid.
   base::android::ScopedJavaGlobalRef<jobject> j_this_;
 
