@@ -154,9 +154,12 @@ cr.define('nux', function() {
     recordFinalize() {
       let finalValue = this.firstPart + this.lastPart;
 
-      chrome.metricsPrivate.recordEnumerationValue(
-          INTERACTION_METRIC_NAME, NuxEmailProvidersInteractions[finalValue],
-          INTERACTION_METRIC_COUNT);
+      // TODO(hcarmona): revisit this metric.
+      let metric = NuxEmailProvidersInteractions[finalValue];
+      if (metric) {
+        chrome.metricsPrivate.recordEnumerationValue(
+            INTERACTION_METRIC_NAME, metric, INTERACTION_METRIC_COUNT);
+      }
     }
   }
 
