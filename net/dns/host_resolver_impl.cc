@@ -21,6 +21,7 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -513,7 +514,7 @@ void MakeNotStale(HostCache::EntryStaleness* stale_info) {
 // Is |dns_server| within the list of known DNS servers that also support
 // DNS-over-HTTPS?
 bool DnsServerSupportsDoh(const IPAddress& dns_server) {
-  const static base::NoDestructor<std::unordered_set<std::string>>
+  static const base::NoDestructor<std::unordered_set<std::string>>
       upgradable_servers({
           // Google Public DNS
           "8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844",
@@ -805,6 +806,9 @@ class HostResolverImpl::ProcTask {
         net_log_(job_net_log),
         tick_clock_(tick_clock),
         weak_ptr_factory_(this) {
+    // ProcTask only supports resolving addresses.
+    DCHECK(IsAddressType(key_.dns_query_type));
+
     DCHECK(callback_);
     if (!params_.resolver_proc.get())
       params_.resolver_proc = HostResolverProc::GetDefault();
@@ -884,9 +888,9 @@ class HostResolverImpl::ProcTask {
       AttemptCompletionCallback completion_callback) {
     AddressList results;
     int os_error = 0;
-    int error =
-        resolver_proc->Resolve(key.hostname, key.address_family,
-                               key.host_resolver_flags, &results, &os_error);
+    int error = resolver_proc->Resolve(
+        key.hostname, DnsQueryTypeToAddressFamily(key.dns_query_type),
+        key.host_resolver_flags, &results, &os_error);
 
     network_task_runner->PostTask(
         FROM_HERE, base::BindOnce(std::move(completion_callback), results,
@@ -1039,52 +1043,41 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   bool allow_fallback_resolution() const { return allow_fallback_resolution_; }
 
   bool needs_two_transactions() const {
-    return key_.address_family == ADDRESS_FAMILY_UNSPECIFIED;
+    return key_.dns_query_type == DnsQueryType::UNSPECIFIED;
   }
 
   bool needs_another_transaction() const {
-    return needs_two_transactions() && !transaction_aaaa_;
+    return needs_two_transactions() && !transaction2_;
   }
 
   void StartFirstTransaction() {
     DCHECK_EQ(0u, num_completed_transactions_);
+    DCHECK(!transaction1_);
+
     net_log_.BeginEvent(NetLogEventType::HOST_RESOLVER_IMPL_DNS_TASK);
-    if (key_.address_family == ADDRESS_FAMILY_IPV6) {
-      StartAAAA();
+    if (key_.dns_query_type == DnsQueryType::UNSPECIFIED) {
+      transaction1_ = CreateTransaction(DnsQueryType::A);
     } else {
-      StartA();
+      transaction1_ = CreateTransaction(key_.dns_query_type);
     }
+    transaction1_->Start();
   }
 
   void StartSecondTransaction() {
-    DCHECK(needs_two_transactions());
-    StartAAAA();
+    DCHECK(needs_another_transaction());
+    transaction2_ = CreateTransaction(DnsQueryType::AAAA);
+    transaction2_->Start();
   }
 
   base::TimeDelta ttl() { return ttl_; }
 
  private:
-  void StartA() {
-    DCHECK(!transaction_a_);
-    DCHECK_NE(ADDRESS_FAMILY_IPV6, key_.address_family);
-    transaction_a_ = CreateTransaction(ADDRESS_FAMILY_IPV4);
-    transaction_a_->Start();
-  }
-
-  void StartAAAA() {
-    DCHECK(!transaction_aaaa_);
-    DCHECK_NE(ADDRESS_FAMILY_IPV4, key_.address_family);
-    transaction_aaaa_ = CreateTransaction(ADDRESS_FAMILY_IPV6);
-    transaction_aaaa_->Start();
-  }
-
-  std::unique_ptr<DnsTransaction> CreateTransaction(AddressFamily family) {
-    DCHECK_NE(ADDRESS_FAMILY_UNSPECIFIED, family);
+  std::unique_ptr<DnsTransaction> CreateTransaction(
+      DnsQueryType dns_query_type) {
+    DCHECK_NE(DnsQueryType::UNSPECIFIED, dns_query_type);
     std::unique_ptr<DnsTransaction> trans =
         client_->GetTransactionFactory()->CreateTransaction(
-            key_.hostname,
-            family == ADDRESS_FAMILY_IPV6 ? dns_protocol::kTypeAAAA
-                                          : dns_protocol::kTypeA,
+            key_.hostname, DnsQueryTypeToQtype(dns_query_type),
             base::BindOnce(&DnsTask::OnTransactionComplete,
                            base::Unretained(this), tick_clock_->NowTicks()),
             net_log_);
@@ -1137,13 +1130,15 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     }
 
     if (transaction->GetType() == dns_protocol::kTypeA) {
-      DCHECK_EQ(transaction_a_.get(), transaction);
+      DCHECK_EQ(transaction1_.get(), transaction);
       // Place IPv4 addresses after IPv6.
       addr_list_.insert(addr_list_.end(), addr_list.begin(), addr_list.end());
-    } else {
-      DCHECK_EQ(transaction_aaaa_.get(), transaction);
+    } else if (transaction->GetType() == dns_protocol::kTypeAAAA) {
       // Place IPv6 addresses before IPv4.
       addr_list_.insert(addr_list_.begin(), addr_list.begin(), addr_list.end());
+    } else {
+      // TODO(crbug.com/846423): Add result parsing for non-address types.
+      NOTIMPLEMENTED();
     }
 
     // If requested via HOST_RESOLVER_CANONNAME, store the canonical name from
@@ -1237,8 +1232,8 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   Delegate* delegate_;
   const NetLogWithSource net_log_;
 
-  std::unique_ptr<DnsTransaction> transaction_a_;
-  std::unique_ptr<DnsTransaction> transaction_aaaa_;
+  std::unique_ptr<DnsTransaction> transaction1_;
+  std::unique_ptr<DnsTransaction> transaction2_;
 
   unsigned num_completed_transactions_;
 
@@ -1756,18 +1751,12 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     DCHECK_EQ(0, key_.host_resolver_flags &
                      ~HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6);
 
-    std::vector<HostResolver::DnsQueryType> query_types;
-    switch (key_.address_family) {
-      case ADDRESS_FAMILY_UNSPECIFIED:
-        query_types.push_back(HostResolver::DnsQueryType::A);
-        query_types.push_back(HostResolver::DnsQueryType::AAAA);
-        break;
-      case ADDRESS_FAMILY_IPV4:
-        query_types.push_back(HostResolver::DnsQueryType::A);
-        break;
-      case ADDRESS_FAMILY_IPV6:
-        query_types.push_back(HostResolver::DnsQueryType::AAAA);
-        break;
+    std::vector<DnsQueryType> query_types;
+    if (key_.dns_query_type == DnsQueryType::UNSPECIFIED) {
+      query_types.push_back(DnsQueryType::A);
+      query_types.push_back(DnsQueryType::AAAA);
+    } else {
+      query_types.push_back(key_.dns_query_type);
     }
 
     mdns_task_ = std::make_unique<HostResolverMdnsTask>(
@@ -1814,18 +1803,21 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       if (had_non_speculative_request_) {
         category = RESOLVE_SUCCESS;
         UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime", duration);
-        switch (key_.address_family) {
-          case ADDRESS_FAMILY_IPV4:
+        switch (key_.dns_query_type) {
+          case DnsQueryType::A:
             UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.IPV4",
                                          duration);
             break;
-          case ADDRESS_FAMILY_IPV6:
+          case DnsQueryType::AAAA:
             UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.IPV6",
                                          duration);
             break;
-          case ADDRESS_FAMILY_UNSPECIFIED:
+          case DnsQueryType::UNSPECIFIED:
             UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.UNSPEC",
                                          duration);
+            break;
+          default:
+            // No histogram for other query types.
             break;
         }
       } else {
@@ -1839,18 +1831,21 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       if (had_non_speculative_request_) {
         category = RESOLVE_FAIL;
         UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveFailureTime", duration);
-        switch (key_.address_family) {
-          case ADDRESS_FAMILY_IPV4:
+        switch (key_.dns_query_type) {
+          case DnsQueryType::A:
             UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveFailureTime.IPV4",
                                          duration);
             break;
-          case ADDRESS_FAMILY_IPV6:
+          case DnsQueryType::AAAA:
             UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveFailureTime.IPV6",
                                          duration);
             break;
-          case ADDRESS_FAMILY_UNSPECIFIED:
+          case DnsQueryType::UNSPECIFIED:
             UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveFailureTime.UNSPEC",
                                          duration);
+            break;
+          default:
+            // No histogram for other query types.
             break;
         }
       } else {
@@ -2483,13 +2478,13 @@ bool HostResolverImpl::ResolveAsIP(const Key& key,
                                    AddressList* addresses) {
   DCHECK(addresses);
   DCHECK(net_error);
-  if (ip_address == nullptr)
+  if (ip_address == nullptr || !IsAddressType(key.dns_query_type))
     return false;
 
   *net_error = OK;
   AddressFamily family = GetAddressFamily(*ip_address);
-  if (key.address_family != ADDRESS_FAMILY_UNSPECIFIED &&
-      key.address_family != family) {
+  if (key.dns_query_type != DnsQueryType::UNSPECIFIED &&
+      key.dns_query_type != AddressFamilyToDnsQueryType(family)) {
     // Don't return IPv6 addresses for IPv4 queries, and vice versa.
     *net_error = ERR_NAME_NOT_RESOLVED;
   } else {
@@ -2547,15 +2542,15 @@ bool HostResolverImpl::ServeFromHosts(const Key& key,
   // flexibility, but lose implicit ordering.
   // We prefer IPv6 because "happy eyeballs" will fall back to IPv4 if
   // necessary.
-  if (key.address_family == ADDRESS_FAMILY_IPV6 ||
-      key.address_family == ADDRESS_FAMILY_UNSPECIFIED) {
+  if (key.dns_query_type == DnsQueryType::AAAA ||
+      key.dns_query_type == DnsQueryType::UNSPECIFIED) {
     auto it = hosts.find(DnsHostsKey(hostname, ADDRESS_FAMILY_IPV6));
     if (it != hosts.end())
       addresses->push_back(IPEndPoint(it->second, host_port));
   }
 
-  if (key.address_family == ADDRESS_FAMILY_IPV4 ||
-      key.address_family == ADDRESS_FAMILY_UNSPECIFIED) {
+  if (key.dns_query_type == DnsQueryType::A ||
+      key.dns_query_type == DnsQueryType::UNSPECIFIED) {
     auto it = hosts.find(DnsHostsKey(hostname, ADDRESS_FAMILY_IPV4));
     if (it != hosts.end())
       addresses->push_back(IPEndPoint(it->second, host_port));
@@ -2567,7 +2562,7 @@ bool HostResolverImpl::ServeFromHosts(const Key& key,
           HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6) &&
       IsAllIPv4Loopback(*addresses)) {
     Key new_key(key);
-    new_key.address_family = ADDRESS_FAMILY_UNSPECIFIED;
+    new_key.dns_query_type = DnsQueryType::UNSPECIFIED;
     new_key.host_resolver_flags &=
         ~HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
     return ServeFromHosts(new_key, host_port, addresses);
@@ -2584,20 +2579,23 @@ bool HostResolverImpl::ServeLocalhost(const Key& key,
 
   addresses->clear();
 
-  for (const auto& address : resolved_addresses) {
-    // Include the address if:
-    // - caller didn't specify an address family, or
-    // - caller specifically asked for the address family of this address, or
-    // - this is an IPv6 address and caller specifically asked for IPv4 due
-    //   to lack of detected IPv6 support. (See SystemHostResolverCall for
-    //   rationale).
-    if (key.address_family == ADDRESS_FAMILY_UNSPECIFIED ||
-        key.address_family == address.GetFamily() ||
-        (address.GetFamily() == ADDRESS_FAMILY_IPV6 &&
-         key.address_family == ADDRESS_FAMILY_IPV4 &&
-         (key.host_resolver_flags &
-          HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6))) {
-      addresses->push_back(address);
+  if (IsAddressType(key.dns_query_type)) {
+    for (const auto& address : resolved_addresses) {
+      // Include the address if:
+      // - caller didn't specify an address family, or
+      // - caller specifically asked for the address family of this address, or
+      // - this is an IPv6 address and caller specifically asked for IPv4 due
+      //   to lack of detected IPv6 support. (See SystemHostResolverCall for
+      //   rationale).
+      if (key.dns_query_type == DnsQueryType::UNSPECIFIED ||
+          DnsQueryTypeToAddressFamily(key.dns_query_type) ==
+              address.GetFamily() ||
+          (address.GetFamily() == ADDRESS_FAMILY_IPV6 &&
+           key.dns_query_type == DnsQueryType::A &&
+           (key.host_resolver_flags &
+            HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6))) {
+        addresses->push_back(address);
+      }
     }
   }
 
@@ -2665,22 +2663,21 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
     const NetLogWithSource& net_log) {
   HostResolverFlags effective_flags = flags | additional_resolver_flags_;
 
-  AddressFamily effective_address_family =
-      DnsQueryTypeToAddressFamily(dns_query_type);
+  DnsQueryType effective_query_type = dns_query_type;
 
-  if (effective_address_family == ADDRESS_FAMILY_UNSPECIFIED &&
+  if (effective_query_type == DnsQueryType::UNSPECIFIED &&
       // When resolving IPv4 literals, there's no need to probe for IPv6.
       // When resolving IPv6 literals, there's no benefit to artificially
       // limiting our resolution based on a probe.  Prior logic ensures
-      // that this query is UNSPECIFIED (see effective_address_family
-      // check above) so the code requesting the resolution should be amenable
-      // to receiving a IPv6 resolution.
+      // that this query is UNSPECIFIED (see effective_query_type check above)
+      // so the code requesting the resolution should be amenable to receiving a
+      // IPv6 resolution.
       !use_local_ipv6_ && ip_address == nullptr && !IsIPv6Reachable(net_log)) {
-    effective_address_family = ADDRESS_FAMILY_IPV4;
+    effective_query_type = DnsQueryType::A;
     effective_flags |= HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
   }
 
-  return Key(hostname, effective_address_family, effective_flags, source);
+  return Key(hostname, effective_query_type, effective_flags, source);
 }
 
 bool HostResolverImpl::IsIPv6Reachable(const NetLogWithSource& net_log) {

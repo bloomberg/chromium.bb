@@ -99,7 +99,7 @@ bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
 
   if (namelen + 1 > sizeof name)
     return false;
-  if (namelen == 0) // Empty names e.g. "", "." are not valid.
+  if (namelen == 0)  // Empty names e.g. "", "." are not valid.
     return false;
   name[namelen++] = 0;  // This is the root label (of length 0).
 
@@ -220,6 +220,32 @@ std::string CreateNamePointer(uint16_t offset) {
   char buf[2];
   base::WriteBigEndian(buf, offset);
   return std::string(buf, sizeof(buf));
+}
+
+uint16_t DnsQueryTypeToQtype(DnsQueryType dns_query_type) {
+  switch (dns_query_type) {
+    case DnsQueryType::UNSPECIFIED:
+      NOTREACHED();
+      return 0;
+    case DnsQueryType::A:
+      return dns_protocol::kTypeA;
+    case DnsQueryType::AAAA:
+      return dns_protocol::kTypeAAAA;
+  }
+}
+
+DnsQueryType AddressFamilyToDnsQueryType(AddressFamily address_family) {
+  switch (address_family) {
+    case ADDRESS_FAMILY_UNSPECIFIED:
+      return DnsQueryType::UNSPECIFIED;
+    case ADDRESS_FAMILY_IPV4:
+      return DnsQueryType::A;
+    case ADDRESS_FAMILY_IPV6:
+      return DnsQueryType::AAAA;
+    default:
+      NOTREACHED();
+      return DnsQueryType::UNSPECIFIED;
+  }
 }
 
 }  // namespace net

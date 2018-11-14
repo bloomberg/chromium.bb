@@ -16,6 +16,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mdns_client.h"
+#include "net/dns/public/dns_query_type.h"
 
 namespace net {
 
@@ -25,10 +26,9 @@ namespace net {
 class HostResolverMdnsTask {
  public:
   // |mdns_client| must outlive |this|.
-  HostResolverMdnsTask(
-      MDnsClient* mdns_client,
-      const std::string& hostname,
-      const std::vector<HostResolver::DnsQueryType>& query_types);
+  HostResolverMdnsTask(MDnsClient* mdns_client,
+                       const std::string& hostname,
+                       const std::vector<DnsQueryType>& query_types);
   ~HostResolverMdnsTask();
 
   // Starts the task. |completion_callback| will be called asynchronously with

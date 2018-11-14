@@ -9,8 +9,10 @@
 
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "net/base/address_family.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
+#include "net/dns/public/dns_query_type.h"
 
 namespace net {
 
@@ -84,6 +86,12 @@ AddressListDeltaType FindAddressListDeltaType(const AddressList& a,
 // which specifies an offset from the start of the message for the pointed name.
 // Note that |offset| must be less than 2^14 - 1 by definition.
 NET_EXPORT std::string CreateNamePointer(uint16_t offset);
+
+// Convert a DnsQueryType enum to the wire format integer representation.
+uint16_t DnsQueryTypeToQtype(DnsQueryType dns_query_type);
+
+NET_EXPORT DnsQueryType
+AddressFamilyToDnsQueryType(AddressFamily address_family);
 
 }  // namespace net
 

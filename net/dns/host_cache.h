@@ -23,6 +23,7 @@
 #include "net/base/net_export.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_resolver_source.h"
+#include "net/dns/public/dns_query_type.h"
 
 namespace base {
 class ListValue;
@@ -34,34 +35,29 @@ namespace net {
 // Cache used by HostResolver to map hostnames to their resolved result.
 class NET_EXPORT HostCache {
  public:
-  struct Key {
+  struct NET_EXPORT Key {
+    Key(const std::string& hostname,
+        DnsQueryType dns_query_type,
+        HostResolverFlags host_resolver_flags,
+        HostResolverSource host_resolver_source);
     Key(const std::string& hostname,
         AddressFamily address_family,
-        HostResolverFlags host_resolver_flags,
-        HostResolverSource host_resolver_source = HostResolverSource::ANY)
-        : hostname(hostname),
-          address_family(address_family),
-          host_resolver_flags(host_resolver_flags),
-          host_resolver_source(host_resolver_source) {}
-
-    Key()
-        : address_family(ADDRESS_FAMILY_UNSPECIFIED),
-          host_resolver_flags(0),
-          host_resolver_source(HostResolverSource::ANY) {}
+        HostResolverFlags host_resolver_flags);
+    Key();
 
     bool operator<(const Key& other) const {
       // The order of comparisons of |Key| fields is arbitrary, thus
-      // |address_family| and |host_resolver_flags| are compared before
+      // |dns_query_type| and |host_resolver_flags| are compared before
       // |hostname| under assumption that integer comparisons are faster than
       // string comparisons.
-      return std::tie(address_family, host_resolver_flags, hostname,
+      return std::tie(dns_query_type, host_resolver_flags, hostname,
                       host_resolver_source) <
-             std::tie(other.address_family, other.host_resolver_flags,
+             std::tie(other.dns_query_type, other.host_resolver_flags,
                       other.hostname, other.host_resolver_source);
     }
 
     std::string hostname;
-    AddressFamily address_family;
+    DnsQueryType dns_query_type;
     HostResolverFlags host_resolver_flags;
     HostResolverSource host_resolver_source;
   };

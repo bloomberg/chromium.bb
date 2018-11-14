@@ -19,6 +19,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/dns_query_type.h"
 #include "net/log/net_log.h"
 #include "services/network/host_resolver.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
@@ -158,7 +159,7 @@ TEST_F(HostResolverTest, DnsQueryType) {
 
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->dns_query_type = net::HostResolver::DnsQueryType::AAAA;
+  optional_parameters->dns_query_type = net::DnsQueryType::AAAA;
 
   base::RunLoop run_loop;
   mojom::ResolveHostClientPtr response_client_ptr;

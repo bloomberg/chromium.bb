@@ -23,9 +23,10 @@ namespace {
 
 const int kMaxCacheEntries = 10;
 
-// Builds a key for |hostname|, defaulting the address family to unspecified.
+// Builds a key for |hostname|, defaulting the query type to unspecified.
 HostCache::Key Key(const std::string& hostname) {
-  return HostCache::Key(hostname, ADDRESS_FAMILY_UNSPECIFIED, 0);
+  return HostCache::Key(hostname, DnsQueryType::UNSPECIFIED, 0,
+                        HostResolverSource::ANY);
 }
 
 bool FoobarIndexIsOdd(const std::string& foobarx_com) {
@@ -199,8 +200,8 @@ TEST(HostCacheTest, CacheNegativeEntry) {
 }
 
 // Tests that the same hostname can be duplicated in the cache, so long as
-// the address family differs.
-TEST(HostCacheTest, AddressFamilyIsPartOfKey) {
+// the query type differs.
+TEST(HostCacheTest, DnsQueryTypeIsPartOfKey) {
   const base::TimeDelta kSuccessEntryTTL = base::TimeDelta::FromSeconds(10);
 
   HostCache cache(kMaxCacheEntries);
@@ -208,8 +209,10 @@ TEST(HostCacheTest, AddressFamilyIsPartOfKey) {
   // t=0.
   base::TimeTicks now;
 
-  HostCache::Key key1("foobar.com", ADDRESS_FAMILY_UNSPECIFIED, 0);
-  HostCache::Key key2("foobar.com", ADDRESS_FAMILY_IPV4, 0);
+  HostCache::Key key1("foobar.com", DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY);
+  HostCache::Key key2("foobar.com", DnsQueryType::A, 0,
+                      HostResolverSource::ANY);
   HostCache::Entry entry =
       HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
@@ -242,11 +245,12 @@ TEST(HostCacheTest, HostResolverFlagsArePartOfKey) {
   // t=0.
   base::TimeTicks now;
 
-  HostCache::Key key1("foobar.com", ADDRESS_FAMILY_IPV4, 0);
-  HostCache::Key key2("foobar.com", ADDRESS_FAMILY_IPV4,
-                      HOST_RESOLVER_CANONNAME);
-  HostCache::Key key3("foobar.com", ADDRESS_FAMILY_IPV4,
-                      HOST_RESOLVER_LOOPBACK_ONLY);
+  HostCache::Key key1("foobar.com", DnsQueryType::A, 0,
+                      HostResolverSource::ANY);
+  HostCache::Key key2("foobar.com", DnsQueryType::A, HOST_RESOLVER_CANONNAME,
+                      HostResolverSource::ANY);
+  HostCache::Key key3("foobar.com", DnsQueryType::A,
+                      HOST_RESOLVER_LOOPBACK_ONLY, HostResolverSource::ANY);
   HostCache::Entry entry =
       HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
@@ -536,55 +540,47 @@ TEST(HostCacheTest, KeyComparators) {
     //    1 means key1 is greater than key2
     int expected_comparison;
   } tests[] = {
-    {
-      HostCache::Key("host1", ADDRESS_FAMILY_UNSPECIFIED, 0),
-      HostCache::Key("host1", ADDRESS_FAMILY_UNSPECIFIED, 0),
-      0
-    },
-    {
-      HostCache::Key("host1", ADDRESS_FAMILY_IPV4, 0),
-      HostCache::Key("host1", ADDRESS_FAMILY_UNSPECIFIED, 0),
-      1
-    },
-    {
-      HostCache::Key("host1", ADDRESS_FAMILY_UNSPECIFIED, 0),
-      HostCache::Key("host1", ADDRESS_FAMILY_IPV4, 0),
-      -1
-    },
-    {
-      HostCache::Key("host1", ADDRESS_FAMILY_UNSPECIFIED, 0),
-      HostCache::Key("host2", ADDRESS_FAMILY_UNSPECIFIED, 0),
-      -1
-    },
-    {
-      HostCache::Key("host1", ADDRESS_FAMILY_IPV4, 0),
-      HostCache::Key("host2", ADDRESS_FAMILY_UNSPECIFIED, 0),
-      1
-    },
-    {
-      HostCache::Key("host1", ADDRESS_FAMILY_UNSPECIFIED, 0),
-      HostCache::Key("host2", ADDRESS_FAMILY_IPV4, 0),
-      -1
-    },
-    {
-      HostCache::Key("host1", ADDRESS_FAMILY_UNSPECIFIED, 0),
-      HostCache::Key("host1", ADDRESS_FAMILY_UNSPECIFIED,
-                     HOST_RESOLVER_CANONNAME),
-      -1
-    },
-    {
-      HostCache::Key("host1", ADDRESS_FAMILY_UNSPECIFIED,
-                     HOST_RESOLVER_CANONNAME),
-      HostCache::Key("host1", ADDRESS_FAMILY_UNSPECIFIED, 0),
-      1
-    },
-    {
-      HostCache::Key("host1", ADDRESS_FAMILY_UNSPECIFIED,
-                     HOST_RESOLVER_CANONNAME),
-      HostCache::Key("host2", ADDRESS_FAMILY_UNSPECIFIED,
-                     HOST_RESOLVER_CANONNAME),
-      -1
-    },
+      {HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY),
+       HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY),
+       0},
+      {HostCache::Key("host1", DnsQueryType::A, 0, HostResolverSource::ANY),
+       HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY),
+       1},
+      {HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY),
+       HostCache::Key("host1", DnsQueryType::A, 0, HostResolverSource::ANY),
+       -1},
+      {HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY),
+       HostCache::Key("host2", DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY),
+       -1},
+      {HostCache::Key("host1", DnsQueryType::A, 0, HostResolverSource::ANY),
+       HostCache::Key("host2", DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY),
+       1},
+      {HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY),
+       HostCache::Key("host2", DnsQueryType::A, 0, HostResolverSource::ANY),
+       -1},
+      {HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY),
+       HostCache::Key("host1", DnsQueryType::UNSPECIFIED,
+                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY),
+       -1},
+      {HostCache::Key("host1", DnsQueryType::UNSPECIFIED,
+                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY),
+       HostCache::Key("host1", DnsQueryType::UNSPECIFIED, 0,
+                      HostResolverSource::ANY),
+       1},
+      {HostCache::Key("host1", DnsQueryType::UNSPECIFIED,
+                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY),
+       HostCache::Key("host2", DnsQueryType::UNSPECIFIED,
+                      HOST_RESOLVER_CANONNAME, HostResolverSource::ANY),
+       -1},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {

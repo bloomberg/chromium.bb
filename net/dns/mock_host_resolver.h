@@ -21,6 +21,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/dns/host_resolver_source.h"
+#include "net/dns/public/dns_query_type.h"
 
 namespace base {
 class TickClock;
@@ -176,7 +177,7 @@ class MockHostResolverBase
   // DNS_CACHE_MISS if failed.
   int ResolveFromIPLiteralOrCache(
       const HostPortPair& host,
-      AddressFamily requested_address_family,
+      DnsQueryType dns_query_type,
       HostResolverFlags flags,
       HostResolverSource source,
       bool allow_cache,

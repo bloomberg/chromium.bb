@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/host_resolver.h"
 #include "net/log/net_log.h"
 
 namespace net {
@@ -34,7 +35,9 @@ namespace {
 // String constants for dictionary keys.
 const char kHostnameKey[] = "hostname";
 const char kAddressFamilyKey[] = "address_family";
+const char kDnsQueryTypeKey[] = "dns_query_type";
 const char kFlagsKey[] = "flags";
+const char kHostResolverSourceKey[] = "host_resolver_source";
 const char kExpirationKey[] = "expiration";
 const char kTtlKey[] = "ttl";
 const char kNetworkChangesKey[] = "network_changes";
@@ -81,6 +84,26 @@ enum HostCache::EraseReason : int {
   ERASE_DESTRUCT = 2,
   MAX_ERASE_REASON
 };
+
+HostCache::Key::Key(const std::string& hostname,
+                    DnsQueryType dns_query_type,
+                    HostResolverFlags host_resolver_flags,
+                    HostResolverSource host_resolver_source)
+    : hostname(hostname),
+      dns_query_type(dns_query_type),
+      host_resolver_flags(host_resolver_flags),
+      host_resolver_source(host_resolver_source) {}
+
+HostCache::Key::Key(const std::string& hostname,
+                    AddressFamily address_family,
+                    HostResolverFlags host_resolver_flags)
+    : Key(hostname,
+          AddressFamilyToDnsQueryType(address_family),
+          host_resolver_flags,
+          HostResolverSource::ANY) {}
+
+HostCache::Key::Key()
+    : Key("", DnsQueryType::UNSPECIFIED, 0, HostResolverSource::ANY) {}
 
 HostCache::Entry::Entry(int error,
                         const AddressList& addresses,
@@ -162,8 +185,7 @@ HostCache::~HostCache() {
   RecordEraseAll(ERASE_DESTRUCT, tick_clock_->NowTicks());
 }
 
-const HostCache::Entry* HostCache::Lookup(const Key& key,
-                                          base::TimeTicks now) {
+const HostCache::Entry* HostCache::Lookup(const Key& key, base::TimeTicks now) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (caching_is_disabled())
     return nullptr;
@@ -318,9 +340,11 @@ void HostCache::GetAsListValue(base::ListValue* entry_list,
         new base::DictionaryValue());
 
     entry_dict->SetString(kHostnameKey, key.hostname);
-    entry_dict->SetInteger(kAddressFamilyKey,
-                           static_cast<int>(key.address_family));
+    entry_dict->SetInteger(kDnsQueryTypeKey,
+                           static_cast<int>(key.dns_query_type));
     entry_dict->SetInteger(kFlagsKey, key.host_resolver_flags);
+    entry_dict->SetInteger(kHostResolverSourceKey,
+                           static_cast<int>(key.host_resolver_source));
 
     if (include_staleness) {
       // The kExpirationKey value is using TimeTicks instead of Time used if
@@ -362,8 +386,9 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
       return false;
 
     std::string hostname;
-    int address_family;
+    int dns_query_type;
     HostResolverFlags flags;
+    int host_resolver_source;
     int error = OK;
     std::string expiration;
     base::ListValue empty_list;
@@ -372,9 +397,28 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
 
     if (!entry_dict->GetString(kHostnameKey, &hostname) ||
         !entry_dict->GetInteger(kFlagsKey, &flags) ||
-        !entry_dict->GetInteger(kAddressFamilyKey, &address_family) ||
         !entry_dict->GetString(kExpirationKey, &expiration)) {
       return false;
+    }
+
+    // If there is no DnsQueryType, look for an AddressFamily.
+    //
+    // TODO(crbug.com/846423): Remove kAddressFamilyKey support after a enough
+    // time has passed to minimize loss-of-persistence impact from backwards
+    // incompatibility.
+    if (!entry_dict->GetInteger(kDnsQueryTypeKey, &dns_query_type)) {
+      int address_family;
+      if (!entry_dict->GetInteger(kAddressFamilyKey, &address_family)) {
+        return false;
+      }
+      dns_query_type = static_cast<int>(AddressFamilyToDnsQueryType(
+          static_cast<AddressFamily>(address_family)));
+    }
+
+    // HostResolverSource is optional.
+    if (!entry_dict->GetInteger(kHostResolverSourceKey,
+                                &host_resolver_source)) {
+      host_resolver_source = static_cast<int>(HostResolverSource::ANY);
     }
 
     // Only one of these fields should be in the dictionary.
@@ -391,7 +435,8 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
         tick_clock_->NowTicks() -
         (base::Time::Now() - base::Time::FromInternalValue(time_internal));
 
-    Key key(hostname, static_cast<AddressFamily>(address_family), flags);
+    Key key(hostname, static_cast<DnsQueryType>(dns_query_type), flags,
+            static_cast<HostResolverSource>(host_resolver_source));
     if (error == OK &&
         !AddressListFromListValue(addresses_value, &address_list)) {
       return false;
@@ -554,12 +599,12 @@ bool HostCache::HasEntry(base::StringPiece hostname,
 
   const HostCache::Entry* entry =
       LookupStale(cache_key, tick_clock_->NowTicks(), stale_out);
-  if (!entry) {
+  if (!entry && IsAddressType(cache_key.dns_query_type)) {
     // Might not have found the cache entry because the address_family or
     // host_resolver_flags in cache_key do not match those used for the
     // original DNS lookup. Try another common combination of address_family
     // and host_resolver_flags in an attempt to find a matching cache entry.
-    cache_key.address_family = net::ADDRESS_FAMILY_IPV4;
+    cache_key.dns_query_type = DnsQueryType::A;
     cache_key.host_resolver_flags =
         net::HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
     entry = LookupStale(cache_key, tick_clock_->NowTicks(), stale_out);

@@ -18,7 +18,7 @@ namespace net {
 
 class HostResolverMdnsTask::Transaction {
  public:
-  Transaction(HostResolver::DnsQueryType query_type, HostResolverMdnsTask* task)
+  Transaction(DnsQueryType query_type, HostResolverMdnsTask* task)
       : query_type_(query_type), result_(ERR_IO_PENDING), task_(task) {}
 
   void Start() {
@@ -28,20 +28,6 @@ class HostResolverMdnsTask::Transaction {
     DCHECK_EQ(ERR_IO_PENDING, result_);
     DCHECK(!async_transaction_);
 
-    uint16_t rrtype;
-    switch (query_type_) {
-      case net::HostResolver::DnsQueryType::A:
-        rrtype = net::dns_protocol::kTypeA;
-        break;
-      case net::HostResolver::DnsQueryType::AAAA:
-        rrtype = net::dns_protocol::kTypeAAAA;
-        break;
-      default:
-        // Type not supported for MDNS.
-        NOTREACHED();
-        return;
-    }
-
     // TODO(crbug.com/846423): Use |allow_cached_response| to set the
     // QUERY_CACHE flag or not.
     int flags = MDnsTransaction::SINGLE_RESULT | MDnsTransaction::QUERY_CACHE |
@@ -50,7 +36,7 @@ class HostResolverMdnsTask::Transaction {
     // cancel and prevent invocation of OnComplete.
     std::unique_ptr<MDnsTransaction> inner_transaction =
         task_->mdns_client_->CreateTransaction(
-            rrtype, task_->hostname_, flags,
+            DnsQueryTypeToQtype(query_type_), task_->hostname_, flags,
             base::BindRepeating(&HostResolverMdnsTask::Transaction::OnComplete,
                                 base::Unretained(this)));
 
@@ -97,16 +83,17 @@ class HostResolverMdnsTask::Transaction {
 
     if (result_ == net::OK) {
       switch (query_type_) {
-        case net::HostResolver::DnsQueryType::A:
+        case DnsQueryType::A:
           task_->result_addresses_.push_back(
               IPEndPoint(parsed->rdata<net::ARecordRdata>()->address(), 0));
           break;
-        case net::HostResolver::DnsQueryType::AAAA:
+        case DnsQueryType::AAAA:
           task_->result_addresses_.push_back(
               IPEndPoint(parsed->rdata<net::AAAARecordRdata>()->address(), 0));
           break;
         default:
-          NOTREACHED();
+          // TODO(crbug.com/846423): Add result parsing for non-address types.
+          NOTIMPLEMENTED();
       }
     }
 
@@ -116,7 +103,7 @@ class HostResolverMdnsTask::Transaction {
     task_->CheckCompletion(!async_transaction_);
   }
 
-  const HostResolver::DnsQueryType query_type_;
+  const DnsQueryType query_type_;
 
   // ERR_IO_PENDING until transaction completes (or is cancelled).
   int result_;
@@ -132,10 +119,10 @@ class HostResolverMdnsTask::Transaction {
 HostResolverMdnsTask::HostResolverMdnsTask(
     MDnsClient* mdns_client,
     const std::string& hostname,
-    const std::vector<HostResolver::DnsQueryType>& query_types)
+    const std::vector<DnsQueryType>& query_types)
     : mdns_client_(mdns_client), hostname_(hostname), weak_ptr_factory_(this) {
   DCHECK(!query_types.empty());
-  for (HostResolver::DnsQueryType query_type : query_types) {
+  for (DnsQueryType query_type : query_types) {
     transactions_.emplace_back(query_type, this);
   }
 }
