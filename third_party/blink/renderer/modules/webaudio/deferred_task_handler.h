@@ -109,6 +109,9 @@ class MODULES_EXPORT DeferredTaskHandler final
   void RequestToDeleteHandlersOnMainThread();
   void ClearHandlersToBeDeleted();
 
+  bool AcceptsTailProcessing() const { return accepts_tail_processing_; }
+  void StopAcceptingTailProcessing() { accepts_tail_processing_ = false; }
+
   // If |node| requires tail processing, add it to the list of tail
   // nodes so the tail is processed.
   void AddTailProcessingHandler(scoped_refptr<AudioHandler>);
@@ -228,10 +231,15 @@ class MODULES_EXPORT DeferredTaskHandler final
 
   // Nodes that are processing its tail.
   Vector<scoped_refptr<AudioHandler>> tail_processing_handlers_;
+
   // Tail processing nodes that are now finished and want the output to be
   // disabled.  This is updated in the audio thread (with the graph lock).  The
   // main thread will disable the outputs.
   Vector<scoped_refptr<AudioHandler>> finished_tail_processing_handlers_;
+
+  // Once the associated context closes, new tail processing handlers are not
+  // accepted.
+  bool accepts_tail_processing_ = true;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

@@ -612,6 +612,9 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
                              WrapPersistent(this)));
   }
 
+  if (new_state == kClosed)
+    GetDeferredTaskHandler().StopAcceptingTailProcessing();
+
   // Notify context that state changed
   if (GetExecutionContext()) {
     GetExecutionContext()

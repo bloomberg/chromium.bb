@@ -450,10 +450,9 @@ void AudioHandler::DisableOutputsIfNecessary() {
     // the outputs so that the tail for the node can be output.
     // Otherwise, we can disable the outputs right away.
     if (RequiresTailProcessing()) {
-      if (Context()->ContextState() !=
-          BaseAudioContext::AudioContextState::kClosed) {
-        Context()->GetDeferredTaskHandler().AddTailProcessingHandler(this);
-      }
+      auto& deferred_task_handler = Context()->GetDeferredTaskHandler();
+      if (deferred_task_handler.AcceptsTailProcessing())
+        deferred_task_handler.AddTailProcessingHandler(this);
     } else {
       DisableOutputs();
     }
