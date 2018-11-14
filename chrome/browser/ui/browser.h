@@ -595,8 +595,6 @@ class Browser : public TabStripModelObserver,
   void ActivateContents(content::WebContents* contents) override;
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
-  void LoadProgressChanged(content::WebContents* source,
-                           double progress) override;
   void CloseContents(content::WebContents* source) override;
   void SetContentsBounds(content::WebContents* source,
                          const gfx::Rect& bounds) override;
