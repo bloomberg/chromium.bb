@@ -20,6 +20,8 @@ class LayerTreeHost;
 class ProxyMain;
 class RenderFrameMetadataObserver;
 
+class ScopedCompletionEvent;
+
 // This class aggregates all the interactions that the main side of the
 // compositor needs to have with the impl side.
 // The class is created and lives on the impl thread.
@@ -143,10 +145,10 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   bool commit_completion_waits_for_activation_;
 
   // Set when the main thread is waiting on a commit to complete.
-  CompletionEvent* commit_completion_event_;
+  std::unique_ptr<ScopedCompletionEvent> commit_completion_event_;
 
   // Set when the main thread is waiting for activation to complete.
-  CompletionEvent* activation_completion_event_;
+  std::unique_ptr<ScopedCompletionEvent> activation_completion_event_;
 
   // Set when the next draw should post DidCommitAndDrawFrame to the main
   // thread.
