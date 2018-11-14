@@ -46,16 +46,12 @@ namespace tracing {
 
 namespace {
 
-ProducerClient* GetProducerClient() {
-  static base::NoDestructor<ProducerClient> producer_client;
-  return producer_client.get();
-}
-
 void InitializeProducerClient(service_manager::Connector* connector) {
   mojom::PerfettoServicePtr perfetto_service;
   connector->BindInterface(mojom::kServiceName, &perfetto_service);
 
-  GetProducerClient()->CreateMojoMessagepipes(base::BindOnce(
+  ProducerClient* client = ProducerClient::Get();
+  client->CreateMojoMessagepipes(base::BindOnce(
       [](mojom::PerfettoServicePtr perfetto_service,
          mojom::ProducerClientPtr producer_client_pipe,
          mojom::ProducerHostRequest producer_host_pipe) {
@@ -64,7 +60,7 @@ void InitializeProducerClient(service_manager::Connector* connector) {
       },
       std::move(perfetto_service)));
 
-  GetProducerClient()->AddDataSource(TraceEventDataSource::GetInstance());
+  client->AddDataSource(TraceEventDataSource::GetInstance());
 }
 
 void AddPerfettoMetadataGeneratorFunction(
@@ -73,7 +69,7 @@ void AddPerfettoMetadataGeneratorFunction(
   // call.
   static TraceEventMetadataSource* metadata_source = []() {
     static base::NoDestructor<TraceEventMetadataSource> instance;
-    GetProducerClient()->AddDataSource(instance.get());
+    ProducerClient::Get()->AddDataSource(instance.get());
     return instance.get();
   }();
 

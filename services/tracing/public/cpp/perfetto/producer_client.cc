@@ -47,6 +47,12 @@ void ProducerClient::DataSourceBase::StartTracingWithID(
   StartTracing(producer_client, data_source_config);
 }
 
+// static
+ProducerClient* ProducerClient::Get() {
+  static base::NoDestructor<ProducerClient> producer_client;
+  return producer_client.get();
+}
+
 ProducerClient::ProducerClient() : weak_ptr_factory_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
