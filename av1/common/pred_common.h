@@ -100,8 +100,10 @@ static INLINE int get_comp_index_context(const AV1_COMMON *cm,
 
   if (fwd_idx >= 0)
     fwd_frame_index = cm->buffer_pool->frame_bufs[fwd_idx].cur_frame_offset;
-  int fwd = abs(get_relative_dist(cm, fwd_frame_index, cur_frame_index));
-  int bck = abs(get_relative_dist(cm, cur_frame_index, bck_frame_index));
+  int fwd = abs(get_relative_dist(&cm->seq_params.order_hint_info,
+                                  fwd_frame_index, cur_frame_index));
+  int bck = abs(get_relative_dist(&cm->seq_params.order_hint_info,
+                                  cur_frame_index, bck_frame_index));
 
   const MB_MODE_INFO *const above_mi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mi = xd->left_mbmi;

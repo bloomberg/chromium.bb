@@ -649,9 +649,11 @@ void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
     fwd_frame_index = cm->buffer_pool->frame_bufs[fwd_idx].cur_frame_offset;
   }
 
-  int d0 = clamp(abs(get_relative_dist(cm, fwd_frame_index, cur_frame_index)),
+  int d0 = clamp(abs(get_relative_dist(&cm->seq_params.order_hint_info,
+                                       fwd_frame_index, cur_frame_index)),
                  0, MAX_FRAME_DISTANCE);
-  int d1 = clamp(abs(get_relative_dist(cm, cur_frame_index, bck_frame_index)),
+  int d1 = clamp(abs(get_relative_dist(&cm->seq_params.order_hint_info,
+                                       cur_frame_index, bck_frame_index)),
                  0, MAX_FRAME_DISTANCE);
 
   const int order = d0 <= d1;

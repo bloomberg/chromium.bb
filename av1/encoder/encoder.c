@@ -1079,22 +1079,26 @@ static void init_seq_coding_tools(SequenceHeader *seq, AV1_COMMON *cm,
   seq->reduced_still_picture_hdr &= !oxcf->full_still_picture_hdr;
   seq->force_screen_content_tools = 2;
   seq->force_integer_mv = 2;
-  seq->enable_order_hint = oxcf->enable_order_hint;
+  seq->order_hint_info.enable_order_hint = oxcf->enable_order_hint;
   seq->frame_id_numbers_present_flag = oxcf->large_scale_tile;
   if (seq->still_picture && seq->reduced_still_picture_hdr) {
-    seq->enable_order_hint = 0;
+    seq->order_hint_info.enable_order_hint = 0;
     seq->frame_id_numbers_present_flag = 0;
     seq->force_screen_content_tools = 2;
     seq->force_integer_mv = 2;
   }
-  seq->order_hint_bits_minus_1 =
-      seq->enable_order_hint ? DEFAULT_EXPLICIT_ORDER_HINT_BITS - 1 : -1;
+  seq->order_hint_info.order_hint_bits_minus_1 =
+      seq->order_hint_info.enable_order_hint
+          ? DEFAULT_EXPLICIT_ORDER_HINT_BITS - 1
+          : -1;
 
   seq->enable_dual_filter = oxcf->enable_dual_filter;
-  seq->enable_jnt_comp = oxcf->enable_jnt_comp;
-  seq->enable_jnt_comp &= seq->enable_order_hint;
-  seq->enable_ref_frame_mvs = oxcf->enable_ref_frame_mvs;
-  seq->enable_ref_frame_mvs &= seq->enable_order_hint;
+  seq->order_hint_info.enable_jnt_comp = oxcf->enable_jnt_comp;
+  seq->order_hint_info.enable_jnt_comp &=
+      seq->order_hint_info.enable_order_hint;
+  seq->order_hint_info.enable_ref_frame_mvs = oxcf->enable_ref_frame_mvs;
+  seq->order_hint_info.enable_ref_frame_mvs &=
+      seq->order_hint_info.enable_order_hint;
   seq->enable_superres = oxcf->enable_superres;
   seq->enable_cdef = oxcf->enable_cdef;
   seq->enable_restoration = oxcf->enable_restoration;
@@ -4401,10 +4405,10 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm, 0);
 
   if (no_cdef) {
-    cm->cdef_bits = 0;
-    cm->cdef_strengths[0] = 0;
-    cm->nb_cdef_strengths = 1;
-    cm->cdef_uv_strengths[0] = 0;
+    cm->cdef_info.cdef_bits = 0;
+    cm->cdef_info.cdef_strengths[0] = 0;
+    cm->cdef_info.nb_cdef_strengths = 1;
+    cm->cdef_info.cdef_uv_strengths[0] = 0;
   } else {
     // Find CDEF parameters
     av1_cdef_search(cm->frame_to_show, cpi->source, cm, xd,
@@ -5254,10 +5258,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   } else {
     cm->lf.filter_level[0] = 0;
     cm->lf.filter_level[1] = 0;
-    cm->cdef_bits = 0;
-    cm->cdef_strengths[0] = 0;
-    cm->nb_cdef_strengths = 1;
-    cm->cdef_uv_strengths[0] = 0;
+    cm->cdef_info.cdef_bits = 0;
+    cm->cdef_info.cdef_strengths[0] = 0;
+    cm->cdef_info.nb_cdef_strengths = 1;
+    cm->cdef_info.cdef_uv_strengths[0] = 0;
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[2].frame_restoration_type = RESTORE_NONE;

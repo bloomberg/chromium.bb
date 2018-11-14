@@ -52,8 +52,8 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
   av1_tile_set_col(&tile_info, cm, 0);
   fd->tile_mi_cols = tile_info.mi_col_end - tile_info.mi_col_start;
   fd->tile_mi_rows = tile_info.mi_row_end - tile_info.mi_row_start;
-  fd->delta_q_present_flag = cm->delta_q_present_flag;
-  fd->delta_q_res = cm->delta_q_res;
+  fd->delta_q_present_flag = cm->delta_q_info.delta_q_present_flag;
+  fd->delta_q_res = cm->delta_q_info.delta_q_res;
 #if CONFIG_ACCOUNTING
   fd->accounting = &pbi->accounting;
 #endif
@@ -114,10 +114,10 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       mi->tx_type =
           (mi->skip ? 0 : mbmi->txk_type[av1_get_txk_type_index(bsize, r, c)]);
 
-      mi->cdef_level =
-          cm->cdef_strengths[mbmi->cdef_strength] / CDEF_SEC_STRENGTHS;
-      mi->cdef_strength =
-          cm->cdef_strengths[mbmi->cdef_strength] % CDEF_SEC_STRENGTHS;
+      mi->cdef_level = cm->cdef_info.cdef_strengths[mbmi->cdef_strength] /
+                       CDEF_SEC_STRENGTHS;
+      mi->cdef_strength = cm->cdef_info.cdef_strengths[mbmi->cdef_strength] %
+                          CDEF_SEC_STRENGTHS;
       mi->cdef_strength += mi->cdef_strength == 3;
       if (mbmi->uv_mode == UV_CFL_PRED) {
         mi->cfl_alpha_idx = mbmi->cfl_alpha_idx;

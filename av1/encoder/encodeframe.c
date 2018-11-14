@@ -925,12 +925,13 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
     }
   }
 
-  if (cm->delta_q_present_flag &&
+  const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
+  if (delta_q_info->delta_q_present_flag &&
       (bsize != cm->seq_params.sb_size || !mbmi->skip) &&
       super_block_upper_left) {
 #if CONFIG_ENTROPY_STATS
     const int dq =
-        (mbmi->current_qindex - xd->current_qindex) / cm->delta_q_res;
+        (mbmi->current_qindex - xd->current_qindex) / delta_q_info->delta_q_res;
     const int absdq = abs(dq);
     for (int i = 0; i < AOMMIN(absdq, DELTA_Q_SMALL); ++i) {
       td->counts->delta_q[i][1]++;
@@ -938,14 +939,14 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
     if (absdq < DELTA_Q_SMALL) td->counts->delta_q[absdq][0]++;
 #endif
     xd->current_qindex = mbmi->current_qindex;
-    if (cm->delta_lf_present_flag) {
-      if (cm->delta_lf_multi) {
+    if (delta_q_info->delta_lf_present_flag) {
+      if (delta_q_info->delta_lf_multi) {
         const int frame_lf_count =
             av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
 #if CONFIG_ENTROPY_STATS
-          const int delta_lf =
-              (mbmi->delta_lf[lf_id] - xd->delta_lf[lf_id]) / cm->delta_lf_res;
+          const int delta_lf = (mbmi->delta_lf[lf_id] - xd->delta_lf[lf_id]) /
+                               delta_q_info->delta_lf_res;
           const int abs_delta_lf = abs(delta_lf);
           for (int i = 0; i < AOMMIN(abs_delta_lf, DELTA_LF_SMALL); ++i) {
             td->counts->delta_lf_multi[lf_id][i][1]++;
@@ -959,7 +960,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 #if CONFIG_ENTROPY_STATS
         const int delta_lf =
             (mbmi->delta_lf_from_base - xd->delta_lf_from_base) /
-            cm->delta_lf_res;
+            delta_q_info->delta_lf_res;
         const int abs_delta_lf = abs(delta_lf);
         for (int i = 0; i < AOMMIN(abs_delta_lf, DELTA_LF_SMALL); ++i) {
           td->counts->delta_lf[i][1]++;
@@ -1471,7 +1472,7 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
   if (!dry_run) {
     if (bsize == cpi->common.seq_params.sb_size && mbmi->skip == 1 &&
-        cpi->common.delta_lf_present_flag) {
+        cpi->common.delta_q_info.delta_lf_present_flag) {
       const int frame_lf_count = av1_num_planes(&cpi->common) > 1
                                      ? FRAME_LF_COUNT
                                      : FRAME_LF_COUNT - 2;
@@ -4839,6 +4840,7 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
                           int mi_col, int num_planes) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
+  const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
   const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
   const int mib_size = cm->seq_params.mib_size;
 
@@ -4857,11 +4859,13 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
     x->sb_energy_level = block_var_level;
     offset_qindex = av1_compute_deltaq_from_energy_level(cpi, block_var_level);
   }
-  const int qmask = ~(cm->delta_q_res - 1);
-  int current_qindex = clamp(cm->base_qindex + offset_qindex, cm->delta_q_res,
-                             256 - cm->delta_q_res);
+  const int qmask = ~(delta_q_info->delta_q_res - 1);
+  int current_qindex =
+      clamp(cm->base_qindex + offset_qindex, delta_q_info->delta_q_res,
+            256 - delta_q_info->delta_q_res);
   current_qindex =
-      ((current_qindex - cm->base_qindex + cm->delta_q_res / 2) & qmask) +
+      ((current_qindex - cm->base_qindex + delta_q_info->delta_q_res / 2) &
+       qmask) +
       cm->base_qindex;
   assert(current_qindex > 0);
 
@@ -4870,9 +4874,9 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
   xd->mi[0]->current_qindex = current_qindex;
   av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
   if (cpi->oxcf.deltaq_mode == DELTA_Q_LF) {
-    const int lfmask = ~(cm->delta_lf_res - 1);
+    const int lfmask = ~(delta_q_info->delta_lf_res - 1);
     const int delta_lf_from_base =
-        ((offset_qindex / 2 + cm->delta_lf_res / 2) & lfmask);
+        ((offset_qindex / 2 + delta_q_info->delta_lf_res / 2) & lfmask);
 
     // pre-set the delta lf for loop filter. Note that this value is set
     // before mi is assigned for each block in current superblock
@@ -4984,8 +4988,9 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
   // Reset delta for every tile
   if (mi_row == tile_info->mi_row_start) {
-    if (cm->delta_q_present_flag) xd->current_qindex = cm->base_qindex;
-    if (cm->delta_lf_present_flag) {
+    if (cm->delta_q_info.delta_q_present_flag)
+      xd->current_qindex = cm->base_qindex;
+    if (cm->delta_q_info.delta_lf_present_flag) {
       av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
     }
   }
@@ -5036,7 +5041,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     xd->cur_frame_force_integer_mv = cm->cur_frame_force_integer_mv;
 
     x->sb_energy_level = 0;
-    if (cm->delta_q_present_flag)
+    if (cm->delta_q_info.delta_q_present_flag)
       setup_delta_q(cpi, x, tile_info, mi_row, mi_col, num_planes);
 
     int dummy_rate;
@@ -5442,7 +5447,8 @@ static void enforce_max_ref_frames(AV1_COMP *cpi) {
           earliest_ref_frames[0] = ref_frame;
           earliest_buf_idxes[0] = buf_idx;
         } else {
-          if (get_relative_dist(cm, ref_offset, min_ref_offset) < 0) {
+          if (get_relative_dist(&cm->seq_params.order_hint_info, ref_offset,
+                                min_ref_offset) < 0) {
             second_min_ref_offset = min_ref_offset;
             earliest_ref_frames[1] = earliest_ref_frames[0];
             earliest_buf_idxes[1] = earliest_buf_idxes[0];
@@ -5451,8 +5457,8 @@ static void enforce_max_ref_frames(AV1_COMP *cpi) {
             earliest_ref_frames[0] = ref_frame;
             earliest_buf_idxes[0] = buf_idx;
           } else if (second_min_ref_offset == UINT_MAX ||
-                     get_relative_dist(cm, ref_offset, second_min_ref_offset) <
-                         0) {
+                     get_relative_dist(&cm->seq_params.order_hint_info,
+                                       ref_offset, second_min_ref_offset) < 0) {
             second_min_ref_offset = ref_offset;
             earliest_ref_frames[1] = ref_frame;
             earliest_buf_idxes[1] = buf_idx;
@@ -5505,7 +5511,8 @@ static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
 
     const int ref_offset =
         cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
-    if (get_relative_dist(cm, ref_offset, (int)cm->frame_offset) > 0) {
+    if (get_relative_dist(&cm->seq_params.order_hint_info, ref_offset,
+                          (int)cm->frame_offset) > 0) {
       one_sided_refs = 0;  // bwd reference
       break;
     }
@@ -5537,8 +5544,10 @@ static int check_skip_mode_enabled(AV1_COMP *const cpi) {
   const int cur_offset = (int)cm->frame_offset;
   int ref_offset[2];
   get_skip_mode_ref_offsets(cm, ref_offset);
-  const int cur_to_ref0 = get_relative_dist(cm, cur_offset, ref_offset[0]);
-  const int cur_to_ref1 = abs(get_relative_dist(cm, cur_offset, ref_offset[1]));
+  const int cur_to_ref0 = get_relative_dist(&cm->seq_params.order_hint_info,
+                                            cur_offset, ref_offset[0]);
+  const int cur_to_ref1 = abs(get_relative_dist(&cm->seq_params.order_hint_info,
+                                                cur_offset, ref_offset[1]));
   if (abs(cur_to_ref0 - cur_to_ref1) > 1) return 0;
 
   // High Latency: Turn off skip mode if all refs are fwd.
@@ -5567,7 +5576,8 @@ static INLINE int skip_gm_frame(AV1_COMMON *const cm, int ref_frame) {
   if ((ref_frame == LAST3_FRAME || ref_frame == LAST2_FRAME) &&
       cm->global_motion[GOLDEN_FRAME].wmtype != IDENTITY) {
     return get_relative_dist(
-               cm, cm->cur_frame->ref_frame_offset[ref_frame - LAST_FRAME],
+               &cm->seq_params.order_hint_info,
+               cm->cur_frame->ref_frame_offset[ref_frame - LAST_FRAME],
                cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <= 0;
   }
   return 0;
@@ -5704,15 +5714,15 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cm->tx_mode = select_tx_mode(cpi);
 
   // Fix delta q resolution for the moment
-  cm->delta_q_res = DEFAULT_DELTA_Q_RES;
+  cm->delta_q_info.delta_q_res = DEFAULT_DELTA_Q_RES;
   // Set delta_q_present_flag before it is used for the first time
-  cm->delta_lf_res = DEFAULT_DELTA_LF_RES;
-  cm->delta_q_present_flag = cpi->oxcf.deltaq_mode != NO_DELTA_Q;
-  cm->delta_lf_present_flag = cpi->oxcf.deltaq_mode == DELTA_Q_LF;
-  cm->delta_lf_multi = DEFAULT_DELTA_LF_MULTI;
+  cm->delta_q_info.delta_lf_res = DEFAULT_DELTA_LF_RES;
+  cm->delta_q_info.delta_q_present_flag = cpi->oxcf.deltaq_mode != NO_DELTA_Q;
+  cm->delta_q_info.delta_lf_present_flag = cpi->oxcf.deltaq_mode == DELTA_Q_LF;
+  cm->delta_q_info.delta_lf_multi = DEFAULT_DELTA_LF_MULTI;
   // update delta_q_present_flag and delta_lf_present_flag based on base_qindex
-  cm->delta_q_present_flag &= cm->base_qindex > 0;
-  cm->delta_lf_present_flag &= cm->base_qindex > 0;
+  cm->delta_q_info.delta_q_present_flag &= cm->base_qindex > 0;
+  cm->delta_q_info.delta_lf_present_flag &= cm->base_qindex > 0;
 
   if (cpi->twopass.gf_group.index &&
       cpi->twopass.gf_group.index < MAX_LAG_BUFFERS &&
@@ -5941,7 +5951,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
   // If intrabc is allowed but never selected, reset the allow_intrabc flag.
   if (cm->allow_intrabc && !cpi->intrabc_used) cm->allow_intrabc = 0;
-  if (cm->allow_intrabc) cm->delta_lf_present_flag = 0;
+  if (cm->allow_intrabc) cm->delta_q_info.delta_lf_present_flag = 0;
 }
 
 void av1_encode_frame(AV1_COMP *cpi) {
@@ -5962,7 +5972,8 @@ void av1_encode_frame(AV1_COMP *cpi) {
   } else {
     cm->frame_offset = cm->current_video_frame;
   }
-  cm->frame_offset %= (1 << (cm->seq_params.order_hint_bits_minus_1 + 1));
+  cm->frame_offset %=
+      (1 << (cm->seq_params.order_hint_info.order_hint_bits_minus_1 + 1));
 
   // Make sure segment_id is no larger than last_active_segid.
   if (cm->seg.enabled && cm->seg.update_map) {

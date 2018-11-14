@@ -41,7 +41,7 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MACROBLOCKD *const xd,
   MB_MODE_INFO *const mbmi = xd->mi[0];
   if (cm->coded_lossless) return;
   if (cm->allow_intrabc) {
-    assert(cm->cdef_bits == 0);
+    assert(cm->cdef_info.cdef_bits == 0);
     return;
   }
 
@@ -59,7 +59,7 @@ static void read_cdef(AV1_COMMON *cm, aom_reader *r, MACROBLOCKD *const xd,
   cm->mi_grid_visible[(mi_row & m) * cm->mi_stride + (mi_col & m)]
       ->cdef_strength = xd->cdef_preset[index] =
       xd->cdef_preset[index] == -1 && !mbmi->skip
-          ? aom_read_literal(r, cm->cdef_bits, ACCT_STR)
+          ? aom_read_literal(r, cm->cdef_info.cdef_bits, ACCT_STR)
           : xd->cdef_preset[index];
 }
 
@@ -710,15 +710,17 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 static void read_delta_q_params(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                 const int mi_row, const int mi_col,
                                 aom_reader *r) {
-  if (cm->delta_q_present_flag) {
+  DeltaQInfo *const delta_q_info = &cm->delta_q_info;
+
+  if (delta_q_info->delta_q_present_flag) {
     MB_MODE_INFO *const mbmi = xd->mi[0];
-    xd->current_qindex +=
-        read_delta_qindex(cm, xd, r, mbmi, mi_col, mi_row) * cm->delta_q_res;
+    xd->current_qindex += read_delta_qindex(cm, xd, r, mbmi, mi_col, mi_row) *
+                          delta_q_info->delta_q_res;
     /* Normative: Clamp to [1,MAXQ] to not interfere with lossless mode */
     xd->current_qindex = clamp(xd->current_qindex, 1, MAXQ);
     FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
-    if (cm->delta_lf_present_flag) {
-      if (cm->delta_lf_multi) {
+    if (delta_q_info->delta_lf_present_flag) {
+      if (delta_q_info->delta_lf_multi) {
         const int frame_lf_count =
             av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
@@ -726,7 +728,7 @@ static void read_delta_q_params(AV1_COMMON *const cm, MACROBLOCKD *const xd,
               xd->delta_lf[lf_id] +
               read_delta_lflevel(cm, r, ec_ctx->delta_lf_multi_cdf[lf_id], mbmi,
                                  mi_col, mi_row) *
-                  cm->delta_lf_res;
+                  delta_q_info->delta_lf_res;
           mbmi->delta_lf[lf_id] = xd->delta_lf[lf_id] =
               clamp(tmp_lvl, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
         }
@@ -734,7 +736,7 @@ static void read_delta_q_params(AV1_COMMON *const cm, MACROBLOCKD *const xd,
         const int tmp_lvl = xd->delta_lf_from_base +
                             read_delta_lflevel(cm, r, ec_ctx->delta_lf_cdf,
                                                mbmi, mi_col, mi_row) *
-                                cm->delta_lf_res;
+                                delta_q_info->delta_lf_res;
         mbmi->delta_lf_from_base = xd->delta_lf_from_base =
             clamp(tmp_lvl, -MAX_LOOP_FILTER, MAX_LOOP_FILTER);
       }
@@ -1419,7 +1421,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     }
 
     if (mbmi->comp_group_idx == 0) {
-      if (cm->seq_params.enable_jnt_comp) {
+      if (cm->seq_params.order_hint_info.enable_jnt_comp) {
         const int comp_index_ctx = get_comp_index_context(cm, xd);
         mbmi->compound_idx = aom_read_symbol(
             r, ec_ctx->compound_index_cdf[comp_index_ctx], 2, ACCT_STR);

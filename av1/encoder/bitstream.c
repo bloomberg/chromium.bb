@@ -315,7 +315,7 @@ static void write_delta_lflevel(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int smallval = abs < DELTA_LF_SMALL ? 1 : 0;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
-  if (cm->delta_lf_multi) {
+  if (cm->delta_q_info.delta_lf_multi) {
     assert(lf_id >= 0 && lf_id < (av1_num_planes(cm) > 1 ? FRAME_LF_COUNT
                                                          : FRAME_LF_COUNT - 2));
     aom_write_symbol(w, AOMMIN(abs, DELTA_LF_SMALL),
@@ -868,10 +868,10 @@ static void write_cdef(AV1_COMMON *cm, MACROBLOCKD *const xd, aom_writer *w,
                        int skip, int mi_col, int mi_row) {
   if (cm->coded_lossless || cm->allow_intrabc) {
     // Initialize to indicate no CDEF for safety.
-    cm->cdef_bits = 0;
-    cm->cdef_strengths[0] = 0;
-    cm->nb_cdef_strengths = 1;
-    cm->cdef_uv_strengths[0] = 0;
+    cm->cdef_info.cdef_bits = 0;
+    cm->cdef_info.cdef_strengths[0] = 0;
+    cm->cdef_info.nb_cdef_strengths = 1;
+    cm->cdef_info.cdef_uv_strengths[0] = 0;
     return;
   }
 
@@ -891,7 +891,7 @@ static void write_cdef(AV1_COMMON *cm, MACROBLOCKD *const xd, aom_writer *w,
                         ? !!(mi_col & mask) + 2 * !!(mi_row & mask)
                         : 0;
   if (xd->cdef_preset[index] == -1 && !skip) {
-    aom_write_literal(w, mbmi->cdef_strength, cm->cdef_bits);
+    aom_write_literal(w, mbmi->cdef_strength, cm->cdef_info.cdef_bits);
     xd->cdef_preset[index] = mbmi->cdef_strength;
   }
 }
@@ -938,7 +938,9 @@ static void write_inter_segment_id(AV1_COMP *cpi, aom_writer *w,
 static void write_delta_q_params(AV1_COMP *cpi, const int mi_row,
                                  const int mi_col, int skip, aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
-  if (cm->delta_q_present_flag) {
+  const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
+
+  if (delta_q_info->delta_q_present_flag) {
     MACROBLOCK *const x = &cpi->td.mb;
     MACROBLOCKD *const xd = &x->e_mbd;
     const MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -951,24 +953,25 @@ static void write_delta_q_params(AV1_COMP *cpi, const int mi_row,
         super_block_upper_left) {
       assert(mbmi->current_qindex > 0);
       const int reduced_delta_qindex =
-          (mbmi->current_qindex - xd->current_qindex) / cm->delta_q_res;
+          (mbmi->current_qindex - xd->current_qindex) /
+          delta_q_info->delta_q_res;
       write_delta_qindex(xd, reduced_delta_qindex, w);
       xd->current_qindex = mbmi->current_qindex;
-      if (cm->delta_lf_present_flag) {
-        if (cm->delta_lf_multi) {
+      if (delta_q_info->delta_lf_present_flag) {
+        if (delta_q_info->delta_lf_multi) {
           const int frame_lf_count =
               av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
           for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
             int reduced_delta_lflevel =
                 (mbmi->delta_lf[lf_id] - xd->delta_lf[lf_id]) /
-                cm->delta_lf_res;
+                delta_q_info->delta_lf_res;
             write_delta_lflevel(cm, xd, lf_id, reduced_delta_lflevel, w);
             xd->delta_lf[lf_id] = mbmi->delta_lf[lf_id];
           }
         } else {
           int reduced_delta_lflevel =
               (mbmi->delta_lf_from_base - xd->delta_lf_from_base) /
-              cm->delta_lf_res;
+              delta_q_info->delta_lf_res;
           write_delta_lflevel(cm, xd, -1, reduced_delta_lflevel, w);
           xd->delta_lf_from_base = mbmi->delta_lf_from_base;
         }
@@ -1148,7 +1151,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         if (mbmi->compound_idx)
           assert(mbmi->interinter_comp.type == COMPOUND_AVERAGE);
 
-        if (cm->seq_params.enable_jnt_comp) {
+        if (cm->seq_params.order_hint_info.enable_jnt_comp) {
           const int comp_index_ctx = get_comp_index_context(cm, xd);
           aom_write_symbol(w, mbmi->compound_idx,
                            ec_ctx->compound_index_cdf[comp_index_ctx], 2);
@@ -1685,9 +1688,9 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
   av1_zero_above_context(cm, xd, mi_col_start, mi_col_end, tile->tile_row);
   av1_init_above_context(cm, xd, tile->tile_row);
 
-  if (cpi->common.delta_q_present_flag) {
+  if (cpi->common.delta_q_info.delta_q_present_flag) {
     xd->current_qindex = cpi->common.base_qindex;
-    if (cpi->common.delta_lf_present_flag) {
+    if (cpi->common.delta_q_info.delta_lf_present_flag) {
       av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
     }
   }
@@ -1977,13 +1980,15 @@ static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   if (cm->allow_intrabc) return;
   const int num_planes = av1_num_planes(cm);
   int i;
-  aom_wb_write_literal(wb, cm->cdef_pri_damping - 3, 2);
-  assert(cm->cdef_pri_damping == cm->cdef_sec_damping);
-  aom_wb_write_literal(wb, cm->cdef_bits, 2);
-  for (i = 0; i < cm->nb_cdef_strengths; i++) {
-    aom_wb_write_literal(wb, cm->cdef_strengths[i], CDEF_STRENGTH_BITS);
+  aom_wb_write_literal(wb, cm->cdef_info.cdef_pri_damping - 3, 2);
+  assert(cm->cdef_info.cdef_pri_damping == cm->cdef_info.cdef_sec_damping);
+  aom_wb_write_literal(wb, cm->cdef_info.cdef_bits, 2);
+  for (i = 0; i < cm->cdef_info.nb_cdef_strengths; i++) {
+    aom_wb_write_literal(wb, cm->cdef_info.cdef_strengths[i],
+                         CDEF_STRENGTH_BITS);
     if (num_planes > 1)
-      aom_wb_write_literal(wb, cm->cdef_uv_strengths[i], CDEF_STRENGTH_BITS);
+      aom_wb_write_literal(wb, cm->cdef_info.cdef_uv_strengths[i],
+                           CDEF_STRENGTH_BITS);
   }
 }
 
@@ -2716,11 +2721,11 @@ static void write_sequence_header(AV1_COMP *cpi,
     aom_wb_write_bit(wb, seq_params->enable_warped_motion);
     aom_wb_write_bit(wb, seq_params->enable_dual_filter);
 
-    aom_wb_write_bit(wb, seq_params->enable_order_hint);
+    aom_wb_write_bit(wb, seq_params->order_hint_info.enable_order_hint);
 
-    if (seq_params->enable_order_hint) {
-      aom_wb_write_bit(wb, seq_params->enable_jnt_comp);
-      aom_wb_write_bit(wb, seq_params->enable_ref_frame_mvs);
+    if (seq_params->order_hint_info.enable_order_hint) {
+      aom_wb_write_bit(wb, seq_params->order_hint_info.enable_jnt_comp);
+      aom_wb_write_bit(wb, seq_params->order_hint_info.enable_ref_frame_mvs);
     }
     if (seq_params->force_screen_content_tools == 2) {
       aom_wb_write_bit(wb, 1);
@@ -2738,8 +2743,9 @@ static void write_sequence_header(AV1_COMP *cpi,
     } else {
       assert(seq_params->force_integer_mv == 2);
     }
-    if (seq_params->enable_order_hint)
-      aom_wb_write_literal(wb, seq_params->order_hint_bits_minus_1, 3);
+    if (seq_params->order_hint_info.enable_order_hint)
+      aom_wb_write_literal(
+          wb, seq_params->order_hint_info.order_hint_bits_minus_1, 3);
   }
 
   aom_wb_write_bit(wb, seq_params->enable_superres);
@@ -3023,9 +3029,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
                                cm->height != seq_params->max_frame_height);
     if (!frame_is_sframe(cm)) aom_wb_write_bit(wb, frame_size_override_flag);
 
-    if (seq_params->enable_order_hint)
-      aom_wb_write_literal(wb, cm->frame_offset,
-                           seq_params->order_hint_bits_minus_1 + 1);
+    if (seq_params->order_hint_info.enable_order_hint)
+      aom_wb_write_literal(
+          wb, cm->frame_offset,
+          seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
 
     if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
       aom_wb_write_literal(wb, cm->primary_ref_frame, PRIMARY_REF_BITS);
@@ -3110,7 +3117,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   if (!frame_is_intra_only(cm) || cpi->refresh_frame_mask != 0xFF) {
     // Write all ref frame order hints if error_resilient_mode == 1
-    if (cm->error_resilient_mode && seq_params->enable_order_hint) {
+    if (cm->error_resilient_mode &&
+        seq_params->order_hint_info.enable_order_hint) {
       RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
         // Get buffer index
@@ -3118,8 +3126,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         assert(buf_idx >= 0 && buf_idx < FRAME_BUFFERS);
 
         // Write order hint to bit stream
-        aom_wb_write_literal(wb, frame_bufs[buf_idx].cur_frame_offset,
-                             seq_params->order_hint_bits_minus_1 + 1);
+        aom_wb_write_literal(
+            wb, frame_bufs[buf_idx].cur_frame_offset,
+            seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
       }
     }
   }
@@ -3144,7 +3153,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       //       automatically.
 #define FRAME_REFS_SHORT_SIGNALING 0
 #if FRAME_REFS_SHORT_SIGNALING
-      cm->frame_refs_short_signaling = seq_params->enable_order_hint;
+      cm->frame_refs_short_signaling =
+          seq_params->order_hint_info.enable_order_hint;
 #endif  // FRAME_REFS_SHORT_SIGNALING
 
       if (cm->frame_refs_short_signaling) {
@@ -3155,7 +3165,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         check_frame_refs_short_signaling(cpi);
       }
 
-      if (seq_params->enable_order_hint)
+      if (seq_params->order_hint_info.enable_order_hint)
         aom_wb_write_bit(wb, cm->frame_refs_short_signaling);
 
       if (cm->frame_refs_short_signaling) {
@@ -3223,19 +3233,20 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   encode_quantization(cm, wb);
   encode_segmentation(cm, xd, wb);
 
-  if (cm->delta_q_present_flag) assert(cm->base_qindex > 0);
+  const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
+  if (delta_q_info->delta_q_present_flag) assert(cm->base_qindex > 0);
   if (cm->base_qindex > 0) {
-    aom_wb_write_bit(wb, cm->delta_q_present_flag);
-    if (cm->delta_q_present_flag) {
-      aom_wb_write_literal(wb, get_msb(cm->delta_q_res), 2);
+    aom_wb_write_bit(wb, delta_q_info->delta_q_present_flag);
+    if (delta_q_info->delta_q_present_flag) {
+      aom_wb_write_literal(wb, get_msb(delta_q_info->delta_q_res), 2);
       xd->current_qindex = cm->base_qindex;
       if (cm->allow_intrabc)
-        assert(cm->delta_lf_present_flag == 0);
+        assert(delta_q_info->delta_lf_present_flag == 0);
       else
-        aom_wb_write_bit(wb, cm->delta_lf_present_flag);
-      if (cm->delta_lf_present_flag) {
-        aom_wb_write_literal(wb, get_msb(cm->delta_lf_res), 2);
-        aom_wb_write_bit(wb, cm->delta_lf_multi);
+        aom_wb_write_bit(wb, delta_q_info->delta_lf_present_flag);
+      if (delta_q_info->delta_lf_present_flag) {
+        aom_wb_write_literal(wb, get_msb(delta_q_info->delta_lf_res), 2);
+        aom_wb_write_bit(wb, delta_q_info->delta_lf_multi);
         av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
       }
     }

@@ -53,7 +53,7 @@ static void update_delta_lf_for_row_mt(AV1_COMP *cpi) {
               mbmi->delta_lf[lf_id] = xd->delta_lf[lf_id];
             mbmi->delta_lf_from_base = xd->delta_lf_from_base;
           } else {
-            if (cm->delta_lf_multi) {
+            if (cm->delta_q_info.delta_lf_multi) {
               for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
                 xd->delta_lf[lf_id] = mbmi->delta_lf[lf_id];
             } else {
@@ -680,6 +680,6 @@ void av1_encode_tiles_row_mt(AV1_COMP *cpi) {
   prepare_enc_workers(cpi, enc_row_mt_worker_hook, num_workers);
   launch_enc_workers(cpi, num_workers);
   sync_enc_workers(cpi, num_workers);
-  if (cm->delta_lf_present_flag) update_delta_lf_for_row_mt(cpi);
+  if (cm->delta_q_info.delta_lf_present_flag) update_delta_lf_for_row_mt(cpi);
   accumulate_counters_enc_workers(cpi, num_workers);
 }

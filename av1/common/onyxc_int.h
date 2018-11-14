@@ -188,6 +188,40 @@ typedef struct BitstreamLevel {
   uint8_t minor;
 } BitstreamLevel;
 
+typedef struct {
+  int cdef_pri_damping;
+  int cdef_sec_damping;
+  int nb_cdef_strengths;
+  int cdef_strengths[CDEF_MAX_STRENGTHS];
+  int cdef_uv_strengths[CDEF_MAX_STRENGTHS];
+  int cdef_bits;
+} CdefInfo;
+
+typedef struct {
+  int delta_q_present_flag;
+  // Resolution of delta quant
+  int delta_q_res;
+  int delta_lf_present_flag;
+  // Resolution of delta lf level
+  int delta_lf_res;
+  // This is a flag for number of deltas of loop filter level
+  // 0: use 1 delta, for y_vertical, y_horizontal, u, and v
+  // 1: use separate deltas for each filter level
+  int delta_lf_multi;
+} DeltaQInfo;
+
+typedef struct {
+  int enable_order_hint;           // 0 - disable order hint, and related tools
+  int order_hint_bits_minus_1;
+                                   // jnt_comp, ref_frame_mvs, frame_sign_bias
+                                   // if 0, enable_jnt_comp and
+                                   // enable_ref_frame_mvs must be set zs 0.
+  int enable_jnt_comp;             // 0 - disable joint compound modes
+                                   // 1 - enable it
+  int enable_ref_frame_mvs;        // 0 - disable ref frame mvs
+                                   // 1 - enable it
+} OrderHintInfo;
+
 // Sequence header structure.
 // Note: All syntax elements of sequence_header_obu that need to be
 // bit-identical across multiple sequence headers must be part of this struct,
@@ -203,7 +237,9 @@ typedef struct SequenceHeader {
   BLOCK_SIZE sb_size;  // Size of the superblock used for this frame
   int mib_size;        // Size of the superblock in units of MI blocks
   int mib_size_log2;   // Log 2 of above.
-  int order_hint_bits_minus_1;
+
+  OrderHintInfo order_hint_info;
+
   int force_screen_content_tools;  // 0 - force off
                                    // 1 - force on
                                    // 2 - adaptive
@@ -218,14 +254,6 @@ typedef struct SequenceHeader {
   int enable_masked_compound;      // enables/disables masked compound
   int enable_dual_filter;          // 0 - disable dual interpolation filter
                                    // 1 - enable vert/horiz filter selection
-  int enable_order_hint;           // 0 - disable order hint, and related tools
-                                   // jnt_comp, ref_frame_mvs, frame_sign_bias
-                                   // if 0, enable_jnt_comp and
-                                   // enable_ref_frame_mvs must be set zs 0.
-  int enable_jnt_comp;             // 0 - disable joint compound modes
-                                   // 1 - enable it
-  int enable_ref_frame_mvs;        // 0 - disable ref frame mvs
-                                   // 1 - enable it
   int enable_warped_motion;        // 0 - disable warped motion for sequence
                                    // 1 - enable it for the sequence
   int enable_superres;     // 0 - Disable superres for the sequence, and disable
@@ -497,23 +525,9 @@ typedef struct AV1Common {
   WarpedMotionParams global_motion[REF_FRAMES];
   aom_film_grain_t film_grain_params;
 
-  int cdef_pri_damping;
-  int cdef_sec_damping;
-  int nb_cdef_strengths;
-  int cdef_strengths[CDEF_MAX_STRENGTHS];
-  int cdef_uv_strengths[CDEF_MAX_STRENGTHS];
-  int cdef_bits;
+  CdefInfo cdef_info;
+  DeltaQInfo delta_q_info;  // Delta Q and Delta LF parameters
 
-  int delta_q_present_flag;
-  // Resolution of delta quant
-  int delta_q_res;
-  int delta_lf_present_flag;
-  // Resolution of delta lf level
-  int delta_lf_res;
-  // This is a flag for number of deltas of loop filter level
-  // 0: use 1 delta, for y_vertical, y_horizontal, u, and v
-  // 1: use separate deltas for each filter level
-  int delta_lf_multi;
   int num_tg;
   SequenceHeader seq_params;
   int current_frame_id;
@@ -651,8 +665,10 @@ static INLINE RefCntBuffer *get_prev_frame(const AV1_COMMON *const cm) {
 
 // Returns 1 if this frame might allow mvs from some reference frame.
 static INLINE int frame_might_allow_ref_frame_mvs(const AV1_COMMON *cm) {
-  return !cm->error_resilient_mode && cm->seq_params.enable_ref_frame_mvs &&
-         cm->seq_params.enable_order_hint && !frame_is_intra_only(cm);
+  return !cm->error_resilient_mode &&
+    cm->seq_params.order_hint_info.enable_ref_frame_mvs &&
+    cm->seq_params.order_hint_info.enable_order_hint &&
+    !frame_is_intra_only(cm);
 }
 
 // Returns 1 if this frame might use warped_motion

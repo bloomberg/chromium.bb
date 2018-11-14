@@ -1640,7 +1640,7 @@ static void parse_decode_block(AV1Decoder *const pbi, ThreadData *const td,
   }
 #endif
 
-  if (cm->delta_q_present_flag) {
+  if (cm->delta_q_info.delta_q_present_flag) {
     for (int i = 0; i < MAX_SEGMENTS; i++) {
       const int current_qindex =
           av1_get_qindex(&cm->seg, i, xd->current_qindex);
@@ -2194,13 +2194,16 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 
 static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   const int num_planes = av1_num_planes(cm);
+  CdefInfo *const cdef_info = &cm->cdef_info;
+
   if (cm->allow_intrabc) return;
-  cm->cdef_pri_damping = cm->cdef_sec_damping = aom_rb_read_literal(rb, 2) + 3;
-  cm->cdef_bits = aom_rb_read_literal(rb, 2);
-  cm->nb_cdef_strengths = 1 << cm->cdef_bits;
-  for (int i = 0; i < cm->nb_cdef_strengths; i++) {
-    cm->cdef_strengths[i] = aom_rb_read_literal(rb, CDEF_STRENGTH_BITS);
-    cm->cdef_uv_strengths[i] =
+  cdef_info->cdef_pri_damping = aom_rb_read_literal(rb, 2) + 3;
+  cdef_info->cdef_sec_damping = cdef_info->cdef_pri_damping;
+  cdef_info->cdef_bits = aom_rb_read_literal(rb, 2);
+  cdef_info->nb_cdef_strengths = 1 << cdef_info->cdef_bits;
+  for (int i = 0; i < cdef_info->nb_cdef_strengths; i++) {
+    cdef_info->cdef_strengths[i] = aom_rb_read_literal(rb, CDEF_STRENGTH_BITS);
+    cdef_info->cdef_uv_strengths[i] =
         num_planes > 1 ? aom_rb_read_literal(rb, CDEF_STRENGTH_BITS) : 0;
   }
 }
@@ -2565,15 +2568,18 @@ void av1_set_single_tile_decoding_mode(AV1_COMMON *const cm) {
   cm->single_tile_decoding = 0;
   if (cm->large_scale_tile) {
     struct loopfilter *lf = &cm->lf;
+    RestorationInfo *const rst_info = cm->rst_info;
+    const CdefInfo *const cdef_info = &cm->cdef_info;
 
     // Figure out single_tile_decoding by loopfilter_level.
     const int no_loopfilter = !(lf->filter_level[0] || lf->filter_level[1]);
-    const int no_cdef = cm->cdef_bits == 0 && cm->cdef_strengths[0] == 0 &&
-                        cm->cdef_uv_strengths[0] == 0;
+    const int no_cdef = cdef_info->cdef_bits == 0 &&
+                        cdef_info->cdef_strengths[0] == 0 &&
+                        cdef_info->cdef_uv_strengths[0] == 0;
     const int no_restoration =
-        cm->rst_info[0].frame_restoration_type == RESTORE_NONE &&
-        cm->rst_info[1].frame_restoration_type == RESTORE_NONE &&
-        cm->rst_info[2].frame_restoration_type == RESTORE_NONE;
+        rst_info[0].frame_restoration_type == RESTORE_NONE &&
+        rst_info[1].frame_restoration_type == RESTORE_NONE &&
+        rst_info[2].frame_restoration_type == RESTORE_NONE;
     assert(IMPLIES(cm->coded_lossless, no_loopfilter && no_cdef));
     assert(IMPLIES(cm->all_lossless, no_restoration));
     cm->single_tile_decoding = no_loopfilter && no_cdef && no_restoration;
@@ -4501,23 +4507,23 @@ void av1_read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb,
     seq_params->enable_masked_compound = 0;
     seq_params->enable_warped_motion = 0;
     seq_params->enable_dual_filter = 0;
-    seq_params->enable_order_hint = 0;
-    seq_params->enable_jnt_comp = 0;
-    seq_params->enable_ref_frame_mvs = 0;
+    seq_params->order_hint_info.enable_order_hint = 0;
+    seq_params->order_hint_info.enable_jnt_comp = 0;
+    seq_params->order_hint_info.enable_ref_frame_mvs = 0;
     seq_params->force_screen_content_tools = 2;  // SELECT_SCREEN_CONTENT_TOOLS
     seq_params->force_integer_mv = 2;            // SELECT_INTEGER_MV
-    seq_params->order_hint_bits_minus_1 = -1;
+    seq_params->order_hint_info.order_hint_bits_minus_1 = -1;
   } else {
     seq_params->enable_interintra_compound = aom_rb_read_bit(rb);
     seq_params->enable_masked_compound = aom_rb_read_bit(rb);
     seq_params->enable_warped_motion = aom_rb_read_bit(rb);
     seq_params->enable_dual_filter = aom_rb_read_bit(rb);
 
-    seq_params->enable_order_hint = aom_rb_read_bit(rb);
-    seq_params->enable_jnt_comp =
-        seq_params->enable_order_hint ? aom_rb_read_bit(rb) : 0;
-    seq_params->enable_ref_frame_mvs =
-        seq_params->enable_order_hint ? aom_rb_read_bit(rb) : 0;
+    seq_params->order_hint_info.enable_order_hint = aom_rb_read_bit(rb);
+    seq_params->order_hint_info.enable_jnt_comp =
+        seq_params->order_hint_info.enable_order_hint ? aom_rb_read_bit(rb) : 0;
+    seq_params->order_hint_info.enable_ref_frame_mvs =
+        seq_params->order_hint_info.enable_order_hint ? aom_rb_read_bit(rb) : 0;
 
     if (aom_rb_read_bit(rb)) {
       seq_params->force_screen_content_tools =
@@ -4535,8 +4541,10 @@ void av1_read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb,
     } else {
       seq_params->force_integer_mv = 2;  // SELECT_INTEGER_MV
     }
-    seq_params->order_hint_bits_minus_1 =
-        seq_params->enable_order_hint ? aom_rb_read_literal(rb, 3) : -1;
+    seq_params->order_hint_info.order_hint_bits_minus_1 =
+        seq_params->order_hint_info.enable_order_hint
+            ? aom_rb_read_literal(rb, 3)
+            : -1;
   }
 
   seq_params->enable_superres = aom_rb_read_bit(rb);
@@ -4974,8 +4982,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
     frame_size_override_flag = frame_is_sframe(cm) ? 1 : aom_rb_read_bit(rb);
 
-    cm->frame_offset =
-        aom_rb_read_literal(rb, seq_params->order_hint_bits_minus_1 + 1);
+    cm->frame_offset = aom_rb_read_literal(
+        rb, seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
     cm->current_video_frame = cm->frame_offset;
 
     if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
@@ -5046,11 +5054,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   if (!frame_is_intra_only(cm) || pbi->refresh_frame_flags != 0xFF) {
     // Read all ref frame order hints if error_resilient_mode == 1
-    if (cm->error_resilient_mode && seq_params->enable_order_hint) {
+    if (cm->error_resilient_mode &&
+        seq_params->order_hint_info.enable_order_hint) {
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
         // Read order hint from bit stream
-        unsigned int frame_offset =
-            aom_rb_read_literal(rb, seq_params->order_hint_bits_minus_1 + 1);
+        unsigned int frame_offset = aom_rb_read_literal(
+            rb, seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
         // Get buffer index
         int buf_idx = cm->ref_frame_map[ref_idx];
         assert(buf_idx < FRAME_BUFFERS);
@@ -5111,7 +5120,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
 
       // Frame refs short signaling is off when error resilient mode is on.
-      if (seq_params->enable_order_hint)
+      if (seq_params->order_hint_info.enable_order_hint)
         cm->frame_refs_short_signaling = aom_rb_read_bit(rb);
 
       if (cm->frame_refs_short_signaling) {
@@ -5278,10 +5287,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     struct loopfilter *lf = &cm->lf;
     lf->filter_level[0] = 0;
     lf->filter_level[1] = 0;
-    cm->cdef_bits = 0;
-    cm->cdef_strengths[0] = 0;
-    cm->nb_cdef_strengths = 1;
-    cm->cdef_uv_strengths[0] = 0;
+    cm->cdef_info.cdef_bits = 0;
+    cm->cdef_info.cdef_strengths[0] = 0;
+    cm->cdef_info.nb_cdef_strengths = 1;
+    cm->cdef_info.cdef_uv_strengths[0] = 0;
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
@@ -5306,18 +5315,20 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   setup_segmentation(cm, rb);
 
-  cm->delta_q_res = 1;
-  cm->delta_lf_res = 1;
-  cm->delta_lf_present_flag = 0;
-  cm->delta_lf_multi = 0;
-  cm->delta_q_present_flag = cm->base_qindex > 0 ? aom_rb_read_bit(rb) : 0;
-  if (cm->delta_q_present_flag) {
+  cm->delta_q_info.delta_q_res = 1;
+  cm->delta_q_info.delta_lf_res = 1;
+  cm->delta_q_info.delta_lf_present_flag = 0;
+  cm->delta_q_info.delta_lf_multi = 0;
+  cm->delta_q_info.delta_q_present_flag =
+      cm->base_qindex > 0 ? aom_rb_read_bit(rb) : 0;
+  if (cm->delta_q_info.delta_q_present_flag) {
     xd->current_qindex = cm->base_qindex;
-    cm->delta_q_res = 1 << aom_rb_read_literal(rb, 2);
-    if (!cm->allow_intrabc) cm->delta_lf_present_flag = aom_rb_read_bit(rb);
-    if (cm->delta_lf_present_flag) {
-      cm->delta_lf_res = 1 << aom_rb_read_literal(rb, 2);
-      cm->delta_lf_multi = aom_rb_read_bit(rb);
+    cm->delta_q_info.delta_q_res = 1 << aom_rb_read_literal(rb, 2);
+    if (!cm->allow_intrabc)
+      cm->delta_q_info.delta_lf_present_flag = aom_rb_read_bit(rb);
+    if (cm->delta_q_info.delta_lf_present_flag) {
+      cm->delta_q_info.delta_lf_res = 1 << aom_rb_read_literal(rb, 2);
+      cm->delta_q_info.delta_lf_multi = aom_rb_read_bit(rb);
       av1_reset_loop_filter_delta(xd, av1_num_planes(cm));
     }
   }
@@ -5339,9 +5350,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->lf.filter_level[1] = 0;
   }
   if (cm->coded_lossless || !seq_params->enable_cdef) {
-    cm->cdef_bits = 0;
-    cm->cdef_strengths[0] = 0;
-    cm->cdef_uv_strengths[0] = 0;
+    cm->cdef_info.cdef_bits = 0;
+    cm->cdef_info.cdef_strengths[0] = 0;
+    cm->cdef_info.cdef_uv_strengths[0] = 0;
   }
   if (cm->all_lossless || !seq_params->enable_restoration) {
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
@@ -5578,7 +5589,8 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
         cm->rst_info[2].frame_restoration_type != RESTORE_NONE;
     const int do_cdef =
         !cm->skip_loop_filter && !cm->coded_lossless &&
-        (cm->cdef_bits || cm->cdef_strengths[0] || cm->cdef_uv_strengths[0]);
+        (cm->cdef_info.cdef_bits || cm->cdef_info.cdef_strengths[0] ||
+         cm->cdef_info.cdef_uv_strengths[0]);
     const int do_superres = av1_superres_scaled(cm);
     const int optimized_loop_restoration = !do_cdef && !do_superres;
 
