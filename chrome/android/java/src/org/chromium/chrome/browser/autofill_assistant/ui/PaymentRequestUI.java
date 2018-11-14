@@ -389,6 +389,9 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         // Enabled in updatePayButtonEnabled() when the user has selected all payment options.
         mPayButton.setEnabled(false);
+
+        // Force the initial appearance of edit chevrons next to all sections.
+        updateSectionVisibility();
     }
 
     /**
