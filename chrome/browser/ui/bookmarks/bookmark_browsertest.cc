@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
@@ -21,12 +22,14 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/url_and_title.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -42,6 +45,25 @@ using bookmarks::UrlAndTitle;
 namespace {
 const char kPersistBookmarkURL[] = "http://www.cnn.com/";
 const char kPersistBookmarkTitle[] = "CNN";
+
+bool AreCommittedInterstitialsEnabled() {
+  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
+}
+
+bool IsShowingInterstitial(content::WebContents* tab) {
+  if (AreCommittedInterstitialsEnabled()) {
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            tab);
+    if (!helper) {
+      return false;
+    }
+    return helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting() !=
+           nullptr;
+  }
+  return tab->GetInterstitialPage() != nullptr;
+}
+
 }  // namespace
 
 class TestBookmarkTabHelperObserver : public BookmarkTabHelperObserver {
@@ -187,16 +209,16 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest,
 
   // Go to a bookmarked url. Bookmark star should show.
   ui_test_utils::NavigateToURL(browser(), bookmark_url);
-  EXPECT_FALSE(web_contents->ShowingInterstitialPage());
+  EXPECT_FALSE(IsShowingInterstitial(web_contents));
   EXPECT_TRUE(bookmark_observer.is_starred());
-
   // Now go to a non-bookmarked url which triggers an SSL warning. Bookmark
   // star should disappear.
   GURL error_url = https_server.GetURL("/");
   ui_test_utils::NavigateToURL(browser(), error_url);
   web_contents = browser()->tab_strip_model()->GetActiveWebContents();
-  content::WaitForInterstitialAttach(web_contents);
-  EXPECT_TRUE(web_contents->ShowingInterstitialPage());
+  if (!AreCommittedInterstitialsEnabled())
+    content::WaitForInterstitialAttach(web_contents);
+  EXPECT_TRUE(IsShowingInterstitial(web_contents));
   EXPECT_FALSE(bookmark_observer.is_starred());
 
   tab_helper->RemoveObserver(&bookmark_observer);
