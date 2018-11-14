@@ -42,7 +42,7 @@ GestureEventQueue::GestureEventQueue(
 
 GestureEventQueue::~GestureEventQueue() { }
 
-bool GestureEventQueue::DebounceOrQueueEvent(
+bool GestureEventQueue::DebounceOrForwardEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   // GFS and GFC should have been filtered in FlingControllerFilterEvent.
   DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingStart);
@@ -50,7 +50,7 @@ bool GestureEventQueue::DebounceOrQueueEvent(
   if (!ShouldForwardForBounceReduction(gesture_event))
     return false;
 
-  QueueAndForwardIfNecessary(gesture_event);
+  ForwardGestureEvent(gesture_event);
   return true;
 }
 
@@ -136,7 +136,6 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
     case WebInputEvent::kGesturePinchBegin:
     case WebInputEvent::kGesturePinchEnd:
     case WebInputEvent::kGesturePinchUpdate:
-      // TODO(rjkroege): Debounce pinch (http://crbug.com/147647)
       return true;
     default:
       if (scrolling_in_progress_) {
@@ -147,13 +146,13 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
   }
 }
 
-void GestureEventQueue::QueueAndForwardIfNecessary(
+void GestureEventQueue::ForwardGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   // GFS and GFC should have been filtered in FlingControllerFilterEvent to
   // get handled by fling controller.
   DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingStart);
   DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingCancel);
-  coalesced_gesture_events_.push_back(gesture_event);
+  sent_events_awaiting_ack_.push_back(gesture_event);
   if (gesture_event.event.GetType() == WebInputEvent::kGestureScrollBegin) {
     fling_controller_.RegisterFlingSchedulerObserver();
   } else if (gesture_event.event.GetType() ==
@@ -161,7 +160,6 @@ void GestureEventQueue::QueueAndForwardIfNecessary(
     fling_controller_.UnregisterFlingSchedulerObserver();
   }
   client_->SendGestureEventImmediately(gesture_event);
-  return;
 }
 
 void GestureEventQueue::ProcessGestureAck(InputEventAckSource ack_source,
@@ -170,14 +168,14 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckSource ack_source,
                                           const ui::LatencyInfo& latency) {
   TRACE_EVENT0("input", "GestureEventQueue::ProcessGestureAck");
 
-  if (coalesced_gesture_events_.empty()) {
+  if (sent_events_awaiting_ack_.empty()) {
     DLOG(ERROR) << "Received unexpected ACK for event type " << type;
     return;
   }
 
   // ACKs could come back out of order. We want to cache them to restore the
   // original order.
-  for (auto& outstanding_event : coalesced_gesture_events_) {
+  for (auto& outstanding_event : sent_events_awaiting_ack_) {
     if (outstanding_event.ack_state() != INPUT_EVENT_ACK_STATE_UNKNOWN)
       continue;
     if (outstanding_event.event.GetType() == type) {
@@ -196,12 +194,12 @@ void GestureEventQueue::AckCompletedEvents() {
   if (processing_acks_)
     return;
   base::AutoReset<bool> process_acks(&processing_acks_, true);
-  while (!coalesced_gesture_events_.empty()) {
-    auto iter = coalesced_gesture_events_.begin();
+  while (!sent_events_awaiting_ack_.empty()) {
+    auto iter = sent_events_awaiting_ack_.begin();
     if (iter->ack_state() == INPUT_EVENT_ACK_STATE_UNKNOWN)
       break;
     GestureEventWithLatencyInfoAndAckState event = *iter;
-    coalesced_gesture_events_.erase(iter);
+    sent_events_awaiting_ack_.erase(iter);
     AckGestureEventToClient(event, event.ack_source(), event.ack_state());
   }
 }
@@ -210,20 +208,12 @@ void GestureEventQueue::AckGestureEventToClient(
     const GestureEventWithLatencyInfo& event_with_latency,
     InputEventAckSource ack_source,
     InputEventAckState ack_result) {
-  // Ack'ing an event may enqueue additional gesture events.  By ack'ing the
-  // event before the forwarding of queued events below, such additional events
-  // can be coalesced with existing queued events prior to dispatch.
   client_->OnGestureEventAck(event_with_latency, ack_source, ack_result);
 }
 
 TouchpadTapSuppressionController*
     GestureEventQueue::GetTouchpadTapSuppressionController() {
   return fling_controller_.GetTouchpadTapSuppressionController();
-}
-
-void GestureEventQueue::ForwardGestureEvent(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  QueueAndForwardIfNecessary(gesture_event);
 }
 
 void GestureEventQueue::SendScrollEndingEventsNow() {
@@ -235,7 +225,7 @@ void GestureEventQueue::SendScrollEndingEventsNow() {
   for (GestureQueue::const_iterator it = debouncing_deferral_queue.begin();
        it != debouncing_deferral_queue.end(); it++) {
     if (!fling_controller_.FilterGestureEvent(*it)) {
-      QueueAndForwardIfNecessary(*it);
+      ForwardGestureEvent(*it);
     }
   }
 }

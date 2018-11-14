@@ -119,7 +119,7 @@ class GestureEventQueueTest : public testing::Test,
   void SimulateGestureEvent(const WebGestureEvent& gesture) {
     GestureEventWithLatencyInfo gesture_event(gesture);
     if (!queue()->FlingControllerFilterEvent(gesture_event)) {
-      queue()->DebounceOrQueueEvent(gesture_event);
+      queue()->DebounceOrForwardEvent(gesture_event);
     }
   }
 
@@ -191,16 +191,17 @@ class GestureEventQueueTest : public testing::Test,
   }
 
   unsigned GestureEventQueueSize() {
-    return queue()->coalesced_gesture_events_.size();
+    return queue()->sent_events_awaiting_ack_.size();
   }
 
   WebGestureEvent GestureEventSecondFromLastQueueEvent() {
-    return queue()->coalesced_gesture_events_.at(
-        GestureEventQueueSize() - 2).event;
+    return queue()
+        ->sent_events_awaiting_ack_.at(GestureEventQueueSize() - 2)
+        .event;
   }
 
   WebGestureEvent GestureEventLastQueueEvent() {
-    return queue()->coalesced_gesture_events_.back().event;
+    return queue()->sent_events_awaiting_ack_.back().event;
   }
 
   unsigned GestureEventDebouncingQueueSize() {
@@ -208,7 +209,7 @@ class GestureEventQueueTest : public testing::Test,
   }
 
   WebGestureEvent GestureEventQueueEventAt(int i) {
-    return queue()->coalesced_gesture_events_.at(i).event;
+    return queue()->sent_events_awaiting_ack_.at(i).event;
   }
 
   bool ScrollingInProgress() {

@@ -37,26 +37,28 @@ class CONTENT_EXPORT GestureEventQueueClient {
                                  InputEventAckState ack_result) = 0;
 };
 
-// Maintains WebGestureEvents in a queue before forwarding them to the renderer
-// to apply a sequence of filters on them:
+// Despite its name, this class isn't so much one queue as it is a collection
+// of queues and filters. This class applies logic to determine if an event
+// should be queued, filtered altogether, or sent immediately; it tracks sent
+// events and ACKs them to the clilent in the order they were dispatched. This
+// class applies a series of filters and queues for various scenarios:
 // 1. The sequence is filtered for bounces. A bounce is when the finger lifts
-//    from the screen briefly during an in-progress scroll. Ifco this happens,
+//    from the screen briefly during an in-progress scroll. If this happens,
 //    non-GestureScrollUpdate events are queued until the de-bounce interval
 //    passes or another GestureScrollUpdate event occurs.
 // 2. Unnecessary GestureFlingCancel events are filtered by fling controller.
 //    These are GestureFlingCancels that have no corresponding GestureFlingStart
-//    in the queue.
+//    in the queue. GestureFlingStarts are also filtered and translated to
+//    scroll gestures by the fling controller.
 // 3. Taps immediately after a GestureFlingCancel (caused by the same tap) are
 //    filtered by fling controller.
-// 4. Whenever possible, events in the queue are coalesced to have as few events
-//    as possible and therefore maximize the chance that the event stream can be
-//    handled entirely by the compositor thread.
-// Events in the queue are forwarded to the renderer one by one; i.e., each
-// event is sent after receiving the ACK for previous one. The only exception is
-// that if a GestureScrollUpdate is followed by a GesturePinchUpdate, they are
-// sent together.
-// TODO(rjkroege): Possibly refactor into a filter chain:
-// http://crbug.com/148443.
+// 4. Gesture events are queued while we're waiting to determine the allowed
+//    touch actions.
+// Sent events are kept in a queue until a response from the renderer is
+// received for that event. The client is notified of ACKs in the order the
+// events were sent, not ACK'd. This means an ACK'd event that was sent after
+// an event still awaiting an ACK won't notify the client until the earlier
+// event is ACK'd.
 class CONTENT_EXPORT GestureEventQueue {
  public:
   using GestureQueue = base::circular_deque<GestureEventWithLatencyInfo>;
@@ -79,24 +81,23 @@ class CONTENT_EXPORT GestureEventQueue {
   ~GestureEventQueue();
 
   // Uses fling controller to filter the gesture event. Returns true if the
-  // event wasn't queued and was filtered.
+  // event was filtered by the fling controller and shouldn't be further
+  // forwarded.
   bool FlingControllerFilterEvent(const GestureEventWithLatencyInfo&);
 
-  // Check for debouncing, or add the gesture event to the queue. Returns false
-  // if the event wasn't queued.
-  bool DebounceOrQueueEvent(const GestureEventWithLatencyInfo&);
+  // Filter the event for debouncing or forward it to the renderer. Returns
+  // true if the event was forwarded, false if was filtered for debouncing.
+  bool DebounceOrForwardEvent(const GestureEventWithLatencyInfo&);
 
   // Adds a gesture to the queue of events that needs to be deferred until the
   // touch action is known.
   void QueueDeferredEvents(const GestureEventWithLatencyInfo&);
 
-  // Returns events in the |deferred_gesture_queue_| and empty
-  // the queue.
+  // Returns events in the |deferred_gesture_queue_| and empty the queue.
   GestureQueue TakeDeferredEvents();
 
   // Indicates that the caller has received an acknowledgement from the renderer
-  // with state |ack_result| and event |type|. May send events if the queue is
-  // not empty.
+  // with state |ack_result| and event |type|.
   void ProcessGestureAck(InputEventAckSource ack_source,
                          InputEventAckState ack_result,
                          blink::WebInputEvent::Type type,
@@ -105,10 +106,12 @@ class CONTENT_EXPORT GestureEventQueue {
   // Returns the |TouchpadTapSuppressionController| instance.
   TouchpadTapSuppressionController* GetTouchpadTapSuppressionController();
 
+  // Sends the gesture event to the renderer. Stores the sent event for when
+  // the renderer replies with an ACK.
   void ForwardGestureEvent(const GestureEventWithLatencyInfo& gesture_event);
 
   bool empty() const {
-    return coalesced_gesture_events_.empty() &&
+    return sent_events_awaiting_ack_.empty() &&
            debouncing_deferral_queue_.empty();
   }
 
@@ -151,12 +154,6 @@ class CONTENT_EXPORT GestureEventQueue {
   bool ShouldForwardForBounceReduction(
       const GestureEventWithLatencyInfo& gesture_event);
 
-  // Puts the events in a queue to forward them one by one; i.e., forward them
-  // whenever ACK for previous event is received. This queue also tries to
-  // coalesce events as much as possible.
-  void QueueAndForwardIfNecessary(
-      const GestureEventWithLatencyInfo& gesture_event);
-
   // ACK completed events in order until we have reached an incomplete event.
   // Will preserve the FIFO order as events originally arrived.
   void AckCompletedEvents();
@@ -178,8 +175,12 @@ class CONTENT_EXPORT GestureEventQueue {
       base::circular_deque<GestureEventWithLatencyInfoAndAckState>;
 
   // Stores outstanding events that have been sent to the renderer but not yet
-  // been ACKed.
-  GestureQueueWithAckState coalesced_gesture_events_;
+  // been ACK'd. These are kept in the order they were sent in so that they can
+  // be ACK'd back in order. Note, the renderer can reply to these out-of-order.
+  // This class makes a note of the ACK state but doesn't actually let the
+  // client know about the ACK until all events earlier in the queue have been
+  // ACK'd so that the client sees the ACKs in order.
+  GestureQueueWithAckState sent_events_awaiting_ack_;
 
   // Timer to release a previously deferred gesture event.
   base::OneShotTimer debounce_deferring_timer_;

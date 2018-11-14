@@ -194,7 +194,7 @@ void InputRouterImpl::SendGestureEventWithoutQueueing(
     return;
   }
 
-  if (!gesture_event_queue_.DebounceOrQueueEvent(gesture_event)) {
+  if (!gesture_event_queue_.DebounceOrForwardEvent(gesture_event)) {
     disposition_handler_->OnGestureEventAck(gesture_event,
                                             InputEventAckSource::BROWSER,
                                             INPUT_EVENT_ACK_STATE_CONSUMED);
