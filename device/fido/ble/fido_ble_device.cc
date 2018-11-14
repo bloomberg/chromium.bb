@@ -21,7 +21,7 @@ FidoBleDevice::FidoBleDevice(BluetoothAdapter* adapter, std::string address)
   connection_ = std::make_unique<FidoBleConnection>(
       adapter, std::move(address),
       base::BindRepeating(&FidoBleDevice::OnStatusMessage,
-                          base::Unretained(this)));
+                          weak_factory_.GetWeakPtr()));
 }
 
 FidoBleDevice::FidoBleDevice(std::unique_ptr<FidoBleConnection> connection)
@@ -36,7 +36,7 @@ void FidoBleDevice::Connect() {
   StartTimeout();
   state_ = State::kBusy;
   connection_->Connect(
-      base::BindOnce(&FidoBleDevice::OnConnected, base::Unretained(this)));
+      base::BindOnce(&FidoBleDevice::OnConnected, weak_factory_.GetWeakPtr()));
 }
 
 void FidoBleDevice::SendPing(std::vector<uint8_t> data,
@@ -118,7 +118,7 @@ bool FidoBleDevice::IsPaired() const {
 
 FidoBleConnection::ReadCallback FidoBleDevice::GetReadCallbackForTesting() {
   return base::BindRepeating(&FidoBleDevice::OnStatusMessage,
-                             base::Unretained(this));
+                             weak_factory_.GetWeakPtr());
 }
 
 void FidoBleDevice::DeviceTransact(std::vector<uint8_t> command,
@@ -156,8 +156,9 @@ void FidoBleDevice::Transition() {
     case State::kConnected:
       StartTimeout();
       state_ = State::kBusy;
-      connection_->ReadControlPointLength(base::BindOnce(
-          &FidoBleDevice::OnReadControlPointLength, base::Unretained(this)));
+      connection_->ReadControlPointLength(
+          base::BindOnce(&FidoBleDevice::OnReadControlPointLength,
+                         weak_factory_.GetWeakPtr()));
       break;
     case State::kReady:
       if (!pending_frames_.empty()) {
@@ -223,8 +224,8 @@ void FidoBleDevice::SendRequestFrame(FidoBleFrame frame,
   transaction_.emplace(connection_.get(), control_point_length_);
   transaction_->WriteRequestFrame(
       std::move(frame),
-      base::BindOnce(&FidoBleDevice::OnResponseFrame, base::Unretained(this),
-                     std::move(callback)));
+      base::BindOnce(&FidoBleDevice::OnResponseFrame,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void FidoBleDevice::StartTimeout() {
