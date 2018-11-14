@@ -2310,6 +2310,10 @@ test("unit_tests") {
     # enums.xml changes.
     "../../tools/metrics/histograms/enums.xml",
 
+    # flag-metadata.json is analyzed by AboutFlagsTest, so this dependency is
+    # needed to re-run unit_tests on changes to that file.
+    "../browser/flag-metadata.json",
+
     # All unittests in browser, common, renderer and service.
     "../browser/about_flags_unittest.cc",
     "../browser/active_use_util_unittest.cc",

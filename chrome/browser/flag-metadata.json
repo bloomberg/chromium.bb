@@ -1,0 +1,28 @@
+// This file lists metadata for chrome://flags entries. This metadata is not
+// ever used in the built browser or in any compiled code, but is used as part
+// of the review process and to clean up flags that have become obsolete or
+// unused.
+//
+// This file is a list of json objects; each object contains these keys:
+//
+//   name: the internal name of the flag, as present in chrome://flags. This is
+//   used as a primary key. The value is a string.
+//
+//   owners: the person(s) or team(s) responsible for this flag. The value is a
+//   list of strings, each of which is either an email address, or any other
+//   text, in which case it is assumed to be the username part of an
+//   @chromium.org email address.
+//
+//   expiry_milestone: the milestone after which this flag is obsolete.
+//   Specifically, after the milestone with the given number branches, this flag
+//   may freely be deleted and defaulted to either enabled or disabled where
+//   used. The special value -1 means "never expires", which should only be used
+//   in consultation with top-level OWNERS.
+
+[
+  {
+    "name": "ignore-gpu-blacklist",
+    "owners": [ "graphics-dev" ],
+    "expiry_milestone": -1
+  }
+]
