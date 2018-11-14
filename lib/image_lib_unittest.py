@@ -190,9 +190,17 @@ class BuildImagePathTest(cros_test_lib.MockTempDirTestCase):
     with self.assertRaises(image_lib.ImageDoesNotExistError):
       image_lib.BuildImagePath(self.board, 'does_not_exist.bin')
 
-    # Nothing provided.
+    default_mock = self.PatchObject(cros_build_lib, 'GetDefaultBoard')
+
+    # Nothing provided, and no default.
+    default_mock.return_value = None
     with self.assertRaises(image_lib.ImageDoesNotExistError):
       image_lib.BuildImagePath(None, None)
+
+    # Nothing provided, with default.
+    default_mock.return_value = 'board'
+    result = image_lib.BuildImagePath(None, None)
+    self.assertEqual(os.path.join(self.board_dir, 'recovery_image.bin'), result)
 
 
 class SecurityTestConfigTest(cros_test_lib.RunCommandTempDirTestCase):
