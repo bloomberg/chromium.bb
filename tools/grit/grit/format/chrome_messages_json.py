@@ -15,15 +15,11 @@ from grit.node import message
 
 def Format(root, lang='en', output_dir='.'):
   """Format the messages as JSON."""
-  yield '{\n'
+  yield '{'
 
   encoder = JSONEncoder(ensure_ascii=False)
-  format = ('  "%s": {\n'
-            '    "message": %s%s\n'
-            '  }')
-  placeholder_format = ('      "%i": {\n'
-                        '        "content": "$%i"\n'
-                        '      }')
+  format = '"%s":{"message":%s%s}'
+  placeholder_format = '"%i":{"content":"$%i"}'
   first = True
   for child in root.ActiveDescendants():
     if isinstance(child, message.MessageNode):
@@ -50,15 +46,15 @@ def Format(root, lang='en', output_dir='.'):
           break
         loc_message = loc_message.replace('$%d' % i, '$%d$' % i)
         if placeholders:
-          placeholders += ',\n'
+          placeholders += ','
         placeholders += placeholder_format % (i, i)
 
       if not first:
-        yield ',\n'
+        yield ','
       first = False
 
       if placeholders:
-        placeholders = ',\n    "placeholders": {\n%s\n    }' % placeholders
+        placeholders = ',"placeholders":{%s}' % placeholders
       yield format % (id, loc_message, placeholders)
 
-  yield '\n}\n'
+  yield '}'
