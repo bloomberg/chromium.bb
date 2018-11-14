@@ -47,13 +47,22 @@
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 #pragma mark - Autofill
 
-- (void)setAutofillEnabled:(BOOL)enabled {
-  autofill::prefs::SetAutofillEnabled(_prefService, enabled);
+- (void)setProfileAutofillEnabled:(BOOL)enabled {
+  autofill::prefs::SetProfileAutofillEnabled(_prefService, enabled);
 }
 
-- (BOOL)isAutofillEnabled {
-  return autofill::prefs::IsAutofillEnabled(_prefService);
+- (BOOL)isProfileAutofillEnabled {
+  return autofill::prefs::IsProfileAutofillEnabled(_prefService);
 }
+
+- (void)setCreditCardAutofillEnabled:(BOOL)enabled {
+  autofill::prefs::SetCreditCardAutofillEnabled(_prefService, enabled);
+}
+
+- (BOOL)isCreditCardAutofillEnabled {
+  return autofill::prefs::IsCreditCardAutofillEnabled(_prefService);
+}
+
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 @end
