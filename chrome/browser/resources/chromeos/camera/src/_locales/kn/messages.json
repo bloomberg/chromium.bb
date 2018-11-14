@@ -8,46 +8,52 @@
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
-    "message": "ಫೈಲ್ ಸಿಸ್ಟಂ ದೋಷಗಳು.",
+    "message": "ಫೈಲ್ ಸಿಸ್ಟಮ್ ದೋಷಗಳು.",
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಪ್ರಸ್ತುತ ಲಭ್ಯವಿಲ್ಲ.",
+    "message": "ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಪ್ರಸ್ತುತ ಲಭ್ಯವಿಲ್ಲ.\nದಯವಿಟ್ಟು ಕ್ಯಾಮರಾ ಸರಿಯಾಗಿ ಸಂಪರ್ಕಗೊಂಡಿದೆಯೇ ಎಂಬುದನ್ನು ಪರೀಕ್ಷಿಸಿ.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "ಕ್ಯಾಮರಾ ಸರಿಯಾಗಿ ಸಂಪರ್ಕಗೊಂಡಿದೆಯೇ ಎಂಬುದನ್ನು ಪರೀಕ್ಷಿಸಿ.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "ಗ್ಯಾಲರಿ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ ಅನ್ನು ರಫ್ತು ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
+    "message": "$file$ ಅನ್ನು ರಫ್ತು ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "ಫೈಲ್ ಅನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
+    "message": "ಫೈಲ್ ಉಳಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
+    "message": "ಫೋಟೋ ಅನ್ನು ತೆಗೆದುಕೊಳ್ಳಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
+    "message": "ರೆಕಾರ್ಡ್ ಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "ಏನನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡಲಾಗಿಲ್ಲ.",
+    "message": "ಏನನ್ನೂ ರೆಕಾರ್ಡ್ ಮಾಡಲಾಗಿಲ್ಲ",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "ರೆಕಾರ್ಡ್ ಮಾಡುವುದನ್ನು ನಿಲ್ಲಿಸಲಾಗಿದೆ",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ ಸಕ್ರಿಯವಾಗಿದೆ",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "ಗ್ಯಾಲರಿಗೆ ಹೋಗಿ",
@@ -89,33 +95,33 @@
     "message": "ರೆಕಾರ್ಡ್ ಮಾಡುವುದನ್ನು ನಿಲ್ಲಿಸಿ",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "ಟೈಮರ್ ಅನ್ನು ಟಾಗಲ್ ಮಾಡಿ",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "ಕ್ಯಾಮರಾ ಟಾಗಲ್ ಮಾಡಿ",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "ಮುಂದಿನ ಸಂಪರ್ಕಿತ ಕ್ಯಾಮೆರಾಗೆ ಬದಲಿಸಿ",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "\"ವೀಡಿಯೊ ರೆಕಾರ್ಡ್ ಮಾಡುವಿಕೆ\" ಗೆ ಬದಲಿಸಿ",
+    "message": "\"ವೀಡಿಯೊ ರೆಕಾರ್ಡ್ ಮಾಡಿ\" ಗೆ ಬದಲಿಸಿ",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "ಫೋಟೋ ತೆಗೆಯುವುದನ್ನು ಬದಲಿಸಿ",
+    "message": "\"ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಿ\" ಗೆ ಬದಲಿಸಿ",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "ಟೈಮರ್",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "ಟಾಗಲ್ ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "ಗ್ರಿಡ್ ಟಾಗಲ್ ಮಾಡಿ",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "ಗ್ರಿಡ್",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "ಮೈಕ್ರೋಫೋನ್‌ ಟಾಗಲ್ ಮಾಡಿ",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "ಮೈಕ್ರೊಫೋನ್",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "ಸರಿ",
@@ -146,7 +152,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "ಕ್ಯಾಮರಾದಿಂದ ಸೆರೆಹಿಡಿದ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳನ್ನು ಡೌನ್‌ಲೋಡ್‌ಗಳ ಫೋಲ್ಡರ್‌ಗೆ ವರ್ಗಾಯಿಸಲಾಗುತ್ತದೆ. ನೀವು ಅವುಗಳನ್ನು ಫೈಲ್‌ಗಳಲ್ಲಿ ಪ್ರವೇಶಿಸಬಹುದು.\nಸಂಗ್ರಹಣೆ ಅನುಮತಿಗಳನ್ನು ಹೊಂದಿರುವ ಆ್ಯಪ್‌ಗಳು ನಿಮ್ಮ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿರುತ್ತವೆ.",
+    "message": "ಕ್ಯಾಮರಾದಿಂದ ಸೆರೆಹಿಡಿದ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳನ್ನು ಡೌನ್‌ಲೋಡ್‌ಗಳ ಫೋಲ್ಡರ್‌ಗೆ ವರ್ಗಾಯಿಸಲಾಗುತ್ತದೆ. ನೀವು ಅವುಗಳನ್ನು ಫೈಲ್‌ಗಳಲ್ಲಿ ಪ್ರವೇಶಿಸಬಹುದು.\n\nಸಂಗ್ರಹಣೆ ಅನುಮತಿಗಳನ್ನು ಹೊಂದಿರುವ ಆ್ಯಪ್‌ಗಳು ನಿಮ್ಮ ಫೋಟೋಗಳು ಮತ್ತು ವೀಡಿಯೊಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿರುತ್ತವೆ.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }

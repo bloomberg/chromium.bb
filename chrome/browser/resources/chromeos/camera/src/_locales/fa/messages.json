@@ -8,46 +8,52 @@
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
-    "message": "خطاهایی در سیستم فایل.",
+    "message": "خطاهایی در سیستم فایل وجود دارد.",
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "درحال‌حاضر دوربین شما در دسترس نیست.",
+    "message": "درحال‌حاضر دوربینتان دردسترس نیست.\nلطفاً بررسی کنید که دوربین به‌درستی متصل شده است یا نه.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "مطمئن شوید دوربین درست وصل شده باشد.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "بارگیری گالری انجام نشد.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "صادر کردن $file$ امکان‌پذیر نیست.",
+    "message": "صادر کردن $file$ امکان‌پذیر نیست",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "ذخیره کردن فایل امکان‌پذیر نیست.",
+    "message": "ذخیره کردن فایل امکان‌پذیر نیست",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "عکس‌برداری امکان‌پذیر نیست.",
+    "message": "عکس‌برداری امکان‌پذیر نیست",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "شروع ضبط امکان‌پذیر نیست.",
+    "message": "شروع ضبط امکان‌پذیر نیست",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "چیزی ضبط نشد.",
+    "message": "چیزی ضبط نشد",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "ضبط متوقف شد",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ فعال است",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "رفتن به گالری",
@@ -89,13 +95,9 @@
     "message": "توقف ضبط",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "روشن/خاموش کردن تایمر",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "جابه‌جا شدن بین دوربین‌ها",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "جابه‌جایی به دوربین بعدی",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "رفتن به حالت فیلم‌برداری",
@@ -105,17 +107,21 @@
     "message": "رفتن به حالت عکس‌برداری",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "تایمر",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "روشن/خاموش کردن نمایش صفحه‌نمایش روی دستگاه دیگر",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "نمایش صفحه‌نمایش روی دستگاه دیگر",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "روشن/خاموش کردن حالت شطرنجی",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "شطرنجی",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "روشن/خاموش کردن میکروفون",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "میکروفون",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "تأیید",

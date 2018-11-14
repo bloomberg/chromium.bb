@@ -12,42 +12,48 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "फ़िलहाल आपका कैमरा उपलब्ध नहीं है.",
+    "message": "आपका कैमरा फ़िलहाल उपलब्ध नहीं है.\nकृपया देखें कि कैमरा ठीक तरह से कनेक्ट है या नहीं.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "देखें कि कैमरा ठीक तरह से कनेक्ट है या नहीं.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "गैलरी लोड नहीं की जा सकी.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ को एक्सपोर्ट (कहीं और भेजना) नहीं किया जा सका.",
+    "message": "$file$ एक्सपोर्ट नहीं की जा सकती",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "फ़ाइल सेव नहीं की जा सकी.",
+    "message": "फ़ाइल सेव नहीं की जा सकी",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "फ़ोटो नहीं खींची जा सकी.",
+    "message": "फ़ोटो नहीं खींची जा सकी",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "रिकॉर्डिंग शुरू नहीं की जा सकी.",
+    "message": "रिकॉर्डिंग शुरू नहीं की जा सकी",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "कुछ भी रिकॉर्ड नहीं हुआ.",
+    "message": "कुछ भी रिकॉर्ड नहीं हुआ",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "रिकॉर्डिंग रूक गई है",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ चालू है",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "गैलरी में जाएं",
@@ -89,13 +95,9 @@
     "message": "रिकॉर्ड करना बंद करें",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "टाइमर टॉगल करें",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "कैमरा टॉगल करें",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "अगले कैमरा का इस्तेमाल करें",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "वीडियो रिकॉर्डिंग मोड पर जाएं",
@@ -105,20 +107,24 @@
     "message": "फ़ोटो खींचने वाले मोड पर जाएं",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "टाइमर",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "स्क्रीन शेयर करने की सुविधा टॉगल करें",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "मिररिंग",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "ग्रिड टॉगल करें",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "ग्रिड",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "माइक्रोफ़ोन टॉगल करें",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "माइक्रोफ़ोन",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
-    "message": "ठीक है",
+    "message": "ठीक",
     "description": "Label for the accepting button in the dialog."
   },
   "dialogCancelButton": {

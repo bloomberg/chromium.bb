@@ -12,16 +12,8 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "현재 카메라를 사용할 수 없습니다.",
+    "message": "현재 카메라를 사용할 수 없습니다.\n카메라가 제대로 연결되어 있는지 확인하세요.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
-  },
-  "errorMsgNoCameraHint": {
-    "message": "카메라가 제대로 연결되어 있는지 확인하세요.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "갤러리를 로드할 수 없습니다.",
-    "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
     "message": "$file$ 파일을 내보낼 수 없습니다.",
@@ -29,7 +21,7 @@
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
@@ -48,6 +40,20 @@
   "errorMsgEmptyRecording": {
     "message": "녹화된 동영상이 없습니다.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "녹음 또는 녹화가 중지되었습니다.",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ 활성화",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "갤러리로 이동",
@@ -89,13 +95,9 @@
     "message": "녹화 중지",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "타이머 전환",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "카메라 전환",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "다음 카메라로 전환",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "동영상 녹화 모드로 전환",
@@ -105,17 +107,21 @@
     "message": "사진 촬영 모드로 전환",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "타이머",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "미러링 전환",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "미러링",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "그리드 전환",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "그리드",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "마이크 전환",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "마이크",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "확인",

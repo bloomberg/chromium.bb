@@ -12,16 +12,8 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "A câmara está atualmente indisponível.",
+    "message": "De momento, a câmara está indisponível.\nVerifique se a câmara está ligada corretamente.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
-  },
-  "errorMsgNoCameraHint": {
-    "message": "Verifique se a câmara está ligada corretamente.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Não foi possível carregar a galeria.",
-    "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
     "message": "Não foi possível exportar $file$.",
@@ -29,7 +21,7 @@
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
@@ -48,6 +40,20 @@
   "errorMsgEmptyRecording": {
     "message": "Nada foi gravado.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Gravação interrompida",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ ativa",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Ir para a galeria",
@@ -89,33 +95,33 @@
     "message": "Parar de gravar",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Ativar/desativar temporizador",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Alternar entre câmaras",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Mudar para a câmara seguinte",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Mudar para gravar vídeo",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "Mudar para tirar fotos",
+    "message": "Mudar para tirar foto",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Temporizador",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Ativar/desativar espelhamento",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Espelhamento",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Ativar/desativar grelha",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Grelha",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Ativar/desativar microfone",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Microfone",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",
