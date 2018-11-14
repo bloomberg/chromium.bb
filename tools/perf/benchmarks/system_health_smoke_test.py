@@ -90,11 +90,13 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_desktop/load:news:cnn',
   'system_health.memory_desktop/load:news:wikipedia',
   'system_health.memory_desktop/load:search:baidu',
+  'system_health.memory_desktop/load:search:yahoo',
   'system_health.memory_desktop/load:tools:stackoverflow',
   # MOBILE:
   'system_health.memory_mobile/load:media:google_images',
   'system_health.memory_mobile/load:news:wikipedia',
   'system_health.memory_mobile/load:search:baidu',
+  'system_health.memory_mobile/load:search:yahoo',
 
   # crbug.com/698006
   'system_health.memory_desktop/load:tools:drive',
