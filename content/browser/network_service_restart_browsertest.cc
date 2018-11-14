@@ -692,8 +692,9 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest, MultipleWorkerFetch) {
   EXPECT_EQ(last_request_relative_url(), "/title2.html");
 }
 
-// Flaky on Linux TSan (https://crbug.com/889855)
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+// Flaky on Linux TSan and Android ASan (https://crbug.com/889855)
+#if (defined(OS_LINUX) && defined(THREAD_SANITIZER)) || \
+    (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 #define MAYBE_FetchFromServiceWorkerControlledPage_NoFetchHandler \
   DISABLED_FetchFromServiceWorkerControlledPage_NoFetchHandler
 #else
@@ -742,8 +743,9 @@ IN_PROC_BROWSER_TEST_F(
   service_worker_context->RemoveObserver(&observer);
 }
 
-// Flaky on Linux TSan (https://crbug.com/889855)
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+// Flaky on Linux TSan and Android ASan (https://crbug.com/889855)
+#if (defined(OS_LINUX) && defined(THREAD_SANITIZER)) || \
+    (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 #define MAYBE_FetchFromServiceWorkerControlledPage_PassThrough \
   DISABLED_FetchFromServiceWorkerControlledPage_PassThrough
 #else
@@ -791,8 +793,9 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceRestartBrowserTest,
   service_worker_context->RemoveObserver(&observer);
 }
 
-// Flaky on Linux TSan (https://crbug.com/889855)
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+// Flaky on Linux TSan and Android ASan (https://crbug.com/889855)
+#if (defined(OS_LINUX) && defined(THREAD_SANITIZER)) || \
+    (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 #define MAYBE_FetchFromServiceWorkerControlledPage_RespondWithFetch \
   DISABLED_FetchFromServiceWorkerControlledPage_RespondWithFetch
 #else
