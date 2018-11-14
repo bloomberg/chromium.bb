@@ -423,7 +423,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
   InitWithDefaultFeatures();
 
   GetFakeServer()->SetWalletData(
-      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001"),
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
@@ -442,7 +443,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
 
   // Put some completely new data in the sync server.
   GetFakeServer()->SetWalletData(
-      {CreateSyncWalletCard(/*name=*/"new-card", /*last_four=*/"0002"),
+      {CreateSyncWalletCard(/*name=*/"new-card", /*last_four=*/"0002",
+                            kDefaultBillingAddressID),
        CreateSyncWalletAddress(/*name=*/"new-address", /*company=*/"Company-2"),
        CreateSyncPaymentsCustomerData(/*customer_id=*/"newid")});
 
@@ -471,7 +473,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
 IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, EmptyUpdatesAreIgnored) {
   InitWithDefaultFeatures();
   GetFakeServer()->SetWalletData(
-      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001"),
+      {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
+                            kDefaultBillingAddressID),
        CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});
   ASSERT_TRUE(SetupSync());
