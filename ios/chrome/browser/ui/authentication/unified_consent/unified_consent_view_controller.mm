@@ -161,13 +161,11 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
   self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
   self.scrollView.accessibilityIdentifier = kUnifiedConsentScrollViewIdentifier;
-  if (@available(iOS 11, *)) {
-    // The observed behavior was buggy. When the view appears on the screen,
-    // the scrollview was not scrolled all the way to the top. Adjusting the
-    // safe area manually fixes the issue.
-    self.scrollView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
+  // The observed behavior was buggy. When the view appears on the screen,
+  // the scrollview was not scrolled all the way to the top. Adjusting the
+  // safe area manually fixes the issue.
+  self.scrollView.contentInsetAdjustmentBehavior =
+      UIScrollViewContentInsetAdjustmentNever;
   [self.view addSubview:self.scrollView];
 
   // Scroll view container.
@@ -299,7 +297,7 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
       constraintEqualToAnchor:self.identityPickerView.bottomAnchor
                      constant:kVerticalTextMargin];
   // Adding constraints for the container.
-  id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self.view);
+  id<LayoutGuideProvider> safeArea = self.view.safeAreaLayoutGuide;
   [container.widthAnchor constraintEqualToAnchor:safeArea.widthAnchor].active =
       YES;
   // Adding constraints for |imageBackgroundView|.
@@ -454,17 +452,9 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
 // Updates constraints and content insets for the |scrollView| and
 // |imageBackgroundView| related to non-safe area.
 - (void)updateScrollViewAndImageBackgroundView {
-  if (@available(iOS 11, *)) {
-    self.scrollView.contentInset = self.view.safeAreaInsets;
-    self.imageBackgroundViewHeightConstraint.constant =
-        self.view.safeAreaInsets.top;
-  } else {
-    CGFloat statusBarHeight =
-        [UIApplication sharedApplication].isStatusBarHidden ? 0.
-                                                            : StatusBarHeight();
-    self.scrollView.contentInset = UIEdgeInsetsMake(statusBarHeight, 0, 0, 0);
-    self.imageBackgroundViewHeightConstraint.constant = statusBarHeight;
-  }
+  self.scrollView.contentInset = self.view.safeAreaInsets;
+  self.imageBackgroundViewHeightConstraint.constant =
+      self.view.safeAreaInsets.top;
   if (self.scrollView.delegate == self) {
     // Don't send the notification if the delegate is not configured yet.
     [self sendDidReachBottomIfReached];

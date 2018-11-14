@@ -16,17 +16,9 @@ namespace {
 // Matcher for the back button on screens presented from the Showcase home
 // screen.
 id<GREYMatcher> BackButton() {
-  // TODO(crbug.com/750185): The original matcher fails on IOS 11 because the
-  // private class is not used anymore. Find a more robust solution that is
-  // consistent across different iOS versions.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    return grey_allOf(grey_accessibilityLabel(@"SC"),
-                      grey_accessibilityTrait(UIAccessibilityTraitButton),
-                      grey_userInteractionEnabled(), nil);
-  }
-
-  return grey_kindOfClass(
-      NSClassFromString(@"_UINavigationBarBackIndicatorView"));
+  return grey_allOf(grey_accessibilityLabel(@"SC"),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton),
+                    grey_userInteractionEnabled(), nil);
 }
 
 // Matcher for the Showcase home screen view.

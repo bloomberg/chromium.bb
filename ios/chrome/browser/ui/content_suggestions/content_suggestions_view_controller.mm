@@ -208,17 +208,10 @@ const CGFloat kCardBorderRadius = 11;
   [super viewDidLoad];
 
   self.collectionView.prefetchingEnabled = NO;
-  if (@available(iOS 11, *)) {
-    // Overscroll action does not work well with content offset, so set this
-    // to never and internally offset the UI to account for safe area insets.
-    self.collectionView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
-#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
-  else {
-    self.automaticallyAdjustsScrollViewInsets = NO;
-  }
-#endif
+  // Overscroll action does not work well with content offset, so set this
+  // to never and internally offset the UI to account for safe area insets.
+  self.collectionView.contentInsetAdjustmentBehavior =
+      UIScrollViewContentInsetAdjustmentNever;
   self.collectionView.accessibilityIdentifier =
       [[self class] collectionAccessibilityIdentifier];
   _collectionUpdater.collectionViewController = self;
@@ -644,15 +637,13 @@ const CGFloat kCardBorderRadius = 11;
   if (base::FeatureList::IsEnabled(web::features::kBrowserContainerFullscreen))
     return;
 
-  if (@available(iOS 11, *)) {
-    UIEdgeInsets missingTop = UIEdgeInsetsZero;
-    // During the new tab animation the browser container view controller
-    // actually matches the browser view controller frame, so safe area does
-    // work, so be sure to check the parent view controller offset.
-    if (self.parentViewController.view.frame.origin.y == StatusBarHeight())
-      missingTop = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
-    self.additionalSafeAreaInsets = missingTop;
-  }
+  UIEdgeInsets missingTop = UIEdgeInsetsZero;
+  // During the new tab animation the browser container view controller
+  // actually matches the browser view controller frame, so safe area does
+  // work, so be sure to check the parent view controller offset.
+  if (self.parentViewController.view.frame.origin.y == StatusBarHeight())
+    missingTop = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
+  self.additionalSafeAreaInsets = missingTop;
 }
 
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gestureRecognizer {

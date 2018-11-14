@@ -116,17 +116,10 @@ TEST_F(CookieUtilTest, CreateCookieStoreInIOS11) {
     return callback_called;
   }));
 
-  if (@available(iOS 11, *)) {
-    // When WKHTTPSystemCookieStore feature is enabled and the iOS version is
-    // 11+ the cookie should be set directly in the backing SystemCookieStore.
-    EXPECT_EQ(1U, result_cookies.count);
-    EXPECT_NSEQ(cookie_name, result_cookies[0].name);
-    EXPECT_NSEQ(cookie_value, result_cookies[0].value);
-  } else {
-    // Before iOS 11, cookies are not set in the backing SystemCookieStore
-    // instead they are found on CookieMonster.
-    EXPECT_EQ(0U, result_cookies.count);
-  }
+  // The cookie should be set directly in the backing SystemCookieStore.
+  EXPECT_EQ(1U, result_cookies.count);
+  EXPECT_NSEQ(cookie_name, result_cookies[0].name);
+  EXPECT_NSEQ(cookie_value, result_cookies[0].value);
 
   // Clear cookies that was set in the test.
   __block bool cookies_cleared = false;

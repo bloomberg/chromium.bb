@@ -51,22 +51,10 @@
   UIButton* trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
   trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
 
-  if (@available(iOS 11, *)) {
-    leadingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentLeading;
-    trailingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentTrailing;
-  } else if (base::i18n::IsRTL()) {
-    leadingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentRight;
-    trailingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentLeft;
-  } else {
-    leadingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentLeft;
-    trailingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentRight;
-  }
+  leadingButton.contentHorizontalAlignment =
+      UIControlContentHorizontalAlignmentLeading;
+  trailingButton.contentHorizontalAlignment =
+      UIControlContentHorizontalAlignmentTrailing;
 
   trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
   TabGridNewTabButton* centerButton = [TabGridNewTabButton

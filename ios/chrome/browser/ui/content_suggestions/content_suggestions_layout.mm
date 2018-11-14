@@ -26,12 +26,7 @@
   // top of the screen.
   CGFloat minimumHeight = collectionViewHeight + headerHeight -
                           ntp_header::kScrolledToTopOmniboxBottomMargin;
-  CGFloat topSafeArea = 0;
-  if (@available(iOS 11, *)) {
-    topSafeArea = self.collectionView.safeAreaInsets.top;
-  } else {
-    topSafeArea = StatusBarHeight();
-  }
+  CGFloat topSafeArea = self.collectionView.safeAreaInsets.top;
   if (!IsRegularXRegularSizeClass(self.collectionView))
     minimumHeight -=
         ToolbarExpandedHeight(
@@ -102,12 +97,7 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
     attributes.zIndex = NSIntegerMax;
 
     // Prevent the fake omnibox from scrolling up off of the screen.
-    CGFloat topSafeArea = 0;
-    if (@available(iOS 11, *)) {
-      topSafeArea = self.collectionView.safeAreaInsets.top;
-    } else {
-      topSafeArea = StatusBarHeight();
-    }
+    CGFloat topSafeArea = self.collectionView.safeAreaInsets.top;
     CGFloat minY =
         headerHeight - ntp_header::kFakeOmniboxScrolledToTopMargin -
         ToolbarExpandedHeight(

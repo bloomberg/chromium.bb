@@ -1302,11 +1302,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (CGFloat)headerOffset {
   CGFloat headerOffset = 0;
-  if (@available(iOS 11, *)) {
-    headerOffset = self.view.safeAreaInsets.top;
-  } else {
-    headerOffset = StatusBarHeight();
-  }
+  headerOffset = self.view.safeAreaInsets.top;
   return [self canShowTabStrip] ? headerOffset : 0.0;
 }
 
@@ -1325,16 +1321,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (BOOL)usesSafeInsetsForViewportAdjustments {
-  // The WKWebView viewport is only updatable via the safe area in iOS 11.
-  if (@available(iOS 11, *)) {
-    fullscreen::features::ViewportAdjustmentExperiment viewportExperiment =
-        fullscreen::features::GetActiveViewportExperiment();
-    return viewportExperiment ==
-               fullscreen::features::ViewportAdjustmentExperiment::SAFE_AREA ||
-           viewportExperiment ==
-               fullscreen::features::ViewportAdjustmentExperiment::HYBRID;
-  }
-  return NO;
+  fullscreen::features::ViewportAdjustmentExperiment viewportExperiment =
+      fullscreen::features::GetActiveViewportExperiment();
+  return viewportExperiment ==
+             fullscreen::features::ViewportAdjustmentExperiment::SAFE_AREA ||
+         viewportExperiment ==
+             fullscreen::features::ViewportAdjustmentExperiment::HYBRID;
 }
 
 - (BubblePresenter*)bubblePresenter {
@@ -1874,12 +1866,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self addConstraintsToPrimaryToolbar];
   }
 
-  // Normally this happens in -viewSafeAreaInsetsDidChange, but added here to
-  // support iOS10.
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    [self setUpViewLayout:NO];
-  }
-
   [self setNeedsStatusBarAppearanceUpdate];
 }
 
@@ -1896,21 +1882,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [_toolbarUIUpdater updateState];
   }
                                completion:nil];
-
-  if (!self.view.window.keyWindow && !base::ios::IsRunningOnIOS11OrLater()) {
-    // When a UIViewController in a background window is rotated, its top layout
-    // guide's length is not updated before |-viewDidLayoutSubviews| is called.
-    // In order to correctly capture the status bar height in the toolbar frame,
-    // start observing the key window notification here so that the updated top
-    // layout guide length can be used to resize the primary toolbar. This is
-    // only necessary on iOS10, as the safe area insets used in iOS11 are
-    // correctly updated for background window rotations.
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(updateToolbarHeightForKeyWindow)
-               name:UIWindowDidBecomeKeyNotification
-             object:self.view.window];
-  }
 }
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
@@ -2226,15 +2197,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return intrinsicHeight;
   // If the primary toolbar is topmost, subtract the height of the portion of
   // the unsafe area.
-  CGFloat unsafeHeight = 0.0;
-  if (@available(iOS 11, *)) {
-    unsafeHeight = self.view.safeAreaInsets.top;
-  }
-#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
-  else {
-    unsafeHeight = self.topLayoutGuide.length;
-  }
-#endif
+  CGFloat unsafeHeight = self.view.safeAreaInsets.top;
 
   // The topmost header is laid out |headerOffset| from the top of |view|, so
   // subtract that from the unsafe height.
@@ -2251,10 +2214,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   UIView* secondaryToolbar =
       self.secondaryToolbarCoordinator.viewController.view;
   // Add the safe area inset to the toolbar height.
-  CGFloat unsafeHeight = 0.0;
-  if (@available(iOS 11, *)) {
-    unsafeHeight = self.view.safeAreaInsets.bottom;
-  }
+  CGFloat unsafeHeight = self.view.safeAreaInsets.bottom;
   return secondaryToolbar.intrinsicContentSize.height + unsafeHeight;
 }
 
@@ -2457,12 +2417,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)setUpViewLayout:(BOOL)initialLayout {
   DCHECK([self isViewLoaded]);
 
-  CGFloat topInset = 0.0;
-  if (@available(iOS 11, *)) {
-    topInset = self.view.safeAreaInsets.top;
-  } else {
-    topInset = StatusBarHeight();
-  }
+  CGFloat topInset = self.view.safeAreaInsets.top;
 
   // Update the fake toolbar background height.
   CGRect fakeStatusBarFrame = _fakeStatusBarView.frame;
@@ -3903,14 +3858,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       return 0;
     // Also subtract the top safe area so the view will appear as full screen.
     // TODO(crbug.com/826369) Remove this once NTP is out of native content.
-    if (@available(iOS 11, *)) {
-      return -self.view.safeAreaInsets.top;
-    }
-#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
-    else {
-      return -self.topLayoutGuide.length;
-    }
-#endif
+    return -self.view.safeAreaInsets.top;
   }
   return [self headerHeightForTab:tab];
 }
@@ -3940,11 +3888,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // the browser container view is laid out using the full screen, it extends
   // past the status bar, so that additional overlap is added here.
   if (self.usesFullscreenContainer) {
-    if (@available(iOS 11, *)) {
-      collapsedToolbarHeight += self.view.safeAreaInsets.top;
-    } else {
-      collapsedToolbarHeight += StatusBarHeight();
-    }
+    collapsedToolbarHeight += self.view.safeAreaInsets.top;
   }
   return collapsedToolbarHeight;
 }
@@ -4120,12 +4064,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                              bottomToolbarHeight:(CGFloat)bottomToolbarHeight {
   UIViewController* containerViewController =
       _browserContainerCoordinator.viewController;
-  if (@available(iOS 11, *)) {
-    containerViewController.additionalSafeAreaInsets = UIEdgeInsetsMake(
-        topToolbarHeight - self.view.safeAreaInsets.top -
-            self.currentWebState->GetWebViewProxy().contentOffset.y,
-        0, 0, 0);
-  }
+  containerViewController.additionalSafeAreaInsets = UIEdgeInsetsMake(
+      topToolbarHeight - self.view.safeAreaInsets.top -
+          self.currentWebState->GetWebViewProxy().contentOffset.y,
+      0, 0, 0);
 }
 
 // Updates the padding of the web view proxy. This either resets the frame of

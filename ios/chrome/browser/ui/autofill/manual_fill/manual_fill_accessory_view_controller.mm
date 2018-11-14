@@ -133,8 +133,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
   stackView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:stackView];
 
-  id<LayoutGuideProvider> safeAreaLayoutGuide =
-      SafeAreaLayoutGuideForView(self.view);
+  id<LayoutGuideProvider> safeAreaLayoutGuide = self.view.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
     // Vertical constraints.
     [stackView.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],

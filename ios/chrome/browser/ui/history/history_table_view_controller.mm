@@ -152,29 +152,25 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
-  if (@available(iOS 11, *)) {
-    // Center search bar's cancel button vertically so it looks centered.
-    // We change the cancel button proxy styles, so we will return it to
-    // default in viewDidDisappear.
-    UIOffset offset =
-        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-    UIBarButtonItem* cancelButton = [UIBarButtonItem
-        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-    [cancelButton setTitlePositionAdjustment:offset
-                               forBarMetrics:UIBarMetricsDefault];
-  }
+  // Center search bar's cancel button vertically so it looks centered.
+  // We change the cancel button proxy styles, so we will return it to
+  // default in viewDidDisappear.
+  UIOffset offset =
+      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+  UIBarButtonItem* cancelButton = [UIBarButtonItem
+      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
+  [cancelButton setTitlePositionAdjustment:offset
+                             forBarMetrics:UIBarMetricsDefault];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
 
-  if (@available(iOS 11, *)) {
-    // Restore to default origin offset for cancel button proxy style.
-    UIBarButtonItem* cancelButton = [UIBarButtonItem
-        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-    [cancelButton setTitlePositionAdjustment:UIOffsetZero
-                               forBarMetrics:UIBarMetricsDefault];
-  }
+  // Restore to default origin offset for cancel button proxy style.
+  UIBarButtonItem* cancelButton = [UIBarButtonItem
+      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
+  [cancelButton setTitlePositionAdjustment:UIOffsetZero
+                             forBarMetrics:UIBarMetricsDefault];
 }
 
 - (void)viewDidLoad {
@@ -241,21 +237,16 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                      action:@selector(dismissSearchController:)
            forControlEvents:UIControlEventAllTouchEvents];
 
-  // For iOS 11 and later, place the search bar in the navigation bar. Otherwise
-  // place the search bar in the table view's header.
-  if (@available(iOS 11, *)) {
-    self.navigationItem.searchController = self.searchController;
-    self.navigationItem.hidesSearchBarWhenScrolling = NO;
+  // Place the search bar in the navigation bar.
+  self.navigationItem.searchController = self.searchController;
+  self.navigationItem.hidesSearchBarWhenScrolling = NO;
 
-    // Center search bar and cancel button vertically so it looks centered
-    // in the header when searching.
-    UIOffset offset =
-        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-    self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
-        offset;
-  } else {
-    self.tableView.tableHeaderView = self.searchController.searchBar;
-  }
+  // Center search bar and cancel button vertically so it looks centered
+  // in the header when searching.
+  UIOffset offset =
+      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+  self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
+      offset;
 }
 
 #pragma mark - TableViewModel
@@ -534,25 +525,15 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   }
   self.historyService->RemoveVisits(entries);
 
-  // Delete items from |self.tableView|.
-  // If iOS11+ use performBatchUpdates: instead of beginUpdates/endUpdates.
-  if (@available(iOS 11, *)) {
-    [self.tableView performBatchUpdates:^{
-      [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths
-                          deleteItemsFromTableView:YES];
-    }
-        completion:^(BOOL) {
-          [self updateTableViewAfterDeletingEntries];
-          [self configureViewsForNonEditModeWithAnimation:YES];
-        }];
-  } else {
-    [self.tableView beginUpdates];
+  // Delete items from |self.tableView| using performBatchUpdates.
+  [self.tableView performBatchUpdates:^{
     [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths
                         deleteItemsFromTableView:YES];
-    [self updateTableViewAfterDeletingEntries];
-    [self configureViewsForNonEditModeWithAnimation:YES];
-    [self.tableView endUpdates];
   }
+      completion:^(BOOL) {
+        [self updateTableViewAfterDeletingEntries];
+        [self configureViewsForNonEditModeWithAnimation:YES];
+      }];
   base::RecordAction(base::UserMetricsAction("HistoryPage_RemoveSelected"));
 }
 
@@ -815,14 +796,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
   // If there's any tableUpdates, run them.
   if (tableUpdates) {
-    // If iOS11+ use performBatchUpdates: instead of beginUpdates/endUpdates.
-    if (@available(iOS 11, *)) {
-      [self.tableView performBatchUpdates:tableUpdates completion:nil];
-    } else {
-      [self.tableView beginUpdates];
-      tableUpdates();
-      [self.tableView endUpdates];
-    }
+    [self.tableView performBatchUpdates:tableUpdates completion:nil];
   }
   self.currentStatusMessage = newStatusMessage;
 }

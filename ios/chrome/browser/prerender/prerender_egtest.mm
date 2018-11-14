@@ -53,13 +53,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Test that tapping the prerendered suggestions opens it.
 - (void)testTapPrerenderSuggestions {
-  // TODO(crbug.com/793306): Re-enable the test on iOS 11 iPad once the
-  // alternate letters problem is fixed.
+  // TODO(crbug.com/793306): Re-enable the test on iPad once the alternate
+  // letters problem is fixed.
   if (IsIPadIdiom()) {
-    if (@available(iOS 11, *)) {
-      EARL_GREY_TEST_DISABLED(
-          @"Disabled for iPad due to alternate letters educational screen.");
-    }
+    EARL_GREY_TEST_DISABLED(
+        @"Disabled for iPad due to alternate letters educational screen.");
   }
 
   GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),

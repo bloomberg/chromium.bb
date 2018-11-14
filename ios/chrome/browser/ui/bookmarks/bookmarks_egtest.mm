@@ -105,15 +105,9 @@ id<GREYMatcher> NavigateBackButtonTo(NSString* previousViewControllerLabel) {
       grey_anyOf(grey_accessibilityLabel(previousViewControllerLabel),
                  grey_accessibilityLabel(@"Back"), nil);
 
-  if (@available(iOS 11, *)) {
-    return grey_allOf(grey_kindOfClass([UIButton class]),
-                      grey_ancestor(grey_kindOfClass([UINavigationBar class])),
-                      buttonLabelMatcher, nil);
-  } else {
-    return grey_allOf(grey_accessibilityTrait(UIAccessibilityTraitButton),
-                      grey_ancestor(grey_kindOfClass([UINavigationBar class])),
-                      buttonLabelMatcher, nil);
-  }
+  return grey_allOf(grey_kindOfClass([UIButton class]),
+                    grey_ancestor(grey_kindOfClass([UINavigationBar class])),
+                    buttonLabelMatcher, nil);
 }
 
 // Matcher for the DONE button on the bookmarks UI.
@@ -1723,15 +1717,13 @@ id<GREYMatcher> SearchIconButton() {
 #pragma mark - BookmarksEntriesTestCase Tests
 
 - (void)testUndoDeleteBookmarkFromSwipe {
-  // TODO(crbug.com/851227): On Compact Width on iOS11, the
-  // bookmark cell is being deleted by grey_swipeFastInDirection.
+  // TODO(crbug.com/851227): On Compact Width, the bookmark cell is being
+  // deleted by grey_swipeFastInDirection.
   // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
   // fail on devices. Disabling this test under these conditions on the
   // meantime.
-  if (@available(iOS 11, *)) {
-    if (!IsCompactWidth()) {
-      EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
-    }
+  if (!IsCompactWidth()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad.");
   }
 
   [BookmarksTestCase setupStandardBookmarks];
@@ -1775,15 +1767,13 @@ id<GREYMatcher> SearchIconButton() {
   FLAKY_testSwipeToDeleteDisabledInEditMode
 #endif
 - (void)testSwipeToDeleteDisabledInEditMode {
-  // TODO(crbug.com/851227): On non Compact Width on iOS11, the
-  // bookmark cell is being deleted by grey_swipeFastInDirection.
+  // TODO(crbug.com/851227): On non Compact Width  the bookmark cell is being
+  // deleted by grey_swipeFastInDirection.
   // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
   // fail on devices. Disabling this test under these conditions on the
   // meantime.
-  if (@available(iOS 11, *)) {
-    if (!IsCompactWidth()) {
-      EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
-    }
+  if (!IsCompactWidth()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
   }
 
   [BookmarksTestCase setupStandardBookmarks];
@@ -4392,15 +4382,13 @@ id<GREYMatcher> SearchIconButton() {
 
 // Tests that you can swipe URL items in search mode.
 - (void)testSearchUrlCanBeSwipedToDelete {
-  // TODO(crbug.com/851227): On non Compact Width on iOS11, the
-  // bookmark cell is being deleted by grey_swipeFastInDirection.
+  // TODO(crbug.com/851227): On non Compact Width, the bookmark cell is being
+  // deleted by grey_swipeFastInDirection.
   // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
   // fail on devices. Disabling this test under these conditions on the
   // meantime.
-  if (@available(iOS 11, *)) {
-    if (!IsCompactWidth()) {
-      EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
-    }
+  if (!IsCompactWidth()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
   }
 
   [BookmarksTestCase setupStandardBookmarks];
@@ -4422,15 +4410,13 @@ id<GREYMatcher> SearchIconButton() {
 
 // Tests that you can swipe folders in search mode.
 - (void)testSearchFolderCanBeSwipedToDelete {
-  // TODO(crbug.com/851227): On non Compact Width on iOS11, the
-  // bookmark cell is being deleted by grey_swipeFastInDirection.
+  // TODO(crbug.com/851227): On non Compact Width, the bookmark cell is being
+  // deleted by grey_swipeFastInDirection.
   // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
   // fail on devices. Disabling this test under these conditions on the
   // meantime.
-  if (@available(iOS 11, *)) {
-    if (!IsCompactWidth()) {
-      EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
-    }
+  if (!IsCompactWidth()) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
   }
 
   [BookmarksTestCase setupStandardBookmarks];

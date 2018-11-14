@@ -257,14 +257,7 @@
 
 - (CGFloat)overscrollHeaderHeight {
   CGFloat height = [self.headerController toolBarView].bounds.size.height;
-  CGFloat topInset = 0.0;
-  if (@available(iOS 11, *)) {
-    topInset = self.suggestionsViewController.view.safeAreaInsets.top;
-  } else {
-    // TODO(crbug.com/826369) Replace this when the NTP is contained by the
-    // BVC with |self.suggestionsViewController.topLayoutGuide.length|.
-    topInset = StatusBarHeight();
-  }
+  CGFloat topInset = self.suggestionsViewController.view.safeAreaInsets.top;
   return height + topInset;
 }
 

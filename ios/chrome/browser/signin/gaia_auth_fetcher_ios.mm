@@ -362,8 +362,7 @@ void GaiaAuthFetcherIOS::CreateAndStartGaiaFetcher(
   // a network request with cookies sent and saved is by making it through a
   // WKWebView.
   SetPendingFetch(true);
-  bool shouldUseXmlHTTPRequest =
-      IsMultiloginUrl(gaia_gurl) || !base::ios::IsRunningOnIOS11OrLater();
+  bool shouldUseXmlHTTPRequest = IsMultiloginUrl(gaia_gurl);
   bridge_->Fetch(gaia_gurl, headers, body, shouldUseXmlHTTPRequest);
 }
 

@@ -65,12 +65,8 @@ const CGFloat kTableViewMaxWidth = 414.0;
 @synthesize tableViewContainer = _tableViewContainer;
 
 - (CGRect)frameOfPresentedViewInContainerView {
-  CGRect safeAreaBounds = self.containerView.bounds;
-  UIEdgeInsets safeAreaInsets = UIEdgeInsetsZero;
-  if (@available(iOS 11, *)) {
-    safeAreaBounds = self.containerView.safeAreaLayoutGuide.layoutFrame;
-    safeAreaInsets = self.containerView.safeAreaInsets;
-  }
+  CGRect safeAreaBounds = self.containerView.safeAreaLayoutGuide.layoutFrame;
+  UIEdgeInsets safeAreaInsets = self.containerView.safeAreaInsets;
 
   CGFloat safeAreaWidth = CGRectGetWidth(safeAreaBounds);
   CGFloat safeAreaHeight = CGRectGetHeight(safeAreaBounds);

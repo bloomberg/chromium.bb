@@ -15,16 +15,6 @@
 namespace {
 // Left and right margins of the cell contents.
 static const CGFloat sideMargins = 16;
-// The base multiplier for the top and bottom margins.  This number multiplied
-// by the font size plus the base margins will give similar results to
-// |constraintEqualToSystemSpacingBelowAnchor:|.
-static const CGFloat iOS10MarginFontMultiplier = 1.18;
-// The base top margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseTopMargin = 4;
-// The base bottom margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseBottomMargin = 4;
 // The multiplier for the base system spacing at the top margin.
 static const CGFloat TopBaseSystemSpacingMultiplier = 1.1;
 // The multiplier for the base system spacing at the bottom margin.
@@ -110,44 +100,23 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
              forControlEvents:UIControlEventTouchUpInside];
   self.titleButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
   [self.contentView addSubview:self.titleButton];
-  id<LayoutGuideProvider> safeArea =
-      SafeAreaLayoutGuideForView(self.contentView);
+  id<LayoutGuideProvider> safeArea = self.contentView.safeAreaLayoutGuide;
 
   NSArray* verticalConstraints;
-  if (@available(iOS 11, *)) {
-    // Multipliers of these constraints are calculated based on a 24 base
-    // system spacing.
-    verticalConstraints = @[
-      // Vertical constraints.
-      [self.titleButton.firstBaselineAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.contentView.topAnchor
-                                         multiplier:
-                                             TopBaseSystemSpacingMultiplier],
-      [self.contentView.bottomAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.titleButton
-                                                        .lastBaselineAnchor
-                                         multiplier:
-                                             BottomBaseSystemSpacingMultiplier],
-    ];
-  } else {
-    CGFloat pointSize = self.titleButton.titleLabel.font.pointSize;
-    // These margins are based on the design size and the current point size.
-    // The multipliers were selected by manually testing the different system
-    // font sizes.
-    CGFloat marginTop =
-        iOS10BaseTopMargin + pointSize * iOS10MarginFontMultiplier;
-    CGFloat marginBottom =
-        iOS10BaseBottomMargin + pointSize * iOS10MarginFontMultiplier;
-
-    verticalConstraints = @[
-      [self.titleButton.firstBaselineAnchor
-          constraintEqualToAnchor:self.contentView.topAnchor
-                         constant:marginTop],
-      [self.contentView.bottomAnchor
-          constraintEqualToAnchor:self.titleButton.lastBaselineAnchor
-                         constant:marginBottom],
-    ];
-  }
+  // Multipliers of these constraints are calculated based on a 24 base
+  // system spacing.
+  verticalConstraints = @[
+    // Vertical constraints.
+    [self.titleButton.firstBaselineAnchor
+        constraintEqualToSystemSpacingBelowAnchor:self.contentView.topAnchor
+                                       multiplier:
+                                           TopBaseSystemSpacingMultiplier],
+    [self.contentView.bottomAnchor
+        constraintEqualToSystemSpacingBelowAnchor:self.titleButton
+                                                      .lastBaselineAnchor
+                                       multiplier:
+                                           BottomBaseSystemSpacingMultiplier],
+  ];
   [NSLayoutConstraint activateConstraints:verticalConstraints];
   // Horizontal constraints.
   [NSLayoutConstraint activateConstraints:@[

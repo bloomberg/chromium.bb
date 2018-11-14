@@ -86,7 +86,7 @@
   [self addSubview:searchStackView];
 
   // Position the stack views.
-  id<LayoutGuideProvider> layoutGuide = SafeAreaLayoutGuideForView(self);
+  id<LayoutGuideProvider> layoutGuide = self.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
     [searchStackView.leadingAnchor
         constraintEqualToAnchor:layoutGuide.leadingAnchor

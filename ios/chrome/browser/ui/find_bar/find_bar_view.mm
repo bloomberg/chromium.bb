@@ -91,7 +91,7 @@ const CGFloat kBlueTintColor = 0x1A73E8;
 // The subviews layout is the following:
 // |-[inputField]-[previousButton][nextButton]-[closeButton]-|
 - (void)setupConstraints {
-  id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self);
+  id<LayoutGuideProvider> safeArea = self.safeAreaLayoutGuide;
 
   [self.closeButton
       setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1

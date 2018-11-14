@@ -96,12 +96,7 @@ const CGFloat kResizeFactor = 4;
     [self addSubview:background];
 
     [background setTranslatesAutoresizingMaskIntoConstraints:NO];
-    CGFloat topInset = 0;
-    if (@available(iOS 11, *)) {
-      topInset = self.safeAreaInsets.top;
-    } else {
-      topInset = StatusBarHeight();
-    }
+    CGFloat topInset = self.safeAreaInsets.top;
     self.backgroundTopConstraint =
         [[background topAnchor] constraintEqualToAnchor:self.topAnchor
                                                constant:-topInset];
@@ -136,12 +131,7 @@ const CGFloat kResizeFactor = 4;
 
 - (void)updateConstraints {
   [super updateConstraints];
-  CGFloat topInset = 0;
-  if (@available(iOS 11, *)) {
-    topInset = self.safeAreaInsets.top;
-  } else {
-    topInset = StatusBarHeight();
-  }
+  CGFloat topInset = self.safeAreaInsets.top;
   self.backgroundTopConstraint.constant = -topInset;
 }
 

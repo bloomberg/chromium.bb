@@ -69,24 +69,6 @@ namespace {
 // Left and right margins of the cell content.
 static const CGFloat sideMargins = 16;
 
-// The base multiplier for the top and bottom margins. This number multiplied by
-// the font size plus the base margins will give similar results to
-// |constraintEqualToSystemSpacingBelowAnchor:| which is not available on iOS
-// 10.
-static const CGFloat iOS10MarginFontMultiplier = 1.18;
-
-// The base top margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseTopMargin = 28;
-
-// The base middle margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseMiddleMargin = 24;
-
-// The base bottom margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseBottomMargin = 18;
-
 // The multiplier for the base system spacing at the top margin.
 static const CGFloat TopSystemSpacingMultiplier = 1.58;
 
@@ -268,8 +250,7 @@ static const CGFloat ExpirationMarginWidth = 16.0;
   ]
                                     container:self.contentView];
 
-  id<LayoutGuideProvider> safeArea =
-      SafeAreaLayoutGuideForView(self.contentView);
+  id<LayoutGuideProvider> safeArea = self.contentView.safeAreaLayoutGuide;
 
   [NSLayoutConstraint activateConstraints:@[
     // Common vertical constraints.
@@ -336,50 +317,23 @@ static const CGFloat ExpirationMarginWidth = 16.0;
 - (void)setVerticalSpacingConstraintsForViews:(NSArray<UIView*>*)views
                                     container:(UIView*)container {
   NSMutableArray* verticalConstraints = [[NSMutableArray alloc] init];
-  if (@available(iOS 11, *)) {
-    // Multipliers of these constraints are calculated based on a 24 base
-    // system spacing.
-    NSLayoutYAxisAnchor* previousAnchor = container.topAnchor;
-    CGFloat multiplier = TopSystemSpacingMultiplier;
-    for (UIView* view in views) {
-      [verticalConstraints
-          addObject:[view.firstBaselineAnchor
-                        constraintEqualToSystemSpacingBelowAnchor:previousAnchor
-                                                       multiplier:multiplier]];
-      multiplier = MiddleSystemSpacingMultiplier;
-      previousAnchor = view.lastBaselineAnchor;
-    }
-    multiplier = BottomSystemSpacingMultiplier;
+  // Multipliers of these constraints are calculated based on a 24 base
+  // system spacing.
+  NSLayoutYAxisAnchor* previousAnchor = container.topAnchor;
+  CGFloat multiplier = TopSystemSpacingMultiplier;
+  for (UIView* view in views) {
     [verticalConstraints
-        addObject:[container.bottomAnchor
+        addObject:[view.firstBaselineAnchor
                       constraintEqualToSystemSpacingBelowAnchor:previousAnchor
                                                      multiplier:multiplier]];
-  } else {
-    CGFloat pointSize = self.cardNumberButton.titleLabel.font.pointSize;
-    // These margins are based on the design size and the current point size.
-    // The multipliers were selected by manually testing the different system
-    // font sizes.
-    CGFloat marginBetweenButtons =
-        iOS10BaseMiddleMargin + pointSize * iOS10MarginFontMultiplier;
-    CGFloat marginBottom =
-        iOS10BaseBottomMargin + pointSize * iOS10MarginFontMultiplier / 2;
-    CGFloat marginTop =
-        iOS10BaseTopMargin + pointSize * iOS10MarginFontMultiplier / 2;
-
-    NSLayoutYAxisAnchor* previousAnchor = container.topAnchor;
-    CGFloat constant = marginTop;
-    for (UIView* view in views) {
-      [verticalConstraints addObject:[view.firstBaselineAnchor
-                                         constraintEqualToAnchor:previousAnchor
-                                                        constant:constant]];
-      constant = marginBetweenButtons;
-      previousAnchor = view.lastBaselineAnchor;
-    }
-    [verticalConstraints addObject:[container.bottomAnchor
-                                       constraintEqualToAnchor:previousAnchor
-                                                      constant:marginBottom]];
+    multiplier = MiddleSystemSpacingMultiplier;
+    previousAnchor = view.lastBaselineAnchor;
   }
-
+  multiplier = BottomSystemSpacingMultiplier;
+  [verticalConstraints
+      addObject:[container.bottomAnchor
+                    constraintEqualToSystemSpacingBelowAnchor:previousAnchor
+                                                   multiplier:multiplier]];
   [NSLayoutConstraint activateConstraints:verticalConstraints];
 }
 

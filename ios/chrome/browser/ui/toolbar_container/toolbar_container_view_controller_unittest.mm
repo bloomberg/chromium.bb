@@ -129,32 +129,12 @@ class ToolbarContainerViewControllerTest
     view_controller_.orientation =
         IsTopToBottom() ? ToolbarContainerOrientation::kTopToBottom
                         : ToolbarContainerOrientation::kBottomToTop;
-    if (@available(iOS 11, *)) {
-      UIEdgeInsets safe_insets = container_view().safeAreaInsets;
-      if (IsTopToBottom())
-        safe_insets.top = kSafeAreaStackInset - safe_insets.top;
-      else
-        safe_insets.bottom = kSafeAreaStackInset - safe_insets.bottom;
-      view_controller_.additionalSafeAreaInsets = safe_insets;
-    }
-#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
-    else {
-      // Deactivate all pre-existing constraints for the |guide|'s height.
-      // They are added by UIKit at the maximum priority, so must be removed to
-      // update |guide|'s length.
-      id<UILayoutSupport> guide = IsTopToBottom()
-                                      ? view_controller_.topLayoutGuide
-                                      : view_controller_.bottomLayoutGuide;
-      for (NSLayoutConstraint* constraint in container_view().constraints) {
-        if (constraint.firstItem == guide &&
-            constraint.firstAttribute == NSLayoutAttributeHeight) {
-          constraint.active = NO;
-        }
-      }
-      [guide.heightAnchor constraintEqualToConstant:kSafeAreaStackInset]
-          .active = YES;
-    }
-#endif
+    UIEdgeInsets safe_insets = container_view().safeAreaInsets;
+    if (IsTopToBottom())
+      safe_insets.top = kSafeAreaStackInset - safe_insets.top;
+    else
+      safe_insets.bottom = kSafeAreaStackInset - safe_insets.bottom;
+    view_controller_.additionalSafeAreaInsets = safe_insets;
   }
 
   // Adds collapsible or non-collapsible toolbars to the container, depending on

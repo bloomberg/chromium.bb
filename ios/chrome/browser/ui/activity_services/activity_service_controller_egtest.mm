@@ -77,11 +77,9 @@ id<GREYMatcher> ShareMenuCollectionView() {
 @implementation ActivityServiceControllerTestCase
 
 - (void)testActivityServiceControllerCantPrintUnprintablePages {
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
+  // TODO(crbug.com/747622): re-enable this test on once earl grey can interact
+  // with the share menu.
+  EARL_GREY_TEST_DISABLED(@"Disabled until EG can use share menu.");
 
   // TODO(crbug.com/864597): Reenable this test.
   EARL_GREY_TEST_DISABLED(@"Test should be rewritten to use Offline Version.");
@@ -127,11 +125,9 @@ id<GREYMatcher> ShareMenuCollectionView() {
 }
 
 - (void)testOpenActivityServiceControllerAndCopy {
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
+  // TODO(crbug.com/747622): re-enable this test once earl grey can interact
+  // with the share menu.
+  EARL_GREY_TEST_DISABLED(@"Disabled until EG can use share menu.");
 
   // Set up mock http server.
   std::map<GURL, std::string> responses;

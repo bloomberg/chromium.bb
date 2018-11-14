@@ -153,16 +153,7 @@
 
 - (void)performBatchTableViewUpdates:(void (^)(void))updates
                           completion:(void (^)(BOOL finished))completion {
-  if (@available(iOS 11, *)) {
-    [self.tableView performBatchUpdates:updates completion:completion];
-  } else {
-    [self.tableView beginUpdates];
-    if (updates)
-      updates();
-    [self.tableView endUpdates];
-    if (completion)
-      completion(YES);
-  }
+  [self.tableView performBatchUpdates:updates completion:completion];
 }
 
 - (void)removeFromModelItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {

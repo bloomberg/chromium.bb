@@ -342,22 +342,11 @@ using toolbar_container::HeightRange;
 
 // Adds additional height to the first toolbar to account for the safe area.
 - (void)updateForSafeArea {
-  if (@available(iOS 11, *)) {
-    if (self.orientation == ToolbarContainerOrientation::kTopToBottom) {
-      self.additionalStackHeight = self.view.safeAreaInsets.top;
-    } else {
-      self.additionalStackHeight = self.view.safeAreaInsets.bottom;
-    }
+  if (self.orientation == ToolbarContainerOrientation::kTopToBottom) {
+    self.additionalStackHeight = self.view.safeAreaInsets.top;
+  } else {
+    self.additionalStackHeight = self.view.safeAreaInsets.bottom;
   }
-#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
-  else {
-    if (self.orientation == ToolbarContainerOrientation::kTopToBottom) {
-      self.additionalStackHeight = self.topLayoutGuide.length;
-    } else {
-      self.additionalStackHeight = self.bottomLayoutGuide.length;
-    }
-  }
-#endif
 }
 
 @end

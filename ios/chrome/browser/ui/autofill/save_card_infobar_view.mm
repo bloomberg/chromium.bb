@@ -200,7 +200,7 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   // Calculate the safe area and current Toolbar height. Set the
   // bottomAnchorConstraint constant to this height to create the bottom
   // padding.
-  CGFloat bottomSafeAreaInset = SafeAreaInsetsForView(self).bottom;
+  CGFloat bottomSafeAreaInset = self.safeAreaInsets.bottom;
   CGFloat toolbarHeight = 0;
   UILayoutGuide* guide =
       [NamedGuide guideWithName:kSecondaryToolbarGuide view:self];
@@ -231,8 +231,7 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   } else {
     self.backgroundColor = [UIColor whiteColor];
   }
-  id<LayoutGuideProvider> safeAreaLayoutGuide =
-      SafeAreaLayoutGuideForView(self);
+  id<LayoutGuideProvider> safeAreaLayoutGuide = self.safeAreaLayoutGuide;
 
   // Add the icon. The icon is fixed to the top leading corner of the infobar.
   // |iconContainerView| is used here because the AutoLayout constraints for

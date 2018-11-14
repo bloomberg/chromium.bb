@@ -173,7 +173,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  UIEdgeInsets safeArea = SafeAreaInsetsForView(CollectionView());
+  UIEdgeInsets safeArea = CollectionView().safeAreaInsets;
   CGFloat collectionWidth =
       CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
@@ -187,7 +187,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                            errorOrNil:nil];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
-  safeArea = SafeAreaInsetsForView(CollectionView());
+  safeArea = CollectionView().safeAreaInsets;
   CGFloat collectionWidthAfterRotation =
       CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertNotEqual(collectionWidth, collectionWidthAfterRotation,
@@ -208,7 +208,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  UIEdgeInsets safeArea = SafeAreaInsetsForView(CollectionView());
+  UIEdgeInsets safeArea = CollectionView().safeAreaInsets;
   CGFloat collectionWidth =
       CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertTrue(collectionWidth > 0, @"The collection width is nil.");
@@ -227,7 +227,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
       performAction:grey_tap()];
 
-  safeArea = SafeAreaInsetsForView(CollectionView());
+  safeArea = CollectionView().safeAreaInsets;
   CGFloat collectionWidthAfterRotation =
       CGRectGetWidth(UIEdgeInsetsInsetRect(CollectionView().bounds, safeArea));
   GREYAssertNotEqual(collectionWidth, collectionWidthAfterRotation,
@@ -383,10 +383,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that tapping the fake omnibox focuses the real omnibox.
 - (void)testTapFakeOmnibox {
-  // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
-  // grey_typeText works on iOS 11.
-  if (IsRegularXRegularSizeClass() && base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
+  // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
+  // works.
+  if (IsRegularXRegularSizeClass()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
   // Setup the server.
   self.testServer->RegisterRequestHandler(base::Bind(&StandardResponse));
@@ -471,16 +471,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           FakeOmniboxAccessibilityID())]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
-  // TODO(crbug.com/826369) This should use collectionView.safeAreaInsets.top
-  // instead of -StatusBarHeight once iOS10 is dropped and the NTP is out of
-  // native content.
-  CGFloat top = 0;
-  if (@available(iOS 11, *)) {
-    top = ntp_home::CollectionView().safeAreaInsets.top;
-  } else {
-    top = StatusBarHeight();
-  }
 
+  CGFloat top = ntp_home::CollectionView().safeAreaInsets.top;
   GREYAssertTrue(offsetAfterTap.y >= origin.y + headerHeight - (60 + top),
                  @"The collection has not moved.");
 

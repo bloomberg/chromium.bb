@@ -97,13 +97,11 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
 
   // On iOS 11, there is no need to use PersistentCookieStore or CookieMonster
   // because there is a way to access cookies in WKHTTPCookieStore. This will
-  // allow URLFetcher and anyother users of net:CookieStore to in iOS to set
+  // allow URLFetcher and any other users of net:CookieStore to in iOS to set
   // and get cookies directly in WKHTTPCookieStore.
-  if (@available(iOS 11, *)) {
-    if (base::FeatureList::IsEnabled(web::features::kWKHTTPSystemCookieStore)) {
-      return std::make_unique<net::CookieStoreIOS>(
-          std::move(system_cookie_store), net_log);
-    }
+  if (base::FeatureList::IsEnabled(web::features::kWKHTTPSystemCookieStore)) {
+    return std::make_unique<net::CookieStoreIOS>(std::move(system_cookie_store),
+                                                 net_log);
   }
 
   scoped_refptr<net::SQLitePersistentCookieStore> persistent_store = nullptr;

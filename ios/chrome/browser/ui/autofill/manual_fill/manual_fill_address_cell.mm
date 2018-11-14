@@ -453,8 +453,7 @@ static const CGFloat InnerMarginWidth = 16.0;
   self.stateCountryLineConstraints = @[];
   self.verticalConstraints = @[];
 
-  id<LayoutGuideProvider> safeArea =
-      SafeAreaLayoutGuideForView(self.contentView);
+  id<LayoutGuideProvider> safeArea = self.contentView.safeAreaLayoutGuide;
 
   [NSLayoutConstraint activateConstraints:@[
     // Common vertical constraints.

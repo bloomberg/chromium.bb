@@ -560,29 +560,17 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     // sessionState.
     // Turn Off animations since UITableViewRowAnimationNone still animates.
     [UIView setAnimationsEnabled:NO];
-    // If iOS11+ use performBatchUpdates: instead of begin/endUpdates.
-    if (@available(iOS 11, *)) {
-      if (newSessionState ==
-          SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
-        [self.tableView performBatchUpdates:^{
-          [self updateSessionSections];
-        }
-                                 completion:nil];
-      } else {
-        [self.tableView performBatchUpdates:^{
-          [self updateOtherDevicesSectionForState:newSessionState];
-        }
-                                 completion:nil];
-      }
-    } else {
-      [self.tableView beginUpdates];
-      if (newSessionState ==
-          SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
+    if (newSessionState ==
+        SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
+      [self.tableView performBatchUpdates:^{
         [self updateSessionSections];
-      } else {
+      }
+                               completion:nil];
+    } else {
+      [self.tableView performBatchUpdates:^{
         [self updateOtherDevicesSectionForState:newSessionState];
       }
-      [self.tableView endUpdates];
+                               completion:nil];
     }
     [UIView setAnimationsEnabled:YES];
   }
@@ -601,16 +589,10 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   if (!self.updatesTableView)
     return;
 
-  if (@available(iOS 11, *)) {
-    [self.tableView performBatchUpdates:^{
-      [self updateRecentlyClosedSection];
-    }
-                             completion:nil];
-  } else {
-    [self.tableView beginUpdates];
+  [self.tableView performBatchUpdates:^{
     [self updateRecentlyClosedSection];
-    [self.tableView endUpdates];
   }
+                           completion:nil];
 }
 
 - (void)setTabRestoreService:(sessions::TabRestoreService*)tabRestoreService {
@@ -651,18 +633,10 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   }
 }
 
-// TODO(crbug.com/850814): Use only dynamic sizing once we stop supporting
-// iOS10.
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
   DCHECK_EQ(tableView, self.tableView);
-  if (@available(iOS 11, *)) {
-    return UITableViewAutomaticDimension;
-  } else {
-    TableViewHeaderFooterItem* header =
-        [self.tableViewModel headerForSection:section];
-    return [header headerHeightForWidth:self.view.bounds.size.width];
-  }
+  return UITableViewAutomaticDimension;
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
@@ -972,14 +946,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     }
   };
 
-  // If iOS11+ use performBatchUpdates: instead of beginUpdates/endUpdates.
-  if (@available(iOS 11, *)) {
-    [self.tableView performBatchUpdates:tableUpdates completion:nil];
-  } else {
-    [self.tableView beginUpdates];
-    tableUpdates();
-    [self.tableView endUpdates];
-  }
+  [self.tableView performBatchUpdates:tableUpdates completion:nil];
 }
 
 #pragma mark - Long press and context menus
@@ -1085,21 +1052,10 @@ const int kRecentlyClosedTabsSectionIndex = 0;
                   withRowAnimation:UITableViewRowAnimationLeft];
   };
 
-  // If iOS11+ use performBatchUpdates: instead of beginUpdates/endUpdates.
-  if (@available(iOS 11, *)) {
-    [self.tableView performBatchUpdates:tableUpdates
-                             completion:^(BOOL) {
-                               openTabs->DeleteForeignSession(sessionTagCopy);
-                             }];
-  } else {
-    [self.tableView beginUpdates];
-    tableUpdates();
-    // DeleteForeignSession will cause |self refreshUserState:| to be called,
-    // thus refreshing the TableView, running this inside the updates block will
-    // make sure that the tableView animations are performed in order.
-    openTabs->DeleteForeignSession(sessionTagCopy);
-    [self.tableView endUpdates];
-  }
+  [self.tableView performBatchUpdates:tableUpdates
+                           completion:^(BOOL) {
+                             openTabs->DeleteForeignSession(sessionTagCopy);
+                           }];
 }
 
 #pragma mark - SigninPromoViewConsumer

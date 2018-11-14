@@ -50,20 +50,6 @@
 namespace {
 // Left and right margins of the cell content.
 static const CGFloat sideMargins = 16;
-// The base multiplier for the top and bottom margins. This number multiplied by
-// the font size plus the base margins will give similar results to
-// |constraintEqualToSystemSpacingBelowAnchor:| which is not available on iOS
-// 10.
-static const CGFloat iOS10MarginFontMultiplier = 1.18;
-// The base top margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseTopMargin = 28;
-// The base middle margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseMiddleMargin = 24;
-// The base bottom margin, only used in iOS 10. Refer to
-// |iOS10MarginFontMultiplier| for how it is used.
-static const CGFloat iOS10BaseBottomMargin = 18;
 // The multiplier for the base system spacing at the top margin.
 static const CGFloat TopSystemSpacingMultiplier = 1.58;
 // The multiplier for the base system spacing between elements (vertical).
@@ -190,61 +176,31 @@ static const CGFloat BottomSystemSpacingMultiplier = 2.26;
                 forControlEvents:UIControlEventTouchUpInside];
   [self.contentView addSubview:self.passwordButton];
 
-  id<LayoutGuideProvider> safeArea =
-      SafeAreaLayoutGuideForView(self.contentView);
+  id<LayoutGuideProvider> safeArea = self.contentView.safeAreaLayoutGuide;
 
   NSArray* verticalConstraints;
-  if (@available(iOS 11, *)) {
-    // Multipliers of these constraints are calculated based on a 24 base
-    // system spacing.
-    verticalConstraints = @[
-      [self.siteNameLabel.firstBaselineAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.contentView.topAnchor
-                                         multiplier:TopSystemSpacingMultiplier],
-      [self.usernameButton.firstBaselineAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.siteNameLabel
-                                                        .lastBaselineAnchor
-                                         multiplier:
-                                             MiddleSystemSpacingMultiplier],
-      [self.passwordButton.firstBaselineAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.usernameButton
-                                                        .lastBaselineAnchor
-                                         multiplier:
-                                             MiddleSystemSpacingMultiplier],
-      [self.contentView.bottomAnchor
-          constraintEqualToSystemSpacingBelowAnchor:self.passwordButton
-                                                        .lastBaselineAnchor
-                                         multiplier:
-                                             BottomSystemSpacingMultiplier],
-    ];
-  } else {
-    CGFloat pointSize = self.usernameButton.titleLabel.font.pointSize;
-    // These margins are based on the design size and the current point size.
-    // The multipliers were selected by manually testing the different system
-    // font sizes.
-    CGFloat marginBetweenButtons =
-        iOS10BaseMiddleMargin + pointSize * iOS10MarginFontMultiplier;
-    CGFloat marginBottom =
-        iOS10BaseBottomMargin + pointSize * iOS10MarginFontMultiplier / 2;
-    CGFloat marginTop =
-        iOS10BaseTopMargin + pointSize * iOS10MarginFontMultiplier / 2;
-
-    verticalConstraints = @[
-      // This doesn't make sense when the label is to big.
-      [self.siteNameLabel.firstBaselineAnchor
-          constraintEqualToAnchor:self.contentView.topAnchor
-                         constant:marginTop],
-      [self.usernameButton.firstBaselineAnchor
-          constraintEqualToAnchor:self.siteNameLabel.lastBaselineAnchor
-                         constant:marginBetweenButtons],
-      [self.passwordButton.firstBaselineAnchor
-          constraintEqualToAnchor:self.usernameButton.lastBaselineAnchor
-                         constant:marginBetweenButtons],
-      [self.contentView.bottomAnchor
-          constraintEqualToAnchor:self.passwordButton.lastBaselineAnchor
-                         constant:marginBottom],
-    ];
-  }
+  // Multipliers of these constraints are calculated based on a 24 base
+  // system spacing.
+  verticalConstraints = @[
+    [self.siteNameLabel.firstBaselineAnchor
+        constraintEqualToSystemSpacingBelowAnchor:self.contentView.topAnchor
+                                       multiplier:TopSystemSpacingMultiplier],
+    [self.usernameButton.firstBaselineAnchor
+        constraintEqualToSystemSpacingBelowAnchor:self.siteNameLabel
+                                                      .lastBaselineAnchor
+                                       multiplier:
+                                           MiddleSystemSpacingMultiplier],
+    [self.passwordButton.firstBaselineAnchor
+        constraintEqualToSystemSpacingBelowAnchor:self.usernameButton
+                                                      .lastBaselineAnchor
+                                       multiplier:
+                                           MiddleSystemSpacingMultiplier],
+    [self.contentView.bottomAnchor
+        constraintEqualToSystemSpacingBelowAnchor:self.passwordButton
+                                                      .lastBaselineAnchor
+                                       multiplier:
+                                           BottomSystemSpacingMultiplier],
+  ];
 
   [NSLayoutConstraint activateConstraints:verticalConstraints];
   [NSLayoutConstraint activateConstraints:@[
