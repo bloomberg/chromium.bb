@@ -39,8 +39,8 @@ class MockFileChooser : public mojom::blink::FileChooser {
     DCHECK(callback_)
         << "OpenFileChooser() or EnumerateChosenDirectory() should "
            "be called beforehand.";
-    std::move(callback_).Run(
-        mojom::blink::FileChooserResult::New(std::move(files)));
+    std::move(callback_).Run(mojom::blink::FileChooserResult::New(
+        std::move(files), base::FilePath()));
     bindings_.FlushForTesting();
   }
 

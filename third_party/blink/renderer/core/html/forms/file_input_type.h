@@ -56,7 +56,7 @@ class CORE_EXPORT FileInputType final : public InputType,
   using InputType::GetElement;
   static Vector<String> FilesFromFormControlState(const FormControlState&);
   static FileList* CreateFileList(const FileChooserFileInfoList& files,
-                                  bool has_webkit_directory_attr);
+                                  const base::FilePath& base_dir);
 
   void CountUsage() override;
 
@@ -96,7 +96,8 @@ class CORE_EXPORT FileInputType final : public InputType,
   void HandleKeyupEvent(KeyboardEvent&) override;
 
   // FileChooserClient implementation.
-  void FilesChosen(FileChooserFileInfoList files) override;
+  void FilesChosen(FileChooserFileInfoList files,
+                   const base::FilePath& base_dir) override;
   LocalFrame* FrameOrNull() const override;
 
   // PopupOpeningObserver implementation.

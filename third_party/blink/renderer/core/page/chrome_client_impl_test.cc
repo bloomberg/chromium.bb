@@ -257,7 +257,7 @@ class MockFileChooserClient
 
  private:
   // FilesChosen() and WillOpenPopup() are never called in the test.
-  void FilesChosen(FileChooserFileInfoList) override {}
+  void FilesChosen(FileChooserFileInfoList, const base::FilePath&) override {}
   void WillOpenPopup() override {}
 
   LocalFrame* FrameOrNull() const override { return frame_; }

@@ -566,6 +566,7 @@ class FileChooserImpl : public blink::mojom::FileChooser,
   }
 
   void FileSelected(std::vector<blink::mojom::FileChooserFileInfoPtr> files,
+                    const base::FilePath& base_dir,
                     blink::mojom::FileChooserParams::Mode mode) {
     proxy_ = nullptr;
     if (!render_frame_host_)
@@ -595,7 +596,8 @@ class FileChooserImpl : public blink::mojom::FileChooser,
         }
       }
     }
-    std::move(callback_).Run(FileChooserResult::New(std::move(files)));
+    std::move(callback_).Run(
+        FileChooserResult::New(std::move(files), base_dir));
   }
 
   void FileSelectionCanceled() {
@@ -621,6 +623,7 @@ class FileChooserImpl : public blink::mojom::FileChooser,
     // FileSelectListener overrides:
 
     void FileSelected(std::vector<blink::mojom::FileChooserFileInfoPtr> files,
+                      const base::FilePath& base_dir,
                       blink::mojom::FileChooserParams::Mode mode) override {
 #if DCHECK_IS_ON()
       DCHECK(!was_file_select_listener_function_called_)
@@ -629,7 +632,7 @@ class FileChooserImpl : public blink::mojom::FileChooser,
       was_file_select_listener_function_called_ = true;
 #endif
       if (owner_)
-        owner_->FileSelected(std::move(files), mode);
+        owner_->FileSelected(std::move(files), base_dir, mode);
     }
 
     void FileSelectionCanceled() override {

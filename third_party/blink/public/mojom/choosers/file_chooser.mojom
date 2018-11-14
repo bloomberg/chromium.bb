@@ -91,6 +91,13 @@ union FileChooserFileInfo {
 struct FileChooserResult {
   // Selected files.
   array<FileChooserFileInfo> files;
+
+  // Requested base directory.
+  // This is a user-chosen path in a case of OpenFileChooser() with
+  // mode=kUploadFolder.
+  // This is |directory_path| in a case of EnumerateChosenDirectory().
+  // Otherwise, it's an empty FilePath.
+  mojo_base.mojom.FilePath base_directory;
 };
 
 // An interface to receive file chooser requests.

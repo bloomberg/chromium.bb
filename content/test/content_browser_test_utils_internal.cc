@@ -297,7 +297,7 @@ void FileChooserDelegate::RunFileChooser(
       blink::mojom::NativeFileInfo::New(file_, base::string16()));
   std::vector<blink::mojom::FileChooserFileInfoPtr> files;
   files.push_back(std::move(file_info));
-  listener->FileSelected(std::move(files),
+  listener->FileSelected(std::move(files), base::FilePath(),
                          blink::mojom::FileChooserParams::Mode::kOpen);
 
   params_ = params.Clone();

@@ -228,7 +228,7 @@ class FileChooserDelegate : public content::WebContentsDelegate {
     std::vector<blink::mojom::FileChooserFileInfoPtr> files;
     files.push_back(blink::mojom::FileChooserFileInfo::NewNativeFile(
         blink::mojom::NativeFileInfo::New(file_, base::string16())));
-    listener->FileSelected(std::move(files),
+    listener->FileSelected(std::move(files), base::FilePath(),
                            blink::mojom::FileChooserParams::Mode::kOpen);
 
     params_ = params.Clone();

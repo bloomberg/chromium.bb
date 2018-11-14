@@ -51,7 +51,8 @@ using FileChooserFileInfoList = Vector<mojom::blink::FileChooserFileInfoPtr>;
 
 class CORE_EXPORT FileChooserClient : public PopupOpeningObserver {
  public:
-  virtual void FilesChosen(FileChooserFileInfoList) = 0;
+  virtual void FilesChosen(FileChooserFileInfoList,
+                           const base::FilePath& base_dir) = 0;
   virtual LocalFrame* FrameOrNull() const = 0;
   ~FileChooserClient() override;
 
