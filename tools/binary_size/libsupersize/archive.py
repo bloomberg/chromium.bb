@@ -601,7 +601,7 @@ def _FindComponentRoot(start_path, cache, knobs):
       SRC_ROOT.
     cache: Dict of OWNERS paths. Used instead of filesystem if paths are present
       in the dict.
-    knobs: Instance of SectionSizeKnobs. Tunable knobs and options.
+    knobs: Instance of SectionSizeKnobs with tunable knobs and options.
 
   Returns:
     COMPONENT belonging to |start_path|, or empty string if not found.
@@ -736,7 +736,7 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory,
     apk_path: Path to the .apk file to measure.
     tool_prefix: Prefix for c++filt & nm.
     output_directory: Build output directory.
-    linker_name: 'gold', 'lld_v#' (# is a number), 'lld-lto_v#', or None.
+    linker_name: A coded linker name (see linker_map_parser.py).
 
   Returns:
     None if |elf_path| is not supplied. Otherwise returns dict mapping string
@@ -1194,13 +1194,20 @@ def CreateSectionSizesAndSymbols(
 
   Args:
     map_path: Path to the linker .map(.gz) file to parse.
-    elf_path: Path to the corresponding unstripped ELF file. Used to find symbol
-        aliases and inlined functions. Can be None.
     tool_prefix: Prefix for c++filt & nm (required).
     output_directory: Build output directory. If None, source_paths and symbol
         alias information will not be recorded.
+    elf_path: Path to the corresponding unstripped ELF file. Used to find symbol
+        aliases and inlined functions. Can be None.
+    apk_path: Path to the .apk file to measure.
     track_string_literals: Whether to break down "** merge string" sections into
         smaller symbols (requires output_directory).
+    metadata: Metadata dict from CreateMetadata().
+    apk_so_path: Path to an .so file within an APK file.
+    pak_files: List of paths to .pak files.
+    pak_info_file: Path to a .pak.info file.
+    linker_name: A coded linker name (see linker_map_parser.py).
+    knobs: Instance of SectionSizeKnobs with tunable knobs and options.
 
   Returns:
     A tuple of (section_sizes, raw_symbols).

@@ -3,7 +3,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Parser for linker map files."""
+"""Parser for linker map files.
+
+The format of a linker map file depends on the linker that generates it. This
+file uses "coded linker name" to identify formats and variants:
+
+  'gold': The gold linker (usage is being deprecated by Chrome).
+  'lld_v0': LLD linker (no LTO), old format.
+  'lld-lto_v0': LLD linker with ThinLTO, old format.
+  'lld_v1': LLD linker (no LTO), new format.
+  'lld-lto_v1': LLD linker with ThinLTO, new format.
+
+The |linker_name| parameter in various functions must take one of the above
+coded linker name values.
+"""
 
 from __future__ import print_function
 
@@ -469,7 +482,7 @@ def DetectLinkerNameFromMapFile(lines):
     lines: Iterable of lines from the linker map.
 
   Returns:
-    A coded linker name: 'gold', 'lld_v#' (# is a number), or 'lld-lto_v#'.
+    A coded linker name.
 
   """
   first_line = next(lines)
