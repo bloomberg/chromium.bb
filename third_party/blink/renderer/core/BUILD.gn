@@ -1729,6 +1729,7 @@ jumbo_source_set("unit_tests") {
     "css/css_computed_style_declaration_test.cc",
     "css/css_font_face_source_test.cc",
     "css/css_gradient_value_test.cc",
+    "css/css_invalid_variable_value_test.cc",
     "css/css_page_rule_test.cc",
     "css/css_paint_value_test.cc",
     "css/css_primitive_value_test.cc",

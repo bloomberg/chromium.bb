@@ -163,7 +163,8 @@ class CORE_EXPORT CSSVariableResolver {
   scoped_refptr<CSSVariableData> ResolveCustomPropertyIfNeeded(
       AtomicString name,
       CSSVariableData*,
-      const Options&);
+      const Options&,
+      bool& cycle_detected);
   // Rewrites (in-place) kUrlTokens and kFunctionToken/CSSValueUrls to contain
   // absolute URLs.
   void ResolveRelativeUrls(Vector<CSSParserToken>& tokens,
@@ -191,6 +192,10 @@ class CORE_EXPORT CSSVariableResolver {
   void SetRegisteredVariable(const AtomicString& name,
                              const PropertyRegistration&,
                              const CSSValue*);
+  void SetInvalidVariable(const AtomicString& name,
+                          const PropertyRegistration*);
+  bool IsRegisteredVariableInvalid(const AtomicString& name,
+                                   const PropertyRegistration&);
 
   const StyleResolverState& state_;
   StyleInheritedVariables* inherited_variables_;

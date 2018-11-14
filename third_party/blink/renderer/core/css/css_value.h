@@ -161,6 +161,9 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool IsPendingSubstitutionValue() const {
     return class_type_ == kPendingSubstitutionValueClass;
   }
+  bool IsInvalidVariableValue() const {
+    return class_type_ == kInvalidVariableValueClass;
+  }
 
   bool HasFailedOrCanceledSubresources() const;
   bool MayContainUrl() const;
@@ -235,6 +238,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     kVariableReferenceClass,
     kCustomPropertyDeclarationClass,
     kPendingSubstitutionValueClass,
+    kInvalidVariableValueClass,
     kLayoutFunctionClass,
 
     kCSSContentDistributionClass,

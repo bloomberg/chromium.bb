@@ -92,6 +92,8 @@ blink_core_sources("css") {
     "css_inherited_value.h",
     "css_initial_value.cc",
     "css_initial_value.h",
+    "css_invalid_variable_value.cc",
+    "css_invalid_variable_value.h",
     "css_keyframe_rule.cc",
     "css_keyframe_rule.h",
     "css_keyframes_rule.cc",

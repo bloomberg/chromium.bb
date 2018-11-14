@@ -47,6 +47,7 @@ CSSValuePool::CSSValuePool()
     : inherited_value_(new CSSInheritedValue),
       initial_value_(new CSSInitialValue()),
       unset_value_(new CSSUnsetValue),
+      invalid_variable_value_(new CSSInvalidVariableValue),
       color_transparent_(new CSSColorValue(Color::kTransparent)),
       color_white_(new CSSColorValue(Color::kWhite)),
       color_black_(new CSSColorValue(Color::kBlack)) {
@@ -60,6 +61,7 @@ void CSSValuePool::Trace(blink::Visitor* visitor) {
   visitor->Trace(inherited_value_);
   visitor->Trace(initial_value_);
   visitor->Trace(unset_value_);
+  visitor->Trace(invalid_variable_value_);
   visitor->Trace(color_transparent_);
   visitor->Trace(color_white_);
   visitor->Trace(color_black_);

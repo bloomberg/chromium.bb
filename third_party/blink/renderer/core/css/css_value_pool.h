@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -67,6 +68,9 @@ class CORE_EXPORT CSSValuePool
   CSSInheritedValue* InheritedValue() { return inherited_value_; }
   CSSInitialValue* InitialValue() { return initial_value_; }
   CSSUnsetValue* UnsetValue() { return unset_value_; }
+  CSSInvalidVariableValue* InvalidVariableValue() {
+    return invalid_variable_value_;
+  }
 
   // Vector caches.
   CSSIdentifierValue* IdentifierCacheValue(CSSValueID ident) {
@@ -126,6 +130,7 @@ class CORE_EXPORT CSSValuePool
   Member<CSSInheritedValue> inherited_value_;
   Member<CSSInitialValue> initial_value_;
   Member<CSSUnsetValue> unset_value_;
+  Member<CSSInvalidVariableValue> invalid_variable_value_;
   Member<CSSColorValue> color_transparent_;
   Member<CSSColorValue> color_white_;
   Member<CSSColorValue> color_black_;
