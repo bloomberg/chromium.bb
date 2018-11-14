@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_AUTO_FETCHER_SERVICE_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/offline_pages/auto_fetch_page_load_watcher.h"
 #include "chrome/common/offline_page_auto_fetcher.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/core/background/request_queue_results.h"
@@ -54,6 +56,8 @@ class OfflinePageAutoFetcherService : public KeyedService {
   explicit OfflinePageAutoFetcherService(
       RequestCoordinator* request_coordinator);
   ~OfflinePageAutoFetcherService() override;
+
+  AutoFetchPageLoadWatcher* page_load_watcher() { return &page_load_watcher_; }
 
   // Auto fetching interface. Schedules and cancels fetch requests.
 
@@ -114,6 +118,7 @@ class OfflinePageAutoFetcherService : public KeyedService {
       std::vector<std::unique_ptr<SavePageRequest>> requests);
   void CancelScheduleStep3(TaskToken token, const MultipleItemStatuses&);
 
+  AutoFetchPageLoadWatcher page_load_watcher_;
   RequestCoordinator* request_coordinator_;
   // TODO(harringtond): Pull out task management into another class, or use
   // offline_pages::TaskQueue.

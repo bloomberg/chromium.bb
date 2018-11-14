@@ -71,7 +71,8 @@ class OfflinePageAutoFetcherService::TaskToken {
 
 OfflinePageAutoFetcherService::OfflinePageAutoFetcherService(
     RequestCoordinator* request_coordinator)
-    : request_coordinator_(request_coordinator) {}
+    : page_load_watcher_(request_coordinator),
+      request_coordinator_(request_coordinator) {}
 OfflinePageAutoFetcherService::~OfflinePageAutoFetcherService() {}
 
 void OfflinePageAutoFetcherService::TrySchedule(bool user_requested,

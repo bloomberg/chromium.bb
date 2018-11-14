@@ -122,6 +122,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/auto_fetch_page_load_watcher.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/recent_tab_helper.h"
 #endif
@@ -323,6 +324,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);
 offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
+offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
