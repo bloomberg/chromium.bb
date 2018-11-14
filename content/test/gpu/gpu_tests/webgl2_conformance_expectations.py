@@ -983,8 +983,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'intel'], bug=680675)
 
     # Linux Intel with ANGLE only
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
     self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
         ['linux', 'intel', 'opengl'], bug=680276)
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
