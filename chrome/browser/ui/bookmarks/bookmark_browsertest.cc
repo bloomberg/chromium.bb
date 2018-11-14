@@ -178,16 +178,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DISABLED_MultiProfile) {
 
 #endif
 
-// Flaky on Linux: http://crbug.com/504869.
-#if defined(OS_LINUX)
-#define MAYBE_HideStarOnNonbookmarkedInterstitial \
-  DISABLED_HideStarOnNonbookmarkedInterstitial
-#else
-#define MAYBE_HideStarOnNonbookmarkedInterstitial \
-  HideStarOnNonbookmarkedInterstitial
-#endif
 IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest,
-                       MAYBE_HideStarOnNonbookmarkedInterstitial) {
+                       HideStarOnNonbookmarkedInterstitial) {
   // Start an HTTPS server with a certificate error.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
