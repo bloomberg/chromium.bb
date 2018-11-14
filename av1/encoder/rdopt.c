@@ -8160,6 +8160,12 @@ static INLINE int64_t interpolation_filter_rd(
   const int tmp_rs =
       get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
 
+  int64_t min_rd = RDCOST(x->rdmult, tmp_rs, 0);
+  if (min_rd > *rd) {
+    mbmi->interp_filters = last_best;
+    return 0;
+  }
+
   assert(skip_pred != 2);
   assert((skip_pred >= 0) && (skip_pred <= cpi->default_interp_skip_flags));
   assert(rate[0] >= 0);
