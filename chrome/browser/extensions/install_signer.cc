@@ -279,7 +279,7 @@ ExtensionIdSet InstallSigner::GetForcedNotFromWebstore() {
 
 namespace {
 
-static int g_request_count = 0;
+int g_request_count = 0;
 
 base::LazyInstance<base::TimeTicks>::DestructorAtExit g_last_request_time =
     LAZY_INSTANCE_INITIALIZER;
