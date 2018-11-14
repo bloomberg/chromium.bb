@@ -24,21 +24,19 @@ class BuildSpecBuilder(generic_builders.ManifestVersionedBuilder):
 
   def RunStages(self):
     """Run the stages."""
-    workspace_dir = self._run.options.workspace
-
     self._RunStage(workspace_stages.WorkspaceSyncStage,
-                   build_root=workspace_dir)
+                   build_root=self._run.options.workspace)
 
     self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
-                   build_root=workspace_dir)
+                   build_root=self._run.options.workspace)
 
     self._RunStage(workspace_stages.WorkspacePublishBuildspecStage,
-                   build_root=workspace_dir)
+                   build_root=self._run.options.workspace)
 
     # TODO(dgarrett): Schedule slaves based on version defined.
 
 
-class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
+class FirmwareBranchBuilder(BuildSpecBuilder):
   """Builder that builds firmware branches.
 
   This builder checks out a second copy of ChromeOS into the workspace
@@ -51,35 +49,26 @@ class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
 
   def RunStages(self):
     """Run the stages."""
-    workspace_dir = self._run.options.workspace
-
-    self._RunStage(workspace_stages.WorkspaceSyncStage,
-                   build_root=workspace_dir)
-
-    self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
-                   build_root=workspace_dir)
-
-    self._RunStage(workspace_stages.WorkspacePublishBuildspecStage,
-                   build_root=workspace_dir)
+    super(FirmwareBranchBuilder, self).RunStages()
 
     self._RunStage(workspace_stages.WorkspaceInitSDKStage,
-                   build_root=workspace_dir)
+                   build_root=self._run.options.workspace)
 
     for board in self._run.config.boards:
       self._RunStage(workspace_stages.WorkspaceSetupBoardStage,
-                     build_root=workspace_dir,
+                     build_root=self._run.options.workspace,
                      board=board)
 
       self._RunStage(workspace_stages.WorkspaceBuildPackagesStage,
-                     build_root=workspace_dir,
+                     build_root=self._run.options.workspace,
                      board=board)
 
       self._RunStage(firmware_stages.FirmwareArchiveStage,
-                     build_root=workspace_dir,
+                     build_root=self._run.options.workspace,
                      board=board)
 
 
-class FactoryBranchBuilder(generic_builders.ManifestVersionedBuilder):
+class FactoryBranchBuilder(BuildSpecBuilder):
   """Builder that builds factory branches.
 
   This builder checks out a second copy of ChromeOS into the workspace
@@ -89,21 +78,12 @@ class FactoryBranchBuilder(generic_builders.ManifestVersionedBuilder):
 
   def RunStages(self):
     """Run the stages."""
-    workspace_dir = self._run.options.workspace
-
-    self._RunStage(workspace_stages.WorkspaceSyncStage,
-                   build_root=workspace_dir)
-
-    self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
-                   build_root=workspace_dir)
-
-    self._RunStage(workspace_stages.WorkspacePublishBuildspecStage,
-                   build_root=workspace_dir)
+    super(FactoryBranchBuilder, self).RunStages()
 
     self._RunStage(workspace_stages.WorkspaceInitSDKStage,
-                   build_root=workspace_dir)
+                   build_root=self._run.options.workspace)
 
     for board in self._run.config.boards:
       self._RunStage(workspace_stages.WorkspaceSetupBoardStage,
-                     build_root=workspace_dir,
+                     build_root=self._run.options.workspace,
                      board=board)
