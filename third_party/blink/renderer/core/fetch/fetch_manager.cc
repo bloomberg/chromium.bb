@@ -201,7 +201,7 @@ class SRIBytesConsumer final : public BytesConsumer {
 class FetchManager::Loader final
     : public GarbageCollectedFinalized<FetchManager::Loader>,
       public ThreadableLoaderClient {
-  USING_PRE_FINALIZER(FetchManager::Loader, Dispose);
+  USING_GARBAGE_COLLECTED_MIXIN(Loader);
 
  public:
   static Loader* Create(ExecutionContext* execution_context,
@@ -215,7 +215,7 @@ class FetchManager::Loader final
   }
 
   ~Loader() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   bool WillFollowRedirect(const KURL&, const ResourceResponse&) override;
   void DidReceiveResponse(unsigned long,
@@ -413,6 +413,7 @@ void FetchManager::Loader::Trace(blink::Visitor* visitor) {
   visitor->Trace(integrity_verifier_);
   visitor->Trace(signal_);
   visitor->Trace(execution_context_);
+  ThreadableLoaderClient::Trace(visitor);
 }
 
 bool FetchManager::Loader::WillFollowRedirect(

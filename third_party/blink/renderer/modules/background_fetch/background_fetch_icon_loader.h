@@ -23,6 +23,8 @@ struct WebSize;
 class MODULES_EXPORT BackgroundFetchIconLoader final
     : public GarbageCollectedFinalized<BackgroundFetchIconLoader>,
       public ThreadableLoaderClient {
+  USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchIconLoader);
+
  public:
   // The bitmap may be empty if the request failed or the image data could not
   // be decoded. The int64_t returned is the scale of the ideal to chosen icon,
@@ -50,9 +52,10 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
   void DidFail(const ResourceError& error) override;
   void DidFailRedirectCheck() override;
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(threadable_loader_);
     visitor->Trace(icons_);
+    ThreadableLoaderClient::Trace(visitor);
   }
 
  private:

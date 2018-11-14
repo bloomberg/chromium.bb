@@ -2014,6 +2014,7 @@ void XMLHttpRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(blob_loader_);
   visitor->Trace(response_text_);
   XMLHttpRequestEventTarget::Trace(visitor);
+  ThreadableLoaderClient::Trace(visitor);
   DocumentParserClient::Trace(visitor);
   PausableObject::Trace(visitor);
 }

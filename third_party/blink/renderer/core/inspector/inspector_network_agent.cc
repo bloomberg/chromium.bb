@@ -663,6 +663,7 @@ void InspectorNetworkAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(worker_global_scope_);
   visitor->Trace(resources_data_);
+  visitor->Trace(pending_request_);
   visitor->Trace(replay_xhrs_);
   visitor->Trace(replay_xhrs_to_be_deleted_);
   visitor->Trace(pending_xhr_replay_data_);

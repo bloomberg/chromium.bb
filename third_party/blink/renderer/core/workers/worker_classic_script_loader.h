@@ -55,11 +55,7 @@ class TextResourceDecoder;
 class CORE_EXPORT WorkerClassicScriptLoader final
     : public GarbageCollectedFinalized<WorkerClassicScriptLoader>,
       public ThreadableLoaderClient {
-  // We have to cancel |threadable_loader_| before destruction. Otherwise
-  // DidFail() of the deleted |this| will be called from
-  // ThreadableLoader::NotifyFinished() when the associated context will be
-  // destroyed.
-  USING_PRE_FINALIZER(WorkerClassicScriptLoader, Cancel);
+  USING_GARBAGE_COLLECTED_MIXIN(WorkerClassicScriptLoader);
 
  public:
   WorkerClassicScriptLoader();
@@ -122,7 +118,7 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
-  virtual void Trace(Visitor*);
+  void Trace(Visitor*) override;
 
  private:
   void NotifyError();

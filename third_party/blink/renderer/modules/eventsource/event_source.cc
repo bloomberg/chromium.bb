@@ -359,6 +359,7 @@ void EventSource::Trace(blink::Visitor* visitor) {
   visitor->Trace(parser_);
   visitor->Trace(loader_);
   EventTargetWithInlineData::Trace(visitor);
+  ThreadableLoaderClient::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   EventSourceParser::Client::Trace(visitor);
 }

@@ -53,12 +53,13 @@ using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
 
 constexpr char kFileName[] = "fox-null-terminated.html";
 
-class MockThreadableLoaderClient : public ThreadableLoaderClient {
+class MockThreadableLoaderClient final
+    : public GarbageCollectedFinalized<MockThreadableLoaderClient>,
+      public ThreadableLoaderClient {
+  USING_GARBAGE_COLLECTED_MIXIN(MockThreadableLoaderClient);
+
  public:
-  static std::unique_ptr<MockThreadableLoaderClient> Create() {
-    return base::WrapUnique(
-        new testing::StrictMock<MockThreadableLoaderClient>);
-  }
+  MockThreadableLoaderClient() = default;
   MOCK_METHOD2(DidSendData, void(unsigned long long, unsigned long long));
   MOCK_METHOD3(DidReceiveResponseMock,
                void(unsigned long,
@@ -77,9 +78,6 @@ class MockThreadableLoaderClient : public ThreadableLoaderClient {
   MOCK_METHOD0(DidFailRedirectCheck, void());
   MOCK_METHOD1(DidReceiveResourceTiming, void(const ResourceTimingInfo&));
   MOCK_METHOD1(DidDownloadData, void(int));
-
- protected:
-  MockThreadableLoaderClient() = default;
 };
 
 bool IsCancellation(const ResourceError& error) {
@@ -242,19 +240,21 @@ class ThreadableLoaderTest : public testing::Test {
 
   void CreateLoader() { helper_->CreateLoader(Client()); }
 
-  MockThreadableLoaderClient* Client() const { return client_.get(); }
+  MockThreadableLoaderClient* Client() const { return client_.Get(); }
 
  private:
   void SetUp() override {
-    client_ = MockThreadableLoaderClient::Create();
+    client_ = MakeGarbageCollected<MockThreadableLoaderClient>();
     helper_->OnSetUp();
   }
 
   void TearDown() override {
     helper_->OnTearDown();
-    client_.reset();
+    client_ = nullptr;
+    // We need GC here to avoid gmock flakiness.
+    ThreadState::Current()->CollectAllGarbage();
   }
-  std::unique_ptr<MockThreadableLoaderClient> client_;
+  Persistent<MockThreadableLoaderClient> client_;
   std::unique_ptr<ThreadableLoaderTestHelper> helper_;
 };
 

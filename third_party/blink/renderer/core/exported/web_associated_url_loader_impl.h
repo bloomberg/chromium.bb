@@ -59,7 +59,7 @@ class CORE_EXPORT WebAssociatedURLLoaderImpl final
 
   // An adapter which converts the hreadableLoaderClient method
   // calls into the WebURLLoaderClient method calls.
-  std::unique_ptr<ClientAdapter> client_adapter_;
+  Persistent<ClientAdapter> client_adapter_;
   Persistent<ThreadableLoader> loader_;
 
   // A ContextLifecycleObserver for cancelling |m_loader| when the Document

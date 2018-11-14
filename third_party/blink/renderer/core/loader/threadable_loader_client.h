@@ -46,7 +46,7 @@ class ResourceError;
 class ResourceResponse;
 class ResourceTimingInfo;
 
-class CORE_EXPORT ThreadableLoaderClient {
+class CORE_EXPORT ThreadableLoaderClient : public GarbageCollectedMixin {
  public:
   virtual void DidSendData(unsigned long long /*bytesSent*/,
                            unsigned long long /*totalBytesToBeSent*/) {}
