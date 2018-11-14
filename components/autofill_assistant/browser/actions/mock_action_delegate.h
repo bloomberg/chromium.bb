@@ -34,7 +34,7 @@ class MockActionDelegate : public ActionDelegate {
                     base::OnceCallback<void(bool)>&));
 
   MOCK_METHOD1(ShowStatusMessage, void(const std::string& message));
-  MOCK_METHOD2(ClickElement,
+  MOCK_METHOD2(ClickOrTapElement,
                void(const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback));
 

@@ -87,9 +87,11 @@ void ScriptExecutor::ShowStatusMessage(const std::string& message) {
   delegate_->GetUiController()->ShowStatusMessage(message);
 }
 
-void ScriptExecutor::ClickElement(const std::vector<std::string>& selectors,
-                                  base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->ClickElement(selectors, std::move(callback));
+void ScriptExecutor::ClickOrTapElement(
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(bool)> callback) {
+  delegate_->GetWebController()->ClickOrTapElement(selectors,
+                                                   std::move(callback));
 }
 
 void ScriptExecutor::GetPaymentInformation(

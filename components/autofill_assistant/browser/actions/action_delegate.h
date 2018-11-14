@@ -55,9 +55,9 @@ class ActionDelegate {
   virtual void WaitForElement(const std::vector<std::string>& selectors,
                               base::OnceCallback<void(bool)> callback) = 0;
 
-  // Click the element given by |selectors| on the web page.
-  virtual void ClickElement(const std::vector<std::string>& selectors,
-                            base::OnceCallback<void(bool)> callback) = 0;
+  // Click or tap the element given by |selectors| on the web page.
+  virtual void ClickOrTapElement(const std::vector<std::string>& selectors,
+                                 base::OnceCallback<void(bool)> callback) = 0;
 
   // Ask user to choose an address in personal data manager. GUID of the chosen
   // address will be returned through callback, otherwise empty string if the
