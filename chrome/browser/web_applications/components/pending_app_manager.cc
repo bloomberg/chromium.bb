@@ -33,11 +33,12 @@ bool PendingAppManager::AppInfo::operator==(
     const PendingAppManager::AppInfo& other) const {
   return std::tie(url, launch_container, install_source, create_shortcuts,
                   override_previous_user_uninstall, bypass_service_worker_check,
-                  require_manifest) ==
+                  require_manifest, always_update) ==
          std::tie(other.url, other.launch_container, other.install_source,
                   other.create_shortcuts,
                   other.override_previous_user_uninstall,
-                  other.bypass_service_worker_check, other.require_manifest);
+                  other.bypass_service_worker_check, other.require_manifest,
+                  other.always_update);
 }
 
 PendingAppManager::PendingAppManager() = default;

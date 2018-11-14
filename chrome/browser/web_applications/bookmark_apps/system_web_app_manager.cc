@@ -34,6 +34,7 @@ PendingAppManager::AppInfo CreateAppInfoForSystemApp(const GURL& url) {
                                                InstallSource::kSystemInstalled);
   app_info.create_shortcuts = false;
   app_info.bypass_service_worker_check = true;
+  app_info.always_update = true;
   return app_info;
 }
 
