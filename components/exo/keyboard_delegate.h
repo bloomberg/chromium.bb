@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_EXO_KEYBOARD_DELEGATE_H_
 #define COMPONENTS_EXO_KEYBOARD_DELEGATE_H_
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
 
