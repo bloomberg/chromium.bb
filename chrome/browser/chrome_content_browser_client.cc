@@ -3129,9 +3129,12 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->data_saver_holdback_web_api_enabled =
       base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
                                               "holdback_web", false);
+  // Media holdback is enabled by default. Enabling this by default decouples
+  // the behavior of the media stack (e.g., autoplay or preloading of
+  // metadata) from the state of the data saver.
   web_prefs->data_saver_holdback_media_api_enabled =
       base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
-                                              "holdback_media", false);
+                                              "holdback_media", true);
 
   content::WebContents* contents =
       content::WebContents::FromRenderViewHost(rvh);
