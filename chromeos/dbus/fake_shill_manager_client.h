@@ -92,6 +92,7 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   int GetInteractiveDelay() const override;
   void SetBestServiceToConnect(const std::string& service_path) override;
   const NetworkThrottlingStatus& GetNetworkThrottlingStatus() override;
+  bool GetFastTransitionStatus() override;
 
   // Constants used for testing.
   static const char kFakeEthernetNetworkGuid[];

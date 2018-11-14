@@ -336,6 +336,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
                                   uint32_t upload_rate_kbits,
                                   uint32_t download_rate_kbits);
 
+  // Sets the Fast Transition property. 802.11r Fast BSS Transition allows
+  // wireless Access Points to share information before a device initiates a
+  // reassociation. This allows devices to roam much more quickly.
+  void SetFastTransitionStatus(bool enabled);
+
   const std::string& GetCheckPortalListForTest() const {
     return check_portal_list_;
   }

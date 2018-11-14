@@ -42,6 +42,10 @@ const char kAudioDevicesState[] = "settings.audio.device_state";
 // request times, keyed to display product_id's.
 const char kQuirksClientLastServerCheck[] = "quirks_client.last_server_check";
 
+// Whether 802.11r Fast BSS Transition is currently enabled.
+const char kDeviceWiFiFastTransitionEnabled[] =
+    "net.device_wifi_fast_transition_enabled";
+
 }  // namespace prefs
 }  // namespace chromeos
 

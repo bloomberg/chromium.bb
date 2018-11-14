@@ -151,6 +151,9 @@ class CHROMEOS_EXPORT ShillPropertyHandler
                                   uint32_t upload_rate_kbits,
                                   uint32_t download_rate_kbits);
 
+  // Sets Fast Transition status.
+  void SetFastTransitionStatus(bool enabled);
+
   // Requests an immediate network scan for |type|.
   void RequestScanByType(const std::string& type) const;
 

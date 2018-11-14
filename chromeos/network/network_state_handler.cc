@@ -1074,6 +1074,11 @@ void NetworkStateHandler::SetNetworkThrottlingStatus(
       enabled, upload_rate_kbits, download_rate_kbits);
 }
 
+void NetworkStateHandler::SetFastTransitionStatus(bool enabled) {
+  NET_LOG_USER("SetFastTransitionStatus", enabled ? "true" : "false");
+  shill_property_handler_->SetFastTransitionStatus(enabled);
+}
+
 const NetworkState* NetworkStateHandler::GetEAPForEthernet(
     const std::string& service_path) {
   const NetworkState* network = GetNetworkState(service_path);
