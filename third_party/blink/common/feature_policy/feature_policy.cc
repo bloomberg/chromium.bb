@@ -34,10 +34,12 @@ ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
     mojom::FeaturePolicyFeature feature,
     bool matches_all_origins,
     bool matches_opaque_src,
+    mojom::FeaturePolicyDisposition disposition,
     std::vector<url::Origin> origins)
     : feature(feature),
       matches_all_origins(matches_all_origins),
       matches_opaque_src(matches_opaque_src),
+      disposition(disposition),
       origins(origins) {}
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
@@ -56,8 +58,22 @@ bool operator==(const ParsedFeaturePolicyDeclaration& lhs,
   // but-not-identical allowlists, or eliminate those comparisons by maintaining
   // the allowlists in a normalized form.
   // https://crbug.com/710324
-  return std::tie(lhs.feature, lhs.matches_all_origins, lhs.origins) ==
-         std::tie(rhs.feature, rhs.matches_all_origins, rhs.origins);
+  return std::tie(lhs.feature, lhs.matches_all_origins, lhs.origins,
+                  lhs.disposition) == std::tie(rhs.feature,
+                                               rhs.matches_all_origins,
+                                               rhs.origins, rhs.disposition);
+}
+
+std::unique_ptr<ParsedFeaturePolicy> DirectivesWithDisposition(
+    mojom::FeaturePolicyDisposition disposition,
+    const ParsedFeaturePolicy& policy) {
+  std::unique_ptr<ParsedFeaturePolicy> filtered_policy =
+      std::make_unique<ParsedFeaturePolicy>();
+  for (const auto& directive : policy) {
+    if (directive.disposition == disposition)
+      filtered_policy->push_back(directive);
+  }
+  return filtered_policy;
 }
 
 FeaturePolicy::Allowlist::Allowlist() : matches_all_origins_(false) {}

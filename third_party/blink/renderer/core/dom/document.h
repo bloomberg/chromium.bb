@@ -1488,6 +1488,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ReportFeaturePolicyViolation(
       mojom::FeaturePolicyFeature,
+      mojom::FeaturePolicyDisposition,
       const String& message = g_empty_string) const override;
 
   bool IsParsedFeaturePolicy(mojom::FeaturePolicyFeature feature) const {

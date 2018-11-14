@@ -16,15 +16,20 @@ class CORE_EXPORT FeaturePolicyViolationReportBody : public MessageReportBody {
  public:
   FeaturePolicyViolationReportBody(const String& feature,
                                    const String& message,
+                                   const String& disposition,
                                    std::unique_ptr<SourceLocation> location)
-      : MessageReportBody(message, std::move(location)), feature_(feature) {}
+      : MessageReportBody(message, std::move(location)),
+        feature_(feature),
+        disposition_(disposition) {}
 
   String feature() const { return feature_; }
+  String disposition() const { return disposition_; }
 
   ~FeaturePolicyViolationReportBody() override = default;
 
  private:
   const String feature_;
+  const String disposition_;
 };
 
 }  // namespace blink

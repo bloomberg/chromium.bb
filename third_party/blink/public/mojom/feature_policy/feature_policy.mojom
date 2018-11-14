@@ -105,6 +105,13 @@ enum FeaturePolicyFeature {
   // chromium/src/tools/metrics/histograms/ to update the UMA mapping.
 };
 
+// This enum is used to distinguish between report-only directives and enforcing
+// directives.
+enum FeaturePolicyDisposition {
+  kEnforce,
+  kReport,
+};
+
 // This struct holds feature policy allowlist data that needs to be replicated
 // between a RenderFrame and any of its associated RenderFrameProxies. A list of
 // these form a ParsedFeaturePolicy.
@@ -112,5 +119,6 @@ enum FeaturePolicyFeature {
 struct ParsedFeaturePolicyDeclaration {
   FeaturePolicyFeature feature;
   bool matches_all_origins;
+  FeaturePolicyDisposition disposition;
   array<url.mojom.Origin> origins;
 };

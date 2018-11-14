@@ -299,15 +299,16 @@ bool HTMLPlugInElement::ShouldAccelerate() const {
 ParsedFeaturePolicy HTMLPlugInElement::ConstructContainerPolicy(
     Vector<String>*) const {
   // Plugin elements (<object> and <embed>) are not allowed to enable the
-  // fullscreen feature. Add an empty whitelist for the fullscreen feature so
+  // fullscreen feature. Add an empty allowlist for the fullscreen feature so
   // that the nested browsing context is unable to use the API, regardless of
   // origin.
   // https://fullscreen.spec.whatwg.org/#model
   ParsedFeaturePolicy container_policy;
-  ParsedFeaturePolicyDeclaration whitelist;
-  whitelist.feature = mojom::FeaturePolicyFeature::kFullscreen;
-  whitelist.matches_all_origins = false;
-  container_policy.push_back(whitelist);
+  ParsedFeaturePolicyDeclaration allowlist;
+  allowlist.feature = mojom::FeaturePolicyFeature::kFullscreen;
+  allowlist.matches_all_origins = false;
+  allowlist.disposition = mojom::FeaturePolicyDisposition::kEnforce;
+  container_policy.push_back(allowlist);
   return container_policy;
 }
 

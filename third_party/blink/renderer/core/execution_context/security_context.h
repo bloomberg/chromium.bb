@@ -51,8 +51,10 @@ using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
 // Whether to report policy violations when checking whether a feature is
 // enabled.
 enum class ReportOptions { kReportOnFailure, kDoNotReport };
+enum class FeatureEnabledState { kDisabled, kReportOnly, kEnabled };
 
 namespace mojom {
+enum class FeaturePolicyDisposition : int32_t;
 enum class FeaturePolicyFeature : int32_t;
 enum class IPAddressSpace : int32_t;
 }
@@ -124,6 +126,9 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   }
 
   FeaturePolicy* GetFeaturePolicy() const { return feature_policy_.get(); }
+  FeaturePolicy* GetReportOnlyFeaturePolicy() const {
+    return report_only_feature_policy_.get();
+  }
   void SetFeaturePolicy(std::unique_ptr<FeaturePolicy> feature_policy);
   void InitializeFeaturePolicy(const ParsedFeaturePolicy& parsed_header,
                                const ParsedFeaturePolicy& container_policy,
@@ -138,8 +143,10 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
       mojom::FeaturePolicyFeature,
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
       const String& message = g_empty_string) const;
+  FeatureEnabledState GetFeatureEnabledState(mojom::FeaturePolicyFeature) const;
   virtual void ReportFeaturePolicyViolation(
       mojom::FeaturePolicyFeature,
+      mojom::FeaturePolicyDisposition,
       const String& message = g_empty_string) const {}
 
   // Apply the sandbox flag. In addition, if the origin is not already opaque,
@@ -165,6 +172,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   scoped_refptr<SecurityOrigin> security_origin_;
   Member<ContentSecurityPolicy> content_security_policy_;
   std::unique_ptr<FeaturePolicy> feature_policy_;
+  std::unique_ptr<FeaturePolicy> report_only_feature_policy_;
 
   mojom::IPAddressSpace address_space_;
   WebInsecureRequestPolicy insecure_request_policy_;

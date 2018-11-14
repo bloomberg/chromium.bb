@@ -272,6 +272,7 @@ void TestRenderFrameHost::SimulateFeaturePolicyHeader(
   blink::ParsedFeaturePolicy header(1);
   header[0].feature = feature;
   header[0].matches_all_origins = false;
+  header[0].disposition = blink::mojom::FeaturePolicyDisposition::kEnforce;
   header[0].origins = whitelist;
   DidSetFramePolicyHeaders(blink::WebSandboxFlags::kNone, header);
 }

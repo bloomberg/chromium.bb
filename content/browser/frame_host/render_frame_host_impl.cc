@@ -2820,7 +2820,8 @@ void RenderFrameHostImpl::DidSetFramePolicyHeaders(
     return;
   // Rebuild the feature policy for this frame.
   ResetFeaturePolicy();
-  feature_policy_->SetHeaderPolicy(parsed_header);
+  feature_policy_->SetHeaderPolicy(*DirectivesWithDisposition(
+      blink::mojom::FeaturePolicyDisposition::kEnforce, parsed_header));
 
   // Update the feature policy and sandbox flags in the frame tree. This will
   // send any updates to proxies if necessary.
@@ -5437,7 +5438,10 @@ void RenderFrameHostImpl::ResetFeaturePolicy() {
   blink::ParsedFeaturePolicy container_policy =
       frame_tree_node()->effective_frame_policy().container_policy;
   feature_policy_ = blink::FeaturePolicy::CreateFromParentPolicy(
-      parent_policy, container_policy, last_committed_origin_);
+      parent_policy,
+      *DirectivesWithDisposition(
+          blink::mojom::FeaturePolicyDisposition::kEnforce, container_policy),
+      last_committed_origin_);
 }
 
 void RenderFrameHostImpl::CreateAudioInputStreamFactory(

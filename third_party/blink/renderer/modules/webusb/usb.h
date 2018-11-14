@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -79,7 +80,7 @@ class USB final : public EventTargetWithInlineData,
   void EnsureServiceConnection();
 
   bool IsContextSupported() const;
-  bool IsFeatureEnabled() const;
+  FeatureEnabledState GetFeatureEnabledState() const;
 
   mojom::blink::WebUsbServicePtr service_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_devices_requests_;
