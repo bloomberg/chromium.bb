@@ -183,6 +183,12 @@ _INTEGRATION_NEGATIVE_FILTER = [
     'SessionHandlingTest.testGetSessions',
 ]
 
+# https://crbug.com/904061
+if util.GetPlatformName() == 'mac':
+  _INTEGRATION_NEGATIVE_FILTER += [
+    'ChromeDriverSiteIsolation.testCanClickOOPIF',
+  ]
+
 
 def _GetDesktopNegativeFilter(version_name):
   filter = _NEGATIVE_FILTER + _DESKTOP_NEGATIVE_FILTER
