@@ -5113,10 +5113,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return self.contentArea;
 }
 
-- (BOOL)isParentViewVisible {
-  return self.visible;
-}
-
 #pragma mark - SadTabCoordinatorDelegate
 
 - (void)sadTabCoordinatorDidStart:(SadTabCoordinator*)sadTabCoordinator {

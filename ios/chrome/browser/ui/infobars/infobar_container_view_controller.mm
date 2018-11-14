@@ -17,6 +17,14 @@ namespace {
 const CGFloat kAlphaChangeAnimationDuration = 0.35;
 }  // namespace
 
+@interface InfobarContainerViewController ()
+
+// Whether the controller's view is currently available.
+// YES from viewDidAppear to viewDidDisappear.
+@property(nonatomic, assign, getter=isVisible) BOOL visible;
+
+@end
+
 @implementation InfobarContainerViewController
 
 // Whenever the container or contained views are re-drawn update the layout to
@@ -24,6 +32,16 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
   [self updateLayoutAnimated:YES];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  self.visible = YES;
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  self.visible = NO;
+  [super viewDidDisappear:animated];
 }
 
 #pragma mark - InfobarConsumer
@@ -53,9 +71,8 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
       CGRectGetMaxY([self.positioner parentView].frame) - height;
   containerFrame.size.height = height;
 
-  BOOL isViewVisible = [self.positioner isParentViewVisible];
   auto completion = ^(BOOL finished) {
-    if (!isViewVisible)
+    if (!self.visible)
       return;
     UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
                                     self.view);
