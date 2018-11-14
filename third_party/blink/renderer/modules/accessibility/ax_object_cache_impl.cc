@@ -1063,6 +1063,8 @@ void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
     MaybeNewRelationTarget(element, Get(element));
   else if (attr_name == kTabindexAttr)
     FocusableChanged(element);
+  else if (attr_name == kDisabledAttr)
+    MarkAXObjectDirty(Get(element), false);
 
   if (!attr_name.LocalName().StartsWith("aria-"))
     return;

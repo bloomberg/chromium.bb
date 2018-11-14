@@ -2,4 +2,4 @@ rootWebArea
 ++form
 ++++textField
 ++++++genericContainer
-++++button name='Submit'
+++++button default name='Submit'

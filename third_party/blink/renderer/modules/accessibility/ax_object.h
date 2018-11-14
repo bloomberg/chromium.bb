@@ -473,6 +473,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return RoleValue() == ax::mojom::Role::kColorWell;
   }
   virtual bool IsControl() const { return false; }
+  virtual bool IsDefault() const { return false; }
   virtual bool IsEmbeddedObject() const { return false; }
   virtual bool IsFieldset() const { return false; }
   virtual bool IsHeading() const { return false; }

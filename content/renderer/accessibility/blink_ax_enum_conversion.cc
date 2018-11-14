@@ -28,6 +28,9 @@ void AXStateFromBlink(const blink::WebAXObject& o, ui::AXNodeData* dst) {
   if (o.IsAutofillAvailable())
     dst->AddState(ax::mojom::State::kAutofillAvailable);
 
+  if (o.IsDefault())
+    dst->AddState(ax::mojom::State::kDefault);
+
   if (o.IsHovered())
     dst->AddState(ax::mojom::State::kHovered);
 

@@ -36,7 +36,7 @@ var allTests = [
     var okButton = contentChildren[0];
     assertEq('Ok', okButton.name);
     state = RemoveUntestedStates(okButton.state);
-    assertEq({focusable: true}, state);
+    assertEq({default: true, focusable: true}, state);
     assertEq(undefined, okButton.restriction);
     var userNameInput = contentChildren[1];
     assertEq(undefined, userNameInput.restriction);
@@ -47,7 +47,7 @@ var allTests = [
     assertEq('Cancel',
              cancelButton.name);
     state = RemoveUntestedStates(cancelButton.state);
-    assertEq({focusable: true}, state);
+    assertEq({default: true, focusable: true}, state);
     assertEq(undefined, cancelButton.restriction);
 
     // Traversal.

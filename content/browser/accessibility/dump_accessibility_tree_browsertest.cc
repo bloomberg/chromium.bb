@@ -160,7 +160,6 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "BUSY");
   AddFilter(filters, "CHECKED");
   AddFilter(filters, "COLLAPSED");
-  AddFilter(filters, "DEFAULT");
   AddFilter(filters, "EXPANDED");
   AddFilter(filters, "FLOATING");
   AddFilter(filters, "FOCUSABLE");
@@ -212,7 +211,6 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "check*");
   AddFilter(filters, "descript*");
   AddFilter(filters, "collapsed");
-  AddFilter(filters, "default");
   AddFilter(filters, "haspopup");
   AddFilter(filters, "horizontal");
   AddFilter(filters, "invisible");

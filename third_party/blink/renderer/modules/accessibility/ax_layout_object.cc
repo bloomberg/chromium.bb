@@ -305,6 +305,20 @@ static bool IsLinkable(const AXObject& object) {
          object.GetLayoutObject()->IsText();
 }
 
+bool AXLayoutObject::IsDefault() const {
+  if (IsDetached())
+    return false;
+
+  // Checks for any kind of disabled, including aria-disabled.
+  if (Restriction() == kDisabled)
+    return false;
+
+  const HTMLFormControlElement* control =
+      ToHTMLFormControlElementOrNull(GetNode());
+  // This does not check for disabled or whether it is the first submit button.
+  return control && control->CanBeSuccessfulSubmitButton();
+}
+
 // Requires layoutObject to be present because it relies on style
 // user-modify. Don't move this logic to AXNodeObject.
 bool AXLayoutObject::IsEditable() const {

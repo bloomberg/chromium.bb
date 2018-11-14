@@ -266,6 +266,13 @@ bool WebAXObject::IsControl() const {
   return private_->IsControl();
 }
 
+bool WebAXObject::IsDefault() const {
+  if (IsDetached())
+    return false;
+
+  return private_->IsDefault();
+}
+
 WebAXRestriction WebAXObject::Restriction() const {
   if (IsDetached())
     return kWebAXRestrictionNone;
