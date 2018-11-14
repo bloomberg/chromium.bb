@@ -18,16 +18,16 @@ class ChromeBrowserState;
 @protocol BrowserViewInformation<NSObject>
 
 // The normal (non-OTR) BrowserViewController
-@property(nonatomic, retain) BrowserViewController* mainBVC;
+@property(nonatomic, readonly) BrowserViewController* mainBVC;
 // The normal (non-OTR) TabModel corresponding to mainBVC.
 @property(nonatomic, retain) TabModel* mainTabModel;
 // The OTR BrowserViewController.
-@property(nonatomic, retain) BrowserViewController* otrBVC;
+@property(nonatomic, readonly) BrowserViewController* otrBVC;
 // The OTR TabModel corresponding to otrBVC.
 @property(nonatomic, retain) TabModel* otrTabModel;
 // The BrowserViewController that is currently being used (one of mainBVC or
 // otrBVC). The other, if present, is in suspended mode.
-@property(nonatomic, assign) BrowserViewController* currentBVC;
+@property(nonatomic, weak) BrowserViewController* currentBVC;
 
 // Halts all tabs from all TabModels.
 - (void)haltAllTabs;

@@ -1768,11 +1768,6 @@ enum class ShowTabSwitcherSnapshotResult {
   return [_browserViewWrangler mainBVC];
 }
 
-- (void)setMainBVC:(BrowserViewController*)mainBVC {
-  DCHECK(_browserViewWrangler);
-  [_browserViewWrangler setMainBVC:mainBVC];
-}
-
 - (TabModel*)mainTabModel {
   DCHECK(_browserViewWrangler);
   return [_browserViewWrangler mainTabModel];
@@ -1786,11 +1781,6 @@ enum class ShowTabSwitcherSnapshotResult {
 - (BrowserViewController*)otrBVC {
   DCHECK(_browserViewWrangler);
   return [_browserViewWrangler otrBVC];
-}
-
-- (void)setOtrBVC:(BrowserViewController*)otrBVC {
-  DCHECK(_browserViewWrangler);
-  [_browserViewWrangler setOtrBVC:otrBVC];
 }
 
 - (TabModel*)otrTabModel {
