@@ -27,6 +27,9 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.explore_sites.ExperimentalExploreSitesSection;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
@@ -111,6 +114,9 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * With {@link #mTilesLoaded}, it's one of the 2 flags used to track initialization progress.
      */
     private boolean mHasShownView;
+
+    /** Observer for overview mode. */
+    private EmptyOverviewModeObserver mOverviewObserver;
 
     private boolean mSearchProviderHasLogo = true;
     private boolean mSearchProviderIsGoogle;
@@ -272,9 +278,24 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         VrModuleProvider.registerVrModeObserver(this);
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
 
-        maybeShowIPHOnHomepageTile();
+        LayoutManager layoutManager =
+                tab.getActivity().getCompositorViewHolder().getLayoutManager();
+        if (layoutManager instanceof LayoutManagerChrome) {
+            final LayoutManagerChrome chromeLayoutManager = (LayoutManagerChrome) layoutManager;
+            if (chromeLayoutManager.overviewVisible()) {
+                mOverviewObserver = new EmptyOverviewModeObserver() {
+                    @Override
+                    public void onOverviewModeFinishedHiding() {
+                        maybeShowIPHOnHomepageTile();
+                        chromeLayoutManager.removeOverviewModeObserver(mOverviewObserver);
+                        mOverviewObserver = null;
+                    }
+                };
+                chromeLayoutManager.addOverviewModeObserver(mOverviewObserver);
+            }
+        }
 
-        manager.addDestructionObserver(NewTabPageLayout.this ::onDestroy);
+        manager.addDestructionObserver(NewTabPageLayout.this::onDestroy);
 
         mInitialized = true;
 
@@ -747,6 +768,13 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             NewTabPageUma.recordSearchAvailableLoadTime(mTab.getActivity());
             TraceEvent.instant("NewTabPageSearchAvailable)");
         }
+
+        // If we are in overview mode, the IPH will be dismissed by overview swap.
+        // The overview mode finish observer will show the IPH instead, since
+        // onAttachedToWindow is called before the overview mode has finished swapping.
+        if (mOverviewObserver == null) {
+            maybeShowIPHOnHomepageTile();
+        }
     }
 
     /**
@@ -882,6 +910,11 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
     private void onDestroy() {
         VrModuleProvider.unregisterVrModeObserver(this);
+        if (mOverviewObserver != null) {
+            ((LayoutManagerChrome) mTab.getActivity().getCompositorViewHolder().getLayoutManager())
+                    .removeOverviewModeObserver(mOverviewObserver);
+            mOverviewObserver = null;
+        }
     }
 
     private void initializeShortcuts() {
