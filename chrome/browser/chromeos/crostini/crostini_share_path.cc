@@ -292,17 +292,21 @@ void CrostiniSharePath::RegisterPersistedPath(const base::FilePath& path) {
   PrefService* pref_service = profile_->GetPrefs();
   ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
   base::ListValue* shared_paths = update.Get();
-  shared_paths->Append(std::make_unique<base::Value>(path.value()));
-  // Remove any existing paths that are children of new path.
+  // Check if path exists, remove paths that are children of new path.
+  bool exists = false;
   auto it = shared_paths->begin();
   while (it != shared_paths->end()) {
     base::FilePath existing(it->GetString());
-    if (path.IsParent(existing)) {
+    if (path == existing) {
+      exists = true;
+    } else if (path.IsParent(existing)) {
       it = shared_paths->Erase(it, nullptr);
       continue;
     }
     ++it;
   }
+  if (!exists)
+    shared_paths->Append(std::make_unique<base::Value>(path.value()));
 }
 
 }  // namespace crostini

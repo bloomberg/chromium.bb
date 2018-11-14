@@ -433,6 +433,13 @@ TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
   prefs->GetString(0, &path);
   EXPECT_EQ(path, "/a/a/a");
 
+  // Adding the same path again should not cause any changes.
+  crostini_share_path()->RegisterPersistedPath(base::FilePath("/a/a/a"));
+  EXPECT_EQ(prefs->GetSize(), 1U);
+  prefs->GetString(0, &path);
+  EXPECT_EQ(path, "/a/a/a");
+
+  // Add more paths.
   crostini_share_path()->RegisterPersistedPath(base::FilePath("/a/a/b"));
   crostini_share_path()->RegisterPersistedPath(base::FilePath("/a/a/c"));
   crostini_share_path()->RegisterPersistedPath(base::FilePath("/a/b/a"));
@@ -450,6 +457,7 @@ TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
   prefs->GetString(4, &path);
   EXPECT_EQ(path, "/b/a/a");
 
+  // Adding /a/a should remove /a/a/b, /a/a/c.
   crostini_share_path()->RegisterPersistedPath(base::FilePath("/a/a"));
   prefs = profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
   EXPECT_EQ(prefs->GetSize(), 3U);
@@ -460,6 +468,7 @@ TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
   prefs->GetString(2, &path);
   EXPECT_EQ(path, "/a/a");
 
+  // Adding /a should remove /a/a, /a/b/a.
   crostini_share_path()->RegisterPersistedPath(base::FilePath("/a"));
   prefs = profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
   EXPECT_EQ(prefs->GetSize(), 2U);
@@ -468,10 +477,12 @@ TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
   prefs->GetString(1, &path);
   EXPECT_EQ(path, "/a");
 
+  // Adding / should remove all others.
   crostini_share_path()->RegisterPersistedPath(base::FilePath("/"));
   prefs = profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
   EXPECT_EQ(prefs->GetSize(), 1U);
   prefs->GetString(0, &path);
   EXPECT_EQ(path, "/");
 }
+
 }  // namespace crostini
