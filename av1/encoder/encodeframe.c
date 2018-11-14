@@ -3372,11 +3372,15 @@ static void ml_op_svm_early_term(const AV1_COMP *const cpi,
 static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
                                  int mi_col, BLOCK_SIZE bsize,
                                  float *features) {
+  // TODO(chiyotsai@google.com): The data this model trained on did not also use
+  // SIMPLE_TRANSLATION to build the inter_predictor. Retraining and tuning the
+  // model with the correct data should give better performance.
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);
 
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
+  mbmi->motion_mode = SIMPLE_TRANSLATION;
 
   mbmi->ref_frame[1] = NONE_FRAME;
   mbmi->sb_type = bsize;
