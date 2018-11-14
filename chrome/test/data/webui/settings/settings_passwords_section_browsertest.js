@@ -35,6 +35,7 @@ SettingsPasswordSectionBrowserTest.prototype = {
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'ensure_lazy_loaded.js',
+    'test_util.js',
   ]),
 
   /** @override */
@@ -917,6 +918,26 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assertFalse(!!exportDialog.$$('#dialog_start'));
 
       done();
+    });
+
+    test('fires close event when canceled', () => {
+      const exportDialog = createExportPasswordsDialog(passwordManager);
+      const wait = test_util.eventToPromise(
+          'passwords-export-dialog-close', exportDialog);
+      exportDialog.$$('#cancelButton').click();
+      return wait;
+    });
+
+    test('fires close event after export complete', () => {
+      const exportDialog = createExportPasswordsDialog(passwordManager);
+      const wait = test_util.eventToPromise(
+          'passwords-export-dialog-close', exportDialog);
+      exportDialog.$$('#exportPasswordsButton').click();
+      passwordManager.progressCallback(
+          {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
+      passwordManager.progressCallback(
+          {status: chrome.passwordsPrivate.ExportProgressStatus.SUCCEEDED});
+      return wait;
     });
   });
 
