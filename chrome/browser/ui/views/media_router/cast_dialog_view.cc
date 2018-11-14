@@ -75,16 +75,21 @@ void CastDialogView::ShowDialogTopCentered(CastDialogController* controller,
 void CastDialogView::HideDialog() {
   if (IsShowing())
     instance_->GetWidget()->Close();
-  // We also set |instance_| to nullptr in WindowClosing() which is called
-  // asynchronously, because not all paths to close the dialog go through
-  // HideDialog(). We set it here because IsShowing() should be false after
-  // HideDialog() is called.
+  // We set |instance_| to null here because IsShowing() should be false after
+  // HideDialog() is called. Not all paths to close the dialog go through
+  // HideDialog(), so we also set it to null in WindowClosing(), which always
+  // gets called asynchronously.
   instance_ = nullptr;
 }
 
 // static
 bool CastDialogView::IsShowing() {
   return instance_ != nullptr;
+}
+
+// static
+CastDialogView* CastDialogView::GetInstance() {
+  return instance_;
 }
 
 // static
@@ -152,6 +157,8 @@ void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
   MaybeSizeToContents();
   // Update the main action button.
   DialogModelChanged();
+  for (Observer& observer : observers_)
+    observer.OnDialogModelUpdated(this);
 }
 
 void CastDialogView::OnControllerInvalidated() {
@@ -210,6 +217,14 @@ void CastDialogView::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
+void CastDialogView::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CastDialogView::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 // static
 void CastDialogView::ShowDialog(views::View* anchor_view,
                                 views::BubbleBorder::Arrow anchor_position,
@@ -259,6 +274,8 @@ void CastDialogView::Init() {
 }
 
 void CastDialogView::WindowClosing() {
+  for (Observer& observer : observers_)
+    observer.OnDialogWillClose(this);
   if (instance_ == this)
     instance_ = nullptr;
   metrics_.OnCloseDialog(base::Time::Now());
