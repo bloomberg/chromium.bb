@@ -523,6 +523,8 @@ class AutofillAssistantUiDelegate {
         // hacks to give enough space to display long messages.
         mStatusMessageView.setMaxLines(4);
         mBottomBar.findViewById(R.id.feedback_button).setVisibility(View.GONE);
+        hideOverlay();
+        mTouchEventFilter.setVisibility(View.GONE);
         hideProgressBar();
         hideDetails();
         mBottomBarAnimations.hideCarousel();

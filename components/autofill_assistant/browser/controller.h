@@ -80,12 +80,12 @@ class Controller : public ScriptExecutorDelegate,
   void StartPeriodicScriptChecks();
   void StopPeriodicScriptChecks();
   void OnPeriodicScriptCheck();
+  void GiveUp();
 
   // Overrides content::UiDelegate:
   void Start(const GURL& initialUrl) override;
   void OnClickOverlay() override;
   void OnDestroy() override;
-  void OnGiveUp() override;
   void OnScriptSelected(const std::string& script_path) override;
   std::string GetDebugContext() override;
 

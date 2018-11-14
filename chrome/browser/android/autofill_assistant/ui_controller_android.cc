@@ -404,12 +404,6 @@ void UiControllerAndroid::Destroy(JNIEnv* env,
   ui_delegate_->OnDestroy();
 }
 
-void UiControllerAndroid::GiveUp(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller) {
-  ui_delegate_->OnGiveUp();
-}
-
 static jlong JNI_AutofillAssistantUiController_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,

@@ -274,6 +274,12 @@ void Controller::OnScriptExecuted(const std::string& script_path,
   GetOrCheckScripts(web_contents()->GetLastCommittedURL());
 }
 
+void Controller::GiveUp() {
+  GetUiController()->ShowStatusMessage(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP));
+  GetUiController()->ShutdownGracefully();
+}
+
 void Controller::OnClickOverlay() {
   GetUiController()->HideOverlay();
   // TODO(crbug.com/806868): Stop executing scripts.
@@ -319,12 +325,6 @@ void Controller::OnDestroy() {
   delete this;
 }
 
-void Controller::OnGiveUp() {
-  GetUiController()->ShowStatusMessage(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP));
-  GetUiController()->ShutdownGracefully();
-}
-
 void Controller::DidAttachInterstitialPage() {
   GetUiController()->Shutdown();
 }
@@ -360,9 +360,7 @@ void Controller::OnNoRunnableScriptsAnymore() {
 
   // We're navigated to a page that has no scripts or the scripts have reached a
   // state from which they cannot recover through a DOM change.
-  GetUiController()->ShowStatusMessage(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP));
-  GetUiController()->ShutdownGracefully();
+  GiveUp();
   return;
 }
 
@@ -450,7 +448,7 @@ void Controller::DidStartNavigation(
       !script_tracker_->running() && !navigation_handle->WasServerRedirect() &&
       !navigation_handle->IsSameDocument() &&
       !navigation_handle->IsRendererInitiated()) {
-    OnGiveUp();
+    GiveUp();
     return;
   }
 }
