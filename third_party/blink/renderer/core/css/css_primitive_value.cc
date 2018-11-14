@@ -97,7 +97,7 @@ CSSPrimitiveValue* CSSPrimitiveValue::Create(double value, UnitType type) {
   if (value < 0 || value > CSSValuePool::kMaximumCacheableIntegerValue)
     return new CSSPrimitiveValue(value, type);
 
-  int int_value = static_cast<int>(value);
+  int int_value = clampTo<int>(value);
   if (value != int_value)
     return new CSSPrimitiveValue(value, type);
 
