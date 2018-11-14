@@ -226,7 +226,8 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   protocol::EmulationHandler* emulation_handler =
       new protocol::EmulationHandler();
   session->AddHandler(base::WrapUnique(new protocol::BrowserHandler()));
-  session->AddHandler(base::WrapUnique(new protocol::DOMHandler()));
+  session->AddHandler(base::WrapUnique(
+      new protocol::DOMHandler(session->client()->MayAffectLocalFiles())));
   session->AddHandler(base::WrapUnique(emulation_handler));
   session->AddHandler(base::WrapUnique(new protocol::InputHandler()));
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
