@@ -301,14 +301,7 @@ public class CompositorViewHolder extends FrameLayout
         mShowingFullscreen = isInFullscreen;
 
         if (mSystemUiFullscreenResizeRunnable == null) {
-            mSystemUiFullscreenResizeRunnable = () -> {
-                View contentView = getContentView();
-                if (contentView != null) {
-                    Point viewportSize = getViewportSize();
-                    setSize(getWebContents(), contentView, viewportSize.x, viewportSize.y);
-                }
-                onViewportChanged();
-            };
+            mSystemUiFullscreenResizeRunnable = this::handleWindowInsetChanged;
         } else {
             getHandler().removeCallbacks(mSystemUiFullscreenResizeRunnable);
         }
@@ -367,13 +360,25 @@ public class CompositorViewHolder extends FrameLayout
         mInsetObserverView = view;
         if (mInsetObserverView != null) {
             mInsetObserverView.addObserver(this);
-            onViewportChanged();
+            handleWindowInsetChanged();
         }
     }
 
     @Override
     public void onInsetChanged(int left, int top, int right, int bottom) {
-        if (mShowingFullscreen) onViewportChanged();
+        if (mShowingFullscreen) handleWindowInsetChanged();
+    }
+
+    private void handleWindowInsetChanged() {
+        // Notify the WebContents that the size has changed.
+        View contentView = getContentView();
+        if (contentView != null) {
+            Point viewportSize = getViewportSize();
+            setSize(getWebContents(), contentView, viewportSize.x, viewportSize.y);
+        }
+        // Notify the compositor layout that the size has changed.  The layout does not drive
+        // the WebContents sizing, so this needs to be done in addition to the above size update.
+        onViewportChanged();
     }
 
     @Override
