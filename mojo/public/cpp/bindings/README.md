@@ -1175,9 +1175,9 @@ over one end of the master interface, or over one end of another associated
 interface which itself already has a master interface.
 
 If you want to test an associated interface endpoint without first
-associating it, you can use `mojo::MakeIsolatedRequest()`. This will create
-working associated interface endpoints which are not actually associated with
-anything else.
+associating it, you can use `mojo::MakeRequestAssociatedWithDedicatedPipe`. This
+will create working associated interface endpoints which are not actually
+associated with anything else.
 
 ### Read more
 
