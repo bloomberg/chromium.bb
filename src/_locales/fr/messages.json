@@ -12,42 +12,48 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Votre caméra est actuellement indisponible.",
+    "message": "Votre caméra est actuellement indisponible.\nVérifiez si la caméra est bien connectée.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Vérifiez si la caméra est bien connectée.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Impossible de charger la galerie.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Impossible d'exporter $file$.",
+    "message": "Impossible d'exporter $file$",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "Impossible d'enregistrer le fichier.",
+    "message": "Impossible d'enregistrer le fichier",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "Impossible de prendre la photo.",
+    "message": "Impossible de prendre la photo",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "Impossible de démarrer l'enregistrement.",
+    "message": "Impossible de démarrer l'enregistrement",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "Aucune donnée enregistrée.",
+    "message": "Aucune donnée enregistrée",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Enregistrement interrompu",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ active",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Accéder à la galerie",
@@ -89,13 +95,9 @@
     "message": "Arrêter l'enregistrement",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Activer/Désactiver le minuteur",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Changer de caméra",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Passer à la caméra suivante",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Passer à l'enregistrement de vidéo",
@@ -105,17 +107,21 @@
     "message": "Passer à la prise de photo",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Minuteur",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Activer/Désactiver la duplication d'écran",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Duplication d'écran",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Activer/Désactiver la grille",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Grille",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Activer/Désactiver le micro",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Micro",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",

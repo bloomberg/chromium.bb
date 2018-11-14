@@ -12,45 +12,51 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "നിങ്ങളുടെ ക്യാമറ നിലവിൽ ലഭ്യമല്ല.",
+    "message": "ക്യാമറ നിലവിൽ ലഭ്യമല്ല.\nക്യാമറ ശരിയായി കണക്റ്റ് ചെയ്‌തിട്ടുണ്ടോ എന്ന് പരിശോധിക്കുക.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "ക്യാമറ ശരിയായി കണക്‌റ്റ് ചെയ്‌തിട്ടുണ്ടോയെന്ന് പരിശോധിക്കുക.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "ഗാലറി ലോഡ് ചെയ്യാനായില്ല.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ എക്‌സ്‌പോർട്ട് ചെയ്യാനായില്ല.",
+    "message": "$file$ എക്‌സ്‌പോർട്ട് ചെയ്യാനായില്ല",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "ഫയൽ സംരക്ഷിക്കാനായില്ല.",
+    "message": "ഫയൽ സംരക്ഷിക്കാനായില്ല",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "ഫോട്ടോ എടുക്കാനായില്ല.",
+    "message": "ഫോട്ടോ എടുക്കാനായില്ല",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "റെക്കോർഡിംഗ് ആരംഭിക്കാനായില്ല.",
+    "message": "റെക്കോർഡിംഗ് ആരംഭിക്കാനായില്ല",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "ഒന്നും റെക്കോർഡ് ചെയ്‌തില്ല.",
+    "message": "ഒന്നും റെക്കോർഡ് ചെയ്‌തില്ല",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
+  "statusMsgRecordingStopped": {
+    "message": "റെക്കോർഡ് ചെയ്യൽ നിർത്തി",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ സജീവമാണ്",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
   "galleryButton": {
-    "message": "ഗാലറിയിലേക്ക് പോകുക",
+    "message": "ഗാലറിയിലേക്ക് പോവുക",
     "description": "Label for the gallery button."
   },
   "deleteButton": {
@@ -89,13 +95,9 @@
     "message": "റെക്കോർഡിംഗ് നിർത്തുക",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "ടൈമർ മാറ്റുക",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "ക്യാമറ മാറ്റുക",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "അടുത്ത ക്യാമറയിലേക്ക് മാറുക",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "വീഡിയോ റെക്കോർഡ് ചെയ്യുന്നതിലേക്ക് മാറുക",
@@ -105,17 +107,21 @@
     "message": "ഫോട്ടോ എടുക്കുന്നതിലേക്ക് മാറുക",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "ടൈമർ",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "മിററിംഗ് മാറ്റുക",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "മിററിംഗ്",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "ഗ്രിഡ് മാറ്റുക",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "ഗ്രിഡ്",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "മൈക്രോ‌ഫോൺ മാറ്റുക",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "മൈക്രോഫോൺ",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "ശരി",

@@ -12,42 +12,48 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "La càmera no està disponible en aquest moment.",
+    "message": "La càmera no està disponible en aquest moment.\nComprova que la càmera estigui ben connectada.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Comprova que la càmera estigui ben connectada.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "No es pot carregar la galeria.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "No es pot exportar el fitxer $file$.",
+    "message": "No es pot exportar el fitxer $file$",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "No es pot desar el fitxer.",
+    "message": "No es pot desar el fitxer",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "No es pot fer la foto.",
+    "message": "No es pot fer la foto",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "No es pot iniciar la gravació.",
+    "message": "No es pot iniciar la gravació",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "No s'ha gravat res.",
+    "message": "No s'ha gravat res",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "S'ha aturat la gravació",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "Càmera $camera$ activada",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Ves a la galeria",
@@ -89,13 +95,9 @@
     "message": "Atura la gravació",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Activa o desactiva el temporitzador",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Canvia de càmera",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Canvia a la càmera següent",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Canvia al mode per gravar vídeo",
@@ -105,17 +107,21 @@
     "message": "Canvia al mode per fer fotos",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Temporitzador",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Activa o desactiva la rèplica",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Rèplica",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Activa o desactiva la quadrícula",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Quadrícula",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Activa o desactiva el micròfon",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Micròfon",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "D'acord",

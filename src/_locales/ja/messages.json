@@ -12,42 +12,48 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "現在、カメラは使用できません。",
+    "message": "カメラは現在ご利用いただけません。\n正しく接続されているか確認してください。",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "カメラが正しく接続されているか確認してください。",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "ギャラリーを読み込めません。",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ をエクスポートできません。",
+    "message": "$file$ をエクスポートできません",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "ファイルを保存できません。",
+    "message": "ファイルを保存できません",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "写真を撮影できません。",
+    "message": "写真を撮影できません",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "録画を開始できません。",
+    "message": "録画を開始できません",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "何も記録されていません。",
+    "message": "何も記録されていません",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "記録を停止しました",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ に切り替えました",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "ギャラリーに移動",
@@ -89,13 +95,9 @@
     "message": "録画を停止",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "タイマーを切り替える",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "カメラを切り替える",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "次のカメラに切り替える",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "動画の撮影に切り替える",
@@ -105,17 +107,21 @@
     "message": "写真の撮影に切り替える",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "タイマー",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "ミラーリングを切り替える",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "ミラーリング",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "グリッドを切り替える",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "グリッド",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "マイクを切り替える",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "マイク",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",

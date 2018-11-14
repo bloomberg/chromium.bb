@@ -12,42 +12,48 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Kasalukuyang hindi available ang iyong camera.",
+    "message": "Kasalukuyang hindi available ang iyong camera.\nPakitingnan kung nakakonekta nang maayos ang camera.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Tingnan kung maayos na nakakonekta ang camera.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Hindi ma-load ang gallery.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Hind ma-export ang $file$.",
+    "message": "Hindi na-export ang $file$",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "Hindi ma-save ang file.",
+    "message": "Hindi na-save ang file",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "Hindi makakuha ng larawan.",
+    "message": "Hindi nakakuha ng larawan",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "Hindi masimulan ang pag-record.",
+    "message": "Hindi nasimulan ang pag-record",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "Walang na-record.",
+    "message": "Walang na-record",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Huminto ang pag-record",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "Aktibo ang $camera$",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Pumunta sa gallery",
@@ -89,13 +95,9 @@
     "message": "Ihinto ang pag-record",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "I-toggle ang timer",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "I-toggle ang camera",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Lumipat sa susunod na camera",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Lumipat sa pag-record ng video",
@@ -105,17 +107,21 @@
     "message": "Lumipat sa pagkuha ng larawan",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Timer",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "I-toggle ang pag-mirror",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Pag-mirror",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "I-toggle ang grid",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Grid",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "I-toggle ang mikropono",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Mikropono",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",

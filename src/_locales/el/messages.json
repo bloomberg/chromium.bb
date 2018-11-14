@@ -12,42 +12,48 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Η κάμερά σας δεν είναι διαθέσιμη προς το παρόν.",
+    "message": "Η κάμερά σας δεν είναι διαθέσιμη προς το παρόν.\nΕλέγξτε αν η κάμερα έχει συνδεθεί σωστά.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Ελέγξτε αν η κάμερα έχει συνδεθεί σωστά.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Δεν είναι δυνατή η φόρτωση του gallery.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Δεν είναι δυνατή η εξαγωγή του αρχείου $file$.",
+    "message": "Δεν είναι δυνατή η εξαγωγή του αρχείου $file$",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "Δεν είναι δυνατή η αποθήκευση του αρχείου.",
+    "message": "Δεν είναι δυνατή η αποθήκευση του αρχείου",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "Δεν είναι δυνατή η λήψη φωτογραφίας.",
+    "message": "Δεν είναι δυνατή η λήψη φωτογραφίας",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "Δεν είναι δυνατή η έναρξη της εγγραφής.",
+    "message": "Δεν είναι δυνατή η έναρξη της εγγραφής",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "Καμία εγγραφή.",
+    "message": "Καμία εγγραφή",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Η εγγραφή διακόπηκε",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ ενεργή",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Μετάβαση στο gallery",
@@ -89,13 +95,9 @@
     "message": "Διακοπή εγγραφής",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Εναλλαγή χρονομέτρου",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Εναλλαγή κάμερας",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Μετάβαση στην επόμενη κάμερα",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Μετάβαση στη λειτουργία εγγραφής βίντεο",
@@ -105,17 +107,21 @@
     "message": "Μετάβαση στη λειτουργία λήψης φωτογραφίας",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Χρονόμετρο",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Εναλλαγή κατοπτρισμού",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Κατοπτρισμός",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Εναλλαγή πλέγματος",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Πλέγμα",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Εναλλαγή μικροφώνου",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Μικρόφωνο",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "ΟΚ",

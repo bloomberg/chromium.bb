@@ -12,16 +12,8 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Kamera pašlaik nav pieejama.",
+    "message": "Jūsu kamera pašlaik nav pieejama.\nPārbaudiet, vai ir pareizi izveidots savienojums ar kameru.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
-  },
-  "errorMsgNoCameraHint": {
-    "message": "Pārbaudiet, vai ir pareizi izveidots savienojums ar kameru.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Nevar ielādēt galeriju.",
-    "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
     "message": "Nevar eksportēt failu $file$.",
@@ -29,7 +21,7 @@
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
@@ -48,6 +40,20 @@
   "errorMsgEmptyRecording": {
     "message": "Nekas nav ierakstīts.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Ierakstīšana apturēta",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ aktīva",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Doties uz galeriju",
@@ -89,13 +95,9 @@
     "message": "Apturēt ierakstīšanu",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Pārslēgt taimeri",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Pārslēgt kameru",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Pārslēgties uz nākamo kameru",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Pārslēgties uz videoklipa ierakstīšanu",
@@ -105,17 +107,21 @@
     "message": "Pārslēgties uz fotoattēla uzņemšanu",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Taimeris",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Pārslēgt spoguļošanu",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Spoguļošana",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Pārslēgt režģi",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Režģis",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Pārslēgt mikrofonu",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Mikrofons",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "Labi",

@@ -12,42 +12,48 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Fotoaparát momentálně není dostupný.",
+    "message": "Fotoaparát momentálně není dostupný.\nZkontrolujte, zda je fotoaparát správně zapojen.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Zkontrolujte, zda je fotoaparát správně zapojen.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Galerii nelze načíst.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Soubor $file$ se nepodařilo exportovat.",
+    "message": "Soubor $file$ se nepodařilo exportovat",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "Soubor se nepodařilo uložit.",
+    "message": "Soubor se nepodařilo uložit",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "Fotku se nepodařilo pořídit.",
+    "message": "Fotku se nepodařilo pořídit",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "Nahrávání se nepodařilo zahájit.",
+    "message": "Nahrávání se nepodařilo zahájit",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "Nic nebylo zaznamenáno.",
+    "message": "Nic nebylo zaznamenáno",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Nahrávání bylo zastaveno",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ je aktivní",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Přejít do galerie",
@@ -89,13 +95,9 @@
     "message": "Zastavit nahrávání",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Přepnout časovač",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Přepnout fotoaparát",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Přepnout na další fotoaparát",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Přepnout na záznam videa",
@@ -105,17 +107,21 @@
     "message": "Přepnout na focení",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Časovač",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Přepnout zrcadlení",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Zrcadlení",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Přepnout mřížku",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Mřížka",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Přepnout mikrofon",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Mikrofon",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",

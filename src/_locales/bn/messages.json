@@ -12,42 +12,48 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "বর্তমানে ক্যামেরা উপলভ্য নেই।",
+    "message": "আপনার ক্যামেরাটি বর্তমানে কানেক্ট করা নেই।\nক্যামেরাটি সঠিকভাবে কানেক্ট করা আছে কিনা দেখে নিন।",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "ক্যামেরা সঠিকভাবে কানেক্ট করা আছে কিনা পরীক্ষা করুন।",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "গ্যালারি লোড করা যায়নি৷",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ এক্সপোর্ট করা যায়নি।",
+    "message": "$file$টি এক্সপোর্ট করা যায়নি",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "ফাইল সেভ করা যায়নি।",
+    "message": "ফাইলটি সেভ করা যায়নি",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "ফটো তোলা যায়নি।",
+    "message": "ফটো তোলা যায়নি",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "রেকর্ডিং শুরু করা যায়নি।",
+    "message": "রেকর্ডিং শুরু করা যায়নি",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "কিছুই রেকর্ড করা হয়নি।",
+    "message": "কিছুই রেকর্ড করা হয়নি",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "রেকর্ডিং বন্ধ করা হয়েছে",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ চালু আছে",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "গ্যালারিতে যান",
@@ -70,7 +76,7 @@
     "description": "Label for the back button."
   },
   "galleryImages": {
-    "message": "গ্যালারির ছবিগুলি",
+    "message": "গ্যালারির ছবি",
     "description": "Text to speech label for the gallery list."
   },
   "takePhotoButton": {
@@ -89,13 +95,9 @@
     "message": "রেকর্ডিং বন্ধ করুন",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "টাইমার টগল করুন",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "ক্যামেরা টগল করুন",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "পরবর্তী ক্যামেরাতে যান",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "ভিডিও রেকর্ড করতে পরিবর্তন করুন",
@@ -105,17 +107,21 @@
     "message": "ফটো তুলতে পরিবর্তন করুন",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "টাইমার",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "মিররিং টগল করুন",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "মিররিং",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "গ্রিড টগল করুন",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "গ্রিড",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "মাইক্রোফোন টগল করুন",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "মাইক্রোফোন",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "ঠিক আছে",

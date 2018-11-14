@@ -12,42 +12,48 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Fotoaparat trenutno ni na voljo.",
+    "message": "Fotoaparat trenutno ni na voljo.\nPreverite, ali je fotoaparat ustrezno povezan.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Preverite, ali je fotoaparat ustrezno povezan.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Galerije ni mogoče naložiti.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Datoteke $file$ ni mogoče izvoziti.",
+    "message": "Datoteke $file$ ni mogoče izvoziti",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "Datoteke ni mogoče shraniti.",
+    "message": "Datoteke ni mogoče shraniti",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "Fotografije ni mogoče posneti.",
+    "message": "Fotografije ni mogoče posneti",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "Snemanja ni mogoče začeti.",
+    "message": "Snemanja ni mogoče začeti",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "Nič ni posneto.",
+    "message": "Nič ni posneto",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Snemanje je ustavljeno",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "Fotoaparat $camera$ je aktiven",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "V galerijo",
@@ -89,13 +95,9 @@
     "message": "Ustavitev snemanja",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Preklop merilnika časa",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Preklop fotoaparata",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Preklop na naslednji fotoaparat",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Preklop na snemanje videa",
@@ -105,17 +107,21 @@
     "message": "Preklop na fotografiranje",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Časovnik",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Preklop zrcaljenja",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Zrcaljenje",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Preklop na mrežo",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Mreža",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Preklop mikrofona",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Mikrofon",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "V redu",

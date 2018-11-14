@@ -12,33 +12,25 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "A kamera jelenleg nem érhető el.",
+    "message": "A kamera jelenleg nem áll rendelkezésre.\nEllenőrizze, hogy megfelelően van-e csatlakoztatva.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Ellenőrizze, hogy a kamera megfelelően van-e csatlakoztatva.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Nem sikerült betölteni a galériát.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "A fájl ($file$) exportálása nem sikerült.",
+    "message": "Nem sikerült exportálni a fájlt ($file$).",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "A fájl mentése nem sikerült.",
+    "message": "Nem sikerült menteni a fájlt.",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "A fotó elkészítése nem sikerült.",
+    "message": "Nem sikerült elkészíteni a fotót.",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
@@ -46,8 +38,22 @@
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "A rendszer semmit nem rögzített.",
+    "message": "A rendszer semmit sem rögzített.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "A felvétel leállt",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ aktív",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Ugrás a galériába",
@@ -89,13 +95,9 @@
     "message": "Felvétel leállítása",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Időzítés be-/kikapcsolása",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Kamerák közötti váltás",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Váltás a következő kamerára",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Váltás videófelvételre",
@@ -105,17 +107,21 @@
     "message": "Váltás fotókészítésre",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Időzítő",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Tükrözés be-/kikapcsolása",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Tükrözés",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Rács be-/kikapcsolása",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Rács",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Mikrofon be-/kikapcsolása",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Mikrofon",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",

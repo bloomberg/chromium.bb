@@ -8,46 +8,52 @@
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
-    "message": "檔案系統錯誤。",
+    "message": "檔案系統發生錯誤。",
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "你的相機目前無法使用。",
+    "message": "目前無法使用相機。\n請檢查相機是否已正確連接。",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "請檢查相機是否妥善連接。",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "無法載入圖片庫。",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "無法匯出「$file$」。",
+    "message": "無法匯出「$file$」",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "無法儲存檔案。",
+    "message": "無法儲存檔案",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "無法拍照。",
+    "message": "無法拍照",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "無法開始錄影。",
+    "message": "無法開始錄影",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "未錄製任何內容。",
+    "message": "未錄製任何內容",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "已停止錄影",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "已切換至 $camera$",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "前往圖片庫",
@@ -86,36 +92,36 @@
     "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
-    "message": "停止錄製",
+    "message": "停止錄影",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "切換計時器",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "切換相機",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "切換至下一個相機",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "切換為錄影",
+    "message": "切換為錄影模式",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "切換為拍照",
+    "message": "切換為拍照模式",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "計時器",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "切換鏡像功能",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "鏡像功能",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "切換格線",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "格線",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "切換麥克風",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "麥克風",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "確定",

@@ -12,42 +12,48 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Žiniatinklio kamera šiuo metu nepasiekiama.",
+    "message": "Jūsų kamera šiuo metu nepasiekiama.\nPatikrinkite, ar kamera tinkamai prijungta.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Patikrinkite, ar žiniatinklio kamera tinkamai prijungta.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Nepavyko įkelti galerijos.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Nepavyko eksportuoti failo $file$.",
+    "message": "Nepavyko eksportuoti failo $file$",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "Nepavyko išsaugoti failo.",
+    "message": "Nepavyko išsaugoti failo",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "Nepavyko nufotografuoti.",
+    "message": "Nepavyko nufotografuoti",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "Nepavyko pradėti įrašymo.",
+    "message": "Nepavyko pradėti įrašymo",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "Nieko neįrašyta.",
+    "message": "Nieko neįrašyta",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Įrašymas sustabdytas",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ veikia",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Eiti į galeriją",
@@ -89,13 +95,9 @@
     "message": "Sustabdyti įrašymą",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Perjungti laikmatį",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Perjungti žiniatinklio kamerą",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Perjungti į kitą kamerą",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Perjungti į vaizdo įrašymo režimą",
@@ -105,17 +107,21 @@
     "message": "Perjungti į fotografavimo režimą",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Laikmatis",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Perjungti ekrano vaizdo bendrinimą",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Atspindėjimas",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Perjungti tinklelį",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Tinklelis",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Perjungti mikrofoną",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Mikrofonas",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "Gerai",

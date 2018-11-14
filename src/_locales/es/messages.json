@@ -8,46 +8,52 @@
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
-    "message": "Errores del sistema de archivos.",
+    "message": "Se han producido errores en el sistema de archivos.",
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Tu cámara no está disponible en este momento.",
+    "message": "La cámara no está disponible en este momento.\nComprueba si la cámara está conectada correctamente.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Comprueba si la cámara está conectada correctamente.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "No se ha podido cargar la galería.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "No se ha podido exportar $file$.",
+    "message": "No se ha podido exportar $file$",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "No se ha podido guardar el archivo.",
+    "message": "No se ha podido guardar el archivo",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "No se ha podido hacer la foto.",
+    "message": "No se ha podido hacer la foto",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "No se ha podido empezar a grabar.",
+    "message": "No se ha podido iniciar la grabación",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "No se ha grabado nada.",
+    "message": "No se ha grabado nada",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Se ha detenido la grabación",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ activa",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Ir a la galería",
@@ -89,13 +95,9 @@
     "message": "Detener grabación",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Activar o desactivar temporizador",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Cambiar de cámara",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Cambiar a la siguiente cámara",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Cambiar al modo de cámara de vídeo",
@@ -105,17 +107,21 @@
     "message": "Cambiar al modo de cámara de fotos",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Temporizador",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Activar o desactivar proyección",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Efecto espejo",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Activar o desactivar cuadrícula",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Cuadrícula",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Activar o desactivar micrófono",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Micrófono",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "Aceptar",
@@ -126,7 +132,7 @@
     "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "¿Seguro que quieres quitar $file$?",
+    "message": "¿Seguro que quieres eliminar $file$?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {

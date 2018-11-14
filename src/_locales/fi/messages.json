@@ -12,24 +12,16 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Kamerasi ei ole käytettävissä tällä hetkellä.",
+    "message": "Kamera ei ole nyt käytettävissä.\nTarkista, onko kamera liitetty oikein.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Tarkista, onko kamera yhdistetty oikein.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Gallerian lataus epäonnistui.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Tiedoston $file$ vieminen epäonnistui.",
+    "message": "Vieminen epäonnistui: $file$.",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
@@ -48,6 +40,20 @@
   "errorMsgEmptyRecording": {
     "message": "Mitään ei kuvattu.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Tallennus keskeytettiin.",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ on aktiivinen.",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Siirry galleriaan",
@@ -89,13 +95,9 @@
     "message": "Lopeta kuvaaminen",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Ajastin päälle/pois",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Kamera päälle/pois",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Vaihda seuraavaan kameraan",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Vaihda videon kuvaamiseen",
@@ -105,17 +107,21 @@
     "message": "Vaihda kuvan ottamiseen",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Ajastin",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Peilikuva päälle/pois",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Peilaus",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Ruudukko päälle/pois",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Ruudukko",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Mikrofoni päälle/pois",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Mikrofoni",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",

@@ -1,6 +1,6 @@
 {
   "name": {
-    "message": "كاميرا",
+    "message": "الكاميرا",
     "description": "Name of the Camera App."
   },
   "description": {
@@ -12,16 +12,8 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "الكاميرا غير مُتاحة حاليًا.",
+    "message": "الكاميرا غير متاحة حاليًا.\nيُرجى التحقُّق من اتصال الكاميرا بشكلٍ صحيح.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
-  },
-  "errorMsgNoCameraHint": {
-    "message": "تحقق من اتصال الكاميرا بشكل صحيح.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "يتعذّر تحميل المعرض.",
-    "description": "Error message shown when loading the gallery failed."
   },
   "errorMsgGalleryExportFailed": {
     "message": "يتعذَّر تصدير $file$.",
@@ -29,7 +21,7 @@
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
@@ -48,6 +40,20 @@
   "errorMsgEmptyRecording": {
     "message": "لم يتمّ تسجيل أيّ بيانات.",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "تمّ إيقاف التسجيل.",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "الكاميرا $camera$ نشِطة.",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "الانتقال إلى المعرض",
@@ -78,7 +84,7 @@
     "description": "Label for the shutter button to take photo."
   },
   "takePhotoCancelButton": {
-    "message": "التوقف عن التقاط صورة",
+    "message": "إيقاف التقاط الصورة",
     "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
@@ -89,36 +95,36 @@
     "message": "إيقاف التسجيل",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "تبديل المؤقِّت",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "تبديل الكاميرا",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "التبديل إلى الكاميرا التالية",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "التبديل لتسجيل فيديو",
+    "message": "تبديل لتسجيل فيديو",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "التبديل لالتقاط صورة",
+    "message": "تبديل لالتقاط صورة",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "الموقِّت",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "تبديل النسخ المطابق",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "النسخ المطابق",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "تبديل الشبكة",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "الشبكة",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "تبديل الميكروفون",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "الميكروفون",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
-    "message": "حسنًا",
+    "message": "موافق",
     "description": "Label for the accepting button in the dialog."
   },
   "dialogCancelButton": {
@@ -126,7 +132,7 @@
     "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "هل تريد بالتأكيد إزالة $file$؟",
+    "message": "هل تريد إزالة $file$ بالفعل؟",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -136,7 +142,7 @@
     }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "هل تريد بالتأكيد إزالة $count$ عنصر؟",
+    "message": "هل تريد إزالة $count$ من العناصر بالفعل؟",
     "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
     "placeholders": {
       "count": {

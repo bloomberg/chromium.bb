@@ -12,42 +12,48 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Dit kamera er ikke tilgængeligt lige nu.",
+    "message": "Dit kamera er i øjeblikket utilgængeligt.\nTjek, om kameraet er tilsluttet korrekt.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Tjek, om kameraet er tilsluttet korrekt.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Galleriet kunne ikke indlæses.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "$file$ kunne ikke eksporteres.",
+    "message": "$file$ kan ikke eksporteres",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "Filen kunne ikke gemmes.",
+    "message": "Filen kan ikke gemmes",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "Det er ikke muligt at tage billeder.",
+    "message": "Det er ikke muligt at tage billeder",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "Optagelsen kunne ikke startes.",
+    "message": "Det er ikke muligt at starte en optagelse",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "Der er ingen optagelser.",
+    "message": "Der er ingen optagelser",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
+  },
+  "statusMsgRecordingStopped": {
+    "message": "Optagelsen er stoppet",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ er aktivt",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
   },
   "galleryButton": {
     "message": "Gå til galleri",
@@ -78,7 +84,7 @@
     "description": "Label for the shutter button to take photo."
   },
   "takePhotoCancelButton": {
-    "message": "Stop med tage billedet",
+    "message": "Stop med at tage billedet",
     "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
@@ -89,13 +95,9 @@
     "message": "Stop optagelse",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Slå timer til/fra",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Skift kamera",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Skift til næste kamera",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Skift til videooptagelse",
@@ -105,17 +107,21 @@
     "message": "Skift til billedtilstand",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Timer",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Slå spejling til/fra",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Spejling",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Slå gitter til/fra",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Gitter",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Slå mikrofon til/fra",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Mikrofon",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",

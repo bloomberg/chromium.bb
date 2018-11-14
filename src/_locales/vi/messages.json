@@ -12,45 +12,51 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "Máy ảnh của bạn hiện chưa sẵn sàng.",
+    "message": "Máy ảnh của bạn hiện không sử dụng được.\nVui lòng kiểm tra xem máy ảnh có được kết nối đúng cách không.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
-  "errorMsgNoCameraHint": {
-    "message": "Kiểm tra xem máy ảnh có được kết nối đúng cách không.",
-    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
-  },
-  "errorMsgGalleryLoadFailed": {
-    "message": "Không thể tải thư viện.",
-    "description": "Error message shown when loading the gallery failed."
-  },
   "errorMsgGalleryExportFailed": {
-    "message": "Không thể xuất $file$.",
+    "message": "Không thể xuất $file$",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
         "content": "$1",
-        "example": "IMG_20160520_000000.jpg."
+        "example": "IMG_20160520_000000.jpg"
       }
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "Không thể lưu tệp.",
+    "message": "Không thể lưu tệp",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "Không thể chụp ảnh.",
+    "message": "Không thể chụp ảnh",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "Không thể bắt đầu quay video.",
+    "message": "Không thể bắt đầu quay video",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "Chưa ghi dữ liệu nào.",
+    "message": "Chưa ghi dữ liệu nào",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
+  "statusMsgRecordingStopped": {
+    "message": "Đã dừng quay video",
+    "description": "Status message for spoken feedback when video recording has been stopped."
+  },
+  "statusMsgCameraSwitched": {
+    "message": "$camera$ hoạt động",
+    "description": "Status message for spoken feedback when switching over to another camera.",
+    "placeholders": {
+      "camera": {
+        "content": "$1",
+        "example": "USB WebCam (12ab:5678) User-facing"
+      }
+    }
+  },
   "galleryButton": {
-    "message": "Truy cập thư viện",
+    "message": "Truy cập vào thư viện",
     "description": "Label for the gallery button."
   },
   "deleteButton": {
@@ -82,20 +88,16 @@
     "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
-    "message": "Bắt đầu ghi",
+    "message": "Bắt đầu quay video",
     "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
-    "message": "Dừng ghi",
+    "message": "Dừng quay video",
     "description": "Label for the shutter button to stop recording."
   },
-  "toggleTimerButton": {
-    "message": "Bật/tắt bộ tính giờ",
-    "description": "Label for the button to toggle the countdown timer."
-  },
-  "toggleCameraButton": {
-    "message": "Bật/tắt máy ảnh",
-    "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
+  "switchCameraButton": {
+    "message": "Chuyển sang máy ảnh tiếp theo",
+    "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
     "message": "Chuyển sang quay video",
@@ -105,17 +107,21 @@
     "message": "Chuyển sang chụp ảnh",
     "description": "Label for the button to switch to take photo mode."
   },
+  "toggleTimerButton": {
+    "message": "Bộ hẹn giờ",
+    "description": "Label for the checkbox to toggle the countdown timer."
+  },
   "toggleMirrorButton": {
-    "message": "Bật/tắt phản chiếu",
-    "description": "Label for the button to toggle the preview mirroring."
+    "message": "Phản chiếu",
+    "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "Bật/tắt lưới",
-    "description": "Label for the button to toggle the grid shown on preview."
+    "message": "Lưới",
+    "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {
-    "message": "Bật/tắt micrô",
-    "description": "Label for the button to toggle the microphone for recording video."
+    "message": "Micrô",
+    "description": "Label for the checkbox to toggle the microphone for recording video."
   },
   "dialogOKButton": {
     "message": "OK",
@@ -146,7 +152,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "Ảnh và video được chụp và quay bằng máy ảnh sẽ được chuyển đến thư mục Tài nguyên đã tải xuống. Bạn có thể truy cập vào ảnh và video trong Tệp.\n\nỨng dụng có quyền truy cập vào bộ nhớ sẽ có quyền truy cập vào ảnh và video của bạn.",
+    "message": "Ảnh và video mà bạn chụp và quay bằng máy ảnh sẽ được chuyển đến thư mục Tài nguyên đã tải xuống. Bạn có thể truy cập vào ảnh và video trong ứng dụng Files.\n\nỨng dụng có quyền truy cập vào bộ nhớ sẽ có quyền truy cập vào ảnh và video của bạn.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }
