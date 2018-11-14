@@ -40,19 +40,19 @@ static bool ArePositionsInSpecifiedOrder(const VisiblePosition& vp1,
 // the direction in which to search for the next bound. nextIfOnBound
 // controls whether |pos| or the next boundary is returned when |pos| is
 // located exactly on word boundary.
-static VisiblePosition NextWordBound(const VisiblePosition& pos,
-                                     SearchDirection direction,
-                                     BoundAdjust word_bound_adjust) {
+static Position NextWordBound(const Position& pos,
+                              SearchDirection direction,
+                              BoundAdjust word_bound_adjust) {
   bool next_bound_if_on_bound =
       word_bound_adjust == BoundAdjust::kNextBoundIfOnBound;
   if (direction == SearchDirection::kSearchForward) {
     EWordSide word_side = next_bound_if_on_bound ? kNextWordIfOnBoundary
                                                  : kPreviousWordIfOnBoundary;
-    return EndOfWord(pos, word_side);
+    return EndOfWordPosition(pos, word_side);
   }
   EWordSide word_side = next_bound_if_on_bound ? kPreviousWordIfOnBoundary
                                                : kNextWordIfOnBoundary;
-  return StartOfWord(pos, word_side);
+  return StartOfWordPosition(pos, word_side);
 }
 
 GranularityStrategy::GranularityStrategy() = default;
@@ -198,32 +198,34 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
 
     // Determine the word boundary, i.e. the boundary extending beyond which
     // should change the granularity to WordGranularity.
-    VisiblePosition word_boundary;
+    Position word_boundary_position;
     if (extent_base_order_switched) {
       // Special case.
       // If the extent-base order was switched, then the selection is now
       // expanding in a different direction than before. Therefore we
       // calculate the word boundary in this new direction and based on
       // the |base| position.
-      word_boundary = NextWordBound(base,
-                                    new_extent_base_order > 0
-                                        ? SearchDirection::kSearchForward
-                                        : SearchDirection::kSearchBackwards,
-                                    BoundAdjust::kNextBoundIfOnBound);
+      word_boundary_position = NextWordBound(
+          base.DeepEquivalent(),
+          new_extent_base_order > 0 ? SearchDirection::kSearchForward
+                                    : SearchDirection::kSearchBackwards,
+          BoundAdjust::kNextBoundIfOnBound);
       granularity_ = TextGranularity::kCharacter;
     } else {
       // Calculate the word boundary based on |oldExtentWithGranularity|.
       // If selection was shrunk in the last update and the extent is now
       // exactly on the word boundary - we need to take the next bound as
       // the bound of the current word.
-      word_boundary = NextWordBound(old_offset_extent_position,
-                                    old_extent_base_order > 0
-                                        ? SearchDirection::kSearchForward
-                                        : SearchDirection::kSearchBackwards,
-                                    state_ == StrategyState::kShrinking
-                                        ? BoundAdjust::kNextBoundIfOnBound
-                                        : BoundAdjust::kCurrentPosIfOnBound);
+      word_boundary_position = NextWordBound(
+          old_offset_extent_position.DeepEquivalent(),
+          old_extent_base_order > 0 ? SearchDirection::kSearchForward
+                                    : SearchDirection::kSearchBackwards,
+          state_ == StrategyState::kShrinking
+              ? BoundAdjust::kNextBoundIfOnBound
+              : BoundAdjust::kCurrentPosIfOnBound);
     }
+    VisiblePosition word_boundary =
+        CreateVisiblePosition(word_boundary_position);
 
     bool expanded_beyond_word_boundary;
     if (selection_expanded)
@@ -251,12 +253,12 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
     // Determine the bounds of the word where the extent is located.
     // Set the selection extent to one of the two bounds depending on
     // whether the extent is passed the middle of the word.
-    VisiblePosition bound_before_extent = NextWordBound(
-        new_offset_extent_position, SearchDirection::kSearchBackwards,
-        BoundAdjust::kCurrentPosIfOnBound);
-    VisiblePosition bound_after_extent = NextWordBound(
-        new_offset_extent_position, SearchDirection::kSearchForward,
-        BoundAdjust::kCurrentPosIfOnBound);
+    VisiblePosition bound_before_extent = CreateVisiblePosition(NextWordBound(
+        new_offset_extent_position.DeepEquivalent(),
+        SearchDirection::kSearchBackwards, BoundAdjust::kCurrentPosIfOnBound));
+    VisiblePosition bound_after_extent = CreateVisiblePosition(NextWordBound(
+        new_offset_extent_position.DeepEquivalent(),
+        SearchDirection::kSearchForward, BoundAdjust::kCurrentPosIfOnBound));
     int x_middle_between_bounds = (PositionLocation(bound_after_extent).X() +
                                    PositionLocation(bound_before_extent).X()) /
                                   2;
