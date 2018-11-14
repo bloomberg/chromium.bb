@@ -78,8 +78,11 @@ class MediaNotificationViewTest : public AshTestBase {
             base::Unretained(this)));
 
     // Show the notification.
-    Shell::Get()->media_notification_controller()->OnFocusGained(
-        std::move(session_info), media_session::mojom::AudioFocusType::kGain);
+    media_session::mojom::AudioFocusRequestStatePtr session(
+        media_session::mojom::AudioFocusRequestState::New());
+    session->session_info = std::move(session_info);
+    Shell::Get()->media_notification_controller()->OnActiveSessionChanged(
+        std::move(session));
 
     message_center::Notification* notification =
         message_center::MessageCenter::Get()->FindVisibleNotificationById(
@@ -229,7 +232,7 @@ TEST_F(MediaNotificationViewTest, ClickNotification) {
   EXPECT_EQ(0, media_controller()->toggle_suspend_resume_count());
 }
 
-TEST_F(MediaNotificationViewTest, PlayToggle_FromFocusGain) {
+TEST_F(MediaNotificationViewTest, PlayToggle_FromActiveSessionChanged) {
   {
     views::ToggleImageButton* button =
         static_cast<views::ToggleImageButton*>(button_row()->child_at(1));
@@ -237,8 +240,8 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromFocusGain) {
     EXPECT_FALSE(button->toggled_for_testing());
   }
 
-  Shell::Get()->media_notification_controller()->OnFocusLost(
-      media_session::mojom::MediaSessionInfo::New());
+  Shell::Get()->media_notification_controller()->OnActiveSessionChanged(
+      nullptr);
 
   // Disable the tray and run the loop to make sure that the existing view is
   // destroyed.

@@ -88,8 +88,7 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   void AbandonAudioFocusInternal(RequestId);
   void EnforceAudioFocusAbandon(mojom::AudioFocusType);
 
-  // Get the top most media session with the gain audio focus type.
-  mojom::MediaSession* GetActiveGainSession() const;
+  void MaybeUpdateActiveSession();
 
   std::unique_ptr<StackRow> RemoveFocusEntryIfPresent(RequestId id);
 

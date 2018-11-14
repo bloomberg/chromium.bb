@@ -22,10 +22,11 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestAudioFocusObserver
   TestAudioFocusObserver();
   ~TestAudioFocusObserver() override;
 
-  void OnFocusGained(media_session::mojom::MediaSessionInfoPtr,
-                     media_session::mojom::AudioFocusType) override;
-
-  void OnFocusLost(media_session::mojom::MediaSessionInfoPtr) override;
+  void OnFocusGained(media_session::mojom::MediaSessionInfoPtr session,
+                     media_session::mojom::AudioFocusType type) override;
+  void OnFocusLost(media_session::mojom::MediaSessionInfoPtr session) override;
+  void OnActiveSessionChanged(
+      media_session::mojom::AudioFocusRequestStatePtr session) override;
 
   void WaitForGainedEvent();
   void WaitForLostEvent();
@@ -40,11 +41,13 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestAudioFocusObserver
   // These store the values we received.
   media_session::mojom::MediaSessionInfoPtr focus_gained_session_;
   media_session::mojom::MediaSessionInfoPtr focus_lost_session_;
+  media_session::mojom::AudioFocusRequestStatePtr active_session_;
 
   // These store the order of notifications that were received by the observer.
   enum class NotificationType {
     kFocusGained,
     kFocusLost,
+    kActiveSessionChanged,
   };
   const std::vector<NotificationType>& notifications() const {
     return notifications_;

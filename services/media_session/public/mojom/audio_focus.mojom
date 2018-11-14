@@ -38,13 +38,18 @@ struct AudioFocusRequestState {
 };
 
 // The observer for audio focus events.
-// Next Method ID: 2
 interface AudioFocusObserver {
   // The given |session| gained audio focus with the specified |type|.
-  OnFocusGained@0(MediaSessionInfo session, AudioFocusType type);
+  OnFocusGained(MediaSessionInfo session, AudioFocusType type);
 
   // The given |session| lost audio focus.
-  OnFocusLost@1(MediaSessionInfo session);
+  OnFocusLost(MediaSessionInfo session);
+
+  // The currently active session changed. The active session is the top most
+  // session that is not temporary. This is the session that will be associated
+  // with the MediaController interface. If all the media sessions have ended
+  // then |session| will be null.
+  OnActiveSessionChanged(AudioFocusRequestState? session);
 };
 
 // Controls audio focus for an associated request.
