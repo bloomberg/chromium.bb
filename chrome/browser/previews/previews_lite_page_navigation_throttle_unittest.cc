@@ -23,11 +23,12 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
   struct TestCase {
     std::string previews_host;
     std::string original_url;
-    std::string previews_url;
+    std::string expected_previews_url;
     std::string experiment;
   };
   const TestCase kTestCases[]{
-      // Use https://play.golang.org/p/HUM2HxmUTOW to compute |previews_url|.
+      // Use https://play.golang.org/p/HUM2HxmUTOW to compute
+      // |expected_previews_url|.
       {
           "https://previews.host.com",
           "https://original.host.com/path/path/path?query=yes",
@@ -86,6 +87,12 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
           "&x=enable_HTCPCP",
           "enable_HTCPCP",
       },
+      {
+          "https://previews.host.com", "https://[::1]:12345",
+          "https://2ikmbopbfxagkb7uer2vgfxmbzu2vw4qq3d3ixe3h2hfhgcabvua."
+          "previews.host.com/p?u=https%3A%2F%2F%5B%3A%3A1%5D%3A12345%2F",
+          "",
+      },
   };
 
   for (const TestCase& test_case : kTestCases) {
@@ -97,6 +104,6 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
 
     EXPECT_EQ(PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
                   GURL(test_case.original_url)),
-              GURL(test_case.previews_url));
+              GURL(test_case.expected_previews_url));
   }
 }
