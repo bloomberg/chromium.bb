@@ -194,11 +194,6 @@ extern const char kDatasaverPromptName[];
 extern const char kDatasaverPromptDescription[];
 extern const char kDatasaverPromptDemoMode[];
 
-#if defined(DCHECK_IS_CONFIGURABLE)
-extern const char kDcheckIsFatalName[];
-extern const char kDcheckIsFatalDescription[];
-#endif  // defined(DCHECK_IS_CONFIGURABLE)
-
 extern const char kDebugPackedAppName[];
 extern const char kDebugPackedAppDescription[];
 
@@ -1085,11 +1080,6 @@ extern const char kSingleClickAutofillDescription[];
 extern const char kSingleTabMode[];
 extern const char kSingleTabModeDescription[];
 
-#if defined(OS_ANDROID)
-extern const char kStrictSiteIsolationName[];
-extern const char kStrictSiteIsolationDescription[];
-#endif
-
 extern const char kSiteIsolationOptOutName[];
 extern const char kSiteIsolationOptOutDescription[];
 extern const char kSiteIsolationOptOutChoiceDefault[];
@@ -1287,6 +1277,9 @@ extern const char kWebPaymentsModifiersDescription[];
 extern const char kWebrtcEchoCanceller3Name[];
 extern const char kWebrtcEchoCanceller3Description[];
 
+extern const char kWebrtcH264WithOpenh264FfmpegName[];
+extern const char kWebrtcH264WithOpenh264FfmpegDescription[];
+
 extern const char kWebrtcHideLocalIpsWithMdnsName[];
 extern const char kWebrtcHideLocalIpsWithMdnsDecription[];
 
@@ -1319,8 +1312,6 @@ extern const char kWebrtcSrtpEncryptedHeadersDescription[];
 
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
-extern const char kWebrtcH264WithOpenh264FfmpegName[];
-extern const char kWebrtcH264WithOpenh264FfmpegDescription[];
 
 extern const char kWebrtcUnifiedPlanByDefaultName[];
 extern const char kWebrtcUnifiedPlanByDefaultDescription[];
@@ -1427,8 +1418,8 @@ extern const char kContextualSearchSecondTapDescription[];
 extern const char kContextualSearchUnityIntegrationName[];
 extern const char kContextualSearchUnityIntegrationDescription[];
 
-extern const char kExploreSitesName[];
-extern const char kExploreSitesDescription[];
+extern const char kDisplayCutoutAPIName[];
+extern const char kDisplayCutoutAPIDescription[];
 
 extern const char kDontPrefetchLibrariesName[];
 extern const char kDontPrefetchLibrariesDescription[];
@@ -1516,6 +1507,9 @@ extern const char kEnableWebPaymentsMethodSectionOrderV2Description[];
 
 extern const char kEphemeralTabName[];
 extern const char kEphemeralTabDescription[];
+
+extern const char kExploreSitesName[];
+extern const char kExploreSitesDescription[];
 
 extern const char kGrantNotificationsToDSEName[];
 extern const char kGrantNotificationsToDSENameDescription[];
@@ -1662,6 +1656,9 @@ extern const char kSiteExplorationUiDescription[];
 extern const char kSpannableInlineAutocompleteName[];
 extern const char kSpannableInlineAutocompleteDescription[];
 
+extern const char kStrictSiteIsolationName[];
+extern const char kStrictSiteIsolationDescription[];
+
 extern const char kTranslateAndroidManualTriggerName[];
 extern const char kTranslateAndroidManualTriggerDescription[];
 
@@ -1711,14 +1708,14 @@ extern const char kEnableAudioFocusEnabled[];
 extern const char kEnableAudioFocusEnabledDuckFlash[];
 extern const char kEnableAudioFocusEnabledNoEnforce[];
 
+extern const char kEnableWebAuthenticationBleSupportName[];
+extern const char kEnableWebAuthenticationBleSupportDescription[];
+
 extern const char kEnableWebAuthenticationCtap2SupportName[];
 extern const char kEnableWebAuthenticationCtap2SupportDescription[];
 
 extern const char kEnableWebAuthenticationTestingAPIName[];
 extern const char kEnableWebAuthenticationTestingAPIDescription[];
-
-extern const char kEnableWebAuthenticationBleSupportName[];
-extern const char kEnableWebAuthenticationBleSupportDescription[];
 
 extern const char kHappinessTrackingSurveysForDesktopName[];
 extern const char kHappinessTrackingSurveysForDesktopDescription[];
@@ -1729,20 +1726,20 @@ extern const char kInfiniteSessionRestoreDescription[];
 extern const char kOmniboxDriveSuggestionsName[];
 extern const char kOmniboxDriveSuggestionsDescriptions[];
 
-extern const char kOmniboxRichEntitySuggestionsName[];
-extern const char kOmniboxRichEntitySuggestionsDescription[];
-
 extern const char kOmniboxNewAnswerLayoutName[];
 extern const char kOmniboxNewAnswerLayoutDescription[];
+
+extern const char kOmniboxPedalSuggestionsName[];
+extern const char kOmniboxPedalSuggestionsDescription[];
 
 extern const char kOmniboxReverseAnswersName[];
 extern const char kOmniboxReverseAnswersDescription[];
 
+extern const char kOmniboxRichEntitySuggestionsName[];
+extern const char kOmniboxRichEntitySuggestionsDescription[];
+
 extern const char kOmniboxTabSwitchSuggestionsName[];
 extern const char kOmniboxTabSwitchSuggestionsDescription[];
-
-extern const char kOmniboxPedalSuggestionsName[];
-extern const char kOmniboxPedalSuggestionsDescription[];
 
 extern const char kOmniboxTailSuggestionsName[];
 extern const char kOmniboxTailSuggestionsDescription[];
@@ -2257,6 +2254,11 @@ extern const char kDirectManipulationStylusDescription[];
 
 // Feature flags --------------------------------------------------------------
 
+#if defined(DCHECK_IS_CONFIGURABLE)
+extern const char kDcheckIsFatalName[];
+extern const char kDcheckIsFatalDescription[];
+#endif  // defined(DCHECK_IS_CONFIGURABLE)
+
 #if BUILDFLAG(ENABLE_VR)
 
 extern const char kWebVrVsyncAlignName[];
@@ -2304,13 +2306,6 @@ extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
 
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
-
-extern const char kDisplayCutoutAPIName[];
-extern const char kDisplayCutoutAPIDescription[];
-
-#endif  // defined(OS_ANDROID)
 
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in
