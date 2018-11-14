@@ -89,7 +89,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
@@ -378,9 +377,6 @@ public class Tab
      */
     private long mDataSavedOnStartPageLoad;
 
-    private int mDefaultThemeColor;
-    private int mThemeColor;
-
     /**
      * The Text bubble used to display In Product help widget for download feature on videos.
      */
@@ -414,12 +410,6 @@ public class Tab
             auditor.notifyCertificateFailure(
                     PolicyAuditor.nativeGetCertificateFailure(getWebContents()),
                     getApplicationContext());
-            updateThemeColorIfNeeded(false);
-        }
-
-        @Override
-        public void onUrlUpdated(Tab tab) {
-            updateThemeColorIfNeeded(false);
         }
 
         @Override
@@ -510,8 +500,8 @@ public class Tab
 
         Resources resources = mThemedApplicationContext.getResources();
         mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
-        mDefaultThemeColor = calculateDefaultThemeColor();
-        mThemeColor = calculateThemeColor(false);
+
+        TabThemeColorHelper.createForTab(this);
 
         // Restore data from the TabState, if it existed.
         if (frozenState != null) {
@@ -554,11 +544,6 @@ public class Tab
         };
     }
 
-    private int calculateDefaultThemeColor() {
-        Resources resources = mThemedApplicationContext.getResources();
-        return ColorUtils.getDefaultThemeColor(resources, mIncognito);
-    }
-
     /**
      * Restores member fields from the given TabState.
      * @param state TabState containing information about this Tab.
@@ -571,8 +556,7 @@ public class Tab
         mTimestampMillis = state.timestampMillis;
         mUrl = state.getVirtualUrlFromState();
 
-        mThemeColor = state.hasThemeColor() ? state.getThemeColor() : getDefaultThemeColor();
-
+        TabThemeColorHelper.get(this).updateFromTabState(state);
         mTitle = state.getDisplayTitleFromState();
         mIsTitleDirectionRtl = mTitle != null
                 && LocalizationUtils.getFirstStrongCharacterDirection(mTitle)
@@ -812,8 +796,8 @@ public class Tab
         tabState.parentId = mParentId;
         tabState.shouldPreserve = mShouldPreserve;
         tabState.timestampMillis = mTimestampMillis;
-        tabState.themeColor = getThemeColor();
         tabState.tabLaunchTypeAtCreation = mLaunchTypeAtCreation;
+        tabState.themeColor = TabThemeColorHelper.getColor(this);
         return tabState;
     }
 
@@ -931,64 +915,7 @@ public class Tab
         return Color.WHITE;
     }
 
-    /**
-     * @return The current theme color based on the value passed from the web contents and the
-     *         security state.
-     */
-    public int getThemeColor() {
-        return mThemeColor;
-    }
-
-    /**
-     * Calculate the theme color based on if the page is native, the theme color changed, etc.
-     * @param didWebContentsThemeColorChange If the theme color of the web contents is known to have
-     *                                       changed.
-     * @return The theme color that should be used for this tab.
-     */
-    private int calculateThemeColor(boolean didWebContentsThemeColorChange) {
-        if (isNativePage()) return mNativePage.getThemeColor();
-
-        // Start by assuming the current theme color is that one that should be used. This will
-        // either be transparent, the last theme color, or the color restored from TabState.
-        int themeColor = ColorUtils.isValidThemeColor(mThemeColor) || mThemeColor == 0
-                ? mThemeColor
-                : getDefaultThemeColor();
-
-        // Only use the web contents for the theme color if it is known to have changed, This
-        // corresponds to the didChangeThemeColor in WebContentsObserver.
-        if (getWebContents() != null && didWebContentsThemeColorChange) {
-            themeColor = getWebContents().getThemeColor();
-            if (themeColor != 0 && !ColorUtils.isValidThemeColor(themeColor)) themeColor = 0;
-        }
-
-        // Do not apply the theme color if there are any security issues on the page.
-        int securityLevel = getSecurityLevel();
-        if (securityLevel == ConnectionSecurityLevel.DANGEROUS
-                || securityLevel == ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT) {
-            themeColor = getDefaultThemeColor();
-        }
-
-        if (isShowingInterstitialPage()) themeColor = getDefaultThemeColor();
-
-        if (themeColor == Color.TRANSPARENT) themeColor = getDefaultThemeColor();
-        if (isIncognito()) themeColor = getDefaultThemeColor();
-        if (isPreview()) themeColor = getDefaultThemeColor();
-
-        // Ensure there is no alpha component to the theme color as that is not supported in the
-        // dependent UI.
-        themeColor |= 0xFF000000;
-        return themeColor;
-    }
-
-    /**
-     * Determines if the theme color has changed and notifies the listeners if it has.
-     * @param didWebContentsThemeColorChange If the theme color of the web contents is known to have
-     *                                       changed.
-     */
-    void updateThemeColorIfNeeded(boolean didWebContentsThemeColorChange) {
-        int themeColor = calculateThemeColor(didWebContentsThemeColorChange);
-        if (themeColor == mThemeColor) return;
-        mThemeColor = themeColor;
+    void notifyThemeColorChanged(int themeColor) {
         RewindableIterator<TabObserver> observers = getTabObservers();
         while (observers.hasNext()) {
             observers.next().onDidChangeThemeColor(this, themeColor);
@@ -1216,10 +1143,6 @@ public class Tab
             mNativePage.getView().addOnAttachStateChangeListener(mAttachStateChangeListener);
         }
         pushNativePageStateToNavigationEntry();
-        // Notifying of theme color change before content change because some of
-        // the observers depend on the theme information being correct in
-        // onContentChanged().
-        updateThemeColorIfNeeded(false);
         notifyContentChanged();
         destroyNativePageInternal(previousNativePage);
     }
@@ -1439,8 +1362,6 @@ public class Tab
     public void attach(ChromeActivity activity, TabDelegateFactory tabDelegateFactory) {
         assert mIsDetached;
         updateWindowAndroid(activity.getWindowAndroid());
-        mDefaultThemeColor = calculateDefaultThemeColor();
-        updateThemeColorIfNeeded(false);
 
         // Update for the controllers that need the Compositor from the new Activity.
         attachTabContentManager(activity.getTabContentManager());
@@ -1750,7 +1671,6 @@ public class Tab
 
             SwipeRefreshHandler.from(this);
 
-            updateThemeColorIfNeeded(false);
             notifyContentChanged();
 
             // For browser tabs, we want to set accessibility focus to the page
@@ -2948,21 +2868,6 @@ public class Tab
 
         tab.detach();
         return tab;
-    }
-
-    /**
-     * @return Whether the theme color for this tab is the default color.
-     */
-    public boolean isDefaultThemeColor() {
-        return isNativePage() || mDefaultThemeColor == getThemeColor();
-    }
-
-    /**
-     * @return The default theme color for this tab.
-     */
-    @VisibleForTesting
-    public int getDefaultThemeColor() {
-        return mDefaultThemeColor;
     }
 
     /**

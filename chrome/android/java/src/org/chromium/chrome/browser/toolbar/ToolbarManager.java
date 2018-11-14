@@ -79,6 +79,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -526,6 +527,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
             @Override
             public void onContentChanged(Tab tab) {
+                if (tab.isNativePage()) TabThemeColorHelper.get(tab).updateIfNeeded(false);
                 mToolbar.onTabContentViewChanged();
                 if (shouldShowCursorInLocationBar()) {
                     mLocationBar.showUrlBarCursorWithoutFocusAnimations();
@@ -1691,7 +1693,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             }
             int defaultPrimaryColor =
                     ColorUtils.getDefaultThemeColor(mToolbar.getResources(), isIncognito);
-            int primaryColor = tab != null ? tab.getThemeColor() : defaultPrimaryColor;
+            int primaryColor =
+                    tab != null ? TabThemeColorHelper.getColor(tab) : defaultPrimaryColor;
             updatePrimaryColor(primaryColor, false);
 
             mToolbar.onTabOrModelChanged();
