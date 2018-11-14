@@ -114,7 +114,7 @@ void AssertHandoffURL(const GURL& gurl) {
 
   // When tab 3 is closed, tab 2 is front and Handoff URL should be the URL for
   // tab 2.
-  chrome_test_util::CloseCurrentTab();
+  [ChromeEarlGrey closeCurrentTab];
   AssertHandoffURL(tab2URL);
 
   // Switches back to the first tab.

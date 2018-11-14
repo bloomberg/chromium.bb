@@ -143,6 +143,21 @@ id ExecuteJavaScript(NSString* javascript,
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
++ (void)closeAllTabsInCurrentMode {
+  chrome_test_util::CloseAllTabsInCurrentMode();
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
++ (void)closeAllIncognitoTabs {
+  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
++ (void)closeCurrentTab {
+  chrome_test_util::CloseCurrentTab();
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
 + (void)waitForPageToFinishLoading {
   GREYAssert(chrome_test_util::WaitForPageToFinishLoading(),
              @"Page did not complete loading.");

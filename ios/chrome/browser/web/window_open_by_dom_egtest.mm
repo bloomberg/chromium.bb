@@ -266,7 +266,7 @@ id<GREYMatcher> PopupBlocker() {
   [ChromeEarlGrey waitForMainTabCount:2];
 
   // Ensure that the starting tab hasn't navigated.
-  chrome_test_util::CloseCurrentTab();
+  [ChromeEarlGrey closeCurrentTab];
   const GURL URL = HttpServer::MakeUrl(kTestURL);
   [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];

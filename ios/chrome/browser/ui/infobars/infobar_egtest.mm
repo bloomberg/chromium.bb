@@ -154,7 +154,7 @@ void VerifyNumberOfInfobarsInManager(size_t number_of_infobars) {
 
   // Close the first tab.  Verify that there is only one tab remaining and its
   // infobar is visible.
-  chrome_test_util::CloseCurrentTab();
+  [ChromeEarlGrey closeCurrentTab];
   [ChromeEarlGrey waitForMainTabCount:1];
   VerifyTestInfoBarVisibleForCurrentTab(true, infoBarMessage);
   VerifyNumberOfInfobarsInManager(1);
