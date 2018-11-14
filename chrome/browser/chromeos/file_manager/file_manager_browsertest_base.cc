@@ -1145,7 +1145,6 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   if (!IsGuestModeTest()) {
     enabled_features.emplace_back(features::kCrostini);
     enabled_features.emplace_back(features::kExperimentalCrostiniUI);
-    command_line->AppendSwitch(chromeos::switches::kCrostiniFiles);
   }
   if (IsDriveFsTest()) {
     enabled_features.emplace_back(chromeos::features::kDriveFs);

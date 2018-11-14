@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_features.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -111,9 +110,6 @@ class CrostiniSharePathTest : public testing::Test {
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
     crostini_share_path_ = std::make_unique<CrostiniSharePath>(profile());
-
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kCrostiniFiles);
 
     // Setup for DriveFS.
     user_manager.AddUser(AccountId::FromUserEmailGaiaId(

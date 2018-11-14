@@ -837,6 +837,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   // TODO(crbug.com/868747): Find a better solution for demo mode.
   dict->SetBoolean("HIDE_SPACE_INFO",
                    chromeos::DemoSession::IsDeviceInDemoMode());
+  dict->SetBoolean(
+      "CROSTINI_FILES_ENABLED",
+      base::FeatureList::IsEnabled(chromeos::features::kCrostiniFiles));
   dict->SetBoolean("DRIVE_FS_ENABLED",
                    base::FeatureList::IsEnabled(chromeos::features::kDriveFs));
   dict->SetBoolean(

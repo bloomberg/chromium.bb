@@ -2152,6 +2152,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewZipUnpackerDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableNewZIPUnpacker)},
 #endif  // OS_CHROMEOS
+#if defined(OS_CHROMEOS)
+    {"disable-crostini-files", flag_descriptions::kCrostiniFilesName,
+     flag_descriptions::kCrostiniFilesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniFiles)},
+#endif  // OS_CHROMEOS
 #if defined(OS_ANDROID)
     {"enable-credit-card-assist", flag_descriptions::kCreditCardAssistName,
      flag_descriptions::kCreditCardAssistDescription, kOsAndroid,
@@ -3145,9 +3150,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(
          chromeos::switches::kShowAndroidFilesInFilesApp,
          chromeos::switches::kHideAndroidFilesInFilesApp)},
-    {"crostini-files", flag_descriptions::kCrostiniFilesName,
-     flag_descriptions::kCrostiniFilesDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kCrostiniFiles)},
     {"crostini-usb-support", flag_descriptions::kCrostiniUsbSupportName,
      flag_descriptions::kCrostiniUsbSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUsbSupport)},

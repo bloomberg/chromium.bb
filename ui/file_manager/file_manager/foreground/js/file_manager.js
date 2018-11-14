@@ -1239,10 +1239,9 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.setupCrostini_ = function() {
     chrome.fileManagerPrivate.isCrostiniEnabled((crostiniEnabled) => {
-      // Check for 'crostini-files' cmd line flag.
-      chrome.commandLinePrivate.hasSwitch('crostini-files', (filesEnabled) => {
-        Crostini.IS_CROSTINI_FILES_ENABLED = crostiniEnabled && filesEnabled;
-      });
+      // Check for 'crostini-files' feature.
+      Crostini.IS_CROSTINI_FILES_ENABLED =
+          crostiniEnabled && loadTimeData.getBoolean('CROSTINI_FILES_ENABLED');
 
       // Setup Linux files fake root.
       this.directoryTree.dataModel.linuxFilesItem = crostiniEnabled ?
