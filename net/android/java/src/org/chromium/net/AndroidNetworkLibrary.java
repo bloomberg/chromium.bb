@@ -4,10 +4,12 @@
 
 package org.chromium.net;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
@@ -19,6 +21,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelFileDescriptor;
+import android.os.Process;
 import android.security.NetworkSecurityPolicy;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -65,6 +68,8 @@ class AndroidNetworkLibrary {
     private static Method sIsPrivateDnsActiveMethod;
     // Cached Method for LinkProperties.getPrivateDnsServerName().
     private static Method sGetPrivateDnsServerNameMethod;
+    // Cached value indicating if app has ACCESS_NETWORK_STATE permission.
+    private static Boolean sHaveAccessNetworkState;
 
     // Set of public DNS servers supporting DNS-over-HTTPS.
     private static final Set<InetAddress> sAutoDohServers = new HashSet<>();
@@ -374,6 +379,19 @@ class AndroidNetworkLibrary {
         return null;
     }
 
+    private static boolean haveAccessNetworkState() {
+        // This could be racy if called on multiple threads, but races will
+        // end in the same result so it's not a problem.
+        if (sHaveAccessNetworkState == null) {
+            sHaveAccessNetworkState =
+                    Boolean.valueOf(ContextUtils.getApplicationContext().checkPermission(
+                                            Manifest.permission.ACCESS_NETWORK_STATE,
+                                            Process.myPid(), Process.myUid())
+                            == PackageManager.PERMISSION_GRANTED);
+        }
+        return sHaveAccessNetworkState;
+    }
+
     /**
      * Returns list of IP addresses of DNS servers.
      * If private DNS is active, then returns a 1x1 array.
@@ -381,6 +399,9 @@ class AndroidNetworkLibrary {
     @TargetApi(Build.VERSION_CODES.M)
     @CalledByNative
     private static byte[][] getDnsServers() {
+        if (!haveAccessNetworkState()) {
+            return new byte[0][0];
+        }
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.CONNECTIVITY_SERVICE);
