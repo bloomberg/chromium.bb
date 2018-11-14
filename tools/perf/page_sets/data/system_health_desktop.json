@@ -144,8 +144,8 @@
         "load:media:facebook_photos:2018": {
             "DEFAULT": "system_health_desktop_eba368f102.wprgo"
         },
-        "load:media:flickr": {
-            "DEFAULT": "system_health_desktop_003.wprgo"
+        "load:media:flickr:2018": {
+            "DEFAULT": "system_health_desktop_ae117f4f81.wprgo"
         },
         "load:media:google_images": {
             "DEFAULT": "system_health_desktop_003.wprgo"

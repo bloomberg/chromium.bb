@@ -376,6 +376,12 @@ class LoadImgurStory(_LoadingStory):
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
+class LoadFlickrStory2018(_LoadingStory):
+  NAME = 'load:media:flickr:2018'
+  URL = 'https://www.flickr.com/photos/tags/noiretblanc'
+  TAGS = [story_tags.YEAR_2018]
+
+
 class LoadFacebookPhotosMobileStory(_LoadingStory):
   """Load a page of rihanna's facebook with a photo."""
   NAME = 'load:media:facebook_photos'
