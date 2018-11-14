@@ -4683,10 +4683,10 @@ void ResetAllFlags(flags_ui::FlagsStorage* flags_storage) {
 }
 
 void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage) {
-  const std::set<std::string> switches =
-      FlagsStateSingleton::GetFlagsState()->GetSwitchesFromFlags(flags_storage);
-  const std::set<std::string> features =
-      FlagsStateSingleton::GetFlagsState()->GetFeaturesFromFlags(flags_storage);
+  std::set<std::string> switches;
+  std::set<std::string> features;
+  FlagsStateSingleton::GetFlagsState()->GetSwitchesAndFeaturesFromFlags(
+      flags_storage, &switches, &features);
   ReportAboutFlagsHistogram("Launch.FlagsAtStartup", switches, features);
 }
 
