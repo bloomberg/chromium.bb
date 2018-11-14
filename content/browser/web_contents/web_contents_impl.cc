@@ -650,6 +650,7 @@ WebContentsImpl::~WebContentsImpl() {
   }
 
   color_chooser_.reset();
+  find_request_manager_.reset();
 
   NotifyDisconnected();
 
