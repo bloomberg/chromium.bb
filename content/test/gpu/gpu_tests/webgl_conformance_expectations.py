@@ -661,13 +661,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'stencil-renderbuffer-initialization.html',
         ['linux', 'passthrough', 'amd'], bug=794339)
 
-    # Linux passthrough Intel
-    self.Fail('conformance/renderbuffers/' +
-        'depth-renderbuffer-initialization.html',
-        ['linux', 'passthrough', 'intel'], bug=794339)
-    self.Fail('conformance/renderbuffers/' +
-        'stencil-renderbuffer-initialization.html',
-        ['linux', 'passthrough', 'intel'], bug=794339)
     ####################
     # Android failures #
     ####################
