@@ -20,6 +20,7 @@ import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
+import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -319,6 +320,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         // Terms and services accepted checkbox. The state is passively propagated along to the
         // client when the pay/continue button is clicked.
         mTermsCheckBox = (CheckBox) mRequestView.findViewById(R.id.terms_checkbox);
+        StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
+        String termsString = context.getString(R.string.autofill_assistant_terms, origin);
+        mTermsCheckBox.setText(
+                SpanApplier.applySpans(termsString, new SpanInfo("<b>", "</b>", boldSpan)));
 
         // Create all the possible sections.
         mSectionSeparators = new ArrayList<>();
