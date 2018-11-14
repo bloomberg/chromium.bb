@@ -14,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "components/payments/core/error_logger.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -49,7 +50,7 @@ namespace payments {
 IOSPaymentInstrumentFinder::IOSPaymentInstrumentFinder(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
-    : downloader_(url_loader_factory),
+    : downloader_(std::make_unique<ErrorLogger>(), url_loader_factory),
       image_fetcher_(url_loader_factory),
       payment_request_ui_delegate_(payment_request_ui_delegate),
       num_instruments_to_find_(0),

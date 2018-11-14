@@ -79,12 +79,21 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (provider_hosts->size() == 0U) {
+    // Cannot print this error to the developer console, because the appropriate
+    // developer console has not been found.
+    LOG(ERROR)
+        << "Unable to find the top level web content for retrieving the web "
+           "app manifest of a payment handler for \""
+        << context_url << "\".";
     RunCallbackAndDestroy();
     return;
   }
 
   for (const auto& frame : *provider_hosts) {
-    // Find out the render frame host registering the payment app.
+    // Find out the render frame host registering the payment app. Although a
+    // service worker can manage instruments, the first instrument must be set
+    // on a page that has a link to a web app manifest, so it can be fetched
+    // here.
     RenderFrameHostImpl* render_frame_host =
         RenderFrameHostImpl::FromID(frame.child_id, frame.frame_routing_id);
     if (!render_frame_host ||
@@ -102,9 +111,33 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
     }
     WebContentsImpl* top_level_web_content = static_cast<WebContentsImpl*>(
         WebContents::FromRenderFrameHost(top_level_render_frame_host));
-    if (!top_level_web_content || top_level_web_content->IsHidden() ||
-        !url::IsSameOriginWith(context_url,
+    if (!top_level_web_content) {
+      top_level_render_frame_host->AddMessageToConsole(
+          content::CONSOLE_MESSAGE_LEVEL_ERROR,
+          "Unable to find the web page for \"" + context_url.spec() +
+              "\" to fetch payment handler manifest (for name and icon).");
+      continue;
+    }
+
+    if (top_level_web_content->IsHidden()) {
+      top_level_render_frame_host->AddMessageToConsole(
+          content::CONSOLE_MESSAGE_LEVEL_ERROR,
+          "Unable to fetch payment handler manifest (for name and icon) for "
+          "\"" +
+              context_url.spec() + "\" from a hidden top level web page \"" +
+              top_level_web_content->GetLastCommittedURL().spec() + "\".");
+      continue;
+    }
+
+    if (!url::IsSameOriginWith(context_url,
                                top_level_web_content->GetLastCommittedURL())) {
+      top_level_render_frame_host->AddMessageToConsole(
+          content::CONSOLE_MESSAGE_LEVEL_ERROR,
+          "Unable to fetch payment handler manifest (for name and icon) for "
+          "\"" +
+              context_url.spec() +
+              "\" from a cross-origin top level web page \"" +
+              top_level_web_content->GetLastCommittedURL().spec() + "\".");
       continue;
     }
 
@@ -117,6 +150,13 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
                        base::Unretained(this)));
     return;
   }
+
+  // Cannot print this error to the developer console, because the appropriate
+  // developer console has not been found.
+  LOG(ERROR)
+      << "Unable to find the top level web content for retrieving the web "
+         "app manifest of a payment handler for \""
+      << context_url << "\".";
 
   RunCallbackAndDestroy();
 }

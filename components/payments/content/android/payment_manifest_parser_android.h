@@ -6,6 +6,7 @@
 #define COMPONENTS_PAYMENTS_CONTENT_ANDROID_PAYMENT_MANIFEST_PARSER_ANDROID_H_
 
 #include <jni.h>
+#include <memory>
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
@@ -13,11 +14,13 @@
 
 namespace payments {
 
+class ErrorLogger;
+
 // Android wrapper for the host of the utility process that parses manifest
 // contents.
 class PaymentManifestParserAndroid {
  public:
-  PaymentManifestParserAndroid();
+  explicit PaymentManifestParserAndroid(std::unique_ptr<ErrorLogger> log);
   ~PaymentManifestParserAndroid();
 
   void ParsePaymentMethodManifest(

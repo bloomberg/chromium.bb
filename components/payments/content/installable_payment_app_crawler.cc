@@ -34,6 +34,7 @@ InstallablePaymentAppCrawler::InstallablePaymentAppCrawler(
     PaymentManifestParser* parser,
     PaymentManifestWebDataService* cache)
     : WebContentsObserver(web_contents),
+      log_(web_contents),
       downloader_(downloader),
       parser_(parser),
       number_of_payment_method_manifest_to_download_(0),
@@ -123,9 +124,9 @@ void InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed(
     if (!net::registry_controlled_domains::SameDomainOrHost(
             method_manifest_url, url,
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      WarnIfPossible("Installable payment app from " + url.spec() +
-                     " is not allowed for the method " +
-                     method_manifest_url.spec());
+      log_.Warn("Installable payment handler from \"" + url.spec() +
+                "\" is not allowed for the method \"" +
+                method_manifest_url.spec() + "\" because of different domain.");
       continue;
     }
 
@@ -191,9 +192,13 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
   if (app_info == nullptr)
     return false;
 
+  std::string log_prefix = "Web app manifest \"" + web_app_manifest_url.spec() +
+                           "\" for payment method manifest \"" +
+                           method_manifest_url.spec() + "\": ";
   if (app_info->sw_js_url.empty() || !base::IsStringUTF8(app_info->sw_js_url)) {
-    WarnIfPossible(
-        "The installable payment app's js url is not a non-empty UTF8 string.");
+    log_.Error(log_prefix +
+               "The installable payment handler's service worker JavaScript "
+               "file URL is not a non-empty UTF8 string.");
     return false;
   }
 
@@ -201,17 +206,21 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
   if (!GURL(app_info->sw_js_url).is_valid()) {
     GURL absolute_url = web_app_manifest_url.Resolve(app_info->sw_js_url);
     if (!absolute_url.is_valid()) {
-      WarnIfPossible(
-          "Failed to resolve the installable payment app's js url (" +
-          app_info->sw_js_url + ").");
+      log_.Error(log_prefix +
+                 "Failed to resolve the installable payment handler's service "
+                 "worker JavaScript file URL \"" +
+                 app_info->sw_js_url + "\".");
       return false;
     }
     if (!net::registry_controlled_domains::SameDomainOrHost(
             method_manifest_url, absolute_url,
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      WarnIfPossible("Installable payment app's js url " + absolute_url.spec() +
-                     " is not allowed for the method " +
-                     method_manifest_url.spec());
+      log_.Error(log_prefix +
+                 "Installable payment handler's service worker JavaScript file "
+                 "URL \"" +
+                 absolute_url.spec() + "\" is not allowed for the method \"" +
+                 method_manifest_url.spec() +
+                 "\" because of different domain.");
       return false;
     }
     app_info->sw_js_url = absolute_url.spec();
@@ -221,18 +230,19 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
     GURL absolute_scope =
         web_app_manifest_url.GetWithoutFilename().Resolve(app_info->sw_scope);
     if (!absolute_scope.is_valid()) {
-      WarnIfPossible(
-          "Failed to resolve the installable payment app's registration "
-          "scope (" +
-          app_info->sw_scope + ").");
+      log_.Error(log_prefix +
+                 "Failed to resolve the installable payment handler's "
+                 "registration scope \"" +
+                 app_info->sw_scope + "\".");
       return false;
     }
     if (!net::registry_controlled_domains::SameDomainOrHost(
             method_manifest_url, absolute_scope,
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      WarnIfPossible("Installable payment app's registration scope " +
-                     absolute_scope.spec() + " is not allowed for the method " +
-                     method_manifest_url.spec());
+      log_.Error(
+          log_prefix + "Installable payment handler's registration scope \"" +
+          absolute_scope.spec() + "\" is not allowed for the method \"" +
+          method_manifest_url.spec() + "\" because of different domain.");
       return false;
     }
     app_info->sw_scope = absolute_scope.spec();
@@ -242,14 +252,18 @@ bool InstallablePaymentAppCrawler::CompleteAndStorePaymentWebAppInfoIfValid(
   if (!content::PaymentAppProvider::GetInstance()->IsValidInstallablePaymentApp(
           web_app_manifest_url, GURL(app_info->sw_js_url),
           GURL(app_info->sw_scope), &error_message)) {
-    WarnIfPossible(error_message);
+    log_.Error(log_prefix + error_message);
     return false;
   }
 
   // TODO(crbug.com/782270): Support multiple installable payment apps for a
   // payment method.
-  if (installable_apps_.find(method_manifest_url) != installable_apps_.end())
+  if (installable_apps_.find(method_manifest_url) != installable_apps_.end()) {
+    log_.Error(log_prefix +
+               "Multiple installable payment handlers from for a single "
+               "payment method: not yet supported.");
     return false;
+  }
 
   installable_apps_[method_manifest_url] = std::move(app_info);
 
@@ -260,15 +274,23 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
     const GURL& method_manifest_url,
     const GURL& web_app_manifest_url,
     std::unique_ptr<std::vector<PaymentManifestParser::WebAppIcon>> icons) {
-  if (icons == nullptr || icons->empty())
+  if (icons == nullptr || icons->empty()) {
+    log_.Error(
+        "No valid icon information for installable payment handler found in "
+        "web app manifest \"" +
+        web_app_manifest_url.spec() + "\" for payment handler manifest \"" +
+        method_manifest_url.spec() + "\".");
     return;
+  }
 
   std::vector<blink::Manifest::ImageResource> manifest_icons;
   for (const auto& icon : *icons) {
     if (icon.src.empty() || !base::IsStringUTF8(icon.src)) {
-      WarnIfPossible(
-          "The installable payment app's icon src url is not a non-empty UTF8 "
-          "string.");
+      log_.Warn(
+          "The installable payment handler's icon src URL is not a non-empty "
+          "UTF8 string in web app manifest \"" +
+          web_app_manifest_url.spec() + "\" for payment handler manifest \"" +
+          method_manifest_url.spec() + "\".");
       continue;
     }
 
@@ -276,9 +298,12 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
     if (!icon_src.is_valid()) {
       icon_src = web_app_manifest_url.Resolve(icon.src);
       if (!icon_src.is_valid()) {
-        WarnIfPossible(
-            "Failed to resolve the installable payment app's icon src url (" +
-            icon.src + ").");
+        log_.Warn(
+            "Failed to resolve the installable payment handler's icon src url "
+            "\"" +
+            icon.src + "\" in web app manifest \"" +
+            web_app_manifest_url.spec() + "\" for payment handler manifest \"" +
+            method_manifest_url.spec() + "\".");
         continue;
       }
     }
@@ -293,8 +318,13 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
     manifest_icons.emplace_back(manifest_icon);
   }
 
-  if (manifest_icons.empty())
+  if (manifest_icons.empty()) {
+    log_.Error("No valid icons found in web app manifest \"" +
+               web_app_manifest_url.spec() +
+               "\" for payment handler manifest \"" +
+               method_manifest_url.spec() + "\".");
     return;
+  }
 
   // TODO(crbug.com/782270): Choose appropriate icon size dynamically on
   // different platforms. Here we choose a large ideal icon size to be big
@@ -306,15 +336,22 @@ void InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
       manifest_icons, kPaymentAppIdealIconSize, kPaymentAppMinimumIconSize,
       blink::Manifest::ImageResource::Purpose::ANY);
   if (!best_icon_url.is_valid()) {
-    WarnIfPossible(
-        "No suitable icon found in the installabble payment app's manifest (" +
-        web_app_manifest_url.spec() + ").");
+    log_.Error("No suitable icon found in web app manifest \"" +
+               web_app_manifest_url.spec() +
+               "\" for payment handler manifest \"" +
+               method_manifest_url.spec() + "\".");
     return;
   }
 
   // Stop if the web_contents is gone.
-  if (web_contents() == nullptr)
+  if (web_contents() == nullptr) {
+    log_.Error(
+        "Cannot download icons after the webpage has been closed (web app "
+        "manifest \"" +
+        web_app_manifest_url.spec() + "\" for payment handler manifest \"" +
+        method_manifest_url.spec() + "\").");
     return;
+  }
 
   number_of_web_app_icons_to_download_and_decode_++;
   bool can_download_icon = content::ManifestIconDownloader::Download(
@@ -333,10 +370,10 @@ void InstallablePaymentAppCrawler::OnPaymentWebAppIconDownloadAndDecoded(
     const SkBitmap& icon) {
   number_of_web_app_icons_to_download_and_decode_--;
   if (icon.drawsNothing()) {
-    WarnIfPossible(
-        "Failed to download or decode installable payment app's icon for web "
-        "app manifest " +
-        web_app_manifest_url.spec() + ".");
+    log_.Error(
+        "Failed to download or decode the icon from web app manifest \"" +
+        web_app_manifest_url.spec() + "\" for payment handler manifest \"" +
+        method_manifest_url.spec() + "\".");
   } else {
     auto it = installable_apps_.find(method_manifest_url);
     DCHECK(it != installable_apps_.end());
@@ -360,15 +397,6 @@ void InstallablePaymentAppCrawler::FinishCrawlingPaymentAppsIfReady() {
 
   std::move(callback_).Run(std::move(installable_apps_));
   std::move(finished_using_resources_).Run();
-}
-
-void InstallablePaymentAppCrawler::WarnIfPossible(const std::string& message) {
-  if (web_contents()) {
-    web_contents()->GetMainFrame()->AddMessageToConsole(
-        content::ConsoleMessageLevel::CONSOLE_MESSAGE_LEVEL_WARNING, message);
-  } else {
-    LOG(WARNING) << message;
-  }
 }
 
 }  // namespace payments.

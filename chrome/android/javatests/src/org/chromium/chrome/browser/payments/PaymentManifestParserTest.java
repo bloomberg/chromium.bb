@@ -67,7 +67,7 @@ public class PaymentManifestParserTest implements ManifestParseCallback {
     @Before
     public void setUp() throws Throwable {
         mRule.startMainActivityOnBlankPage();
-        mRule.runOnUiThread((Runnable) () -> mParser.createNative());
+        mRule.runOnUiThread((Runnable) () -> mParser.createNative(mRule.getWebContents()));
         mWebAppManifestUris = null;
         mSupportedOrigins = null;
         mAllOriginsSupported = false;

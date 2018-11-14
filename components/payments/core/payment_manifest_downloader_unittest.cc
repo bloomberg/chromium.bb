@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/payments/core/error_logger.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -23,7 +24,8 @@ class PaymentMethodManifestDownloaderTest : public testing::Test {
         shared_url_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_factory_)),
-        downloader_(shared_url_loader_factory_) {
+        downloader_(std::make_unique<ErrorLogger>(),
+                    shared_url_loader_factory_) {
     downloader_.DownloadPaymentMethodManifest(
         test_url_,
         base::BindOnce(&PaymentMethodManifestDownloaderTest::OnManifestDownload,
@@ -278,7 +280,8 @@ class WebAppManifestDownloaderTest : public testing::Test {
         shared_url_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_factory_)),
-        downloader_(shared_url_loader_factory_) {
+        downloader_(std::make_unique<ErrorLogger>(),
+                    shared_url_loader_factory_) {
     downloader_.DownloadWebAppManifest(
         test_url_,
         base::BindOnce(&WebAppManifestDownloaderTest::OnManifestDownload,
