@@ -138,7 +138,8 @@ Non-Googlers can email one of the people in
 * Add chromium-third-party@google.com as a reviewer on your change. This
   will trigger an automatic round-robin assignment of the review to an
   appropriate reviewer. This list does not receive or deliver email, so only
-  use it as a reviewer, not for other communication.
+  use it as a reviewer, not for other communication. (Internally, see
+  b/119558132 for details about how this is configured.)
 
 Please send separate emails to the eng review and security lists.
 
