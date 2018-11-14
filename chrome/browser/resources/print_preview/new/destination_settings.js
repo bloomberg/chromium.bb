@@ -59,7 +59,7 @@ Polymer({
    */
   shouldDisableButton_: function() {
     return !this.destinationStore ||
-        (this.disabled &&
+        (this.disabled && this.state != print_preview_new.State.NOT_READY &&
          this.state != print_preview_new.State.INVALID_PRINTER);
   },
 
