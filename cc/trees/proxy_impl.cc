@@ -40,13 +40,22 @@ unsigned int nextBeginFrameId = 0;
 
 }  // namespace
 
+// Ensures that a CompletionEvent is always signaled.
+class ScopedCompletionEvent {
+ public:
+  explicit ScopedCompletionEvent(CompletionEvent* event) : event_(event) {}
+  ~ScopedCompletionEvent() { event_->Signal(); }
+
+ private:
+  CompletionEvent* const event_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedCompletionEvent);
+};
+
 ProxyImpl::ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
                      LayerTreeHost* layer_tree_host,
                      TaskRunnerProvider* task_runner_provider)
     : layer_tree_host_id_(layer_tree_host->GetId()),
       commit_completion_waits_for_activation_(false),
-      commit_completion_event_(nullptr),
-      activation_completion_event_(nullptr),
       next_frame_is_newly_committed_frame_(false),
       inside_draw_(false),
       input_throttled_until_commit_(false),
@@ -261,7 +270,8 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
 
   host_impl_->ReadyToCommit();
 
-  commit_completion_event_ = completion;
+  commit_completion_event_ =
+      std::make_unique<ScopedCompletionEvent>(completion);
   commit_completion_waits_for_activation_ = hold_commit_for_activation;
 
   DCHECK(!blocked_main_commit().layer_tree_host);
@@ -440,7 +450,6 @@ void ProxyImpl::DidActivateSyncTree() {
   if (activation_completion_event_) {
     TRACE_EVENT_INSTANT0("cc", "ReleaseCommitbyActivation",
                          TRACE_EVENT_SCOPE_THREAD);
-    activation_completion_event_->Signal();
     activation_completion_event_ = nullptr;
   }
 }
@@ -578,9 +587,7 @@ void ProxyImpl::ScheduledActionCommit() {
     // already activated if there was no work to be done.
     TRACE_EVENT_INSTANT0("cc", "HoldCommit", TRACE_EVENT_SCOPE_THREAD);
     commit_completion_waits_for_activation_ = false;
-    activation_completion_event_ = commit_completion_event_;
-  } else {
-    commit_completion_event_->Signal();
+    activation_completion_event_ = std::move(commit_completion_event_);
   }
   commit_completion_event_ = nullptr;
 
