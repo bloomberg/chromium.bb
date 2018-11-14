@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 
@@ -59,11 +60,22 @@ void BrightnessMonitorImpl::ScreenBrightnessChanged(
     return;
   }
 
+  double brightness_percent_received = change.percent();
+  if (brightness_percent_received < 0.0 ||
+      brightness_percent_received > 100.0) {
+    // Brightness should not be outside the range of [0,100]. If it's outside
+    // this range after initialization completes successfully, we clip the value
+    // instead of throwing it away.
+    LogDataError(DataError::kBrightnessPercent);
+    brightness_percent_received =
+        std::max(0.0, std::min(100.0, brightness_percent_received));
+  }
+
   if (change.cause() ==
       power_manager::BacklightBrightnessChange_Cause_USER_REQUEST) {
     // This is the only brightness change caused by explicit user selection.
     NotifyUserBrightnessChangeRequested();
-    user_brightness_percent_ = base::Optional<double>(change.percent());
+    user_brightness_percent_ = brightness_percent_received;
     StartBrightnessSampleTimer();
     return;
   }
@@ -75,7 +87,7 @@ void BrightnessMonitorImpl::ScreenBrightnessChanged(
     brightness_sample_timer_.Stop();
     NotifyUserBrightnessChanged();
   }
-  stable_brightness_percent_ = base::Optional<double>(change.percent());
+  stable_brightness_percent_ = brightness_percent_received;
 }
 
 void BrightnessMonitorImpl::OnPowerManagerServiceAvailable(
@@ -94,7 +106,10 @@ void BrightnessMonitorImpl::OnReceiveInitialBrightnessPercent(
     const base::Optional<double> brightness_percent) {
   DCHECK_EQ(brightness_monitor_status_, Status::kInitializing);
 
-  if (brightness_percent) {
+  if (brightness_percent && *brightness_percent >= 0.0 &&
+      *brightness_percent <= 100.0) {
+    // Brightness should not be outside the range of [0,100]. If it's outside
+    // this range on initialization, then we disable the monitor.
     stable_brightness_percent_ = brightness_percent;
     brightness_monitor_status_ = Status::kSuccess;
   } else {

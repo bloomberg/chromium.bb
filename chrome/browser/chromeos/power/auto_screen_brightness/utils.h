@@ -15,6 +15,17 @@ namespace chromeos {
 namespace power {
 namespace auto_screen_brightness {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class DataError {
+  kAlsValue = 0,
+  kBrightnessPercent = 1,
+  kMaxValue = kBrightnessPercent
+};
+
+// Logs data errors to UMA.
+void LogDataError(DataError error);
+
 // Returns natural log of 1+|value|.
 double ConvertToLog(double value);
 
