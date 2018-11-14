@@ -252,6 +252,9 @@ void LayoutTestBackgroundFetchDelegate::Abort(
   // TODO(peter): Implement the ability to abort the |job_unique_id|.
 }
 
+void LayoutTestBackgroundFetchDelegate::MarkJobComplete(
+    const std::string& job_unique_id) {}
+
 void LayoutTestBackgroundFetchDelegate::UpdateUI(
     const std::string& job_unique_id,
     const base::Optional<std::string>& title,

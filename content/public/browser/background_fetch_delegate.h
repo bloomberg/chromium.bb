@@ -137,6 +137,9 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
   // Aborts any downloads associated with |job_unique_id|.
   virtual void Abort(const std::string& job_unique_id) = 0;
 
+  // Called after the fetch has completed so that the delegate can clean up.
+  virtual void MarkJobComplete(const std::string& job_unique_id) = 0;
+
   // Updates the UI shown for the fetch job associated with |job_unique_id| to
   // display a new |title| or |icon|.
   virtual void UpdateUI(const std::string& job_unique_id,

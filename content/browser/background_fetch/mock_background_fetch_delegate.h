@@ -83,12 +83,17 @@ class MockBackgroundFetchDelegate : public BackgroundFetchDelegate {
                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
                    const net::HttpRequestHeaders& headers) override;
   void Abort(const std::string& job_unique_id) override;
+  void MarkJobComplete(const std::string& job_unique_id) override;
   void UpdateUI(const std::string& job_unique_id,
                 const base::Optional<std::string>& title,
                 const base::Optional<SkBitmap>& icon) override;
 
   void RegisterResponse(const GURL& url,
                         std::unique_ptr<TestResponse> response);
+
+  const std::set<std::string>& completed_jobs() const {
+    return completed_jobs_;
+  }
 
  private:
   // Posts (to the default task runner) a callback that is only run if the job
@@ -112,6 +117,9 @@ class MockBackgroundFetchDelegate : public BackgroundFetchDelegate {
 
   // Set of unique job ids that have been aborted.
   std::set<std::string> aborted_jobs_;
+
+  // Set of unique job ids that have been completed.
+  std::set<std::string> completed_jobs_;
 
   // Map from download GUIDs to unique job ids.
   std::map<std::string, std::string> download_guid_to_job_id_map_;

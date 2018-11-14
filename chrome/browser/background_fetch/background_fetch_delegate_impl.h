@@ -65,6 +65,7 @@ class BackgroundFetchDelegateImpl
                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
                    const net::HttpRequestHeaders& headers) override;
   void Abort(const std::string& job_unique_id) override;
+  void MarkJobComplete(const std::string& job_unique_id) override;
   void UpdateUI(const std::string& job_unique_id,
                 const base::Optional<std::string>& title,
                 const base::Optional<SkBitmap>& icon) override;
@@ -122,6 +123,9 @@ class BackgroundFetchDelegateImpl
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BackgroundFetchBrowserTest,
+                           FetchesRunToCompletionAndUpdateTitle_Fetched);
+
   struct JobDetails {
     // If a job is part of the |job_details_map_|, it will have one of these
     // states.

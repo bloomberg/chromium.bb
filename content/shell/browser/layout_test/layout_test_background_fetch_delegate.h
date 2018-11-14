@@ -40,6 +40,7 @@ class LayoutTestBackgroundFetchDelegate : public BackgroundFetchDelegate {
                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
                    const net::HttpRequestHeaders& headers) override;
   void Abort(const std::string& job_unique_id) override;
+  void MarkJobComplete(const std::string& job_unique_id) override;
   void UpdateUI(const std::string& job_unique_id,
                 const base::Optional<std::string>& title,
                 const base::Optional<SkBitmap>& icon) override;

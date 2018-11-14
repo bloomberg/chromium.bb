@@ -68,9 +68,12 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
                          base::Unretained(this), job_unique_id, guid));
     }
   }
+
   void Abort(const std::string& job_unique_id) override {
     aborted_jobs_.insert(job_unique_id);
   }
+
+  void MarkJobComplete(const std::string& job_unique_id) override {}
 
   void UpdateUI(const std::string& job_unique_id,
                 const base::Optional<std::string>& title,
@@ -257,7 +260,6 @@ TEST_F(BackgroundFetchDelegateProxyTest, Abort) {
   delegate_proxy_.Abort(kExampleUniqueId);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(controller.request_started_) << "Aborted job started";
   EXPECT_FALSE(controller.request_completed_) << "Aborted job completed";
   EXPECT_TRUE(controller2.request_started_) << "Normal job did not start";
   EXPECT_TRUE(controller2.request_completed_) << "Normal job did not complete";

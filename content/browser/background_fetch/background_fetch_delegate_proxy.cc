@@ -168,6 +168,13 @@ class BackgroundFetchDelegateProxy::Core
       delegate_->Abort(job_unique_id);
   }
 
+  void MarkJobComplete(const std::string& job_unique_id) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    if (delegate_)
+      delegate_->MarkJobComplete(job_unique_id);
+  }
+
   void UpdateUI(const std::string& job_unique_id,
                 const base::Optional<std::string>& title,
                 const base::Optional<SkBitmap>& icon) {
@@ -381,7 +388,13 @@ void BackgroundFetchDelegateProxy::Abort(const std::string& job_unique_id) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&Core::Abort, ui_core_ptr_, job_unique_id));
+}
 
+void BackgroundFetchDelegateProxy::MarkJobComplete(
+    const std::string& job_unique_id) {
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&Core::MarkJobComplete, ui_core_ptr_, job_unique_id));
   job_details_map_.erase(job_unique_id);
 }
 
