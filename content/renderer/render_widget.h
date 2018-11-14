@@ -725,13 +725,6 @@ class CONTENT_EXPORT RenderWidget
 
   gfx::ColorSpace GetRasterColorSpace() const;
 
-  void SendInputEventAck(blink::WebInputEvent::Type type,
-                         uint32_t touch_event_id,
-                         InputEventAckState ack_state,
-                         const ui::LatencyInfo& latency_info,
-                         std::unique_ptr<ui::DidOverscrollParams>,
-                         base::Optional<cc::TouchAction>);
-
   void UpdateZoom(double zoom_level);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
