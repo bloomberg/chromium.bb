@@ -82,28 +82,6 @@ void RasterDecoderTestBase::SetUp() {
   InitDecoder(InitState());
 }
 
-void RasterDecoderTestBase::AddExpectationsForVertexAttribManager() {
-  for (GLint ii = 0; ii < kNumVertexAttribs; ++ii) {
-    EXPECT_CALL(*gl_, VertexAttrib4f(ii, 0.0f, 0.0f, 0.0f, 1.0f))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-}
-
-void RasterDecoderTestBase::AddExpectationsForBindVertexArrayOES() {
-  if (group_->feature_info()->feature_flags().native_vertex_array_object) {
-    EXPECT_CALL(*gl_, BindVertexArrayOES(_)).Times(1).RetiresOnSaturation();
-  } else {
-    for (uint32_t vv = 0; vv < group_->max_vertex_attribs(); ++vv) {
-      AddExpectationsForRestoreAttribState(vv);
-    }
-
-    EXPECT_CALL(*gl_, BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-}
-
 void RasterDecoderTestBase::AddExpectationsForRestoreAttribState(
     GLuint attrib) {
   EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, _))
@@ -232,18 +210,6 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   attribs.lose_context_when_out_of_memory =
       init.lose_context_when_out_of_memory;
   attribs.context_type = context_type;
-
-  if (group_->feature_info()->feature_flags().native_vertex_array_object) {
-    EXPECT_CALL(*gl_, GenVertexArraysOES(1, _))
-        .WillOnce(SetArgPointee<1>(kServiceVertexArrayId))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, BindVertexArrayOES(_)).Times(1).RetiresOnSaturation();
-  }
-
-  if (group_->feature_info()->workarounds().init_vertex_attributes)
-    AddExpectationsForVertexAttribManager();
-
-  AddExpectationsForBindVertexArrayOES();
 
   bool use_default_textures = bind_generates_resource;
   for (GLint tt = 0; tt < gles2::TestHelper::kNumTextureUnits; ++tt) {
@@ -498,7 +464,6 @@ void RasterDecoderTestBase::SetupClearTextureExpectations(
 #ifndef COMPILER_MSVC
 const GLint RasterDecoderTestBase::kMaxTextureSize;
 const GLint RasterDecoderTestBase::kNumTextureUnits;
-const GLint RasterDecoderTestBase::kNumVertexAttribs;
 
 const GLint RasterDecoderTestBase::kViewportX;
 const GLint RasterDecoderTestBase::kViewportY;
