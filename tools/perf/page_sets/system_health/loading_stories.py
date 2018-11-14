@@ -342,6 +342,12 @@ class LoadGoogleImagesStory(_LoadingStory):
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
+class LoadGoogleImagesStory2018(_LoadingStory):
+  NAME = 'load:media:google_images:2018'
+  URL = 'https://www.google.co.uk/search?tbm=isch&q=love'
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
+
+
 class LoadSoundCloudStory(_LoadingStory):
   # No way to disable autoplay on desktop. Album artwork doesn't load due to
   # https://github.com/chromium/web-page-replay/issues/73.
