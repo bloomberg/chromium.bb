@@ -7,7 +7,11 @@
 #include "base/mac/foundation_util.h"
 #include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/password_store.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
+#import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
+#include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_coordinator.h"
@@ -24,7 +28,8 @@
     ManualFillAccessoryViewControllerDelegate,
     AddressCoordinatorDelegate,
     CardCoordinatorDelegate,
-    PasswordCoordinatorDelegate>
+    PasswordCoordinatorDelegate,
+    PasswordFetcherDelegate>
 
 // The Mediator for the input accessory view controller.
 @property(nonatomic, strong)
@@ -42,6 +47,9 @@
 // in the forms.
 @property(nonatomic, strong)
     ManualFillInjectionHandler* manualFillInjectionHandler;
+
+// The password fetcher used to inform if passwords are available.
+@property(nonatomic, strong) PasswordFetcher* passwordFetcher;
 
 // The WebStateList for this instance. Used to instantiate the child
 // coordinators lazily.
@@ -78,6 +86,17 @@
     _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
         initWithConsumer:self.formInputAccessoryViewController
             webStateList:webStateList];
+
+    auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+        browserState, ServiceAccessType::EXPLICIT_ACCESS);
+    // In BVC unit tests the password store doesn't exist. Skip creating the
+    // fetcher.
+    // TODO:(crbug.com/878388) Remove this workaround.
+    if (passwordStore) {
+      _passwordFetcher =
+          [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
+                                                delegate:self];
+    }
   }
   return self;
 }
@@ -193,6 +212,15 @@
 
 - (void)openAddressSettings {
   [self.delegate openAddressSettings];
+}
+
+#pragma mark - PasswordFetcherDelegate
+
+- (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
+      didFetchPasswords:
+          (std::vector<std::unique_ptr<autofill::PasswordForm>>&)passwords {
+  self.manualFillAccessoryViewController.passwordButtonHidden =
+      passwords.empty();
 }
 
 @end

@@ -74,22 +74,24 @@ class PasswordFetcherTest : public PlatformTest {
         .get();
   }
 
-  // Creates and adds a saved password form.
-  void AddSavedForm1() {
-    auto form = std::make_unique<autofill::PasswordForm>();
-    form->origin = GURL("http://www.example.com/accounts/LoginAuth");
-    form->action = GURL("http://www.example.com/accounts/Login");
-    form->username_element = base::ASCIIToUTF16("Email");
-    form->username_value = base::ASCIIToUTF16("test@egmail.com");
-    form->password_element = base::ASCIIToUTF16("Passwd");
-    form->password_value = base::ASCIIToUTF16("test");
-    form->submit_element = base::ASCIIToUTF16("signIn");
-    form->signon_realm = "http://www.example.com/";
-    form->preferred = false;
-    form->scheme = autofill::PasswordForm::SCHEME_HTML;
-    form->blacklisted_by_user = false;
-    GetPasswordStore()->AddLogin(*std::move(form));
+  autofill::PasswordForm Form1() {
+    autofill::PasswordForm form;
+    form.origin = GURL("http://www.example.com/accounts/LoginAuth");
+    form.action = GURL("http://www.example.com/accounts/Login");
+    form.username_element = base::ASCIIToUTF16("Email");
+    form.username_value = base::ASCIIToUTF16("test@egmail.com");
+    form.password_element = base::ASCIIToUTF16("Passwd");
+    form.password_value = base::ASCIIToUTF16("test");
+    form.submit_element = base::ASCIIToUTF16("signIn");
+    form.signon_realm = "http://www.example.com/";
+    form.preferred = false;
+    form.scheme = autofill::PasswordForm::SCHEME_HTML;
+    form.blacklisted_by_user = false;
+    return form;
   }
+
+  // Creates and adds a saved password form.
+  void AddSavedForm1() { GetPasswordStore()->AddLogin(Form1()); }
 
   // Creates and adds a saved password form.
   void AddSavedForm2() {
@@ -224,6 +226,34 @@ TEST_F(PasswordFetcherTest, IgnoresDuplicated) {
       true, base::TimeDelta::FromSeconds(1000));
 
   EXPECT_EQ(passwordFetcherDelegate.passwordNumber, 1u);
+  EXPECT_TRUE(passwordFetcher);
+}
+
+// Tests PasswordFetcher receives 0 passwords.
+TEST_F(PasswordFetcherTest, ReceivesZeroPasswords) {
+  AddSavedForm1();
+  TestPasswordFetcherDelegate* passwordFetcherDelegate =
+      [[TestPasswordFetcherDelegate alloc] init];
+  auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+      chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS);
+  PasswordFetcher* passwordFetcher =
+      [[PasswordFetcher alloc] initWithPasswordStore:passwordStore
+                                            delegate:passwordFetcherDelegate];
+  WaitUntilCondition(
+      ^bool {
+        return passwordFetcherDelegate.passwordNumber > 0;
+      },
+      true, base::TimeDelta::FromSeconds(1000));
+  EXPECT_EQ(passwordFetcherDelegate.passwordNumber, 1u);
+
+  GetPasswordStore()->RemoveLogin(Form1());
+
+  WaitUntilCondition(
+      ^bool {
+        return passwordFetcherDelegate.passwordNumber == 0;
+      },
+      true, base::TimeDelta::FromSeconds(1000));
+  EXPECT_EQ(passwordFetcherDelegate.passwordNumber, 0u);
   EXPECT_TRUE(passwordFetcher);
 }
 

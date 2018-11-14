@@ -18,8 +18,7 @@ SavePasswordsConsumer::~SavePasswordsConsumer() = default;
 
 void SavePasswordsConsumer::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  if (!results.empty())
-    [delegate_ onGetPasswordStoreResults:results];
+  [delegate_ onGetPasswordStoreResults:results];
 }
 
 }  // namespace ios
