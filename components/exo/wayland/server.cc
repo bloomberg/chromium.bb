@@ -96,6 +96,7 @@
 #include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_input_delegate.h"
+#include "components/exo/wayland/wayland_pointer_delegate.h"
 #include "components/exo/wayland/zcr_notification_shell.h"
 #include "components/exo/wayland/zwp_text_input_manager.h"
 #include "components/exo/wm_helper.h"
@@ -3558,133 +3559,6 @@ void bind_data_device_manager(wl_client* client,
 
 ////////////////////////////////////////////////////////////////////////////////
 // wl_pointer_interface:
-
-// Pointer delegate class that accepts events for surfaces owned by the same
-// client as a pointer resource.
-class WaylandPointerDelegate : public WaylandInputDelegate,
-                               public PointerDelegate {
- public:
-  explicit WaylandPointerDelegate(wl_resource* pointer_resource)
-      : pointer_resource_(pointer_resource) {}
-
-  // Overridden from PointerDelegate:
-  void OnPointerDestroying(Pointer* pointer) override { delete this; }
-  bool CanAcceptPointerEventsForSurface(Surface* surface) const override {
-    wl_resource* surface_resource = GetSurfaceResource(surface);
-    // We can accept events for this surface if the client is the same as the
-    // pointer.
-    return surface_resource &&
-           wl_resource_get_client(surface_resource) == client();
-  }
-  void OnPointerEnter(Surface* surface,
-                      const gfx::PointF& location,
-                      int button_flags) override {
-    wl_resource* surface_resource = GetSurfaceResource(surface);
-    DCHECK(surface_resource);
-    // Should we be sending button events to the client before the enter event
-    // if client's pressed button state is different from |button_flags|?
-    wl_pointer_send_enter(pointer_resource_, next_serial(), surface_resource,
-                          wl_fixed_from_double(location.x()),
-                          wl_fixed_from_double(location.y()));
-  }
-  void OnPointerLeave(Surface* surface) override {
-    wl_resource* surface_resource = GetSurfaceResource(surface);
-    DCHECK(surface_resource);
-    wl_pointer_send_leave(pointer_resource_, next_serial(), surface_resource);
-  }
-  void OnPointerMotion(base::TimeTicks time_stamp,
-                       const gfx::PointF& location) override {
-    SendTimestamp(time_stamp);
-    wl_pointer_send_motion(
-        pointer_resource_, TimeTicksToMilliseconds(time_stamp),
-        wl_fixed_from_double(location.x()), wl_fixed_from_double(location.y()));
-  }
-  void OnPointerButton(base::TimeTicks time_stamp,
-                       int button_flags,
-                       bool pressed) override {
-    struct {
-      ui::EventFlags flag;
-      uint32_t value;
-    } buttons[] = {
-        {ui::EF_LEFT_MOUSE_BUTTON, BTN_LEFT},
-        {ui::EF_RIGHT_MOUSE_BUTTON, BTN_RIGHT},
-        {ui::EF_MIDDLE_MOUSE_BUTTON, BTN_MIDDLE},
-        {ui::EF_FORWARD_MOUSE_BUTTON, BTN_FORWARD},
-        {ui::EF_BACK_MOUSE_BUTTON, BTN_BACK},
-    };
-    uint32_t serial = next_serial();
-    for (auto button : buttons) {
-      if (button_flags & button.flag) {
-        SendTimestamp(time_stamp);
-        wl_pointer_send_button(
-            pointer_resource_, serial, TimeTicksToMilliseconds(time_stamp),
-            button.value, pressed ? WL_POINTER_BUTTON_STATE_PRESSED
-                                  : WL_POINTER_BUTTON_STATE_RELEASED);
-      }
-    }
-  }
-  void OnPointerScroll(base::TimeTicks time_stamp,
-                       const gfx::Vector2dF& offset,
-                       bool discrete) override {
-    // Same as Weston, the reference compositor.
-    const double kAxisStepDistance = 10.0 / ui::MouseWheelEvent::kWheelDelta;
-
-    if (wl_resource_get_version(pointer_resource_) >=
-        WL_POINTER_AXIS_SOURCE_SINCE_VERSION) {
-      int32_t axis_source = discrete ? WL_POINTER_AXIS_SOURCE_WHEEL
-                                     : WL_POINTER_AXIS_SOURCE_FINGER;
-      wl_pointer_send_axis_source(pointer_resource_, axis_source);
-    }
-
-    double x_value = offset.x() * kAxisStepDistance;
-    SendTimestamp(time_stamp);
-    wl_pointer_send_axis(pointer_resource_, TimeTicksToMilliseconds(time_stamp),
-                         WL_POINTER_AXIS_HORIZONTAL_SCROLL,
-                         wl_fixed_from_double(-x_value));
-
-    double y_value = offset.y() * kAxisStepDistance;
-    SendTimestamp(time_stamp);
-    wl_pointer_send_axis(pointer_resource_, TimeTicksToMilliseconds(time_stamp),
-                         WL_POINTER_AXIS_VERTICAL_SCROLL,
-                         wl_fixed_from_double(-y_value));
-  }
-  void OnPointerScrollStop(base::TimeTicks time_stamp) override {
-    if (wl_resource_get_version(pointer_resource_) >=
-        WL_POINTER_AXIS_STOP_SINCE_VERSION) {
-      SendTimestamp(time_stamp);
-      wl_pointer_send_axis_stop(pointer_resource_,
-                                TimeTicksToMilliseconds(time_stamp),
-                                WL_POINTER_AXIS_HORIZONTAL_SCROLL);
-      SendTimestamp(time_stamp);
-      wl_pointer_send_axis_stop(pointer_resource_,
-                                TimeTicksToMilliseconds(time_stamp),
-                                WL_POINTER_AXIS_VERTICAL_SCROLL);
-    }
-  }
-  void OnPointerFrame() override {
-    if (wl_resource_get_version(pointer_resource_) >=
-        WL_POINTER_FRAME_SINCE_VERSION) {
-      wl_pointer_send_frame(pointer_resource_);
-    }
-    wl_client_flush(client());
-  }
-
- private:
-  // The client who own this pointer instance.
-  wl_client* client() const {
-    return wl_resource_get_client(pointer_resource_);
-  }
-
-  // Returns the next serial to use for pointer events.
-  uint32_t next_serial() const {
-    return wl_display_next_serial(wl_client_get_display(client()));
-  }
-
-  // The pointer resource associated with the pointer.
-  wl_resource* const pointer_resource_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandPointerDelegate);
-};
 
 void pointer_set_cursor(wl_client* client,
                         wl_resource* resource,
