@@ -425,9 +425,13 @@ inline bool PaintFastBottomLayer(Node* node,
   // so snap to integers. This is particuarly important for sprite maps.
   // Calculation up to this point, in LayoutUnits, can lead to small variations
   // from integer size, so it is safe to round without introducing major issues.
-  const FloatRect src_rect =
-      FloatRect(RoundedIntRect(Image::ComputeSubsetForBackground(
-          image_tile, dest_rect_for_subset, intrinsic_tile_size)));
+  const FloatRect unrounded_subset = Image::ComputeSubsetForBackground(
+      image_tile, dest_rect_for_subset, intrinsic_tile_size);
+  FloatRect src_rect = FloatRect(RoundedIntRect(unrounded_subset));
+
+  // If we have rounded the image size to 0, revert the rounding.
+  if (src_rect.IsEmpty())
+    src_rect = unrounded_subset;
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",
