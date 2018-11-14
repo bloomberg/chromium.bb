@@ -24,8 +24,8 @@ source_set("extensions_util_lib") {
   deps = [
     ":chrome_util_lib",
     "//base:base",
-    "//chrome/chrome_cleaner/json_parser",
     "//chrome/chrome_cleaner/os:common_os",
+    "//chrome/chrome_cleaner/parsers/json_parser",
   ]
 }
 
@@ -40,7 +40,7 @@ source_set("unittest_sources") {
     ":extensions_util_lib",
     "//base:base",
     "//base/test:test_support",
-    "//chrome/chrome_cleaner/json_parser",
+    "//chrome/chrome_cleaner/parsers/json_parser",
     "//chrome/chrome_cleaner/test:test_util",
     "//testing/gtest",
   ]

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CHROME_CLEANER_JSON_PARSER_JSON_PARSER_API_H_
-#define CHROME_CHROME_CLEANER_JSON_PARSER_JSON_PARSER_API_H_
+#ifndef CHROME_CHROME_CLEANER_PARSERS_JSON_PARSER_JSON_PARSER_API_H_
+#define CHROME_CHROME_CLEANER_PARSERS_JSON_PARSER_JSON_PARSER_API_H_
 
 #include "base/callback.h"
 #include "base/optional.h"
@@ -24,4 +24,4 @@ class JsonParserAPI {
 
 }  // namespace chrome_cleaner
 
-#endif  // CHROME_CHROME_CLEANER_JSON_PARSER_JSON_PARSER_API_H_
+#endif  // CHROME_CHROME_CLEANER_PARSERS_JSON_PARSER_JSON_PARSER_API_H_

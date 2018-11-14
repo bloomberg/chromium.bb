@@ -16,12 +16,6 @@ static_library("json_splicer") {
 static_library("json_parser") {
   sources = [
     "json_parser_api.h",
-    "json_parser_impl.cc",
-    "json_parser_impl.h",
-    "sandbox_setup_hooks.cc",
-    "sandbox_setup_hooks.h",
-    "sandbox_target_hooks.cc",
-    "sandbox_target_hooks.h",
     "sandboxed_json_parser.cc",
     "sandboxed_json_parser.h",
     "test_json_parser.cc",
@@ -31,10 +25,12 @@ static_library("json_parser") {
   deps = [
     "//base:base",
     "//chrome/chrome_cleaner/constants:common_strings",
-    "//chrome/chrome_cleaner/interfaces:json_parser_interface",
+    "//chrome/chrome_cleaner/interfaces:parser_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/ipc:sandbox",
     "//chrome/chrome_cleaner/os:common_os",
+    "//chrome/chrome_cleaner/parsers/broker:parser_sandbox_broker",
+    "//chrome/chrome_cleaner/parsers/target:parser_sandbox_target",
     "//chrome/chrome_cleaner/settings:settings_types",
     "//components/chrome_cleaner/public/constants",
     "//mojo/public/cpp/bindings",
@@ -45,9 +41,7 @@ source_set("unittest_sources") {
   testonly = true
 
   sources = [
-    "json_parser_impl_unittest.cc",
     "json_splicer_unittest.cc",
-    "sandbox_setup_unittest.cc",
   ]
 
   deps = [
@@ -55,8 +49,10 @@ source_set("unittest_sources") {
     ":json_splicer",
     "//base:base",
     "//base/test:test_support",
-    "//chrome/chrome_cleaner/interfaces:json_parser_interface",
+    "//chrome/chrome_cleaner/interfaces:parser_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
+    "//chrome/chrome_cleaner/parsers/broker:parser_sandbox_broker",
+    "//chrome/chrome_cleaner/parsers/target:parser_sandbox_target",
     "//mojo/public/cpp/bindings",
     "//sandbox/win:sandbox",
     "//testing/gtest",

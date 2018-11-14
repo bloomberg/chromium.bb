@@ -2,16 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/chrome_cleaner/json_parser/test_json_parser.h"
+#include "chrome/chrome_cleaner/parsers/target/parser_impl.h"
 
 #include "base/json/json_reader.h"
 #include "base/values.h"
-#include "chrome/chrome_cleaner/json_parser/json_parser_impl.h"
 
 namespace chrome_cleaner {
 
-void TestJsonParser::Parse(const std::string& json,
-                           ParseDoneCallback callback) {
+ParserImpl::ParserImpl(mojom::ParserRequest request,
+                       base::OnceClosure connection_error_handler)
+    : binding_(this, std::move(request)) {
+  binding_.set_connection_error_handler(std::move(connection_error_handler));
+}
+
+ParserImpl::~ParserImpl() = default;
+
+void ParserImpl::ParseJson(const std::string& json,
+                           ParseJsonCallback callback) {
   int error_code;
   std::string error;
   std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(

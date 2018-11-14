@@ -407,7 +407,9 @@ ResultCode GetResultCodeForSandboxConnectionError(SandboxType sandbox_type) {
     case SandboxType::kEset:
       result_code = RESULT_CODE_ESET_SANDBOX_DISCONNECTED_TOO_SOON;
       break;
-    case SandboxType::kJsonParser:
+    case SandboxType::kParser:
+      // TODO(joenotcharles): This needs to be renamed to
+      // RESULT_CODE_PARSER_SANDBOX_DISCONNECTED_TOO_SOON.
       result_code = RESULT_CODE_JSON_PARSER_SANDBOX_DISCONNECTED_TOO_SOON;
       break;
     case SandboxType::kZipArchiver:

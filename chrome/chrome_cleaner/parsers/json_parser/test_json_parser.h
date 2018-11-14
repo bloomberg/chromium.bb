@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_CHROME_CLEANER_JSON_PARSER_TEST_JSON_PARSER_H_
-#define CHROME_CHROME_CLEANER_JSON_PARSER_TEST_JSON_PARSER_H_
+#ifndef CHROME_CHROME_CLEANER_PARSERS_JSON_PARSER_TEST_JSON_PARSER_H_
+#define CHROME_CHROME_CLEANER_PARSERS_JSON_PARSER_TEST_JSON_PARSER_H_
 
-#include "chrome/chrome_cleaner/json_parser/json_parser_api.h"
+#include "chrome/chrome_cleaner/parsers/json_parser/json_parser_api.h"
 
 namespace chrome_cleaner {
 
@@ -19,4 +19,4 @@ class TestJsonParser : public JsonParserAPI {
 
 }  // namespace chrome_cleaner
 
-#endif  // CHROME_CHROME_CLEANER_JSON_PARSER_TEST_JSON_PARSER_H_
+#endif  // CHROME_CHROME_CLEANER_PARSERS_JSON_PARSER_TEST_JSON_PARSER_H_
