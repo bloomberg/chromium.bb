@@ -65,7 +65,7 @@ class SpotlightManagerTest : public PlatformTest {
  protected:
   SpotlightManagerTest() {
     model_ = bookmarks::TestBookmarkClient::CreateModel();
-    large_icon_service_.reset(new favicon::LargeIconService(
+    large_icon_service_.reset(new favicon::LargeIconServiceImpl(
         &mock_favicon_service_, /*image_fetcher=*/nullptr));
     bookmarksSpotlightManager_ = [[BookmarksSpotlightManager alloc]
         initWithLargeIconService:large_icon_service_.get()
@@ -80,7 +80,7 @@ class SpotlightManagerTest : public PlatformTest {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
-  std::unique_ptr<favicon::LargeIconService> large_icon_service_;
+  std::unique_ptr<favicon::LargeIconServiceImpl> large_icon_service_;
   base::CancelableTaskTracker cancelable_task_tracker_;
   std::unique_ptr<bookmarks::BookmarkModel> model_;
   BookmarksSpotlightManager* bookmarksSpotlightManager_;

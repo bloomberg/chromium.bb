@@ -138,7 +138,7 @@ class LargeIconServiceTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   NiceMock<MockImageFetcher>* mock_image_fetcher_;
   testing::NiceMock<MockFaviconService> mock_favicon_service_;
-  LargeIconService large_icon_service_;
+  LargeIconServiceImpl large_icon_service_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<ui::test::ScopedSetSupportedScaleFactors>
       scoped_set_supported_scale_factors_;
@@ -760,18 +760,19 @@ INSTANTIATE_TEST_CASE_P(,  // Empty instatiation name.
                         ::testing::Values(false, true));
 
 TEST(LargeIconServiceOrganizationNameTest, ShouldGetOrganizationNameForUma) {
-  EXPECT_EQ("", LargeIconService::GetOrganizationNameForUma(GURL()));
-  EXPECT_EQ("", LargeIconService::GetOrganizationNameForUma(GURL("http://")));
-  EXPECT_EQ("", LargeIconService::GetOrganizationNameForUma(GURL("com")));
+  EXPECT_EQ("", LargeIconServiceImpl::GetOrganizationNameForUma(GURL()));
   EXPECT_EQ("",
-            LargeIconService::GetOrganizationNameForUma(GURL("http://com")));
-  EXPECT_EQ("",
-            LargeIconService::GetOrganizationNameForUma(GURL("http://google")));
-  EXPECT_EQ("google", LargeIconService::GetOrganizationNameForUma(
+            LargeIconServiceImpl::GetOrganizationNameForUma(GURL("http://")));
+  EXPECT_EQ("", LargeIconServiceImpl::GetOrganizationNameForUma(GURL("com")));
+  EXPECT_EQ(
+      "", LargeIconServiceImpl::GetOrganizationNameForUma(GURL("http://com")));
+  EXPECT_EQ("", LargeIconServiceImpl::GetOrganizationNameForUma(
+                    GURL("http://google")));
+  EXPECT_EQ("google", LargeIconServiceImpl::GetOrganizationNameForUma(
                           GURL("http://google.com")));
-  EXPECT_EQ("google", LargeIconService::GetOrganizationNameForUma(
+  EXPECT_EQ("google", LargeIconServiceImpl::GetOrganizationNameForUma(
                           GURL("http://google.de")));
-  EXPECT_EQ("google", LargeIconService::GetOrganizationNameForUma(
+  EXPECT_EQ("google", LargeIconServiceImpl::GetOrganizationNameForUma(
                           GURL("http://foo.google.com")));
 }
 

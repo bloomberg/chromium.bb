@@ -67,14 +67,14 @@ class ReadingListMediatorTest
     model_->AddEntry(GURL("http://chromium.org/read2"), "read2",
                      reading_list::ADDED_VIA_CURRENT_APP);
     model_->SetReadStatus(GURL("http://chromium.org/read2"), true);
-    large_icon_service_.reset(new favicon::LargeIconService(
+    large_icon_service_.reset(new favicon::LargeIconServiceImpl(
         &mock_favicon_service_, /*image_fetcher=*/nullptr));
 
-      favicon_loader.reset(new FaviconLoader(large_icon_service_.get()));
-      mediator_ = [[ReadingListMediator alloc]
-            initWithModel:model_.get()
-            faviconLoader:favicon_loader.get()
-          listItemFactory:[[ReadingListListItemFactory alloc] init]];
+    favicon_loader.reset(new FaviconLoader(large_icon_service_.get()));
+    mediator_ = [[ReadingListMediator alloc]
+          initWithModel:model_.get()
+          faviconLoader:favicon_loader.get()
+        listItemFactory:[[ReadingListListItemFactory alloc] init]];
   }
 
  protected:
@@ -84,7 +84,7 @@ class ReadingListMediatorTest
   base::SimpleTestClock clock_;
   GURL no_title_entry_url_;
   std::unique_ptr<FaviconLoader> favicon_loader;
-  std::unique_ptr<favicon::LargeIconService> large_icon_service_;
+  std::unique_ptr<favicon::LargeIconServiceImpl> large_icon_service_;
 
  private:
   web::TestWebThreadBundle thread_bundle_;

@@ -20,7 +20,7 @@ std::unique_ptr<KeyedService> BuildLargeIconService(
     web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<favicon::LargeIconService>(
+  return std::make_unique<favicon::LargeIconServiceImpl>(
       ios::FaviconServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
       std::make_unique<image_fetcher::ImageFetcherImpl>(
