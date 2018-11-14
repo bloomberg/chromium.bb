@@ -52,8 +52,7 @@
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
 
-  id<LayoutGuideProvider> safeAreaLayoutGuide =
-      SafeAreaLayoutGuideForView(self.view);
+  id<LayoutGuideProvider> safeAreaLayoutGuide = self.view.safeAreaLayoutGuide;
   UIView* contentView = self.contentViewController.view;
   UIView* headerView = self.appBarViewController.headerView;
   contentView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -440,15 +439,10 @@ initWithRootViewController:(UIViewController*)rootViewController
       viewController.navigationItem.leftBarButtonItems.count == 0) {
     viewController.navigationItem.leftBarButtonItem = [self backButton];
   }
-  // TODO(crbug.com/875528): This is a workaround for iOS 10.x.
-  if (@available(iOS 11, *)) {
-    // Wrap the view controller in an MDCAppBarContainerViewController if
-    // needed.
-    [super pushViewController:[self wrappedControllerIfNeeded:viewController]
-                     animated:animated];
-  } else {
-    [super pushViewController:viewController animated:animated];
-  }
+  // Wrap the view controller in an MDCAppBarContainerViewController if
+  // needed.
+  [super pushViewController:[self wrappedControllerIfNeeded:viewController]
+                   animated:animated];
 }
 
 - (UIViewController*)popViewControllerAnimated:(BOOL)animated {

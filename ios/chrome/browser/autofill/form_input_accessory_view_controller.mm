@@ -281,15 +281,6 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   // On ipad we hide the views so they don't stick around at the bottom. Only
   // needed on iPad because we add the view directly to the keyboard view.
   if (IsIPadIdiom() && self.customAccessoryView) {
-    if (@available(iOS 11, *)) {
-    } else {
-      // [iPad iOS 10] There is a bug when constraining something to the
-      // keyboard view. So this updates the frame instead.
-      CGFloat height = autofill::kInputAccessoryHeight;
-      self.customAccessoryView.frame =
-          CGRectMake(keyboardView.frame.origin.x, -height,
-                     keyboardView.frame.size.width, height);
-    }
     if (CGRectEqualToRect(_keyboardFrame, CGRectZero)) {
       self.customAccessoryView.hidden = true;
       self.grayBackgroundView.hidden = true;
@@ -318,28 +309,18 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   if (self.customAccessoryView && !self.customAccessoryView.superview) {
     if (IsIPadIdiom()) {
       UIView* keyboardView = [self getKeyboardView];
-      // [iPad iOS 10] There is a bug when constraining something to the
-      // keyboard view. So this sets the frame instead.
-      if (@available(iOS 11, *)) {
-        self.customAccessoryView.translatesAutoresizingMaskIntoConstraints = NO;
-        [keyboardView addSubview:self.customAccessoryView];
-        [NSLayoutConstraint activateConstraints:@[
-          [self.customAccessoryView.leadingAnchor
-              constraintEqualToAnchor:keyboardView.leadingAnchor],
-          [self.customAccessoryView.trailingAnchor
-              constraintEqualToAnchor:keyboardView.trailingAnchor],
-          [self.customAccessoryView.bottomAnchor
-              constraintEqualToAnchor:keyboardView.topAnchor],
-          [self.customAccessoryView.heightAnchor
-              constraintEqualToConstant:autofill::kInputAccessoryHeight]
-        ]];
-      } else {
-        CGFloat height = autofill::kInputAccessoryHeight;
-        self.customAccessoryView.frame =
-            CGRectMake(keyboardView.frame.origin.x, -height,
-                       keyboardView.frame.size.width, height);
-        [keyboardView addSubview:self.customAccessoryView];
-      }
+      self.customAccessoryView.translatesAutoresizingMaskIntoConstraints = NO;
+      [keyboardView addSubview:self.customAccessoryView];
+      [NSLayoutConstraint activateConstraints:@[
+        [self.customAccessoryView.leadingAnchor
+            constraintEqualToAnchor:keyboardView.leadingAnchor],
+        [self.customAccessoryView.trailingAnchor
+            constraintEqualToAnchor:keyboardView.trailingAnchor],
+        [self.customAccessoryView.bottomAnchor
+            constraintEqualToAnchor:keyboardView.topAnchor],
+        [self.customAccessoryView.heightAnchor
+            constraintEqualToConstant:autofill::kInputAccessoryHeight]
+      ]];
       if (!self.grayBackgroundView.superview) {
         [keyboardView addSubview:self.grayBackgroundView];
         [keyboardView sendSubviewToBack:self.grayBackgroundView];

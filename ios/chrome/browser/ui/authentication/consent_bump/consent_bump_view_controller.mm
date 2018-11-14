@@ -230,7 +230,7 @@ const CGFloat kImageTitleSpace = 10;
   self.secondaryMoreButtonMarginConstraint = [self.moreButton.leadingAnchor
       constraintGreaterThanOrEqualToAnchor:self.moreOptionsButton.trailingAnchor
                                   constant:kMargin];
-  id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self.view);
+  id<LayoutGuideProvider> safeArea = self.view.safeAreaLayoutGuide;
   AddSameConstraintsToSides(self.view, self.gradientView,
                             LayoutSides::kLeading | LayoutSides::kTrailing);
   AddSameConstraintsToSides(

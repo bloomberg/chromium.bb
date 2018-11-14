@@ -211,7 +211,7 @@ const CGFloat kDamping = 0.85;
       constraintEqualToAnchor:namedGuide.centerXAnchor];
   center.priority = UILayoutPriorityDefaultHigh;
 
-  id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(parentView);
+  id<LayoutGuideProvider> safeArea = parentView.safeAreaLayoutGuide;
   self.presentedConstraints = @[
     center,
     verticalPositioning,

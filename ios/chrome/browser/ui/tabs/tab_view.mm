@@ -144,11 +144,9 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
         forControlEvents:UIControlEventTouchUpInside];
 
     if (DragAndDropIsEnabled()) {
-      if (@available(iOS 11, *)) {
-        _dropInteraction =
-            [[DropAndNavigateInteraction alloc] initWithDelegate:self];
-        [self addInteraction:_dropInteraction];
-      }
+      _dropInteraction =
+          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
+      [self addInteraction:_dropInteraction];
     }
   }
   return self;

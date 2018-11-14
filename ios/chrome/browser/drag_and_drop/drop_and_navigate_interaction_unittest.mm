@@ -17,11 +17,9 @@ namespace {
 using DropAndNavigateTest = PlatformTest;
 
 TEST_F(DropAndNavigateTest, Instantiation) {
-  if (@available(iOS 11, *)) {
-    DropAndNavigateInteraction* interaction =
-        [[DropAndNavigateInteraction alloc] initWithDelegate:nil];
-    DCHECK(interaction.delegate);
-  }
+  DropAndNavigateInteraction* interaction =
+      [[DropAndNavigateInteraction alloc] initWithDelegate:nil];
+  DCHECK(interaction.delegate);
 }
 
 }  // namespace

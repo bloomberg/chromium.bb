@@ -250,9 +250,6 @@ void TriggerHapticFeedbackForImpact(UIImpactFeedbackStyle impactStyle);
 // |type| represent the type of notification associated with this feedback.
 void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type);
 
-// Returns the safeAreaInsets for a given view.
-UIEdgeInsets SafeAreaInsetsForView(UIView* view);
-
 // Returns the text for tabs count to be displayed in toolbar and tab_grid.
 // As an easter egg, show a smiley face instead of the count if the user has
 // more than 99 tabs open.

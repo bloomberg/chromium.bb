@@ -440,10 +440,10 @@ void TapSuppressDialogsButton() {
 // Tests that a prompt dialog is shown, and that the completion block is called
 // with the correct value when the OK buton is tapped.
 - (void)testShowJavaScriptPromptOK {
-  // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
-  // grey_typeText works on iOS 11.
-  if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
+  // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
+  // works.
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 
   // Load the blank test page and show a prompt dialog.
@@ -462,10 +462,10 @@ void TapSuppressDialogsButton() {
 // Tests that a prompt dialog is shown, and that the completion block is called
 // with the correct value when the Cancel buton is tapped.
 - (void)testShowJavaScriptPromptCancelled {
-  // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
-  // grey_typeText works on iOS 11.
-  if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
+  // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
+  // works.
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 
   // Load the blank test page and show a prompt dialog.
@@ -544,11 +544,9 @@ void TapSuppressDialogsButton() {
 
 // Tests that an alert is presented after displaying the share menu.
 - (void)testShowJavaScriptAfterShareMenu {
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
+  // TODO(crbug.com/747622): re-enable this test once earl grey can interact
+  // with the share menu.
+  EARL_GREY_TEST_DISABLED(@"Disabled until EG can use share menu.");
 
   // Load the blank test page.
   [self loadBlankTestPage];

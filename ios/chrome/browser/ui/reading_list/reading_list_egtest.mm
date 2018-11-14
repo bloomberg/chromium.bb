@@ -788,12 +788,7 @@ void AssertIsShowingDistillablePage(bool online) {
   TapContextMenuButtonWithA11yLabelID(
       IDS_IOS_READING_LIST_MARK_ALL_READ_ACTION);
 
-  if (@available(iOS 11, *)) {
-    // On iOS10, removing UITableView sections don't remove their header text
-    // from the hierarchy.
-    AssertHeaderNotVisible(kUnreadHeader);
-  }
-
+  AssertHeaderNotVisible(kUnreadHeader);
   AssertAllEntriesVisible();
   XCTAssertEqual(kNumberUnreadEntries + kNumberReadEntries,
                  ModelReadSize(GetReadingListModel()));

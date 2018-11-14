@@ -150,11 +150,9 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
     EARL_GREY_TEST_SKIPPED(@"Test not support on iPhone");
   }
 
-  // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
-  // grey_typeText works on iOS 11.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
-  }
+  // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
+  // works on iOS 11.
+  EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
 
   const GURL URL = web::test::HttpServer::MakeUrl("http://origin");
 
@@ -249,46 +247,37 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
 
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    // Can't access share menu from xctest on iOS 11+, so use the text field
-    // callout bar instead.
-    if (IsRefreshLocationBarEnabled()) {
-      [[EarlGrey
-          selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
-          performAction:grey_tap()];
-    } else {
-      [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-          performAction:grey_tap()];
-    }
-    // Tap twice to get the pre-edit label callout bar copy button.
+  // Can't access share menu from xctest on iOS 11+, so use the text field
+  // callout bar instead.
+  if (IsRefreshLocationBarEnabled()) {
     [[EarlGrey
-        selectElementWithMatcher:grey_allOf(
-                                     grey_ancestor(chrome_test_util::Omnibox()),
-                                     grey_kindOfClass([UILabel class]), nil)]
+        selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+        performAction:grey_tap()];
+  } else {
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+        performAction:grey_tap()];
+  }
+  // Tap twice to get the pre-edit label callout bar copy button.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_ancestor(chrome_test_util::Omnibox()),
+                                   grey_kindOfClass([UILabel class]), nil)]
+      performAction:grey_tap()];
+
+  [[[EarlGrey selectElementWithMatcher:SystemSelectionCalloutCopyButton()]
+      inRoot:SystemSelectionCallout()] performAction:grey_tap()];
+
+  if (IsIPadIdiom()) {
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
         performAction:grey_tap()];
 
-    [[[EarlGrey selectElementWithMatcher:SystemSelectionCalloutCopyButton()]
-        inRoot:SystemSelectionCallout()] performAction:grey_tap()];
-
-    if (IsIPadIdiom()) {
-      [[EarlGrey
-          selectElementWithMatcher:grey_accessibilityID(@"Typing Shield")]
-          performAction:grey_tap()];
-
-    } else {
-      // Typing shield might be unavailable if there are any suggestions
-      // displayed in the popup.
-      [[EarlGrey
-          selectElementWithMatcher:
-              grey_accessibilityID(kToolbarCancelOmniboxEditButtonIdentifier)]
-          performAction:grey_tap()];
-    }
-
   } else {
-    [ChromeEarlGreyUI openShareMenu];
+    // Typing shield might be unavailable if there are any suggestions
+    // displayed in the popup.
     [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
-                                     @"Copy")] performAction:grey_tap()];
+        selectElementWithMatcher:grey_accessibilityID(
+                                     kToolbarCancelOmniboxEditButtonIdentifier)]
+        performAction:grey_tap()];
   }
 
   [ChromeEarlGrey loadURL:secondURL];
@@ -307,10 +296,10 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
 // Verifies that the clear text button clears any text in the omnibox.
 - (void)testOmniboxClearTextButton {
-  // TODO(crbug.com/753098): Re-enable this test on iOS 11 iPad once
-  // grey_typeText works on iOS 11.
-  if (base::ios::IsRunningOnIOS11OrLater() && IsIPadIdiom()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
+  // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
+  // works.
+  if (IsIPadIdiom()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 
   const GURL URL = web::test::HttpServer::MakeUrl("http://origin");

@@ -388,7 +388,7 @@ UIImage* InfoBarCloseImage() {
     leftMargin += metrics_->horizontal_space_between_icon_and_text;
   } else {
     leftMargin += metrics_->left_margin_on_first_line_when_icon_absent;
-    leftMargin += SafeAreaInsetsForView(self).left;
+    leftMargin += self.safeAreaInsets.left;
   }
   return leftMargin;
 }
@@ -396,8 +396,7 @@ UIImage* InfoBarCloseImage() {
 // Returns the width reserved for the close button.
 - (CGFloat)rightMarginOnFirstLine {
   return [closeButton_ imageView].image.size.width +
-         metrics_->close_button_inner_padding * 2 +
-         SafeAreaInsetsForView(self).right;
+         metrics_->close_button_inner_padding * 2 + self.safeAreaInsets.right;
 }
 
 // Returns the horizontal space available between the icon and the close
@@ -533,7 +532,7 @@ UIImage* InfoBarCloseImage() {
             [self layoutWideButtonAlignRight:button1_
                                    rightEdge:CGRectGetWidth(self.bounds) -
                                              metrics_->button_margin -
-                                             SafeAreaInsetsForView(self).right
+                                             self.safeAreaInsets.right
                                            y:heightOfFirstLine];
         [self layoutWideButtonAlignRight:button2_
                                rightEdge:leftOfRightmostButton -
@@ -562,7 +561,7 @@ UIImage* InfoBarCloseImage() {
       [self layoutWideButtonAlignRight:button
                              rightEdge:CGRectGetWidth(self.bounds) -
                                        metrics_->button_margin -
-                                       SafeAreaInsetsForView(self).right
+                                       self.safeAreaInsets.right
                                      y:heightOfFirstLine];
     }
     return metrics_->button_height;
@@ -734,7 +733,7 @@ UIImage* InfoBarCloseImage() {
   // The top safe area is ignored because at rest (i.e. not during animations)
   // the infobar is aligned to the bottom of the screen, and thus should not
   // have its top intersect with any safe area.
-  CGFloat bottomSafeAreaInset = SafeAreaInsetsForView(self).bottom;
+  CGFloat bottomSafeAreaInset = self.safeAreaInsets.bottom;
   requiredHeight += bottomSafeAreaInset;
 
   UILayoutGuide* guide =
@@ -1013,7 +1012,7 @@ UIImage* InfoBarCloseImage() {
   closeButtonSize.width += metrics_->close_button_inner_padding * 2;
   closeButtonSize.height += metrics_->close_button_inner_padding * 2;
   CGFloat x = CGRectGetMaxX(self.frame) - closeButtonSize.width -
-              SafeAreaInsetsForView(self).right;
+              self.safeAreaInsets.right;
   // Aligns the close button at the top (height includes touch padding).
   CGFloat y = 0;
   if (singleLineMode) {
@@ -1027,8 +1026,7 @@ UIImage* InfoBarCloseImage() {
 - (CGRect)frameOfIcon {
   CGSize iconSize = [imageView_ image].size;
   CGFloat y = metrics_->buttons_margin_top;
-  CGFloat x =
-      metrics_->close_button_margin_left + SafeAreaInsetsForView(self).left;
+  CGFloat x = metrics_->close_button_margin_left + self.safeAreaInsets.left;
   return CGRectMake(AlignValueToPixel(x), AlignValueToPixel(y), iconSize.width,
                     iconSize.height);
 }

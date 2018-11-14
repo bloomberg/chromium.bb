@@ -150,7 +150,7 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
   trailingView.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:trailingView];
 
-  id<LayoutGuideProvider> layoutGuide = SafeAreaLayoutGuideForView(self);
+  id<LayoutGuideProvider> layoutGuide = self.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
     [leadingViewContainer.topAnchor
         constraintEqualToAnchor:layoutGuide.topAnchor],

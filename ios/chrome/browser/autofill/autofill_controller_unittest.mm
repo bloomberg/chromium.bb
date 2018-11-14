@@ -558,13 +558,6 @@ TEST_F(AutofillControllerTest, KeyValueTypedSuggestions) {
 // Checks that focusing on and typing on one field, then changing focus before
 // typing again, result in suggestions.
 TEST_F(AutofillControllerTest, KeyValueFocusChange) {
-#if !TARGET_IPHONE_SIMULATOR
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // TODO(crbug.com/836808): This test hangs on iOS10 devices when there are
-    // no breakpoint.
-    return;
-  }
-#endif
   SetUpKeyValueData();
 
   // Focus the dummy field and confirm no suggestions are presented.

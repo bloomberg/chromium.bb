@@ -22,17 +22,6 @@
 namespace {
 const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 const CGFloat kShiftTilesUpAnimationDuration = 0.25;
-
-UIEdgeInsets SafeAreaInsetsForViewWithinNTP(UIView* view) {
-  UIEdgeInsets insets = SafeAreaInsetsForView(view);
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // TODO(crbug.com/826369) Replace this when the NTP is contained by the
-    // BVC with |self.collectionController.topLayoutGuide.length|.
-    insets = UIEdgeInsetsMake(StatusBarHeight(), 0, 0, 0);
-  }
-  return insets;
-}
-
 }  // namespace
 
 @interface ContentSuggestionsHeaderSynchronizer ()<UIGestureRecognizerDelegate>
@@ -177,7 +166,7 @@ initWithCollectionController:
   }
 
   if (self.shouldAnimateHeader) {
-    UIEdgeInsets insets = SafeAreaInsetsForViewWithinNTP(self.collectionView);
+    UIEdgeInsets insets = self.collectionView.safeAreaInsets;
     [self.headerController
         updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
                        screenWidth:self.collectionView.frame.size.width
@@ -193,8 +182,7 @@ initWithCollectionController:
     // updated safeAreaInsets, but VC.collectionView does not until a layer
     // -viewDidLayoutSubviews.  Since self.collectionView and it's superview
     // should always have the same safeArea, this should be safe.
-    UIEdgeInsets insets =
-        SafeAreaInsetsForViewWithinNTP(self.collectionView.superview);
+    UIEdgeInsets insets = self.collectionView.superview.safeAreaInsets;
     [self.headerController
         updateFakeOmniboxForOffset:self.collectionView.contentOffset.y
                        screenWidth:width

@@ -305,12 +305,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   if (!IsRegularXRegularSizeClass()) {
     // Test that the omnibox is still pinned to the top of the screen and
     // under the safe area.
-    CGFloat safeAreaTop = 0;
-    if (@available(iOS 11, *)) {
-      safeAreaTop = ntp_home::CollectionView().safeAreaInsets.top;
-    } else {
-      safeAreaTop = StatusBarHeight();
-    }
+    CGFloat safeAreaTop = ntp_home::CollectionView().safeAreaInsets.top;
 
     CGFloat contentOffset = ntp_home::CollectionView().contentOffset.y;
     CGFloat fakeOmniboxOrigin = ntp_home::FakeOmnibox().frame.origin.y;

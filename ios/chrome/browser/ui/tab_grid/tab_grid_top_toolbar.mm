@@ -57,22 +57,10 @@
   trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
   trailingButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
 
-  if (@available(iOS 11, *)) {
-    leadingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentLeading;
-    trailingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentTrailing;
-  } else if (base::i18n::IsRTL()) {
-    leadingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentRight;
-    trailingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentLeft;
-  } else {
-    leadingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentLeft;
-    trailingButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentRight;
-  }
+  leadingButton.contentHorizontalAlignment =
+      UIControlContentHorizontalAlignmentLeading;
+  trailingButton.contentHorizontalAlignment =
+      UIControlContentHorizontalAlignmentTrailing;
 
   [toolbar.contentView addSubview:leadingButton];
   [toolbar.contentView addSubview:trailingButton];

@@ -604,10 +604,7 @@ void FocusOmnibox() {
             [window convertRect:element.frame fromView:element.superview]);
 
         CGFloat bottomSafeArea = CGFLOAT_MAX;
-        if (@available(iOS 11, *)) {
-          bottomSafeArea =
-              CGRectGetMaxY(window.safeAreaLayoutGuide.layoutFrame);
-        }
+        bottomSafeArea = CGRectGetMaxY(window.safeAreaLayoutGuide.layoutFrame);
         CGFloat infobarContentBottomPoint =
             MIN(bottomSafeArea, toolbarTopPoint);
         BOOL buttonIsAbove = buttonBottomPoint < infobarContentBottomPoint - 10;

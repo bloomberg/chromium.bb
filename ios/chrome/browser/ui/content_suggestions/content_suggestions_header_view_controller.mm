@@ -229,7 +229,7 @@ using base::UserMetricsAction;
       insetsView =
           [[UIApplication sharedApplication] keyWindow].rootViewController.view;
     }
-    UIEdgeInsets safeAreaInsets = SafeAreaInsetsForView(insetsView);
+    UIEdgeInsets safeAreaInsets = insetsView.safeAreaInsets;
     width = std::max<CGFloat>(
         0, width - safeAreaInsets.left - safeAreaInsets.right);
 

@@ -178,7 +178,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   emptyStateView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.collectionView.backgroundView addSubview:emptyStateView];
   id<LayoutGuideProvider> safeAreaGuide =
-      SafeAreaLayoutGuideForView(self.collectionView.backgroundView);
+      self.collectionView.backgroundView.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
     [self.collectionView.backgroundView.centerXAnchor
         constraintEqualToAnchor:emptyStateView.centerXAnchor],

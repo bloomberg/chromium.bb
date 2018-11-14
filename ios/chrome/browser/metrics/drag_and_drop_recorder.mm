@@ -64,12 +64,10 @@ void RecordDragTypesForSession(id<UIDropSession> dropSession)
 - (instancetype)initWithView:(UIView*)view {
   self = [super init];
   if (self) {
-    if (@available(iOS 11, *)) {
-      dropSessions_ = [NSHashTable weakObjectsHashTable];
-      UIDropInteraction* dropInteraction =
-          [[UIDropInteraction alloc] initWithDelegate:self];
-      [view addInteraction:dropInteraction];
-    }
+    dropSessions_ = [NSHashTable weakObjectsHashTable];
+    UIDropInteraction* dropInteraction =
+        [[UIDropInteraction alloc] initWithDelegate:self];
+    [view addInteraction:dropInteraction];
   }
   return self;
 }

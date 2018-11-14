@@ -103,7 +103,7 @@ constexpr float PopoverMaxHeight = 250;
   if (self.contentInsetsAlwaysEqualToSafeArea && !IsIPadIdiom()) {
     // Resets the table view content inssets to be equal to the safe area
     // insets.
-    self.tableView.contentInset = SafeAreaInsetsForView(self.view);
+    self.tableView.contentInset = self.view.safeAreaInsets;
   }
 }
 
@@ -115,7 +115,7 @@ constexpr float PopoverMaxHeight = 250;
     CGRect keyboardFrame =
         [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
     CGFloat keyboardHeight = keyboardFrame.size.height;
-    UIEdgeInsets safeInsets = SafeAreaInsetsForView(self.view);
+    UIEdgeInsets safeInsets = self.view.safeAreaInsets;
     self.tableView.contentInset =
         UIEdgeInsetsMake(safeInsets.top, safeInsets.left,
                          safeInsets.bottom - keyboardHeight, safeInsets.right);

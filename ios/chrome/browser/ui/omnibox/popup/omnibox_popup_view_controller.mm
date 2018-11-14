@@ -127,10 +127,7 @@ UIColor* BackgroundColorIncognito() {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  // Respect the safe area on iOS 11 to support iPhone X.
-  if (@available(iOS 11, *)) {
-    self.tableView.insetsContentViewsToSafeArea = YES;
-  }
+  self.tableView.insetsContentViewsToSafeArea = YES;
 
   // Initialize the same size as the parent view, autoresize will correct this.
   [self.view setFrame:CGRectZero];
@@ -168,15 +165,8 @@ UIColor* BackgroundColorIncognito() {
   if ([self.tableView respondsToSelector:@selector(setLayoutMargins:)]) {
     [self.tableView setLayoutMargins:UIEdgeInsetsZero];
   }
-  if (@available(iOS 11, *)) {
-    self.tableView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
-#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
-  else {
-    self.automaticallyAdjustsScrollViewInsets = NO;
-  }
-#endif
+  self.tableView.contentInsetAdjustmentBehavior =
+      UIScrollViewContentInsetAdjustmentNever;
   [self.tableView setContentInset:UIEdgeInsetsMake(kTopAndBottomPadding, 0,
                                                    kTopAndBottomPadding, 0)];
   self.tableView.estimatedRowHeight = 0;
@@ -347,7 +337,7 @@ UIColor* BackgroundColorIncognito() {
   [detailTextLabel setTextAlignment:_alignment];
 
   // The width must be positive for CGContextRef to be valid.
-  UIEdgeInsets safeAreaInsets = SafeAreaInsetsForView(self.view);
+  UIEdgeInsets safeAreaInsets = self.view.safeAreaInsets;
   CGRect rowBounds = UIEdgeInsetsInsetRect(self.view.bounds, safeAreaInsets);
   CGFloat labelWidth =
       MAX(40, floorf(rowBounds.size.width) - kTextCellLeadingPadding);
@@ -547,16 +537,8 @@ UIColor* BackgroundColorIncognito() {
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   // TODO(crbug.com/733650): Default to the dragging check once it's been tested
   // on trunk.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    if (!scrollView.dragging)
-      return;
-  } else {
-    // Setting the top inset of the scrollView to |kTopAndBottomPadding| causes
-    // a one time scrollViewDidScroll to |-kTopAndBottomPadding|.  It's easier
-    // to just ignore this one scroll tick.
-    if (scrollView.contentOffset.y == 0 - kTopAndBottomPadding)
-      return;
-  }
+  if (!scrollView.dragging)
+    return;
 
   if (self.forwardsScrollEvents)
     [self.delegate autocompleteResultConsumerDidScroll:self];

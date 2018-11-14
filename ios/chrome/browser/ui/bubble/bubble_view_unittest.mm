@@ -60,11 +60,7 @@ TEST_F(BubbleViewTest, BubbleSizeMultipleLineText) {
   CGSize bubbleSize = [bubble sizeThatFits:maxSize_];
 
   // The bubble should fit the label, which contains two lines of text.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EXPECT_NEAR(329.0f, bubbleSize.width, 1.0f);
-  } else {
-    EXPECT_NEAR(402.0f, bubbleSize.width, 1.0f);
-  }
+  EXPECT_NEAR(329.0f, bubbleSize.width, 1.0f);
 
   EXPECT_NEAR(83.0f, bubbleSize.height, 2.0f);
 }

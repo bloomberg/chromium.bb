@@ -115,12 +115,8 @@ void AssertURLIs(const GURL& expectedURL) {
   if (base::FeatureList::IsEnabled(
           web::features::kBrowserContainerFullscreen) &&
       base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen)) {
-    if (@available(iOS 11, *)) {
-      yOffset -=
-          chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
-    } else {
-      yOffset -= StatusBarHeight();
-    }
+    yOffset -=
+        chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
   }
   DCHECK_LT(yOffset, 0);
   [[EarlGrey

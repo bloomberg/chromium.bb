@@ -51,13 +51,11 @@ const CGFloat kOptionsVerticalMargin = 16;
   self.scrollView = [[UIScrollView alloc] init];
   self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
 
-  if (@available(iOS 11, *)) {
-    // The observed behavior was buggy. When the view appears on the screen,
-    // the scrollview was not scrolled all the way to the top. Adjusting the
-    // safe area manually fixes the issue.
-    self.scrollView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
+  // The observed behavior was buggy. When the view appears on the screen,
+  // the scrollview was not scrolled all the way to the top. Adjusting the
+  // safe area manually fixes the issue.
+  self.scrollView.contentInsetAdjustmentBehavior =
+      UIScrollViewContentInsetAdjustmentNever;
   [self.view addSubview:self.scrollView];
 
   // Scroll view container.
@@ -129,7 +127,7 @@ const CGFloat kOptionsVerticalMargin = 16;
 
   self.options = @[ noChangeOption, reviewOption, turnOnOption ];
 
-  id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self.view);
+  id<LayoutGuideProvider> safeArea = self.view.safeAreaLayoutGuide;
   AddSameConstraints(self.view, self.scrollView);
   AddSameConstraints(container, self.scrollView);
   AddSameCenterXConstraint(container, headerImageView);
@@ -226,17 +224,9 @@ const CGFloat kOptionsVerticalMargin = 16;
 // Updates constraints and content insets for the |scrollView| and
 // |imageBackgroundView| related to non-safe area.
 - (void)updateScrollViewAndImageBackgroundView {
-  if (@available(iOS 11, *)) {
-    self.scrollView.contentInset = self.view.safeAreaInsets;
-    self.imageBackgroundViewHeightConstraint.constant =
-        self.view.safeAreaInsets.top;
-  } else {
-    CGFloat statusBarHeight =
-        [UIApplication sharedApplication].isStatusBarHidden ? 0.
-                                                            : StatusBarHeight();
-    self.scrollView.contentInset = UIEdgeInsetsMake(statusBarHeight, 0, 0, 0);
-    self.imageBackgroundViewHeightConstraint.constant = statusBarHeight;
-  }
+  self.scrollView.contentInset = self.view.safeAreaInsets;
+  self.imageBackgroundViewHeightConstraint.constant =
+      self.view.safeAreaInsets.top;
 }
 
 @end

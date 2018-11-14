@@ -55,21 +55,11 @@ const CGFloat kCheckmarkMagin = 26.;
   [self.identityView setAvatar:image];
   self.accessoryType = checked ? UITableViewCellAccessoryCheckmark
                                : UITableViewCellAccessoryNone;
-  if (@available(iOS 11, *)) {
-    if (checked) {
-      self.directionalLayoutMargins =
-          NSDirectionalEdgeInsetsMake(0, 0, 0, kCheckmarkMagin);
-    } else {
-      self.directionalLayoutMargins = NSDirectionalEdgeInsetsZero;
-    }
+  if (checked) {
+    self.directionalLayoutMargins =
+        NSDirectionalEdgeInsetsMake(0, 0, 0, kCheckmarkMagin);
   } else {
-    if (!checked) {
-      self.layoutMargins = UIEdgeInsetsZero;
-    } else if (base::i18n::IsRTL()) {
-      self.layoutMargins = UIEdgeInsetsMake(0, kCheckmarkMagin, 0, 0);
-    } else {
-      self.layoutMargins = UIEdgeInsetsMake(0, 0, 0, kCheckmarkMagin);
-    }
+    self.directionalLayoutMargins = NSDirectionalEdgeInsetsZero;
   }
 }
 

@@ -140,7 +140,7 @@
   self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
   [contentView addSubview:self.stackView];
 
-  id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(self);
+  id<LayoutGuideProvider> safeArea = self.safeAreaLayoutGuide;
 
   [NSLayoutConstraint activateConstraints:@[
     [self.stackView.leadingAnchor

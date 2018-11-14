@@ -356,22 +356,17 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                      action:@selector(dismissSearchController:)
            forControlEvents:UIControlEventAllTouchEvents];
 
-  // For iOS 11 and later, place the search bar in the navigation bar.
-  // Otherwise place the search bar in the table view's header.
-  if (@available(iOS 11, *)) {
-    self.navigationItem.searchController = self.searchController;
-    self.navigationItem.hidesSearchBarWhenScrolling = NO;
+  // Place the search bar in the navigation bar.
+  self.navigationItem.searchController = self.searchController;
+  self.navigationItem.hidesSearchBarWhenScrolling = NO;
 
-    // Center search bar vertically so it looks centered in the header when
-    // searching.  The cancel button is centered / decentered on
-    // viewWillAppear and viewDidDisappear.
-    UIOffset offset =
-        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-    self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
-        offset;
-  } else {
-    self.tableView.tableHeaderView = self.searchController.searchBar;
-  }
+  // Center search bar vertically so it looks centered in the header when
+  // searching.  The cancel button is centered / decentered on
+  // viewWillAppear and viewDidDisappear.
+  UIOffset offset =
+      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+  self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
+      offset;
 
   self.searchTerm = @"";
 
@@ -398,29 +393,25 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     self.navigationController.toolbarHidden = YES;
   }
 
-  if (@available(iOS 11, *)) {
-    // Center search bar's cancel button vertically so it looks centered.
-    // We change the cancel button proxy styles, so we will return it to
-    // default in viewDidDisappear.
-    UIOffset offset =
-        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
-    UIBarButtonItem* cancelButton = [UIBarButtonItem
-        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-    [cancelButton setTitlePositionAdjustment:offset
-                               forBarMetrics:UIBarMetricsDefault];
-  }
+  // Center search bar's cancel button vertically so it looks centered.
+  // We change the cancel button proxy styles, so we will return it to
+  // default in viewDidDisappear.
+  UIOffset offset =
+      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+  UIBarButtonItem* cancelButton = [UIBarButtonItem
+      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
+  [cancelButton setTitlePositionAdjustment:offset
+                             forBarMetrics:UIBarMetricsDefault];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
 
-  if (@available(iOS 11, *)) {
-    // Restore to default origin offset for cancel button proxy style.
-    UIBarButtonItem* cancelButton = [UIBarButtonItem
-        appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
-    [cancelButton setTitlePositionAdjustment:UIOffsetZero
-                               forBarMetrics:UIBarMetricsDefault];
-  }
+  // Restore to default origin offset for cancel button proxy style.
+  UIBarButtonItem* cancelButton = [UIBarButtonItem
+      appearanceWhenContainedInInstancesOfClasses:@[ [UISearchBar class] ]];
+  [cancelButton setTitlePositionAdjustment:UIOffsetZero
+                             forBarMetrics:UIBarMetricsDefault];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -749,17 +740,15 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
     [self navigateAway];
 
-    if (@available(iOS 11, *)) {
-      // At root, since there's a large title, the search bar is lower than on
-      // whatever destination folder it is transitioning to (root is never
-      // reachable through search). To avoid a kink in the animation, the title
-      // is set to regular size, which means the search bar is at same level at
-      // beginning and end of animation. This controller will be replaced in
-      // |stack| so there's no need to care about restoring this.
-      if (_rootNode == self.bookmarks->root_node()) {
-        self.navigationItem.largeTitleDisplayMode =
-            UINavigationItemLargeTitleDisplayModeNever;
-      }
+    // At root, since there's a large title, the search bar is lower than on
+    // whatever destination folder it is transitioning to (root is never
+    // reachable through search). To avoid a kink in the animation, the title
+    // is set to regular size, which means the search bar is at same level at
+    // beginning and end of animation. This controller will be replaced in
+    // |stack| so there's no need to care about restoring this.
+    if (_rootNode == self.bookmarks->root_node()) {
+      self.navigationItem.largeTitleDisplayMode =
+          UINavigationItemLargeTitleDisplayModeNever;
     }
 
     auto completion = ^{
@@ -1027,11 +1016,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                                        (const bookmarks::BookmarkNode*)node {
   viewController.navigationItem.leftBarButtonItem.action = @selector(back);
   // Disable large titles on every VC but the root controller.
-  if (@available(iOS 11, *)) {
-    if (node != self.bookmarks->root_node()) {
-      viewController.navigationItem.largeTitleDisplayMode =
-          UINavigationItemLargeTitleDisplayModeNever;
-    }
+  if (node != self.bookmarks->root_node()) {
+    viewController.navigationItem.largeTitleDisplayMode =
+        UINavigationItemLargeTitleDisplayModeNever;
   }
 
   // Add custom title.

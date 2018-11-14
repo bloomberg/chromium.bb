@@ -91,27 +91,13 @@ constexpr float PopoverMaxHeight = 250;
   self.definesPresentationContext = YES;
   self.searchController.searchBar.backgroundColor = [UIColor clearColor];
   self.searchController.obscuresBackgroundDuringPresentation = NO;
-  if (@available(iOS 11, *)) {
-    self.navigationItem.searchController = self.searchController;
-    self.navigationItem.hidesSearchBarWhenScrolling = NO;
-  } else {
-    self.tableView.tableHeaderView = self.searchController.searchBar;
-  }
+  self.navigationItem.searchController = self.searchController;
+  self.navigationItem.hidesSearchBarWhenScrolling = NO;
   self.searchController.searchBar.accessibilityIdentifier =
       manual_fill::PasswordSearchBarAccessibilityIdentifier;
   NSString* titleString =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD);
   self.title = titleString;
-
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // On iOS 11 this is not needed since the cell constrains are updated by the
-    // system.
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self.tableView
-           selector:@selector(reloadData)
-               name:UIContentSizeCategoryDidChangeNotification
-             object:nil];
-  }
 }
 
 #pragma mark - ManualFillPasswordConsumer
@@ -137,7 +123,7 @@ constexpr float PopoverMaxHeight = 250;
   if (self.contentInsetsAlwaysEqualToSafeArea && !IsIPadIdiom()) {
     // Resets the table view content inssets to be equal to the safe area
     // insets.
-    self.tableView.contentInset = SafeAreaInsetsForView(self.view);
+    self.tableView.contentInset = self.view.safeAreaInsets;
   }
 }
 
@@ -149,7 +135,7 @@ constexpr float PopoverMaxHeight = 250;
     CGRect keyboardFrame =
         [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
     CGFloat keyboardHeight = keyboardFrame.size.height;
-    UIEdgeInsets safeInsets = SafeAreaInsetsForView(self.view);
+    UIEdgeInsets safeInsets = self.view.safeAreaInsets;
     self.tableView.contentInset =
         UIEdgeInsetsMake(safeInsets.top, safeInsets.left,
                          safeInsets.bottom - keyboardHeight, safeInsets.right);

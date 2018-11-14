@@ -36,12 +36,8 @@
 
 - (UIFont*)nameFont {
   if (!_nameFont) {
-    if (@available(iOS 11, *)) {
-      _nameFont = [[UIFontMetrics defaultMetrics]
-          scaledFontForFont:[MDCTypography body2Font]];
-    } else {
-      _nameFont = [MDCTypography body2Font];
-    }
+    _nameFont = [[UIFontMetrics defaultMetrics]
+        scaledFontForFont:[MDCTypography body2Font]];
   }
   return _nameFont;
 }
@@ -55,12 +51,8 @@
 
 - (UIFont*)valueFont {
   if (!_valueFont) {
-    if (@available(iOS 11, *)) {
-      _valueFont = [[UIFontMetrics defaultMetrics]
-          scaledFontForFont:[MDCTypography body1Font]];
-    } else {
-      _valueFont = [MDCTypography body1Font];
-    }
+    _valueFont = [[UIFontMetrics defaultMetrics]
+        scaledFontForFont:[MDCTypography body1Font]];
   }
   return _valueFont;
 }
@@ -86,10 +78,8 @@
   cell.textLabel.textColor = self.nameColor;
   cell.detailTextLabel.font = self.valueFont;
   cell.detailTextLabel.textColor = self.valueColor;
-  if (@available(iOS 11, *)) {
-    cell.textLabel.adjustsFontForContentSizeCategory = YES;
-    cell.detailTextLabel.adjustsFontForContentSizeCategory = YES;
-  }
+  cell.textLabel.adjustsFontForContentSizeCategory = YES;
+  cell.detailTextLabel.adjustsFontForContentSizeCategory = YES;
 
   [cell updateConstraintsIfNeeded];
 }

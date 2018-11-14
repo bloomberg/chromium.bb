@@ -50,7 +50,6 @@ const CGFloat kVoiceSearchButtonWidth = 36.0;
 // When rendering the same string in a UITextField and a UILabel with the same
 // frame and the same font, the text is slightly offset.
 const CGFloat kUILabelUITextfieldBaselineDeltaInPoints = 1.0;
-const CGFloat kUILabelUITextfieldBaselineDeltaIpadIOS10InPixels = 1.0;
 
 // The default omnibox text color (used while editing).
 UIColor* TextColor() {
@@ -248,19 +247,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
   NSTextAlignment alignment = [self bestTextAlignment];
   [self setTextAlignment:alignment];
-  if (!base::ios::IsRunningOnIOS11OrLater()) {
-    // TODO(crbug.com/730461): Remove this entire block once it's been tested
-    // on trunk.
-    UITextWritingDirection writingDirection =
-        alignment == NSTextAlignmentLeft ? UITextWritingDirectionLeftToRight
-                                         : UITextWritingDirectionRightToLeft;
-    [self
-        setBaseWritingDirection:writingDirection
-                       forRange:
-                           [self
-                               textRangeFromPosition:[self beginningOfDocument]
-                                          toPosition:[self endOfDocument]]];
-  }
 }
 
 - (UIColor*)displayedTextColor {
@@ -1118,19 +1104,12 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 - (void)layoutSelectionViewWithNewEditingRectBounds:(CGRect)newBounds {
   // The goal is to visually align the _selection label and the |self| textfield
   // to avoid text jumping when inline autocomplete is shown or hidden.
-  CGFloat baselineDifference = kUILabelUITextfieldBaselineDeltaInPoints;
-  if (IsIPadIdiom() && !base::ios::IsRunningOnIOS11OrLater()) {
-    // On iOS 10, there is a difference between iPad and iPhone rendering.
-    baselineDifference = kUILabelUITextfieldBaselineDeltaIpadIOS10InPixels /
-                         UIScreen.mainScreen.scale;
-  }
-
-  newBounds.origin.y -= baselineDifference;
+  newBounds.origin.y -= kUILabelUITextfieldBaselineDeltaInPoints;
 
   // Position the selection view appropriately.
   [_selection setFrame:newBounds];
 
-  newBounds.origin.y += baselineDifference;
+  newBounds.origin.y += kUILabelUITextfieldBaselineDeltaInPoints;
 }
 
 @end

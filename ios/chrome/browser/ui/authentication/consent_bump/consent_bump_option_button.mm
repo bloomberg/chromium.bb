@@ -68,7 +68,7 @@ const CGFloat kAnimationDuration = 0.15;
   checkMarkImageView.tintColor = UIColorFromRGB(kAuthenticationCheckmarkColor);
   [option addSubview:checkMarkImageView];
 
-  id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(option);
+  id<LayoutGuideProvider> safeArea = option.safeAreaLayoutGuide;
 
   if (text) {
     // There is text to be displayed. Make sure it is taken into account.

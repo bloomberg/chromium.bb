@@ -285,8 +285,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   if (!self.superview)
     return;
 
-  id<LayoutGuideProvider> safeAreaGuide =
-      SafeAreaLayoutGuideForView(self.superview);
+  id<LayoutGuideProvider> safeAreaGuide = self.superview.safeAreaLayoutGuide;
   _bottomUnsafeAreaGuideInSuperview = [[UILayoutGuide alloc] init];
   [self.superview addLayoutGuide:_bottomUnsafeAreaGuideInSuperview];
 
@@ -345,12 +344,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   if (IsRegularXRegularSizeClass(self)) {
     _topToolbarMarginHeight.constant = 0;
   } else {
-    CGFloat topInset = 0;
-    if (@available(iOS 11, *)) {
-      topInset = self.safeAreaInsets.top;
-    } else {
-      topInset = StatusBarHeight();
-    }
+    CGFloat topInset = self.safeAreaInsets.top;
     _topToolbarMarginHeight.constant =
         topInset + ToolbarExpandedHeight(
                        self.traitCollection.preferredContentSizeCategory);

@@ -37,7 +37,7 @@ const CGFloat kContainerCornerRadius = 13.0;
 
 - (CGRect)frameOfPresentedViewInContainerView {
   CGRect safeAreaFrame = UIEdgeInsetsInsetRect(
-      self.containerView.bounds, SafeAreaInsetsForView(self.containerView));
+      self.containerView.bounds, self.containerView.safeAreaInsets);
 
   CGFloat availableWidth = CGRectGetWidth(safeAreaFrame);
   CGFloat availableHeight = CGRectGetHeight(safeAreaFrame);

@@ -68,15 +68,13 @@ const CGFloat kFaviconDimension = 16;
     [text addAttribute:NSForegroundColorAttributeName
                  value:[[MDCPalette cr_greenPalette] tint700]
                  range:NSMakeRange(0, strlen(url::kHttpsScheme))];
-    if (@available(iOS 11, *)) {
-      // We need to set the font to the attributed portion, or the field doesn't
-      // asjust with dynamic types.
-      [text addAttribute:NSFontAttributeName
-                   value:[[UIFontMetrics defaultMetrics]
-                             scaledFontForFont:[[MDCTypography fontLoader]
-                                                   regularFontOfSize:12]]
-                   range:NSMakeRange(0, strlen(url::kHttpsScheme))];
-    }
+    // We need to set the font to the attributed portion, or the field doesn't
+    // asjust with dynamic types.
+    [text addAttribute:NSFontAttributeName
+                 value:[[UIFontMetrics defaultMetrics]
+                           scaledFontForFont:[[MDCTypography fontLoader]
+                                                 regularFontOfSize:12]]
+                 range:NSMakeRange(0, strlen(url::kHttpsScheme))];
     [cell.pageHostLabel setAttributedText:text];
 
     // Set lock image. UIImageRenderingModeAlwaysTemplate is used so that

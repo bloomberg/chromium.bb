@@ -95,7 +95,7 @@ CGFloat ToolbarHeight() {
 - (void)addToolbarView:(UIView*)toolbarView {
   _toolBarView = toolbarView;
   [self addSubview:toolbarView];
-  id<LayoutGuideProvider> layoutGuide = SafeAreaLayoutGuideForView(self);
+  id<LayoutGuideProvider> layoutGuide = self.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
     [toolbarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
     [toolbarView.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],

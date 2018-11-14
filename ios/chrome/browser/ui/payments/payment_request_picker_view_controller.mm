@@ -286,12 +286,7 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
     // content by the same amount, to ensure they line up properly. Also insets
     // by one more pixel to hide the one pixel gap left in between the
     // navigation bar and the UITableView.
-    CGFloat topInset = 0;
-    if (@available(iOS 11, *)) {
-      topInset = self.view.safeAreaInsets.top;
-    } else {
-      topInset = StatusBarHeight();
-    }
+    CGFloat topInset = self.view.safeAreaInsets.top;
     const UIEdgeInsets statusBarInset =
         UIEdgeInsetsMake(-1 - topInset, 0, 0, 0);
     self.tableView.contentInset = statusBarInset;

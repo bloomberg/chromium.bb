@@ -131,12 +131,8 @@ UIFont* GetUIFont(int fontFace, bool isBold, CGFloat fontSize) {
 }
 
 void SetUILabelScaledFont(UILabel* label, UIFont* font) {
-  if (@available(iOS 11, *)) {
-    label.font = [[UIFontMetrics defaultMetrics] scaledFontForFont:font];
-    label.adjustsFontForContentSizeCategory = YES;
-  } else {
-    label.font = font;
-  }
+  label.font = [[UIFontMetrics defaultMetrics] scaledFontForFont:font];
+  label.adjustsFontForContentSizeCategory = YES;
 }
 
 void MaybeSetUILabelScaledFont(BOOL maybe, UILabel* label, UIFont* font) {
@@ -148,12 +144,8 @@ void MaybeSetUILabelScaledFont(BOOL maybe, UILabel* label, UIFont* font) {
 }
 
 void SetUITextFieldScaledFont(UITextField* textField, UIFont* font) {
-  if (@available(iOS 11, *)) {
-    textField.font = [[UIFontMetrics defaultMetrics] scaledFontForFont:font];
-    textField.adjustsFontForContentSizeCategory = YES;
-  } else {
-    textField.font = font;
-  }
+  textField.font = [[UIFontMetrics defaultMetrics] scaledFontForFont:font];
+  textField.adjustsFontForContentSizeCategory = YES;
 }
 
 void MaybeSetUITextFieldScaledFont(BOOL maybe,
@@ -649,13 +641,12 @@ UIView* GetFirstResponderSubview(UIView* view) {
 }
 
 UIResponder* GetFirstResponder() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   UIApplication* application = [UIApplication sharedApplication];
-  if (base::ios::IsRunningOnIOS11OrLater() &&
-      base::FeatureList::IsEnabled(kFirstResponderKeyWindow)) {
+  if (base::FeatureList::IsEnabled(kFirstResponderKeyWindow)) {
     return GetFirstResponderSubview(application.keyWindow);
   }
 
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   DCHECK(!gFirstResponder);
   [application sendAction:@selector(cr_markSelfCurrentFirstResponder)
                        to:nil
@@ -712,14 +703,6 @@ void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type) {
   if (generatorClass) {
     UINotificationFeedbackGenerator* generator = [[generatorClass alloc] init];
     [generator notificationOccurred:type];
-  }
-}
-
-UIEdgeInsets SafeAreaInsetsForView(UIView* view) {
-  if (@available(iOS 11, *)) {
-    return view.safeAreaInsets;
-  } else {
-    return UIEdgeInsetsZero;
   }
 }
 
