@@ -88,6 +88,7 @@ void AuthenticatorRequestDialogModel::StartFlow(
     TransportAvailabilityInfo transport_availability,
     base::Optional<device::FidoTransportProtocol> last_used_transport) {
   DCHECK_EQ(current_step(), Step::kNotStarted);
+  DCHECK(!transport_availability.disable_embedder_ui);
 
   transport_availability_ = std::move(transport_availability);
   last_used_transport_ = last_used_transport;

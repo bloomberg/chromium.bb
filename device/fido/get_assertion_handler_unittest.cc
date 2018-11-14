@@ -31,6 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
+#include "device/fido/win/authenticator.h"
 #include "device/fido/win/fake_webauthn_api.h"
 #endif  // defined(OS_WIN)
 
@@ -753,10 +754,13 @@ TEST_F(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
     if (test.enable_feature_flag)
       scoped_feature_list.InitAndEnableFeature(kWebAuthUseNativeWinApi);
 
+    // Simulate a connected HID device.
+    ScopedFakeHidManager fake_hid_manager;
+    fake_hid_manager.AddFidoHidDevice("guid");
+
     TestGetAssertionRequestCallback cb;
-    ScopedFakeHidManager fake_hid_manager_;
     auto handler = std::make_unique<GetAssertionRequestHandler>(
-        fake_hid_manager_.service_manager_connector(),
+        fake_hid_manager.service_manager_connector(),
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         CtapGetAssertionRequest(test_data::kRelyingPartyId,
@@ -765,14 +769,11 @@ TEST_F(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
         cb.callback());
     scoped_task_environment_.RunUntilIdle();
 
-    fake_hid_manager_.AddFidoHidDevice("guid");
-    scoped_task_environment_.RunUntilIdle();
-
     EXPECT_EQ(1u, handler->AuthenticatorsForTesting().size());
     // Crudely distinguish authenticator type by FidoAuthenticator::GetId.
     EXPECT_EQ(test.expect_device_type == DeviceType::kHid
                   ? "hid:guid"
-                  : "WinNativeCrossPlatformAuthenticator",
+                  : WinWebAuthnApiAuthenticator::kAuthenticatorId,
               handler->AuthenticatorsForTesting().begin()->second->GetId());
   }
 }

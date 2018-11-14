@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "build/build_config.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/fido_device_discovery.h"
 #include "device/fido/fido_discovery_base.h"
@@ -39,6 +40,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   // Instantiates a FidoDiscovery for caBLE.
   static std::unique_ptr<FidoDiscoveryBase> CreateCable(
       std::vector<CableDiscoveryData> cable_data);
+#if defined(OS_WIN)
+  // Instantiates a FidoDiscovery for the native Windows WebAuthn
+  // API where available. Returns nullptr otherwise.
+  static std::unique_ptr<FidoDiscoveryBase>
+  MaybeCreateWinWebAuthnApiDiscovery();
+#endif  // defined(OS_WIN)
 
  private:
   friend class internal::ScopedFidoDiscoveryFactory;
