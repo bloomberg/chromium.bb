@@ -55,16 +55,8 @@ class CORE_EXPORT AnchorElementMetrics {
   // browser on page load.
   static const int kMaxAnchorElementMetricsSize;
 
-  // Extract features of the anchor element. |is_url_incremented_by_one| is
-  // true if |anchor_element| links to a URL which is one number different
-  // from the document's URL. Based on the value of the anchor element URL,
-  // and document URL, |is_url_incremented_by_one| may be true or false.
-  // Examples for different values of |is_url_incremented_by_one|:
-  // example.com/page9/cat5, example.com/page10/cat5 => true
-  // example.com/page9/cat5, example.com/page10/cat10 => false
-  static base::Optional<AnchorElementMetrics> Create(
-      const HTMLAnchorElement* anchor_element,
-      bool is_url_incremented_by_one);
+  // Extract features of the anchor element.
+  static base::Optional<AnchorElementMetrics> Create(const HTMLAnchorElement*);
 
   // Returns the mojom struct used to send metrics to the browser process.
   mojom::blink::AnchorElementMetricsPtr CreateMetricsPtr() const;
