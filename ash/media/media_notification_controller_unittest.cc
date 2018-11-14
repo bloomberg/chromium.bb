@@ -17,8 +17,7 @@
 
 namespace ash {
 
-using media_session::mojom::AudioFocusType;
-using media_session::mojom::MediaSessionInfo;
+using media_session::mojom::AudioFocusRequestState;
 
 namespace {
 
@@ -56,43 +55,43 @@ class MediaNotificationControllerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationControllerTest);
 };
 
-TEST_F(MediaNotificationControllerTest, OnFocusGainedLost) {
+TEST_F(MediaNotificationControllerTest, OnActiveSessionChanged) {
   EXPECT_FALSE(IsMediaNotificationShown());
   EXPECT_EQ(0, GetVisibleNotificationCount());
   EXPECT_EQ(0, GetPopupNotificationCount());
 
-  Shell::Get()->media_notification_controller()->OnFocusGained(
-      MediaSessionInfo::New(), AudioFocusType::kGain);
+  Shell::Get()->media_notification_controller()->OnActiveSessionChanged(
+      AudioFocusRequestState::New());
   EXPECT_TRUE(IsMediaNotificationShown());
   EXPECT_EQ(1, GetVisibleNotificationCount());
   EXPECT_EQ(0, GetPopupNotificationCount());
 
-  Shell::Get()->media_notification_controller()->OnFocusGained(
-      MediaSessionInfo::New(), AudioFocusType::kGain);
+  Shell::Get()->media_notification_controller()->OnActiveSessionChanged(
+      AudioFocusRequestState::New());
   EXPECT_TRUE(IsMediaNotificationShown());
   EXPECT_EQ(1, GetVisibleNotificationCount());
   EXPECT_EQ(0, GetPopupNotificationCount());
 
-  Shell::Get()->media_notification_controller()->OnFocusLost(
-      MediaSessionInfo::New());
+  Shell::Get()->media_notification_controller()->OnActiveSessionChanged(
+      nullptr);
   EXPECT_FALSE(IsMediaNotificationShown());
   EXPECT_EQ(0, GetVisibleNotificationCount());
   EXPECT_EQ(0, GetPopupNotificationCount());
 }
 
-TEST_F(MediaNotificationControllerTest, OnFocusLost_Noop) {
+TEST_F(MediaNotificationControllerTest, OnActiveSessionChanged_Noop) {
   EXPECT_FALSE(IsMediaNotificationShown());
 
-  Shell::Get()->media_notification_controller()->OnFocusLost(
-      MediaSessionInfo::New());
+  Shell::Get()->media_notification_controller()->OnActiveSessionChanged(
+      nullptr);
   EXPECT_FALSE(IsMediaNotificationShown());
 }
 
 TEST_F(MediaNotificationControllerTest, NotificationHasCustomViewType) {
   EXPECT_FALSE(IsMediaNotificationShown());
 
-  Shell::Get()->media_notification_controller()->OnFocusGained(
-      MediaSessionInfo::New(), AudioFocusType::kGain);
+  Shell::Get()->media_notification_controller()->OnActiveSessionChanged(
+      AudioFocusRequestState::New());
   message_center::Notification* notification =
       message_center::MessageCenter::Get()->FindVisibleNotificationById(
           kMediaSessionNotificationId);

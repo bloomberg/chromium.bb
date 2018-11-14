@@ -67,13 +67,19 @@ MediaNotificationController::MediaNotificationController(
 
 MediaNotificationController::~MediaNotificationController() = default;
 
-void MediaNotificationController::OnFocusGained(
-    media_session::mojom::MediaSessionInfoPtr session_info,
-    media_session::mojom::AudioFocusType type) {
+void MediaNotificationController::OnActiveSessionChanged(
+    media_session::mojom::AudioFocusRequestStatePtr session) {
+  // Hide the notification if the active session is null.
+  if (session.is_null()) {
+    message_center::MessageCenter::Get()->RemoveNotification(
+        kMediaSessionNotificationId, false);
+    return;
+  }
+
   if (IsMediaSessionNotificationVisible())
     return;
 
-  session_info_ = std::move(session_info);
+  session_info_ = std::move(session->session_info);
 
   std::unique_ptr<message_center::Notification> notification =
       ash::CreateSystemNotification(
@@ -99,15 +105,6 @@ void MediaNotificationController::OnFocusGained(
 
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
-}
-
-void MediaNotificationController::OnFocusLost(
-    media_session::mojom::MediaSessionInfoPtr session_info) {
-  if (!IsMediaSessionNotificationVisible())
-    return;
-
-  message_center::MessageCenter::Get()->RemoveNotification(
-      kMediaSessionNotificationId, false);
 }
 
 void MediaNotificationController::MediaSessionInfoChanged(
