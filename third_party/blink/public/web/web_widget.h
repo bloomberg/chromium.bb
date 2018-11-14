@@ -148,6 +148,12 @@ class WebWidget {
   virtual void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) {}
 
+  // Runs |callback| after a new frame has been submitted to the display
+  // compositor, and the display-compositor has displayed it on screen. Forces a
+  // redraw so that a new frame is submitted.
+  virtual void RequestPresentationCallbackForTesting(
+      base::OnceClosure callback) {}
+
   // Called to inform the WebWidget of a change in theme.
   // Implementors that cache rendered copies of widgets need to re-render
   // on receiving this message

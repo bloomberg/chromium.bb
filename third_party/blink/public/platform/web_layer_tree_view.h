@@ -225,6 +225,11 @@ class WebLayerTreeView {
 
   virtual void RequestDecode(const cc::PaintImage& image,
                              base::OnceCallback<void(bool)> callback) {}
+
+  // Runs |callback| after a new frame has been submitted to the display
+  // compositor, and the display-compositor has displayed it on screen. Forces a
+  // redraw so that a new frame is submitted.
+  virtual void RequestPresentationCallback(base::OnceClosure callback) {}
 };
 
 }  // namespace blink

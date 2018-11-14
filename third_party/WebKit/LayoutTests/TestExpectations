@@ -23,18 +23,14 @@ crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 ### These fail on all platforms:
 ## Next 18 can be viewed in this run, by clicking on "Did not pass 11183":
 ## https://test-results.appspot.com/data/layout_results/linux-blink-rel/1237/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
-crbug.com/891427 http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure ]
 crbug.com/891427 rootscroller/rootscroller-during-fullscreen.html [ Failure Pass ]
 crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-transform-responsive.html [ Timeout ]
 crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
-crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure ]
 crbug.com/891427 fast/scrolling/editor-command-scroll-page-scale.html [ Pass Failure ]
 crbug.com/891427 virtual/fractional_scrolling/fast/scrolling/editor-command-scroll-page-scale.html [ Pass Failure ]
 crbug.com/891427 virtual/scroll_customization/fast/scrolling/editor-command-scroll-page-scale.html [ Pass Failure ]
 crbug.com/891427 virtual/threaded/fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
 crbug.com/891427 fast/replaced/replaced-breaking.html [ Failure ]
-crbug.com/891427 http/tests/devtools/tracing/decode-resize.js [ Failure ]
-crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure ]
 crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
 crbug.com/891427 virtual/android/rootscroller/set-root-scroller.html [ Failure ]
 crbug.com/891427 virtual/android/rootscroller/set-rootscroller-before-load.html [ Failure ]
@@ -63,9 +59,6 @@ crbug.com/891427 virtual/user-activation-v2/fast/events/touch/gesture/touch-gest
 # Next 2 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1183
 crbug.com/891427 external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
-# Next 2 here: https://ci.chromium.org/buildbot/tryserver.blink/mac10.13-blink-rel/1144
-crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Pass Failure Timeout Crash ]
-crbug.com/891427 http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
 crbug.com/891427 editing/pasteboard/drop-text-without-selection.html [ Pass Failure Timeout Crash ]
 # Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541

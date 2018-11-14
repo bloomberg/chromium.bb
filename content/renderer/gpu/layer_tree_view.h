@@ -181,6 +181,7 @@ class CONTENT_EXPORT LayerTreeView
   void SetBrowserControlsShownRatio(float) override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
+  void RequestPresentationCallback(base::OnceClosure callback) override;
 
   void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
 
