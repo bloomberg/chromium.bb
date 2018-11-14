@@ -1575,7 +1575,7 @@ void RTCPeerConnection::removeStream(MediaStream* stream,
 }
 
 String RTCPeerConnection::id(ScriptState* script_state) const {
-  DCHECK(OriginTrials::RtcPeerConnectionIdEnabled(
+  DCHECK(origin_trials::RtcPeerConnectionIdEnabled(
       ExecutionContext::From(script_state)));
   return peer_handler_->Id();
 }

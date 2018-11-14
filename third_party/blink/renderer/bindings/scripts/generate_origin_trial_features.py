@@ -39,7 +39,7 @@ def get_install_functions(interfaces, feature_names):
         be installed on those interfaces.
     """
     return [
-        {'condition': 'OriginTrials::%sEnabled' % feature_name,
+        {'condition': 'origin_trials::%sEnabled' % feature_name,
          'name': feature_name,
          'install_method': 'install%s' % feature_name,
          'interface_is_global': interface_info.is_global,
@@ -182,7 +182,7 @@ def origin_trial_features_context(generator_name, feature_info):
     # functions to call, organized by interface.
     context['installers_by_feature'] = [
         {'name': feature_name,
-         'name_constant': 'OriginTrials::k%sTrialName' % feature_name,
+         'name_constant': 'origin_trials::k%sTrialName' % feature_name,
          'installers': get_install_functions(interfaces, [feature_name])}
         for feature_name, interfaces in types_for_feature.items()]
     context['installers_by_feature'].sort(key=lambda x: x['name'])

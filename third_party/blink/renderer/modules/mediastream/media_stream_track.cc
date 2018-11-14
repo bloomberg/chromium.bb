@@ -490,7 +490,7 @@ MediaTrackSettings* MediaStreamTrack::getSettings() const {
     settings->setAutoGainControl(*platform_settings.auto_gain_control);
   if (platform_settings.noise_supression)
     settings->setNoiseSuppression(*platform_settings.noise_supression);
-  if (OriginTrials::ExperimentalHardwareEchoCancellationEnabled(
+  if (origin_trials::ExperimentalHardwareEchoCancellationEnabled(
           GetExecutionContext()) &&
       !platform_settings.echo_cancellation_type.IsNull()) {
     settings->setEchoCancellationType(platform_settings.echo_cancellation_type);

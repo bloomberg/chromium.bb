@@ -1216,7 +1216,7 @@ void DocumentLoader::InstallNewDocument(
         document, response_.HttpHeaderField(http_names::kOriginTrial));
   }
   bool stale_while_revalidate_enabled =
-      OriginTrials::StaleWhileRevalidateEnabled(document);
+      origin_trials::StaleWhileRevalidateEnabled(document);
   fetcher_->SetStaleWhileRevalidateEnabled(stale_while_revalidate_enabled);
 
   // If stale while revalidate is enabled via Origin Trials count it as such.

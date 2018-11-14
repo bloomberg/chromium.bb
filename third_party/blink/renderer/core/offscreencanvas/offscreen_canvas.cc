@@ -218,7 +218,7 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
   // Unknown type.
   if (context_type == CanvasRenderingContext::kContextTypeUnknown ||
       (context_type == CanvasRenderingContext::kContextXRPresent &&
-       !OriginTrials::WebXREnabled(execution_context))) {
+       !origin_trials::WebXREnabled(execution_context))) {
     return nullptr;
   }
 

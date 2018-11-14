@@ -55,7 +55,7 @@ class PLATFORM_EXPORT RuntimeEnabledFeatures {
   // to test whether the feature is unconditionally enabled (for example, by
   // starting the browser with the appropriate command-line flag). However,
   // that is almost always the incorrect check. Most renderer code should
-  // be calling OriginTrials::<feature>Enabled() instead, to test if the
+  // be calling origin_trials::<feature>Enabled() instead, to test if the
   // feature is enabled in a given context.
 
   {% for feature in features %}
