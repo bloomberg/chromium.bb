@@ -31,6 +31,12 @@ class LoadGoogleStory(_LoadingStory):
   TAGS = [story_tags.YEAR_2016]
 
 
+class LoadGoogleStory2018(_LoadingStory):
+  NAME = 'load:search:google:2018'
+  URL = 'https://www.google.co.uk/search?q=pepper'
+  TAGS = [story_tags.YEAR_2018]
+
+
 class LoadBaiduStory(_LoadingStory):
   NAME = 'load:search:baidu'
   URL = 'https://www.baidu.com/s?word=google'

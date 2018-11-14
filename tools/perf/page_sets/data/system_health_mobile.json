@@ -201,6 +201,9 @@
         "load:search:google": {
             "DEFAULT": "system_health_mobile_029.wprgo"
         },
+        "load:search:google:2018": {
+            "DEFAULT": "system_health_mobile_09493f5937.wprgo"
+        },
         "load:search:taobao": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
