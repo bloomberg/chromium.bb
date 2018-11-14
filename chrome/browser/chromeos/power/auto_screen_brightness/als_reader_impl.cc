@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -231,6 +232,10 @@ void AlsReaderImpl::OnAlsRead(const std::string& data) {
   base::TrimWhitespaceASCII(data, base::TRIM_ALL, &trimmed_data);
   int value = 0;
   if (base::StringToInt(trimmed_data, &value)) {
+    if (value < 0) {
+      LogDataError(DataError::kAlsValue);
+      value = 0;
+    }
     for (auto& observer : observers_)
       observer.OnAmbientLightUpdated(value);
   }

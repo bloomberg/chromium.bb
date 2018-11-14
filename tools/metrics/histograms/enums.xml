@@ -3260,6 +3260,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="dual source"/>
 </enum>
 
+<enum name="AutoScreenBrightnessDataError">
+  <int value="0" label="kAlsValue"/>
+  <int value="1" label="kBrightnessPercent"/>
+</enum>
+
 <enum name="AutoScreenBrightnessUserAdjustment">
   <int value="0" label="NoPriorModelAdjustment"/>
   <int value="1" label="WithPriorModelAdjustment"/>
