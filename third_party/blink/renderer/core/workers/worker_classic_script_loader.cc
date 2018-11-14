@@ -243,6 +243,7 @@ void WorkerClassicScriptLoader::Trace(Visitor* visitor) {
   visitor->Trace(threadable_loader_);
   visitor->Trace(content_security_policy_);
   visitor->Trace(execution_context_);
+  ThreadableLoaderClient::Trace(visitor);
 }
 
 void WorkerClassicScriptLoader::Cancel() {

@@ -104,6 +104,8 @@ AtomicString CreateAccessControlRequestHeadersHeader(
 class ThreadableLoader::DetachedClient final
     : public GarbageCollectedFinalized<DetachedClient>,
       public ThreadableLoaderClient {
+  USING_GARBAGE_COLLECTED_MIXIN(DetachedClient);
+
  public:
   explicit DetachedClient(ThreadableLoader* loader)
       : self_keep_alive_(this), loader_(loader) {}
@@ -114,7 +116,10 @@ class ThreadableLoader::DetachedClient final
   }
   void DidFail(const ResourceError&) override { self_keep_alive_.Clear(); }
   void DidFailRedirectCheck() override { self_keep_alive_.Clear(); }
-  void Trace(Visitor* visitor) { visitor->Trace(loader_); }
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(loader_);
+    ThreadableLoaderClient::Trace(visitor);
+  }
 
  private:
   SelfKeepAlive<DetachedClient> self_keep_alive_;
@@ -482,15 +487,7 @@ void ThreadableLoader::MakeCrossOriginAccessRequest(
   LoadRequest(cross_origin_request, cross_origin_options);
 }
 
-ThreadableLoader::~ThreadableLoader() {
-  // |client_| is a raw pointer and having a non-null |client_| here probably
-  // means UaF.
-  // In the detached case, |this| is held by DetachedClient defined above, but
-  // SelfKeepAlive in DetachedClient is forcibly cancelled on worker thread
-  // termination. We can safely ignore this case.
-  CHECK(!client_ || detached_);
-  DCHECK(!GetResource());
-}
+ThreadableLoader::~ThreadableLoader() {}
 
 void ThreadableLoader::SetTimeout(const TimeDelta& timeout) {
   timeout_ = timeout;
@@ -1105,6 +1102,7 @@ Document* ThreadableLoader::GetDocument() const {
 
 void ThreadableLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
+  visitor->Trace(client_);
   RawResourceClient::Trace(visitor);
 }
 

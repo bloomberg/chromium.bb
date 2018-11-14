@@ -94,15 +94,17 @@ void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
 // It forwards its ThreadableLoaderClient notifications to a
 // WebAssociatedURLLoaderClient.
 class WebAssociatedURLLoaderImpl::ClientAdapter final
-    : public ThreadableLoaderClient {
+    : public GarbageCollectedFinalized<ClientAdapter>,
+      public ThreadableLoaderClient {
+  USING_GARBAGE_COLLECTED_MIXIN(ClientAdapter);
+
  public:
-  static std::unique_ptr<ClientAdapter> Create(
-      WebAssociatedURLLoaderImpl*,
-      WebAssociatedURLLoaderClient*,
-      const WebAssociatedURLLoaderOptions&,
-      network::mojom::FetchRequestMode,
-      network::mojom::FetchCredentialsMode,
-      scoped_refptr<base::SingleThreadTaskRunner>);
+  ClientAdapter(WebAssociatedURLLoaderImpl*,
+                WebAssociatedURLLoaderClient*,
+                const WebAssociatedURLLoaderOptions&,
+                network::mojom::FetchRequestMode,
+                network::mojom::FetchCredentialsMode,
+                scoped_refptr<base::SingleThreadTaskRunner>);
 
   // ThreadableLoaderClient
   void DidSendData(unsigned long long /*bytesSent*/,
@@ -140,13 +142,6 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   }
 
  private:
-  ClientAdapter(WebAssociatedURLLoaderImpl*,
-                WebAssociatedURLLoaderClient*,
-                const WebAssociatedURLLoaderOptions&,
-                network::mojom::FetchRequestMode,
-                network::mojom::FetchCredentialsMode,
-                scoped_refptr<base::SingleThreadTaskRunner>);
-
   void NotifyError(TimerBase*);
 
   WebAssociatedURLLoaderImpl* loader_;
@@ -162,19 +157,6 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
 
   DISALLOW_COPY_AND_ASSIGN(ClientAdapter);
 };
-
-std::unique_ptr<WebAssociatedURLLoaderImpl::ClientAdapter>
-WebAssociatedURLLoaderImpl::ClientAdapter::Create(
-    WebAssociatedURLLoaderImpl* loader,
-    WebAssociatedURLLoaderClient* client,
-    const WebAssociatedURLLoaderOptions& options,
-    network::mojom::FetchRequestMode fetch_request_mode,
-    network::mojom::FetchCredentialsMode credentials_mode,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return base::WrapUnique(new ClientAdapter(loader, client, options,
-                                            fetch_request_mode,
-                                            credentials_mode, task_runner));
-}
 
 WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
     WebAssociatedURLLoaderImpl* loader,
@@ -406,7 +388,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     task_runner = Thread::Current()->GetTaskRunner();
   }
   client_ = client;
-  client_adapter_ = ClientAdapter::Create(
+  client_adapter_ = MakeGarbageCollected<ClientAdapter>(
       this, client, options_, request.GetFetchRequestMode(),
       request.GetFetchCredentialsMode(), std::move(task_runner));
 
@@ -442,7 +424,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
 
     if (observer_) {
       Document& document = To<Document>(*observer_->LifecycleContext());
-      loader_ = new ThreadableLoader(document, client_adapter_.get(),
+      loader_ = new ThreadableLoader(document, client_adapter_,
                                      resource_loader_options);
       loader_->Start(webcore_request);
     }
@@ -477,7 +459,7 @@ void WebAssociatedURLLoaderImpl::CancelLoader() {
     loader_->Cancel();
     loader_ = nullptr;
   }
-  client_adapter_.reset();
+  client_adapter_ = nullptr;
 }
 
 void WebAssociatedURLLoaderImpl::SetDefersLoading(bool defers_loading) {

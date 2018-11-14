@@ -89,10 +89,6 @@ class CORE_EXPORT ThreadableLoader final
   // After any of these methods is called, the loader won't call any of the
   // ThreadableLoaderClient methods.
   //
-  // A user must guarantee that the loading completes before the attached
-  // client gets invalid. Also, a user must guarantee that the loading
-  // completes before the ThreadableLoader is destructed.
-  //
   // When ThreadableLoader::Cancel() is called,
   // ThreadableLoaderClient::DidFail() is called with a ResourceError
   // with IsCancellation() returning true, if any of DidFinishLoading()
@@ -100,7 +96,7 @@ class CORE_EXPORT ThreadableLoader final
   // called with a ResourceError with IsCancellation() returning true
   // also for cancellation happened inside the loader.)
   //
-  // ThreadableLoaderClient methods may call cancel().
+  // ThreadableLoaderClient methods may call Cancel().
   ThreadableLoader(ExecutionContext&,
                    ThreadableLoaderClient*,
                    const ResourceLoaderOptions&);
@@ -211,7 +207,7 @@ class CORE_EXPORT ThreadableLoader final
   // TODO(kinuko): Remove dependency to document.
   Document* GetDocument() const;
 
-  ThreadableLoaderClient* client_;
+  Member<ThreadableLoaderClient> client_;
   Member<ExecutionContext> execution_context_;
 
   TimeDelta timeout_;
