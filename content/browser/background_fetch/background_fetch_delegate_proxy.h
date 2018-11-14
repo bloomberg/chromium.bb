@@ -111,6 +111,9 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // requests already called OnDownloadComplete.
   void Abort(const std::string& job_unique_id);
 
+  // Called when the fetch associated |job_unique_id| is completed.
+  void MarkJobComplete(const std::string& job_unique_id);
+
  private:
   class Core;
 

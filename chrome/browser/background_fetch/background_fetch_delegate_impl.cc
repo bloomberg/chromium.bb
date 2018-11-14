@@ -314,7 +314,11 @@ void BackgroundFetchDelegateImpl::Abort(const std::string& job_unique_id) {
     download_job_unique_id_map_.erase(download_guid);
   }
   UpdateOfflineItemAndUpdateObservers(&job_details);
-  job_details_map_.erase(job_details_iter);
+}
+
+void BackgroundFetchDelegateImpl::MarkJobComplete(
+    const std::string& job_unique_id) {
+  job_details_map_.erase(job_unique_id);
 }
 
 void BackgroundFetchDelegateImpl::UpdateUI(

@@ -164,6 +164,9 @@ void BackgroundFetchScheduler::CleanupRegistration(
   // downloaded data around so long as there are references to it, and delete
   // it once there is none. We don't need to do that accounting.
   data_manager_->DeleteRegistration(registration_id, base::DoNothing());
+
+  // Notify other systems that this registration is complete.
+  delegate_proxy_->MarkJobComplete(registration_id.unique_id());
 }
 
 void BackgroundFetchScheduler::DispatchClickEvent(

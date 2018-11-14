@@ -256,12 +256,11 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
 
     SetUpBrowser(browser());
 
-    BackgroundFetchDelegateImpl* delegate =
-        static_cast<BackgroundFetchDelegateImpl*>(
-            active_browser_->profile()->GetBackgroundFetchDelegate());
-    DCHECK(delegate);
+    delegate_ = static_cast<BackgroundFetchDelegateImpl*>(
+        active_browser_->profile()->GetBackgroundFetchDelegate());
+    DCHECK(delegate_);
 
-    offline_content_provider_observer_->set_delegate(delegate);
+    offline_content_provider_observer_->set_delegate(delegate_);
   }
 
   void SetUpBrowser(Browser* browser) {
@@ -323,11 +322,8 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
       const ContentId& offline_item_id,
       std::unique_ptr<OfflineItemVisuals>* out_visuals) {
     base::RunLoop run_loop;
-    BackgroundFetchDelegateImpl* delegate =
-        static_cast<BackgroundFetchDelegateImpl*>(
-            active_browser_->profile()->GetBackgroundFetchDelegate());
-    DCHECK(delegate);
-    delegate->GetVisualsForItem(
+
+    delegate_->GetVisualsForItem(
         offline_item_id, base::Bind(&BackgroundFetchBrowserTest::DidGetVisuals,
                                     base::Unretained(this),
                                     run_loop.QuitClosure(), out_visuals));
@@ -427,7 +423,8 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  download::DownloadService* download_service_{nullptr};
+  BackgroundFetchDelegateImpl* delegate_ = nullptr;
+  download::DownloadService* download_service_ = nullptr;
 
   std::unique_ptr<WaitableDownloadLoggerObserver> download_observer_;
   std::unique_ptr<OfflineContentProviderObserver>
@@ -685,6 +682,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   EXPECT_TRUE(
       base::StartsWith(offline_content_provider_observer_->latest_item().title,
                        "New Fetched Title!", base::CompareCase::SENSITIVE));
+
+  // Make sure the delegate cleans up after the fetch is complete.
+  EXPECT_TRUE(delegate_->job_details_map_.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,

@@ -641,6 +641,10 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
     ASSERT_FALSE(fetches[i].response->blob->uuid.empty());
     ASSERT_GT(fetches[i].response->blob->size, 0u);
   }
+
+  auto* delegate = static_cast<MockBackgroundFetchDelegate*>(
+      browser_context()->GetBackgroundFetchDelegate());
+  EXPECT_TRUE(delegate->completed_jobs().count(registration.unique_id));
 }
 
 TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
@@ -732,6 +736,10 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
               blink::mojom::ServiceWorkerResponseError::kUnknown);
     EXPECT_TRUE(fetches[i].response->cors_exposed_header_names.empty());
   }
+
+  auto* delegate = static_cast<MockBackgroundFetchDelegate*>(
+      browser_context()->GetBackgroundFetchDelegate());
+  EXPECT_TRUE(delegate->completed_jobs().count(registration.unique_id));
 }
 
 TEST_F(BackgroundFetchServiceTest, UpdateUI) {
@@ -815,6 +823,10 @@ TEST_F(BackgroundFetchServiceTest, Abort) {
   GetRegistration(service_worker_registration_id, kExampleDeveloperId,
                   &second_error, &second_registration);
   ASSERT_EQ(second_error, blink::mojom::BackgroundFetchError::INVALID_ID);
+
+  auto* delegate = static_cast<MockBackgroundFetchDelegate*>(
+      browser_context()->GetBackgroundFetchDelegate());
+  EXPECT_TRUE(delegate->completed_jobs().count(registration_id.unique_id()));
 }
 
 TEST_F(BackgroundFetchServiceTest, AbortInvalidDeveloperIdArgument) {

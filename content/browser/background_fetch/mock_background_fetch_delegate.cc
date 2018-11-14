@@ -171,6 +171,11 @@ void MockBackgroundFetchDelegate::Abort(const std::string& job_unique_id) {
   aborted_jobs_.insert(job_unique_id);
 }
 
+void MockBackgroundFetchDelegate::MarkJobComplete(
+    const std::string& job_unique_id) {
+  completed_jobs_.insert(job_unique_id);
+}
+
 void MockBackgroundFetchDelegate::UpdateUI(
     const std::string& job_unique_id,
     const base::Optional<std::string>& title,
