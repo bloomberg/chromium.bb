@@ -11,10 +11,17 @@
 
 @interface CWVPreferences (Autofill)
 
-// Whether or not autofill as a feature is turned on. Defaults to |YES|.
-// If enabled, contents of submitted forms may be saved and offered as a
+// Whether or not profile autofill is turned on. Defaults to |YES|.
+// If enabled, contents of submitted profiles may be saved and offered as a
 // suggestion in either the same or similar forms.
-@property(nonatomic, assign, getter=isAutofillEnabled) BOOL autofillEnabled;
+@property(nonatomic, assign, getter=isProfileAutofillEnabled)
+    BOOL profileAutofillEnabled;
+
+// Whether or not credit card autofill is turned on. Defaults to |YES|.
+// If enabled, contents of submitted credit cards may be saved and offered as a
+// suggestion in either the same or similar forms.
+@property(nonatomic, assign, getter=isCreditCardAutofillEnabled)
+    BOOL creditCardAutofillEnabled;
 
 @end
 
