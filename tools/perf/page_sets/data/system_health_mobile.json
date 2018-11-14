@@ -186,6 +186,9 @@
         "load:search:baidu": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
+        "load:search:baidu:2018": {
+            "DEFAULT": "system_health_mobile_028870b3b5.wprgo"
+        },
         "load:search:ebay": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
