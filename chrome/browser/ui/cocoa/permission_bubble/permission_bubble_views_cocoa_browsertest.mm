@@ -37,13 +37,7 @@ void ShowBubble(Browser* browser) {
 }
 
 bool HasVisibleLocationBarForBrowser(Browser* browser) {
-  if (!browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
-    return false;
-
-  if (!browser->exclusive_access_manager()->context()->IsFullscreen())
-    return true;
-
-  return false;
+  return browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
 }
 
 }  // namespace
@@ -81,10 +75,9 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest, AppHasNoLocationBar) {
   EXPECT_FALSE(HasVisibleLocationBarForBrowser(app_browser));
 }
 
-// http://crbug.com/470724
-// Kiosk mode on Mac has a location bar but it shouldn't.
 IN_PROC_BROWSER_TEST_F(PermissionBubbleKioskBrowserTest,
-                       DISABLED_KioskHasNoLocationBar) {
+                       KioskHasNoLocationBar) {
   ShowBubble(browser());
+  // Kiosk mode on Mac has no location bar.
   EXPECT_FALSE(HasVisibleLocationBarForBrowser(browser()));
 }
