@@ -194,10 +194,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [[tabModel stub] setCurrentTab:[OCMArg any]];
     [[tabModel stub] closeAllTabs];
 
-    // Stub methods for Tab.
-    UIView* dummyView = [[UIView alloc] initWithFrame:CGRectZero];
-    [[[currentTab stub] andReturn:dummyView] view];
-
     web::WebState::CreateParams params(chrome_browser_state_.get());
     std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
     webStateImpl_.reset(static_cast<web::WebStateImpl*>(webState.release()));
@@ -302,7 +298,7 @@ TEST_F(BrowserViewControllerTest, TestSwitchToTab) {
 
 TEST_F(BrowserViewControllerTest, TestTabSelected) {
   [bvc_ tabSelected:tab_ notifyToolbar:YES];
-  EXPECT_EQ([[tab_ view] superview], [bvc_ contentArea]);
+  EXPECT_EQ([tab_.webState->GetView() superview], [bvc_ contentArea]);
   EXPECT_TRUE(webStateImpl_->IsVisible());
 }
 
@@ -313,7 +309,7 @@ TEST_F(BrowserViewControllerTest, TestTabSelectedIsNewTab) {
   id tabMock = (id)tab_;
   [tabMock onSelector:@selector(url) callBlockExpectation:block];
   [bvc_ tabSelected:tab_ notifyToolbar:YES];
-  EXPECT_EQ([[tab_ view] superview], [bvc_ contentArea]);
+  EXPECT_EQ([tab_.webState->GetView() superview], [bvc_ contentArea]);
   EXPECT_TRUE(webStateImpl_->IsVisible());
 }
 

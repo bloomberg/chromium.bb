@@ -2564,7 +2564,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       _browserContainerCoordinator.viewController.contentViewController =
           viewController;
     } else {
-      _browserContainerCoordinator.viewController.contentView = tab.view;
+      _browserContainerCoordinator.viewController.contentView =
+          [self viewForTab:tab];
     }
   }
   [self updateToolbar];
@@ -2713,14 +2714,22 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (UIView*)viewForTab:(Tab*)tab {
   DCHECK(tab);
-  if (tab.webState) {
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(tab.webState);
-    if (NTPHelper && NTPHelper->IsActive()) {
-      return _ntpCoordinatorsForWebStates[tab.webState].viewController.view;
-    }
+  if (!tab.webState)
+    return nil;
+  web::WebState* webState = tab.webState;
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
+  if (NTPHelper && NTPHelper->IsActive()) {
+    return _ntpCoordinatorsForWebStates[webState].viewController.view;
   }
-  return tab.view;
+  // TODO(crbug.com/904588): Move |RecordPageLoadStart| to TabUsageRecorder.
+  if (webState->IsEvicted() && [tab.parentTabModel tabUsageRecorder]) {
+    [tab.parentTabModel tabUsageRecorder]->RecordPageLoadStart(webState);
+  }
+  if (!webState->IsCrashed()) {
+    // Load the page if it was evicted by browsing data clearing logic.
+    webState->GetNavigationManager()->LoadIfNecessary();
+  }
+  return webState->GetView();
 }
 
 #pragma mark - Private Methods: Find Bar UI

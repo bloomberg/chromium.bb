@@ -267,22 +267,6 @@ NSString* const kTabUrlKey = @"url";
   _parentTabModel = model;
 }
 
-- (UIView*)view {
-  if (!self.webState)
-    return nil;
-
-  // Record reload of previously-evicted tab.
-  if (self.webState->IsEvicted() && [_parentTabModel tabUsageRecorder])
-    [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(self.webState);
-
-  // Do not trigger the load if the tab has crashed. SadTabTabHelper is
-  // responsible for handing reload logic for crashed tabs.
-  if (!self.webState->IsCrashed()) {
-    self.webState->GetNavigationManager()->LoadIfNecessary();
-  }
-  return self.webState->GetView();
-}
-
 - (UIView*)viewForPrinting {
   return self.webController.viewForPrinting;
 }
@@ -420,8 +404,7 @@ NSString* const kTabUrlKey = @"url";
     _openInController = [[OpenInController alloc]
         initWithURLLoaderFactory:_browserState->GetSharedURLLoaderFactory()
                    webController:self.webController];
-    // If the tab was evicted before, It should have been loaded already before
-    // starting the open-in controller.
+    // Previously evicted tabs should be reloaded before this method is called.
     DCHECK(!self.webState->IsEvicted());
     self.webState->GetNavigationManager()->LoadIfNecessary();
     _openInController.baseView = self.webState->GetView();
