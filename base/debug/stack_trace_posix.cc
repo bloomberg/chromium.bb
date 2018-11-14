@@ -53,6 +53,8 @@
 #include "build/build_config.h"
 
 #if defined(USE_SYMBOLIZE)
+#include "base/no_destructor.h"
+#include "base/synchronization/lock.h"
 #include "base/third_party/symbolize/symbolize.h"
 #endif
 
@@ -178,7 +180,18 @@ void ProcessBacktrace(void* const* trace,
     // Subtract by one as return address of function may be in the next
     // function when a function is annotated as noreturn.
     void* address = static_cast<char*>(trace[i]) - 1;
-    if (google::Symbolize(address, buf, sizeof(buf)))
+    bool symbolize_result;
+    {
+      // Chromium version of google::Symbolize() uses SandboxSymbolizeHelper::
+      // GetFileDescriptor(), and unlike the original version, it reuses fds for
+      // multiple symbolize requests. As google::Symbolize() calls lseek() on
+      // the shared fd before reading it and changes the state of the
+      // descriptor, parallel symbolize requests are racy.
+      static base::NoDestructor<base::Lock> lock;
+      base::AutoLock auto_lock(*lock);
+      symbolize_result = google::Symbolize(address, buf, sizeof(buf));
+    }
+    if (symbolize_result)
       handler->HandleOutput(buf);
     else
       handler->HandleOutput("<unknown>");
