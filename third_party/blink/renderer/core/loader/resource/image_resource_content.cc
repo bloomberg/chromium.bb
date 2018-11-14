@@ -77,7 +77,7 @@ int64_t EstimateOriginalImageSizeForPlaceholder(
   if (response.HttpHeaderField("chrome-proxy-content-transform") ==
       "empty-image") {
     const String& str = response.HttpHeaderField("chrome-proxy");
-    size_t index = str.Find("ofcl=");
+    wtf_size_t index = str.Find("ofcl=");
     if (index != kNotFound) {
       bool ok = false;
       int bytes = str.Substring(index + (sizeof("ofcl=") - 1)).ToInt(&ok);

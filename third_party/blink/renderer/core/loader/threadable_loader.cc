@@ -910,7 +910,7 @@ void ThreadableLoader::SetSerializedCachedMetadata(Resource*,
 
   if (!actual_request_.IsNull())
     return;
-  client_->DidReceiveCachedMetadata(data, size);
+  client_->DidReceiveCachedMetadata(data, SafeCast<int>(size));
 }
 
 void ThreadableLoader::DataReceived(Resource* resource,

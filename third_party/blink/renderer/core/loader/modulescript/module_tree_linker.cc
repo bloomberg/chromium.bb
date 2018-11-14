@@ -377,7 +377,7 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
   //
   // [FD] Step 7. These invocations of the internal module script graph fetching
   // procedure should be performed in parallel to each other.
-  for (size_t i = 0; i < urls.size(); ++i) {
+  for (wtf_size_t i = 0; i < urls.size(); ++i) {
     // [FD] Step 7. ... perform the internal module script graph fetching
     // procedure given url, fetch client settings object, destination, options,
     // module script's settings object, visited set, module script's base URL,

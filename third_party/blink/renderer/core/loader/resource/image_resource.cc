@@ -28,6 +28,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_info.h"
@@ -297,8 +298,9 @@ void ImageResource::DestroyDecodedDataIfPossible() {
   GetContent()->DestroyDecodedData();
   if (GetContent()->HasImage() && !IsUnusedPreload() &&
       GetContent()->IsRefetchableDataFromDiskCache()) {
-    UMA_HISTOGRAM_MEMORY_KB("Memory.Renderer.EstimatedDroppableEncodedSize",
-                            EncodedSize() / 1024);
+    UMA_HISTOGRAM_MEMORY_KB(
+        "Memory.Renderer.EstimatedDroppableEncodedSize",
+        base::saturated_cast<base::Histogram::Sample>(EncodedSize() / 1024));
   }
 }
 
@@ -335,7 +337,7 @@ scoped_refptr<const SharedBuffer> ImageResource::ResourceBuffer() const {
 void ImageResource::AppendData(const char* data, size_t length) {
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(length);
   if (multipart_parser_) {
-    multipart_parser_->AppendData(data, length);
+    multipart_parser_->AppendData(data, SafeCast<wtf_size_t>(length));
   } else {
     Resource::AppendData(data, length);
 
