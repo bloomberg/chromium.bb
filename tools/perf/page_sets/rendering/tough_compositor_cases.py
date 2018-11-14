@@ -50,20 +50,6 @@ class JSScrollTextPage(ToughCompositorScrollPage):
   URL = 'http://jsbin.com/dozirar/quiet?JS_SCROLL_TEXT_ONLY'
 
 
-# Why: Scroll by a large number of CC layers """
-# TODO(crbug.com/878951): Remove after 'n_layer' tests below are fully landed.
-class CCScroll200LayerPage(ToughCompositorScrollPage):
-  BASE_NAME = 'cc_scroll_200_layer_grid'
-  URL = 'http://jsbin.com/yakagevo/1/quiet?CC_SCROLL_200_LAYER_GRID'
-
-
-# Why: Scroll by a large number of JS layers """
-# TODO(crbug.com/878951): Remove after 'n_layer' tests below are fully landed.
-class JSScroll200LayerPage(ToughCompositorScrollPage):
-  BASE_NAME = 'js_scroll_200_layer_grid'
-  URL = 'http://jsbin.com/jumolix/quiet?JS_SCROLL_200_LAYER_GRID'
-
-
 class ToughCompositorWaitPage(ToughCompositorPage):
   ABSTRACT_STORY = True
 
