@@ -114,10 +114,6 @@ bool CanCoverAvailableWorkspace(aura::Window* window) {
   return wm::GetWindowState(window)->IsMaximizedOrFullscreenOrPinned();
 }
 
-bool IsOverviewSwipeToCloseEnabled() {
-  return base::FeatureList::IsEnabled(features::kOverviewSwipeToClose);
-}
-
 void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
                                       OverviewAnimationType animation_type,
                                       bool slide) {

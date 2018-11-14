@@ -448,9 +448,6 @@ extern const char kEnableOptimizationHintsDescription[];
 extern const char kEnableOutOfBlinkCORSName[];
 extern const char kEnableOutOfBlinkCORSDescription[];
 
-extern const char kEnableOverviewSwipeToCloseName[];
-extern const char kEnableOverviewSwipeToCloseDescription[];
-
 extern const char kVizDisplayCompositorName[];
 extern const char kVizDisplayCompositorDescription[];
 

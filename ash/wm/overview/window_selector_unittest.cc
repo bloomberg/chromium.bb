@@ -50,7 +50,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_types.h"
@@ -3573,9 +3572,6 @@ TEST_F(SplitViewWindowSelectorTest, Dragging) {
 TEST_F(SplitViewWindowSelectorTest, OverviewDragControllerBehavior) {
   Shell::Get()->aura_env()->set_throttle_input_on_resize_for_testing(false);
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
-
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
 
@@ -3617,9 +3613,6 @@ TEST_F(SplitViewWindowSelectorTest, OverviewDragControllerBehavior) {
 // Verify that if the window item has been dragged enough vertically, the window
 // will be closed.
 TEST_F(SplitViewWindowSelectorTest, DragToClose) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
-
   // This test requires a widget.
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<views::Widget> widget1(CreateWindowWidget(bounds));
@@ -3651,9 +3644,6 @@ TEST_F(SplitViewWindowSelectorTest, DragToClose) {
 // Verify that if the window item has been flung enough vertically, the window
 // will be closed.
 TEST_F(SplitViewWindowSelectorTest, FlingToClose) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
-
   // This test requires a widget.
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<views::Widget> widget1(CreateWindowWidget(bounds));
@@ -3694,9 +3684,6 @@ TEST_F(SplitViewWindowSelectorTest, FlingToClose) {
 // we still only have one row, so the other items should nudge while the item is
 // being dragged.
 TEST_F(SplitViewWindowSelectorTest, BasicNudging) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
-
   // Set up three equal windows, which take up one row on the overview grid.
   // When one of them is deleted we are still left with all the windows on one
   // row.
@@ -3741,9 +3728,6 @@ TEST_F(SplitViewWindowSelectorTest, BasicNudging) {
 // if the item to be deleted results in the overview grid to change number of
 // rows.
 TEST_F(SplitViewWindowSelectorTest, NoNudgingWhenNumRowsChange) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
-
   // Set up four equal windows, which would split into two rows in overview
   // mode. Removing one window would leave us with three windows, which only
   // takes a single row in overview.
@@ -3779,9 +3763,6 @@ TEST_F(SplitViewWindowSelectorTest, NoNudgingWhenNumRowsChange) {
 // from the previous row to drop down to the current row, thus causing the items
 // to the right of the item to be shifted right, which is visually unacceptable.
 TEST_F(SplitViewWindowSelectorTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
-
   // Set up five equal windows, which would split into two rows in overview
   // mode. Removing one window would cause the rows to rearrange, with the third
   // item dropping down from the first row to the second row. Create the windows
