@@ -259,6 +259,30 @@ CrElementsPolicyNetworkIndicatorTest.prototype = {
 TEST_F('CrElementsPolicyNetworkIndicatorTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsFingerprintProgressArcTest() {}
+
+CrElementsFingerprintProgressArcTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/chromeos/fingerprint/' +
+      'cr_fingerprint_progress_arc.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_fingerprint_progress_arc_tests.js',
+  ]),
+};
+
+TEST_F('CrElementsFingerprintProgressArcTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#endif');
 
 /**
