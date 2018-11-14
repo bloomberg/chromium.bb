@@ -108,10 +108,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // TODO(crbug.com/228575): Create a delegate interface and remove this.
 - (void)setParentTabModel:(TabModel*)model;
 
-// The view to display in the view hierarchy based on the current URL. Won't be
-// nil. It is up to the caller to size the view and confirm |webUsageEnabled|.
-- (UIView*)view;
-
 // The view that generates print data when printing. It can be nil when printing
 // is not supported with this tab. It can be different from |Tab view|.
 - (UIView*)viewForPrinting;
