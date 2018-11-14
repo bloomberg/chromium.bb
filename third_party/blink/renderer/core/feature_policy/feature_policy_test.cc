@@ -439,10 +439,12 @@ class FeaturePolicyMutationTest : public testing::Test {
   ParsedFeaturePolicy test_policy = {{mojom::FeaturePolicyFeature::kFullscreen,
                                       false,
                                       false,
+                                      mojom::FeaturePolicyDisposition::kEnforce,
                                       {url_origin_a_, url_origin_b_}},
                                      {mojom::FeaturePolicyFeature::kGeolocation,
                                       false,
                                       false,
+                                      mojom::FeaturePolicyDisposition::kEnforce,
                                       {url_origin_a_}}};
   ParsedFeaturePolicy empty_policy = {};
 };

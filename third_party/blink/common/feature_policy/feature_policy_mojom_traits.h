@@ -83,6 +83,10 @@ class BLINK_COMMON_EXPORT
       const blink::ParsedFeaturePolicyDeclaration& policy) {
     return policy.matches_all_origins;
   }
+  static blink::mojom::FeaturePolicyDisposition disposition(
+      const blink::ParsedFeaturePolicyDeclaration& policy) {
+    return policy.disposition;
+  }
   static const std::vector<url::Origin>& origins(
       const blink::ParsedFeaturePolicyDeclaration& policy) {
     return policy.origins;

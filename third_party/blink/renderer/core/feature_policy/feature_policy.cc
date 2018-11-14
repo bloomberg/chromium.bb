@@ -17,6 +17,9 @@
 
 namespace blink {
 
+constexpr char kReportOnlySuffix[] = "-report-only";
+constexpr size_t kReportOnlySuffixLength = 12;
+
 ParsedFeaturePolicy ParseFeaturePolicyHeader(
     const String& policy,
     scoped_refptr<const SecurityOrigin> origin,
@@ -64,15 +67,31 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       // Empty policy. Skip.
       if (tokens.IsEmpty())
         continue;
-      if (!feature_names.Contains(tokens[0])) {
-        if (messages)
+      mojom::FeaturePolicyDisposition disposition =
+          mojom::FeaturePolicyDisposition::kEnforce;
+      String feature_name;
+      if (RuntimeEnabledFeatures::FeaturePolicyReportingEnabled() &&
+          tokens[0].EndsWith(kReportOnlySuffix)) {
+        feature_name = tokens[0].Substring(
+            0, tokens[0].length() - kReportOnlySuffixLength);
+        disposition = mojom::FeaturePolicyDisposition::kReport;
+      } else {
+        feature_name = tokens[0];
+      }
+      if (!feature_names.Contains(feature_name)) {
+        if (messages) {
+          // Console message should display the entire string, with
+          // "-report-only" suffix if it was originally included.
           messages->push_back("Unrecognized feature: '" + tokens[0] + "'.");
+        }
         continue;
       }
 
-      mojom::FeaturePolicyFeature feature = feature_names.at(tokens[0]);
+      mojom::FeaturePolicyFeature feature = feature_names.at(feature_name);
       // If a policy has already been specified for the current feature, drop
       // the new policy.
+      // TODO(crbug.com/904880): Allow a report-only and an enforcing version in
+      // the same parsed policy.
       if (features_specified.QuickGet(static_cast<int>(feature)))
         continue;
 
@@ -92,6 +111,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
 
       ParsedFeaturePolicyDeclaration allowlist;
       allowlist.feature = feature;
+      allowlist.disposition = disposition;
       features_specified.QuickSet(static_cast<int>(feature));
       std::vector<url::Origin> origins;
       // If a policy entry has no (optional) values (e,g,
@@ -181,6 +201,7 @@ bool DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature feature,
   allowlist.feature = feature;
   allowlist.matches_all_origins = false;
   allowlist.matches_opaque_src = false;
+  allowlist.disposition = mojom::FeaturePolicyDisposition::kEnforce;
   policy.push_back(allowlist);
   return true;
 }
@@ -193,6 +214,7 @@ bool AllowFeatureEverywhereIfNotPresent(mojom::FeaturePolicyFeature feature,
   allowlist.feature = feature;
   allowlist.matches_all_origins = true;
   allowlist.matches_opaque_src = true;
+  allowlist.disposition = mojom::FeaturePolicyDisposition::kEnforce;
   policy.push_back(allowlist);
   return true;
 }

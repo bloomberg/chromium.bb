@@ -85,14 +85,15 @@ void HTMLFrameElement::ParseAttribute(
 ParsedFeaturePolicy HTMLFrameElement::ConstructContainerPolicy(
     Vector<String>*) const {
   // Frame elements are not allowed to enable the fullscreen feature. Add an
-  // empty whitelist for the fullscreen feature so that the framed content is
+  // empty allowlist for the fullscreen feature so that the framed content is
   // unable to use the API, regardless of origin.
   // https://fullscreen.spec.whatwg.org/#model
   ParsedFeaturePolicy container_policy;
-  ParsedFeaturePolicyDeclaration whitelist;
-  whitelist.feature = mojom::FeaturePolicyFeature::kFullscreen;
-  whitelist.matches_all_origins = false;
-  container_policy.push_back(whitelist);
+  ParsedFeaturePolicyDeclaration allowlist;
+  allowlist.feature = mojom::FeaturePolicyFeature::kFullscreen;
+  allowlist.matches_all_origins = false;
+  allowlist.disposition = mojom::FeaturePolicyDisposition::kEnforce;
+  container_policy.push_back(allowlist);
   return container_policy;
 }
 

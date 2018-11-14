@@ -110,11 +110,19 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
         script_state,
         DOMException::Create(DOMExceptionCode::kNotSupportedError));
   }
-  if (!IsFeatureEnabled()) {
+
+  FeatureEnabledState state = GetFeatureEnabledState();
+  if (state != FeatureEnabledState::kEnabled) {
     ExecutionContext* execution_context = ExecutionContext::From(script_state);
     if (auto* document = DynamicTo<Document>(execution_context)) {
-      document->ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature::kUsb);
+      document->ReportFeaturePolicyViolation(
+          mojom::FeaturePolicyFeature::kUsb,
+          (state == FeatureEnabledState::kReportOnly
+               ? mojom::FeaturePolicyDisposition::kReport
+               : mojom::FeaturePolicyDisposition::kEnforce));
     }
+  }
+  if (state == FeatureEnabledState::kDisabled) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(DOMExceptionCode::kSecurityError,
                                            kFeaturePolicyBlocked));
@@ -271,7 +279,8 @@ void USB::AddedEventListener(const AtomicString& event_type,
     return;
   }
 
-  if (!IsContextSupported() || !IsFeatureEnabled())
+  if (!IsContextSupported() ||
+      GetFeatureEnabledState() == FeatureEnabledState::kDisabled)
     return;
 
   EnsureServiceConnection();
@@ -282,7 +291,7 @@ void USB::EnsureServiceConnection() {
     return;
 
   DCHECK(IsContextSupported());
-  DCHECK(IsFeatureEnabled());
+  DCHECK(GetFeatureEnabledState() != FeatureEnabledState::kDisabled);
   GetExecutionContext()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&service_));
   service_.set_connection_error_handler(
@@ -311,8 +320,8 @@ bool USB::IsContextSupported() const {
   return true;
 }
 
-bool USB::IsFeatureEnabled() const {
-  return GetExecutionContext()->GetSecurityContext().IsFeatureEnabled(
+FeatureEnabledState USB::GetFeatureEnabledState() const {
+  return GetExecutionContext()->GetSecurityContext().GetFeatureEnabledState(
       mojom::FeaturePolicyFeature::kUsb);
 }
 

@@ -7676,8 +7676,10 @@ LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
   return *lazy_load_image_observer_;
 }
 
-void Document::ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature feature,
-                                            const String& message) const {
+void Document::ReportFeaturePolicyViolation(
+    mojom::FeaturePolicyFeature feature,
+    mojom::FeaturePolicyDisposition disposition,
+    const String& message) const {
   if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled())
     return;
   LocalFrame* frame = GetFrame();
@@ -7685,7 +7687,10 @@ void Document::ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature feature,
     return;
   const String& feature_name = GetNameForFeature(feature);
   FeaturePolicyViolationReportBody* body = new FeaturePolicyViolationReportBody(
-      feature_name, "Feature policy violation", SourceLocation::Capture());
+      feature_name, "Feature policy violation",
+      (disposition == mojom::FeaturePolicyDisposition::kReport ? "report"
+                                                               : "enforce"),
+      SourceLocation::Capture());
   Report* report = new Report("feature-policy", Url().GetString(), body);
   ReportingContext::From(this)->QueueReport(report);
 
@@ -7697,13 +7702,19 @@ void Document::ReportFeaturePolicyViolation(mojom::FeaturePolicyFeature feature,
 
   // Send the feature policy violation report to the Reporting API.
   frame->GetReportingService()->QueueFeaturePolicyViolationReport(
-      Url(), feature_name, "Feature policy violation", body->sourceFile(),
-      line_number, column_number);
-  frame->Console().AddMessage(ConsoleMessage::Create(
-      kViolationMessageSource, kErrorMessageLevel,
-      (message.IsEmpty() ? ("Feature policy violation: " + feature_name +
-                            " is not allowed in this document.")
-                         : message)));
+      Url(), feature_name,
+      (disposition == mojom::FeaturePolicyDisposition::kReport ? "report"
+                                                               : "enforce"),
+      "Feature policy violation", body->sourceFile(), line_number,
+      column_number);
+  // TODO(iclelland): Report something different in report-only mode
+  if (disposition == mojom::FeaturePolicyDisposition::kEnforce) {
+    frame->Console().AddMessage(ConsoleMessage::Create(
+        kViolationMessageSource, kErrorMessageLevel,
+        (message.IsEmpty() ? ("Feature policy violation: " + feature_name +
+                              " is not allowed in this document.")
+                           : message)));
+  }
 }
 
 void Document::IncrementNumberOfCanvases() {
