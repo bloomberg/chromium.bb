@@ -693,11 +693,7 @@ void AXObjectCacheImpl::FocusableChanged(Element* element) {
     ChildrenChanged(element->parentNode());
   } else {
     // Refresh the focusable state on the exposed object.
-    // Reusing the value change event in order to invalidate, even though the
-    // value did not necessarily change.
-    // TODO(accessibility) find out why using MarkAXObjectDirty(obj, false) does
-    // not cause a state change event to be emitted.
-    PostNotification(obj, ax::mojom::Event::kValueChanged);
+    MarkAXObjectDirty(obj, false);
   }
 }
 

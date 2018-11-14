@@ -2660,10 +2660,7 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
 void AXLayoutObject::HandleAutofillStateChanged(bool is_available) {
   if (is_autofill_available_ != is_available) {
     is_autofill_available_ = is_available;
-    // Reusing the value change event in order to invalidate, even though the
-    // value did not necessarily change.
-    // TODO(dmazzoni) change to using a MarkDirty() API.
-    AXObjectCache().PostNotification(this, ax::mojom::Event::kValueChanged);
+    AXObjectCache().MarkAXObjectDirty(this, false);
   }
 }
 

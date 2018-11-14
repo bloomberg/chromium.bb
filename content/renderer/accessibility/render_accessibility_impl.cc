@@ -415,7 +415,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   if (document.IsNull())
     return;
 
-  if (pending_events_.empty())
+  if (pending_events_.empty() && dirty_objects_.empty())
     return;
 
   ack_pending_ = true;
