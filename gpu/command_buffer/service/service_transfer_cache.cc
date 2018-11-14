@@ -132,15 +132,22 @@ bool ServiceTransferCache::UnlockEntry(const EntryKey& key) {
   return true;
 }
 
+template <typename Iterator>
+Iterator ServiceTransferCache::ForceDeleteEntry(Iterator it) {
+  if (it->second.handle)
+    it->second.handle->ForceDelete();
+
+  DCHECK_GE(total_size_, it->second.entry->CachedSize());
+  total_size_ -= it->second.entry->CachedSize();
+  return entries_.Erase(it);
+}
+
 bool ServiceTransferCache::DeleteEntry(const EntryKey& key) {
   auto found = entries_.Peek(key);
   if (found == entries_.end())
     return false;
 
-  if (found->second.handle)
-    found->second.handle->ForceDelete();
-  total_size_ -= found->second.entry->CachedSize();
-  entries_.Erase(found);
+  ForceDeleteEntry(found);
   return true;
 }
 
@@ -185,6 +192,16 @@ void ServiceTransferCache::PurgeMemory(
 
   EnforceLimits();
   cache_size_limit_ = DiscardableCacheSizeLimit();
+}
+
+void ServiceTransferCache::DeleteAllEntriesForDecoder(int decoder_id) {
+  for (auto it = entries_.rbegin(); it != entries_.rend();) {
+    if (it->first.decoder_id != decoder_id) {
+      ++it;
+      continue;
+    }
+    it = ForceDeleteEntry(it);
+  }
 }
 
 bool ServiceTransferCache::OnMemoryDump(
