@@ -2,7 +2,6 @@ Test behavior of the HTMLTableRowElement cells attribute in cases where there is
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS checkCellNesting("col") is 0
 PASS checkCellNesting("colgroup") is 0
 PASS checkCellNesting("div") is 0
@@ -14,8 +13,10 @@ PASS checkCellNesting("tfoot") is 0
 PASS checkCellNesting("thead") is 0
 PASS checkCellNesting("tr") is 0
 
+
 PASS checkCellNesting("td") is 1
 PASS checkCellNesting("th") is 1
+
 
 PASS checkHeaderCellNesting("col") is 0
 PASS checkHeaderCellNesting("colgroup") is 0
@@ -28,8 +29,10 @@ PASS checkHeaderCellNesting("tfoot") is 0
 PASS checkHeaderCellNesting("thead") is 0
 PASS checkHeaderCellNesting("tr") is 0
 
+
 PASS checkHeaderCellNesting("td") is 1
 PASS checkHeaderCellNesting("th") is 1
+
 
 PASS successfullyParsed is true
 

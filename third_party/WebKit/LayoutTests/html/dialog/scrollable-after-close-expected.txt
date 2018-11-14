@@ -2,7 +2,6 @@ Tests that FrameView::m_scrollableAreas is updated after closing a modal dialog 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS internals.numberOfScrollableAreas(document) is 1
 PASS successfullyParsed is true
 

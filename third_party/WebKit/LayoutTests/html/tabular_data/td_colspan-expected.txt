@@ -2,7 +2,6 @@ HTMLTableCellElement colspan attribute test
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.createElement("td").colSpan is 1
 PASS colspanAttributeEffect("") is 1
 PASS colspanAttributeEffect("1") is 1

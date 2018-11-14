@@ -2,7 +2,6 @@ HTMLTableElement cellpadding attribute test
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS cellPaddingAttributeEffect("") is "1px"
 PASS cellPaddingAttributeEffect("1") is "1px"
 PASS cellPaddingAttributeEffect("2") is "2px"

@@ -3,7 +3,6 @@ Tests layout of fixed positioned dialogs.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-
 showModal() should center in the viewport.
 PASS dialog.getBoundingClientRect().top is centeredTop
 

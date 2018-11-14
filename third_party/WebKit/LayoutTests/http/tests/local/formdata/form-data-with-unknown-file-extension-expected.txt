@@ -1,4 +1,3 @@
-
 PASS xhr.responseText is 'file1=file.invalid:application/octet-stream:1234567890'
 PASS successfullyParsed is true
 

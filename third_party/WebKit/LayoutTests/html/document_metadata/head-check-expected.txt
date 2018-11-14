@@ -3,20 +3,25 @@ This test checks whether one (and only one) HEAD element is created for various 
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 Testing: head-check-1.html
 PASS iframe.contentWindow.document.getElementsByTagName('head').length is 1
 PASS iframe.contentWindow.document.firstChild.firstChild.nodeName.toLowerCase() is 'head'
+
 
 Testing: head-check-2.html
 PASS iframe.contentWindow.document.getElementsByTagName('head').length is 1
 PASS iframe.contentWindow.document.firstChild.firstChild.nodeName.toLowerCase() is 'head'
 
+
 Testing: head-check-3.html
 PASS iframe.contentWindow.document.getElementsByTagName('head').length is 1
 PASS iframe.contentWindow.document.firstChild.firstChild.nodeName.toLowerCase() is 'head'
 
+
 Testing: head-check-4.html
 PASS iframe.contentWindow.document.getElementsByTagName('head').length is 1
 PASS iframe.contentWindow.document.firstChild.firstChild.nodeName.toLowerCase() is 'head'
+
 
 TEST COMPLETE

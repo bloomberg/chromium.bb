@@ -2,7 +2,6 @@ Test for bug 110952. Ensure that mouse events are not dispatched to an inert nod
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Clicking on inert box
 PASS inertDivHandledEvent is false
 PASS Object.keys(handledEvents.document).length is expectedEventCountForDocument

@@ -2,7 +2,6 @@ Tests focusing of an inert label for a non-inert target. label.focus() should se
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Testing that calling focus() on label sends focus to its target.
 PASS document.activeElement is document.querySelector('#submit')
 Testing that clicking on the label sends focus to document.body.
@@ -10,4 +9,6 @@ PASS document.activeElement is document.body
 PASS successfullyParsed is true
 
 TEST COMPLETE
-Label for Submit   
+
+Label for Submit
+ 

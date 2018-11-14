@@ -2,7 +2,6 @@ Various tests for the section element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 <section> closes <p>:
 PASS section1.parentNode.nodeName == "p" is false
 <p> does not close <section>:

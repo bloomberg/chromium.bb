@@ -3,7 +3,6 @@ Test for slicing a dragged file and sending it via XMLHttpRequest.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Test slicing and sending an empty file.
 PASS event.dataTransfer contains a File object on drop.
 PASS subfile.size is 0
