@@ -40,14 +40,10 @@ test.util.executeTestMessage = null;
  * Registers message listener, which runs test utility functions.
  */
 test.util.registerRemoteTestUtils = function() {
-  /**
-   * Responses that couldn't be sent while waiting for test scripts to load.
-   * Null if there is no load in progress.
-   * @type{Array<function(*)>}
-   */
-  let responsesWaitingForLoad = null;
+  let responsesWaitingForLoad = [];
 
-  // Return true for asynchronous functions and false for synchronous.
+  // Return true for asynchronous functions, which keeps the connection to the
+  // caller alive; Return false for synchronous functions.
   chrome.runtime.onMessageExternal.addListener(function(
       request, sender, sendResponse) {
     /**
@@ -69,49 +65,39 @@ test.util.registerRemoteTestUtils = function() {
       // handle external messages.
       return;
     }
-    if (window.IN_TEST) {
-      // If there are multiple foreground windows, the remote call API may have
-      // already been initialised by one of them, so just return true to tell
-      // the other window we are ready.
-      if ('enableTesting' in request) {
-        sendResponse(true);
-        return false;  // No need to keep the connection alive.
-      }
+
+    // Set the global IN_TEST flag, so other components are aware of it.
+    window.IN_TEST = true;
+
+    // If testing functions are loaded just run the requested function.
+    if (test.util.executeTestMessage !== null)
       return test.util.executeTestMessage(request, sendResponse);
-    }
 
-    // When a valid test extension connects, the first message sent must be an
-    // enable tests request.
-    if (!('enableTesting' in request))
-      throw new Error('Expected enableTesting');
+    // Queue the request/response pair.
+    const obj = {request, sendResponse};
+    responsesWaitingForLoad.push(obj);
 
-    if (responsesWaitingForLoad != null) {
-      // Loading started, but not complete. Queue the response.
-      responsesWaitingForLoad.push(sendResponse);
+    // Only load the script with testing functions in the first request.
+    if (responsesWaitingForLoad.length > 1)
       return true;
-    }
-    responsesWaitingForLoad = [];
 
+    // Asynchronously load the testing functions.
     let script = document.createElement('script');
     document.body.appendChild(script);
-    script.onload = function() {
-      // The runtime load should have populated test.util with
-      // executeTestMessage, allowing it to be invoked on the next
-      // onMessageExternal call.
-      sendResponse(true);
-      responsesWaitingForLoad.forEach((queuedResponse) => {
-        queuedResponse(true);
-      });
-      responsesWaitingForLoad = null;
 
-      // Set a global flag that we are in tests, so other components are aware
-      // of it.
-      window.IN_TEST = true;
+    script.onload = function() {
+      // Run queued request/response pairs.
+      responsesWaitingForLoad.forEach((queueObj) => {
+        test.util.executeTestMessage(queueObj.request, queueObj.sendResponse);
+      });
+      responsesWaitingForLoad = [];
     };
+
     script.onerror = function(/** Event */ event) {
-      console.error('Script load failed ' + event);
-      throw new Error('Script load failed.');
+      console.error('Failed to load the run-time test script: ' + event);
+      throw new Error('Failed to load the run-time test script: ' + event);
     };
+
     const kFileManagerExtension =
         'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
     const kTestScriptUrl =
