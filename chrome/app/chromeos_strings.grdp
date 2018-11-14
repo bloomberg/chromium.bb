@@ -3214,7 +3214,7 @@
     Related info
   </message>
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC" desc="Description for assistant screen context optin.">
-    Let the Assistant give suggestions based on what's on your screen
+    Let the Assistant show you info related to what's on your screen
   </message>
   <message name="IDS_ASSISTANT_GET_MORE_SCREEN_TITLE" desc="Title for assistant get more screen.">
     Get the most out of your Assistant
