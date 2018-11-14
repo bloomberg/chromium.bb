@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
@@ -216,52 +214,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ListenerRegistration) {
     SCOPED_TRACE("After page unload");
     expect_has_listeners(false);
   }
-}
-
-class ExtensionsActivityLogTest : public ExtensionSettingsUIBrowserTest {
- protected:
-  // Enable command line flags for test.
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableExtensionActivityLogging);
-  };
-};
-
-IN_PROC_BROWSER_TEST_F(ExtensionsActivityLogTest, TestActivityLogVisible) {
-  base::FilePath test_data_dir;
-  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-  test_data_dir = test_data_dir.AppendASCII("extensions");
-  extensions::ChromeTestExtensionLoader loader(browser()->profile());
-  const extensions::Extension* extension =
-      loader
-          .LoadExtension(test_data_dir.AppendASCII("activity_log/simple_call"))
-          .get();
-  ASSERT_TRUE(extension);
-
-  GURL activity_log_url("chrome://extensions/?activity=" + extension->id());
-  ui_test_utils::NavigateToURL(browser(), activity_log_url);
-  content::WebContents* activity_log_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(activity_log_contents);
-  EXPECT_EQ(activity_log_url, activity_log_contents->GetLastCommittedURL());
-
-  // We are looking for the 'tabs.query' entry in the activity log as that is
-  // the only API call the simple_call.crx extension does.
-  // The querySelectors and shadowRoots are used here in order to penetrate
-  // multiple nested shadow DOMs created by Polymer components
-  // in the chrome://extensions page.
-  // See chrome/browser/resources/md_extensions for the Polymer code.
-  // This test only serves as an end to end test, and most of the functionality
-  // is covered in the JS unit tests.
-  bool has_api_call = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      activity_log_contents,
-      R"(let manager = document.querySelector('extensions-manager');
-         let activityLog =
-             manager.shadowRoot.querySelector('extensions-activity-log');
-         let item = activityLog.shadowRoot.querySelector('activity-log-item');
-         let apiCall = item.shadowRoot.getElementById('api-call');
-         window.domAutomationController.send(
-             apiCall.innerText === 'tabs.query');)",
-      &has_api_call));
-  EXPECT_TRUE(has_api_call);
 }

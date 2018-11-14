@@ -6,7 +6,6 @@ cr.define('extensions', function() {
   'use strict';
 
   /**
-   * @implements {extensions.ActivityLogDelegate}
    * @implements {extensions.ErrorPageDelegate}
    * @implements {extensions.ItemDelegate}
    * @implements {extensions.KeyboardShortcutDelegate}
@@ -338,21 +337,6 @@ cr.define('extensions', function() {
     /** @override */
     showInFolder(id) {
       chrome.developerPrivate.showPath(id);
-    }
-
-    /** @override */
-    getExtensionActivityLog(extensionId) {
-      return new Promise(function(resolve, reject) {
-        chrome.activityLogPrivate.getExtensionActivities(
-            {
-              activityType:
-                  chrome.activityLogPrivate.ExtensionActivityFilter.ANY,
-              extensionId: extensionId
-            },
-            function(result) {
-              resolve(result);
-            });
-      });
     }
   }
 
