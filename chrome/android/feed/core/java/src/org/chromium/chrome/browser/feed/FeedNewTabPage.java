@@ -256,7 +256,6 @@ public class FeedNewTabPage extends NewTabPage {
         super.destroy();
         mMediator.destroy();
         if (mStreamLifecycleManager != null) mStreamLifecycleManager.destroy();
-        if (mImageLoader != null) mImageLoader.destroy();
         mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
     }
 
@@ -364,7 +363,6 @@ public class FeedNewTabPage extends NewTabPage {
             mStreamLifecycleManager = null;
             // Do not call mStream.onDestroy(), the mStreamLifecycleManager has done that for us.
             mStream = null;
-            mImageLoader.destroy();
             mImageLoader = null;
             mSectionHeaderView = null;
             mSectionHeaderViewMarginResizer.detach();
