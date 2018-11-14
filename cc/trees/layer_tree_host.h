@@ -73,12 +73,12 @@ class UkmRecorderFactory;
 struct RenderingStats;
 struct ScrollAndScaleSet;
 
-// Returned from LayerTreeHost::DeferCommits. Automatically un-defers on
+// Returned from LayerTreeHost::DeferMainFrameUpdate. Automatically un-defers on
 // destruction.
-class CC_EXPORT ScopedDeferCommits {
+class CC_EXPORT ScopedDeferMainFrameUpdate {
  public:
-  explicit ScopedDeferCommits(LayerTreeHost* host);
-  ~ScopedDeferCommits();
+  explicit ScopedDeferMainFrameUpdate(LayerTreeHost* host);
+  ~ScopedDeferMainFrameUpdate();
 
  private:
   base::WeakPtr<LayerTreeHost> host_;
@@ -221,14 +221,16 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool CommitRequested() const;
 
   // Prevents the compositor from requesting main frame updates from the client
-  // until the ScopedDeferCommits object is destroyed, or StopDeferringCommits
-  // is called.
-  std::unique_ptr<ScopedDeferCommits> DeferCommits();
+  // until the ScopedDeferMainFrameUpdate object is destroyed, or
+  // StopDeferringCommits is called.
+  std::unique_ptr<ScopedDeferMainFrameUpdate> DeferMainFrameUpdate();
 
-  // Returns whether there are any outstanding ScopedDeferCommits, though
-  // commits may be deferred also when the local_surface_id_from_parent() is not
-  // valid.
-  bool defer_commits() const { return defer_commits_count_; }
+  // Returns whether there are any outstanding ScopedDeferMainFrameUpdate,
+  // though commits may be deferred also when the local_surface_id_from_parent()
+  // is not valid.
+  bool defer_main_frame_update() const {
+    return defer_main_frame_update_count_;
+  }
 
   // Synchronously performs a main frame update and layer updates. Used only in
   // single threaded mode when the compositor's internal scheduling is disabled.
@@ -652,7 +654,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
  private:
   friend class LayerTreeHostSerializationTest;
-  friend class ScopedDeferCommits;
+  friend class ScopedDeferMainFrameUpdate;
 
   // This is the number of consecutive frames in which we want the content to be
   // free of slow-paths before toggling the flag.
@@ -665,7 +667,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   bool DoUpdateLayers(Layer* root_layer);
 
-  void UpdateDeferCommitsInternal();
+  void UpdateDeferMainFrameUpdateInternal();
 
   const CompositorMode compositor_mode_;
 
@@ -742,7 +744,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Used to detect surface invariant violations.
   bool has_pushed_local_surface_id_from_parent_ = false;
   bool new_local_surface_id_request_ = false;
-  uint32_t defer_commits_count_ = 0;
+  uint32_t defer_main_frame_update_count_ = 0;
 
   SkColor background_color_ = SK_ColorWHITE;
 
@@ -798,8 +800,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // added here.
   std::vector<PresentationTimeCallback> pending_presentation_time_callbacks_;
 
-  // Used to vend weak pointers to LayerTreeHost to ScopedDeferCommits objects.
-  base::WeakPtrFactory<LayerTreeHost> defer_commits_weak_ptr_factory_;
+  // Used to vend weak pointers to LayerTreeHost to ScopedDeferMainFrameUpdate
+  // objects.
+  base::WeakPtrFactory<LayerTreeHost> defer_main_frame_update_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

@@ -3171,7 +3171,7 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     // This means that we're transitioning to a new page. Suppress
     // commits until Blink generates invalidations so we don't
     // attempt to paint too early in the next page load.
-    scoped_defer_commits_ = layer_tree_view_->DeferCommits();
+    scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
     layer_tree_view_->ClearRootLayer();
     layer_tree_view_->ClearViewportLayers();
   }
@@ -3189,7 +3189,7 @@ void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
     // This means that we're transitioning to a new page. Suppress
     // commits until Blink generates invalidations so we don't
     // attempt to paint too early in the next page load.
-    scoped_defer_commits_ = layer_tree_view_->DeferCommits();
+    scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
     layer_tree_view_->ClearRootLayer();
     layer_tree_view_->ClearViewportLayers();
   }
@@ -3240,7 +3240,7 @@ void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
   // We don't yet have a page loaded at this point of the initialization of
   // WebViewImpl, so don't allow cc to commit any frames Blink might
   // try to create in the meantime.
-  scoped_defer_commits_ = layer_tree_view_->DeferCommits();
+  scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
 }
 
 void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
@@ -3390,8 +3390,8 @@ int32_t WebViewImpl::AutoplayFlagsForTest() {
   return page_->AutoplayFlags();
 }
 
-void WebViewImpl::DeferCommitsForTesting() {
-  scoped_defer_commits_ = layer_tree_view_->DeferCommits();
+void WebViewImpl::DeferMainFrameUpdateForTesting() {
+  scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
 }
 
 }  // namespace blink
