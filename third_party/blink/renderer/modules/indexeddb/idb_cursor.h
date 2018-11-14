@@ -51,10 +51,10 @@ class IDBCursor : public ScriptWrappable {
  public:
   using Source = IDBObjectStoreOrIDBIndex;
 
-  static WebIDBCursorDirection StringToDirection(const String& mode_string);
+  static mojom::IDBCursorDirection StringToDirection(const String& mode_string);
 
   static IDBCursor* Create(std::unique_ptr<WebIDBCursor>,
-                           WebIDBCursorDirection,
+                           mojom::IDBCursorDirection,
                            IDBRequest*,
                            const Source&,
                            IDBTransaction*);
@@ -103,7 +103,7 @@ class IDBCursor : public ScriptWrappable {
 
  protected:
   IDBCursor(std::unique_ptr<WebIDBCursor>,
-            WebIDBCursorDirection,
+            mojom::IDBCursorDirection,
             IDBRequest*,
             const Source&,
             IDBTransaction*);
@@ -113,7 +113,7 @@ class IDBCursor : public ScriptWrappable {
 
   std::unique_ptr<WebIDBCursor> backend_;
   Member<IDBRequest> request_;
-  const WebIDBCursorDirection direction_;
+  const mojom::IDBCursorDirection direction_;
   Source source_;
   Member<IDBTransaction> transaction_;
   bool got_value_ = false;

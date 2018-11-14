@@ -33,6 +33,7 @@
 #include "content/common/content_export.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -524,14 +525,14 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64_t database_id,
       int64_t object_store_id,
       const blink::IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
+      blink::mojom::IDBCursorDirection,
       leveldb::Status*);
   virtual std::unique_ptr<Cursor> OpenObjectStoreCursor(
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
       int64_t object_store_id,
       const blink::IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
+      blink::mojom::IDBCursorDirection,
       leveldb::Status*);
   virtual std::unique_ptr<Cursor> OpenIndexKeyCursor(
       IndexedDBBackingStore::Transaction* transaction,
@@ -539,7 +540,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64_t object_store_id,
       int64_t index_id,
       const blink::IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
+      blink::mojom::IDBCursorDirection,
       leveldb::Status*);
   virtual std::unique_ptr<Cursor> OpenIndexCursor(
       IndexedDBBackingStore::Transaction* transaction,
@@ -547,7 +548,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64_t object_store_id,
       int64_t index_id,
       const blink::IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
+      blink::mojom::IDBCursorDirection,
       leveldb::Status*);
 
   IndexedDBPreCloseTaskQueue* pre_close_task_queue() {

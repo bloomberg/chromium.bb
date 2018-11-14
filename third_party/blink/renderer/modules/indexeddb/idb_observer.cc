@@ -56,16 +56,16 @@ void IDBObserver::observe(IDBDatabase* database,
     return;
   }
 
-  std::bitset<kWebIDBOperationTypeCount> types;
+  std::bitset<kIDBOperationTypeCount> types;
   for (const auto& operation_type : options->operationTypes()) {
     if (operation_type == indexed_db_names::kAdd) {
-      types[kWebIDBAdd] = true;
+      types[static_cast<size_t>(mojom::IDBOperationType::Add)] = true;
     } else if (operation_type == indexed_db_names::kPut) {
-      types[kWebIDBPut] = true;
+      types[static_cast<size_t>(mojom::IDBOperationType::Put)] = true;
     } else if (operation_type == indexed_db_names::kDelete) {
-      types[kWebIDBDelete] = true;
+      types[static_cast<size_t>(mojom::IDBOperationType::Delete)] = true;
     } else if (operation_type == indexed_db_names::kClear) {
-      types[kWebIDBClear] = true;
+      types[static_cast<size_t>(mojom::IDBOperationType::Clear)] = true;
     } else {
       exception_state.ThrowTypeError(
           "Unknown operation type in observe options: " + operation_type);

@@ -52,7 +52,7 @@ class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
       int64_t id,
       IndexedDBConnection* connection,
       const std::set<int64_t>& scope,
-      blink::WebIDBTransactionMode mode,
+      blink::mojom::IDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction) override;
   scoped_refptr<LevelDBTransaction> CreateLevelDBTransaction(
       LevelDBDatabase* db) override;

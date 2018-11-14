@@ -34,6 +34,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -217,7 +218,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(success, kSuccess);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError);
 
-  void SetCursorDetails(indexed_db::CursorType, WebIDBCursorDirection);
+  void SetCursorDetails(indexed_db::CursorType, mojom::IDBCursorDirection);
   void SetPendingCursor(IDBCursor*);
   void Abort();
 
@@ -276,7 +277,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   virtual void EnqueueUpgradeNeeded(int64_t old_version,
                                     std::unique_ptr<WebIDBDatabase>,
                                     const IDBDatabaseMetadata&,
-                                    WebIDBDataLoss,
+                                    mojom::IDBDataLoss,
                                     String data_loss_message) {
     NOTREACHED();
   }
@@ -391,7 +392,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
 
   // Only used if the result type will be a cursor.
   indexed_db::CursorType cursor_type_ = indexed_db::kCursorKeyAndValue;
-  WebIDBCursorDirection cursor_direction_ = kWebIDBCursorDirectionNext;
+  mojom::IDBCursorDirection cursor_direction_ = mojom::IDBCursorDirection::Next;
   // When a cursor is continued/advanced, |result_| is cleared and
   // |pendingCursor_| holds it.
   Member<IDBCursor> pending_cursor_;

@@ -704,10 +704,10 @@ class DataLoader final : public ExecutableWithDatabase<RequestDataCallback> {
       }
 
       idb_request = idb_index->openCursor(script_state, idb_key_range_.Get(),
-                                          kWebIDBCursorDirectionNext);
+                                          mojom::IDBCursorDirection::Next);
     } else {
       idb_request = idb_object_store->openCursor(
-          script_state, idb_key_range_.Get(), kWebIDBCursorDirectionNext);
+          script_state, idb_key_range_.Get(), mojom::IDBCursorDirection::Next);
     }
     OpenCursorCallback* open_cursor_callback = OpenCursorCallback::Create(
         v8_session_, script_state, std::move(request_callback_), skip_count_,

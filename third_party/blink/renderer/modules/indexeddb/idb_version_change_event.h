@@ -28,6 +28,7 @@
 
 #include "base/optional.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
@@ -46,7 +47,7 @@ class IDBVersionChangeEvent final : public Event {
       const AtomicString& event_type,
       unsigned long long old_version,
       const base::Optional<unsigned long long>& new_version,
-      WebIDBDataLoss data_loss = kWebIDBDataLossNone,
+      mojom::IDBDataLoss data_loss = mojom::IDBDataLoss::None,
       const String& data_loss_message = String()) {
     return new IDBVersionChangeEvent(event_type, old_version, new_version,
                                      data_loss, data_loss_message);
@@ -72,14 +73,14 @@ class IDBVersionChangeEvent final : public Event {
   IDBVersionChangeEvent(const AtomicString& event_type,
                         unsigned long long old_version,
                         const base::Optional<unsigned long long>& new_version,
-                        WebIDBDataLoss,
+                        mojom::IDBDataLoss,
                         const String& data_loss);
   IDBVersionChangeEvent(const AtomicString& event_type,
                         const IDBVersionChangeEventInit*);
 
   unsigned long long old_version_;
   base::Optional<unsigned long long> new_version_;
-  WebIDBDataLoss data_loss_;
+  mojom::IDBDataLoss data_loss_;
   String data_loss_message_;
 };
 

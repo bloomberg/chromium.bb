@@ -160,7 +160,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
   void OnUpgradeNeeded(long long old_version,
                        WebIDBDatabase* database,
                        const WebIDBMetadata& metadata,
-                       unsigned short data_loss,
+                       mojom::IDBDataLoss data_loss,
                        WebString data_loss_message) override {
     NOTREACHED();
   }

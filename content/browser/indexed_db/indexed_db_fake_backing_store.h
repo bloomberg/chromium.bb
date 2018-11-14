@@ -82,14 +82,14 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
       int64_t database_id,
       int64_t object_store_id,
       const blink::IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
+      blink::mojom::IDBCursorDirection,
       leveldb::Status*) override;
   std::unique_ptr<Cursor> OpenObjectStoreCursor(
       Transaction* transaction,
       int64_t database_id,
       int64_t object_store_id,
       const blink::IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
+      blink::mojom::IDBCursorDirection,
       leveldb::Status*) override;
   std::unique_ptr<Cursor> OpenIndexKeyCursor(
       Transaction* transaction,
@@ -97,7 +97,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
       int64_t object_store_id,
       int64_t index_id,
       const blink::IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
+      blink::mojom::IDBCursorDirection,
       leveldb::Status*) override;
   std::unique_ptr<Cursor> OpenIndexCursor(
       Transaction* transaction,
@@ -105,7 +105,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
       int64_t object_store_id,
       int64_t index_id,
       const blink::IndexedDBKeyRange& key_range,
-      blink::WebIDBCursorDirection,
+      blink::mojom::IDBCursorDirection,
       leveldb::Status*) override;
 
   class FakeTransaction : public IndexedDBBackingStore::Transaction {

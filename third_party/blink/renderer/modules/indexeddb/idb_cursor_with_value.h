@@ -42,7 +42,7 @@ class IDBCursorWithValue final : public IDBCursor {
 
  public:
   static IDBCursorWithValue* Create(std::unique_ptr<WebIDBCursor>,
-                                    WebIDBCursorDirection,
+                                    mojom::IDBCursorDirection,
                                     IDBRequest*,
                                     const Source&,
                                     IDBTransaction*);
@@ -57,7 +57,7 @@ class IDBCursorWithValue final : public IDBCursor {
 
  private:
   IDBCursorWithValue(std::unique_ptr<WebIDBCursor>,
-                     WebIDBCursorDirection,
+                     mojom::IDBCursorDirection,
                      IDBRequest*,
                      const Source&,
                      IDBTransaction*);
