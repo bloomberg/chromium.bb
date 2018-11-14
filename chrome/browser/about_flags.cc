@@ -4092,13 +4092,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalProductivityFeaturesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kExperimentalProductivityFeatures)},
 
-#if defined(OS_CHROMEOS)
-    {"enable-overview-swipe-to-close",
-     flag_descriptions::kEnableOverviewSwipeToCloseName,
-     flag_descriptions::kEnableOverviewSwipeToCloseDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kOverviewSwipeToClose)},
-#endif  // OS_CHROMEOS
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
     {"ntp-backgrounds", flag_descriptions::kNtpBackgroundsName,
      flag_descriptions::kNtpBackgroundsDescription, kOsDesktop,

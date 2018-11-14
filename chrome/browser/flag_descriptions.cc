@@ -700,12 +700,6 @@ const char kEnableOutOfBlinkCORSName[] = "Out of blink CORS";
 const char kEnableOutOfBlinkCORSDescription[] =
     "CORS handling logic is moved out of blink.";
 
-const char kEnableOverviewSwipeToCloseName[] =
-    "Enable overview swipe to close.";
-const char kEnableOverviewSwipeToCloseDescription[] =
-    "Enables closing of items in overview mode by dragging or flinging "
-    "vertically.";
-
 const char kExperimentalAccessibilityFeaturesName[] =
     "Experimental accessibility features";
 const char kExperimentalAccessibilityFeaturesDescription[] =
