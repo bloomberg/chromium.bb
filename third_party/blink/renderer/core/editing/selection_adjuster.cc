@@ -186,7 +186,8 @@ class GranularityAdjuster final {
         const VisiblePositionTemplate<Strategy> original_end =
             CreateVisiblePosition(passed_end);
         const VisiblePositionTemplate<Strategy> word_end =
-            EndOfWord(original_end, ChooseWordSide(original_end));
+            CreateVisiblePosition(EndOfWordPosition(
+                passed_end.GetPosition(), ChooseWordSide(original_end)));
         if (!IsEndOfParagraph(original_end))
           return word_end.DeepEquivalent();
         if (IsEmptyTableCell(start.AnchorNode()))
