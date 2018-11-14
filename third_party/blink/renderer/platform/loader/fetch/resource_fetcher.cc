@@ -742,8 +742,9 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   // stale while revalidate (based on a list of hosts). This allows us
   // to only log metrics for sites that would possibly benefit from
   // stale while revalidate being enabled.
-  resource_request.SetStaleRevalidateCandidate(host_matches_allow ||
-                                               host_matches_control);
+  resource_request.SetStaleRevalidateCandidate(
+      (host_matches_allow || host_matches_control) &&
+      !params.IsStaleRevalidation());
   // Indicate whether the network stack can return a stale resource. If a
   // stale resource is returned a StaleRevalidation request will be scheduled.
   // Explicitly disallow stale responses for fetchers that don't have SWR
