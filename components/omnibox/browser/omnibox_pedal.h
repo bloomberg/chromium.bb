@@ -9,7 +9,15 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
+#include "components/omnibox/browser/buildflags.h"
 #include "url/gurl.h"
+
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+namespace gfx {
+struct VectorIcon;
+}
+#endif
 
 class AutocompleteProviderClient;
 class OmniboxEditController;
@@ -85,6 +93,11 @@ class OmniboxPedal {
   // it does not apply under current conditions. (Example: the UpdateChrome
   // Pedal may not be ready to trigger if no update is available.)
   virtual bool IsReadyToTrigger(const AutocompleteProviderClient& client) const;
+
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+  // Returns the vector icon to represent this Pedal's action in suggestion.
+  virtual const gfx::VectorIcon& GetVectorIcon() const;
+#endif
 
   // Returns true if the preprocessed match suggestion text triggers
   // presentation of this Pedal.  This is not intended for general use,

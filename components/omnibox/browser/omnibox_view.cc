@@ -134,8 +134,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
   // For tests, model_ will be null.
   if (!model_) {
     const gfx::VectorIcon& vector_icon = AutocompleteMatch::TypeToVectorIcon(
-        AutocompleteMatchType::URL_WHAT_YOU_TYPED, false /*is_bookmark*/,
-        AutocompleteMatch::DocumentType::NONE);
+        AutocompleteMatchType::URL_WHAT_YOU_TYPED, /*is_bookmark=*/false);
     return gfx::CreateVectorIcon(vector_icon, dip_size, color);
   }
 
@@ -165,8 +164,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
   const bool is_bookmarked =
       bookmark_model && bookmark_model->IsBookmarked(match.destination_url);
 
-  const gfx::VectorIcon& vector_icon = AutocompleteMatch::TypeToVectorIcon(
-      match.type, is_bookmarked, match.document_type);
+  const gfx::VectorIcon& vector_icon = match.GetVectorIcon(is_bookmarked);
   return gfx::CreateVectorIcon(vector_icon, dip_size, color);
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 }
