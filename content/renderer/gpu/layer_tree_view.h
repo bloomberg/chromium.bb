@@ -40,7 +40,7 @@ class LayerTreeSettings;
 class RenderFrameMetadataObserver;
 class TaskGraphRunner;
 class UkmRecorderFactory;
-class ScopedDeferCommits;
+class ScopedDeferMainFrameUpdate;
 }  // namespace cc
 
 namespace gfx {
@@ -149,7 +149,8 @@ class CONTENT_EXPORT LayerTreeView
   // including updates to the compositor state, optionally including
   // rasterization.
   void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
-  std::unique_ptr<cc::ScopedDeferCommits> DeferCommits() override;
+  std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
+      override;
   void RegisterViewportLayers(const ViewportLayers& viewport_layers) override;
   void ClearViewportLayers() override;
   void RegisterSelection(const cc::LayerSelection& selection) override;

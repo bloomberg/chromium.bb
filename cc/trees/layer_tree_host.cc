@@ -120,7 +120,7 @@ LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
       content_source_id_(0),
       event_listener_properties_(),
       mutator_host_(params.mutator_host),
-      defer_commits_weak_ptr_factory_(this) {
+      defer_main_frame_update_weak_ptr_factory_(this) {
   DCHECK(task_graph_runner_);
   DCHECK(!settings_.enable_checker_imaging || image_worker_task_runner_);
 
@@ -173,7 +173,7 @@ void LayerTreeHost::InitializeProxy(std::unique_ptr<Proxy> proxy) {
   proxy_ = std::move(proxy);
   proxy_->Start();
 
-  UpdateDeferCommitsInternal();
+  UpdateDeferMainFrameUpdateInternal();
 
   mutator_host_->SetSupportsScrollAnimations(proxy_->SupportsImplScrolling());
 }
@@ -436,10 +436,9 @@ void LayerTreeHost::WillCommit() {
   }
 }
 
-
-void LayerTreeHost::UpdateDeferCommitsInternal() {
-  proxy_->SetDeferCommits(
-      defer_commits_count_ > 0 ||
+void LayerTreeHost::UpdateDeferMainFrameUpdateInternal() {
+  proxy_->SetDeferMainFrameUpdate(
+      defer_main_frame_update_count_ > 0 ||
       (settings_.enable_surface_synchronization &&
        !local_surface_id_allocation_from_parent_.IsValid()));
 }
@@ -527,23 +526,24 @@ void LayerTreeHost::DidLoseLayerTreeFrameSink() {
   SetNeedsCommit();
 }
 
-ScopedDeferCommits::ScopedDeferCommits(LayerTreeHost* host)
-    : host_(host->defer_commits_weak_ptr_factory_.GetWeakPtr()) {
-  host->defer_commits_count_++;
-  host->UpdateDeferCommitsInternal();
+ScopedDeferMainFrameUpdate::ScopedDeferMainFrameUpdate(LayerTreeHost* host)
+    : host_(host->defer_main_frame_update_weak_ptr_factory_.GetWeakPtr()) {
+  host->defer_main_frame_update_count_++;
+  host->UpdateDeferMainFrameUpdateInternal();
 }
 
-ScopedDeferCommits::~ScopedDeferCommits() {
+ScopedDeferMainFrameUpdate::~ScopedDeferMainFrameUpdate() {
   LayerTreeHost* host = host_.get();
   if (host) {
-    DCHECK_GT(host->defer_commits_count_, 0u);
-    if (--host->defer_commits_count_ == 0)
-      host->UpdateDeferCommitsInternal();
+    DCHECK_GT(host->defer_main_frame_update_count_, 0u);
+    if (--host->defer_main_frame_update_count_ == 0)
+      host->UpdateDeferMainFrameUpdateInternal();
   }
 }
 
-std::unique_ptr<ScopedDeferCommits> LayerTreeHost::DeferCommits() {
-  return std::make_unique<ScopedDeferCommits>(this);
+std::unique_ptr<ScopedDeferMainFrameUpdate>
+LayerTreeHost::DeferMainFrameUpdate() {
+  return std::make_unique<ScopedDeferMainFrameUpdate>(this);
 }
 
 DISABLE_CFI_PERF
@@ -1298,7 +1298,7 @@ void LayerTreeHost::SetLocalSurfaceIdAllocationFromParent(
   local_surface_id_allocation_from_parent_ =
       local_surface_id_allocation_from_parent;
   has_pushed_local_surface_id_from_parent_ = false;
-  UpdateDeferCommitsInternal();
+  UpdateDeferMainFrameUpdateInternal();
   SetNeedsCommit();
 }
 

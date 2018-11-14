@@ -64,8 +64,8 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
   // Returns true if commits are deferred in the compositor. Since these tests
   // use synchronous compositing through BeginFrame(), the deferred state has no
   // real effect.
-  bool DeferCommits() const {
-    return layer_tree_view_->layer_tree_host()->defer_commits();
+  bool DeferMainFrameUpdate() const {
+    return layer_tree_view_->layer_tree_host()->defer_main_frame_update();
   }
   // Returns true if a selection is set on the compositor.
   bool HasSelection() const {
@@ -95,7 +95,8 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
 
   content::LayerTreeView* layer_tree_view_ = nullptr;
 
-  std::unique_ptr<cc::ScopedDeferCommits> scoped_defer_commits_;
+  std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+      scoped_defer_main_frame_update_;
 };
 
 }  // namespace blink

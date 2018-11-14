@@ -39,7 +39,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
       base::WeakPtr<ProxyMain> proxy_main_frame_sink_bound_weak_ptr);
   void InitializeMutatorOnImpl(std::unique_ptr<LayerTreeMutator> mutator);
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled);
-  void SetDeferCommitsOnImpl(bool defer_commits) const;
+  void SetDeferMainFrameUpdateOnImpl(bool defer_main_frame_update) const;
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect);
   void SetNeedsCommitOnImpl();
   void BeginMainFrameAbortedOnImpl(

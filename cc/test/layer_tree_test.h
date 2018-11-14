@@ -83,10 +83,12 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void PostSetLocalSurfaceIdAllocationToMainThread(
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void PostRequestNewLocalSurfaceIdToMainThread();
-  void PostGetDeferCommitsToMainThread(
-      std::unique_ptr<ScopedDeferCommits>* scoped_defer_commits);
-  void PostReturnDeferCommitsToMainThread(
-      std::unique_ptr<ScopedDeferCommits> scoped_defer_commits);
+  void PostGetDeferMainFrameUpdateToMainThread(
+      std::unique_ptr<ScopedDeferMainFrameUpdate>*
+          scoped_defer_main_frame_update);
+  void PostReturnDeferMainFrameUpdateToMainThread(
+      std::unique_ptr<ScopedDeferMainFrameUpdate>
+          scoped_defer_main_frame_update);
   void PostSetNeedsCommitToMainThread();
   void PostSetNeedsUpdateLayersToMainThread();
   void PostSetNeedsRedrawToMainThread();
@@ -187,10 +189,12 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchSetLocalSurfaceIdAllocation(
       const viz::LocalSurfaceIdAllocation& local_surface_id_allocation);
   void DispatchRequestNewLocalSurfaceId();
-  void DispatchGetDeferCommits(
-      std::unique_ptr<ScopedDeferCommits>* scoped_defer_commits);
-  void DispatchReturnDeferCommits(
-      std::unique_ptr<ScopedDeferCommits> scoped_defer_commits);
+  void DispatchGetDeferMainFrameUpdate(
+      std::unique_ptr<ScopedDeferMainFrameUpdate>*
+          scoped_defer_main_frame_update);
+  void DispatchReturnDeferMainFrameUpdate(
+      std::unique_ptr<ScopedDeferMainFrameUpdate>
+          scoped_defer_main_frame_update);
   void DispatchSetNeedsCommit();
   void DispatchSetNeedsUpdateLayers();
   void DispatchSetNeedsRedraw();

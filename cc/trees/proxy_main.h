@@ -81,7 +81,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   void SetNextCommitWaitsForActivation() override;
   bool RequestedAnimatePending() override;
   void NotifyInputThrottledUntilCommit() override;
-  void SetDeferCommits(bool defer_commits) override;
+  void SetDeferMainFrameUpdate(bool defer_main_frame_update) override;
   bool CommitRequested() const override;
   void Start() override;
   void Stop() override;
@@ -134,7 +134,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   // stopped using Proxy::Stop().
   bool started_;
 
-  bool defer_commits_;
+  bool defer_main_frame_update_;
 
   // ProxyImpl is created and destroyed on the impl thread, and should only be
   // accessed on the impl thread.

@@ -365,7 +365,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       base::TimeDelta timeout =
           base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs)) {
     return lock_manager_.GetCompositorLock(client, timeout,
-                                           host_->DeferCommits());
+                                           host_->DeferMainFrameUpdate());
   }
 
   // Registers a callback that is run when the next frame successfully makes it

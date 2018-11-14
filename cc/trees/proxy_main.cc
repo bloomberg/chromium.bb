@@ -36,7 +36,7 @@ ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
       deferred_final_pipeline_stage_(NO_PIPELINE_STAGE),
       commit_waits_for_activation_(false),
       started_(false),
-      defer_commits_(false),
+      defer_main_frame_update_(false),
       frame_sink_bound_weak_factory_(this),
       weak_factory_(this) {
   TRACE_EVENT0("cc", "ProxyMain::ProxyMain");
@@ -138,7 +138,8 @@ void ProxyMain::BeginMainFrame(
       layer_tree_host_->GetSwapPromiseManager());
 
   // We need to issue image decode callbacks whether or not we will abort this
-  // commit, since the request ids are only stored in |begin_main_frame_state|.
+  // update and commit, since the request ids are only stored in
+  // |begin_main_frame_state|.
   layer_tree_host_->ImageDecodesFinished(
       std::move(begin_main_frame_state->completed_image_decode_requests));
 
@@ -150,8 +151,8 @@ void ProxyMain::BeginMainFrame(
   // have side effects on page loading behavior.
   bool skip_commit = begin_main_frame_state->begin_frame_args.animate_only;
 
-  // If commits are deferred, skip the entire pipeline.
-  bool skip_full_pipeline = defer_commits_;
+  // If main frame updates and commits are deferred, skip the entire pipeline.
+  bool skip_full_pipeline = defer_main_frame_update_;
 
   // We may have previously skipped paint and commit. If we should still skip it
   // now, and there was no intermediate request for a commit since the last
@@ -221,9 +222,12 @@ void ProxyMain::BeginMainFrame(
   // what this does.
   layer_tree_host_->RequestMainFrameUpdate();
 
+  // TODO(schenney) This will be changed to defer_commits_ when we introduce
+  // the separation between deferring of main frame updates and deferring of
+  // commits.
   // At this point the main frame may have deferred commits to avoid committing
   // right now.
-  skip_commit |= defer_commits_;
+  skip_commit |= defer_main_frame_update_;
 
   if (skip_commit) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit_InsideBeginMainFrame",
@@ -429,21 +433,21 @@ void ProxyMain::NotifyInputThrottledUntilCommit() {
                                 base::Unretained(proxy_impl_.get()), true));
 }
 
-void ProxyMain::SetDeferCommits(bool defer_commits) {
+void ProxyMain::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
   DCHECK(IsMainThread());
-  if (defer_commits_ == defer_commits)
+  if (defer_main_frame_update_ == defer_main_frame_update)
     return;
 
-  defer_commits_ = defer_commits;
-  if (defer_commits_)
-    TRACE_EVENT_ASYNC_BEGIN0("cc", "ProxyMain::SetDeferCommits", this);
+  defer_main_frame_update_ = defer_main_frame_update;
+  if (defer_main_frame_update_)
+    TRACE_EVENT_ASYNC_BEGIN0("cc", "ProxyMain::SetDeferMainFrameUpdate", this);
   else
-    TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferCommits", this);
+    TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferMainFrameUpdate", this);
 
   ImplThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ProxyImpl::SetDeferCommitsOnImpl,
-                     base::Unretained(proxy_impl_.get()), defer_commits));
+      FROM_HERE, base::BindOnce(&ProxyImpl::SetDeferMainFrameUpdateOnImpl,
+                                base::Unretained(proxy_impl_.get()),
+                                defer_main_frame_update));
 }
 
 bool ProxyMain::CommitRequested() const {

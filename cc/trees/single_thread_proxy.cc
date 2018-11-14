@@ -47,7 +47,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
       inside_impl_frame_(false),
 #endif
       inside_draw_(false),
-      defer_commits_(false),
+      defer_main_frame_update_(false),
       animate_requested_(false),
       commit_requested_(false),
       inside_synchronous_composite_(false),
@@ -263,21 +263,23 @@ bool SingleThreadProxy::RequestedAnimatePending() {
   return animate_requested_ || commit_requested_ || needs_impl_frame_;
 }
 
-void SingleThreadProxy::SetDeferCommits(bool defer_commits) {
+void SingleThreadProxy::SetDeferMainFrameUpdate(bool defer_main_frame_update) {
   DCHECK(task_runner_provider_->IsMainThread());
   // Deferring commits only makes sense if there's a scheduler.
   if (!scheduler_on_impl_thread_)
     return;
-  if (defer_commits_ == defer_commits)
+  if (defer_main_frame_update_ == defer_main_frame_update)
     return;
 
-  if (defer_commits)
-    TRACE_EVENT_ASYNC_BEGIN0("cc", "SingleThreadProxy::SetDeferCommits", this);
+  if (defer_main_frame_update)
+    TRACE_EVENT_ASYNC_BEGIN0("cc", "SingleThreadProxy::SetDeferMainFrameUpdate",
+                             this);
   else
-    TRACE_EVENT_ASYNC_END0("cc", "SingleThreadProxy::SetDeferCommits", this);
+    TRACE_EVENT_ASYNC_END0("cc", "SingleThreadProxy::SetDeferMainFrameUpdate",
+                           this);
 
-  defer_commits_ = defer_commits;
-  scheduler_on_impl_thread_->SetDeferCommits(defer_commits);
+  defer_main_frame_update_ = defer_main_frame_update;
+  scheduler_on_impl_thread_->SetDeferMainFrameUpdate(defer_main_frame_update);
 }
 
 bool SingleThreadProxy::CommitRequested() const {
@@ -734,7 +736,7 @@ void SingleThreadProxy::BeginMainFrame(
   needs_impl_frame_ = false;
   animate_requested_ = false;
 
-  if (defer_commits_) {
+  if (defer_main_frame_update_) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit",
                          TRACE_EVENT_SCOPE_THREAD);
     BeginMainFrameAbortedOnImplThread(
@@ -761,7 +763,7 @@ void SingleThreadProxy::BeginMainFrame(
 
   // At this point the main frame may have deferred commits to avoid committing
   // right now.
-  if (defer_commits_ || begin_frame_args.animate_only) {
+  if (defer_main_frame_update_ || begin_frame_args.animate_only) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit_InsideBeginMainFrame",
                          TRACE_EVENT_SCOPE_THREAD);
     BeginMainFrameAbortedOnImplThread(

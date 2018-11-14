@@ -295,7 +295,7 @@ class CC_EXPORT SchedulerStateMachine {
 
   bool CouldSendBeginMainFrame() const;
 
-  void SetDeferCommits(bool defer_commits);
+  void SetDeferMainFrameUpdate(bool defer_main_frame_update);
 
   void SetVideoNeedsBeginFrames(bool video_needs_begin_frames);
   bool video_needs_begin_frames() const { return video_needs_begin_frames_; }
@@ -417,7 +417,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool critical_begin_main_frame_to_activate_is_fast_ = true;
   bool main_thread_missed_last_deadline_ = false;
   bool skip_next_begin_main_frame_to_reduce_latency_ = false;
-  bool defer_commits_ = false;
+  bool defer_main_frame_update_ = false;
   bool video_needs_begin_frames_ = false;
   bool last_commit_had_no_updates_ = false;
   bool active_tree_is_ready_to_draw_ = true;

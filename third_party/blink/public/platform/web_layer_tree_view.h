@@ -152,8 +152,10 @@ class WebLayerTreeView {
   // rasterization.
   virtual void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) {}
 
-  // Prevents updates to layer tree from becoming visible.
-  virtual std::unique_ptr<cc::ScopedDeferCommits> DeferCommits() {
+  // Prevents any updates to the input for the layer tree, and the layer tree
+  // itself, and the layer tree from becoming visible.
+  virtual std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+  DeferMainFrameUpdate() {
     return nullptr;
   }
 

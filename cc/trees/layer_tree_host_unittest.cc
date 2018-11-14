@@ -3520,13 +3520,13 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestContinuousInvalidate);
 
-class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
+class LayerTreeHostTestDeferMainFrameUpdate : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestDeferCommits() = default;
+  LayerTreeHostTestDeferMainFrameUpdate() = default;
 
   void BeginTest() override {
     // Start with commits deferred.
-    PostGetDeferCommitsToMainThread(&scoped_defer_commits_);
+    PostGetDeferMainFrameUpdateToMainThread(&scoped_defer_main_frame_update_);
     PostSetNeedsCommitToMainThread();
   }
 
@@ -3549,7 +3549,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
             FROM_HERE,
             // Unretained because the test should not end before allowing
             // commits via this running.
-            base::BindOnce(&LayerTreeHostTestDeferCommits::AllowCommits,
+            base::BindOnce(&LayerTreeHostTestDeferMainFrameUpdate::AllowCommits,
                            base::Unretained(this)));
         break;
       default:
@@ -3560,7 +3560,7 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
   }
 
   void WillBeginMainFrame() override {
-    EXPECT_FALSE(scoped_defer_commits_);
+    EXPECT_FALSE(scoped_defer_main_frame_update_);
     EXPECT_TRUE(IsCommitAllowed());
     num_send_begin_main_frame_++;
     EndTest();
@@ -3573,24 +3573,24 @@ class LayerTreeHostTestDeferCommits : public LayerTreeHostTest {
 
   virtual void AllowCommits() {
     allow_commits_ = true;
-    scoped_defer_commits_.reset();
+    scoped_defer_main_frame_update_.reset();
   }
 
   virtual bool IsCommitAllowed() const { return allow_commits_; }
 
  private:
-  std::unique_ptr<ScopedDeferCommits> scoped_defer_commits_;
+  std::unique_ptr<ScopedDeferMainFrameUpdate> scoped_defer_main_frame_update_;
   bool allow_commits_ = false;
   int num_will_begin_impl_frame_ = 0;
   int num_send_begin_main_frame_ = 0;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferCommits);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferMainFrameUpdate);
 
 // This verifies that changing the size of a LayerTreeHost without providing a
 // LocalSurfaceId defers commits.
 class LayerTreeHostInvalidLocalSurfaceIdDefersCommit
-    : public LayerTreeHostTestDeferCommits {
+    : public LayerTreeHostTestDeferMainFrameUpdate {
  public:
   LayerTreeHostInvalidLocalSurfaceIdDefersCommit() = default;
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -3623,10 +3623,13 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostInvalidLocalSurfaceIdDefersCommit);
 // This verifies that we can abort a commit inside the main frame, and
 // we don't leave any weird states around if we never allow the commit
 // to happen.
-class LayerTreeHostTestDeferCommitsInsideBeginMainFrame
+// TODO(schenney): This should be renamed back to
+// LayerTreeHostTestDeferCommitInsideBeginMainFrame when we re-create
+// the concept of defer commit when not defering main frame updates.
+class LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrame
     : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestDeferCommitsInsideBeginMainFrame() = default;
+  LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrame() = default;
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -3634,7 +3637,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrame
     ++begin_main_frame_count_;
 
     // This should prevent the commit from happening.
-    scoped_defer_commits_ = layer_tree_host()->DeferCommits();
+    scoped_defer_main_frame_update_ = layer_tree_host()->DeferMainFrameUpdate();
     // Wait to see if the commit happens. It's possible the deferred
     // commit happens when it shouldn't but takes long enough that
     // this passes. But it won't fail when it shouldn't.
@@ -3653,20 +3656,25 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrame
   }
 
  private:
-  std::unique_ptr<ScopedDeferCommits> scoped_defer_commits_;
+  std::unique_ptr<ScopedDeferMainFrameUpdate> scoped_defer_main_frame_update_;
   int commit_count_ = 0;
   int begin_main_frame_count_ = 0;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestDeferCommitsInsideBeginMainFrame);
+    LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrame);
 
 // This verifies that we can abort a commit inside the main frame, and
 // we will finish the commit once it is allowed.
-class LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter
+// TODO(schenney): This should be renamed back to
+// LayerTreeHostTestDeferCommitInsideBeginMainFrameWithCommitAfter when
+// we re-create the concept of defer commit when not defering main frame
+// updates.
+class LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrameWithCommitAfter
     : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter() = default;
+  LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrameWithCommitAfter() =
+      default;
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -3676,7 +3684,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter
       return;
 
     // This should prevent the commit from happening.
-    scoped_defer_commits_ = layer_tree_host()->DeferCommits();
+    scoped_defer_main_frame_update_ = layer_tree_host()->DeferMainFrameUpdate();
     // Wait to see if the commit happens. It's possible the deferred
     // commit happens when it shouldn't but takes long enough that
     // this passes. But it won't fail when it shouldn't.
@@ -3684,7 +3692,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter
         FROM_HERE,
         // Unretained because the test doesn't end before this runs.
         base::BindOnce(
-            &LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter::
+            &LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrameWithCommitAfter::
                 AllowCommits,
             base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(100));
@@ -3694,7 +3702,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter
     // Once we've waited and seen that commit did not happen, we
     // allow commits and should see this one go through.
     allow_commits_ = true;
-    scoped_defer_commits_.reset();
+    scoped_defer_main_frame_update_.reset();
   }
 
   void DidCommit() override {
@@ -3715,7 +3723,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter
   }
 
  private:
-  std::unique_ptr<ScopedDeferCommits> scoped_defer_commits_;
+  std::unique_ptr<ScopedDeferMainFrameUpdate> scoped_defer_main_frame_update_;
   bool allow_commits_ = false;
   int commit_count_ = 0;
   int begin_main_frame_count_ = 0;
@@ -3723,7 +3731,7 @@ class LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestDeferCommitsInsideBeginMainFrameWithCommitAfter);
+    LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrameWithCommitAfter);
 
 // This verifies that animate_only BeginFrames only run animation/layout
 // updates, i.e. abort commits after the paint stage and only request layer

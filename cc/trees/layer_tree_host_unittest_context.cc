@@ -1757,9 +1757,12 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
       return;
     deferred_ = true;
 
-    // Defer commits before the BeginFrame completes, causing it to be delayed.
-    scoped_defer_commits_ = layer_tree_host()->DeferCommits();
-    // Meanwhile, lose the context while we are in defer commits.
+    // TODO(schenney): This should switch back to defer_commits_ because there
+    // is no way in the real code to start deferring main frame updates when
+    // inside WillBeginMainFrame. Defer commits before the BeginFrame completes,
+    // causing it to be delayed.
+    scoped_defer_main_frame_update_ = layer_tree_host()->DeferMainFrameUpdate();
+    // Meanwhile, lose the context while we are in defer BeginMainFrame.
     ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&LayerTreeHostContextTestLoseAfterSendingBeginMainFrame::
@@ -1767,8 +1770,8 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
                        base::Unretained(this)));
 
     // After the first frame, we will lose the context and then not start
-    // allowing commits until that happens. The 2nd frame should not happen
-    // before DidInitializeLayerTreeFrameSink occurs.
+    // lifecycle updates and commits until that happens. The 2nd frame should
+    // not happen before DidInitializeLayerTreeFrameSink occurs.
     lost_ = true;
   }
 
@@ -1780,15 +1783,18 @@ class LayerTreeHostContextTestLoseAfterSendingBeginMainFrame
   void LoseContextOnImplThread() {
     LoseContext();
 
+    // TODO(schenney): This should switch back to defer_commits_ to match the
+    // change above.
     // After losing the context, stop deferring commits.
-    PostReturnDeferCommitsToMainThread(std::move(scoped_defer_commits_));
+    PostReturnDeferMainFrameUpdateToMainThread(
+        std::move(scoped_defer_main_frame_update_));
   }
 
   void DidCommitAndDrawFrame() override { EndTest(); }
 
   void AfterTest() override {}
 
-  std::unique_ptr<ScopedDeferCommits> scoped_defer_commits_;
+  std::unique_ptr<ScopedDeferMainFrameUpdate> scoped_defer_main_frame_update_;
   bool deferred_ = false;
   bool lost_ = true;
 };
