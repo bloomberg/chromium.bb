@@ -30,7 +30,8 @@ class WorkerFetchContext final : public BaseFetchContext {
  public:
   static WorkerFetchContext* Create(WorkerOrWorkletGlobalScope&,
                                     scoped_refptr<WebWorkerFetchContext>,
-                                    SubresourceFilter*);
+                                    SubresourceFilter*,
+                                    FetchClientSettingsObject*);
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:
@@ -128,7 +129,8 @@ class WorkerFetchContext final : public BaseFetchContext {
  private:
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,
                      scoped_refptr<WebWorkerFetchContext>,
-                     SubresourceFilter*);
+                     SubresourceFilter*,
+                     FetchClientSettingsObject*);
 
   void SetFirstPartyCookie(ResourceRequest&);
 

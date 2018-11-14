@@ -23,6 +23,7 @@
 
 namespace blink {
 
+class FetchClientSettingsObject;
 class FetchClientSettingsObjectSnapshot;
 class Modulator;
 class ModuleTreeClient;
@@ -93,6 +94,17 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   ResourceFetcher* Fetcher() const override;
   ResourceFetcher* EnsureFetcher();
 
+  // ResourceFetcher for off-the-main-thread worker top-level script fetching,
+  // corresponding to "outside" fetch client's settings object.
+  // CreateOutsideSettingsFetcher() is called for each invocation of top-level
+  // script fetch, which can occur multiple times in worklets.
+  // TODO(hiroshige, nhiroki): Currently this outside ResourceFetcher and its
+  // WorkerFetchContext is mostly the copy of the insideSettings
+  // ResourceFetcher, and have dependencies to WorkerOrWorkletGlobalScope. Plumb
+  // more data to the outside ResourceFetcher to fix the behavior and reduce the
+  // dependencies.
+  ResourceFetcher* CreateOutsideSettingsFetcher(FetchClientSettingsObject*);
+
   WorkerClients* Clients() const { return worker_clients_.Get(); }
 
   WorkerOrWorkletScriptController* ScriptController() {
@@ -124,16 +136,23 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
  private:
   void InitializeWebFetchContextIfNeeded();
+  ResourceFetcher* CreateFetcherInternal(FetchClientSettingsObject*);
 
   bool web_fetch_context_initialized_ = false;
 
   CrossThreadPersistent<WorkerClients> worker_clients_;
 
-  Member<ResourceFetcher> resource_fetcher_;
+  Member<ResourceFetcher> inside_settings_resource_fetcher_;
+
+  // Keeps track of all ResourceFetchers (including
+  // |inside_settings_resource_fetcher_|) for disposing and pausing/unpausing.
+  HeapHashSet<WeakMember<ResourceFetcher>> resource_fetchers_;
 
   // A WorkerOrWorkletGlobalScope has one WebWorkerFetchContext and one
   // corresponding SubresourceFilter, which are shared by all
-  // WorkerFetchContexts of |this| global scope after crbug.com/880027.
+  // WorkerFetchContexts of |this| global scope, i.e. those behind
+  // ResourceFetchers created by EnsureFetcher() and
+  // CreateOutsideSettingsFetcher().
   // As all references to |web_worker_fetch_context_| are on the context
   // thread, |web_worker_fetch_context_| is destructed on the context
   // thread.
