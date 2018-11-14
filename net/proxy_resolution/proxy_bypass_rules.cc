@@ -9,6 +9,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/parse_number.h"
@@ -446,13 +447,20 @@ bool ProxyBypassRules::MatchesImplicitRules(const GURL& url) {
   //     *.localhost
   //     localhost6
   //     localhost6.localdomain6
+  //     loopback  [Windows only]
+  //     loopback. [Windows only]
   //     [::1]
   //     127.0.0.1/8
   //     169.254/16
   //     [FE80::]/10
-  //
-  // TODO(eroman): Does "loopback" need special treatment on Windows?
-  return net::IsLocalhost(url) || IsLinkLocalIP(url);
+  return net::IsLocalhost(url) ||
+         IsLinkLocalIP(url)
+#if defined(OS_WIN)
+         // See http://crbug.com/904889
+         || (url.host_piece() == "loopback") ||
+         (url.host_piece() == "loopback.")
+#endif
+      ;
 }
 
 }  // namespace net

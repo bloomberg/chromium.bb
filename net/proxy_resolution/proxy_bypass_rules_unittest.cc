@@ -7,8 +7,15 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "net/proxy_resolution/proxy_config_service_common_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+// On Windows, "loopback" resolves to localhost and is implicitly bypassed to
+// match WinInet.
+#define BYPASS_LOOPBACK
+#endif
 
 namespace net {
 
@@ -47,14 +54,18 @@ void ExpectBypassLocalhost(
     bool bypasses,
     const std::set<std::string>& inverted_hosts = std::set<std::string>()) {
   const char* kHosts[] = {
-      "localhost",
-      "localhost.",
-      "foo.localhost",
-      "localhost6",
-      "localhost6.localdomain6",
-      "127.0.0.1",
-      "127.100.0.2",
-      "[::1]",
+    "localhost",
+    "localhost.",
+    "foo.localhost",
+    "localhost6",
+    "localhost6.localdomain6",
+    "127.0.0.1",
+    "127.100.0.2",
+    "[::1]",
+#if defined(BYPASS_LOOPBACK)
+    "loopback",
+    "loopback.",
+#endif
   };
 
   ExpectRulesMatch(rules, kHosts, base::size(kHosts), bypasses, inverted_hosts);
@@ -76,10 +87,17 @@ void ExpectBypassMisc(
     bool bypasses,
     const std::set<std::string>& inverted_hosts = std::set<std::string>()) {
   const char* kHosts[] = {
-      "192.168.0.1", "170.254.0.0", "128.0.0.1", "[::2]", "[FD80::1]", "foo",
-      "www.example3.com",
-      // On Windows, "loopback" is an implicitly matched hostname.
-      "loopback",
+    "192.168.0.1",
+    "170.254.0.0",
+    "128.0.0.1",
+    "[::2]",
+    "[FD80::1]",
+    "foo",
+    "www.example3.com",
+#if !defined(BYPASS_LOOPBACK)
+    "loopback",
+    "loopback.",
+#endif
   };
 
   ExpectRulesMatch(rules, kHosts, base::size(kHosts), bypasses, inverted_hosts);
@@ -343,7 +361,7 @@ TEST(ProxyBypassRulesTest, BypassSimpleHostnames) {
   // Confusingly, <local> rule is NOT about localhost names. There is however
   // overlap on "localhost6?" as it is both a simple hostname and a localhost
   // name
-  ExpectBypassLocalhost(rules, false, {"localhost", "localhost6"});
+  ExpectBypassLocalhost(rules, false, {"localhost", "localhost6", "loopback"});
 
   // Should NOT bypass link-local addresses.
   ExpectBypassLinkLocal(rules, false);
