@@ -319,6 +319,8 @@ var nextFileManagerDialogID = 0;
 function registerDialog(dialogWindow) {
   var id = DIALOG_ID_PREFIX + (nextFileManagerDialogID++);
   window.background.dialogs[id] = dialogWindow;
+  if (window.IN_TEST)
+    dialogWindow.IN_TEST = true;
   dialogWindow.addEventListener('pagehide', function() {
     delete window.background.dialogs[id];
   });
