@@ -155,6 +155,28 @@ void ApplyChangesToCache(const syncer::SyncChangeList& changes,
   }
 }
 
+template <class DataType>
+bool AreLocalUseStatsUpdated(const sync_pb::WalletMetadataSpecifics& remote,
+                             const DataType& local) {
+  return base::checked_cast<size_t>(remote.use_count()) < local.use_count() &&
+         base::Time::FromInternalValue(remote.use_date()) < local.use_date();
+}
+
+bool IsLocalBillingAddressUpdated(
+    const sync_pb::WalletMetadataSpecifics& remote,
+    const CreditCard& local) {
+  std::string remote_billing_address_id;
+  base::Base64Decode(remote.card_billing_address_id(),
+                     &remote_billing_address_id);
+  return local.billing_address_id() != remote_billing_address_id;
+}
+
+bool IsLocalHasConvertedStatusUpdated(
+    const sync_pb::WalletMetadataSpecifics& remote,
+    const AutofillProfile& local) {
+  return remote.address_has_converted() != local.has_converted();
+}
+
 // Merges the metadata of the remote and local versions of the data model.
 void MergeCommonMetadata(
     const sync_pb::WalletMetadataSpecifics& remote_metadata,
@@ -513,9 +535,20 @@ void AutofillWalletMetadataSyncableService::AutofillProfileChanged(
     // Implicitly, we filter out ADD (not in cache) and REMOVE (!data_model()).
     DCHECK(change.type() == AutofillProfileChange::UPDATE);
 
-    AutofillDataModelUpdated(
-        server_id, sync_pb::WalletMetadataSpecifics::ADDRESS,
-        it->GetSpecifics().wallet_metadata(), *change.data_model());
+    const sync_pb::WalletMetadataSpecifics& remote =
+        it->GetSpecifics().wallet_metadata();
+    const AutofillProfile& local = *change.data_model();
+
+    if (!AreLocalUseStatsUpdated(remote, local) &&
+        !IsLocalHasConvertedStatusUpdated(remote, local)) {
+      return;
+    }
+
+    SendChangesToSyncServer(syncer::SyncChangeList(
+        1, syncer::SyncChange(
+               FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
+               BuildSyncData(sync_pb::WalletMetadataSpecifics::ADDRESS,
+                             server_id, local))));
   }
 }
 
@@ -536,9 +569,19 @@ void AutofillWalletMetadataSyncableService::CreditCardChanged(
     // Implicitly, we filter out ADD (not in cache) and REMOVE (!data_model()).
     DCHECK(change.type() == AutofillProfileChange::UPDATE);
 
-    AutofillDataModelUpdated(server_id, sync_pb::WalletMetadataSpecifics::CARD,
-                             it->GetSpecifics().wallet_metadata(),
-                             *change.data_model());
+    const sync_pb::WalletMetadataSpecifics& remote =
+        it->GetSpecifics().wallet_metadata();
+    const CreditCard& local = *change.data_model();
+    if (!AreLocalUseStatsUpdated(remote, local) &&
+        !IsLocalBillingAddressUpdated(remote, local)) {
+      return;
+    }
+
+    SendChangesToSyncServer(syncer::SyncChangeList(
+        1,
+        syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
+                           BuildSyncData(sync_pb::WalletMetadataSpecifics::CARD,
+                                         server_id, local))));
   }
 }
 
@@ -716,20 +759,6 @@ syncer::SyncMergeResult AutofillWalletMetadataSyncableService::MergeData(
   }
 
   return result;
-}
-
-template <class DataType>
-void AutofillWalletMetadataSyncableService::AutofillDataModelUpdated(
-    const std::string& server_id,
-    const sync_pb::WalletMetadataSpecifics::Type& type,
-    const sync_pb::WalletMetadataSpecifics& remote,
-    const DataType& local) {
-  if (base::checked_cast<size_t>(remote.use_count()) < local.use_count() &&
-      base::Time::FromInternalValue(remote.use_date()) < local.use_date()) {
-    SendChangesToSyncServer(syncer::SyncChangeList(
-        1, syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
-                              BuildSyncData(remote.type(), server_id, local))));
-  }
 }
 
 }  // namespace autofill
