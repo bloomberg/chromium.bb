@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
@@ -60,7 +61,7 @@ WorkerFetchContext::WorkerFetchContext(
   DCHECK(web_context_);
 }
 
-const FetchClientSettingsObjectImpl*
+const FetchClientSettingsObject*
 WorkerFetchContext::GetFetchClientSettingsObject() const {
   return fetch_client_settings_object_.Get();
 }

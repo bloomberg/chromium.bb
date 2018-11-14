@@ -231,7 +231,7 @@ bool MixedContentChecker::IsMixedContent(const SecurityOrigin* security_origin,
 
 // static
 bool MixedContentChecker::IsMixedContent(
-    const FetchClientSettingsObjectImpl& settings,
+    const FetchClientSettingsObject& settings,
     const KURL& url) {
   switch (settings.GetHttpsState()) {
     case HttpsState::kNone:

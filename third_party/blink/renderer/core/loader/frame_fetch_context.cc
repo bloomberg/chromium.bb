@@ -1451,7 +1451,8 @@ FetchContext* FrameFetchContext::Detach() {
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsMainFrame(), IsSVGImageChromeClient());
     fetch_client_settings_object_ = new FetchClientSettingsObjectSnapshot(
-        NullURL(), nullptr, kReferrerPolicyDefault, String());
+        NullURL(), nullptr, kReferrerPolicyDefault, String(),
+        HttpsState::kNone);
   }
 
   // This is needed to break a reference cycle in which off-heap
