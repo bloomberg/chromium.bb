@@ -3365,6 +3365,13 @@ def ApplyCustomOverrides(site_config):
       'veyron_minnie-release': {
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
+
+      # TODO(crbug/871967, b/117991928) Re-enable hwtests on clapper-release
+      # once clapper automated repair is fixed in the lab.
+      'clapper-release': {
+          'hw_tests': [],
+          'hw_tests_override': [],
+      }
   }
 
   for config_name, overrides  in overwritten_configs.iteritems():

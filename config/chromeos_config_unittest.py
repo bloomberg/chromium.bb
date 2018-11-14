@@ -12,6 +12,7 @@ import json
 import mock
 import os
 import re
+import unittest
 
 from chromite.cbuildbot import builders
 from chromite.config import chromeos_config
@@ -642,9 +643,27 @@ class CBuildBotTest(ChromeosConfigTestBase):
           'Config %s: is tryjob safe, but defines hw_tests_override.' % \
           build_name)
 
+  # TODO(crbug/871967) Remove expectedFailure once clapper-release* gets its
+  # hwtests back.
+  @unittest.expectedFailure
   def testHWTestsReleaseBuilderRequirement(self):
     """Make sure all release configs run hw tests."""
     for build_name, config in self.site_config.iteritems():
+      if (config.build_type == 'canary' and 'test' in config.images and
+          config.upload_hw_test_artifacts and config.hwqual):
+        self.assertTrue(
+            config.hw_tests,
+            "Release builder %s must run hw tests." % build_name)
+
+
+  def testHWTestsReleaseBuilderWeakRequirement(self):
+    """Make sure most release configs run hw tests."""
+    for build_name, config in self.site_config.iteritems():
+      # crbug/871967: clapper-release* hwtests are intentionally currently
+      # turned off.
+      if build_name.startswith('clapper'):
+        continue
+
       if (config.build_type == 'canary' and 'test' in config.images and
           config.upload_hw_test_artifacts and config.hwqual):
         self.assertTrue(
