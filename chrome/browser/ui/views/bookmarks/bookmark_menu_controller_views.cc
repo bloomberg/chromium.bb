@@ -188,6 +188,13 @@ void BookmarkMenuController::BookmarkModelChanged() {
     menu()->Cancel();
 }
 
+bool BookmarkMenuController::ShouldTryPositioningBesideAnchor() const {
+  // The bookmark menu appears from the bookmark bar, which has a set of buttons positioned next to
+  // each other; if the bookmark menu appears beside its anchor button, it will likely overlay the
+  // adjacent bookmark button, which prevents easy scrubbing through the bookmark bar's menus.
+  return false;
+}
+
 BookmarkMenuController::~BookmarkMenuController() {
   menu_delegate_->GetBookmarkModel()->RemoveObserver(this);
   if (observer_)
