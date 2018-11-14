@@ -2,7 +2,6 @@ Various tests for the marquee element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 "behavior" IDL attribute reflects content attribute:
 PASS marquee.behavior is "slide"
 "behavior" IDL attribute can be modified:

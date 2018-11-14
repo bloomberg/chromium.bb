@@ -2,7 +2,6 @@ Test that ancestors of modal <dialog> are inert. To test manually, click the lef
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Clicking on ancestor
 PASS handledEvent.document is true
 PASS handledEvent.body is false

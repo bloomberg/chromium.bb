@@ -2,10 +2,10 @@ Tests inert node focusing across frames and iframes.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 Opening a modal dialog in frame1. It blocks other nodes in its document.
 PASS "frame1-input"; focusedElement === theElement is false
 PASS "iframe-input"; focusedElement === theElement is false

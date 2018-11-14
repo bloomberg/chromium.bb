@@ -2,7 +2,6 @@ Various tests for the figure element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 <figure> default styling:
 PASS getStyleValue("figure0","display") is "block"
 PASS getStyleValue("figure0","margin-top") is emSize

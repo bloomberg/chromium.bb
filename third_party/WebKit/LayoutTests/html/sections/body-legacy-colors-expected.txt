@@ -1,6 +1,7 @@
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS getComputedStyle(window.document.body).backgroundColor is white
 PASS internals.computedStyleIncludingVisitedInfo(vlink).color is green
 PASS internals.computedStyleIncludingVisitedInfo(alink).color is yellow

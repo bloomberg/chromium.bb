@@ -2,7 +2,6 @@ HTMLTableColElement span attribute test
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.createElement("col").span is 1
 PASS spanAttributeEffect("") is 1
 PASS spanAttributeEffect("1") is 1

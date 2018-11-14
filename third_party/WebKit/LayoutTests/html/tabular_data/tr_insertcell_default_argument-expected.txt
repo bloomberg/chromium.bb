@@ -2,7 +2,6 @@ Tests that HTMLTableRowElement.insertCell()'s default argument is -1.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS tr.__proto__ is HTMLTableRowElement.prototype
 PASS cells.length is 4
 PASS cells[0].innerHTML is "0"

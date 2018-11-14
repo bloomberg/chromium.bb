@@ -2,7 +2,6 @@ Test that any numbered header element end tag can close any other open numbered 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 <h1> closes <h1>:
 PASS test2.parentNode.id == "test1" is false
 PASS test2.parentNode.id == "test0" is true

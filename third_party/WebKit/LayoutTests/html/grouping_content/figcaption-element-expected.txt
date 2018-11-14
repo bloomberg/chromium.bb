@@ -2,7 +2,6 @@ Various tests for the figcaption element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 <figcaption> default styling:
 PASS getStyleValue("figcaption0","display") is "block"
 <figcaption> closes <p>:

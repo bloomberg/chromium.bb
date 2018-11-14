@@ -2,7 +2,6 @@ Various tests for the header element.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 <header> closes <p>:
 PASS header1.parentNode.nodeName == "p" is false
 <p> does not close <header>:

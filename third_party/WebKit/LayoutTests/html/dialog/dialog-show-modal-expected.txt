@@ -2,7 +2,6 @@ Tests that showModal() performs the steps specified in the HTML spec. bug 97425
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS computedStyle.getPropertyValue('display') is "none"
 PASS computedStyle.getPropertyValue('display') is "block"
 "If dialog already has an open attribute, then throw an InvalidStateError exception."

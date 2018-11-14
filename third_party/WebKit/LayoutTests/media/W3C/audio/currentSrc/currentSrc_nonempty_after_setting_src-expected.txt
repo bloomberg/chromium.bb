@@ -2,12 +2,11 @@ audioElement.currentSrc should not be empty after setting src attribute (even to
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS true is true
 PASS false is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
+
 spec reference
-
-
