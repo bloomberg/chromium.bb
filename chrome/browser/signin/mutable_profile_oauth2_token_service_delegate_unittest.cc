@@ -360,16 +360,14 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   std::string account_id_2 = "account_id_2";
   std::string refresh_token_2 = "refresh_token_2";
 
-  // TODO(fgorski): Enable below when implemented:
-  // EXPECT_FALSE(oauth2_servive_->RefreshTokenIsAvailable(account_id_1));
-  // EXPECT_FALSE(oauth2_servive_->RefreshTokenIsAvailable(account_id_2));
+  EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(account_id_1));
+  EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(account_id_2));
   oauth2_service_delegate_->UpdateCredentials(account_id_1, refresh_token_1);
   oauth2_service_delegate_->UpdateCredentials(account_id_2, refresh_token_2);
   EXPECT_EQ(2, start_batch_changes_);
   EXPECT_EQ(2, end_batch_changes_);
 
-  // TODO(fgorski): Enable below when implemented:
-  // EXPECT_TRUE(oauth2_servive_->RefreshTokenIsAvailable(account_id_1));
+  EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(account_id_1));
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(account_id_2));
 
   ResetObserverCounts();
@@ -378,8 +376,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_EQ(1, end_batch_changes_);
   ExpectOneTokenRevokedNotification();
 
-  // TODO(fgorski): Enable below when implemented:
-  // EXPECT_FALSE(oauth2_servive_->RefreshTokenIsAvailable(account_id_1));
+  EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(account_id_1));
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(account_id_2));
 
   oauth2_service_delegate_->RevokeAllCredentials();
