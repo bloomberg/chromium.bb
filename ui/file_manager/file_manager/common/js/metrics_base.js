@@ -95,6 +95,15 @@ metricsBase.recordTime = function(name, time) {
 };
 
 /**
+ * Records a boolean value to the given metric.
+ * @param {string} name Short metric name.
+ * @param {boolean} value The value to be recorded.
+ */
+metricsBase.recordBoolean = function(name, value) {
+  metrics.call_('recordBoolean', [metrics.convertName_(name), value]);
+};
+
+/**
  * Records an action performed by the user.
  * @param {string} name Short metric name.
  */

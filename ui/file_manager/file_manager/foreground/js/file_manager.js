@@ -643,12 +643,9 @@ FileManager.prototype = /** @struct */ {
             if (enabled) {
               this.importController_ = new importer.ImportController(
                   new importer.RuntimeControllerEnvironment(
-                      this,
-                      assert(this.selectionHandler_)),
-                  assert(this.mediaScanner_),
-                  assert(this.mediaImportHandler_),
-                  new importer.RuntimeCommandWidget(),
-                  assert(this.tracker_));
+                      this, assert(this.selectionHandler_)),
+                  assert(this.mediaScanner_), assert(this.mediaImportHandler_),
+                  new importer.RuntimeCommandWidget());
             }
           }.bind(this));
     }

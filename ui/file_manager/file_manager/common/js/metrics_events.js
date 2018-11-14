@@ -97,10 +97,6 @@ metrics.Dimensions = {
     index: metrics.Dimension_.SESSION_TYPE,
     value: 'Manage'
   },
-  SESSION_TYPE_IMPORT: {
-    index: metrics.Dimension_.SESSION_TYPE,
-    value: 'Import'
-  },
   MACHINE_USE_SINGLE: {
     index: metrics.Dimension_.MACHINE_USE,
     value: 'Single'
@@ -137,31 +133,8 @@ metrics.Management = {
 
 /** @enum {!analytics.EventBuilder} */
 metrics.ImportEvents = {
-  DEVICE_YANKED: metrics.event.Builders_.IMPORT
-      .action('Device Yanked'),
-
-  ERRORS: metrics.event.Builders_.IMPORT
-      .action('Import Error Count'),
-
-  FILES_DEDUPLICATED: metrics.event.Builders_.IMPORT
-      .action('Files Deduplicated'),
-
-  FILES_IMPORTED: metrics.event.Builders_.IMPORT
-      .action('Files Imported'),
-
   HISTORY_LOADED: metrics.event.Builders_.IMPORT
       .action('History Loaded'),
-
-  IMPORT_CANCELLED: metrics.event.Builders_.IMPORT
-      .action('Import Cancelled'),
-
-  MEGABYTES_IMPORTED: metrics.event.Builders_.IMPORT
-      .action('Megabytes Imported'),
-
-  STARTED: metrics.event.Builders_.IMPORT
-      .action('Import Started')
-      .dimension(metrics.Dimensions.SESSION_TYPE_IMPORT)
-      .dimension(metrics.Dimensions.CONSUMER_TYPE_IMPORTER)
 };
 
 /** @enum {!analytics.EventBuilder} */

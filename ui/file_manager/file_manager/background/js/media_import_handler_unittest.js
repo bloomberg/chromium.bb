@@ -39,10 +39,19 @@ var driveSyncHandler;
 loadTimeData.data = {
   CLOUD_IMPORT_ITEMS_REMAINING: '',
   DRIVE_DIRECTORY_LABEL: 'My Drive',
-  DOWNLOADS_DIRECTORY_LABEL: 'Downloads'
+  DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
+  DRIVE_OFFLINE_COLLECTION_LABEL: 'Offline',
+  DRIVE_SHARED_WITH_ME_COLLECTION_LABEL: 'Shared with me',
 };
 
 var chrome;
+
+window.metrics = {
+  recordSmallCount: function() {},
+  recordUserAction: function() {},
+  recordMediumCount: function() {},
+  recordBoolean: function() {},
+};
 
 function setUp() {
   // Set up mock chrome APIs.
@@ -98,7 +107,7 @@ function setUp() {
   mediaImporter = new importer.MediaImportHandler(
       progressCenter, importHistory, function(entry, destination) {
         return dispositionChecker(entry, destination);
-      }, new TestTracker(), driveSyncHandler);
+      }, driveSyncHandler);
 }
 
 function testImportMedia(callback) {
@@ -168,8 +177,7 @@ function testImportMedia_skipAndMarkDuplicatedFiles(callback) {
     return Promise.resolve(importer.Disposition.ORIGINAL);
   };
   mediaImporter = new importer.MediaImportHandler(
-      progressCenter, importHistory, dispositionChecker, new TestTracker(),
-      driveSyncHandler);
+      progressCenter, importHistory, dispositionChecker, driveSyncHandler);
   var scanResult = new TestScanResult(media);
   var importTask = mediaImporter.importFromScanResult(
       scanResult,

@@ -29,10 +29,9 @@ importer.ActivityState = {
  * @param {!importer.MediaScanner} scanner
  * @param {!importer.ImportRunner} importRunner
  * @param {!importer.CommandWidget} commandWidget
- * @param {!analytics.Tracker} tracker
  */
-importer.ImportController =
-    function(environment, scanner, importRunner, commandWidget, tracker) {
+importer.ImportController = function(
+    environment, scanner, importRunner, commandWidget) {
 
   /** @private {!importer.ControllerEnvironment} */
   this.environment_ = environment;
@@ -51,9 +50,6 @@ importer.ImportController =
 
   /** @type {!importer.ScanManager} */
   this.scanManager_ = new importer.ScanManager(environment, scanner);
-
-  /** @private {!analytics.Tracker} */
-  this.tracker_ = tracker;
 
   /**
    * The active import task, if any.
@@ -160,7 +156,7 @@ importer.ImportController.prototype.onVolumeUnmounted_ = function(volumeId) {
   if (this.activeImport_) {
     this.activeImport_.task.requestCancel();
     this.finalizeActiveImport_();
-    this.tracker_.send(metrics.ImportEvents.DEVICE_YANKED);
+    metrics.recordBoolean('ImportController.DeviceYanked');
   }
   this.scanManager_.reset();
   this.checkState_();
@@ -330,7 +326,7 @@ importer.ImportController.prototype.cancel_ = function() {
   if (this.activeImport_) {
     this.activeImport_.task.requestCancel();
     this.finalizeActiveImport_();
-    this.tracker_.send(metrics.ImportEvents.IMPORT_CANCELLED);
+    metrics.recordBoolean('ImportController.ImportCancelled');
   }
 
   this.scanManager_.reset();
