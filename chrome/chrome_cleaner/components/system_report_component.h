@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/chrome_cleaner/components/component_api.h"
-#include "chrome/chrome_cleaner/json_parser/json_parser_api.h"
+#include "chrome/chrome_cleaner/parsers/json_parser/json_parser_api.h"
 
 namespace chrome_cleaner {
 

@@ -43,7 +43,6 @@
 #include "chrome/chrome_cleaner/chrome_utils/extensions_util.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/constants/common_registry_names.h"
-#include "chrome/chrome_cleaner/json_parser/json_parser_api.h"
 #include "chrome/chrome_cleaner/logging/logging_service_api.h"
 #include "chrome/chrome_cleaner/logging/proto/shared_data.pb.h"
 #include "chrome/chrome_cleaner/logging/scoped_timed_task_logger.h"
@@ -59,6 +58,7 @@
 #include "chrome/chrome_cleaner/os/system_util.h"
 #include "chrome/chrome_cleaner/os/system_util_cleaner.h"
 #include "chrome/chrome_cleaner/os/task_scheduler.h"
+#include "chrome/chrome_cleaner/parsers/json_parser/json_parser_api.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 
 using base::WaitableEvent;

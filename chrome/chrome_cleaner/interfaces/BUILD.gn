@@ -31,9 +31,9 @@ chrome_cleaner_mojom("engine_sandbox_interface") {
   ]
 }
 
-chrome_cleaner_mojom("json_parser_interface") {
+chrome_cleaner_mojom("parser_interface") {
   sources = [
-    "json_parser.mojom",
+    "parser_interface.mojom",
   ]
   deps = [
     "//mojo/public/mojom/base",

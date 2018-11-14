@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/chrome_cleaner/json_parser/json_parser_api.h"
 #include "chrome/chrome_cleaner/os/registry_util.h"
+#include "chrome/chrome_cleaner/parsers/json_parser/json_parser_api.h"
 
 namespace chrome_cleaner {
 

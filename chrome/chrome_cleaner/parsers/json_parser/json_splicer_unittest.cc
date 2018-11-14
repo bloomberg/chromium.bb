@@ -2,16 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/chrome_cleaner/json_parser/json_splicer.h"
+#include "chrome/chrome_cleaner/parsers/json_parser/json_splicer.h"
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
-#include "chrome/chrome_cleaner/interfaces/json_parser.mojom.h"
+#include "chrome/chrome_cleaner/interfaces/parser_interface.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
-#include "chrome/chrome_cleaner/json_parser/json_parser_impl.h"
-#include "chrome/chrome_cleaner/json_parser/sandboxed_json_parser.h"
+#include "chrome/chrome_cleaner/parsers/json_parser/sandboxed_json_parser.h"
+#include "chrome/chrome_cleaner/parsers/target/parser_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,28 +61,25 @@ class JsonSplicerImplTest : public testing::Test {
  public:
   JsonSplicerImplTest()
       : task_runner_(MojoTaskRunner::Create()),
-        json_parser_ptr_(new mojom::JsonParserPtr(),
-                         base::OnTaskRunnerDeleter(task_runner_)),
-        json_parser_impl_(nullptr, base::OnTaskRunnerDeleter(task_runner_)),
-        sandboxed_json_parser_(task_runner_.get(), json_parser_ptr_.get()) {
+        parser_ptr_(new mojom::ParserPtr(),
+                    base::OnTaskRunnerDeleter(task_runner_)),
+        parser_impl_(nullptr, base::OnTaskRunnerDeleter(task_runner_)),
+        sandboxed_json_parser_(task_runner_.get(), parser_ptr_.get()) {
     task_runner_->PostTask(
-        FROM_HERE,
-        BindOnce(BindParser, json_parser_ptr_.get(), &json_parser_impl_));
+        FROM_HERE, BindOnce(BindParser, parser_ptr_.get(), &parser_impl_));
   }
 
  protected:
   static void BindParser(
-      mojom::JsonParserPtr* json_parser,
-      std::unique_ptr<JsonParserImpl, base::OnTaskRunnerDeleter>*
-          json_parser_impl) {
-    json_parser_impl->reset(
-        new JsonParserImpl(mojo::MakeRequest(json_parser), base::DoNothing()));
+      mojom::ParserPtr* json_parser,
+      std::unique_ptr<ParserImpl, base::OnTaskRunnerDeleter>* parser_impl) {
+    parser_impl->reset(
+        new ParserImpl(mojo::MakeRequest(json_parser), base::DoNothing()));
   }
 
   scoped_refptr<MojoTaskRunner> task_runner_;
-  std::unique_ptr<mojom::JsonParserPtr, base::OnTaskRunnerDeleter>
-      json_parser_ptr_;
-  std::unique_ptr<JsonParserImpl, base::OnTaskRunnerDeleter> json_parser_impl_;
+  std::unique_ptr<mojom::ParserPtr, base::OnTaskRunnerDeleter> parser_ptr_;
+  std::unique_ptr<ParserImpl, base::OnTaskRunnerDeleter> parser_impl_;
   SandboxedJsonParser sandboxed_json_parser_;
 };
 
@@ -92,17 +93,16 @@ TEST_F(JsonSplicerImplTest, FailedJsonDictSplice) {
       base::BindOnce(
           [](base::WaitableEvent* done, base::Optional<base::Value> value,
              const base::Optional<std::string>& error) {
-            JsonSplicer splicer;
             ASSERT_FALSE(error.has_value());
             ASSERT_TRUE(value.has_value());
             base::DictionaryValue* dict;
             ASSERT_TRUE(value->GetAsDictionary(&dict));
             ASSERT_TRUE(IsDaysOfWeek(dict));
             std::string blank = "";
-            ASSERT_FALSE(splicer.RemoveKeyFromDictionary(dict, blank));
+            ASSERT_FALSE(RemoveKeyFromDictionary(dict, blank));
             ASSERT_TRUE(IsDaysOfWeek(dict));
             std::string random = "aoeu";
-            ASSERT_FALSE(splicer.RemoveKeyFromDictionary(dict, random));
+            ASSERT_FALSE(RemoveKeyFromDictionary(dict, random));
             ASSERT_TRUE(IsDaysOfWeek(dict));
             done->Signal();
           },
@@ -118,7 +118,6 @@ TEST_F(JsonSplicerImplTest, JsonDictSplice) {
       base::BindOnce(
           [](base::WaitableEvent* done, base::Optional<base::Value> value,
              const base::Optional<std::string>& error) {
-            JsonSplicer splicer;
             ASSERT_FALSE(error.has_value());
             ASSERT_TRUE(value.has_value());
             base::DictionaryValue* dict;
@@ -127,13 +126,13 @@ TEST_F(JsonSplicerImplTest, JsonDictSplice) {
 
             std::string monday = "monday";
             ASSERT_TRUE(dict->HasKey(monday));
-            ASSERT_TRUE(splicer.RemoveKeyFromDictionary(dict, monday));
+            ASSERT_TRUE(RemoveKeyFromDictionary(dict, monday));
             ASSERT_FALSE(IsDaysOfWeek(dict));
             ASSERT_FALSE(dict->HasKey(monday));
 
             std::string wednesday = "wednesday";
             ASSERT_TRUE(dict->HasKey(wednesday));
-            ASSERT_TRUE(splicer.RemoveKeyFromDictionary(dict, wednesday));
+            ASSERT_TRUE(RemoveKeyFromDictionary(dict, wednesday));
             ASSERT_FALSE(IsDaysOfWeek(dict));
             ASSERT_FALSE(dict->HasKey(wednesday));
             done->Signal();
@@ -150,16 +149,15 @@ TEST_F(JsonSplicerImplTest, FailedJsonListSplice) {
       base::BindOnce(
           [](base::WaitableEvent* done, base::Optional<base::Value> value,
              const base::Optional<std::string>& error) {
-            JsonSplicer splicer;
             ASSERT_FALSE(error.has_value());
             ASSERT_TRUE(value.has_value());
             std::vector<base::Value>& list = value->GetList();
             ASSERT_TRUE(IsDaysOfWeek(list));
             std::string blank = "";
-            ASSERT_FALSE(splicer.RemoveValueFromList(&*value, blank));
+            ASSERT_FALSE(RemoveValueFromList(&*value, blank));
             ASSERT_TRUE(IsDaysOfWeek(list));
             std::string random = "aoeu";
-            ASSERT_FALSE(splicer.RemoveValueFromList(&*value, random));
+            ASSERT_FALSE(RemoveValueFromList(&*value, random));
             ASSERT_TRUE(IsDaysOfWeek(list));
             done->Signal();
           },
@@ -175,18 +173,17 @@ TEST_F(JsonSplicerImplTest, JsonListSplice) {
       base::BindOnce(
           [](base::WaitableEvent* done, base::Optional<base::Value> value,
              const base::Optional<std::string>& error) {
-            JsonSplicer splicer;
             ASSERT_FALSE(error.has_value());
             ASSERT_TRUE(value.has_value());
             std::vector<base::Value>& list = value->GetList();
             ASSERT_TRUE(IsDaysOfWeek(list));
             std::string monday = "monday";
-            ASSERT_TRUE(splicer.RemoveValueFromList(&*value, monday));
+            ASSERT_TRUE(RemoveValueFromList(&*value, monday));
             ASSERT_FALSE(IsDaysOfWeek(list));
             ASSERT_FALSE(std::find(list.begin(), list.end(),
                                    base::Value(monday)) != list.end());
             std::string wednesday = "wednesday";
-            ASSERT_TRUE(splicer.RemoveValueFromList(&*value, wednesday));
+            ASSERT_TRUE(RemoveValueFromList(&*value, wednesday));
             ASSERT_FALSE(IsDaysOfWeek(list));
             ASSERT_FALSE(std::find(list.begin(), list.end(),
                                    base::Value(monday)) != list.end());

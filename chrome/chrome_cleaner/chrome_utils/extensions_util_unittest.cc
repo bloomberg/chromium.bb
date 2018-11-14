@@ -17,7 +17,7 @@
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/registry.h"
-#include "chrome/chrome_cleaner/json_parser/test_json_parser.h"
+#include "chrome/chrome_cleaner/parsers/json_parser/test_json_parser.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

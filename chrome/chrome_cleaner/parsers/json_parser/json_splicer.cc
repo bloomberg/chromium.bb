@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/chrome_cleaner/json_parser/json_splicer.h"
+#include "chrome/chrome_cleaner/parsers/json_parser/json_splicer.h"
+
+#include <string>
+#include <vector>
 
 #include "base/values.h"
 
 namespace chrome_cleaner {
 
-JsonSplicer::~JsonSplicer() = default;
-
-bool JsonSplicer::RemoveKeyFromDictionary(base::Value* dictionary,
-                                          const std::string& key) {
+bool RemoveKeyFromDictionary(base::Value* dictionary, const std::string& key) {
   bool result = false;
   base::DictionaryValue* entries = nullptr;
   if (dictionary == nullptr || !dictionary->is_dict() ||
@@ -28,8 +28,7 @@ bool JsonSplicer::RemoveKeyFromDictionary(base::Value* dictionary,
   return result;
 }
 
-bool JsonSplicer::RemoveValueFromList(base::Value* list,
-                                      const std::string& key) {
+bool RemoveValueFromList(base::Value* list, const std::string& key) {
   if (list == nullptr || !list->is_list()) {
     LOG(ERROR) << "Got a " << (list ? list->GetTypeName(list->type()) : "NULL")
                << " but expected a list.";
