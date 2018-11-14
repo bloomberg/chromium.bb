@@ -2,7 +2,8 @@ include_rules = [
   "+crypto",
   "+gpu",
   "+net",
-  "+pdf",
+  "+pdf/buildflags.h",
+  "+pdf/pdf_features.h",
   "+printing",
   "+sql",
   # Browser, renderer, common and tests access V8 for various purposes.
