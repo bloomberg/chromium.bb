@@ -5,6 +5,7 @@
 #include <map>
 
 #import <EarlGrey/EarlGrey.h>
+#import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 #import <XCTest/XCTest.h>
 
@@ -12,6 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -100,6 +102,53 @@
   [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
       performAction:grey_tap()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
+#pragma mark - Open URL
+
+// Tests that BVC properly handles open URL. When NTP is visible, the URL
+// should be opened in the same tab (not create a new tab).
+- (void)testOpenURLFromNTP {
+  id<UIApplicationDelegate> appDelegate =
+      [[UIApplication sharedApplication] delegate];
+  [appDelegate application:[UIApplication sharedApplication]
+                   openURL:[NSURL URLWithString:@"https://anything"]
+                   options:[NSDictionary dictionary]];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          "https://anything")]
+      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForMainTabCount:1];
+}
+
+// Tests that BVC properly handles open URL. When BVC is showing a non-NTP
+// tab, the URL should be opened in a new tab, adding to the tab count.
+- (void)testOpenURLFromTab {
+  [ChromeEarlGrey loadURL:GURL("https://invalid")];
+  id<UIApplicationDelegate> appDelegate =
+      [[UIApplication sharedApplication] delegate];
+  [appDelegate application:[UIApplication sharedApplication]
+                   openURL:[NSURL URLWithString:@"https://anything"]
+                   options:[NSDictionary dictionary]];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          "https://anything")]
+      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForMainTabCount:2];
+}
+
+// Tests that BVC properly handles open URL. When tab switcher is showing,
+// the URL should be opened in a new tab, and BVC should be shown.
+- (void)testOpenURLFromTabSwitcher {
+  chrome_test_util::CloseCurrentTab();
+  [ChromeEarlGrey waitForMainTabCount:0];
+  id<UIApplicationDelegate> appDelegate =
+      [[UIApplication sharedApplication] delegate];
+  [appDelegate application:[UIApplication sharedApplication]
+                   openURL:[NSURL URLWithString:@"https://anything"]
+                   options:[NSDictionary dictionary]];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          "https://anything")]
+      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 @end
