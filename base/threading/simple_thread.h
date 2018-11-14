@@ -119,7 +119,7 @@ class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
   bool HasBeenStarted();
 
   // Returns True if Join() has ever been called.
-  bool HasBeenJoined() { return joined_; }
+  bool HasBeenJoined() const { return joined_; }
 
   // Returns true if Start() or StartAsync() has been called.
   bool HasStartBeenAttempted() { return start_called_; }
