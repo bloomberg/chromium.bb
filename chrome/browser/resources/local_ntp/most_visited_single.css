@@ -80,7 +80,8 @@ a:visited {
   user-select: none;
 }
 
-.md #mv-tiles {
+.md #mv-tiles,
+.md .mv-tiles-old {
   display: flex;
   flex-wrap: wrap;
   height: auto;
@@ -91,10 +92,14 @@ a:visited {
    * values in local_ntp.css. */
   max-width: calc(var(--md-tile-width) * var(--md-max-tiles-row));
   position: static;
+  transition-duration: 300ms;
 }
 
 .md .mv-tiles-old {
-  display: none;
+  left: 0;
+  margin: auto;
+  position: absolute;
+  right: 0;
 }
 
 .mv-tile,
