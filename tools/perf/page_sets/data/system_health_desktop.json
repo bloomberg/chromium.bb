@@ -150,6 +150,9 @@
         "load:media:google_images": {
             "DEFAULT": "system_health_desktop_003.wprgo"
         },
+        "load:media:google_images:2018": {
+            "DEFAULT": "system_health_desktop_2fefa84cbf.wprgo"
+        },
         "load:media:imgur": {
             "DEFAULT": "system_health_desktop_025.wprgo"
         },

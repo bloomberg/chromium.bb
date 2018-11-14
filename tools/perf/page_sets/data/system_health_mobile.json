@@ -132,6 +132,9 @@
         "load:media:google_images": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
+        "load:media:google_images:2018": {
+            "DEFAULT": "system_health_mobile_cac60dab45.wprgo"
+        },
         "load:media:imgur": {
             "DEFAULT": "system_health_mobile_035.wprgo"
         },
