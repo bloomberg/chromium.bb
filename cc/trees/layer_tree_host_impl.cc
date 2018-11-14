@@ -2498,9 +2498,18 @@ void LayerTreeHostImpl::UpdateViewportContainerSizes() {
 
     ClipNode* outer_clip_node = property_trees->clip_tree.Node(
         OuterViewportScrollLayer()->clip_tree_index());
-    outer_clip_node->clip.set_height(
-        OuterViewportScrollNode()->container_bounds.height() +
-        outer_bounds_delta.y());
+
+    float container_height =
+        OuterViewportScrollNode()->container_bounds.height();
+
+    // TODO(bokan): The container bounds for the outer viewport are incorrectly
+    // computed pre-Blink-Gen-Property-Trees so we must apply the minimum page
+    // scale factor.  https://crbug.com/901083
+    if (!settings().use_layer_lists)
+      container_height *= active_tree_->min_page_scale_factor();
+
+    outer_clip_node->clip.set_height(container_height + inner_bounds_delta.y());
+
     anchor.ResetViewportToAnchoredPosition();
   }
 
