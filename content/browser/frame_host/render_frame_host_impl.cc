@@ -3099,13 +3099,19 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
         }
       }
 
-      // Call testing callback functions for each event to fire.
-      for (size_t i = 0; i < details.events.size(); i++) {
-        if (static_cast<int>(details.events[i].event_type) < 0)
-          continue;
+      if (details.events.empty()) {
+        // Objects were marked dirty but no events were provided.
+        // The callback must still run, otherwise dump event tests can hang.
+        accessibility_testing_callback_.Run(this, ax::mojom::Event::kNone, 0);
+      } else {
+        // Call testing callback functions for each event to fire.
+        for (size_t i = 0; i < details.events.size(); i++) {
+          if (static_cast<int>(details.events[i].event_type) < 0)
+            continue;
 
-        accessibility_testing_callback_.Run(this, details.events[i].event_type,
-                                            details.events[i].id);
+          accessibility_testing_callback_.Run(
+              this, details.events[i].event_type, details.events[i].id);
+        }
       }
     }
   }
