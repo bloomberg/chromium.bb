@@ -1085,33 +1085,34 @@ bool FrameSelection::SelectWordAroundCaret() {
   // http://crbug.com/657237 for more details.
   if (!selection.IsCaret())
     return false;
-  const VisiblePosition& position = selection.VisibleStart();
+  const Position position = selection.Start();
   static const EWordSide kWordSideList[2] = {kNextWordIfOnBoundary,
                                              kPreviousWordIfOnBoundary};
   for (EWordSide word_side : kWordSideList) {
-    // TODO(yoichio): We should have Position version of |start/endOfWord|
-    // for avoiding unnecessary canonicalization.
-    VisiblePosition start = StartOfWord(position, word_side);
-    VisiblePosition end = EndOfWord(position, word_side);
+    Position start = StartOfWordPosition(position, word_side);
+    Position end = EndOfWordPosition(position, word_side);
 
     // TODO(editing-dev): |StartOfWord()| and |EndOfWord()| should not make null
     // for non-null parameter.
     // See http://crbug.com/872443
-    if (start.DeepEquivalent().IsNull() || end.DeepEquivalent().IsNull())
+    if (start.IsNull() || end.IsNull())
       continue;
 
-    String text =
-        PlainText(EphemeralRange(start.DeepEquivalent(), end.DeepEquivalent()));
+    if (start > end) {
+      // Since word boundaries are computed on flat tree, they can be reversed
+      // when mapped back to DOM.
+      std::swap(start, end);
+    }
+
+    String text = PlainText(EphemeralRange(start, end));
     if (!text.IsEmpty() && !IsSeparator(text.CharacterStartingAt(0))) {
-      SetSelection(SelectionInDOMTree::Builder()
-                       .Collapse(start.ToPositionWithAffinity())
-                       .Extend(end.DeepEquivalent())
-                       .Build(),
-                   SetSelectionOptions::Builder()
-                       .SetShouldCloseTyping(true)
-                       .SetShouldClearTypingStyle(true)
-                       .SetGranularity(TextGranularity::kWord)
-                       .Build());
+      SetSelection(
+          SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build(),
+          SetSelectionOptions::Builder()
+              .SetShouldCloseTyping(true)
+              .SetShouldClearTypingStyle(true)
+              .SetGranularity(TextGranularity::kWord)
+              .Build());
       return true;
     }
   }
