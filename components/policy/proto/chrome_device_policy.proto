@@ -812,6 +812,12 @@ message LoginVideoCaptureAllowedUrlsProto {
   repeated string urls = 1;
 }
 
+// Settings that control whether a device can connect to a 802.11r enabled
+// WiFi network.
+message DeviceWiFiFastTransitionEnabledProto {
+  optional bool enabled = 1 [default = false];
+}
+
 message NetworkThrottlingEnabledProto {
   optional bool enabled = 1 [default = false];
   optional int32 upload_rate_kbits = 2 [default = 0];
@@ -1170,4 +1176,6 @@ message ChromeDeviceSettingsProto {
   optional SamlLoginAuthenticationTypeProto saml_login_authentication_type = 71;
   optional DeviceUnaffiliatedCrostiniAllowedProto
       device_unaffiliated_crostini_allowed = 72;
+  optional DeviceWiFiFastTransitionEnabledProto
+      device_wifi_fast_transition_enabled = 73;
 }

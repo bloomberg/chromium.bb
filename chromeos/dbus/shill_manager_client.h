@@ -100,6 +100,9 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
     // Returns the current network throttling status.
     virtual const NetworkThrottlingStatus& GetNetworkThrottlingStatus() = 0;
 
+    // Returns the current Fast Transition status.
+    virtual bool GetFastTransitionStatus() = 0;
+
    protected:
     virtual ~TestInterface() {}
   };
