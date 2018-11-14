@@ -6,6 +6,7 @@
 #define CHROMECAST_BROWSER_CAST_FEATURE_LIST_CREATOR_H_
 
 #include <memory>
+#include <string>
 
 class PrefService;
 
@@ -26,10 +27,15 @@ class CastFeatureListCreator {
   // Takes ownership of the |PrefService| previously created.
   std::unique_ptr<PrefService> TakePrefService();
 
+  // Sets the extra features to be enabled.
+  void SetExtraEnableFeatures(std::string extra_enable_features);
+
  private:
   // Holds the |PrefService| until TakePrefService() is called and ownership
   // is taken away.
   std::unique_ptr<PrefService> pref_service_;
+  // Extra features that can be enabled at run time.
+  std::string extra_enable_features_;
 };
 
 }  // namespace chromecast

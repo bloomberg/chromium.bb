@@ -930,6 +930,11 @@ class WebContents : public PageNavigator,
   // Sets a flag that causes the WebContents to ignore input events.
   virtual void SetIgnoreInputEvents(bool ignore_input_events) = 0;
 
+  // Returns the group id for all audio streams that correspond to a single
+  // WebContents. This can be used to determine if a AudioOutputStream was
+  // created from a renderer that originated from this WebContents.
+  virtual base::UnguessableToken GetAudioGroupId() = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class WebContentsImpl;

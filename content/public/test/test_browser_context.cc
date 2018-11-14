@@ -50,8 +50,8 @@ namespace content {
 TestBrowserContext::TestBrowserContext(
     base::FilePath browser_context_dir_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI))
-      << "Please construct content::TestBrowserTheadBundle before constructing "
-      << "TestBrowserContext instances.  "
+      << "Please construct content::TestBrowserThreadBundle before "
+      << "constructing TestBrowserContext instances.  "
       << BrowserThread::GetDCheckCurrentlyOnErrorMessage(BrowserThread::UI);
 
   if (browser_context_dir_path.empty()) {

@@ -106,6 +106,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
       CastAudioManager* audio_manager,
       service_manager::Connector* connector,
       const ::media::AudioParameters& audio_params,
+      const std::string& group_id,
       MixerServiceConnectionFactory* mixer_service_connection_factory);
   ~CastAudioOutputStream() override;
 
@@ -132,6 +133,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   CastAudioManager* const audio_manager_;
   service_manager::Connector* connector_;
   const ::media::AudioParameters audio_params_;
+  const std::string group_id_;
   MixerServiceConnectionFactory* mixer_service_connection_factory_;
   chromecast::mojom::MultiroomManagerPtr multiroom_manager_;
   std::unique_ptr<CmaWrapper> cma_wrapper_;

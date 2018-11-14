@@ -43,6 +43,10 @@ std::unique_ptr<service_manager::Connector> CreateConnector() {
   return service_manager::Connector::Create(&request);
 }
 
+std::string DummyGetSessionId(std::string /* audio_group_id */) {
+  return "AABBCCDDEE";
+}
+
 }  // namespace
 
 namespace chromecast {
@@ -276,6 +280,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
         std::make_unique<::media::TestAudioThread>(), nullptr,
         base::BindRepeating(&CastAudioOutputStreamTest::GetCmaBackendFactory,
                             base::Unretained(this)),
+        base::BindRepeating(&DummyGetSessionId),
         scoped_task_environment_.GetMainThreadTaskRunner(),
         scoped_task_environment_.GetMainThreadTaskRunner(), connector_.get(),
         use_mixer, true /* force_use_cma_backend_for_output*/));
@@ -856,10 +861,11 @@ TEST_F(CastAudioOutputStreamTest, SessionId) {
   // TODO(awolter, b/111669896): Verify that the session id is correct after
   // piping has been added. For now, we want to verify that the session id is
   // empty, so that basic MZ continues to work.
+  std::string session_id = DummyGetSessionId("");
   ASSERT_TRUE(cma_backend_);
-  EXPECT_EQ(multiroom_manager_.GetLastSessionId(), "");
+  EXPECT_EQ(multiroom_manager_.GetLastSessionId(), session_id);
   MediaPipelineDeviceParams params = cma_backend_->params();
-  EXPECT_EQ(params.session_id, "");
+  EXPECT_EQ(params.session_id, session_id);
 
   stream->Stop();
   stream->Close();

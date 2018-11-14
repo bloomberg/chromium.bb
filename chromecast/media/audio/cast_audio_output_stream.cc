@@ -490,19 +490,21 @@ CastAudioOutputStream::CastAudioOutputStream(
     CastAudioManager* audio_manager,
     service_manager::Connector* connector,
     const ::media::AudioParameters& audio_params,
+    const std::string& group_id,
     MixerServiceConnectionFactory* mixer_service_connection_factory)
     : volume_(1.0),
       audio_thread_state_(kClosed),
       audio_manager_(audio_manager),
       connector_(connector),
       audio_params_(audio_params),
+      group_id_(group_id),
       mixer_service_connection_factory_(mixer_service_connection_factory),
       audio_weak_factory_(this) {
   DCHECK(audio_manager_);
   DCHECK(connector_);
-  VLOG(1) << "CastAudioOutputStream " << this << " created with "
-          << audio_params_.AsHumanReadableString();
   DETACH_FROM_THREAD(audio_thread_checker_);
+  VLOG(1) << __func__ << " " << this << " created from group_id=" << group_id
+          << " with audio_params=" << audio_params_.AsHumanReadableString();
 }
 
 CastAudioOutputStream::~CastAudioOutputStream() {
@@ -528,8 +530,10 @@ bool CastAudioOutputStream::Open() {
   DCHECK_GE(audio_params_.channels(), 1);
   DCHECK_LE(audio_params_.channels(), 2);
 
-  // TODO(awolter, b/111669896): Populate this with the correct session id.
-  const std::string application_session_id = "";
+  const std::string application_session_id =
+      audio_manager_->GetSessionId(group_id_);
+  VLOG(1) << this << ": " << __func__
+          << ", session_id=" << application_session_id;
 
   // Connect to the Multiroom interface and fetch the current info.
   connector_->BindInterface(chromecast::mojom::kChromecastServiceName,

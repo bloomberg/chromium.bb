@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 
 namespace chromecast {
 namespace {
@@ -179,15 +180,19 @@ const std::vector<const base::Feature*>& GetFeatures() {
 void InitializeFeatureList(const base::DictionaryValue& dcs_features,
                            const base::ListValue& dcs_experiment_ids,
                            const std::string& cmd_line_enable_features,
-                           const std::string& cmd_line_disable_features) {
+                           const std::string& cmd_line_disable_features,
+                           const std::string& extra_enable_features) {
   DCHECK(!base::FeatureList::GetInstance());
 
   // Set the experiments.
   SetExperimentIds(dcs_experiment_ids);
 
+  std::string all_enable_features =
+      cmd_line_enable_features + "," + extra_enable_features;
+
   // Initialize the FeatureList from the command line.
   auto feature_list = std::make_unique<base::FeatureList>();
-  feature_list->InitializeFromCommandLine(cmd_line_enable_features,
+  feature_list->InitializeFromCommandLine(all_enable_features,
                                           cmd_line_disable_features);
 
   // Override defaults from the DCS config.

@@ -6355,6 +6355,13 @@ void WebContentsImpl::SetBrowserPluginGuest(
   browser_plugin_guest_ = std::move(guest);
 }
 
+base::UnguessableToken WebContentsImpl::GetAudioGroupId() {
+  if (!base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams))
+    return base::UnguessableToken::Null();
+
+  return GetAudioStreamFactory()->group_id();
+}
+
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
   return browser_plugin_embedder_.get();
 }
