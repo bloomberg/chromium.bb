@@ -351,6 +351,7 @@ base::Optional<ModelError> ClientTagBasedModelTypeProcessor::GetError() const {
 
 base::WeakPtr<ModelTypeControllerDelegate>
 ClientTagBasedModelTypeProcessor::GetControllerDelegate() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return weak_ptr_factory_for_controller_.GetWeakPtr();
 }
 
