@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_CONTROLLER_IMPL_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
@@ -53,11 +52,6 @@ class LocalCardMigrationDialogControllerImpl
   void OnViewCardsButtonClicked() override;
   void OnLegalMessageLinkClicked(const GURL& url) override;
   void OnDialogClosed() override;
-
-  // Returns nullptr if no dialog is currently shown.
-  LocalCardMigrationDialog* local_card_migration_dialog_view() const {
-    return local_card_migration_dialog_;
-  }
 
  protected:
   explicit LocalCardMigrationDialogControllerImpl(
