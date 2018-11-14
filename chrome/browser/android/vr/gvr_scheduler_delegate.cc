@@ -612,7 +612,7 @@ void GvrSchedulerDelegate::DrawFrameSubmitNow(FrameType frame_type,
       // that was inserted after Submit may not be complete yet when the next
       // Submit finishes.
       browser_gpu_trace =
-          std::make_unique<ScopedGpuTrace>("gpu", "Vr.PostSubmitDrawOnGpu");
+          std::make_unique<ScopedGpuTrace>("Vr.PostSubmitDrawOnGpu");
     }
     graphics_->SubmitToGvr(head_pose);
 

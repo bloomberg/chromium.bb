@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/time/default_tick_clock.h"
-#include "base/trace_event/auto_open_close_event.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
@@ -20,6 +19,9 @@ namespace media {
 // Amount of time to wait between UpdateCurrentFrame() callbacks before starting
 // background rendering to keep the Render() callbacks moving.
 const int kBackgroundRenderingTimeoutMs = 250;
+
+// static
+constexpr const char VideoFrameCompositor::kTracingCategory[];
 
 VideoFrameCompositor::VideoFrameCompositor(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -111,8 +113,9 @@ void VideoFrameCompositor::OnRendererStateUpdate(bool new_state) {
   rendering_ = new_state;
 
   if (!auto_open_close_) {
-    auto_open_close_.reset(new base::trace_event::AutoOpenCloseEvent(
-        base::trace_event::AutoOpenCloseEvent::Type::ASYNC, "media,rail",
+    auto_open_close_.reset(new base::trace_event::AutoOpenCloseEvent<
+                           kTracingCategory>(
+        base::trace_event::AutoOpenCloseEvent<kTracingCategory>::Type::ASYNC,
         "VideoPlayback"));
   }
 

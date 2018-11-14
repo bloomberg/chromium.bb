@@ -18,7 +18,8 @@ using blink::TracedValue;
 const char kBlinkResourceID[] = "BlinkResourceID";
 const char kResourceLoadTitle[] = "ResourceLoad";
 const char kResourcePrioritySetTitle[] = "ResourcePrioritySet";
-const char kNetInstrumentationCategory[] = TRACE_DISABLED_BY_DEFAULT("network");
+constexpr const char kNetInstrumentationCategory[] =
+    TRACE_DISABLED_BY_DEFAULT("network");
 
 const char* RequestOutcomeToString(RequestOutcome outcome) {
   switch (outcome) {

@@ -42,7 +42,8 @@ class BASE_EXPORT MemoryDumpManager {
   using RequestGlobalDumpFunction =
       RepeatingCallback<void(MemoryDumpType, MemoryDumpLevelOfDetail)>;
 
-  static const char* const kTraceCategory;
+  static constexpr const char* const kTraceCategory =
+      TRACE_DISABLED_BY_DEFAULT("memory-infra");
 
   // This value is returned as the tracing id of the child processes by
   // GetTracingProcessId() when tracing is not enabled.

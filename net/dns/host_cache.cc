@@ -215,7 +215,7 @@ void HostCache::Set(const Key& key,
                     const Entry& entry,
                     base::TimeTicks now,
                     base::TimeDelta ttl) {
-  TRACE_EVENT0(kNetTracingCategory, "HostCache::Set");
+  TRACE_EVENT0(NetTracingCategory(), "HostCache::Set");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (caching_is_disabled())
     return;

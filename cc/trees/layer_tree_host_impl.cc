@@ -2145,7 +2145,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
   {
     TRACE_EVENT0("cc", "DrawLayers.FrameViewerTracing");
     TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-        frame_viewer_instrumentation::kCategoryLayerTree,
+        frame_viewer_instrumentation::CategoryLayerTree(),
         "cc::LayerTreeHostImpl", id_, AsValueWithFrame(frame));
   }
 

@@ -33,7 +33,7 @@ namespace heap_profiling {
 
 namespace {
 
-const char kTestCategory[] = "kTestCategory";
+constexpr const char kTestCategory[] = "kTestCategory";
 const char kMallocEvent[] = "kMallocEvent";
 const char kMallocTypeTag[] = "kMallocTypeTag";
 const char kPAEvent[] = "kPAEvent";

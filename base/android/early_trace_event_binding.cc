@@ -14,7 +14,7 @@
 namespace base {
 namespace android {
 
-const char kEarlyJavaCategory[] = "EarlyJava";
+constexpr const char kEarlyJavaCategory[] = "EarlyJava";
 
 static void JNI_EarlyTraceEvent_RecordEarlyEvent(
     JNIEnv* env,

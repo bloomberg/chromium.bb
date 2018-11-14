@@ -20,21 +20,19 @@ namespace media {
 // is destroyed without being run.
 class MEDIA_EXPORT ScopedAsyncTrace {
  public:
-  // Create a ScopedAsyncTrace if tracing for |category| is enabled, else return
+  // Create a ScopedAsyncTrace if tracing for "media" is enabled, else return
   // nullptr.  |name| provided to the trace as the name(!).
   // IMPORTANT: These strings must outlive |this|, since tracing needs it.  In
   // other words, use literal strings only.  See trace_event_common.h .
-  static std::unique_ptr<ScopedAsyncTrace> CreateIfEnabled(const char* category,
-                                                           const char* name);
+  static std::unique_ptr<ScopedAsyncTrace> CreateIfEnabled(const char* name);
 
   ~ScopedAsyncTrace();
 
   // TODO(liberato): Add StepInto / StepPast.
 
  private:
-  ScopedAsyncTrace(const char* category, const char* name);
+  explicit ScopedAsyncTrace(const char* name);
 
-  const char* category_ = nullptr;
   const char* name_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedAsyncTrace);

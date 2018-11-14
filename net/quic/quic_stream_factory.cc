@@ -501,7 +501,7 @@ int QuicStreamFactory::Job::Run(CompletionOnceCallback callback) {
 }
 
 int QuicStreamFactory::Job::DoLoop(int rv) {
-  TRACE_EVENT0(kNetTracingCategory, "QuicStreamFactory::Job::DoLoop");
+  TRACE_EVENT0(NetTracingCategory(), "QuicStreamFactory::Job::DoLoop");
 
   do {
     IoState state = io_state_;
@@ -1664,7 +1664,7 @@ int QuicStreamFactory::CreateSession(
     const NetLogWithSource& net_log,
     QuicChromiumClientSession** session,
     NetworkChangeNotifier::NetworkHandle* network) {
-  TRACE_EVENT0(kNetTracingCategory, "QuicStreamFactory::CreateSession");
+  TRACE_EVENT0(NetTracingCategory(), "QuicStreamFactory::CreateSession");
   IPEndPoint addr = *address_list.begin();
   const quic::QuicServerId& server_id = key.server_id();
   std::unique_ptr<DatagramClientSocket> socket(

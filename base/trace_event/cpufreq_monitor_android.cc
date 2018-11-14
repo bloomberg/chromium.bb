@@ -26,7 +26,7 @@ namespace trace_event {
 namespace {
 
 const size_t kNumBytesToReadForSampling = 32;
-const char kTraceCategory[] = TRACE_DISABLED_BY_DEFAULT("power");
+constexpr const char kTraceCategory[] = TRACE_DISABLED_BY_DEFAULT("power");
 const char kEventTitle[] = "CPU Frequency";
 
 }  // namespace

@@ -20,6 +20,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time_override.h"
+#include "base/trace_event/category_registry.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -200,6 +201,14 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   static const unsigned char* GetCategoryGroupEnabled(const char* name);
   static const char* GetCategoryGroupName(
       const unsigned char* category_group_enabled);
+  static constexpr const unsigned char* GetBuiltinCategoryEnabled(
+      const char* name) {
+    TraceCategory* builtin_category =
+        CategoryRegistry::GetBuiltinCategoryByName(name);
+    if (builtin_category)
+      return builtin_category->state_ptr();
+    return nullptr;
+  }
 
   // Called by TRACE_EVENT* macros, don't call this directly.
   // If |copy| is set, |name|, |arg_name1| and |arg_name2| will be deep copied

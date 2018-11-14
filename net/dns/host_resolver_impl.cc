@@ -903,7 +903,7 @@ class HostResolverImpl::ProcTask {
                                       const AddressList& results,
                                       int error,
                                       const int os_error) {
-    TRACE_EVENT0(kNetTracingCategory, "ProcTask::OnLookupComplete");
+    TRACE_EVENT0(NetTracingCategory(), "ProcTask::OnLookupComplete");
 
     // If results are empty, we should return an error.
     bool empty_list_on_ok = (error == OK && results.empty());

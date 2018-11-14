@@ -18,7 +18,11 @@ namespace benchmark_instrumentation {
 // The benchmarks search for events and their arguments by name.
 
 namespace internal {
-const char kCategory[] = "cc,benchmark";
+constexpr const char* Category() {
+  // Declared as a constexpr function to have an external linkage and to be
+  // known at compile-time.
+  return "cc,benchmark";
+}
 const char kBeginFrameId[] = "begin_frame_id";
 }  // namespace internal
 
@@ -31,11 +35,11 @@ class ScopedBeginFrameTask {
  public:
   ScopedBeginFrameTask(const char* event_name, unsigned int begin_frame_id)
       : event_name_(event_name) {
-    TRACE_EVENT_BEGIN1(internal::kCategory, event_name_,
+    TRACE_EVENT_BEGIN1(internal::Category(), event_name_,
                        internal::kBeginFrameId, begin_frame_id);
   }
   ~ScopedBeginFrameTask() {
-    TRACE_EVENT_END0(internal::kCategory, event_name_);
+    TRACE_EVENT_END0(internal::Category(), event_name_);
   }
 
  private:

@@ -179,7 +179,7 @@ void SSLConnectJob::OnIOComplete(int result) {
 }
 
 int SSLConnectJob::DoLoop(int result) {
-  TRACE_EVENT0(kNetTracingCategory, "SSLConnectJob::DoLoop");
+  TRACE_EVENT0(NetTracingCategory(), "SSLConnectJob::DoLoop");
   DCHECK_NE(next_state_, STATE_NONE);
 
   int rv = result;
@@ -300,7 +300,7 @@ int SSLConnectJob::DoTunnelConnectComplete(int result) {
 }
 
 int SSLConnectJob::DoSSLConnect() {
-  TRACE_EVENT0(kNetTracingCategory, "SSLConnectJob::DoSSLConnect");
+  TRACE_EVENT0(NetTracingCategory(), "SSLConnectJob::DoSSLConnect");
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
 
   // Reset the timeout to just the time allowed for the SSL handshake.

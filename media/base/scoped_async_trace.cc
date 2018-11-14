@@ -9,23 +9,24 @@
 
 namespace media {
 
+namespace {
+constexpr const char kCategory[] = "media";
+}  // namespace
+
 // static
 std::unique_ptr<ScopedAsyncTrace> ScopedAsyncTrace::CreateIfEnabled(
-    const char* category,
     const char* name) {
   bool enabled = false;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(category, &enabled);
-  return enabled ? base::WrapUnique(new ScopedAsyncTrace(category, name))
-                 : nullptr;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kCategory, &enabled);
+  return enabled ? base::WrapUnique(new ScopedAsyncTrace(name)) : nullptr;
 }
 
-ScopedAsyncTrace::ScopedAsyncTrace(const char* category, const char* name)
-    : category_(category), name_(name) {
-  TRACE_EVENT_ASYNC_BEGIN0(category_, name_, this);
+ScopedAsyncTrace::ScopedAsyncTrace(const char* name) : name_(name) {
+  TRACE_EVENT_ASYNC_BEGIN0(kCategory, name_, this);
 }
 
 ScopedAsyncTrace::~ScopedAsyncTrace() {
-  TRACE_EVENT_ASYNC_END0(category_, name_, this);
+  TRACE_EVENT_ASYNC_END0(kCategory, name_, this);
 }
 
 }  // namespace media

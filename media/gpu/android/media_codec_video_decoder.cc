@@ -744,7 +744,7 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
   gfx::Rect visible_rect(output_buffer->size());
   std::unique_ptr<ScopedAsyncTrace> async_trace =
       ScopedAsyncTrace::CreateIfEnabled(
-          "media", "MediaCodecVideoDecoder::CreateVideoFrame");
+          "MediaCodecVideoDecoder::CreateVideoFrame");
   video_frame_factory_->CreateVideoFrame(
       std::move(output_buffer), presentation_time,
       GetNaturalSize(visible_rect, decoder_config_.GetPixelAspectRatio()),
