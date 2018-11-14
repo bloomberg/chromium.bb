@@ -123,7 +123,7 @@ void IndexedDBCallbacksImpl::Blocked(int64_t existing_version) {
 void IndexedDBCallbacksImpl::UpgradeNeeded(
     IDBDatabaseAssociatedPtrInfo database_info,
     int64_t old_version,
-    WebIDBDataLoss data_loss,
+    mojom::IDBDataLoss data_loss,
     const String& data_loss_message,
     const WebIDBMetadata& web_metadata) {
   WebIDBDatabase* database = new WebIDBDatabaseImpl(std::move(database_info));

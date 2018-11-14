@@ -40,7 +40,7 @@ class MockMojoIndexedDBCallbacks : public blink::mojom::IDBCallbacks {
   MOCK_METHOD5(MockedUpgradeNeeded,
                void(blink::mojom::IDBDatabaseAssociatedPtrInfo* database_info,
                     int64_t old_version,
-                    blink::WebIDBDataLoss data_loss,
+                    blink::mojom::IDBDataLoss data_loss,
                     const std::string& data_loss_message,
                     const blink::IndexedDBDatabaseMetadata& metadata));
 
@@ -48,7 +48,7 @@ class MockMojoIndexedDBCallbacks : public blink::mojom::IDBCallbacks {
   void UpgradeNeeded(
       blink::mojom::IDBDatabaseAssociatedPtrInfo database_info,
       int64_t old_version,
-      blink::WebIDBDataLoss data_loss,
+      blink::mojom::IDBDataLoss data_loss,
       const std::string& data_loss_message,
       const blink::IndexedDBDatabaseMetadata& metadata) override {
     MockedUpgradeNeeded(&database_info, old_version, data_loss,

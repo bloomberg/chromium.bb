@@ -31,32 +31,33 @@ ScriptValue IDBObservation::value(ScriptState* script_state) {
   return ScriptValue::From(script_state, value_);
 }
 
-WebIDBOperationType IDBObservation::StringToOperationType(const String& type) {
+mojom::IDBOperationType IDBObservation::StringToOperationType(
+    const String& type) {
   if (type == indexed_db_names::kAdd)
-    return kWebIDBAdd;
+    return mojom::IDBOperationType::Add;
   if (type == indexed_db_names::kPut)
-    return kWebIDBPut;
+    return mojom::IDBOperationType::Put;
   if (type == indexed_db_names::kDelete)
-    return kWebIDBDelete;
+    return mojom::IDBOperationType::Delete;
   if (type == indexed_db_names::kClear)
-    return kWebIDBClear;
+    return mojom::IDBOperationType::Clear;
 
   NOTREACHED();
-  return kWebIDBAdd;
+  return mojom::IDBOperationType::Add;
 }
 
 const String& IDBObservation::type() const {
   switch (operation_type_) {
-    case kWebIDBAdd:
+    case mojom::IDBOperationType::Add:
       return indexed_db_names::kAdd;
 
-    case kWebIDBPut:
+    case mojom::IDBOperationType::Put:
       return indexed_db_names::kPut;
 
-    case kWebIDBDelete:
+    case mojom::IDBOperationType::Delete:
       return indexed_db_names::kDelete;
 
-    case kWebIDBClear:
+    case mojom::IDBOperationType::Clear:
       return indexed_db_names::kClear;
 
     default:

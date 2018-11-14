@@ -119,7 +119,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
 
   // Exposed for the use of IDBCursor::update().
   IDBRequest* DoPut(ScriptState*,
-                    WebIDBPutMode,
+                    mojom::IDBPutMode,
                     const IDBRequest::Source&,
                     const ScriptValue&,
                     const IDBKey*,
@@ -129,8 +129,8 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   IDBRequest* openCursor(
       ScriptState*,
       IDBKeyRange*,
-      WebIDBCursorDirection,
-      WebIDBTaskType = kWebIDBTaskTypeNormal,
+      mojom::IDBCursorDirection,
+      mojom::IDBTaskType = mojom::IDBTaskType::Normal,
       IDBRequest::AsyncTraceState = IDBRequest::AsyncTraceState());
   IDBRequest* deleteFunction(
       ScriptState*,
@@ -195,7 +195,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
                         const IDBIndexParameters*,
                         ExceptionState&);
   IDBRequest* DoPut(ScriptState*,
-                    WebIDBPutMode,
+                    mojom::IDBPutMode,
                     const ScriptValue&,
                     const ScriptValue& key_value,
                     ExceptionState&);
