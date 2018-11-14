@@ -81,7 +81,6 @@ void StreamBufferManager::SetUpStreamsAndBuffers(
     const cros::mojom::CameraMetadataPtr& static_metadata,
     std::vector<cros::mojom::Camera3StreamPtr> streams) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  DCHECK(!stream_context_[StreamType::kPreview]);
 
   // The partial result count metadata is optional; defaults to 1 in case it
   // is not set in the static metadata.
@@ -191,6 +190,7 @@ void StreamBufferManager::StopPreview(
     base::OnceCallback<void(int32_t)> callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   capturing_ = false;
+  repeating_request_settings_.reset();
   if (callback) {
     capture_interface_->Flush(std::move(callback));
   }
