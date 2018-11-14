@@ -80,7 +80,7 @@ function FileBrowserBackgroundImpl() {
    */
   this.mediaImportHandler = new importer.MediaImportHandler(
       this.progressCenter, this.historyLoader, this.dispositionChecker_,
-      this.tracker, this.driveSyncHandler);
+      this.driveSyncHandler);
 
   /**
    * String assets.

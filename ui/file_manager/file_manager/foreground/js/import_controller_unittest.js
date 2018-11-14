@@ -47,6 +47,13 @@ var MESSAGES = {
 // Set up string assets.
 loadTimeData.data = MESSAGES;
 
+window.metrics = {
+  recordSmallCount: function() {},
+  recordUserAction: function() {},
+  recordValue: function() {},
+  recordBoolean: function() {},
+};
+
 function setUp() {
   new MockChromeStorageAPI();
   new MockCommandLinePrivate();
@@ -701,11 +708,7 @@ function createController(volumeType, volumeId, fileNames, currentDirectory) {
       sourceVolume.fileSystem.entries[currentDirectory]);
 
   return new importer.ImportController(
-      environment,
-      mediaScanner,
-      mediaImporter,
-      widget,
-      new TestTracker());
+      environment, mediaScanner, mediaImporter, widget);
 }
 
 /**
