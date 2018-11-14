@@ -35,6 +35,12 @@
       <structure name="IDR_MD_EXTENSIONS_ACTIVITY_LOG_JS"
                  file="activity_log.js"
                  type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_ACTIVITY_LOG_ITEM_HTML"
+                 file="activity_log_item.html"
+                 type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_ACTIVITY_LOG_ITEM_JS"
+                 file="activity_log_item.js"
+                 type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_DETAIL_VIEW_HTML"
                  file="detail_view.html"
                  type="chrome_html" />
@@ -170,6 +176,9 @@
                  type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_SERVICE_JS"
                  file="service.js"
+                 type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_SHARED_STYLE_HTML"
+                 file="shared_style.html"
                  type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_SHORTCUT_INPUT_HTML"
                  file="shortcut_input.html"

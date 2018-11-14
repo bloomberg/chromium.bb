@@ -13,6 +13,7 @@
 //        related and whose tests fail.
 
 var expected = [
+  'activityLogPrivate',
   'csi',
   'developerPrivate',
   'getVariableValue',

@@ -17,18 +17,14 @@
 <link rel="import" href="code_section.html">
 <link rel="import" href="item_util.html">
 <link rel="import" href="navigation_helper.html">
+<link rel="import" href="shared_style.html">
 
 <dom-module id="extensions-error-page">
   <template>
-    <style include="paper-button-style cr-icons cr-shared-style">
+    <style include="paper-button-style cr-icons cr-shared-style shared-style">
       :host {
         display: block;
         height: 100%;
-      }
-
-      #container {
-        height: 100%;
-        overflow: overlay;
       }
 
       iron-icon {
@@ -43,17 +39,6 @@
 
       iron-icon[icon='cr:error'] {
         --iron-icon-fill-color: var(--paper-red-700);
-      }
-
-      /* TODO(dpapad): There is a lot of duplicated styling between
-       * detail_view.html and error_page.html. Refactor such that no duplication
-       * happens.*/
-      #main {
-        @apply --cr-card-elevation;
-        background-color: white;
-        margin: auto;
-        min-height: 100%;
-        width: 640px;
       }
 
       .section {
@@ -169,8 +154,8 @@
         outline: none;
       }
     </style>
-    <div id="container">
-      <div id="main">
+    <div class="page-container" id="container">
+      <div class="page-content">
         <div id="heading">
           <paper-icon-button-light class="icon-arrow-back no-overlap">
             <button id="closeButton" aria-label="$i18n{back}"

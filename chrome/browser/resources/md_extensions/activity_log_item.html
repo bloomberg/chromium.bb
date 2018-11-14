@@ -1,0 +1,38 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/html/cr.html">
+
+<dom-module id="activity-log-item">
+  <template>
+    <style include="iron-flex cr-shared-style">
+      #main {
+        min-height: 0;
+        padding: 16px 20px;
+      }
+
+      #activity-type {
+        min-width: 85px;
+      }
+
+      #api-call {
+        flex-grow: 1;
+        margin-left: 10px;
+      }
+
+      #page-url-link {
+        margin-left: 16px;
+      }
+    </style>
+    <div id="main">
+      <div id="activity-call-and-count" class="layout horizontal">
+        <span id="activity-type">[[data.activityType]]</span>
+        <span id="api-call">[[data.apiCall]]</span>
+        <span id="activity-count">[[data.count]]</span>
+      </div>
+      <div id="page-url" hidden$="[[!data.pageUrl]]">
+        <a id="page-url-link" href="[[data.pageUrl]]">[[data.pageUrl]]</a>
+      </div>
+    </div>
+  </template>
+  <script src="activity_log_item.js"></script>
+</dom-module>
