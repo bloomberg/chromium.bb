@@ -322,6 +322,43 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureReportQueued) {
                               NetworkErrorLoggingService::kTypeKey);
 }
 
+TEST_F(NetworkErrorLoggingServiceTest, UnknownFailureReportQueued) {
+  static const std::string kHeaderFailureFraction1 =
+      "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderFailureFraction1);
+
+  // This error code happens to not be mapped to a NEL report `type` field
+  // value.
+  service()->OnRequest(MakeRequestDetails(kUrl_, ERR_FILE_NO_SPACE));
+
+  ASSERT_EQ(1u, reports().size());
+  const base::DictionaryValue* body;
+  ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
+  base::ExpectDictStringValue("application", *body,
+                              NetworkErrorLoggingService::kPhaseKey);
+  base::ExpectDictStringValue("unknown", *body,
+                              NetworkErrorLoggingService::kTypeKey);
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, UnknownCertFailureReportQueued) {
+  static const std::string kHeaderFailureFraction1 =
+      "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";
+  service()->OnHeader(kOrigin_, kServerIP_, kHeaderFailureFraction1);
+
+  // This error code happens to not be mapped to a NEL report `type` field
+  // value.  Because it's a certificate error, we'll set the `phase` to be
+  // `connection`.
+  service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CERT_NON_UNIQUE_NAME));
+
+  ASSERT_EQ(1u, reports().size());
+  const base::DictionaryValue* body;
+  ASSERT_TRUE(reports()[0].body->GetAsDictionary(&body));
+  base::ExpectDictStringValue("connection", *body,
+                              NetworkErrorLoggingService::kPhaseKey);
+  base::ExpectDictStringValue("unknown", *body,
+                              NetworkErrorLoggingService::kTypeKey);
+}
+
 TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportQueued) {
   static const std::string kHeaderFailureFraction1 =
       "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";

@@ -113,17 +113,18 @@ const struct {
     // TODO(juliatuttle): Surely there are more errors we want here.
 };
 
-bool GetPhaseAndTypeFromNetError(Error error,
+void GetPhaseAndTypeFromNetError(Error error,
                                  std::string* phase_out,
                                  std::string* type_out) {
   for (size_t i = 0; i < arraysize(kErrorTypes); ++i) {
     if (kErrorTypes[i].error == error) {
       *phase_out = kErrorTypes[i].phase;
       *type_out = kErrorTypes[i].type;
-      return true;
+      return;
     }
   }
-  return false;
+  *phase_out = IsCertificateError(error) ? kConnectionPhase : kApplicationPhase;
+  *type_out = "unknown";
 }
 
 bool IsHttpError(const NetworkErrorLoggingService::RequestDetails& request) {
@@ -238,10 +239,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
 
     std::string phase_string;
     std::string type_string;
-    if (!GetPhaseAndTypeFromNetError(type, &phase_string, &type_string)) {
-      RecordRequestOutcome(RequestOutcome::DISCARDED_UNMAPPED_ERROR);
-      return;
-    }
+    GetPhaseAndTypeFromNetError(type, &phase_string, &type_string);
 
     if (IsHttpError(details)) {
       phase_string = kApplicationPhase;
