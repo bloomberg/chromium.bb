@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "components/payments/core/error_logger.h"
 
 namespace payments {
 namespace {
@@ -23,24 +25,27 @@ uint8_t HexDigitToByte(char c) {
 
 }  // namespace
 
-std::vector<uint8_t> FingerprintStringToByteArray(const std::string& input) {
+std::vector<uint8_t> FingerprintStringToByteArray(const std::string& input,
+                                                  const ErrorLogger& log) {
   std::vector<uint8_t> output;
   if (!base::IsStringASCII(input)) {
-    LOG(ERROR) << "Fingerprint should be an ASCII string.";
+    log.Error("Fingerprint should be an ASCII string.");
     return output;
   }
 
   const size_t kLength = 32 * 3 - 1;
   if (input.size() != kLength) {
-    LOG(ERROR) << "Fingerprint \"" << input << "\" should contain exactly "
-               << kLength << " characters.";
+    log.Error(base::StringPrintf(
+        "Fingerprint \"%s\" should contain exactly %zu characters.",
+        input.c_str(), kLength));
     return output;
   }
 
   for (size_t i = 0; i < input.size(); i += 3) {
     if (i < input.size() - 2 && input[i + 2] != ':') {
-      LOG(ERROR) << "Bytes in fingerprint \"" << input
-                 << "\" should separated by \":\" characters.";
+      log.Error(base::StringPrintf(
+          "Bytes in fingerprint \"%s\" should separated by \":\" characters.",
+          input.c_str()));
       output.clear();
       return output;
     }
@@ -48,8 +53,10 @@ std::vector<uint8_t> FingerprintStringToByteArray(const std::string& input) {
     char big_end = input[i];
     char little_end = input[i + 1];
     if (!IsUpperCaseHexDigit(big_end) || !IsUpperCaseHexDigit(little_end)) {
-      LOG(ERROR) << "Bytes in fingerprint \"" << input
-                 << "\" should be upper case hex digits 0-9 and A-F.";
+      log.Error(base::StringPrintf(
+          "Bytes in fingerprint \"%s\" should be upper case hex digits 0-9 and "
+          "A-F.",
+          input.c_str()));
       output.clear();
       return output;
     }

@@ -324,7 +324,7 @@ public class AndroidPaymentAppFinderUnitTest {
             }
 
             @Override
-            public void createNative() {}
+            public void createNative(WebContents webContents) {}
 
             @Override
             public void destroyNative() {}

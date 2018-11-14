@@ -8,6 +8,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
+#include "components/payments/core/error_logger.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -15,7 +16,8 @@ namespace payments {
 
 TestDownloader::TestDownloader(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : PaymentManifestDownloader(url_loader_factory) {}
+    : PaymentManifestDownloader(std::make_unique<ErrorLogger>(),
+                                url_loader_factory) {}
 
 TestDownloader::~TestDownloader() {}
 

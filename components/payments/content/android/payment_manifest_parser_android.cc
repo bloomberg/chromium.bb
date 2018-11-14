@@ -5,6 +5,7 @@
 #include "components/payments/content/android/payment_manifest_parser_android.h"
 
 #include <stddef.h>
+#include <utility>
 #include <vector>
 
 #include "base/android/jni_array.h"
@@ -14,6 +15,9 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "components/payments/content/developer_console_logger.h"
+#include "components/payments/core/error_logger.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/PaymentManifestParser_jni.h"
 #include "url/gurl.h"
 
@@ -119,7 +123,9 @@ class ParseCallback {
 
 }  // namespace
 
-PaymentManifestParserAndroid::PaymentManifestParserAndroid() {}
+PaymentManifestParserAndroid::PaymentManifestParserAndroid(
+    std::unique_ptr<ErrorLogger> log)
+    : parser_(std::move(log)) {}
 
 PaymentManifestParserAndroid::~PaymentManifestParserAndroid() {}
 
@@ -154,8 +160,15 @@ void PaymentManifestParserAndroid::DestroyPaymentManifestParserAndroid(
 // Caller owns the result.
 jlong JNI_PaymentManifestParser_CreatePaymentManifestParserAndroid(
     JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller) {
-  return reinterpret_cast<jlong>(new PaymentManifestParserAndroid);
+    const base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jobject>& jweb_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  auto log = web_contents
+                 ? std::make_unique<DeveloperConsoleLogger>(web_contents)
+                 : std::make_unique<ErrorLogger>();
+  return reinterpret_cast<jlong>(
+      new PaymentManifestParserAndroid(std::move(log)));
 }
 
 }  // namespace payments

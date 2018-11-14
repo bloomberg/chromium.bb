@@ -178,12 +178,13 @@ bool PaymentRequestDialogView::IsInteractive() const {
 void PaymentRequestDialogView::ShowPaymentHandlerScreen(
     const GURL& url,
     PaymentHandlerOpenWindowCallback callback) {
-  view_stack_->Push(CreateViewAndInstallController(
-                        std::make_unique<PaymentHandlerWebFlowViewController>(
-                            request_->spec(), request_->state(), this,
-                            GetProfile(), url, std::move(callback)),
-                        &controller_map_),
-                    /* animate = */ true);
+  view_stack_->Push(
+      CreateViewAndInstallController(
+          std::make_unique<PaymentHandlerWebFlowViewController>(
+              request_->spec(), request_->state(), this,
+              request_->web_contents(), GetProfile(), url, std::move(callback)),
+          &controller_map_),
+      /* animate = */ true);
   HideProcessingSpinner();
 }
 

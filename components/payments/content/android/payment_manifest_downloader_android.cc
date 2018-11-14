@@ -8,6 +8,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "components/payments/content/developer_console_logger.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -59,8 +60,9 @@ class DownloadCallback {
 }  // namespace
 
 PaymentManifestDownloaderAndroid::PaymentManifestDownloaderAndroid(
+    std::unique_ptr<ErrorLogger> log,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : downloader_(std::move(url_loader_factory)) {}
+    : downloader_(std::move(log), std::move(url_loader_factory)) {}
 
 PaymentManifestDownloaderAndroid::~PaymentManifestDownloaderAndroid() {}
 
@@ -106,6 +108,7 @@ static jlong JNI_PaymentManifestDownloader_Init(
     return 0;
 
   return reinterpret_cast<jlong>(new PaymentManifestDownloaderAndroid(
+      std::make_unique<DeveloperConsoleLogger>(web_contents),
       content::BrowserContext::GetDefaultStoragePartition(
           web_contents->GetBrowserContext())
           ->GetURLLoaderFactoryForBrowserProcess()));
