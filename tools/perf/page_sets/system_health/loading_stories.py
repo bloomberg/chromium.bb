@@ -51,6 +51,13 @@ class LoadYahooStory(_LoadingStory):
   TAGS = [story_tags.YEAR_2016]
 
 
+class LoadYahooStory2018(_LoadingStory):
+  NAME = 'load:search:yahoo:2018'
+  # Use additional parameter to bypass consent screen.
+  URL = 'https://search.yahoo.com/search;_ylt=?p=google&_guc_consent_skip=1541794498'
+  TAGS = [story_tags.YEAR_2018]
+
+
 class LoadAmazonDesktopStory(_LoadingStory):
   NAME = 'load:search:amazon'
   URL = 'https://www.amazon.com/s/?field-keywords=nexus'

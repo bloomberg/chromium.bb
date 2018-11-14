@@ -243,6 +243,9 @@
         "load:search:yahoo": {
             "DEFAULT": "system_health_desktop_000.wprgo"
         },
+        "load:search:yahoo:2018": {
+            "DEFAULT": "system_health_desktop_d661408019.wprgo"
+        },
         "load:search:yandex": {
             "DEFAULT": "system_health_desktop_000.wprgo"
         },
