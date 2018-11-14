@@ -38,7 +38,6 @@ class DemoModeResourcesRemover;
 class DiagnosticsdBridge;
 class DiscoverManager;
 class EventRewriterDelegateImpl;
-class FastTransitionObserver;
 class IdleActionWarningObserver;
 class LowDiskNotification;
 class NetworkPrefStateObserver;
@@ -102,7 +101,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<RendererFreezer> renderer_freezer_;
   std::unique_ptr<PowerMetricsReporter> power_metrics_reporter_;
   std::unique_ptr<WakeOnWifiManager> wake_on_wifi_manager_;
-  std::unique_ptr<FastTransitionObserver> fast_transition_observer_;
   std::unique_ptr<NetworkThrottlingObserver> network_throttling_observer_;
 
   // Indicates whether the DBus has been initialized before. It is possible that
