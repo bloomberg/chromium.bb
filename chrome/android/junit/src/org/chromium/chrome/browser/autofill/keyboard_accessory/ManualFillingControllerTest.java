@@ -29,7 +29,7 @@ import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FRO
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
-import android.view.View;
+import android.view.ViewGroup;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -61,7 +61,9 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.display.DisplayAndroid;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -79,7 +81,9 @@ public class ManualFillingControllerTest {
     @Mock
     private ChromeActivity mMockActivity;
     @Mock
-    private View mMockContentView;
+    private WebContents mMockWebContents;
+    @Mock
+    private ViewGroup mMockContentView;
     @Mock
     private KeyboardAccessoryView mMockKeyboardAccessoryView;
     @Mock
@@ -477,6 +481,36 @@ public class ManualFillingControllerTest {
     }
 
     @Test
+    public void testDisplaysAccessoryOnlyWhenSpaceIsSufficient() {
+        ManualFillingMediator mediator = mController.getMediatorForTesting();
+        Tab tab = addTab(mediator, 1234, null);
+        when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(true);
+
+        // Show the accessory bar for the default dimensions (300x80@2.f).
+        mediator.getKeyboardAccessory().addTab(
+                new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
+        mediator.showWhenKeyboardIsVisible();
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
+
+        // Use a width that is too small (e.g. on tiny phones).
+        simulateOrientationChange(mediator, 2.0f, 200, 80);
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(false));
+
+        // Use a height that is too small but with a valid width (e.g. rotated to landscape).
+        simulateOrientationChange(mediator, 2.0f, 600, 20);
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(false));
+
+        // Use valid dimension at another density.
+        simulateOrientationChange(mediator, 1.5f, 300, 80);
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
+
+        // Now that the accessory is shown, the content area is already smaller due to the bar.
+        setContentAreaDimensions(3.f, 300, (80 - /* bar height = */ 48));
+        mediator.onLayoutChange(mMockContentView, 0, 0, 900, 96, 0, 0, 450, 120);
+        assertThat(mediator.getKeyboardAccessory().isShown(), is(true));
+    }
+
+    @Test
     public void testClosingTabDoesntAffectUnitializedComponents() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
 
@@ -492,6 +526,7 @@ public class ManualFillingControllerTest {
         // After initialization with one tab, the accessory sheet is closed.
         KeyboardAccessoryCoordinator accessory =
                 mController.getMediatorForTesting().getKeyboardAccessory();
+        addTab(mController.getMediatorForTesting(), 1234, null);
         mController.getMediatorForTesting().addTab(
                 new KeyboardAccessoryData.Tab(null, null, 0, 0, null));
         accessory.requestShowing();
@@ -524,10 +559,14 @@ public class ManualFillingControllerTest {
         Tab tab = mock(Tab.class);
         when(tab.getId()).thenReturn(id);
         when(tab.getUserDataHost()).thenReturn(mUserDataHost);
+        when(tab.getWebContents()).thenReturn(mMockWebContents);
+        when(tab.getContentView()).thenReturn(mMockContentView);
+        when(mMockActivity.getActivityTab()).thenReturn(tab);
         when(mMockTabModelSelector.getCurrentTab()).thenReturn(tab);
         mediator.getTabModelObserverForTesting().didAddTab(tab, FROM_BROWSER_ACTIONS);
         mediator.getTabObserverForTesting().onShown(tab, FROM_NEW);
         mediator.getTabModelObserverForTesting().didSelectTab(tab, FROM_NEW, lastId);
+        setContentAreaDimensions(2.f, 300, 80);
         return tab;
     }
 
@@ -563,5 +602,38 @@ public class ManualFillingControllerTest {
                     next, FROM_CLOSE, tabToBeClosed.getId());
         }
         mediator.getTabObserverForTesting().onDestroyed(tabToBeClosed);
+    }
+
+    private void setContentAreaDimensions(float density, int widthDp, int heightDp) {
+        DisplayAndroid mockDisplay = mock(DisplayAndroid.class);
+        when(mockDisplay.getDipScale()).thenReturn(density);
+        when(mMockWindow.getDisplay()).thenReturn(mockDisplay);
+        when(mMockWebContents.getHeight()).thenReturn(heightDp);
+        when(mMockWebContents.getWidth()).thenReturn(widthDp);
+    }
+
+    /**
+     * This function initializes mocks and then calls the given mediator events in the order in
+     * which a rotation call would trigger them.
+     * It mains sets the {@link WebContents} size and calls |onLayoutChange| with the new bounds.
+     * @param mediator The mediator to be called.
+     * @param density The logical screen density (e.g. 1.f).
+     * @param width The new {@link WebContents} width in dp.
+     * @param height The new {@link WebContents} height in dp.
+     */
+    private void simulateOrientationChange(
+            ManualFillingMediator mediator, float density, int width, int height) {
+        int oldHeight = mMockWebContents.getHeight();
+        int oldWidth = mMockWebContents.getWidth();
+        int newHeight = (int) (density * height);
+        int newWidth = (int) (density * width);
+        setContentAreaDimensions(density, width, height);
+        // A rotation always closes the keyboard for a brief period before reopening it.
+        when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(false);
+        mediator.onLayoutChange(
+                mMockContentView, 0, 0, newWidth, newHeight, 0, 0, oldWidth, oldHeight);
+        when(mMockKeyboard.isSoftKeyboardShowing(eq(mMockActivity), any())).thenReturn(true);
+        mediator.onLayoutChange(
+                mMockContentView, 0, 0, newWidth, newHeight, 0, 0, oldWidth, oldHeight);
     }
 }

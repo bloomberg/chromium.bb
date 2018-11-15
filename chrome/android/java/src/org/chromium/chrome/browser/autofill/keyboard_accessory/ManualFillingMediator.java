@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.DropdownPopupWindow;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -43,6 +44,9 @@ import java.util.Map;
  */
 class ManualFillingMediator extends EmptyTabObserver
         implements KeyboardAccessoryCoordinator.VisibilityDelegate, View.OnLayoutChangeListener {
+    static private final int MINIMAL_AVAILABLE_VERTICAL_SPACE = 80; // in DP.
+    static private final int MINIMAL_AVAILABLE_HORIZONTAL_SPACE = 300; // in DP.
+
     private WindowAndroid mWindowAndroid;
     private Supplier<InsetObserverView> mInsetObserverViewSupplier;
     private boolean mShouldShow;
@@ -200,14 +204,18 @@ class ManualFillingMediator extends EmptyTabObserver
     private void onKeyboardVisibilityPossiblyChanged(boolean isShowing) {
         if (!mKeyboardAccessory.hasContents()) return; // Exit early to not affect the layout.
         if (isShowing) {
-            if (mShouldShow) {
-                displayKeyboardAccessory();
-            }
+            displayKeyboardAccessory();
         } else {
             mKeyboardAccessory.close();
             onBottomControlSpaceChanged();
             if (mKeyboardAccessory.hasActiveTab()) {
-                mAccessorySheet.show();
+                if (hasSufficientSpace()) {
+                    mAccessorySheet.show();
+                } else {
+                    mKeyboardExtensionSizeManager.setKeyboardExtensionHeight(0);
+                    mKeyboardAccessory.closeActiveTab();
+                    mAccessorySheet.hide();
+                }
             }
         }
     }
@@ -285,16 +293,28 @@ class ManualFillingMediator extends EmptyTabObserver
     }
 
     private void displayKeyboardAccessory() {
+        if (!mShouldShow) return;
         // Don't open the accessory inside the contextual search panel.
         ContextualSearchManager contextualSearchManager = mActivity.getContextualSearchManager();
         if (contextualSearchManager != null && contextualSearchManager.isSearchPanelOpened()) {
             return;
         }
+        if (!hasSufficientSpace() && !mAccessorySheet.isShown()) return;
         mKeyboardAccessory.requestShowing();
         mKeyboardExtensionSizeManager.setKeyboardExtensionHeight(calculateAccessoryBarHeight());
         if (mAccessorySheet.isShown()) mKeyboardAccessory.closeActiveTab();
         mKeyboardAccessory.setBottomOffset(0);
         mAccessorySheet.hide();
+    }
+
+    private boolean hasSufficientSpace() {
+        if (mActivity == null || mActiveBrowserTab == null) return false;
+        WebContents webContents = mActiveBrowserTab.getWebContents();
+        if (webContents == null) return false;
+        float height = webContents.getHeight(); // getHeight actually returns dip, not Px!
+        height += calculateAccessoryBarHeight() / mWindowAndroid.getDisplay().getDipScale();
+        return height >= MINIMAL_AVAILABLE_VERTICAL_SPACE
+                && webContents.getWidth() >= MINIMAL_AVAILABLE_HORIZONTAL_SPACE;
     }
 
     KeyboardExtensionSizeManager getKeyboardExtensionSizeManager() {
