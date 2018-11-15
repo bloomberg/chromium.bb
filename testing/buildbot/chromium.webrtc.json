@@ -27,110 +27,6 @@
       }
     ]
   },
-  "Linux Builder": {
-    "additional_compile_targets": [
-      "frame_analyzer",
-      "jingle_unittests",
-      "remoting_unittests"
-    ]
-  },
-  "Linux Tester": {
-    "gtest_tests": [
-      {
-        "args": [
-          "--gtest_filter=WebRtcApprtcBrowserTest.*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "name": "browser_tests_apprtc",
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "name": "browser_tests_functional",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-logging",
-          "--v=1",
-          "--test-launcher-jobs=1",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "capture_unittests"
-      },
-      {
-        "args": [
-          "--gtest_filter=WebRtc*"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--gtest_filter=UsingRealWebcam*",
-          "--run-manual",
-          "--test-launcher-jobs=1"
-        ],
-        "name": "content_browsertests_sequential",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
-          "--run-manual",
-          "--ui-test-action-max-timeout=120000"
-        ],
-        "name": "content_browsertests_stress",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "jingle_unittests"
-      },
-      {
-        "args": [
-          "--gtest_filter=Webrtc*"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "remoting_unittests"
-      }
-    ]
-  },
   "Mac Builder": {
     "additional_compile_targets": [
       "frame_analyzer",
@@ -236,6 +132,110 @@
     ]
   },
   "Mac Tester (long-running)": {},
+  "WebRTC Chromium Linux Builder": {
+    "additional_compile_targets": [
+      "frame_analyzer",
+      "jingle_unittests",
+      "remoting_unittests"
+    ]
+  },
+  "WebRTC Chromium Linux Tester": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--gtest_filter=WebRtcApprtcBrowserTest.*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "name": "browser_tests_apprtc",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "name": "browser_tests_functional",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--enable-logging",
+          "--v=1",
+          "--test-launcher-jobs=1",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "capture_unittests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtc*"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--gtest_filter=UsingRealWebcam*",
+          "--run-manual",
+          "--test-launcher-jobs=1"
+        ],
+        "name": "content_browsertests_sequential",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*",
+          "--run-manual",
+          "--ui-test-action-max-timeout=120000"
+        ],
+        "name": "content_browsertests_stress",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "jingle_unittests"
+      },
+      {
+        "args": [
+          "--gtest_filter=Webrtc*"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "remoting_unittests"
+      }
+    ]
+  },
   "Win Builder": {
     "additional_compile_targets": [
       "frame_analyzer",
