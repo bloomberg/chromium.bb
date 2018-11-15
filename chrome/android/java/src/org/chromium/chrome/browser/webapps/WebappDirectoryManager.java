@@ -61,7 +61,6 @@ public class WebappDirectoryManager {
      *
      * @param context         Context to pull info and Files from.
      * @param currentWebappId ID for the currently running web app.
-     * @return                AsyncTask doing the cleaning.
      */
     public void cleanUpDirectories(final Context context, final String currentWebappId) {
         if (mCleanupTask != null) return;
