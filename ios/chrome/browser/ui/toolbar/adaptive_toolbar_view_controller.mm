@@ -81,22 +81,11 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   [super viewDidLoad];
   [self addStandardActionsForAllButtons];
 
-  if (@available(iOS 11.0, *)) {
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(voiceOverChanged:)
-               name:UIAccessibilityVoiceOverStatusDidChangeNotification
-             object:nil];
-  }
-#if !defined(__IPHONE_11_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_11_0
-  else {
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(voiceOverChanged:)
-               name:UIAccessibilityVoiceOverStatusChanged
-             object:nil];
-  }
-#endif
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(voiceOverChanged:)
+             name:UIAccessibilityVoiceOverStatusDidChangeNotification
+           object:nil];
   [self makeViewAccessibilityTraitsContainer];
 
   // Adds the layout guide to the buttons.

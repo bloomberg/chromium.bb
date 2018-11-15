@@ -714,21 +714,6 @@ NSString* TextForTabCount(long count) {
   return [NSString stringWithFormat:@"%ld", count];
 }
 
-BOOL ContentSizeCategoryIsAccessibilityCategory(
-    UIContentSizeCategory category) {
-  if (@available(iOS 11.0, *)) {
-    return UIContentSizeCategoryIsAccessibilityCategory(category);
-  } else {
-    return
-        [category
-            isEqual:UIContentSizeCategoryAccessibilityExtraExtraExtraLarge] ||
-        [category isEqual:UIContentSizeCategoryAccessibilityExtraExtraLarge] ||
-        [category isEqual:UIContentSizeCategoryAccessibilityExtraLarge] ||
-        [category isEqual:UIContentSizeCategoryAccessibilityLarge] ||
-        [category isEqual:UIContentSizeCategoryAccessibilityMedium];
-  }
-}
-
 UIFont* PreferredFontForTextStyleWithMaxCategory(
     UIFontTextStyle style,
     UIContentSizeCategory currentCategory,

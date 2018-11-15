@@ -255,10 +255,6 @@ void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type);
 // more than 99 tabs open.
 NSString* TextForTabCount(long count);
 
-// Helper check if |category| is an accessibility category. For iOS 11+ it is a
-// wrapper around UIContentSizeCategoryIsAccessibilityCategory.
-BOOL ContentSizeCategoryIsAccessibilityCategory(UIContentSizeCategory category);
-
 UIFont* PreferredFontForTextStyleWithMaxCategory(
     UIFontTextStyle style,
     UIContentSizeCategory currentCategory,

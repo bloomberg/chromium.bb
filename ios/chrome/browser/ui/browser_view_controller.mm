@@ -3778,10 +3778,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       return nil;
 
     CGFloat fakeStatusBarHeight = _fakeStatusBarView.frame.size.height;
-    UIEdgeInsets safeAreaInset = UIEdgeInsetsZero;
-    if (@available(iOS 11.0, *)) {
-      safeAreaInset = self.view.safeAreaInsets;
-    }
+    UIEdgeInsets safeAreaInset = self.view.safeAreaInsets;
     safeAreaInset.top = MAX(safeAreaInset.top - fakeStatusBarHeight, 0);
 
     NewTabPageController* pageController = [[NewTabPageController alloc]

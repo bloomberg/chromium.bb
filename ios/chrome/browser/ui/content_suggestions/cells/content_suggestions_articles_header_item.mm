@@ -141,7 +141,7 @@ const int kLabelColorRGB = 0x6D6D72;
           constraintEqualToAnchor:self.contentView.bottomAnchor],
     ]];
 
-    if (ContentSizeCategoryIsAccessibilityCategory(
+    if (UIContentSizeCategoryIsAccessibilityCategory(
             self.traitCollection.preferredContentSizeCategory)) {
       [NSLayoutConstraint activateConstraints:_accessibilityConstraints];
     } else {
@@ -161,10 +161,10 @@ const int kLabelColorRGB = 0x6D6D72;
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   BOOL isCurrentCategoryAccessibility =
-      ContentSizeCategoryIsAccessibilityCategory(
+      UIContentSizeCategoryIsAccessibilityCategory(
           self.traitCollection.preferredContentSizeCategory);
   BOOL isPreviousCategoryAccessibility =
-      ContentSizeCategoryIsAccessibilityCategory(
+      UIContentSizeCategoryIsAccessibilityCategory(
           previousTraitCollection.preferredContentSizeCategory);
   if (isCurrentCategoryAccessibility != isPreviousCategoryAccessibility) {
     if (isCurrentCategoryAccessibility) {

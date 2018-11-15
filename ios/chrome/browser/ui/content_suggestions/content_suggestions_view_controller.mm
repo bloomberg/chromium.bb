@@ -477,7 +477,7 @@ const CGFloat kCardBorderRadius = 11;
   CGSize defaultSize = [super collectionView:collectionView
                                       layout:collectionViewLayout
              referenceSizeForHeaderInSection:section];
-  if (ContentSizeCategoryIsAccessibilityCategory(
+  if (UIContentSizeCategoryIsAccessibilityCategory(
           self.traitCollection.preferredContentSizeCategory) &&
       [self.collectionUpdater isContentSuggestionsSection:section]) {
     // Double the size of the header as it is now on two lines.

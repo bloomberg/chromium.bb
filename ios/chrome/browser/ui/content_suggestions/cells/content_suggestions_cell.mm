@@ -223,9 +223,9 @@ const CGFloat kAnimationDuration = 0.3;
       previousTraitCollection.preferredContentSizeCategory;
 
   BOOL isCurrentCategoryAccessibility =
-      ContentSizeCategoryIsAccessibilityCategory(currentCategory);
+      UIContentSizeCategoryIsAccessibilityCategory(currentCategory);
   if (isCurrentCategoryAccessibility !=
-      ContentSizeCategoryIsAccessibilityCategory(previousCategory)) {
+      UIContentSizeCategoryIsAccessibilityCategory(previousCategory)) {
     if (isCurrentCategoryAccessibility) {
       [NSLayoutConstraint deactivateConstraints:self.standardConstraints];
       [NSLayoutConstraint activateConstraints:self.accessibilityConstraints];
@@ -319,7 +319,7 @@ const CGFloat kAnimationDuration = 0.3;
     _imageTitleVerticalSpacing,
   ];
 
-  if (ContentSizeCategoryIsAccessibilityCategory(
+  if (UIContentSizeCategoryIsAccessibilityCategory(
           self.traitCollection.preferredContentSizeCategory)) {
     [NSLayoutConstraint activateConstraints:self.accessibilityConstraints];
   } else {
@@ -366,7 +366,7 @@ const CGFloat kAnimationDuration = 0.3;
 // |hasImage| and the content size category.
 + (CGFloat)labelHorizontalMarginsWithImage:(BOOL)hasImage {
   BOOL isCurrentCategoryAccessibility =
-      ContentSizeCategoryIsAccessibilityCategory(
+      UIContentSizeCategoryIsAccessibilityCategory(
           [UIApplication sharedApplication].preferredContentSizeCategory);
 
   CGFloat offset = (hasImage && !isCurrentCategoryAccessibility)
@@ -379,7 +379,7 @@ const CGFloat kAnimationDuration = 0.3;
 // and the content size category.
 + (CGFloat)labelVerticalMarginsWithImage:(BOOL)hasImage {
   BOOL isCurrentCategoryAccessibility =
-      ContentSizeCategoryIsAccessibilityCategory(
+      UIContentSizeCategoryIsAccessibilityCategory(
           [UIApplication sharedApplication].preferredContentSizeCategory);
 
   CGFloat offset = (hasImage && isCurrentCategoryAccessibility)

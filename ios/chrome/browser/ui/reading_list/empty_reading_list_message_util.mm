@@ -29,7 +29,7 @@ const CGFloat kLineSpacing = 4;
 
 UIFont* FontWithMaximumForCategory(UIContentSizeCategory category,
                                    UIFontTextStyle font_style) {
-  if (ContentSizeCategoryIsAccessibilityCategory(category)) {
+  if (UIContentSizeCategoryIsAccessibilityCategory(category)) {
     return [UIFont
             preferredFontForTextStyle:font_style
         compatibleWithTraitCollection:

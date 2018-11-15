@@ -218,10 +218,8 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
   field_delegate_ =
       [[AutocompleteTextFieldDelegate alloc] initWithEditView:this];
 
-  if (@available(iOS 11.0, *)) {
-    paste_delegate_ = [[OmniboxTextFieldPasteDelegate alloc] init];
-    [field_ setPasteDelegate:paste_delegate_];
-  }
+  paste_delegate_ = [[OmniboxTextFieldPasteDelegate alloc] init];
+  [field_ setPasteDelegate:paste_delegate_];
 
   [field_ setDelegate:field_delegate_];
   [field_ addTarget:field_delegate_

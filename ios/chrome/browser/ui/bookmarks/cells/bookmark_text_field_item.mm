@@ -146,7 +146,7 @@
 }
 
 - (void)applyContentSizeCategoryStyles {
-  if (ContentSizeCategoryIsAccessibilityCategory(
+  if (UIContentSizeCategoryIsAccessibilityCategory(
           UIScreen.mainScreen.traitCollection.preferredContentSizeCategory)) {
     self.stackView.axis = UILayoutConstraintAxisVertical;
     self.stackView.alignment = UIStackViewAlignmentLeading;

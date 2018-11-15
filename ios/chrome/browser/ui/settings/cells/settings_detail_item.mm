@@ -203,7 +203,7 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
     AddOptionalVerticalPadding(contentView, _textLabel, kVerticalPadding);
 
     [self updateForAccessibilityContentSizeCategory:
-              ContentSizeCategoryIsAccessibilityCategory(
+              UIContentSizeCategoryIsAccessibilityCategory(
                   self.traitCollection.preferredContentSizeCategory)];
   }
   return self;
@@ -231,10 +231,10 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   BOOL isCurrentCategoryAccessibility =
-      ContentSizeCategoryIsAccessibilityCategory(
+      UIContentSizeCategoryIsAccessibilityCategory(
           self.traitCollection.preferredContentSizeCategory);
   if (isCurrentCategoryAccessibility !=
-      ContentSizeCategoryIsAccessibilityCategory(
+      UIContentSizeCategoryIsAccessibilityCategory(
           previousTraitCollection.preferredContentSizeCategory)) {
     [self updateForAccessibilityContentSizeCategory:
               isCurrentCategoryAccessibility];

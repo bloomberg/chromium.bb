@@ -153,8 +153,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   [self.tableView setDelegate:self];
   self.tableView.cellLayoutMarginsFollowReadableWidth = NO;
   self.tableView.estimatedRowHeight = kEstimatedRowHeight;
-  if (@available(iOS 11.0, *))
-    self.tableView.estimatedSectionHeaderHeight = kEstimatedRowHeight;
+  self.tableView.estimatedSectionHeaderHeight = kEstimatedRowHeight;
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionFooterHeight = 0.0;
   self.title = l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);

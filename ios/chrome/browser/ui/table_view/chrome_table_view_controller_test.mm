@@ -202,26 +202,6 @@ void ChromeTableViewControllerTest::DeleteItem(
       completion_block();
     }
   };
-  if (@available(iOS 11.0, *)) {
-    [[controller_ tableView] performBatchUpdates:batch_updates
-                                      completion:completion];
-  } else {
-    TableViewModel* model = controller_.tableViewModel;
-    NSInteger section_ID =
-        [model sectionIdentifierForSection:index_path.section];
-    NSInteger item_type = [model itemTypeForIndexPath:index_path];
-    NSUInteger index = [model indexInItemTypeForIndexPath:index_path];
-    [model removeItemWithType:item_type
-        fromSectionWithIdentifier:section_ID
-                          atIndex:index];
-
-    // Delete in the table view.
-    [[controller_ tableView]
-        deleteRowsAtIndexPaths:@[ index_path ]
-              withRowAnimation:UITableViewRowAnimationNone];
-
-    if (completion_block) {
-      completion_block();
-    }
-  }
+  [[controller_ tableView] performBatchUpdates:batch_updates
+                                    completion:completion];
 }

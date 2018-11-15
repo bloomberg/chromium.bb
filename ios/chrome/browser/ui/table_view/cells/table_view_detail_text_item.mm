@@ -152,10 +152,10 @@ const CGFloat kMinimalHeight = 48;
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   BOOL isCurrentCategoryAccessibility =
-      ContentSizeCategoryIsAccessibilityCategory(
+      UIContentSizeCategoryIsAccessibilityCategory(
           self.traitCollection.preferredContentSizeCategory);
   if (isCurrentCategoryAccessibility !=
-      ContentSizeCategoryIsAccessibilityCategory(
+      UIContentSizeCategoryIsAccessibilityCategory(
           previousTraitCollection.preferredContentSizeCategory)) {
     if (isCurrentCategoryAccessibility) {
       self.textLabel.numberOfLines = 0;

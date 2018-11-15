@@ -1048,9 +1048,7 @@ enum AuthenticationState {
   primaryButtonLayout.position.originY = CGRectGetHeight(self.view.bounds) -
                                          constants.ButtonBottomPadding -
                                          constants.ButtonHeight;
-  if (@available(iOS 11.0, *)) {
-    primaryButtonLayout.position.originY -= self.view.safeAreaInsets.bottom;
-  }
+  primaryButtonLayout.position.originY -= self.view.safeAreaInsets.bottom;
   primaryButtonLayout.size.height = constants.ButtonHeight;
   [_primaryButton setFrame:LayoutRectGetRect(primaryButtonLayout)];
 
