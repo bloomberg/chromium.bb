@@ -1377,9 +1377,10 @@ bool OmniboxEditModel::GetQueryInOmniboxSearchTerms(
     return false;
 
   LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
+  bool ignore_security_level = !location_bar_model->IsSecurityInfoInitialized();
   return query_in_omnibox->GetDisplaySearchTerms(
       location_bar_model->GetSecurityLevel(false /* ignore_editing */),
-      location_bar_model->GetURL(), search_terms);
+      ignore_security_level, location_bar_model->GetURL(), search_terms);
 }
 
 // static

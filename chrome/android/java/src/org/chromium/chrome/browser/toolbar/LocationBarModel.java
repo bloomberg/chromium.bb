@@ -461,8 +461,12 @@ public class LocationBarModel implements ToolbarDataProvider {
             return null;
         }
 
+        boolean ignoreSecurityLevel = false;
+        if (mNativeLocationBarModelAndroid != 0) {
+            ignoreSecurityLevel = !nativeIsSecurityInfoInitialized(mNativeLocationBarModelAndroid);
+        }
         return QueryInOmnibox.getDisplaySearchTerms(
-                getProfile(), getSecurityLevel(), getCurrentUrl());
+                getProfile(), getSecurityLevel(), ignoreSecurityLevel, getCurrentUrl());
     }
 
     /** @return The formatted URL suitable for editing. */
@@ -481,4 +485,5 @@ public class LocationBarModel implements ToolbarDataProvider {
     private native void nativeDestroy(long nativeLocationBarModelAndroid);
     private native String nativeGetFormattedFullURL(long nativeLocationBarModelAndroid);
     private native String nativeGetURLForDisplay(long nativeLocationBarModelAndroid);
+    private native boolean nativeIsSecurityInfoInitialized(long nativeLocationBarModelAndroid);
 }

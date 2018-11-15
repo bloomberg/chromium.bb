@@ -44,6 +44,12 @@ ScopedJavaLocalRef<jstring> LocationBarModelAndroid::GetURLForDisplay(
       env, location_bar_model_->GetURLForDisplay());
 }
 
+jboolean LocationBarModelAndroid::IsSecurityInfoInitialized(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return location_bar_model_->IsSecurityInfoInitialized();
+}
+
 content::WebContents* LocationBarModelAndroid::GetActiveWebContents() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> jweb_contents =

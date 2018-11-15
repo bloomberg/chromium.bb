@@ -34,40 +34,44 @@ class QueryInOmniboxTest : public testing::Test {
 };
 
 TEST_F(QueryInOmniboxTest, FeatureFlagWorks) {
-  EXPECT_FALSE(model()->GetDisplaySearchTerms(
-      security_state::SecurityLevel::SECURE, kValidSearchResultsPage, nullptr));
+  EXPECT_FALSE(
+      model()->GetDisplaySearchTerms(security_state::SecurityLevel::SECURE,
+                                     false, kValidSearchResultsPage, nullptr));
 
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
 
-  EXPECT_TRUE(model()->GetDisplaySearchTerms(
-      security_state::SecurityLevel::SECURE, kValidSearchResultsPage, nullptr));
+  EXPECT_TRUE(
+      model()->GetDisplaySearchTerms(security_state::SecurityLevel::SECURE,
+                                     false, kValidSearchResultsPage, nullptr));
 }
 
 TEST_F(QueryInOmniboxTest, SecurityLevel) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
 
-  EXPECT_TRUE(model()->GetDisplaySearchTerms(
-      security_state::SecurityLevel::SECURE, kValidSearchResultsPage, nullptr));
+  EXPECT_TRUE(
+      model()->GetDisplaySearchTerms(security_state::SecurityLevel::SECURE,
+                                     false, kValidSearchResultsPage, nullptr));
   EXPECT_TRUE(
       model()->GetDisplaySearchTerms(security_state::SecurityLevel::EV_SECURE,
-                                     kValidSearchResultsPage, nullptr));
+                                     false, kValidSearchResultsPage, nullptr));
 
   // Insecure levels should not be allowed to display search terms.
-  EXPECT_FALSE(model()->GetDisplaySearchTerms(
-      security_state::SecurityLevel::NONE, kValidSearchResultsPage, nullptr));
+  EXPECT_FALSE(
+      model()->GetDisplaySearchTerms(security_state::SecurityLevel::NONE, false,
+                                     kValidSearchResultsPage, nullptr));
   EXPECT_FALSE(
       model()->GetDisplaySearchTerms(security_state::SecurityLevel::DANGEROUS,
-                                     kValidSearchResultsPage, nullptr));
+                                     false, kValidSearchResultsPage, nullptr));
 
   // But respect the flag on to ignore the security level.
-  model()->set_ignore_security_level(true);
-  EXPECT_TRUE(model()->GetDisplaySearchTerms(
-      security_state::SecurityLevel::NONE, kValidSearchResultsPage, nullptr));
+  EXPECT_TRUE(
+      model()->GetDisplaySearchTerms(security_state::SecurityLevel::NONE, true,
+                                     kValidSearchResultsPage, nullptr));
   EXPECT_TRUE(
       model()->GetDisplaySearchTerms(security_state::SecurityLevel::DANGEROUS,
-                                     kValidSearchResultsPage, nullptr));
+                                     true, kValidSearchResultsPage, nullptr));
 }
 
 TEST_F(QueryInOmniboxTest, DefaultSearchProviderWithAndWithoutQuery) {
@@ -75,15 +79,16 @@ TEST_F(QueryInOmniboxTest, DefaultSearchProviderWithAndWithoutQuery) {
   scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
 
   base::string16 result;
-  EXPECT_TRUE(model()->GetDisplaySearchTerms(
-      security_state::SecurityLevel::SECURE, kValidSearchResultsPage, &result));
+  EXPECT_TRUE(
+      model()->GetDisplaySearchTerms(security_state::SecurityLevel::SECURE,
+                                     false, kValidSearchResultsPage, &result));
   EXPECT_EQ(base::ASCIIToUTF16("foo query"), result);
 
   const GURL kDefaultSearchProviderURLWithNoQuery(
       "https://www.google.com/maps");
   result.clear();
   EXPECT_FALSE(model()->GetDisplaySearchTerms(
-      security_state::SecurityLevel::SECURE,
+      security_state::SecurityLevel::SECURE, false,
       kDefaultSearchProviderURLWithNoQuery, &result));
   EXPECT_EQ(base::string16(), result);
 }
@@ -95,9 +100,9 @@ TEST_F(QueryInOmniboxTest, NonDefaultSearchProvider) {
   const GURL kNonDefaultSearchProvider(
       "https://search.yahoo.com/search?ei=UTF-8&fr=crmas&p=foo+query");
   base::string16 result;
-  EXPECT_FALSE(
-      model()->GetDisplaySearchTerms(security_state::SecurityLevel::SECURE,
-                                     kNonDefaultSearchProvider, &result));
+  EXPECT_FALSE(model()->GetDisplaySearchTerms(
+      security_state::SecurityLevel::SECURE, false, kNonDefaultSearchProvider,
+      &result));
   EXPECT_EQ(base::string16(), result);
 }
 
@@ -108,7 +113,8 @@ TEST_F(QueryInOmniboxTest, LookalikeURL) {
   const GURL kLookalikeURLQuery(
       "https://www.google.com/search?q=lookalike.com");
   base::string16 result;
-  EXPECT_FALSE(model()->GetDisplaySearchTerms(
-      security_state::SecurityLevel::SECURE, kLookalikeURLQuery, &result));
+  EXPECT_FALSE(
+      model()->GetDisplaySearchTerms(security_state::SecurityLevel::SECURE,
+                                     false, kLookalikeURLQuery, &result));
   EXPECT_EQ(base::string16(), result);
 }

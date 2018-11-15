@@ -23,11 +23,14 @@ class QueryInOmnibox : public KeyedService {
 
   // Returns true if the toolbar should display the search terms. When this
   // method returns true, the extracted search terms will be filled into
-  // |search_terms| if its not nullptr.
+  // |search_terms| if its not nullptr. |ignore_security_level| can be set to
+  // true to avoid a flicker during page loading for a search results page
+  // before the SSL state updates.
   //
   // This method will return false if any of the following are true:
   //  - Query in Omnibox is disabled
   //  - |security_level| is insufficient to show search terms instead of the URL
+  //    and |ignore_security_level| is false.
   //  - |url| is not from the default search provider
   //  - There are no search terms to extract from |url|
   //  - The extracted search terms look too much like a URL (could confuse user)
@@ -36,15 +39,9 @@ class QueryInOmnibox : public KeyedService {
   // to check the display status only. Virtual for testing purposes.
   virtual bool GetDisplaySearchTerms(
       security_state::SecurityLevel security_level,
+      bool ignore_security_level,
       const GURL& url,
       base::string16* search_terms);
-
-  //  Sets a flag telling the model to ignore the security level in its check
-  // for whether to display search terms or not. This is useful for avoiding the
-  // flicker that occurs when loading a SRP URL before our SSL state updates.
-  void set_ignore_security_level(bool ignore_security_level) {
-    ignore_security_level_ = ignore_security_level;
-  }
 
  protected:
   // For testing only.
@@ -55,10 +52,6 @@ class QueryInOmnibox : public KeyedService {
   // from the default search provider, if there are no search terms in |url|,
   // or if the extracted search terms look too much like a URL.
   base::string16 ExtractSearchTermsInternal(const GURL& url);
-
-  // If true, the security level preconditions are ignored for displaying the
-  // query in the omnibox.
-  bool ignore_security_level_ = false;
 
   // Because extracting search terms from a URL string is relatively expensive,
   // and we want to support cheap calls to GetDisplaySearchTerms, cache the
