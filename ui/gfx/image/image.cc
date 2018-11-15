@@ -177,7 +177,8 @@ class ImageRepCocoaTouch : public ImageRep {
   explicit ImageRepCocoaTouch(UIImage* image)
       : ImageRep(Image::kImageRepCocoaTouch),
         image_(image) {
-    CHECK(image);
+    CHECK(image_);
+    base::mac::NSObjectRetain(image_);
   }
 
   ~ImageRepCocoaTouch() override {
@@ -204,7 +205,8 @@ class ImageRepCocoa : public ImageRep {
   explicit ImageRepCocoa(NSImage* image)
       : ImageRep(Image::kImageRepCocoa),
         image_(image) {
-    CHECK(image);
+    CHECK(image_);
+    base::mac::NSObjectRetain(image_);
   }
 
   ~ImageRepCocoa() override {
@@ -351,7 +353,6 @@ Image::Image(const ImageSkia& image) {
 #if defined(OS_IOS)
 Image::Image(UIImage* image) {
   if (image) {
-    base::mac::NSObjectRetain(image);
     storage_ = new internal::ImageStorage(Image::kImageRepCocoaTouch);
     AddRepresentation(std::make_unique<internal::ImageRepCocoaTouch>(image));
   }
@@ -463,7 +464,6 @@ UIImage* Image::ToUIImage() const {
         const internal::ImageRepSkia* skia_rep =
             GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
         UIImage* image = UIImageFromImageSkia(*skia_rep->image());
-        base::mac::NSObjectRetain(image);
         scoped_rep.reset(new internal::ImageRepCocoaTouch(image));
         break;
       }
@@ -496,7 +496,6 @@ NSImage* Image::ToNSImage() const {
             GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
         NSImage* image = NSImageFromImageSkiaWithColorSpace(*skia_rep->image(),
             default_representation_color_space);
-        base::mac::NSObjectRetain(image);
         scoped_rep.reset(new internal::ImageRepCocoa(image));
         break;
       }

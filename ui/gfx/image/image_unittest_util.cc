@@ -19,11 +19,9 @@
 #include "ui/gfx/image/image_skia.h"
 
 #if defined(OS_IOS)
-#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "skia/ext/skia_utils_ios.h"
 #elif defined(OS_MACOSX)
-#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #endif
@@ -222,12 +220,10 @@ PlatformImage CreatePlatformImage() {
       CGColorSpaceCreateDeviceRGB());
   UIImage* image =
       skia::SkBitmapToUIImageWithColorSpace(bitmap, scale, color_space);
-  base::mac::NSObjectRetain(image);
   return image;
 #elif defined(OS_MACOSX)
   NSImage* image = skia::SkBitmapToNSImageWithColorSpace(
       bitmap, base::mac::GetGenericRGBColorSpace());
-  base::mac::NSObjectRetain(image);
   return image;
 #else
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
@@ -258,7 +254,7 @@ gfx::Image CopyViaPlatformType(const gfx::Image& image) {
 #if defined(OS_IOS)
   return gfx::Image(image.ToUIImage());
 #elif defined(OS_MACOSX)
-  return gfx::Image(image.CopyNSImage());
+  return gfx::Image(image.ToNSImage());
 #else
   return gfx::Image(image.AsImageSkia());
 #endif

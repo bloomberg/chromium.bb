@@ -101,7 +101,7 @@ TEST_F(ImageMacTest, MultiResolutionNSImageToImageSkia) {
   [ns_image addRepresentation:ns_image_rep1];
   [ns_image addRepresentation:ns_image_rep2];
 
-  gfx::Image image(ns_image.release());
+  gfx::Image image(ns_image);
 
   EXPECT_EQ(1u, image.RepresentationCount());
 
@@ -132,7 +132,7 @@ TEST_F(ImageMacTest, UnalignedMultiResolutionNSImageToImageSkia) {
       [[NSImage alloc] initWithSize:NSMakeSize(kWidth1x, kHeight1x)]);
   [ns_image addRepresentation:ns_image_rep4];
 
-  gfx::Image image(ns_image.release());
+  gfx::Image image(ns_image);
 
   EXPECT_EQ(1u, image.RepresentationCount());
 

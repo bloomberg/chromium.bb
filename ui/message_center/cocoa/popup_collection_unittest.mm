@@ -235,8 +235,8 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
   MCNotificationController* controller =
       [[popups objectAtIndex:1] notificationController];
   EXPECT_FALSE([[controller iconView] image]);
-  center_->SetNotificationIcon("2",
-      gfx::Image([[NSImage imageNamed:NSImageNameUser] retain]));
+  center_->SetNotificationIcon(
+      "2", gfx::Image([NSImage imageNamed:NSImageNameUser]));
   WaitForAnimationEnded();
   EXPECT_TRUE([[controller iconView] image]);
 
