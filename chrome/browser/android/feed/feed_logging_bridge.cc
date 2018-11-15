@@ -123,17 +123,15 @@ void FeedLoggingBridge::OnOpenedWithNoContent(
 void FeedLoggingBridge::OnContentTargetVisited(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
-    const jlong visit_time_ms) {
-  feed_logging_metrics_->OnSuggestionArticleVisited(
-      base::TimeDelta::FromMilliseconds(visit_time_ms));
-}
-
-void FeedLoggingBridge::OnOfflinePageVisited(
-    JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this,
-    const jlong visit_time_ms) {
-  feed_logging_metrics_->OnSuggestionOfflinePageVisited(
-      base::TimeDelta::FromMilliseconds(visit_time_ms));
+    const jlong visit_time_ms,
+    const jboolean is_offline) {
+  if (is_offline) {
+    feed_logging_metrics_->OnSuggestionOfflinePageVisited(
+        base::TimeDelta::FromMilliseconds(visit_time_ms));
+  } else {
+    feed_logging_metrics_->OnSuggestionArticleVisited(
+        base::TimeDelta::FromMilliseconds(visit_time_ms));
+  }
 }
 
 }  // namespace feed
