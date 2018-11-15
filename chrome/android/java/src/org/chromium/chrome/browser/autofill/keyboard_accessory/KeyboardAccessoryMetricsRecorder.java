@@ -231,7 +231,8 @@ public class KeyboardAccessoryMetricsRecorder {
                 return;
             }
             if (propertyKey == AccessorySheetProperties.ACTIVE_TAB_INDEX
-                    || propertyKey == AccessorySheetProperties.HEIGHT) {
+                    || propertyKey == AccessorySheetProperties.HEIGHT
+                    || propertyKey == AccessorySheetProperties.TOP_SHADOW_VISIBLE) {
                 return;
             }
             assert false : "Every property update needs to be handled explicitly!";

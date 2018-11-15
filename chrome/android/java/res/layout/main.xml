@@ -40,7 +40,6 @@
 
         <ViewStub
             android:id="@+id/keyboard_accessory_sheet_stub"
-            android:inflatedId="@+id/keyboard_accessory_sheet"
             android:layout="@layout/keyboard_accessory_sheet"
             android:layout_height="@dimen/keyboard_accessory_sheet_height"
             android:layout_width="match_parent"

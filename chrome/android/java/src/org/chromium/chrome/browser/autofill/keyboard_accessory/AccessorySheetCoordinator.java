@@ -8,12 +8,14 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryS
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.HEIGHT;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.NO_ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TABS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TOP_SHADOW_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.VISIBLE;
 
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
@@ -36,12 +38,15 @@ public class AccessorySheetCoordinator {
      * parts up.
      * @param viewProvider A provider for the accessory layout.
      */
-    public AccessorySheetCoordinator(ViewProvider<ViewPager> viewProvider) {
-        PropertyModel model = new PropertyModel.Builder(TABS, ACTIVE_TAB_INDEX, VISIBLE, HEIGHT)
-                                      .with(TABS, new ListModel<>())
-                                      .with(ACTIVE_TAB_INDEX, NO_ACTIVE_TAB)
-                                      .with(VISIBLE, false)
-                                      .build();
+    public AccessorySheetCoordinator(ViewProvider<AccessorySheetView> viewProvider) {
+        PropertyModel model =
+                new PropertyModel
+                        .Builder(TABS, ACTIVE_TAB_INDEX, VISIBLE, HEIGHT, TOP_SHADOW_VISIBLE)
+                        .with(TABS, new ListModel<>())
+                        .with(ACTIVE_TAB_INDEX, NO_ACTIVE_TAB)
+                        .with(VISIBLE, false)
+                        .with(TOP_SHADOW_VISIBLE, false)
+                        .build();
 
         LazyConstructionPropertyMcp.create(
                 model, VISIBLE, viewProvider, AccessorySheetViewBinder::bind);
@@ -67,8 +72,6 @@ public class AccessorySheetCoordinator {
     /**
      * Adds the contents of a given {@link KeyboardAccessoryData.Tab} to the accessory sheet. If it
      * is the first Tab, it automatically becomes the active Tab.
-     * Careful, if you want to show this tab as icon in the KeyboardAccessory, use the method
-     * {@link ManualFillingCoordinator#addTab(KeyboardAccessoryData.Tab)} instead.
      * @param tab The tab which should be added to the AccessorySheet.
      */
     void addTab(KeyboardAccessoryData.Tab tab) {
@@ -81,6 +84,10 @@ public class AccessorySheetCoordinator {
 
     void setTabs(KeyboardAccessoryData.Tab[] tabs) {
         mMediator.setTabs(tabs);
+    }
+
+    RecyclerView.OnScrollListener getScrollListener() {
+        return mMediator.getScrollListener();
     }
 
     /**

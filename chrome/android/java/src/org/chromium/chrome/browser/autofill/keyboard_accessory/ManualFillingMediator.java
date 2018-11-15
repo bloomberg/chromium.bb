@@ -473,7 +473,8 @@ class ManualFillingMediator extends EmptyTabObserver
         if (mActiveBrowserTab == null) return null; // No need for a sheet if there is no tab.
         AccessoryState state = getOrCreateAccessoryState(mActiveBrowserTab);
         if (state.mPasswordAccessorySheet == null) {
-            state.mPasswordAccessorySheet = new PasswordAccessorySheetCoordinator(mActivity);
+            state.mPasswordAccessorySheet = new PasswordAccessorySheetCoordinator(
+                    mActivity, mAccessorySheet.getScrollListener());
             addTab(state.mPasswordAccessorySheet.getTab());
         }
         return state.mPasswordAccessorySheet;

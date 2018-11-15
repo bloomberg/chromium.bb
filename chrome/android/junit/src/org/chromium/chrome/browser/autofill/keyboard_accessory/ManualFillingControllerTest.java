@@ -17,9 +17,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction
+        .GENERATE_PASSWORD_AUTOMATIC;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties
+        .ACTIVE_TAB;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties
+        .TABS;
 import static org.chromium.chrome.browser.tab.Tab.INVALID_TAB_ID;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType.FROM_BROWSER_ACTIONS;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_CLOSE;
@@ -28,7 +31,6 @@ import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FRO
 
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewPager;
 import android.view.ViewGroup;
 
 import org.junit.Before;
@@ -48,7 +50,8 @@ import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData
+        .PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.ListModel;
@@ -87,7 +90,7 @@ public class ManualFillingControllerTest {
     @Mock
     private KeyboardAccessoryView mMockKeyboardAccessoryView;
     @Mock
-    private ViewPager mMockViewPager;
+    private AccessorySheetView mMockViewPager;
     @Mock
     private ListObservable.ListObserver<Void> mMockTabListObserver;
     @Mock
@@ -326,7 +329,7 @@ public class ManualFillingControllerTest {
         // Open a tab but pretend that the states became inconsistent.
         Tab tab = addTab(mediator, 1111, null);
         mediator.getModelForTesting().get(tab).mPasswordAccessorySheet =
-                new PasswordAccessorySheetCoordinator(mMockActivity);
+                new PasswordAccessorySheetCoordinator(mMockActivity, null);
 
         // Create a new tab with a passwords tab:
         addTab(mediator, 1111, tab);
