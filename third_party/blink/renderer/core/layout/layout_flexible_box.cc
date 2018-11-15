@@ -1504,6 +1504,9 @@ void LayoutFlexibleBox::LayoutColumnReverse(FlexItemVectorView& children,
 }
 
 void LayoutFlexibleBox::AlignFlexLines(Vector<FlexLine>& line_contexts) {
+  if (line_contexts.IsEmpty())
+    return;
+
   const StyleContentAlignmentData align_content =
       FlexLayoutAlgorithm::ResolvedAlignContent(StyleRef());
 
@@ -1511,7 +1514,7 @@ void LayoutFlexibleBox::AlignFlexLines(Vector<FlexLine>& line_contexts) {
   // flex line, the line height is all the available space. For
   // flex-direction: row, this means we need to use the height, so we do this
   // after calling updateLogicalHeight.
-  if (line_contexts.size() == 1) {
+  if (!IsMultiline()) {
     line_contexts[0].cross_axis_extent = CrossAxisContentExtent();
     return;
   }
@@ -1523,11 +1526,8 @@ void LayoutFlexibleBox::AlignFlexLines(Vector<FlexLine>& line_contexts) {
   for (const FlexLine& line : line_contexts)
     available_cross_axis_space -= line.cross_axis_extent;
 
-  LayoutUnit line_offset;
-  if (line_contexts.size() > 1) {
-    line_offset = FlexLayoutAlgorithm::InitialContentPositionOffset(
-        available_cross_axis_space, align_content, line_contexts.size());
-  }
+  LayoutUnit line_offset = FlexLayoutAlgorithm::InitialContentPositionOffset(
+      available_cross_axis_space, align_content, line_contexts.size());
   for (unsigned line_number = 0; line_number < line_contexts.size();
        ++line_number) {
     FlexLine& line_context = line_contexts[line_number];
