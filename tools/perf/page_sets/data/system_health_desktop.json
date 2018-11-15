@@ -225,6 +225,9 @@
         "load:search:ebay": {
             "DEFAULT": "system_health_desktop_000.wprgo"
         },
+        "load:search:ebay:2018": {
+            "DEFAULT": "system_health_desktop_0e255e1cf7.wprgo"
+        },
         "load:search:flipkart": {
             "DEFAULT": "system_health_desktop_000.wprgo"
         },

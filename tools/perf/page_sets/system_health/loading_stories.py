@@ -127,6 +127,12 @@ class LoadEbayStory(_LoadingStory):
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
+class LoadEbayStory2018(_LoadingStory):
+  NAME = 'load:search:ebay:2018'
+  URL = 'https://www.ebay.com/sch/i.html?_nkw=headphones'
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
+
+
 ################################################################################
 # Social networks.
 ################################################################################

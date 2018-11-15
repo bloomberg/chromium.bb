@@ -198,6 +198,9 @@
         "load:search:ebay": {
             "DEFAULT": "system_health_mobile_000.wprgo"
         },
+        "load:search:ebay:2018": {
+            "DEFAULT": "system_health_mobile_b32499ce35.wprgo"
+        },
         "load:search:google": {
             "DEFAULT": "system_health_mobile_029.wprgo"
         },
