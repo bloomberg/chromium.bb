@@ -32,6 +32,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/command_buffer/common/presentation_feedback_utils.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -1476,10 +1477,12 @@ void InProcessCommandBuffer::BufferPresented(
   SwapBufferParams params = pending_presented_params_.front();
   pending_presented_params_.pop_front();
 
-  PostOrRunClientCallback(
-      base::BindOnce(&InProcessCommandBuffer::BufferPresentedOnOriginThread,
-                     client_thread_weak_ptr_factory_.GetWeakPtr(),
-                     params.swap_id, params.flags, feedback));
+  if (ShouldSendBufferPresented(params.flags, feedback.flags)) {
+    PostOrRunClientCallback(
+        base::BindOnce(&InProcessCommandBuffer::BufferPresentedOnOriginThread,
+                       client_thread_weak_ptr_factory_.GetWeakPtr(),
+                       params.swap_id, params.flags, feedback));
+  }
 }
 
 void InProcessCommandBuffer::AddFilter(IPC::MessageFilter* message_filter) {
@@ -1505,13 +1508,11 @@ void InProcessCommandBuffer::BufferPresentedOnOriginThread(
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   if (gpu_control_client_)
     gpu_control_client_->OnSwapBufferPresented(swap_id, feedback);
-  if (flags & gpu::SwapBuffersFlags::kPresentationFeedback ||
-      (flags & gpu::SwapBuffersFlags::kVSyncParams &&
-       feedback.flags & gfx::PresentationFeedback::kVSync)) {
-    if (update_vsync_parameters_completion_callback_ &&
-        feedback.timestamp != base::TimeTicks())
-      update_vsync_parameters_completion_callback_.Run(feedback.timestamp,
-                                                       feedback.interval);
+
+  if (update_vsync_parameters_completion_callback_ &&
+      ShouldUpdateVsyncParams(feedback)) {
+    update_vsync_parameters_completion_callback_.Run(feedback.timestamp,
+                                                     feedback.interval);
   }
 }
 
