@@ -584,10 +584,6 @@ void TestRunnerForSpecificView::DidLosePointerLockInternal() {
     web_view()->MainFrameWidget()->DidLosePointerLock();
 }
 
-bool TestRunnerForSpecificView::CallShouldCloseOnWebView() {
-  return GetLocalMainFrame()->DispatchBeforeUnloadEvent(false);
-}
-
 void TestRunnerForSpecificView::SetDomainRelaxationForbiddenForURLScheme(
     bool forbidden,
     const std::string& scheme) {
