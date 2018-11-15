@@ -22,8 +22,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
-#include "chrome/browser/notifications/win/mock_itoastnotification.h"
-#include "chrome/browser/notifications/win/mock_itoastnotifier.h"
+#include "chrome/browser/notifications/win/fake_itoastnotification.h"
+#include "chrome/browser/notifications/win/fake_itoastnotifier.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -185,15 +185,15 @@ class NotificationPlatformBridgeWinUITest : public InProcessBrowserTest {
   bool delegate_called_ = false;
 };
 
-class MockIToastActivatedEventArgs
+class FakeIToastActivatedEventArgs
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           winui::Notifications::IToastActivatedEventArgs> {
  public:
-  explicit MockIToastActivatedEventArgs(const base::string16& args)
+  explicit FakeIToastActivatedEventArgs(const base::string16& args)
       : arguments_(args) {}
-  ~MockIToastActivatedEventArgs() override = default;
+  ~FakeIToastActivatedEventArgs() override = default;
 
   HRESULT STDMETHODCALLTYPE get_Arguments(HSTRING* value) override {
     base::win::ScopedHString arguments =
@@ -205,7 +205,7 @@ class MockIToastActivatedEventArgs
  private:
   base::string16 arguments_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockIToastActivatedEventArgs);
+  DISALLOW_COPY_AND_ASSIGN(FakeIToastActivatedEventArgs);
 };
 
 IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleEvent) {
@@ -226,8 +226,8 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleEvent) {
 </toast>
 )";
 
-  MockIToastNotification toast(kXmlDoc, L"tag");
-  MockIToastActivatedEventArgs args(
+  FakeIToastNotification toast(kXmlDoc, L"tag");
+  FakeIToastActivatedEventArgs args(
       L"1|1|0|Default|0|https://example.com/|notification_id");
 
   base::RunLoop run_loop;
@@ -297,8 +297,8 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleSettings) {
 </toast>
 )";
 
-  MockIToastNotification toast(kXmlDoc, L"tag");
-  MockIToastActivatedEventArgs args(
+  FakeIToastNotification toast(kXmlDoc, L"tag");
+  FakeIToastActivatedEventArgs args(
       L"2|0|Default|0|https://example.com/|notification_id");
 
   base::RunLoop run_loop;
@@ -351,15 +351,15 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   bool incognito = true;
 
   Profile* profile1 = CreateTestingProfile("P1");
-  notifications.push_back(Microsoft::WRL::Make<MockIToastNotification>(
+  notifications.push_back(Microsoft::WRL::Make<FakeIToastNotification>(
       GetToastString(L"P1i", L"P1", incognito), L"tag"));
-  notifications.push_back(Microsoft::WRL::Make<MockIToastNotification>(
+  notifications.push_back(Microsoft::WRL::Make<FakeIToastNotification>(
       GetToastString(L"P1reg", L"P1", !incognito), L"tag"));
 
   Profile* profile2 = CreateTestingProfile("P2");
-  notifications.push_back(Microsoft::WRL::Make<MockIToastNotification>(
+  notifications.push_back(Microsoft::WRL::Make<FakeIToastNotification>(
       GetToastString(L"P2i", L"P2", incognito), L"tag"));
-  notifications.push_back(Microsoft::WRL::Make<MockIToastNotification>(
+  notifications.push_back(Microsoft::WRL::Make<FakeIToastNotification>(
       GetToastString(L"P2reg", L"P2", !incognito), L"tag"));
 
   // Query for profile P1 in incognito (should return 1 item).
@@ -417,16 +417,16 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   bridge->SetDisplayedNotificationsForTesting(nullptr);
 }
 
-// Test calling Display with a mock implementation of the Action Center
+// Test calling Display with a fake implementation of the Action Center
 // and validate it gets the values expected.
-IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, DisplayWithMockAC) {
+IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, DisplayWithFakeAC) {
   if (base::win::GetVersion() < kMinimumWindowsVersion)
     return;
 
   NotificationPlatformBridgeWin* bridge = GetBridge();
   ASSERT_TRUE(bridge);
 
-  MockIToastNotifier notifier;
+  FakeIToastNotifier notifier;
   bridge->SetNotifierForTesting(&notifier);
 
   std::string launch_id_value = "0|0|P1|0|https://example.com/|notification_id";

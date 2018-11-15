@@ -2806,8 +2806,8 @@ test("unit_tests") {
   if (is_win) {
     assert(toolkit_views)
     sources += [
-      "../browser/notifications/win/mock_notification_image_retainer.cc",
-      "../browser/notifications/win/mock_notification_image_retainer.h",
+      "../browser/notifications/win/fake_notification_image_retainer.cc",
+      "../browser/notifications/win/fake_notification_image_retainer.h",
       "../browser/ui/views/try_chrome_dialog_win/button_layout_unittest.cc",
     ]
     if (enable_widevine) {
@@ -5012,8 +5012,8 @@ if (!is_android) {
       sources += [
         "../browser/downgrade/user_data_downgrade_browsertest.cc",
         "../browser/notifications/notification_platform_bridge_win_interactive_uitest.cc",
-        "../browser/notifications/win/mock_itoastnotifier.cc",
-        "../browser/notifications/win/mock_itoastnotifier.h",
+        "../browser/notifications/win/fake_itoastnotifier.cc",
+        "../browser/notifications/win/fake_itoastnotifier.h",
         "../browser/ui/views/touch_events_interactive_uitest_win.cc",
         "//ui/resources/cursors/aliasb.cur",
         "//ui/resources/cursors/cell.cur",
