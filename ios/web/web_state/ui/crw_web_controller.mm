@@ -1730,6 +1730,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // No DidFinishNavigation callback for displaying error page.
     context->SetHasCommitted(true);
     _webStateImpl->OnNavigationFinished(context);
+    web::NavigationItemImpl* item =
+        context ? web::GetItemWithUniqueID(self.navigationManagerImpl,
+                                           context->GetNavigationItemUniqueID())
+                : nullptr;
+    if (item && web::GetWebClient()->IsAppSpecificURL(item->GetURL())) {
+      // Reports the successful navigation to the ErrorRetryStateMachine.
+      item->error_retry_state_machine().SetNoNavigationError();
+    }
   }
 
   NSString* title = [self.nativeController title];

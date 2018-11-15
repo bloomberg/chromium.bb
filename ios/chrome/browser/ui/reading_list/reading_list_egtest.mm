@@ -36,13 +36,13 @@
 #include "ios/web/public/features.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/reload_type.h"
-#import "ios/web/public/test/http_server/delayed_response_provider.h"
-#import "ios/web/public/test/http_server/html_response_provider.h"
-#import "ios/web/public/test/http_server/http_server.h"
-#include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "net/base/network_change_notifier.h"
+#include "net/test/embedded_test_server/default_handlers.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -52,8 +52,8 @@ namespace {
 const char kContentToRemove[] = "Text that distillation should remove.";
 const char kContentToKeep[] = "Text that distillation should keep.";
 const char kDistillableTitle[] = "Tomato";
-const char kDistillableURL[] = "http://potato";
-const char kNonDistillableURL[] = "http://beans";
+const char kDistillableURL[] = "/potato";
+const char kNonDistillableURL[] = "/beans";
 const char kReadTitle[] = "foobar";
 const char kReadURL[] = "http://readfoobar.com";
 const char kUnreadTitle[] = "I am an unread entry";
@@ -354,28 +354,35 @@ void WaitForDistillation() {
              @"Item was not distilled.");
 }
 
-// Returns the responses for a web server that can serve a distillable content
-// at kDistillableURL and a not distillable content at kNotDistillableURL.
-std::map<GURL, std::string> ResponsesForDistillationServer() {
-  // Setup a server serving a distillable page at http://potato with the title
-  // "tomato", and a non distillable page at http://beans
-  std::map<GURL, std::string> responses;
-  std::string page_title = "Tomato";
-  const GURL distillable_page_url =
-      web::test::HttpServer::MakeUrl(kDistillableURL);
+// Serves URLs. Response can be delayed by |delay| second or return an error if
+// |responds_with_content| is false.
+// If |distillable|, result is can be distilled for offline display.
+std::unique_ptr<net::test_server::HttpResponse> HandleQueryOrCloseSocket(
+    const bool& responds_with_content,
+    const int& delay,
+    bool distillable,
+    const net::test_server::HttpRequest& request) {
+  if (!responds_with_content) {
+    return std::make_unique<net::test_server::RawHttpResponse>(
+        /*headers=*/"", /*contents=*/"");
+  }
+  auto response = std::make_unique<net::test_server::DelayedHttpResponse>(
+      base::TimeDelta::FromSeconds(delay));
+  response->set_content_type("text/html");
+  if (distillable) {
+    std::string page_title = "Tomato";
 
-  std::string content_to_remove(kContentToRemove);
-  std::string content_to_keep(kContentToKeep);
-  // Distillation only occurs on pages that are not too small.
-  responses[distillable_page_url] =
-      "<html><head><title>" + page_title + "</title></head>" +
-      content_to_remove * 20 + "<article>" + content_to_keep * 20 +
-      "</article>" + content_to_remove * 20 + "</html>";
-  const GURL non_distillable_page_url =
-      web::test::HttpServer::MakeUrl(kNonDistillableURL);
-  responses[non_distillable_page_url] =
-      "<html><head><title>greens</title></head></html>";
-  return responses;
+    std::string content_to_remove(kContentToRemove);
+    std::string content_to_keep(kContentToKeep);
+
+    response->set_content("<html><head><title>" + page_title +
+                          "</title></head>" + content_to_remove * 20 +
+                          "<article>" + content_to_keep * 20 + "</article>" +
+                          content_to_remove * 20 + "</html>");
+  } else {
+    response->set_content("<html><head><title>greens</title></head></html>");
+  }
+  return std::move(response);
 }
 
 // Opens the page security info bubble.
@@ -388,7 +395,7 @@ void OpenPageSecurityInfoBubble() {
 }
 
 // Tests that the correct version of kDistillableURL is displayed.
-void AssertIsShowingDistillablePage(bool online) {
+void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
   NSString* contentToKeep = base::SysUTF8ToNSString(kContentToKeep);
   // There will be multiple reloads, wait for the page to be displayed.
   if (online) {
@@ -407,10 +414,8 @@ void AssertIsShowingDistillablePage(bool online) {
     [ChromeEarlGrey waitForStaticHTMLViewContainingText:contentToKeep];
   }
 
-  // Test Omnibox URL
-  GURL distillableURL = web::test::HttpServer::MakeUrl(kDistillableURL);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          distillableURL.GetContent())]
+                                          distillable_url.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Test that the offline and online pages are properly displayed.
@@ -436,27 +441,36 @@ void AssertIsShowingDistillablePage(bool online) {
 
 // Test class for the Reading List menu.
 @interface ReadingListTestCase : ChromeTestCase
+// YES if test server is replying with valid HTML content (URL query). NO if
+// test server closes the socket.
+@property(atomic) bool serverRespondsWithContent;
 
+// The delay after which self.testServer will send a response.
+@property(atomic) NSTimeInterval serverResponseDelay;
+;
 @end
 
 @implementation ReadingListTestCase
+@synthesize serverRespondsWithContent = _serverRespondsWithContent;
+@synthesize serverResponseDelay = _serverResponseDelay;
 
 - (void)setUp {
   [super setUp];
   ReadingListModel* model = GetReadingListModel();
   for (const GURL& url : model->Keys())
     model->RemoveEntryByURL(url);
-}
-
-- (void)tearDown {
-  web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
-  server.SetSuspend(NO);
-  if (!server.IsRunning()) {
-    server.StartOrDie();
-    base::test::ios::SpinRunLoopWithMinDelay(
-        base::TimeDelta::FromSecondsD(kServerOperationDelay));
-  }
-  [super tearDown];
+  self.testServer->RegisterRequestHandler(base::BindRepeating(
+      &net::test_server::HandlePrefixedRequest, kDistillableURL,
+      base::BindRepeating(&HandleQueryOrCloseSocket,
+                          base::ConstRef(_serverRespondsWithContent),
+                          base::ConstRef(_serverResponseDelay), true)));
+  self.testServer->RegisterRequestHandler(base::BindRepeating(
+      &net::test_server::HandlePrefixedRequest, kNonDistillableURL,
+      base::BindRepeating(&HandleQueryOrCloseSocket,
+                          base::ConstRef(_serverRespondsWithContent),
+                          base::ConstRef(_serverResponseDelay), false)));
+  self.serverRespondsWithContent = true;
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 }
 
 // Tests that the Reading List view is accessible.
@@ -483,10 +497,8 @@ void AssertIsShowingDistillablePage(bool online) {
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
-  web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
-  GURL distillablePageURL(web::test::HttpServer::MakeUrl(kDistillableURL));
-  GURL nonDistillablePageURL(
-      web::test::HttpServer::MakeUrl(kNonDistillableURL));
+  GURL distillablePageURL(self.testServer->GetURL(kDistillableURL));
+  GURL nonDistillablePageURL(self.testServer->GetURL(kNonDistillableURL));
   std::string pageTitle(kDistillableTitle);
   // Open http://potato
   [ChromeEarlGrey loadURL:distillablePageURL];
@@ -507,7 +519,7 @@ void AssertIsShowingDistillablePage(bool online) {
   LongPressEntry(pageTitle);
   TapContextMenuButtonWithA11yLabelID(
       IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE);
-  AssertIsShowingDistillablePage(false);
+  AssertIsShowingDistillablePage(false, distillablePageURL);
 
   // Tap the Omnibox' Info Bubble to open the Page Info.
   OpenPageSecurityInfoBubble();
@@ -542,17 +554,15 @@ void AssertIsShowingDistillablePage(bool online) {
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
-  web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
-  web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
   std::string pageTitle(kDistillableTitle);
-
+  GURL distillableURL = self.testServer->GetURL(kDistillableURL);
   // Open http://potato
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDistillableURL)];
+  [ChromeEarlGrey loadURL:distillableURL];
 
   AddCurrentPageToReadingList();
 
   // Navigate to http://beans
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNonDistillableURL)];
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kNonDistillableURL)];
   [ChromeEarlGrey waitForPageToFinishLoading];
 
   // Verify that an entry with the correct title is present in the reading list.
@@ -563,15 +573,15 @@ void AssertIsShowingDistillablePage(bool online) {
   // Long press the entry, and open it offline.
   TapEntry(pageTitle);
 
-  AssertIsShowingDistillablePage(true);
+  AssertIsShowingDistillablePage(true, distillableURL);
   // Stop server to reload offline.
-  server.SetSuspend(YES);
+  self.serverRespondsWithContent = NO;
   base::test::ios::SpinRunLoopWithMinDelay(
       base::TimeDelta::FromSecondsD(kServerOperationDelay));
 
   chrome_test_util::GetCurrentWebState()->GetNavigationManager()->Reload(
       web::ReloadType::NORMAL, false);
-  AssertIsShowingDistillablePage(false);
+  AssertIsShowingDistillablePage(false, distillableURL);
 }
 
 // Tests that sharing a web page to the Reading List results in a snackbar
@@ -593,17 +603,16 @@ void AssertIsShowingDistillablePage(bool online) {
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
-  web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
   std::string pageTitle(kDistillableTitle);
-  web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
+  GURL distillableURL = self.testServer->GetURL(kDistillableURL);
   // Open http://potato
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDistillableURL)];
+  [ChromeEarlGrey loadURL:distillableURL];
 
   AddCurrentPageToReadingList();
 
   // Navigate to http://beans
 
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNonDistillableURL)];
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kNonDistillableURL)];
   [ChromeEarlGrey waitForPageToFinishLoading];
 
   // Verify that an entry with the correct title is present in the reading list.
@@ -612,22 +621,26 @@ void AssertIsShowingDistillablePage(bool online) {
   WaitForDistillation();
 
   // Stop server to generate error.
-  server.SetSuspend(YES);
+  self.serverRespondsWithContent = NO;
   base::test::ios::SpinRunLoopWithMinDelay(
       base::TimeDelta::FromSecondsD(kServerOperationDelay));
   // Long press the entry, and open it offline.
   TapEntry(pageTitle);
+  AssertIsShowingDistillablePage(false, distillableURL);
 
-  AssertIsShowingDistillablePage(false);
+  // Reload. As server is still down, the offline page should show again.
+  chrome_test_util::GetCurrentWebState()->GetNavigationManager()->Reload(
+      web::ReloadType::NORMAL, false);
+  AssertIsShowingDistillablePage(false, distillableURL);
+
   // Start server to reload online error.
-  server.SetSuspend(NO);
+  self.serverRespondsWithContent = YES;
   base::test::ios::SpinRunLoopWithMinDelay(
       base::TimeDelta::FromSecondsD(kServerOperationDelay));
-  web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
 
   chrome_test_util::GetCurrentWebState()->GetNavigationManager()->Reload(
       web::ReloadType::NORMAL, false);
-  AssertIsShowingDistillablePage(true);
+  AssertIsShowingDistillablePage(true, distillableURL);
 }
 
 // Tests that sharing a web page to the Reading List results in a snackbar
@@ -645,41 +658,36 @@ void AssertIsShowingDistillablePage(bool online) {
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
-  web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
   std::string pageTitle(kDistillableTitle);
+  GURL distillableURL = self.testServer->GetURL(kDistillableURL);
   // Open http://potato
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDistillableURL)];
+  [ChromeEarlGrey loadURL:distillableURL];
 
   AddCurrentPageToReadingList();
 
   // Navigate to http://beans
-  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNonDistillableURL)];
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kNonDistillableURL)];
   [ChromeEarlGrey waitForPageToFinishLoading];
 
-  // Verify that an entry with the correct title is present in the reading list.
+  // Verify that an entry with the correct title is present in the reading
   OpenReadingList();
   AssertEntryVisible(pageTitle);
   WaitForDistillation();
 
-  web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
-      std::make_unique<HtmlResponseProvider>(ResponsesForDistillationServer()),
-      kDelayForSlowWebServer));
-  // Long press the entry, and open it offline.
+  self.serverResponseDelay = kDelayForSlowWebServer;
+  // Open the entry.
   TapEntry(pageTitle);
 
-  AssertIsShowingDistillablePage(false);
+  AssertIsShowingDistillablePage(false, distillableURL);
 
-  // TODO(crbug.com/724555): Re-enable the reload checks.
-  if (false) {
-    // Reload should load online page.
-    chrome_test_util::GetCurrentWebState()->GetNavigationManager()->Reload(
-        web::ReloadType::NORMAL, false);
-    AssertIsShowingDistillablePage(true);
-    // Reload should load offline page.
-    chrome_test_util::GetCurrentWebState()->GetNavigationManager()->Reload(
-        web::ReloadType::NORMAL, false);
-    AssertIsShowingDistillablePage(false);
-  }
+  // Reload should load online page.
+  chrome_test_util::GetCurrentWebState()->GetNavigationManager()->Reload(
+      web::ReloadType::NORMAL, false);
+  AssertIsShowingDistillablePage(true, distillableURL);
+  // Reload should load offline page.
+  chrome_test_util::GetCurrentWebState()->GetNavigationManager()->Reload(
+      web::ReloadType::NORMAL, false);
+  AssertIsShowingDistillablePage(false, distillableURL);
 }
 
 // Tests that only the "Edit" button is showing when not editing.
