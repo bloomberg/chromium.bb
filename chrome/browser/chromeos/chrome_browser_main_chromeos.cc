@@ -78,6 +78,7 @@
 #include "chrome/browser/chromeos/net/network_pref_state_observer.h"
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
+#include "chrome/browser/chromeos/network_change_manager_client.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -136,8 +137,6 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/login_event_recorder.h"
 #include "chromeos/network/network_cert_loader.h"
-#include "chromeos/network/network_change_notifier_chromeos.h"
-#include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/settings/install_attributes.h"
@@ -157,6 +156,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_capture_devices.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -168,6 +168,7 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "media/audio/sounds/sounds_manager.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_change_notifier_chromeos.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "printing/backend/print_backend.h"
@@ -349,11 +350,6 @@ class DBusServices {
     cryptohome::HomedirMethods::Initialize();
 
     NetworkHandler::Initialize();
-
-    // Initialize the network change notifier for Chrome OS. The network
-    // change notifier starts to monitor changes from the power manager and
-    // the network manager.
-    NetworkChangeNotifierFactoryChromeos::GetInstance()->Initialize();
 
     // Likewise, initialize the upgrade detector for Chrome OS. The upgrade
     // detector starts to monitor changes from the update engine.
@@ -573,11 +569,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
   // to session state change right after browser is started.
   g_browser_process->platform_part()->InitializeSessionManager();
 
-  // Replace the default NetworkChangeNotifierFactory with ChromeOS specific
-  // implementation. This must be done before BrowserMainLoop calls
-  // net::NetworkChangeNotifier::Create() in MainMessageLoopStart().
-  net::NetworkChangeNotifier::SetFactory(
-      new NetworkChangeNotifierFactoryChromeos());
   ChromeBrowserMainPartsLinux::PreMainMessageLoopStart();
 }
 
@@ -600,6 +591,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
+  network_change_manager_client_.reset(new NetworkChangeManagerClient(
+      static_cast<net::NetworkChangeNotifierChromeos*>(
+          content::GetNetworkChangeNotifier())));
+
   // Set the crypto thread after the IO thread has been created/started.
   TPMTokenLoader::Get()->SetCryptoTaskRunner(
       base::CreateSingleThreadTaskRunnerWithTraits(
@@ -1061,12 +1056,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (UpgradeDetectorChromeos::GetInstance())
     UpgradeDetectorChromeos::GetInstance()->Shutdown();
 
-  // Shutdown the network change notifier for Chrome OS. The network
-  // change notifier stops monitoring changes from the power manager and
-  // the network manager.
-  if (NetworkChangeNotifierFactoryChromeos::GetInstance())
-    NetworkChangeNotifierFactoryChromeos::GetInstance()->Shutdown();
-
   // Tell DeviceSettingsService to stop talking to session_manager. Do not
   // shutdown DeviceSettingsService yet, it might still be accessed by
   // BrowserPolicyConnector (owned by g_browser_process).
@@ -1175,6 +1164,8 @@ void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
   // Destroy crosvm_metrics_ after threads are stopped so that no weak_ptr is
   // held by any task.
   crosvm_metrics_.reset();
+
+  network_change_manager_client_.reset();
 
   // Destroy DBus services immediately after threads are stopped.
   dbus_services_.reset();

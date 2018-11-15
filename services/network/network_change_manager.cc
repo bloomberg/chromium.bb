@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_change_notifier_chromeos.h"
 
 namespace network {
 
@@ -42,6 +43,34 @@ void NetworkChangeManager::RequestNotifications(
   client_ptr->OnInitialConnectionType(connection_type_);
   clients_.push_back(std::move(client_ptr));
 }
+
+#if defined(OS_CHROMEOS)
+void NetworkChangeManager::OnNetworkChanged(
+    bool dns_changed,
+    bool ip_address_changed,
+    bool connection_type_changed,
+    mojom::ConnectionType new_connection_type,
+    bool connection_subtype_changed,
+    mojom::ConnectionSubtype new_connection_subtype) {
+  DCHECK(network_change_notifier_);
+  net::NetworkChangeNotifierChromeos* notifier =
+      static_cast<net::NetworkChangeNotifierChromeos*>(
+          network_change_notifier_.get());
+  if (dns_changed)
+    notifier->OnDNSChanged();
+  if (ip_address_changed)
+    notifier->OnIPAddressChanged();
+  if (connection_type_changed) {
+    notifier->OnConnectionChanged(
+        net::NetworkChangeNotifier::ConnectionType(new_connection_type));
+  }
+  if (connection_type_changed || connection_subtype_changed) {
+    notifier->OnConnectionSubtypeChanged(
+        net::NetworkChangeNotifier::ConnectionType(new_connection_type),
+        net::NetworkChangeNotifier::ConnectionSubtype(new_connection_subtype));
+  }
+}
+#endif
 
 size_t NetworkChangeManager::GetNumClientsForTesting() const {
   return clients_.size();

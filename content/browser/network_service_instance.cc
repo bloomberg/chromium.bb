@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/network_service_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -185,6 +186,10 @@ network::NetworkService* GetNetworkServiceImpl() {
   }
 
   return g_network_service;
+}
+
+net::NetworkChangeNotifier* GetNetworkChangeNotifier() {
+  return BrowserMainLoop::GetInstance()->network_change_notifier();
 }
 
 void FlushNetworkServiceInstanceForTesting() {
