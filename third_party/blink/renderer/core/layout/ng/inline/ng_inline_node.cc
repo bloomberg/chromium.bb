@@ -159,20 +159,22 @@ void CollectInlinesInternal(
       // should not appear. LayoutObject tree should have created an anonymous
       // box to prevent having inline/block-mixed children.
       DCHECK(node->IsInline());
+      LayoutInline* layout_inline = ToLayoutInline(node);
+      layout_inline->UpdateShouldCreateBoxFragment();
 
-      builder->EnterInline(node);
+      builder->EnterInline(layout_inline);
 
       // Traverse to children if they exist.
-      if (LayoutObject* child = node->SlowFirstChild()) {
+      if (LayoutObject* child = layout_inline->FirstChild()) {
         node = child;
         continue;
       }
 
       // An empty inline node.
-      builder->ExitInline(node);
+      builder->ExitInline(layout_inline);
 
       if (update_layout)
-        ClearNeedsLayout(node);
+        ClearNeedsLayout(layout_inline);
     }
 
     // Find the next sibling, or parent, until we reach |block|.
@@ -661,7 +663,7 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
           item.layout_object_->IsLayoutInline() &&
           item.layout_object_->Parent() == GetLayoutBox() &&
           ToLayoutInline(item.layout_object_)->IsFirstLineAnonymous()) {
-        item.should_create_box_fragment_ = true;
+        item.SetShouldCreateBoxFragment();
       }
       break;
     }
