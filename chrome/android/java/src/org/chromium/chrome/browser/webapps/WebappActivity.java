@@ -48,6 +48,8 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -83,6 +85,8 @@ public class WebappActivity extends SingleTabActivity {
     private static final String TAG = "WebappActivity";
     private static final String HISTOGRAM_NAVIGATION_STATUS = "Webapp.NavigationStatus";
     private static final long MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL = 1000;
+
+    private static final String BUNDLE_TAB_ID = "tabId";
 
     private static final int ENTER_IMMERSIVE_MODE_DELAY_MILLIS = 300;
     private static final int RESTORE_IMMERSIVE_MODE_DELAY_MILLIS = 3000;
@@ -303,10 +307,8 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (getActivityTab() != null) {
-            outState.putInt(BUNDLE_TAB_ID, getActivityTab().getId());
-            outState.putString(BUNDLE_TAB_URL, getActivityTab().getUrl());
-        }
+        mDirectoryManager.cancelCleanup();
+        saveState(outState);
     }
 
     @Override
@@ -318,8 +320,6 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
-        mDirectoryManager.cancelCleanup();
-        if (getActivityTab() != null) saveState(getActivityDirectory());
         if (getFullscreenManager() != null) {
             getFullscreenManager().exitPersistentFullscreenMode();
         }
@@ -328,9 +328,16 @@ public class WebappActivity extends SingleTabActivity {
     /**
      * Saves the tab data out to a file.
      */
-    void saveState(File activityDirectory) {
+    private void saveState(Bundle outState) {
+        if (getActivityTab() == null || getActivityTab().getUrl() == null
+                || getActivityTab().getUrl().isEmpty()) {
+            return;
+        }
+
+        outState.putInt(BUNDLE_TAB_ID, getActivityTab().getId());
+
         String tabFileName = TabState.getTabStateFilename(getActivityTab().getId(), false);
-        File tabFile = new File(activityDirectory, tabFileName);
+        File tabFile = new File(getActivityDirectory(), tabFileName);
 
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525781
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
@@ -342,6 +349,19 @@ public class WebappActivity extends SingleTabActivity {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
+    }
+
+    @Override
+    protected Tab restoreTab(Bundle savedInstanceState) {
+        int tabId = getSavedInstanceState().getInt(BUNDLE_TAB_ID, Tab.INVALID_TAB_ID);
+
+        if (tabId == Tab.INVALID_TAB_ID || getActivityDirectory() == null) return null;
+
+        TabState tabState = TabState.restoreTabState(getActivityDirectory(), tabId);
+        if (tabState == null) return null;
+
+        return new Tab(tabId, Tab.INVALID_TAB_ID, false, getWindowAndroid(),
+                TabLaunchType.FROM_RESTORE, TabCreationState.FROZEN_ON_RESTORE, tabState);
     }
 
     @Override
@@ -822,8 +842,7 @@ public class WebappActivity extends SingleTabActivity {
      *
      * @return The directory used for the current web app.
      */
-    @Override
-    protected final File getActivityDirectory() {
+    private File getActivityDirectory() {
         return mDirectoryManager.getWebappDirectory(this, getActivityId());
     }
 

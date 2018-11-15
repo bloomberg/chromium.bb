@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.os.Bundle;
 import android.provider.Browser;
 import android.util.SparseArray;
 import android.view.View;
@@ -218,5 +219,10 @@ public class FullscreenActivity extends SingleTabActivity {
 
         sTabsToSteal.remove(id);
         return tab;
+    }
+
+    @Override
+    protected Tab restoreTab(Bundle savedInstanceState) {
+        return null;
     }
 }
