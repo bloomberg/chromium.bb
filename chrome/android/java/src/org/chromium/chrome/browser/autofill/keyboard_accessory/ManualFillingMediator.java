@@ -45,7 +45,7 @@ class ManualFillingMediator extends EmptyTabObserver
         implements KeyboardAccessoryCoordinator.VisibilityDelegate, View.OnLayoutChangeListener {
     private WindowAndroid mWindowAndroid;
     private Supplier<InsetObserverView> mInsetObserverViewSupplier;
-    private boolean mShouldShow = false;
+    private boolean mShouldShow;
     private final KeyboardExtensionSizeManager mKeyboardExtensionSizeManager =
             new KeyboardExtensionSizeManager();
 

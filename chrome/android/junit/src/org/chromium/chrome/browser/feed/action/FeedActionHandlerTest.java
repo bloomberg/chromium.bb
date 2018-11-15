@@ -87,7 +87,7 @@ public class FeedActionHandlerTest {
     @Captor
     ArgumentCaptor<WebContentsObserver> mWebContentsObserverCaptor;
 
-    int mLastCommittedEntryIndex = 0;
+    int mLastCommittedEntryIndex;
     private FeedActionHandler mActionHandler;
 
     private void verifyOpenedOffline(int expectedDisposition) {

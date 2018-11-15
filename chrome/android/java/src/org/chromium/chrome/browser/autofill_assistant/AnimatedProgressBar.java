@@ -29,10 +29,10 @@ public class AnimatedProgressBar {
     private final int mNormalColor;
     private final int mPulsedColor;
 
-    private boolean mIsRunningProgressAnimation = false;
-    private int mLastProgress = 0;
+    private boolean mIsRunningProgressAnimation;
+    private int mLastProgress;
     private Queue<ValueAnimator> mPendingIncreaseAnimations = new ArrayDeque<>();
-    private ValueAnimator mPulseAnimation = null;
+    private ValueAnimator mPulseAnimation;
 
     public AnimatedProgressBar(MaterialProgressBar progressBar, int normalColor, int pulsedColor) {
         mProgressBar = progressBar;

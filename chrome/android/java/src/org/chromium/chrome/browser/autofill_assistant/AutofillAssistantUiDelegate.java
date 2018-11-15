@@ -101,7 +101,7 @@ class AutofillAssistantUiDelegate {
 
     private final BottomBarAnimations mBottomBarAnimations;
     private final boolean mIsRightToLeftLayout;
-    private ValueAnimator mDetailsPulseAnimation = null;
+    private ValueAnimator mDetailsPulseAnimation;
 
     private AutofillAssistantPaymentRequest mPaymentRequest;
 
