@@ -106,9 +106,9 @@ class LoginBubbleTest : public LoginTestBase {
   }
 
   void ShowSelectionMenu(const LoginMenuView::OnSelect& on_select) {
-    LoginMenuView* view =
-        new LoginMenuView(PopulateMenuItems(), container_, on_select);
-    bubble_->ShowSelectionMenu(view, bubble_opener_);
+    LoginMenuView* view = new LoginMenuView(PopulateMenuItems(), container_,
+                                            bubble_opener_, on_select);
+    bubble_->ShowSelectionMenu(view);
   }
 
   // Owned by test widget view hierarchy.

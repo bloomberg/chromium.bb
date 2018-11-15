@@ -6,6 +6,7 @@
 #define ASH_LOGIN_UI_LOGIN_BASE_BUBBLE_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/login/ui/login_button.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view.h"
 
@@ -20,6 +21,9 @@ class ASH_EXPORT LoginBaseBubbleView : public views::BubbleDialogDelegateView {
   explicit LoginBaseBubbleView(views::View* anchor_view,
                                gfx::NativeView parent_window);
   ~LoginBaseBubbleView() override;
+
+  // Returns the button responsible for opening this bubble.
+  virtual LoginButton* GetBubbleOpener() const;
 
   // views::BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,

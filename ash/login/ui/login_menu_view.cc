@@ -123,8 +123,9 @@ LoginMenuView::Item::Item() = default;
 
 LoginMenuView::LoginMenuView(const std::vector<Item>& items,
                              views::View* anchor_view,
+                             LoginButton* opener,
                              const OnSelect& on_select)
-    : LoginBaseBubbleView(anchor_view), on_select_(on_select) {
+    : LoginBaseBubbleView(anchor_view), opener_(opener), on_select_(on_select) {
   set_can_activate(true);
   set_margins(gfx::Insets());
   set_color(kMenuBackgroundColor);
@@ -192,6 +193,10 @@ int LoginMenuView::FindNextItem(bool reverse) {
   if (current_index < 0 || current_index == contents_->child_count())
     return selected_index_;
   return current_index;
+}
+
+LoginButton* LoginMenuView::GetBubbleOpener() const {
+  return opener_;
 }
 
 void LoginMenuView::OnFocus() {

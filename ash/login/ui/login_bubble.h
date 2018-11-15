@@ -74,7 +74,7 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   void ShowTooltip(const base::string16& message, views::View* anchor_view);
 
   // Shows a selection menu.
-  void ShowSelectionMenu(LoginMenuView* menu, LoginButton* bubble_opener);
+  void ShowSelectionMenu(LoginMenuView* menu);
 
   // Schedule animation for closing the bubble.
   // The bubble widget will be closed when the animation is ended.
@@ -132,9 +132,6 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   uint32_t flags_ = kFlagsNone;
 
   LoginBaseBubbleView* bubble_view_ = nullptr;
-
-  // A button that could open/close the bubble.
-  LoginButton* bubble_opener_ = nullptr;
 
   // The status of bubble after animation ends.
   bool is_visible_ = false;
