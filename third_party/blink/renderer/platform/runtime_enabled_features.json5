@@ -798,10 +798,6 @@
       status: "stable",
     },
     {
-      name: "NestedWorkers",
-      status: "stable",
-    },
-    {
       name: "NetInfoDownlinkMax",
       status: "stable",
     },

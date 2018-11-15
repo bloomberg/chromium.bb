@@ -31,7 +31,7 @@
     ActiveScriptWrappable,
     Constructor(DOMString scriptURL, optional WorkerOptions options),
     ConstructorCallWith=ExecutionContext,
-    Exposed(Window StableBlinkFeatures,DedicatedWorker NestedWorkers),
+    Exposed=(Window,DedicatedWorker),
     RaisesException=Constructor,
     ImplementedAs=DedicatedWorker
 ] interface Worker : EventTarget {
