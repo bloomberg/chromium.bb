@@ -43,16 +43,20 @@ source_set("favicon") {
 
 source_set("unit_tests") {
   testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "favicon_loader_unittest.mm",
     "large_icon_cache_unittest.cc",
   ]
   deps = [
     ":favicon",
     "//base",
+    "//components/favicon/core",
     "//components/favicon_base",
+    "//ios/chrome/common/favicon",
     "//skia",
     "//testing/gtest",
-    "//ui/gfx",
-    "//ui/gfx:test_support",
+    "//ui/gfx/codec",
+    "//url",
   ]
 }
