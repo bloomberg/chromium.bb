@@ -84,7 +84,7 @@ bool AwFormDatabaseService::HasFormData() {
           base::IgnoreResult(&awds::GetCountOfValuesContainedBetween),
           autofill_data_, base::Time(), base::Time::Max(), this));
   {
-    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
+    base::ThreadRestrictions::ScopedAllowWait wait;
     has_form_data_completion_.Wait();
   }
   return has_form_data_result_;
