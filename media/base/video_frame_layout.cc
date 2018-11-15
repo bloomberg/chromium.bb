@@ -139,20 +139,37 @@ size_t VideoFrameLayout::GetTotalBufferSize() const {
   return std::accumulate(buffer_sizes_.begin(), buffer_sizes_.end(), 0u);
 }
 
-std::string VideoFrameLayout::ToString() const {
-  std::ostringstream s;
-  s << "VideoFrameLayout format: " << VideoPixelFormatToString(format_)
-    << ", coded_size: " << coded_size_.ToString()
-    << ", num_buffers: " << num_buffers()
-    << ", buffer_sizes: " << VectorToString(buffer_sizes_)
-    << ", num_planes: " << num_planes()
-    << ", planes (stride, offset): " << VectorToString(planes_);
-  return s.str();
-}
-
 std::ostream& operator<<(std::ostream& ostream,
                          const VideoFrameLayout::Plane& plane) {
   ostream << "(" << plane.stride << ", " << plane.offset << ")";
+  return ostream;
+}
+
+bool VideoFrameLayout::Plane::operator==(
+    const VideoFrameLayout::Plane& rhs) const {
+  return stride == rhs.stride && offset == rhs.offset;
+}
+
+bool VideoFrameLayout::Plane::operator!=(
+    const VideoFrameLayout::Plane& rhs) const {
+  return !(*this == rhs);
+}
+
+bool VideoFrameLayout::operator==(const VideoFrameLayout& rhs) const {
+  return format_ == rhs.format_ && coded_size_ == rhs.coded_size_ &&
+         planes_ == rhs.planes_ && buffer_sizes_ == rhs.buffer_sizes_;
+}
+
+bool VideoFrameLayout::operator!=(const VideoFrameLayout& rhs) const {
+  return !(*this == rhs);
+}
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const VideoFrameLayout& layout) {
+  ostream << "VideoFrameLayout(format: " << layout.format()
+          << ", coded_size: " << layout.coded_size().ToString()
+          << ", planes (stride, offset): " << VectorToString(layout.planes())
+          << ", buffer_sizes: " << VectorToString(layout.buffer_sizes()) << ")";
   return ostream;
 }
 
