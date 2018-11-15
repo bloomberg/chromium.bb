@@ -76,6 +76,16 @@ interface BroadcastChannel : EventTarget
 interface ByteLengthQueuingStrategy
     method constructor
     method size
+interface CSSSkewX : CSSTransformComponent
+    attribute @@toStringTag
+    getter ax
+    method constructor
+    setter ax
+interface CSSSkewY : CSSTransformComponent
+    attribute @@toStringTag
+    getter ay
+    method constructor
+    setter ay
 interface Cache
     attribute @@toStringTag
     method add
@@ -627,6 +637,12 @@ interface IDBObserver
     method constructor
     method observe
     method unobserve
+interface IDBObserverChanges
+    attribute @@toStringTag
+    getter database
+    getter records
+    getter transaction
+    method constructor
 interface IDBOpenDBRequest : IDBRequest
     attribute @@toStringTag
     getter onblocked

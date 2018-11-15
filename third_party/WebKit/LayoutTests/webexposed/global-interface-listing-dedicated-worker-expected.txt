@@ -63,6 +63,16 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface ByteLengthQueuingStrategy
 [Worker]     method constructor
 [Worker]     method size
+[Worker] interface CSSSkewX : CSSTransformComponent
+[Worker]     attribute @@toStringTag
+[Worker]     getter ax
+[Worker]     method constructor
+[Worker]     setter ax
+[Worker] interface CSSSkewY : CSSTransformComponent
+[Worker]     attribute @@toStringTag
+[Worker]     getter ay
+[Worker]     method constructor
+[Worker]     setter ay
 [Worker] interface Cache
 [Worker]     attribute @@toStringTag
 [Worker]     method add
@@ -569,6 +579,12 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method observe
 [Worker]     method unobserve
+[Worker] interface IDBObserverChanges
+[Worker]     attribute @@toStringTag
+[Worker]     getter database
+[Worker]     getter records
+[Worker]     getter transaction
+[Worker]     method constructor
 [Worker] interface IDBOpenDBRequest : IDBRequest
 [Worker]     attribute @@toStringTag
 [Worker]     getter onblocked
