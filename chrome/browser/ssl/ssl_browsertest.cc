@@ -150,7 +150,6 @@
 #include "net/ssl/client_cert_identity_test_util.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_info.h"
-#include "net/ssl/ssl_server_config.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -7265,128 +7264,6 @@ IN_PROC_BROWSER_TEST_F(SymantecMessageSSLUITest, DistrustedIframeResource) {
   console_observer.Wait();
   EXPECT_TRUE(
       base::MatchPattern(console_observer.message(), "*has been distrusted*"));
-}
-
-class TLSLegacyVersionSSLUITest : public CertVerifierBrowserTest {
- public:
-  TLSLegacyVersionSSLUITest()
-      : CertVerifierBrowserTest(),
-        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
-  ~TLSLegacyVersionSSLUITest() override {}
-
-  void SetUpOnMainThread() override {
-    CertVerifierBrowserTest::SetUpOnMainThread();
-    host_resolver()->AddRule("*", "127.0.0.1");
-    mock_cert_verifier()->set_default_result(net::OK);
-
-    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
-
-    SetShouldNotRequireCTForTesting();
-  }
-
- protected:
-  net::EmbeddedTestServer* https_server() { return &https_server_; }
-
-  void SetTLSVersion(uint16_t version) {
-    net::SSLServerConfig config;
-    config.version_max = version;
-    config.version_min = version;
-    https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_OK, config);
-  }
-
- private:
-  net::EmbeddedTestServer https_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(TLSLegacyVersionSSLUITest);
-};
-
-// TLS 1.2 should not trigger a warning.
-IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, NoWarningTLS12) {
-  SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1_2);
-  ASSERT_TRUE(https_server()->Start());
-
-  GURL url(https_server()->GetURL("/ssl/google.html"));
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::ConsoleObserverDelegate console_observer(
-      tab, base::StringPrintf(
-               "*The connection used to load resources from https://%s:%s*",
-               url.host().c_str(), url.port().c_str()));
-  tab->SetDelegate(&console_observer);
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_EQ(std::string(), console_observer.message());
-}
-
-// TLS 1.1 should trigger a warning.
-IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, WarningTLS11) {
-  SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1_1);
-  ASSERT_TRUE(https_server()->Start());
-
-  GURL url(https_server()->GetURL("/ssl/google.html"));
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::ConsoleObserverDelegate console_observer(
-      tab, base::StringPrintf(
-               "*The connection used to load resources from https://%s:%s*",
-               url.host().c_str(), url.port().c_str()));
-  tab->SetDelegate(&console_observer);
-  ui_test_utils::NavigateToURL(browser(), url);
-  console_observer.Wait();
-  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
-                                 "*will be disabled in the future*"));
-  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
-                                 "*should enable TLS 1.2 or later*"));
-}
-
-// TLS 1.0 should trigger a warning.
-IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, WarningTLS1) {
-  SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
-  ASSERT_TRUE(https_server()->Start());
-
-  GURL url(https_server()->GetURL("/ssl/google.html"));
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::ConsoleObserverDelegate console_observer(
-      tab, base::StringPrintf(
-               "*The connection used to load resources from https://%s:%s*",
-               url.host().c_str(), url.port().c_str()));
-  tab->SetDelegate(&console_observer);
-  ui_test_utils::NavigateToURL(browser(), url);
-  console_observer.Wait();
-  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
-                                 "*will be disabled in the future*"));
-  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
-                                 "*should enable TLS 1.2 or later*"));
-}
-
-// Warnings should show for subresources, but cap after a limit.
-IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, ManySubresources) {
-  SetTLSVersion(net::SSL_PROTOCOL_VERSION_TLS1);
-  content::SetupCrossSiteRedirector(https_server());
-  ASSERT_TRUE(https_server()->Start());
-  GURL url(https_server()->GetURL("/ssl/page_with_many_subresources.html"));
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-
-  // Observe the message for a cross-site subresource.
-  {
-    content::ConsoleObserverDelegate console_observer(tab, "*https://a.test*");
-    tab->SetDelegate(&console_observer);
-    ui_test_utils::NavigateToURL(browser(), url);
-    console_observer.Wait();
-    EXPECT_TRUE(base::MatchPattern(console_observer.message(),
-                                   "*will be disabled in the future*"));
-    EXPECT_TRUE(base::MatchPattern(console_observer.message(),
-                                   "*should enable TLS 1.2 or later*"));
-  }
-  // Observe that the message caps out after some number of subresources.
-  {
-    content::ConsoleObserverDelegate console_observer(tab,
-                                                      "*Additional resources*");
-    tab->SetDelegate(&console_observer);
-    ui_test_utils::NavigateToURL(browser(), url);
-    console_observer.Wait();
-    EXPECT_TRUE(base::MatchPattern(console_observer.message(),
-                                   "*will be disabled in the future*"));
-    EXPECT_TRUE(base::MatchPattern(console_observer.message(),
-                                   "*should enable TLS 1.2 or later*"));
-  }
 }
 
 // Checks that SimpleURLLoader, which uses services/network/url_loader.cc, goes
