@@ -11,6 +11,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -95,11 +96,14 @@ base::Time GetReferenceTime() {
 }
 
 std::unique_ptr<KeyedService> BuildTestHistoryService(
+    scoped_refptr<base::SequencedTaskRunner> backend_runner,
     content::BrowserContext* context) {
   std::unique_ptr<history::HistoryService> service(
       new history::HistoryService());
+  if (backend_runner)
+    service->set_backend_task_runner_for_testing(std::move(backend_runner));
   service->Init(history::TestHistoryDatabaseParamsForPath(g_temp_history_dir));
-  return std::move(service);
+  return service;
 }
 
 }  // namespace
@@ -107,13 +111,15 @@ std::unique_ptr<KeyedService> BuildTestHistoryService(
 class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
+    mock_time_task_runner_ =
+        base::MakeRefCounted<base::TestMockTimeTaskRunner>();
     scoped_feature_list_.InitAndEnableFeature(
         media::kRecordMediaEngagementScores);
     ChromeRenderViewHostTestHarness::SetUp();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     g_temp_history_dir = temp_dir_.GetPath();
-    ConfigureHistoryService();
+    ConfigureHistoryService(nullptr);
 
     test_clock_.SetNow(GetReferenceTime());
     service_ = base::WrapUnique(StartNewMediaEngagementService());
@@ -128,18 +134,21 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     return service;
   }
 
-  void ConfigureHistoryService() {
+  void ConfigureHistoryService(
+      scoped_refptr<base::SequencedTaskRunner> backend_runner) {
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
-        profile(), base::BindRepeating(&BuildTestHistoryService));
+        profile(), base::BindRepeating(&BuildTestHistoryService,
+                                       std::move(backend_runner)));
   }
 
-  void RestartHistoryService() {
+  void RestartHistoryService(
+      scoped_refptr<base::SequencedTaskRunner> backend_runner) {
     history::HistoryService* history_old = HistoryServiceFactory::GetForProfile(
         profile(), ServiceAccessType::IMPLICIT_ACCESS);
     history_old->Shutdown();
 
     HistoryServiceFactory::ShutdownForProfile(profile());
-    ConfigureHistoryService();
+    ConfigureHistoryService(std::move(backend_runner));
     history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         profile(), ServiceAccessType::IMPLICIT_ACCESS);
     history->AddObserver(service());
@@ -250,6 +259,9 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
   std::vector<MediaEngagementScore> GetAllStoredScores() const {
     return GetAllStoredScores(service_.get());
   }
+
+ protected:
+  scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
 
  private:
   base::SimpleTestClock test_clock_;
@@ -601,7 +613,12 @@ TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
 
   // Expire history older than |threshold|.
   MediaEngagementChangeWaiter waiter(profile());
-  RestartHistoryService();
+  RestartHistoryService(mock_time_task_runner_);
+  // First, run the task that schedules backend initialization.
+  mock_time_task_runner_->RunUntilIdle();
+  // Now, fast forward time to ensure that the expiration job is completed. 30
+  // seconds is the value of kExpirationDelaySec.
+  mock_time_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(30));
   waiter.Wait();
 
   // Check the scores for the test origins.

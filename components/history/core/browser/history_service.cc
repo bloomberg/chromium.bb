@@ -18,8 +18,6 @@
 
 #include "components/history/core/browser/history_service.h"
 
-#include <utility>
-
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -939,21 +937,23 @@ bool HistoryService::Init(
   TRACE_EVENT0("browser,startup", "HistoryService::Init")
   SCOPED_UMA_HISTOGRAM_TIMER("History.HistoryServiceInitTime");
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!backend_task_runner_);
 
-  if (thread_) {
-    base::Thread::Options options;
-    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-    if (!thread_->StartWithOptions(options)) {
-      Cleanup();
-      return false;
+  // Unit tests can inject |backend_task_runner_| before this is called.
+  if (!backend_task_runner_) {
+    if (thread_) {
+      base::Thread::Options options;
+      options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+      if (!thread_->StartWithOptions(options)) {
+        Cleanup();
+        return false;
+      }
+      backend_task_runner_ = thread_->task_runner();
+    } else {
+      backend_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+           base::TaskPriority::USER_BLOCKING,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
     }
-    backend_task_runner_ = thread_->task_runner();
-  } else {
-    backend_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::WithBaseSyncPrimitives(),
-         base::TaskPriority::USER_BLOCKING,
-         base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   }
 
   // Create the history backend.
