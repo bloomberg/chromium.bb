@@ -24,24 +24,6 @@ TestComponentCreator::~TestComponentCreator() {
 }
 
 optimization_guide::ComponentInfo
-TestComponentCreator::CreateComponentInfoWithTopLevelWhitelist(
-    optimization_guide::proto::OptimizationType optimization_type,
-    const std::vector<std::string>& whitelisted_host_suffixes) {
-  optimization_guide::proto::Configuration config;
-  for (const auto& whitelisted_site : whitelisted_host_suffixes) {
-    optimization_guide::proto::Hint* hint = config.add_hints();
-    hint->set_key(whitelisted_site);
-    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
-
-    optimization_guide::proto::Optimization* optimization =
-        hint->add_whitelisted_optimizations();
-    optimization->set_optimization_type(optimization_type);
-  }
-
-  return WriteConfigToFileAndReturnComponentInfo(config);
-}
-
-optimization_guide::ComponentInfo
 TestComponentCreator::CreateComponentInfoWithPageHints(
     optimization_guide::proto::OptimizationType optimization_type,
     const std::vector<std::string>& page_hint_host_suffixes,
