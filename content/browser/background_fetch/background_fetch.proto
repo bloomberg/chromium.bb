@@ -73,6 +73,7 @@ message BackgroundFetchOptions {
     enum Purpose {
       ANY = 1;
       BADGE = 2;
+      MASKABLE = 3;
     }
 
     // blink::Manifest::ImageResource::Purpose enum.

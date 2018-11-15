@@ -63,6 +63,7 @@ struct ManifestImageResource {
   enum Purpose {
     ANY = 0,
     BADGE,
+    MASKABLE,
   };
 
   // MUST be a valid url. If an icon doesn't have a valid URL, it will not be

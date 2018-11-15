@@ -965,12 +965,14 @@ TEST_F(ManifestParserTest, IconPurposeParseRules) {
   {
     blink::Manifest manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
-        "\"purpose\": \"Any Badge\" } ] }");
-    ASSERT_EQ(manifest.icons[0].purpose.size(), 2u);
+        "\"purpose\": \"Any Badge Maskable\" } ] }");
+    ASSERT_EQ(manifest.icons[0].purpose.size(), 3u);
     EXPECT_EQ(manifest.icons[0].purpose[0],
               blink::Manifest::ImageResource::Purpose::ANY);
     EXPECT_EQ(manifest.icons[0].purpose[1],
               blink::Manifest::ImageResource::Purpose::BADGE);
+    EXPECT_EQ(manifest.icons[0].purpose[2],
+              blink::Manifest::ImageResource::Purpose::MASKABLE);
     EXPECT_EQ(0u, GetErrorCount());
   }
 

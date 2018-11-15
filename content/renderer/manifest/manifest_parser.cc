@@ -294,6 +294,8 @@ ManifestParser::ParseIconPurpose(const base::DictionaryValue& icon) {
       purposes.push_back(blink::Manifest::ImageResource::Purpose::ANY);
     } else if (base::LowerCaseEqualsASCII(keyword, "badge")) {
       purposes.push_back(blink::Manifest::ImageResource::Purpose::BADGE);
+    } else if (base::LowerCaseEqualsASCII(keyword, "maskable")) {
+      purposes.push_back(blink::Manifest::ImageResource::Purpose::MASKABLE);
     } else {
       AddErrorInfo(
           "found icon with invalid purpose. "
