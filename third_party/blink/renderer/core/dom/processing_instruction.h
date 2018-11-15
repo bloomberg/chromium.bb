@@ -91,6 +91,7 @@ class CORE_EXPORT ProcessingInstruction final : public CharacterData,
 
   void ParseStyleSheet(const String& sheet);
   void ClearSheet();
+  void RemovePendingSheet();
 
   String DebugName() const override { return "ProcessingInstruction"; }
 
