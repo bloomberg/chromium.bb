@@ -1358,4 +1358,52 @@ IN_PROC_BROWSER_TEST_F(
             views::LabelButton::ButtonState::STATE_NORMAL);
 }
 
+// Tests the upload save bubble. Ensures that if the user is selecting an
+// expired expiration date, it is not allowed to click [Save].
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_SaveButtonIsDisabledIfExpiredExpirationDateAndExpirationDateRequested) {
+  // Enable the EditableExpirationDate experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should still show the upload save bubble and legal
+  // footer, along with a pair of dropdowns specifically requesting the
+  // expiration date. (Must wait for response from Payments before accessing
+  // the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitFormWithoutExpirationDate();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW));
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR));
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH));
+
+  views::LabelButton* save_button = static_cast<views::LabelButton*>(
+      FindViewInBubbleById(DialogViewId::OK_BUTTON));
+  views::Combobox* year_input = static_cast<views::Combobox*>(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR));
+  views::Combobox* month_input = static_cast<views::Combobox*>(
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH));
+
+  // Set now to next month. Setting test_clock will not affect the dropdown to
+  // be selected, so selecting the current January will always be expired.
+  autofill::TestAutofillClock test_clock;
+  test_clock.SetNow(base::Time::Now());
+  test_clock.Advance(base::TimeDelta::FromDays(40));
+  // Selecting expired date will disable [Save] button.
+  month_input->SetSelectedRow(1);
+  year_input->SetSelectedRow(1);
+  EXPECT_EQ(save_button->state(),
+            views::LabelButton::ButtonState::STATE_DISABLED);
+}
+
 }  // namespace autofill

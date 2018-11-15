@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -19,6 +20,8 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
+#include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -103,13 +106,23 @@ bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
                          &trimmed_text);
     return !trimmed_text.empty();
   }
-  // If requesting the user select the expiration date, it cannot be unselected.
+  // If requesting the user select the expiration date, it cannot be unselected
+  // or expired.
   if (month_input_dropdown_ || year_input_dropdown_) {
     // Make sure we are not requesting cardholder name and expiration date at
     // the same time.
     DCHECK(!cardholder_name_textfield_);
-    return !(month_input_dropdown_->selected_index() == 0 ||
-             year_input_dropdown_->selected_index() == 0);
+    int month_value = 0, year_value = 0;
+    if (!base::StringToInt(month_input_dropdown_->GetTextForRow(
+                               month_input_dropdown_->selected_index()),
+                           &month_value) ||
+        !base::StringToInt(year_input_dropdown_->GetTextForRow(
+                               year_input_dropdown_->selected_index()),
+                           &year_value)) {
+      return false;
+    }
+    return IsValidCreditCardExpirationDate(year_value, month_value,
+                                           AutofillClock::Now());
   }
 
   return true;
