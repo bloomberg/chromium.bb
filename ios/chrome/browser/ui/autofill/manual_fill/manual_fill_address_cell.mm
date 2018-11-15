@@ -4,18 +4,11 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_address_cell.h"
 
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_profile.h"
-#include "ios/chrome/browser/application_context.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/address_list_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,19 +20,18 @@
 @property(nonatomic, weak, readonly) id<ManualFillContentDelegate> delegate;
 
 // The address/profile for this item.
-@property(nonatomic, readonly) autofill::AutofillProfile profile;
+@property(nonatomic, readonly) ManualFillAddress* address;
 
 @end
 
 @implementation ManualFillAddressItem
 
-- (instancetype)
-initWithAutofillProfile:(const autofill::AutofillProfile&)profile
-               delegate:(id<ManualFillContentDelegate>)delegate {
+- (instancetype)initWithAddress:(ManualFillAddress*)address
+                       delegate:(id<ManualFillContentDelegate>)delegate {
   self = [super initWithType:kItemTypeEnumZero];
   if (self) {
     _delegate = delegate;
-    _profile = profile;
+    _address = address;
     self.cellClass = [ManualFillAddressCell class];
   }
   return self;
@@ -48,7 +40,7 @@ initWithAutofillProfile:(const autofill::AutofillProfile&)profile
 - (void)configureCell:(ManualFillAddressCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
-  [cell setUpWithAutofillProfile:self.profile delegate:self.delegate];
+  [cell setUpWithAddress:self.address delegate:self.delegate];
 }
 
 @end
@@ -127,10 +119,6 @@ static const CGFloat InnerMarginWidth = 16.0;
 // The content delegate for this item.
 @property(nonatomic, weak) id<ManualFillContentDelegate> delegate;
 
-// The credit address/profile data for this cell.
-// TODO(crbug.com/845472): move to cocoa model.
-@property(nonatomic, assign) autofill::AutofillProfile profile;
-
 @end
 
 @implementation ManualFillAddressCell
@@ -160,32 +148,29 @@ static const CGFloat InnerMarginWidth = 16.0;
   [self.countryButton setTitle:@"" forState:UIControlStateNormal];
   [self.line2Button setTitle:@"" forState:UIControlStateNormal];
   self.delegate = nil;
-  // TODO(crbug.com/845472): clear profile.
 }
 
-- (void)setUpWithAutofillProfile:(const autofill::AutofillProfile&)profile
-                        delegate:(id<ManualFillContentDelegate>)delegate {
+- (void)setUpWithAddress:(ManualFillAddress*)address
+                delegate:(id<ManualFillContentDelegate>)delegate {
   if (self.contentView.subviews.count == 0) {
     [self createViewHierarchy];
   }
   self.delegate = delegate;
-  self.profile = profile;
 
   NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
-  NSString* line1 = [self fieldValueOfType:autofill::ADDRESS_HOME_LINE1];
-  NSString* line2 = [self fieldValueOfType:autofill::ADDRESS_HOME_LINE2];
 
   // Top label, summary of line 1 and 2.
   NSMutableAttributedString* attributedString =
       [[NSMutableAttributedString alloc]
-          initWithString:line1 ? line1 : @""
+          initWithString:address.line1 ? address.line1 : @""
               attributes:@{
                 NSForegroundColorAttributeName : UIColor.blackColor,
                 NSFontAttributeName :
                     [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
               }];
-  if (line2.length) {
-    NSString* line2String = [NSString stringWithFormat:@" –– %@", line2];
+  if (address.line2.length) {
+    NSString* line2String =
+        [NSString stringWithFormat:@" –– %@", address.line2];
     NSDictionary* attributes = @{
       NSForegroundColorAttributeName : UIColor.lightGrayColor,
       NSFontAttributeName :
@@ -201,19 +186,14 @@ static const CGFloat InnerMarginWidth = 16.0;
 
   // Name line, first middle and last.
   NSMutableArray<UIView*>* nameLineViews = [[NSMutableArray alloc] init];
-  NSString* firstName = [self fieldValueOfType:autofill::NAME_FIRST];
-  NSString* lastName = [self fieldValueOfType:autofill::NAME_LAST];
-  NSString* middleName = [self fieldValueOfType:autofill::NAME_MIDDLE];
-  if (!middleName || middleName.length == 0) {
-    middleName = [self fieldValueOfType:autofill::NAME_MIDDLE_INITIAL];
-  }
 
-  bool showFirstName = firstName.length;
-  bool showMiddleName = middleName.length;
-  bool showLastName = lastName.length;
+  bool showFirstName = address.firstName.length;
+  bool showMiddleName = address.middleNameOrInitial.length;
+  bool showLastName = address.lastName.length;
 
   if (showFirstName) {
-    [self.firstNameButton setTitle:firstName forState:UIControlStateNormal];
+    [self.firstNameButton setTitle:address.firstName
+                          forState:UIControlStateNormal];
     [nameLineViews addObject:self.firstNameButton];
     self.firstNameButton.hidden = NO;
   } else {
@@ -228,7 +208,8 @@ static const CGFloat InnerMarginWidth = 16.0;
   }
 
   if (showMiddleName) {
-    [self.middleNameButton setTitle:middleName forState:UIControlStateNormal];
+    [self.middleNameButton setTitle:address.middleNameOrInitial
+                           forState:UIControlStateNormal];
     [nameLineViews addObject:self.middleNameButton];
     self.middleNameButton.hidden = NO;
   } else {
@@ -243,7 +224,8 @@ static const CGFloat InnerMarginWidth = 16.0;
   }
 
   if (showLastName) {
-    [self.lastNameButton setTitle:lastName forState:UIControlStateNormal];
+    [self.lastNameButton setTitle:address.lastName
+                         forState:UIControlStateNormal];
     [nameLineViews addObject:self.lastNameButton];
     self.lastNameButton.hidden = NO;
   } else {
@@ -258,8 +240,8 @@ static const CGFloat InnerMarginWidth = 16.0;
   }
 
   // Address line 1.
-  if (line1.length) {
-    [self.line1Button setTitle:line1 forState:UIControlStateNormal];
+  if (address.line1.length) {
+    [self.line1Button setTitle:address.line1 forState:UIControlStateNormal];
     [verticalLeadViews addObject:self.line1Button];
     self.line1Button.hidden = NO;
   } else {
@@ -267,8 +249,8 @@ static const CGFloat InnerMarginWidth = 16.0;
   }
 
   // Address line 2.
-  if (line2.length) {
-    [self.line2Button setTitle:line2 forState:UIControlStateNormal];
+  if (address.line2.length) {
+    [self.line2Button setTitle:address.line2 forState:UIControlStateNormal];
     [verticalLeadViews addObject:self.line2Button];
     self.line2Button.hidden = NO;
   } else {
@@ -277,26 +259,24 @@ static const CGFloat InnerMarginWidth = 16.0;
 
   // Zip and city line.
   NSMutableArray<UIView*>* zipCityLineViews = [[NSMutableArray alloc] init];
-  NSString* zip = [self fieldValueOfType:autofill::ADDRESS_HOME_ZIP];
-  NSString* city = [self fieldValueOfType:autofill::ADDRESS_HOME_CITY];
 
-  if (zip.length) {
-    [self.zipButton setTitle:zip forState:UIControlStateNormal];
+  if (address.zip.length) {
+    [self.zipButton setTitle:address.zip forState:UIControlStateNormal];
     [zipCityLineViews addObject:self.zipButton];
     self.zipButton.hidden = NO;
   } else {
     self.zipButton.hidden = YES;
   }
 
-  if (zip.length && city.length) {
+  if (address.zip.length && address.city.length) {
     [zipCityLineViews addObject:self.citySeparatorLabel];
     self.citySeparatorLabel.hidden = NO;
   } else {
     self.citySeparatorLabel.hidden = YES;
   }
 
-  if (city.length) {
-    [self.cityButton setTitle:city forState:UIControlStateNormal];
+  if (address.city.length) {
+    [self.cityButton setTitle:address.city forState:UIControlStateNormal];
     [zipCityLineViews addObject:self.cityButton];
     self.cityButton.hidden = NO;
   } else {
@@ -312,26 +292,24 @@ static const CGFloat InnerMarginWidth = 16.0;
   // State and country line.
   NSMutableArray<UIView*>* stateCountryLineViews =
       [[NSMutableArray alloc] init];
-  NSString* state = [self fieldValueOfType:autofill::ADDRESS_HOME_STATE];
-  NSString* country = [self fieldValueOfType:autofill::ADDRESS_HOME_COUNTRY];
 
-  if (state.length) {
-    [self.stateButton setTitle:state forState:UIControlStateNormal];
+  if (address.state.length) {
+    [self.stateButton setTitle:address.state forState:UIControlStateNormal];
     [stateCountryLineViews addObject:self.stateButton];
     self.stateButton.hidden = NO;
   } else {
     self.stateButton.hidden = YES;
   }
 
-  if (state.length && country.length) {
+  if (address.state.length && address.country.length) {
     [stateCountryLineViews addObject:self.countrySeparatorLabel];
     self.countrySeparatorLabel.hidden = NO;
   } else {
     self.countrySeparatorLabel.hidden = YES;
   }
 
-  if (country.length) {
-    [self.countryButton setTitle:country forState:UIControlStateNormal];
+  if (address.country.length) {
+    [self.countryButton setTitle:address.country forState:UIControlStateNormal];
     [stateCountryLineViews addObject:self.countryButton];
     self.countryButton.hidden = NO;
   } else {
@@ -468,14 +446,6 @@ static const CGFloat InnerMarginWidth = 16.0;
         constraintEqualToAnchor:self.grayLine.trailingAnchor
                        constant:sideMargins],
   ]];
-}
-
-// Takes in an autofill profile and an autofill field type and returns the
-// corresponding field value.
-- (NSString*)fieldValueOfType:(autofill::ServerFieldType)fieldType {
-  return base::SysUTF16ToNSString(
-      self.profile.GetInfo(autofill::AutofillType(fieldType),
-                           GetApplicationContext()->GetApplicationLocale()));
 }
 
 - (void)userDidTapAddressInfo:(UIButton*)sender {
