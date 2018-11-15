@@ -114,6 +114,17 @@ bool ChromeExtensionsBrowserClient::AreExtensionsDisabled(
 
 bool ChromeExtensionsBrowserClient::IsValidContext(
     content::BrowserContext* context) {
+  // TODO(https://crbug.com/870838): Remove after investigating the bug.
+  if (!context) {
+    LOG(ERROR) << "Unexpected null context";
+    NOTREACHED();
+    return false;
+  }
+  if (!g_browser_process) {
+    LOG(ERROR) << "Unexpected null g_browser_process";
+    NOTREACHED();
+    return false;
+  }
   Profile* profile = static_cast<Profile*>(context);
   return g_browser_process->profile_manager() &&
          g_browser_process->profile_manager()->IsValidProfile(profile);
