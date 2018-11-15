@@ -45,6 +45,8 @@ source_set("wayland") {
     "wayland_touch_delegate.h",
     "zcr_notification_shell.cc",
     "zcr_notification_shell.h",
+    "zwp_input_timestamps_manager.cc",
+    "zwp_input_timestamps_manager.h",
     "zwp_text_input_manager.cc",
     "zwp_text_input_manager.h",
   ]
