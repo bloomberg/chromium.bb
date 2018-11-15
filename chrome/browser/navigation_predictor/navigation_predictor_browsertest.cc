@@ -8,6 +8,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
@@ -462,5 +463,53 @@ IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
         "AnchorElementMetrics.Clicked.RatioContainsImage_ContainsImage", 1);
     histogram_tester.ExpectUniqueSample(
         "AnchorElementMetrics.Clicked.OnNonDSE.SameHost", 0, 1);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+                       ActionPrefetch_NoSameHostAnchorElement) {
+  base::HistogramTester histogram_tester;
+
+  const GURL& url = GetTestURL("/simple_page_with_anchors.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kRecordAnchorMetricsVisible)) {
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 3, 1);
+    // Same document anchor element should be removed after merge.
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+    histogram_tester.ExpectUniqueSample(
+        "NavigationPredictor.OnNonDSE.ActionTaken",
+        NavigationPredictor::Action::kNone, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(NavigationPredictorBrowserTest,
+                       ActionPrefetch_SameHostAnchorElement) {
+  base::HistogramTester histogram_tester;
+
+  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kRecordAnchorMetricsVisible)) {
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
+    // Same document anchor element should be removed after merge.
+    histogram_tester.ExpectUniqueSample(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+    histogram_tester.ExpectUniqueSample(
+        "NavigationPredictor.OnNonDSE.ActionTaken",
+        NavigationPredictor::Action::kPrefetch, 1);
+  } else {
+    histogram_tester.ExpectTotalCount(
+        "AnchorElementMetrics.Visible.NumberOfAnchorElements", 0);
   }
 }

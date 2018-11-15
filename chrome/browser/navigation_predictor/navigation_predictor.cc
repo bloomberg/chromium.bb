@@ -4,8 +4,11 @@
 
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/system/sys_info.h"
@@ -19,6 +22,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 struct NavigationPredictor::NavigationScore {
   NavigationScore(const GURL& url,
@@ -459,7 +463,9 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   std::sort(navigation_scores.begin(), navigation_scores.end(),
             [](const auto& a, const auto& b) { return a->score > b->score; });
 
-  MaybeTakeActionOnLoad(navigation_scores);
+  const url::Origin document_origin =
+      url::Origin::Create(metrics[0]->source_url);
+  MaybeTakeActionOnLoad(document_origin, navigation_scores);
 
   // Store navigation scores in |navigation_scores_map_| for fast look up upon
   // clicks.
@@ -541,19 +547,58 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
 }
 
 void NavigationPredictor::MaybeTakeActionOnLoad(
+    const url::Origin& document_origin,
     const std::vector<std::unique_ptr<NavigationScore>>&
-        sorted_navigation_scores) const {
+        sorted_navigation_scores) {
   DCHECK(!browser_context_->IsOffTheRecord());
-
-  // TODO(chelu): https://crbug.com/850624/. Given the calculated navigation
-  // scores, this function decides which action to take, or decides not to do
-  // anything. Example actions including preresolve, preload, prerendering, etc.
 
   // |sorted_navigation_scores| are sorted in descending order, the first one
   // has the highest navigation score.
   UMA_HISTOGRAM_COUNTS_100(
       "AnchorElementMetrics.Visible.HighestNavigationScore",
       static_cast<int>(sorted_navigation_scores[0]->score));
+
+  std::string action_histogram_name =
+      source_is_default_search_engine_page_
+          ? "NavigationPredictor.OnDSE.ActionTaken"
+          : "NavigationPredictor.OnNonDSE.ActionTaken";
+
+  DCHECK(!prefetch_url_.has_value());
+
+  prefetch_url_ = GetUrlToPrefetch(document_origin, sorted_navigation_scores);
+  if (prefetch_url_.has_value()) {
+    DCHECK_EQ(document_origin.host(), prefetch_url_->host());
+    base::UmaHistogramEnumeration(action_histogram_name, Action::kPrefetch);
+    return;
+  }
+
+  base::UmaHistogramEnumeration(action_histogram_name, Action::kNone);
+}
+
+base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
+    const url::Origin& document_origin,
+    const std::vector<std::unique_ptr<NavigationScore>>&
+        sorted_navigation_scores) const {
+  // Currently, prefetch is disabled on low-end devices since prefetch may
+  // increase memory usage.
+  if (is_low_end_device_)
+    return base::nullopt;
+
+  // On search engine results page, next navigation is likely to be a different
+  // origin. Currently, the prefetch is only allowed for same orgins. Hence,
+  // prefetch is currently disabled on search engine results page.
+  if (source_is_default_search_engine_page_)
+    return base::nullopt;
+
+  // Return the same-origin URL that has the highest navigation score.
+  for (const auto& navigation_score : sorted_navigation_scores) {
+    // Currently, only same origin URLs can be prefetched.
+    if (url::Origin::Create(navigation_score->url) != document_origin)
+      continue;
+    return navigation_score->url;
+  }
+
+  return base::nullopt;
 }
 
 void NavigationPredictor::RecordMetricsOnLoad(

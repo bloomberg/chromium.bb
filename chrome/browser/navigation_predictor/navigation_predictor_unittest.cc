@@ -28,6 +28,8 @@ class TestNavigationPredictor : public NavigationPredictor {
 
   ~TestNavigationPredictor() override {}
 
+  base::Optional<GURL> prefetch_url() const { return prefetch_url_; }
+
   const std::map<GURL, int>& GetAreaRankMap() const { return area_rank_map_; }
 
  private:
@@ -77,6 +79,10 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
 
   TestNavigationPredictor* predictor_service_helper() const {
     return predictor_service_helper_.get();
+  }
+
+  base::Optional<GURL> prefetch_url() const {
+    return predictor_service_helper_->prefetch_url();
   }
 
  private:
@@ -229,4 +235,60 @@ TEST_F(NavigationPredictorTest, MultipleAnchorElementMetricsOnLoad) {
       "AnchorElementMetrics.Visible.HighestNavigationScore", 38, 1);
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
                                     5);
+}
+
+TEST_F(NavigationPredictorTest, ActionTaken_NoSameHost_Prefetch) {
+  const std::string source = "https://example.com";
+  const std::string href_xlarge = "https://example2.com/xlarge";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, href_xlarge, 0.1));
+
+  base::HistogramTester histogram_tester;
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kNone, 1);
+  EXPECT_FALSE(prefetch_url().has_value());
+}
+
+TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch) {
+  const std::string source = "https://example.com";
+  const std::string same_origin_href_small = "https://example.com/small";
+  const std::string diff_origin_href_xlarge = "https://example2.com/xlarge";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_small, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, diff_origin_href_xlarge, 1));
+
+  base::HistogramTester histogram_tester;
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kPrefetch, 1);
+  EXPECT_EQ(GURL(same_origin_href_small), prefetch_url());
+}
+
+TEST_F(NavigationPredictorTest,
+       ActionTaken_SameOrigin_DifferentScheme_Prefetch) {
+  const std::string source = "https://example.com";
+  const std::string same_origin_href_small = "http://example.com/small";
+  const std::string diff_origin_href_xlarge = "https://example2.com/xlarge";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_small, 0.01));
+  metrics.push_back(CreateMetricsPtr(source, diff_origin_href_xlarge, 1));
+
+  base::HistogramTester histogram_tester;
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "NavigationPredictor.OnNonDSE.ActionTaken",
+      NavigationPredictor::Action::kNone, 1);
+  EXPECT_FALSE(prefetch_url().has_value());
 }
