@@ -774,6 +774,10 @@ void NGInlineItemsBuilderTemplate<
     wtf_size_t index =
         static_cast<wtf_size_t>(std::distance(items_->begin(), item));
     items_->EraseAt(index);
+    for (BoxInfo& box : boxes_) {
+      if (box.item_index >= index)
+        --box.item_index;
+    }
     if (index == items_->size())
       return;
     // Re-compute |item| because |EraseAt| may have reallocated the buffer.
