@@ -28,13 +28,6 @@ class TestComponentCreator {
   TestComponentCreator();
   ~TestComponentCreator();
 
-  // Creates component data based on |whitelisted_host_suffixes| for
-  // optimization with type |optimization_type| to a temp file
-  // and returns the ComponentInfo for it.
-  optimization_guide::ComponentInfo CreateComponentInfoWithTopLevelWhitelist(
-      optimization_guide::proto::OptimizationType optimization_type,
-      const std::vector<std::string>& whitelisted_host_suffixes);
-
   // Creates component data based on |whitelisted_host_suffixes| with page hints
   // for type |optimization_type| blocking resources specified by
   // |resource_patterns|, and returns the ComponentInfo for it.

@@ -218,8 +218,9 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
     base::RunLoop().RunUntilIdle();
 
     const optimization_guide::ComponentInfo& component_info =
-        test_component_creator_.CreateComponentInfoWithTopLevelWhitelist(
-            optimization_guide::proto::NOSCRIPT, whitelisted_noscript_sites);
+        test_component_creator_.CreateComponentInfoWithPageHints(
+            optimization_guide::proto::NOSCRIPT, whitelisted_noscript_sites,
+            {});
     g_browser_process->optimization_guide_service()->ProcessHints(
         component_info);
 
