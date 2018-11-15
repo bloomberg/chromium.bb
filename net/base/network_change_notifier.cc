@@ -33,8 +33,6 @@
 #include "net/base/network_change_notifier_linux.h"
 #elif defined(OS_MACOSX)
 #include "net/base/network_change_notifier_mac.h"
-#elif defined(OS_CHROMEOS)
-#include "net/base/network_change_notifier_chromeos.h"
 #elif defined(OS_FUCHSIA)
 #include "net/base/network_change_notifier_fuchsia.h"
 #endif
@@ -208,12 +206,15 @@ NetworkChangeNotifier* NetworkChangeNotifier::Create() {
       new NetworkChangeNotifierWin();
   network_change_notifier->WatchForAddressChange();
   return network_change_notifier;
-#elif defined(OS_ANDROID)
-  // Android builds MUST use their own class factory.
+#elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  // ChromeOS and Android builds MUST use their own class factory.
+#if !defined(OS_CHROMEOS)
+  // TODO(oshima): ash_shell do not have access to chromeos'es
+  // notifier yet. Re-enable this when chromeos'es notifier moved to
+  // chromeos root directory. crbug.com/119298.
   CHECK(false);
+#endif
   return NULL;
-#elif defined(OS_CHROMEOS)
-  return new NetworkChangeNotifierChromeos();
 #elif defined(OS_LINUX)
   return new NetworkChangeNotifierLinux(std::unordered_set<std::string>());
 #elif defined(OS_MACOSX)

@@ -239,7 +239,6 @@ class NetworkContextTest : public testing::Test,
   NetworkContextTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         network_service_(NetworkService::CreateForTesting()) {}
   ~NetworkContextTest() override {}
 
@@ -326,7 +325,6 @@ class NetworkContextTest : public testing::Test,
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<NetworkService> network_service_;
   // Stores the NetworkContextPtr of the most recently created NetworkContext.
   // Not strictly needed, but seems best to mimic real-world usage.

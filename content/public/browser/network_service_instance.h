@@ -12,10 +12,6 @@
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
-namespace net {
-class NetworkChangeNotifier;
-}  // namespace net
-
 namespace network {
 class NetworkService;
 namespace mojom {
@@ -58,9 +54,6 @@ RegisterNetworkServiceCrashHandler(base::RepeatingClosure handler);
 // Must only be called on the IO thread.  Must not be called if the network
 // service is enabled.
 CONTENT_EXPORT network::NetworkService* GetNetworkServiceImpl();
-
-// Returns the global NetworkChangeNotifier instance.
-CONTENT_EXPORT net::NetworkChangeNotifier* GetNetworkChangeNotifier();
 
 // Call |FlushForTesting()| on cached |NetworkServicePtr|. For testing only.
 // Must only be called on the UI thread.
