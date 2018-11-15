@@ -48,10 +48,13 @@ bool ShouldThemifyFaviconForUrl(const GURL& url) {
          url.host_piece() != chrome::kChromeUIAppLauncherPageHost;
 }
 
+// Fraction of the icon height used for the throbber.
+constexpr float kThrobberBoundsFraction = 1 / 8.0f;
+
 // Returns a rect that covers the bottom quarter of |bounds|.
 gfx::RectF GetThrobberBounds(const gfx::Rect& bounds) {
   gfx::RectF throbber_bounds(bounds);
-  const float height = bounds.height() / 4;
+  const float height = bounds.height() * kThrobberBoundsFraction;
   throbber_bounds.set_y(bounds.bottom() - height);
   throbber_bounds.set_height(height);
   return throbber_bounds;
@@ -334,7 +337,8 @@ void TabIcon::PaintFaviconPlaceholder(gfx::Canvas* canvas,
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
 
-  canvas->DrawRoundRect(bounds, bounds.height() / 4, flags);
+  canvas->DrawRoundRect(bounds, bounds.height() * kThrobberBoundsFraction,
+                        flags);
 }
 
 bool TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
