@@ -3670,11 +3670,10 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 // LayerTreeHostTestDeferCommitInsideBeginMainFrameWithCommitAfter when
 // we re-create the concept of defer commit when not defering main frame
 // updates.
-class LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrameWithCommitAfter
+class LayerTreeHostTestDeferInsideBeginMainFrameWithCommitAfter
     : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrameWithCommitAfter() =
-      default;
+  LayerTreeHostTestDeferInsideBeginMainFrameWithCommitAfter() = default;
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
@@ -3692,7 +3691,7 @@ class LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrameWithCommitAfter
         FROM_HERE,
         // Unretained because the test doesn't end before this runs.
         base::BindOnce(
-            &LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrameWithCommitAfter::
+            &LayerTreeHostTestDeferInsideBeginMainFrameWithCommitAfter::
                 AllowCommits,
             base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(100));
@@ -3731,7 +3730,7 @@ class LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrameWithCommitAfter
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrameWithCommitAfter);
+    LayerTreeHostTestDeferInsideBeginMainFrameWithCommitAfter);
 
 // This verifies that animate_only BeginFrames only run animation/layout
 // updates, i.e. abort commits after the paint stage and only request layer
