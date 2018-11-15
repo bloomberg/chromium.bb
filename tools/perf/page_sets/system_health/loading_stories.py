@@ -561,6 +561,19 @@ class LoadSpyChaseStory(_LoadingStory):
         'document.querySelector("#game canvas").style.background !== ""')
 
 
+class LoadSpyChaseStory2018(_LoadingStory):
+  NAME = 'load:games:spychase:2018'
+  # Using "https://" shows "Your connection is not private".
+  URL = 'http://playstar.mobi/games/spychase/index.php'
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
+
+  def _DidLoadDocument(self, action_runner):
+    # The background of the game canvas is set when the "Tap screen to play"
+    # caption is displayed.
+    action_runner.WaitForJavaScriptCondition(
+        'document.querySelector("#game canvas").style.background !== ""')
+
+
 class LoadMiniclipStory(_LoadingStory):
   NAME = 'load:games:miniclip'
   # Using "https://" causes "404 Not Found" during WPR recording.

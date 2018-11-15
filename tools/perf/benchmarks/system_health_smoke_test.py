@@ -86,6 +86,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_desktop/browse:search:google_india',
   'system_health.memory_desktop/load:games:alphabetty',
   'system_health.memory_desktop/load:games:miniclip',
+  'system_health.memory_desktop/load:games:spychase',
   'system_health.memory_desktop/load:media:flickr',
   'system_health.memory_desktop/load:media:google_images',
   'system_health.memory_desktop/load:news:cnn',
@@ -97,6 +98,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_desktop/load:search:yandex',
   'system_health.memory_desktop/load:tools:stackoverflow',
   # MOBILE:
+  'system_health.memory_mobile/load:games:spychase',
   'system_health.memory_mobile/load:media:flickr',
   'system_health.memory_mobile/load:media:google_images',
   'system_health.memory_mobile/load:news:wikipedia',
@@ -124,7 +126,6 @@ _DISABLED_TESTS = frozenset({
 
   # crbug.com/903849
   'system_health.memory_mobile/browse:news:cnn:2018',
-  'system_health.memory_mobile/load:games:spychase',
 })
 
 
