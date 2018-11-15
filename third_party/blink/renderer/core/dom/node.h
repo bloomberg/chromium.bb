@@ -484,6 +484,11 @@ class CORE_EXPORT Node : public EventTarget {
 
   void MarkAncestorsWithChildNeedsReattachLayoutTree();
 
+  void SetForceReattachLayoutTree() { SetFlag(kForceReattachLayoutTree); }
+  bool GetForceReattachLayoutTree() {
+    return GetFlag(kForceReattachLayoutTree);
+  }
+
   bool NeedsDistributionRecalc() const;
 
   bool ChildNeedsDistributionRecalc() const {
@@ -930,11 +935,13 @@ class CORE_EXPORT Node : public EventTarget {
     // Temporary flag for some UseCounter items. crbug.com/859391.
     kInDOMNodeRemovedHandler = 1 << 29,
 
+    kForceReattachLayoutTree = 1 << 30,
+
     kDefaultNodeFlags =
         kIsFinishedParsingChildrenFlag | kNeedsReattachStyleChange
   };
 
-  // 3 bits remaining.
+  // 1 bit remaining.
 
   bool GetFlag(NodeFlags mask) const { return node_flags_ & mask; }
   void SetFlag(bool f, NodeFlags mask) {

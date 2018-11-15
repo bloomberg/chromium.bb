@@ -2360,6 +2360,9 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
     }
   }
 
+  if (GetForceReattachLayoutTree())
+    local_change = kReattach;
+
   if (change == kReattach || local_change == kReattach) {
     SetNonAttachedStyle(new_style);
     SetNeedsReattachLayoutTree();
@@ -4295,11 +4298,11 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
   if (IsInTopLayer() == in_top_layer)
     return;
   SetElementFlag(ElementFlags::kIsInTopLayer, in_top_layer);
-
-  // We must ensure a reattach occurs so the layoutObject is inserted in the
-  // correct sibling order under LayoutView according to its top layer position,
-  // or in its usual place if not in the top layer.
-  LazyReattachIfAttached();
+  if (!isConnected())
+    return;
+  SetForceReattachLayoutTree();
+  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                             style_change_reason::kFullscreen));
 }
 
 void Element::requestPointerLock() {

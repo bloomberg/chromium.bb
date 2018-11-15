@@ -304,6 +304,16 @@ LayoutObject* LayoutTreeBuilderTraversal::NextInTopLayer(
   wtf_size_t position = top_layer_elements.Find(&element);
   DCHECK_NE(position, kNotFound);
   for (wtf_size_t i = position + 1; i < top_layer_elements.size(); ++i) {
+    if (top_layer_elements[i]->NeedsReattachLayoutTree()) {
+      // top_layer_elements[i] is either about to have its LayoutObject removed
+      // from the LayoutView or it has just been moved to the top layer and the
+      // current LayoutObject is not in LayoutView and should not be considered
+      // as a LayoutObject sibling. For the former case we could use it as a
+      // sibling, but for the latter using it as a sibling will confuse the
+      // AddChild code as it will not have a common non-anonymous layout tree
+      // ancestor.
+      continue;
+    }
     if (LayoutObject* layout_object = top_layer_elements[i]->GetLayoutObject())
       return layout_object;
   }
