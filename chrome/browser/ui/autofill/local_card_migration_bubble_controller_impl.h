@@ -35,9 +35,6 @@ class LocalCardMigrationBubbleControllerImpl
   // Invoked when local card migration icon is clicked.
   void ReshowBubble();
 
-  // Returns true if Omnibox save credit card icon should be visible.
-  bool IsIconVisible() const;
-
   // Returns nullptr if no bubble is currently shown.
   LocalCardMigrationBubble* local_card_migration_bubble_view() const;
 

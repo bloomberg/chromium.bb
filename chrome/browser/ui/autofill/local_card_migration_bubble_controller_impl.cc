@@ -66,10 +66,6 @@ void LocalCardMigrationBubbleControllerImpl::ReshowBubble() {
   ShowBubbleImplementation();
 }
 
-bool LocalCardMigrationBubbleControllerImpl::IsIconVisible() const {
-  return !local_card_migration_bubble_closure_.is_null();
-}
-
 LocalCardMigrationBubble*
 LocalCardMigrationBubbleControllerImpl::local_card_migration_bubble_view()
     const {

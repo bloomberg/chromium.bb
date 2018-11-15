@@ -2302,6 +2302,8 @@ jumbo_split_static_library("ui") {
       "autofill/local_card_migration_dialog_controller_impl.h",
       "autofill/local_card_migration_dialog_factory.h",
       "autofill/local_card_migration_dialog_state.h",
+      "autofill/manage_migration_ui_controller.cc",
+      "autofill/manage_migration_ui_controller.h",
       "autofill/save_card_bubble_controller_impl.cc",
       "autofill/save_card_bubble_controller_impl.h",
       "autofill/save_card_bubble_view.h",

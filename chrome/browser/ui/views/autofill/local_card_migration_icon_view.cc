@@ -5,12 +5,13 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/autofill/local_card_migration_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/autofill/local_card_migration_bubble_views.h"
+#include "chrome/browser/ui/views/autofill/local_card_migration_dialog_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -31,12 +32,24 @@ LocalCardMigrationIconView::LocalCardMigrationIconView(
 LocalCardMigrationIconView::~LocalCardMigrationIconView() {}
 
 views::BubbleDialogDelegateView* LocalCardMigrationIconView::GetBubble() const {
-  LocalCardMigrationBubbleControllerImpl* controller = GetController();
+  ManageMigrationUiController* controller = GetController();
   if (!controller)
     return nullptr;
 
-  return static_cast<autofill::LocalCardMigrationBubbleViews*>(
-      controller->local_card_migration_bubble_view());
+  switch (controller->GetFlowStep()) {
+    case LocalCardMigrationFlowStep::PROMO_BUBBLE: {
+      return static_cast<LocalCardMigrationBubbleViews*>(
+          controller->GetBubbleView());
+    }
+    case LocalCardMigrationFlowStep::CREDIT_CARD_ICON: {
+      return static_cast<LocalCardMigrationDialogView*>(
+          controller->GetDialogView());
+    }
+    default: {
+      NOTREACHED();
+      return nullptr;
+    }
+  }
 }
 
 bool LocalCardMigrationIconView::Update() {
@@ -46,7 +59,7 @@ bool LocalCardMigrationIconView::Update() {
   const bool was_visible = visible();
 
   // |controller| may be nullptr due to lazy initialization.
-  LocalCardMigrationBubbleControllerImpl* controller = GetController();
+  ManageMigrationUiController* controller = GetController();
   bool enabled = controller && controller->IsIconVisible();
   enabled &= SetCommandEnabled(enabled);
   SetVisible(enabled);
@@ -65,8 +78,7 @@ base::string16 LocalCardMigrationIconView::GetTextForTooltipAndAccessibleName()
   return l10n_util::GetStringUTF16(IDS_TOOLTIP_MIGRATE_LOCAL_CARD);
 }
 
-LocalCardMigrationBubbleControllerImpl*
-LocalCardMigrationIconView::GetController() const {
+ManageMigrationUiController* LocalCardMigrationIconView::GetController() const {
   if (!browser_)
     return nullptr;
 
@@ -74,8 +86,7 @@ LocalCardMigrationIconView::GetController() const {
   if (!web_contents)
     return nullptr;
 
-  return autofill::LocalCardMigrationBubbleControllerImpl::FromWebContents(
-      web_contents);
+  return autofill::ManageMigrationUiController::FromWebContents(web_contents);
 }
 
 }  // namespace autofill
