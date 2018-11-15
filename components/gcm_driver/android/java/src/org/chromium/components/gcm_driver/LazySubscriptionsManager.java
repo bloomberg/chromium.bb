@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
@@ -29,6 +30,7 @@ import java.util.Set;
 public class LazySubscriptionsManager {
     private static final String TAG = "LazySubscriptions";
     private static final String FCM_LAZY_SUBSCRIPTIONS = "fcm_lazy_subscriptions";
+    private static final String HAS_PERSISTED_MESSAGES_KEY = "has_persisted_messages";
     private static final String PREF_PACKAGE =
             "org.chromium.components.gcm_driver.lazy_subscriptions";
 
@@ -40,6 +42,33 @@ public class LazySubscriptionsManager {
     // Private constructor because all methods in this class are static, and it
     // shouldn't be instantiated.
     private LazySubscriptionsManager() {}
+
+    /**
+     * Stores a global flag that indicates whether there are any persisted
+     * messages to read. The flag could be read using hasPersistedMessages().
+     * @param hasPersistedMessages
+     */
+    public static void storeHasPersistedMessages(boolean hasPersistedMessages) {
+        // Store the global flag in the default preferences instead of special one
+        // for the GCM messages. The reason is the default preferences file is used in
+        // many places in Chrome and should be already cached in memory by the
+        // time this method is called. Therefore, it should provide a cheap way
+        // that (most probably) doesn't require disk access to read that global flag.
+        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
+        sharedPrefs.edit().putBoolean(HAS_PERSISTED_MESSAGES_KEY, hasPersistedMessages).apply();
+    }
+
+    /**
+     * Whether some messages are persisted and should be replayed next time
+     * Chrome is running. It should be cheaper to call than actually reading the
+     * stored messages. Call this method to decide whether there is a need to
+     * read any persisted messages.
+     * @return whether some messages are persisted.
+     */
+    public static boolean hasPersistedMessages() {
+        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
+        return sharedPrefs.getBoolean(HAS_PERSISTED_MESSAGES_KEY, false);
+    }
 
     /**
      * Given an appId and a senderId, this methods builds a unique identifier for a subscription.
@@ -74,12 +103,28 @@ public class LazySubscriptionsManager {
      * Returns whether the subscription with the |appId| and |senderId| is lazy.
      */
     public static boolean isSubscriptionLazy(final String subscriptionId) {
-        Context context = ContextUtils.getApplicationContext();
-        SharedPreferences sharedPrefs =
-                context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
-        Set<String> lazyIds = new HashSet<>(
-                sharedPrefs.getStringSet(FCM_LAZY_SUBSCRIPTIONS, Collections.emptySet()));
-        return lazyIds.contains(subscriptionId);
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            Context context = ContextUtils.getApplicationContext();
+            SharedPreferences sharedPrefs =
+                    context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+            Set<String> lazyIds = new HashSet<>(
+                    sharedPrefs.getStringSet(FCM_LAZY_SUBSCRIPTIONS, Collections.emptySet()));
+            return lazyIds.contains(subscriptionId);
+        }
+    }
+
+    /**
+     * Returns the ids of all lazy subscriptions.
+     * @return Set of subscriptions ids.
+     */
+    public static Set<String> getLazySubscriptionIds() {
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            Context context = ContextUtils.getApplicationContext();
+            SharedPreferences sharedPrefs =
+                    context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+            return new HashSet<>(
+                    sharedPrefs.getStringSet(FCM_LAZY_SUBSCRIPTIONS, Collections.emptySet()));
+        }
     }
 
     /**
@@ -124,6 +169,7 @@ public class LazySubscriptionsManager {
             // Add the new message to the end.
             queueJSON.put(message.toJSON());
             sharedPrefs.edit().putString(subscriptionId, queueJSON.toString()).apply();
+            storeHasPersistedMessages(/*hasPersistedMessages=*/true);
         } catch (JSONException e) {
             Log.e(TAG,
                     "Error when parsing the persisted message queue for subscriber:"
@@ -172,6 +218,17 @@ public class LazySubscriptionsManager {
                             + subscriptionId);
         }
         return new GCMMessage[0];
+    }
+
+    /**
+     * Deletes all persisted messages for the given subscription id.
+     * @param subscriptionId
+     */
+    public static void deletePersistedMessagesForSubscriptionId(String subscriptionId) {
+        Context context = ContextUtils.getApplicationContext();
+        SharedPreferences sharedPrefs =
+                context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+        sharedPrefs.edit().remove(subscriptionId).apply();
     }
 
     /**

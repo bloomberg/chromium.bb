@@ -20,6 +20,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
+import java.util.Set;
+
 /**
  * Unit tests for LazySubscriptionsManager.
  */
@@ -29,6 +31,21 @@ public class LazySubscriptionsManagerTest {
     @Before
     public void setUp() {
         ShadowRecordHistogram.reset();
+    }
+
+    /**
+     * Tests the persistence of the "hasPersistedMessages" flag.
+     */
+    @Test
+    public void testHasPersistedMessages() {
+        // Default is false.
+        assertFalse(LazySubscriptionsManager.hasPersistedMessages());
+
+        LazySubscriptionsManager.storeHasPersistedMessages(true);
+        assertTrue(LazySubscriptionsManager.hasPersistedMessages());
+
+        LazySubscriptionsManager.storeHasPersistedMessages(false);
+        assertFalse(LazySubscriptionsManager.hasPersistedMessages());
     }
 
     /**
@@ -58,6 +75,21 @@ public class LazySubscriptionsManagerTest {
     public void testDefaultSubscriptionNotLazy() {
         final String subscriptionId = "subscription_id";
         assertFalse(LazySubscriptionsManager.isSubscriptionLazy(subscriptionId));
+    }
+
+    @Test
+    public void testGetLazySubscriptionIds() {
+        final String subscriptionId1 = "subscription_id1";
+        final String subscriptionId2 = "subscription_id2";
+        final String subscriptionId3 = "subscription_id3";
+        LazySubscriptionsManager.storeLazinessInformation(subscriptionId1, true);
+        LazySubscriptionsManager.storeLazinessInformation(subscriptionId2, true);
+        LazySubscriptionsManager.storeLazinessInformation(subscriptionId3, true);
+        Set<String> lazySubscriptionIds = LazySubscriptionsManager.getLazySubscriptionIds();
+        assertEquals(3, lazySubscriptionIds.size());
+        assertTrue(lazySubscriptionIds.contains(subscriptionId1));
+        assertTrue(lazySubscriptionIds.contains(subscriptionId2));
+        assertTrue(lazySubscriptionIds.contains(subscriptionId3));
     }
 
     /**
@@ -160,5 +192,24 @@ public class LazySubscriptionsManagerTest {
         assertEquals(2,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PushMessaging.QueuedMessagesCount", 0));
+    }
+
+    /**
+     * Tests that messages with the same collapse key override each other.
+     */
+    @Test
+    public void testDeletePersistedMessages() {
+        final String subscriptionId = "subscriptionId";
+
+        Bundle extras = new Bundle();
+        extras.putString("subtype", "MyAppId");
+        extras.putString("collapse_key", "collapseKey");
+        extras.putByteArray("rawData", new byte[] {});
+        GCMMessage message = new GCMMessage("MySenderId", extras);
+        LazySubscriptionsManager.persistMessage(subscriptionId, message);
+
+        assertEquals(1, LazySubscriptionsManager.readMessages(subscriptionId).length);
+        LazySubscriptionsManager.deletePersistedMessagesForSubscriptionId(subscriptionId);
+        assertEquals(0, LazySubscriptionsManager.readMessages(subscriptionId).length);
     }
 }

@@ -12,6 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.AsyncTask;
 
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * This class is the Java counterpart to the C++ GCMDriverAndroid class.
@@ -47,6 +48,23 @@ public class GCMDriver {
             throw new IllegalStateException("Already instantiated");
         }
         sInstance = new GCMDriver(nativeGCMDriverAndroid);
+        // Don't bother to read the stored messages unless there are actually
+        // messages persisted on disk. Calling
+        // LazySubscriptionsManager.hasPersistedMessages() should be a cheap way
+        // to avoid unnecessary disk reads.
+        if (LazySubscriptionsManager.hasPersistedMessages()) {
+            // TODO(https://crbug.com/882887): record a UMA metric for how long
+            // does it take to read all persisted messaged.
+            Set<String> lazySubscriptionIds = LazySubscriptionsManager.getLazySubscriptionIds();
+            for (String id : lazySubscriptionIds) {
+                GCMMessage[] messages = LazySubscriptionsManager.readMessages(id);
+                for (GCMMessage message : messages) {
+                    dispatchMessage(message);
+                }
+                LazySubscriptionsManager.deletePersistedMessagesForSubscriptionId(id);
+            }
+            LazySubscriptionsManager.storeHasPersistedMessages(/*hasPersistedMessages=*/false);
+        }
         return sInstance;
     }
 
