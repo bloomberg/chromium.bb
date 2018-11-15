@@ -192,6 +192,8 @@ const char kChromeFeaturesServiceIsUsbguardEnabledMethod[] =
     "IsUsbguardEnabled";
 const char kChromeFeaturesServiceIsShillSandboxingEnabledMethod[] =
     "IsShillSandboxingEnabled";
+const char kChromeFeaturesServiceIsFsNosymfollowEnabledMethod[] =
+    "IsFsNosymfollowEnabled";
 
 const char kUrlHandlerServiceName[] = "org.chromium.UrlHandlerService";
 const char kUrlHandlerServicePath[] = "/org/chromium/UrlHandlerService";
