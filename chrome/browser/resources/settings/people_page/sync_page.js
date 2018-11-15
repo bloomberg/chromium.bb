@@ -165,11 +165,6 @@ Polymer({
       }
     },
 
-    // The toggle for user events is not reflected directly on
-    // syncPrefs.userEventsSynced, because this sync preference must only be
-    // updated if there is no passphrase and typedUrls are synced as well.
-    userEventsToggleValue: Boolean,
-
     // <if expr="not chromeos">
     diceEnabled: Boolean,
     // </if>
@@ -342,11 +337,6 @@ Polymer({
     if (!this.syncPrefs.autofillRegistered || !this.syncPrefs.autofillSynced)
       this.set('syncPrefs.paymentsIntegrationEnabled', false);
 
-    this.set(
-        'userEventsToggleValue',
-        this.syncPrefs.userEventsSynced && this.syncPrefs.typedUrlsSynced &&
-            !this.syncPrefs.encryptAllData);
-
     // Hide the new passphrase box if the sync data has been encrypted.
     if (this.syncPrefs.encryptAllData)
       this.creatingNewPassphrase_ = false;
@@ -421,25 +411,6 @@ Polymer({
    * @private
    */
   onTypedUrlsDataTypeChanged_: function() {
-    // Enabling typed URLs also resets the user events to ON. |encryptAllData|
-    // is not expected to change on the fly, and if it changed the user sync
-    // settings would be reset anyway.
-    if (!this.syncPrefs.encryptAllData && this.syncPrefs.typedUrlsSynced)
-      this.set('syncPrefs.userEventsSynced', true);
-
-    this.onSingleSyncDataTypeChanged_();
-  },
-
-  /**
-   * Handler for when the user events data type checkbox is changed.
-   * @private
-   */
-  onUserEventsSyncDataTypeChanged_: function() {
-    // Only update the sync preference when there is no passphrase and typed
-    // URLs are synced.
-    assert(!this.syncPrefs.encryptAllData && this.syncPrefs.typedUrlsSynced);
-    this.set('syncPrefs.userEventsSynced', this.userEventsToggleValue);
-
     this.onSingleSyncDataTypeChanged_();
   },
 
@@ -575,19 +546,6 @@ Polymer({
   shouldPaymentsCheckboxBeDisabled_: function(
       syncAllDataTypes, autofillSynced) {
     return syncAllDataTypes || !autofillSynced;
-  },
-
-  /**
-   * @param {boolean} syncAllDataTypes
-   * @param {boolean} typedUrlsSynced
-   * @param {boolean} userEventsEnforced
-   * @param {boolean} encryptAllData
-   * @return {boolean} Whether the sync checkbox should be disabled.
-   */
-  shouldUserEventsCheckboxBeDisabled_: function(
-      syncAllDataTypes, typedUrlsSynced, userEventsEnforced, encryptAllData) {
-    return syncAllDataTypes || !typedUrlsSynced || userEventsEnforced ||
-        encryptAllData;
   },
 
   /**
