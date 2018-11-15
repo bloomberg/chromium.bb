@@ -1,11 +1,11 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_tracker.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -34,11 +35,42 @@ String GetImageUrl(const LayoutObject& object) {
         ToLayoutVideo(&object)->CachedImage();
     return cached_image ? cached_image->Url().StrippedForUseAsReferrer() : "";
   }
-  DCHECK(object.IsSVGImage());
-  const LayoutImageResource* image_resource =
-      ToLayoutSVGImage(&object)->ImageResource();
-  const ImageResourceContent* cached_image = image_resource->CachedImage();
-  return cached_image ? cached_image->Url().StrippedForUseAsReferrer() : "";
+  if (object.IsSVGImage()) {
+    const LayoutImageResource* image_resource =
+        ToLayoutSVGImage(&object)->ImageResource();
+    const ImageResourceContent* cached_image = image_resource->CachedImage();
+    return cached_image ? cached_image->Url().StrippedForUseAsReferrer() : "";
+  }
+  DCHECK(ImagePaintTimingDetector::HasContentfulBackgroundImage(object));
+  const ComputedStyle* style = object.Style();
+  StringBuilder concatenated_result;
+  for (const FillLayer* bg_layer = &style->BackgroundLayers(); bg_layer;
+       bg_layer = bg_layer->Next()) {
+    StyleImage* bg_image = bg_layer->GetImage();
+    if (!bg_image || !bg_image->IsImageResource())
+      continue;
+    const StyleFetchedImage* fetched_image = ToStyleFetchedImage(bg_image);
+    const String url = fetched_image->Url().StrippedForUseAsReferrer();
+    concatenated_result.Append(url.Utf8().data(), url.length());
+  }
+  return concatenated_result.ToString();
+}
+
+bool AttachedBackgroundImagesAllLoaded(const LayoutObject& object) {
+  DCHECK(ImagePaintTimingDetector::HasContentfulBackgroundImage(object));
+  const ComputedStyle* style = object.Style();
+  DCHECK(style);
+  for (const FillLayer* bg_layer = &style->BackgroundLayers(); bg_layer;
+       bg_layer = bg_layer->Next()) {
+    StyleImage* bg_image = bg_layer->GetImage();
+    // A layout object with background images is not loaded until all of the
+    // background images are loaded.
+    if (!bg_image || !bg_image->IsImageResource())
+      continue;
+    if (!bg_image->IsLoaded())
+      return false;
+  }
+  return true;
 }
 
 bool IsLoaded(const LayoutObject& object) {
@@ -52,11 +84,14 @@ bool IsLoaded(const LayoutObject& object) {
         ToLayoutVideo(&object)->CachedImage();
     return cached_image ? cached_image->IsLoaded() : false;
   }
-  DCHECK(object.IsSVGImage());
-  const LayoutImageResource* image_resource =
-      ToLayoutSVGImage(&object)->ImageResource();
-  const ImageResourceContent* cached_image = image_resource->CachedImage();
-  return cached_image ? cached_image->IsLoaded() : false;
+  if (object.IsSVGImage()) {
+    const LayoutImageResource* image_resource =
+        ToLayoutSVGImage(&object)->ImageResource();
+    const ImageResourceContent* cached_image = image_resource->CachedImage();
+    return cached_image ? cached_image->IsLoaded() : false;
+  }
+  DCHECK(ImagePaintTimingDetector::HasContentfulBackgroundImage(object));
+  return AttachedBackgroundImagesAllLoaded(object);
 }
 }  // namespace
 
@@ -264,6 +299,48 @@ void ImagePaintTimingDetector::ReportSwapTime(
   }
 
   Analyze();
+}
+
+// In the context of FCP++, we define contentful background image as one that
+// satisfies all of the following conditions:
+// * has image reources attached to style of the object, i.e.,
+//  { background-image: url('example.gif') }
+// * not attached to <body> or <html>
+//
+// static
+bool ImagePaintTimingDetector::HasContentfulBackgroundImage(
+    const LayoutObject& object) {
+  Node* node = object.GetNode();
+  if (!node)
+    return false;
+  // Background images attached to <body> or <html> are likely for background
+  // purpose, so we rule them out, according to the following rules:
+  // * Box model objects includes objects of box model, such as <div>, <body>,
+  //  LayoutView, but not includes LayoutText.
+  // * BackgroundTransfersToView is true for the <body>, <html>, e.g., that
+  //  have transferred their background to LayoutView.
+  // * LayoutView has the background transfered by <html> if <html> has
+  //  background.
+  if (!object.IsBoxModelObject() ||
+      ToLayoutBoxModelObject(object).BackgroundTransfersToView())
+    return false;
+  if (object.IsLayoutView())
+    return false;
+  const ComputedStyle* style = object.Style();
+  if (!style)
+    return false;
+  if (!style->HasBackgroundImage())
+    return false;
+
+  for (const FillLayer* bg_layer = &style->BackgroundLayers(); bg_layer;
+       bg_layer = bg_layer->Next()) {
+    StyleImage* bg_image = bg_layer->GetImage();
+    // Rule out images that doesn't load any image resources, e.g., a gradient.
+    if (!bg_image || !bg_image->IsImageResource())
+      continue;
+    return true;
+  }
+  return false;
 }
 
 void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,

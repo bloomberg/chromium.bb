@@ -32,7 +32,8 @@ void PaintTracker::NotifyObjectPrePaint(const LayoutObject& object,
   if (object.IsText()) {
     text_paint_timing_detector_->RecordText(object, painting_layer);
   }
-  if (object.IsImage() || object.IsVideo() || object.IsSVGImage()) {
+  if (object.IsImage() || object.IsVideo() || object.IsSVGImage() ||
+      ImagePaintTimingDetector::HasContentfulBackgroundImage(object)) {
     image_paint_timing_detector_->RecordImage(object, painting_layer);
   }
   // Todo(maxlg): add other detectors here.

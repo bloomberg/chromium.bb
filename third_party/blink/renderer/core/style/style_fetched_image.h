@@ -72,6 +72,8 @@ class StyleFetchedImage final : public StyleImage,
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
   ImageResourceContent* CachedImage() const override;
 
+  const KURL& Url() const { return url_; }
+
   void LoadDeferredImage(const Document& document);
 
   void Trace(blink::Visitor*) override;

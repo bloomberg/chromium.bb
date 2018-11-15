@@ -65,6 +65,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
  public:
   ImagePaintTimingDetector(LocalFrameView*);
   void RecordImage(const LayoutObject&, const PaintLayer&);
+  static bool HasContentfulBackgroundImage(const LayoutObject& object);
   void OnPrePaintFinished();
   void NotifyNodeRemoved(DOMNodeId);
   base::TimeTicks LargestImagePaint() const { return largest_image_paint_; }
