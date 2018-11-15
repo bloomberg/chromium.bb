@@ -1186,6 +1186,7 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
 
 void Node::ClearNeedsStyleRecalc() {
   node_flags_ &= ~kStyleChangeMask;
+  ClearFlag(kForceReattachLayoutTree);
 
   if (IsElementNode() && HasRareData())
     ToElement(*this).SetAnimationStyleChange(false);
