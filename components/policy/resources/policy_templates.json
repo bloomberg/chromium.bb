@@ -4229,12 +4229,12 @@
                 }
               }
             },
-            'url_patterns': {
+            'urls': {
               'type': 'array',
               'items': { 'type': 'string' }
             }
           },
-          'required': ['devices', 'url_patterns']
+          'required': ['devices', 'urls']
         }
       },
       'supported_on': ['chrome_os:71-', 'android:71-', 'chrome.*:71-'],
@@ -4245,12 +4245,14 @@
       },
       'example_value': [{
         'devices': [{'vendor_id': 1234, 'product_id': 5678}],
-        'url_patterns': ['https://[*].google.com'],
+        'urls': ['https://google.com', 'https://requesting.com,https://embedded.com'],
       }],
       'id': 486,
       'caption': '''Automatically grant permission to these sites to connect to USB devices with the given vendor and product IDs.''',
       'tags': ['website-sharing'],
-      'desc': '''Allows you to set a list of url patterns that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and url patterns in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid. Invalid policy values are ignored.
+      'desc': '''Allows you to set a list of urls that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and urls in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid and will be ignored.
+
+        The USB permission model uses the URL of the requesting site ("requesting URL") and the URL of the top-level frame site ("embedding URL") to grant permission to the requesting URL to access the USB device. The requesting URL may be different than the embedding URL when the requesting site is loaded in an iframe. Therefore, the "urls" field can contain up to two URL strings delimited by a comma to specify the requesting and embedding URL respectively. If only one URL is specified, then access to the corresponding USB devices will be granted when the requesting site's URL matches this URL regardless of embedding status. The URLs in "urls" must be valid URLs, otherwise the policy will be ignored.
 
         If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
 

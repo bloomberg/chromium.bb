@@ -1890,7 +1890,7 @@
       "WebUsbAllowDevicesForUrls": [
         {
           "devices": [{"vendor_id": 1234, "product_id": 5678}],
-          "url_patterns": ["[*.]google.com", "[*.]youtube.com"]
+          "urls": ["https://google.com,https://google.com", "https://www.youtube.com"]
         }
       ]
     },

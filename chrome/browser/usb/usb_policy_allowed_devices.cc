@@ -4,29 +4,34 @@
 
 #include "chrome/browser/usb/usb_policy_allowed_devices.h"
 
+#include <string>
+#include <vector>
+
+#include "base/strings/string_split.h"
 #include "base/values.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
-#include "url/gurl.h"
 
 namespace {
 
 constexpr char kPrefDevicesKey[] = "devices";
-constexpr char kPrefUrlPatternsKey[] = "url_patterns";
+constexpr char kPrefUrlsKey[] = "urls";
 constexpr char kPrefVendorIdKey[] = "vendor_id";
 constexpr char kPrefProductIdKey[] = "product_id";
 
-// Find the URL match by checking if the pattern matches the given GURL types
-// using ContentSettingsPattern::Matches().
-bool FindMatchInSet(const std::set<content_settings::PatternPair>& pattern_set,
+// Find the URL match by checking if a url pair in |url_set| matches the given
+// GURL pair. An empty embedding URL signifies a wildcard, so ignore the
+// embedding origin check for this case.
+bool FindMatchInSet(const std::set<std::pair<GURL, GURL>>& url_set,
                     const GURL& requesting_origin,
                     const GURL& embedding_origin) {
-  for (const auto& pattern : pattern_set) {
-    if (pattern.first.Matches(requesting_origin) &&
-        pattern.second.Matches(embedding_origin)) {
-      return true;
+  for (const auto& url_pair : url_set) {
+    if (url_pair.first.GetOrigin() == requesting_origin.GetOrigin()) {
+      if (url_pair.second.is_empty() ||
+          url_pair.second.GetOrigin() == embedding_origin.GetOrigin()) {
+        return true;
+      }
     }
   }
   return false;
@@ -54,8 +59,8 @@ bool UsbPolicyAllowedDevices::IsDeviceAllowed(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const device::mojom::UsbDeviceInfo& device_info) {
-  // Search through each set of URL patterns that match the given device. The
-  // keys correspond to the following URL pattern sets:
+  // Search through each set of URL pair that match the given device. The
+  // keys correspond to the following URL pair sets:
   //  * (vendor_id, product_id): A set corresponding to the exact device.
   //  * (vendor_id, -1): A set corresponding to any device with |vendor_id|.
   //  * (-1, -1): A set corresponding to any device.
@@ -64,11 +69,11 @@ bool UsbPolicyAllowedDevices::IsDeviceAllowed(
       std::make_pair(device_info.vendor_id, -1), std::make_pair(-1, -1)};
 
   for (const auto& key : set_keys) {
-    const auto patterns = usb_device_ids_to_url_patterns_.find(key);
-    if (patterns == usb_device_ids_to_url_patterns_.cend())
+    const auto entry = usb_device_ids_to_urls_.find(key);
+    if (entry == usb_device_ids_to_urls_.cend())
       continue;
 
-    if (FindMatchInSet(patterns->second, requesting_origin, embedding_origin))
+    if (FindMatchInSet(entry->second, requesting_origin, embedding_origin))
       return true;
   }
   return false;
@@ -77,7 +82,7 @@ bool UsbPolicyAllowedDevices::IsDeviceAllowed(
 void UsbPolicyAllowedDevices::CreateOrUpdateMap() {
   const base::Value* pref_value = pref_change_registrar_.prefs()->Get(
       prefs::kManagedWebUsbAllowDevicesForUrls);
-  usb_device_ids_to_url_patterns_.clear();
+  usb_device_ids_to_urls_.clear();
 
   // A policy has not been assigned.
   if (!pref_value) {
@@ -87,20 +92,29 @@ void UsbPolicyAllowedDevices::CreateOrUpdateMap() {
   // The pref value has already been validated by the policy handler, so it is
   // safe to assume that |pref_value| follows the policy template.
   for (const auto& item : pref_value->GetList()) {
-    const base::Value* url_patterns = item.FindKey(kPrefUrlPatternsKey);
-    std::set<content_settings::PatternPair> parsed_url_set;
+    const base::Value* urls_list = item.FindKey(kPrefUrlsKey);
+    std::set<std::pair<GURL, GURL>> parsed_url_set;
 
-    // Parse each URL pattern into a PatternPair and store it in
-    // |parsed_url_set|.
-    for (const auto& url_pattern : url_patterns->GetList()) {
-      content_settings::PatternPair pattern_pair =
-          content_settings::ParsePatternString(url_pattern.GetString());
+    // A urls item can contain a pair of URLs that are delimited by a comma. If
+    // it does not contain a second URL, set the embedding URL to an empty GURL
+    // to signify a wildcard embedded URL.
+    for (const auto& urls_value : urls_list->GetList()) {
+      std::vector<std::string> urls =
+          base::SplitString(urls_value.GetString(), ",", base::TRIM_WHITESPACE,
+                            base::SPLIT_WANT_ALL);
 
-      // Ignore invalid patterns.
-      if (!pattern_pair.first.IsValid())
+      // Skip invalid URL entries.
+      if (urls.empty())
         continue;
 
-      parsed_url_set.insert(std::move(pattern_pair));
+      GURL requesting_url(urls[0]);
+      GURL embedding_url;
+      if (urls.size() == 2 && !urls[1].empty())
+        embedding_url = GURL(urls[1]);
+      auto url_pair =
+          std::make_pair(std::move(requesting_url), std::move(embedding_url));
+
+      parsed_url_set.insert(std::move(url_pair));
     }
 
     // Ignore items with empty parsed URLs.
@@ -108,7 +122,7 @@ void UsbPolicyAllowedDevices::CreateOrUpdateMap() {
       continue;
 
     // For each device entry in the map, create or update its respective URL
-    // pattern set.
+    // set.
     const base::Value* devices = item.FindKey(kPrefDevicesKey);
     for (const auto& device : devices->GetList()) {
       // A missing ID signifies a wildcard for that ID, so a sentinel value of
@@ -120,8 +134,8 @@ void UsbPolicyAllowedDevices::CreateOrUpdateMap() {
       DCHECK(vendor_id != -1 || product_id == -1);
 
       auto key = std::make_pair(vendor_id, product_id);
-      usb_device_ids_to_url_patterns_[key].insert(parsed_url_set.begin(),
-                                                  parsed_url_set.end());
+      usb_device_ids_to_urls_[key].insert(parsed_url_set.begin(),
+                                          parsed_url_set.end());
     }
   }
 }

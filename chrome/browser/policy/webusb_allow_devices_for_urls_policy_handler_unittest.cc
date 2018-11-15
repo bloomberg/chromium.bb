@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/webusb_allow_devices_for_urls_policy_handler.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/strings/string_util.h"
@@ -22,139 +23,167 @@ namespace policy {
 
 namespace {
 
-const char kDevicesKey[] = "devices";
-const char kUrlPatternsKey[] = "url_patterns";
-const char kVendorIdKey[] = "vendor_id";
-const char kProductIdKey[] = "product_id";
-const char kValidPolicy[] =
-    "["
-    "  {"
-    "    \"devices\": ["
-    // Ensure that a device can have both IDs.
-    "      {"
-    "        \"vendor_id\": 1234,"
-    "        \"product_id\": 5678"
-    // Ensure that a device can have only a
-    // |vendor_id|.
-    "      }, {"
-    "        \"vendor_id\": 4321"
-    "      }"
-    "    ],"
-    "    \"url_patterns\": ["
-    "      \"[*.]google.com\","
-    "      \"youtube.com\""
-    "    ]"
-    "  }, {"
-    // Ensure that a device can have neither IDs.
-    "    \"devices\": [{ }],"
-    "    \"url_patterns\": [\"[*.]crbug.com\"]"
-    "  }"
-    "]";
+constexpr char kDevicesKey[] = "devices";
+constexpr char kUrlsKey[] = "urls";
+constexpr char kVendorIdKey[] = "vendor_id";
+constexpr char kProductIdKey[] = "product_id";
+// This policy contains several valid entries. A valid |devices| item is an
+// object that contains both IDs, only the |vendor_id|, or neither IDs. A valid
+// |urls| entry is a string containing up to two valid URLs delimited by a
+// comma.
+constexpr char kValidPolicy[] = R"(
+    [
+      {
+        "devices": [
+          {
+            "vendor_id": 1234,
+            "product_id": 5678
+          }, {
+            "vendor_id": 4321
+          }
+        ],
+        "urls": [
+          "https://google.com,https://google.com",
+          "https://www.youtube.com"
+        ]
+      }, {
+        "devices": [{ }],
+        "urls": ["https://chromium.org,"]
+      }
+    ])";
 // An invalid entry invalidates the entire policy.
-const char kInvalidPolicyInvalidTopLevelEntry[] =
-    "["
-    "  {"
-    "    \"devices\": ["
-    "      {"
-    "        \"vendor_id\": 1234,"
-    "        \"product_id\": 5678"
-    "      }, {"
-    "        \"vendor_id\": 4321"
-    "      }"
-    "    ],"
-    "    \"url_patterns\": ["
-    "      \"[*.]google.com\","
-    "      \"youtube.com\""
-    "    ]"
-    "  }, {"
-    "    \"url_patterns\": [\"[*.]crbug.com\"]"
-    "  }"
-    "]";
-// A list item must have both |devices| and
-// |url_patterns| specified.
-const char kInvalidPolicyMissingDevicesProperty[] =
-    "["
-    "  {"
-    "    \"url_patterns\": ["
-    "      \"[*.]google.com\","
-    "      \"youtube.com\""
-    "    ]"
-    "  }"
-    "]";
-const char kInvalidPolicyMissingUrlPatternsProperty[] =
-    "["
-    "  {"
-    "    \"devices\": ["
-    "      {"
-    "        \"vendor_id\": 1234,"
-    "        \"product_id\": 5678"
-    "      }"
-    "    ]"
-    "  }"
-    "]";
+constexpr char kInvalidPolicyInvalidTopLevelEntry[] = R"(
+    [
+      {
+        "devices": [
+          {
+            "vendor_id": 1234,
+            "product_id": 5678
+          }, {
+            "vendor_id": 4321
+          }
+        ],
+        "urls": [
+          "https://google.com,https://google.com",
+          "https://www.youtube.com"
+        ]
+      }, {
+        "urls": ["https://crbug.com"]
+      }
+    ])";
+// A list item must have both |devices| and |urls| specified.
+constexpr char kInvalidPolicyMissingDevicesProperty[] = R"(
+    [
+      {
+        "urls": [
+          "https://google.com,https://google.com",
+          "https://www.youtube.com"
+        ]
+      }
+    ])";
+constexpr char kInvalidPolicyMissingUrlsProperty[] = R"(
+    [
+      {
+        "devices": [
+          {
+            "vendor_id": 1234,
+            "product_id": 5678
+          }
+        ]
+      }
+    ])";
 // The |vendor_id| and |product_id| values should fit into an unsigned short.
-const char kInvalidPolicyMismatchedVendorIdType[] =
-    "["
-    "  {"
-    "    \"devices\": ["
-    "      {"
-    "        \"vendor_id\": 70000,"
-    "        \"product_id\": 5678"
-    "      }"
-    "    ],"
-    "    \"url_patterns\": ["
-    "      \"[*.]google.com\","
-    "      \"youtube.com\""
-    "    ]"
-    "  }"
-    "]";
-const char kInvalidPolicyMismatchedProductIdType[] =
-    "["
-    "  {"
-    "    \"devices\": ["
-    "      {"
-    "        \"vendor_id\": 1234,"
-    "        \"product_id\": 70000"
-    "      }"
-    "    ],"
-    "    \"url_patterns\": ["
-    "      \"[*.]google.com\","
-    "      \"youtube.com\""
-    "    ]"
-    "  }"
-    "]";
+constexpr char kInvalidPolicyMismatchedVendorIdType[] = R"(
+    [
+      {
+        "devices": [
+          {
+            "vendor_id": 70000,
+            "product_id": 5678
+          }
+        ],
+        "urls": [
+          "https://google.com,https://google.com",
+          "https://www.youtube.com"
+        ]
+      }
+    ])";
+constexpr char kInvalidPolicyMismatchedProductIdType[] = R"(
+    [
+      {
+        "devices": [
+          {
+            "vendor_id": 1234,
+            "product_id": 70000
+          }
+        ],
+        "urls": [
+          "https://google.com,https://google.com",
+          "https://www.youtube.com"
+        ]
+      }
+    ])";
 // Unknown properties invalidate the policy.
-const char kInvalidPolicyUnknownProperty[] =
-    "["
-    "  {"
-    "    \"devices\": ["
-    "      {"
-    "        \"vendor_id\": 1234,"
-    "        \"product_id\": 5678,"
-    "        \"serialNumber\": \"1234ABCD\""
-    "      }"
-    "    ],"
-    "    \"url_patterns\": ["
-    "      \"[*.]google.com\","
-    "      \"youtube.com\""
-    "    ]"
-    "  }"
-    "]";
+constexpr char kInvalidPolicyUnknownProperty[] = R"(
+    [
+      {
+        "devices": [
+          {
+            "vendor_id": 1234,
+            "product_id": 5678,
+            "serialNumber": "1234ABCD"
+          }
+        ],
+        "urls": [
+          "https://google.com,https://google.com",
+          "https://www.youtube.com"
+        ]
+      }
+    ])";
 // A device containing a |product_id| must also have a |vendor_id|.
-const char kInvalidPolicyProductIdWithoutVendorId[] =
-    "["
-    "  {"
-    "    \"devices\": ["
-    "      {"
-    "        \"product_id\": 5678"
-    "      }"
-    "    ],"
-    "    \"url_patterns\": ["
-    "      \"[*.]google.com\","
-    "      \"youtube.com\""
-    "    ]"
-    "  }"
-    "]";
+constexpr char kInvalidPolicyProductIdWithoutVendorId[] = R"(
+    [
+      {
+        "devices": [
+          {
+            "product_id": 5678
+          }
+        ],
+        "urls": [
+          "https://google.com,https://google.com",
+          "https://www.youtube.com"
+        ]
+      }
+    ])";
+// The |urls| array must contain valid URLs.
+constexpr char kInvalidPolicyInvalidRequestingUrl[] = R"(
+    [
+      {
+        "devices": [{ "vendor_id": 1234, "product_id": 5678 }],
+        "urls": ["some.invalid.url"]
+      }
+    ])";
+constexpr char kInvalidPolicyInvalidEmbeddingUrl[] = R"(
+    [
+      {
+        "devices": [{ "vendor_id": 1234, "product_id": 5678 }],
+        "urls": ["https://google.com,some.invalid.url"]
+      }
+    ])";
+constexpr char kInvalidPolicyInvalidUrlsEntry[] = R"(
+    [
+      {
+        "devices": [{ "vendor_id": 1234, "product_id": 5678 }],
+        "urls": ["https://google.com,https://google.com,https://google.com"]
+      }
+    ])";
+constexpr char InvalidPolicyNoUrls[] = R"(
+    [
+      {
+        "devices": [{ "vendor_id": 1234, "product_id": 5678 }],
+        "urls": [""]
+      }
+    ])";
 
 }  // namespace
 
@@ -200,8 +229,7 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_FALSE(errors.empty());
-  ASSERT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(errors.size(), 1ul);
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[1]\": Missing or invalid required "
@@ -221,8 +249,7 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_FALSE(errors.empty());
-  ASSERT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(errors.size(), 1ul);
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0]\": Missing or invalid required "
@@ -231,24 +258,22 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
 }
 
 TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
-       CheckPolicySettingsWithMissingUrlPatternsProperty) {
+       CheckPolicySettingsWithMissingUrlsProperty) {
   PolicyMap policy;
   PolicyErrorMap errors;
 
   policy.Set(
       key::kWebUsbAllowDevicesForUrls, PolicyLevel::POLICY_LEVEL_MANDATORY,
       PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::Read(kInvalidPolicyMissingUrlPatternsProperty),
-      nullptr);
+      base::JSONReader::Read(kInvalidPolicyMissingUrlsProperty), nullptr);
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_FALSE(errors.empty());
-  ASSERT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(errors.size(), 1ul);
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0]\": Missing or invalid required "
-      "property: url_patterns");
+      "property: urls");
   EXPECT_EQ(errors.GetErrors(key::kWebUsbAllowDevicesForUrls), kExpected);
 }
 
@@ -264,8 +289,7 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_FALSE(errors.empty());
-  ASSERT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(errors.size(), 1ul);
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0].devices.items[0]\": Unknown "
@@ -285,8 +309,7 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_FALSE(errors.empty());
-  ASSERT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(errors.size(), 1ul);
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0].devices.items[0]\": The vendor_id "
@@ -306,8 +329,7 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_FALSE(errors.empty());
-  ASSERT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(errors.size(), 1ul);
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0].devices.items[0]\": The "
@@ -327,12 +349,91 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
 
   ASSERT_TRUE(errors.empty());
   EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
-  EXPECT_FALSE(errors.empty());
-  ASSERT_EQ(errors.size(), 1ul);
+  EXPECT_EQ(errors.size(), 1ul);
 
   const base::string16 kExpected = base::ASCIIToUTF16(
       "Schema validation error at \"items[0].devices.items[0]\": A vendor_id "
       "must also be specified");
+  EXPECT_EQ(errors.GetErrors(key::kWebUsbAllowDevicesForUrls), kExpected);
+}
+
+TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
+       CheckPolicySettingsWithInvalidRequestingUrlEntry) {
+  PolicyMap policy;
+  PolicyErrorMap errors;
+
+  policy.Set(
+      key::kWebUsbAllowDevicesForUrls, PolicyLevel::POLICY_LEVEL_MANDATORY,
+      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
+      base::JSONReader::Read(kInvalidPolicyInvalidRequestingUrl), nullptr);
+
+  ASSERT_TRUE(errors.empty());
+  EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
+  EXPECT_EQ(errors.size(), 1ul);
+
+  const base::string16 kExpected = base::ASCIIToUTF16(
+      "Schema validation error at \"items[0].urls.items[0]\": The urls item "
+      "must contain valid URLs");
+  EXPECT_EQ(errors.GetErrors(key::kWebUsbAllowDevicesForUrls), kExpected);
+}
+
+TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
+       CheckPolicySettingsWithInvalidEmbeddingUrlEntry) {
+  PolicyMap policy;
+  PolicyErrorMap errors;
+
+  policy.Set(
+      key::kWebUsbAllowDevicesForUrls, PolicyLevel::POLICY_LEVEL_MANDATORY,
+      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
+      base::JSONReader::Read(kInvalidPolicyInvalidEmbeddingUrl), nullptr);
+
+  ASSERT_TRUE(errors.empty());
+  EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
+  EXPECT_EQ(errors.size(), 1ul);
+
+  const base::string16 kExpected = base::ASCIIToUTF16(
+      "Schema validation error at \"items[0].urls.items[0]\": The urls item "
+      "must contain valid URLs");
+  EXPECT_EQ(errors.GetErrors(key::kWebUsbAllowDevicesForUrls), kExpected);
+}
+
+TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
+       CheckPolicySettingsWithInvalidUrlsEntry) {
+  PolicyMap policy;
+  PolicyErrorMap errors;
+
+  policy.Set(
+      key::kWebUsbAllowDevicesForUrls, PolicyLevel::POLICY_LEVEL_MANDATORY,
+      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
+      base::JSONReader::Read(kInvalidPolicyInvalidUrlsEntry), nullptr);
+
+  ASSERT_TRUE(errors.empty());
+  EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
+  EXPECT_EQ(errors.size(), 1ul);
+
+  const base::string16 kExpected = base::ASCIIToUTF16(
+      "Schema validation error at \"items[0].urls.items[0]\": Each urls "
+      "string entry must contain between 1 to 2 URLs");
+  EXPECT_EQ(errors.GetErrors(key::kWebUsbAllowDevicesForUrls), kExpected);
+}
+
+TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
+       CheckPolicySettingsWithNoUrls) {
+  PolicyMap policy;
+  PolicyErrorMap errors;
+
+  policy.Set(
+      key::kWebUsbAllowDevicesForUrls, PolicyLevel::POLICY_LEVEL_MANDATORY,
+      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
+      base::JSONReader::Read(InvalidPolicyNoUrls), nullptr);
+
+  ASSERT_TRUE(errors.empty());
+  EXPECT_FALSE(handler()->CheckPolicySettings(policy, &errors));
+  EXPECT_EQ(errors.size(), 1ul);
+
+  const base::string16 kExpected = base::ASCIIToUTF16(
+      "Schema validation error at \"items[0].urls.items[0]\": Each urls "
+      "string entry must contain between 1 to 2 URLs");
   EXPECT_EQ(errors.GetErrors(key::kWebUsbAllowDevicesForUrls), kExpected);
 }
 
@@ -354,14 +455,14 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettings) {
   ASSERT_TRUE(pref_value->is_list());
 
   // Ensure that the kManagedWebUsbAllowDevicesForUrls pref is set correctly.
-  const base::Value::ListStorage& list = pref_value->GetList();
+  const auto& list = pref_value->GetList();
   ASSERT_EQ(list.size(), 2ul);
 
   // Check the first item's devices list.
   const base::Value* devices = list[0].FindKey(kDevicesKey);
   ASSERT_TRUE(devices);
 
-  const base::Value::ListStorage& first_devices_list = devices->GetList();
+  const auto& first_devices_list = devices->GetList();
   ASSERT_EQ(first_devices_list.size(), 2ul);
 
   const base::Value* vendor_id = first_devices_list[0].FindKey(kVendorIdKey);
@@ -379,23 +480,23 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettings) {
   product_id = first_devices_list[1].FindKey(kProductIdKey);
   EXPECT_FALSE(product_id);
 
-  // Check the first item's url_patterns list.
-  const base::Value* url_patterns = list[0].FindKey(kUrlPatternsKey);
-  ASSERT_TRUE(url_patterns);
+  // Check the first item's urls list.
+  const base::Value* urls = list[0].FindKey(kUrlsKey);
+  ASSERT_TRUE(urls);
 
-  const base::Value::ListStorage& first_url_patterns_list =
-      url_patterns->GetList();
-  ASSERT_EQ(first_url_patterns_list.size(), 2ul);
-  ASSERT_TRUE(first_url_patterns_list[0].is_string());
-  ASSERT_TRUE(first_url_patterns_list[1].is_string());
-  EXPECT_EQ(first_url_patterns_list[0].GetString(), "[*.]google.com");
-  EXPECT_EQ(first_url_patterns_list[1].GetString(), "youtube.com");
+  const auto& first_urls_list = urls->GetList();
+  ASSERT_EQ(first_urls_list.size(), 2ul);
+  ASSERT_TRUE(first_urls_list[0].is_string());
+  ASSERT_TRUE(first_urls_list[1].is_string());
+  EXPECT_EQ(first_urls_list[0].GetString(),
+            "https://google.com,https://google.com");
+  EXPECT_EQ(first_urls_list[1].GetString(), "https://www.youtube.com");
 
   // Check the second item's devices list.
   devices = list[1].FindKey(kDevicesKey);
   ASSERT_TRUE(devices);
 
-  const base::Value::ListStorage& second_devices_list = devices->GetList();
+  const auto& second_devices_list = devices->GetList();
   ASSERT_EQ(second_devices_list.size(), 1ul);
 
   vendor_id = second_devices_list[0].FindKey(kVendorIdKey);
@@ -404,15 +505,14 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettings) {
   product_id = second_devices_list[0].FindKey(kProductIdKey);
   EXPECT_FALSE(product_id);
 
-  // Check the second item's url_patterns list.
-  url_patterns = list[1].FindKey(kUrlPatternsKey);
-  ASSERT_TRUE(url_patterns);
+  // Check the second item's urls list.
+  urls = list[1].FindKey(kUrlsKey);
+  ASSERT_TRUE(urls);
 
-  const base::Value::ListStorage& second_url_patterns_list =
-      url_patterns->GetList();
-  ASSERT_EQ(second_url_patterns_list.size(), 1ul);
-  ASSERT_TRUE(second_url_patterns_list[0].is_string());
-  EXPECT_EQ(second_url_patterns_list[0].GetString(), "[*.]crbug.com");
+  const auto& second_urls_list = urls->GetList();
+  ASSERT_EQ(second_urls_list.size(), 1ul);
+  ASSERT_TRUE(second_urls_list[0].is_string());
+  EXPECT_EQ(second_urls_list[0].GetString(), "https://chromium.org,");
 }
 
 TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
@@ -451,7 +551,7 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
 }
 
 TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
-       ApplyPolicySettingsWithMissingUrlPatternsProperty) {
+       ApplyPolicySettingsWithMissingUrlsProperty) {
   EXPECT_FALSE(
       store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, nullptr));
 
@@ -459,8 +559,7 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
   policy.Set(
       key::kWebUsbAllowDevicesForUrls, PolicyLevel::POLICY_LEVEL_MANDATORY,
       PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
-      base::JSONReader::Read(kInvalidPolicyMissingUrlPatternsProperty),
-      nullptr);
+      base::JSONReader::Read(kInvalidPolicyMissingUrlsProperty), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_FALSE(
@@ -529,6 +628,73 @@ TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
       key::kWebUsbAllowDevicesForUrls, PolicyLevel::POLICY_LEVEL_MANDATORY,
       PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
       base::JSONReader::Read(kInvalidPolicyProductIdWithoutVendorId), nullptr);
+  UpdateProviderPolicy(policy);
+  const base::Value* pref_value = nullptr;
+  EXPECT_FALSE(
+      store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, &pref_value));
+  EXPECT_FALSE(pref_value);
+}
+
+TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
+       ApplyPolicySettingsInvalidRequestingUrl) {
+  EXPECT_FALSE(
+      store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, nullptr));
+
+  PolicyMap policy;
+  policy.Set(
+      key::kWebUsbAllowDevicesForUrls, PolicyLevel::POLICY_LEVEL_MANDATORY,
+      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
+      base::JSONReader::Read(kInvalidPolicyInvalidRequestingUrl), nullptr);
+  UpdateProviderPolicy(policy);
+  const base::Value* pref_value = nullptr;
+  EXPECT_FALSE(
+      store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, &pref_value));
+  EXPECT_FALSE(pref_value);
+}
+
+TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
+       ApplyPolicySettingsInvalidEmbeddingUrl) {
+  EXPECT_FALSE(
+      store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, nullptr));
+
+  PolicyMap policy;
+  policy.Set(
+      key::kWebUsbAllowDevicesForUrls, PolicyLevel::POLICY_LEVEL_MANDATORY,
+      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
+      base::JSONReader::Read(kInvalidPolicyInvalidEmbeddingUrl), nullptr);
+  UpdateProviderPolicy(policy);
+  const base::Value* pref_value = nullptr;
+  EXPECT_FALSE(
+      store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, &pref_value));
+  EXPECT_FALSE(pref_value);
+}
+
+TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest,
+       ApplyPolicySettingsInvalidUrlsEntry) {
+  EXPECT_FALSE(
+      store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, nullptr));
+
+  PolicyMap policy;
+  policy.Set(
+      key::kWebUsbAllowDevicesForUrls, PolicyLevel::POLICY_LEVEL_MANDATORY,
+      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
+      base::JSONReader::Read(kInvalidPolicyInvalidUrlsEntry), nullptr);
+  UpdateProviderPolicy(policy);
+  const base::Value* pref_value = nullptr;
+  EXPECT_FALSE(
+      store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, &pref_value));
+  EXPECT_FALSE(pref_value);
+}
+
+TEST_F(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettingsNoUrls) {
+  EXPECT_FALSE(
+      store_->GetValue(prefs::kManagedWebUsbAllowDevicesForUrls, nullptr));
+
+  PolicyMap policy;
+  policy.Set(
+      key::kWebUsbAllowDevicesForUrls, PolicyLevel::POLICY_LEVEL_MANDATORY,
+      PolicyScope::POLICY_SCOPE_MACHINE, PolicySource::POLICY_SOURCE_CLOUD,
+      base::JSONReader::Read(InvalidPolicyNoUrls), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* pref_value = nullptr;
   EXPECT_FALSE(

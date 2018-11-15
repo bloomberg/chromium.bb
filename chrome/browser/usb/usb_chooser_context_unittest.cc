@@ -293,23 +293,23 @@ constexpr char kPolicySetting[] = R"(
     [
       {
         "devices": [{ "vendor_id": 1234, "product_id": 5678 }],
-        "url_patterns": ["https://product.vendor.com"]
+        "urls": ["https://product.vendor.com"]
       }, {
         "devices": [{ "vendor_id": 1234 }],
-        "url_patterns": ["https://vendor.com"]
+        "urls": ["https://vendor.com"]
       }, {
         "devices": [{}],
-        "url_patterns": ["https://[*.]anydevice.com"]
+        "urls": ["https://anydevice.com"]
       }, {
         "devices": [{ "vendor_id": 2468, "product_id": 1357 }],
-        "url_patterns": ["https://gadget.com,https://cool.com"]
+        "urls": ["https://gadget.com,https://cool.com"]
       }
     ])";
 
 const GURL kPolicyOrigins[] = {
     GURL("https://product.vendor.com"), GURL("https://vendor.com"),
-    GURL("https://anydevice.com"),      GURL("https://sub.anydevice.com"),
-    GURL("https://gadget.com"),         GURL("https://cool.com")};
+    GURL("https://anydevice.com"), GURL("https://gadget.com"),
+    GURL("https://cool.com")};
 
 void ExpectNoPermissions(UsbChooserContext* store,
                          const device::mojom::UsbDeviceInfo& device_info) {
@@ -347,7 +347,7 @@ TEST_F(UsbChooserContextTest,
        UsbAllowDevicesForUrlsPermissionForSpecificDevice) {
   const std::vector<GURL> kValidRequestingOrigins = {
       GURL("https://product.vendor.com"), GURL("https://vendor.com"),
-      GURL("https://sub.anydevice.com"), GURL("https://anydevice.com")};
+      GURL("https://anydevice.com")};
   const std::vector<GURL> kInvalidRequestingOrigins = {
       GURL("https://gadget.com"), GURL("https://cool.com")};
 
@@ -368,8 +368,7 @@ TEST_F(UsbChooserContextTest,
 TEST_F(UsbChooserContextTest,
        UsbAllowDevicesForUrlsPermissionForVendorRelatedDevice) {
   const std::vector<GURL> kValidRequestingOrigins = {
-      GURL("https://vendor.com"), GURL("https://sub.anydevice.com"),
-      GURL("https://anydevice.com")};
+      GURL("https://vendor.com"), GURL("https://anydevice.com")};
   const std::vector<GURL> kInvalidRequestingOrigins = {
       GURL("https://product.vendor.com"), GURL("https://gadget.com"),
       GURL("https://cool.com")};
@@ -393,7 +392,7 @@ TEST_F(UsbChooserContextTest,
 TEST_F(UsbChooserContextTest,
        UsbAllowDevicesForUrlsPermissionForUnrelatedDevice) {
   const std::vector<GURL> kValidRequestingOrigins = {
-      GURL("https://sub.anydevice.com"), GURL("https://anydevice.com")};
+      GURL("https://anydevice.com")};
   const std::vector<GURL> kInvalidRequestingOrigins = {
       GURL("https://product.vendor.com"), GURL("https://vendor.com"),
       GURL("https://cool.com")};
