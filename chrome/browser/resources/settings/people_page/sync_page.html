@@ -373,36 +373,6 @@
                 aria-label="$i18n{enablePaymentsIntegrationCheckboxLabel}">
             </cr-toggle>
           </div>
-
-          <!-- User events is disabled and unchecked if data is encrypted or
-               typed urls are disabled. -->
-          <template is="dom-if" if="[[unifiedConsentEnabled]]">
-            <div hidden="[[!syncPrefs.userEventsRegistered]]"
-                class$="[[getPassphraseHintLines_(syncPrefs.encryptAllData)]]
-                    layout horizontal list-item">
-              <div class="start" id="userEventsCheckboxLabel">
-                $i18n{userEventsCheckboxLabel}
-                <div class="secondary">
-                  $i18n{userEventsCheckboxText}
-                  <div id="reset-sync-message-box-user-events"
-                      hidden="[[!syncPrefs.encryptAllData]]">
-                    <iron-icon icon="settings:info-outline"
-                        class="passphrase-reset-icon">
-                    </iron-icon>
-                    $i18nRaw{passphraseResetHintToggle}
-                  </div>
-                </div>
-              </div>
-              <cr-toggle id="userEventsToggle"
-                  checked="{{userEventsToggleValue}}"
-                  on-change="onUserEventsSyncDataTypeChanged_"
-                  disabled="[[shouldUserEventsCheckboxBeDisabled_(
-                      syncPrefs.syncAllDataTypes, syncPrefs.typedUrlsSynced,
-                      syncPrefs.userEventsEnforced, syncPrefs.encryptAllData)]]"
-                  aria-labelledby="userEventsCheckboxLabel">
-              </cr-toggle>
-            </div>
-          </template>
         </div>
 
         <div id="other-sync-items"
