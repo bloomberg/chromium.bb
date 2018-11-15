@@ -53,6 +53,17 @@ public class TouchEventFilter
     public interface Client {
         /** Called after a certain number of unexpected taps. */
         void onUnexpectedTaps();
+
+        /**
+         * Scroll the browser view by the given distance.
+         *
+         * <p>Distances are floats between -1.0 and 1.0, with 1 corresponding to the size of the
+         * visible viewport.
+         */
+        void scrollBy(float distanceXRatio, float distanceYRatio);
+
+        /** Asks for an update of the touchable area. */
+        void updateTouchableArea();
     }
 
     private Client mClient;
@@ -74,20 +85,23 @@ public class TouchEventFilter
     private final RectF mDrawRect = new RectF();
 
     /** Detects gestures that happen outside of the allowed area. */
-    private final GestureDetector mGestureDetector;
+    private final GestureDetector mNonBrowserGesture;
+
+    /** True while a gesture handled by {@link #mNonBrowserGesture} is in progress. */
+    private boolean mNonBrowserGestureInProgress;
 
     /** Times, in millisecond, of unexpected taps detected outside of the allowed area. */
     private final List<Long> mUnexpectedTapTimes = new ArrayList<>();
 
-    /** True while scrolling. */
-    private boolean mScrolling;
+    /** True while the browser is scrolling. */
+    private boolean mBrowserScrolling;
 
     /**
      * Scrolling offset to use while scrolling right after scrolling.
      *
      * <p>This value shifts the touchable area by that many pixels while scrolling.
      */
-    private int mScrollOffsetY;
+    private int mBrowserScrollOffsetY;
 
     /**
      * Offset reported at the beginning of a scroll.
@@ -95,7 +109,7 @@ public class TouchEventFilter
      * <p>This is used to interpret the offsets reported by subsequent calls to {@link
      * #onScrollOffsetOrExtentChanged} or {@link #onScrollEnded}.
      */
-    private int mInitialScrollOffsetY;
+    private int mInitialBrowserScrollOffsetY;
 
     /**
      * Current offset that applies on mTouchableArea.
@@ -129,11 +143,19 @@ public class TouchEventFilter
         mClear = new Paint();
         mClear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
-        // Detect gestures in the unexpected area.
-        mGestureDetector = new GestureDetector(context, new SimpleOnGestureListener() {
+        // Handles gestures that happen outside of the allowed area.
+        mNonBrowserGesture = new GestureDetector(context, new SimpleOnGestureListener() {
+
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
                 onUnexpectedTap(e);
+                return true;
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent downEvent, MotionEvent moveEvent, float distanceX,
+                    float distanceY) {
+                mClient.scrollBy(distanceX / getWidth(), distanceY / getVisualViewportHeight());
                 return true;
             }
         });
@@ -168,7 +190,7 @@ public class TouchEventFilter
             clearTouchableArea();
         }
 
-        if (!mScrolling && !mTouchableArea.equals(rectangles)) {
+        if (!mTouchableArea.equals(rectangles)) {
             clearTouchableArea();
             mTouchableArea.addAll(rectangles);
         }
@@ -177,6 +199,8 @@ public class TouchEventFilter
     private void clearTouchableArea() {
         mTouchableArea.clear();
         mOffsetY = 0;
+        mInitialBrowserScrollOffsetY += mBrowserScrollOffsetY;
+        mBrowserScrollOffsetY = 0;
         invalidate();
     }
 
@@ -187,10 +211,24 @@ public class TouchEventFilter
                 // Scrolling is always safe. Let it through.
                 return false;
 
-            case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE:
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                if (mNonBrowserGestureInProgress) {
+                    // If a non-browser gesture, started with an ACTION_DOWN, is in progress, give
+                    // it priority over everything else until the next ACTION_DOWN.
+                    mNonBrowserGesture.onTouchEvent(event);
+                    return true;
+                }
+                if (mBrowserScrolling) {
+                    // Events sent to the browser triggered scrolling, which was reported to
+                    // onScrollStarted. Direct all events to the browser until the next ACTION_DOWN
+                    // to avoid interrupting that scroll.
+                    return false;
+                }
+            // fallthrough
+
+            case MotionEvent.ACTION_DOWN:
                 if (!mEnabled) return false; // let everything through
 
                 // Only let through events if they're meant for the touchable area of the screen.
@@ -201,9 +239,10 @@ public class TouchEventFilter
                 }
                 int height = yBottom - yTop;
                 boolean allowed = isInTouchableArea(((float) event.getX()) / getWidth(),
-                        (((float) event.getY() - yTop + mScrollOffsetY + mOffsetY) / height));
+                        (((float) event.getY() - yTop + mBrowserScrollOffsetY + mOffsetY)
+                                / height));
                 if (!allowed) {
-                    mGestureDetector.onTouchEvent(event);
+                    mNonBrowserGestureInProgress = mNonBrowserGesture.onTouchEvent(event);
                     return true; // handled
                 }
                 return false; // let it through
@@ -236,9 +275,11 @@ public class TouchEventFilter
         int height = yBottom - yTop;
         for (RectF rect : mTouchableArea) {
             mDrawRect.left = rect.left * width - mPaddingPx;
-            mDrawRect.top = yTop + rect.top * height - mPaddingPx - mScrollOffsetY - mOffsetY;
+            mDrawRect.top =
+                    yTop + rect.top * height - mPaddingPx - mBrowserScrollOffsetY - mOffsetY;
             mDrawRect.right = rect.right * width + mPaddingPx;
-            mDrawRect.bottom = yTop + rect.bottom * height + mPaddingPx - mScrollOffsetY - mOffsetY;
+            mDrawRect.bottom =
+                    yTop + rect.bottom * height + mPaddingPx - mBrowserScrollOffsetY - mOffsetY;
             if (mDrawRect.left <= 0 && mDrawRect.right >= width) {
                 // Rounded corners look strange in the case where the rectangle takes exactly the
                 // width of the screen.
@@ -272,37 +313,40 @@ public class TouchEventFilter
         invalidate();
     }
 
+    /** Called at the beginning of a scroll gesture triggered by the browser. */
     @Override
     public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
-        mScrolling = true;
-        mInitialScrollOffsetY = scrollOffsetY;
-        mScrollOffsetY = 0;
+        mBrowserScrolling = true;
+        mInitialBrowserScrollOffsetY = scrollOffsetY;
+        mBrowserScrollOffsetY = 0;
         invalidate();
     }
 
+    /** Called during a scroll gesture triggered by the browser. */
     @Override
     public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {
-        if (!mScrolling) {
+        if (!mBrowserScrolling) {
             // onScrollOffsetOrExtentChanged will be called alone, without onScrollStarted during a
             // Javascript-initiated scroll.
-            //
-            // TODO(crbug.com/806868): Consider handling these as well, for smoother
-            // Javascript-initiated scrolling.
+            mClient.updateTouchableArea();
             return;
         }
-        mScrollOffsetY = scrollOffsetY - mInitialScrollOffsetY;
+        mBrowserScrollOffsetY = scrollOffsetY - mInitialBrowserScrollOffsetY;
         invalidate();
+        mClient.updateTouchableArea();
     }
 
+    /** Called at the end of a scroll gesture triggered by the browser. */
     @Override
     public void onScrollEnded(int scrollOffsetY, int scrollExtentY) {
-        if (!mScrolling) {
+        if (!mBrowserScrolling) {
             return;
         }
-        mOffsetY += (scrollOffsetY - mInitialScrollOffsetY);
-        mScrollOffsetY = 0;
-        mScrolling = false;
+        mOffsetY += (scrollOffsetY - mInitialBrowserScrollOffsetY);
+        mBrowserScrollOffsetY = 0;
+        mBrowserScrolling = false;
         invalidate();
+        mClient.updateTouchableArea();
     }
 
     /** Considers whether to let the client know about unexpected taps. */
@@ -346,5 +390,10 @@ public class TouchEventFilter
                     - mFullscreenManager.getBottomControlOffset());
         }
         return getHeight() - bottomBarHeight;
+    }
+
+    /** Height of the visual viewport. */
+    private int getVisualViewportHeight() {
+        return getVisualViewportBottom() - getVisualViewportTop();
     }
 }

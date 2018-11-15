@@ -122,6 +122,16 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @Override
+    public void scrollBy(float distanceXRatio, float distanceYRatio) {
+        nativeScrollBy(mUiControllerAndroid, distanceXRatio, distanceYRatio);
+    }
+
+    @Override
+    public void updateTouchableArea() {
+        nativeUpdateTouchableArea(mUiControllerAndroid);
+    }
+
+    @Override
     public void onScriptSelected(String scriptPath) {
         nativeOnScriptSelected(mUiControllerAndroid, scriptPath);
     }
@@ -433,6 +443,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             String[] parameterValues, String locale, String countryCode);
     private native void nativeStart(long nativeUiControllerAndroid, String initialUrl);
     private native void nativeDestroy(long nativeUiControllerAndroid);
+    private native void nativeScrollBy(
+            long nativeUiControllerAndroid, float distanceXRatio, float distanceYRatio);
+    private native void nativeUpdateTouchableArea(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);
