@@ -34,8 +34,13 @@ class MojoSandboxSetupHooks : public SandboxSetupHooks {
       const base::Process& target_process,
       const base::win::ScopedHandle& target_thread) override;
 
+  void SetupFailed() override;
+
  private:
+  void ReportProcessLaunchAttempt();
+
   bool message_pipe_was_created_ = false;
+  bool process_launch_attempt_reported_ = false;
   mojo::OutgoingInvitation outgoing_invitation_;
   mojo::PlatformChannel mojo_channel_;
 
