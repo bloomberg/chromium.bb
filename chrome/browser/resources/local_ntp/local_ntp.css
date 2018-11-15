@@ -553,6 +553,18 @@ html[dir=rtl] #mv-notice-x {
   transition: bottom 400ms;
 }
 
+/* Required to allow click events through the wrapping div of the toast
+ * notification container. */
+.md-icons #mv-notice-container,
+#error-notice-container {
+  pointer-events: none;
+}
+.md-icons #mv-notice-container > div,
+#error-notice-container > div {
+  pointer-events: all;
+}
+
+
 .md-icons #mv-notice-container.float-up {
   bottom: 0;
 }
