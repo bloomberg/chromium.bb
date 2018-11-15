@@ -84,7 +84,6 @@ class AutofillAssistantUiDelegate {
     private final Client mClient;
     private final ViewGroup mCoordinatorView;
     private final View mFullContainer;
-    private final View mOverlay;
     private final TouchEventFilter mTouchEventFilter;
     private final LinearLayout mBottomBar;
     private final HorizontalScrollView mCarouselScroll;
@@ -109,11 +108,6 @@ class AutofillAssistantUiDelegate {
      * This is a client interface that relays interactions from the UI.
      */
     public interface Client extends TouchEventFilter.Client {
-        /**
-         * Called when clicking on the overlay.
-         */
-        void onClickOverlay();
-
         /**
          * Called when the bottom bar is dismissing.
          */
@@ -318,8 +312,6 @@ class AutofillAssistantUiDelegate {
                                  .inflate(R.layout.autofill_assistant_sheet, mCoordinatorView)
                                  .findViewById(R.id.autofill_assistant);
         // TODO(crbug.com/806868): Set hint text on overlay.
-        mOverlay = mFullContainer.findViewById(R.id.overlay);
-        mOverlay.setOnClickListener(unusedView -> mClient.onClickOverlay());
         mTouchEventFilter = (TouchEventFilter) mFullContainer.findViewById(R.id.touch_event_filter);
         mTouchEventFilter.init(client, activity.getFullscreenManager(),
                 activity.getActivityTab().getWebContents());
@@ -358,7 +350,6 @@ class AutofillAssistantUiDelegate {
         // Finch experiment to adjust overlay color
         Integer overlayColor = AutofillAssistantStudy.getOverlayColor();
         if (overlayColor != null) {
-            mOverlay.setBackgroundColor(overlayColor);
             mTouchEventFilter.setGrayOutColor(overlayColor);
         }
 
@@ -532,16 +523,12 @@ class AutofillAssistantUiDelegate {
 
     /** Called to show overlay. */
     public void showOverlay() {
-        mOverlay.setVisibility(View.VISIBLE);
+        mTouchEventFilter.setEnableFiltering(true);
     }
 
     /** Called to hide overlay. */
     public void hideOverlay() {
-        mOverlay.setVisibility(View.GONE);
-    }
-
-    public boolean isOverlayVisible() {
-        return mOverlay.getVisibility() == View.VISIBLE;
+        mTouchEventFilter.setEnableFiltering(false);
     }
 
     public void hideDetails() {

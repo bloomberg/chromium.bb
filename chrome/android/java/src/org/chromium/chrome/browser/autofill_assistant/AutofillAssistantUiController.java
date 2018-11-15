@@ -151,11 +151,6 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         return nativeOnRequestDebugContext(mUiControllerAndroid);
     }
 
-    @Override
-    public void onClickOverlay() {
-        // TODO(crbug.com/806868): Notify native side.
-    }
-
     /**
      * Immediately and unconditionally destroys the UI Controller.
      *

@@ -37,8 +37,6 @@ import java.util.List;
  *
  * <p>This view decides whether to forward touch events. It does not manipulate them. This works at
  * the level of low-level touch events (up, down, move, cancel), not gestures.
- *
- * <p>TODO(crbug.com/806868): Consider merging this view with the overlay.
  */
 public class TouchEventFilter
         extends View implements ChromeFullscreenManager.FullscreenListener, GestureStateListener {
@@ -177,6 +175,20 @@ public class TouchEventFilter
         mGrayOut.setColor(color);
     }
 
+    /** Enables/disables the filter. Clears all currently set touchable areas. */
+    public void setEnableFiltering(boolean enabled) {
+        if (mEnabled != enabled) {
+            clearTouchableArea();
+            mEnabled = enabled;
+            setAlpha(mEnabled ? 1.0f : 0.0f);
+
+            // reset tap counter each time the filter is disabled.
+            if (!mEnabled) mUnexpectedTapTimes.clear();
+
+            invalidate();
+        }
+    }
+
     /**
      * Defines the area of the visible viewport that can be used.
      *
@@ -184,12 +196,7 @@ public class TouchEventFilter
      * @param rectangles rectangles defining the area that can be used, may be empty
      */
     public void updateTouchableArea(boolean enabled, List<RectF> rectangles) {
-        if (mEnabled != enabled) {
-            mEnabled = enabled;
-            setAlpha(mEnabled ? 1.0f : 0.0f);
-            clearTouchableArea();
-        }
-
+        setEnableFiltering(enabled);
         if (!mTouchableArea.equals(rectangles)) {
             clearTouchableArea();
             mTouchableArea.addAll(rectangles);
