@@ -13,6 +13,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -79,7 +80,9 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
           kDoubleTapThresholdMs) {
     // Second taps should not be processed outside of overview mode. (First
     // taps should be outside of overview).
-    DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
+    WindowSelectorController* window_selector_controller =
+        Shell::Get()->window_selector_controller();
+    DCHECK(window_selector_controller->IsSelecting());
 
     base::RecordAction(base::UserMetricsAction("Tablet_QuickSwitch"));
 
@@ -89,8 +92,12 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
         Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
 
     // Switch to the second most recently used window (most recent is the
-    // current window) if it exists, unless splitview mode is active.
-    if (mru_window_list.size() > 1u) {
+    // current window) if it exists, unless splitview mode is active. Do not
+    // switch we entered overview mode will all windows minimized.
+    if (mru_window_list.size() > 1u &&
+        window_selector_controller->window_selector()
+                ->enter_exit_overview_type() !=
+            WindowSelector::EnterExitOverviewType::kWindowsMinimized) {
       aura::Window* new_active_window = mru_window_list[1];
 
       // In splitview mode, quick switch will only affect the windows on the non
@@ -110,7 +117,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
       }
 
       AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
-      wm::GetWindowState(new_active_window)->Activate();
+      ::wm::ActivateWindow(new_active_window);
       last_press_event_time_ = base::nullopt;
       return true;
     }
