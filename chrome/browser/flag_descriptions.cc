@@ -2236,6 +2236,12 @@ const char kAccessibilityTabSwitcherName[] = "Accessibility Tab Switcher";
 const char kAccessibilityTabSwitcherDescription[] =
     "Enable the accessibility tab switcher for Android.";
 
+const char kAllowRemoteContextForNotificationsName[] =
+    "Allow using remote app context for notifications";
+const char kAllowRemoteContextForNotificationsDescription[] =
+    "Allow using Context#createPackageContext to work around issues with status"
+    "bar icons on certain Android M devices.";
+
 const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
 const char kAndroidAutofillAccessibilityDescription[] =
     "Enable accessibility for autofill popup.";

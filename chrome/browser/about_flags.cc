@@ -4520,6 +4520,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDiscoverAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDiscoverApp)},
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+    {"allow-remote-context-for-notifications",
+     flag_descriptions::kAllowRemoteContextForNotificationsName,
+     flag_descriptions::kAllowRemoteContextForNotificationsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAllowRemoteContextForNotifications)},
+#endif  // defined(OS_ANDROID)
 };
 
 class FlagsStateSingleton {

@@ -74,6 +74,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &feed::kInterestFeedContentSuggestions,
     &invalidation::switches::kFCMInvalidations,
     &kAdjustWebApkInstallationSpace,
+    &kAllowRemoteContextForNotifications,
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
     &kAndroidPaymentApps,
@@ -197,6 +198,9 @@ const base::Feature kAdjustWebApkInstallationSpace = {
 
 const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAllowRemoteContextForNotifications{
+    "AllowRemoteContextForNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidPayIntegrationV2{"AndroidPayIntegrationV2",
                                              base::FEATURE_ENABLED_BY_DEFAULT};

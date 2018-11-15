@@ -29449,6 +29449,7 @@ from previous Chrome versions.
   <int value="-1438279809" label="GamepadExtensions:disabled"/>
   <int value="-1436251034" label="VoiceSearchOnLocalNtp:disabled"/>
   <int value="-1433719718" label="enable-webrtc-stun-origin"/>
+  <int value="-1433452630" label="AllowRemoteContextForNotifications:enabled"/>
   <int value="-1433087548" label="enable-app-install-alerts"/>
   <int value="-1431563697" label="WebPaymentsMethodSectionOrderV2:enabled"/>
   <int value="-1426817842" label="BlockTabUnders:enabled"/>
@@ -31388,6 +31389,7 @@ from previous Chrome versions.
   <int value="2139048614" label="UseSurfaceLayerForVideo:enabled"/>
   <int value="2141067485" label="SystemWebApps:enabled"/>
   <int value="2141463681" label="enable-offer-upload-credit-cards"/>
+  <int value="2142661816" label="AllowRemoteContextForNotifications:disabled"/>
   <int value="2142979536" label="EnableManualFallbacksFilling:disabled"/>
 </enum>
 

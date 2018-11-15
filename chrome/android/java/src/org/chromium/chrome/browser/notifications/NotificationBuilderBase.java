@@ -25,6 +25,7 @@ import android.support.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 import java.lang.annotation.Retention;
@@ -125,6 +126,13 @@ public abstract class NotificationBuilderBase {
     protected int mSmallIconId;
     @Nullable protected Bitmap mSmallIconBitmapForStatusBar;
     @Nullable protected Bitmap mSmallIconBitmapForContent;
+
+    /**
+     * Package name to use for creating remote package context to be passed to NotificationBuilder.
+     * If null, Chrome's context is used. Currently only used as a workaround for a certain issue,
+     * see {@link #setStatusBarIconForRemoteApp}, {@link #deviceSupportsBitmapStatusBarIcons}.
+     */
+    @Nullable protected String mRemotePackageForBuilderContext;
 
     protected PendingIntent mContentIntent;
     protected PendingIntent mDeleteIntent;
@@ -248,7 +256,7 @@ public abstract class NotificationBuilderBase {
      */
     public NotificationBuilderBase setStatusBarIconForTrustedRemoteApp(
             int iconId, String packageName) {
-        setStatusBarIconForRemoteApp(iconId, decodeImageResource(packageName, iconId));
+        setStatusBarIconForRemoteApp(iconId, decodeImageResource(packageName, iconId), packageName);
         return this;
     }
 
@@ -257,24 +265,39 @@ public abstract class NotificationBuilderBase {
      * Unlike {@link #setStatusBarIconForTrustedRemoteApp} this is safe to use for any app.
      * @param iconId An iconId for a resource in the package that will display the notification.
      * @param iconBitmap The decoded bitmap. Depending on the device we need either id or bitmap.
+     * @param packageName The package name of the package that will display the notification.
      */
     public NotificationBuilderBase setStatusBarIconForUntrustedRemoteApp(
-            int iconId, @Nullable Bitmap iconBitmap) {
-        setStatusBarIconForRemoteApp(iconId, iconBitmap);
+            int iconId, @Nullable Bitmap iconBitmap, String packageName) {
+        setStatusBarIconForRemoteApp(iconId, iconBitmap, packageName);
         return this;
     }
 
-    private void setStatusBarIconForRemoteApp(int iconId, @Nullable Bitmap iconBitmap) {
+    private void setStatusBarIconForRemoteApp(int iconId, @Nullable Bitmap iconBitmap,
+            String packageName) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // On Android M+, the small icon has to be from the resources of the app whose context
             // is passed to the Notification.Builder constructor. Thus we can't use iconId directly,
-            // and instead decode the image and set the icon as a Bitmap.
-            setStatusBarIcon(iconBitmap);
+            // and instead use the decoded Bitmap.
+            if (deviceSupportsBitmapStatusBarIcons()) {
+                setStatusBarIcon(iconBitmap);
+            } else if (usingRemoteAppContextAllowed()) {
+                // For blacklisted M devices we can use neither iconId (see comment below), nor
+                // iconBitmap, because that leads to crashes. Here we attempt to work around that by
+                // using remote app context: with that context iconId can be used.
+                mRemotePackageForBuilderContext = packageName;
+                setSmallIconId(iconId);
+            }  // else we're out of luck.
         } else {
             // Pre Android M, the small icon has to be from the resources of the app whose
             // NotificationManager is used in NotificationManager#notify.
             setSmallIconId(iconId);
         }
+    }
+
+    private static boolean usingRemoteAppContextAllowed() {
+        return ChromeFeatureList.isEnabled(
+                ChromeFeatureList.ALLOW_REMOTE_CONTEXT_FOR_NOTIFICATIONS);
     }
 
     /**
