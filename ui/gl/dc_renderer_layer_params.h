@@ -21,6 +21,13 @@ class GLImage;
 
 namespace ui {
 
+enum class ProtectedVideoType : uint32_t {
+  kClear = 0,
+  kSoftwareProtected = 1,
+  kHardwareProtected = 2,
+  kMaxValue = kHardwareProtected,
+};
+
 struct GL_EXPORT DCRendererLayerParams {
   DCRendererLayerParams(bool is_clipped,
                         const gfx::Rect clip_rect,
@@ -33,7 +40,7 @@ struct GL_EXPORT DCRendererLayerParams {
                         unsigned edge_aa_mask,
                         float opacity,
                         unsigned filter,
-                        bool is_protected_video);
+                        ProtectedVideoType protected_video_type);
   DCRendererLayerParams(const DCRendererLayerParams& other);
   ~DCRendererLayerParams();
 
@@ -48,7 +55,7 @@ struct GL_EXPORT DCRendererLayerParams {
   unsigned edge_aa_mask;
   float opacity;
   unsigned filter;
-  bool is_protected_video;
+  ProtectedVideoType protected_video_type;
 
   // This is a subset of cc::FilterOperation::FilterType.
   enum class FilterEffectType : uint32_t {

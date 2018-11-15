@@ -20,7 +20,7 @@ DCRendererLayerParams::DCRendererLayerParams(
     unsigned edge_aa_mask,
     float opacity,
     unsigned filter,
-    bool is_protected_video)
+    ProtectedVideoType protected_video_type)
     : is_clipped(is_clipped),
       clip_rect(clip_rect),
       z_order(z_order),
@@ -32,7 +32,7 @@ DCRendererLayerParams::DCRendererLayerParams(
       edge_aa_mask(edge_aa_mask),
       opacity(opacity),
       filter(filter),
-      is_protected_video(is_protected_video) {}
+      protected_video_type(protected_video_type) {}
 
 DCRendererLayerParams::DCRendererLayerParams(
     const DCRendererLayerParams& other) = default;

@@ -807,7 +807,7 @@ virtual void ScheduleDCLayerCHROMIUM(GLsizei num_textures,
                                      GLuint edge_aa_mask,
                                      const GLfloat* bounds_rect,
                                      GLuint filter,
-                                     bool is_protected_video) = 0;
+                                     GLuint protected_video_type) = 0;
 virtual void SetActiveURLCHROMIUM(const char* url) = 0;
 virtual void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) = 0;
 virtual void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) = 0;

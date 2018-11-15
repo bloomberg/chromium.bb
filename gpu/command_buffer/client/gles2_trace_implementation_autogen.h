@@ -783,7 +783,7 @@ void ScheduleDCLayerCHROMIUM(GLsizei num_textures,
                              GLuint edge_aa_mask,
                              const GLfloat* bounds_rect,
                              GLuint filter,
-                             bool is_protected_video) override;
+                             GLuint protected_video_type) override;
 void SetActiveURLCHROMIUM(const char* url) override;
 void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) override;
 void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) override;

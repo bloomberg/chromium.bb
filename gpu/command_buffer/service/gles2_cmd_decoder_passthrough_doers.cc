@@ -3661,8 +3661,7 @@ error::Error GLES2DecoderPassthroughImpl::DoGetProgramInfoCHROMIUM(
 
   const base::CheckedNumeric<size_t> buffer_header_size(
       sizeof(ProgramInfoHeader));
-  const base::CheckedNumeric<size_t> buffer_block_size(
-      sizeof(ProgramInput));
+  const base::CheckedNumeric<size_t> buffer_block_size(sizeof(ProgramInput));
   const base::CheckedNumeric<size_t> attribute_block_size =
       buffer_block_size * num_attributes;
   const base::CheckedNumeric<size_t> uniform_block_size =
@@ -4416,7 +4415,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
     GLuint edge_aa_mask,
     GLenum filter,
     const GLfloat* bounds_rect,
-    bool is_protected_video) {
+    GLuint protected_video_type) {
   switch (filter) {
     case GL_NEAREST:
     case GL_LINEAR:
@@ -4465,12 +4464,20 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
     }
   }
 
+  if (protected_video_type >
+      static_cast<GLuint>(ui::ProtectedVideoType::kMaxValue)) {
+    InsertError(GL_INVALID_VALUE, "unknown protected video type.");
+    return error::kNoError;
+  }
+  ui::ProtectedVideoType protected_video_type_param =
+      static_cast<ui::ProtectedVideoType>(protected_video_type);
+
   ui::DCRendererLayerParams params(
       dc_layer_shared_state_->is_clipped, dc_layer_shared_state_->clip_rect,
       dc_layer_shared_state_->z_order, dc_layer_shared_state_->transform,
       images, contents_rect_object, gfx::ToEnclosingRect(bounds_rect_object),
       background_color, edge_aa_mask, dc_layer_shared_state_->opacity, filter,
-      is_protected_video);
+      protected_video_type_param);
 
   if (!surface_->ScheduleDCLayer(params)) {
     InsertError(GL_INVALID_OPERATION, "failed to schedule DCLayer");

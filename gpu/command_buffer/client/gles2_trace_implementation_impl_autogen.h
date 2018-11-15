@@ -2245,11 +2245,11 @@ void GLES2TraceImplementation::ScheduleDCLayerCHROMIUM(
     GLuint edge_aa_mask,
     const GLfloat* bounds_rect,
     GLuint filter,
-    bool is_protected_video) {
+    GLuint protected_video_type) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ScheduleDCLayerCHROMIUM");
   gl_->ScheduleDCLayerCHROMIUM(num_textures, contents_texture_ids,
                                contents_rect, background_color, edge_aa_mask,
-                               bounds_rect, filter, is_protected_video);
+                               bounds_rect, filter, protected_video_type);
 }
 
 void GLES2TraceImplementation::SetActiveURLCHROMIUM(const char* url) {

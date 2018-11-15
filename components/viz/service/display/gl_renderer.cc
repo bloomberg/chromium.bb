@@ -3158,6 +3158,8 @@ void GLRenderer::ScheduleDCLayers() {
     GLfloat transform[16];
     dc_layer_overlay.shared_state->transform.asColMajorf(transform);
     unsigned filter = dc_layer_overlay.filter;
+    unsigned protected_video_type =
+        static_cast<unsigned>(dc_layer_overlay.protected_video_type);
 
     if (dc_layer_overlay.shared_state != shared_state) {
       shared_state = dc_layer_overlay.shared_state;
@@ -3173,7 +3175,7 @@ void GLRenderer::ScheduleDCLayers() {
     gl_->ScheduleDCLayerCHROMIUM(ids_to_send, texture_ids, contents_rect,
                                  dc_layer_overlay.background_color,
                                  dc_layer_overlay.edge_aa_mask, bounds_rect,
-                                 filter, dc_layer_overlay.is_protected_video);
+                                 filter, protected_video_type);
   }
 }
 

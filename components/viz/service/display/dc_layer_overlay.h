@@ -42,6 +42,10 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
   DCLayerOverlay(const DCLayerOverlay& other);
   ~DCLayerOverlay();
 
+  bool IsProtectedVideo() const {
+    return (protected_video_type != ui::ProtectedVideoType::kClear);
+  }
+
   // State that is frequently shared between consecutive DCLayerOverlays.
   scoped_refptr<DCLayerOverlaySharedState> shared_state;
 
@@ -68,7 +72,7 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
   gfx::ColorSpace color_space;
 
   bool require_overlay = false;
-  bool is_protected_video = false;
+  ui::ProtectedVideoType protected_video_type = ui::ProtectedVideoType::kClear;
 };
 
 typedef std::vector<DCLayerOverlay> DCLayerOverlayList;

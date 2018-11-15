@@ -317,7 +317,7 @@ GL_APICALL void         GL_APIENTRY glCommitOverlayPlanesCHROMIUM (GLuint64 swap
 GL_APICALL void         GL_APIENTRY glFlushDriverCachesCHROMIUM (void);
 GL_APICALL GLuint       GL_APIENTRY glGetLastFlushIdCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glScheduleDCLayerSharedStateCHROMIUM (GLfloat opacity, GLboolean is_clipped, const GLfloat* clip_rect, GLint z_order, const GLfloat* transform);
-GL_APICALL void         GL_APIENTRY glScheduleDCLayerCHROMIUM (GLsizei num_textures, const GLuint* contents_texture_ids, const GLfloat* contents_rect, GLuint background_color, GLuint edge_aa_mask, const GLfloat* bounds_rect, GLuint filter, bool is_protected_video);
+GL_APICALL void         GL_APIENTRY glScheduleDCLayerCHROMIUM (GLsizei num_textures, const GLuint* contents_texture_ids, const GLfloat* contents_rect, GLuint background_color, GLuint edge_aa_mask, const GLfloat* bounds_rect, GLuint filter, GLuint protected_video_type);
 GL_APICALL void         GL_APIENTRY glSetActiveURLCHROMIUM (const char* url);
 
 // Extension CHROMIUM_path_rendering.

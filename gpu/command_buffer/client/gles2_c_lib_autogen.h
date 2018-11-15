@@ -1550,10 +1550,10 @@ GLES2ScheduleDCLayerCHROMIUM(GLsizei num_textures,
                              GLuint edge_aa_mask,
                              const GLfloat* bounds_rect,
                              GLuint filter,
-                             bool is_protected_video) {
+                             GLuint protected_video_type) {
   gles2::GetGLContext()->ScheduleDCLayerCHROMIUM(
       num_textures, contents_texture_ids, contents_rect, background_color,
-      edge_aa_mask, bounds_rect, filter, is_protected_video);
+      edge_aa_mask, bounds_rect, filter, protected_video_type);
 }
 void GL_APIENTRY GLES2SetActiveURLCHROMIUM(const char* url) {
   gles2::GetGLContext()->SetActiveURLCHROMIUM(url);
