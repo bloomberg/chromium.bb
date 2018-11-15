@@ -212,7 +212,7 @@ NSString* const kCreditCardLabelTemplate = @"Test User, %@";
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
                                    @"cardItem_switch", YES, YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnLegacySettingsSwitchOn(NO)];
 
   // Expect Autofill credit cards to remain visible.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
@@ -223,7 +223,7 @@ NSString* const kCreditCardLabelTemplate = @"Test User, %@";
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
                                    @"cardItem_switch", NO, YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnLegacySettingsSwitchOn(YES)];
 
   // Expect Autofill credit cards to remain visible.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(

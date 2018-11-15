@@ -89,14 +89,25 @@ id<GREYMatcher> TabletTabSwitcherOpenButton();
 // Matcher for show tabs button.
 id<GREYMatcher> ShowTabsButton();
 
-// Matcher for LegacySettingsSwitchCell.
-id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibilityIdentifier,
-                                         BOOL isToggledOn);
+// Matcher for SettingsSwitchCell.
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
+                                   BOOL is_toggled_on);
+
+// Matcher for SettingsSwitchCell.
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
+                                   BOOL is_toggled_on,
+                                   BOOL is_enabled);
 
 // Matcher for LegacySettingsSwitchCell.
-id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibilityIdentifier,
-                                         BOOL isToggledOn,
-                                         BOOL isEnabled);
+// TODO(crbug.com/894800): Remove this.
+id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
+                                         BOOL is_toggled_on);
+
+// Matcher for LegacySettingsSwitchCell.
+// TODO(crbug.com/894800): Remove this.
+id<GREYMatcher> LegacySettingsSwitchCell(NSString* accessibility_identifier,
+                                         BOOL is_toggled_on,
+                                         BOOL is_enabled);
 
 // Matcher for SyncSwitchCell.
 id<GREYMatcher> SyncSwitchCell(NSString* accessibilityLabel, BOOL isToggledOn);

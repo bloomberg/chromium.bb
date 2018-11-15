@@ -25,6 +25,10 @@ id<GREYAction> LongPressElementForContextMenu(
 
 // Action to turn the switch of a LegacySettingsSwitchCell to the given |on|
 // state.
+// TODO(crbug.com/894800): Remove this.
+id<GREYAction> TurnLegacySettingsSwitchOn(BOOL on);
+
+// Action to turn the switch of a SettingsSwitchCell to the given |on| state.
 id<GREYAction> TurnSettingsSwitchOn(BOOL on);
 
 // Action to turn the switch of a SyncSwitchCell to the given |on| state.
