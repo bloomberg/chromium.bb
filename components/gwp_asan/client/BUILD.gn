@@ -5,6 +5,8 @@
 component("client") {
   output_name = "gwp_asan_client"
   sources = [
+    "crash_key.cc",
+    "crash_key.h",
     "export.h",
     "gwp_asan.cc",
     "gwp_asan.h",
@@ -18,6 +20,7 @@ component("client") {
   deps = [
     "//base",
     "//base/allocator:buildflags",
+    "//components/crash/core/common:crash_key",
     "//components/gwp_asan/common",
   ]
 }
@@ -31,6 +34,7 @@ source_set("unit_tests") {
     ":client",
     "//base/allocator:buildflags",
     "//base/test:test_support",
+    "//components/crash/core/common:crash_key",
     "//components/gwp_asan/common",
     "//testing/gtest",
   ]

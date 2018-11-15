@@ -10,10 +10,13 @@
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/gtest_util.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "components/crash/core/common/crash_key.h"
+#include "components/gwp_asan/common/crash_key_name.h"
 #include "components/gwp_asan/common/guarded_page_allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -37,6 +40,7 @@ constexpr size_t kSamplingFrequency = 10;
 constexpr size_t kLoopIterations = kSamplingFrequency * 32;
 
 constexpr int kSuccess = 0;
+constexpr int kFailure = 1;
 
 class SamplingAllocatorShimsTest : public base::MultiProcessTest {
  protected:
@@ -157,11 +161,28 @@ MULTIPROCESS_TEST_MAIN(Calloc) {
     free(alloc);
   }
 
-  return kSuccess + 1;
+  return kFailure;
 }
 
 TEST_F(SamplingAllocatorShimsTest, Calloc) {
   runTest("Calloc");
+}
+
+MULTIPROCESS_TEST_MAIN(CrashKey) {
+  InstallAllocatorHooks(GuardedPageAllocator::kGpaMaxPages, kSamplingFrequency);
+
+  std::string crash_key = crash_reporter::GetCrashKeyValue(kGpaCrashKey);
+
+  uint64_t value;
+  if (!base::HexStringToUInt64(crash_key, &value) ||
+      value != reinterpret_cast<uintptr_t>(&GetGpaForTesting()))
+    return kFailure;
+
+  return kSuccess;
+}
+
+TEST_F(SamplingAllocatorShimsTest, CrashKey) {
+  runTest("CrashKey");
 }
 
 }  // namespace
