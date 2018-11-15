@@ -903,4 +903,71 @@ public class AwContentsTest {
         // |loadUrl| doesn't allow a null url, so it is not necessary to check that for this API.
         // See http://crbug.com/864708.
     }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testLoadUrlRecordsScheme_http() throws Throwable {
+        // No need to spin up a web server, since we don't care if the load ever succeeds.
+        final String httpUrlWithNoRealPage = "http://some.origin/some/path.html";
+        loadUrlAndCheckScheme(httpUrlWithNoRealPage, AwContents.UrlScheme.HTTP_SCHEME);
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testLoadUrlRecordsScheme_javascript() throws Throwable {
+        loadUrlAndCheckScheme(
+                "javascript:console.log('message')", AwContents.UrlScheme.JAVASCRIPT_SCHEME);
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testLoadUrlRecordsScheme_fileAndroidAsset() throws Throwable {
+        loadUrlAndCheckScheme("file:///android_asset/some/asset/page.html",
+                AwContents.UrlScheme.FILE_ANDROID_ASSET_SCHEME);
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testLoadUrlRecordsScheme_fileRegular() throws Throwable {
+        loadUrlAndCheckScheme("file:///some/path/on/disk.html", AwContents.UrlScheme.FILE_SCHEME);
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testLoadUrlRecordsScheme_data() throws Throwable {
+        loadUrlAndCheckScheme(
+                "data:text/html,<html><body>foo</body></html>", AwContents.UrlScheme.DATA_SCHEME);
+    }
+
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    public void testLoadUrlRecordsScheme_blank() throws Throwable {
+        loadUrlAndCheckScheme("about:blank", AwContents.UrlScheme.EMPTY);
+    }
+
+    private void loadUrlAndCheckScheme(String url, @AwContents.UrlScheme int expectedSchemeEnum)
+            throws Throwable {
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        AwContents.LOAD_URL_SCHEME_HISTOGRAM_NAME));
+        // Note: we use async because not all loads emit onPageFinished. This relies on the UMA
+        // metric being logged in the synchronous part of loadUrl().
+        mActivityTestRule.loadUrlAsync(awContents, url);
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        AwContents.LOAD_URL_SCHEME_HISTOGRAM_NAME));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        AwContents.LOAD_URL_SCHEME_HISTOGRAM_NAME, expectedSchemeEnum));
+    }
 }
