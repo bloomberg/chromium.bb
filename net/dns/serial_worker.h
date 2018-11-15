@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/task/task_traits.h"
@@ -34,7 +34,7 @@ namespace net {
 // This implementation avoids locking by using the |state_| member to ensure
 // that |DoWork| and |OnWorkFinished| cannot execute in parallel.
 class NET_EXPORT_PRIVATE SerialWorker
-    : public base::RefCountedThreadSafe<SerialWorker> {
+    : public base::RefCountedDeleteOnSequence<SerialWorker> {
  public:
   SerialWorker();
 
@@ -48,7 +48,8 @@ class NET_EXPORT_PRIVATE SerialWorker
   bool IsCancelled() const { return state_ == CANCELLED; }
 
  protected:
-  friend class base::RefCountedThreadSafe<SerialWorker>;
+  friend class base::DeleteHelper<SerialWorker>;
+  friend class base::RefCountedDeleteOnSequence<SerialWorker>;
   // protected to allow sub-classing, but prevent deleting
   virtual ~SerialWorker();
 
