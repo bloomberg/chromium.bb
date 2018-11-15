@@ -16,7 +16,6 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/sync/history_model_worker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sequenced_model_worker.h"
@@ -231,26 +230,9 @@ ProfileSyncServiceBundle::SyncClientBuilder::Build() {
 
 ProfileSyncServiceBundle::ProfileSyncServiceBundle()
     : db_thread_(base::SequencedTaskRunnerHandle::Get()),
-      signin_client_(&pref_service_),
-#if defined(OS_CHROMEOS)
-      signin_manager_(&signin_client_, &account_tracker_),
-#else
-      signin_manager_(&signin_client_,
-                      &auth_service_,
-                      &account_tracker_,
-                      nullptr),
-#endif
-      auth_service_(&pref_service_),
-      gaia_cookie_manager_service_(&auth_service_,
-                                   &signin_client_),
-      identity_test_env_(&account_tracker_,
-                         &auth_service_,
-                         &signin_manager_,
-                         &gaia_cookie_manager_service_) {
+      identity_test_env_(true) {
   RegisterPrefsForProfileSyncService(pref_service_.registry());
-  auth_service_.set_auto_post_fetch_response_on_message_loop(true);
-  account_tracker_.Initialize(&pref_service_, base::FilePath());
-  signin_manager_.Initialize(&pref_service_);
+  identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
   identity_provider_ = std::make_unique<invalidation::ProfileIdentityProvider>(
       identity_manager());
 }

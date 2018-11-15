@@ -15,7 +15,7 @@
 #include "base/values.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_test_util.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/fake_data_type_controller.h"
@@ -290,10 +290,6 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
   invalidation::ProfileIdentityProvider* identity_provider() {
     return profile_sync_service_bundle_.identity_provider();
-  }
-
-  AccountTrackerService* account_tracker() {
-    return profile_sync_service_bundle_.account_tracker();
   }
 
   identity::IdentityManager* identity_manager() {
@@ -776,12 +772,10 @@ TEST_F(ProfileSyncServiceTest, RevokeAccessTokenFromTokenService) {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(service()->GetAccessTokenForTest().empty());
 
-  std::string secondary_account_gaiaid = "1234567";
-  std::string secondary_account_name = "test_user2@gmail.com";
-  std::string secondary_account_id = account_tracker()->SeedAccountInfo(
-      secondary_account_gaiaid, secondary_account_name);
-  identity_test_env()->SetRefreshTokenForAccount(secondary_account_id);
-  identity_test_env()->RemoveRefreshTokenForAccount(secondary_account_id);
+  AccountInfo secondary_account_info =
+      identity_test_env()->MakeAccountAvailable("test_user2@gmail.com");
+  identity_test_env()->RemoveRefreshTokenForAccount(
+      secondary_account_info.account_id);
   EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
 
   identity_test_env()->RemoveRefreshTokenForPrimaryAccount();
