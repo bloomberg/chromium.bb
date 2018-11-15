@@ -10,11 +10,16 @@
 namespace ash {
 
 BluetoothDevicesObserver::BluetoothDevicesObserver(
-    const DeviceChangedCallback& device_changed_callback)
-    : device_changed_callback_(device_changed_callback), weak_factory_(this) {
-  device::BluetoothAdapterFactory::GetAdapter(
-      base::Bind(&BluetoothDevicesObserver::InitializeOnAdapterReady,
-                 weak_factory_.GetWeakPtr()));
+    const AdapterOrDeviceChangedCallback& device_changed_callback)
+    : adapter_or_device_changed_callback_(device_changed_callback),
+      weak_factory_(this) {
+  if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
+    device::BluetoothAdapterFactory::GetAdapter(
+        base::Bind(&BluetoothDevicesObserver::InitializeOnAdapterReady,
+                   weak_factory_.GetWeakPtr()));
+  } else {
+    adapter_or_device_changed_callback_.Run(/*device=*/nullptr);
+  }
 }
 
 BluetoothDevicesObserver::~BluetoothDevicesObserver() {
@@ -22,9 +27,21 @@ BluetoothDevicesObserver::~BluetoothDevicesObserver() {
     bluetooth_adapter_->RemoveObserver(this);
 }
 
+void BluetoothDevicesObserver::AdapterPresentChanged(
+    device::BluetoothAdapter* adapter,
+    bool present) {
+  adapter_or_device_changed_callback_.Run(/*device=*/nullptr);
+}
+
+void BluetoothDevicesObserver::AdapterPoweredChanged(
+    device::BluetoothAdapter* adapter,
+    bool powered) {
+  adapter_or_device_changed_callback_.Run(/*device=*/nullptr);
+}
+
 void BluetoothDevicesObserver::DeviceChanged(device::BluetoothAdapter* adapter,
                                              device::BluetoothDevice* device) {
-  device_changed_callback_.Run(device);
+  adapter_or_device_changed_callback_.Run(device);
 }
 
 void BluetoothDevicesObserver::InitializeOnAdapterReady(
@@ -35,8 +52,11 @@ void BluetoothDevicesObserver::InitializeOnAdapterReady(
 
 bool BluetoothDevicesObserver::IsConnectedBluetoothDevice(
     const ui::InputDevice& input_device) const {
-  if (!bluetooth_adapter_ || !bluetooth_adapter_->IsPowered())
+  if (!bluetooth_adapter_ || !bluetooth_adapter_->IsPresent() ||
+      !bluetooth_adapter_->IsInitialized() ||
+      !bluetooth_adapter_->IsPowered()) {
     return false;
+  }
 
   // Since there is no map from an InputDevice to a BluetoothDevice. We just
   // comparing their vendor id and product id to guess a match.

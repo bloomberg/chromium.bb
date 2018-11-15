@@ -902,6 +902,7 @@ TEST_F(TabletModeControllerTest, ExternalTouchPadTest) {
   // Set the current list of devices to empty so that they don't interfere
   // with the test.
   base::RunLoop().RunUntilIdle();
+  ws::InputDeviceClientTestApi().SetMouseDevices({});
   ws::InputDeviceClientTestApi().SetTouchpadDevices({});
   base::RunLoop().RunUntilIdle();
 
