@@ -1026,6 +1026,18 @@ HistogramBase* LinearHistogram::FactoryGetWithRangeDescription(
     uint32_t bucket_count,
     int32_t flags,
     const DescriptionPair descriptions[]) {
+  // Originally, histograms were required to have at least one sample value
+  // plus underflow and overflow buckets. For single-entry enumerations,
+  // that one value is usually zero (which IS the underflow bucket)
+  // resulting in a |maximum| value of 1 (the exclusive upper-bound) and only
+  // the two outlier buckets. Handle this by making max==2 and buckets==3.
+  // This usually won't have any cost since the single-value-optimization
+  // will be used until the count exceeds 16 bits.
+  if (maximum == 1 && bucket_count == 2) {
+    maximum = 2;
+    bucket_count = 3;
+  }
+
   bool valid_arguments = Histogram::InspectConstructionArguments(
       name, &minimum, &maximum, &bucket_count);
   DCHECK(valid_arguments);

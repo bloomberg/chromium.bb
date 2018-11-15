@@ -295,6 +295,25 @@ TEST_P(HistogramTest, LinearRangesTest) {
   EXPECT_TRUE(ranges2.Equals(histogram2->bucket_ranges()));
 }
 
+TEST_P(HistogramTest, SingleValueEnumerationHistogram) {
+  // Make sure its possible to construct a linear histogram with only the two
+  // required outlier buckets (underflow and overflow).
+  HistogramBase* histogram = LinearHistogram::FactoryGet(
+      "SingleValueEnum", 1, 1, 2, HistogramBase::kNoFlags);
+  EXPECT_TRUE(histogram);
+
+  // Make sure the macros work properly. This can only be run when
+  // there is no persistent allocator which can be discarded and leave
+  // dangling pointers.
+  if (!use_persistent_histogram_allocator_) {
+    enum EnumWithMax {
+      kSomething = 0,
+      kMaxValue = kSomething,
+    };
+    UMA_HISTOGRAM_ENUMERATION("h1", kSomething);
+  }
+}
+
 TEST_P(HistogramTest, ArrayToCustomEnumRangesTest) {
   const HistogramBase::Sample ranges[3] = {5, 10, 20};
   std::vector<HistogramBase::Sample> ranges_vec =
