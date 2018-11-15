@@ -5,32 +5,16 @@
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
-#include "third_party/blink/renderer/core/css/property_descriptor.h"
-#include "third_party/blink/renderer/core/css/property_registration.h"
-#include "third_party/blink/renderer/core/css/property_registry.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 
+using namespace css_test_helpers;
+
 namespace {
 
-class CSSPropertyRefTest : public PageTestBase {
- public:
-  void RegisterProperty(const String& name,
-                        const String& syntax,
-                        const String& initial_value,
-                        bool is_inherited) {
-    DummyExceptionStateForTesting exception_state;
-    PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
-    property_descriptor->setName(name);
-    property_descriptor->setSyntax(syntax);
-    property_descriptor->setInitialValue(initial_value);
-    property_descriptor->setInherits(is_inherited);
-    PropertyRegistration::registerProperty(&GetDocument(), property_descriptor,
-                                           exception_state);
-    EXPECT_FALSE(exception_state.HadException());
-  }
-};
+class CSSPropertyRefTest : public PageTestBase {};
 
 }  // namespace
 
@@ -41,7 +25,7 @@ TEST_F(CSSPropertyRefTest, LookupUnregistred) {
 }
 
 TEST_F(CSSPropertyRefTest, LookupRegistered) {
-  RegisterProperty("--x", "<length>", "42px", false);
+  RegisterProperty(GetDocument(), "--x", "<length>", "42px", false);
   CSSPropertyRef ref("--x", GetDocument());
   EXPECT_TRUE(ref.IsValid());
   EXPECT_EQ(CSSPropertyVariable, ref.GetProperty().PropertyID());
@@ -102,7 +86,7 @@ TEST_F(CSSPropertyRefTest, GetResolvedPropertyAlias) {
 }
 
 TEST_F(CSSPropertyRefTest, FromCSSPropertyNameCustom) {
-  RegisterProperty("--x", "<length>", "42px", false);
+  RegisterProperty(GetDocument(), "--x", "<length>", "42px", false);
   CSSPropertyRef ref(CSSPropertyName("--x"), GetDocument());
   EXPECT_EQ(CSSPropertyVariable, ref.GetProperty().PropertyID());
 }

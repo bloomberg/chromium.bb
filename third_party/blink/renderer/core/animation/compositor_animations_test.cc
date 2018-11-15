@@ -46,9 +46,7 @@
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
-#include "third_party/blink/renderer/core/css/property_descriptor.h"
-#include "third_party/blink/renderer/core/css/property_registration.h"
-#include "third_party/blink/renderer/core/css/property_registry.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -75,6 +73,8 @@
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 
 namespace blink {
+
+using namespace css_test_helpers;
 
 class AnimationCompositorAnimationsTest : public RenderingTest {
  protected:
@@ -262,21 +262,6 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
           CreateReplaceOpKeyframe(CSSPropertyOpacity, value, offset));
     }
     return frames;
-  }
-
-  void RegisterProperty(const String& name,
-                        const String& syntax,
-                        const String& initial_value,
-                        bool is_inherited) {
-    DummyExceptionStateForTesting exception_state;
-    PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
-    property_descriptor->setName(name);
-    property_descriptor->setSyntax(syntax);
-    property_descriptor->setInitialValue(initial_value);
-    property_descriptor->setInherits(is_inherited);
-    PropertyRegistration::registerProperty(&GetDocument(), property_descriptor,
-                                           exception_state);
-    EXPECT_FALSE(exception_state.HadException());
   }
 
   void SetCustomProperty(const String& name, const String& value) {
@@ -580,8 +565,8 @@ TEST_F(AnimationCompositorAnimationsTest,
 TEST_F(AnimationCompositorAnimationsTest,
        CanStartEffectOnCompositorCustomCssProperty) {
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
-  RegisterProperty("--foo", "<number>", "0", false);
-  RegisterProperty("--bar", "<length>", "10px", false);
+  RegisterProperty(GetDocument(), "--foo", "<number>", "0", false);
+  RegisterProperty(GetDocument(), "--bar", "<length>", "10px", false);
   SetCustomProperty("--foo", "10");
   SetCustomProperty("--bar", "10px");
 
@@ -1639,7 +1624,7 @@ TEST_F(AnimationCompositorAnimationsTest,
        CreateSimpleCustomFloatPropertyAnimation) {
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
 
-  RegisterProperty("--foo", "<number>", "0", false);
+  RegisterProperty(GetDocument(), "--foo", "<number>", "0", false);
   SetCustomProperty("--foo", "10");
 
   StringKeyframeEffectModel* effect =
