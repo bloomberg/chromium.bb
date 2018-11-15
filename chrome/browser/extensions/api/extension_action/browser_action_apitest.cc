@@ -396,6 +396,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, InvisibleIconBrowserAction) {
 
   const std::string histogram_name =
       "Extensions.DynamicExtensionActionIconWasVisible";
+  const std::string new_histogram_name =
+      "Extensions.DynamicExtensionActionIconWasVisibleRendered";
   {
     base::HistogramTester histogram_tester;
     std::string result;
@@ -407,6 +409,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, InvisibleIconBrowserAction) {
     EXPECT_TRUE(gfx::test::AreImagesEqual(initial_bar_icon,
                                           GetBrowserActionsBar()->GetIcon(0)));
     EXPECT_THAT(histogram_tester.GetAllSamples(histogram_name),
+                testing::ElementsAre(base::Bucket(0, 1)));
+    EXPECT_THAT(histogram_tester.GetAllSamples(new_histogram_name),
                 testing::ElementsAre(base::Bucket(0, 1)));
   }
 
@@ -421,6 +425,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, InvisibleIconBrowserAction) {
     EXPECT_FALSE(gfx::test::AreImagesEqual(initial_bar_icon,
                                            GetBrowserActionsBar()->GetIcon(0)));
     EXPECT_THAT(histogram_tester.GetAllSamples(histogram_name),
+                testing::ElementsAre(base::Bucket(1, 1)));
+    EXPECT_THAT(histogram_tester.GetAllSamples(new_histogram_name),
                 testing::ElementsAre(base::Bucket(1, 1)));
   }
 }

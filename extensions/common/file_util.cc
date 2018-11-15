@@ -462,6 +462,7 @@ void SetReportErrorForInvisibleIconForTesting(bool value) {
 bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
                               const Extension* extension,
                               int error_message_id,
+                              SkColor background_color,
                               std::string* error) {
   for (const auto& entry : icon_set.map()) {
     const base::FilePath path =
@@ -475,9 +476,15 @@ bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
     if (extension->location() == Manifest::UNPACKED) {
       const bool is_sufficiently_visible =
           image_util::IsIconAtPathSufficientlyVisible(path);
+      const bool is_sufficiently_visible_rendered =
+          image_util::IsRenderedIconAtPathSufficientlyVisible(path,
+                                                              background_color);
       UMA_HISTOGRAM_BOOLEAN(
           "Extensions.ManifestIconSetIconWasVisibleForUnpacked",
           is_sufficiently_visible);
+      UMA_HISTOGRAM_BOOLEAN(
+          "Extensions.ManifestIconSetIconWasVisibleForUnpackedRendered",
+          is_sufficiently_visible_rendered);
       if (!is_sufficiently_visible && g_report_error_for_invisible_icon) {
         *error = l10n_util::GetStringFUTF8(
             IDS_EXTENSION_LOAD_ICON_NOT_SUFFICIENTLY_VISIBLE,

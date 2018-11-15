@@ -209,6 +209,8 @@ bool IsIconAtPathSufficientlyVisible(const base::FilePath& path) {
   return IsIconSufficientlyVisible(icon);
 }
 
+const SkColor kDefaultToolbarColor = SK_ColorWHITE;
+
 struct ScopedUmaMicrosecondHistogramTimer {
   ScopedUmaMicrosecondHistogramTimer() : timer() {}
 
