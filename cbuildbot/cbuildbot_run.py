@@ -37,7 +37,6 @@ except ImportError:
 import types
 
 from chromite.cbuildbot import archive_lib
-from chromite.lib.const import waterfall
 from chromite.lib import constants
 from chromite.lib import metadata_lib
 from chromite.lib import cidb
@@ -668,16 +667,6 @@ class _BuilderRunBase(object):
     """Create a BoardRunAttributes object for this run and given |board|."""
     return BoardRunAttributes(self.attrs, board, self.config.name)
 
-  def GetWaterfall(self):
-    """Gets the waterfall of the current build."""
-    # Metadata dictionary may not have been written at this time (it
-    # should be written in the BuildStartStage), fall back to get the
-    # environment variable in that case. Assume we are on the trybot
-    # waterfall if no waterfall can be found.
-    return (self.attrs.metadata.GetDict().get('buildbot-master-name') or
-            os.environ.get('BUILDBOT_MASTERNAME') or
-            waterfall.WATERFALL_SWARMING)
-
   def GetBuildbotUrl(self):
     """Gets the URL of the waterfall hosting the current build."""
     # Metadata dictionary may not have been written at this time (it
@@ -712,16 +701,7 @@ class _BuilderRunBase(object):
           self.GetBuilderName(),
           self.options.buildnumber, stage=stage)
     else:
-      # If we have a buildbucket_id, use it to construct URLs.
-      if self.options.buildbucket_id:
-        return tree_status.ConstructLegolandBuildURL(
-            self.options.buildbucket_id)
-
-      # If not, assume buildbot URLs are needed.
-      return tree_status.ConstructDashboardURL(
-          self.GetWaterfall(),
-          self.GetBuilderName(),
-          self.options.buildnumber)
+      return tree_status.ConstructLegolandBuildURL(self.options.buildbucket_id)
 
   def ShouldBuildAutotest(self):
     """Return True if this run should build autotest and artifacts."""
@@ -767,8 +747,7 @@ class _BuilderRunBase(object):
 
   def InEmailReportingEnvironment(self):
     """Return True if this run should send reporting emails.."""
-    in_email_waterfall = self.GetWaterfall() in waterfall.EMAIL_WATERFALLS
-    return self.InProduction() or in_email_waterfall
+    return self.InProduction()
 
   def GetVersionInfo(self):
     """Helper for picking apart various version bits.

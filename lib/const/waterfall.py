@@ -12,14 +12,6 @@ WATERFALL_BRANCH = 'chromeos.branch'
 # Used for all swarming builds.
 WATERFALL_SWARMING = 'go/legoland'
 
-# These waterfalls should send email reports regardless of cidb connection.
-EMAIL_WATERFALLS = (
-    WATERFALL_INTERNAL,
-    WATERFALL_RELEASE,
-    WATERFALL_BRANCH,
-    WATERFALL_SWARMING,
-)
-
 # URLs to the various waterfalls.
 BUILD_INT_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos'
 RELEASE_DASHBOARD = 'https://uberchromegw.corp.google.com/i/chromeos_release'

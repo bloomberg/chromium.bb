@@ -309,6 +309,9 @@ def ConstructLegolandBuildURL(buildbucket_id):
   Returns:
     The fully formed URL.
   """
+  # Only local tryjobs will not have a buildbucket_id but they also do not have
+  # a web UI to point at. Generate a fake URL.
+  buildbucket_id = buildbucket_id or 'fake_bb_id'
   return _LEGOLAND_BUILD_URL % {'buildbucket_id': buildbucket_id}
 
 
