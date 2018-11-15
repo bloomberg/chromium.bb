@@ -266,7 +266,7 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
 }
 
 // Compute the horizontal frequency component energy in a frame
-// by calucluating the 16x4 Horizontal DCT. This will be subsequently
+// by calculuating the 16x4 Horizontal DCT. This will be subsequently
 // used to decide the superresolution factors.
 void analyze_hor_freq(const AV1_COMP *cpi, double *energy) {
   uint64_t freq_energy[16] = { 0 };
@@ -283,15 +283,16 @@ void analyze_hor_freq(const AV1_COMP *cpi, double *energy) {
         av1_fwd_txfm2d_16x4(src16 + i * buf->y_stride + j, coeff, buf->y_stride,
                             H_DCT, bd);
         for (int k = 4; k < 16; ++k) {
-          const int64_t en =
+          const int64_t this_energy =
               coeff[k] * coeff[k] + coeff[k + 16] * coeff[k + 16] +
               coeff[k + 32] * coeff[k + 32] + coeff[k + 48] * coeff[k + 48];
-          freq_energy[k] += ROUND_POWER_OF_TWO(en, 2 * (bd - 8));
+          freq_energy[k] += ROUND_POWER_OF_TWO(this_energy, 2 * (bd - 8));
         }
         n++;
       }
     }
   } else {
+    assert(bd == 8);
     int16_t src16[16 * 4];
     for (int i = 0; i < height - 4; i += 4) {
       for (int j = 0; j < width - 16; j += 16) {
@@ -301,16 +302,16 @@ void analyze_hor_freq(const AV1_COMP *cpi, double *energy) {
                 buf->y_buffer[(i + ii) * buf->y_stride + (j + jj)];
         av1_fwd_txfm2d_16x4(src16, coeff, buf->y_stride, H_DCT, bd);
         for (int k = 4; k < 16; ++k) {
-          const int64_t en =
+          const int64_t this_energy =
               coeff[k] * coeff[k] + coeff[k + 16] * coeff[k + 16] +
               coeff[k + 32] * coeff[k + 32] + coeff[k + 48] * coeff[k + 48];
-          freq_energy[k] += ROUND_POWER_OF_TWO(en, 2 * (bd - 8));
+          freq_energy[k] += this_energy;
         }
         n++;
       }
     }
   }
-  for (int k = 4; k < 16; ++k) energy[k] = (double)freq_energy[k] / n;
+  for (int k = 4; k < 16; ++k) energy[k] = (double)freq_energy[k] / (4 * n);
 }
 
 static void set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv,
