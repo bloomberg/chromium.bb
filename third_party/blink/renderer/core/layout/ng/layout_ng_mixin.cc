@@ -258,10 +258,33 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
       return nullptr;
   }
 
+  // Check BFC block offset. Even if they don't match, there're some cases we
+  // can still reuse the fragment.
+  base::Optional<LayoutUnit> bfc_block_offset =
+      cached_result_->BfcBlockOffset();
+  if (new_space.BfcOffset().block_offset !=
+      old_space.BfcOffset().block_offset) {
+    // Earlier floats may affect this box if block offset changes.
+    if (new_space.HasFloats() || old_space.HasFloats())
+      return nullptr;
+
+    // Even for the first fragment, when block fragmentation is enabled, block
+    // offset changes should cause re-layout, since we will fragment at other
+    // locations than before.
+    if (new_space.HasBlockFragmentation() || old_space.HasBlockFragmentation())
+      return nullptr;
+
+    if (bfc_block_offset.has_value()) {
+      bfc_block_offset = bfc_block_offset.value() -
+                         old_space.BfcOffset().block_offset +
+                         new_space.BfcOffset().block_offset;
+    }
+  }
+
   // The checks above should be enough to bail if layout is incomplete, but
   // let's verify:
   DCHECK(IsBlockLayoutComplete(old_space, *cached_result_));
-  return base::AdoptRef(new NGLayoutResult(*cached_result_));
+  return base::AdoptRef(new NGLayoutResult(*cached_result_, bfc_block_offset));
 }
 
 template <typename Base>
@@ -307,10 +330,7 @@ bool LayoutNGMixin<Base>::AreCachedLinesValidFor(
 
   // Floats in either cached or new constraint space prevents reusing cached
   // lines.
-  if (constraint_space.AdjoiningFloatTypes() != kFloatTypeNone ||
-      cached_constraint_space.AdjoiningFloatTypes() != kFloatTypeNone ||
-      !constraint_space.ExclusionSpace().IsEmpty() ||
-      !cached_constraint_space.ExclusionSpace().IsEmpty())
+  if (constraint_space.HasFloats() || cached_constraint_space.HasFloats())
     return false;
 
   // Propagating OOF needs re-layout.
