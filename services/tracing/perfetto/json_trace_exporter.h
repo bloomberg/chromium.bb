@@ -62,6 +62,8 @@ class JSONTraceExporter : public perfetto::Consumer {
   bool has_output_first_event_ = false;
   std::string config_;
   std::unique_ptr<base::DictionaryValue> metadata_;
+  std::string legacy_system_ftrace_output_;
+  std::string legacy_system_trace_events_;
 
   // Keep last to avoid edge-cases where its callbacks come in mid-destruction.
   std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>

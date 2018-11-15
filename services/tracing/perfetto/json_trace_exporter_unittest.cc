@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/trace_event_analyzer.h"
@@ -152,19 +154,22 @@ class JSONTraceExporterTest : public testing::Test {
                         base::DictionaryValue* metadata,
                         bool has_more) {
     CHECK(!has_more);
-    // The TraceAnalyzer expects the raw trace output, without the
-    // wrapping root-node.
-    static const size_t kTracingPreambleLength = strlen("\"{traceEvents\":");
-    static const size_t kTracingEpilogueLength = strlen("}");
-    std::string raw_events = json.substr(
-        kTracingPreambleLength,
-        json.length() - kTracingPreambleLength - kTracingEpilogueLength);
-
-    trace_analyzer_.reset(trace_analyzer::TraceAnalyzer::Create(raw_events));
 
     parsed_trace_data_ =
         base::DictionaryValue::From(base::JSONReader::Read(json));
     EXPECT_TRUE(parsed_trace_data_);
+    if (!parsed_trace_data_) {
+      LOG(ERROR) << "Couldn't parse json: \n" << json;
+    }
+
+    // The TraceAnalyzer expects the raw trace output, without the
+    // wrapping root-node.
+    std::string raw_events;
+    auto* events_value = parsed_trace_data_->FindKey("traceEvents");
+    ASSERT_TRUE(events_value);
+    base::JSONWriter::Write(*events_value, &raw_events);
+
+    trace_analyzer_.reset(trace_analyzer::TraceAnalyzer::Create(raw_events));
   }
 
   void SetTestPacketBasicData(
@@ -699,6 +704,91 @@ TEST_F(JSONTraceExporterTest, TracedValueHierarchy) {
       "{\"a1\":[1,true,{\"i2\":3}],\"b0\":true,\"d0\":6.0,\"a1\":{\"dict2\":{"
       "\"b2\":true},\"i1\":2014,\"s1\":\"foo\"},\"i0\":2014,\"s0\":\"foo\"}",
       json);
+}
+
+TEST_F(JSONTraceExporterTest, TestLegacyUserTrace) {
+  CreateJSONTraceExporter("foo");
+  service()->WaitForTracingEnabled();
+  StopAndFlush();
+
+  perfetto::protos::TracePacket trace_packet_proto;
+
+  auto* new_trace_event =
+      trace_packet_proto.mutable_chrome_events()->add_trace_events();
+  SetTestPacketBasicData(new_trace_event);
+
+  auto* json_trace =
+      trace_packet_proto.mutable_chrome_events()->add_legacy_json_trace();
+  json_trace->set_type(perfetto::protos::ChromeLegacyJsonTrace::USER_TRACE);
+  json_trace->set_data(
+      "{\"pid\":10,\"tid\":11,\"ts\":23,\"ph\":\"I\""
+      ",\"cat\":\"cat_name2\",\"name\":\"bar_name\""
+      ",\"id2\":{\"global\":\"0x5\"},\"args\":{}}");
+
+  FinalizePacket(trace_packet_proto);
+
+  service()->WaitForTracingDisabled();
+  ValidateAndGetBasicTestPacket();
+
+  const trace_analyzer::TraceEvent* trace_event = trace_analyzer()->FindFirstOf(
+      trace_analyzer::Query(trace_analyzer::Query::EVENT_NAME) ==
+      trace_analyzer::Query::String("bar_name"));
+  EXPECT_TRUE(trace_event);
+
+  EXPECT_EQ(10, trace_event->thread.process_id);
+  EXPECT_EQ(11, trace_event->thread.thread_id);
+  EXPECT_EQ(23, trace_event->timestamp);
+  EXPECT_EQ('I', trace_event->phase);
+  EXPECT_EQ("bar_name", trace_event->name);
+  EXPECT_EQ("cat_name2", trace_event->category);
+  EXPECT_EQ("0x5", trace_event->global_id2);
+}
+
+TEST_F(JSONTraceExporterTest, TestLegacySystemFtrace) {
+  CreateJSONTraceExporter("foo");
+  service()->WaitForTracingEnabled();
+  StopAndFlush();
+
+  std::string ftrace = "#dummy data";
+
+  perfetto::protos::TracePacket trace_packet_proto;
+  trace_packet_proto.mutable_chrome_events()->add_legacy_ftrace_output(ftrace);
+  FinalizePacket(trace_packet_proto);
+
+  service()->WaitForTracingDisabled();
+  auto* sys_trace = parsed_trace_data()->FindKey("systemTraceEvents");
+  EXPECT_TRUE(sys_trace);
+  EXPECT_EQ(sys_trace->GetString(), ftrace);
+}
+
+TEST_F(JSONTraceExporterTest, TestLegacySystemTraceEvents) {
+  CreateJSONTraceExporter("foo");
+  service()->WaitForTracingEnabled();
+  StopAndFlush();
+
+  perfetto::protos::TracePacket trace_packet_proto;
+
+  auto* json_trace =
+      trace_packet_proto.mutable_chrome_events()->add_legacy_json_trace();
+  json_trace->set_type(perfetto::protos::ChromeLegacyJsonTrace::SYSTEM_TRACE);
+  json_trace->set_data(
+      "\"name\":\"MySysTrace\",\"content\":["
+      "{\"pid\":10,\"tid\":11,\"ts\":23,\"ph\":\"I\""
+      ",\"cat\":\"cat_name2\",\"name\":\"bar_name\""
+      ",\"id2\":{\"global\":\"0x5\"},\"args\":{}}]");
+
+  FinalizePacket(trace_packet_proto);
+
+  service()->WaitForTracingDisabled();
+
+  auto* sys_trace = parsed_trace_data()->FindKey("systemTraceEvents");
+  EXPECT_TRUE(sys_trace);
+  EXPECT_EQ(sys_trace->FindKey("name")->GetString(), "MySysTrace");
+  auto* content = sys_trace->FindKey("content");
+  EXPECT_EQ(content->GetList().size(), 1u);
+  EXPECT_EQ(content->GetList()[0].FindKey("pid")->GetInt(), 10);
+  EXPECT_EQ(content->GetList()[0].FindKey("tid")->GetInt(), 11);
+  EXPECT_EQ(content->GetList()[0].FindKey("name")->GetString(), "bar_name");
 }
 
 }  // namespace tracing
