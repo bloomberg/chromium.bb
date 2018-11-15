@@ -671,7 +671,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (properties.goog_experimental_auto_gain_control) {
     apm_config.gain_controller2.enabled =
         base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
-    apm_config.gain_controller2.fixed_gain_db = 0.f;
+    apm_config.gain_controller2.fixed_digital.gain_db = 0.f;
   }
   ConfigPreAmplifier(&apm_config, pre_amplifier_fixed_gain_factor);
   audio_processing_->ApplyConfig(apm_config);
