@@ -20765,6 +20765,8 @@ Called by update_net_error_codes.py.-->
   <int value="2627" label="PageLifeCycleFreeze"/>
   <int value="2628" label="DefaultInCustomIdent"/>
   <int value="2629" label="HTMLAnchorElementHrefTranslateAttribute"/>
+  <int value="2630" label="WebKitUserModifyEffective"/>
+  <int value="2631" label="PlainTextEditingEffective"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
