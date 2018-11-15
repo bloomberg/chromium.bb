@@ -77,6 +77,21 @@ using content_settings::SETTING_SOURCE_NONE;
 
 namespace {
 
+ContentSettingBubbleModel::ListItem CreateUrlListItem(int32_t id,
+                                                      const GURL& url) {
+  // Empty URLs should get a placeholder.
+  // TODO(csharrison): See if we can DCHECK that the URL will be valid here.
+  base::string16 title = url.spec().empty()
+                             ? l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE)
+                             : base::UTF8ToUTF16(url.spec());
+
+  // Format the title to include the unicode single dot bullet code-point
+  // \u2022 and two spaces.
+  title = l10n_util::GetStringFUTF16(IDS_LIST_BULLET, title);
+  return ContentSettingBubbleModel::ListItem(gfx::Image(), title,
+                                             true /* has_link */, id);
+}
+
 struct ContentSettingsTypeIdEntry {
   ContentSettingsType type;
   int id;
@@ -751,10 +766,8 @@ bool ContentSettingSingleRadioGroup::settings_changed() const {
 // Initialize the radio group by setting the appropriate labels for the
 // content type and setting the default value based on the content setting.
 void ContentSettingSingleRadioGroup::SetRadioGroup() {
-  GURL url = web_contents()->GetURL();
+  const GURL& url = web_contents()->GetURL();
   base::string16 display_host = url_formatter::FormatUrlForSecurityDisplay(url);
-  if (display_host.empty())
-    display_host = base::ASCIIToUTF16(url.spec());
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
@@ -950,8 +963,6 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup,
                const content::NotificationDetails& details) override;
 
  private:
-  ListItem CreateListItem(int32_t id, const GURL& id_and_url);
-
   void OnListItemClicked(int index, int event_flags) override;
 
   int32_t item_id_from_item_index(int index) const {
@@ -982,7 +993,7 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
   auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents);
   std::map<int32_t, GURL> blocked_popups = helper->GetBlockedPopupRequests();
   for (const auto& blocked_popup : blocked_popups)
-    AddListItem(CreateListItem(blocked_popup.first, blocked_popup.second));
+    AddListItem(CreateUrlListItem(blocked_popup.first, blocked_popup.second));
 
   popup_blocker_observer_.Add(helper);
   content_settings::RecordPopupsAction(
@@ -991,7 +1002,7 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
 
 void ContentSettingPopupBubbleModel::BlockedPopupAdded(int32_t id,
                                                        const GURL& url) {
-  AddListItem(CreateListItem(id, url));
+  AddListItem(CreateUrlListItem(id, url));
 }
 
 void ContentSettingPopupBubbleModel::Observe(
@@ -1001,22 +1012,6 @@ void ContentSettingPopupBubbleModel::Observe(
   ContentSettingSingleRadioGroup::Observe(type, source, details);
   if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED)
     popup_blocker_observer_.RemoveAll();
-}
-
-ContentSettingBubbleModel::ListItem
-ContentSettingPopupBubbleModel::CreateListItem(int32_t id, const GURL& url) {
-  base::string16 title;
-  // The pop-up may not have a valid URL.
-  if (url.spec().empty())
-    title = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
-  else
-    title = base::UTF8ToUTF16(url.spec());
-
-  // Format the title to include the unicode single dot bullet code-point \u2022
-  // and two spaces.
-  title = l10n_util::GetStringFUTF16(IDS_LIST_BULLET, title);
-
-  return ListItem(gfx::Image(), title, true, id);
 }
 
 void ContentSettingPopupBubbleModel::OnListItemClicked(int index,
@@ -1200,8 +1195,6 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   radio_group.url = url;
 
   base::string16 display_host = url_formatter::FormatUrlForSecurityDisplay(url);
-  if (display_host.empty())
-    display_host = base::UTF8ToUTF16(url.spec());
 
   DCHECK(CameraAccessed() || MicrophoneAccessed());
   int radio_allow_label_id = 0;
@@ -1489,10 +1482,8 @@ ContentSettingDownloadsBubbleModel::AsDownloadsBubbleModel() {
 // Initialize the radio group by setting the appropriate labels for the
 // content type and setting the default value based on the content setting.
 void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
-  GURL url = web_contents()->GetURL();
+  const GURL& url = web_contents()->GetURL();
   base::string16 display_host = url_formatter::FormatUrlForSecurityDisplay(url);
-  if (display_host.empty())
-    display_host = base::ASCIIToUTF16(url.spec());
 
   DownloadRequestLimiter* download_request_limiter =
       g_browser_process->download_request_limiter();
@@ -1582,7 +1573,7 @@ ContentSettingFramebustBlockBubbleModel::
 
   // Build the blocked urls list.
   for (const auto& blocked_url : helper->blocked_urls())
-    AddListItem(CreateListItem(blocked_url));
+    AddListItem(CreateUrlListItem(0 /* id */, blocked_url));
 
   helper->AddObserver(this);
 }
@@ -1625,21 +1616,7 @@ ContentSettingFramebustBlockBubbleModel::AsFramebustBlockBubbleModel() {
 
 void ContentSettingFramebustBlockBubbleModel::OnBlockedUrlAdded(
     const GURL& blocked_url) {
-  AddListItem(CreateListItem(blocked_url));
-}
-
-ContentSettingBubbleModel::ListItem
-ContentSettingFramebustBlockBubbleModel::CreateListItem(const GURL& url) {
-  // Skip empty URLS.
-  base::string16 title = !url.spec().empty()
-                             ? base::UTF8ToUTF16(url.spec())
-                             : l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
-
-  // Format the title to include the unicode single dot bullet code-point
-  // \u2022 and two spaces.
-  title = l10n_util::GetStringFUTF16(IDS_LIST_BULLET, title);
-
-  return ListItem(gfx::Image(), title, true, 0);
+  AddListItem(CreateUrlListItem(0 /* id */, blocked_url));
 }
 
 // ContentSettingBubbleModel ---------------------------------------------------
