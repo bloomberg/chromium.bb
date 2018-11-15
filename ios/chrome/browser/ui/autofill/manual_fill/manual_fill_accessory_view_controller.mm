@@ -81,6 +81,22 @@ static NSTimeInterval MFAnimationDuration = 0.20;
 
 #pragma mark - Setters
 
+- (void)setAddressButtonHidden:(BOOL)addressButtonHidden {
+  if (addressButtonHidden == _addressButtonHidden) {
+    return;
+  }
+  _accountButton.hidden = addressButtonHidden;
+  _addressButtonHidden = addressButtonHidden;
+}
+
+- (void)setCreditCardButtonHidden:(BOOL)creditCardButtonHidden {
+  if (creditCardButtonHidden == _creditCardButtonHidden) {
+    return;
+  }
+  _cardsButton.hidden = creditCardButtonHidden;
+  _creditCardButtonHidden = creditCardButtonHidden;
+}
+
 - (void)setPasswordButtonHidden:(BOOL)passwordButtonHidden {
   if (passwordButtonHidden == _passwordButtonHidden) {
     return;
@@ -136,6 +152,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
                forControlEvents:UIControlEventTouchUpInside];
     self.cardsButton.accessibilityIdentifier =
         manual_fill::AccessoryCreditCardAccessibilityIdentifier;
+    self.cardsButton.hidden = self.isCreditCardButtonHidden;
     [icons addObject:self.cardsButton];
 
     self.accountButton = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -148,6 +165,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
                  forControlEvents:UIControlEventTouchUpInside];
     self.accountButton.accessibilityIdentifier =
         manual_fill::AccessoryAddressAccessibilityIdentifier;
+    self.accountButton.hidden = self.isAddressButtonHidden;
     [icons addObject:self.accountButton];
   }
   UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:icons];
