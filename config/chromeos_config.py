@@ -1713,6 +1713,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'peppy',
       'poppy',
       'quawks',
+      'rammus',
       'reef',
       'samus',
       'scarlet',
@@ -1757,7 +1758,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
-      'rammus', # contact:zhuohao@
       'kalista', # contact:zhuohao@
   ])
 
