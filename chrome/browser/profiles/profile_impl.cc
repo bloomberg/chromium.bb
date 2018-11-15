@@ -123,8 +123,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/permission_controller.h"
-#include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
@@ -327,31 +325,6 @@ std::unique_ptr<service_manager::Service> CreateAppService(Profile* profile) {
   return std::make_unique<apps::AppService>();
 }
 #endif
-
-void CheckDomainReliablityUploadAllowedOnUIThread(
-    Profile* profile,
-    const GURL& origin,
-    base::OnceCallback<void(bool)> callback) {
-  // Profile is safe since ProfileImpl always outlives IO thread.
-  content::PermissionController* permission_controller =
-      content::BrowserContext::GetPermissionController(profile);
-  DCHECK(permission_controller);
-  bool allowed = permission_controller->GetPermissionStatus(
-                     content::PermissionType::BACKGROUND_SYNC, origin,
-                     origin) == blink::mojom::PermissionStatus::GRANTED;
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(std::move(callback), allowed));
-}
-
-void CheckDomainReliablityUploadAllowedOnIOThread(
-    Profile* profile,
-    const GURL& origin,
-    base::OnceCallback<void(bool)> callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(CheckDomainReliablityUploadAllowedOnUIThread, profile,
-                     origin, std::move(callback)));
-}
 
 }  // namespace
 
@@ -1503,8 +1476,7 @@ ProfileImpl::CreateDomainReliabilityMonitor(PrefService* local_state) {
 
   return service->CreateMonitor(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-      base::BindRepeating(CheckDomainReliablityUploadAllowedOnIOThread, this));
+      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 }
 
 std::unique_ptr<service_manager::Service> ProfileImpl::CreateIdentityService() {

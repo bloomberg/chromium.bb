@@ -11,7 +11,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/domain_reliability/service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
 
 #if defined(OS_CHROMEOS)
@@ -32,32 +31,15 @@ const char kFieldTrialValueEnable[] = "enable";
 // Identifies Chrome as the source of Domain Reliability uploads it sends.
 const char kUploadReporterString[] = "chrome";
 
-class KeyedServiceWrapper : public KeyedService {
- public:
-  explicit KeyedServiceWrapper(DomainReliabilityService* service)
-      : service_(service) {}
-  ~KeyedServiceWrapper() override = default;
-
-  DomainReliabilityService* service() { return service_; }
-
- private:
-  DomainReliabilityService* service_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyedServiceWrapper);
-};
-
 }  // namespace
 
 // static
 DomainReliabilityService*
 DomainReliabilityServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  auto* wrapper = static_cast<KeyedServiceWrapper*>(
+  return static_cast<DomainReliabilityService*>(
       GetInstance()->GetServiceForBrowserContext(context,
                                                  /* create = */ true));
-  if (!wrapper)
-    return nullptr;
-  return wrapper->service();
 }
 
 // static
@@ -78,8 +60,7 @@ KeyedService* DomainReliabilityServiceFactory::BuildServiceInstanceFor(
   if (!ShouldCreateService())
     return NULL;
 
-  return new KeyedServiceWrapper(
-      DomainReliabilityService::Create(kUploadReporterString));
+  return DomainReliabilityService::Create(kUploadReporterString, context);
 }
 
 bool DomainReliabilityServiceFactory::ShouldCreateService() const {
