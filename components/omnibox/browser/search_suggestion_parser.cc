@@ -59,13 +59,13 @@ AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
 
 // SearchSuggestionParser::Result ----------------------------------------------
 
-SearchSuggestionParser::Result::Result(bool from_keyword_provider,
+SearchSuggestionParser::Result::Result(bool from_keyword,
                                        int relevance,
                                        bool relevance_from_server,
                                        AutocompleteMatchType::Type type,
                                        int subtype_identifier,
                                        const std::string& deletion_url)
-    : from_keyword_provider_(from_keyword_provider),
+    : from_keyword_(from_keyword),
       type_(type),
       subtype_identifier_(subtype_identifier),
       relevance_(relevance),
@@ -83,7 +83,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
     int subtype_identifier,
-    bool from_keyword_provider,
+    bool from_keyword,
     int relevance,
     bool relevance_from_server,
     const base::string16& input_text)
@@ -97,7 +97,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
                     /*deletion_url=*/"",
                     /*image_dominant_color=*/"",
                     /*image_url=*/"",
-                    from_keyword_provider,
+                    from_keyword,
                     relevance,
                     relevance_from_server,
                     /*should_prefetch=*/false,
@@ -114,12 +114,12 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
     const std::string& deletion_url,
     const std::string& image_dominant_color,
     const std::string& image_url,
-    bool from_keyword_provider,
+    bool from_keyword,
     int relevance,
     bool relevance_from_server,
     bool should_prefetch,
     const base::string16& input_text)
-    : Result(from_keyword_provider,
+    : Result(from_keyword,
              relevance,
              relevance_from_server,
              type,
@@ -198,7 +198,7 @@ void SearchSuggestionParser::SuggestResult::SetAnswer(
 int SearchSuggestionParser::SuggestResult::CalculateRelevance(
     const AutocompleteInput& input,
     bool keyword_provider_requested) const {
-  if (!from_keyword_provider_ && keyword_provider_requested)
+  if (!from_keyword_ && keyword_provider_requested)
     return 100;
   return ((input.type() == metrics::OmniboxInputType::URL) ? 300 : 600);
 }
@@ -212,11 +212,11 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
     int subtype_identifier,
     const base::string16& description,
     const std::string& deletion_url,
-    bool from_keyword_provider,
+    bool from_keyword,
     int relevance,
     bool relevance_from_server,
     const base::string16& input_text)
-    : Result(from_keyword_provider,
+    : Result(from_keyword,
              relevance,
              relevance_from_server,
              type,
@@ -291,7 +291,7 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
 int SearchSuggestionParser::NavigationResult::CalculateRelevance(
     const AutocompleteInput& input,
     bool keyword_provider_requested) const {
-  return (from_keyword_provider_ || !keyword_provider_requested) ? 800 : 150;
+  return (from_keyword_ || !keyword_provider_requested) ? 800 : 150;
 }
 
 // SearchSuggestionParser::Results ---------------------------------------------
