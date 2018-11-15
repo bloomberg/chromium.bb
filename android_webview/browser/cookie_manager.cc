@@ -247,7 +247,7 @@ void CookieManager::ExecCookieTaskSync(
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   ExecCookieTask(base::BindOnce(
       std::move(task), BoolCallbackAdapter(SignalEventClosure(&completion))));
-  base::ScopedAllowBaseSyncPrimitives wait;
+  base::ThreadRestrictions::ScopedAllowWait wait;
   completion.Wait();
 }
 
@@ -258,7 +258,7 @@ void CookieManager::ExecCookieTaskSync(
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   ExecCookieTask(base::BindOnce(
       std::move(task), IntCallbackAdapter(SignalEventClosure(&completion))));
-  base::ScopedAllowBaseSyncPrimitives wait;
+  base::ThreadRestrictions::ScopedAllowWait wait;
   completion.Wait();
 }
 
@@ -270,7 +270,7 @@ void CookieManager::ExecCookieTaskSync(
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   ExecCookieTask(
       base::BindOnce(std::move(task), SignalEventClosure(&completion)));
-  base::ScopedAllowBaseSyncPrimitives wait;
+  base::ThreadRestrictions::ScopedAllowWait wait;
   completion.Wait();
 }
 
