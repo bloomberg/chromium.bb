@@ -1634,8 +1634,7 @@ CommandHandler.COMMANDS_['manage-in-drive'] = /** @type {Command} */ ({
 
 
 /**
- * Shares the selected (single only) Downloads subfolder with crostini
- * container.
+ * Shares the selected (single only) directory with the crostini container.
  * @type {Command}
  */
 CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
@@ -1645,8 +1644,13 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     const entry = CommandUtil.getCommandEntry(event.target);
-    if (entry && entry.isDirectory) {
-      const dir = /** @type {!DirectoryEntry} */ (entry);
+    if (!entry || !entry.isDirectory)
+      return;
+    const dir = /** @type {!DirectoryEntry} */ (entry);
+    const info = fileManager.volumeManager.getLocationInfo(dir);
+    if (!info)
+      return;
+    function share() {
       // Always persist shares via right-click > Share with Linux.
       chrome.fileManagerPrivate.sharePathsWithCrostini(
           [dir], true /* persist */, () => {
@@ -1658,9 +1662,32 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
               Crostini.registerSharedPath(dir, fileManager.volumeManager);
             }
           });
-      CommandHandler.recordMenuItemSelected_(
-          CommandHandler.MenuCommandsForUMA.SHARE_WITH_LINUX);
     }
+    // Show a confirmation dialog if we are sharing the root of a volume.
+    // Non-Drive volume roots are always '/'.
+    if (dir.fullPath == '/') {
+      fileManager.ui_.confirmDialog.showHtml(
+          strf('SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE'),
+          strf('SHARE_ROOT_FOLDER_WITH_CROSTINI', info.volumeInfo.label), share,
+          () => {});
+    } else if (
+        info.isRootEntry &&
+        (info.rootType == VolumeManagerCommon.RootType.DRIVE ||
+         info.rootType == VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
+         info.rootType ==
+             VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT)) {
+      // Only show the dialog for My Drive, Team Drives Grand Root and
+      // Computers Grand Root.  Do not show for roots of a single Team Drive
+      // or Computer.
+      fileManager.ui_.confirmDialog.showHtml(
+          strf('SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE'),
+          strf('SHARE_ROOT_FOLDER_WITH_CROSTINI_DRIVE'), share, () => {});
+    } else {
+      // This is not a root, share it without confirmation dialog.
+      share();
+    }
+    CommandHandler.recordMenuItemSelected_(
+        CommandHandler.MenuCommandsForUMA.SHARE_WITH_LINUX);
   },
   /**
    * @param {!Event} event Command event.
