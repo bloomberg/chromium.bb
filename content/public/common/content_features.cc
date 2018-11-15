@@ -464,7 +464,12 @@ const base::Feature kWebAssembly{"WebAssembly",
 
 // Enable WebAssembly baseline compilation and tier up.
 const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
+#ifdef ARCH_CPU_X86_FAMILY
+                                         base::FEATURE_ENABLED_BY_DEFAULT
+#else
+                                         base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enable WebAssembly threads.
 // https://github.com/WebAssembly/threads
