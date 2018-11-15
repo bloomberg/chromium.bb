@@ -7,6 +7,7 @@ class TestBookmarkProxy extends TestBrowserProxy {
   constructor() {
     super([
       'addBookmark',
+      'isBookmarkBarShown',
       'removeBookmark',
       'toggleBookmarkBar',
     ]);
@@ -18,6 +19,14 @@ class TestBookmarkProxy extends TestBrowserProxy {
   addBookmark(data, callback) {
     this.methodCalled('addBookmark', data);
     callback({id: this.fakeBookmarkId++});
+  }
+
+  /** @override */
+  isBookmarkBarShown() {
+    this.methodCalled('isBookmarkBarShown');
+
+    // TODO(scottchen): make changable to test both true/false cases.
+    return Promise.resolve(true);
   }
 
   /** @override */
