@@ -83,7 +83,9 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
       FaviconAttributes* attributes =
           [FaviconAttributes attributesWithImage:favicon];
       [favicon_cache_ setObject:attributes forKey:key];
-      block(attributes);
+      if (block) {
+        block(attributes);
+      }
       return;
     } else if (fallback_to_google_server) {
       void (^favicon_loaded_from_server_block)(
@@ -130,7 +132,9 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
                                is_default_background_color];
 
     [favicon_cache_ setObject:attributes forKey:key];
-    block(attributes);
+    if (block) {
+      block(attributes);
+    }
   };
 
   CGFloat favicon_size_in_pixels = [UIScreen mainScreen].scale * size;
