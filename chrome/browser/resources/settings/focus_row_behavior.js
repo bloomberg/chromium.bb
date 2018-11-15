@@ -87,6 +87,9 @@ const FocusRowBehavior = {
     },
   },
 
+  /** @private {boolean} */
+  blurred_: false,
+
   /** @private {?Element} */
   firstControl_: null,
 
@@ -226,12 +229,13 @@ const FocusRowBehavior = {
       return;
     }
 
-    if (this.lastFocused) {
+    if (this.lastFocused && !this.blurred_) {
       this.row_.getEquivalentElement(this.lastFocused).focus();
     } else {
       const firstFocusable = assert(this.firstControl_);
       firstFocusable.focus();
     }
+    this.blurred_ = false;
   },
 
   /** @param {!KeyboardEvent} e */
@@ -251,8 +255,16 @@ const FocusRowBehavior = {
     this.mouseFocused_ = true;  // Set flag to not do any control-focusing.
   },
 
-  /** @private */
-  onBlur_: function() {
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onBlur_: function(e) {
     this.mouseFocused_ = false;  // Reset flag since it's not active anymore.
-  }
+
+    const node =
+        e.relatedTarget ? /** @type {!Node} */ (e.relatedTarget) : null;
+    if (!this.parentNode.contains(node))
+      this.blurred_ = true;
+  },
 };

@@ -131,6 +131,9 @@ cr.define('md_history', function() {
     /** @private {boolean} */
     isShiftKeyDown_: false,
 
+    /** @private {boolean} */
+    blurred_: false,
+
     /** @override */
     attached: function() {
       Polymer.RenderStatus.afterNextRender(this, function() {
@@ -141,6 +144,7 @@ cr.define('md_history', function() {
         // Adding listeners asynchronously to reduce blocking time, since these
         // history items are items in a potentially long list.
         this.listen(this, 'focus', 'onFocus_');
+        this.listen(this, 'blur', 'onBlur_');
         this.listen(this, 'dom-change', 'onDomChange_');
         this.listen(this.$.checkbox, 'keydown', 'onCheckboxKeydown_');
       });
@@ -165,10 +169,22 @@ cr.define('md_history', function() {
       if (this.mouseDown_)
         return;
 
-      if (this.lastFocused)
+      if (this.lastFocused && !this.blurred_)
         this.row_.getEquivalentElement(this.lastFocused).focus();
       else
         this.row_.getFirstFocusable().focus();
+      this.blurred_ = false;
+    },
+
+    /**
+     * @param {!Event} e
+     * @private
+     */
+    onBlur_: function(e) {
+      const node =
+          e.relatedTarget ? /** @type {!Node} */ (e.relatedTarget) : null;
+      if (!this.parentNode.contains(node))
+        this.blurred_ = true;
     },
 
     /** @param {!KeyboardEvent} e */
