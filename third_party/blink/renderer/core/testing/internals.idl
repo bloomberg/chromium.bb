@@ -362,7 +362,7 @@ enum EffectiveConnectionType {
     // Returns a promise that is resolved when |feature| is counted on
     // |document|'s UseCounter. When |feature| was already counted, it's
     // immediately resolved.
-    [CallWith=ScriptState] Promise<bool> observeUseCounter(Document document, unsigned long feature);
+    [CallWith=ScriptState] Promise<boolean> observeUseCounter(Document document, unsigned long feature);
 
     readonly attribute unsigned long length;
     getter long (unsigned long index);
