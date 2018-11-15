@@ -800,6 +800,8 @@ static_library("test_support_driver") {
     "driver/sync_client_mock.h",
     "driver/test_sync_service.cc",
     "driver/test_sync_service.h",
+    "driver/test_sync_user_settings.cc",
+    "driver/test_sync_user_settings.h",
     "engine/fake_sync_engine.cc",
     "engine/fake_sync_engine.h",
     "engine/mock_sync_engine.cc",

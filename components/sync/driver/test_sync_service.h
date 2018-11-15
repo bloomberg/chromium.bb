@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/test_sync_user_settings.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "url/gurl.h"
@@ -108,6 +109,8 @@ class TestSyncService : public SyncService {
   void Shutdown() override;
 
  private:
+  TestSyncUserSettings user_settings_;
+
   int disable_reasons_ = DISABLE_REASON_NONE;
   TransportState transport_state_ = TransportState::ACTIVE;
   bool local_sync_enabled_ = false;
