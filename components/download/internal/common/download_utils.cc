@@ -459,7 +459,6 @@ ResumeMode GetDownloadResumeMode(DownloadInterruptReason reason,
     case DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN:
     case DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED:
     case DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE:
-    case DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN:
     case DOWNLOAD_INTERRUPT_REASON_CRASH:
       // It is not clear whether attempting a resumption is acceptable at this
       // time or whether it would work at all. Hence allow the user to retry the
@@ -489,6 +488,7 @@ ResumeMode GetDownloadResumeMode(DownloadInterruptReason reason,
     case DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST:
     case DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED:
     case DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT:
+    case DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN:
     case DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
     case DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED:
     case DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED:
