@@ -338,9 +338,8 @@ int GpuMain(const MainFunctionParams& parameters) {
   gpu_process.set_main_thread(child_thread);
 
   // Setup tracing sampler profiler as early as possible.
-  auto tracing_sampler_profiler =
-      std::make_unique<tracing::TracingSamplerProfiler>(
-          base::PlatformThread::CurrentId());
+  std::unique_ptr<tracing::TracingSamplerProfiler> tracing_sampler_profiler =
+      tracing::TracingSamplerProfiler::CreateOnMainThread();
   tracing_sampler_profiler->OnMessageLoopStarted();
 
 #if defined(OS_ANDROID)

@@ -7,9 +7,11 @@
 #include <cinttypes>
 
 #include "base/format_macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
@@ -118,6 +120,26 @@ class TracingProfileBuilder
 
 }  // namespace
 
+// static
+std::unique_ptr<TracingSamplerProfiler>
+TracingSamplerProfiler::CreateOnMainThread() {
+  return base::WrapUnique(
+      new TracingSamplerProfiler(base::PlatformThread::CurrentId()));
+}
+
+// static
+void TracingSamplerProfiler::CreateOnChildThread() {
+  using ProfilerSlot =
+      base::SequenceLocalStorageSlot<std::unique_ptr<TracingSamplerProfiler>>;
+  static base::NoDestructor<ProfilerSlot> slot;
+  if (!slot.get()->Get()) {
+    slot.get()->Set(base::WrapUnique(
+        new TracingSamplerProfiler(base::PlatformThread::CurrentId())));
+  }
+  TracingSamplerProfiler* profiler = slot.get()->Get().get();
+  profiler->OnMessageLoopStarted();
+}
+
 TracingSamplerProfiler::TracingSamplerProfiler(
     base::PlatformThreadId sampled_thread_id)
     : sampled_thread_id_(sampled_thread_id), weak_ptr_factory_(this) {
@@ -134,6 +156,12 @@ TracingSamplerProfiler::TracingSamplerProfiler(
 TracingSamplerProfiler::~TracingSamplerProfiler() {
   base::trace_event::TraceLog::GetInstance()->RemoveAsyncEnabledStateObserver(
       this);
+}
+
+void TracingSamplerProfiler::OnMessageLoopStarted() {
+  base::trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
+      weak_ptr_factory_.GetWeakPtr());
+  OnTraceLogEnabled();
 }
 
 void TracingSamplerProfiler::OnTraceLogEnabled() {
@@ -176,12 +204,6 @@ void TracingSamplerProfiler::OnTraceLogDisabled() {
   // Stop and release the stack sampling profiler.
   profiler_->Stop();
   profiler_.reset();
-}
-
-void TracingSamplerProfiler::OnMessageLoopStarted() {
-  base::trace_event::TraceLog::GetInstance()->AddAsyncEnabledStateObserver(
-      weak_ptr_factory_.GetWeakPtr());
-  OnTraceLogEnabled();
 }
 
 }  // namespace tracing

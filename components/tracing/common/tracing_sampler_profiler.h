@@ -24,16 +24,29 @@ namespace tracing {
 class TRACING_EXPORT TracingSamplerProfiler
     : public base::trace_event::TraceLog::AsyncEnabledStateObserver {
  public:
-  TracingSamplerProfiler(base::PlatformThreadId sampled_thread_id);
+  // Creates sampling profiler on main thread. Since the message loop might not
+  // be setup when creating this profiler, the client must call
+  // OnMessageLoopStarted() when setup.
+  static std::unique_ptr<TracingSamplerProfiler> CreateOnMainThread();
+
+  // Sets up tracing sampling profiler on a child thread. The profiler will be
+  // stored in SequencedLocalStorageSlot and will be destroyed with the thread
+  // task runner.
+  static void CreateOnChildThread();
+
   ~TracingSamplerProfiler() override;
+
+  // Notify the profiler that the message loop for current thread is started.
+  // Only required for main thread.
+  void OnMessageLoopStarted();
 
   // trace_event::TraceLog::EnabledStateObserver implementation:
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
-  void OnMessageLoopStarted();
-
  private:
+  explicit TracingSamplerProfiler(base::PlatformThreadId sampled_thread_id);
+
   const base::PlatformThreadId sampled_thread_id_;
   std::unique_ptr<base::StackSamplingProfiler> profiler_;
 
