@@ -122,7 +122,7 @@ class CORE_EXPORT DOMSelection final : public ScriptWrappable,
 
   bool IsValidForPosition(Node*) const;
 
-  void AddConsoleError(const String& message);
+  void AddConsoleWarning(const String& message);
   Range* PrimaryRangeOrNull() const;
   EphemeralRange CreateRangeFromSelectionEditor() const;
 
