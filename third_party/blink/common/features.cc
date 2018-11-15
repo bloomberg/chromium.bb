@@ -32,10 +32,6 @@ const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kMojoBlobURLs{"MojoBlobURLs",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Nested workers. See https://crbug.com/31666
-const base::Feature kNestedWorkers{"NestedWorkers",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Onion souping for all DOMStorage. https://crbug.com/781870
 const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
                                          base::FEATURE_ENABLED_BY_DEFAULT};

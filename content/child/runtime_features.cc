@@ -437,9 +437,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnablePreloadImageSrcSetEnabled(true);
   }
 
-  WebRuntimeFeatures::EnableNestedWorkers(
-      base::FeatureList::IsEnabled(blink::features::kNestedWorkers));
-
   if (base::FeatureList::IsEnabled(
           features::kExperimentalProductivityFeatures)) {
     WebRuntimeFeatures::EnableExperimentalProductivityFeatures(true);

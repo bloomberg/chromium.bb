@@ -119,7 +119,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableMiddleClickAutoscroll(bool);
   BLINK_PLATFORM_EXPORT static void EnableModernMediaControls(bool);
   BLINK_PLATFORM_EXPORT static void EnableNavigatorContentUtils(bool);
-  BLINK_PLATFORM_EXPORT static void EnableNestedWorkers(bool);
   BLINK_PLATFORM_EXPORT static void EnableNetInfoDownlinkMax(bool);
   BLINK_PLATFORM_EXPORT static void EnableNetworkService(bool);
   BLINK_PLATFORM_EXPORT static void EnableNoHoverAfterLayoutChange(bool);
