@@ -103,5 +103,12 @@ function assertArraysEquals(arrayA, arrayB) {
   assertEquals(JSON.stringify(arrayA), JSON.stringify(arrayB));
 }
 
+/**
+ * Asserts and fails immediately once called.
+ */
+function assertNotReached() {
+  assertFalse(true);
+}
+
 assertSame = assertEquals;
 assertNotSame = assertNotEquals;

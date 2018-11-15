@@ -30,6 +30,7 @@ chromevox_modules = [
   "braille/braille_key_types.js",
   "braille/braille_table.js",
   "braille/braille_translator_manager.js",
+  "braille/bluetooth_braille_display_manager.js",
   "braille/expanding_braille_translator.js",
   "braille/liblouis.js",
   "braille/nav_braille.js",
@@ -557,6 +558,7 @@ generate_deps_js("chromevox_test_deps_js") {
 js2gtest("chromevox_unitjs_tests") {
   test_type = "webui"
   sources = [
+    "braille/bluetooth_braille_display_manager_test.unitjs",
     "braille/braille_display_manager_test.unitjs",
     "braille/braille_input_handler_test.unitjs",
     "braille/expanding_braille_translator_test.unitjs",
