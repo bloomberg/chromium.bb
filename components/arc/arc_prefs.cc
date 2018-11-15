@@ -60,6 +60,10 @@ const char kArcLocationServiceEnabled[] = "arc.location_service.enabled";
 const char kArcPackages[] = "arc.packages";
 // A preference that indicates that Play Auto Install flow was already started.
 const char kArcPaiStarted[] = "arc.pai.started";
+// A preference that indicates that provisioning was initiated from OOBE. This
+// is preserved across Chrome restart.
+const char kArcProvisioningInitiatedFromOobe[] =
+    "arc.provisioning.initiated.from.oobe";
 // A preference that indicates that Play Fast App Reinstall flow was already
 // started.
 const char kArcFastAppReinstallStarted[] = "arc.fast.app.reinstall.started";
@@ -147,6 +151,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kArcFastAppReinstallStarted, false);
   registry->RegisterListPref(kArcFastAppReinstallPackages);
   registry->RegisterBooleanPref(kArcPolicyComplianceReported, false);
+  registry->RegisterBooleanPref(kArcProvisioningInitiatedFromOobe, false);
   registry->RegisterBooleanPref(kArcSignedIn, false);
   registry->RegisterBooleanPref(kArcSkippedReportingNotice, false);
   registry->RegisterBooleanPref(kArcTermsAccepted, false);
