@@ -29,6 +29,11 @@ bool ManagementPolicy::Provider::UserMayLoad(const Extension* extension,
   return true;
 }
 
+bool ManagementPolicy::Provider::UserMayInstall(const Extension* extension,
+                                                base::string16* error) const {
+  return UserMayLoad(extension, error);
+}
+
 bool ManagementPolicy::Provider::UserMayModifySettings(
     const Extension* extension, base::string16* error) const {
   return true;
@@ -78,6 +83,12 @@ bool ManagementPolicy::UserMayLoad(const Extension* extension,
                                    base::string16* error) const {
   return ApplyToProviderList(
       &Provider::UserMayLoad, "Installation", true, extension, error);
+}
+
+bool ManagementPolicy::UserMayInstall(const Extension* extension,
+                                      base::string16* error) const {
+  return ApplyToProviderList(&Provider::UserMayInstall, "Installation", true,
+                             extension, error);
 }
 
 bool ManagementPolicy::UserMayModifySettings(const Extension* extension,
