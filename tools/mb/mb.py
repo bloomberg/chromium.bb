@@ -368,6 +368,7 @@ class MetaBuildWrapper(object):
             self.PathJoin(self.chromium_src_dir, 'tools', 'swarming_client',
                           'isolate.py'),
             'remap',
+            '--collapse_symlinks',
             '-s', self.PathJoin(self.args.path, self.args.target + '.isolated'),
             '-o', zip_dir
           ]
