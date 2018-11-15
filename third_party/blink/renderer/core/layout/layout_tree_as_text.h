@@ -36,7 +36,6 @@ namespace blink {
 class Color;
 class PaintLayer;
 class Element;
-class LayoutRect;
 class LocalFrame;
 class LayoutBlockFlow;
 class LayoutObject;
@@ -94,7 +93,6 @@ class LayoutTreeAsText {
   static void WriteLayers(WTF::TextStream&,
                           const PaintLayer* root_layer,
                           PaintLayer*,
-                          const LayoutRect& paint_dirty_rect,
                           int indent = 0,
                           LayoutAsTextBehavior = kLayoutAsTextBehaviorNormal,
                           const PaintLayer* marked_layer = nullptr);
