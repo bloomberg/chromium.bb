@@ -839,13 +839,7 @@
   },
 
   "EnableSha1ForLocalAnchors": {
-    "os": ["win", "linux", "mac", "chromeos", "android"],
-    "test_policy": { "EnableSha1ForLocalAnchors": true },
-    "pref_mappings": [
-      { "pref": "ssl.sha1_enabled_for_local_anchors",
-        "local_state": true
-      }
-    ]
+    "note": "This policy is deprecated and removed since Chrome 72."
   },
 
   "EnableCommonNameFallbackForLocalAnchors": {
