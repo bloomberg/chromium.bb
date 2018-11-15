@@ -108,7 +108,7 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
 
         mView = (ViewGroup) LayoutInflater.from(context).inflate(
                 R.layout.download_home_toolbar, null);
-        mToolbar = mView.findViewById(R.id.toolbar);
+        mToolbar = mView.findViewById(R.id.download_toolbar);
         mShadow = mView.findViewById(R.id.shadow);
 
         mToolbar.initialize(selectionDelegate, 0 /* titleResId */, null /* drawerLayout */,
