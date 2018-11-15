@@ -748,6 +748,10 @@ void AwContentBrowserClient::RegisterOutOfProcessServices(
       base::BindRepeating(&base::ASCIIToUTF16, "Heap Profiling Service");
 }
 
+bool AwContentBrowserClient::ShouldIsolateErrorPage(bool in_main_frame) {
+  return false;
+}
+
 bool AwContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   // TODO(lukasza): When/if we eventually add OOPIF support for AW we should
   // consider running AW tests with and without site-per-process (and this might
