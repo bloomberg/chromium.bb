@@ -62,11 +62,18 @@ const char* kJSONInvalidSizes = R"()]}'
       "version":"1.2.3.4",
       "prodversionmin":"2.0.143.0",
       "packages":{"package":[{"name":"1","size":1234},
-                             {"name":"1","size":-1234},
-                             {"name":"1"},
-                             {"name":"1","size":"-a"},
-                             {"name":"1","size":-123467890123456789},
-                             {"name":"1","size":123467890123456789}]}}
+                             {"name":"2","size":9007199254740991},
+                             {"name":"3","size":-1234},
+                             {"name":"4"},
+                             {"name":"5","size":"-a"},
+                             {"name":"6","size":-123467890123456789},
+                             {"name":"7","size":123467890123456789},
+                             {"name":"8","sizediff":1234},
+                             {"name":"9","sizediff":9007199254740991},
+                             {"name":"10","sizediff":-1234},
+                             {"name":"11","sizediff":"-a"},
+                             {"name":"12","sizediff":-123467890123456789},
+                             {"name":"13","sizediff":123467890123456789}]}}
       }
      }
     ]
@@ -385,11 +392,18 @@ TEST(UpdateClientProtocolParserJSONTest, Parse) {
     const auto* first_result = &parser->results().list[0];
     EXPECT_FALSE(first_result->manifest.packages.empty());
     EXPECT_EQ(1234, first_result->manifest.packages[0].size);
-    EXPECT_EQ(-1234, first_result->manifest.packages[1].size);
+    EXPECT_EQ(9007199254740991, first_result->manifest.packages[1].size);
     EXPECT_EQ(0, first_result->manifest.packages[2].size);
     EXPECT_EQ(0, first_result->manifest.packages[3].size);
     EXPECT_EQ(0, first_result->manifest.packages[4].size);
     EXPECT_EQ(0, first_result->manifest.packages[5].size);
+    EXPECT_EQ(0, first_result->manifest.packages[6].size);
+    EXPECT_EQ(1234, first_result->manifest.packages[7].sizediff);
+    EXPECT_EQ(9007199254740991, first_result->manifest.packages[8].sizediff);
+    EXPECT_EQ(0, first_result->manifest.packages[9].sizediff);
+    EXPECT_EQ(0, first_result->manifest.packages[10].sizediff);
+    EXPECT_EQ(0, first_result->manifest.packages[11].sizediff);
+    EXPECT_EQ(0, first_result->manifest.packages[12].sizediff);
   }
   {
     // Parse xml with a <daystart> element.

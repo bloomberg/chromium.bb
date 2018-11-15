@@ -57,11 +57,18 @@ const char* valid_xml_with_invalid_sizes =
     "     <manifest version='1.2.3.4' prodversionmin='2.0.143.0'>"
     "       <packages>"
     "         <package name='1' size='1234'/>"
-    "         <package name='2' size='-1234'/>"
-    "         <package name='3' />"
-    "         <package name='4' size='-a'/>"
-    "         <package name='5' size='-123467890123456789'/>"
-    "         <package name='6' size='123467890123456789'/>"
+    "         <package name='2' size='9223372036854775807'/>"
+    "         <package name='3' size='-1234'/>"
+    "         <package name='4' />"
+    "         <package name='5' size='-a'/>"
+    "         <package name='6' size='-123467890123456789'/>"
+    "         <package name='7' size='123467890123456789012'/>"
+    "         <package name='8' sizediff='1234'/>"
+    "         <package name='9' sizediff='9223372036854775807'/>"
+    "         <package name='10' sizediff='-1234'/>"
+    "         <package name='11' sizediff='-a'/>"
+    "         <package name='12' sizediff='-123467890123456789'/>"
+    "         <package name='13' sizediff='123467890123456789012'/>"
     "       </packages>"
     "     </manifest>"
     "   </updatecheck>"
@@ -377,11 +384,18 @@ TEST(UpdateClientProtocolParserXmlTest, Parse) {
   first_result = &parser->results().list[0];
   EXPECT_FALSE(first_result->manifest.packages.empty());
   EXPECT_EQ(1234, first_result->manifest.packages[0].size);
-  EXPECT_EQ(-1234, first_result->manifest.packages[1].size);
+  EXPECT_EQ(9223372036854775807, first_result->manifest.packages[1].size);
   EXPECT_EQ(0, first_result->manifest.packages[2].size);
   EXPECT_EQ(0, first_result->manifest.packages[3].size);
   EXPECT_EQ(0, first_result->manifest.packages[4].size);
   EXPECT_EQ(0, first_result->manifest.packages[5].size);
+  EXPECT_EQ(0, first_result->manifest.packages[5].size);
+  EXPECT_EQ(1234, first_result->manifest.packages[7].sizediff);
+  EXPECT_EQ(9223372036854775807, first_result->manifest.packages[8].sizediff);
+  EXPECT_EQ(0, first_result->manifest.packages[9].sizediff);
+  EXPECT_EQ(0, first_result->manifest.packages[10].sizediff);
+  EXPECT_EQ(0, first_result->manifest.packages[11].sizediff);
+  EXPECT_EQ(0, first_result->manifest.packages[12].sizediff);
 
   // Parse xml with a <daystart> element.
   EXPECT_TRUE(parser->Parse(kWithDaystart));
