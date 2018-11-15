@@ -3,7 +3,7 @@
 <script src="../../../resources/testharnessreport.js"></script>
 <script>
 promise_test(async () => {
-  await taskWorklet.addModule("resources/async_sum.js");
+  await taskWorklet.addModule("resources/async-sum.js");
   const task = taskWorklet.postTask('repeat', 2);
   const task2 = taskWorklet.postTask('repeat', 4);
   const task3 = taskWorklet.postTask('sum', task, task2);
