@@ -298,7 +298,7 @@ TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithoutHints) {
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
-       ProcessHintsWhitelistForNoScriptPopulatedCorrectly) {
+       ProcessHintsWhitelistForNoScriptTopLevelHintsPopulatedCorrectly) {
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("facebook.com");
@@ -332,6 +332,66 @@ TEST_F(PreviewsOptimizationGuideTest,
                                      PreviewsType::NOSCRIPT, &ect_threshold));
   EXPECT_FALSE(guide()->IsWhitelisted(&user_data, GURL("https://google.com"),
                                       PreviewsType::NOSCRIPT, &ect_threshold));
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       ProcessHintsForNoScriptPageHintsPopulatedCorrectly) {
+  optimization_guide::proto::Configuration config;
+
+  // Configure somedomain.org with 2 page patterns, different ECT thresholds.
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("somedomain.org");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("noscript_default_2g");
+  optimization_guide::proto::Optimization* optimization1 =
+      page_hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  optimization_guide::proto::PageHint* page_hint2 = hint1->add_page_hints();
+  page_hint2->set_page_pattern("noscript_3g");
+  page_hint2->set_max_ect_trigger(
+      optimization_guide::proto::EffectiveConnectionType::
+          EFFECTIVE_CONNECTION_TYPE_3G);
+  optimization_guide::proto::Optimization* optimization2 =
+      page_hint2->add_whitelisted_optimizations();
+  optimization2->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+
+  // Configure anypage.com with * page pattern.
+  optimization_guide::proto::Hint* hint2 = config.add_hints();
+  hint2->set_key("anypage.com");
+  hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::PageHint* page_hint3 = hint2->add_page_hints();
+  page_hint3->set_page_pattern("*");
+  optimization_guide::proto::Optimization* optimization3 =
+      page_hint3->add_whitelisted_optimizations();
+  optimization3->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  ProcessHints(config, "2.0.0");
+
+  RunUntilIdle();
+  PreviewsUserData user_data(kDefaultPageId);
+  net::EffectiveConnectionType ect_threshold;
+
+  // Verify page matches and ECT thresholds.
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      &user_data, GURL("https://somedomain.org/noscript_default_2g"),
+      PreviewsType::NOSCRIPT, &ect_threshold));
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
+  EXPECT_TRUE(guide()->IsWhitelisted(&user_data,
+                                     GURL("https://somedomain.org/noscript_3g"),
+                                     PreviewsType::NOSCRIPT, &ect_threshold));
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G, ect_threshold);
+  EXPECT_FALSE(guide()->IsWhitelisted(
+      &user_data, GURL("https://somedomain.org/no_pattern_match"),
+      PreviewsType::NOSCRIPT, &ect_threshold));
+
+  // Verify * matches any page.
+  EXPECT_TRUE(guide()->IsWhitelisted(
+      &user_data, GURL("https://anypage.com/noscript_for_all"),
+      PreviewsType::NOSCRIPT, &ect_threshold));
+  EXPECT_TRUE(guide()->IsWhitelisted(&user_data, GURL("https://anypage.com/"),
+                                     PreviewsType::NOSCRIPT, &ect_threshold));
+  EXPECT_TRUE(guide()->IsWhitelisted(&user_data, GURL("https://anypage.com"),
+                                     PreviewsType::NOSCRIPT, &ect_threshold));
 }
 
 // Test when resource loading hints are enabled.
