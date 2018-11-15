@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -34,16 +35,22 @@ public class FeedLifecycleBridge {
         mNativeBridge = 0;
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private static void onCachedDataCleared() {
-        FeedProcessScopeFactory.getFeedAppLifecycle().onCachedDataCleared();
+    static void onCachedDataCleared() {
+        FeedAppLifecycle lifecycle = FeedProcessScopeFactory.getFeedAppLifecycle();
+        if (lifecycle != null) {
+            lifecycle.onCachedDataCleared();
+        }
     }
 
-    // This would ordinarily be non-static, but there's no instance state, so for simplicity it's
-    // isomorphic to onCachedDataCleared.
+    @VisibleForTesting
     @CalledByNative
-    private static void onHistoryDeleted() {
-        FeedProcessScopeFactory.getFeedAppLifecycle().onHistoryDeleted();
+    static void onHistoryDeleted() {
+        FeedAppLifecycle lifecycle = FeedProcessScopeFactory.getFeedAppLifecycle();
+        if (lifecycle != null) {
+            lifecycle.onHistoryDeleted();
+        }
     }
 
     private native long nativeInit(Profile profile);

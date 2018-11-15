@@ -9,12 +9,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import com.google.android.libraries.feed.api.lifecycle.AppLifecycleListener;
 import com.google.android.libraries.feed.feedapplifecyclelistener.FeedAppLifecycleListener;
 import com.google.android.libraries.feed.host.network.NetworkClient;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +27,7 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -35,8 +38,12 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.feed.FeedAppLifecycle.AppLifecycleEvent;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -57,8 +64,6 @@ public class FeedAppLifecycleTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Mock
-    private FeedLifecycleBridge mLifecycleBridge;
-    @Mock
     private FeedScheduler mFeedScheduler;
     @Mock
     private NetworkClient mNetworkClient;
@@ -68,6 +73,7 @@ public class FeedAppLifecycleTest {
     private AppLifecycleListener mAppLifecycleListener;
     private ChromeTabbedActivity mActivity;
     private FeedAppLifecycle mAppLifecycle;
+    private FeedLifecycleBridge mLifecycleBridge;
     private final String mHistogramAppLifecycleEvents =
             "ContentSuggestions.Feed.AppLifecycle.Events";
 
@@ -75,6 +81,14 @@ public class FeedAppLifecycleTest {
     public void setUp() throws InterruptedException, TimeoutException {
         MockitoAnnotations.initMocks(this);
         ThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
+                        .handleSynchronousStartup();
+            } catch (ProcessInitException e) {
+                Assert.fail("Native initialization failed");
+            }
+            Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
+            mLifecycleBridge = new FeedLifecycleBridge(profile);
             mAppLifecycle =
                     new FeedAppLifecycle(mAppLifecycleListener, mLifecycleBridge, mFeedScheduler);
             FeedProcessScopeFactory.createFeedProcessScopeForTesting(mFeedScheduler, mNetworkClient,
@@ -239,6 +253,18 @@ public class FeedAppLifecycleTest {
         verify(mFeedScheduler, times(1)).onForegrounded();
         signalActivityResume(mActivity);
         verify(mFeedScheduler, times(2)).onForegrounded();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"InterestFeedContentSuggestions"})
+    public void clear_data_after_disabling_does_not_crash() {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
+            PrefServiceBridge.getInstance().setBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED, false);
+            FeedLifecycleBridge.onCachedDataCleared();
+            FeedLifecycleBridge.onHistoryDeleted();
+        });
     }
 
     private void signalActivityStart(Activity activity)
