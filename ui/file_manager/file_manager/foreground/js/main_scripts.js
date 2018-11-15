@@ -108,7 +108,6 @@
 // <include src="actions_model.js">
 // <include src="app_state_controller.js">
 // <include src="column_visibility_controller.js">
-// <include src="crostini.js">
 // <include src="dialog_action_controller.js">
 // <include src="dialog_type.js">
 // <include src="directory_contents.js">

@@ -1659,7 +1659,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
                   'Error sharing with linux: ' +
                   chrome.runtime.lastError.message);
             } else {
-              Crostini.registerSharedPath(dir, fileManager.volumeManager);
+              fileManager.crostini.registerSharedPath(dir);
             }
           });
     }
@@ -1697,9 +1697,8 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
     // Must be single directory subfolder of Downloads not already shared.
     const entries = CommandUtil.getCommandEntries(event.target);
     event.canExecute = entries.length === 1 && entries[0].isDirectory &&
-        !Crostini.isPathShared(entries[0], fileManager.volumeManager) &&
-        Crostini.canSharePath(
-            entries[0], true /* persist */, fileManager.volumeManager);
+        !fileManager.crostini.isPathShared(entries[0]) &&
+        fileManager.crostini.canSharePath(entries[0], true /* persist */);
     event.command.setHidden(!event.canExecute);
   }
 });
@@ -1724,7 +1723,7 @@ CommandHandler.COMMANDS_['manage-linux-sharing'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    event.canExecute = Crostini.IS_CROSTINI_FILES_ENABLED;
+    event.canExecute = fileManager.crostini.isEnabled();
     event.command.setHidden(!event.canExecute);
   }
 });

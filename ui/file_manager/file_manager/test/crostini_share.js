@@ -28,11 +28,11 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
           callback();
         });
       };
-  const oldCrostiniUnregister = Crostini.unregisterSharedPath;
+  const oldCrostiniUnregister = fileManager.crostini.unregisterSharedPath;
   let unregisterCalled = false;
-  Crostini.unregisterSharedPath = function(entry, volumeManager) {
+  fileManager.crostini.unregisterSharedPath = function(entry) {
     unregisterCalled = true;
-    oldCrostiniUnregister(entry, volumeManager);
+    oldCrostiniUnregister.call(fileManager.crostini, entry);
   };
   chrome.metricsPrivate.smallCounts_ = [];
   chrome.metricsPrivate.values_ = [];
@@ -112,8 +112,8 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
       .then(() => {
         // Restore fmp.*.
         chrome.fileManagerPrivate.sharePathsWithCrostini = oldSharePaths;
-        // Restore Crostini.unregisterSharedPath;
-        Crostini.unregisterSharedPath = oldCrostiniUnregister;
+        // Restore Crostini.unregisterSharedPath.
+        fileManager.crostini.unregisterSharedPath = oldCrostiniUnregister;
         done();
       });
 };
@@ -159,7 +159,7 @@ crostiniShare.testSharePathShown = (done) => {
                 .getCurrentProfileVolumeInfo(
                     VolumeManagerCommon.VolumeType.DOWNLOADS)
                 .fileSystem.entries['/photos'];
-        Crostini.registerSharedPath(alreadySharedPhotosDir, mockVolumeManager);
+        fileManager.crostini.registerSharedPath(alreadySharedPhotosDir);
         assertTrue(
             test.fakeMouseRightClick('#file-list [file-name="photos"]'),
             'right-click hello.txt');
@@ -252,8 +252,7 @@ crostiniShare.testSharePathShown = (done) => {
         // Unset DRIVE_FS_ENABLED.
         loadTimeData.data_['DRIVE_FS_ENABLED'] = false;
         // Clear Crostini shared folders.
-        Crostini.unregisterSharedPath(
-            alreadySharedPhotosDir, mockVolumeManager);
+        fileManager.crostini.unregisterSharedPath(alreadySharedPhotosDir);
         done();
       });
 };
@@ -270,13 +269,7 @@ crostiniShare.testGearMenuManageLinuxSharing = (done) => {
   test.setupAndWaitUntilReady()
       .then(() => {
         // Setup with crostini disabled.
-        chrome.fileManagerPrivate.crostiniEnabled_ = false;
-        fileManager.setupCrostini_();
-        return test.repeatUntil(
-            () => !Crostini.IS_CROSTINI_FILES_ENABLED ||
-                test.pending('crostini setup'));
-      })
-      .then(() => {
+        fileManager.crostini.setEnabled(false);
         // Click gear menu, ensure 'Manage Linux sharing' is hidden.
         assertTrue(test.fakeMouseClick('#gear-button'));
         return test.waitForElement(manageLinuxSharingOptionHidden);
@@ -288,13 +281,7 @@ crostiniShare.testGearMenuManageLinuxSharing = (done) => {
       })
       .then(() => {
         // Setup with crostini enabled.
-        chrome.fileManagerPrivate.crostiniEnabled_ = true;
-        fileManager.setupCrostini_();
-        return test.repeatUntil(
-            () => Crostini.IS_CROSTINI_FILES_ENABLED ||
-                test.pending('crostini setup'));
-      })
-      .then(() => {
+        fileManager.crostini.setEnabled(true);
         // Click gear menu, ensure 'Manage Linux sharing' is shown.
         assertTrue(test.fakeMouseClick('#gear-button'));
         return test.waitForElement(manageLinuxSharingOptionShown);

@@ -107,3 +107,8 @@ CommandHandlerDeps.prototype.getSelection = function() {};
  * @type {MetadataModel}
  */
 CommandHandlerDeps.prototype.metadataModel;
+
+/**
+ * @type {Crostini}
+ */
+CommandHandlerDeps.prototype.crostini;

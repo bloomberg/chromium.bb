@@ -2,18 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const Crostini = {};
-
 /**
- * Set from cmd line flag 'crostini-files'.
- * @type {boolean}
+ * Crostini shared path state handler.
+ * @constructor
  */
-Crostini.IS_CROSTINI_FILES_ENABLED = false;
+function Crostini() {
+  /** @private {boolean} */
+  this.enabled_ = false;
+
+  /**
+   * Maintains a list of paths shared with the crostini container.
+   * Keyed by VolumeManagerCommon.RootType, with boolean set values
+   * of string paths.  e.g. {'Downloads': {'/foo': true, '/bar': true}}.
+   * @private @dict {!Object<!Object<boolean>>}
+   */
+  this.shared_paths_ = {};
+}
 
 /**
  * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
  * histogram_suffix.
  * @type {!Map<VolumeManagerCommon.RootType, string>}
+ * @const
  */
 Crostini.VALID_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.DOWNLOADS, 'Downloads'],
@@ -21,16 +31,18 @@ Crostini.VALID_ROOT_TYPES_FOR_SHARE = new Map([
 ]);
 
 /**
- * Can be collapsed into VALD_ROOT_TYPES_FOR_SHARE once
+ * Can be collapsed into VALID_ROOT_TYPES_FOR_SHARE once
  * DriveFS flag is removed.
  * Keep in sync with histograms.xml:FileBrowserCrostiniSharedPathsDepth
  * histogram_suffix.
  * @type {!Map<VolumeManagerCommon.RootType, string>}
+ * @const
  */
 Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT, 'DriveComputers'],
   [VolumeManagerCommon.RootType.COMPUTER, 'DriveComputers'],
   [VolumeManagerCommon.RootType.DRIVE, 'MyDrive'],
+  [VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT, 'TeamDrive'],
   [VolumeManagerCommon.RootType.TEAM_DRIVE, 'TeamDrive'],
 ]);
 
@@ -38,26 +50,48 @@ Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE = new Map([
 Crostini.UMA_ROOT_TYPE_OTHER = 'Other';
 
 /**
- * Maintains a list of paths shared with the crostini container.
- * Keyed by VolumeManagerCommon.RootType, with boolean set values
- * of string paths.  e.g. {'Downloads': {'/foo': true, '/bar': true}}.
- * @private @dict {!Object<!Object<boolean>>}
+ * Initialize Volume Manager.
+ * @param {!VolumeManager} volumeManager
  */
-Crostini.SHARED_PATHS_ = {};
+Crostini.prototype.init = function(volumeManager) {
+  this.volumeManager_ = volumeManager;
+};
+
+/**
+ * Register for any shared path changes.
+ */
+Crostini.prototype.listen = function() {
+  chrome.fileManagerPrivate.onCrostiniSharedPathsChanged.addListener(
+      this.onChange_.bind(this));
+};
+
+/**
+ * Set from feature 'crostini-files'.
+ * @param {boolean} enabled
+ */
+Crostini.prototype.setEnabled = function(enabled) {
+  this.enabled_ = enabled;
+};
+
+/**
+ * @return {boolean} Whether crostini is enabled.
+ */
+Crostini.prototype.isEnabled = function() {
+  return this.enabled_;
+};
 
 /**
  * Registers an entry as a shared path.
  * @param {!Entry} entry
- * @param {!VolumeManager} volumeManager
  */
-Crostini.registerSharedPath = function(entry, volumeManager) {
-  const info = volumeManager.getLocationInfo(entry);
+Crostini.prototype.registerSharedPath = function(entry) {
+  const info = this.volumeManager_.getLocationInfo(entry);
   if (!info)
     return;
-  let paths = Crostini.SHARED_PATHS_[info.rootType];
+  let paths = this.shared_paths_[info.rootType];
   if (!paths) {
     paths = {};
-    Crostini.SHARED_PATHS_[info.rootType] = paths;
+    this.shared_paths_[info.rootType] = paths;
   }
   // Remove any existing paths that are children of the new path.
   for (let path in paths) {
@@ -78,13 +112,12 @@ Crostini.registerSharedPath = function(entry, volumeManager) {
 /**
  * Unregisters entry as a shared path.
  * @param {!Entry} entry
- * @param {!VolumeManager} volumeManager
  */
-Crostini.unregisterSharedPath = function(entry, volumeManager) {
-  const info = volumeManager.getLocationInfo(entry);
+Crostini.prototype.unregisterSharedPath = function(entry) {
+  const info = this.volumeManager_.getLocationInfo(entry);
   if (!info)
     return;
-  const paths = Crostini.SHARED_PATHS_[info.rootType];
+  const paths = this.shared_paths_[info.rootType];
   if (paths) {
     delete paths[entry.fullPath];
   }
@@ -92,17 +125,17 @@ Crostini.unregisterSharedPath = function(entry, volumeManager) {
 
 /**
  * Handles shared path changes.
- * @param {!VolumeManager} volumeManager
  * @param {chrome.fileManagerPrivate.CrostiniSharedPathsChangedEvent} event
+ * @private
  */
-Crostini.onSharedPathsChanged = function(volumeManager, event) {
+Crostini.prototype.onChange_ = function(event) {
   if (event.eventType === 'share') {
     for (const entry of event.entries) {
-      Crostini.registerSharedPath(entry, volumeManager);
+      this.registerSharedPath(entry);
     }
   } else if (event.eventType === 'unshare') {
     for (const entry of event.entries) {
-      Crostini.unregisterSharedPath(entry, volumeManager);
+      this.unregisterSharedPath(entry);
     }
   }
 };
@@ -110,13 +143,12 @@ Crostini.onSharedPathsChanged = function(volumeManager, event) {
 /**
  * Returns true if entry is shared.
  * @param {!Entry} entry
- * @param {!VolumeManager} volumeManager
  * @return {boolean} True if path is shared either by a direct
  *   share or from one of its ancestor directories.
  */
-Crostini.isPathShared = function(entry, volumeManager) {
-  const root = volumeManager.getLocationInfo(entry).rootType;
-  const paths = Crostini.SHARED_PATHS_[root];
+Crostini.prototype.isPathShared = function(entry) {
+  const root = this.volumeManager_.getLocationInfo(entry).rootType;
+  const paths = this.shared_paths_[root];
   if (!paths)
     return false;
   // Check path and all ancestor directories.
@@ -130,25 +162,12 @@ Crostini.isPathShared = function(entry, volumeManager) {
 };
 
 /**
- * @param {!Entry} entry
- * @param {!VolumeManager} volumeManager
- * @return {boolean} True if the entry is from crostini.
- */
-Crostini.isCrostiniEntry = function(entry, volumeManager) {
-  return volumeManager.getLocationInfo(entry).rootType ===
-      VolumeManagerCommon.RootType.CROSTINI;
-};
-
-/**
  * Returns true if entry can be shared with Crostini.
  * @param {!Entry} entry
  * @param {boolean} persist If path is to be persisted.
- * @param {!VolumeManager} volumeManager
  */
-Crostini.canSharePath = function(entry, persist, volumeManager) {
-
-  // Check crostini-files flag and valid volume.
-  if (!Crostini.IS_CROSTINI_FILES_ENABLED)
+Crostini.prototype.canSharePath = function(entry, persist) {
+  if (!this.enabled_)
     return false;
 
   // Only directories for persistent shares.
@@ -156,20 +175,8 @@ Crostini.canSharePath = function(entry, persist, volumeManager) {
     return false;
 
   // Allow Downloads, and Drive if DriveFS is enabled.
-  const rootType = volumeManager.getLocationInfo(entry).rootType;
+  const rootType = this.volumeManager_.getLocationInfo(entry).rootType;
   return Crostini.VALID_ROOT_TYPES_FOR_SHARE.has(rootType) ||
       (loadTimeData.getBoolean('DRIVE_FS_ENABLED') &&
        Crostini.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE.has(rootType));
-};
-
-/**
- * Returns true if task requires entries to be shared before executing task.
- * @param {!chrome.fileManagerPrivate.FileTask} task Task to run.
- * @return {boolean} true if task requires entries to be shared.
- */
-Crostini.taskRequiresSharing = function(task) {
-  const taskParts = task.taskId.split('|');
-  const taskType = taskParts[1];
-  const actionId = taskParts[2];
-  return taskType === 'crostini' || actionId === 'install-linux-package';
 };

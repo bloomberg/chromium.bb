@@ -12,6 +12,7 @@
 // <include src="../../common/js/progress_center_common.js">
 // <include src="../../common/js/importer_common.js">
 // <include src="metadata_proxy.js">
+// <include src="crostini.js">
 // <include src="device_handler.js">
 // <include src="drive_sync_handler.js">
 // <include src="duplicate_finder.js">

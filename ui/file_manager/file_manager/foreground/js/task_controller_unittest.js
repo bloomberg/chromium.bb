@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+window.loadTimeData = {
+  getBoolean: function(key) {
+    return false;
+  }
+};
+
 window.metrics = {
   recordEnum: function() {}
 };
@@ -29,6 +35,16 @@ function setUp() {
   };
 
   cr.ui.decorate('command', cr.ui.Command);
+}
+
+function createCrostini() {
+  const crostini = new Crostini();
+  crostini.init({
+    getLocationInfo: () => {
+      return 'test';
+    }
+  });
+  return crostini;
 }
 
 function testExecuteEntryTask(callback) {
@@ -72,7 +88,7 @@ function testExecuteEntryTask(callback) {
           return null;
         }
       },
-      new cr.EventTarget(), null);
+      new cr.EventTarget(), null, createCrostini());
 
   controller.executeEntryTask(fileSystem.entries['/test.png']);
   reportPromise(new Promise(function(fulfill) {
@@ -141,7 +157,7 @@ function createTaskController(selectionHandler) {
           return null;
         }
       },
-      selectionHandler, null);
+      selectionHandler, null, createCrostini());
 }
 
 // TaskController.getFileTasks should not call fileManagerPrivate.getFileTasks
