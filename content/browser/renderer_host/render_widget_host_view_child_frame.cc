@@ -82,7 +82,10 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     frame_sink_id_ = viz::FrameSinkId();
   } else {
     GetHostFrameSinkManager()->RegisterFrameSinkId(
-        frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kYes);
+        frame_sink_id_, this,
+        enable_surface_synchronization_
+            ? viz::ReportFirstSurfaceActivation::kNo
+            : viz::ReportFirstSurfaceActivation::kYes);
     GetHostFrameSinkManager()->SetFrameSinkDebugLabel(
         frame_sink_id_, "RenderWidgetHostViewChildFrame");
     CreateCompositorFrameSinkSupport();
@@ -228,7 +231,7 @@ bool RenderWidgetHostViewChildFrame::HasFocus() const {
 }
 
 bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() const {
-  return has_frame_;
+  return GetLocalSurfaceIdAllocation().IsValid();
 }
 
 void RenderWidgetHostViewChildFrame::EnsureSurfaceSynchronizedForLayoutTest() {
@@ -587,7 +590,6 @@ void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink(
   ResetCompositorFrameSinkSupport();
   renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
   CreateCompositorFrameSinkSupport();
-  has_frame_ = false;
 }
 
 void RenderWidgetHostViewChildFrame::SetParentFrameSinkId(
@@ -616,6 +618,8 @@ void RenderWidgetHostViewChildFrame::SetParentFrameSinkId(
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
   if (features::IsMultiProcessMash())
     return;
+  if (enable_surface_synchronization_)
+    return;
   if (!last_activated_surface_info_.is_valid())
     return;
   FirstSurfaceActivation(last_activated_surface_info_);
@@ -642,15 +646,6 @@ void RenderWidgetHostViewChildFrame::OnDidNotProduceFrame(
     const viz::BeginFrameAck& ack) {
   DCHECK(!enable_viz_);
   support_->DidNotProduceFrame(ack);
-}
-
-void RenderWidgetHostViewChildFrame::ProcessFrameSwappedCallbacks() {
-  std::vector<base::OnceClosure> process_callbacks;
-  // Swap the vectors to avoid re-entrancy issues due to calls to
-  // RegisterFrameSwappedCallback() while running the OnceClosures.
-  process_callbacks.swap(frame_swapped_callbacks_);
-  for (base::OnceClosure& callback : process_callbacks)
-    std::move(callback).Run();
 }
 
 void RenderWidgetHostViewChildFrame::TransformPointToRootSurface(
@@ -742,14 +737,13 @@ bool RenderWidgetHostViewChildFrame::HasSize() const {
 
 gfx::PointF RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpaceF(
     const gfx::PointF& point) {
+  viz::SurfaceId surface_id = GetCurrentSurfaceId();
   // LocalSurfaceId is not needed in Viz hit-test.
-  if (!frame_connector_ ||
-      (!use_viz_hit_test_ && !last_activated_surface_info_.is_valid())) {
+  if (!frame_connector_ || (!use_viz_hit_test_ && !surface_id.is_valid())) {
     return point;
   }
 
-  return frame_connector_->TransformPointToRootCoordSpace(
-      point, last_activated_surface_info_.id());
+  return frame_connector_->TransformPointToRootCoordSpace(point, surface_id);
 }
 
 bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpaceLegacy(
@@ -757,12 +751,12 @@ bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpaceLegacy(
     const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
   *transformed_point = point;
-  if (!frame_connector_ || !last_activated_surface_info_.is_valid())
+  viz::SurfaceId surface_id = GetCurrentSurfaceId();
+  if (!frame_connector_ || !surface_id.is_valid())
     return false;
 
   return frame_connector_->TransformPointToLocalCoordSpaceLegacy(
-      point, original_surface, last_activated_surface_info_.id(),
-      transformed_point);
+      point, original_surface, surface_id, transformed_point);
 }
 
 bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
@@ -770,9 +764,9 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
     RenderWidgetHostViewBase* target_view,
     gfx::PointF* transformed_point,
     viz::EventSource source) {
+  viz::SurfaceId surface_id = GetCurrentSurfaceId();
   // LocalSurfaceId is not needed in Viz hit-test.
-  if (!frame_connector_ ||
-      (!use_viz_hit_test_ && !last_activated_surface_info_.is_valid())) {
+  if (!frame_connector_ || (!use_viz_hit_test_ && !surface_id.is_valid())) {
     return false;
   }
 
@@ -782,8 +776,7 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
   }
 
   return frame_connector_->TransformPointToCoordSpaceForView(
-      point, target_view, last_activated_surface_info_.id(), transformed_point,
-      source);
+      point, target_view, surface_id, transformed_point, source);
 }
 
 gfx::PointF RenderWidgetHostViewChildFrame::TransformRootPointToViewCoordSpace(
@@ -840,21 +833,12 @@ void RenderWidgetHostViewChildFrame::ShowDefinitionForSelection() {
 void RenderWidgetHostViewChildFrame::SpeakSelection() {}
 #endif  // defined(OS_MACOSX)
 
-void RenderWidgetHostViewChildFrame::RegisterFrameSwappedCallback(
-    base::OnceClosure callback) {
-  frame_swapped_callbacks_.emplace_back(std::move(callback));
-}
-
 void RenderWidgetHostViewChildFrame::CopyFromSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
   if (!IsSurfaceAvailableForCopy()) {
-    // Defer submitting the copy request until after a frame is drawn, at which
-    // point we should be guaranteed that the surface is available.
-    RegisterFrameSwappedCallback(base::BindOnce(
-        &RenderWidgetHostViewChildFrame::CopyFromSurface, AsWeakPtr(),
-        src_subrect, output_size, std::move(callback)));
+    std::move(callback).Run(SkBitmap());
     return;
   }
 
@@ -869,11 +853,13 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
               std::move(callback)));
 
   if (src_subrect.IsEmpty()) {
-    request->set_area(gfx::Rect(last_activated_surface_info_.size_in_pixels()));
+    request->set_area(gfx::Rect(GetCompositorViewportPixelSize()));
   } else {
+    ScreenInfo screen_info;
+    GetScreenInfo(&screen_info);
     // |src_subrect| is in DIP coordinates; convert to Surface coordinates.
-    request->set_area(gfx::ScaleToRoundedRect(
-        src_subrect, last_activated_surface_info_.device_scale_factor()));
+    request->set_area(
+        gfx::ScaleToRoundedRect(src_subrect, screen_info.device_scale_factor));
   }
 
   if (!output_size.IsEmpty()) {
@@ -889,8 +875,8 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
         gfx::Vector2d(output_size.width(), output_size.height()));
   }
 
-  GetHostFrameSinkManager()->RequestCopyOfOutput(
-      last_activated_surface_info_.id(), std::move(request));
+  GetHostFrameSinkManager()->RequestCopyOfOutput(GetCurrentSurfaceId(),
+                                                 std::move(request));
 }
 
 void RenderWidgetHostViewChildFrame::ReclaimResources(
@@ -913,10 +899,12 @@ void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {
 
 void RenderWidgetHostViewChildFrame::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
+  if (enable_surface_synchronization_) {
+    NOTREACHED();
+    return;
+  }
   last_activated_surface_info_ = surface_info;
-  has_frame_ = true;
   FirstSurfaceActivation(surface_info);
-  ProcessFrameSwappedCallbacks();
 }
 
 void RenderWidgetHostViewChildFrame::OnFrameTokenChanged(uint32_t frame_token) {

@@ -198,6 +198,9 @@ TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
 // Verify that RenderWidgetHostViewChildFrame passes the child's SurfaceId to
 // FrameConnectorDelegate to be sent to the embedding renderer.
 TEST_F(RenderWidgetHostViewChildFrameTest, PassesSurfaceId) {
+  if (features::IsSurfaceSynchronizationEnabled())
+    return;
+
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
   float scale_factor = 1.f;

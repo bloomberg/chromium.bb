@@ -234,8 +234,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void UpdateRenderThrottlingStatus();
 
-  bool has_frame() { return has_frame_; }
-
   ui::TextInputType GetTextInputType() const;
   bool GetSelectionRange(gfx::Range* range) const;
 
@@ -320,7 +318,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   const bool enable_viz_;
   const bool enable_surface_synchronization_;
-  bool has_frame_ = false;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 
