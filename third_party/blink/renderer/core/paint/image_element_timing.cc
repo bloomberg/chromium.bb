@@ -57,7 +57,9 @@ void ImageElementTiming::NotifyImagePainted(const HTMLImageElement* element,
     return;
 
   // Skip the computations below if the element is not same origin.
-  DCHECK(layout_image->CachedImage());
+  if (!layout_image->CachedImage())
+    return;
+
   const KURL& url = layout_image->CachedImage()->Url();
   DCHECK(GetSupplementable()->document() == &layout_image->GetDocument());
   if (!SecurityOrigin::AreSameSchemeHostPort(layout_image->GetDocument().Url(),
