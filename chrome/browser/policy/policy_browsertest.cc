@@ -6351,12 +6351,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
   base::Value devices_value(base::Value::Type::LIST);
   devices_value.GetList().push_back(std::move(device_value));
 
-  base::Value url_patterns_value(base::Value::Type::LIST);
-  url_patterns_value.GetList().emplace_back(base::Value("https://[*.]foo.com"));
+  base::Value urls_value(base::Value::Type::LIST);
+  urls_value.GetList().emplace_back(base::Value("https://foo.com"));
 
   base::Value entry(base::Value::Type::DICTIONARY);
   entry.SetKey("devices", std::move(devices_value));
-  entry.SetKey("url_patterns", std::move(url_patterns_value));
+  entry.SetKey("urls", std::move(urls_value));
 
   auto policy_value = std::make_unique<base::Value>(base::Value::Type::LIST);
   policy_value->GetList().push_back(std::move(entry));
