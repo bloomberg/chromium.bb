@@ -11,24 +11,25 @@ Performance.mark method takes in custom detail and custom start time.
 <div id="log"></div>
 <script>
   async_test(function (t) {
-    var mark_entries = [];
-    var now = self.performance.now();
-    var observer = new PerformanceObserver(
+    let mark_entries = [];
+    const now = self.performance.now();
+    const expected_entries =
+        [{ entryType: "mark", name: "mark1", detail: null},
+        { entryType: "mark", name: "mark2", detail: null},
+        { entryType: "mark", name: "mark3", detail: null},
+        { entryType: "mark", name: "mark4", detail: null},
+        { entryType: "mark", name: "mark5", detail: null},
+        { entryType: "mark", name: "mark6", detail: {}},
+        { entryType: "mark", name: "mark7", detail: {info: 'abc'}},
+        { entryType: "mark", name: "mark8", detail: null, startTime: now},
+        { entryType: "mark", name: "mark9", detail: null, startTime: 234.56},
+        { entryType: "mark", name: "mark10", detail: {count: 3}, startTime: 345.67}];
+    const observer = new PerformanceObserver(
         t.step_func(function (entryList, obs) {
           mark_entries =
             mark_entries.concat(entryList.getEntries());
           if (mark_entries.length >= 10) {
-            checkEntries(mark_entries,
-              [{ entryType: "mark", name: "mark1", detail: null},
-              { entryType: "mark", name: "mark2", detail: null},
-              { entryType: "mark", name: "mark3", detail: null},
-              { entryType: "mark", name: "mark4", detail: null},
-              { entryType: "mark", name: "mark5", detail: null},
-              { entryType: "mark", name: "mark6", detail: {}},
-              { entryType: "mark", name: "mark7", detail: {info: 'abc'}},
-              { entryType: "mark", name: "mark8", detail: null, startTime: now},
-              { entryType: "mark", name: "mark9", detail: null, startTime: 234.56},
-              { entryType: "mark", name: "mark10", detail: {count: 3}, startTime: 345.67}]);
+            checkEntries(mark_entries, expected_entries);
             observer.disconnect();
             t.done();
           }
@@ -36,15 +37,17 @@ Performance.mark method takes in custom detail and custom start time.
       );
     self.performance.clearMarks();
     observer.observe({entryTypes: ["mark"]});
-    self.performance.mark("mark1");
-    self.performance.mark("mark2", undefined);
-    self.performance.mark("mark3", null);
-    self.performance.mark("mark4", {});
-    self.performance.mark("mark5", {detail: null});
-    self.performance.mark("mark6", {detail: {}});
-    self.performance.mark("mark7", {detail: {info: 'abc'}});
-    self.performance.mark("mark8", now);
-    self.performance.mark("mark9", {startTime: 234.56});
-    self.performance.mark("mark10", {detail: {count: 3}, startTime: 345.67});
+    const returned_entries = [];
+    returned_entries.push(self.performance.mark("mark1"));
+    returned_entries.push(self.performance.mark("mark2", undefined));
+    returned_entries.push(self.performance.mark("mark3", null));
+    returned_entries.push(self.performance.mark("mark4", {}));
+    returned_entries.push(self.performance.mark("mark5", {detail: null}));
+    returned_entries.push(self.performance.mark("mark6", {detail: {}}));
+    returned_entries.push(self.performance.mark("mark7", {detail: {info: 'abc'}}));
+    returned_entries.push(self.performance.mark("mark8", now));
+    returned_entries.push(self.performance.mark("mark9", {startTime: 234.56}));
+    returned_entries.push(self.performance.mark("mark10", {detail: {count: 3}, startTime: 345.67}));
+    checkEntries(returned_entries, expected_entries);
   }, "mark entries' detail and startTime are customizable");
 </script>

@@ -255,19 +255,19 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   void AddPaintTiming(PerformancePaintTiming::PaintType, TimeTicks start_time);
 
-  PerformanceMeasure* measureInternal(
+  PerformanceMeasure* MeasureInternal(
       ScriptState*,
       const AtomicString& measure_name,
       const StringOrDoubleOrPerformanceMeasureOptions& start,
       const StringOrDouble& end,
       ExceptionState&);
 
-  PerformanceMeasure* measureInternal(ScriptState*,
-                                      const AtomicString& measure_name,
-                                      const StringOrDouble& start,
-                                      const StringOrDouble& end,
-                                      const ScriptValue& detail,
-                                      ExceptionState&);
+  PerformanceMeasure* MeasureWithDetail(ScriptState*,
+                                        const AtomicString& measure_name,
+                                        const StringOrDouble& start,
+                                        const StringOrDouble& end,
+                                        const ScriptValue& detail,
+                                        ExceptionState&);
 
  protected:
   Performance(TimeTicks time_origin,

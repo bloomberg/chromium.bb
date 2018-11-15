@@ -16,7 +16,7 @@ Custom User Timing: measure
     const timeStamp2 = 1234.5;
     const timeStamp3 = 66.6;
     const timeStamp4 = 5566;
-    const expectectedEntries =
+    const expectedEntries =
         [{ entryType: "measure", name: "measure1", detail: null, startTime: 0 },
         { entryType: "measure", name: "measure2", detail: null, startTime: 0 },
         { entryType: "measure", name: "measure3", detail: null, startTime: 0 },
@@ -46,8 +46,8 @@ Custom User Timing: measure
         t.step_func(function (entryList, obs) {
           measureEntries =
             measureEntries.concat(entryList.getEntries());
-          if (measureEntries.length >= expectectedEntries.length) {
-            checkEntries(measureEntries, expectectedEntries);
+          if (measureEntries.length >= expectedEntries.length) {
+            checkEntries(measureEntries, expectedEntries);
             observer.disconnect();
             t.done();
           }
@@ -59,31 +59,53 @@ Custom User Timing: measure
     self.performance.mark("mark1", { detail: { randomInfo: 3 }, startTime: timeStamp1 });
     self.performance.mark("mark2", timeStamp2);
 
-    self.performance.measure("measure1");
-    self.performance.measure("measure2", undefined);
-    self.performance.measure("measure3", null);
-    self.performance.measure("measure4", timeStamp1);
-    self.performance.measure("measure5", 'mark1');
-    self.performance.measure("measure6", undefined, timeStamp1);
-    self.performance.measure("measure7", null, 'mark1');
-    self.performance.measure("measure8", timeStamp2, null);
-    self.performance.measure("measure9", timeStamp2, timeStamp3);
-    self.performance.measure("measure10", timeStamp2, 'mark1');
-    self.performance.measure("measure11", 'mark1', undefined);
-    self.performance.measure("measure12", 'mark1', timeStamp3);
-    self.performance.measure("measure13", 'mark1', 'mark2');
-    self.performance.measure("measure14", {});
-    self.performance.measure("measure15", { startTime: null });
-    self.performance.measure("measure16", { startTime: undefined });
-    self.performance.measure("measure17", { startTime: 'mark1' });
-    self.performance.measure("measure18", { startTime: timeStamp3 });
-    self.performance.measure("measure19", { endTime: undefined });
-    self.performance.measure("measure20", { endTime: 'mark1' });
-    self.performance.measure("measure21", { startTime: timeStamp3, endTime: 'mark1' });
-    self.performance.measure("measure22", { startTime: timeStamp1, endTime: timeStamp2, detail: undefined });
-    self.performance.measure("measure23", { startTime: 'mark1', endTime: undefined, detail: null });
-    self.performance.measure("measure24", { startTime: null, endTime: timeStamp1, detail: {} });
-    self.performance.measure("measure25", { startTime: timeStamp3, endTime: 'mark2', detail: { customInfo: 159 }});
+    const returnedEntries = [];
+    returnedEntries.push(self.performance.measure("measure1"));
+    returnedEntries.push(self.performance.measure("measure2", undefined));
+    returnedEntries.push(self.performance.measure("measure3", null));
+    returnedEntries.push(self.performance.measure("measure4", timeStamp1));
+    returnedEntries.push(self.performance.measure("measure5", 'mark1'));
+    returnedEntries.push(
+        self.performance.measure("measure6", undefined, timeStamp1));
+    returnedEntries.push(
+        self.performance.measure("measure7", null, 'mark1'));
+    returnedEntries.push(
+        self.performance.measure("measure8", timeStamp2, null));
+    returnedEntries.push(
+        self.performance.measure("measure9", timeStamp2, timeStamp3));
+    returnedEntries.push(
+        self.performance.measure("measure10", timeStamp2, 'mark1'));
+    returnedEntries.push(
+        self.performance.measure("measure11", 'mark1', undefined));
+    returnedEntries.push(
+        self.performance.measure("measure12", 'mark1', timeStamp3));
+    returnedEntries.push(
+        self.performance.measure("measure13", 'mark1', 'mark2'));
+    returnedEntries.push(
+        self.performance.measure("measure14", {}));
+    returnedEntries.push(
+        self.performance.measure("measure15", { startTime: null }));
+    returnedEntries.push(
+        self.performance.measure("measure16", { startTime: undefined }));
+    returnedEntries.push(
+        self.performance.measure("measure17", { startTime: 'mark1' }));
+    returnedEntries.push(
+        self.performance.measure("measure18", { startTime: timeStamp3 }));
+    returnedEntries.push(
+        self.performance.measure("measure19", { endTime: undefined }));
+    returnedEntries.push(
+        self.performance.measure("measure20", { endTime: 'mark1' }));
+    returnedEntries.push(
+        self.performance.measure("measure21", { startTime: timeStamp3, endTime: 'mark1' }));
+    returnedEntries.push(
+        self.performance.measure("measure22", { startTime: timeStamp1, endTime: timeStamp2, detail: undefined }));
+    returnedEntries.push(
+        self.performance.measure("measure23", { startTime: 'mark1', endTime: undefined, detail: null }));
+    returnedEntries.push(
+        self.performance.measure("measure24", { startTime: null, endTime: timeStamp1, detail: {} }));
+    returnedEntries.push(
+        self.performance.measure("measure25", { startTime: timeStamp3, endTime: 'mark2', detail: { customInfo: 159 }}));
+    checkEntries(returnedEntries, expectedEntries);
   }, "measure entries' detail and start/end are customizable");
 
   async_test(function (t) {
