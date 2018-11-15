@@ -81,14 +81,21 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   auto& filler2 = *GetLayoutObjectByElementId("filler2");
 
   const auto& view_client = ViewScrollingBackgroundClient();
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
-                          IsSameId(&container1, kBackgroundType),
-                          IsSameId(&content1, kBackgroundType),
-                          IsSameId(&filler1, kBackgroundType),
-                          IsSameId(&container2, kBackgroundType),
-                          IsSameId(&content2, kBackgroundType),
-                          IsSameId(&filler2, kBackgroundType)));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&container1),
+                           kBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&content1),
+                           kBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&filler1),
+                           kBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&container2),
+                           kBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&content2),
+                           kBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&filler2),
+                           kBackgroundType)));
 
   auto* container1_layer = ToLayoutBoxModelObject(container1).Layer();
   auto* filler1_layer = ToLayoutBoxModelObject(filler1).Layer();
@@ -143,14 +150,21 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
 
   CommitAndFinishCycle();
 
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
-                          IsSameId(&container1, kBackgroundType),
-                          IsSameId(&content1, kBackgroundType),
-                          IsSameId(&filler1, kBackgroundType),
-                          IsSameId(&container2, kBackgroundType),
-                          IsSameId(&content2, kBackgroundType),
-                          IsSameId(&filler2, kBackgroundType)));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&container1),
+                           kBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&content1),
+                           kBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&filler1),
+                           kBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&container2),
+                           kBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&content2),
+                           kBackgroundType),
+                  IsSameId(GetDisplayItemClientFromLayoutObject(&filler2),
+                           kBackgroundType)));
 
   // We should still have the paint chunks forced by the cached subsequences.
   check_chunks();
@@ -184,20 +198,18 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
   )HTML");
   InvalidateAll(RootPaintController());
 
-  LayoutObject& container1 =
-      *GetDocument().getElementById("container1")->GetLayoutObject();
-  LayoutObject& content1 =
-      *GetDocument().getElementById("content1")->GetLayoutObject();
-  LayoutObject& container2 =
-      *GetDocument().getElementById("container2")->GetLayoutObject();
-  LayoutObject& content2a =
-      *GetDocument().getElementById("content2a")->GetLayoutObject();
-  LayoutObject& content2b =
-      *GetDocument().getElementById("content2b")->GetLayoutObject();
-  LayoutObject& container3 =
-      *GetDocument().getElementById("container3")->GetLayoutObject();
-  LayoutObject& content3 =
-      *GetDocument().getElementById("content3")->GetLayoutObject();
+  DisplayItemClient& container1 =
+      *GetDisplayItemClientFromElementId("container1");
+  DisplayItemClient& content1 = *GetDisplayItemClientFromElementId("content1");
+  DisplayItemClient& container2 =
+      *GetDisplayItemClientFromElementId("container2");
+  DisplayItemClient& content2a =
+      *GetDisplayItemClientFromElementId("content2a");
+  DisplayItemClient& content2b =
+      *GetDisplayItemClientFromElementId("content2b");
+  DisplayItemClient& container3 =
+      *GetDisplayItemClientFromElementId("container3");
+  DisplayItemClient& content3 = *GetDisplayItemClientFromElementId("content3");
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   IntRect interest_rect(0, 0, 400, 300);
@@ -286,14 +298,12 @@ TEST_P(PaintLayerPainterTest,
   IntRect interest_rect(0, 0, 50, 300);
   Paint(&interest_rect);
 
-  LayoutObject& container1 =
-      *GetDocument().getElementById("container1")->GetLayoutObject();
-  LayoutObject& content1 =
-      *GetDocument().getElementById("content1")->GetLayoutObject();
-  LayoutObject& container2 =
-      *GetDocument().getElementById("container2")->GetLayoutObject();
-  LayoutObject& content2 =
-      *GetDocument().getElementById("content2")->GetLayoutObject();
+  DisplayItemClient& container1 =
+      *GetDisplayItemClientFromElementId("container1");
+  DisplayItemClient& content1 = *GetDisplayItemClientFromElementId("content1");
+  DisplayItemClient& container2 =
+      *GetDisplayItemClientFromElementId("container2");
+  DisplayItemClient& content2 = *GetDisplayItemClientFromElementId("content2");
 
   const auto& background_display_item_client = ViewScrollingBackgroundClient();
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
@@ -304,7 +314,7 @@ TEST_P(PaintLayerPainterTest,
                           IsSameId(&container2, kBackgroundType),
                           IsSameId(&content2, kBackgroundType)));
 
-  ToHTMLElement(content1.GetNode())
+  ToHTMLElement(GetElementById("content1"))
       ->setAttribute(html_names::kStyleAttr,
                      "position: absolute; width: 100px; height: 100px; "
                      "background-color: green");
