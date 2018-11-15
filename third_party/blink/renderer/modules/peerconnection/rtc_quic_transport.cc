@@ -109,7 +109,7 @@ RTCQuicTransport::RTCQuicTransport(
     const HeapVector<Member<RTCCertificate>>& certificates,
     ExceptionState& exception_state,
     std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory)
-    : ContextLifecycleObserver(context),
+    : ContextClient(context),
       transport_(transport),
       certificates_(certificates),
       p2p_quic_transport_factory_(std::move(p2p_quic_transport_factory)) {
@@ -118,18 +118,6 @@ RTCQuicTransport::RTCQuicTransport(
 
 RTCQuicTransport::~RTCQuicTransport() {
   DCHECK(!proxy_);
-}
-
-void RTCQuicTransport::Close(RTCQuicTransportState new_state) {
-  DCHECK(!IsClosed());
-  for (RTCQuicStream* stream : streams_) {
-    stream->Stop();
-  }
-  streams_.clear();
-  transport_->DisconnectConsumer(this);
-  proxy_.reset();
-  state_ = new_state;
-  DCHECK(IsClosed());
 }
 
 RTCIceTransport* RTCQuicTransport::transport() const {
@@ -251,7 +239,7 @@ void RTCQuicTransport::StartConnection() {
   proxy_->Start(std::move(rtc_fingerprints));
 }
 
-void RTCQuicTransport::OnTransportStarted() {
+void RTCQuicTransport::OnIceTransportStarted() {
   // The RTCIceTransport has now been started.
   if (remote_parameters_) {
     StartConnection();
@@ -262,10 +250,7 @@ void RTCQuicTransport::stop() {
   if (IsClosed()) {
     return;
   }
-  if (proxy_) {
-    proxy_->Stop();
-  }
-  Close(RTCQuicTransportState::kClosed);
+  Close(CloseReason::kLocalStopped);
 }
 
 RTCQuicStream* RTCQuicTransport::createStream(ExceptionState& exception_state) {
@@ -301,18 +286,67 @@ void RTCQuicTransport::OnConnected() {
 
 void RTCQuicTransport::OnConnectionFailed(const std::string& error_details,
                                           bool from_remote) {
-  Close(RTCQuicTransportState::kFailed);
-  DispatchEvent(*Event::Create(event_type_names::kStatechange));
+  Close(CloseReason::kFailed);
 }
 
 void RTCQuicTransport::OnRemoteStopped() {
-  Close(RTCQuicTransportState::kClosed);
-  DispatchEvent(*Event::Create(event_type_names::kStatechange));
+  Close(CloseReason::kRemoteStopped);
 }
 
 void RTCQuicTransport::OnStream(QuicStreamProxy* stream_proxy) {
   RTCQuicStream* stream = AddStream(stream_proxy);
   DispatchEvent(*RTCQuicStreamEvent::Create(stream));
+}
+
+void RTCQuicTransport::OnIceTransportClosed(
+    RTCIceTransport::CloseReason reason) {
+  if (reason == RTCIceTransport::CloseReason::kContextDestroyed) {
+    Close(CloseReason::kContextDestroyed);
+  } else {
+    Close(CloseReason::kIceTransportClosed);
+  }
+}
+
+void RTCQuicTransport::Close(CloseReason reason) {
+  DCHECK(!IsClosed());
+
+  // Disconnect from the RTCIceTransport, allowing a new RTCQuicTransport to
+  // connect to it.
+  transport_->DisconnectConsumer(this);
+
+  // Notify the active streams that the transport is closing.
+  for (RTCQuicStream* stream : streams_) {
+    stream->OnQuicTransportClosed(reason);
+  }
+  streams_.clear();
+
+  // Tear down the QuicTransportProxy and change the state.
+  switch (reason) {
+    case CloseReason::kLocalStopped:
+    case CloseReason::kIceTransportClosed:
+    case CloseReason::kContextDestroyed:
+      // The QuicTransportProxy may be active so gracefully Stop() before
+      // destroying it.
+      if (proxy_) {
+        proxy_->Stop();
+        proxy_.reset();
+      }
+      state_ = RTCQuicTransportState::kClosed;
+      break;
+    case CloseReason::kRemoteStopped:
+    case CloseReason::kFailed:
+      // The QuicTransportProxy has already been closed by the event, so just go
+      // ahead and delete it.
+      proxy_.reset();
+      state_ =
+          (reason == CloseReason::kFailed ? RTCQuicTransportState::kFailed
+                                          : RTCQuicTransportState::kClosed);
+      DispatchEvent(*Event::Create(event_type_names::kStatechange));
+      break;
+  }
+
+  DCHECK(!proxy_);
+  DCHECK(IsClosed());
 }
 
 bool RTCQuicTransport::RaiseExceptionIfClosed(
@@ -331,15 +365,7 @@ const AtomicString& RTCQuicTransport::InterfaceName() const {
 }
 
 ExecutionContext* RTCQuicTransport::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
-}
-
-void RTCQuicTransport::ContextDestroyed(ExecutionContext*) {
-  stop();
-}
-
-bool RTCQuicTransport::HasPendingActivity() const {
-  return static_cast<bool>(proxy_);
+  return ContextClient::GetExecutionContext();
 }
 
 void RTCQuicTransport::Trace(blink::Visitor* visitor) {
@@ -349,7 +375,7 @@ void RTCQuicTransport::Trace(blink::Visitor* visitor) {
   visitor->Trace(remote_parameters_);
   visitor->Trace(streams_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

@@ -246,22 +246,24 @@ TEST_F(RTCQuicTransportTest, RTCIceTransportStopDeletesP2PQuicTransport) {
 // is ContextDestroyed.
 TEST_F(RTCQuicTransportTest,
        RTCIceTransportContextDestroyedDeletesP2PQuicTransport) {
-  V8TestingScope scope;
-
-  Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
-  ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
-                       ASSERT_NO_EXCEPTION);
-
   bool mock_deleted = false;
-  auto mock_transport = std::make_unique<MockP2PQuicTransport>();
-  EXPECT_CALL(*mock_transport, Die()).WillOnce(Assign(&mock_deleted, true));
+  {
+    V8TestingScope scope;
 
-  Persistent<RTCQuicTransport> quic_transport =
-      CreateQuicTransport(scope, ice_transport, GenerateLocalRTCCertificates(),
-                          std::move(mock_transport));
-  quic_transport->start(CreateRemoteRTCQuicParameters1(), ASSERT_NO_EXCEPTION);
+    Persistent<RTCIceTransport> ice_transport = CreateIceTransport(scope);
+    ice_transport->start(CreateRemoteRTCIceParameters1(), "controlling",
+                         ASSERT_NO_EXCEPTION);
 
-  ice_transport->ContextDestroyed(scope.GetExecutionContext());
+    auto mock_transport = std::make_unique<MockP2PQuicTransport>();
+    EXPECT_CALL(*mock_transport, Die()).WillOnce(Assign(&mock_deleted, true));
+
+    Persistent<RTCQuicTransport> quic_transport = CreateQuicTransport(
+        scope, ice_transport, GenerateLocalRTCCertificates(),
+        std::move(mock_transport));
+    quic_transport->start(CreateRemoteRTCQuicParameters1(),
+                          ASSERT_NO_EXCEPTION);
+  }  // ContextDestroyed when V8TestingScope goes out of scope.
+
   RunUntilIdle();
 
   EXPECT_TRUE(mock_deleted);

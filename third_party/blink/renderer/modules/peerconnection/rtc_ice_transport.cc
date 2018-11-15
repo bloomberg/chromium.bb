@@ -357,7 +357,7 @@ void RTCIceTransport::start(RTCIceParameters* remote_parameters,
     proxy_->Start(ConvertIceParameters(remote_parameters), role,
                   initial_remote_candidates);
     if (consumer_) {
-      consumer_->OnTransportStarted();
+      consumer_->OnIceTransportStarted();
     }
   } else {
     remote_candidates_.clear();
@@ -372,14 +372,7 @@ void RTCIceTransport::stop() {
   if (IsClosed()) {
     return;
   }
-  if (HasConsumer()) {
-    consumer_->stop();
-  }
-  // Stopping the consumer should cause it to disconnect.
-  DCHECK(!HasConsumer());
-  state_ = RTCIceTransportState::kClosed;
-  selected_candidate_pair_ = nullptr;
-  proxy_.reset();
+  Close(CloseReason::kStopped);
 }
 
 void RTCIceTransport::addRemoteCandidate(RTCIceCandidate* remote_candidate,
@@ -475,6 +468,18 @@ void RTCIceTransport::OnSelectedCandidatePairChanged(
   DispatchEvent(*Event::Create(event_type_names::kSelectedcandidatepairchange));
 }
 
+void RTCIceTransport::Close(CloseReason reason) {
+  DCHECK_NE(state_, RTCIceTransportState::kClosed);
+  if (HasConsumer()) {
+    consumer_->OnIceTransportClosed(reason);
+  }
+  // Notifying the consumer that we're closing should cause it to disconnect.
+  DCHECK(!HasConsumer());
+  state_ = RTCIceTransportState::kClosed;
+  selected_candidate_pair_ = nullptr;
+  proxy_.reset();
+}
+
 bool RTCIceTransport::RaiseExceptionIfClosed(
     ExceptionState& exception_state) const {
   if (IsClosed()) {
@@ -495,7 +500,10 @@ ExecutionContext* RTCIceTransport::GetExecutionContext() const {
 }
 
 void RTCIceTransport::ContextDestroyed(ExecutionContext*) {
-  stop();
+  if (IsClosed()) {
+    return;
+  }
+  Close(CloseReason::kContextDestroyed);
 }
 
 bool RTCIceTransport::HasPendingActivity() const {

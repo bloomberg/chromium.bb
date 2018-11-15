@@ -211,19 +211,20 @@ TEST_F(RTCIceTransportTest, StopDeletesIceTransportAdapter) {
 
 // Test that the IceTransportAdapter is deleted on ContextDestroyed.
 TEST_F(RTCIceTransportTest, ContextDestroyedDeletesIceTransportAdapter) {
-  V8TestingScope scope;
-
   bool mock_deleted = false;
-  auto mock = std::make_unique<MockIceTransportAdapter>();
-  EXPECT_CALL(*mock, Die()).WillOnce(Assign(&mock_deleted, true));
+  {
+    V8TestingScope scope;
 
-  Persistent<RTCIceTransport> ice_transport =
-      CreateIceTransport(scope, std::move(mock));
-  RTCIceGatherOptions* options = RTCIceGatherOptions::Create();
-  options->setGatherPolicy("all");
-  ice_transport->gather(options, ASSERT_NO_EXCEPTION);
+    auto mock = std::make_unique<MockIceTransportAdapter>();
+    EXPECT_CALL(*mock, Die()).WillOnce(Assign(&mock_deleted, true));
 
-  ice_transport->ContextDestroyed(scope.GetExecutionContext());
+    Persistent<RTCIceTransport> ice_transport =
+        CreateIceTransport(scope, std::move(mock));
+    RTCIceGatherOptions* options = RTCIceGatherOptions::Create();
+    options->setGatherPolicy("all");
+    ice_transport->gather(options, ASSERT_NO_EXCEPTION);
+  }  // ContextDestroyed when V8TestingScope goes out of scope.
+
   RunUntilIdle();
 
   EXPECT_TRUE(mock_deleted);

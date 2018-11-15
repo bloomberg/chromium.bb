@@ -11,13 +11,15 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 
 namespace blink {
 
-class RTCQuicTransport;
-
 enum class RTCQuicStreamState { kNew, kOpening, kOpen, kClosing, kClosed };
 
+// The RTCQuicStream does not need to be ActiveScriptWrappable since the
+// RTCQuicTransport that it is associated with holds a strong reference to it
+// as long as it is not closed.
 class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
                                            public ContextClient,
                                            public QuicStreamProxy::Delegate {
@@ -27,14 +29,26 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   // TODO(steveanton): These maybe should be adjustable.
   static const uint32_t kWriteBufferSize;
 
+  enum class CloseReason {
+    // Both read and write sides have been finished.
+    kReadWriteFinished,
+    // reset() was called.
+    kLocalReset,
+    // The remote stream sent a reset().
+    kRemoteReset,
+    // The RTCQuicTransport has closed.
+    kQuicTransportClosed,
+    // The ExecutionContext is being destroyed.
+    kContextDestroyed,
+  };
+
   RTCQuicStream(ExecutionContext* context,
                 RTCQuicTransport* transport,
                 QuicStreamProxy* stream_proxy);
   ~RTCQuicStream() override;
 
-  // Called from the RTCQuicTransport when it is being stopped.
-  void Stop();
-  bool IsClosed() const { return state_ == RTCQuicStreamState::kClosed; }
+  // Called by the RTCQuicTransport when it is being closed.
+  void OnQuicTransportClosed(RTCQuicTransport::CloseReason reason);
 
   // rtc_quic_stream.idl
   RTCQuicTransport* transport() const;
@@ -55,15 +69,17 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   void Trace(blink::Visitor* visitor) override;
 
  private:
-  // Closes the stream. This will change the state to kClosed and deregister it
-  // from the RTCQuicTransport. The QuicStreamProxy can no longer be used after
-  // this point.
-  void Close();
-
   // QuicStreamProxy::Delegate overrides.
   void OnRemoteReset() override;
   void OnDataReceived(Vector<uint8_t> data, bool fin) override;
   void OnWriteDataConsumed(uint32_t amount) override;
+
+  // Permenantly closes the RTCQuicStream with the given reason.
+  // The RTCQuicStream must not already be closed.
+  // This will transition the state to closed.
+  void Close(CloseReason reason);
+
+  bool IsClosed() const { return state_ == RTCQuicStreamState::kClosed; }
 
   Member<RTCQuicTransport> transport_;
   RTCQuicStreamState state_ = RTCQuicStreamState::kOpen;

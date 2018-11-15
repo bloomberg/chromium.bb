@@ -50,6 +50,13 @@ class MODULES_EXPORT RTCIceTransport final
   USING_GARBAGE_COLLECTED_MIXIN(RTCIceTransport);
 
  public:
+  enum class CloseReason {
+    // stop() was called.
+    kStopped,
+    // The ExecutionContext is being destroyed.
+    kContextDestroyed,
+  };
+
   static RTCIceTransport* Create(ExecutionContext* context);
   static RTCIceTransport* Create(
       ExecutionContext* context,
@@ -132,6 +139,11 @@ class MODULES_EXPORT RTCIceTransport final
   // Fills in |local_parameters_| with a random usernameFragment and a random
   // password.
   void GenerateLocalParameters();
+
+  // Permenantly closes the RTCIceTransport with the given reason.
+  // The RTCIceTransport must not already be closed.
+  // This will transition the state to closed.
+  void Close(CloseReason reason);
 
   bool RaiseExceptionIfClosed(ExceptionState& exception_state) const;
 
