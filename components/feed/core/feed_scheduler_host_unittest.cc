@@ -24,13 +24,17 @@
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::Time;
+using base::TimeDelta;
+
 namespace feed {
+
+namespace {
 
 // Fixed "now" to make tests more deterministic.
 char kNowString[] = "2018-06-11 15:41";
 
-using base::Time;
-using base::TimeDelta;
+}  // namespace
 
 class ForceDeviceOffline : public net::NetworkChangeNotifier {
  public:
@@ -880,7 +884,7 @@ TEST_F(FeedSchedulerHostTest, RefreshThrottler) {
 
   for (int i = 0; i < 5; i++) {
     scheduler()->OnForegrounded();
-    ResetRefreshState(base::Time());
+    ResetRefreshState(Time());
     EXPECT_EQ(std::min(i + 1, 3), refresh_call_count());
   }
 }

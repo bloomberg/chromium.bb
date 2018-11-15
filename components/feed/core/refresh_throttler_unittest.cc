@@ -18,11 +18,21 @@
 
 namespace feed {
 
+namespace {
+
+// Fixed "now" to make tests more deterministic.
+char kNowString[] = "2018-06-11 15:41";
+
+}  // namespace
+
 class RefreshThrottlerTest : public testing::Test {
  public:
   RefreshThrottlerTest() {
     RefreshThrottler::RegisterProfilePrefs(test_prefs_.registry());
-    test_clock_.SetNow(base::Time::Now());
+
+    base::Time now;
+    EXPECT_TRUE(base::Time::FromUTCString(kNowString, &now));
+    test_clock_.SetNow(now);
 
     variations::testing::VariationParamsManager variation_params(
         kInterestFeedContentSuggestions.name,
@@ -49,8 +59,7 @@ TEST_F(RefreshThrottlerTest, QuotaExceeded) {
   EXPECT_FALSE(throttler_->RequestQuota());
 }
 
-// Disabled since this is not robust against DST https://crbug.com/901698
-TEST_F(RefreshThrottlerTest, DISABLED_QuotaIsPerDay) {
+TEST_F(RefreshThrottlerTest, QuotaIsPerDay) {
   EXPECT_TRUE(throttler_->RequestQuota());
   EXPECT_TRUE(throttler_->RequestQuota());
   EXPECT_FALSE(throttler_->RequestQuota());
@@ -59,8 +68,7 @@ TEST_F(RefreshThrottlerTest, DISABLED_QuotaIsPerDay) {
   EXPECT_TRUE(throttler_->RequestQuota());
 }
 
-// Disabled since this is not robust against DST https://crbug.com/901698
-TEST_F(RefreshThrottlerTest, DISABLED_RollOver) {
+TEST_F(RefreshThrottlerTest, RollOver) {
   // Exhaust our quota so the for loop can verify everything as false.
   EXPECT_TRUE(throttler_->RequestQuota());
   EXPECT_TRUE(throttler_->RequestQuota());
