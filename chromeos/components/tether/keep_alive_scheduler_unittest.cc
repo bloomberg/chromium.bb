@@ -185,7 +185,7 @@ class KeepAliveSchedulerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(KeepAliveSchedulerTest);
 };
 
-TEST_F(KeepAliveSchedulerTest, TestSendTickle_OneActiveHost) {
+TEST_F(KeepAliveSchedulerTest, DISABLED_TestSendTickle_OneActiveHost) {
   EXPECT_FALSE(fake_operation_factory_->num_created());
   EXPECT_FALSE(fake_operation_factory_->num_deleted());
   VerifyTimerRunning(false /* is_running */);
@@ -258,7 +258,7 @@ TEST_F(KeepAliveSchedulerTest, TestSendTickle_OneActiveHost) {
   VerifyTimerRunning(false /* is_running */);
 }
 
-TEST_F(KeepAliveSchedulerTest, TestSendTickle_MultipleActiveHosts) {
+TEST_F(KeepAliveSchedulerTest, DISABLED_TestSendTickle_MultipleActiveHosts) {
   EXPECT_FALSE(fake_operation_factory_->num_created());
   EXPECT_FALSE(fake_operation_factory_->num_deleted());
   VerifyTimerRunning(false /* is_running */);

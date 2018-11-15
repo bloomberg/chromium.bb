@@ -214,7 +214,7 @@ class DisconnectTetheringRequestSenderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DisconnectTetheringRequestSenderTest);
 };
 
-TEST_F(DisconnectTetheringRequestSenderTest, SendRequest_Success) {
+TEST_F(DisconnectTetheringRequestSenderTest, DISABLED_SendRequest_Success) {
   disconnect_tethering_request_sender_->SendDisconnectRequestToDevice(
       test_devices_[0].GetDeviceId());
   EXPECT_TRUE(disconnect_tethering_request_sender_->HasPendingRequests());
@@ -230,7 +230,8 @@ TEST_F(DisconnectTetheringRequestSenderTest, SendRequest_Success) {
                     ->num_no_more_pending_requests_events());
 }
 
-TEST_F(DisconnectTetheringRequestSenderTest, SendRequest_CannotFetchHost) {
+TEST_F(DisconnectTetheringRequestSenderTest,
+       DISABLED_SendRequest_CannotFetchHost) {
   // Remove hosts from |fake_tether_host_fetcher_|; this will cause the fetcher
   // to return a null RemoteDevice.
   fake_tether_host_fetcher_->set_tether_hosts(cryptauth::RemoteDeviceRefList());
@@ -245,44 +246,46 @@ TEST_F(DisconnectTetheringRequestSenderTest, SendRequest_CannotFetchHost) {
 
 TEST_F(
     DisconnectTetheringRequestSenderTest,
-    MultipleRequestAttempts_Concurrent_DifferentDeviceId_BothOperationsSuccessful) {
+    DISABLED_MultipleRequestAttempts_Concurrent_DifferentDeviceId_BothOperationsSuccessful) {
   SendConcurrentRequestsToTwoDevices(true /* first_operation_successful */,
                                      true /* second_operation_successful */);
 }
 
 TEST_F(
     DisconnectTetheringRequestSenderTest,
-    MultipleRequestAttempts_Concurrent_DifferentDeviceId_BothOperationsFailed) {
+    DISABLED_MultipleRequestAttempts_Concurrent_DifferentDeviceId_BothOperationsFailed) {
   SendConcurrentRequestsToTwoDevices(false /* first_operation_successful */,
                                      false /* second_operation_successful */);
 }
 
 TEST_F(
     DisconnectTetheringRequestSenderTest,
-    MultipleRequestAttempts_Concurrent_DifferentDeviceId_FirstOperationSuccessful) {
+    DISABLED_MultipleRequestAttempts_Concurrent_DifferentDeviceId_FirstOperationSuccessful) {
   SendConcurrentRequestsToTwoDevices(true /* first_operation_successful */,
                                      false /* second_operation_successful */);
 }
 
 TEST_F(
     DisconnectTetheringRequestSenderTest,
-    MultipleRequestAttempts_Concurrent_DifferentDeviceId_SecondOperationSuccessful) {
+    DISABLED_MultipleRequestAttempts_Concurrent_DifferentDeviceId_SecondOperationSuccessful) {
   SendConcurrentRequestsToTwoDevices(false /* first_operation_successful */,
                                      true /* second_operation_successful */);
 }
 
-TEST_F(DisconnectTetheringRequestSenderTest,
-       MultipleRequestAttempts_Concurrent_SameDeviceId_OperationSuccessful) {
+TEST_F(
+    DisconnectTetheringRequestSenderTest,
+    DISABLED_MultipleRequestAttempts_Concurrent_SameDeviceId_OperationSuccessful) {
   CallSendRequestTwiceWithOneDevice(true /* operation_successful */);
 }
 
-TEST_F(DisconnectTetheringRequestSenderTest,
-       MultipleRequestAttempts_Concurrent_SameDeviceId_OperationFailed) {
+TEST_F(
+    DisconnectTetheringRequestSenderTest,
+    DISABLED_MultipleRequestAttempts_Concurrent_SameDeviceId_OperationFailed) {
   CallSendRequestTwiceWithOneDevice(false /* operation_successful */);
 }
 
 TEST_F(DisconnectTetheringRequestSenderTest,
-       SendMultipleRequests_NotifyFinished) {
+       DISABLED_SendMultipleRequests_NotifyFinished) {
   // When multiple requests are sent, a new DisconnectTetheringOperation will be
   // created if the previous one has finished. This is true regardless of the
   // success of the previous operation.

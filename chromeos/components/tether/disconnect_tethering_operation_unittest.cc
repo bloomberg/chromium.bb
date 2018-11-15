@@ -138,13 +138,13 @@ class DisconnectTetheringOperationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(DisconnectTetheringOperationTest);
 };
 
-TEST_F(DisconnectTetheringOperationTest, TestSuccess) {
+TEST_F(DisconnectTetheringOperationTest, DISABLED_TestSuccess) {
   SimulateDeviceAuthenticationAndVerifyMessageSent();
   EXPECT_EQ(test_device_.GetDeviceId(), test_observer_->last_device_id());
   EXPECT_TRUE(test_observer_->WasLastOperationSuccessful());
 }
 
-TEST_F(DisconnectTetheringOperationTest, TestFailure) {
+TEST_F(DisconnectTetheringOperationTest, DISABLED_TestFailure) {
   SimulateConnectionTimeout();
   EXPECT_EQ(test_device_.GetDeviceId(), test_observer_->last_device_id());
   EXPECT_FALSE(test_observer_->WasLastOperationSuccessful());

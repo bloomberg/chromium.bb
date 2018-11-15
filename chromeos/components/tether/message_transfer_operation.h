@@ -29,7 +29,7 @@ class TimerFactory;
 
 // Abstract base class used for operations which send and/or receive messages
 // from remote devices.
-class MessageTransferOperation : public BleConnectionManager::Observer {
+class MessageTransferOperation {
  public:
   // The number of times to attempt to connect to a device without receiving any
   // response before giving up. When a connection to a device is attempted, a
@@ -57,16 +57,6 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   // Initializes the operation by registering devices with BleConnectionManager.
   void Initialize();
 
-  // BleConnectionManager::Observer:
-  void OnSecureChannelStatusChanged(
-      const std::string& device_id,
-      const cryptauth::SecureChannel::Status& old_status,
-      const cryptauth::SecureChannel::Status& new_status,
-      BleConnectionManager::StateChangeDetail status_change_detail) override;
-  void OnMessageReceived(const std::string& device_id,
-                         const std::string& payload) override;
-  void OnMessageSent(int sequence_number) override {}
-
  protected:
   // Unregisters |remote_device| for the MessageType returned by
   // GetMessageTypeForConnection().
@@ -90,6 +80,15 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   virtual void OnMessageReceived(
       std::unique_ptr<MessageWrapper> message_wrapper,
       cryptauth::RemoteDeviceRef remote_device) {}
+
+  // Callback executed when any message is received on the "magic_tether"
+  // feature.
+  virtual void OnMessageReceived(const std::string& device_id,
+                                 const std::string& payload);
+
+  // Callback executed a tether protocol message is sent. |sequence_number| is
+  // the value returned by SendMessageToDevice().
+  virtual void OnMessageSent(int sequence_number) {}
 
   // Callback executed when the operation has started (i.e., in Initialize()).
   virtual void OnOperationStarted() {}
@@ -167,23 +166,12 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   // duration.
   static constexpr const uint32_t kDefaultMessageTimeoutSeconds = 10;
 
-  struct ConnectAttemptCounts {
-    uint32_t empty_scan_attempts = 0;
-    uint32_t gatt_connection_attempts = 0;
-  };
-
   void OnConnectionAttemptFailure(
       cryptauth::RemoteDeviceRef remote_device,
       secure_channel::mojom::ConnectionAttemptFailureReason reason);
   void OnConnection(cryptauth::RemoteDeviceRef remote_device,
                     std::unique_ptr<secure_channel::ClientChannel> channel);
   void OnDisconnected(cryptauth::RemoteDeviceRef remote_device);
-  void OnMessageReceived(cryptauth::RemoteDeviceRef remote_device,
-                         const std::string& payload);
-
-  void HandleDeviceDisconnection(
-      cryptauth::RemoteDeviceRef remote_device,
-      BleConnectionManager::StateChangeDetail status_change_detail);
 
   // Start the timer while waiting for a connection to |remote_device|. See
   // |kConnectionTimeoutSeconds|.
@@ -206,9 +194,7 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   cryptauth::RemoteDeviceRefList remote_devices_;
   device_sync::DeviceSyncClient* device_sync_client_;
   secure_channel::SecureChannelClient* secure_channel_client_;
-  BleConnectionManager* connection_manager_;
   const secure_channel::ConnectionPriority connection_priority_;
-  const base::UnguessableToken request_id_;
 
   std::unique_ptr<TimerFactory> timer_factory_;
 
@@ -224,8 +210,6 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
       remote_device_to_client_channel_observer_map_;
   int next_message_sequence_number_ = 0;
 
-  base::flat_map<cryptauth::RemoteDeviceRef, ConnectAttemptCounts>
-      remote_device_to_attempts_map_;
   base::flat_map<cryptauth::RemoteDeviceRef,
                  std::unique_ptr<base::OneShotTimer>>
       remote_device_to_timer_map_;
