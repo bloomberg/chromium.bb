@@ -833,6 +833,9 @@ if (enable_java_templates) {
       if (!defined(deps)) {
         deps = []
       }
+      if (defined(invoker.srcjar_deps)) {
+        deps += invoker.srcjar_deps
+      }
 
       if (defined(invoker.lint_suppressions_file)) {
         lint_suppressions_file = invoker.lint_suppressions_file
@@ -898,10 +901,7 @@ if (enable_java_templates) {
         ]
       } else {
         inputs += invoker.java_files
-        inputs += [
-          invoker.jar_path,
-          invoker.build_config,
-        ]
+        inputs += [ invoker.build_config ]
         if (invoker.java_files != []) {
           inputs += [ invoker.java_sources_file ]
           _rebased_java_sources_file =
@@ -913,9 +913,6 @@ if (enable_java_templates) {
         _rebased_build_config =
             rebase_path(invoker.build_config, root_build_dir)
         args += [
-          "--jar-path",
-          rebase_path(invoker.jar_path, root_build_dir),
-          "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
           "--srcjars=@FileArg($_rebased_build_config:gradle:bundled_srcjars)",
           "--can-fail-build",
         ]
@@ -3259,8 +3256,6 @@ if (enable_java_templates) {
           srcjar_filearg = "@FileArg($_rebased_build_config:deps_info:owned_resource_srcjars)"
         }
       }
-      _accumulated_public_deps += [ ":$_compile_java_target" ]
-
       if (defined(invoker.android_manifest_for_lint)) {
         _android_manifest_for_lint = invoker.android_manifest_for_lint
         assert(_android_manifest_for_lint != "")  # Mark as used.
@@ -3273,9 +3268,9 @@ if (enable_java_templates) {
           } else if (defined(_android_manifest_for_lint)) {
             android_manifest = _android_manifest_for_lint
           }
+          srcjar_deps = _srcjar_deps
           build_config = _build_config
           requires_android = _requires_android
-          jar_path = _javac_jar_path
           deps = _accumulated_deps + _accumulated_public_deps
           java_files = _java_files
           if (_java_files != []) {
@@ -3295,6 +3290,9 @@ if (enable_java_templates) {
           ]
         }
       }
+
+      # Update this after lint so that lint does not depend on javac.
+      _accumulated_public_deps += [ ":$_compile_java_target" ]
     }  # _has_sources
 
     if (defined(_final_jar_path)) {
