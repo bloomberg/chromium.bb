@@ -200,7 +200,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         RunnerArgs runnerArgs =
                 new RunnerArgs.Builder().fromManifest(this).fromBundle(arguments).build();
         TestRequestBuilder builder;
-        if (dexFiles != null) {
+        if (!dexFiles.isEmpty()) {
             builder = new DexFileTestRequestBuilder(this, arguments, dexFiles);
         } else {
             builder = new TestRequestBuilder(this, arguments);
@@ -274,7 +274,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                 // builder.addApkToScan uses new DexFile(path) under the hood, which on Dalvik OS's
                 // assumes that the optimized dex is in the default location (crashes).
                 // Perform our own dex file scanning instead as a workaround.
-                scanIncrementalJarsForTestClasses();
+                scanDexFilesForTestClasses();
             }
             return super.build();
         }
@@ -288,8 +288,8 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
             return false;
         }
 
-        private void scanIncrementalJarsForTestClasses() {
-            Log.i(TAG, "Scanning incremental classpath.");
+        private void scanDexFilesForTestClasses() {
+            Log.i(TAG, "Scanning loaded dex files for test classes.");
             // Mirror TestRequestBuilder.getClassNamesFromClassPath().
             TestLoader loader = new TestLoader();
             for (DexFile dexFile : mDexFiles) {
