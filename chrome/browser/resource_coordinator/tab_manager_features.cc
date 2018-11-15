@@ -162,6 +162,11 @@ InfiniteSessionRestoreParams::InfiniteSessionRestoreParams(
 
 ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
     int memory_in_gb) {
+  // TimeDelta::Max() should be used to express infinite timeouts. A large
+  // timeout that is not TimeDelta::Max() causes MessageLoop to output a
+  // warning.
+  constexpr base::TimeDelta kLargeTimeout = base::TimeDelta::FromDays(14);
+
   ProactiveTabFreezeAndDiscardParams params = {};
 
   params.should_proactively_discard =
@@ -187,21 +192,27 @@ ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
 
   params.low_occluded_timeout = base::TimeDelta::FromSeconds(
       ProactiveTabFreezeAndDiscardParams::kLowOccludedTimeout.Get());
+  DCHECK_LT(params.low_occluded_timeout, kLargeTimeout);
 
   params.moderate_occluded_timeout = base::TimeDelta::FromSeconds(
       ProactiveTabFreezeAndDiscardParams::kModerateOccludedTimeout.Get());
+  DCHECK_LT(params.moderate_occluded_timeout, kLargeTimeout);
 
   params.high_occluded_timeout = base::TimeDelta::FromSeconds(
       ProactiveTabFreezeAndDiscardParams::kHighOccludedTimeout.Get());
+  DCHECK_LT(params.high_occluded_timeout, kLargeTimeout);
 
   params.freeze_timeout = base::TimeDelta::FromSeconds(
       ProactiveTabFreezeAndDiscardParams::kFreezeTimeout.Get());
+  DCHECK_LT(params.freeze_timeout, kLargeTimeout);
 
   params.unfreeze_timeout = base::TimeDelta::FromSeconds(
       ProactiveTabFreezeAndDiscardParams::kUnfreezeTimeout.Get());
+  DCHECK_LT(params.unfreeze_timeout, kLargeTimeout);
 
   params.refreeze_timeout = base::TimeDelta::FromSeconds(
       ProactiveTabFreezeAndDiscardParams::kRefreezeTimeout.Get());
+  DCHECK_LT(params.refreeze_timeout, kLargeTimeout);
 
   params.disable_heuristics_protections =
       ProactiveTabFreezeAndDiscardParams::kDisableHeuristicsProtections.Get();
