@@ -50,7 +50,6 @@
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
-#include "gpu/command_buffer/service/indexed_buffer_binding_host.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
@@ -61,8 +60,6 @@
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
-#include "gpu/command_buffer/service/vertex_array_manager.h"
-#include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/wrapped_sk_image.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
@@ -971,22 +968,7 @@ ContextResult RasterDecoderImpl::Initialize(
   if (image_factory && image_factory->SupportsCreateAnonymousImage())
     feature_info_->EnableCHROMIUMTextureStorageImage();
 
-  // In theory |needs_emulation| needs to be true on Desktop GL 4.1 or lower.
-  // However, we set it to true everywhere, not to trust drivers to handle
-  // out-of-bounds buffer accesses.
-  bool needs_emulation = true;
-  state_.indexed_uniform_buffer_bindings =
-      new gles2::IndexedBufferBindingHost(group_->max_uniform_buffer_bindings(),
-                                          GL_UNIFORM_BUFFER, needs_emulation);
-  state_.indexed_uniform_buffer_bindings->SetIsBound(true);
-
   state_.InitGenericAttribs(group_->max_vertex_attribs());
-
-  GLuint default_vertex_attrib_service_id = 0;
-  if (features().native_vertex_array_object) {
-    api()->glGenVertexArraysOESFn(1, &default_vertex_attrib_service_id);
-    api()->glBindVertexArrayOESFn(default_vertex_attrib_service_id);
-  }
 
   query_manager_.reset(new QueryManager());
 
@@ -1077,7 +1059,6 @@ void RasterDecoderImpl::Destroy(bool have_context) {
   state_.sampler_units.clear();
   state_.bound_pixel_pack_buffer = nullptr;
   state_.bound_pixel_unpack_buffer = nullptr;
-  state_.indexed_uniform_buffer_bindings = nullptr;
 
   copy_tex_image_blit_.reset();
   copy_texture_chromium_.reset();

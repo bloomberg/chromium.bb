@@ -558,7 +558,10 @@ void ContextState::RestoreState(const ContextState* prev_state) {
   // RestoreBufferBindings. This is because setting the indexed uniform buffer
   // bindings via glBindBuffer{Base,Range} also sets the general uniform buffer
   // bindings (glBindBuffer), but not vice versa.
-  RestoreIndexedUniformBufferBindings(prev_state);
+  // For RasterDecoder, |indexed_uniform_buffer_bindings| will be nullptr, and
+  // we don't need restore indexed uniform buffer for them.
+  if (indexed_uniform_buffer_bindings)
+    RestoreIndexedUniformBufferBindings(prev_state);
   RestoreBufferBindings();
   RestoreRenderbufferBindings();
   RestoreProgramSettings(prev_state, true);
