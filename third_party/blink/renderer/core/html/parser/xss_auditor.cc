@@ -374,7 +374,9 @@ void XSSAuditor::Init(Document* document,
   if (!is_enabled_)
     return;
 
-  document_url_ = document->Url().Copy();
+  document_url_ = document->Url();
+  document_url_.RemoveFragmentIdentifier();
+  document_url_ = document_url_.Copy();  // Make thread safe.
 
   // In theory, the Document could have detached from the LocalFrame after the
   // XSSAuditor was constructed.
