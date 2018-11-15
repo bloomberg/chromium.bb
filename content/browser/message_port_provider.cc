@@ -4,6 +4,9 @@
 
 #include "content/public/browser/message_port_provider.h"
 
+#include <utility>
+
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -21,11 +24,12 @@ using blink::MessagePortChannel;
 namespace content {
 namespace {
 
-void PostMessageToFrameInternal(WebContents* web_contents,
-                                const base::string16& source_origin,
-                                const base::string16& target_origin,
-                                const base::string16& data,
-                                std::vector<MessagePortChannel> channels) {
+void PostMessageToFrameInternal(
+    WebContents* web_contents,
+    const base::string16& source_origin,
+    const base::Optional<base::string16>& target_origin,
+    const base::string16& data,
+    std::vector<MessagePortChannel> channels) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FrameMsg_PostMessage_Params params;
@@ -36,7 +40,8 @@ void PostMessageToFrameInternal(WebContents* web_contents,
   params.message->data.ports = std::move(channels);
   params.source_routing_id = MSG_ROUTING_NONE;
   params.source_origin = source_origin;
-  params.target_origin = target_origin;
+  if (target_origin)
+    params.target_origin = *target_origin;
 
   RenderFrameHost* rfh = web_contents->GetMainFrame();
   rfh->Send(new FrameMsg_PostMessageEvent(rfh->GetRoutingID(), params));
@@ -80,4 +85,22 @@ void MessagePortProvider::PostMessageToFrame(
 }
 #endif
 
-} // namespace content
+#if defined(OS_FUCHSIA)
+// static
+void MessagePortProvider::PostMessageToFrame(
+    WebContents* web_contents,
+    const base::string16& source_origin,
+    const base::Optional<base::string16>& target_origin,
+    const base::string16& data,
+    std::vector<mojo::ScopedMessagePipeHandle> channels) {
+  std::vector<MessagePortChannel> channels_wrapped;
+  for (mojo::ScopedMessagePipeHandle& handle : channels) {
+    channels_wrapped.emplace_back(std::move(handle));
+  }
+
+  PostMessageToFrameInternal(web_contents, source_origin, target_origin, data,
+                             channels_wrapped);
+}
+#endif
+
+}  // namespace content

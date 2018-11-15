@@ -9,6 +9,7 @@
 #include <zircon/processargs.h>
 
 #include <functional>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -29,6 +30,7 @@
 #include "base/test/multiprocess_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
+#include "webrunner/fidl/chromium/web/cpp/fidl_test_base.h"
 #include "webrunner/service/common.h"
 
 namespace webrunner {
@@ -40,7 +42,7 @@ constexpr char kUrl[] = "chrome://:emorhc";
 constexpr char kTitle[] = "Palindrome";
 
 // A fake Frame implementation that manages its own lifetime.
-class FakeFrame : public chromium::web::Frame {
+class FakeFrame : public chromium::web::testing::Frame_TestBase {
  public:
   explicit FakeFrame(fidl::InterfaceRequest<chromium::web::Frame> request)
       : binding_(this, std::move(request)) {
@@ -63,27 +65,10 @@ class FakeFrame : public chromium::web::Frame {
     std::move(on_set_observer_callback_).Run();
   }
 
-  void CreateView(
-      fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
-      fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> services) override {
+  // chromium::web::testing::Frame_TestBase implementation.
+  void NotImplemented_(const std::string& name) override {
+    NOTREACHED() << name;
   }
-
-  void CreateView2(
-      zx::eventpair view_token,
-      fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
-      fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services)
-      override {}
-
-  void GetNavigationController(
-      fidl::InterfaceRequest<chromium::web::NavigationController> controller)
-      override {}
-
-  void ExecuteJavaScript(fidl::VectorPtr<::fidl::StringPtr> origins,
-                         fuchsia::mem::Buffer script,
-                         chromium::web::ExecuteMode mode,
-                         ExecuteJavaScriptCallback callback) override {}
-
-  void SetJavaScriptLogLevel(chromium::web::LogLevel) override {}
 
  private:
   fidl::Binding<chromium::web::Frame> binding_;

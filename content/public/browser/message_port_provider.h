@@ -9,11 +9,17 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
+#endif
+
+#if defined(OS_FUCHSIA)
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
 #endif
 
 namespace content {
@@ -41,7 +47,17 @@ class CONTENT_EXPORT MessagePortProvider {
       const base::android::JavaParamRef<jstring>& target_origin,
       const base::android::JavaParamRef<jstring>& data,
       const base::android::JavaParamRef<jobjectArray>& ports);
-#endif
+#endif  // OS_ANDROID
+
+#if defined(OS_FUCHSIA)
+  // If |target_origin| is unset, then no origin scoping is applied.
+  static void PostMessageToFrame(
+      WebContents* web_contents,
+      const base::string16& source_origin,
+      const base::Optional<base::string16>& target_origin,
+      const base::string16& data,
+      std::vector<mojo::ScopedMessagePipeHandle> channels);
+#endif  // OS_FUCHSIA
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MessagePortProvider);
