@@ -31,6 +31,13 @@ chrome.brailleDisplayPrivate.onKeyEvent;
  */
 chrome.brailleDisplayPrivate.writeDots = function(cells, columns, rows) {};
 
+
+/**
+ * @param {string} address
+ */
+chrome.brailleDisplayPrivate.updateBluetoothBrailleDisplayAddress = function(
+    address) {};
+
 /**
  * @const
  */
