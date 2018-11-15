@@ -1653,15 +1653,15 @@ bool GLES2Implementation::GetUniformIndicesHelper(GLuint program,
                                                   GLsizei count,
                                                   const char* const* names,
                                                   GLuint* indices) {
+  if (!PackStringsToBucket(count, names, nullptr, "glGetUniformIndices")) {
+    return false;
+  }
   typedef cmds::GetUniformIndices::Result Result;
   Result* result = GetResultAs<Result*>();
   if (!result) {
     return false;
   }
   result->SetNumResults(0);
-  if (!PackStringsToBucket(count, names, nullptr, "glGetUniformIndices")) {
-    return false;
-  }
   helper_->GetUniformIndices(program, kResultBucketId, GetResultShmId(),
                              GetResultShmOffset());
   WaitForCmd();
@@ -3281,7 +3281,8 @@ bool GLES2Implementation::GetActiveAttribHelper(GLuint program,
   helper_->GetActiveAttrib(program, index, kResultBucketId, GetResultShmId(),
                            GetResultShmOffset());
   WaitForCmd();
-  if (result->success) {
+  bool success = !!result->success;
+  if (success) {
     if (size) {
       *size = result->size;
     }
@@ -3290,6 +3291,7 @@ bool GLES2Implementation::GetActiveAttribHelper(GLuint program,
     }
     if (length || name) {
       std::vector<int8_t> str;
+      // Note: this can invalidate |result|.
       GetBucketContents(kResultBucketId, &str);
       GLsizei max_size =
           std::min(static_cast<size_t>(bufsize) - 1,
@@ -3303,7 +3305,7 @@ bool GLES2Implementation::GetActiveAttribHelper(GLuint program,
       }
     }
   }
-  return result->success != 0;
+  return success;
 }
 
 void GLES2Implementation::GetActiveAttrib(GLuint program,
@@ -3541,12 +3543,6 @@ bool GLES2Implementation::GetActiveUniformsivHelper(GLuint program,
                                                     const GLuint* indices,
                                                     GLenum pname,
                                                     GLint* params) {
-  typedef cmds::GetActiveUniformsiv::Result Result;
-  Result* result = GetResultAs<Result*>();
-  if (!result) {
-    return false;
-  }
-  result->SetNumResults(0);
   base::CheckedNumeric<size_t> bytes = static_cast<size_t>(count);
   bytes *= sizeof(GLuint);
   if (!bytes.IsValid()) {
@@ -3554,6 +3550,12 @@ bool GLES2Implementation::GetActiveUniformsivHelper(GLuint program,
     return false;
   }
   SetBucketContents(kResultBucketId, indices, bytes.ValueOrDefault(0));
+  typedef cmds::GetActiveUniformsiv::Result Result;
+  Result* result = GetResultAs<Result*>();
+  if (!result) {
+    return false;
+  }
+  result->SetNumResults(0);
   helper_->GetActiveUniformsiv(program, kResultBucketId, pname,
                                GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
