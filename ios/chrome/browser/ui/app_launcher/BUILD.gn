@@ -38,7 +38,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "app_launcher_coordinator_unittest.mm",
-    "app_launcher_util_unittest.mm",
     "open_mail_handler_view_controller_unittest.mm",
   ]
   deps = [

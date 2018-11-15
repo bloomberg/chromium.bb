@@ -456,11 +456,9 @@ UIColor* BackgroundColor() {
             forControlEvents:UIControlEventTouchUpInside];
 
     if (DragAndDropIsEnabled()) {
-      if (@available(iOS 11.0, *)) {
-        _buttonNewTabInteraction =
-            [[DropAndNavigateInteraction alloc] initWithDelegate:self];
-        [_buttonNewTab addInteraction:_buttonNewTabInteraction];
-      }
+      _buttonNewTabInteraction =
+          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
+      [_buttonNewTab addInteraction:_buttonNewTabInteraction];
     }
 
     [_tabStripView addSubview:_buttonNewTab];

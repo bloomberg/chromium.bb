@@ -158,7 +158,7 @@ const CGFloat kIconImageSize = 28;
       _iconHiddenConstraint,
     ]];
 
-    if (ContentSizeCategoryIsAccessibilityCategory(
+    if (UIContentSizeCategoryIsAccessibilityCategory(
             self.traitCollection.preferredContentSizeCategory)) {
       [NSLayoutConstraint activateConstraints:_accessibilityConstraints];
     } else {
@@ -198,9 +198,9 @@ const CGFloat kIconImageSize = 28;
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   BOOL isCurrentContentSizeAccessibility =
-      ContentSizeCategoryIsAccessibilityCategory(
+      UIContentSizeCategoryIsAccessibilityCategory(
           self.traitCollection.preferredContentSizeCategory);
-  if (ContentSizeCategoryIsAccessibilityCategory(
+  if (UIContentSizeCategoryIsAccessibilityCategory(
           previousTraitCollection.preferredContentSizeCategory) !=
       isCurrentContentSizeAccessibility) {
     if (isCurrentContentSizeAccessibility) {

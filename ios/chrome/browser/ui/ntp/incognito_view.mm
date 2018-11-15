@@ -52,18 +52,8 @@ GURL GetUrlWithLang(const GURL& url) {
 // Returns a font, scaled to the current dynamic type settings, that is suitable
 // for the title of the incognito page.
 UIFont* TitleFont() {
-  // On iOS 11, use UIFontMetrics to return a scalable font.
-  if (@available(iOS 11.0, *)) {
-    return [[UIFontMetrics defaultMetrics]
-        scaledFontForFont:[UIFont boldSystemFontOfSize:26.0]];
-  }
-
-  UIFontDescriptor* baseDescriptor = [UIFontDescriptor
-      preferredFontDescriptorWithTextStyle:UIFontTextStyleTitle1];
-  UIFontDescriptor* styleDescriptor = [baseDescriptor
-      fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
-  // Use a |size| of 0.0 to use the default size for the descriptor.
-  return [UIFont fontWithDescriptor:styleDescriptor size:0.0];
+  return [[UIFontMetrics defaultMetrics]
+      scaledFontForFont:[UIFont boldSystemFontOfSize:26.0]];
 }
 
 // Returns the color to use for body text.
@@ -155,11 +145,9 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
     _loader = loader;
 
     self.alwaysBounceVertical = YES;
-    if (@available(iOS 11.0, *)) {
-      // The bottom safe area is taken care of with the bottomUnsafeArea guides.
-      self.contentInsetAdjustmentBehavior =
-          UIScrollViewContentInsetAdjustmentNever;
-    }
+    // The bottom safe area is taken care of with the bottomUnsafeArea guides.
+    self.contentInsetAdjustmentBehavior =
+        UIScrollViewContentInsetAdjustmentNever;
 
     // Container to hold and vertically position the stack view.
     _containerView = [[UIView alloc] initWithFrame:frame];
@@ -178,10 +166,8 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
     UIImageView* incognitoImage = [[UIImageView alloc]
         initWithImage:[UIImage imageNamed:@"incognito_icon"]];
     [_stackView addArrangedSubview:incognitoImage];
-    if (@available(iOS 11.0, *)) {
-      [_stackView setCustomSpacing:kStackViewImageSpacing
-                         afterView:incognitoImage];
-    }
+    [_stackView setCustomSpacing:kStackViewImageSpacing
+                       afterView:incognitoImage];
 
     [self addTextSections];
 

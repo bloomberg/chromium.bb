@@ -182,27 +182,13 @@
   dispatch_async(_sessionQueue, ^{
     // Get the back camera.
     NSArray* videoCaptureDevices = nil;
-
-    // Although Apple documentation claims that
-    // AVCaptureDeviceDiscoverySession etc. is available on iOS 10+, they are
-    // not really available on an app whose deployment target is iOS 10.0
-    // (iOS 10.1+ are okay) and Chrome will fail at dynamic link time and
-    // instantly crash.  NSClassFromString() checks if Objective-C run-time
-    // has the classes before using them.
-    Class discoverSessionClass =
-        NSClassFromString(@"AVCaptureDeviceDiscoverySession");
-    if (discoverSessionClass) {
-      // Hardcoded value of AVCaptureDeviceTypeBuiltInWideAngleCamera here.
-      // When this @available(iOS 10, *) is deprecated, the unit test
-      // CameraControllerTest.TestAVCaptureDeviceValue can be removed.
-      // See https://crbug.com/826011
-      NSString* cameraType = @"AVCaptureDeviceTypeBuiltInWideAngleCamera";
-      AVCaptureDeviceDiscoverySession* discoverySession = [discoverSessionClass
-          discoverySessionWithDeviceTypes:@[ cameraType ]
-                                mediaType:AVMediaTypeVideo
-                                 position:AVCaptureDevicePositionBack];
-      videoCaptureDevices = [discoverySession devices];
-    }
+    NSString* cameraType = @"AVCaptureDeviceTypeBuiltInWideAngleCamera";
+    AVCaptureDeviceDiscoverySession* discoverySession =
+        [AVCaptureDeviceDiscoverySession
+            discoverySessionWithDeviceTypes:@[ cameraType ]
+                                  mediaType:AVMediaTypeVideo
+                                   position:AVCaptureDevicePositionBack];
+    videoCaptureDevices = [discoverySession devices];
     if ([videoCaptureDevices count] == 0) {
       [self setCameraState:qr_scanner::CAMERA_UNAVAILABLE];
       return;

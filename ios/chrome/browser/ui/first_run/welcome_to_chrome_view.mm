@@ -503,10 +503,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
   CGFloat OKButtonBottomPadding =
       kOKButtonBottomPadding[self.cr_widthSizeClass];
   CGSize OKButtonSize = self.OKButton.bounds.size;
-  CGFloat bottomSafeArea = 0;
-  if (@available(iOS 11.0, *)) {
-    bottomSafeArea = self.safeAreaInsets.bottom;
-  }
+  CGFloat bottomSafeArea = self.safeAreaInsets.bottom;
   self.OKButton.frame = AlignRectOriginAndSizeToPixels(
       CGRectMake((CGRectGetWidth(self.bounds) - OKButtonSize.width) / 2.0,
                  CGRectGetMaxY(self.bounds) - OKButtonSize.height -

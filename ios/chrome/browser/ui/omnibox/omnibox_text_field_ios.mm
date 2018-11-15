@@ -142,9 +142,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
       [self setRightViewMode:UITextFieldViewModeAlways];
     }
 
-    if (@available(iOS 11.0, *)) {
-      [self setSmartQuotesType:UITextSmartQuotesTypeNo];
-    }
+    [self setSmartQuotesType:UITextSmartQuotesTypeNo];
 
     // Sanity check:
     DCHECK([self conformsToProtocol:@protocol(UITextInput)]);

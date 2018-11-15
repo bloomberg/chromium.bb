@@ -420,12 +420,7 @@ using base::UserMetricsAction;
 }
 
 - (CGFloat)topInset {
-  if (@available(iOS 11, *))
-    return self.parentViewController.view.safeAreaInsets.top;
-
-  // TODO(crbug.com/826369) Replace this when the NTP is contained by the
-  // BVC with |self.parentViewController.topLayoutGuide.length|.
-  return StatusBarHeight();
+  return self.parentViewController.view.safeAreaInsets.top;
 }
 
 #pragma mark - LogoAnimationControllerOwnerOwner
