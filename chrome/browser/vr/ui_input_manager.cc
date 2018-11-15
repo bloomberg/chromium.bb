@@ -419,6 +419,10 @@ void UiInputManager::OnKeyboardHidden() {
   UnfocusFocusedElement();
 }
 
+bool UiInputManager::ControllerRestingInViewport() const {
+  return controller_resting_in_viewport_;
+}
+
 gfx::PointF UiInputManager::GetCapturedElementHitPoint(
     const gfx::Point3F& target_point) const {
   UiElement* captured_element =

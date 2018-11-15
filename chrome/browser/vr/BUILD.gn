@@ -176,6 +176,11 @@ component("vr_ui") {
     "vr_ui_export.h",
   ]
 
+  sources += [
+    "ui_input_manager_for_testing.cc",
+    "ui_input_manager_for_testing.h",
+  ]
+
   deps = [
     ":vr_base",
     "//base",
@@ -230,13 +235,9 @@ component("vr_common") {
     "gesture_detector.h",
     "graphics_delegate.h",
     "input_delegate.h",
-    "input_delegate_for_testing.cc",
-    "input_delegate_for_testing.h",
     "location_bar_helper.cc",
     "location_bar_helper.h",
     "platform_controller.h",
-    "platform_controller_for_testing.cc",
-    "platform_controller_for_testing.h",
     "sample_queue.cc",
     "sample_queue.h",
     "scheduler_browser_renderer_interface.h",
@@ -257,6 +258,13 @@ component("vr_common") {
     "ui_factory.h",
     "vr_web_contents_observer.cc",
     "vr_web_contents_observer.h",
+  ]
+
+  sources += [
+    "input_delegate_for_testing.cc",
+    "input_delegate_for_testing.h",
+    "platform_controller_for_testing.cc",
+    "platform_controller_for_testing.h",
   ]
 
   public_deps = [
@@ -337,8 +345,6 @@ source_set("vr_base") {
     "input_event.cc",
     "input_event.h",
     "keyboard_delegate.h",
-    "keyboard_delegate_for_testing.cc",
-    "keyboard_delegate_for_testing.h",
     "keyboard_ui_interface.h",
     "macros.h",
     "metrics/metrics_helper.cc",
@@ -389,6 +395,11 @@ source_set("vr_base") {
     "vr_geometry_util.h",
     "vr_gl_util.cc",
     "vr_gl_util.h",
+  ]
+
+  sources += [
+    "keyboard_delegate_for_testing.cc",
+    "keyboard_delegate_for_testing.h",
   ]
 
   defines = [
