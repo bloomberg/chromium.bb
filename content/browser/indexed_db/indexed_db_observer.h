@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
+#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
 namespace content {
 
@@ -24,15 +24,15 @@ class CONTENT_EXPORT IndexedDBObserver {
     explicit Options(bool include_transaction,
                      bool no_records,
                      bool values,
-                     std::bitset<blink::kIDBOperationTypeCount> types);
+                     unsigned short types);
     Options(const Options&);
     ~Options();
 
     bool include_transaction;
     bool no_records;
     bool values;
-    // Operation type bits are set corresponding to mojom::IDBOperationType.
-    std::bitset<blink::kIDBOperationTypeCount> operation_types;
+    // Operation type bits are set corresponding to WebIDBOperationType.
+    std::bitset<blink::kWebIDBOperationTypeCount> operation_types;
   };
   IndexedDBObserver(int32_t observer_id,
                     std::set<int64_t> object_store_ids,
@@ -48,9 +48,9 @@ class CONTENT_EXPORT IndexedDBObserver {
     object_store_ids_ = std::move(ids);
   }
 
-  bool IsRecordingType(blink::mojom::IDBOperationType type) const {
-    DCHECK_LT(static_cast<size_t>(type), blink::kIDBOperationTypeCount);
-    return options_.operation_types[static_cast<size_t>(type)];
+  bool IsRecordingType(blink::WebIDBOperationType type) const {
+    DCHECK_NE(type, blink::kWebIDBOperationTypeCount);
+    return options_.operation_types[type];
   }
   bool IsRecordingObjectStore(int64_t object_store_id) const {
     return base::ContainsKey(object_store_ids_, object_store_id);

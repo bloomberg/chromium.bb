@@ -35,7 +35,6 @@
 #include "content/public/common/content_switches.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/common/database/database_identifier.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "url/origin.h"
@@ -197,18 +196,9 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
           std::unique_ptr<base::DictionaryValue> transaction_info(
               std::make_unique<base::DictionaryValue>());
 
-          switch (transaction->mode()) {
-            case blink::mojom::IDBTransactionMode::ReadOnly:
-              transaction_info->SetString("mode", "readonly");
-              break;
-            case blink::mojom::IDBTransactionMode::ReadWrite:
-              transaction_info->SetString("mode", "readwrite");
-              break;
-            case blink::mojom::IDBTransactionMode::VersionChange:
-              transaction_info->SetString("mode", "versionchange");
-              break;
-          }
-
+          const char* const kModes[] =
+              { "readonly", "readwrite", "versionchange" };
+          transaction_info->SetString("mode", kModes[transaction->mode()]);
           switch (transaction->state()) {
             case IndexedDBTransaction::CREATED:
               transaction_info->SetString("status", "blocked");

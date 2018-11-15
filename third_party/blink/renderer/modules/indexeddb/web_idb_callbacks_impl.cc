@@ -215,7 +215,7 @@ void WebIDBCallbacksImpl::OnBlocked(long long old_version) {
 void WebIDBCallbacksImpl::OnUpgradeNeeded(long long old_version,
                                           WebIDBDatabase* database,
                                           const WebIDBMetadata& metadata,
-                                          mojom::IDBDataLoss data_loss,
+                                          unsigned short data_loss,
                                           WebString data_loss_message) {
   std::unique_ptr<WebIDBDatabase> db = base::WrapUnique(database);
   if (request_) {
@@ -224,9 +224,9 @@ void WebIDBCallbacksImpl::OnUpgradeNeeded(long long old_version,
 #if DCHECK_IS_ON()
     DCHECK(!request_->TransactionHasQueuedResults());
 #endif  // DCHECK_IS_ON()
-    request_->EnqueueUpgradeNeeded(old_version, std::move(db),
-                                   IDBDatabaseMetadata(metadata), data_loss,
-                                   data_loss_message);
+    request_->EnqueueUpgradeNeeded(
+        old_version, std::move(db), IDBDatabaseMetadata(metadata),
+        static_cast<WebIDBDataLoss>(data_loss), data_loss_message);
   } else {
     db->Close();
   }

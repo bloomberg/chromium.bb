@@ -39,18 +39,18 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
                          const String& new_name) override;
   void CreateTransaction(long long transaction_id,
                          const Vector<int64_t>& scope,
-                         mojom::IDBTransactionMode mode) override;
+                         blink::WebIDBTransactionMode mode) override;
 
   void Close() override;
   void VersionChangeIgnored() override;
 
-  void AddObserver(
-      long long transaction_id,
-      int32_t observer_id,
-      bool include_transaction,
-      bool no_records,
-      bool values,
-      std::bitset<blink::kIDBOperationTypeCount> operation_types) override;
+  void AddObserver(long long transaction_id,
+                   int32_t observer_id,
+                   bool include_transaction,
+                   bool no_records,
+                   bool values,
+                   const std::bitset<blink::kWebIDBOperationTypeCount>&
+                       operation_types) override;
   void RemoveObservers(const Vector<int32_t>& observer_ids) override;
 
   void Get(long long transaction_id,
@@ -71,7 +71,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
            const blink::WebData& value,
            const Vector<blink::WebBlobInfo>&,
            blink::WebIDBKeyView primary_key,
-           mojom::IDBPutMode,
+           blink::WebIDBPutMode,
            blink::WebIDBCallbacks*,
            const Vector<blink::WebIDBIndexKeys>&) override;
   void SetIndexKeys(long long transaction_id,
@@ -85,9 +85,9 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public blink::WebIDBDatabase {
                   long long object_store_id,
                   long long index_id,
                   const blink::WebIDBKeyRange&,
-                  mojom::IDBCursorDirection direction,
+                  blink::WebIDBCursorDirection direction,
                   bool key_only,
-                  mojom::IDBTaskType,
+                  blink::WebIDBTaskType,
                   blink::WebIDBCallbacks*) override;
   void Count(long long transaction_id,
              long long object_store_id,

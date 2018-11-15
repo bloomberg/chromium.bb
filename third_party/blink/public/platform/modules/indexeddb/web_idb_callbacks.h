@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_CALLBACKS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_CALLBACKS_H_
 
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -64,7 +63,7 @@ class WebIDBCallbacks {
   virtual void OnUpgradeNeeded(long long old_version,
                                WebIDBDatabase*,
                                const WebIDBMetadata&,
-                               mojom::IDBDataLoss data_loss,
+                               unsigned short data_loss,
                                WebString data_loss_message) = 0;
   virtual void Detach() = 0;
 };

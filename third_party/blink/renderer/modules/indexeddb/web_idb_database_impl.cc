@@ -57,7 +57,7 @@ void WebIDBDatabaseImpl::RenameObjectStore(long long transaction_id,
 void WebIDBDatabaseImpl::CreateTransaction(
     long long transaction_id,
     const Vector<int64_t>& object_store_ids,
-    mojom::IDBTransactionMode mode) {
+    WebIDBTransactionMode mode) {
   database_->CreateTransaction(transaction_id, object_store_ids, mode);
 }
 
@@ -75,9 +75,9 @@ void WebIDBDatabaseImpl::AddObserver(
     bool include_transaction,
     bool no_records,
     bool values,
-    std::bitset<blink::kIDBOperationTypeCount> operation_types) {
-  static_assert(kIDBOperationTypeCount < sizeof(uint32_t) * CHAR_BIT,
-                "IDBOperationTypeCount exceeds size of uint32_t");
+    const std::bitset<kWebIDBOperationTypeCount>& operation_types) {
+  static_assert(kWebIDBOperationTypeCount < sizeof(uint16_t) * CHAR_BIT,
+                "WebIDBOperationType Count exceeds size of uint16_t");
   database_->AddObserver(transaction_id, observer_id, include_transaction,
                          no_records, values, operation_types.to_ulong());
 }
@@ -121,7 +121,7 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
                              const WebData& value,
                              const Vector<WebBlobInfo>& web_blob_info,
                              WebIDBKeyView web_primary_key,
-                             mojom::IDBPutMode put_mode,
+                             WebIDBPutMode put_mode,
                              WebIDBCallbacks* callbacks,
                              const Vector<WebIDBIndexKeys>& index_keys) {
   WebIDBKey primary_key = WebIDBKeyBuilder::Build(web_primary_key);
@@ -212,9 +212,9 @@ void WebIDBDatabaseImpl::OpenCursor(long long transaction_id,
                                     long long object_store_id,
                                     long long index_id,
                                     const WebIDBKeyRange& key_range,
-                                    mojom::IDBCursorDirection direction,
+                                    WebIDBCursorDirection direction,
                                     bool key_only,
-                                    mojom::IDBTaskType task_type,
+                                    WebIDBTaskType task_type,
                                     WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 

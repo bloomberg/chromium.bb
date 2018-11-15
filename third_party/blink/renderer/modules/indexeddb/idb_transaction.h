@@ -29,7 +29,6 @@
 #include <memory>
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
@@ -75,7 +74,7 @@ class MODULES_EXPORT IDBTransaction final
   static IDBTransaction* CreateNonVersionChange(ScriptState*,
                                                 int64_t,
                                                 const HashSet<String>& scope,
-                                                mojom::IDBTransactionMode,
+                                                WebIDBTransactionMode,
                                                 IDBDatabase*);
   static IDBTransaction* CreateVersionChange(
       ExecutionContext*,
@@ -86,7 +85,7 @@ class MODULES_EXPORT IDBTransaction final
   ~IDBTransaction() override;
   void Trace(blink::Visitor*) override;
 
-  static mojom::IDBTransactionMode StringToMode(const String&);
+  static WebIDBTransactionMode StringToMode(const String&);
 
   // When the connection is closed backend will be 0.
   WebIDBDatabase* BackendDB() const;
@@ -95,11 +94,9 @@ class MODULES_EXPORT IDBTransaction final
   bool IsActive() const { return state_ == kActive; }
   bool IsFinished() const { return state_ == kFinished; }
   bool IsFinishing() const { return state_ == kFinishing; }
-  bool IsReadOnly() const {
-    return mode_ == mojom::IDBTransactionMode::ReadOnly;
-  }
+  bool IsReadOnly() const { return mode_ == kWebIDBTransactionModeReadOnly; }
   bool IsVersionChange() const {
-    return mode_ == mojom::IDBTransactionMode::VersionChange;
+    return mode_ == kWebIDBTransactionModeVersionChange;
   }
 
   // Implement the IDBTransaction IDL
@@ -179,7 +176,7 @@ class MODULES_EXPORT IDBTransaction final
   IDBTransaction(ScriptState*,
                  int64_t,
                  const HashSet<String>& scope,
-                 mojom::IDBTransactionMode,
+                 WebIDBTransactionMode,
                  IDBDatabase*);
 
   // For upgrade transactions.
@@ -208,7 +205,7 @@ class MODULES_EXPORT IDBTransaction final
   const int64_t id_;
   Member<IDBDatabase> database_;
   Member<IDBOpenDBRequest> open_db_request_;
-  const mojom::IDBTransactionMode mode_;
+  const WebIDBTransactionMode mode_;
 
   // The names of the object stores that make up this transaction's scope.
   //

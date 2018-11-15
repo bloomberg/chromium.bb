@@ -60,7 +60,7 @@ IndexedDBTransaction::Operation BindWeakOperation(
 IndexedDBCursor::IndexedDBCursor(
     std::unique_ptr<IndexedDBBackingStore::Cursor> cursor,
     indexed_db::CursorType cursor_type,
-    blink::mojom::IDBTaskType task_type,
+    blink::WebIDBTaskType task_type,
     IndexedDBTransaction* transaction)
     : task_type_(task_type),
       cursor_type_(cursor_type),

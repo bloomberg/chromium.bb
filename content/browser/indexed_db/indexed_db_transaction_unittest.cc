@@ -86,7 +86,7 @@ class IndexedDBTransactionTest : public testing::Test {
 
 class IndexedDBTransactionTestMode
     : public IndexedDBTransactionTest,
-      public testing::WithParamInterface<blink::mojom::IDBTransactionMode> {
+      public testing::WithParamInterface<blink::WebIDBTransactionMode> {
  public:
   IndexedDBTransactionTestMode() {}
  private:
@@ -102,8 +102,7 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
           kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
   std::unique_ptr<IndexedDBTransaction> transaction =
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
-          id, connection.get(), scope,
-          blink::mojom::IDBTransactionMode::ReadWrite,
+          id, connection.get(), scope, blink::kWebIDBTransactionModeReadWrite,
           new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
   db_->TransactionCreated(transaction.get());
 
@@ -149,8 +148,7 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
           kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
   std::unique_ptr<IndexedDBTransaction> transaction =
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
-          id, connection.get(), scope,
-          blink::mojom::IDBTransactionMode::ReadOnly,
+          id, connection.get(), scope, blink::kWebIDBTransactionModeReadOnly,
           new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
   db_->TransactionCreated(transaction.get());
 
@@ -203,7 +201,7 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
 
   transaction->ScheduleTask(
-      blink::mojom::IDBTaskType::Normal,
+      blink::kWebIDBTaskTypeNormal,
       base::BindOnce(&IndexedDBTransactionTest::DummyOperation,
                      base::Unretained(this), leveldb::Status::OK()));
 
@@ -267,7 +265,7 @@ TEST_P(IndexedDBTransactionTestMode, TaskFails) {
   EXPECT_CALL(*factory_, HandleBackingStoreFailure(testing::_)).Times(1);
 
   transaction->ScheduleTask(
-      blink::mojom::IDBTaskType::Normal,
+      blink::kWebIDBTaskTypeNormal,
       base::BindOnce(&IndexedDBTransactionTest::DummyOperation,
                      base::Unretained(this),
                      leveldb::Status::IOError("error")));
@@ -313,7 +311,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   std::unique_ptr<IndexedDBTransaction> transaction =
       std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
           id, connection.get(), scope,
-          blink::mojom::IDBTransactionMode::VersionChange,
+          blink::kWebIDBTransactionModeVersionChange,
           new IndexedDBFakeBackingStore::FakeTransaction(commit_failure)));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
@@ -331,7 +329,7 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   EXPECT_TRUE(transaction->preemptive_task_queue_.empty());
 
   transaction->ScheduleTask(
-      blink::mojom::IDBTaskType::Preemptive,
+      blink::kWebIDBTaskTypePreemptive,
       base::BindOnce(&IndexedDBTransactionTest::DummyOperation,
                      base::Unretained(this), leveldb::Status::OK()));
   transaction->AddPreemptiveEvent();
@@ -412,7 +410,7 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
   EXPECT_FALSE(transaction->IsTimeoutTimerRunning());
 
   transaction->ScheduleTask(
-      blink::mojom::IDBTaskType::Preemptive,
+      blink::kWebIDBTaskTypePreemptive,
       base::BindOnce(&IndexedDBTransactionTest::DummyOperation,
                      base::Unretained(this), leveldb::Status::OK()));
   EXPECT_EQ(0, transaction->pending_preemptive_events_);
@@ -460,7 +458,7 @@ TEST_F(IndexedDBTransactionTest, IndexedDBObserver) {
       connection->AddTransactionForTesting(
           std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
               id, connection.get(), scope,
-              blink::mojom::IDBTransactionMode::ReadWrite,
+              blink::kWebIDBTransactionModeReadWrite,
               new IndexedDBFakeBackingStore::FakeTransaction(commit_success))));
   ASSERT_TRUE(transaction);
   db_->TransactionCreated(transaction.get());
@@ -497,10 +495,10 @@ TEST_F(IndexedDBTransactionTest, IndexedDBObserver) {
   EXPECT_EQ(0UL, connection->active_observers().size());
 }
 
-static const blink::mojom::IDBTransactionMode kTestModes[] = {
-    blink::mojom::IDBTransactionMode::ReadOnly,
-    blink::mojom::IDBTransactionMode::ReadWrite,
-    blink::mojom::IDBTransactionMode::VersionChange};
+static const blink::WebIDBTransactionMode kTestModes[] = {
+    blink::kWebIDBTransactionModeReadOnly,
+    blink::kWebIDBTransactionModeReadWrite,
+    blink::kWebIDBTransactionModeVersionChange};
 
 INSTANTIATE_TEST_CASE_P(IndexedDBTransactions,
                         IndexedDBTransactionTestMode,

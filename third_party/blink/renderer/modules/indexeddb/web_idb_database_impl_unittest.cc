@@ -47,7 +47,7 @@ TEST_F(WebIDBDatabaseImplTest, ValueSizeTest) {
   WebIDBDatabaseImpl database_impl(nullptr);
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
   database_impl.Put(transaction_id, object_store_id, value, blob_info,
-                    key.View(), mojom::IDBPutMode::AddOrUpdate, &callbacks,
+                    key.View(), blink::kWebIDBPutModeAddOrUpdate, &callbacks,
                     Vector<blink::WebIDBIndexKeys>());
 }
 
@@ -86,7 +86,7 @@ TEST_F(WebIDBDatabaseImplTest, KeyAndValueSizeTest) {
   WebIDBDatabaseImpl database_impl(nullptr);
   database_impl.max_put_value_size_ = kMaxValueSizeForTesting;
   database_impl.Put(transaction_id, object_store_id, value, blob_info,
-                    key.View(), mojom::IDBPutMode::AddOrUpdate, &callbacks,
+                    key.View(), blink::kWebIDBPutModeAddOrUpdate, &callbacks,
                     Vector<blink::WebIDBIndexKeys>());
 }
 

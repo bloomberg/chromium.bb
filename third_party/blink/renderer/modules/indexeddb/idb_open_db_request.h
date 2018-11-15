@@ -51,7 +51,7 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   void EnqueueUpgradeNeeded(int64_t old_version,
                             std::unique_ptr<WebIDBDatabase>,
                             const IDBDatabaseMetadata&,
-                            mojom::IDBDataLoss,
+                            WebIDBDataLoss,
                             String data_loss_message) override;
   void EnqueueResponse(std::unique_ptr<WebIDBDatabase>,
                        const IDBDatabaseMetadata&) override;

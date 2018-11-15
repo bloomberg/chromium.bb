@@ -105,7 +105,7 @@ void IndexedDBConnection::RemoveObservers(
 IndexedDBTransaction* IndexedDBConnection::CreateTransaction(
     int64_t id,
     const std::set<int64_t>& scope,
-    blink::mojom::IDBTransactionMode mode,
+    blink::WebIDBTransactionMode mode,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
   CHECK_EQ(GetTransaction(id), nullptr) << "Duplicate transaction id." << id;
   std::unique_ptr<IndexedDBTransaction> transaction =

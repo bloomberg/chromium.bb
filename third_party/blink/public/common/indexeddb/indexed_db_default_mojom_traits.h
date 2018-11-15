@@ -14,6 +14,23 @@ namespace mojo {
 
 template <>
 struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::IDBCursorDirection, blink::WebIDBCursorDirection> {
+  static blink::mojom::IDBCursorDirection ToMojom(
+      blink::WebIDBCursorDirection input);
+  static bool FromMojom(blink::mojom::IDBCursorDirection input,
+                        blink::WebIDBCursorDirection* output);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::IDBDataLoss, blink::WebIDBDataLoss> {
+  static blink::mojom::IDBDataLoss ToMojom(blink::WebIDBDataLoss input);
+  static bool FromMojom(blink::mojom::IDBDataLoss input,
+                        blink::WebIDBDataLoss* output);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
                  blink::IndexedDBDatabaseMetadata> {
   static int64_t id(const blink::IndexedDBDatabaseMetadata& metadata) {
@@ -177,6 +194,40 @@ struct BLINK_COMMON_EXPORT
   }
   static bool Read(blink::mojom::IDBObjectStoreMetadataDataView data,
                    blink::IndexedDBObjectStoreMetadata* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::IDBOperationType, blink::WebIDBOperationType> {
+  static blink::mojom::IDBOperationType ToMojom(
+      blink::WebIDBOperationType input);
+  static bool FromMojom(blink::mojom::IDBOperationType input,
+                        blink::WebIDBOperationType* output);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::IDBPutMode, blink::WebIDBPutMode> {
+  static blink::mojom::IDBPutMode ToMojom(blink::WebIDBPutMode input);
+  static bool FromMojom(blink::mojom::IDBPutMode input,
+                        blink::WebIDBPutMode* output);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::IDBTaskType, blink::WebIDBTaskType> {
+  static blink::mojom::IDBTaskType ToMojom(blink::WebIDBTaskType input);
+  static bool FromMojom(blink::mojom::IDBTaskType input,
+                        blink::WebIDBTaskType* output);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    EnumTraits<blink::mojom::IDBTransactionMode, blink::WebIDBTransactionMode> {
+  static blink::mojom::IDBTransactionMode ToMojom(
+      blink::WebIDBTransactionMode input);
+  static bool FromMojom(blink::mojom::IDBTransactionMode input,
+                        blink::WebIDBTransactionMode* output);
 };
 
 }  // namespace mojo

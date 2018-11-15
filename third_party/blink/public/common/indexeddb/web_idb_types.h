@@ -26,8 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_WEB_IDB_TYPES_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_WEB_IDB_TYPES_H_
 
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
-
 namespace blink {
 
 // TODO(cmp): Deprecate these in favor of the blink.mojom.IDB* enum types.
@@ -49,12 +47,42 @@ enum WebIDBKeyPathType {
   kWebIDBKeyPathTypeArray,
 };
 
-// kIDBOperationTypeCount corresponds to the number of mojom::IDBOperationType
-// enum values that exist.  Mojo provides kMaxValue which corresponds to the
-// value of the last item in the enum list.  To get the total number, we have
-// to increment the max value by 1.
-static const uint32_t kIDBOperationTypeCount =
-    static_cast<uint32_t>(blink::mojom::IDBOperationType::kMaxValue) + 1;
+enum WebIDBDataLoss {
+  kWebIDBDataLossNone = 0,
+  kWebIDBDataLossTotal,
+};
+
+enum WebIDBCursorDirection {
+  kWebIDBCursorDirectionNext = 0,
+  kWebIDBCursorDirectionNextNoDuplicate = 1,
+  kWebIDBCursorDirectionPrev = 2,
+  kWebIDBCursorDirectionPrevNoDuplicate = 3,
+};
+
+enum WebIDBTaskType {
+  kWebIDBTaskTypeNormal = 0,
+  kWebIDBTaskTypePreemptive,
+};
+
+enum WebIDBPutMode {
+  kWebIDBPutModeAddOrUpdate,
+  kWebIDBPutModeAddOnly,
+  kWebIDBPutModeCursorUpdate,
+};
+
+enum WebIDBOperationType {
+  kWebIDBAdd = 0,
+  kWebIDBPut,
+  kWebIDBDelete,
+  kWebIDBClear,
+  kWebIDBOperationTypeCount,
+};
+
+enum WebIDBTransactionMode {
+  kWebIDBTransactionModeReadOnly = 0,
+  kWebIDBTransactionModeReadWrite,
+  kWebIDBTransactionModeVersionChange,
+};
 
 }  // namespace blink
 

@@ -48,7 +48,7 @@ using blink::WebIDBDatabase;
 namespace blink {
 
 IDBCursor* IDBCursor::Create(std::unique_ptr<WebIDBCursor> backend,
-                             mojom::IDBCursorDirection direction,
+                             WebIDBCursorDirection direction,
                              IDBRequest* request,
                              const Source& source,
                              IDBTransaction* transaction) {
@@ -57,7 +57,7 @@ IDBCursor* IDBCursor::Create(std::unique_ptr<WebIDBCursor> backend,
 }
 
 IDBCursor::IDBCursor(std::unique_ptr<WebIDBCursor> backend,
-                     mojom::IDBCursorDirection direction,
+                     WebIDBCursorDirection direction,
                      IDBRequest* request,
                      const Source& source,
                      IDBTransaction* transaction)
@@ -130,7 +130,7 @@ IDBRequest* IDBCursor::update(ScriptState* script_state,
   }
 
   IDBObjectStore* object_store = EffectiveObjectStore();
-  return object_store->DoPut(script_state, mojom::IDBPutMode::CursorUpdate,
+  return object_store->DoPut(script_state, kWebIDBPutModeCursorUpdate,
                              IDBRequest::Source::FromIDBCursor(this), value,
                              IdbPrimaryKey(), exception_state);
 }
@@ -231,8 +231,8 @@ void IDBCursor::continuePrimaryKey(ScriptState* script_state,
     return;
   }
 
-  if (direction_ != mojom::IDBCursorDirection::Next &&
-      direction_ != mojom::IDBCursorDirection::Prev) {
+  if (direction_ != kWebIDBCursorDirectionNext &&
+      direction_ != kWebIDBCursorDirectionPrev) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The cursor's direction is not 'next' or 'prev'.");
@@ -283,8 +283,8 @@ void IDBCursor::Continue(std::unique_ptr<IDBKey> key,
 
   if (key) {
     DCHECK(key_);
-    if (direction_ == mojom::IDBCursorDirection::Next ||
-        direction_ == mojom::IDBCursorDirection::NextNoDuplicate) {
+    if (direction_ == kWebIDBCursorDirectionNext ||
+        direction_ == kWebIDBCursorDirectionNextNoDuplicate) {
       const bool ok = key_->IsLessThan(key.get()) ||
                       (primary_key && key_->IsEqual(key.get()) &&
                        current_primary_key->IsLessThan(primary_key.get()));
@@ -483,33 +483,33 @@ bool IDBCursor::IsDeleted() const {
   return source_.GetAsIDBIndex()->IsDeleted();
 }
 
-mojom::IDBCursorDirection IDBCursor::StringToDirection(
+WebIDBCursorDirection IDBCursor::StringToDirection(
     const String& direction_string) {
   if (direction_string == indexed_db_names::kNext)
-    return mojom::IDBCursorDirection::Next;
+    return kWebIDBCursorDirectionNext;
   if (direction_string == indexed_db_names::kNextunique)
-    return mojom::IDBCursorDirection::NextNoDuplicate;
+    return kWebIDBCursorDirectionNextNoDuplicate;
   if (direction_string == indexed_db_names::kPrev)
-    return mojom::IDBCursorDirection::Prev;
+    return kWebIDBCursorDirectionPrev;
   if (direction_string == indexed_db_names::kPrevunique)
-    return mojom::IDBCursorDirection::PrevNoDuplicate;
+    return kWebIDBCursorDirectionPrevNoDuplicate;
 
   NOTREACHED();
-  return mojom::IDBCursorDirection::Next;
+  return kWebIDBCursorDirectionNext;
 }
 
 const String& IDBCursor::direction() const {
   switch (direction_) {
-    case mojom::IDBCursorDirection::Next:
+    case kWebIDBCursorDirectionNext:
       return indexed_db_names::kNext;
 
-    case mojom::IDBCursorDirection::NextNoDuplicate:
+    case kWebIDBCursorDirectionNextNoDuplicate:
       return indexed_db_names::kNextunique;
 
-    case mojom::IDBCursorDirection::Prev:
+    case kWebIDBCursorDirectionPrev:
       return indexed_db_names::kPrev;
 
-    case mojom::IDBCursorDirection::PrevNoDuplicate:
+    case kWebIDBCursorDirectionPrevNoDuplicate:
       return indexed_db_names::kPrevunique;
 
     default:

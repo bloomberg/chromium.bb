@@ -29,7 +29,6 @@
 #include <bitset>
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
@@ -59,7 +58,7 @@ class MODULES_EXPORT WebIDBDatabase {
                                  const String& name) = 0;
   virtual void CreateTransaction(long long id,
                                  const Vector<int64_t>& scope,
-                                 mojom::IDBTransactionMode) = 0;
+                                 WebIDBTransactionMode) = 0;
   virtual void Close() = 0;
   virtual void VersionChangeIgnored() = 0;
 
@@ -89,7 +88,7 @@ class MODULES_EXPORT WebIDBDatabase {
       bool include_transaction,
       bool no_records,
       bool values,
-      std::bitset<blink::kIDBOperationTypeCount> operation_types) = 0;
+      const std::bitset<kWebIDBOperationTypeCount>& operation_types) = 0;
   virtual void RemoveObservers(
       const Vector<int32_t>& observer_ids_to_remove) = 0;
   virtual void Get(long long transaction_id,
@@ -110,7 +109,7 @@ class MODULES_EXPORT WebIDBDatabase {
                    const WebData& value,
                    const Vector<WebBlobInfo>&,
                    WebIDBKeyView primary_key,
-                   mojom::IDBPutMode,
+                   WebIDBPutMode,
                    WebIDBCallbacks*,
                    const Vector<WebIDBIndexKeys>&) = 0;
   virtual void SetIndexKeys(long long transaction_id,
@@ -124,9 +123,9 @@ class MODULES_EXPORT WebIDBDatabase {
                           long long object_store_id,
                           long long index_id,
                           const WebIDBKeyRange&,
-                          mojom::IDBCursorDirection,
+                          WebIDBCursorDirection,
                           bool key_only,
-                          mojom::IDBTaskType,
+                          WebIDBTaskType,
                           WebIDBCallbacks*) = 0;
   virtual void Count(long long transaction_id,
                      long long object_store_id,
