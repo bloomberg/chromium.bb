@@ -10,6 +10,8 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -28,6 +30,8 @@
 #include "chrome/chrome_cleaner/os/registry.h"
 #include "chrome/chrome_cleaner/os/registry_util.h"
 #include "chrome/chrome_cleaner/os/system_util.h"
+#include "chrome/chrome_cleaner/parsers/json_parser/json_splicer.h"
+#include "chrome/chrome_cleaner/parsers/parser_utils/parse_tasks_remaining_counter.h"
 
 using base::WaitableEvent;
 
@@ -36,36 +40,7 @@ namespace {
 
 const int kExtensionIdLength = 32;
 
-class ParseTasksRemainingCounter
-    : public base::RefCountedThreadSafe<ParseTasksRemainingCounter> {
- public:
-  ParseTasksRemainingCounter(size_t count, WaitableEvent* done)
-      : count_(count), done_(done) {
-    DCHECK(count_ > 0) << "Must be constructed with a positive count.";
-  }
-
-  void Increment() {
-    DCHECK(count_ > 0)
-        << "Once decremented to zero, Increment should never be called.";
-    count_++;
-  }
-
-  void Decrement() {
-    DCHECK(count_);
-    count_--;
-    if (count_ == 0) {
-      done_->Signal();
-    }
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<ParseTasksRemainingCounter>;
-  ~ParseTasksRemainingCounter() = default;
-
-  size_t count_;
-  WaitableEvent* done_;
-};
-
+// TODO(joenotcharles): Use RegKeyPath instead.
 struct RegistryKey {
   HKEY hkey;
   const wchar_t* path;
@@ -95,6 +70,21 @@ constexpr std::array<const base::char16*, 8> default_extension_whitelist = {
 
 const wchar_t kMasterPreferencesFileName[] = L"master_preferences";
 
+// Removes the extension from the JSON. If the extension is not associated
+// wih a valid file and JSON value then this function returns false and
+// |json_result| is not modified.
+bool RemoveExtensionFromJson(const ForceInstalledExtension& extension,
+                             base::Value* json_result) {
+  DCHECK(json_result);
+  DCHECK(extension.policy_file);
+  if (!extension.policy_file->json) {
+    return false;
+  }
+
+  bool result = RemoveKeyFromDictionary(json_result, extension.id.AsString());
+  return result;
+}
+
 void GetForcelistPoliciesForAccessMask(
     REGSAM access_mask,
     std::vector<ExtensionPolicyRegistryEntry>* policies) {
@@ -114,16 +104,50 @@ void GetForcelistPoliciesForAccessMask(
 
         policies->emplace_back(extension_id, extension_forcelist_keys[i].hkey,
                                extension_forcelist_keys[i].path,
-                               forcelist_it.Name());
+                               forcelist_it.Name(), forcelist_it.Type(),
+                               nullptr);
       }
     }
   }
+}
+
+bool RemoveForcelistPolicyExtensionForAccessMask(
+    REGSAM access_mask,
+    const ForceInstalledExtension& extension) {
+  for (size_t i = 0; i < base::size(extension_forcelist_keys); ++i) {
+    std::vector<base::string16> keys;
+    base::win::RegistryValueIterator forcelist_it(
+        extension_forcelist_keys[i].hkey, extension_forcelist_keys[i].path,
+        access_mask);
+    for (; forcelist_it.Valid(); ++forcelist_it) {
+      base::string16 entry;
+      GetRegistryValueAsString(forcelist_it.Value(), forcelist_it.ValueSize(),
+                               forcelist_it.Type(), &entry);
+      if (base::UTF16ToUTF8(entry.substr(0, kExtensionIdLength)) ==
+          extension.id.AsString()) {
+        keys.push_back(forcelist_it.Name());
+      }
+    }
+    base::win::RegKey key;
+    key.Open(extension_forcelist_keys[i].hkey, extension_forcelist_keys[i].path,
+             access_mask | KEY_WRITE);
+    for (base::string16& key_name : keys) {
+      LONG result = key.DeleteValue(key_name.c_str());
+      if (result != ERROR_SUCCESS) {
+        LOG(WARNING) << "Could not delete value at key " << key_name
+                     << ", error code: " << result;
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 void GetExtensionSettingsPoliciesFromParsedJson(
     const RegistryKey& registry_key,
     std::vector<ExtensionPolicyRegistryEntry>* policies,
     scoped_refptr<ParseTasksRemainingCounter> counter,
+    ContentType type,
     base::Optional<base::Value> json,
     const base::Optional<std::string>& error) {
   base::ScopedClosureRunner closure(
@@ -140,6 +164,8 @@ void GetExtensionSettingsPoliciesFromParsedJson(
     return;
   }
 
+  scoped_refptr<RefValue> saved_json =
+      base::WrapRefCounted(new RefValue(json->Clone()));
   for (const auto& entry : *extension_settings) {
     const base::string16& extension_id = base::UTF8ToUTF16(entry.first);
     const std::unique_ptr<base::Value>& settings_value = entry.second;
@@ -150,9 +176,9 @@ void GetExtensionSettingsPoliciesFromParsedJson(
       if (installation_mode != nullptr &&
           installation_mode->GetString() ==
               kExtensionSettingsForceInstalledValue) {
-        policies->emplace_back(extension_id, registry_key.hkey,
-                               registry_key.path,
-                               kExtensionSettingsRegistryEntryName);
+        policies->emplace_back(
+            extension_id, registry_key.hkey, registry_key.path,
+            kExtensionSettingsRegistryEntryName, type, saved_json);
       }
     }
   }
@@ -168,7 +194,7 @@ void GetExtensionSettingsPoliciesForAccessMask(
                    extension_settings_keys[i].path, access_mask);
     base::string16 extension_settings;
     RegistryError error;
-    uint32_t type;
+    ContentType type;
     ReadRegistryValue(key, kExtensionSettingsRegistryEntryName,
                       &extension_settings, &type, &error);
 
@@ -185,7 +211,7 @@ void GetExtensionSettingsPoliciesForAccessMask(
     json_parser->Parse(
         base::UTF16ToUTF8(extension_settings),
         base::BindOnce(&GetExtensionSettingsPoliciesFromParsedJson,
-                       extension_settings_keys[i], policies, counter));
+                       extension_settings_keys[i], policies, counter, type));
   }
 }
 
@@ -208,10 +234,13 @@ void GetDefaultExtensionsFromParsedJson(
     return;
   }
 
+  scoped_refptr<RefValue> saved_json =
+      base::WrapRefCounted(new RefValue(json->Clone()));
   for (const auto& entry : *default_extensions) {
     base::string16 extension_id = base::UTF8ToUTF16(entry.first);
-    if (!base::ContainsValue(default_extension_whitelist, extension_id))
-      policies->emplace_back(extension_id, extensions_file);
+    if (!base::ContainsValue(default_extension_whitelist, extension_id)) {
+      policies->emplace_back(extension_id, extensions_file, saved_json);
+    }
   }
 }
 
@@ -241,9 +270,11 @@ void GetMasterPreferencesExtensionsFromParsedJson(
 
   base::DictionaryValue* extension_settings_dictionary;
   extension_settings->GetAsDictionary(&extension_settings_dictionary);
+  scoped_refptr<RefValue> saved_json =
+      base::WrapRefCounted(new RefValue(json->Clone()));
   for (const auto& entry : *extension_settings_dictionary) {
     base::string16 extension_id = base::UTF8ToUTF16(entry.first);
-    policies->emplace_back(extension_id, extensions_file);
+    policies->emplace_back(extension_id, extensions_file, saved_json);
   }
 }
 
@@ -253,20 +284,32 @@ ExtensionPolicyRegistryEntry::ExtensionPolicyRegistryEntry(
     const base::string16& extension_id,
     HKEY hkey,
     const base::string16& path,
-    const base::string16& name)
-    : extension_id(extension_id), hkey(hkey), path(path), name(name) {}
+    const base::string16& name,
+    ContentType content_type,
+    scoped_refptr<RefValue> json)
+    : extension_id(extension_id),
+      hkey(hkey),
+      path(path),
+      name(name),
+      content_type(content_type),
+      json(std::move(json)) {}
 
 ExtensionPolicyRegistryEntry::ExtensionPolicyRegistryEntry(
     ExtensionPolicyRegistryEntry&&) = default;
+
+ExtensionPolicyRegistryEntry::~ExtensionPolicyRegistryEntry() = default;
 
 ExtensionPolicyRegistryEntry& ExtensionPolicyRegistryEntry::operator=(
     ExtensionPolicyRegistryEntry&&) = default;
 
 ExtensionPolicyFile::ExtensionPolicyFile(const base::string16& extension_id,
-                                         const base::FilePath& path)
-    : extension_id(extension_id), path(path) {}
+                                         const base::FilePath& path,
+                                         scoped_refptr<RefValue> json)
+    : extension_id(extension_id), path(path), json(std::move(json)) {}
 
 ExtensionPolicyFile::ExtensionPolicyFile(ExtensionPolicyFile&&) = default;
+
+ExtensionPolicyFile::~ExtensionPolicyFile() = default;
 
 ExtensionPolicyFile& ExtensionPolicyFile::operator=(ExtensionPolicyFile&&) =
     default;
@@ -276,6 +319,19 @@ void GetExtensionForcelistRegistryPolicies(
   GetForcelistPoliciesForAccessMask(KEY_WOW64_32KEY, policies);
   if (IsX64Architecture())
     GetForcelistPoliciesForAccessMask(KEY_WOW64_64KEY, policies);
+}
+
+bool RemoveForcelistPolicyExtension(const ForceInstalledExtension& extension) {
+  DCHECK(extension.install_method == POLICY_EXTENSION_FORCELIST);
+  // No need to check for policy_registry_entry, as it's not used in deletion.
+
+  bool result =
+      RemoveForcelistPolicyExtensionForAccessMask(KEY_WOW64_32KEY, extension);
+  if (IsX64Architecture() && result) {
+    result =
+        RemoveForcelistPolicyExtensionForAccessMask(KEY_WOW64_64KEY, extension);
+  }
+  return result;
 }
 
 void GetNonWhitelistedDefaultExtensions(
@@ -317,6 +373,12 @@ void GetNonWhitelistedDefaultExtensions(
   }
 }
 
+bool RemoveDefaultExtension(const ForceInstalledExtension& extension,
+                            base::Value* json_result) {
+  DCHECK(extension.install_method == DEFAULT_APPS_EXTENSION);
+  return RemoveExtensionFromJson(extension, json_result);
+}
+
 void GetExtensionSettingsForceInstalledExtensions(
     JsonParserAPI* json_parser,
     std::vector<ExtensionPolicyRegistryEntry>* policies,
@@ -333,6 +395,19 @@ void GetExtensionSettingsForceInstalledExtensions(
   }
   // Decrement so that the counter can signal when it hits 0.
   counter->Decrement();
+}
+
+bool RemoveExtensionSettingsPoliciesExtension(
+    const ForceInstalledExtension& extension,
+    base::Value* json_result) {
+  DCHECK(extension.install_method == POLICY_EXTENSION_SETTINGS);
+  DCHECK(extension.policy_registry_entry);
+  DCHECK(json_result);
+
+  if (!extension.policy_registry_entry->json.get()) {
+    return false;
+  }
+  return RemoveKeyFromDictionary(json_result, extension.id.AsString());
 }
 
 void GetMasterPreferencesExtensions(JsonParserAPI* json_parser,
@@ -371,6 +446,17 @@ void GetMasterPreferencesExtensions(JsonParserAPI* json_parser,
         content, base::BindOnce(&GetMasterPreferencesExtensionsFromParsedJson,
                                 path, policies, counter));
   }
+}
+
+bool RemoveMasterPreferencesExtension(const ForceInstalledExtension& extension,
+                                      base::Value* json_result) {
+  DCHECK(extension.install_method == POLICY_MASTER_PREFERENCES);
+  DCHECK(json_result);
+  DCHECK(json_result->is_dict());
+  // The extensions are stored in ["extensions"]["settings"]
+  base::Value* sub_dictionary =
+      json_result->FindPath({"extensions", "settings"});
+  return RemoveExtensionFromJson(extension, sub_dictionary);
 }
 
 }  // namespace chrome_cleaner

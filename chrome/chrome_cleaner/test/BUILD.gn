@@ -71,6 +71,18 @@ source_set("test_executables") {
   ]
 }
 
+source_set("test_extensions") {
+  sources = [
+    "test_extensions.cc",
+    "test_extensions.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//chrome/chrome_cleaner/os:common_os",
+  ]
+}
+
 source_set("test_pup_data") {
   testonly = true
 
