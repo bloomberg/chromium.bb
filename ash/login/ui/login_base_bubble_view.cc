@@ -46,6 +46,10 @@ LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view,
 
 LoginBaseBubbleView::~LoginBaseBubbleView() = default;
 
+LoginButton* LoginBaseBubbleView::GetBubbleOpener() const {
+  return nullptr;
+}
+
 void LoginBaseBubbleView::OnBeforeBubbleWidgetInit(
     views::Widget::InitParams* params,
     views::Widget* widget) const {

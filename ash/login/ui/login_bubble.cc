@@ -185,11 +185,13 @@ class LoginUserMenuView : public LoginBaseBubbleView,
                     user_manager::UserType type,
                     bool is_owner,
                     views::View* anchor_view,
+                    LoginButton* bubble_opener_,
                     bool show_remove_user,
                     base::OnceClosure on_remove_user_warning_shown,
                     base::OnceClosure on_remove_user_requested)
       : LoginBaseBubbleView(anchor_view),
         bubble_(bubble),
+        bubble_opener_(bubble_opener_),
         on_remove_user_warning_shown_(std::move(on_remove_user_warning_shown)),
         on_remove_user_requested_(std::move(on_remove_user_requested)) {
     // This view has content the user can interact with if the remove user
@@ -325,6 +327,9 @@ class LoginUserMenuView : public LoginBaseBubbleView,
 
   ~LoginUserMenuView() override = default;
 
+  // LoginBaseBubbleView:
+  LoginButton* GetBubbleOpener() const override { return bubble_opener_; }
+
   // views::View:
   const char* GetClassName() const override { return "LoginUserMenuView"; }
   gfx::Size CalculatePreferredSize() const override {
@@ -384,6 +389,7 @@ class LoginUserMenuView : public LoginBaseBubbleView,
 
  private:
   LoginBubble* bubble_ = nullptr;
+  LoginButton* bubble_opener_ = nullptr;
   base::OnceClosure on_remove_user_warning_shown_;
   base::OnceClosure on_remove_user_requested_;
   views::View* remove_user_confirm_data_ = nullptr;
@@ -472,12 +478,12 @@ void LoginBubble::ShowUserMenu(const base::string16& username,
     CloseImmediately();
 
   flags_ = kFlagsNone;
-  bubble_opener_ = bubble_opener;
-  bubble_view_ = new LoginUserMenuView(this, username, email, type, is_owner,
-                                       anchor_view, show_remove_user,
-                                       std::move(on_remove_user_warning_shown),
-                                       std::move(on_remove_user_requested));
-  bool had_focus = bubble_opener_->HasFocus();
+  bubble_view_ = new LoginUserMenuView(
+      this, username, email, type, is_owner, anchor_view, bubble_opener,
+      show_remove_user, std::move(on_remove_user_warning_shown),
+      std::move(on_remove_user_requested));
+  bool had_focus = bubble_view_->GetBubbleOpener() &&
+                   bubble_view_->GetBubbleOpener()->HasFocus();
   Show();
   if (had_focus) {
     // Try to focus the bubble view only if the bubble opener was focused.
@@ -495,14 +501,13 @@ void LoginBubble::ShowTooltip(const base::string16& message,
   Show();
 }
 
-void LoginBubble::ShowSelectionMenu(LoginMenuView* menu,
-                                    LoginButton* bubble_opener) {
+void LoginBubble::ShowSelectionMenu(LoginMenuView* menu) {
   if (bubble_view_)
     CloseImmediately();
 
   flags_ = kFlagsNone;
-  bubble_opener_ = bubble_opener;
-  const bool had_focus = bubble_opener_->HasFocus();
+  const bool had_focus =
+      menu->GetBubbleOpener() && menu->GetBubbleOpener()->HasFocus();
 
   // Transfer the ownership of |menu| to bubble widget.
   bubble_view_ = menu;
@@ -566,7 +571,8 @@ void LoginBubble::OnKeyEvent(ui::KeyEvent* event) {
 
   // If current focus view is the button view, don't process the event here,
   // let the button logic handle the event and determine show/hide behavior.
-  if (bubble_opener_ && bubble_opener_->HasFocus())
+  if (bubble_view_->GetBubbleOpener() &&
+      bubble_view_->GetBubbleOpener()->HasFocus())
     return;
 
   // If |bubble_view_| is interactive do not close it.
@@ -632,8 +638,9 @@ void LoginBubble::ProcessPressedEvent(const ui::LocatedEvent* event) {
 
   // If the user clicks on the button view, don't process the event here,
   // let the button logic handle the event and determine show/hide behavior.
-  if (bubble_opener_) {
-    gfx::Rect bubble_opener_bounds = bubble_opener_->GetBoundsInScreen();
+  if (bubble_view_->GetBubbleOpener()) {
+    gfx::Rect bubble_opener_bounds =
+        bubble_view_->GetBubbleOpener()->GetBoundsInScreen();
     if (bubble_opener_bounds.Contains(screen_location))
       return;
   }
@@ -646,10 +653,11 @@ void LoginBubble::ScheduleAnimation(bool visible) {
   if (!bubble_view_ || is_visible_ == visible)
     return;
 
-  if (bubble_opener_) {
-    bubble_opener_->AnimateInkDrop(visible ? views::InkDropState::ACTIVATED
-                                           : views::InkDropState::DEACTIVATED,
-                                   nullptr /*event*/);
+  if (bubble_view_->GetBubbleOpener()) {
+    bubble_view_->GetBubbleOpener()->AnimateInkDrop(
+        visible ? views::InkDropState::ACTIVATED
+                : views::InkDropState::DEACTIVATED,
+        nullptr /*event*/);
   }
 
   ui::Layer* layer = bubble_view_->layer();
@@ -685,7 +693,6 @@ void LoginBubble::Reset(bool widget_already_closing) {
   if (!widget_already_closing)
     bubble_view_->GetWidget()->Close();
   is_visible_ = false;
-  bubble_opener_ = nullptr;
   bubble_view_ = nullptr;
   flags_ = kFlagsNone;
 }

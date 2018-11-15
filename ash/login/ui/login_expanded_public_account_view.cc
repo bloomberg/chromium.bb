@@ -358,10 +358,10 @@ class RightPaneView : public NonAccessibleView,
       if (!language_menu_->IsVisible() && !language_items_.empty()) {
         LoginMenuView* view = new LoginMenuView(
             language_items_, language_selection_ /*anchor_view*/,
+            language_selection_ /*bubble_opener*/,
             base::BindRepeating(&RightPaneView::OnLanguageSelected,
                                 weak_factory_.GetWeakPtr()));
-        language_menu_->ShowSelectionMenu(
-            view, language_selection_ /*bubble_opener*/);
+        language_menu_->ShowSelectionMenu(view);
       } else {
         language_menu_->Close();
       }
@@ -369,10 +369,10 @@ class RightPaneView : public NonAccessibleView,
       if (!keyboard_menu_->IsVisible() && !keyboard_items_.empty()) {
         LoginMenuView* view = new LoginMenuView(
             keyboard_items_, keyboard_selection_ /*anchor_view*/,
+            keyboard_selection_ /*bubble_opener*/,
             base::BindRepeating(&RightPaneView::OnKeyboardSelected,
                                 weak_factory_.GetWeakPtr()));
-        keyboard_menu_->ShowSelectionMenu(
-            view, keyboard_selection_ /*bubble_opener*/);
+        keyboard_menu_->ShowSelectionMenu(view);
       } else {
         keyboard_menu_->Close();
       }
