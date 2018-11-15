@@ -21,13 +21,15 @@
 
 namespace blink {
 
-class ImagePaintTimingDetectorTest : public PageTestBase,
-                                     private ScopedPaintTrackingForTest {
+class ImagePaintTimingDetectorTest
+    : public PageTestBase,
+      private ScopedFirstContentfulPaintPlusPlusForTest {
   using CallbackQueue = std::queue<WebLayerTreeView::ReportTimeCallback>;
 
  public:
   ImagePaintTimingDetectorTest()
-      : ScopedPaintTrackingForTest(true), base_url_("http://www.test.com/"){};
+      : ScopedFirstContentfulPaintPlusPlusForTest(true),
+        base_url_("http://www.test.com/"){};
 
   ~ImagePaintTimingDetectorTest() override {
     Platform::Current()

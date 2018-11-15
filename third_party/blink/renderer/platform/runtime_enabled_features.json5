@@ -488,6 +488,12 @@
       name: "FileSystem",
       status: "stable",
     },
+    // FirstContentfulPaintPlusPlus enables the Largest Text Paint metric, Last
+    // Text Paint metric, Largest Image Paint metric and Last Image Paint
+    // metric. See also: http://bit.ly/fcp_plus_plus
+    {
+      name: "FirstContentfulPaintPlusPlus",
+    },
     {
       name: "FontCacheScaling",
       status: "test",
@@ -905,12 +911,6 @@
     {
       name: "PaintTouchActionRects",
       status: "stable",
-    },
-    // PaintTracking enables the Largest Text Paint metric, Last Text Paint
-    // metric, Largest Image Paint metric and Last Image Paint metric.
-    // See also: https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit
-    {
-      name: "PaintTracking",
     },
     {
       name: "PaintUnderInvalidationChecking",

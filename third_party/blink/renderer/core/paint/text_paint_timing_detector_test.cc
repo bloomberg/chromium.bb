@@ -6,15 +6,17 @@
 #include "third_party/blink/renderer/core/paint/paint_tracker.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-class TextPaintTimingDetectorTest : public RenderingTest {
+class TextPaintTimingDetectorTest
+    : public RenderingTest,
+      private ScopedFirstContentfulPaintPlusPlusForTest {
  public:
-  void SetUp() override {
-    RenderingTest::SetUp();
-    RuntimeEnabledFeatures::SetPaintTrackingEnabled(true);
-  }
+  TextPaintTimingDetectorTest()
+      : ScopedFirstContentfulPaintPlusPlusForTest(true) {}
+  void SetUp() override { RenderingTest::SetUp(); }
 
  protected:
   LocalFrameView& GetFrameView() { return *GetFrame().View(); }
