@@ -594,7 +594,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                         recordClientConnectionStatus();
                         finishAndClose(false);
                     }
-                }, null);
+                });
 
         mBrowserSessionContentHandler = new BrowserSessionContentHandler() {
             @Override
@@ -1485,7 +1485,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             // The media viewer has no default menu items, so if there are also no custom items, we
             // should hide the menu button altogether.
             if (mIntentDataProvider.getMenuTitles().isEmpty()) {
-                getToolbarManager().getToolbarLayout().disableMenuButton();
+                getToolbarManager().getToolbar().disableMenuButton();
             }
         }
     }

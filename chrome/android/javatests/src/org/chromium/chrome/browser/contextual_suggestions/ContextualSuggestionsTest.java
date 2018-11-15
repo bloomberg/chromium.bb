@@ -687,6 +687,6 @@ public class ContextualSuggestionsTest {
     }
 
     private ToolbarPhone getToolbarPhone(ChromeActivity activity) {
-        return (ToolbarPhone) activity.getToolbarManager().getToolbarLayout();
+        return (ToolbarPhone) activity.getToolbarManager().getToolbarLayoutForTesting();
     }
 }

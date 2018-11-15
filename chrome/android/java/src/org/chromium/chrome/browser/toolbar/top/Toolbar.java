@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.toolbar.top;
 
 import android.graphics.Rect;
 import android.view.View;
+import android.widget.ProgressBar;
 
-import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 
 /**
- * An interface for outside packages to interact with ToolbarLayout. Other than for testing purposes
- * this interface should be used rather than {@link ToolbarLayout} and extending classes.
+ * An interface for outside packages to interact with the top toolbar. Other than for testing
+ * purposes this interface should be used rather than {@link TopToolbarCoordinator} or
+ * {@link ToolbarLayout} and extending classes.
  */
 public interface Toolbar {
     /**
@@ -63,13 +65,6 @@ public interface Toolbar {
     boolean setForceTextureCapture(boolean forceTextureCapture);
 
     /**
-     * Sets the {@link LayoutUpdateHost} for use in requesting an update when the toolbar texture
-     * needs to be recaptured.
-     * @param layoutUpdateHost The {@link LayoutUpdateHost} for requesting updates.
-     */
-    void setLayoutUpdateHost(LayoutUpdateHost layoutUpdateHost);
-
-    /**
      * Sets whether or not the menu button should be highlighted.
      * @param highlight Whether or not the menu button should be highlighted.
      */
@@ -98,8 +93,25 @@ public interface Toolbar {
     void removeAppMenuUpdateBadge(boolean animate);
 
     /**
-     * Returns the height of the tab strip, iff the toolbar has one.
+     * Returns the height of the tab strip, iff the toolbar has one. Returns 0 for toolbars that do
+     * not have a tabstrip.
      * @return height of the tab strip in px.
      */
     int getTabStripHeight();
+
+    /**
+     * Disable the menu button. This removes the view from the hierarchy and nulls the related
+     * instance vars.
+     */
+    void disableMenuButton();
+
+    /**
+     * @return The {@link ProgressBar} this layout uses.
+     */
+    ToolbarProgressBar getProgressBar();
+
+    /**
+     * @return The primary color to use for the background drawable.
+     */
+    int getPrimaryColor();
 }

@@ -311,7 +311,9 @@ public class NavigationPopupTest {
         return ThreadUtils.runOnUiThreadBlocking(() -> {
             NavigationPopup popup = new NavigationPopup(mProfile, mActivityTestRule.getActivity(),
                     controller, NavigationPopup.Type.TABLET_FORWARD);
-            popup.show(mActivityTestRule.getActivity().getToolbarManager().getToolbarLayout());
+            popup.show(mActivityTestRule.getActivity()
+                               .getToolbarManager()
+                               .getToolbarLayoutForTesting());
             return popup.getPopupForTesting();
         });
     }

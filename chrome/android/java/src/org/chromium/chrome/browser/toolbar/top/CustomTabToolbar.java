@@ -185,8 +185,8 @@ public class CustomTabToolbar
     }
 
     @Override
-    public void initialize(ToolbarDataProvider toolbarDataProvider,
-            ToolbarTabController tabController, AppMenuButtonHelper appMenuButtonHelper) {
+    void initialize(ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController,
+            AppMenuButtonHelper appMenuButtonHelper) {
         super.initialize(toolbarDataProvider, tabController, appMenuButtonHelper);
         updateVisualsForState();
     }
@@ -205,19 +205,18 @@ public class CustomTabToolbar
     }
 
     @Override
-    public void setCloseButtonImageResource(Drawable drawable) {
+    void setCloseButtonImageResource(Drawable drawable) {
         mCloseButton.setVisibility(drawable != null ? View.VISIBLE : View.GONE);
         mCloseButton.setImageDrawable(drawable);
     }
 
     @Override
-    public void setCustomTabCloseClickHandler(OnClickListener listener) {
+    void setCustomTabCloseClickHandler(OnClickListener listener) {
         mCloseButton.setOnClickListener(listener);
     }
 
     @Override
-    public void addCustomActionButton(
-            Drawable drawable, String description, OnClickListener listener) {
+    void addCustomActionButton(Drawable drawable, String description, OnClickListener listener) {
         ImageButton button = (ImageButton) LayoutInflater.from(getContext())
                                      .inflate(R.layout.custom_tabs_toolbar_button, null);
         button.setOnLongClickListener(this);
@@ -231,7 +230,7 @@ public class CustomTabToolbar
     }
 
     @Override
-    public void updateCustomActionButton(int index, Drawable drawable, String description) {
+    void updateCustomActionButton(int index, Drawable drawable, String description) {
         ImageButton button = (ImageButton) mCustomActionButtons.getChildAt(
                 mCustomActionButtons.getChildCount() - 1 - index);
         assert button != null;
@@ -270,7 +269,7 @@ public class CustomTabToolbar
     }
 
     @Override
-    public int getTabStripHeight() {
+    int getTabStripHeight() {
         return 0;
     }
 
@@ -341,7 +340,7 @@ public class CustomTabToolbar
     }
 
     @Override
-    public String getContentPublisher() {
+    String getContentPublisher() {
         Tab tab = getToolbarDataProvider().getTab();
         if (tab == null) return null;
 
@@ -376,7 +375,7 @@ public class CustomTabToolbar
     }
 
     @Override
-    public void onNavigatedToDifferentPage() {
+    void onNavigatedToDifferentPage() {
         super.onNavigatedToDifferentPage();
         setTitleToPageTitle();
         if (mState == STATE_TITLE_ONLY) {
@@ -567,7 +566,7 @@ public class CustomTabToolbar
      * for the current tab changing.
      */
     @Override
-    public void onPrimaryColorChanged(boolean shouldAnimate) {
+    void onPrimaryColorChanged(boolean shouldAnimate) {
         if (mBrandColorTransitionActive) mBrandColorTransitionAnimation.cancel();
 
         final ColorDrawable background = getBackground();
@@ -708,7 +707,7 @@ public class CustomTabToolbar
     }
 
     @Override
-    public boolean useLightDrawables() {
+    boolean useLightDrawables() {
         return !mUseDarkColors;
     }
 
@@ -784,27 +783,27 @@ public class CustomTabToolbar
     public void setAutocompleteProfile(Profile profile) {}
 
     @Override
-    public void showAppMenuUpdateBadge() {}
+    void showAppMenuUpdateBadge() {}
 
     @Override
-    public boolean isShowingAppMenuUpdateBadge() {
+    boolean isShowingAppMenuUpdateBadge() {
         return false;
     }
 
     @Override
-    public void removeAppMenuUpdateBadge(boolean animate) {}
+    void removeAppMenuUpdateBadge(boolean animate) {}
 
     @Override
-    public void setAppMenuUpdateBadgeToVisible(boolean animate) {}
+    void setAppMenuUpdateBadgeToVisible(boolean animate) {}
 
     @Override
-    public View getMenuButtonWrapper() {
+    View getMenuButtonWrapper() {
         // This class has no menu button wrapper, so return the menu button instead.
         return getMenuButton();
     }
 
     @Override
-    public void disableMenuButton() {
+    void disableMenuButton() {
         super.disableMenuButton();
         // In addition to removing the menu button, we also need to remove the margin on the custom
         // action button.
@@ -818,10 +817,10 @@ public class CustomTabToolbar
 
     // Temporary fix to override ToolbarLayout's highlight-related methods
     @Override
-    public void setMenuButtonHighlight(boolean highlight) {}
+    void setMenuButtonHighlight(boolean highlight) {}
 
     @Override
-    public void setMenuButtonHighlightDrawable(boolean highlighting) {}
+    void setMenuButtonHighlightDrawable(boolean highlighting) {}
 
     @Override
     public int getUrlContainerMarginEnd() {
