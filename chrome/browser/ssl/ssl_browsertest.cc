@@ -1993,33 +1993,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1IsDefaultDisabled) {
       AuthState::SHOWING_INTERSTITIAL);
 }
 
-// Enables support for SHA-1 certificates from locally installed CAs, then
-// attempts to navigate to such a site. No interstitial should be presented.
-IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1PrefsCanEnable) {
-  EXPECT_FALSE(last_ssl_config_.sha1_local_anchors_enabled);
-  EXPECT_FALSE(CreateDefaultNetworkContextParams()
-                   ->initial_ssl_config->sha1_local_anchors_enabled);
-
-  // Enable, and make sure the default network context params reflect the
-  // change.
-  base::RunLoop run_loop;
-  set_ssl_config_updated_callback(run_loop.QuitClosure());
-  ASSERT_NO_FATAL_FAILURE(EnablePolicy(g_browser_process->local_state(),
-                                       policy::key::kEnableSha1ForLocalAnchors,
-                                       prefs::kCertEnableSha1LocalAnchors));
-  run_loop.Run();
-  EXPECT_TRUE(last_ssl_config_.sha1_local_anchors_enabled);
-  EXPECT_TRUE(CreateDefaultNetworkContextParams()
-                  ->initial_ssl_config->sha1_local_anchors_enabled);
-
-  ASSERT_TRUE(https_server_sha1_.Start());
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_sha1_.GetURL("/ssl/google.html"));
-
-  CheckUnauthenticatedState(
-      browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
-}
-
 // By default, trust in Symantec's Legacy PKI should be disabled. Unfortunately,
 // there is currently no way to simulate navigation to a page that will
 // meaningfully test that Symantec enforcement is actually applied to the

@@ -1658,11 +1658,6 @@ const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
 const char kCertRevocationCheckingRequiredLocalAnchors[] =
     "ssl.rev_checking.required_for_local_anchors";
 
-// Boolean that specifies whether to allow the SHA-1 digest algorithm in
-// certificate signatures for certificate paths that end in a locally-trusted
-// (as opposed to publicly trusted) trust anchor.
-const char kCertEnableSha1LocalAnchors[] = "ssl.sha1_enabled_for_local_anchors";
-
 // Boolean that specifies whether to allow certificates from the Legacy
 // Symantec Infrastructure, disabling the mitigations documented in
 // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html

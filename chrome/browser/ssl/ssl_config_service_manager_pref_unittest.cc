@@ -353,44 +353,6 @@ TEST_F(SSLConfigServiceManagerPrefTest, TLS13VariantOverrideEnable) {
             initial_config_->tls13_variant);
 }
 
-// Tests that SHA-1 signatures for local trust anchors can be enabled.
-TEST_F(SSLConfigServiceManagerPrefTest, SHA1ForLocalAnchors) {
-  scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());
-
-  TestingPrefServiceSimple local_state;
-  SSLConfigServiceManager::RegisterPrefs(local_state.registry());
-
-  std::unique_ptr<SSLConfigServiceManager> config_manager =
-      SetUpConfigServiceManager(&local_state);
-
-  // By default, SHA-1 local trust anchors should not be enabled when not
-  // not using any pref service.
-  EXPECT_FALSE(net::CertVerifier::Config().enable_sha1_local_anchors);
-  EXPECT_FALSE(network::mojom::SSLConfig::New()->sha1_local_anchors_enabled);
-
-  // Using a pref service without any preference set should result in
-  // SHA-1 local trust anchors being disabled.
-  EXPECT_FALSE(initial_config_->sha1_local_anchors_enabled);
-
-  // Enabling the local preference should result in SHA-1 local trust anchors
-  // being enabled.
-  local_state.SetUserPref(prefs::kCertEnableSha1LocalAnchors,
-                          std::make_unique<base::Value>(true));
-  // Wait for the SSLConfigServiceManagerPref to be notified of the preferences
-  // being changed, and for it to notify the test fixture of the change.
-  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
-  EXPECT_TRUE(observed_configs_[0]->sha1_local_anchors_enabled);
-
-  // Disabling the local preference should result in SHA-1 local trust
-  // anchors being disabled.
-  local_state.SetUserPref(prefs::kCertEnableSha1LocalAnchors,
-                          std::make_unique<base::Value>(false));
-  // Wait for the SSLConfigServiceManagerPref to be notified of the preferences
-  // being changed, and for it to notify the test fixture of the change.
-  ASSERT_NO_FATAL_FAILURE(WaitForUpdate());
-  EXPECT_FALSE(observed_configs_[1]->sha1_local_anchors_enabled);
-}
-
 // Tests that Symantec's legacy infrastructure can be enabled.
 TEST_F(SSLConfigServiceManagerPrefTest, SymantecLegacyInfrastructure) {
   scoped_refptr<TestingPrefStore> local_state_store(new TestingPrefStore());

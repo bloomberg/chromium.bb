@@ -6000,7 +6000,7 @@
       'name': 'EnableSha1ForLocalAnchors',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:54-', 'chrome_os:54-', 'android:54-'],
+      'supported_on': ['chrome.*:54-71', 'chrome_os:54-71', 'android:54-71'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
