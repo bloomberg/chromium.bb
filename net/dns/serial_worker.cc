@@ -7,11 +7,16 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace net {
 
-SerialWorker::SerialWorker() : state_(IDLE), weak_factory_(this) {}
+SerialWorker::SerialWorker()
+    : base::RefCountedDeleteOnSequence<SerialWorker>(
+          base::SequencedTaskRunnerHandle::Get()),
+      state_(IDLE),
+      weak_factory_(this) {}
 
 SerialWorker::~SerialWorker() = default;
 
