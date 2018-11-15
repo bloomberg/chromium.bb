@@ -15,6 +15,8 @@ class HTMLPortalElement;
 
 class DocumentPortals : public GarbageCollected<DocumentPortals>,
                         public Supplement<Document> {
+  USING_GARBAGE_COLLECTED_MIXIN(DocumentPortals);
+
  public:
   static const char kSupplementName[];
   static DocumentPortals& From(Document&);
