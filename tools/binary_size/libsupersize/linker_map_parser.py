@@ -419,6 +419,10 @@ class MapFileParserLld(object):
             sym_maker.cur_sym.object_path = cur_obj
 
         elif indent_size == 16:
+          # Ignore anything with '.L_MergedGlobals' prefix. This seems to only
+          # happen for ARM (32-bit) builds.
+          if tok.startswith('.L_MergedGlobals'):
+            continue
           # If multiple entries exist, take the first on that reports a size.
           # Zero-length symbols look like "$t.4", "$d.5".
           if size and not sym_maker.cur_sym.full_name:
