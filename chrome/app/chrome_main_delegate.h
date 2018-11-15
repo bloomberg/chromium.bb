@@ -61,7 +61,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
           delegates) override;
   void ZygoteForked() override;
 #endif
-  bool ShouldEnableProfilerRecording() override;
   service_manager::ProcessType OverrideProcessType() override;
   void PreCreateMainMessageLoop() override;
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)

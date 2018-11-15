@@ -1118,20 +1118,6 @@ ChromeMainDelegate::CreateContentUtilityClient() {
 #endif
 }
 
-bool ChromeMainDelegate::ShouldEnableProfilerRecording() {
-  switch (chrome::GetChannel()) {
-    case version_info::Channel::UNKNOWN:
-    case version_info::Channel::CANARY:
-      return true;
-    case version_info::Channel::DEV:
-    case version_info::Channel::BETA:
-    case version_info::Channel::STABLE:
-    default:
-      // Don't enable instrumentation.
-      return false;
-  }
-}
-
 service_manager::ProcessType ChromeMainDelegate::OverrideProcessType() {
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
   if (command_line.GetSwitchValueASCII(switches::kProcessType) ==

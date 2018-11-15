@@ -55,10 +55,6 @@ int ContentMainDelegate::TerminateForFatalInitializationError() {
   return 0;
 }
 
-bool ContentMainDelegate::ShouldEnableProfilerRecording() {
-  return false;
-}
-
 service_manager::ProcessType ContentMainDelegate::OverrideProcessType() {
   return service_manager::ProcessType::kDefault;
 }
