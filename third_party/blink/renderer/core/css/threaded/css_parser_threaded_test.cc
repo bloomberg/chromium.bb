@@ -6,9 +6,9 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/threaded/multi_threaded_test_util.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 
 namespace blink {
 

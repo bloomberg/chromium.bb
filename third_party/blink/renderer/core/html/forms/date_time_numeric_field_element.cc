@@ -25,7 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/date_time_numeric_field_element.h"
 
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
