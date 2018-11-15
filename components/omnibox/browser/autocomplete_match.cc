@@ -203,12 +203,10 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 }
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
-// static
-const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
-                                                           bool is_bookmark) {
+const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
+    bool is_bookmark) const {
   if (is_bookmark)
     return omnibox::kBookmarkIcon;
-
   switch (type) {
     case Type::URL_WHAT_YOU_TYPED:
     case Type::HISTORY_URL:
@@ -222,7 +220,6 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
     case Type::PHYSICAL_WEB_DEPRECATED:
     case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case Type::TAB_SEARCH_DEPRECATED:
-    case Type::DOCUMENT_SUGGESTION:
       return omnibox::kPageIcon;
 
     case Type::SEARCH_WHAT_YOU_TYPED:
@@ -245,22 +242,6 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
     case Type::SEARCH_SUGGEST_TAIL:
       return omnibox::kBlankIcon;
 
-    case Type::PEDAL:
-      return omnibox::kPedalIcon;
-
-    case Type::NUM_TYPES:
-      break;
-  }
-  NOTREACHED();
-  static const gfx::VectorIcon dummy = {};
-  return dummy;
-}
-
-const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
-    bool is_bookmark) const {
-  if (is_bookmark)
-    return omnibox::kBookmarkIcon;
-  switch (type) {
     case Type::DOCUMENT_SUGGESTION:
       switch (document_type) {
         case DocumentType::DRIVE_DOCS:
@@ -276,10 +257,14 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
         default:
           return omnibox::kPageIcon;
       }
+
     case Type::PEDAL:
       return (pedal ? pedal->GetVectorIcon() : omnibox::kPedalIcon);
-    default:
-      return TypeToVectorIcon(type, is_bookmark);
+
+    case Type::NUM_TYPES:
+      NOTREACHED();
+      static const gfx::VectorIcon dummy = {};
+      return dummy;
   }
 }
 #endif
