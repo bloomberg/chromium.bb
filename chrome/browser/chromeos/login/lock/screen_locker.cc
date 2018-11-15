@@ -582,6 +582,14 @@ void ScreenLocker::SaveSyncPasswordHash(const UserContext& user_context) {
   if (profile)
     login::SaveSyncPasswordDataToProfile(user_context, profile);
 }
+
+void ScreenLocker::SetAuthenticatorsForTesting(
+    scoped_refptr<Authenticator> authenticator,
+    scoped_refptr<ExtendedAuthenticator> extended_authenticator) {
+  authenticator_ = std::move(authenticator);
+  extended_authenticator_ = std::move(extended_authenticator);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ScreenLocker, private:
 
@@ -611,10 +619,6 @@ ScreenLocker::~ScreenLocker() {
   if (saved_ime_state_.get()) {
     input_method::InputMethodManager::Get()->SetState(saved_ime_state_);
   }
-}
-
-void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
-  authenticator_ = authenticator;
 }
 
 void ScreenLocker::ScreenLockReady() {

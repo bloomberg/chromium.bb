@@ -38,12 +38,6 @@ class ScreenlockIconProvider;
 class WebUIScreenLocker;
 class ViewsScreenLocker;
 
-namespace test {
-class ScreenLockerTester;
-class ScreenLockerViewsTester;
-class WebUIScreenLockerTester;
-}  // namespace test
-
 // ScreenLocker creates a WebUIScreenLocker which will display the lock UI.
 // As well, it takes care of authenticating the user and managing a global
 // instance of itself which will be deleted when the system is unlocked.
@@ -166,18 +160,17 @@ class ScreenLocker : public AuthStatusConsumer,
   // Hide the screen locker.
   static void Hide();
 
-  // Returns the tester
-  static test::ScreenLockerTester* GetTester();
-
   // Saves sync password hash and salt to user profile prefs based on
   // |user_context|.
   void SaveSyncPasswordHash(const UserContext& user_context);
 
+  // Change the authenticators; should only be used by tests.
+  void SetAuthenticatorsForTesting(
+      scoped_refptr<Authenticator> authenticator,
+      scoped_refptr<ExtendedAuthenticator> extended_authenticator);
+
  private:
   friend class base::DeleteHelper<ScreenLocker>;
-  friend class test::ScreenLockerTester;
-  friend class test::ScreenLockerViewsTester;
-  friend class test::WebUIScreenLockerTester;
   friend class WebUIScreenLocker;
   friend class ViewsScreenLocker;
 
@@ -200,9 +193,6 @@ class ScreenLocker : public AuthStatusConsumer,
                         int percent_complete) override {}
 
   void OnFingerprintAuthFailure(const user_manager::User& user);
-
-  // Sets the authenticator.
-  void SetAuthenticator(Authenticator* authenticator);
 
   // Called when the screen lock is ready.
   void ScreenLockReady();

@@ -43,6 +43,7 @@ using testing::_;
 using testing::AnyNumber;
 using testing::Return;
 
+namespace chromeos {
 namespace {
 
 // An object that wait for lock state and fullscreen state.
@@ -68,8 +69,7 @@ class Waiter : public content::NotificationObserver {
 
   // Wait until the two conditions are met.
   void Wait(bool locker_state, bool fullscreen) {
-    std::unique_ptr<chromeos::test::ScreenLockerTester> tester(
-        chromeos::ScreenLocker::GetTester());
+    std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
     while (tester->IsLocked() != locker_state ||
            browser_->window()->IsFullscreen() != fullscreen) {
       base::RunLoop run_loop;
@@ -91,8 +91,6 @@ class Waiter : public content::NotificationObserver {
 
 }  // namespace
 
-namespace chromeos {
-
 class ScreenLockerTest : public InProcessBrowserTest {
  public:
   ScreenLockerTest() : fake_session_manager_client_(NULL) {}
@@ -100,7 +98,7 @@ class ScreenLockerTest : public InProcessBrowserTest {
  protected:
   FakeSessionManagerClient* fake_session_manager_client_;
 
-  void LockScreen(test::ScreenLockerTester* tester) {
+  void LockScreen(ScreenLockerTester* tester) {
     ScreenLocker::Show();
     content::WindowedNotificationObserver lock_state_observer(
         chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
@@ -156,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestBasic) {
   if (features::IsUsingWindowService())
     return;
   ScreenLocker::Show();
-  std::unique_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
+  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
   content::WindowedNotificationObserver lock_state_observer(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::NotificationService::AllSources());
@@ -211,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, MAYBE_TestFullscreenExit) {
   // does not have all the pixels (e.g. the shelf is auto hidden instead of
   // hidden), locking the screen should not exit fullscreen. The shelf is
   // auto hidden when in immersive fullscreen.
-  std::unique_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
+  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
   BrowserWindow* browser_window = browser()->window();
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(browser_window->GetNativeWindow());
@@ -300,7 +298,7 @@ void UnlockKeyPress(views::Widget* widget) {
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
-  std::unique_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
+  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
   LockScreen(tester.get());
 
   // Calling Show again simply send LockCompleted signal.

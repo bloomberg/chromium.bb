@@ -5,18 +5,20 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_SCREEN_LOCKER_TESTER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOCK_SCREEN_LOCKER_TESTER_H_
 
+#include <memory>
 #include <string>
 
 namespace chromeos {
 
 class UserContext;
 
-namespace test {
-
 // ScreenLockerTester provides access to the private state/function
 // of ScreenLocker class. Used to implement unit tests.
 class ScreenLockerTester {
  public:
+  // Create a new tester.
+  static std::unique_ptr<ScreenLockerTester> Create();
+
   ScreenLockerTester();
   virtual ~ScreenLockerTester();
 
@@ -26,17 +28,9 @@ class ScreenLockerTester {
   // Injects StubAuthenticator that uses the credentials in |user_context|.
   virtual void InjectStubUserContext(const UserContext& user_context);
 
-  // Sets the password text.
-  virtual void SetPassword(const std::string& password) = 0;
-
-  // Gets the password text.
-  virtual std::string GetPassword() = 0;
-
-  // Emulates entring a password.
+  // Enters and submits the given password.
   virtual void EnterPassword(const std::string& password) = 0;
 };
-
-}  // namespace test
 
 }  // namespace chromeos
 
