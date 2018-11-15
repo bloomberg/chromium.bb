@@ -639,7 +639,7 @@ PerformanceMark* Performance::mark(ScriptState* script_state,
                                    const AtomicString& mark_name,
                                    ExceptionState& exception_state) {
   DoubleOrPerformanceMarkOptions startOrOptions;
-  return this->mark(script_state, mark_name, startOrOptions, exception_state);
+  return mark(script_state, mark_name, startOrOptions, exception_state);
 }
 
 PerformanceMark* Performance::mark(
@@ -676,7 +676,9 @@ PerformanceMark* Performance::mark(
       script_state, mark_name, start, detail, exception_state);
   if (performance_mark)
     NotifyObserversOfEntry(*performance_mark);
-  return performance_mark;
+  if (RuntimeEnabledFeatures::CustomUserTimingEnabled())
+    return performance_mark;
+  return nullptr;
 }
 
 void Performance::clearMarks(const AtomicString& mark_name) {
@@ -690,11 +692,10 @@ PerformanceMeasure* Performance::measure(ScriptState* script_state,
                                          ExceptionState& exception_state) {
   LogMeasureStartToUma(MeasureParameterType::kUnprovided);
   LogMeasureEndToUma(MeasureParameterType::kUnprovided);
-  return measureInternal(script_state, measure_name,
-                         NativeValueTraits<StringOrDouble>::NullValue(),
-                         NativeValueTraits<StringOrDouble>::NullValue(),
-                         ScriptValue::CreateNull(script_state),
-                         exception_state);
+  return MeasureInternal(
+      script_state, measure_name,
+      NativeValueTraits<StringOrDoubleOrPerformanceMeasureOptions>::NullValue(),
+      NativeValueTraits<StringOrDouble>::NullValue(), exception_state);
 }
 
 PerformanceMeasure* Performance::measure(
@@ -704,7 +705,7 @@ PerformanceMeasure* Performance::measure(
     ExceptionState& exception_state) {
   LogMeasureStartToUma(StartOrOptionsToParameterType(start_or_options));
   LogMeasureEndToUma(MeasureParameterType::kUnprovided);
-  return measureInternal(script_state, measure_name, start_or_options,
+  return MeasureInternal(script_state, measure_name, start_or_options,
                          NativeValueTraits<StringOrDouble>::NullValue(),
                          exception_state);
 }
@@ -717,7 +718,7 @@ PerformanceMeasure* Performance::measure(
     ExceptionState& exception_state) {
   LogMeasureStartToUma(StartOrOptionsToParameterType(start_or_options));
   LogMeasureEndToUma(EndToParameterType(end));
-  return measureInternal(script_state, measure_name, start_or_options, end,
+  return MeasureInternal(script_state, measure_name, start_or_options, end,
                          exception_state);
 }
 
@@ -738,7 +739,7 @@ PerformanceMeasure* Performance::measure(
 // When |end| is null in C++, we cannot tell whether |end| is null, undefined or
 // empty in JS from StringOrDouble, so we need |end_is_empty| to help
 // distinguish between (null or undefined) and empty.
-PerformanceMeasure* Performance::measureInternal(
+PerformanceMeasure* Performance::MeasureInternal(
     ScriptState* script_state,
     const AtomicString& measure_name,
     const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
@@ -755,9 +756,9 @@ PerformanceMeasure* Performance::measureInternal(
       }
       const PerformanceMeasureOptions* options =
           start_or_options.GetAsPerformanceMeasureOptions();
-      return measureInternal(script_state, measure_name, options->startTime(),
-                             options->endTime(), options->detail(),
-                             exception_state);
+      return MeasureWithDetail(script_state, measure_name, options->startTime(),
+                               options->endTime(), options->detail(),
+                               exception_state);
     } else {
       StringOrDouble converted_start;
       if (start_or_options.IsDouble()) {
@@ -770,11 +771,11 @@ PerformanceMeasure* Performance::measureInternal(
         DCHECK(start_or_options.IsNull());
         converted_start = NativeValueTraits<StringOrDouble>::NullValue();
       }
-      // We let |end| behaves the same whether it's empty, undefined or null in
+      // We let |end| behave the same whether it's empty, undefined or null in
       // JS, as long as |end| is null in C++.
-      return measureInternal(script_state, measure_name, converted_start, end,
-                             ScriptValue::CreateNull(script_state),
-                             exception_state);
+      return MeasureWithDetail(script_state, measure_name, converted_start, end,
+                               ScriptValue::CreateNull(script_state),
+                               exception_state);
     }
   } else {
     // For consistency with UserTimingL2: the L2 API took |start| as a string,
@@ -804,14 +805,15 @@ PerformanceMeasure* Performance::measureInternal(
       DCHECK(end.IsNull());
       DCHECK(converted_end.IsNull());
     }
-    measureInternal(script_state, measure_name, converted_start, converted_end,
-                    ScriptValue::CreateNull(script_state), exception_state);
+    MeasureWithDetail(script_state, measure_name, converted_start,
+                      converted_end, ScriptValue::CreateNull(script_state),
+                      exception_state);
     // Return nullptr to distinguish from L3.
     return nullptr;
   }
 }
 
-PerformanceMeasure* Performance::measureInternal(
+PerformanceMeasure* Performance::MeasureWithDetail(
     ScriptState* script_state,
     const AtomicString& measure_name,
     const StringOrDouble& start,
