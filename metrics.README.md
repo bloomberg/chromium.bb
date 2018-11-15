@@ -55,7 +55,8 @@ The metrics we're collecting are:
   - What host are we making the request to?
     Only collected for well known hosts like chromium-review.googlesource.com.
   - What path did we access on the server?
-    We map the path to an enum to make sure we're not collecting PII.
+    We map the path to an enum to make sure we're not collecting personally
+    identifiable information.
     i.e. we report 'changes/' instead of 'changes/12345'
   - What arguments were used on the request?
     We collect only known argument names, but not their values.
