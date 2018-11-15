@@ -25,7 +25,6 @@ analyzer_option_flags = [
     '-fdiagnostics-show-option',
     '-analyzer-checker=cplusplus',
     '-analyzer-opt-analyze-nested-blocks',
-    '-analyzer-eagerly-assume',
     '-analyzer-output=text',
     '-analyzer-config',
     'suppress-c++-stdlib=true',
