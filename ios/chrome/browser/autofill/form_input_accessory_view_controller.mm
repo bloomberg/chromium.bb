@@ -103,6 +103,7 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   view.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(view, constrainingView);
   self.keyboardReplacementView = view;
+  UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, view);
 }
 
 #pragma mark - FormInputAccessoryConsumer
