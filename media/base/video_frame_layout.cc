@@ -105,7 +105,8 @@ base::Optional<VideoFrameLayout> VideoFrameLayout::CreateWithPlanes(
     VideoPixelFormat format,
     const gfx::Size& coded_size,
     std::vector<Plane> planes,
-    std::vector<size_t> buffer_sizes) {
+    std::vector<size_t> buffer_sizes,
+    size_t buffer_addr_align) {
   // NOTE: Even if format is UNKNOWN, it is valid if coded_sizes is not Empty().
   // TODO(crbug.com/896135): Return base::nullopt,
   // if (format != PIXEL_FORMAT_UNKNOWN || !coded_sizes.IsEmpty())
@@ -114,17 +115,19 @@ base::Optional<VideoFrameLayout> VideoFrameLayout::CreateWithPlanes(
   // TODO(crbug.com/896135): Return base::nullopt,
   // if (buffer_sizes.size() > planes.size())
   return VideoFrameLayout(format, coded_size, std::move(planes),
-                          std::move(buffer_sizes));
+                          std::move(buffer_sizes), buffer_addr_align);
 }
 
 VideoFrameLayout::VideoFrameLayout(VideoPixelFormat format,
                                    const gfx::Size& coded_size,
                                    std::vector<Plane> planes,
-                                   std::vector<size_t> buffer_sizes)
+                                   std::vector<size_t> buffer_sizes,
+                                   size_t buffer_addr_align)
     : format_(format),
       coded_size_(coded_size),
       planes_(std::move(planes)),
-      buffer_sizes_(std::move(buffer_sizes)) {}
+      buffer_sizes_(std::move(buffer_sizes)),
+      buffer_addr_align_(buffer_addr_align) {}
 
 VideoFrameLayout::~VideoFrameLayout() = default;
 VideoFrameLayout::VideoFrameLayout(const VideoFrameLayout&) = default;
