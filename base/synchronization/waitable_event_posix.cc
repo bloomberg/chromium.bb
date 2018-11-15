@@ -163,13 +163,16 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
 }
 
 bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
+  // Record the event that this thread is blocking upon (for hang diagnosis) and
+  // consider it blocked for scheduling purposes. Ignore this for non-blocking
+  // WaitableEvents.
+  Optional<debug::ScopedEventWaitActivity> event_activity;
   Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
       scoped_blocking_call;
-  if (waiting_is_blocking_)
+  if (waiting_is_blocking_) {
+    event_activity.emplace(this);
     scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
-
-  // Record the event that this thread is blocking upon (for hang diagnosis).
-  debug::ScopedEventWaitActivity event_activity(this);
+  }
 
   const bool finite_time = !end_time.is_max();
 

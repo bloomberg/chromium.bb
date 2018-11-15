@@ -55,7 +55,7 @@ bool WaitableEvent::IsSignaled() {
 
 void WaitableEvent::Wait() {
   // Record the event that this thread is blocking upon (for hang diagnosis) and
-  // consider blocked for scheduling purposes. Ignore this for non-blocking
+  // consider it blocked for scheduling purposes. Ignore this for non-blocking
   // WaitableEvents.
   Optional<debug::ScopedEventWaitActivity> event_activity;
   Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
@@ -113,7 +113,7 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
     return IsSignaled();
 
   // Record the event that this thread is blocking upon (for hang diagnosis) and
-  // consider blocked for scheduling purposes. Ignore this for non-blocking
+  // consider it blocked for scheduling purposes. Ignore this for non-blocking
   // WaitableEvents.
   Optional<debug::ScopedEventWaitActivity> event_activity;
   Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
@@ -134,7 +134,7 @@ bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
     return IsSignaled();
 
   // Record the event that this thread is blocking upon (for hang diagnosis) and
-  // consider blocked for scheduling purposes. Ignore this for non-blocking
+  // consider it blocked for scheduling purposes. Ignore this for non-blocking
   // WaitableEvents.
   Optional<debug::ScopedEventWaitActivity> event_activity;
   Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
