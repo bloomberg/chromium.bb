@@ -86,7 +86,7 @@ const char kNoCrashUploadSwitch[] = "no-crash-upload";
 const char kNoRecoveryComponentSwitch[] = "no-recovery-component";
 
 // Prevent the logging service from uploading logs and reports.
-// WARNING: this switch is used by internal test systems, be careful when making
+// WARNING: this switch is used by internal test systems. Be careful when making
 // changes.
 const char kNoReportUploadSwitch[] = "no-report-upload";
 
@@ -141,7 +141,7 @@ const char kTestLoggingURLSwitch[] = "test-logging-url";
 
 // Flag set during testing and stored as a crash key, to differentiate from
 // crashes received from actual users.
-// WARNING: this switch is used by internal test systems, be careful when making
+// WARNING: this switch is used by internal test systems. Be careful when making
 // changes.
 const char kTestingSwitch[] = "testing";
 

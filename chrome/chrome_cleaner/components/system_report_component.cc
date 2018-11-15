@@ -27,6 +27,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/process_iterator.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -135,8 +136,6 @@ const RegistryKey extension_policy_keys[] = {
     {HKEY_CURRENT_USER, kChromiumPoliciesWhitelistKeyPath},
     {HKEY_LOCAL_MACHINE, kChromiumPoliciesForcelistKeyPath},
     {HKEY_CURRENT_USER, kChromiumPoliciesForcelistKeyPath}};
-
-const int64_t kParseAttemptTimeoutMilliseconds = 10000;
 
 // Expand an executable path as if the launch process directory was the
 // windows folder. This is used to resolve kernel module path.
