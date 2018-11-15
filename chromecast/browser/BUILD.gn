@@ -537,7 +537,7 @@ if (is_android) {
       "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroid.java",
     ]
 
-    if (is_android_things_non_public) {
+    if (is_android_things_non_public && !build_for_android_things_n) {
       sources += [ "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
     }
 

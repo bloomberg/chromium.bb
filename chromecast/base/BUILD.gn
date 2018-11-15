@@ -199,8 +199,7 @@ cast_source_set("cast_sys_info") {
       "cast_sys_info_android.h",
       "cast_sys_info_android_factory.cc",
     ]
-
-    if (is_android_things) {
+    if (is_android_things && !build_for_android_things_n) {
       sources += [
         "cast_sys_info_android_things.cc",
         "cast_sys_info_android_things.h",

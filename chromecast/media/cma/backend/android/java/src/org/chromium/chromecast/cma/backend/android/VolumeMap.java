@@ -82,7 +82,8 @@ public final class VolumeMap {
     // Returns the current volume in dB for the given stream type and volume index.
     private static float getStreamVolumeDB(int streamType, int idx) {
         float db = 0;
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1
+                || Build.VERSION.SDK_INT == Build.VERSION_CODES.N) {
             // API is hidden, use reflection.
             try {
                 db = (float) getAudioManager()
