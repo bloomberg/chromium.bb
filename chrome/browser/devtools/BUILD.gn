@@ -149,6 +149,7 @@ static_library("devtools") {
       "devtools_browser_context_manager.h",
       "devtools_contents_resizing_strategy.cc",
       "devtools_contents_resizing_strategy.h",
+      "devtools_dock_tile.h",
       "devtools_embedder_message_dispatcher.cc",
       "devtools_embedder_message_dispatcher.h",
       "devtools_eye_dropper.cc",
@@ -185,7 +186,11 @@ static_library("devtools") {
       ]
     }
   }
-
+  if (is_mac) {
+    sources += [ "devtools_dock_tile_mac.mm" ]
+  } else {
+    sources += [ "devtools_dock_tile.cc" ]
+  }
   if (!is_android) {
     deps += [ ":protocol_generated_sources" ]
     sources += [

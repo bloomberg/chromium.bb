@@ -31,6 +31,7 @@ class BrowserHandler : public DomainHandler, public Browser::Backend {
   Response SetWindowBounds(
       int window_id,
       std::unique_ptr<Browser::Bounds> out_bounds) override;
+  Response SetDockTile(Maybe<std::string> label, Maybe<Binary> image) override;
 
  private:
   std::string target_id_;
