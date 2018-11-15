@@ -1066,6 +1066,15 @@
   <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_CROSTINI" desc="Message shown when a user tries to use a crostini app to open a file which cannot be shared with the crostini container (e.g. in Play or USB).  This message will be removed once we support this action.">
     To open files with $1, first copy to Linux files folder.
   </message>
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI_TITLE" desc="Message title shown when a user shares the root of a volume such as Downloads with the crostini container.">
+    Share folder with Linux
+  </message>
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI" desc="Confirmation message shown when a user shares the root of a volume such as Downloads with the crostini container.">
+    Give Linux apps permission to open files in the $1 folder
+  </message>
+  <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_CROSTINI_DRIVE" desc="Confirmation message shown when a user shares the root of a Drive volume (My Drive, Team Drives, Computers) with the crostini container.">
+    Give Linux apps permission to open files in your Google Drive. Changes will sync to your other devices.
+  </message>
 
   <message name="IDS_FILE_BROWSER_FOLDER" desc="Folder entry type">
     Folder

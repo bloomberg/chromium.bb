@@ -9,7 +9,14 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
       '[command="#share-with-linux"][hidden][disabled="disabled"]';
   const menuShareWithLinux = '#file-context-menu:not([hidden]) ' +
       '[command="#share-with-linux"]:not([hidden]):not([disabled])';
+  const shareWithLinux = '#file-context-menu [command="#share-with-linux"]';
+  const menuShareWithLinuxDirTree =
+      '#directory-tree-context-menu:not([hidden]) ' +
+      '[command="#share-with-linux"]:not([hidden]):not([disabled])';
+  const shareWithLinuxDirTree =
+      '#directory-tree-context-menu [command="#share-with-linux"]';
   const photos = '#file-list [file-name="photos"]';
+  const downloadsDirTree = '#directory-tree [volume-type-icon="downloads"]';
   const oldSharePaths = chrome.fileManagerPrivate.sharePathsWithCrostini;
   let sharePathsCalled = false;
   let sharePathsPersist;
@@ -39,10 +46,7 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
       })
       .then(() => {
         // Click on 'Share with Linux'.
-        assertTrue(
-            test.fakeMouseClick(
-                '#file-context-menu [command="#share-with-linux"]'),
-            'Share with Linux');
+        assertTrue(test.fakeMouseClick(shareWithLinux, 'Share with Linux'));
         // Check sharePathsWithCrostini is called.
         return test.repeatUntil(() => {
           return sharePathsCalled || test.pending('wait for sharePathsCalled');
@@ -85,6 +89,25 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
         // Check 'Share with Linux' is shown in menu.
         assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');
         return test.waitForElement(menuShareWithLinux);
+      })
+      .then(() => {
+        // Verify dialog is shown for Downloads root.
+        // Check 'Share with Linux' is shown in menu.
+        assertTrue(
+            test.fakeMouseRightClick(downloadsDirTree),
+            'right-click downloads');
+        return test.waitForElement(menuShareWithLinuxDirTree);
+      })
+      .then(() => {
+        // Click 'Share with Linux', verify dialog.
+        assertTrue(
+            test.fakeMouseClick(shareWithLinuxDirTree, 'Share with Linux'));
+        return test.waitForElement('.cr-dialog-container.shown');
+      })
+      .then(() => {
+        // Click Cancel button to close.
+        assertTrue(test.fakeMouseClick('button.cr-dialog-cancel'));
+        return test.waitForElementLost('.cr-dialog-container');
       })
       .then(() => {
         // Restore fmp.*.
