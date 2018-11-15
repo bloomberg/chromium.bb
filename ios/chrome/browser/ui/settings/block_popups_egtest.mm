@@ -211,7 +211,7 @@ class ScopedBlockPopupsException {
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
                                    @"blockPopupsContentView_switch", YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnLegacySettingsSwitchOn(NO)];
   [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
                                           allowedPattern))]
       assertWithMatcher:grey_notVisible()];
@@ -227,7 +227,7 @@ class ScopedBlockPopupsException {
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
                                    @"blockPopupsContentView_switch", NO)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnLegacySettingsSwitchOn(YES)];
   [[EarlGrey selectElementWithMatcher:grey_text(base::SysUTF8ToNSString(
                                           allowedPattern))]
       assertWithMatcher:grey_sufficientlyVisible()];

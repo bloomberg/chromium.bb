@@ -278,7 +278,7 @@ NSString* GetTextFieldForID(int categoryId) {
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
                                    @"addressItem_switch", YES, YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+      performAction:chrome_test_util::TurnLegacySettingsSwitchOn(NO)];
 
   // Expect Autofill profiles to remain visible.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(kProfileLabel)]
@@ -288,7 +288,7 @@ NSString* GetTextFieldForID(int categoryId) {
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
                                    @"addressItem_switch", NO, YES)]
-      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+      performAction:chrome_test_util::TurnLegacySettingsSwitchOn(YES)];
 
   // Expect Autofill profiles to remain visible.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(kProfileLabel)]

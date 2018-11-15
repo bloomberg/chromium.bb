@@ -59,6 +59,7 @@ using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModule;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModuleForExport;
+using chrome_test_util::TurnLegacySettingsSwitchOn;
 using web::test::ElementSelector;
 
 namespace {
@@ -1276,7 +1277,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
     [GetInteractionForListItem(chrome_test_util::LegacySettingsSwitchCell(
                                    @"savePasswordsItem_switch", expected_state),
                                kGREYDirectionUp)
-        performAction:chrome_test_util::TurnSettingsSwitchOn(!expected_state)];
+        performAction:TurnLegacySettingsSwitchOn(!expected_state)];
     // Check the stored items. Scroll down if needed.
     [GetInteractionForPasswordEntry(@"example.com, concrete username")
         assertWithMatcher:grey_notNil()];
@@ -1303,8 +1304,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
         selectElementWithMatcher:chrome_test_util::LegacySettingsSwitchCell(
                                      @"savePasswordsItem_switch",
                                      expected_initial_state)]
-        performAction:chrome_test_util::TurnSettingsSwitchOn(
-                          !expected_initial_state)];
+        performAction:TurnLegacySettingsSwitchOn(!expected_initial_state)];
     ios::ChromeBrowserState* browserState =
         chrome_test_util::GetOriginalBrowserState();
     const bool expected_final_state = !expected_initial_state;
