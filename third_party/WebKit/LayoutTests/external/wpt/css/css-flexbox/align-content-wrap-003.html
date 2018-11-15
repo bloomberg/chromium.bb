@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html>
+<link rel="help" href="https://drafts.csswg.org/css-flexbox/#propdef-align-content" />
+<title>css-flexbox: Tests align-content with flex-wrap: wrap</title>
 <style>
 .flexbox {
     display: flex;
@@ -64,9 +65,9 @@
     background-color: yellow;
 }
 </style>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 <body onload="checkLayout('.flexbox')">
 <div id=log></div>
 <p>Test to make sure that align-content works properly.</p>
@@ -187,13 +188,13 @@
 
 <!-- 1 line should not crash. -->
 <div data-expected-height="30" class="flexbox horizontal" style="align-content: space-between; height: 30px">
-  <div data-offset-x="0" data-offset-y="0" data-expected-height="30"></div>
+  <div data-offset-x="0" data-offset-y="0" data-expected-height="10"></div>
 </div>
 <div data-expected-height="30" class="flexbox horizontal" style="align-content: space-around; height: 30px">
-  <div data-offset-x="0" data-offset-y="0" data-expected-height="30"></div>
+  <div data-offset-x="0" data-offset-y="10" data-expected-height="10"></div>
 </div>
 <div data-expected-height="30" class="flexbox horizontal" style="align-content: space-evenly; height: 30px">
-  <div data-offset-x="0" data-offset-y="0" data-expected-height="30"></div>
+  <div data-offset-x="0" data-offset-y="10" data-expected-height="10"></div>
 </div>
 <div data-expected-height="30" class="flexbox horizontal" style="align-content: stretch; height: 30px">
   <div data-offset-x="0" data-offset-y="0" data-expected-height="30"></div>
@@ -316,16 +317,14 @@
 
 <!-- 1 line should not crash. -->
 <div data-expected-width="30" class="flexbox vertical-rl" style="align-content: space-between; width: 30px">
-  <div data-offset-x="0" data-offset-y="0" data-expected-width="30"></div>
+  <div data-offset-x="20" data-offset-y="0" data-expected-width="10"></div>
 </div>
 <div data-expected-width="30" class="flexbox vertical-rl" style="align-content: space-around; width: 30px">
-  <div data-offset-x="0" data-offset-y="0" data-expected-width="30"></div>
+  <div data-offset-x="10" data-offset-y="0" data-expected-width="10"></div>
 </div>
 <div data-expected-width="30" class="flexbox vertical-rl" style="align-content: space-evenly; width: 30px">
-  <div data-offset-x="0" data-offset-y="0" data-expected-width="30"></div>
+  <div data-offset-x="10" data-offset-y="0" data-expected-width="10"></div>
 </div>
 <div data-expected-width="30" class="flexbox vertical-rl" style="align-content: stretch; width: 30px">
   <div data-offset-x="0" data-offset-y="0" data-expected-width="30"></div>
 </div>
-</body>
-</html>

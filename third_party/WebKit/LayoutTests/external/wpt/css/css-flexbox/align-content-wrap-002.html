@@ -1,9 +1,6 @@
 <!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/check-layout-th.js"></script>
+<link rel="help" href="https://drafts.csswg.org/css-flexbox/#propdef-align-content" />
+<title>css-flexbox: Tests align-content with flex-wrap: wrap</title>
 <style>
 .flex-horizontal {
     width:600px;
@@ -64,7 +61,9 @@
     background:red;
 }
 </style>
-</head>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/check-layout-th.js"></script>
 <body onload="checkLayout('.flex-horizontal, .flex-vertical');">
 <div id=log></div>
 <p>Test for crbug.com/362848: Flex box word-wrap is not adhering to spec</p>
@@ -75,9 +74,9 @@
 </div>
 
 <div class="flex-horizontal" style="flex-wrap:wrap;">
-    <div class="item-horizontal" data-expected-height="80"><div class="content1-horizontal"></div></div>
-    <div class="item-horizontal" data-expected-height="80"><div class="content2-horizontal"></div></div>
-    <div class="item-horizontal" data-expected-height="80"><div class="content3-horizontal"></div></div>
+    <div class="item-horizontal" data-expected-height="150"><div class="content1-horizontal"></div></div>
+    <div class="item-horizontal" data-expected-height="150"><div class="content2-horizontal"></div></div>
+    <div class="item-horizontal" data-expected-height="150"><div class="content3-horizontal"></div></div>
 </div>
 
 <div class="flex-horizontal" style="flex-wrap:wrap;">
@@ -95,9 +94,9 @@
 </div>
 
 <div class="flex-vertical" style="flex-wrap:wrap;">
-    <div class="item-vertical" data-expected-width="80"><div class="content1-vertical"></div></div>
-    <div class="item-vertical" data-expected-width="80"><div class="content2-vertical"></div></div>
-    <div class="item-vertical" data-expected-width="80"><div class="content3-vertical"></div></div>
+    <div class="item-vertical" data-expected-width="150"><div class="content1-vertical"></div></div>
+    <div class="item-vertical" data-expected-width="150"><div class="content2-vertical"></div></div>
+    <div class="item-vertical" data-expected-width="150"><div class="content3-vertical"></div></div>
 </div>
 
 <div class="flex-vertical" style="flex-wrap:wrap;">
@@ -107,5 +106,3 @@
     <div class="item-vertical" data-expected-width="150"><div class="content1-vertical"></div></div>
     <div class="item-vertical" data-expected-width="150"><div class="content2-vertical"></div></div>
 </div>
-</body>
-</html>
