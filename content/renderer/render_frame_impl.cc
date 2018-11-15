@@ -2235,11 +2235,8 @@ void RenderFrameImpl::OnSwapOut(
   if (is_main_frame_) {
     // The RenderWidget isn't actually closed here because we might need to use
     // it again. It can't be destroyed and recreated later as it is part of
-    // the |render_view_|, which must be kept alive. So instead just stop the
-    // compositor.
-    // TODO(crbug.com/419087): The RenderWidget should be destroyed as a result
-    // of this (main) frame going away, then we won't have to do this.
-    render_view_->GetWidget()->StopCompositor();
+    // the |render_view_|, which must be kept alive. So instead mark the widget
+    // as swapped out.
     render_view_->GetWidget()->SetSwappedOut(true);
   }
 
@@ -5868,16 +5865,8 @@ bool RenderFrameImpl::SwapIn() {
   if (is_main_frame_) {
     CHECK(!render_view_->main_render_frame_);
     render_view_->main_render_frame_ = this;
-    if (render_view_->GetWidget()->is_swapped_out()) {
+    if (render_view_->GetWidget()->is_swapped_out())
       render_view_->GetWidget()->SetSwappedOut(false);
-      // In OnSwapOut() the RenderWidget's compositor was stopped instead of
-      // deleting the RenderWidget. So here we can start it again. If the
-      // |render_view_|'s RenderWidget started swapped in, it may already be
-      // swapped in here, so this does nothing.
-      // TODO(crbug.com/419087): The RenderWidget should be newly created here,
-      // then we won't have to do this.
-      render_view_->GetWidget()->StartCompositor();
-    }
     render_view_->UpdateWebViewWithDeviceScaleFactor();
   }
 

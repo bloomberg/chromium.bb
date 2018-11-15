@@ -1575,6 +1575,29 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
   return layer_tree_view_.get();
 }
 
+void RenderWidget::StartCompositor() {
+  if (!is_hidden_)
+    layer_tree_view_->SetVisible(true);
+}
+
+void RenderWidget::StopCompositor() {
+  layer_tree_view_->SetVisible(false);
+  // Drop all gpu resources, this makes SetVisible(true) more expensive/slower
+  // but we don't expect to use this RenderWidget again until some possible
+  // future navigation. This brings us a bit closer to emulating deleting the
+  // RenderWidget instead of just stopping the compositor.
+  layer_tree_view_->ReleaseLayerTreeFrameSink();
+}
+
+void RenderWidget::SetSwappedOut(bool is_swapped_out) {
+  DCHECK_NE(is_swapped_out, is_swapped_out_);
+  is_swapped_out_ = is_swapped_out;
+  if (is_swapped_out)
+    StopCompositor();
+  else
+    StartCompositor();
+}
+
 void RenderWidget::DoDeferredClose() {
   // Prevent compositor from setting up new IPC channels, since we know a
   // WidgetMsg_Close is coming.
@@ -2914,20 +2937,6 @@ cc::ManagedMemoryPolicy RenderWidget::GetGpuMemoryPolicy(
     actual.bytes_limit_when_visible *= 2;
 #endif
   return actual;
-}
-
-void RenderWidget::StartCompositor() {
-  if (!is_hidden_)
-    layer_tree_view_->SetVisible(true);
-}
-
-void RenderWidget::StopCompositor() {
-  layer_tree_view_->SetVisible(false);
-  // Drop all gpu resources, this makes SetVisible(true) more expensive/slower
-  // but we don't expect to use this RenderWidget again until some possible
-  // future navigation. This brings us a bit closer to emulating deleting the
-  // RenderWidget instead of just stopping the compositor.
-  layer_tree_view_->ReleaseLayerTreeFrameSink();
 }
 
 void RenderWidget::HasPointerRawMoveEventHandlers(bool has_handlers) {
