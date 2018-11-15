@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_WIN_MOCK_ITOASTNOTIFIER_H_
-#define CHROME_BROWSER_NOTIFICATIONS_WIN_MOCK_ITOASTNOTIFIER_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_WIN_FAKE_ITOASTNOTIFIER_H_
+#define CHROME_BROWSER_NOTIFICATIONS_WIN_FAKE_ITOASTNOTIFIER_H_
 
 #include <windows.ui.notifications.h>
 #include <wrl/implements.h>
@@ -13,14 +13,14 @@
 
 class NotificationLaunchId;
 
-class MockIToastNotifier
+class FakeIToastNotifier
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::UI::Notifications::IToastNotifier> {
  public:
-  MockIToastNotifier();
-  ~MockIToastNotifier() override;
+  FakeIToastNotifier();
+  ~FakeIToastNotifier() override;
 
   // Sets a callback to be notified when Show has been called.
   void SetNotificationShownCallback(
@@ -55,7 +55,7 @@ class MockIToastNotifier
   base::RepeatingCallback<void(const NotificationLaunchId& launch_id)>
       notification_shown_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockIToastNotifier);
+  DISALLOW_COPY_AND_ASSIGN(FakeIToastNotifier);
 };
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_WIN_MOCK_ITOASTNOTIFIER_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_WIN_FAKE_ITOASTNOTIFIER_H_

@@ -56,7 +56,7 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleEvent);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleSettings);
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest,
-                           DisplayWithMockAC);
+                           DisplayWithFakeAC);
 
   // Simulates a click/dismiss event. Only for use in testing.
   // Note: Ownership of |notification| and |args| is retained by the caller.

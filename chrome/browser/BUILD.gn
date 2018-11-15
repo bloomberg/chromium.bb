@@ -5287,8 +5287,8 @@ static_library("test_support") {
 
   if (is_win) {
     sources += [
-      "notifications/win/mock_itoastnotification.cc",
-      "notifications/win/mock_itoastnotification.h",
+      "notifications/win/fake_itoastnotification.cc",
+      "notifications/win/fake_itoastnotification.h",
     ]
   }
 

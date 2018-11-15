@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "chrome/browser/notifications/win/mock_notification_image_retainer.h"
+#include "chrome/browser/notifications/win/fake_notification_image_retainer.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/grit/chromium_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,7 +78,7 @@ class NotificationTemplateBuilderTest : public ::testing::Test {
   // must be wrapped in ASSERT_NO_FATAL_FAILURE().
   void VerifyXml(const message_center::Notification& notification,
                  const base::string16& expected_xml_template) {
-    MockNotificationImageRetainer image_retainer;
+    FakeNotificationImageRetainer image_retainer;
     NotificationLaunchId launch_id(kEncodedId);
     base::string16 xml_template =
         BuildNotificationTemplate(&image_retainer, launch_id, notification);

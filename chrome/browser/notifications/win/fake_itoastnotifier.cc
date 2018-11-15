@@ -2,51 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/win/mock_itoastnotifier.h"
+#include "chrome/browser/notifications/win/fake_itoastnotifier.h"
 
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/notifications/win/notification_util.h"
 
 namespace winui = ABI::Windows::UI;
 
-MockIToastNotifier::MockIToastNotifier() = default;
-MockIToastNotifier::~MockIToastNotifier() = default;
+FakeIToastNotifier::FakeIToastNotifier() = default;
+FakeIToastNotifier::~FakeIToastNotifier() = default;
 
-void MockIToastNotifier::SetNotificationShownCallback(
+void FakeIToastNotifier::SetNotificationShownCallback(
     const base::RepeatingCallback<void(const NotificationLaunchId& launch_id)>&
         callback) {
   notification_shown_callback_ = callback;
 }
 
-HRESULT MockIToastNotifier::Show(
+HRESULT FakeIToastNotifier::Show(
     winui::Notifications::IToastNotification* notification) {
   NotificationLaunchId launch_id = GetNotificationLaunchId(notification);
   notification_shown_callback_.Run(launch_id);
   return S_OK;
 }
 
-HRESULT MockIToastNotifier::Hide(
+HRESULT FakeIToastNotifier::Hide(
     winui::Notifications::IToastNotification* notification) {
   return E_NOTIMPL;
 }
 
-HRESULT MockIToastNotifier::get_Setting(
+HRESULT FakeIToastNotifier::get_Setting(
     winui::Notifications::NotificationSetting* value) {
   *value = winui::Notifications::NotificationSetting_Enabled;
   return S_OK;
 }
 
-HRESULT MockIToastNotifier::AddToSchedule(
+HRESULT FakeIToastNotifier::AddToSchedule(
     winui::Notifications::IScheduledToastNotification* scheduledToast) {
   return E_NOTIMPL;
 }
 
-HRESULT MockIToastNotifier::RemoveFromSchedule(
+HRESULT FakeIToastNotifier::RemoveFromSchedule(
     winui::Notifications::IScheduledToastNotification* scheduledToast) {
   return E_NOTIMPL;
 }
 
-HRESULT MockIToastNotifier::GetScheduledToastNotifications(
+HRESULT FakeIToastNotifier::GetScheduledToastNotifications(
     __FIVectorView_1_Windows__CUI__CNotifications__CScheduledToastNotification**
         scheduledToasts) {
   return E_NOTIMPL;

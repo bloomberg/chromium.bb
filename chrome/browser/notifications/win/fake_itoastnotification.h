@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_WIN_MOCK_ITOASTNOTIFICATION_H_
-#define CHROME_BROWSER_NOTIFICATIONS_WIN_MOCK_ITOASTNOTIFICATION_H_
+#ifndef CHROME_BROWSER_NOTIFICATIONS_WIN_FAKE_ITOASTNOTIFICATION_H_
+#define CHROME_BROWSER_NOTIFICATIONS_WIN_FAKE_ITOASTNOTIFICATION_H_
 
 #include <windows.ui.notifications.h>
 #include <wrl/implements.h>
@@ -11,16 +11,16 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
-class MockIToastNotification
+class FakeIToastNotification
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::UI::Notifications::IToastNotification,
           ABI::Windows::UI::Notifications::IToastNotification2> {
  public:
-  explicit MockIToastNotification(const base::string16& xml,
+  explicit FakeIToastNotification(const base::string16& xml,
                                   const base::string16& tag);
-  ~MockIToastNotification() override = default;
+  ~FakeIToastNotification() override = default;
 
   // ABI::Windows::UI::Notifications::IToastNotification implementation:
   HRESULT STDMETHODCALLTYPE
@@ -62,7 +62,7 @@ class MockIToastNotification
   base::string16 group_;
   base::string16 tag_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockIToastNotification);
+  DISALLOW_COPY_AND_ASSIGN(FakeIToastNotification);
 };
 
-#endif  // CHROME_BROWSER_NOTIFICATIONS_WIN_MOCK_ITOASTNOTIFICATION_H_
+#endif  // CHROME_BROWSER_NOTIFICATIONS_WIN_FAKE_ITOASTNOTIFICATION_H_

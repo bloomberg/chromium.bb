@@ -23,8 +23,8 @@
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/notifications/notification_common.h"
-#include "chrome/browser/notifications/win/mock_itoastnotification.h"
-#include "chrome/browser/notifications/win/mock_notification_image_retainer.h"
+#include "chrome/browser/notifications/win/fake_itoastnotification.h"
+#include "chrome/browser/notifications/win/fake_notification_image_retainer.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
 #include "chrome/browser/notifications/win/notification_template_builder.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -72,7 +72,7 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
         message_center::NotifierId(origin),
         message_center::RichNotificationData(), nullptr /* delegate */);
     notification->set_renotify(renotify);
-    MockNotificationImageRetainer image_retainer;
+    FakeNotificationImageRetainer image_retainer;
     base::string16 xml_template =
         BuildNotificationTemplate(&image_retainer, launch_id, *notification);
 
@@ -244,9 +244,9 @@ TEST_F(NotificationPlatformBridgeWinTest, Suppress) {
   // Register a single notification with a specific tag.
   std::string tag_data = std::string(kNotificationId) + "|" + kProfileId + "|0";
   base::string16 tag = base::UintToString16(base::Hash(tag_data));
-  // Microsoft::WRL::Make() requires MockIToastNotification to derive from
+  // Microsoft::WRL::Make() requires FakeIToastNotification to derive from
   // RuntimeClass.
-  notifications.push_back(Microsoft::WRL::Make<MockIToastNotification>(
+  notifications.push_back(Microsoft::WRL::Make<FakeIToastNotification>(
       L"<toast launch=\"0|0|Default|0|https://foo.com/|id\"></toast>", tag));
 
   // Request this notification with renotify true (should not be suppressed).
