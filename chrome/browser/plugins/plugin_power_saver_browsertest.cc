@@ -15,6 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/plugins/plugin_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -68,28 +69,10 @@ const int kComparisonHeight = 600;
 // counted as a matching pixel by this simple manhattan distance threshold.
 const int kPixelManhattanDistanceTolerance = 25;
 
-std::string RunTestScript(base::StringPiece test_script,
-                          content::WebContents* contents,
-                          const std::string& element_id) {
-  std::string script = base::StringPrintf(
-      "var plugin = window.document.getElementById('%s');"
-      "if (plugin === undefined ||"
-      "    (plugin.nodeName !== 'OBJECT' && plugin.nodeName !== 'EMBED')) {"
-      "  window.domAutomationController.send('error');"
-      "} else {"
-      "  %s"
-      "}",
-      element_id.c_str(), test_script.data());
-  std::string result;
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(contents, script, &result));
-  return result;
-}
-
 // This also tests that we have JavaScript access to the underlying plugin.
 bool PluginLoaded(content::WebContents* contents,
                   const std::string& element_id) {
-  std::string result = RunTestScript(
+  std::string result = PluginTestUtils::RunTestScript(
       "if (plugin.postMessage === undefined) {"
       "  window.domAutomationController.send('poster_only');"
       "} else {"
@@ -100,29 +83,10 @@ bool PluginLoaded(content::WebContents* contents,
   return result == "plugin_loaded";
 }
 
-// Blocks until the placeholder is ready.
-void WaitForPlaceholderReady(content::WebContents* contents,
-                             const std::string& element_id) {
-  std::string result = RunTestScript(
-      "function handleEvent(event) {"
-      "  if (event.data === 'placeholderReady') {"
-      "    window.domAutomationController.send('ready');"
-      "    plugin.removeEventListener('message', handleEvent);"
-      "  }"
-      "}"
-      "plugin.addEventListener('message', handleEvent);"
-      "if (plugin.hasAttribute('placeholderReady')) {"
-      "  window.domAutomationController.send('ready');"
-      "  plugin.removeEventListener('message', handleEvent);"
-      "}",
-      contents, element_id);
-  ASSERT_EQ("ready", result);
-}
-
 // Also waits for the placeholder UI overlay to finish loading.
 void VerifyPluginIsThrottled(content::WebContents* contents,
                              const std::string& element_id) {
-  std::string result = RunTestScript(
+  std::string result = PluginTestUtils::RunTestScript(
       "function handleEvent(event) {"
       "  if (event.data.isPeripheral && event.data.isThrottled && "
       "      event.data.isHiddenForPlaceholder) {"
@@ -140,12 +104,12 @@ void VerifyPluginIsThrottled(content::WebContents* contents,
   // Page should continue to have JavaScript access to all throttled plugins.
   EXPECT_TRUE(PluginLoaded(contents, element_id));
 
-  WaitForPlaceholderReady(contents, element_id);
+  PluginTestUtils::WaitForPlaceholderReady(contents, element_id);
 }
 
 void VerifyPluginMarkedEssential(content::WebContents* contents,
                                  const std::string& element_id) {
-  std::string result = RunTestScript(
+  std::string result = PluginTestUtils::RunTestScript(
       "function handleEvent(event) {"
       "  if (event.data.isPeripheral === false) {"
       "    window.domAutomationController.send('essential');"
@@ -351,7 +315,8 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   //    test has missed the above two events.
   void SimulateClickAndAwaitMarkedEssential(const std::string& element_id,
                                             const gfx::Point& point) {
-    WaitForPlaceholderReady(GetActiveWebContents(), element_id);
+    PluginTestUtils::WaitForPlaceholderReady(GetActiveWebContents(),
+                                             element_id);
     content::SimulateMouseClickAt(GetActiveWebContents(), 0 /* modifiers */,
                                   blink::WebMouseEvent::Button::kLeft, point);
 
@@ -361,7 +326,8 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   // |element_id| must be an element on the foreground tab.
   void VerifyPluginIsPlaceholderOnly(const std::string& element_id) {
     EXPECT_FALSE(PluginLoaded(GetActiveWebContents(), element_id));
-    WaitForPlaceholderReady(GetActiveWebContents(), element_id);
+    PluginTestUtils::WaitForPlaceholderReady(GetActiveWebContents(),
+                                             element_id);
   }
 
   bool VerifySnapshot(const base::FilePath::StringType& expected_filename) {
