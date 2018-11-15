@@ -269,8 +269,6 @@ void LocationBarView::Init() {
   // visible when the location entry has just been initialized.
   Update(nullptr);
 
-  size_animation_.Reset(1);
-
   hover_animation_.SetSlideDuration(200);
 }
 
@@ -376,8 +374,6 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
 
   if (!IsInitialized())
     return min_size;
-
-  min_size.set_height(min_size.height() * size_animation_.GetCurrentValue());
 
   // Compute width of omnibox-leading content.
   int leading_width = 0;
@@ -959,21 +955,6 @@ void LocationBarView::UpdateBookmarkStarVisibility() {
   }
 }
 
-void LocationBarView::UpdateLocationBarVisibility(bool visible, bool animate) {
-  if (!animate) {
-    size_animation_.Reset(visible ? 1 : 0);
-    SetVisible(visible);
-    return;
-  }
-
-  if (visible) {
-    SetVisible(true);
-    size_animation_.Show();
-  } else {
-    size_animation_.Hide();
-  }
-}
-
 void LocationBarView::SaveStateToContents(WebContents* contents) {
   omnibox_view_->SaveStateToTab(contents);
 }
@@ -1086,28 +1067,18 @@ bool LocationBarView::CanStartDragForView(View* sender,
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private gfx::AnimationDelegate implementation:
 void LocationBarView::AnimationProgressed(const gfx::Animation* animation) {
-  if (animation == &size_animation_) {
-    GetWidget()->non_client_view()->Layout();
-  } else if (animation == &hover_animation_) {
-    RefreshBackground();
-  } else {
-    NOTREACHED();
-  }
+  DCHECK_EQ(animation, &hover_animation_);
+  RefreshBackground();
 }
 
 void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
-  if (animation == &size_animation_) {
-    AnimationProgressed(animation);
-    if (animation->GetCurrentValue() == 0)
-      SetVisible(false);
-  } else if (animation == &hover_animation_) {
-    AnimationProgressed(animation);
-  }
+  DCHECK_EQ(animation, &hover_animation_);
+  AnimationProgressed(animation);
 }
 
 void LocationBarView::AnimationCanceled(const gfx::Animation* animation) {
-  if (animation == &hover_animation_)
-    AnimationProgressed(animation);
+  DCHECK_EQ(animation, &hover_animation_);
+  AnimationProgressed(animation);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

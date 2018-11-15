@@ -145,6 +145,8 @@ void ToolbarView::Init() {
   location_bar_ = new LocationBarView(browser_, browser_->profile(),
                                       browser_->command_controller(), this,
                                       !is_display_mode_normal());
+  // Make sure the toolbar shows by default.
+  size_animation_.Reset(1);
 
   if (!is_display_mode_normal()) {
     AddChildView(location_bar_);
@@ -267,6 +269,16 @@ void ToolbarView::Init() {
   initialized_ = true;
 }
 
+void ToolbarView::AnimationEnded(const gfx::Animation* animation) {
+  AnimationProgressed(animation);
+  if (animation->GetCurrentValue() == 0)
+    SetToolbarVisibility(false);
+}
+
+void ToolbarView::AnimationProgressed(const gfx::Animation* animation) {
+  GetWidget()->non_client_view()->Layout();
+}
+
 void ToolbarView::Update(WebContents* tab) {
   if (location_bar_)
     location_bar_->Update(tab);
@@ -274,6 +286,26 @@ void ToolbarView::Update(WebContents* tab) {
     browser_actions_->RefreshToolbarActionViews();
   if (reload_)
     reload_->set_menu_enabled(chrome::IsDebuggerAttachedToCurrentTab(browser_));
+}
+
+void ToolbarView::SetToolbarVisibility(bool visible) {
+  SetVisible(visible);
+  location_bar_->SetVisible(visible);
+}
+
+void ToolbarView::UpdateToolbarVisibility(bool visible, bool animate) {
+  if (!animate) {
+    size_animation_.Reset(visible ? 1.0 : 0.0);
+    SetToolbarVisibility(visible);
+    return;
+  }
+
+  if (visible) {
+    SetToolbarVisibility(true);
+    size_animation_.Show();
+  } else {
+    size_animation_.Hide();
+  }
 }
 
 void ToolbarView::ResetTabState(WebContents* tab) {
@@ -768,6 +800,8 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
         ui::MaterialDesignController::touch_ui() ? 0 : 9;
     size.SetToMax(gfx::Size(0, content_height + extra_vertical_space));
   }
+
+  size.set_height(size.height() * size_animation_.GetCurrentValue());
   return size;
 }
 

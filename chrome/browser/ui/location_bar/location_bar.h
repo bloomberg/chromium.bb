@@ -65,10 +65,6 @@ class LocationBar {
   // Updates the visibility of the bookmark star.
   virtual void UpdateBookmarkStarVisibility() = 0;
 
-  // Updates the visibility of the location bar. Animates the transition if
-  // |animate| is true.
-  virtual void UpdateLocationBarVisibility(bool visible, bool animate) = 0;
-
   // Saves the state of the location bar to the specified WebContents, so that
   // it can be restored later. (Done when switching tabs).
   virtual void SaveStateToContents(content::WebContents* contents) = 0;

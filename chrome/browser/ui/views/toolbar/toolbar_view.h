@@ -57,6 +57,7 @@ class CastToolbarButton;
 class ToolbarView : public views::AccessiblePaneView,
                     public views::MenuButtonListener,
                     public ui::AcceleratorProvider,
+                    public gfx::AnimationDelegate,
                     public LocationBarView::Delegate,
                     public BrowserActionsContainer::Delegate,
                     public CommandObserver,
@@ -81,6 +82,10 @@ class ToolbarView : public views::AccessiblePaneView,
   // and should restore any previous location bar state (such as user editing)
   // as well.
   void Update(content::WebContents* tab);
+
+  // Updates the visibility of the toolbar, potentially animating the
+  // transition.
+  void UpdateToolbarVisibility(bool visible, bool animate);
 
   // Clears the current state for |tab|.
   void ResetTabState(content::WebContents* tab);
@@ -170,6 +175,10 @@ class ToolbarView : public views::AccessiblePaneView,
   bool AcceleratorPressed(const ui::Accelerator& acc) override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
+  bool is_display_mode_normal() const {
+    return display_mode_ == DISPLAYMODE_NORMAL;
+  }
+
  protected:
   // AccessiblePaneView:
   bool SetPaneFocusAndFocusDefault() override;
@@ -177,17 +186,22 @@ class ToolbarView : public views::AccessiblePaneView,
   // ui::MaterialDesignControllerObserver:
   void OnTouchUiChanged() override;
 
-  bool is_display_mode_normal() const {
-    return display_mode_ == DISPLAYMODE_NORMAL;
-  }
+  // This controls Toolbar and LocationBar visibility.
+  // If we don't both, tab navigation from the app menu breaks
+  // on Chrome OS.
+  void SetToolbarVisibility(bool visible);
 
  private:
   // Types of display mode this toolbar can have.
   enum DisplayMode {
-    DISPLAYMODE_NORMAL,       // Normal toolbar with buttons, etc.
-    DISPLAYMODE_LOCATION      // Slimline toolbar showing only compact location
-                              // bar, used for popups.
+    DISPLAYMODE_NORMAL,   // Normal toolbar with buttons, etc.
+    DISPLAYMODE_LOCATION  // Slimline toolbar showing only compact location
+                          // bar, used for popups.
   };
+
+  // AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // AppMenuIconController::Delegate:
   void UpdateTypeAndSeverity(
@@ -226,6 +240,8 @@ class ToolbarView : public views::AccessiblePaneView,
   void ShowOutdatedInstallNotification(bool auto_update_enabled);
 
   void OnShowHomeButtonChanged();
+
+  gfx::SlideAnimation size_animation_{this};
 
   // Controls. Most of these can be null, e.g. in popup windows. Only
   // |location_bar_| is guaranteed to exist. These pointers are owned by the
