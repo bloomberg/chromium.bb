@@ -650,6 +650,14 @@ void FrameFetchContext::DispatchDidReceiveResponse(
                                                     false /* did_fail */);
   }
 
+  if (response.IsLegacyTLSVersion()) {
+    if (resource->GetType() != ResourceType::kMainResource) {
+      // Main resources are counted in DocumentLoader.
+      UseCounter::Count(GetFrame(), WebFeature::kLegacyTLSVersionInSubresource);
+    }
+    GetLocalFrameClient()->ReportLegacyTLSVersion(response.Url());
+  }
+
   GetFrame()->Loader().Progress().IncrementProgress(identifier, response);
   GetLocalFrameClient()->DispatchDidReceiveResponse(response);
   DocumentLoader* document_loader = MasterDocumentLoader();

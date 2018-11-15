@@ -20767,6 +20767,9 @@ Called by update_net_error_codes.py.-->
   <int value="2629" label="HTMLAnchorElementHrefTranslateAttribute"/>
   <int value="2630" label="WebKitUserModifyEffective"/>
   <int value="2631" label="PlainTextEditingEffective"/>
+  <int value="2632" label="LegacyTLSVersionInMainFrameResource"/>
+  <int value="2633" label="LegacyTLSVersionInSubresource"/>
+  <int value="2634" label="LegacyTLSVersionInSubframeMainResource"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
