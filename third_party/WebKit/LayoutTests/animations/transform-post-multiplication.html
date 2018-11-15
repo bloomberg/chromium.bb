@@ -20,9 +20,11 @@ function assertNoPostMultiplication(start, end) {
 }
 
 function interpolationUsesPostMultiplication(start, end) {
-    // This value prefix will cause post multiplication to interpolate differently than pairwise interpolation.
-    var testStart = 'rotate(90deg) translateX(10px) ' + start;
-    var testEnd = 'rotate(90deg) translateX(100px) ' + end;
+    // This value prefix will cause post multiplication to interpolate differently than pairwise
+    // interpolation. Flipping both the x and y scales is equivalent to a 180 degree rotation in
+    // its matrix representation.
+    var testStart = 'scale(-1, -1) ' + start;
+    var testEnd = 'scale(1, 1) ' + end;
 
     var animation = target.animate({transform: [toMatrix(testStart), toMatrix(testEnd)]}, 1);
     animation.currentTime = 0.5;
@@ -45,8 +47,20 @@ function toMatrix(transform) {
 }
 
 function matricesApproxEqual(actualMatrix, expectedMatrix, epsilon) {
-  var actualNumbers = actualMatrix.split(/[^\d\.-]/).map(Number);
-  var expectedNumbers = expectedMatrix.split(/[^\d\.-]/).map(Number);
+  var extractmatrix = function(matrixStr) {
+    var list = [];
+    var regex = /[+\-]?[0-9]+[.]?[0-9]*(e[+/-][0-9]+)?/g;
+    var match = undefined;
+    do {
+      match = regex.exec(matrixStr);
+      if (match) {
+        list.push(parseFloat(match[0]));
+      }
+    } while (match);
+    return list;
+  }
+  var actualNumbers = extractmatrix(actualMatrix);
+  var expectedNumbers = extractmatrix(expectedMatrix);
   if (actualNumbers.length !== expectedNumbers.length) {
     return false;
   }
@@ -58,12 +72,24 @@ function matricesApproxEqual(actualMatrix, expectedMatrix, epsilon) {
   return true;
 }
 
-assertPostMultiplication('translateX(10px)', 'matrix(1, 1, 1, 1, 1, 1)');
-assertPostMultiplication('translateX(10px)', 'rotate(90deg)');
-assertPostMultiplication('skewX(90deg)', 'skewY(90deg)');
-assertPostMultiplication('skew(90deg, 0deg)', 'skewY(90deg)');
-assertPostMultiplication('matrix(1, 0, 0, 1, 0, 0)', 'matrix3d(2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1)');
+// Verify that the transform prefix generates different interpolations based on matrix and pairwise
+// interpolation.
+assertNoPostMultiplication('', '');
 
+// Transforms are not of the same type: fallback to 4x4 matrix.
+assertPostMultiplication('translateX(10px)', 'matrix(1, 1, 0, 1, 1, 1)');
+assertPostMultiplication('translateX(10px)', 'rotate(90deg)');
+assertPostMultiplication('skewX(45deg)', 'translateX(10px)');
+assertPostMultiplication(
+    'matrix(1, 0, 0, 1, 0, 0)',
+    'matrix3d(2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4, 0, 0, 0, 0, 1)');
+
+// TODO(kevers): Investigate if skewX(a) and skewY(b) should map to skew(a, 0) and skew(0, b),
+// respectively. If correct, then pairwise interpolation should be used.
+assertPostMultiplication('skewX(15deg)', 'skewY(15deg)');
+assertPostMultiplication('skew(15deg, 0deg)', 'skewY(15deg)');
+
+// Transform pairs can be expressed in the form of a common primitive.
 assertNoPostMultiplication('translate(10px, 20px)', 'translateX(100px)');
 assertNoPostMultiplication('translateX(10px)', 'translateY(100px)');
 assertNoPostMultiplication('translateX(10px)', 'translateZ(100px)');
@@ -72,7 +98,8 @@ assertNoPostMultiplication('scaleX(2)', 'scaleY(1)');
 assertNoPostMultiplication('scaleX(2)', 'scaleZ(1)');
 assertNoPostMultiplication('scaleX(2)', 'scale(1, 2)');
 assertNoPostMultiplication('scaleX(2)', 'scale3d(1, 2, 3)');
-assertNoPostMultiplication('skewY(10deg)', 'skewY(90deg)');
+assertNoPostMultiplication('skewY(10deg)', 'skewY(15deg)');
+assertNoPostMultiplication('skew(10deg, 0)', 'skew(10deg, 0)');
 assertNoPostMultiplication('rotate(10deg)', 'rotate(90deg)');
 assertNoPostMultiplication('rotateY(10deg)', 'rotateY(90deg)');
 assertNoPostMultiplication('rotateX(90deg)', 'rotateY(90deg)');
