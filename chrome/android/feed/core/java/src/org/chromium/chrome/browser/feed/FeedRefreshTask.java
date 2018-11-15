@@ -15,8 +15,6 @@ import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * A task implementation that loads native and then tries to refresh the Feed's articles. Failures
  * or interruptions are not retried or rescheduled.
@@ -91,10 +89,11 @@ public class FeedRefreshTask extends NativeBackgroundTask {
 
     @Override
     public void reschedule(Context context) {
-        // The user may be trying to do something other than use Chrome right now, so we want to be
-        // as light weight as possible. Instead of going to native to reschedule with a more
-        // informed threshold, just schedule for 1 day from now. The next time a successful fetch
-        // occurs, this value will be set to a value tailored to current usage patterns.
-        ThreadUtils.runOnUiThread(() -> scheduleWakeUp(TimeUnit.DAYS.toMillis(1)));
+        ThreadUtils.runOnUiThread(() -> {
+            FeedScheduler scheduler = FeedProcessScopeFactory.getFeedScheduler();
+            if (scheduler != null) {
+                scheduler.onTaskReschedule();
+            }
+        });
     }
 }

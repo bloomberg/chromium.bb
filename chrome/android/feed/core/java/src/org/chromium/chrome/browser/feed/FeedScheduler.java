@@ -20,6 +20,9 @@ public interface FeedScheduler extends SchedulerApi {
     /** To be called when a background scheduling task wakes up the browser. */
     void onFixedTimer(Runnable onCompletion);
 
+    /** To be called when a background scheduling task needs to be rescheduled. */
+    void onTaskReschedule();
+
     /** To be called when an article is consumed, influencing future scheduling. */
     void onSuggestionConsumed();
 }
