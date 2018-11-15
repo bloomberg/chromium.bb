@@ -5377,6 +5377,9 @@ crbug.com/497522 css3/filters/backdrop-filter-svg.html [ Failure ]
 crbug.com/497522 css3/filters/backdrop-filter-plus-filter.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-isolate.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-border-radius.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-clip-rect.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-edge-pixels.html [ Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-paint-order.html [ Failure ]
 
 #Sheriff 2018-11-14
 crbug.com/905694 [ Linux ] virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Failure Pass ]
