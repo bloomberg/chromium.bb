@@ -343,6 +343,8 @@ struct input {
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
 	struct window *touch_focus;
+	struct window *locked_window;
+	struct window *confined_window;
 	int current_cursor;
 	uint32_t cursor_anim_start;
 	struct wl_callback *cursor_frame_cb;
@@ -1584,6 +1586,10 @@ window_destroy(struct window *window)
 			input->pointer_focus = NULL;
 		if (input->keyboard_focus == window)
 			input->keyboard_focus = NULL;
+		if (input->locked_window == window)
+			input->locked_window = NULL;
+		if (input->confined_window == window)
+			input->confined_window = NULL;
 		if (input->focus_widget &&
 		    input->focus_widget->window == window)
 			input->focus_widget = NULL;
@@ -4792,7 +4798,10 @@ locked_pointer_locked(void *data,
 		      struct zwp_locked_pointer_v1 *locked_pointer)
 {
 	struct input *input = data;
-	struct window *window = input->pointer_focus;
+	struct window *window = input->locked_window;
+
+	if (!window)
+		return;
 
 	window->pointer_locked = true;
 
@@ -4808,9 +4817,14 @@ locked_pointer_unlocked(void *data,
 			struct zwp_locked_pointer_v1 *locked_pointer)
 {
 	struct input *input = data;
-	struct window *window = input->pointer_focus;
+	struct window *window = input->locked_window;
+
+	if (!window)
+		return;
 
 	window_unlock_pointer(window);
+
+	input->locked_window = NULL;
 
 	if (window->pointer_unlocked_handler) {
 		window->pointer_unlocked_handler(window,
@@ -4867,6 +4881,7 @@ window_lock_pointer(struct window *window, struct input *input)
 
 	window->locked_pointer = locked_pointer;
 	window->relative_pointer = relative_pointer;
+	input->locked_window = window;
 
 	return 0;
 }
@@ -4904,7 +4919,10 @@ confined_pointer_confined(void *data,
 			  struct zwp_confined_pointer_v1 *confined_pointer)
 {
 	struct input *input = data;
-	struct window *window = input->pointer_focus;
+	struct window *window = input->confined_window;
+
+	if (!window)
+		return;
 
 	window->confined = true;
 
@@ -4920,11 +4938,15 @@ confined_pointer_unconfined(void *data,
 			    struct zwp_confined_pointer_v1 *confined_pointer)
 {
 	struct input *input = data;
-	struct window *window = input->pointer_focus;
+	struct window *window = input->confined_window;
+
+	if (!window)
+		return;
 
 	window_unconfine_pointer(window);
 
 	window->confined = false;
+	input->confined_window = NULL;
 
 	if (window->pointer_unconfined_handler) {
 		window->pointer_unconfined_handler(window,
@@ -4989,6 +5011,7 @@ window_confine_pointer_to_rectangles(struct window *window,
 
 	window->confined_pointer = confined_pointer;
 	window->confined_widget = NULL;
+	input->confined_window = window;
 
 	return 0;
 }
