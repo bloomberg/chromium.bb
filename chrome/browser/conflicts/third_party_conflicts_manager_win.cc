@@ -16,9 +16,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/installed_applications_win.h"
@@ -28,6 +30,9 @@
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/install_static/install_util.h"
+#include "chrome_elf/third_party_dlls/packed_list_format.h"
+#include "chrome_elf/third_party_dlls/status_codes.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -74,6 +79,53 @@ ReadInitialBlacklistedModules() {
   return initial_blacklisted_modules;
 }
 
+// Log the initialization status of the chrome_elf component that is responsible
+// for blocking third-party DLLs. The status is stored in the
+// kStatusCodesRegValue registry key during chrome_elf's initialization.
+void LogChromeElfThirdPartyStatus() {
+  base::win::RegKey registry_key(
+      HKEY_CURRENT_USER,
+      base::StringPrintf(L"%ls%ls", install_static::GetRegistryPath().c_str(),
+                         third_party_dlls::kThirdPartyRegKeyName)
+          .c_str(),
+      KEY_QUERY_VALUE);
+
+  // Early return if the registry key can't be opened.
+  if (!registry_key.Valid())
+    return;
+
+  // Read the status code. Since the data is basically an array of integers, and
+  // resets every startups, a starting size of 128 should always be sufficient.
+  DWORD size = 128;
+  std::vector<uint8_t> buffer(size);
+  DWORD key_type;
+  DWORD result = registry_key.ReadValue(third_party_dlls::kStatusCodesRegValue,
+                                        buffer.data(), &size, &key_type);
+
+  if (result == ERROR_MORE_DATA) {
+    buffer.resize(size);
+    result = registry_key.ReadValue(third_party_dlls::kStatusCodesRegValue,
+                                    buffer.data(), &size, &key_type);
+  }
+
+  // Give up if it failed to retrieve the status codes.
+  if (result != ERROR_SUCCESS)
+    return;
+
+  // The real size of the data is most probably smaller than the initial size.
+  buffer.resize(size);
+
+  // Sanity check the type of data.
+  if (key_type != REG_BINARY)
+    return;
+
+  std::vector<third_party_dlls::ThirdPartyStatus> status_array;
+  third_party_dlls::ConvertBufferToStatusCodes(buffer, &status_array);
+
+  for (auto status : status_array)
+    UMA_HISTOGRAM_ENUMERATION("ChromeElf.ThirdPartyStatus", status);
+}
+
 }  // namespace
 
 ThirdPartyConflictsManager::ThirdPartyConflictsManager(
@@ -89,6 +141,8 @@ ThirdPartyConflictsManager::ThirdPartyConflictsManager(
       module_list_update_needed_(false),
       component_update_service_observer_(this),
       weak_ptr_factory_(this) {
+  LogChromeElfThirdPartyStatus();
+
   module_database_event_source_->AddObserver(this);
   base::PostTaskAndReplyWithResult(
       background_sequence_.get(), FROM_HERE,

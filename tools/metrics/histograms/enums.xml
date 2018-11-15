@@ -49417,6 +49417,28 @@ would be helpful to identify which type is being sent.
   <int value="1835109015" label="patts: Chrome OS Indian English"/>
 </enum>
 
+<enum name="ThirdPartyStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="FilePathNotFoundInRegistry"/>
+  <int value="2" label="FileNotFound"/>
+  <int value="3" label="FileEmpty"/>
+  <int value="4" label="FileArraySizeZero"/>
+  <int value="5" label="FileAccessDenied"/>
+  <int value="6" label="FileUnexpectedFailure"/>
+  <int value="7" label="FileMetadataReadFailure"/>
+  <int value="8" label="FileInvalidFormatVersion"/>
+  <int value="9" label="FileArrayTooBig"/>
+  <int value="10" label="FileArrayReadFailure"/>
+  <int value="11" label="FileArrayNotSorted"/>
+  <int value="12" label="LogsCreateMutexFailure"/>
+  <int value="13" label="HookInitImportsFailure"/>
+  <int value="14" label="HookUnsupportedOs"/>
+  <int value="15" label="HookVirtualProtectFailure"/>
+  <int value="16" label="HookApplyFailure"/>
+  <int value="17" label="HookCreateMutexFailure"/>
+  <int value="18" label="StatusCodeResetFailure"/>
+</enum>
+
 <enum name="ThreadType">
   <int value="0" label="UI"/>
   <int value="1" label="Blocking"/>
