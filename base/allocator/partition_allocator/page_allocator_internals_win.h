@@ -65,7 +65,7 @@ void* TrimMappingInternal(void* base,
   return ret;
 }
 
-bool SetSystemPagesAccessInternal(
+bool TrySetSystemPagesAccessInternal(
     void* address,
     size_t length,
     PageAccessibilityConfiguration accessibility) {
@@ -75,18 +75,30 @@ bool SetSystemPagesAccessInternal(
                                  GetAccessFlags(accessibility));
 }
 
+void SetSystemPagesAccessInternal(
+    void* address,
+    size_t length,
+    PageAccessibilityConfiguration accessibility) {
+  if (accessibility == PageInaccessible) {
+    CHECK_NE(0, VirtualFree(address, length, MEM_DECOMMIT));
+  } else {
+    CHECK_NE(nullptr, VirtualAlloc(address, length, MEM_COMMIT,
+                                   GetAccessFlags(accessibility)));
+  }
+}
+
 void FreePagesInternal(void* address, size_t length) {
   CHECK(VirtualFree(address, 0, MEM_RELEASE));
 }
 
 void DecommitSystemPagesInternal(void* address, size_t length) {
-  CHECK(SetSystemPagesAccess(address, length, PageInaccessible));
+  SetSystemPagesAccess(address, length, PageInaccessible);
 }
 
 bool RecommitSystemPagesInternal(void* address,
                                  size_t length,
                                  PageAccessibilityConfiguration accessibility) {
-  return SetSystemPagesAccess(address, length, accessibility);
+  return TrySetSystemPagesAccess(address, length, accessibility);
 }
 
 void DiscardSystemPagesInternal(void* address, size_t length) {

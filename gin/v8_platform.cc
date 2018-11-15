@@ -245,8 +245,8 @@ class PageAllocator : public v8::PageAllocator {
       base::DecommitSystemPages(address, length);
       return true;
     } else {
-      return base::SetSystemPagesAccess(address, length,
-                                        GetPageConfig(permissions));
+      return base::TrySetSystemPagesAccess(address, length,
+                                           GetPageConfig(permissions));
     }
   }
 
