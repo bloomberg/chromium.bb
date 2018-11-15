@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
 class BrowserContext;
@@ -16,6 +17,20 @@ class BrowserContext;
 namespace domain_reliability {
 
 class DomainReliabilityService;
+
+class DomainReliabilityKeyedServiceWrapper : public KeyedService {
+ public:
+  explicit DomainReliabilityKeyedServiceWrapper(
+      DomainReliabilityService* service);
+  ~DomainReliabilityKeyedServiceWrapper() override;
+
+  DomainReliabilityService* service() { return service_; }
+
+ private:
+  DomainReliabilityService* service_;
+
+  DISALLOW_COPY_AND_ASSIGN(DomainReliabilityKeyedServiceWrapper);
+};
 
 // Creates DomainReliabilityServices for BrowserContexts. Initializes them with
 // the hardcoded upload reporter string "chrome".

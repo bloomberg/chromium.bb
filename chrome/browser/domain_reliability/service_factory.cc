@@ -33,13 +33,22 @@ const char kUploadReporterString[] = "chrome";
 
 }  // namespace
 
+DomainReliabilityKeyedServiceWrapper::DomainReliabilityKeyedServiceWrapper(
+    DomainReliabilityService* service)
+    : service_(service) {}
+DomainReliabilityKeyedServiceWrapper::~DomainReliabilityKeyedServiceWrapper() =
+    default;
+
 // static
 DomainReliabilityService*
 DomainReliabilityServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<DomainReliabilityService*>(
+  auto* wrapper = static_cast<DomainReliabilityKeyedServiceWrapper*>(
       GetInstance()->GetServiceForBrowserContext(context,
                                                  /* create = */ true));
+  if (!wrapper)
+    return nullptr;
+  return wrapper->service();
 }
 
 // static
@@ -60,7 +69,8 @@ KeyedService* DomainReliabilityServiceFactory::BuildServiceInstanceFor(
   if (!ShouldCreateService())
     return NULL;
 
-  return DomainReliabilityService::Create(kUploadReporterString, context);
+  return new DomainReliabilityKeyedServiceWrapper(
+      DomainReliabilityService::Create(kUploadReporterString));
 }
 
 bool DomainReliabilityServiceFactory::ShouldCreateService() const {

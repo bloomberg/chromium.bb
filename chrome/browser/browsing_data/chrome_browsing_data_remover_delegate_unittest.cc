@@ -140,6 +140,7 @@ using content::BrowsingDataFilterBuilder;
 using domain_reliability::CLEAR_BEACONS;
 using domain_reliability::CLEAR_CONTEXTS;
 using domain_reliability::DomainReliabilityClearMode;
+using domain_reliability::DomainReliabilityKeyedServiceWrapper;
 using domain_reliability::DomainReliabilityMonitor;
 using domain_reliability::DomainReliabilityService;
 using domain_reliability::DomainReliabilityServiceFactory;
@@ -496,8 +497,9 @@ class MockDomainReliabilityService : public DomainReliabilityService {
 
   std::unique_ptr<DomainReliabilityMonitor> CreateMonitor(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
-      override {
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      const domain_reliability::DomainReliabilityContext::UploadAllowedCallback&
+          upload_allowed_callback) override {
     NOTREACHED();
     return std::unique_ptr<DomainReliabilityMonitor>();
   }
@@ -578,7 +580,7 @@ std::unique_ptr<KeyedService> TestingDomainReliabilityServiceFactoryFunction(
   EXPECT_FALSE(data->attached);
 
   data->attached = true;
-  return base::WrapUnique(data->service);
+  return std::make_unique<DomainReliabilityKeyedServiceWrapper>(data->service);
 }
 
 std::unique_ptr<KeyedService> BuildProtocolHandlerRegistry(
@@ -590,20 +592,19 @@ std::unique_ptr<KeyedService> BuildProtocolHandlerRegistry(
 
 class ClearDomainReliabilityTester {
  public:
-  explicit ClearDomainReliabilityTester(TestingProfile* profile) :
-      profile_(profile),
-      mock_service_(new MockDomainReliabilityService()) {
+  explicit ClearDomainReliabilityTester(TestingProfile* profile)
+      : profile_(profile) {
     AttachService();
   }
 
-  unsigned clear_count() const { return mock_service_->clear_count(); }
+  unsigned clear_count() const { return mock_service_.clear_count(); }
 
   DomainReliabilityClearMode last_clear_mode() const {
-    return mock_service_->last_clear_mode();
+    return mock_service_.last_clear_mode();
   }
 
   const base::Callback<bool(const GURL&)>& last_filter() const {
-    return mock_service_->last_filter();
+    return mock_service_.last_filter();
   }
 
  private:
@@ -613,7 +614,7 @@ class ClearDomainReliabilityTester {
     // Attach kludgey UserData struct to profile.
     TestingDomainReliabilityServiceFactoryUserData* data =
         new TestingDomainReliabilityServiceFactoryUserData(profile_,
-                                                           mock_service_);
+                                                           &mock_service_);
     EXPECT_FALSE(profile_->GetUserData(kKey));
     profile_->SetUserData(kKey, base::WrapUnique(data));
 
@@ -629,7 +630,7 @@ class ClearDomainReliabilityTester {
   }
 
   TestingProfile* profile_;
-  MockDomainReliabilityService* mock_service_;
+  MockDomainReliabilityService mock_service_;
 };
 
 class RemovePasswordsTester {
