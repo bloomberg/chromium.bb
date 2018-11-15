@@ -365,7 +365,7 @@ def match_interface_extended_attributes_and_name_from_idl(file_contents):
     file_contents = re.sub(block_comment_re, '', file_contents)
 
     match = re.search(
-        r'(?:\[([^[]*)\]\s*)?'
+        r'(?:\[([^{};]*)\]\s*)?'
         r'(interface|callback\s+interface|partial\s+interface|dictionary)\s+'
         r'(\w+)\s*'
         r'(:\s*\w+\s*)?'
@@ -373,22 +373,34 @@ def match_interface_extended_attributes_and_name_from_idl(file_contents):
         file_contents, flags=re.DOTALL)
     return match
 
+
 def get_interface_extended_attributes_from_idl(file_contents):
     match = match_interface_extended_attributes_and_name_from_idl(file_contents)
     if not match or not match.group(1):
         return {}
 
-    extended_attributes_string = match.group(1)
-    extended_attributes = {}
-    # FIXME: this splitting is WRONG: it fails on extended attributes where lists of
-    # multiple values are used, which are seperated by a comma and a space.
+    extended_attributes_string = match.group(1).strip()
     parts = [extended_attribute.strip()
-             for extended_attribute in re.split(',\s+', extended_attributes_string)
+             for extended_attribute in re.split(',', extended_attributes_string)
              # Discard empty parts, which may exist due to trailing comma
              if extended_attribute.strip()]
+
+    # Joins |parts| with commas as far as the parences are not balanced,
+    # and then converts a (joined) term to a dict entry.
+    # ex. ['ab=c', 'ab(cd', 'ef', 'gh)', 'f=(a', 'b)']
+    #   => {'ab': 'c', 'ab(cd,ef,gh)': '', 'f': '(a,b)'}
+    extended_attributes = {}
+    concatenated = None
     for part in parts:
-        name, _, value = map(string.strip, part.partition('='))
-        extended_attributes[name] = value
+        concatenated = (concatenated + ', ' + part) if concatenated else part
+        parences = concatenated.count('(') - concatenated.count(')')
+        square_brackets = concatenated.count('[') - concatenated.count(']')
+        if parences < 0 or square_brackets < 0:
+            raise ValueError('You have more close braces than open braces.')
+        if parences == 0 and square_brackets == 0:
+            name, _, value = map(string.strip, concatenated.partition('='))
+            extended_attributes[name] = value
+            concatenated = None
     return extended_attributes
 
 
@@ -410,6 +422,7 @@ def get_interface_exposed_arguments(file_contents):
 
 
 def get_first_interface_name_from_idl(file_contents):
+    # TODO(peria): This function returns 'mixin' for interface mixins.
     match = match_interface_extended_attributes_and_name_from_idl(file_contents)
     if match:
         return match.group(3)

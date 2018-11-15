@@ -97,7 +97,8 @@ def record_global_constructors(idl_filename):
             global_name_to_constructors[argument['exposed']].extend(new_constructors_list)
     else:
         # Exposed=env or Exposed=(env1,...) case
-        exposed_global_names = extended_attributes.get('Exposed', 'Window').strip('()').split(',')
+        exposed_value = extended_attributes.get('Exposed', 'Window')
+        exposed_global_names = map(str.strip, exposed_value.strip('()').split(','))
         new_constructors_list = generate_global_constructors_list(interface_name, extended_attributes)
         for name in exposed_global_names:
             global_name_to_constructors[name].extend(new_constructors_list)

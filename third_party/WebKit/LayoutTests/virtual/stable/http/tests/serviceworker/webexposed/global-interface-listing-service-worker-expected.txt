@@ -33,6 +33,16 @@ interface BroadcastChannel : EventTarget
 interface ByteLengthQueuingStrategy
     method constructor
     method size
+interface CSSSkewX : CSSTransformComponent
+    attribute @@toStringTag
+    getter ax
+    method constructor
+    setter ax
+interface CSSSkewY : CSSTransformComponent
+    attribute @@toStringTag
+    getter ay
+    method constructor
+    setter ay
 interface Cache
     attribute @@toStringTag
     method add
