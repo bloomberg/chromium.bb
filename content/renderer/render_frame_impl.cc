@@ -2750,12 +2750,9 @@ bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
   return success;
 }
 
-void RenderFrameImpl::DidFailProvisionalLoadInternal(
+void RenderFrameImpl::DidFailProvisionalLoad(
     const WebURLError& error,
-    blink::WebHistoryCommitType commit_type,
-    const base::Optional<std::string>& error_page_content,
-    std::unique_ptr<blink::WebNavigationParams> navigation_params,
-    std::unique_ptr<blink::WebDocumentLoader::ExtraData> document_state) {
+    blink::WebHistoryCommitType commit_type) {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::didFailProvisionalLoad", "id", routing_id_);
   // Note: It is important this notification occur before DidStopLoading so the
@@ -2776,9 +2773,6 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
   if (!ShouldDisplayErrorPageForFailedLoad(error.reason(), error.url()))
     return;
 
-  // Make sure we never show errors in view source mode.
-  frame_->EnableViewSourceMode(false);
-
   NavigationState* navigation_state =
       NavigationState::FromDocumentLoader(document_loader);
 
@@ -2787,6 +2781,9 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
   // Otherwise, we do a normal load, which simulates a 'go' navigation as far
   // as session history is concerned.
   bool replace = commit_type != blink::kWebStandardCommit;
+
+  std::unique_ptr<blink::WebNavigationParams> navigation_params;
+  std::unique_ptr<DocumentState> document_state;
 
   // If we failed on a browser initiated request, then make sure that our error
   // page load is regarded as the same browser initiated request.
@@ -2803,7 +2800,7 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
   }
 
   LoadNavigationErrorPage(failed_request, error, replace, nullptr,
-                          error_page_content, std::move(navigation_params),
+                          base::nullopt, std::move(navigation_params),
                           std::move(document_state));
 }
 
@@ -2847,6 +2844,9 @@ void RenderFrameImpl::LoadNavigationErrorPageInternal(
     std::unique_ptr<blink::WebNavigationParams> navigation_params,
     std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data,
     const WebURLRequest* failed_request) {
+  // Make sure we never show errors in view source mode.
+  frame_->EnableViewSourceMode(false);
+
   blink::WebFrameLoadType frame_load_type =
       history_entry ? blink::WebFrameLoadType::kBackForward
                     : blink::WebFrameLoadType::kStandard;
@@ -3362,6 +3362,8 @@ void RenderFrameImpl::CommitFailedNavigation(
     const base::Optional<std::string>& error_page_content,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
     CommitFailedNavigationCallback callback) {
+  TRACE_EVENT1("navigation,benchmark,rail",
+               "RenderFrameImpl::CommitFailedNavigation", "id", routing_id_);
   DCHECK(
       !FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type));
   RenderFrameImpl::PrepareRenderViewForNavigation(common_params.url,
@@ -3424,9 +3426,6 @@ void RenderFrameImpl::CommitFailedNavigation(
     return;
   }
 
-  // Make sure errors are not shown in view source mode.
-  frame_->EnableViewSourceMode(false);
-
   // Replace the current history entry in reloads, and loads of the same url.
   // This corresponds to Blink's notion of a standard commit.
   // Also replace the current history entry if the browser asked for it
@@ -3442,49 +3441,45 @@ void RenderFrameImpl::CommitFailedNavigation(
   if (request_params.page_state.IsValid())
     history_entry = PageStateToHistoryEntry(request_params.page_state);
 
+  std::unique_ptr<blink::WebNavigationParams> navigation_params =
+      BuildNavigationParams(common_params, request_params,
+                            BuildServiceWorkerNetworkProviderForNavigation(
+                                &request_params, nullptr));
+  std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
+      common_params, request_params, base::TimeTicks(), std::move(callback),
+      nullptr);
+
+  if (request_params.nav_entry_id == 0) {
+    // For renderer initiated navigations, we send out a
+    // DidFailProvisionalLoad() notification.
+    NotifyObserversOfFailedProvisionalLoad(error);
+
+    // Provisional document loader can be null in cases such as cross
+    // process failures, e.g. error pages.
+    if (frame_->GetProvisionalDocumentLoader()) {
+      // TODO(dgozman): why do we need to notify browser in response
+      // to it's own request?
+      SendFailedProvisionalLoad(failed_request, error, frame_);
+    }
+  }
+
   // The load of the error page can result in this frame being removed.
   // Use a WeakPtr as an easy way to detect whether this has occured. If so,
   // this method should return immediately and not touch any part of the object,
   // otherwise it will result in a use-after-free bug.
   base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
 
-  std::unique_ptr<blink::WebNavigationParams> navigation_params =
-      BuildNavigationParams(common_params, request_params,
-                            BuildServiceWorkerNetworkProviderForNavigation(
-                                &request_params, nullptr));
-  std::unique_ptr<DocumentState> navigation_data(BuildDocumentStateFromParams(
-      common_params, request_params, base::TimeTicks(), std::move(callback),
-      nullptr));
-
-  // For renderer initiated navigations, we send out a didFailProvisionalLoad()
-  // notification.
-  bool had_provisional_document_loader = frame_->GetProvisionalDocumentLoader();
-  if (request_params.nav_entry_id == 0) {
-    blink::WebHistoryCommitType commit_type =
-        replace ? blink::kWebHistoryInertCommit : blink::kWebStandardCommit;
-
-    // Note: had_provisional_document_loader can be false in cases such as cross
-    // process failures, e.g. error pages.
-    if (had_provisional_document_loader) {
-      DidFailProvisionalLoadInternal(error, commit_type, error_page_content,
-                                     std::move(navigation_params),
-                                     std::move(navigation_data));
-    } else {
-      NotifyObserversOfFailedProvisionalLoad(error);
-    }
-    if (!weak_this)
-      return;
-  }
-
-  // If we didn't call DidFailProvisionalLoad above, LoadNavigationErrorPage
-  // wasn't called, so do it now.
-  if (request_params.nav_entry_id != 0 || !had_provisional_document_loader) {
-    LoadNavigationErrorPage(failed_request, error, replace, history_entry.get(),
-                            error_page_content, std::move(navigation_params),
-                            std::move(navigation_data));
-    if (!weak_this)
-      return;
-  }
+  // Don't pass history entry for renderer initiated navigations.
+  bool pass_history_entry = request_params.nav_entry_id != 0;
+  // TODO(dgozman): if this DCHECK never triggers, we can just pass
+  // |history_entry| unconditionally.
+  DCHECK(pass_history_entry || !history_entry);
+  LoadNavigationErrorPage(failed_request, error, replace,
+                          pass_history_entry ? history_entry.get() : nullptr,
+                          error_page_content, std::move(navigation_params),
+                          std::move(document_state));
+  if (!weak_this)
+    return;
 
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
@@ -4227,13 +4222,6 @@ void RenderFrameImpl::DidStartProvisionalLoad(
     observer.DidStartProvisionalLoad(document_loader,
                                      navigation_state->IsContentInitiated());
   }
-}
-
-void RenderFrameImpl::DidFailProvisionalLoad(
-    const WebURLError& error,
-    blink::WebHistoryCommitType commit_type) {
-  DidFailProvisionalLoadInternal(error, commit_type, base::nullopt, nullptr,
-                                 nullptr);
 }
 
 void RenderFrameImpl::DidCommitProvisionalLoad(
