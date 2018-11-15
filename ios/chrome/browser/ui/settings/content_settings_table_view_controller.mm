@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/content_settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
 
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -17,9 +17,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/mailto/features.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/block_popups_collection_view_controller.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/compose_email_handler_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/translate_table_view_controller.h"
@@ -28,8 +27,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -51,8 +48,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface ContentSettingsCollectionViewController ()<PrefObserverDelegate,
-                                                      BooleanObserver> {
+@interface ContentSettingsTableViewController ()<PrefObserverDelegate,
+                                                 BooleanObserver> {
   // Pref observer to track changes to prefs.
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
   // Registrar for pref changes notifications.
@@ -66,9 +63,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   MailtoHandlerManager* _mailtoHandlerManager;
 
   // Updatable Items
-  LegacySettingsDetailItem* _blockPopupsDetailItem;
-  LegacySettingsDetailItem* _translateDetailItem;
-  LegacySettingsDetailItem* _composeEmailDetailItem;
+  SettingsDetailItem* _blockPopupsDetailItem;
+  SettingsDetailItem* _translateDetailItem;
+  SettingsDetailItem* _composeEmailDetailItem;
 }
 
 // Returns the value for the default setting with ID |settingID|.
@@ -81,15 +78,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @end
 
-@implementation ContentSettingsCollectionViewController {
+@implementation ContentSettingsTableViewController {
   ios::ChromeBrowserState* browserState_;  // weak
 }
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     browserState_ = browserState;
     self.title = l10n_util::GetNSString(IDS_IOS_CONTENT_SETTINGS_TITLE);
@@ -114,18 +111,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
           [MailtoHandlerManager mailtoHandlerManagerWithStandardHandlers];
       [_mailtoHandlerManager setObserver:self];
     }
-
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
   return self;
 }
 
+#pragma mark - UIViewController
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.tableView.rowHeight = UITableViewAutomaticDimension;
+
+  [self loadModel];
+}
+
+#pragma mark - ChromeTableViewController
+
 - (void)loadModel {
   [super loadModel];
 
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierSettings];
   [model addItem:[self blockPopupsItem]
       toSectionWithIdentifier:SectionIdentifierSettings];
@@ -146,23 +150,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-- (CollectionViewItem*)blockPopupsItem {
-  _blockPopupsDetailItem = [[LegacySettingsDetailItem alloc]
-      initWithType:ItemTypeSettingsBlockPopups];
+#pragma mark - ContentSettingsTableViewController
+
+- (TableViewItem*)blockPopupsItem {
+  _blockPopupsDetailItem =
+      [[SettingsDetailItem alloc] initWithType:ItemTypeSettingsBlockPopups];
   NSString* subtitle = [_disablePopupsSetting value]
                            ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                            : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   _blockPopupsDetailItem.text = l10n_util::GetNSString(IDS_IOS_BLOCK_POPUPS);
   _blockPopupsDetailItem.detailText = subtitle;
   _blockPopupsDetailItem.accessoryType =
-      MDCCollectionViewCellAccessoryDisclosureIndicator;
+      UITableViewCellAccessoryDisclosureIndicator;
   _blockPopupsDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
   return _blockPopupsDetailItem;
 }
 
-- (CollectionViewItem*)translateItem {
+- (TableViewItem*)translateItem {
   _translateDetailItem =
-      [[LegacySettingsDetailItem alloc] initWithType:ItemTypeSettingsTranslate];
+      [[SettingsDetailItem alloc] initWithType:ItemTypeSettingsTranslate];
   BOOL enabled =
       browserState_->GetPrefs()->GetBoolean(prefs::kOfferTranslateEnabled);
   NSString* subtitle = enabled ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
@@ -170,14 +176,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _translateDetailItem.text = l10n_util::GetNSString(IDS_IOS_TRANSLATE_SETTING);
   _translateDetailItem.detailText = subtitle;
   _translateDetailItem.accessoryType =
-      MDCCollectionViewCellAccessoryDisclosureIndicator;
+      UITableViewCellAccessoryDisclosureIndicator;
   _translateDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
   return _translateDetailItem;
 }
 
-- (CollectionViewItem*)composeEmailItem {
-  _composeEmailDetailItem = [[LegacySettingsDetailItem alloc]
-      initWithType:ItemTypeSettingsComposeEmail];
+- (TableViewItem*)composeEmailItem {
+  _composeEmailDetailItem =
+      [[SettingsDetailItem alloc] initWithType:ItemTypeSettingsComposeEmail];
   if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
     // Use the handler's preferred title string for the compose email item.
     MailtoHandlerProvider* provider =
@@ -198,7 +204,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [_mailtoHandlerManager defaultHandlerName];
   }
   _composeEmailDetailItem.accessoryType =
-      MDCCollectionViewCellAccessoryDisclosureIndicator;
+      UITableViewCellAccessoryDisclosureIndicator;
   _composeEmailDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
   return _composeEmailDetailItem;
 }
@@ -208,14 +214,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
       ->GetDefaultContentSetting(settingID, NULL);
 }
 
-#pragma mark - UICollectionViewDelegate
+#pragma mark - UITableViewDelegate
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didSelectRowAtIndexPath:indexPath];
 
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
     case ItemTypeSettingsBlockPopups: {
       UIViewController* controller =
@@ -251,6 +256,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
   }
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 #pragma mark - PrefObserverDelegate

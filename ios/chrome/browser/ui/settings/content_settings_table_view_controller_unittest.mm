@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/content_settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
 
 #include "base/test/scoped_feature_list.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/mailto/features.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest_mac.h"
@@ -20,17 +20,17 @@
 
 namespace {
 
-class ContentSettingsCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class ContentSettingsTableViewControllerTest
+    : public ChromeTableViewControllerTest {
  protected:
   void SetUp() override {
-    CollectionViewControllerTest::SetUp();
+    ChromeTableViewControllerTest::SetUp();
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
   }
 
-  CollectionViewController* InstantiateController() override {
-    return [[ContentSettingsCollectionViewController alloc]
+  ChromeTableViewController* InstantiateController() override {
+    return [[ContentSettingsTableViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
@@ -41,7 +41,7 @@ class ContentSettingsCollectionViewControllerTest
 
 // Tests that there are 3 sections in Content Settings if mailto: URL
 // rewriting feature is enabled and mailto handling with Google UI is enabled.
-TEST_F(ContentSettingsCollectionViewControllerTest,
+TEST_F(ContentSettingsTableViewControllerTest,
        TestModelWithMailToUrlRewritingAndGoogleUI) {
   // Turn on mailto handling with Google UI feature flag.
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -60,7 +60,7 @@ TEST_F(ContentSettingsCollectionViewControllerTest,
 
 // Tests that there are 3 sections in Content Settings if mailto: URL
 // rewriting feature is enabled.
-TEST_F(ContentSettingsCollectionViewControllerTest,
+TEST_F(ContentSettingsTableViewControllerTest,
        TestModelWithMailToUrlRewriting) {
   // Turn off mailto handling with Google UI feature flag.
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -75,7 +75,7 @@ TEST_F(ContentSettingsCollectionViewControllerTest,
   CheckDetailItemTextWithIds(IDS_IOS_BLOCK_POPUPS, IDS_IOS_SETTING_ON, 0, 0);
   CheckDetailItemTextWithIds(IDS_IOS_TRANSLATE_SETTING, IDS_IOS_SETTING_ON, 0,
                              1);
-  LegacySettingsDetailItem* item = GetCollectionViewItem(0, 2);
+  SettingsDetailItem* item = GetTableViewItem(0, 2);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_COMPOSE_EMAIL_SETTING), item.text);
 }
 

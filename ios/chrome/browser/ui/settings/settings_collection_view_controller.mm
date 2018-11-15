@@ -51,7 +51,7 @@
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
-#import "ios/chrome/browser/ui/settings/content_settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/material_cell_catalog_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
@@ -879,7 +879,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
           initWithBrowserState:_browserState];
       break;
     case ItemTypeContentSettings:
-      controller = [[ContentSettingsCollectionViewController alloc]
+      controller = [[ContentSettingsTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeBandwidth:
