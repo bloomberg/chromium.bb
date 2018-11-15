@@ -126,9 +126,10 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
   auto history_helper = std::make_unique<FeedHistoryHelper>(history_service);
-  auto logging_metrics =
-      std::make_unique<FeedLoggingMetrics>(base::BindRepeating(
-          &FeedHistoryHelper::CheckURL, std::move(history_helper)));
+  auto logging_metrics = std::make_unique<FeedLoggingMetrics>(
+      base::BindRepeating(&FeedHistoryHelper::CheckURL,
+                          std::move(history_helper)),
+      base::DefaultClock::GetInstance());
 
   return new FeedHostService(
       std::move(logging_metrics), std::move(image_manager),

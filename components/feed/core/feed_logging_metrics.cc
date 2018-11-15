@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 
@@ -37,12 +38,12 @@ const char kHistogramArticlesUsageTimeLocal[] =
 // Records ContentSuggestions usage. Therefore the day is sliced into 20min
 // buckets. Depending on the current local time the count of the corresponding
 // bucket is increased.
-void RecordContentSuggestionsUsage() {
+void RecordContentSuggestionsUsage(base::Time now) {
   const int kBucketSizeMins = 20;
   const int kNumBuckets = 24 * 60 / kBucketSizeMins;
 
   base::Time::Exploded now_exploded;
-  base::Time::Now().LocalExplode(&now_exploded);
+  now.LocalExplode(&now_exploded);
   int bucket = (now_exploded.hour * 60 + now_exploded.minute) / kBucketSizeMins;
 
   const char* kWeekdayNames[] = {"Sunday",   "Monday", "Tuesday", "Wednesday",
@@ -78,8 +79,10 @@ void RecordSuggestionPageVisited(bool return_to_ntp) {
 }  // namespace
 
 FeedLoggingMetrics::FeedLoggingMetrics(
-    HistoryURLCheckCallback history_url_check_callback)
+    HistoryURLCheckCallback history_url_check_callback,
+    base::Clock* clock)
     : history_url_check_callback_(std::move(history_url_check_callback)),
+      clock_(clock),
       weak_ptr_factory_(this) {}
 
 FeedLoggingMetrics::~FeedLoggingMetrics() = default;
@@ -97,7 +100,7 @@ void FeedLoggingMetrics::OnSuggestionShown(int position,
   UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.Shown", position,
                              kMaxSuggestionsTotal);
 
-  base::TimeDelta age = base::Time::Now() - publish_date;
+  base::TimeDelta age = clock_->Now() - publish_date;
   UMA_HISTOGRAM_CUSTOM_TIMES("NewTabPage.ContentSuggestions.ShownAge.Articles",
                              age, base::TimeDelta::FromSeconds(1),
                              base::TimeDelta::FromDays(7), 100);
@@ -109,14 +112,14 @@ void FeedLoggingMetrics::OnSuggestionShown(int position,
   // Records the time since the fetch time of the displayed snippet.
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "NewTabPage.ContentSuggestions.TimeSinceSuggestionFetched",
-      base::Time::Now() - fetch_date, base::TimeDelta::FromSeconds(1),
+      clock_->Now() - fetch_date, base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromDays(7),
       /*bucket_count=*/100);
 
   // When the first of the articles suggestions is shown, then we count this as
   // a single usage of content suggestions.
   if (position == 0) {
-    RecordContentSuggestionsUsage();
+    RecordContentSuggestionsUsage(clock_->Now());
   }
 }
 
@@ -126,7 +129,7 @@ void FeedLoggingMetrics::OnSuggestionOpened(int position,
   UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.Opened", position,
                              kMaxSuggestionsTotal);
 
-  base::TimeDelta age = base::Time::Now() - publish_date;
+  base::TimeDelta age = clock_->Now() - publish_date;
   UMA_HISTOGRAM_CUSTOM_TIMES("NewTabPage.ContentSuggestions.OpenedAge.Articles",
                              age, base::TimeDelta::FromSeconds(1),
                              base::TimeDelta::FromDays(7), 100);
@@ -135,7 +138,7 @@ void FeedLoggingMetrics::OnSuggestionOpened(int position,
       "NewTabPage.ContentSuggestions.OpenedScoreNormalized.Articles",
       ToUMAScore(score), 11);
 
-  RecordContentSuggestionsUsage();
+  RecordContentSuggestionsUsage(clock_->Now());
 
   base::RecordAction(base::UserMetricsAction("Suggestions.Content.Opened"));
 }
@@ -160,7 +163,7 @@ void FeedLoggingMetrics::OnSuggestionMenuOpened(int position,
   UMA_HISTOGRAM_EXACT_LINEAR("NewTabPage.ContentSuggestions.MenuOpened",
                              position, kMaxSuggestionsTotal);
 
-  base::TimeDelta age = base::Time::Now() - publish_date;
+  base::TimeDelta age = clock_->Now() - publish_date;
   UMA_HISTOGRAM_CUSTOM_TIMES(
       "NewTabPage.ContentSuggestions.MenuOpenedAge.Articles", age,
       base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(7), 100);

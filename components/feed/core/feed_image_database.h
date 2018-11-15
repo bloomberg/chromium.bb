@@ -13,6 +13,10 @@
 #include "base/memory/weak_ptr.h"
 #include "components/leveldb_proto/proto_database.h"
 
+namespace base {
+class Clock;
+}  // namespace base
+
 namespace feed {
 
 class CachedImageProto;
@@ -42,7 +46,8 @@ class FeedImageDatabase {
   FeedImageDatabase(
       const base::FilePath& database_dir,
       std::unique_ptr<leveldb_proto::ProtoDatabase<CachedImageProto>>
-          image_database);
+          image_database,
+      base::Clock* clock);
   ~FeedImageDatabase();
 
   // Returns true if initialization has finished successfully, else false.
@@ -111,6 +116,10 @@ class FeedImageDatabase {
 
   std::unique_ptr<leveldb_proto::ProtoDatabase<CachedImageProto>>
       image_database_;
+
+  // Used to access current time, injected for testing.
+  base::Clock* clock_;
+
   std::vector<std::pair<std::string, FeedImageDatabaseCallback>>
       pending_image_callbacks_;
 
