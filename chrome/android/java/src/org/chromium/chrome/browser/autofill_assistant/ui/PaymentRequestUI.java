@@ -15,11 +15,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.annotation.IntDef;
-import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
-import android.text.SpannableString;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -33,7 +30,6 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
@@ -51,11 +47,8 @@ import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.animation.FocusAnimator;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
-import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
-import org.chromium.ui.widget.TextViewWithClickableSpans;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -740,9 +733,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     FadingEdgeScrollView.EdgeType.HARD, FadingEdgeScrollView.EdgeType.FADING);
             mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout, -1));
 
-            // Add a link to Autofill settings.
-            addCardAndAddressOptionsSettingsView(mPaymentContainerLayout);
-
             // Expand all the dividers.
             for (int i = 0; i < mSectionSeparators.size(); i++) mSectionSeparators.get(i).expand();
             mPaymentContainerLayout.requestLayout();
@@ -781,35 +771,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         } else {
             updateSectionVisibility();
         }
-    }
-
-    private void addCardAndAddressOptionsSettingsView(LinearLayout parent) {
-        String message;
-        if (!mShowDataSource) {
-            message = mContext.getString(R.string.payments_card_and_address_settings);
-        } else if (ChromeSigninController.get().isSignedIn()) {
-            message = mContext.getString(R.string.payments_card_and_address_settings_signed_in,
-                    ChromeSigninController.get().getSignedInAccountName());
-        } else {
-            message = mContext.getString(R.string.payments_card_and_address_settings_signed_out);
-        }
-
-        NoUnderlineClickableSpan settingsSpan =
-                new NoUnderlineClickableSpan((widget) -> mClient.onCardAndAddressSettingsClicked());
-        SpannableString spannableMessage = SpanApplier.applySpans(
-                message, new SpanInfo("BEGIN_LINK", "END_LINK", settingsSpan));
-
-        TextView view = new TextViewWithClickableSpans(mContext);
-        view.setText(spannableMessage);
-        view.setMovementMethod(LinkMovementMethod.getInstance());
-        ApiCompatibilityUtils.setTextAppearance(view, R.style.BlackBody);
-
-        // Add paddings instead of margin to let getMeasuredHeight return correct value for section
-        // resize animation.
-        int paddingSize = mContext.getResources().getDimensionPixelSize(
-                R.dimen.editor_dialog_section_large_spacing);
-        ViewCompat.setPaddingRelative(view, paddingSize, paddingSize, paddingSize, paddingSize);
-        parent.addView(view);
     }
 
     private Callback<SectionInformation> createUpdateSectionCallback(@DataType final int type) {
