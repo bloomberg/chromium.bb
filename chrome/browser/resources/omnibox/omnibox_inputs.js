@@ -55,6 +55,10 @@ class OmniboxInputs extends OmniboxElement {
       this.$$('show-details'),
       this.$$('show-all-providers'),
     ].forEach(elem => elem.addEventListener('change', onDisplayInputsChanged));
+    this.$$('copy-text')
+        .addEventListener('click', () => this.onCopyOutput_('text'));
+    this.$$('copy-json')
+        .addEventListener('click', () => this.onCopyOutput_('json'));
   }
 
   /** @private */
@@ -91,6 +95,14 @@ class OmniboxInputs extends OmniboxElement {
     return this.$$('lock-cursor-position').checked ?
         this.$$('input-text').value.length :
         this.$$('input-text').selectionEnd;
+  }
+
+  /**
+   * @param {string} format Either 'text' or 'json'.
+   * @private
+   */
+  onCopyOutput_(format) {
+    this.dispatchEvent(new CustomEvent('copy-request', {detail: format}));
   }
 }
 
