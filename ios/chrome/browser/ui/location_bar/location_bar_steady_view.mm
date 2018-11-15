@@ -100,6 +100,11 @@ const CGFloat kButtonTrailingSpacing = 10;
 
 @implementation LocationBarSteadyButton
 
+- (void)layoutSubviews {
+  [super layoutSubviews];
+  self.layer.cornerRadius = self.bounds.size.height / 2.0;
+}
+
 - (void)setHighlighted:(BOOL)highlighted {
   [super setHighlighted:highlighted];
   [UIView animateWithDuration:0.1
