@@ -14,16 +14,16 @@
 namespace blink {
 
 bool CullRect::Intersects(const IntRect& rect) const {
-  return rect.Intersects(rect_);
+  return IsInfinite() || rect.Intersects(rect_);
 }
 
 bool CullRect::Intersects(const LayoutRect& rect) const {
-  return rect_.Intersects(EnclosingIntRect(rect));
+  return IsInfinite() || rect_.Intersects(EnclosingIntRect(rect));
 }
 
 bool CullRect::IntersectsTransformed(const AffineTransform& transform,
                                      const FloatRect& rect) const {
-  return transform.MapRect(rect).Intersects(rect_);
+  return IsInfinite() || transform.MapRect(rect).Intersects(rect_);
 }
 
 bool CullRect::IntersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const {
@@ -35,16 +35,19 @@ bool CullRect::IntersectsVerticalRange(LayoutUnit lo, LayoutUnit hi) const {
 }
 
 void CullRect::MoveBy(const IntPoint& offset) {
-  if (rect_ != LayoutRect::InfiniteIntRect())
+  if (!IsInfinite())
     rect_.MoveBy(offset);
 }
 
 void CullRect::Move(const IntSize& offset) {
-  if (rect_ != LayoutRect::InfiniteIntRect())
+  if (!IsInfinite())
     rect_.Move(offset);
 }
 
 void CullRect::ApplyTransform(const TransformPaintPropertyNode* transform) {
+  if (IsInfinite())
+    return;
+
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     if (const auto* scroll = transform->ScrollNode()) {
       rect_.Intersect(scroll->ContainerRect());
@@ -59,8 +62,7 @@ void CullRect::ApplyTransform(const TransformPaintPropertyNode* transform) {
     }
   }
 
-  if (rect_ != LayoutRect::InfiniteIntRect())
-    rect_ = transform->Matrix().Inverse().MapRect(rect_);
+  rect_ = transform->Matrix().Inverse().MapRect(rect_);
 }
 
 }  // namespace blink

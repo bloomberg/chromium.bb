@@ -122,9 +122,9 @@ class DraggedNodeImageBuilder {
             .AbsoluteToLocalQuad(FloatQuad(absolute_bounding_box),
                                  kUseTransforms)
             .BoundingBox();
-    PaintLayerPaintingInfo painting_info(layer, LayoutRect(bounding_box),
-                                         kGlobalPaintFlattenCompositingLayers,
-                                         LayoutSize());
+    PaintLayerPaintingInfo painting_info(
+        layer, CullRect(EnclosingIntRect(bounding_box)),
+        kGlobalPaintFlattenCompositingLayers, LayoutSize());
     PaintLayerFlags flags = kPaintLayerHaveTransparency |
                             kPaintLayerUncachedClipRects;
     PaintRecordBuilder builder;

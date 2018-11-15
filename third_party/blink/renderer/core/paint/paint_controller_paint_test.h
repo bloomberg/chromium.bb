@@ -47,8 +47,7 @@ class PaintControllerPaintTestBase : public RenderingTest {
         GraphicsContext graphics_context(RootPaintController());
         GetDocument().View()->Paint(
             graphics_context, kGlobalPaintNormalPhase,
-            interest_rect ? CullRect(*interest_rect)
-                          : CullRect(LayoutRect::InfiniteIntRect()));
+            interest_rect ? CullRect(*interest_rect) : CullRect::Infinite());
         return true;
       }
       GetDocument().View()->Lifecycle().AdvanceTo(
@@ -142,12 +141,12 @@ const DisplayItem::Type kScrollingContentsBackgroundChunkType =
     DisplayItem::PaintPhaseToClipType(
         PaintPhase::kDescendantBlockBackgroundsOnly);
 
-#define EXPECT_SUBSEQUENCE(client, expected_start, expected_end) \
-  do {                                                           \
-    auto* subsequence = GetSubsequenceMarkers(client);           \
-    ASSERT_NE(nullptr, subsequence);                             \
-    EXPECT_EQ(expected_start, subsequence->start);               \
-    EXPECT_EQ(expected_end, subsequence->end);                   \
+#define EXPECT_SUBSEQUENCE(client, expected_start, expected_end)        \
+  do {                                                                  \
+    auto* subsequence = GetSubsequenceMarkers(client);                  \
+    ASSERT_NE(nullptr, subsequence);                                    \
+    EXPECT_EQ(static_cast<size_t>(expected_start), subsequence->start); \
+    EXPECT_EQ(static_cast<size_t>(expected_end), subsequence->end);     \
   } while (false)
 
 #define EXPECT_NO_SUBSEQUENCE(client) \

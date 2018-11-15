@@ -529,7 +529,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   // would.
   LocalFrameView* view = web_view_helper_.LocalMainFrame()->GetFrameView();
   PaintLayer* root_layer = view->GetLayoutView()->Layer();
-  LayoutRect paint_rect(0, 0, kWidth, kHeight);
+  CullRect paint_rect(IntRect(0, 0, kWidth, kHeight));
   PaintLayerPaintingInfo painting_info(root_layer, paint_rect,
                                        kGlobalPaintNormalPhase, LayoutSize());
 

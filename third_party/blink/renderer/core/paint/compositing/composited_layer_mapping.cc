@@ -3113,7 +3113,7 @@ void CompositedLayerMapping::DoPaintTask(
       kPaintsIntoGroupedBacking) {
     // FIXME: GraphicsLayers need a way to split for multicol.
     PaintLayerPaintingInfo painting_info(
-        paint_info.paint_layer, LayoutRect(dirty_rect), kGlobalPaintNormalPhase,
+        paint_info.paint_layer, CullRect(dirty_rect), kGlobalPaintNormalPhase,
         paint_info.paint_layer->SubpixelAccumulation());
     PaintLayerPainter(*paint_info.paint_layer)
         .PaintLayerContents(context, painting_info, paint_layer_flags);
@@ -3126,7 +3126,7 @@ void CompositedLayerMapping::DoPaintTask(
     }
   } else {
     PaintLayerPaintingInfo painting_info(
-        paint_info.paint_layer, LayoutRect(dirty_rect), kGlobalPaintNormalPhase,
+        paint_info.paint_layer, CullRect(dirty_rect), kGlobalPaintNormalPhase,
         paint_info.paint_layer->SubpixelAccumulation());
     PaintLayerPainter(*paint_info.paint_layer)
         .Paint(context, painting_info, paint_layer_flags);

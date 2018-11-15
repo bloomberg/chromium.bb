@@ -101,11 +101,11 @@ void FramePainter::PaintContents(GraphicsContext& context,
       root_layer->GetLayoutObject().GetFrame());
   context.SetDeviceScaleFactor(device_scale_factor);
 
-  layer_painter.Paint(context, LayoutRect(rect), updated_global_paint_flags,
+  layer_painter.Paint(context, CullRect(rect), updated_global_paint_flags,
                       root_layer_paint_flags);
 
   if (root_layer->ContainsDirtyOverlayScrollbars()) {
-    layer_painter.PaintOverlayScrollbars(context, LayoutRect(rect),
+    layer_painter.PaintOverlayScrollbars(context, CullRect(rect),
                                          updated_global_paint_flags);
   }
 

@@ -63,7 +63,7 @@ void TableRowPainter::HandleChangedPartialPaint(
       dirtied_columns ==
               layout_table_row_.Section()->FullTableEffectiveColumnSpan()
           ? kFullyPainted
-          : kMayBeClippedByPaintDirtyRect;
+          : kMayBeClippedByCullRect;
   layout_table_row_.GetMutableForPainting().UpdatePaintResult(
       paint_result, paint_info.GetCullRect());
 }

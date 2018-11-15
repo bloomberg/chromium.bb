@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CULL_RECT_H_
 
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -26,6 +27,10 @@ class PLATFORM_EXPORT CullRect {
   CullRect() = default;
   explicit CullRect(const IntRect& rect) : rect_(rect) {}
 
+  static CullRect Infinite() { return CullRect(LayoutRect::InfiniteIntRect()); }
+
+  bool IsInfinite() const { return rect_ == LayoutRect::InfiniteIntRect(); }
+
   bool Intersects(const IntRect&) const;
   bool Intersects(const LayoutRect&) const;
   bool IntersectsTransformed(const AffineTransform&, const FloatRect&) const;
@@ -42,15 +47,17 @@ class PLATFORM_EXPORT CullRect {
 
  private:
   IntRect rect_;
-
-  friend bool operator==(const CullRect&, const CullRect&);
 };
 
 inline bool operator==(const CullRect& a, const CullRect& b) {
-  return a.rect_ == b.rect_;
+  return a.Rect() == b.Rect();
 }
 inline bool operator!=(const CullRect& a, const CullRect& b) {
   return !(a == b);
+}
+
+inline std::ostream& operator<<(std::ostream& os, const CullRect& cull_rect) {
+  return os << cull_rect.Rect();
 }
 
 }  // namespace blink

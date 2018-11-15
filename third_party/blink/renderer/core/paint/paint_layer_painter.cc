@@ -38,12 +38,11 @@ static inline bool ShouldSuppressPaintingLayer(const PaintLayer& layer) {
 }
 
 void PaintLayerPainter::Paint(GraphicsContext& context,
-                              const LayoutRect& damage_rect,
+                              const CullRect& cull_rect,
                               const GlobalPaintFlags global_paint_flags,
                               PaintLayerFlags paint_flags) {
-  PaintLayerPaintingInfo painting_info(
-      &paint_layer_, LayoutRect(EnclosingIntRect(damage_rect)),
-      global_paint_flags, LayoutSize());
+  PaintLayerPaintingInfo painting_info(&paint_layer_, cull_rect,
+                                       global_paint_flags, LayoutSize());
   if (!paint_layer_.PaintsIntoOwnOrGroupedBacking(global_paint_flags))
     Paint(context, painting_info, paint_flags);
 }
@@ -213,23 +212,23 @@ static bool ShouldRepaintSubsequence(
 
   // Repaint if previously the layer might be clipped by paintDirtyRect and
   // paintDirtyRect changes.
-  if ((paint_layer.PreviousPaintResult() == kMayBeClippedByPaintDirtyRect ||
+  if ((paint_layer.PreviousPaintResult() == kMayBeClippedByCullRect ||
        // When PaintUnderInvalidationChecking is enabled, always repaint the
        // subsequence when the paint rect changes because we will strictly match
        // new and cached subsequences. Normally we can reuse the cached fully
        // painted subsequence even if we would partially paint this time.
        RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) &&
-      paint_layer.PreviousPaintDirtyRect() != painting_info.paint_dirty_rect) {
+      paint_layer.PreviousCullRect() != painting_info.cull_rect) {
     needs_repaint = true;
   }
-  paint_layer.SetPreviousPaintDirtyRect(painting_info.paint_dirty_rect);
+  paint_layer.SetPreviousCullRect(painting_info.cull_rect);
 
   return needs_repaint;
 }
 
-static bool ShouldUseInfiniteDirtyRect(const GraphicsContext& context,
-                                       const PaintLayer& layer,
-                                       PaintLayerPaintingInfo& painting_info) {
+static bool ShouldUseInfiniteCullRect(const GraphicsContext& context,
+                                      const PaintLayer& layer,
+                                      PaintLayerPaintingInfo& painting_info) {
   // Cull rects and clips can't be propagated across a filter which moves
   // pixels, since the input of the filter may be outside the cull rect /
   // clips yet still result in painted output.
@@ -262,13 +261,12 @@ void PaintLayerPainter::AdjustForPaintProperties(
     PaintLayerFlags& paint_flags) {
   const auto& first_fragment = paint_layer_.GetLayoutObject().FirstFragment();
 
-  bool is_using_infinite_dirty_rect = painting_info.paint_dirty_rect ==
-                                      LayoutRect(LayoutRect::InfiniteIntRect());
-  bool should_use_infinite_dirty_rect =
-      ShouldUseInfiniteDirtyRect(context, paint_layer_, painting_info);
-  if (!is_using_infinite_dirty_rect && should_use_infinite_dirty_rect) {
-    painting_info.paint_dirty_rect = LayoutRect(LayoutRect::InfiniteIntRect());
-    is_using_infinite_dirty_rect = true;
+  bool is_using_infinite_cull_rect = painting_info.cull_rect.IsInfinite();
+  bool should_use_infinite_cull_rect =
+      ShouldUseInfiniteCullRect(context, paint_layer_, painting_info);
+  if (!is_using_infinite_cull_rect && should_use_infinite_cull_rect) {
+    painting_info.cull_rect = CullRect::Infinite();
+    is_using_infinite_cull_rect = true;
   }
 
   if (painting_info.root_layer == &paint_layer_)
@@ -283,20 +281,22 @@ void PaintLayerPainter::AdjustForPaintProperties(
   // Will use the current layer as the new root layer if the layer requires
   // infinite dirty rect or has different transform space from the current
   // root layer.
-  if (!should_use_infinite_dirty_rect && !transform_changed)
+  if (!should_use_infinite_cull_rect && !transform_changed)
     return;
 
-  if (!is_using_infinite_dirty_rect && transform_changed) {
-    // painting_info.paint_dirty_rect is currently in
-    // |painting_info.root_layer|'s pixel-snapped border box space. We need to
-    // adjust it into |paint_layer_|'s space.
-    // This handles the following cases:
+  if (!is_using_infinite_cull_rect && transform_changed) {
+    // painting_info.cull_rect is currently in |painting_info.root_layer|'s
+    // pixel-snapped border box space. We need to adjust it into
+    // |paint_layer_|'s space. This handles the following cases:
     // - The current layer has PaintOffsetTranslation;
     // - The current layer's transform state escapes the root layers contents
     //   transform, e.g. a fixed-position layer;
     // - Scroll offsets.
-    first_root_fragment.MapRectToFragment(first_fragment,
-                                          painting_info.paint_dirty_rect);
+    // TODO(wangxianzhu): Use CullRect::ApplyTransform() which will support
+    // SPv2 interest rect expansion for composited scrolling.
+    auto rect = painting_info.cull_rect.Rect();
+    first_root_fragment.MapRectToFragment(first_fragment, rect);
+    painting_info.cull_rect = CullRect(rect);
   }
 
   // Make the current layer the new root layer.
@@ -331,8 +331,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     // TODO(crbug.com/848056): This can happen e.g. when we paint a filter
     // referencing a SVG foreign object through feImage, especially when there
     // is circular references. Should find a better solution.
-    paint_layer_.SetPreviousPaintDirtyRect(LayoutRect());
-    return kMayBeClippedByPaintDirtyRect;
+    paint_layer_.SetPreviousCullRect(CullRect());
+    return kMayBeClippedByCullRect;
   }
 
   DCHECK(paint_layer_.IsSelfPaintingLayer() ||
@@ -393,8 +393,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   offset_from_root.Move(subpixel_accumulation);
 
   LayoutRect bounds = paint_layer_.PhysicalBoundingBox(offset_from_root);
-  if (!painting_info.paint_dirty_rect.Contains(bounds))
-    result = kMayBeClippedByPaintDirtyRect;
+  if (!LayoutRect(painting_info.cull_rect.Rect()).Contains(bounds))
+    result = kMayBeClippedByCullRect;
 
   // These helpers output clip and compositing operations using a RAII pattern.
   // Stack-allocated-varibles are destructed in the reverse order of
@@ -436,7 +436,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       // clipping container. This handles nested border radius by including
       // all of them in the mask.
       //
-      // The paint rect is in this layer's space, so convert it to the clipper's
+      // The cull rect is in this layer's space, so convert it to the clipper's
       // layer's space. The root_layer is also changed to the clipper's layer to
       // simplify coordinate system adjustments. The change to root_layer must
       // persist to correctly record the clips.
@@ -445,22 +445,24 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       local_painting_info.root_layer = paint_layer_for_fragments;
       paint_layer_.ConvertToLayerCoords(local_painting_info.root_layer,
                                         offset_to_clipper);
-      local_painting_info.paint_dirty_rect.MoveBy(offset_to_clipper);
+      LayoutRect new_cull_rect(local_painting_info.cull_rect.Rect());
+      new_cull_rect.MoveBy(offset_to_clipper);
+      local_painting_info.cull_rect = CullRect(EnclosingIntRect(new_cull_rect));
       // Overflow clip of the compositing container is irrelevant.
       respect_overflow_clip = kIgnoreOverflowClip;
     }
 
     paint_layer_for_fragments->CollectFragments(
         layer_fragments, local_painting_info.root_layer,
-        &local_painting_info.paint_dirty_rect,
-        kIgnorePlatformOverlayScrollbarSize, respect_overflow_clip,
-        &offset_from_root, local_painting_info.sub_pixel_accumulation);
+        &local_painting_info.cull_rect, kIgnorePlatformOverlayScrollbarSize,
+        respect_overflow_clip, &offset_from_root,
+        local_painting_info.sub_pixel_accumulation);
 
     // PaintLayer::CollectFragments depends on the paint dirty rect in
     // complicated ways. For now, always assume a partially painted output
     // for fragmented content.
     if (layer_fragments.size() > 1)
-      result = kMayBeClippedByPaintDirtyRect;
+      result = kMayBeClippedByCullRect;
 
     if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
       // Fragment offsets have been computed in the clipping container's
@@ -477,7 +479,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       should_paint_content = AtLeastOneFragmentIntersectsDamageRect(
           layer_fragments, local_painting_info, paint_flags, offset_from_root);
       if (!should_paint_content)
-        result = kMayBeClippedByPaintDirtyRect;
+        result = kMayBeClippedByCullRect;
     }
   }
 
@@ -533,8 +535,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
             paint_layer_, DisplayItem::kLayerChunkNegativeZOrderChildren);
       }
       if (PaintChildren(kNegativeZOrderChildren, context, painting_info,
-                        paint_flags) == kMayBeClippedByPaintDirtyRect)
-        result = kMayBeClippedByPaintDirtyRect;
+                        paint_flags) == kMayBeClippedByCullRect)
+        result = kMayBeClippedByCullRect;
     }
 
     if (should_paint_own_contents) {
@@ -555,9 +557,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
             DisplayItem::kLayerChunkNormalFlowAndPositiveZOrderChildren);
       }
       if (PaintChildren(kNormalFlowChildren | kPositiveZOrderChildren, context,
-                        painting_info,
-                        paint_flags) == kMayBeClippedByPaintDirtyRect)
-        result = kMayBeClippedByPaintDirtyRect;
+                        painting_info, paint_flags) == kMayBeClippedByCullRect)
+        result = kMayBeClippedByCullRect;
     }
 
     if (should_paint_overlay_scrollbars) {
@@ -698,8 +699,8 @@ PaintResult PaintLayerPainter::PaintChildren(
       continue;
 
     if (PaintLayerPainter(*child).Paint(context, painting_info, paint_flags) ==
-        kMayBeClippedByPaintDirtyRect)
-      result = kMayBeClippedByPaintDirtyRect;
+        kMayBeClippedByCullRect)
+      result = kMayBeClippedByCullRect;
   }
 
   return result;
@@ -947,14 +948,13 @@ void PaintLayerPainter::PaintChildClippingMaskForFragments(
 
 void PaintLayerPainter::PaintOverlayScrollbars(
     GraphicsContext& context,
-    const LayoutRect& damage_rect,
+    const CullRect& cull_rect,
     const GlobalPaintFlags paint_flags) {
   if (!paint_layer_.ContainsDirtyOverlayScrollbars())
     return;
 
-  PaintLayerPaintingInfo painting_info(
-      &paint_layer_, LayoutRect(EnclosingIntRect(damage_rect)), paint_flags,
-      LayoutSize());
+  PaintLayerPaintingInfo painting_info(&paint_layer_, cull_rect, paint_flags,
+                                       LayoutSize());
   Paint(context, painting_info, kPaintLayerPaintingOverlayScrollbars);
 
   paint_layer_.SetContainsDirtyOverlayScrollbars(false);
