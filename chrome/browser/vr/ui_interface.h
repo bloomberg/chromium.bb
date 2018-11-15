@@ -72,6 +72,7 @@ class UiInterface {
       const gfx::PointF& position) = 0;
   virtual bool GetElementVisibilityForTesting(
       UserFriendlyElementName element_name) = 0;
+  virtual void SetUiInputManagerForTesting(bool enabled) = 0;
   virtual bool IsContentVisibleAndOpaque() = 0;
   virtual void SetContentUsesQuadLayer(bool uses_quad_buffers) = 0;
   virtual gfx::Transform GetContentWorldSpaceTransform() = 0;

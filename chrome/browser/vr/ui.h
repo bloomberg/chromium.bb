@@ -75,6 +75,7 @@ class VR_UI_EXPORT Ui : public UiInterface,
   }
   bool GetElementVisibilityForTesting(
       UserFriendlyElementName element_name) override;
+  void SetUiInputManagerForTesting(bool enabled) override;
 
   void Dump(bool include_bindings);
   // TODO(crbug.com/767957): Refactor to hide these behind the UI interface.
@@ -214,6 +215,7 @@ class VR_UI_EXPORT Ui : public UiInterface,
   std::unique_ptr<ContentInputDelegate> content_input_delegate_;
   std::unique_ptr<UiElementRenderer> ui_element_renderer_;
   std::unique_ptr<UiInputManager> input_manager_;
+  std::unique_ptr<UiInputManager> input_manager_for_testing_;
   std::unique_ptr<UiRenderer> ui_renderer_;
   std::unique_ptr<SkiaSurfaceProvider> provider_;
 

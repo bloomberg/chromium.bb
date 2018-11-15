@@ -335,6 +335,7 @@ void BrowserRenderer::PerformControllerActionForTesting(
              "queued";
       using_input_delegate_for_testing_ = false;
       input_delegate_for_testing_.swap(input_delegate_);
+      ui_->SetUiInputManagerForTesting(false);
     }
     return;
   }
@@ -344,6 +345,7 @@ void BrowserRenderer::PerformControllerActionForTesting(
       input_delegate_for_testing_ =
           std::make_unique<InputDelegateForTesting>(ui_.get());
     input_delegate_for_testing_.swap(input_delegate_);
+    ui_->SetUiInputManagerForTesting(true);
   }
   if (controller_input.action != VrControllerTestAction::kEnableMockedInput) {
     static_cast<InputDelegateForTesting*>(input_delegate_.get())

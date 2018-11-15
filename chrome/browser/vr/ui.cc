@@ -33,6 +33,7 @@
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_input_manager.h"
+#include "chrome/browser/vr/ui_input_manager_for_testing.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
@@ -444,7 +445,7 @@ void Ui::OnControllerUpdated(const ControllerModel& controller_model,
   model_->controller = controller_model;
   model_->reticle = reticle_model;
   model_->controller.resting_in_viewport =
-      input_manager_->controller_resting_in_viewport();
+      input_manager_->ControllerRestingInViewport();
 }
 
 void Ui::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
@@ -554,6 +555,21 @@ bool Ui::GetElementVisibilityForTesting(UserFriendlyElementName element_name) {
       UserFriendlyElementNameToUiElementName(element_name));
   DCHECK(target_element) << "Unsupported test element";
   return target_element->IsVisible();
+}
+
+void Ui::SetUiInputManagerForTesting(bool enabled) {
+  if (enabled) {
+    DCHECK(input_manager_for_testing_ == nullptr)
+        << "Attempted to set test UiInputManager while already using it";
+    input_manager_for_testing_ =
+        std::make_unique<UiInputManagerForTesting>(scene_.get());
+    input_manager_for_testing_.swap(input_manager_);
+  } else {
+    DCHECK(input_manager_for_testing_ != nullptr)
+        << "Attempted to unset test UiInputManager while not using it";
+    input_manager_for_testing_.swap(input_manager_);
+    input_manager_for_testing_.reset();
+  }
 }
 
 void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
