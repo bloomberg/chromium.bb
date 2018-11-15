@@ -25,6 +25,7 @@ class QuietModeView;
 class UnifiedSliderBubbleController;
 class UnifiedSystemTrayBubble;
 class UnifiedSystemTrayModel;
+class NetworkIconPurger;
 
 // UnifiedSystemTray is system menu of Chromium OS, which is typically
 // accessible from the button on the right bottom of the screen (Status Area).
@@ -122,6 +123,8 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
 
   const std::unique_ptr<UnifiedSliderBubbleController>
       slider_bubble_controller_;
+
+  const std::unique_ptr<NetworkIconPurger> network_icon_purger_;
 
   ImeModeView* const ime_mode_view_;
   ManagedDeviceView* const managed_device_view_;
