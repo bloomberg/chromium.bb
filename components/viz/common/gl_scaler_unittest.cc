@@ -158,6 +158,7 @@ TEST_F(GLScalerTest, Configure_ResolvesUnspecifiedColorSpaces) {
   const auto srgb = gfx::ColorSpace::CreateSRGB();
   EXPECT_EQ(srgb, scaler.params().source_color_space);
   EXPECT_EQ(srgb, scaler.params().output_color_space);
+  EXPECT_TRUE(GLScaler::ParametersAreEquivalent(params, scaler.params()));
 
   // Source space set to XYZD50 with no output space specified: Both should
   // resolve to XYZD50.
@@ -166,6 +167,7 @@ TEST_F(GLScalerTest, Configure_ResolvesUnspecifiedColorSpaces) {
   EXPECT_TRUE(scaler.Configure(params));
   EXPECT_EQ(xyzd50, scaler.params().source_color_space);
   EXPECT_EQ(xyzd50, scaler.params().output_color_space);
+  EXPECT_TRUE(GLScaler::ParametersAreEquivalent(params, scaler.params()));
 
   // Source space set to XYZD50 with output space set to P3D65: Nothing should
   // change.
@@ -174,6 +176,7 @@ TEST_F(GLScalerTest, Configure_ResolvesUnspecifiedColorSpaces) {
   EXPECT_TRUE(scaler.Configure(params));
   EXPECT_EQ(xyzd50, scaler.params().source_color_space);
   EXPECT_EQ(p3d65, scaler.params().output_color_space);
+  EXPECT_TRUE(GLScaler::ParametersAreEquivalent(params, scaler.params()));
 }
 
 TEST_F(GLScalerTest, Configure_RequiresValidSwizzles) {

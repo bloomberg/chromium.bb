@@ -344,6 +344,36 @@ bool GLScaler::ParametersHasSameScaleRatio(const GLScaler::Parameters& params,
                         to.y());
 }
 
+// static
+bool GLScaler::ParametersAreEquivalent(const Parameters& a,
+                                       const Parameters& b) {
+  if (!ParametersHasSameScaleRatio(a, b.scale_from, b.scale_to) ||
+      a.enable_precise_color_management != b.enable_precise_color_management ||
+      a.quality != b.quality || a.is_flipped_source != b.is_flipped_source ||
+      a.flip_output != b.flip_output || a.export_format != b.export_format ||
+      a.swizzle[0] != b.swizzle[0] || a.swizzle[1] != b.swizzle[1]) {
+    return false;
+  }
+
+  const gfx::ColorSpace source_color_space_a =
+      a.source_color_space.IsValid() ? a.source_color_space
+                                     : gfx::ColorSpace::CreateSRGB();
+  const gfx::ColorSpace source_color_space_b =
+      b.source_color_space.IsValid() ? b.source_color_space
+                                     : gfx::ColorSpace::CreateSRGB();
+  if (source_color_space_a != source_color_space_b) {
+    return false;
+  }
+
+  const gfx::ColorSpace output_color_space_a = a.output_color_space.IsValid()
+                                                   ? a.output_color_space
+                                                   : source_color_space_a;
+  const gfx::ColorSpace output_color_space_b = b.output_color_space.IsValid()
+                                                   ? b.output_color_space
+                                                   : source_color_space_b;
+  return output_color_space_a == output_color_space_b;
+}
+
 void GLScaler::OnContextLost() {
   // The destruction order here is important due to data dependencies.
   chain_.reset();
@@ -685,6 +715,7 @@ bool GLScaler::AreAllGLExtensionsPresent(
 }
 
 GLScaler::Parameters::Parameters() = default;
+GLScaler::Parameters::Parameters(const Parameters& other) = default;
 GLScaler::Parameters::~Parameters() = default;
 
 // static
