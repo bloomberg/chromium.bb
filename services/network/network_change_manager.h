@@ -41,6 +41,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkChangeManager
   void RequestNotifications(
       mojom::NetworkChangeManagerClientPtr client_ptr) override;
 
+#if defined(OS_CHROMEOS)
+  void OnNetworkChanged(
+      bool dns_changed,
+      bool ip_address_changed,
+      bool connection_type_changed,
+      mojom::ConnectionType new_connection_type,
+      bool connection_subtype_changed,
+      mojom::ConnectionSubtype new_connection_subtype) override;
+#endif
+
   size_t GetNumClientsForTesting() const;
 
  private:

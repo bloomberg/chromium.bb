@@ -11,6 +11,10 @@
 #include "base/callback_list.h"
 #include "content/common/content_export.h"
 
+namespace net {
+class NetworkChangeNotifier;
+}  // namespace net
+
 namespace network {
 class NetworkConnectionTracker;
 class NetworkService;
@@ -54,6 +58,9 @@ RegisterNetworkServiceCrashHandler(base::RepeatingClosure handler);
 // Must only be called on the IO thread.  Must not be called if the network
 // service is enabled.
 CONTENT_EXPORT network::NetworkService* GetNetworkServiceImpl();
+
+// Returns the global NetworkChangeNotifier instance.
+CONTENT_EXPORT net::NetworkChangeNotifier* GetNetworkChangeNotifier();
 
 // Call |FlushForTesting()| on cached |NetworkServicePtr|. For testing only.
 // Must only be called on the UI thread.
