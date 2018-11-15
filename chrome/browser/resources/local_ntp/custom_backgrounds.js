@@ -391,17 +391,29 @@ customBackgrounds.getTilesWide = function() {
  * @param {string} current Number of the current tile.
  */
 customBackgrounds.getNextTile = function(deltaX, deltaY, current) {
-  let tilesWide = customBackgrounds.getTilesWide();
-
-  var targetNum = parseInt(current) + deltaX + (deltaY * tilesWide);
-
+  let idPrefix = 'coll_tile_';
   if ($(customBackgrounds.IDS.MENU)
           .classList.contains(customBackgrounds.CLASSES.IMAGE_DIALOG)) {
-    return $('img_tile_' + targetNum);
+    idPrefix = 'img_tile_';
   }
-  if ($(customBackgrounds.IDS.MENU)
-          .classList.contains(customBackgrounds.CLASSES.COLLECTION_DIALOG)) {
-    return $('coll_tile_' + targetNum);
+
+  if (deltaX != 0) {
+    let target = parseInt(current) + deltaX;
+    return $(idPrefix + target);
+  } else if (deltaY != 0) {
+    let target = parseInt(current);
+    let nextTile = $(idPrefix + target);
+    let startingTop = nextTile.getBoundingClientRect().top;
+    let startingLeft = nextTile.getBoundingClientRect().left;
+
+    // Search until a tile in a different row and the same column is found.
+    while (nextTile &&
+           (nextTile.getBoundingClientRect().top == startingTop ||
+            nextTile.getBoundingClientRect().left != startingLeft)) {
+      target += deltaY;
+      nextTile = $(idPrefix + target);
+    }
+    return nextTile;
   }
 };
 
