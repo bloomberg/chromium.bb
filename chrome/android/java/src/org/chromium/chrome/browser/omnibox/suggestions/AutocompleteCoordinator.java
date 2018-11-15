@@ -290,11 +290,14 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
      */
     public boolean handleKeyEvent(int keyCode, KeyEvent event) {
         boolean isShowingList = mListView != null && mListView.isShown();
-        if (isShowingList && mMediator.getSuggestionCount() > 0
-                && (KeyNavigationUtil.isGoDown(event) || KeyNavigationUtil.isGoUp(event))) {
+
+        boolean isUpOrDown = KeyNavigationUtil.isGoUpOrDown(event);
+        if (isShowingList && mMediator.getSuggestionCount() > 0 && isUpOrDown) {
             mMediator.allowPendingItemSelection();
         }
-        if (isShowingList && mListView.onKeyDown(keyCode, event)) return true;
+        boolean isValidListKey = isUpOrDown || KeyNavigationUtil.isGoRight(event)
+                || KeyNavigationUtil.isEnter(event);
+        if (isShowingList && isValidListKey && mListView.onKeyDown(keyCode, event)) return true;
         if (KeyNavigationUtil.isEnter(event) && mParent.getVisibility() == View.VISIBLE) {
             mMediator.loadTypedOmniboxText(event.getEventTime());
             return true;
