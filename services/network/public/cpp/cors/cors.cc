@@ -20,6 +20,11 @@
 #include "url/url_constants.h"
 #include "url/url_util.h"
 
+// String conversion from blink::String to std::string for header name/value
+// should be latin-1, not utf-8, as per HTTP. Note that as we use ByteString
+// as the IDL types of header name/value, a character whose code point is
+// greater than 255 has already been blocked.
+
 namespace {
 
 const char kAsterisk[] = "*";
@@ -90,10 +95,11 @@ bool IsSimilarToIntABNF(const std::string& header_value) {
 
 // https://fetch.spec.whatwg.org/#cors-unsafe-request-header-byte
 bool IsCorsUnsafeRequestHeaderByte(char c) {
-  return (c < 0x20 && c != 0x09) || c == 0x22 || c == 0x28 || c == 0x29 ||
-         c == 0x3a || c == 0x3c || c == 0x3e || c == 0x3f || c == 0x40 ||
-         c == 0x5b || c == 0x5c || c == 0x5d || c == 0x7b || c == 0x7d ||
-         c >= 0x7f;
+  const auto u = static_cast<uint8_t>(c);
+  return (u < 0x20 && u != 0x09) || u == 0x22 || u == 0x28 || u == 0x29 ||
+         u == 0x3a || u == 0x3c || u == 0x3e || u == 0x3f || u == 0x40 ||
+         u == 0x5b || u == 0x5c || u == 0x5d || u == 0x7b || u == 0x7d ||
+         u == 0x7f;
 }
 
 // |value| should be lower case.

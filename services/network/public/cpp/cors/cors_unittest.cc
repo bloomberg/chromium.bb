@@ -404,7 +404,7 @@ TEST_F(CORSTest, SafelistedAccept) {
   constexpr char kAllowed[] =
       "\t !#$%&'*+,-./0123456789;="
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~";
-  for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+  for (int i = 0; i < 128; ++i) {
     SCOPED_TRACE(testing::Message() << "c = static_cast<char>(" << i << ")");
     char c = static_cast<char>(i);
     // 1 for the trailing null character.
@@ -413,6 +413,12 @@ TEST_F(CORSTest, SafelistedAccept) {
               IsCORSSafelistedHeader("accept", std::string(1, c)));
     EXPECT_EQ(std::find(kAllowed, end, c) != end,
               IsCORSSafelistedHeader("AccepT", std::string(1, c)));
+  }
+  for (int i = 128; i <= 255; ++i) {
+    SCOPED_TRACE(testing::Message() << "c = static_cast<char>(" << i << ")");
+    char c = static_cast<char>(static_cast<unsigned char>(i));
+    EXPECT_TRUE(IsCORSSafelistedHeader("accept", std::string(1, c)));
+    EXPECT_TRUE(IsCORSSafelistedHeader("AccepT", std::string(1, c)));
   }
 
   EXPECT_TRUE(IsCORSSafelistedHeader("accept", std::string(128, 'a')));
@@ -473,7 +479,7 @@ TEST_F(CORSTest, SafelistedContentType) {
   constexpr char kAllowed[] =
       "\t !#$%&'*+,-./0123456789;="
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`abcdefghijklmnopqrstuvwxyz|~";
-  for (int i = CHAR_MIN; i <= CHAR_MAX; ++i) {
+  for (int i = 0; i < 128; ++i) {
     SCOPED_TRACE(testing::Message() << "c = static_cast<char>(" << i << ")");
     const char c = static_cast<char>(i);
     // 1 for the trailing null character.
@@ -483,6 +489,13 @@ TEST_F(CORSTest, SafelistedContentType) {
 
     EXPECT_EQ(is_allowed, IsCORSSafelistedHeader("content-type", value));
     EXPECT_EQ(is_allowed, IsCORSSafelistedHeader("cONtent-tYPe", value));
+  }
+  for (int i = 128; i <= 255; ++i) {
+    SCOPED_TRACE(testing::Message() << "c = static_cast<char>(" << i << ")");
+    char c = static_cast<char>(static_cast<unsigned char>(i));
+    const std::string value = std::string("text/plain; charset=") + c;
+    EXPECT_TRUE(IsCORSSafelistedHeader("content-type", value));
+    EXPECT_TRUE(IsCORSSafelistedHeader("ConTEnt-Type", value));
   }
 
   EXPECT_TRUE(IsCORSSafelistedHeader("content-type", "text/plain"));
