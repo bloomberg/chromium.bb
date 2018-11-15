@@ -81,12 +81,13 @@ class MODULES_EXPORT IDBDatabase final
   void TransactionCreated(IDBTransaction*);
   void TransactionFinished(const IDBTransaction*);
   const String& GetObjectStoreName(int64_t object_store_id) const;
-  int32_t AddObserver(IDBObserver*,
-                      int64_t transaction_id,
-                      bool include_transaction,
-                      bool no_records,
-                      bool values,
-                      std::bitset<kIDBOperationTypeCount> operation_types);
+  int32_t AddObserver(
+      IDBObserver*,
+      int64_t transaction_id,
+      bool include_transaction,
+      bool no_records,
+      bool values,
+      const std::bitset<kWebIDBOperationTypeCount>& operation_types);
   void RemoveObservers(const Vector<int32_t>& observer_ids);
 
   // Implement the IDL

@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
 class IndexedDBDatabaseCallbacks;
@@ -60,7 +59,7 @@ class CONTENT_EXPORT IndexedDBConnection {
   IndexedDBTransaction* CreateTransaction(
       int64_t id,
       const std::set<int64_t>& scope,
-      blink::mojom::IDBTransactionMode mode,
+      blink::WebIDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction);
 
   void AbortTransaction(IndexedDBTransaction* transaction,

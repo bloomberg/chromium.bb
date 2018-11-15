@@ -154,7 +154,7 @@ class IndexedDBCallbacks::IOThreadHelper {
   void SendBlocked(int64_t existing_version);
   void SendUpgradeNeeded(SafeIOThreadConnectionWrapper connection,
                          int64_t old_version,
-                         blink::mojom::IDBDataLoss data_loss,
+                         blink::WebIDBDataLoss data_loss,
                          const std::string& data_loss_message,
                          const IndexedDBDatabaseMetadata& metadata);
   void SendSuccessDatabase(SafeIOThreadConnectionWrapper connection,
@@ -221,7 +221,7 @@ IndexedDBCallbacks::IndexedDBCallbacks(
     const url::Origin& origin,
     blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info,
     scoped_refptr<base::SequencedTaskRunner> idb_runner)
-    : data_loss_(blink::mojom::IDBDataLoss::None),
+    : data_loss_(blink::kWebIDBDataLossNone),
       io_helper_(new IOThreadHelper(std::move(callbacks_info),
                                     std::move(dispatcher_host),
                                     origin,
@@ -371,7 +371,7 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   blink::mojom::IDBValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
@@ -398,7 +398,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   blink::mojom::IDBValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
@@ -425,7 +425,7 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
   DCHECK_EQ(keys.size(), primary_keys.size());
   DCHECK_EQ(keys.size(), values->size());
 
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   std::vector<blink::mojom::IDBValuePtr> mojo_values;
   mojo_values.reserve(values->size());
@@ -444,7 +444,7 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
 
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   blink::mojom::IDBReturnValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
@@ -467,7 +467,7 @@ void IndexedDBCallbacks::OnSuccessArray(
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   std::vector<blink::mojom::IDBReturnValuePtr> mojo_values;
   mojo_values.reserve(values->size());
@@ -486,7 +486,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
@@ -511,7 +511,7 @@ void IndexedDBCallbacks::OnSuccess() {
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
-  DCHECK_EQ(blink::mojom::IDBDataLoss::None, data_loss_);
+  DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                            base::BindOnce(&IOThreadHelper::SendSuccess,
@@ -593,7 +593,7 @@ void IndexedDBCallbacks::IOThreadHelper::SendBlocked(int64_t existing_version) {
 void IndexedDBCallbacks::IOThreadHelper::SendUpgradeNeeded(
     SafeIOThreadConnectionWrapper connection_wrapper,
     int64_t old_version,
-    blink::mojom::IDBDataLoss data_loss,
+    blink::WebIDBDataLoss data_loss,
     const std::string& data_loss_message,
     const IndexedDBDatabaseMetadata& metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

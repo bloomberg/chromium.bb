@@ -73,7 +73,7 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
   void OnUpgradeNeeded(long long old_version,
                        WebIDBDatabase*,
                        const WebIDBMetadata&,
-                       mojom::IDBDataLoss data_loss,
+                       unsigned short data_loss,
                        WebString data_loss_message) override;
   void Detach() override;
 

@@ -17,7 +17,6 @@
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
 
@@ -25,7 +24,7 @@ class CONTENT_EXPORT IndexedDBCursor {
  public:
   IndexedDBCursor(std::unique_ptr<IndexedDBBackingStore::Cursor> cursor,
                   indexed_db::CursorType cursor_type,
-                  blink::mojom::IDBTaskType task_type,
+                  blink::WebIDBTaskType task_type,
                   IndexedDBTransaction* transaction);
   ~IndexedDBCursor();
 
@@ -63,7 +62,7 @@ class CONTENT_EXPORT IndexedDBCursor {
       IndexedDBTransaction* transaction);
 
  private:
-  blink::mojom::IDBTaskType task_type_;
+  blink::WebIDBTaskType task_type_;
   indexed_db::CursorType cursor_type_;
 
   // We rely on the transaction calling Close() to clear this.

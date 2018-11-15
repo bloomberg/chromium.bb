@@ -131,7 +131,7 @@ TEST_F(IndexedDBDatabaseTest, ForcedClose) {
   const int64_t transaction_id = 123;
   const std::vector<int64_t> scope;
   db_->CreateTransaction(transaction_id, request->connection(), scope,
-                         blink::mojom::IDBTransactionMode::ReadOnly);
+                         blink::kWebIDBTransactionModeReadOnly);
 
   request->connection()->ForceClose();
 
@@ -340,7 +340,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
                                                         db_, callbacks_);
     transaction_ = connection_->CreateTransaction(
         transaction_id, std::set<int64_t>() /*scope*/,
-        blink::mojom::IDBTransactionMode::VersionChange,
+        blink::kWebIDBTransactionModeVersionChange,
         new IndexedDBFakeBackingStore::FakeTransaction(commit_success_));
     db_->TransactionCreated(transaction_);
 
@@ -460,7 +460,7 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
   scoped_refptr<MockIndexedDBCallbacks> request(
       new MockIndexedDBCallbacks(false));
   db_->Put(transaction_, store_id, &value, std::move(key),
-           blink::mojom::IDBPutMode::AddOnly, request, index_keys);
+           blink::kWebIDBPutModeAddOnly, request, index_keys);
 
   // Deletion is asynchronous.
   db_->DeleteObjectStore(transaction_, store_id);

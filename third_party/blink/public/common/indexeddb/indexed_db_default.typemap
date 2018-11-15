@@ -15,6 +15,8 @@ traits_headers = [
   "//third_party/blink/public/common/indexeddb/indexed_db_default_mojom_traits.h",
 ]
 type_mappings = [
+  "blink.mojom.IDBCursorDirection=::blink::WebIDBCursorDirection",
+  "blink.mojom.IDBDataLoss=::blink::WebIDBDataLoss",
   "blink.mojom.IDBDatabaseMetadata=::blink::IndexedDBDatabaseMetadata",
   "blink.mojom.IDBIndexKeys=::blink::IndexedDBIndexKeys",
   "blink.mojom.IDBIndexMetadata=::blink::IndexedDBIndexMetadata",
@@ -22,4 +24,8 @@ type_mappings = [
   "blink.mojom.IDBKeyPath=::blink::IndexedDBKeyPath",
   "blink.mojom.IDBKeyRange=::blink::IndexedDBKeyRange",
   "blink.mojom.IDBObjectStoreMetadata=::blink::IndexedDBObjectStoreMetadata",
+  "blink.mojom.IDBOperationType=::blink::WebIDBOperationType",
+  "blink.mojom.IDBPutMode=::blink::WebIDBPutMode",
+  "blink.mojom.IDBTaskType=::blink::WebIDBTaskType",
+  "blink.mojom.IDBTransactionMode=::blink::WebIDBTransactionMode",
 ]

@@ -45,7 +45,7 @@ IndexedDBClassFactory::CreateIndexedDBTransaction(
     int64_t id,
     IndexedDBConnection* connection,
     const std::set<int64_t>& scope,
-    blink::mojom::IDBTransactionMode mode,
+    blink::WebIDBTransactionMode mode,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
   return std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
       id, connection, scope, mode, backing_store_transaction));

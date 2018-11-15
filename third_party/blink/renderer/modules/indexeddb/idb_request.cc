@@ -240,7 +240,7 @@ void IDBRequest::Abort() {
 }
 
 void IDBRequest::SetCursorDetails(indexed_db::CursorType cursor_type,
-                                  mojom::IDBCursorDirection direction) {
+                                  WebIDBCursorDirection direction) {
   DCHECK_EQ(ready_state_, PENDING);
   DCHECK(!pending_cursor_);
   cursor_type_ = cursor_type;

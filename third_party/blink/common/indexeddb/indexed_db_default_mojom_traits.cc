@@ -14,7 +14,76 @@
 
 namespace mojo {
 
+using blink::mojom::IDBCursorDirection;
+using blink::mojom::IDBDataLoss;
 using blink::mojom::IDBOperationType;
+
+// static
+IDBCursorDirection
+EnumTraits<IDBCursorDirection, blink::WebIDBCursorDirection>::ToMojom(
+    blink::WebIDBCursorDirection input) {
+  switch (input) {
+    case blink::kWebIDBCursorDirectionNext:
+      return IDBCursorDirection::Next;
+    case blink::kWebIDBCursorDirectionNextNoDuplicate:
+      return IDBCursorDirection::NextNoDuplicate;
+    case blink::kWebIDBCursorDirectionPrev:
+      return IDBCursorDirection::Prev;
+    case blink::kWebIDBCursorDirectionPrevNoDuplicate:
+      return IDBCursorDirection::PrevNoDuplicate;
+  }
+  NOTREACHED();
+  return IDBCursorDirection::Next;
+}
+
+// static
+bool EnumTraits<IDBCursorDirection, blink::WebIDBCursorDirection>::FromMojom(
+    IDBCursorDirection input,
+    blink::WebIDBCursorDirection* output) {
+  switch (input) {
+    case IDBCursorDirection::Next:
+      *output = blink::kWebIDBCursorDirectionNext;
+      return true;
+    case IDBCursorDirection::NextNoDuplicate:
+      *output = blink::kWebIDBCursorDirectionNextNoDuplicate;
+      return true;
+    case IDBCursorDirection::Prev:
+      *output = blink::kWebIDBCursorDirectionPrev;
+      return true;
+    case IDBCursorDirection::PrevNoDuplicate:
+      *output = blink::kWebIDBCursorDirectionPrevNoDuplicate;
+      return true;
+  }
+  return false;
+}
+
+// static
+IDBDataLoss EnumTraits<IDBDataLoss, blink::WebIDBDataLoss>::ToMojom(
+    blink::WebIDBDataLoss input) {
+  switch (input) {
+    case blink::kWebIDBDataLossNone:
+      return IDBDataLoss::None;
+    case blink::kWebIDBDataLossTotal:
+      return IDBDataLoss::Total;
+  }
+  NOTREACHED();
+  return IDBDataLoss::None;
+}
+
+// static
+bool EnumTraits<IDBDataLoss, blink::WebIDBDataLoss>::FromMojom(
+    IDBDataLoss input,
+    blink::WebIDBDataLoss* output) {
+  switch (input) {
+    case IDBDataLoss::None:
+      *output = blink::kWebIDBDataLossNone;
+      return true;
+    case IDBDataLoss::Total:
+      *output = blink::kWebIDBDataLossTotal;
+      return true;
+  }
+  return false;
+}
 
 // static
 bool StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
@@ -244,6 +313,146 @@ bool StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
       return false;
   }
   return true;
+}
+
+// static
+IDBOperationType
+EnumTraits<IDBOperationType, blink::WebIDBOperationType>::ToMojom(
+    blink::WebIDBOperationType input) {
+  switch (input) {
+    case blink::kWebIDBAdd:
+      return IDBOperationType::Add;
+    case blink::kWebIDBPut:
+      return IDBOperationType::Put;
+    case blink::kWebIDBDelete:
+      return IDBOperationType::Delete;
+    case blink::kWebIDBClear:
+      return IDBOperationType::Clear;
+    case blink::kWebIDBOperationTypeCount:
+      // WebIDBOperationTypeCount is not a valid option.
+      break;
+  }
+  NOTREACHED();
+  return IDBOperationType::Add;
+}
+
+// static
+bool EnumTraits<IDBOperationType, blink::WebIDBOperationType>::FromMojom(
+    IDBOperationType input,
+    blink::WebIDBOperationType* output) {
+  switch (input) {
+    case IDBOperationType::Add:
+      *output = blink::kWebIDBAdd;
+      return true;
+    case IDBOperationType::Put:
+      *output = blink::kWebIDBPut;
+      return true;
+    case IDBOperationType::Delete:
+      *output = blink::kWebIDBDelete;
+      return true;
+    case IDBOperationType::Clear:
+      *output = blink::kWebIDBClear;
+      return true;
+  }
+  return false;
+}
+
+// static
+blink::mojom::IDBPutMode
+EnumTraits<blink::mojom::IDBPutMode, blink::WebIDBPutMode>::ToMojom(
+    blink::WebIDBPutMode input) {
+  switch (input) {
+    case blink::kWebIDBPutModeAddOrUpdate:
+      return blink::mojom::IDBPutMode::AddOrUpdate;
+    case blink::kWebIDBPutModeAddOnly:
+      return blink::mojom::IDBPutMode::AddOnly;
+    case blink::kWebIDBPutModeCursorUpdate:
+      return blink::mojom::IDBPutMode::CursorUpdate;
+  }
+  NOTREACHED();
+  return blink::mojom::IDBPutMode::AddOrUpdate;
+}
+
+// static
+bool EnumTraits<blink::mojom::IDBPutMode, blink::WebIDBPutMode>::FromMojom(
+    blink::mojom::IDBPutMode input,
+    blink::WebIDBPutMode* output) {
+  switch (input) {
+    case blink::mojom::IDBPutMode::AddOrUpdate:
+      *output = blink::kWebIDBPutModeAddOrUpdate;
+      return true;
+    case blink::mojom::IDBPutMode::AddOnly:
+      *output = blink::kWebIDBPutModeAddOnly;
+      return true;
+    case blink::mojom::IDBPutMode::CursorUpdate:
+      *output = blink::kWebIDBPutModeCursorUpdate;
+      return true;
+  }
+  return false;
+}
+
+// static
+blink::mojom::IDBTaskType
+EnumTraits<blink::mojom::IDBTaskType, blink::WebIDBTaskType>::ToMojom(
+    blink::WebIDBTaskType input) {
+  switch (input) {
+    case blink::kWebIDBTaskTypeNormal:
+      return blink::mojom::IDBTaskType::Normal;
+    case blink::kWebIDBTaskTypePreemptive:
+      return blink::mojom::IDBTaskType::Preemptive;
+  }
+  NOTREACHED();
+  return blink::mojom::IDBTaskType::Normal;
+}
+
+// static
+bool EnumTraits<blink::mojom::IDBTaskType, blink::WebIDBTaskType>::FromMojom(
+    blink::mojom::IDBTaskType input,
+    blink::WebIDBTaskType* output) {
+  switch (input) {
+    case blink::mojom::IDBTaskType::Normal:
+      *output = blink::kWebIDBTaskTypeNormal;
+      return true;
+    case blink::mojom::IDBTaskType::Preemptive:
+      *output = blink::kWebIDBTaskTypePreemptive;
+      return true;
+  }
+  return false;
+}
+
+// static
+blink::mojom::IDBTransactionMode EnumTraits<
+    blink::mojom::IDBTransactionMode,
+    blink::WebIDBTransactionMode>::ToMojom(blink::WebIDBTransactionMode input) {
+  switch (input) {
+    case blink::kWebIDBTransactionModeReadOnly:
+      return blink::mojom::IDBTransactionMode::ReadOnly;
+    case blink::kWebIDBTransactionModeReadWrite:
+      return blink::mojom::IDBTransactionMode::ReadWrite;
+    case blink::kWebIDBTransactionModeVersionChange:
+      return blink::mojom::IDBTransactionMode::VersionChange;
+  }
+  NOTREACHED();
+  return blink::mojom::IDBTransactionMode::ReadOnly;
+}
+
+// static
+bool EnumTraits<blink::mojom::IDBTransactionMode,
+                blink::WebIDBTransactionMode>::
+    FromMojom(blink::mojom::IDBTransactionMode input,
+              blink::WebIDBTransactionMode* output) {
+  switch (input) {
+    case blink::mojom::IDBTransactionMode::ReadOnly:
+      *output = blink::kWebIDBTransactionModeReadOnly;
+      return true;
+    case blink::mojom::IDBTransactionMode::ReadWrite:
+      *output = blink::kWebIDBTransactionModeReadWrite;
+      return true;
+    case blink::mojom::IDBTransactionMode::VersionChange:
+      *output = blink::kWebIDBTransactionModeVersionChange;
+      return true;
+  }
+  return false;
 }
 
 }  // namespace mojo

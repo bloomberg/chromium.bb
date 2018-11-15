@@ -35,7 +35,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
   MOCK_METHOD3(CreateTransaction,
                void(long long id,
                     const Vector<int64_t>& scope,
-                    mojom::IDBTransactionMode));
+                    WebIDBTransactionMode));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD0(VersionChangeIgnored, void());
   MOCK_METHOD1(Abort, void(long long transaction_id));
@@ -64,7 +64,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
            bool include_transaction,
            bool no_records,
            bool values,
-           std::bitset<blink::kIDBOperationTypeCount> operation_types));
+           const std::bitset<kWebIDBOperationTypeCount>& operation_types));
   MOCK_CONST_METHOD1(ContainsObserverId, bool(int32_t id));
   MOCK_METHOD1(RemoveObservers,
                void(const Vector<int32_t>& observer_ids_to_remove));
@@ -90,7 +90,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     const WebData& value,
                     const Vector<WebBlobInfo>&,
                     WebIDBKeyView primary_key,
-                    mojom::IDBPutMode,
+                    WebIDBPutMode,
                     WebIDBCallbacks*,
                     const Vector<WebIDBIndexKeys>&));
 
@@ -108,9 +108,9 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     long long object_store_id,
                     long long index_id,
                     const WebIDBKeyRange&,
-                    mojom::IDBCursorDirection,
+                    WebIDBCursorDirection,
                     bool key_only,
-                    mojom::IDBTaskType,
+                    WebIDBTaskType,
                     WebIDBCallbacks*));
   MOCK_METHOD5(Count,
                void(long long transaction_id,

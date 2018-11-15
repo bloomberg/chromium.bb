@@ -48,7 +48,7 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
                          const base::string16& new_name) override;
   void CreateTransaction(int64_t transaction_id,
                          const std::vector<int64_t>& object_store_ids,
-                         blink::mojom::IDBTransactionMode mode) override;
+                         blink::WebIDBTransactionMode mode) override;
   void Close() override;
   void VersionChangeIgnored() override;
   void AddObserver(int64_t transaction_id,
@@ -56,7 +56,7 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
                    bool include_transaction,
                    bool no_records,
                    bool values,
-                   uint32_t operation_types) override;
+                   uint16_t operation_types) override;
   void RemoveObservers(const std::vector<int32_t>& observers) override;
   void Get(int64_t transaction_id,
            int64_t object_store_id,
@@ -75,7 +75,7 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
            int64_t object_store_id,
            blink::mojom::IDBValuePtr value,
            const blink::IndexedDBKey& key,
-           blink::mojom::IDBPutMode mode,
+           blink::WebIDBPutMode mode,
            const std::vector<blink::IndexedDBIndexKeys>& index_keys,
            blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks) override;
   void SetIndexKeys(
@@ -91,9 +91,9 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
       int64_t object_store_id,
       int64_t index_id,
       const IndexedDBKeyRange& key_range,
-      blink::mojom::IDBCursorDirection direction,
+      blink::WebIDBCursorDirection direction,
       bool key_only,
-      blink::mojom::IDBTaskType task_type,
+      blink::WebIDBTaskType task_type,
       blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) override;
   void Count(int64_t transaction_id,
              int64_t object_store_id,
