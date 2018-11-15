@@ -42,3 +42,6 @@
 
 # This test is flaky. https://crbug.com/897879
 -ExtensionApiTest.DisplayModeWindowIsInFullscreen
+
+# This test is flaky. https://crbug.com/905789
+-PasswordManagerInteractiveTest.PromptForXHRWithoutOnSubmit
