@@ -293,6 +293,15 @@ ChromeTranslateClient::GetTranslateAcceptLanguages() {
 int ChromeTranslateClient::GetInfobarIconID() const {
   return IDR_ANDROID_INFOBAR_TRANSLATE;
 }
+
+void ChromeTranslateClient::ManualTranslateWhenReady() {
+  if (GetLanguageState().original_language().empty()) {
+    manual_translate_on_ready_ = true;
+  } else {
+    translate::TranslateManager* manager = GetTranslateManager();
+    manager->InitiateManualTranslation();
+  }
+}
 #endif
 
 void ChromeTranslateClient::RecordLanguageDetectionEvent(
@@ -362,6 +371,14 @@ void ChromeTranslateClient::OnLanguageDetermined(
       content::Details<const translate::LanguageDetectionDetails>(&details));
 
   RecordLanguageDetectionEvent(details);
+
+#if defined(OS_ANDROID)
+  // See ChromeTranslateClient::ManualTranslateOnReady
+  if (manual_translate_on_ready_) {
+    GetTranslateManager()->InitiateManualTranslation();
+    manual_translate_on_ready_ = false;
+  }
+#endif
 }
 
 void ChromeTranslateClient::OnPageTranslated(
