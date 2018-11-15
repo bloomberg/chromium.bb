@@ -40,13 +40,25 @@ fuzzer_test("language_detection_fuzzer") {
   ]
 }
 
-fuzzer_test("snappy_fuzzer") {
+fuzzer_test("snappy_compress_fuzzer") {
   sources = [
-    "snappy_fuzzer.cc",
+    "snappy_compress_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//third_party/snappy:snappy",
+  ]
+  seed_corpus = "//third_party/snappy/src/testdata"
+}
+
+fuzzer_test("snappy_uncompress_fuzzer") {
+  sources = [
+    "snappy_uncompress_fuzzer.cc",
   ]
   deps = [
     "//third_party/snappy:snappy",
   ]
+  seed_corpus = "//third_party/snappy/src/testdata"
 }
 
 fuzzer_test("template_url_parser_fuzzer") {
