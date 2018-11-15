@@ -13,6 +13,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/contextual_search/core/browser/contextual_search_preference.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
@@ -27,16 +28,13 @@ namespace {
 
 class TestSyncService : public syncer::TestSyncService {
  public:
-  explicit TestSyncService(PrefService* pref_service)
-      : pref_service_(pref_service) {}
+  TestSyncService() = default;
 
   void AddObserver(syncer::SyncServiceObserver* observer) override {
     observer_ = observer;
   }
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override {
-    syncer::SyncPrefs(pref_service_).SetKeepEverythingSynced(sync_everything);
-
     // Add this for the Migration_UpdateSettings test.
     chosen_types.Put(syncer::HISTORY_DELETE_DIRECTIVES);
     SetPreferredDataTypes(chosen_types);
@@ -49,7 +47,6 @@ class TestSyncService : public syncer::TestSyncService {
 
  private:
   syncer::SyncServiceObserver* observer_ = nullptr;
-  PrefService* pref_service_;
 };
 
 const char kSpellCheckDummyEnabled[] = "spell_check_dummy.enabled";
@@ -116,7 +113,7 @@ std::map<Service, bool> FakeUnifiedConsentServiceClient::is_not_supported_;
 
 class UnifiedConsentServiceTest : public testing::Test {
  public:
-  UnifiedConsentServiceTest() : sync_service_(&pref_service_) {
+  UnifiedConsentServiceTest() {
     pref_service_.registry()->RegisterBooleanPref(
         autofill::prefs::kAutofillWalletImportEnabled, false);
     UnifiedConsentService::RegisterPrefs(pref_service_.registry());
@@ -256,9 +253,10 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
   CreateConsentService();
   identity_test_environment_.SetPrimaryAccount("testaccount");
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  sync_service_.OnUserChoseDatatypes(false, syncer::UserSelectableTypes());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(
+      false, syncer::UserSelectableTypes());
   syncer::SyncPrefs sync_prefs(&pref_service_);
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   EXPECT_FALSE(consent_service_->IsUnifiedConsentGiven());
 
   // Make sure sync is not active.
@@ -273,7 +271,7 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
   EXPECT_TRUE(consent_service_->IsUnifiedConsentGiven());
 
   // Couldn't sync everything because sync is not active.
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   // Initalize sync engine and therefore activate sync.
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
@@ -281,7 +279,7 @@ TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_SyncNotActive) {
   base::RunLoop().RunUntilIdle();
 
   // UnifiedConsentService starts syncing everything.
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 }
 
 TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent_WithCustomPassphrase) {
@@ -370,9 +368,10 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndAllServicesOn) {
 
   // Create inconsistent state.
   identity_test_environment_.SetPrimaryAccount("testaccount");
-  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
   syncer::SyncPrefs sync_prefs(&pref_service_);
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   sync_service_.SetTransportState(
       syncer::SyncService::TransportState::INITIALIZING);
@@ -387,14 +386,14 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndAllServicesOn) {
             unified_consent::MigrationState::kInProgressWaitForSyncInit);
   EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
   // Sync-everything is still on because sync is not active yet.
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   // When sync is active, the migration should continue and finish.
   sync_service_.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
   sync_service_.FireStateChanged();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   // No metric for the consent bump suppress reason should have been recorded at
   // this point.
@@ -418,9 +417,10 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndServicesOff) {
 
   // Create inconsistent state.
   identity_test_environment_.SetPrimaryAccount("testaccount");
-  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
   syncer::SyncPrefs sync_prefs(&pref_service_);
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_TRUE(sync_service_.IsSyncFeatureActive());
 
@@ -429,7 +429,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndServicesOff) {
   // After the creation of the consent service, the profile is migrated and
   // |ShouldShowConsentBump| should return false.
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   EXPECT_EQ(GetMigrationState(), unified_consent::MigrationState::kCompleted);
   EXPECT_FALSE(consent_service_->ShouldShowConsentBump());
 
@@ -445,10 +445,11 @@ TEST_F(UnifiedConsentServiceTest, Migration_NotSyncingEverything) {
   base::HistogramTester histogram_tester;
 
   identity_test_environment_.SetPrimaryAccount("testaccount");
-  sync_service_.OnUserChoseDatatypes(false, syncer::UserSelectableTypes());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(
+      false, syncer::UserSelectableTypes());
   syncer::SyncPrefs sync_prefs(&pref_service_);
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   CreateConsentService();
   // When the user is not syncing everything the migration is completed after
@@ -463,9 +464,10 @@ TEST_F(UnifiedConsentServiceTest, Migration_NotSyncingEverything) {
 TEST_F(UnifiedConsentServiceTest, Migration_UpdateSettings) {
   // Create user that syncs everything
   identity_test_environment_.SetPrimaryAccount("testaccount");
-  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
   syncer::SyncPrefs sync_prefs(&pref_service_);
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   EXPECT_TRUE(sync_service_.IsSyncFeatureActive());
   EXPECT_TRUE(sync_service_.GetPreferredDataTypes().Has(syncer::USER_EVENTS));
   // Url keyed data collection is off before the migration.
@@ -476,7 +478,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_UpdateSettings) {
   EXPECT_EQ(GetMigrationState(), unified_consent::MigrationState::kCompleted);
   // During the migration USER_EVENTS is disabled and Url keyed data collection
   // is enabled.
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   EXPECT_FALSE(sync_service_.GetPreferredDataTypes().Has(syncer::USER_EVENTS));
   EXPECT_TRUE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
@@ -544,13 +546,14 @@ TEST_F(UnifiedConsentServiceTest, Migration_NotSignedIn) {
 TEST_F(UnifiedConsentServiceTest, Rollback_WasSyncingEverything) {
   identity_test_environment_.SetPrimaryAccount("testaccount");
   syncer::SyncPrefs sync_prefs(&pref_service_);
-  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   // Migrate
   CreateConsentService();
   // Check expectations after migration.
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
   EXPECT_TRUE(
@@ -572,7 +575,7 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasSyncingEverything) {
   EXPECT_FALSE(
       pref_service_.GetBoolean(prefs::kHadEverythingSyncedBeforeMigration));
   // Sync everything should be back on.
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   // Run until idle so the RollbackHelper is deleted.
   base::RunLoop().RunUntilIdle();
@@ -583,15 +586,15 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasNotSyncingEverything) {
   syncer::SyncPrefs sync_prefs(&pref_service_);
   syncer::ModelTypeSet chosen_data_types = syncer::UserSelectableTypes();
   chosen_data_types.Remove(syncer::BOOKMARKS);
-  sync_service_.OnUserChoseDatatypes(false, chosen_data_types);
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(false, chosen_data_types);
+  EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   EXPECT_FALSE(sync_service_.GetPreferredDataTypes().HasAll(
       syncer::UserSelectableTypes()));
 
   // Migrate
   CreateConsentService();
   // Check expectations after migration.
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
   EXPECT_FALSE(
@@ -609,7 +612,7 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasNotSyncingEverything) {
             GetMigrationState());
 
   // Sync everything should be off because not all user types were on.
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   // Run until idle so the RollbackHelper is deleted.
   base::RunLoop().RunUntilIdle();
@@ -618,14 +621,15 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasNotSyncingEverything) {
 TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
   identity_test_environment_.SetPrimaryAccount("testaccount");
   syncer::SyncPrefs sync_prefs(&pref_service_);
-  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   // Migrate and opt into unified consent.
   CreateConsentService();
   consent_service_->SetUnifiedConsentGiven(true);
   // Check expectations after opt-in.
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   EXPECT_TRUE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
   EXPECT_EQ(unified_consent::MigrationState::kCompleted, GetMigrationState());
   EXPECT_TRUE(
@@ -649,7 +653,7 @@ TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
   EXPECT_FALSE(
       pref_service_.GetBoolean(prefs::kHadEverythingSyncedBeforeMigration));
   // Sync everything should still be on.
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   // Off-by-default services should be turned off.
   EXPECT_NE(ServiceState::kEnabled,
             service_client_->GetServiceState(
@@ -662,7 +666,8 @@ TEST_F(UnifiedConsentServiceTest, Rollback_UserOptedIntoUnifiedConsent) {
 TEST_F(UnifiedConsentServiceTest, SettingsHistogram_None) {
   base::HistogramTester histogram_tester;
   // Disable all services.
-  sync_service_.OnUserChoseDatatypes(false, syncer::ModelTypeSet());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(false,
+                                                      syncer::ModelTypeSet());
   CreateConsentService();
 
   histogram_tester.ExpectUniqueSample(
@@ -719,9 +724,10 @@ TEST_F(UnifiedConsentServiceTest, ConsentBump_EligibleOnSecondStartup) {
   base::HistogramTester histogram_tester;
 
   identity_test_environment_.SetPrimaryAccount("testaccount");
-  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
   syncer::SyncPrefs sync_prefs(&pref_service_);
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   // First time creation of the service migrates the profile and initializes the
   // consent bump pref.
@@ -752,9 +758,10 @@ TEST_F(UnifiedConsentServiceTest,
   base::HistogramTester histogram_tester;
 
   identity_test_environment_.SetPrimaryAccount("testaccount");
-  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
   syncer::SyncPrefs sync_prefs(&pref_service_);
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   // First time creation of the service migrates the profile and initializes the
   // consent bump pref.
@@ -774,7 +781,7 @@ TEST_F(UnifiedConsentServiceTest,
   auto data_types = sync_service_.GetPreferredDataTypes();
   data_types.RetainAll(syncer::UserSelectableTypes());
   data_types.Remove(syncer::BOOKMARKS);
-  sync_service_.OnUserChoseDatatypes(false, data_types);
+  sync_service_.GetUserSettings()->SetChosenDataTypes(false, data_types);
 
   // After the second startup, the user should not be eligible anymore.
   CreateConsentService(true /* client_services_on_by_default */);
@@ -793,9 +800,10 @@ TEST_F(UnifiedConsentServiceTest,
   base::HistogramTester histogram_tester;
 
   identity_test_environment_.SetPrimaryAccount("testaccount");
-  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
   syncer::SyncPrefs sync_prefs(&pref_service_);
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
 
   // First time creation of the service migrates the profile and initializes the
   // consent bump pref.
@@ -825,10 +833,11 @@ TEST_F(UnifiedConsentServiceTest, ConsentBump_SuppressedWithCustomPassphrase) {
   // Setup sync account with custom passphrase, such that it would be eligible
   // for the consent bump without custom passphrase.
   identity_test_environment_.SetPrimaryAccount("testaccount");
-  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  sync_service_.GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
   sync_service_.SetIsUsingSecondaryPassphrase(true);
   syncer::SyncPrefs sync_prefs(&pref_service_);
-  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+  EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   sync_service_.SetTransportState(
       syncer::SyncService::TransportState::INITIALIZING);
   EXPECT_FALSE(sync_service_.IsEngineInitialized());
