@@ -22,7 +22,7 @@ import("//ui/base/ui_features.gni")
 import("//ui/views/features.gni")
 
 config("ui_warnings") {
-  if (is_clang) {
+  if (is_mac) {
     # TODO(thakis): Remove this once http://crbug.com/383820 is figured out
     cflags = [ "-Wno-nonnull" ]
   }
