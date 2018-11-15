@@ -74,6 +74,7 @@ bool CanProcessWindow(aura::Window* window,
   if (window->type() == aura::client::WINDOW_TYPE_POPUP)
     return false;
 
+  // Do not process if |window| is not the root of a transient tree.
   if (::wm::GetTransientParent(window))
     return false;
 
@@ -181,7 +182,6 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
     return false;
 
   mode_ = mode;
-  initial_event_location_ = location;
   last_event_location_ = base::make_optional(location);
 
   UpdateWindows(0.0, /*animate=*/false);
@@ -198,11 +198,6 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
 
   last_event_location_ = base::make_optional(location);
   last_scroll_y_ = scroll_y;
-  if (mode_ == Mode::kSlideUpToShow &&
-      (*last_event_location_ - initial_event_location_).y() > 0) {
-    UpdateWindows(0.0, /*animate=*/false);
-    return true;
-  }
 
   DCHECK(display_.is_valid());
   UpdateWindows(GetHeightInWorkAreaAsRatio(location, display_.work_area()),
@@ -210,8 +205,7 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
   return true;
 }
 
-bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location,
-                                                bool* out_dragged_down) {
+bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
   if (IsAnimating())
     return false;
 
@@ -228,11 +222,6 @@ bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location,
   }
 
   last_event_location_ = base::make_optional(location);
-  if (out_dragged_down) {
-    DCHECK_EQ(mode_, Mode::kSlideUpToShow);
-    *out_dragged_down =
-        (*last_event_location_ - initial_event_location_).y() > 0;
-  }
   AnimateToFinalState();
   return true;
 }

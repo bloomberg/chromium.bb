@@ -1318,16 +1318,8 @@ void ShelfLayoutManager::CompleteAppListDrag(
 
   HomeLauncherGestureHandler* home_launcher_handler =
       Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-  bool dragged_down;
   if (home_launcher_handler &&
-      home_launcher_handler->OnReleaseEvent(gesture_in_screen.location(),
-                                            &dragged_down)) {
-    if (dragged_down && visibility_state() == SHELF_AUTO_HIDE) {
-      DCHECK_EQ(SHELF_AUTO_HIDE_SHOWN, gesture_drag_auto_hide_state_);
-      gesture_drag_auto_hide_state_ = SHELF_AUTO_HIDE_HIDDEN;
-      gesture_drag_status_ = GESTURE_DRAG_COMPLETE_IN_PROGRESS;
-      UpdateVisibilityState();
-    }
+      home_launcher_handler->OnReleaseEvent(gesture_in_screen.location())) {
     gesture_drag_status_ = GESTURE_DRAG_NONE;
     return;
   }

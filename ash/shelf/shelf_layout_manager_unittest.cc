@@ -9,6 +9,8 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -2479,6 +2481,70 @@ TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
   gfx::Rect status_area_bounds(status_area_widget->GetWindowBoundsInScreen());
   EXPECT_TRUE(gfx::Rect(0, 0, 500, 400).Contains(status_area_bounds));
   EXPECT_EQ(gfx::Point(500, 400), status_area_bounds.bottom_right());
+}
+
+// Tests that the shelf forwards the appropriate events to the home launcher
+// gesture handler to handle.
+TEST_F(ShelfLayoutManagerTest, HomeLauncherGestureHandler) {
+  // Home launcher is only available in tablet mode.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  // Home launcher gesture handler needs at least one window.
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  const gfx::Point shelf_center =
+      GetVisibleShelfWidgetBoundsInScreen().CenterPoint();
+
+  // Helper to create a scroll event for this test.
+  auto create_scroll_event = [&shelf_center](ui::EventType type,
+                                             float scroll_y) {
+    ui::GestureEventDetails details =
+        type == ui::ET_GESTURE_SCROLL_END
+            ? ui::GestureEventDetails(type)
+            : ui::GestureEventDetails(type, 0, scroll_y);
+    return ui::GestureEvent(shelf_center.x(), shelf_center.y(), 0,
+                            base::TimeTicks(), details);
+  };
+
+  // The home launcher gesture handler should not be handling any window
+  // initially.
+  ShelfLayoutManager* manager = GetShelfLayoutManager();
+  HomeLauncherGestureHandler* gesture_handler =
+      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
+  ASSERT_TRUE(gesture_handler);
+  ASSERT_FALSE(gesture_handler->window());
+
+  // Tests that after scrolling up on the shelf, the home launcher gesture
+  // handler will be acting on |window|.
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, -1.f));
+  EXPECT_EQ(window.get(), gesture_handler->window());
+
+  // Tests that since the initial scroll event was scrolled up, the home
+  // launcher gesture handler will continue to act on |window| regardless of
+  // direction of scroll updates.
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, -1.f));
+  EXPECT_EQ(window.get(), gesture_handler->window());
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, 1.f));
+  EXPECT_EQ(window.get(), gesture_handler->window());
+
+  // End the scroll.
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_END, 1.f));
+  ASSERT_FALSE(gesture_handler->window());
+
+  // Tests that if the initial scroll event is directed downwards, the home
+  // launcher gesture handler will not act on |window|.
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, 1.f));
+  EXPECT_FALSE(gesture_handler->window());
+  manager->ProcessGestureEvent(
+      create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, -1.f));
+  EXPECT_FALSE(gesture_handler->window());
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
