@@ -249,10 +249,7 @@ class CORE_EXPORT NGPhysicalFragment
   scoped_refptr<NGBreakToken> break_token_;
 
   const unsigned type_ : 2;      // NGFragmentType
-  const unsigned sub_type_ : 3;  // Union of NGBoxType and NGTextType
-  unsigned is_fieldset_container_ : 1;
-  unsigned is_old_layout_root_ : 1;
-  unsigned border_edge_ : 4;  // NGBorderEdges::Physical
+  const unsigned sub_type_ : 3;  // NGBoxType, NGTextType, or NGLineBoxType
   const unsigned style_variant_ : 2;  // NGStyleVariant
 
   // The following bitfield is only to be used by NGPhysicalLineBoxFragment
@@ -262,6 +259,9 @@ class CORE_EXPORT NGPhysicalFragment
   // The following bitfield is only to be used by NGPhysicalBoxFragment (it's
   // defined here to save memory, since that class has no bitfields).
   unsigned children_inline_ : 1;
+  unsigned is_fieldset_container_ : 1;
+  unsigned is_old_layout_root_ : 1;
+  unsigned border_edge_ : 4;  // NGBorderEdges::Physical
 
   // The following bitfield is only to be used by NGPhysicalTextFragment (it's
   // defined here to save memory, since that class has no bitfields).

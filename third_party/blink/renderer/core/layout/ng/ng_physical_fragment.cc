@@ -253,9 +253,9 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
       break_token_(std::move(builder->break_token_)),
       type_(type),
       sub_type_(sub_type),
+      style_variant_((unsigned)builder->style_variant_),
       is_fieldset_container_(false),
-      is_old_layout_root_(false),
-      style_variant_((unsigned)builder->style_variant_) {}
+      is_old_layout_root_(false) {}
 
 NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        NGStyleVariant style_variant,
@@ -268,9 +268,9 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       break_token_(std::move(break_token)),
       type_(type),
       sub_type_(sub_type),
+      style_variant_((unsigned)style_variant),
       is_fieldset_container_(false),
-      is_old_layout_root_(false),
-      style_variant_((unsigned)style_variant) {}
+      is_old_layout_root_(false) {}
 
 // Keep the implementation of the destructor here, to avoid dependencies on
 // ComputedStyle in the header file.
