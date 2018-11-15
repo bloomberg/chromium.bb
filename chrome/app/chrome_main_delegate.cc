@@ -217,7 +217,7 @@ bool IsSandboxedProcess() {
 }
 
 bool UseHooks() {
-#if defined(ARCH_CPU_X86_64)
+#if defined(ARCH_CPU_64_BITS)
   return false;
 #elif defined(NDEBUG)
   version_info::Channel channel = chrome::GetChannel();
