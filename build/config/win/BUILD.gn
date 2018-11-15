@@ -91,7 +91,7 @@ config("compiler") {
     if (is_component_build) {
       cflags += [
         # Do not export inline member functions. This makes component builds
-        # faster. This is similar to -fviisibility-inlines-hidden.
+        # faster. This is similar to -fvisibility-inlines-hidden.
         "/Zc:dllexportInlines-",
       ]
     }
