@@ -140,7 +140,7 @@ static_library("sandbox") {
     "src/window.h",
   ]
 
-  if (current_cpu == "x64") {
+  if (current_cpu == "x64" || current_cpu == "arm64") {
     sources += [
       "src/interceptors_64.cc",
       "src/interceptors_64.h",
