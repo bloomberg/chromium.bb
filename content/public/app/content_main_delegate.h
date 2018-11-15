@@ -88,11 +88,6 @@ class CONTENT_EXPORT ContentMainDelegate {
   virtual void ZygoteForked() {}
 #endif  // defined(OS_LINUX)
 
-  // TODO(vadimt, yiyaoliu): Remove this function once crbug.com/453640 is
-  // fixed.
-  // Returns whether or not profiler recording should be enabled.
-  virtual bool ShouldEnableProfilerRecording();
-
   // Fatal errors during initialization are reported by this function, so that
   // the embedder can implement graceful exit by displaying some message and
   // returning initialization error code. Default behavior is CHECK(false).
