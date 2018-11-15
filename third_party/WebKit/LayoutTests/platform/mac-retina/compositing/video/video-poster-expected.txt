@@ -6,18 +6,18 @@ Case: No src, no poster
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [800, 600],
+      "bounds": [200, 150],
       "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [800, 600],
+      "bounds": [185, 135],
       "drawsContent": false
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [800, 600],
+      "bounds": [308, 326],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     }
@@ -30,18 +30,18 @@ Case: Displaying poster
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [800, 600],
+      "bounds": [200, 150],
       "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [785, 600],
+      "bounds": [185, 135],
       "drawsContent": false
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 781],
+      "bounds": [360, 824],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     }
@@ -54,18 +54,18 @@ Case: Displaying movie
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [800, 600],
+      "bounds": [200, 150],
       "drawsContent": false,
       "backgroundColor": "#FFFFFF"
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [785, 600],
+      "bounds": [185, 135],
       "drawsContent": false
     },
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 1165],
+      "bounds": [360, 1184],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
     },
