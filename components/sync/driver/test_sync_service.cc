@@ -23,9 +23,9 @@ SyncCycleSnapshot MakeDefaultCycleSnapshot() {
       /*num_server_conflicts=*/7, /*notifications_enabled=*/false,
       /*num_entries=*/0, /*sync_start_time=*/base::Time::Now(),
       /*poll_finish_time=*/base::Time::Now(),
-      /*num_entries_by_type=*/std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
+      /*num_entries_by_type=*/std::vector<int>(MODEL_TYPE_COUNT, 0),
       /*num_to_delete_entries_by_type=*/
-      std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
+      std::vector<int>(MODEL_TYPE_COUNT, 0),
       /*get_updates_origin=*/sync_pb::SyncEnums::UNKNOWN_ORIGIN,
       /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
       /*long_poll_interval=*/base::TimeDelta::FromMinutes(180),
@@ -35,7 +35,8 @@ SyncCycleSnapshot MakeDefaultCycleSnapshot() {
 }  // namespace
 
 TestSyncService::TestSyncService()
-    : preferred_data_types_(ModelTypeSet::All()),
+    : user_settings_(this),
+      preferred_data_types_(ModelTypeSet::All()),
       active_data_types_(ModelTypeSet::All()),
       last_cycle_snapshot_(MakeDefaultCycleSnapshot()) {}
 
@@ -94,19 +95,19 @@ void TestSyncService::SetNonEmptyLastCycleSnapshot() {
   SetLastCycleSnapshot(MakeDefaultCycleSnapshot());
 }
 
-syncer::SyncUserSettings* TestSyncService::GetUserSettings() {
-  return nullptr;
+SyncUserSettings* TestSyncService::GetUserSettings() {
+  return &user_settings_;
 }
 
-const syncer::SyncUserSettings* TestSyncService::GetUserSettings() const {
-  return nullptr;
+const SyncUserSettings* TestSyncService::GetUserSettings() const {
+  return &user_settings_;
 }
 
 int TestSyncService::GetDisableReasons() const {
   return disable_reasons_;
 }
 
-syncer::SyncService::TransportState TestSyncService::GetTransportState() const {
+SyncService::TransportState TestSyncService::GetTransportState() const {
   return transport_state_;
 }
 
@@ -206,11 +207,11 @@ UserShare* TestSyncService::GetUserShare() const {
   return nullptr;
 }
 
-syncer::SyncTokenStatus TestSyncService::GetSyncTokenStatus() const {
-  syncer::SyncTokenStatus token;
+SyncTokenStatus TestSyncService::GetSyncTokenStatus() const {
+  SyncTokenStatus token;
 
   if (GetAuthError().state() != GoogleServiceAuthError::NONE) {
-    token.connection_status = syncer::ConnectionStatus::CONNECTION_AUTH_ERROR;
+    token.connection_status = ConnectionStatus::CONNECTION_AUTH_ERROR;
     token.last_get_token_error =
         GoogleServiceAuthError::FromServiceError("error");
   }
@@ -272,12 +273,11 @@ bool TestSyncService::IsPassphraseRequired() const {
 ModelTypeSet TestSyncService::GetEncryptedDataTypes() const {
   if (!using_secondary_passphrase_) {
     // PASSWORDS are always encrypted.
-    return ModelTypeSet(syncer::PASSWORDS);
+    return ModelTypeSet(PASSWORDS);
   }
   // Some types can never be encrypted, e.g. DEVICE_INFO and
   // AUTOFILL_WALLET_DATA, so make sure we don't report them as encrypted.
-  return syncer::Intersection(GetPreferredDataTypes(),
-                              syncer::EncryptableUserTypes());
+  return Intersection(GetPreferredDataTypes(), EncryptableUserTypes());
 }
 
 void TestSyncService::Shutdown() {}

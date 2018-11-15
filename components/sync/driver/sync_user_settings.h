@@ -16,6 +16,8 @@ namespace syncer {
 // This class encapsulates all the user-configurable bits of Sync.
 class SyncUserSettings {
  public:
+  virtual ~SyncUserSettings() = default;
+
   // Whether the user wants Sync to run, a.k.a. the Sync feature toggle in
   // settings. This maps to DISABLE_REASON_USER_CHOICE.
   virtual bool IsSyncRequested() const = 0;
