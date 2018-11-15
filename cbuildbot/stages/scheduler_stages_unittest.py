@@ -224,15 +224,16 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     stage = self.ConstructStage()
     stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
 
-    results = self.fake_db.GetBuildRequestsForBuildConfig('important_external')
+    results = self.fake_db.GetBuildRequestsForBuildConfigs(
+        ['important_external'])
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].request_build_config, 'important_external')
     self.assertEqual(results[0].request_buildbucket_id, 'bb_id_2')
     self.assertEqual(results[0].request_reason,
                      build_requests.REASON_IMPORTANT_CQ_SLAVE)
 
-    results = self.fake_db.GetBuildRequestsForBuildConfig(
-        'experimental_external')
+    results = self.fake_db.GetBuildRequestsForBuildConfigs(
+        ['experimental_external'])
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].request_build_config, 'experimental_external')
     self.assertEqual(results[0].request_buildbucket_id, 'bb_id_1')

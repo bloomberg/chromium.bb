@@ -999,33 +999,6 @@ class BuildTableTest(CIDBIntegrationTest):
     })
     return bot_db.UpdateMetadata(build_id, metadata)
 
-  def testGetPlatformVersions(self):
-    """Test GetPlatformVersions."""
-    self._PrepareDatabase()
-    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
-    self._InsertBuildAndUpdateMetadata(
-        bot_db, 'master-release', '59', '9352.0.0')
-    self._InsertBuildAndUpdateMetadata(
-        bot_db, 'master-release', '60', '9462.0.0')
-    self._InsertBuildAndUpdateMetadata(
-        bot_db, 'master-release', '60', '9475.0.0')
-    self._InsertBuildAndUpdateMetadata(
-        bot_db, 'master-release', '61', '9623.0.0')
-
-    r = bot_db.GetPlatformVersions('master-paladin')
-    self.assertItemsEqual(r, [])
-
-    r = bot_db.GetPlatformVersions('master-release')
-    self.assertItemsEqual(r, ['9352.0.0', '9462.0.0', '9475.0.0', '9623.0.0'])
-
-    r = bot_db.GetPlatformVersions('master-release',
-                                   starting_milestone_version=60)
-    self.assertItemsEqual(r, ['9462.0.0', '9475.0.0', '9623.0.0'])
-
-    r = bot_db.GetPlatformVersions('master-release', num_results=1,
-                                   starting_milestone_version=60)
-    self.assertItemsEqual(r, ['9462.0.0'])
-
   def testBuildHistory(self):
     """Test Get operations on build history."""
     self._PrepareDatabase()
@@ -1221,17 +1194,17 @@ class BuildRequestTableTest(CIDBIntegrationTest):
     self._InsertPreCQBuildRequests(bot_db, current_ts)
     self._InsertCQBuildRequests(bot_db)
 
-    requests = bot_db.GetBuildRequestsForBuildConfig(
-        'test_pre_cq_1', num_results=1)
+    requests = bot_db.GetBuildRequestsForBuildConfigs(
+        ['test_pre_cq_1'], num_results=1)
     self.assertEqual(len(requests), 1)
     self.assertEqual(requests[0].id, 2)
     self.assertEqual(requests[0].request_build_config, 'test_pre_cq_1')
     self.assertEqual(requests[0].request_buildbucket_id, 'test_bb_id_2')
 
-    requests = bot_db.GetBuildRequestsForBuildConfig('test_pre_cq_1')
+    requests = bot_db.GetBuildRequestsForBuildConfigs(['test_pre_cq_1'])
     self.assertEqual(len(requests), 2)
 
-    requests = bot_db.GetBuildRequestsForBuildConfig('test_pre_cq_2')
+    requests = bot_db.GetBuildRequestsForBuildConfigs(['test_pre_cq_2'])
     self.assertEqual(len(requests), 1)
     self.assertEqual(requests[0].id, 3)
     self.assertEqual(requests[0].request_build_config, 'test_pre_cq_2')

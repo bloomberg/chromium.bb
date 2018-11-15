@@ -519,23 +519,6 @@ class FakeCIDBConnection(object):
     else:
       return builds
 
-  def GetPlatformVersions(self, build_config, num_results=-1,
-                          starting_milestone_version=None):
-    """Get the platform versions for a build_config."""
-    builds = [b for b in self.buildTable
-              if b['build_config'] == build_config]
-
-    if starting_milestone_version is not None:
-      builds = [b for b in builds if int(b.get('milestone_version')) >=
-                int(starting_milestone_version)]
-
-    versions = [b['platform_version'] for b in builds]
-
-    if num_results != -1:
-      return versions[:num_results]
-    else:
-      return versions
-
   def GetTimeToDeadline(self, build_id):
     """Gets the time remaining until deadline."""
     now = datetime.datetime.now()
@@ -594,21 +577,6 @@ class FakeCIDBConnection(object):
             value['status']))
 
     return results
-
-  def GetBuildRequestsForBuildConfig(self, request_build_config,
-                                     num_results=-1, start_time=None):
-    """Get BuildRequests for a build_config.
-
-    Args:
-      request_build_config: build config (string) to request.
-      num_results: number of results to return, default to -1.
-      start_time: get build requests sent after start_time.
-
-    Returns:
-      A list of BuildRequest instances sorted by id in descending order.
-    """
-    return self.GetBuildRequestsForBuildConfigs(
-        [request_build_config], num_results=num_results, start_time=start_time)
 
   def GetBuildRequestsForBuildConfigs(self, request_build_configs,
                                       num_results=-1, start_time=None):

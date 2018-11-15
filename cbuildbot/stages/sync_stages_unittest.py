@@ -767,12 +767,12 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.sync_stage.LaunchSanityPreCQs(
         self.build_id, self.fake_db, mock_pool, configs)
 
-    requests = self.fake_db.GetBuildRequestsForBuildConfig('test-pre-cq1')
+    requests = self.fake_db.GetBuildRequestsForBuildConfigs(['test-pre-cq1'])
     self.assertEqual(len(requests), 1)
     self.assertEqual(requests[0].request_build_config, 'test-pre-cq1')
     self.assertEqual(requests[0].request_buildbucket_id, 'bb_id_1')
 
-    requests = self.fake_db.GetBuildRequestsForBuildConfig('test-pre-cq2')
+    requests = self.fake_db.GetBuildRequestsForBuildConfigs(['test-pre-cq2'])
     self.assertEqual(len(requests), 1)
     self.assertEqual(requests[0].request_build_config, 'test-pre-cq2')
     self.assertEqual(requests[0].request_buildbucket_id, 'bb_id_2')

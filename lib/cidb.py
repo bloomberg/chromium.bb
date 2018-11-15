@@ -1599,35 +1599,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [dict(zip(CIDBConnection.BUILD_STATUS_KEYS, values))
             for values in results]
 
-  def GetPlatformVersions(self, build_config,
-                          num_results=NUM_RESULTS_NO_LIMIT,
-                          starting_milestone_version=None):
-    """Get the platform versions for a build_config.
-
-    Args:
-      build_config: The build config (string) to get the platform version.
-      num_results: Number of platform_version to get. Default to
-        CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
-        of results.
-      starting_milestone_version: The starting milestone version to get the
-        platform version.
-
-    Returns:
-      A list of platform_version which match the requirement.
-    """
-    where_clauses = ['build_config = "%s"' % build_config]
-    if starting_milestone_version is not None:
-      starting_milestone_version_int = int(starting_milestone_version)
-      where_clauses.append('CAST(milestone_version as UNSIGNED) >= %d' %
-                           starting_milestone_version_int)
-    query = ('SELECT platform_version FROM buildTable WHERE %s' %
-             ' AND '.join(where_clauses))
-    if num_results != self.NUM_RESULTS_NO_LIMIT:
-      query += ' LIMIT %d' % num_results
-
-    results = self._Execute(query).fetchall()
-    return [r['platform_version'] for r in results]
-
   @minimum_schema(47)
   def GetAnnotatedBuilds(self, build_config, num_results, start_date=None,
                          end_date=None):
@@ -1829,28 +1800,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return clactions.CLActionHistory(clactions.CLAction(*values)
                                      for values in results)
 
-  @minimum_schema(11)
-  def GetActionsSince(self, start_date):
-    """Get all CL actions after a specific |start_date|.
-
-    Unlike GetActionHistory, this method makes use of only a single simple
-    SELECT query, and does not perform any of the precalculations that
-    CLActionHistory makes use of for statistics. Hence, this method is most
-    suitable for queries expected to return a large result set.
-
-    Args:
-      start_date: (Type: datetime.date) The first date on which you want action
-                  history.
-    """
-    values = {'start_date': start_date.strftime(self._DATE_FORMAT)}
-
-    # Enforce start date
-    conds = 'timestamp >= TIMESTAMP(%(start_date)s)'
-
-    query = '%s WHERE %s' % (self._SQL_FETCH_ACTIONS, conds)
-    results = self._Execute(query, values).fetchall()
-    return [clactions.CLAction(*values) for values in results]
-
   @minimum_schema(29)
   def HasFailureMsgForStage(self, build_stage_id):
     """Determine whether a build stage has failure messages in failureTable.
@@ -1946,27 +1895,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     results = self._Execute(q).fetchall()
 
     return [hwtest_results.HWTestResult(*values) for values in results]
-
-  @minimum_schema(59)
-  def GetBuildRequestsForBuildConfig(self,
-                                     request_build_config,
-                                     num_results=NUM_RESULTS_NO_LIMIT,
-                                     start_time=None):
-    """Get BuildRequests for one request_build_config.
-
-    Args:
-      request_build_config: build config (string) to request.
-      num_results: Number of results to return, default to
-        self.NUM_RESULTS_NO_LIMIT.
-      start_time: If not None, only return build requests sent after the
-        start_time. Default to None.
-
-    Returns:
-      A list of BuildRequest instances sorted by id in descending order.
-    """
-    return self.GetBuildRequestsForBuildConfigs([request_build_config],
-                                                num_results=num_results,
-                                                start_time=start_time)
 
   @minimum_schema(59)
   def GetBuildRequestsForBuildConfigs(self,
