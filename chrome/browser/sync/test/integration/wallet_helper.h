@@ -65,8 +65,7 @@ void UpdateServerAddressMetadata(
 sync_pb::SyncEntity CreateDefaultSyncWalletCard();
 
 sync_pb::SyncEntity CreateSyncWalletCard(const std::string& name,
-                                         const std::string& last_four,
-                                         const std::string& billing_address_id);
+                                         const std::string& last_four);
 
 sync_pb::SyncEntity CreateSyncPaymentsCustomerData(
     const std::string& customer_id);
@@ -93,7 +92,6 @@ void ExpectDefaultProfileValues(const autofill::AutofillProfile& profile);
 
 // Load current data from the database of profile |profile|.
 std::vector<autofill::AutofillProfile*> GetServerProfiles(int profile);
-std::vector<autofill::AutofillProfile*> GetLocalProfiles(int profile);
 std::vector<autofill::CreditCard*> GetServerCreditCards(int profile);
 
 }  // namespace wallet_helper

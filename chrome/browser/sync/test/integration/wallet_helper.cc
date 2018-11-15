@@ -238,14 +238,11 @@ void UpdateServerAddressMetadata(int profile,
 }
 
 sync_pb::SyncEntity CreateDefaultSyncWalletCard() {
-  return CreateSyncWalletCard(kDefaultCardID, kDefaultCardLastFour,
-                              kDefaultBillingAddressID);
+  return CreateSyncWalletCard(kDefaultCardID, kDefaultCardLastFour);
 }
 
-sync_pb::SyncEntity CreateSyncWalletCard(
-    const std::string& name,
-    const std::string& last_four,
-    const std::string& billing_address_id) {
+sync_pb::SyncEntity CreateSyncWalletCard(const std::string& name,
+                                         const std::string& last_four) {
   sync_pb::SyncEntity entity;
   entity.set_name(name);
   entity.set_id_string(name);
@@ -266,9 +263,7 @@ sync_pb::SyncEntity CreateSyncWalletCard(
   credit_card->set_name_on_card(kDefaultCardName);
   credit_card->set_status(sync_pb::WalletMaskedCreditCard::VALID);
   credit_card->set_type(kDefaultCardType);
-  if (!billing_address_id.empty()) {
-    credit_card->set_billing_address_id(billing_address_id);
-  }
+  credit_card->set_billing_address_id(kDefaultBillingAddressID);
   return entity;
 }
 
@@ -400,12 +395,6 @@ std::vector<AutofillProfile*> GetServerProfiles(int profile) {
   WaitForPDMToRefresh(profile);
   PersonalDataManager* pdm = GetPersonalDataManager(profile);
   return pdm->GetServerProfiles();
-}
-
-std::vector<AutofillProfile*> GetLocalProfiles(int profile) {
-  WaitForPDMToRefresh(profile);
-  PersonalDataManager* pdm = GetPersonalDataManager(profile);
-  return pdm->GetProfiles();
 }
 
 std::vector<CreditCard*> GetServerCreditCards(int profile) {

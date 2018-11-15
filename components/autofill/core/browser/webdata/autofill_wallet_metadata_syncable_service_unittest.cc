@@ -476,8 +476,8 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
   MergeMetadata(&local_, &remote_);
 }
 
-// Verify that lower or equal values of metadata are not sent to the sync server
-// when local metadata is updated.
+// Verify that lower values of metadata are not sent to the sync server when
+// local metadata is updated.
 TEST_F(AutofillWalletMetadataSyncableServiceTest,
        DontSendLowerValueToServerOnSingleChange) {
   local_.UpdateAddressStats(BuildAddress(kAddr1, 1, 2, true));
@@ -485,8 +485,8 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
   remote_.UpdateAddressStats(BuildAddress(kAddr1, 1, 2, true));
   remote_.UpdateCardStats(BuildCard(kCard1, 3, 4, kAddr1));
   MergeMetadata(&local_, &remote_);
-  AutofillProfile address = BuildAddress(kAddr1, 0, 0, true);
-  CreditCard card = BuildCard(kCard1, 3, 4, kAddr1);
+  AutofillProfile address = BuildAddress(kAddr1, 0, 0, false);
+  CreditCard card = BuildCard(kCard1, 0, 0, kAddr2);
 
   EXPECT_CALL(local_, SendChangesToSyncServer(_)).Times(0);
 
@@ -517,35 +517,6 @@ TEST_F(AutofillWalletMetadataSyncableServiceTest,
               SendChangesToSyncServer(ElementsAre(SyncCardChangeAndDataMatch(
                   syncer::SyncChange::ACTION_UPDATE, kCard1SyncTag,
                   sync_pb::WalletMetadataSpecifics::CARD, kCard1Utf8, 30, 40,
-                  kAddr2Utf8))));
-
-  local_.AutofillProfileChanged(AutofillProfileChange(
-      AutofillProfileChange::UPDATE, address.guid(), &address));
-  local_.CreditCardChanged(
-      CreditCardChange(CreditCardChange::UPDATE, card.guid(), &card));
-}
-
-// Verify that other changed metadata elements are sent to the sync server when
-// local metadata is updated.
-TEST_F(AutofillWalletMetadataSyncableServiceTest,
-       SendChangedMetadataToServerOnLocalSingleChange) {
-  local_.UpdateAddressStats(BuildAddress(kAddr1, 1, 2, false));
-  local_.UpdateCardStats(BuildCard(kCard1, 3, 4, kAddr1));
-  remote_.UpdateAddressStats(BuildAddress(kAddr1, 1, 2, false));
-  remote_.UpdateCardStats(BuildCard(kCard1, 3, 4, kAddr1));
-  MergeMetadata(&local_, &remote_);
-  AutofillProfile address = BuildAddress(kAddr1, 1, 2, true);
-  CreditCard card = BuildCard(kCard1, 3, 4, kAddr2);
-
-  EXPECT_CALL(
-      local_,
-      SendChangesToSyncServer(ElementsAre(SyncAddressChangeAndDataMatch(
-          syncer::SyncChange::ACTION_UPDATE, kAddr1SyncTag,
-          sync_pb::WalletMetadataSpecifics::ADDRESS, kAddr1Utf8, 1, 2, true))));
-  EXPECT_CALL(local_,
-              SendChangesToSyncServer(ElementsAre(SyncCardChangeAndDataMatch(
-                  syncer::SyncChange::ACTION_UPDATE, kCard1SyncTag,
-                  sync_pb::WalletMetadataSpecifics::CARD, kCard1Utf8, 3, 4,
                   kAddr2Utf8))));
 
   local_.AutofillProfileChanged(AutofillProfileChange(
