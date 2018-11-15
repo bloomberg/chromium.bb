@@ -88,6 +88,7 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(PopupListBoxRow);
     DEBUG_STRING_CASE(PrintedContentDestinationLocations);
     DEBUG_STRING_CASE(PrintedContentPDFURLRect);
+    DEBUG_STRING_CASE(ReflectionMask);
     DEBUG_STRING_CASE(Resizer);
     DEBUG_STRING_CASE(SVGClip);
     DEBUG_STRING_CASE(SVGFilter);
@@ -107,10 +108,8 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(SelectionTint);
     DEBUG_STRING_CASE(TableCollapsedBorders);
     DEBUG_STRING_CASE(VideoBitmap);
-    DEBUG_STRING_CASE(WebPlugin);
     DEBUG_STRING_CASE(WebFont);
-    DEBUG_STRING_CASE(ReflectionMask);
-    DEBUG_STRING_CASE(HitTest);
+    DEBUG_STRING_CASE(WebPlugin);
 
     DEFAULT_CASE;
   }
@@ -146,6 +145,7 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
   PAINT_PHASE_BASED_DEBUG_STRINGS(SVGEffect);
 
   switch (type) {
+    DEBUG_STRING_CASE(HitTest);
     DEBUG_STRING_CASE(ScrollHitTest);
     DEBUG_STRING_CASE(LayerChunkBackground);
     DEBUG_STRING_CASE(LayerChunkNegativeZOrderChildren);

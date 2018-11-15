@@ -26,13 +26,13 @@ void HitTestDisplayItem::Record(GraphicsContext& context,
 
 #if DCHECK_IS_ON()
 void HitTestDisplayItem::PropertiesAsJSON(JSONObject& json) const {
-  DrawingDisplayItem::PropertiesAsJSON(json);
+  DisplayItem::PropertiesAsJSON(json);
   json.SetString("hitTestRect", hit_test_rect_.ToString());
 }
 #endif
 
 bool HitTestDisplayItem::Equals(const DisplayItem& other) const {
-  return DrawingDisplayItem::Equals(other) &&
+  return DisplayItem::Equals(other) &&
          hit_test_rect_ ==
              static_cast<const HitTestDisplayItem&>(other).hit_test_rect_;
 }

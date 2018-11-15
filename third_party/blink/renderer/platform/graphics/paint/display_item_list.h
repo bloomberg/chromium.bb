@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/contiguous_container.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/wtf/alignment.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -20,8 +20,9 @@ struct PaintChunk;
 // each derived display item; the ideal value is the least common multiple.
 // The validity of kDisplayItemAlignment and kMaximumDisplayItemSize are checked
 // in PaintController::CreateAndAppend().
-static const size_t kDisplayItemAlignment = WTF_ALIGN_OF(HitTestDisplayItem);
-static const size_t kMaximumDisplayItemSize = sizeof(HitTestDisplayItem);
+static const size_t kDisplayItemAlignment =
+    WTF_ALIGN_OF(ForeignLayerDisplayItem);
+static const size_t kMaximumDisplayItemSize = sizeof(ForeignLayerDisplayItem);
 
 // A container for a list of display items.
 class PLATFORM_EXPORT DisplayItemList
@@ -74,9 +75,10 @@ class PLATFORM_EXPORT DisplayItemList
 #if DCHECK_IS_ON()
   enum JsonOptions {
     kDefault = 0,
-    kShowPaintRecords = 1 << 0,
-    kClientKnownToBeAlive = 1 << 1,
-    kShownOnlyDisplayItemTypes = 1 << 2
+    kShowPaintRecords = 1,
+    kSkipNonDrawings = 1 << 1,
+    kClientKnownToBeAlive = 1 << 2,
+    kShownOnlyDisplayItemTypes = 1 << 3
   };
   typedef unsigned JsonFlags;
 

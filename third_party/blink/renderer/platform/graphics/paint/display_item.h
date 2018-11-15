@@ -81,6 +81,7 @@ class PLATFORM_EXPORT DisplayItem {
     kPopupListBoxRow,
     kPrintedContentDestinationLocations,
     kPrintedContentPDFURLRect,
+    kReflectionMask,
     kResizer,
     kSVGClip,
     kSVGFilter,
@@ -100,15 +101,9 @@ class PLATFORM_EXPORT DisplayItem {
     kSelectionTint,
     kTableCollapsedBorders,
     kVideoBitmap,
-    kWebPlugin,
     kWebFont,
-    kReflectionMask,
-    // Compositor hit testing requires that layers are created and sized to
-    // include content that does not paint. Hit test display items ensure
-    // a layer exists and is sized properly even if no content would otherwise
-    // be painted.
-    kHitTest,
-    kDrawingLast = kHitTest,
+    kWebPlugin,
+    kDrawingLast = kWebPlugin,
 
     kForeignLayerFirst,
     kForeignLayerCanvas = kForeignLayerFirst,
@@ -130,6 +125,12 @@ class PLATFORM_EXPORT DisplayItem {
 
     kSVGEffectPaintPhaseFirst,
     kSVGEffectPaintPhaseLast = kSVGEffectPaintPhaseFirst + kPaintPhaseMax,
+
+    // Compositor hit testing requires that layers are created and sized to
+    // include content that does not paint. Hit test display items ensure
+    // a layer exists and is sized properly even if no content would otherwise
+    // be painted.
+    kHitTest,
 
     kScrollHitTest,
 
