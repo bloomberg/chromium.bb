@@ -342,34 +342,37 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
     }
     seen_host_suffixes.insert(hint_key);
 
-    // Create whitelist condition set out of the optimizations that are
-    // whitelisted for the host suffix at the top level (i.e., not within
-    // PageHints).
-    std::set<std::pair<PreviewsType, int>> whitelisted_optimizations;
-    for (const auto& optimization : hint.whitelisted_optimizations()) {
-      if (IsDisabledExperimentalOptimization(optimization)) {
-        continue;
-      }
-      base::Optional<PreviewsType> previews_type =
-          ConvertProtoOptimizationTypeToPreviewsType(
-              optimization.optimization_type());
-      if (!previews_type.has_value()) {
-        continue;
-      }
-      // Resource loading hints should always be page hints; if they appear as
-      // top-level whitelisted optimizations, then it indicates a bug.
-      DCHECK(previews_type != PreviewsType::RESOURCE_LOADING_HINTS);
+    // Only process legacy top level hints if specifically enabled.
+    if (previews::params::NoScriptPreviewsUsesTopLevelHints()) {
+      // Create whitelist condition set out of the optimizations that are
+      // whitelisted for the host suffix at the top level (i.e., not within
+      // PageHints).
+      std::set<std::pair<PreviewsType, int>> whitelisted_optimizations;
+      for (const auto& optimization : hint.whitelisted_optimizations()) {
+        if (IsDisabledExperimentalOptimization(optimization)) {
+          continue;
+        }
+        base::Optional<PreviewsType> previews_type =
+            ConvertProtoOptimizationTypeToPreviewsType(
+                optimization.optimization_type());
+        if (!previews_type.has_value()) {
+          continue;
+        }
+        // Resource loading hints should always be page hints; if they appear as
+        // top-level whitelisted optimizations, then it indicates a bug.
+        DCHECK(previews_type != PreviewsType::RESOURCE_LOADING_HINTS);
 
-      whitelisted_optimizations.insert(std::make_pair(
-          previews_type.value(), optimization.inflation_percent()));
+        whitelisted_optimizations.insert(std::make_pair(
+            previews_type.value(), optimization.inflation_percent()));
+      }
+
+      url_matcher::URLMatcherCondition condition =
+          condition_factory->CreateHostSuffixCondition(hint_key);
+      all_conditions.push_back(new url_matcher::URLMatcherConditionSet(
+          id, std::set<url_matcher::URLMatcherCondition>{condition}));
+      hints->whitelist_[id] = whitelisted_optimizations;
+      id++;
     }
-
-    url_matcher::URLMatcherCondition condition =
-        condition_factory->CreateHostSuffixCondition(hint_key);
-    all_conditions.push_back(new url_matcher::URLMatcherConditionSet(
-        id, std::set<url_matcher::URLMatcherCondition>{condition}));
-    hints->whitelist_[id] = whitelisted_optimizations;
-    id++;
 
     // If this hint contains page hints, then add a pared down version of the
     // hint to the initial hints that are used to populate the hint cache,
@@ -400,7 +403,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromConfig(
   // Completed processing hints data without crashing so clear sentinel.
   DeleteSentinelFile(sentinel_path);
   RecordProcessHintsResult(
-      all_conditions.empty()
+      hints->initial_hints_.empty() && all_conditions.empty()
           ? PreviewsProcessHintsResult::kProcessedNoPreviewsHints
           : PreviewsProcessHintsResult::kProcessedPreviewsHints);
   return hints;
@@ -522,6 +525,12 @@ bool PreviewsHints::IsWhitelistedAtTopLevel(const GURL& url,
                                             PreviewsType type,
                                             int* out_inflation_percent) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Top level hints are deprecated so only check here if specifically enabled
+  // for NoScript.
+  if (!previews::params::NoScriptPreviewsUsesTopLevelHints()) {
+    return false;
+  }
 
   // Resource loading hints are not processed in the top-level whitelist.
   if (type == PreviewsType::RESOURCE_LOADING_HINTS) {
