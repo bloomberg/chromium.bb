@@ -172,6 +172,11 @@ std::unique_ptr<Catalog> ValidateCatalog(std::unique_ptr<Catalog> catalog) {
       // Add the site into the category we are working on.
       Site* new_site = new_category->add_sites();
       new_site->Swap(&site);
+
+      // We want to use a canonicalized URL in the database so that blacklisting
+      // will always work.  Typically this will cause a trailing slash to be
+      // added if it's missing.
+      new_site->set_site_url(url.spec());
     }
 
     // Collect UMA if the last site was removed from the category, or there were
