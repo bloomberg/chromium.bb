@@ -60,6 +60,12 @@ const base::Feature kAppNotificationStatusMessaging{
     "AppNotificationStatusMessaging", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+// Use the App Service. See chrome/services/app_service/README.md.
+const base::Feature kAppService{"AppService",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !defined(OS_ANDROID)
+
 // If enabled, the list of content suggestions on the New Tab page will contain
 // assets (e.g. books, pictures, audio) that the user downloaded for later use.
 // DO NOT check directly whether this feature is enabled (i.e. do not use
@@ -275,8 +281,8 @@ const base::Feature kFullscreenExitUI{"FullscreenExitUI",
 
 #if defined(OS_WIN)
 // Enables using GDI to print text as simply text.
-const base::Feature kGdiTextPrinting {"GdiTextPrinting",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kGdiTextPrinting{"GdiTextPrinting",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Controls whether the GeoLanguage system is enabled. GeoLanguage uses IP-based
@@ -293,10 +299,10 @@ const base::Feature kGrantNotificationsToDSE{"GrantNotificationsToDSE",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
-#if defined (OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
 // Enables or disables the Happiness Tracking System for the device.
-const base::Feature kHappinessTrackingSystem {
-    "HappinessTrackingSystem", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kHappinessTrackingSystem{"HappinessTrackingSystem",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if !defined(OS_ANDROID)

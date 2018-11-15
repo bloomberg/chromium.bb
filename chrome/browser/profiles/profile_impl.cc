@@ -1238,7 +1238,7 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
 #endif
 
 #if !defined(OS_ANDROID)
-  {
+  if (base::FeatureList::IsEnabled(features::kAppService)) {
     // Binding the App Service here means that its preferences will be stored in
     // the primary Preferences file for this profile.
     service_manager::EmbeddedServiceInfo info;
