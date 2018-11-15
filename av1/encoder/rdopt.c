@@ -8328,6 +8328,59 @@ static INLINE void find_best_vert_interp_filter_rd(
   }
 }
 
+// Find the best interp filter if dual_interp_filter = 0
+static INLINE void find_best_non_dual_interp_filter(
+    MACROBLOCK *const x, const AV1_COMP *const cpi, BLOCK_SIZE bsize,
+    int mi_row, int mi_col, BUFFER_SET *const orig_dst, int64_t *const rd,
+    int *const switchable_rate, int *const skip_txfm_sb,
+    int64_t *const skip_sse_sb, const BUFFER_SET *dst_bufs[2],
+    const int switchable_ctx[2], const int skip_ver, const int skip_hor,
+    int *rate, int64_t *dist, int filter_set_size) {
+  int16_t i;
+
+  // Regular filter evaluation should have been done and hence the same should
+  // be the winner
+  assert(x->e_mbd.mi[0]->interp_filters == filter_sets[0]);
+  assert(filter_set_size == DUAL_FILTER_SET_SIZE);
+
+  // Reuse regular filter's modeled rd data for sharp filter for following
+  // cases
+  // 1) When bsize is 4x4
+  // 2) When block width is 4 (i.e. 4x8/4x16 blocks) and MV in vertical
+  // direction is full-pel
+  // 3) When block height is 4 (i.e. 8x4/16x4 blocks) and MV in horizontal
+  // direction is full-pel
+  // TODO(any): Optimize cases 2 and 3 further if luma MV in relavant direction
+  // alone is full-pel
+
+  if ((bsize == BLOCK_4X4) ||
+      (block_size_wide[bsize] == 4 &&
+       skip_ver == cpi->default_interp_skip_flags) ||
+      (block_size_high[bsize] == 4 &&
+       skip_hor == cpi->default_interp_skip_flags)) {
+    int skip_pred = cpi->default_interp_skip_flags;
+    for (i = filter_set_size - 1; i > 0; i -= (SWITCHABLE_FILTERS + 1)) {
+      // This assert tells that (filter_x == filter_y) for non-dual filter case
+      assert((filter_sets[i] & 0xffff) == (filter_sets[i] >> 16));
+      interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
+                              switchable_rate, skip_txfm_sb, skip_sse_sb,
+                              dst_bufs, i, switchable_ctx, skip_pred, rate,
+                              dist);
+      skip_pred = (skip_hor & skip_ver);
+    }
+  } else {
+    for (i = (SWITCHABLE_FILTERS + 1); i < filter_set_size;
+         i += (SWITCHABLE_FILTERS + 1)) {
+      // This assert tells that (filter_x == filter_y) for non-dual filter case
+      assert((filter_sets[i] & 0xffff) == (filter_sets[i] >> 16));
+      interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
+                              switchable_rate, skip_txfm_sb, skip_sse_sb,
+                              dst_bufs, i, switchable_ctx,
+                              (skip_hor & skip_ver), rate, dist);
+    }
+  }
+}
+
 // check if there is saved result match with this search
 static INLINE int is_interp_filter_match(const INTERPOLATION_FILTER_STATS *st,
                                          MB_MODE_INFO *const mi) {
@@ -8527,14 +8580,14 @@ static int64_t interpolation_filter_search(
         x, cpi, bsize, mi_row, mi_col, orig_dst, rd, switchable_rate,
         best_skip_txfm_sb, best_skip_sse_sb, dst_bufs, switchable_ctx, skip_ver,
         tmp_rate, tmp_dist, best_dual_mode, filter_set_size);
+  } else if (cm->seq_params.enable_dual_filter == 0) {
+    find_best_non_dual_interp_filter(
+        x, cpi, bsize, mi_row, mi_col, orig_dst, rd, switchable_rate,
+        best_skip_txfm_sb, best_skip_sse_sb, dst_bufs, switchable_ctx, skip_ver,
+        skip_hor, tmp_rate, tmp_dist, filter_set_size);
   } else {
     // EIGHTTAP_REGULAR mode is calculated beforehand
     for (i = 1; i < filter_set_size; ++i) {
-      if (cm->seq_params.enable_dual_filter == 0) {
-        const int16_t filter_y = filter_sets[i] & 0xffff;
-        const int16_t filter_x = filter_sets[i] >> 16;
-        if (filter_x != filter_y) continue;
-      }
       interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
                               switchable_rate, best_skip_txfm_sb,
                               best_skip_sse_sb, dst_bufs, i, switchable_ctx,
