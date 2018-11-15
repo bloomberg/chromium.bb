@@ -133,7 +133,7 @@ void PrePaintTreeWalk::Walk(LocalFrameView& frame_view) {
 
   if (RuntimeEnabledFeatures::JankTrackingEnabled())
     frame_view.GetJankTracker().NotifyPrePaintFinished();
-  if (RuntimeEnabledFeatures::PaintTrackingEnabled())
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled())
     frame_view.GetPaintTracker().NotifyPrePaintFinished();
 
   context_storage_.pop_back();
@@ -375,7 +375,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
         object, paint_invalidator_context.old_visual_rect,
         *paint_invalidator_context.painting_layer);
   }
-  if (RuntimeEnabledFeatures::PaintTrackingEnabled()) {
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
     object.GetFrameView()->GetPaintTracker().NotifyObjectPrePaint(
         object, *paint_invalidator_context.painting_layer);
   }
