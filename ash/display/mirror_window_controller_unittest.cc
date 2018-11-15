@@ -27,6 +27,7 @@
 namespace ash {
 
 namespace {
+
 display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
                                               const gfx::Rect& bounds,
                                               float scale = 1.f) {
@@ -49,7 +50,6 @@ class MirrorOnBootTest : public AshTestBase {
         ::switches::kEnableSoftwareMirroring);
     AshTestBase::SetUp();
   }
-  void TearDown() override { AshTestBase::TearDown(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MirrorOnBootTest);

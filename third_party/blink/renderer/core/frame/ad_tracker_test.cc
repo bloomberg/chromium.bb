@@ -482,8 +482,6 @@ class AdTrackerDisabledSimTest : public SimTest {
     main_resource_->Start();
   }
 
-  void TearDown() override { SimTest::TearDown(); }
-
   std::unique_ptr<SimRequest> main_resource_;
 };
 

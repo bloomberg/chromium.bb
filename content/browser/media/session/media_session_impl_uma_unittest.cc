@@ -74,8 +74,6 @@ class MediaSessionImplUmaTest : public RenderViewHostImplTestHarness {
     StartPlayer();
   }
 
-  void TearDown() override { RenderViewHostImplTestHarness::TearDown(); }
-
  protected:
   MediaSessionImpl* GetSession() { return MediaSessionImpl::Get(contents()); }
 

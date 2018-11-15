@@ -28,8 +28,6 @@ class StickyKeysTest : public AshTestBase {
     root_window_ = target_->GetRootWindow();
   }
 
-  void TearDown() override { AshTestBase::TearDown(); }
-
   virtual void OnShortcutPressed() {
     if (target_) {
       delete target_;

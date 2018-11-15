@@ -36,8 +36,6 @@ class WindowAnimationsTest : public AshTestBase {
     AshTestBase::SetUp();
   }
 
-  void TearDown() override { AshTestBase::TearDown(); }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowAnimationsTest);
 };
@@ -51,7 +49,7 @@ class MinimizeAnimationObserver : public ui::LayerAnimationObserver {
     animator_->AddObserver(this);
     // RemoveObserver is called when the first animation is scheduled and so
     // there should be no need for now to remove it in destructor.
-  };
+  }
   base::TimeDelta duration() { return duration_; }
 
  protected:

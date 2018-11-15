@@ -43,8 +43,6 @@ class MailboxManagerTest : public GpuServiceTest {
     DCHECK(manager_->UsesSync());
   }
 
-  void TearDown() override { GpuServiceTest::TearDown(); }
-
   Texture* CreateTexture() {
     return new Texture(1);
   }
