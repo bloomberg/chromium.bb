@@ -60,7 +60,7 @@ void __cdecl operator delete(void* memory,
 
 namespace sandbox {
 
-#if defined(_M_X64)
+#if defined(_M_X64) || defined(_M_ARM64)
 #pragma intrinsic(_InterlockedCompareExchange)
 #pragma intrinsic(_InterlockedCompareExchangePointer)
 
