@@ -45,6 +45,9 @@ extern NSString* const OtherCardsAccessibilityIdentifier;
 // Unavailable. Use |initWithCards:|.
 - (instancetype)init NS_UNAVAILABLE;
 
+// Finds the original autofill::CreditCard from given |GUID|.
+- (const autofill::CreditCard*)findCreditCardfromGUID:(NSString*)GUID;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_CARD_MEDIATOR_H_

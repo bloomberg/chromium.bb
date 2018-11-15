@@ -87,7 +87,7 @@ TEST_F(ManualFillCreditCardFormAutofilliOSTest, CreationObfuscated) {
   EXPECT_TRUE([GUID isEqualToString:manualFillCard.GUID]);
   EXPECT_TRUE([@"Visa" isEqualToString:manualFillCard.network]);
   EXPECT_TRUE([bankName isEqualToString:manualFillCard.bankName]);
-  EXPECT_TRUE([number isEqualToString:manualFillCard.number]);
+  EXPECT_FALSE(manualFillCard.number);
   EXPECT_TRUE([manualFillCard.obfuscatedNumber containsString:@"1234"]);
   EXPECT_FALSE([manualFillCard.obfuscatedNumber containsString:@"4321"]);
   EXPECT_TRUE([cardHolder isEqualToString:manualFillCard.cardHolder]);

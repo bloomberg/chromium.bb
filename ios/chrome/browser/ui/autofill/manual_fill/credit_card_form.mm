@@ -25,9 +25,11 @@
       base::SysUTF16ToNSString(base::ASCIIToUTF16(creditCard.bank_name()));
   NSString* cardHolder = autofill::GetCreditCardName(
       creditCard, GetApplicationContext()->GetApplicationLocale());
-  NSString* number =
-      base::SysUTF16ToNSString(autofill::CreditCard::StripSeparators(
-          creditCard.GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
+  NSString* number = nil;
+  if (creditCard.record_type() != autofill::CreditCard::MASKED_SERVER_CARD) {
+    number = base::SysUTF16ToNSString(autofill::CreditCard::StripSeparators(
+        creditCard.GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
+  }
 
   // Unicode characters used in card number:
   //  - 0x0020 - Space.

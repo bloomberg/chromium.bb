@@ -8,11 +8,14 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/credit_card.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_consumer.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_list_delegate.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/credit_card.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/credit_card_form.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/full_card_request_result_delegate_bridge.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_card_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
@@ -65,6 +68,16 @@ NSString* const ManageCardsAccessibilityIdentifier =
   [self postActionsToConsumer];
 }
 
+- (const autofill::CreditCard*)findCreditCardfromGUID:(NSString*)GUID {
+  for (autofill::CreditCard* card : self.cards) {
+    NSString* cppGUID =
+        base::SysUTF16ToNSString(base::ASCIIToUTF16(card->guid()));
+    if ([cppGUID isEqualToString:GUID])
+      return card;
+  }
+  return nil;
+}
+
 #pragma mark - Private
 
 // Posts the cards to the consumer.
@@ -76,9 +89,10 @@ NSString* const ManageCardsAccessibilityIdentifier =
   NSMutableArray* items =
       [[NSMutableArray alloc] initWithCapacity:self.cards.size()];
   for (autofill::CreditCard* card : self.cards) {
-    // TODO(crbug.com/845472): create a pure objc object instead.
+    ManualFillCreditCard* manualFillCreditCard =
+        [[ManualFillCreditCard alloc] initWithCreditCard:*card];
     auto item =
-        [[ManualFillCardItem alloc] initWithCreditCard:*card
+        [[ManualFillCardItem alloc] initWithCreditCard:manualFillCreditCard
                                        contentDelegate:self.contentDelegate
                                     navigationDelegate:self.navigationDelegate];
     [items addObject:item];
@@ -110,16 +124,18 @@ NSString* const ManageCardsAccessibilityIdentifier =
 
 - (void)onFullCardRequestSucceeded:(const autofill::CreditCard&)card {
   // Credit card are not shown as 'Secure'.
-  NSString* cardNumber =
-      base::SysUTF16ToNSString(autofill::CreditCard::StripSeparators(
-          card.GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
+  ManualFillCreditCard* manualFillCreditCard =
+      [[ManualFillCreditCard alloc] initWithCreditCard:card];
+  // Don't replace the locked card with the unlocked one, so the user will
+  // have to unlock it again, if needed.
   // TODO(crbug.com/845472): update userDidPickContent to have an isHttps
   // parameter.
-  [self.contentDelegate userDidPickContent:cardNumber isSecure:NO];
+  [self.contentDelegate userDidPickContent:manualFillCreditCard.number
+                                  isSecure:NO];
 }
 
 - (void)onFullCardRequestFailed {
-  // TODO(crbug.com/845472): handle failure to unlock card.
+  // This is called on user cancelling, so there's nothing to do here.
 }
 
 @end

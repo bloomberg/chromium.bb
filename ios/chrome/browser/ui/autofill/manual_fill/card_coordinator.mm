@@ -5,11 +5,9 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_coordinator.h"
 
 #include "base/memory/ref_counted.h"
-#include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
-#include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_list_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_mediator.h"
@@ -66,6 +64,10 @@ initWithBaseViewController:(UIViewController*)viewController
     std::vector<autofill::CreditCard*> cards =
         personalDataManager->GetCreditCardsToSuggest(true);
 
+    // TODO(crbug.com/845472): add observer using
+    // PersonalDataManagerObserverBridge and refresh data when personal data
+    // changes. Applies to addresses too.
+
     _cardMediator = [[ManualFillCardMediator alloc] initWithCards:cards];
     _cardMediator.navigationDelegate = self;
     _cardMediator.contentDelegate = self.manualFillInjectionHandler;
@@ -94,13 +96,17 @@ initWithBaseViewController:(UIViewController*)viewController
   }];
 }
 
-- (void)requestFullCreditCard:(const autofill::CreditCard&)card {
+- (void)requestFullCreditCard:(ManualFillCreditCard*)card {
   __weak __typeof(self) weakSelf = self;
-  // TODO(crbug.com/845472): resolve potential weak card here either using
-  // std::unique or an Obj-C Creditcard object as proposed in another TODO.
-  autofill::CreditCard cardCopy = card;
+  __weak ManualFillCreditCard* weakCard = card;
   [self dismissIfNecessaryThenDoCompletion:^{
-    [weakSelf.cardRequester requestFullCreditCard:cardCopy
+    if (!weakSelf)
+      return;
+    const autofill::CreditCard* autofillCreditCard =
+        [weakSelf.cardMediator findCreditCardfromGUID:weakCard.GUID];
+    if (!autofillCreditCard)
+      return;
+    [weakSelf.cardRequester requestFullCreditCard:*autofillCreditCard
                            withBaseViewController:weakSelf.baseViewController];
   }];
 }

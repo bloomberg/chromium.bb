@@ -5,9 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_CARD_LIST_DELEGATE_H_
 #define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_CARD_LIST_DELEGATE_H_
 
-namespace autofill {
-class CreditCard;
-}  // namespace autofill
+#import "ios/chrome/browser/ui/autofill/manual_fill/credit_card.h"
 
 // Delegate for actions in manual fallback's cards list.
 @protocol CardListDelegate
@@ -16,7 +14,7 @@ class CreditCard;
 - (void)openCardSettings;
 
 // Open credit card unlock, through CVC, prompt.
-- (void)requestFullCreditCard:(const autofill::CreditCard&)card;
+- (void)requestFullCreditCard:(ManualFillCreditCard*)card;
 
 @end
 
