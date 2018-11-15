@@ -16,6 +16,7 @@ import android.net.Uri;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -65,6 +66,7 @@ public final class LaunchTest {
      * the intent and the host browser getting launched.
      */
     @Test
+    @Ignore
     public void testDeepLink() {
         final String deepLinkUrl = "https://pwa.rocks/deep.html";
 
@@ -98,6 +100,7 @@ public final class LaunchTest {
 
     /** Test that the host browser is launched as a result of a main launch intent. */
     @Test
+    @Ignore
     public void testMainIntent() {
         Intent launchIntent = new Intent(Intent.ACTION_MAIN);
         launchIntent.setPackage(WEBAPK_PACKAGE_NAME);
@@ -130,6 +133,7 @@ public final class LaunchTest {
      * browser getting launched.
      */
     @Test
+    @Ignore
     public void testTargetShareActivityPreserved() {
         final String expectedStartUrl = "https://pwa.rocks/share_title.html?text=subject_value";
 
@@ -156,6 +160,7 @@ public final class LaunchTest {
      * the deep link getting handled and the host browser getting launched.
      */
     @Test
+    @Ignore
     public void testSourcePropagated() {
         final String deepLinkUrl = "https://pwa.rocks/deep_link.html";
         final int source = 2;
