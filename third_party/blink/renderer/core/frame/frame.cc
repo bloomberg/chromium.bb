@@ -199,6 +199,11 @@ bool Frame::ConsumeTransientUserActivationInLocalTree() {
   return was_active;
 }
 
+void Frame::ClearUserActivationInLocalTree() {
+  for (Frame* node = this; node; node = node->Tree().TraverseNext(this))
+    node->user_activation_state_.Clear();
+}
+
 void Frame::SetOwner(FrameOwner* owner) {
   owner_ = owner;
   UpdateInertIfPossible();

@@ -5999,11 +5999,13 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // Find the appropriate NavigationHandle for this navigation.
   std::unique_ptr<NavigationHandleImpl> navigation_handle;
 
-  if (is_same_document_navigation)
+  if (is_same_document_navigation) {
     navigation_handle =
         TakeNavigationHandleForSameDocumentCommit(*validated_params);
-  else
+  } else {
     navigation_handle = TakeNavigationHandleForCommit(*validated_params);
+  }
+
   DCHECK(navigation_handle);
 
   UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);

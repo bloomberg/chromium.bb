@@ -348,6 +348,9 @@ void WebRemoteFrameImpl::UpdateUserActivationState(
     case UserActivationUpdateType::kConsumeTransientActivation:
       GetFrame()->ConsumeTransientUserActivationInLocalTree();
       break;
+    case UserActivationUpdateType::kClearActivation:
+      GetFrame()->ClearUserActivationInLocalTree();
+      break;
   }
 }
 

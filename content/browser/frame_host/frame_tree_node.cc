@@ -186,6 +186,15 @@ void FrameTreeNode::ResetForNavigation() {
   // Clear any CSP-set sandbox flags, and the declared feature policy for the
   // frame.
   UpdateFramePolicyHeaders(blink::WebSandboxFlags::kNone, {});
+
+  // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
+  if (IsMainFrame()) {
+    // This frame has had its user activation bits cleared in the renderer
+    // before arriving here. We just need to clear them here and in the other
+    // renderer processes that may have a reference to this frame.
+    UpdateUserActivationState(
+        blink::UserActivationUpdateType::kClearActivation);
+  }
 }
 
 void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
@@ -551,6 +560,15 @@ bool FrameTreeNode::ConsumeTransientUserActivation() {
   return was_active;
 }
 
+bool FrameTreeNode::ClearUserActivation() {
+  // Only received for a new main frame.
+  // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
+  DCHECK(IsMainFrame());
+  for (FrameTreeNode* node : frame_tree()->SubtreeNodes(this))
+    node->user_activation_state_.Clear();
+  return true;
+}
+
 bool FrameTreeNode::UpdateUserActivationState(
     blink::UserActivationUpdateType update_type) {
   render_manager_.UpdateUserActivationState(update_type);
@@ -560,6 +578,9 @@ bool FrameTreeNode::UpdateUserActivationState(
 
     case blink::UserActivationUpdateType::kNotifyActivation:
       return NotifyUserActivation();
+
+    case blink::UserActivationUpdateType::kClearActivation:
+      return ClearUserActivation();
   }
   NOTREACHED() << "Invalid update_type.";
 }
