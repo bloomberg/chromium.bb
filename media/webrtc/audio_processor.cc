@@ -312,7 +312,7 @@ void AudioProcessor::InitializeAPM() {
     apm_config.gain_controller2.enabled =
         settings_.automatic_gain_control ==
         AutomaticGainControlType::kHybridExperimental;
-    apm_config.gain_controller2.fixed_gain_db = 0.f;
+    apm_config.gain_controller2.fixed_digital.gain_db = 0.f;
   }
 
   audio_processing_->ApplyConfig(apm_config);
