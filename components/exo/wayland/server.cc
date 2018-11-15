@@ -99,6 +99,7 @@
 #include "components/exo/wayland/wayland_keyboard_delegate.h"
 #include "components/exo/wayland/wayland_pointer_delegate.h"
 #include "components/exo/wayland/wayland_touch_delegate.h"
+#include "components/exo/wayland/zcr_keyboard_configuration.h"
 #include "components/exo/wayland/zcr_keyboard_extension.h"
 #include "components/exo/wayland/zcr_notification_shell.h"
 #include "components/exo/wayland/zwp_input_timestamps_manager.h"
@@ -4429,102 +4430,6 @@ void bind_pointer_gestures(wl_client* client,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// keyboard_device_configuration interface:
-
-class WaylandKeyboardDeviceConfigurationDelegate
-    : public KeyboardDeviceConfigurationDelegate,
-      public KeyboardObserver {
- public:
-  WaylandKeyboardDeviceConfigurationDelegate(wl_resource* resource,
-                                             Keyboard* keyboard)
-      : resource_(resource), keyboard_(keyboard) {
-    keyboard_->SetDeviceConfigurationDelegate(this);
-    keyboard_->AddObserver(this);
-  }
-  ~WaylandKeyboardDeviceConfigurationDelegate() override {
-    if (keyboard_) {
-      keyboard_->SetDeviceConfigurationDelegate(nullptr);
-      keyboard_->RemoveObserver(this);
-    }
-  }
-
-  // Overridden from KeyboardObserver:
-  void OnKeyboardDestroying(Keyboard* keyboard) override {
-    keyboard_ = nullptr;
-  }
-
-  // Overridden from KeyboardDeviceConfigurationDelegate:
-  void OnKeyboardTypeChanged(bool is_physical) override {
-    zcr_keyboard_device_configuration_v1_send_type_change(
-        resource_,
-        is_physical
-            ? ZCR_KEYBOARD_DEVICE_CONFIGURATION_V1_KEYBOARD_TYPE_PHYSICAL
-            : ZCR_KEYBOARD_DEVICE_CONFIGURATION_V1_KEYBOARD_TYPE_VIRTUAL);
-  }
-
- private:
-  wl_resource* resource_;
-  Keyboard* keyboard_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandKeyboardDeviceConfigurationDelegate);
-};
-
-void keyboard_device_configuration_destroy(wl_client* client,
-                                           wl_resource* resource) {
-  wl_resource_destroy(resource);
-}
-
-const struct zcr_keyboard_device_configuration_v1_interface
-    keyboard_device_configuration_implementation = {
-        keyboard_device_configuration_destroy};
-
-////////////////////////////////////////////////////////////////////////////////
-// keyboard_configuration interface:
-
-void keyboard_configuration_get_keyboard_device_configuration(
-    wl_client* client,
-    wl_resource* resource,
-    uint32_t id,
-    wl_resource* keyboard_resource) {
-  Keyboard* keyboard = GetUserDataAs<Keyboard>(keyboard_resource);
-  if (keyboard->HasDeviceConfigurationDelegate()) {
-    wl_resource_post_error(
-        resource,
-        ZCR_KEYBOARD_CONFIGURATION_V1_ERROR_DEVICE_CONFIGURATION_EXISTS,
-        "keyboard has already been associated with a device configuration "
-        "object");
-    return;
-  }
-
-  wl_resource* keyboard_device_configuration_resource = wl_resource_create(
-      client, &zcr_keyboard_device_configuration_v1_interface,
-      wl_resource_get_version(resource), id);
-
-  SetImplementation(
-      keyboard_device_configuration_resource,
-      &keyboard_device_configuration_implementation,
-      std::make_unique<WaylandKeyboardDeviceConfigurationDelegate>(
-          keyboard_device_configuration_resource, keyboard));
-}
-
-const struct zcr_keyboard_configuration_v1_interface
-    keyboard_configuration_implementation = {
-        keyboard_configuration_get_keyboard_device_configuration};
-
-const uint32_t keyboard_configuration_version = 2;
-
-void bind_keyboard_configuration(wl_client* client,
-                                 void* data,
-                                 uint32_t version,
-                                 uint32_t id) {
-  wl_resource* resource =
-      wl_resource_create(client, &zcr_keyboard_configuration_v1_interface,
-                         std::min(version, keyboard_configuration_version), id);
-  wl_resource_set_implementation(
-      resource, &keyboard_configuration_implementation, data, nullptr);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // stylus_tool interface:
 
 class StylusTool : public SurfaceObserver {
@@ -4755,7 +4660,7 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &zwp_pointer_gestures_v1_interface, 1,
                    display_, bind_pointer_gestures);
   wl_global_create(wl_display_.get(), &zcr_keyboard_configuration_v1_interface,
-                   keyboard_configuration_version, display_,
+                   kZcrKeyboardConfigurationVersion, display_,
                    bind_keyboard_configuration);
   wl_global_create(wl_display_.get(), &zcr_stylus_tools_v1_interface, 1,
                    display_, bind_stylus_tools);
