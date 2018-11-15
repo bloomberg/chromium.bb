@@ -141,6 +141,7 @@ Refer to README.md for content description and update process.
  <item id="interest_feed_send" hash_code="76717919" type="0" content_hash_code="34678180" os_list="linux,windows" file_path="components/feed/core/feed_networking_host.cc"/>
  <item id="intranet_redirect_detector" hash_code="21785164" type="0" content_hash_code="62025595" os_list="linux,windows" file_path="chrome/browser/intranet_redirect_detector.cc"/>
  <item id="invalidation_service" hash_code="72354423" type="0" content_hash_code="78425687" os_list="linux,windows" file_path="components/invalidation/impl/gcm_network_channel.cc"/>
+ <item id="journey_journey_info_json_request" hash_code="62660788" type="0" content_hash_code="77009071" os_list="linux,windows" file_path="components/journey/journey_info_json_request.cc"/>
  <item id="lib_address_input" hash_code="50816767" type="0" content_hash_code="57977576" os_list="linux,windows" file_path="third_party/libaddressinput/chromium/chrome_metadata_source.cc"/>
  <item id="logo_tracker" hash_code="36859107" type="0" content_hash_code="67588075" os_list="linux,windows" file_path="components/search_provider_logos/logo_tracker.cc"/>
  <item id="md_downloads_dom_handler" hash_code="65603364" type="0" content_hash_code="134779147" os_list="linux,windows" file_path="chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.cc"/>
@@ -154,8 +155,8 @@ Refer to README.md for content description and update process.
  <item id="network_location_provider" hash_code="23472048" type="1" second_id="96590038" content_hash_code="41087976" os_list="linux,windows" semantics_fields="1" policy_fields="3,4" file_path="services/device/geolocation/network_location_provider.cc"/>
  <item id="network_location_request" hash_code="96590038" type="2" content_hash_code="80741011" os_list="linux,windows" semantics_fields="2,3,4,5" policy_fields="-1" file_path="services/device/geolocation/network_location_request.cc"/>
  <item id="network_time_component" hash_code="46188932" type="0" content_hash_code="28051857" os_list="linux,windows" file_path="components/network_time/network_time_tracker.cc"/>
- <item id="ntp_custom_link_checker_request" hash_code="78408551" type="0" deprecated="2018-10-26" content_hash_code="13407730" file_path=""/>
  <item id="ntp_contextual_suggestions_fetch" hash_code="95711309" type="0" content_hash_code="107035434" os_list="linux,windows" file_path="components/ntp_snippets/contextual/contextual_suggestions_fetch.cc"/>
+ <item id="ntp_custom_link_checker_request" hash_code="78408551" type="0" deprecated="2018-10-26" content_hash_code="13407730" file_path=""/>
  <item id="ntp_icon_source" hash_code="29197139" type="0" content_hash_code="16399294" os_list="linux,windows" file_path="chrome/browser/search/ntp_icon_source.cc"/>
  <item id="ntp_snippets_fetch" hash_code="15418154" type="0" content_hash_code="10078959" os_list="linux,windows" file_path="components/ntp_snippets/remote/json_request.cc"/>
  <item id="oauth2_access_token_fetcher" hash_code="27915688" type="0" content_hash_code="33501872" os_list="linux,windows" file_path="google_apis/gaia/oauth2_access_token_fetcher_impl.cc"/>
