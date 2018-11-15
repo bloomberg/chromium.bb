@@ -159,7 +159,6 @@ typedef struct RefCntBuffer {
   aom_codec_frame_buffer_t raw_frame_buffer;
   YV12_BUFFER_CONFIG buf;
   hash_table hash_table;
-  uint8_t intra_only;
   FRAME_TYPE frame_type;
 
   // Inter frame reference frame delta for loop filter
@@ -311,8 +310,6 @@ typedef struct {
 
 typedef struct {
   FRAME_TYPE frame_type;
-  // Flag signaling that the frame is encoded using only INTRA modes.
-  uint8_t intra_only;
   REFERENCE_MODE reference_mode;
 
   unsigned int order_hint;
@@ -368,8 +365,6 @@ typedef struct AV1Common {
   int show_frame;
   int showable_frame;  // frame can be used as show existing frame in future
   int show_existing_frame;
-  // Flag for a frame used as a reference - not written to the bitstream
-  int is_reference_frame;
   int reset_decoder_state;
 
   uint8_t disable_cdf_update;
@@ -537,7 +532,6 @@ typedef struct AV1Common {
   int current_frame_id;
   int ref_frame_id[REF_FRAMES];
   int valid_for_referencing[REF_FRAMES];
-  int invalid_delta_frame_id_minus_1;
   TPL_MV_REF *tpl_mvs;
   int tpl_mvs_mem_size;
   // TODO(jingning): This can be combined with sign_bias later.
@@ -545,7 +539,6 @@ typedef struct AV1Common {
 
   int is_annexb;
 
-  int frame_refs_short_signaling;
   int temporal_layer_id;
   int spatial_layer_id;
   unsigned int number_temporal_layers;
@@ -645,7 +638,7 @@ static INLINE void assign_frame_buffer(RefCntBuffer *bufs, int *idx_ptr,
 
 static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
   return cm->current_frame.frame_type == KEY_FRAME ||
-      cm->current_frame.intra_only;
+      cm->current_frame.frame_type == INTRA_ONLY_FRAME;
 }
 
 static INLINE int frame_is_sframe(const AV1_COMMON *cm) {

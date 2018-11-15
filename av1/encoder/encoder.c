@@ -5038,7 +5038,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   aom_clear_system_state();
 
   // frame type has been decided outside of this function call
-  cm->cur_frame->intra_only = frame_is_intra_only(cm);
   cm->cur_frame->frame_type = current_frame->frame_type;
 
   // S_FRAMEs are always error resilient
@@ -6671,7 +6670,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
         }
       }
       cm->show_frame = 0;
-      current_frame->intra_only = 0;
 
       if (oxcf->pass < 2) {
         // In second pass, the buffer updates configure will be set
@@ -6713,7 +6711,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       }
 
       cm->show_frame = 0;
-      current_frame->intra_only = 0;
 
       if (oxcf->pass < 2) {
         // In second pass, the buffer updates configure will be set
@@ -6731,7 +6728,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     if ((source = av1_lookahead_peek(cpi->lookahead, brf_src_index)) != NULL) {
       cm->showable_frame = 1;
       cm->show_frame = 0;
-      current_frame->intra_only = 0;
 
       if (oxcf->pass < 2) {
         // In second pass, the buffer updates configure will be set
@@ -6753,7 +6749,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
     if (source != NULL) {
       cm->show_frame = 1;
-      current_frame->intra_only = 0;
 
       // Check to see if the frame should be encoded as an arf overlay.
       check_src_altref(cpi, source);

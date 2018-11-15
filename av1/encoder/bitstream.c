@@ -867,14 +867,7 @@ static void write_cfl_alphas(FRAME_CONTEXT *const ec_ctx, int idx,
 
 static void write_cdef(AV1_COMMON *cm, MACROBLOCKD *const xd, aom_writer *w,
                        int skip, int mi_col, int mi_row) {
-  if (cm->coded_lossless || cm->allow_intrabc) {
-    // Initialize to indicate no CDEF for safety.
-    cm->cdef_info.cdef_bits = 0;
-    cm->cdef_info.cdef_strengths[0] = 0;
-    cm->cdef_info.nb_cdef_strengths = 1;
-    cm->cdef_info.cdef_uv_strengths[0] = 0;
-    return;
-  }
+  if (cm->coded_lossless || cm->allow_intrabc) return;
 
   const int m = ~((1 << (6 - MI_SIZE_LOG2)) - 1);
   const MB_MODE_INFO *mbmi =
@@ -2076,15 +2069,6 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-static void write_tx_mode(AV1_COMMON *cm, TX_MODE *mode,
-                          struct aom_write_bit_buffer *wb) {
-  if (cm->coded_lossless) {
-    *mode = ONLY_4X4;
-    return;
-  }
-  aom_wb_write_bit(wb, *mode == TX_MODE_SELECT);
-}
-
 static void write_frame_interp_filter(InterpFilter filter,
                                       struct aom_write_bit_buffer *wb) {
   aom_wb_write_bit(wb, filter == SWITCHABLE);
@@ -2842,9 +2826,8 @@ static void write_global_motion(AV1_COMP *cpi,
   }
 }
 
-static void check_frame_refs_short_signaling(AV1_COMP *const cpi) {
+static int check_frame_refs_short_signaling(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  if (!cm->frame_refs_short_signaling) return;
 
   // Check whether all references are distinct frames.
   int buf_markers[FRAME_BUFFERS] = { 0 };
@@ -2866,8 +2849,7 @@ static void check_frame_refs_short_signaling(AV1_COMP *const cpi) {
   if (num_refs < INTER_REFS_PER_FRAME) {
     // It indicates that there exist more than one reference frame pointing to
     // the same reference buffer, i.e. two or more references are duplicate.
-    cm->frame_refs_short_signaling = 0;
-    return;
+    return 0;
   }
 
   // Check whether the encoder side ref frame choices are aligned with that to
@@ -2887,19 +2869,20 @@ static void check_frame_refs_short_signaling(AV1_COMP *const cpi) {
 
   // We only turn on frame_refs_short_signaling when the encoder side decision
   // on ref frames is identical to that at the decoder side.
+  int frame_refs_short_signaling = 1;
   for (int ref_idx = 0; ref_idx < INTER_REFS_PER_FRAME; ++ref_idx) {
     // Compare the buffer index between two reference frames indexed
     // respectively by the encoder and the decoder side decisions.
     if (cm->current_frame.frame_refs[ref_idx].buf !=
         frame_refs_copy[ref_idx].buf) {
-      cm->frame_refs_short_signaling = 0;
+      frame_refs_short_signaling = 0;
       break;
     }
   }
 
 #if 0   // For debug
   printf("\nFrame=%d: \n", cm->current_frame.frame_number);
-  printf("***frame_refs_short_signaling=%d\n", cm->frame_refs_short_signaling);
+  printf("***frame_refs_short_signaling=%d\n", frame_refs_short_signaling);
   for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     printf("enc_ref(map_idx=%d, buf_idx=%d)=%d, vs. "
         "dec_ref(map_idx=%d)=%d\n",
@@ -2911,9 +2894,11 @@ static void check_frame_refs_short_signaling(AV1_COMP *const cpi) {
 #endif  // 0
 
   // Restore the frame refs info if frame_refs_short_signaling is off.
-  if (!cm->frame_refs_short_signaling)
+  if (!frame_refs_short_signaling) {
     memcpy(cm->current_frame.frame_refs, frame_refs_copy,
            INTER_REFS_PER_FRAME * sizeof(RefBuffer));
+  }
+  return frame_refs_short_signaling;
 }
 
 // New function based on HLS R18
@@ -2924,11 +2909,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   const SequenceHeader *const seq_params = &cm->seq_params;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   CurrentFrame *const current_frame = &cm->current_frame;
-
-  // NOTE: By default all coded frames to be used as a reference
-  cm->is_reference_frame = 1;
-  current_frame->frame_type =
-      current_frame->intra_only ? INTRA_ONLY_FRAME : current_frame->frame_type;
 
   if (seq_params->still_picture) {
     assert(cm->show_existing_frame == 0);
@@ -3008,9 +2988,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     assert(cm->cur_frame_force_integer_mv == 0);
   }
 
-  cm->invalid_delta_frame_id_minus_1 = 0;
   int frame_size_override_flag = 0;
-  cm->frame_refs_short_signaling = 0;
 
   if (seq_params->reduced_still_picture_hdr) {
     assert(cm->width == seq_params->max_frame_width &&
@@ -3111,12 +3089,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       if (updated_fb >= 0) {
         cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
       }
-
-      if (!cpi->refresh_frame_mask) {
-        // NOTE: "cpi->refresh_frame_mask == 0" indicates that the coded frame
-        //       will not be used as a reference
-        cm->is_reference_frame = 0;
-      }
     }
   }
 
@@ -3157,24 +3129,25 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
       // NOTE: Error resilient mode turns off frame_refs_short_signaling
       //       automatically.
+      int frame_refs_short_signaling = 0;
 #define FRAME_REFS_SHORT_SIGNALING 0
 #if FRAME_REFS_SHORT_SIGNALING
-      cm->frame_refs_short_signaling =
+      frame_refs_short_signaling =
           seq_params->order_hint_info.enable_order_hint;
 #endif  // FRAME_REFS_SHORT_SIGNALING
 
-      if (cm->frame_refs_short_signaling) {
+      if (frame_refs_short_signaling) {
         // NOTE(zoeliu@google.com):
         //   An example solution for encoder-side implementation on frame refs
         //   short signaling, which is only turned on when the encoder side
         //   decision on ref frames is identical to that at the decoder side.
-        check_frame_refs_short_signaling(cpi);
+        frame_refs_short_signaling = check_frame_refs_short_signaling(cpi);
       }
 
       if (seq_params->order_hint_info.enable_order_hint)
-        aom_wb_write_bit(wb, cm->frame_refs_short_signaling);
+        aom_wb_write_bit(wb, frame_refs_short_signaling);
 
-      if (cm->frame_refs_short_signaling) {
+      if (frame_refs_short_signaling) {
         const int lst_ref = get_ref_frame_map_idx(cpi, LAST_FRAME);
         aom_wb_write_literal(wb, lst_ref, REF_FRAMES_LOG2);
 
@@ -3184,7 +3157,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
       for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
         assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
-        if (!cm->frame_refs_short_signaling)
+        if (!frame_refs_short_signaling)
           aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
                                REF_FRAMES_LOG2);
         if (seq_params->frame_id_numbers_present_flag) {
@@ -3197,8 +3170,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
                (1 << frame_id_len)) -
               1;
           if (delta_frame_id_minus_1 < 0 ||
-              delta_frame_id_minus_1 >= (1 << diff_len))
-            cm->invalid_delta_frame_id_minus_1 = 1;
+              delta_frame_id_minus_1 >= (1 << diff_len)) {
+            aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR,
+                               "Invalid delta_frame_id_minus_1");
+          }
           aom_wb_write_literal(wb, delta_frame_id_minus_1, diff_len);
         }
       }
@@ -3209,11 +3184,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         write_frame_size(cm, frame_size_override_flag, wb);
       }
 
-      if (cm->cur_frame_force_integer_mv) {
-        cm->allow_high_precision_mv = 0;
-      } else {
+      if (!cm->cur_frame_force_integer_mv)
         aom_wb_write_bit(wb, cm->allow_high_precision_mv);
-      }
       fix_interp_filter(cm, cpi->td.counts);
       write_frame_interp_filter(cm->interp_filter, wb);
       aom_wb_write_bit(wb, cm->switchable_motion_mode);
@@ -3228,7 +3200,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   const int might_bwd_adapt =
       !(seq_params->reduced_still_picture_hdr) && !(cm->disable_cdf_update);
   if (cm->large_scale_tile)
-    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
+    assert(cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
 
   if (might_bwd_adapt) {
     aom_wb_write_bit(
@@ -3268,7 +3240,11 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     encode_restoration_mode(cm, wb);
   }
 
-  write_tx_mode(cm, &cm->tx_mode, wb);
+  // Write TX mode
+  if (cm->coded_lossless)
+    assert(cm->tx_mode == ONLY_4X4);
+  else
+    aom_wb_write_bit(wb, cm->tx_mode == TX_MODE_SELECT);
 
   if (!frame_is_intra_only(cm)) {
     const int use_hybrid_pred =

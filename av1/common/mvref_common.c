@@ -948,7 +948,9 @@ static int motion_field_projection(AV1_COMMON *cm,
       cm->current_frame.frame_refs[FWD_RF_OFFSET(start_frame)].buf;
   if (start_frame_buf == NULL) return 0;
 
-  if (start_frame_buf->intra_only) return 0;
+  if (start_frame_buf->frame_type == KEY_FRAME ||
+      start_frame_buf->frame_type == INTRA_ONLY_FRAME)
+    return 0;
 
   if (start_frame_buf->mi_rows != cm->mi_rows ||
       start_frame_buf->mi_cols != cm->mi_cols)

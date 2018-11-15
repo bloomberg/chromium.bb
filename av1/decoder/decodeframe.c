@@ -4726,8 +4726,6 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
     pbi->need_resync = 0;
   }
 
-  cm->cur_frame->intra_only = 1;
-
   if (cm->seq_params.frame_id_numbers_present_flag) {
     /* If bitmask is set, update reference frame id values and
        mark frames as valid for reference.
@@ -4792,9 +4790,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "No sequence header");
   }
-
-  // NOTE: By default all coded frames to be used as a reference
-  cm->is_reference_frame = 1;
 
   if (seq_params->reduced_still_picture_hdr) {
     cm->show_existing_frame = 0;
@@ -4905,7 +4900,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->showable_frame = aom_rb_read_bit(rb);
     }
     cm->cur_frame->showable_frame = cm->showable_frame;
-    current_frame->intra_only = current_frame->frame_type == INTRA_ONLY_FRAME;
     cm->error_resilient_mode =
         frame_is_sframe(cm) ||
                 (current_frame->frame_type == KEY_FRAME && cm->show_frame)
@@ -4930,7 +4924,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->cur_frame_force_integer_mv = 0;
   }
 
-  cm->frame_refs_short_signaling = 0;
   int frame_size_override_flag = 0;
   cm->allow_intrabc = 0;
   cm->primary_ref_frame = PRIMARY_REF_NONE;
@@ -5030,7 +5023,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       pbi->need_resync = 0;
     }
   } else {
-    if (current_frame->intra_only) {
+    if (current_frame->frame_type == INTRA_ONLY_FRAME) {
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
       if (pbi->refresh_frame_flags == 0xFF) {
         aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
@@ -5043,11 +5036,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
       pbi->refresh_frame_flags =
           frame_is_sframe(cm) ? 0xFF : aom_rb_read_literal(rb, REF_FRAMES);
-      if (!pbi->refresh_frame_flags) {
-        // NOTE: "pbi->refresh_frame_flags == 0" indicates that the coded frame
-        //       will not be used as a reference
-        cm->is_reference_frame = 0;
-      }
     }
   }
 
@@ -5108,7 +5096,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   } else {
     cm->allow_ref_frame_mvs = 0;
 
-    if (current_frame->intra_only) {
+    if (current_frame->frame_type == INTRA_ONLY_FRAME) {
       cm->cur_frame->film_grain_params_present =
           seq_params->film_grain_params_present;
       setup_frame_size(cm, frame_size_override_flag, rb);
@@ -5116,12 +5104,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         cm->allow_intrabc = aom_rb_read_bit(rb);
 
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
-
+      int frame_refs_short_signaling = 0;
       // Frame refs short signaling is off when error resilient mode is on.
       if (seq_params->order_hint_info.enable_order_hint)
-        cm->frame_refs_short_signaling = aom_rb_read_bit(rb);
+        frame_refs_short_signaling = aom_rb_read_bit(rb);
 
-      if (cm->frame_refs_short_signaling) {
+      if (frame_refs_short_signaling) {
         // == LAST_FRAME ==
         const int lst_ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
         const int lst_idx = cm->ref_frame_map[lst_ref];
@@ -5148,7 +5136,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
       for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         int ref = 0;
-        if (!cm->frame_refs_short_signaling) {
+        if (!frame_refs_short_signaling) {
           ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
           const int idx = cm->ref_frame_map[ref];
 
@@ -5211,7 +5199,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                          "frame context is unavailable.");
     }
 
-    if (!current_frame->intra_only && pbi->need_resync != 1) {
+    if (!(current_frame->frame_type == INTRA_ONLY_FRAME) &&
+        pbi->need_resync != 1) {
       if (frame_might_allow_ref_frame_mvs(cm))
         cm->allow_ref_frame_mvs = aom_rb_read_bit(rb);
       else
@@ -5233,8 +5222,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   av1_setup_frame_sign_bias(cm);
 
-  cm->cur_frame->intra_only =
-      current_frame->frame_type == KEY_FRAME || current_frame->intra_only;
   cm->cur_frame->frame_type = current_frame->frame_type;
 
   if (seq_params->frame_id_numbers_present_flag) {

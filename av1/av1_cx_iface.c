@@ -1355,12 +1355,6 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
            -1 != av1_get_compressed_data(cpi, &lib_flags, &frame_size, cx_data,
                                          &dst_time_stamp, &dst_end_time_stamp,
                                          !img, timebase)) {
-      if (cpi->common.seq_params.frame_id_numbers_present_flag) {
-        if (cpi->common.invalid_delta_frame_id_minus_1) {
-          aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR,
-                             "Invalid delta_frame_id_minus_1");
-        }
-      }
       cpi->seq_params_locked = 1;
       if (frame_size) {
         if (ctx->pending_cx_data == 0) ctx->pending_cx_data = cx_data;
