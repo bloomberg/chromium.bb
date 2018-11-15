@@ -38,7 +38,6 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/ssl/client_cert_store.h"
-#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -127,11 +126,6 @@ void PopulateResourceResponse(
         (!net::IsCertStatusError(response->head.cert_status) ||
          net::IsCertStatusMinorError(response->head.cert_status)) &&
         net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
-    net::SSLVersion ssl_version = net::SSLConnectionStatusToVersion(
-        request->ssl_info().connection_status);
-    response->head.is_legacy_tls_version =
-        ssl_version == net::SSLVersion::SSL_CONNECTION_VERSION_TLS1 ||
-        ssl_version == net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_1;
 
     if (info->ShouldReportSecurityInfo())
       response->head.ssl_info = SelectSSLInfoFields(request->ssl_info());

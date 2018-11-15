@@ -2081,9 +2081,6 @@ enum WebFeature {
   kHTMLAnchorElementHrefTranslateAttribute = 2629,
   kWebKitUserModifyEffective = 2630,
   kPlainTextEditingEffective = 2631,
-  kLegacyTLSVersionInMainFrameResource = 2632,
-  kLegacyTLSVersionInSubresource = 2633,
-  kLegacyTLSVersionInSubframeMainResource = 2634,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

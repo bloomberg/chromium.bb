@@ -33,7 +33,6 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
       v8::Local<v8::Context> context) override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
   bool IsIdleMediaSuspendEnabled() override;
-  bool SuppressLegacyTLSVersionConsoleMessage() override;
 
  private:
   std::unique_ptr<LayoutTestRenderThreadObserver> shell_observer_;

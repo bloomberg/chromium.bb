@@ -607,10 +607,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // been distrusted (|did_fail|=true).
   virtual void ReportLegacySymantecCert(const WebURL&, bool did_fail) {}
 
-  // The frame loaded a resource with a legacy TLS version that will be removed
-  // in the future. Prints a console message to warn about this.
-  virtual void ReportLegacyTLSVersion(const WebURL&) {}
-
   // A performance timing event (e.g. first paint) occurred
   virtual void DidChangePerformanceTiming() {}
 
