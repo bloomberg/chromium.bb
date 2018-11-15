@@ -124,10 +124,10 @@ CHROMEOS_EXPORT extern const char kFineGrainedTimeZoneResolveEnabled[];
 
 CHROMEOS_EXPORT extern const char kDeviceOffHours[];
 
-CHROMEOS_EXPORT extern const char kDevicePrintersConfigurations[];
-CHROMEOS_EXPORT extern const char kDevicePrintersAccessMode[];
-CHROMEOS_EXPORT extern const char kDevicePrintersBlacklist[];
-CHROMEOS_EXPORT extern const char kDevicePrintersWhitelist[];
+CHROMEOS_EXPORT extern const char kDeviceNativePrinters[];
+CHROMEOS_EXPORT extern const char kDeviceNativePrintersAccessMode[];
+CHROMEOS_EXPORT extern const char kDeviceNativePrintersBlacklist[];
+CHROMEOS_EXPORT extern const char kDeviceNativePrintersWhitelist[];
 
 CHROMEOS_EXPORT extern const char kTPMFirmwareUpdateSettings[];
 

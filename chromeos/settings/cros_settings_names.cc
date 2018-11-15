@@ -270,16 +270,18 @@ const char kFineGrainedTimeZoneResolveEnabled[] =
 const char kDeviceOffHours[] = "cros.device_off_hours";
 
 // An external data pref for the printer configurations download.
-const char kDevicePrintersConfigurations[] =
-    "cros.device.printer_configurations";
+const char kDeviceNativePrinters[] = "cros.device.native_printers";
 // An enum specifying the access policy device printers should observe.
-const char kDevicePrintersAccessMode[] = "cros.device.printers_access_mode";
+const char kDeviceNativePrintersAccessMode[] =
+    "cros.device.native_printers_access_mode";
 // A list of strings representing device printer ids for which access is
 // restricted.
-const char kDevicePrintersBlacklist[] = "cros.device.printers_blacklist";
+const char kDeviceNativePrintersBlacklist[] =
+    "cros.device.native_printers_blacklist";
 // A list of strings representing the list of device printer ids which are
 // accessible.
-const char kDevicePrintersWhitelist[] = "cros.device.printers_whitelist";
+const char kDeviceNativePrintersWhitelist[] =
+    "cros.device.native_printers_whitelist";
 
 // A dictionary containing parameters controlling the TPM firmware update
 // functionality.

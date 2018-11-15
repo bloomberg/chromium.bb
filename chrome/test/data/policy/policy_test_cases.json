@@ -3793,7 +3793,7 @@
       }
     },
     "pref_mappings": [{
-      "pref": "cros.device.printer_configurations",
+      "pref": "cros.device.native_printers",
       "local_state": true
     }]
   },
@@ -3804,7 +3804,7 @@
       "DeviceNativePrintersAccessMode": 1
     },
     "pref_mappings": [
-      { "pref": "cros.device.printers_access_mode" }
+      { "pref": "cros.device.native_printers_access_mode" }
     ]
   },
 
@@ -3814,7 +3814,7 @@
       "DeviceNativePrintersBlacklist": ["id4", "id7", "id10"]
     },
     "pref_mappings": [
-      { "pref": "cros.device.printers_blacklist" }
+      { "pref": "cros.device.native_printers_blacklist" }
     ]
   },
   "DeviceNativePrintersWhitelist": {
@@ -3823,7 +3823,7 @@
       "DeviceNativePrintersWhitelist":  ["id4", "id7", "id10"]
     },
     "pref_mappings": [
-      { "pref": "cros.device.printers_whitelist" }
+      { "pref": "cros.device.native_printers_whitelist" }
     ]
   },
 
