@@ -293,13 +293,24 @@ void ProfileAttributesEntry::SetAvatarIconIndex(size_t icon_index) {
     // switch to generic avatar
     icon_index = 0;
   }
-  SetString(kAvatarIconKey, profiles::GetDefaultAvatarIconUrl(icon_index));
+  std::string default_avatar_icon_url =
+      profiles::GetDefaultAvatarIconUrl(icon_index);
+  if (default_avatar_icon_url == GetString(kAvatarIconKey)) {
+    // On Windows, Taskbar and Desktop icons are refreshed every time
+    // |OnProfileAvatarChanged| notification is fired.
+    // As the current avatar icon is already set to |default_avatar_icon_url|,
+    // it is important to avoid firing |OnProfileAvatarChanged| in this case.
+    // See http://crbug.com/900374
+    return;
+  }
+
+  SetString(kAvatarIconKey, default_avatar_icon_url);
 
   base::FilePath profile_path = GetPath();
-
-  if (!profile_info_cache_->GetDisableAvatarDownloadForTesting())
+  if (!profile_info_cache_->GetDisableAvatarDownloadForTesting()) {
     profile_info_cache_->DownloadHighResAvatarIfNeeded(icon_index,
                                                        profile_path);
+  }
 
   profile_info_cache_->NotifyOnProfileAvatarChanged(profile_path);
 }

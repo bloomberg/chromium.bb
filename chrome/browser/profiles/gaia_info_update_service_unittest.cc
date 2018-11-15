@@ -196,12 +196,26 @@ class GAIAInfoUpdateServiceTest : public GAIAInfoUpdateServiceTestBase {
   DISALLOW_COPY_AND_ASSIGN(GAIAInfoUpdateServiceTest);
 };
 
-class GAIAInfoUpdateServiceMiscTest : public GAIAInfoUpdateServiceTestBase {
+class GAIAInfoUpdateServiceMiscTest : public GAIAInfoUpdateServiceTestBase,
+                                      public ProfileInfoCacheObserver {
  public:
   GAIAInfoUpdateServiceMiscTest()
       : GAIAInfoUpdateServiceTestBase(
             /*create_gaia_info_service_on_setup_=*/false) {}
   ~GAIAInfoUpdateServiceMiscTest() override = default;
+
+  void OnProfileNameChanged(const base::FilePath& profile_path,
+                            const base::string16& old_profile_name) override {
+    profile_name_changed_count_++;
+  }
+
+  void OnProfileAvatarChanged(const base::FilePath& profile_path) override {
+    profile_avatar_changed_count_++;
+  }
+
+ protected:
+  unsigned int profile_name_changed_count_ = 0;
+  unsigned int profile_avatar_changed_count_ = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GAIAInfoUpdateServiceMiscTest);
@@ -371,7 +385,7 @@ TEST_F(GAIAInfoUpdateServiceTest, LogIn) {
 TEST_F(GAIAInfoUpdateServiceMiscTest, ClearGaiaInfoOnStartup) {
   // Simulate a state where the profile entry has GAIA related information
   // when there is not primary account set.
-  EXPECT_FALSE(
+  ASSERT_FALSE(
       IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount());
   ASSERT_EQ(1u, storage()->GetNumberOfProfiles());
   ProfileAttributesEntry* entry = storage()->GetAllProfilesAttributes().front();
@@ -380,11 +394,49 @@ TEST_F(GAIAInfoUpdateServiceMiscTest, ClearGaiaInfoOnStartup) {
   gfx::Image gaia_picture = gfx::test::CreateImage(256, 256);
   entry->SetGAIAPicture(&gaia_picture);
 
+  GetCache()->AddObserver(this);
+
   // Verify that creating the GAIAInfoUpdateService resets the GAIA related
-  // profile attributes if the profile no longer has a primary account.
+  // profile attributes if the profile no longer has a primary account and that
+  // the profile info cache observer wass notified about profile name and
+  // avatar changes.
   service_.reset(new NiceMock<GAIAInfoUpdateServiceMock>(profile()));
   EXPECT_TRUE(entry->GetGAIAName().empty());
   EXPECT_TRUE(entry->GetGAIAGivenName().empty());
   EXPECT_FALSE(entry->GetGAIAPicture());
+  EXPECT_EQ(1U, profile_name_changed_count_);
+  EXPECT_EQ(1U, profile_avatar_changed_count_);
+
+  GetCache()->RemoveObserver(this);
 }
+
+// Regression test for http://crbug.com/900374
+TEST_F(GAIAInfoUpdateServiceMiscTest,
+       ClearGaiaInfoForSignedOutProfileDoesNotNotifyProfileObservers) {
+  // Simulate a state where the profile entry has no GAIA related information
+  // and when there is not primary account set.
+  ASSERT_FALSE(
+      IdentityManagerFactory::GetForProfile(profile())->HasPrimaryAccount());
+
+  ASSERT_EQ(1u, storage()->GetNumberOfProfiles());
+  ProfileAttributesEntry* entry = storage()->GetAllProfilesAttributes().front();
+  ASSERT_TRUE(entry->GetGAIAName().empty());
+  ASSERT_TRUE(entry->GetGAIAGivenName().empty());
+  ASSERT_FALSE(entry->GetGAIAPicture());
+
+  GetCache()->AddObserver(this);
+
+  // Verify that the state for the profile entry did not change and that the
+  // profile info cache observer was not notified about any profile name
+  // and avatar changes.
+  service_.reset(new NiceMock<GAIAInfoUpdateServiceMock>(profile()));
+  EXPECT_TRUE(entry->GetGAIAName().empty());
+  EXPECT_TRUE(entry->GetGAIAGivenName().empty());
+  EXPECT_FALSE(entry->GetGAIAPicture());
+  EXPECT_EQ(0U, profile_name_changed_count_);
+  EXPECT_EQ(0U, profile_avatar_changed_count_);
+
+  GetCache()->RemoveObserver(this);
+}
+
 #endif
