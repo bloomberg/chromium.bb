@@ -53397,6 +53397,7 @@ Full version information for the fingerprint enum values:
   <int value="10" label="Blob"/>
   <int value="11" label="Content"/>
   <int value="12" label="Intent"/>
+  <int value="13" label="android_asset or android_res"/>
 </enum>
 
 <enum name="WelcomeSignInPromptOutcome">

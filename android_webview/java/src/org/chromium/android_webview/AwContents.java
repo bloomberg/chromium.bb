@@ -105,6 +105,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
+import java.util.regex.Pattern;
 
 /**
  * Exposes the native AwContents class, and together these classes wrap the WebContents
@@ -142,6 +143,13 @@ public class AwContents implements SmartClipProvider {
     public static final String DATA_BASE_URL_SCHEME_HISTOGRAM_NAME =
             "Android.WebView.LoadDataWithBaseUrl.BaseUrl";
 
+    @VisibleForTesting
+    public static final String LOAD_URL_SCHEME_HISTOGRAM_NAME = "Android.WebView.LoadUrl.UrlScheme";
+
+    // Permit any number of slashes, since chromium seems to canonicalize bad values.
+    private static final Pattern sFileAndroidAssetPattern =
+            Pattern.compile("^file:/*android_(asset|res).*");
+
     private static class ForceAuxiliaryBitmapRendering {
         private static final boolean sResult = lazyCheck();
         private static boolean lazyCheck() {
@@ -166,7 +174,7 @@ public class AwContents implements SmartClipProvider {
             UrlScheme.HTTPS_SCHEME, UrlScheme.FILE_SCHEME, UrlScheme.FTP_SCHEME,
             UrlScheme.DATA_SCHEME, UrlScheme.JAVASCRIPT_SCHEME, UrlScheme.ABOUT_SCHEME,
             UrlScheme.CHROME_SCHEME, UrlScheme.BLOB_SCHEME, UrlScheme.CONTENT_SCHEME,
-            UrlScheme.INTENT_SCHEME})
+            UrlScheme.INTENT_SCHEME, UrlScheme.FILE_ANDROID_ASSET_SCHEME})
     public @interface UrlScheme {
         int EMPTY = 0;
         int UNKNOWN_SCHEME = 1;
@@ -181,7 +189,8 @@ public class AwContents implements SmartClipProvider {
         int BLOB_SCHEME = 10;
         int CONTENT_SCHEME = 11;
         int INTENT_SCHEME = 12;
-        int COUNT = 13;
+        int FILE_ANDROID_ASSET_SCHEME = 13; // Covers android_asset and android_res URLs
+        int COUNT = 14;
     }
 
     /**
@@ -1690,6 +1699,11 @@ public class AwContents implements SmartClipProvider {
                 DATA_BASE_URL_SCHEME_HISTOGRAM_NAME, value, UrlScheme.COUNT);
     }
 
+    private static void recordLoadUrlScheme(@UrlScheme int value) {
+        RecordHistogram.recordEnumeratedHistogram(
+                LOAD_URL_SCHEME_HISTOGRAM_NAME, value, UrlScheme.COUNT);
+    }
+
     /**
      * WebView.loadData.
      */
@@ -1701,6 +1715,37 @@ public class AwContents implements SmartClipProvider {
         }
         loadUrl(LoadUrlParams.createLoadDataParams(
                 fixupData(data), fixupMimeType(mimeType), isBase64Encoded(encoding)));
+    }
+
+    private @UrlScheme int schemeForUrl(String url) {
+        if (url == null || url.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+            return (UrlScheme.EMPTY);
+        } else if (url.startsWith("http:")) {
+            return (UrlScheme.HTTP_SCHEME);
+        } else if (url.startsWith("https:")) {
+            return (UrlScheme.HTTPS_SCHEME);
+        } else if (sFileAndroidAssetPattern.matcher(url).matches()) {
+            return (UrlScheme.FILE_ANDROID_ASSET_SCHEME);
+        } else if (url.startsWith("file:")) {
+            return (UrlScheme.FILE_SCHEME);
+        } else if (url.startsWith("ftp:")) {
+            return (UrlScheme.FTP_SCHEME);
+        } else if (url.startsWith("data:")) {
+            return (UrlScheme.DATA_SCHEME);
+        } else if (url.startsWith("javascript:")) {
+            return (UrlScheme.JAVASCRIPT_SCHEME);
+        } else if (url.startsWith("about:")) {
+            return (UrlScheme.ABOUT_SCHEME);
+        } else if (url.startsWith("chrome:")) {
+            return (UrlScheme.CHROME_SCHEME);
+        } else if (url.startsWith("blob:")) {
+            return (UrlScheme.BLOB_SCHEME);
+        } else if (url.startsWith("content:")) {
+            return (UrlScheme.CONTENT_SCHEME);
+        } else if (url.startsWith("intent:")) {
+            return (UrlScheme.INTENT_SCHEME);
+        }
+        return (UrlScheme.UNKNOWN_SCHEME);
     }
 
     /**
@@ -1725,33 +1770,7 @@ public class AwContents implements SmartClipProvider {
             recordHistoryUrl(HistoryUrl.DIFFERENT);
         }
 
-        if (baseUrl.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
-            recordBaseUrl(UrlScheme.EMPTY);
-        } else if (baseUrl.startsWith("http:")) {
-            recordBaseUrl(UrlScheme.HTTP_SCHEME);
-        } else if (baseUrl.startsWith("https:")) {
-            recordBaseUrl(UrlScheme.HTTPS_SCHEME);
-        } else if (baseUrl.startsWith("file:")) {
-            recordBaseUrl(UrlScheme.FILE_SCHEME);
-        } else if (baseUrl.startsWith("ftp:")) {
-            recordBaseUrl(UrlScheme.FTP_SCHEME);
-        } else if (baseUrl.startsWith("data:")) {
-            recordBaseUrl(UrlScheme.DATA_SCHEME);
-        } else if (baseUrl.startsWith("javascript:")) {
-            recordBaseUrl(UrlScheme.JAVASCRIPT_SCHEME);
-        } else if (baseUrl.startsWith("about:")) {
-            recordBaseUrl(UrlScheme.ABOUT_SCHEME);
-        } else if (baseUrl.startsWith("chrome:")) {
-            recordBaseUrl(UrlScheme.CHROME_SCHEME);
-        } else if (baseUrl.startsWith("blob:")) {
-            recordBaseUrl(UrlScheme.BLOB_SCHEME);
-        } else if (baseUrl.startsWith("content:")) {
-            recordBaseUrl(UrlScheme.CONTENT_SCHEME);
-        } else if (baseUrl.startsWith("intent:")) {
-            recordBaseUrl(UrlScheme.INTENT_SCHEME);
-        } else {
-            recordBaseUrl(UrlScheme.UNKNOWN_SCHEME);
-        }
+        recordBaseUrl(schemeForUrl(baseUrl));
 
         if (baseUrl.startsWith("data:")) {
             // We record only for this branch, because the other branch assumes unencoded content.
@@ -1797,6 +1816,12 @@ public class AwContents implements SmartClipProvider {
      */
     @VisibleForTesting
     public void loadUrl(LoadUrlParams params) {
+        if (params.getBaseUrl() == null) {
+            // Don't record the URL if this was loaded via loadDataWithBaseURL(). That API is
+            // tracked separately under Android.WebView.LoadDataWithBaseUrl.BaseUrl.
+            recordLoadUrlScheme(schemeForUrl(params.getUrl()));
+        }
+
         if (params.getLoadUrlType() == LoadURLType.DATA && !params.isBaseUrlDataScheme()) {
             // This allows data URLs with a non-data base URL access to file:///android_asset/ and
             // file:///android_res/ URLs. If AwSettings.getAllowFileAccess permits, it will also
