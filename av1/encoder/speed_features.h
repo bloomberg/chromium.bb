@@ -585,6 +585,10 @@ typedef struct SPEED_FEATURES {
   // identical
   int skip_obmc_in_uniform_mv_field;
   int skip_wm_in_uniform_mv_field;
+
+  // skip sharp_filter evaluation based on regular and smooth filter rd for
+  // dual_filter=0 case
+  int skip_sharp_interp_filter_search;
 } SPEED_FEATURES;
 
 struct AV1_COMP;

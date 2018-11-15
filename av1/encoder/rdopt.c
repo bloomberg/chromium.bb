@@ -8398,14 +8398,27 @@ static INLINE void find_best_non_dual_interp_filter(
       skip_pred = (skip_hor & skip_ver);
     }
   } else {
+    int skip_pred = (skip_hor & skip_ver);
     for (i = (SWITCHABLE_FILTERS + 1); i < filter_set_size;
          i += (SWITCHABLE_FILTERS + 1)) {
       // This assert tells that (filter_x == filter_y) for non-dual filter case
       assert((filter_sets[i] & 0xffff) == (filter_sets[i] >> 16));
       interpolation_filter_rd(x, cpi, bsize, mi_row, mi_col, orig_dst, rd,
                               switchable_rate, skip_txfm_sb, skip_sse_sb,
-                              dst_bufs, i, switchable_ctx,
-                              (skip_hor & skip_ver), rate, dist);
+                              dst_bufs, i, switchable_ctx, skip_pred, rate,
+                              dist);
+      // In first iteration, smooth filter is evaluated. If smooth filter
+      // (which is less sharper) is the winner among regular and smooth filters,
+      // sharp filter evaluation is skipped
+      // TODO(any): Refine this gating based on modelled rd only (i.e., by not
+      // accounting switchable filter rate)
+      if (cpi->sf.skip_sharp_interp_filter_search &&
+          skip_pred != cpi->default_interp_skip_flags) {
+        MACROBLOCKD *const xd = &x->e_mbd;
+        MB_MODE_INFO *const mbmi = xd->mi[0];
+        if (mbmi->interp_filters == filter_sets[(SWITCHABLE_FILTERS + 1)])
+          break;
+      }
     }
   }
 }
