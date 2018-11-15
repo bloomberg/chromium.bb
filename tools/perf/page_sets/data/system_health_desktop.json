@@ -135,6 +135,9 @@
         "load:games:spychase": {
             "DEFAULT": "system_health_desktop_005.wprgo"
         },
+        "load:games:spychase:2018": {
+            "DEFAULT": "system_health_desktop_84749d207a.wprgo"
+        },
         "load:media:9gag": {
             "DEFAULT": "system_health_desktop_003.wprgo"
         },
