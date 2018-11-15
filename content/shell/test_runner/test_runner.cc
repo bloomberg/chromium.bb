@@ -292,7 +292,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void WaitForPolicyDelegate();
   void WaitUntilDone();
   void WaitUntilExternalURLLoad();
-  bool CallShouldCloseOnWebView();
   bool DisableAutoResizeMode(int new_width, int new_height);
   bool EnableAutoResizeMode(int min_width,
                             int min_height,
@@ -406,8 +405,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("addOriginAccessAllowListEntry",
                  &TestRunnerBindings::AddOriginAccessAllowListEntry)
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
-      .SetMethod("callShouldCloseOnWebView",
-                 &TestRunnerBindings::CallShouldCloseOnWebView)
       .SetMethod("capturePixelsAsyncThen",
                  &TestRunnerBindings::CapturePixelsAsyncThen)
       .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
@@ -743,12 +740,6 @@ void TestRunnerBindings::ExecCommand(gin::Arguments* args) {
 bool TestRunnerBindings::IsCommandEnabled(const std::string& command) {
   if (view_runner_)
     return view_runner_->IsCommandEnabled(command);
-  return false;
-}
-
-bool TestRunnerBindings::CallShouldCloseOnWebView() {
-  if (view_runner_)
-    return view_runner_->CallShouldCloseOnWebView();
   return false;
 }
 

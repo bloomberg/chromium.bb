@@ -203,7 +203,6 @@ class TestRunnerForSpecificView {
     PointerLockWillFailSync,
   } pointer_lock_planned_result_;
 
-  bool CallShouldCloseOnWebView();
   void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                 const std::string& scheme);
   v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(

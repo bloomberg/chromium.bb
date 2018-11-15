@@ -15,6 +15,8 @@
         {
             alert("beforeUnload");
             window.onbeforeunload = null;
+            testRunner.notifyDone();
+            return false;
         }
 
 
@@ -22,9 +24,7 @@
         {
             if (window.testRunner) {
                 // Simulate an attempt to close the window
-                if (!testRunner.callShouldCloseOnWebView())
-                    alert("Should have run the beforeUnload handler.");
-                testRunner.notifyDone();
+                location.href = "resources/notify-done.html";
             }
         }
     </script>
