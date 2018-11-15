@@ -461,7 +461,7 @@ TEST_F(ArcIntentHelperTest, TestAppendStringToIntentHelperPackageName) {
                 fake_activity),
             package_name + "." + fake_activity);
 
-  std::string empty_string = "";
+  const std::string empty_string;
   EXPECT_EQ(ArcIntentHelperBridge::AppendStringToIntentHelperPackageName(
                 empty_string),
             package_name + ".");
