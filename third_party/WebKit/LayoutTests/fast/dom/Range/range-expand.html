@@ -64,20 +64,20 @@ function runTests() {
     assert_equals(actual, 'Roll the mouse around the page. The coordinates\x0Aof the mouse pointer are currently atop an element');
   }, 'sentence7');
 
-  // test 8 - Sentence does not go upstream?
+  // test 8
   test(() => {
     const actual = expandRangeString('multilineSentence', 0, 'multilineSentence', 0, 'sentence', false);
-    assert_equals(actual, 'Now, a sentence\x0Ais divided into\x0Amultiple lines.');
+    assert_equals(actual, 'Now, a sentence\n');
   }, 'sentence8');
 
   test(() => {
     const actual = expandRangeString('multilineSentence', 1, 'multilineSentence', 5, 'sentence', true);
-    assert_equals(actual, 'Now, a sentence\x0Ais divided into\x0Amultiple lines.');
+    assert_equals(actual, 'Now, a sentence\n');
   }, 'sentence9');
 
   test(() => {
     const actual = expandRangeString('multilineSentence', 20, 'multilineSentence', 20, 'sentence', true);
-    assert_equals(actual, 'is divided into\x0Amultiple lines.');
+    assert_equals(actual, 'is divided into\n');
   }, 'sentence10');
 
   test(() => {
@@ -221,10 +221,10 @@ function runTests() {
 <p>This is the begin of a block. A block is a collection of sentences. Each sentence begins with capital
 letter and ends with a punctuation.
 </p>
-<p id="multilineSentence">Now, a sentence
+<pre id="multilineSentence">Now, a sentence
 is divided into
 multiple lines.
-</p>
+</pre>
 <p id="instructions">Roll the mouse around the page. The coordinates
 of the mouse pointer are currently atop an element<br id="mybr">whose ID 
 is:"<span id="myspan" style="font-weight:bold"></span>".</p>
