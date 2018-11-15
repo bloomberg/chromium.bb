@@ -19,7 +19,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/trace_uploader.h"
-#include "content/public/browser/tracing_controller.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -127,8 +126,6 @@ class TracingControllerTest : public ContentBrowserTest {
     disable_recording_done_callback_count_ = 0;
     ContentBrowserTest::SetUp();
   }
-
-  void TearDown() override { ContentBrowserTest::TearDown(); }
 
   void Navigate(Shell* shell) {
     NavigateToURL(shell, GetTestUrl("", "title.html"));

@@ -46,8 +46,6 @@ class LoginMetricsRecorderTest : public LoginTestBase {
     histogram_tester_.reset(new base::HistogramTester());
   }
 
-  void TearDown() override { LoginTestBase::TearDown(); }
-
  protected:
   void EnableTabletMode(bool enable) {
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(

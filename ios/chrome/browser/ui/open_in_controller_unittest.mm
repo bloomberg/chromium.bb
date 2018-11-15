@@ -38,8 +38,6 @@ class OpenInControllerTest : public PlatformTest {
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
 
-  void TearDown() override { PlatformTest::TearDown(); }
-
   void SetUp() override {
     PlatformTest::SetUp();
 

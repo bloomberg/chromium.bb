@@ -67,8 +67,6 @@ class CastMediaBlockerTest : public content::RenderViewHostTestHarness {
     media_blocker_ = std::make_unique<CastMediaBlocker>(media_session_.get());
   }
 
-  void TearDown() override { content::RenderViewHostTestHarness::TearDown(); }
-
   void MediaSessionChanged(bool controllable, bool suspended) {
     media_blocker_->MediaSessionStateChanged(controllable, suspended);
   }

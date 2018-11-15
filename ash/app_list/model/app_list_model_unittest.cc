@@ -227,7 +227,6 @@ class AppListModelFolderTest : public AppListModelTest {
 
   // testing::Test overrides:
   void SetUp() override { AppListModelTest::SetUp(); }
-  void TearDown() override { AppListModelTest::TearDown(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppListModelFolderTest);

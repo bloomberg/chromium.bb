@@ -97,8 +97,6 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
             Shell::Get()->session_controller()));
   }
 
-  void TearDown() override { AshTestBase::TearDown(); }
-
   aura::Window* CreateWindowInDefaultContainer() {
     return CreateWindowInContainer(kShellWindowId_DefaultContainer);
   }

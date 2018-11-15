@@ -55,8 +55,6 @@ class CompositedLayerMappingTest : public RenderingTest {
     RenderingTest::SetUp();
     EnableCompositing();
   }
-
-  void TearDown() override { RenderingTest::TearDown(); }
 };
 
 // Tests the pre-BlinkGenPropertyTrees composited layer mapping code. With BGPT,
