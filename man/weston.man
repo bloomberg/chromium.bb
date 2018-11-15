@@ -261,13 +261,11 @@ See
 .SH FILES
 .
 If the environment variable is set, the configuration file is read
-from the respective path, or the current directory if neither is set.
+from the respective path.
 .PP
 .BI $XDG_CONFIG_HOME /weston.ini
 .br
 .BI $HOME /.config/weston.ini
-.br
-.I ./weston.ini
 .br
 .
 .\" ***************************************************************

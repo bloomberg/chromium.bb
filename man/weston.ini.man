@@ -27,7 +27,6 @@ server is started:
 .B  "weston/weston.ini in each"
 .BR "\ \ \ \ $XDG_CONFIG_DIR           " "(if $XDG_CONFIG_DIRS is set)"
 .BR "/etc/xdg/weston/weston.ini    " "(if $XDG_CONFIG_DIRS is not set)"
-.BR "<current dir>/weston.ini      " "(if no variables were set)"
 .fi
 .RE
 .PP

@@ -75,8 +75,7 @@ open_config_file(struct weston_config *c, const char *name)
 	}
 
 	/* Precedence is given to config files in the home directory,
-	 * and then to directories listed in XDG_CONFIG_DIRS and
-	 * finally to the current working directory. */
+	 * then to directories listed in XDG_CONFIG_DIRS. */
 
 	/* $XDG_CONFIG_HOME */
 	if (config_dir) {
@@ -111,10 +110,7 @@ open_config_file(struct weston_config *c, const char *name)
 			next++;
 	}
 
-	/* Current working directory. */
-	snprintf(c->path, sizeof c->path, "./%s", name);
-
-	return open(c->path, O_RDONLY | O_CLOEXEC);
+	return -1;
 }
 
 static struct weston_config_entry *
