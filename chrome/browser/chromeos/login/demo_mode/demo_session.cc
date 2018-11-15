@@ -10,9 +10,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/optional.h"
-#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -20,17 +21,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/chromeos_paths.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/settings/install_attributes.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -52,14 +50,6 @@ DemoSession* g_demo_session = nullptr;
 
 // Type of demo config forced on for tests.
 base::Optional<DemoSession::DemoModeConfig> g_force_demo_config;
-
-// Path relative to the path at which offline demo resources are loaded that
-// contains image with demo Android apps.
-constexpr base::FilePath::CharType kDemoAppsPath[] =
-    FILE_PATH_LITERAL("android_demo_apps.squash");
-
-constexpr base::FilePath::CharType kExternalExtensionsPrefsPath[] =
-    FILE_PATH_LITERAL("demo_extensions.json");
 
 // Path relative to the path at which offline demo resources are loaded that
 // contains the highlights app.
@@ -159,19 +149,6 @@ void RestoreDefaultLocaleForNextSession() {
 }
 
 }  // namespace
-
-// static
-const char DemoSession::kDemoModeResourcesComponentName[] =
-    "demo-mode-resources";
-
-// static
-base::FilePath DemoSession::GetPreInstalledDemoResourcesPath() {
-  base::FilePath preinstalled_components_root;
-  base::PathService::Get(DIR_PREINSTALLED_COMPONENTS,
-                         &preinstalled_components_root);
-  return preinstalled_components_root.AppendASCII("cros-components")
-      .AppendASCII(kDemoModeResourcesComponentName);
-}
 
 // static
 std::string DemoSession::DemoConfigToString(
@@ -316,62 +293,9 @@ void DemoSession::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 
 void DemoSession::EnsureOfflineResourcesLoaded(
     base::OnceClosure load_callback) {
-  if (offline_resources_loaded_) {
-    if (load_callback)
-      std::move(load_callback).Run();
-    return;
-  }
-
-  if (load_callback)
-    offline_resources_load_callbacks_.emplace_back(std::move(load_callback));
-
-  if (offline_resources_load_requested_)
-    return;
-  offline_resources_load_requested_ = true;
-
-  if (offline_enrolled_) {
-    LoadPreinstalledOfflineResources();
-    return;
-  }
-
-  component_updater::CrOSComponentManager* cros_component_manager =
-      g_browser_process->platform_part()->cros_component_manager();
-  // In unit tests, DemoModeTestHelper should set up a fake
-  // CrOSComponentManager.
-  DCHECK(cros_component_manager);
-
-  g_browser_process->platform_part()->cros_component_manager()->Load(
-      kDemoModeResourcesComponentName,
-      component_updater::CrOSComponentManager::MountPolicy::kMount,
-      component_updater::CrOSComponentManager::UpdatePolicy::kSkip,
-      base::BindOnce(&DemoSession::InstalledComponentLoaded,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void DemoSession::SetOfflineResourcesLoadedForTesting(
-    const base::FilePath& path) {
-  OnOfflineResourcesLoaded(path);
-}
-
-base::FilePath DemoSession::GetDemoAppsPath() const {
-  if (offline_resources_path_.empty())
-    return base::FilePath();
-  return offline_resources_path_.Append(kDemoAppsPath);
-}
-
-base::FilePath DemoSession::GetExternalExtensionsPrefsPath() const {
-  if (offline_resources_path_.empty())
-    return base::FilePath();
-  return offline_resources_path_.Append(kExternalExtensionsPrefsPath);
-}
-
-base::FilePath DemoSession::GetOfflineResourceAbsolutePath(
-    const base::FilePath& relative_path) const {
-  if (offline_resources_path_.empty())
-    return base::FilePath();
-  if (relative_path.ReferencesParent())
-    return base::FilePath();
-  return offline_resources_path_.Append(relative_path);
+  if (!demo_resources_)
+    demo_resources_ = std::make_unique<DemoResources>(GetDemoConfig());
+  demo_resources_->EnsureLoaded(std::move(load_callback));
 }
 
 bool DemoSession::ShouldIgnorePinPolicy(const std::string& app_id_or_package) {
@@ -413,51 +337,18 @@ DemoSession::DemoSession()
 
 DemoSession::~DemoSession() = default;
 
-void DemoSession::InstalledComponentLoaded(
-    component_updater::CrOSComponentManager::Error error,
-    const base::FilePath& path) {
-  if (error == component_updater::CrOSComponentManager::Error::NONE) {
-    OnOfflineResourcesLoaded(base::make_optional(path));
-    return;
-  }
-
-  LoadPreinstalledOfflineResources();
-}
-
-void DemoSession::LoadPreinstalledOfflineResources() {
-  chromeos::DBusThreadManager::Get()
-      ->GetImageLoaderClient()
-      ->LoadComponentAtPath(
-          kDemoModeResourcesComponentName, GetPreInstalledDemoResourcesPath(),
-          base::BindOnce(&DemoSession::OnOfflineResourcesLoaded,
-                         weak_ptr_factory_.GetWeakPtr()));
-}
-
-void DemoSession::OnOfflineResourcesLoaded(
-    base::Optional<base::FilePath> mounted_path) {
-  offline_resources_loaded_ = true;
-
-  if (mounted_path.has_value())
-    offline_resources_path_ = mounted_path.value();
-
-  std::list<base::OnceClosure> load_callbacks;
-  load_callbacks.swap(offline_resources_load_callbacks_);
-  for (auto& callback : load_callbacks)
-    std::move(callback).Run();
-}
-
 void DemoSession::InstallDemoResources() {
-  DCHECK(offline_resources_loaded_);
+  DCHECK(demo_resources_->loaded());
   if (offline_enrolled_)
     LoadAndLaunchHighlightsApp();
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&InstallDemoMedia, offline_resources_path_));
+      base::BindOnce(&InstallDemoMedia, demo_resources_->path()));
 }
 
 void DemoSession::LoadAndLaunchHighlightsApp() {
-  DCHECK(offline_resources_loaded_);
-  if (offline_resources_path_.empty()) {
+  DCHECK(demo_resources_->loaded());
+  if (demo_resources_->path().empty()) {
     LOG(ERROR) << "Offline resources not loaded - no highlights app available.";
     InstallAppFromUpdateUrl(GetHighlightsAppId());
     return;
@@ -465,7 +356,7 @@ void DemoSession::LoadAndLaunchHighlightsApp() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
   const base::FilePath resources_path =
-      offline_resources_path_.Append(kHighlightsAppPath);
+      demo_resources_->path().Append(kHighlightsAppPath);
   if (!apps::AppLoadService::Get(profile)->LoadAndLaunch(
           resources_path, base::CommandLine(base::CommandLine::NO_PROGRAM),
           base::FilePath() /* cur_dir */)) {
