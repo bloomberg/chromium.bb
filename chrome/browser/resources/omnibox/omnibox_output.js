@@ -170,6 +170,22 @@ cr.define('omnibox_output', function() {
     }
   ];
 
+  /**
+   * In addition to representing the rendered HTML element, OmniboxOutput also
+   * provides a single public interface to interact with the output:
+   * 1. Render tables from responses  (RenderDelegate)
+   * 2. Control visibility based on display options (TODO)
+   * 3. Control visibility and coloring based on search text (TODO)
+   * 4. Export and copy output (CopyDelegate)
+   * 5. Preserve inputs and reset inputs to default (TODO)
+   * 6. Export and import inputs (TODO)
+   * With regards to interacting with RenderDelegate, OmniboxOutput tracks and
+   * aggregates responses from the C++ autocomplete controller. Typically, the
+   * C++ controller returns 3 sets of results per query, unless a new query is
+   * submitted before all 3 responses. OmniboxController also triggers
+   * appending to and clearing of OmniboxOutput when appropriate (e.g., upon
+   * receiving a new response or a change in display inputs).
+   */
   class OmniboxOutput extends OmniboxElement {
     /** @return {string} */
     static get is() {
@@ -178,6 +194,55 @@ cr.define('omnibox_output', function() {
 
     constructor() {
       super('omnibox-output-template');
+
+      /** @type {RenderDelegate} */
+      this.renderDelegate = new RenderDelegate(this.$$('contents'));
+      /** @type {CopyDelegate} */
+      this.copyDelegate = new CopyDelegate(this);
+
+      /** @type {!Array<!mojom.OmniboxResult>} */
+      this.responses = [];
+      /** @private {QueryInputs} */
+      this.queryInputs_ = /** @type {QueryInputs} */ ({});
+      /** @private {DisplayInputs} */
+      this.displayInputs_ = /** @type {DisplayInputs} */ ({});
+    }
+
+    /** @param {QueryInputs} queryInputs */
+    updateQueryInputs(queryInputs) {
+      this.queryInputs_ = queryInputs;
+      this.refresh_();
+    }
+
+    /** @param {DisplayInputs} displayInputs */
+    updateDisplayInputs(displayInputs) {
+      this.displayInputs_ = displayInputs;
+      this.refresh_();
+    }
+
+    clearAutocompleteResponses() {
+      this.responses = [];
+      this.refresh_();
+    }
+
+    /** @param {!mojom.OmniboxResult} response */
+    addAutocompleteResponse(response) {
+      this.responses.push(response);
+      this.refresh_();
+    }
+
+    /** @private */
+    refresh_() {
+      this.renderDelegate.refresh(
+          this.queryInputs_, this.responses, this.displayInputs_);
+    }
+  }
+
+  // Responsible for rendering the output HTML.
+  class RenderDelegate {
+    /** @param {Element} containerElement */
+    constructor(containerElement) {
+      this.containerElement = containerElement;
     }
 
     /**
@@ -186,42 +251,45 @@ cr.define('omnibox_output', function() {
      * @param {DisplayInputs} displayInputs
      */
     refresh(queryInputs, responses, displayInputs) {
-      /** @private {QueryInputs} */
-      this.queryInputs_ = queryInputs;
-      /** @private {!Array<mojom.OmniboxResult>} */
-      this.responses_ = responses;
-      /** @private {DisplayInputs} */
-      this.displayInputs_ = displayInputs;
-
       this.clearOutput_();
       if (responses.length) {
-        if (this.displayInputs_.showIncompleteResults)
-          responses.forEach(this.addOutputResultsGroup_.bind(this));
-        else
-          this.addOutputResultsGroup_(responses[responses.length - 1]);
+        if (displayInputs.showIncompleteResults) {
+          responses.forEach(
+              response => this.addOutputResultsGroup_(
+                  response, queryInputs, displayInputs));
+        } else {
+          this.addOutputResultsGroup_(
+              responses[responses.length - 1], queryInputs, displayInputs);
+        }
       }
     }
 
     /**
      * @private
      * @param {!mojom.OmniboxResult} response
+     * @param {QueryInputs} queryInputs
+     * @param {DisplayInputs} displayInputs
      */
-    addOutputResultsGroup_(response) {
-      this.$$('contents')
-          .appendChild(
-              new OutputResultsGroup(response, this.queryInputs_.cursorPosition)
-                  .render(
-                      this.displayInputs_.showDetails,
-                      this.displayInputs_.showIncompleteResults,
-                      this.displayInputs_.showAllProviders));
+    addOutputResultsGroup_(response, queryInputs, displayInputs) {
+      this.containerElement.appendChild(
+          new OutputResultsGroup(response, queryInputs.cursorPosition)
+              .render(
+                  displayInputs.showDetails,
+                  displayInputs.showIncompleteResults,
+                  displayInputs.showAllProviders));
     }
 
     /** @private */
     clearOutput_() {
-      let contents = this.$$('contents');
+      let contents = this.containerElement;
       // Clears all children.
       while (contents.firstChild)
         contents.removeChild(contents.firstChild);
+    }
+
+    /** @return {string} */
+    get visibletableText() {
+      return this.containerElement.innerText;
     }
   }
 
@@ -516,13 +584,33 @@ cr.define('omnibox_output', function() {
     }
   }
 
+  /** Responsible for setting clipboard contents. */
+  class CopyDelegate {
+    /** @param {omnibox_output.OmniboxOutput} omniboxOutput */
+    constructor(omniboxOutput) {
+      /** @type {omnibox_output.OmniboxOutput} */
+      this.omniboxOutput = omniboxOutput;
+    }
+
+    copyTextOutput() {
+      this.copy_(this.omniboxOutput.renderDelegate.visibletableText);
+    }
+
+    copyJsonOutput() {
+      this.copy_(JSON.stringify(this.omniboxOutput.responses, null, 2));
+    }
+
+    /**
+     * @private
+     * @param {string} value
+     */
+    copy_(value) {
+      navigator.clipboard.writeText(value).catch(
+          error => console.error('unable to copy to clipboard:', error));
+    }
+  }
+
   window.customElements.define(OmniboxOutput.is, OmniboxOutput);
 
-  // TODO(manukh) remove PROPERTY_OUTPUT_ORDER from exports after the remaining
-  // OmniboxOutput classes are extracted
-  // TODO(manukh) use shorthand object creation if/when approved
-  // https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/es6.md#object-literal-extensions
-  return {
-    OmniboxOutput: OmniboxOutput,
-  };
+  return {OmniboxOutput: OmniboxOutput};
 });

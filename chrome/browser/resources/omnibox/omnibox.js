@@ -26,53 +26,6 @@
    */
   let cursorPosition = -1;
 
-  /**
-   * Tracks and aggregates responses from the C++ autocomplete controller.
-   * Typically, the C++ controller returns 3 sets of results per query, unless
-   * a new query is submitted before all 3 responses. OutputController also
-   * triggers appending to and clearing of OmniboxOutput when appropriate (e.g.,
-   * upon receiving a new response or a change in display inputs).
-   */
-  class OutputController {
-    constructor() {
-      /** @private {!Array<!mojom.OmniboxResult>} */
-      this.responses_ = [];
-      /** @private {QueryInputs} */
-      this.queryInputs_ = /** @type {QueryInputs} */ ({});
-      /** @private {DisplayInputs} */
-      this.displayInputs_ = /** @type {DisplayInputs} */ ({});
-    }
-
-    /** @param {QueryInputs} queryInputs */
-    updateQueryInputs(queryInputs) {
-      this.queryInputs_ = queryInputs;
-      this.refresh_();
-    }
-
-    /** @param {DisplayInputs} displayInputs */
-    updateDisplayInputs(displayInputs) {
-      this.displayInputs_ = displayInputs;
-      this.refresh_();
-    }
-
-    clearAutocompleteResponses() {
-      this.responses_ = [];
-      this.refresh_();
-    }
-
-    /** @param {!mojom.OmniboxResult} response */
-    addAutocompleteResponse(response) {
-      this.responses_.push(response);
-      this.refresh_();
-    }
-
-    /** @private */
-    refresh_() {
-      omniboxOutput.refresh(
-          this.queryInputs_, this.responses_, this.displayInputs_);
-    }
-  }
-
   class BrowserProxy {
     constructor() {
       /** @private {!mojom.OmniboxPageCallbackRouter} */
@@ -83,7 +36,7 @@
       // match. Response refers to the data returned from the C++
       // AutocompleteController.
       this.callbackRouter_.handleNewAutocompleteResult.addListener(
-          result => outputController.addAutocompleteResponse(result));
+          result => omniboxOutput.addAutocompleteResponse(result));
 
       /** @private {!mojom.OmniboxPageHandlerProxy} */
       this.handler_ = mojom.OmniboxPageHandler.getProxy();
@@ -118,16 +71,15 @@
   let omniboxInputs;
   /** @type {omnibox_output.OmniboxOutput} */
   let omniboxOutput;
-  /** @type {OutputController} */
-  const outputController = new OutputController();
 
   document.addEventListener('DOMContentLoaded', () => {
     omniboxInputs = /** @type {!OmniboxInputs} */ ($('omnibox-inputs'));
     omniboxOutput =
         /** @type {!omnibox_output.OmniboxOutput} */ ($('omnibox-output'));
+
     omniboxInputs.addEventListener('query-inputs-changed', event => {
-      outputController.clearAutocompleteResponses();
-      outputController.updateQueryInputs(event.detail);
+      omniboxOutput.clearAutocompleteResponses();
+      omniboxOutput.updateQueryInputs(event.detail);
       browserProxy.makeRequest(
           event.detail.inputText,
           event.detail.cursorPosition,
@@ -137,6 +89,11 @@
     });
     omniboxInputs.addEventListener(
         'display-inputs-changed',
-        event => outputController.updateDisplayInputs(event.detail));
+        event => omniboxOutput.updateDisplayInputs(event.detail));
+    omniboxInputs.addEventListener(
+        'copy-request',
+        event => event.detail === 'text' ?
+            omniboxOutput.copyDelegate.copyTextOutput() :
+            omniboxOutput.copyDelegate.copyJsonOutput());
   });
 })();

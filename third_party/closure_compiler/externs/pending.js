@@ -92,3 +92,23 @@ Polymer.RenderStatus.beforeNextRender = function(element, fn, args) {};
  */
 let BigInt = function(value) {};
 
+/**
+ * TODO(manukh): Remove this once it is added to Closure Compiler itself.
+ * @see https://w3c.github.io/clipboard-apis/#async-clipboard-api
+ * @interface
+ */
+function Clipboard() {}
+
+/**
+ * @return {!Promise<string>}
+ */
+Clipboard.prototype.readText = function() {};
+
+/**
+ * @param {string} text
+ * @return {!Promise<void>}
+ */
+Clipboard.prototype.writeText = function(text) {};
+
+/** @const {!Clipboard} */
+Navigator.prototype.clipboard;
