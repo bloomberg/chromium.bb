@@ -241,9 +241,9 @@ gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
 
 gfx::PointF RenderWidgetHostViewGuest::TransformPointToRootCoordSpaceF(
     const gfx::PointF& point) {
+  viz::SurfaceId surface_id = GetCurrentSurfaceId();
   // LocalSurfaceId is not needed in Viz hit-test.
-  if (!guest_ ||
-      (!use_viz_hit_test_ && !last_activated_surface_info_.is_valid())) {
+  if (!guest_ || (!use_viz_hit_test_ && !surface_id.is_valid())) {
     return point;
   }
 
@@ -255,8 +255,8 @@ gfx::PointF RenderWidgetHostViewGuest::TransformPointToRootCoordSpaceF(
   // TODO(wjmaclean): If we knew that TransformPointToLocalCoordSpace would
   // guarantee not to change transformed_point on failure, then we could skip
   // checking the function return value and directly return transformed_point.
-  if (!root_rwhv->TransformPointToLocalCoordSpace(
-          point, last_activated_surface_info_.id(), &transformed_point)) {
+  if (!root_rwhv->TransformPointToLocalCoordSpace(point, surface_id,
+                                                  &transformed_point)) {
     return point;
   }
   return transformed_point;
@@ -266,19 +266,19 @@ bool RenderWidgetHostViewGuest::TransformPointToLocalCoordSpaceLegacy(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
+  viz::SurfaceId surface_id = GetCurrentSurfaceId();
   *transformed_point = point;
-  if (!guest_ || !last_activated_surface_info_.is_valid())
+  if (!guest_ || !surface_id.is_valid())
     return false;
 
-  if (original_surface == last_activated_surface_info_.id())
+  if (original_surface == surface_id)
     return true;
 
   *transformed_point =
       gfx::ConvertPointToPixel(current_surface_scale_factor(), point);
   viz::SurfaceHittest hittest(nullptr,
                               GetFrameSinkManager()->surface_manager());
-  if (!hittest.TransformPointToTargetSurface(original_surface,
-                                             last_activated_surface_info_.id(),
+  if (!hittest.TransformPointToTargetSurface(original_surface, surface_id,
                                              transformed_point)) {
     return false;
   }
