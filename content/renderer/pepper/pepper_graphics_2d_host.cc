@@ -753,6 +753,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
     *release_callback = viz::SingleReleaseCallback::Create(
         base::BindOnce(&ReleaseTextureCallback, this->AsWeakPtr(),
                        main_thread_context_, texture_id));
+    transferable_resource->format =
+        upload_bgra ? viz::BGRA_8888 : viz::RGBA_8888;
     composited_output_modified_ = false;
     return true;
   }
