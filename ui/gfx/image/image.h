@@ -71,9 +71,7 @@ class GFX_EXPORT Image {
   // Retains |image|.
   explicit Image(UIImage* image);
 #elif defined(OS_MACOSX)
-  // Does not retain |image|; expects to take ownership.
-  // A single NSImage object can contain multiple bitmaps so there's no reason
-  // to pass a vector of these.
+  // Retains |image|.
   explicit Image(NSImage* image);
 #endif
 

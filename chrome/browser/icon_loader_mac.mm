@@ -35,7 +35,7 @@ void IconLoader::ReadIcon() {
 
   if (icon_size_ == ALL) {
     // The NSImage already has all sizes.
-    image = std::make_unique<gfx::Image>([icon retain]);
+    image = std::make_unique<gfx::Image>(icon);
   } else {
     NSSize size = NSZeroSize;
     switch (icon_size_) {

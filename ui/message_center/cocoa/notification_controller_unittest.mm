@@ -128,7 +128,7 @@ TEST_F(NotificationControllerTest, BasicLayout) {
           ASCIIToUTF16("Jonathan and 5 others"), gfx::Image(), base::string16(),
           GURL(), DummyNotifierId(), message_center::RichNotificationData(),
           NULL));
-  gfx::Image testIcon([TestIcon() retain]);
+  gfx::Image testIcon(TestIcon());
   notification->set_icon(testIcon);
   notification->set_small_image(testIcon);
 
@@ -241,7 +241,7 @@ TEST_F(NotificationControllerTest, Update) {
   EXPECT_FALSE([[controller smallImageView] image]);
 
   // Update the icon.
-  gfx::Image testIcon([TestIcon() retain]);
+  gfx::Image testIcon(TestIcon());
   notification->set_icon(testIcon);
   notification->set_small_image(testIcon);
   [controller updateNotification:notification.get()];
@@ -284,7 +284,7 @@ TEST_F(NotificationControllerTest, Image) {
           GURL(), DummyNotifierId(), message_center::RichNotificationData(),
           NULL));
   NSImage* image = [NSImage imageNamed:NSImageNameFolder];
-  notification->set_image(gfx::Image([image retain]));
+  notification->set_image(gfx::Image(image));
 
   MockMessageCenter message_center;
 

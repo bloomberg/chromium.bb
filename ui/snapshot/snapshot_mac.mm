@@ -50,9 +50,9 @@ bool GrabViewSnapshot(gfx::NativeView native_view,
   if (CGImageGetWidth(windowSnapshot) <= 0)
     return false;
 
-  NSImage* nsImage =
-      [[NSImage alloc] initWithCGImage:windowSnapshot size:NSZeroSize];
-  *image = gfx::Image(nsImage);
+  *image =
+      gfx::Image([[[NSImage alloc] initWithCGImage:windowSnapshot
+                                              size:NSZeroSize] autorelease]);
   return true;
 }
 
