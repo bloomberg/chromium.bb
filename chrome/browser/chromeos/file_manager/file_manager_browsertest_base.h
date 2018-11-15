@@ -49,6 +49,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   // Optional overrides for each File Manager test extension type.
   virtual bool GetTabletMode() const;
   virtual bool GetEnableDriveFs() const;
+  virtual bool GetEnableMyFilesVolume() const;
   virtual bool GetRequiresStartupBrowser() const;
   virtual bool GetNeedsZipSupport() const;
   virtual bool GetIsOffline() const;
@@ -70,6 +71,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Returns true if the test requires DriveFS.
   bool IsDriveFsTest() const { return GetEnableDriveFs(); }
+
+  // Returns true if the test MyFilesVolume feature is enabled.
+  bool IsMyFilesVolume() const { return GetEnableMyFilesVolume(); }
 
   // Returns true if the test requires zip/unzip support.
   bool IsZipTest() const { return GetNeedsZipSupport(); }
