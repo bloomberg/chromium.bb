@@ -1119,3 +1119,29 @@ TEST_F(
 TEST_F('PrintPreviewKeyEventTest', 'CtrlShiftPOpensSystemDialog', function() {
   this.runMochaTest(key_event_test.TestNames.CtrlShiftPOpensSystemDialog);
 });
+
+PrintPreviewDestinationSettingsTest = class extends NewPrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/new/destination_settings.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      ROOT_PATH + 'ui/webui/resources/js/webui_listener_tracker.js',
+      '../test_browser_proxy.js',
+      'native_layer_stub.js',
+      'destination_settings_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_settings_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewDestinationSettingsTest', 'ChangeButtonState', function() {
+  this.runMochaTest(destination_settings_test.TestNames.ChangeButtonState);
+});
