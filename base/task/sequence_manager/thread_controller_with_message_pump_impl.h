@@ -10,6 +10,7 @@
 #include "base/debug/task_annotator.h"
 #include "base/message_loop/message_pump.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/moveable_auto_lock.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
@@ -76,18 +77,21 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   bool DoDelayedWork(TimeTicks* next_run_time) override;
   bool DoIdleWork() override;
 
- private:
-  friend class DoWorkScope;
-  friend class RunScope;
-
   // RunLoop::Delegate implementation.
   void Run(bool application_tasks_allowed) override;
   void Quit() override;
   void EnsureWorkScheduled() override;
 
+ private:
+  friend class DoWorkScope;
+  friend class RunScope;
+
   bool DoWorkImpl(base::TimeTicks* next_run_time);
 
   bool InTopLevelDoWork() const;
+
+  void InitializeThreadTaskRunnerHandle()
+      EXCLUSIVE_LOCKS_REQUIRED(task_runner_lock_);
 
   struct MainThreadOnly {
     MainThreadOnly();
@@ -98,7 +102,7 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     std::unique_ptr<ThreadTaskRunnerHandle> thread_task_runner_handle;
 
     // Indicates that we should yield DoWork ASAP.
-    bool quit_do_work = false;
+    bool quit_pending = false;
 
     // Whether high resolution timing is enabled or not.
     bool in_high_res_mode = false;
@@ -154,7 +158,6 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
   debug::TaskAnnotator task_annotator_;
   const TickClock* time_source_;  // Not owned.
-  scoped_refptr<SingleThreadTaskRunner> task_runner_to_set_;
 
   // Required to register the current thread as a sequence.
   base::internal::SequenceLocalStorageMap sequence_local_storage_map_;

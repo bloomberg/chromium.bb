@@ -5,8 +5,7 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_H_
 #define BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_H_
 
-#include "base/message_loop/timer_slack.h"
-#include "base/run_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/time/time.h"
@@ -81,8 +80,11 @@ class ThreadController {
   virtual void BindToCurrentThread(
       std::unique_ptr<MessagePump> message_pump) = 0;
 
+  // Explicitly allow or disallow task execution. Implicitly disallowed when
+  // entering a nested runloop.
   virtual void SetTaskExecutionAllowed(bool allowed) = 0;
 
+  // Whether task execution is allowed or not.
   virtual bool IsTaskExecutionAllowed() const = 0;
 
   // Returns the MessagePump we're bound to if any.

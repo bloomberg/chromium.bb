@@ -4,6 +4,7 @@
 
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/mock_callback.h"
@@ -32,9 +33,11 @@ class ThreadControllerForTest
                           const TickClock* clock)
       : ThreadControllerWithMessagePumpImpl(std::move(pump), clock) {}
 
-  using ThreadControllerWithMessagePumpImpl::DoWork;
   using ThreadControllerWithMessagePumpImpl::DoDelayedWork;
   using ThreadControllerWithMessagePumpImpl::DoIdleWork;
+  using ThreadControllerWithMessagePumpImpl::DoWork;
+  using ThreadControllerWithMessagePumpImpl::EnsureWorkScheduled;
+  using ThreadControllerWithMessagePumpImpl::Quit;
 };
 
 class MockMessagePump : public MessagePump {
@@ -301,6 +304,8 @@ TEST_F(ThreadControllerWithMessagePumpTest,
         EXPECT_FALSE(delegate->DoWork());
         log.push_back("exiting nested runloop");
       }));
+  // An extra schedule work will be called when entering a nested runloop.
+  EXPECT_CALL(*message_pump_, ScheduleWork());
 
   task_source_.AddTask(
       PendingTask(FROM_HERE,
@@ -355,6 +360,110 @@ TEST_F(ThreadControllerWithMessagePumpTest, SetDefaultTaskRunner) {
       MakeRefCounted<FakeTaskRunner>();
   thread_controller_.SetDefaultTaskRunner(task_runner2);
   EXPECT_EQ(task_runner2, ThreadTaskRunnerHandle::Get());
+}
+
+TEST_F(ThreadControllerWithMessagePumpTest, EnsureWorkScheduled) {
+  task_source_.AddTask(PendingTask(FROM_HERE, DoNothing(), TimeTicks()));
+
+  // Ensure that the first ScheduleWork() call results in the pump being called.
+  EXPECT_CALL(*message_pump_, ScheduleWork());
+  thread_controller_.ScheduleWork();
+  testing::Mock::VerifyAndClearExpectations(message_pump_);
+
+  // Ensure that the subsequent ScheduleWork() does not call the pump.
+  thread_controller_.ScheduleWork();
+  testing::Mock::VerifyAndClearExpectations(message_pump_);
+
+  // Ensure that EnsureWorkScheduled() forces a call to a pump.
+  EXPECT_CALL(*message_pump_, ScheduleWork());
+  thread_controller_.EnsureWorkScheduled();
+  testing::Mock::VerifyAndClearExpectations(message_pump_);
+}
+
+TEST_F(ThreadControllerWithMessagePumpTest, NoWorkAfterQuit) {
+  // Ensure that multiple DoWork calls are no-ops after Quit() is called
+  // in the current RunLoop.
+
+  ThreadTaskRunnerHandle handle(MakeRefCounted<FakeTaskRunner>());
+
+  std::vector<std::string> log;
+
+  EXPECT_CALL(*message_pump_, Run(_))
+      .WillOnce(Invoke([this](MessagePump::Delegate* delegate) {
+        EXPECT_EQ(delegate, &thread_controller_);
+        base::TimeTicks next_time;
+        EXPECT_TRUE(delegate->DoWork());
+        EXPECT_FALSE(delegate->DoDelayedWork(&next_time));
+        // We still have work to do, but subsequent calls to DoWork should
+        // do nothing as we're in the process of quitting the current loop.
+        EXPECT_FALSE(delegate->DoWork());
+        EXPECT_FALSE(delegate->DoDelayedWork(&next_time));
+        EXPECT_FALSE(delegate->DoWork());
+        EXPECT_FALSE(delegate->DoDelayedWork(&next_time));
+      }));
+  EXPECT_CALL(*message_pump_, Quit());
+
+  RunLoop run_loop;
+
+  task_source_.AddTask(
+      PendingTask(FROM_HERE,
+                  base::BindOnce(
+                      [](std::vector<std::string>* log, RunLoop* run_loop) {
+                        log->push_back("task1");
+                        run_loop->Quit();
+                      },
+                      &log, &run_loop),
+                  TimeTicks()));
+  task_source_.AddTask(PendingTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](std::vector<std::string>* log) { log->push_back("task2"); }, &log),
+      TimeTicks()));
+
+  run_loop.Run();
+
+  EXPECT_THAT(log, ElementsAre("task1"));
+  testing::Mock::VerifyAndClearExpectations(message_pump_);
+}
+
+TEST_F(ThreadControllerWithMessagePumpTest, EarlyQuit) {
+  // This test ensures that a opt-of-runloop Quit() (which is possible with some
+  // pump implementations) doesn't affect the next RunLoop::Run call.
+
+  ThreadTaskRunnerHandle handle(MakeRefCounted<FakeTaskRunner>());
+
+  std::vector<std::string> log;
+
+  // This quit should be a no-op for future calls.
+  EXPECT_CALL(*message_pump_, Quit());
+  thread_controller_.Quit();
+  testing::Mock::VerifyAndClearExpectations(message_pump_);
+
+  EXPECT_CALL(*message_pump_, Run(_))
+      .WillOnce(Invoke([this](MessagePump::Delegate* delegate) {
+        EXPECT_EQ(delegate, &thread_controller_);
+        EXPECT_TRUE(delegate->DoWork());
+        EXPECT_TRUE(delegate->DoWork());
+        EXPECT_FALSE(delegate->DoWork());
+      }));
+
+  RunLoop run_loop;
+
+  task_source_.AddTask(PendingTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](std::vector<std::string>* log) { log->push_back("task1"); }, &log),
+      TimeTicks()));
+  task_source_.AddTask(PendingTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](std::vector<std::string>* log) { log->push_back("task2"); }, &log),
+      TimeTicks()));
+
+  run_loop.RunUntilIdle();
+
+  EXPECT_THAT(log, ElementsAre("task1", "task2"));
+  testing::Mock::VerifyAndClearExpectations(message_pump_);
 }
 
 }  // namespace sequence_manager

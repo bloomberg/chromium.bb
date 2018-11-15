@@ -41,6 +41,10 @@ struct BASE_EXPORT AssociatedThreadId
   // the SequenceManager and TaskQueues on a different thread/sequence than the
   // one it will manage. Should only be called once.
   void BindToCurrentThread() {
+    // TODO(altimin): Remove this after MessageLoopImpl is gone and
+    // initialisation is simplified.
+    if (thread_id == PlatformThread::CurrentId())
+      return;
     DCHECK_EQ(kInvalidThreadId, thread_id);
     thread_id = PlatformThread::CurrentId();
 

@@ -84,9 +84,10 @@ void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
   scoped_set_sequence_local_storage_map_for_current_thread_ = std::make_unique<
       base::internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
       &sequence_local_storage_map_);
-  if (task_runner_to_set_) {
-    SetDefaultTaskRunner(task_runner_to_set_);
-    task_runner_to_set_ = nullptr;
+  {
+    AutoLock task_runner_lock(task_runner_lock_);
+    if (task_runner_)
+      InitializeThreadTaskRunnerHandle();
   }
   if (should_schedule_work_after_bind_)
     ScheduleWork();
@@ -138,15 +139,14 @@ void ThreadControllerWithMessagePumpImpl::SetNextDelayedDoWork(
   if (main_thread_only().next_delayed_do_work == run_time)
     return;
 
-  // Don't post a DoWork if there's an immediate DoWork in flight or if we're
-  // inside a top level DoWork. We can rely on a continuation being posted as
-  // needed.
+  run_time = CapAtOneDay(run_time, lazy_now);
+  main_thread_only().next_delayed_do_work = run_time;
+
+  // Do not call ScheduleDelayedWork if there is an immediate DoWork scheduled.
+  // We can rely on calling ScheduleDelayedWork from the next DoWork call.
   if (main_thread_only().immediate_do_work_posted || InTopLevelDoWork())
     return;
 
-  run_time = CapAtOneDay(run_time, lazy_now);
-
-  main_thread_only().next_delayed_do_work = run_time;
   // |pump_| can't be null as all postTasks are cross-thread before binding,
   // and delayed cross-thread postTasks do the thread hop through an immediate
   // task.
@@ -163,18 +163,22 @@ bool ThreadControllerWithMessagePumpImpl::RunsTasksInCurrentSequence() {
 
 void ThreadControllerWithMessagePumpImpl::SetDefaultTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
-  if (associated_thread_->thread_id == kInvalidThreadId) {
-    // Save task runner, it will be set in BindToCurrentThread.
-    task_runner_to_set_ = std::move(task_runner);
-  } else {
-    // Only one ThreadTaskRunnerHandle can exist at any time,
-    // so reset the old one.
-    main_thread_only().thread_task_runner_handle.reset();
-    main_thread_only().thread_task_runner_handle =
-        std::make_unique<ThreadTaskRunnerHandle>(task_runner);
-    AutoLock lock(task_runner_lock_);
-    task_runner_ = std::move(task_runner);
+  DCHECK(associated_thread_->thread_id == kInvalidThreadId ||
+         associated_thread_->thread_id == PlatformThread::CurrentId());
+  AutoLock lock(task_runner_lock_);
+  task_runner_ = task_runner;
+  if (associated_thread_->thread_id != kInvalidThreadId) {
+    // Thread task runner handle will be created in BindToCurrentThread().
+    InitializeThreadTaskRunnerHandle();
   }
+}
+
+void ThreadControllerWithMessagePumpImpl::InitializeThreadTaskRunnerHandle() {
+  // Only one ThreadTaskRunnerHandle can exist at any time,
+  // so reset the old one.
+  main_thread_only().thread_task_runner_handle.reset();
+  main_thread_only().thread_task_runner_handle =
+      std::make_unique<ThreadTaskRunnerHandle>(task_runner_);
 }
 
 scoped_refptr<SingleThreadTaskRunner>
@@ -222,6 +226,8 @@ bool ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     base::TimeTicks* next_run_time) {
   if (!main_thread_only().task_execution_allowed)
     return false;
+  if (main_thread_only().quit_pending)
+    return false;
 
   DCHECK(main_thread_only().task_source);
   bool task_ran = false;
@@ -244,22 +250,19 @@ bool ThreadControllerWithMessagePumpImpl::DoWorkImpl(
 
     main_thread_only().task_source->DidRunTask();
 
-    // If we have executed a delayed task, reset the next delayed do work.
-    if (next_run_time)
-      main_thread_only().next_delayed_do_work = TimeTicks();
+    // If we have executed a task, reset the next delayed do work.
+    main_thread_only().next_delayed_do_work = TimeTicks();
 
     // When Quit() is called we must stop running the batch because the caller
     // expects per-task granularity.
-    if (main_thread_only().quit_do_work)
+    if (main_thread_only().quit_pending)
       break;
   }
 
   main_thread_only().do_work_running_count--;
 
-  if (main_thread_only().quit_do_work) {
-    main_thread_only().quit_do_work = false;
+  if (main_thread_only().quit_pending)
     return task_ran;
-  }
 
   LazyNow lazy_now(time_source_);
   TimeDelta do_work_delay =
@@ -321,6 +324,10 @@ bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
 
 void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed) {
   DCHECK(RunsTasksInCurrentSequence());
+  // Quit may have been called outside of a Run(), so |quit_pending| might be
+  // true here. We can't use InTopLevelDoWork() in Quit() as this call may be
+  // outside top-level DoWork but still in Run().
+  main_thread_only().quit_pending = false;
   if (application_tasks_allowed && !main_thread_only().task_execution_allowed) {
     // Allow nested task execution as explicitly requested.
     DCHECK(RunLoop::IsNestedOnCurrentThread());
@@ -330,6 +337,7 @@ void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed) {
   } else {
     pump_->Run(this);
   }
+  main_thread_only().quit_pending = false;
 }
 
 void ThreadControllerWithMessagePumpImpl::OnBeginNestedRunLoop() {
@@ -348,15 +356,14 @@ void ThreadControllerWithMessagePumpImpl::OnExitNestedRunLoop() {
 void ThreadControllerWithMessagePumpImpl::Quit() {
   DCHECK(RunsTasksInCurrentSequence());
   // Interrupt a batch of work.
-  if (InTopLevelDoWork())
-    main_thread_only().quit_do_work = true;
+  main_thread_only().quit_pending = true;
   // If we're in a nested RunLoop, continuation will be posted if necessary.
   pump_->Quit();
 }
 
 void ThreadControllerWithMessagePumpImpl::EnsureWorkScheduled() {
+  pump_->ScheduleWork();
   main_thread_only().immediate_do_work_posted = true;
-  ScheduleWork();
 }
 
 void ThreadControllerWithMessagePumpImpl::SetTaskExecutionAllowed(
