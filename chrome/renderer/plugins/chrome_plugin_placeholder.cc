@@ -383,8 +383,8 @@ gin::ObjectTemplateBuilder ChromePluginPlaceholder::GetObjectTemplateBuilder(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePluginPlaceholderTesting)) {
     builder.SetMethod<void (ChromePluginPlaceholder::*)()>(
-        "didFinishIconRepositionForTesting",
-        &ChromePluginPlaceholder::DidFinishIconRepositionForTestingCallback);
+        "notifyPlaceholderReadyForTesting",
+        &ChromePluginPlaceholder::NotifyPlaceholderReadyForTestingCallback);
   }
 
   return builder;

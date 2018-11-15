@@ -78,7 +78,6 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   // Javascript callbacks:
   void LoadCallback();
   void DidFinishLoadingCallback();
-  void DidFinishIconRepositionForTestingCallback();
 
   // True if the power saver heuristic has already been run on this content.
   bool heuristic_run_before_;
