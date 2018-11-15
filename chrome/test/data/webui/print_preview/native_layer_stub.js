@@ -143,7 +143,8 @@ cr.define('print_preview', function() {
           {destinationId: printerId, printerType: type});
       if (type != print_preview.PrinterType.LOCAL_PRINTER)
         return Promise.reject();
-      return this.localDestinationCapabilities_.get(printerId);
+      return this.localDestinationCapabilities_.get(printerId) ||
+          Promise.reject();
     }
 
     /** @override */
