@@ -70,8 +70,6 @@ using device::BluetoothUUID;
 
 namespace {
 
-constexpr int32_t DEFAULT_RSSI = -127;
-
 // https://android.googlesource.com/platform/system/bt/+/master/stack/include/gatt_api.h
 constexpr int32_t GATT_CHAR_PROP_BIT_BROADCAST = (1 << 0);
 constexpr int32_t GATT_CHAR_PROP_BIT_READ = (1 << 1);
@@ -536,43 +534,6 @@ void ArcBluetoothBridge::OnConnectionClosed() {
   is_bluetooth_instance_up_ = false;
 }
 
-void ArcBluetoothBridge::SendDevice(const BluetoothDevice* device,
-                                    bool include_cached_device) const {
-  auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->bluetooth(), OnDeviceFound);
-  if (!bluetooth_instance)
-    return;
-
-  std::vector<mojom::BluetoothPropertyPtr> properties =
-      GetDeviceProperties(mojom::BluetoothPropertyType::ALL, device);
-
-  bluetooth_instance->OnDeviceFound(std::move(properties));
-
-  if (!(device->GetType() & device::BLUETOOTH_TRANSPORT_LE))
-    return;
-
-  base::Optional<int8_t> rssi = device->GetInquiryRSSI();
-  mojom::BluetoothAddressPtr addr;
-
-  // There are two cases where we send advertise data to Android:
-  // 1) Cached found devices are sent when applications start scanning.
-  //    In this case, |include_cached_device| is true.
-  // 2) Updated devices are sent during scanning. In this case, rssi is valid.
-  if (!rssi.has_value() && !include_cached_device)
-    return;
-
-  auto* btle_instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_bridge_service_->bluetooth(), OnLEDeviceFound);
-  if (!btle_instance)
-    return;
-
-  std::vector<mojom::BluetoothAdvertisingDataPtr> adv_data =
-      GetAdvertisingData(device);
-  addr = mojom::BluetoothAddress::From(device->GetAddress());
-  btle_instance->OnLEDeviceFound(std::move(addr), rssi.value_or(DEFAULT_RSSI),
-                                 std::move(adv_data));
-}
-
 void ArcBluetoothBridge::AdapterPoweredChanged(BluetoothAdapter* adapter,
                                                bool powered) {
   AdapterPowerState power_change =
@@ -593,12 +554,25 @@ void ArcBluetoothBridge::DeviceChanged(BluetoothAdapter* adapter,
   if (!IsInstanceUp())
     return;
 
-  SendDevice(device, /* include_cached_device = */ false);
+  auto* device_found = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->bluetooth(), OnDeviceFound);
+  if (device_found) {
+    device_found->OnDeviceFound(
+        GetDeviceProperties(mojom::BluetoothPropertyType::ALL, device));
+  }
 
   if (!(device->GetType() & device::BLUETOOTH_TRANSPORT_LE))
     return;
 
+  base::Optional<int8_t> rssi = device->GetInquiryRSSI();
   std::string addr = device->GetAddress();
+  auto* le_device_found = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->bluetooth(), OnLEDeviceFound);
+  if (le_device_found && rssi.has_value()) {
+    le_device_found->OnLEDeviceFound(mojom::BluetoothAddress::From(addr),
+                                     rssi.value(), GetAdvertisingData(device));
+  }
+
   auto it = gatt_connections_.find(addr);
   bool was_connected =
       (it != gatt_connections_.end() &&
@@ -1210,7 +1184,6 @@ void ArcBluetoothBridge::StartDiscoveryImpl(bool le_scan) {
     discovery_off_timer_.Start(FROM_HERE, kDiscoveryTimeout,
                                base::Bind(&ArcBluetoothBridge::CancelDiscovery,
                                           weak_factory_.GetWeakPtr()));
-    SendCachedDevicesFound();
     discovery_queue_.Pop();
     return;
   }
@@ -1288,7 +1261,6 @@ void ArcBluetoothBridge::OnDiscoveryStarted(
   if (bluetooth_instance != nullptr) {
     bluetooth_instance->OnDiscoveryStateChanged(
         mojom::BluetoothDiscoveryState::STARTED);
-    SendCachedDevicesFound();
   }
   discovery_queue_.Pop();
 }
@@ -2819,12 +2791,6 @@ ArcBluetoothBridge::GetAdvertisingData(const BluetoothDevice* device) const {
   }
 
   return advertising_data;
-}
-
-void ArcBluetoothBridge::SendCachedDevicesFound() const {
-  DCHECK(bluetooth_adapter_);
-  for (auto* device : bluetooth_adapter_->GetDevices())
-    SendDevice(device, /* include_cached_device = */ true);
 }
 
 void ArcBluetoothBridge::OnGetServiceRecordsDone(

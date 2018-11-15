@@ -420,8 +420,6 @@ class ArcBluetoothBridge
   std::vector<mojom::BluetoothAdvertisingDataPtr> GetAdvertisingData(
       const device::BluetoothDevice* device) const;
 
-  void SendCachedDevicesFound() const;
-
   device::BluetoothRemoteGattCharacteristic* FindGattCharacteristic(
       mojom::BluetoothAddressPtr remote_addr,
       mojom::BluetoothGattServiceIDPtr service_id,
@@ -524,9 +522,6 @@ class ArcBluetoothBridge
   // Find the next free advertisement handle and put it in *adv_handle,
   // or return false if the advertisement map is full.
   bool GetAdvertisementHandle(int32_t* adv_handle);
-
-  void SendDevice(const device::BluetoothDevice* device,
-                  bool include_cached_device) const;
 
   void OnGattServerPrepareWrite(mojom::BluetoothAddressPtr addr,
                                 bool has_subsequent_write,
