@@ -2079,6 +2079,8 @@ enum WebFeature {
   kPageLifeCycleFreeze = 2627,
   kDefaultInCustomIdent = 2628,
   kHTMLAnchorElementHrefTranslateAttribute = 2629,
+  kWebKitUserModifyEffective = 2630,
+  kPlainTextEditingEffective = 2631,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

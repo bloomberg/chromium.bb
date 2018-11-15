@@ -165,6 +165,41 @@ using namespace html_names;
 
 enum class ClassStringContent { kEmpty, kWhiteSpaceOnly, kHasClasses };
 
+namespace {
+
+bool IsRootEditableElementWithCounting(const Element& element) {
+  bool is_editable = IsRootEditableElement(element);
+  Document& doc = element.GetDocument();
+  if (!doc.IsActive())
+    return is_editable;
+  // -webkit-user-modify doesn't affect text control elements.
+  if (element.IsTextControl())
+    return is_editable;
+  const auto* style = element.GetComputedStyle();
+  if (!style)
+    return is_editable;
+  const AtomicString& ce_value = element.FastGetAttribute(kContenteditableAttr);
+  if (ce_value.IsNull() || DeprecatedEqualIgnoringCase(ce_value, "false")) {
+    if (style->UserModify() != EUserModify::kReadOnly)
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
+    if (style->UserModify() == EUserModify::kReadWritePlaintextOnly)
+      UseCounter::Count(doc, WebFeature::kPlainTextEditingEffective);
+  } else if (ce_value.IsEmpty() ||
+             DeprecatedEqualIgnoringCase(ce_value, "true")) {
+    if (style->UserModify() != EUserModify::kReadWrite)
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
+    if (style->UserModify() == EUserModify::kReadWritePlaintextOnly)
+      UseCounter::Count(doc, WebFeature::kPlainTextEditingEffective);
+  } else if (DeprecatedEqualIgnoringCase(ce_value, "plaintext-only")) {
+    if (style->UserModify() != EUserModify::kReadWritePlaintextOnly)
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
+    UseCounter::Count(doc, WebFeature::kPlainTextEditingEffective);
+  }
+  return is_editable;
+}
+
+}  // namespace
+
 Element* Element::Create(const QualifiedName& tag_name, Document* document) {
   return new Element(tag_name, document, kCreateElement);
 }
@@ -3214,7 +3249,7 @@ bool Element::SupportsFocus() const {
   // it won't be focusable. Furthermore, supportsFocus cannot just return true
   // always or else tabIndex() will change for all HTML elements.
   return HasElementFlag(ElementFlags::kTabIndexWasSetExplicitly) ||
-         IsRootEditableElement(*this) ||
+         IsRootEditableElementWithCounting(*this) ||
          (IsShadowHost(this) && AuthorShadowRoot() &&
           AuthorShadowRoot()->delegatesFocus()) ||
          SupportsSpatialNavigationFocus() ||
