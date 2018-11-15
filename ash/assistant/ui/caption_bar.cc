@@ -13,6 +13,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
@@ -23,7 +24,7 @@ namespace {
 
 // Appearance.
 constexpr int kCaptionButtonSizeDip = 32;
-constexpr int kPreferredHeightDip = 48;
+constexpr int kPreferredHeightDip = 32;
 constexpr int kVectorIconSizeDip = 12;
 
 // CaptionButton ---------------------------------------------------------------
