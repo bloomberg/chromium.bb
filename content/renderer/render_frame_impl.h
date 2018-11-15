@@ -1127,14 +1127,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Loads the appropriate error page for the specified failure into the frame.
   // |entry| is only when navigating to a history item.
   void LoadNavigationErrorPage(
-      const blink::WebURLRequest& failed_request,
-      const blink::WebURLError& error,
-      bool replace,
-      HistoryEntry* entry,
-      const base::Optional<std::string>& error_page_content,
-      std::unique_ptr<blink::WebNavigationParams> navigation_params,
-      std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
-  void LoadNavigationErrorPageInternal(
       const std::string& error_html,
       const GURL& error_url,
       bool replace,

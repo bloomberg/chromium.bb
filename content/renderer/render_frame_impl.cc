@@ -2776,12 +2776,6 @@ void RenderFrameImpl::DidFailProvisionalLoad(
   NavigationState* navigation_state =
       NavigationState::FromDocumentLoader(document_loader);
 
-  // If this is a failed back/forward/reload navigation, then we need to do a
-  // 'replace' load.  This is necessary to avoid messing up session history.
-  // Otherwise, we do a normal load, which simulates a 'go' navigation as far
-  // as session history is concerned.
-  bool replace = commit_type != blink::kWebStandardCommit;
-
   std::unique_ptr<blink::WebNavigationParams> navigation_params;
   std::unique_ptr<DocumentState> document_state;
 
@@ -2799,9 +2793,18 @@ void RenderFrameImpl::DidFailProvisionalLoad(
             nullptr /* controller_service_worker_info */));
   }
 
-  LoadNavigationErrorPage(failed_request, error, replace, nullptr,
-                          base::nullopt, std::move(navigation_params),
-                          std::move(document_state));
+  // If this is a failed back/forward/reload navigation, then we need to do a
+  // 'replace' load. This is necessary to avoid messing up session history.
+  // Otherwise, we do a normal load, which simulates a 'go' navigation as far
+  // as session history is concerned.
+  bool replace = commit_type != blink::kWebStandardCommit;
+
+  std::string error_html;
+  GetContentClient()->renderer()->PrepareErrorPage(this, failed_request, error,
+                                                   &error_html);
+  LoadNavigationErrorPage(error_html, error.url(), replace, nullptr,
+                          std::move(navigation_params),
+                          std::move(document_state), &failed_request);
 }
 
 void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad(
@@ -2813,30 +2816,6 @@ void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad(
 }
 
 void RenderFrameImpl::LoadNavigationErrorPage(
-    const WebURLRequest& failed_request,
-    const WebURLError& error,
-    bool replace,
-    HistoryEntry* entry,
-    const base::Optional<std::string>& error_page_content,
-    std::unique_ptr<blink::WebNavigationParams> navigation_params,
-    std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data) {
-  std::string error_html;
-  if (error_page_content.has_value()) {
-    error_html = error_page_content.value();
-    // We don't need the actual error page content, but still call this
-    // for any possible side effects.
-    GetContentClient()->renderer()->PrepareErrorPage(this, failed_request,
-                                                     error, nullptr);
-  } else {
-    GetContentClient()->renderer()->PrepareErrorPage(this, failed_request,
-                                                     error, &error_html);
-  }
-  LoadNavigationErrorPageInternal(error_html, error.url(), replace, entry,
-                                  std::move(navigation_params),
-                                  std::move(navigation_data), &failed_request);
-}
-
-void RenderFrameImpl::LoadNavigationErrorPageInternal(
     const std::string& error_html,
     const GURL& error_url,
     bool replace,
@@ -2993,7 +2972,7 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
   GetContentClient()->renderer()->PrepareErrorPage(
       this, frame_->GetDocumentLoader()->GetRequest(), error, &error_html);
 
-  LoadNavigationErrorPageInternal(
+  LoadNavigationErrorPage(
       error_html, error.url(), true /* replace */, nullptr /* history_entry */,
       nullptr /* navigation_params */, nullptr /* navigation_data */,
       nullptr /* failed_request */);
@@ -3463,6 +3442,18 @@ void RenderFrameImpl::CommitFailedNavigation(
     }
   }
 
+  std::string error_html;
+  if (error_page_content.has_value()) {
+    error_html = error_page_content.value();
+    // We don't need the actual error page content, but still call this
+    // for any possible side effects.
+    GetContentClient()->renderer()->PrepareErrorPage(this, failed_request,
+                                                     error, nullptr);
+  } else {
+    GetContentClient()->renderer()->PrepareErrorPage(this, failed_request,
+                                                     error, &error_html);
+  }
+
   // The load of the error page can result in this frame being removed.
   // Use a WeakPtr as an easy way to detect whether this has occured. If so,
   // this method should return immediately and not touch any part of the object,
@@ -3474,10 +3465,10 @@ void RenderFrameImpl::CommitFailedNavigation(
   // TODO(dgozman): if this DCHECK never triggers, we can just pass
   // |history_entry| unconditionally.
   DCHECK(pass_history_entry || !history_entry);
-  LoadNavigationErrorPage(failed_request, error, replace,
+  LoadNavigationErrorPage(error_html, error.url(), replace,
                           pass_history_entry ? history_entry.get() : nullptr,
-                          error_page_content, std::move(navigation_params),
-                          std::move(document_state));
+                          std::move(navigation_params),
+                          std::move(document_state), &failed_request);
   if (!weak_this)
     return;
 
@@ -4552,10 +4543,9 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
     std::string error_html;
     GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
         this, failed_request, unreachable_url, http_status_code, &error_html);
-    LoadNavigationErrorPageInternal(error_html, unreachable_url,
-                                    true /* replace */, nullptr /* entry */,
-                                    std::move(navigation_params),
-                                    std::move(document_state), &failed_request);
+    LoadNavigationErrorPage(error_html, unreachable_url, true /* replace */,
+                            nullptr /* entry */, std::move(navigation_params),
+                            std::move(document_state), &failed_request);
   }
   // Do not use |this| or |frame_| here without checking |weak_self|.
 }
