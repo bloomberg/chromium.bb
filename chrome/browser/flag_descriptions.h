@@ -1992,6 +1992,9 @@ extern const char kEnableAppsGridGapFeatureDescription[];
 extern const char kEnableArcUnifiedAudioFocusName[];
 extern const char kEnableArcUnifiedAudioFocusDescription[];
 
+extern const char kEnableAssistantVoiceMatchName[];
+extern const char kEnableAssistantVoiceMatchDescription[];
+
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 

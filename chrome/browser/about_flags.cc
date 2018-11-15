@@ -160,6 +160,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "components/arc/arc_features.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif  // OS_CHROMEOS
@@ -4478,6 +4479,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableMediaSessionAshMediaKeysName,
      flag_descriptions::kEnableMediaSessionAshMediaKeysDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kMediaSessionAccelerators)},
+
+    {"enable-assistant-voice-match",
+     flag_descriptions::kEnableAssistantVoiceMatchName,
+     flag_descriptions::kEnableAssistantVoiceMatchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantVoiceMatch)},
 #endif  // defined(OS_CHROMEOS)
 
     {"enable-blink-heap-unified-garbage-collection",
