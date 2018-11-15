@@ -209,11 +209,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       if (android_64bit_target_cpu) {
         shared_libraries = [ "//android_webview:monochrome" ]
       } else {
-        if (invoker.target_type == "android_app_bundle_module") {
-          shared_libraries = [ "//chrome/android:monochrome_base" ]
-        } else {
-          shared_libraries = [ "//chrome/android:monochrome" ]
-        }
+        shared_libraries = [ "//chrome/android:monochrome" ]
       }
       if (android_64bit_target_cpu && build_apk_secondary_abi) {
         secondary_abi_shared_libraries =
@@ -269,13 +265,9 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       "//android_webview/apk:webview_license_activity_java",
       "//android_webview/glue",
       "//chrome/android:chrome_public_non_pak_assets",
+      "//chrome/android:monochrome_apk_pak_assets",
       "//chrome/android/monochrome:monochrome_license_provider_java",
     ]
-    if (invoker.target_type == "android_app_bundle_module") {
-      deps += [ "//chrome/android:monochrome_bundle_pak_assets" ]
-    } else {
-      deps += [ "//chrome/android:monochrome_apk_pak_assets" ]
-    }
 
     if (_enable_multidex && invoker.target_type == "android_apk" &&
         !defined(invoker.negative_main_dex_globs)) {

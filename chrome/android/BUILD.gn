@@ -1056,27 +1056,14 @@ template("chrome_shared_library") {
   }
 }
 
-# This template creates a native library for Chrome's APK or bundle.
-template("libchrome_apk_or_bundle_tmpl") {
-  chrome_shared_library(target_name) {
-    forward_variables_from(invoker, "*")
-    sources = [
-      "../browser/android/chrome_entry_point.cc",
-      chrome_jni_registration_header,
-    ]
-    deps = [
-      ":chrome_jni_registration($default_toolchain)",
-    ]
-  }
-}
-
-# Chrome APK's native library.
-libchrome_apk_or_bundle_tmpl("libchrome") {
-}
-
-# Chrome bundle's base module native library. This is currently the same as the
-# APK version, but will diverge when code moves into feature modules.
-libchrome_apk_or_bundle_tmpl("libchrome_base") {
+chrome_shared_library("libchrome") {
+  sources = [
+    "../browser/android/chrome_entry_point.cc",
+    chrome_jni_registration_header,
+  ]
+  deps = [
+    ":chrome_jni_registration($default_toolchain)",
+  ]
 }
 
 chrome_shared_library("libchromefortest") {
@@ -1126,20 +1113,22 @@ if (current_toolchain == default_toolchain) {
   #    is_monochrome: If true, generate Monochrome targets rather than Chrome.
   #    is_bundle: If true, generate resources for bundles rather than APK.
   template("resource_packaging") {
+    not_needed([ "target_name" ])
+
     _is_monochrome = invoker.is_monochrome
     _is_bundle = invoker.is_bundle
 
     if (_is_monochrome) {
-      _type = "monochrome"
+      _prefix = "monochrome"
     } else {
-      _type = "chrome"
+      _prefix = "chrome"
     }
     if (_is_bundle) {
       _output_type = "bundle"
     } else {
       _output_type = "apk"
     }
-    _variant = "${_type}_${_output_type}"
+    _variant = "${_prefix}_${_output_type}"
 
     if (enable_resource_whitelist_generation) {
       _resource_whitelist_target = "${_variant}_resource_whitelist"
@@ -1147,17 +1136,10 @@ if (current_toolchain == default_toolchain) {
           "$target_gen_dir/${_variant}_resource_whitelist.txt"
 
       if (_is_monochrome) {
-        _target_prefix = ""
+        _target = "monochrome"
       } else {
-        _target_prefix = "lib"
+        _target = "libchrome"
       }
-      if (_is_bundle) {
-        _suffix = "_base"
-      } else {
-        _suffix = ""
-      }
-      _lib_path = "/lib.unstripped/lib" + _type + _suffix + shlib_extension
-      _lib_target = _target_prefix + _type + _suffix
 
       generate_resource_whitelist(_resource_whitelist_target) {
         _fat_lib_toolchain = ""
@@ -1171,10 +1153,11 @@ if (current_toolchain == default_toolchain) {
           }
         }
         deps = [
-          ":${_lib_target}($_fat_lib_toolchain)",
+          ":${_target}($_fat_lib_toolchain)",
         ]
 
-        input = get_label_info(deps[0], "root_out_dir") + _lib_path
+        input = get_label_info(deps[0], "root_out_dir") +
+                "/lib.unstripped/lib${_prefix}$shlib_extension"
         output = _resource_whitelist_file
       }
 
@@ -1186,9 +1169,10 @@ if (current_toolchain == default_toolchain) {
         _locale_whitelist_target = "${_variant}_locale_whitelist"
         _locale_whitelist_file =
             "$target_gen_dir/${_variant}_locale_whitelist.txt"
-        _system_webview_locale_resource_id_list = "$target_gen_dir/${_variant}_system_webview_locale_resource_id_list.txt"
+        _system_webview_locale_resource_id_list =
+            "$target_gen_dir/system_webview_locale_resource_id_list.txt"
 
-        action("${_variant}_system_webview_locale_resource_id_list") {
+        action("system_webview_locale_resource_id_list") {
           script = "//tools/grit/pak_util.py"
 
           _system_webview_en_US_locale_pak =
@@ -1229,7 +1213,7 @@ if (current_toolchain == default_toolchain) {
 
           deps = [
             ":${_resource_whitelist_target}",
-            ":${_variant}_system_webview_locale_resource_id_list",
+            ":system_webview_locale_resource_id_list",
             "//android_webview:system_webview_pak_whitelist",
           ]
 
@@ -1247,7 +1231,7 @@ if (current_toolchain == default_toolchain) {
     }
 
     chrome_paks("${_variant}_paks") {
-      output_dir = "$target_gen_dir/${_variant}_paks"
+      output_dir = "$target_gen_dir/$target_name"
       deps = []
 
       if (_is_monochrome) {
@@ -1284,8 +1268,7 @@ if (current_toolchain == default_toolchain) {
     }
 
     # This target explicitly includes locale paks via deps.
-    android_assets(target_name) {
-      assert("${_variant}_pak_assets" == target_name)
+    android_assets("${_variant}_pak_assets") {
       sources = [
         "$target_gen_dir/${_variant}_paks/chrome_100_percent.pak",
         "$target_gen_dir/${_variant}_paks/resources.pak",
@@ -1302,23 +1285,13 @@ if (current_toolchain == default_toolchain) {
     }
   }
 
-  # Resource packaging varies with Monochrome and bundles because the pak
-  # resource whitelist is derived from the native library.
-  resource_packaging("chrome_apk_pak_assets") {
+  resource_packaging("") {
     is_monochrome = false
     is_bundle = false
   }
-  resource_packaging("monochrome_apk_pak_assets") {
+  resource_packaging("") {
     is_monochrome = true
     is_bundle = false
-  }
-  resource_packaging("chrome_bundle_pak_assets") {
-    is_monochrome = false
-    is_bundle = true
-  }
-  resource_packaging("monochrome_bundle_pak_assets") {
-    is_monochrome = true
-    is_bundle = true
   }
 
   # TODO(cjgrant): Remove this temporary alias after downstream renaming lands.
@@ -1337,29 +1310,17 @@ if (current_toolchain == default_toolchain) {
 # for 64-bit APK.
 if (!android_64bit_target_cpu ||
     current_toolchain == android_secondary_abi_toolchain) {
-  # Monochrome equivalent of Chrome's APK or bundle library template.
-  template("libmonochrome_apk_or_bundle_tmpl") {
-    chrome_common_shared_library(target_name) {
-      forward_variables_from(invoker, "*")
-      sources = [
-        "../browser/android/monochrome_entry_point.cc",
-      ]
-      deps = [
-        "//android_webview:common",
-      ]
+  chrome_common_shared_library("monochrome") {
+    sources = [
+      "../browser/android/monochrome_entry_point.cc",
+    ]
+    deps = [
+      "//android_webview:common",
+    ]
 
-      export_java_symbols = true
-      enable_compressed_relocations = use_lld
-      use_gnu_hash_style = true
-    }
-  }
-
-  # Monochrome APK native library.
-  libmonochrome_apk_or_bundle_tmpl("monochrome") {
-  }
-
-  # Monochrome bundle native library.
-  libmonochrome_apk_or_bundle_tmpl("monochrome_base") {
+    export_java_symbols = true
+    enable_compressed_relocations = use_lld
+    use_gnu_hash_style = true
   }
 } else {
   group("monochrome_secondary_abi_lib") {
@@ -1399,6 +1360,7 @@ _chrome_public_shared_deps = [
   ":chrome_public_apk_resources",
   ":chrome_public_base_module_java",
   ":chrome_public_non_pak_assets",
+  ":chrome_apk_pak_assets",
 ]
 
 generate_jni("test_support_jni_headers") {
@@ -1481,18 +1443,10 @@ template("chrome_public_apk_or_module_tmpl") {
       android_manifest_dep = ":chrome_public_android_manifest"
     }
 
-    if (invoker.target_type == "android_app_bundle_module") {
-      deps += [ ":chrome_bundle_pak_assets" ]
-      _suffix = "_base"
-    } else {
-      deps += [ ":chrome_apk_pak_assets" ]
-      _suffix = ""
-    }
-
-    shared_libraries = [ ":libchrome${_suffix}" ]
+    shared_libraries = [ ":libchrome" ]
     add_unwind_tables_in_apk = _add_unwind_tables_in_chrome_public_apk
     if (_add_unwind_tables_in_chrome_public_apk) {
-      shared_library_for_unwind_asset = "chrome${_suffix}"
+      shared_library_for_unwind_asset = "chrome"
     }
 
     # Android supports webp transparent resources properly since API level 18,
@@ -1604,11 +1558,7 @@ template("monochrome_public_apk_or_module_tmpl") {
         _add_unwind_tables_in_chrome_public_apk &&
         (!defined(use_trichrome_library) || !use_trichrome_library)
     if (add_unwind_tables_in_apk && can_unwind_with_cfi_table) {
-      if (invoker.target_type == "android_app_bundle_module") {
-        shared_library_for_unwind_asset = "monochrome_base"
-      } else {
-        shared_library_for_unwind_asset = "monochrome"
-      }
+      shared_library_for_unwind_asset = "monochrome"
     }
 
     version_name = chrome_version_name
@@ -1752,7 +1702,6 @@ template("chrome_test_apk_tmpl") {
     }
 
     deps = _chrome_public_shared_deps + invoker.deps + [
-             ":chrome_apk_pak_assets",
              ":chrome_public_base_module_java_for_test",
              "//third_party/android_support_test_runner:runner_java",
              "//third_party/android_tools:android_test_base_java",
