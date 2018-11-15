@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import com.google.android.gms.gcm.GcmListenerService;
 import com.google.ipc.invalidation.ticl.android2.channel.AndroidGcmController;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -23,6 +24,7 @@ import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.gcm_driver.GCMDriver;
 import org.chromium.components.gcm_driver.GCMMessage;
+import org.chromium.components.gcm_driver.LazySubscriptionsManager;
 
 /**
  * Receives Downstream messages and status of upstream messages from GCM.
@@ -87,13 +89,25 @@ public class ChromeGcmListenerService extends GcmListenerService {
     }
 
     /**
-     * Either schedules |message| to be dispatched through the Job Scheduler, which we use on
-     * Android N and beyond, or immediately dispatches the message on other versions of Android.
-     * Must be called on the UI thread both for the BackgroundTaskScheduler and for dispatching
-     * the |message| to the GCMDriver.
+     * If Chrome is backgrounded, messages coming from lazy subscriptions are
+     * persisted on disk and replayed next time Chrome is forgrounded. If Chrome is forgrounded or
+     * if the message isn't coming from a lazy subscription, this method either schedules |message|
+     * to be dispatched through the Job Scheduler, which we use on Android N and beyond, or
+     * immediately dispatches the message on other versions of Android. Must be called on the UI
+     * thread both for the BackgroundTaskScheduler and for dispatching the |message| to the
+     * GCMDriver.
      */
     static void scheduleOrDispatchMessageToDriver(GCMMessage message) {
         ThreadUtils.assertOnUiThread();
+        final String subscriptionId = LazySubscriptionsManager.buildSubscriptionUniqueId(
+                message.getAppId(), message.getSenderId());
+        if (!ApplicationStatus.hasVisibleActivities()
+                && LazySubscriptionsManager.isSubscriptionLazy(subscriptionId)) {
+            // TODO(https://crbug.com/882887): record a UMA metric for how long
+            // does it take to check if the subscription is lazy.
+            LazySubscriptionsManager.persistMessage(subscriptionId, message);
+            return;
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Bundle extras = message.toBundle();
