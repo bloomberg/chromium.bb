@@ -146,6 +146,83 @@ class CertDatabaseChangedObserver : public net::CertDatabase::Observer {
   DISALLOW_COPY_AND_ASSIGN(CertDatabaseChangedObserver);
 };
 
+// Allows setting user policy to assign trust to the CA certificate specified by
+// |kRootCert|.
+class UserPolicyCertsHelper {
+ public:
+  UserPolicyCertsHelper() {
+    base::FilePath server_cert_pem_file_path;
+    chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory, kGoodCert,
+                                          &server_cert_pem_file_path);
+    test_server_cert_ =
+        net::ImportCertFromFile(server_cert_pem_file_path.DirName(),
+                                server_cert_pem_file_path.BaseName().value());
+
+    base::FilePath root_cert_pem_file_path;
+    chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory, kRootCert,
+                                          &root_cert_pem_file_path);
+    test_root_cert_ =
+        net::ImportCertFromFile(root_cert_pem_file_path.DirName(),
+                                root_cert_pem_file_path.BaseName().value());
+  }
+
+  // Installs the BrowserPolicyConnector to set user policy.
+  void SetUpInProcessBrowserTestFixture() {
+    is_set_up_ = true;
+
+    // Set up the mock policy provider.
+    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+  }
+
+  // Sets the ONC-policy to the blob defined by |kRootCertOnc| and waits until
+  // the notification that policy-provided trust roots have changed is sent from
+  // |profile|'s UserNetworkConfigurationUpdater.
+  void SetRootCertONCUserPolicy(Profile* profile) {
+    ASSERT_TRUE(is_set_up_);
+    UserNetworkConfigurationUpdater* user_network_configuration_updater =
+        UserNetworkConfigurationUpdaterFactory::GetForBrowserContext(profile);
+
+    WebTrustedCertsChangedObserver trust_roots_changed_observer;
+    user_network_configuration_updater->AddPolicyProvidedCertsObserver(
+        &trust_roots_changed_observer);
+
+    const std::string& user_policy_blob =
+        chromeos::onc::test_utils::ReadTestData(kRootCertOnc);
+    policy::PolicyMap policy;
+    policy.Set(key::kOpenNetworkConfiguration, policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(user_policy_blob), nullptr);
+    provider_.UpdateChromePolicy(policy);
+    // Note that this relies on the implementation detail that the notification
+    // is sent even if the trust roots effectively remain the same.
+    trust_roots_changed_observer.Wait();
+    user_network_configuration_updater->RemovePolicyProvidedCertsObserver(
+        &trust_roots_changed_observer);
+  }
+
+  const scoped_refptr<net::X509Certificate>& test_server_cert() {
+    return test_server_cert_;
+  }
+
+  const scoped_refptr<net::X509Certificate>& test_root_cert() {
+    return test_root_cert_;
+  }
+
+ private:
+  // This is set to true when |SetUpInProcessBrowserTestFixture| has been
+  // called.
+  bool is_set_up_ = false;
+
+  MockConfigurationPolicyProvider provider_;
+
+  // Server Certificate which is signed by authority specified in |kRootCert|.
+  scoped_refptr<net::X509Certificate> test_server_cert_;
+  // Authority Certificate specified in |kRootCert|.
+  scoped_refptr<net::X509Certificate> test_root_cert_;
+};
+
 // Verifies |certificate| with |profile|'s CertVerifier and returns the result.
 int VerifyTestServerCert(
     Profile* profile,
@@ -236,10 +313,11 @@ bool IsCertInCertificateList(const net::X509Certificate* cert,
 
 }  // namespace
 
-// Base class for testing if policy-provided trust roots take effect.
-class PolicyProvidedTrustAnchorsTestBase : public DevicePolicyCrosBrowserTest {
+// Allows testing if user policy provided trust roots take effect, without
+// having device policy.
+class PolicyProvidedTrustAnchorsRegularUserTest : public InProcessBrowserTest {
  protected:
-  PolicyProvidedTrustAnchorsTestBase() {
+  PolicyProvidedTrustAnchorsRegularUserTest() {
     // Use the same testing slot as private and public slot for testing.
     test_nss_cert_db_ = std::make_unique<net::NSSCertDatabase>(
         crypto::ScopedPK11Slot(
@@ -248,82 +326,23 @@ class PolicyProvidedTrustAnchorsTestBase : public DevicePolicyCrosBrowserTest {
             PK11_ReferenceSlot(test_nssdb_.slot())) /* private slot */);
   }
 
-  // InProcessBrowserTest:
-  ~PolicyProvidedTrustAnchorsTestBase() override {}
-
   void SetUpInProcessBrowserTestFixture() override {
-    // Load the certificate which is only OK if the policy-provided authority is
-    // actually trusted.
-    base::FilePath server_cert_pem_file_path;
-    chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory, kGoodCert,
-                                          &server_cert_pem_file_path);
-    test_server_cert_ =
-        net::ImportCertFromFile(server_cert_pem_file_path.DirName(),
-                                server_cert_pem_file_path.BaseName().value());
-
-    base::FilePath root_cert_pem_file_path;
-    chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory, kRootCert,
-                                          &root_cert_pem_file_path);
-    test_root_cert_ =
-        net::ImportCertFromFile(root_cert_pem_file_path.DirName(),
-                                root_cert_pem_file_path.BaseName().value());
-
-    // Set up the mock policy provider.
-    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
-    BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-
-    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+    user_policy_certs_helper_.SetUpInProcessBrowserTestFixture();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
-  }
-
-  // Sets the ONC-policy to the blob defined by |kRootCertOnc| and waits until
-  // the notification that policy-provided trust roots have changed is sent from
-  // |profile|'s UserNetworkConfigurationUpdater.
-  void SetRootCertONCPolicy(Profile* profile) {
-    UserNetworkConfigurationUpdater* user_network_configuration_updater =
-        UserNetworkConfigurationUpdaterFactory::GetForBrowserContext(profile);
-    WebTrustedCertsChangedObserver trust_roots_changed_observer;
-    user_network_configuration_updater->AddPolicyProvidedCertsObserver(
-        &trust_roots_changed_observer);
-
-    const std::string& user_policy_blob =
-        chromeos::onc::test_utils::ReadTestData(kRootCertOnc);
-    policy::PolicyMap policy;
-    policy.Set(key::kOpenNetworkConfiguration, policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(user_policy_blob), nullptr);
-    provider_.UpdateChromePolicy(policy);
-    // Note that this relies on the implementation detail that the notification
-    // is sent even if the trust roots effectively remain the same.
-    trust_roots_changed_observer.Wait();
-    user_network_configuration_updater->RemovePolicyProvidedCertsObserver(
-        &trust_roots_changed_observer);
-  }
-
- private:
-  MockConfigurationPolicyProvider provider_;
-
- protected:
-  // Certificate which is signed by authority specified in |kRootCertOnc|.
-  scoped_refptr<net::X509Certificate> test_server_cert_;
-  scoped_refptr<net::X509Certificate> test_root_cert_;
+  UserPolicyCertsHelper user_policy_certs_helper_;
 
   crypto::ScopedTestNSSDB test_nssdb_;
   std::unique_ptr<net::NSSCertDatabase> test_nss_cert_db_;
 };
 
-class PolicyProvidedTrustAnchorsRegularUserTest
-    : public PolicyProvidedTrustAnchorsTestBase {};
-
 IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
                        AllowedForRegularUser) {
-  SetRootCertONCPolicy(browser()->profile());
+  user_policy_certs_helper_.SetRootCertONCUserPolicy(browser()->profile());
   EXPECT_EQ(net::OK,
-            VerifyTestServerCert(browser()->profile(), test_server_cert_));
+            VerifyTestServerCert(browser()->profile(),
+                                 user_policy_certs_helper_.test_server_cert()));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
@@ -335,25 +354,36 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
   ASSERT_TRUE(chromeos::NetworkCertLoader::IsInitialized());
   chromeos::NetworkCertLoader::Get()->SetUserNSSDB(test_nss_cert_db_.get());
 
-  EXPECT_FALSE(IsCertInCertificateList(
-      test_root_cert_.get(), chromeos::NetworkCertLoader::Get()->all_certs()));
-
+  EXPECT_FALSE(
+      IsCertInCertificateList(user_policy_certs_helper_.test_root_cert().get(),
+                              chromeos::NetworkCertLoader::Get()->all_certs()));
   NetworkCertLoaderTestObserver network_cert_loader_observer(
       chromeos::NetworkCertLoader::Get());
-  SetRootCertONCPolicy(browser()->profile());
+  user_policy_certs_helper_.SetRootCertONCUserPolicy(browser()->profile());
   network_cert_loader_observer.Wait();
 
   // Check that |NetworkCertLoader| is aware of the authority certificate.
   // (Web Trust does not matter for the NetworkCertLoader, but we currently only
   // set a policy with a certificate requesting Web Trust here).
-  EXPECT_TRUE(IsCertInCertificateList(
-      test_root_cert_.get(), chromeos::NetworkCertLoader::Get()->all_certs()));
+  EXPECT_TRUE(
+      IsCertInCertificateList(user_policy_certs_helper_.test_root_cert().get(),
+                              chromeos::NetworkCertLoader::Get()->all_certs()));
 }
 
 // Base class for testing policy-provided trust roots with device-local
 // accounts. Needs device policy.
 class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
-    : public PolicyProvidedTrustAnchorsTestBase {
+    : public DevicePolicyCrosBrowserTest {
+ public:
+  PolicyProvidedTrustAnchorsDeviceLocalAccountTest() {
+    // Use the same testing slot as private and public slot for testing.
+    test_nss_cert_db_ = std::make_unique<net::NSSCertDatabase>(
+        crypto::ScopedPK11Slot(
+            PK11_ReferenceSlot(test_nssdb_.slot())) /* public slot */,
+        crypto::ScopedPK11Slot(
+            PK11_ReferenceSlot(test_nssdb_.slot())) /* private slot */);
+  }
+
  protected:
   void SetUp() override {
     // Configure and start the test server.
@@ -366,13 +396,15 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
                                   PolicyBuilder::kFakeDeviceId);
     ASSERT_TRUE(policy_server_.Start());
 
-    PolicyProvidedTrustAnchorsTestBase::SetUp();
+    DevicePolicyCrosBrowserTest::SetUp();
   }
 
   virtual void SetupDevicePolicy() = 0;
 
   void SetUpInProcessBrowserTestFixture() override {
-    PolicyProvidedTrustAnchorsTestBase::SetUpInProcessBrowserTestFixture();
+    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
+
+    user_policy_certs_helper_.SetUpInProcessBrowserTestFixture();
 
     InstallOwnerKey();
     MarkAsEnterpriseOwned();
@@ -385,7 +417,7 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    PolicyProvidedTrustAnchorsTestBase::SetUpCommandLine(command_line);
+    DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
@@ -408,6 +440,11 @@ class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
       AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
           kDeviceLocalAccountId,
           DeviceLocalAccount::TYPE_PUBLIC_SESSION));
+
+  UserPolicyCertsHelper user_policy_certs_helper_;
+
+  crypto::ScopedTestNSSDB test_nssdb_;
+  std::unique_ptr<net::NSSCertDatabase> test_nss_cert_db_;
 };
 
 // Sets up device policy for public session and provides functions to sing into
@@ -463,9 +500,10 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsPublicSessionTest,
   Browser* browser = browser_list->get(0);
   ASSERT_TRUE(browser);
 
-  SetRootCertONCPolicy(browser->profile());
+  user_policy_certs_helper_.SetRootCertONCUserPolicy(browser->profile());
   EXPECT_EQ(net::OK,
-            VerifyTestServerCert(browser->profile(), test_server_cert_));
+            VerifyTestServerCert(browser->profile(),
+                                 user_policy_certs_helper_.test_server_cert()));
 }
 
 class PolicyProvidedTrustAnchorsOnUserSessionInitTest
@@ -611,5 +649,7 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedClientCertsTest, ClientCertsImported) {
   EXPECT_TRUE(
       IsCertInNSSDatabase(browser()->profile(), kClientCertSubjectCommonName));
 }
+
+// TODO(https://crbug.com/874937): Add a test case for a kiosk session.
 
 }  // namespace policy
