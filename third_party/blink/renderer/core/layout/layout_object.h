@@ -644,6 +644,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsBody() const {
     return GetNode() && GetNode()->HasTagName(html_names::kBodyTag);
   }
+
   bool IsHR() const;
 
   bool IsTablePart() const {

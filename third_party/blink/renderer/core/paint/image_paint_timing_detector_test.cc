@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/paint/paint_tracker.h"
@@ -12,6 +13,8 @@
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -23,7 +26,14 @@ class ImagePaintTimingDetectorTest : public PageTestBase,
   using CallbackQueue = std::queue<WebLayerTreeView::ReportTimeCallback>;
 
  public:
-  ImagePaintTimingDetectorTest() : ScopedPaintTrackingForTest(true){};
+  ImagePaintTimingDetectorTest()
+      : ScopedPaintTrackingForTest(true), base_url_("http://www.test.com/"){};
+
+  ~ImagePaintTimingDetectorTest() override {
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
+        ->UnregisterAllURLsAndClearMemoryCache();
+  }
 
   void SetUp() override {
     PageTestBase::SetUp();
@@ -47,6 +57,12 @@ class ImagePaintTimingDetectorTest : public PageTestBase,
     return GetPaintTracker()
         .GetImagePaintTimingDetector()
         .FindLastPaintCandidate();
+  }
+
+  unsigned CountRecords() {
+    return GetPaintTracker()
+        .GetImagePaintTimingDetector()
+        .id_record_map_.size();
   }
 
   TimeTicks LargestPaintStoredResult() {
@@ -92,6 +108,12 @@ class ImagePaintTimingDetectorTest : public PageTestBase,
     ToSVGImageElement(element)->SetImageForTest(content);
   }
 
+  void RegisterMockedHttpURLLoad(const std::string& file_name) {
+    url_test_helpers::RegisterMockedURLLoadFromBase(
+        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
+        WebString::FromUTF8(file_name));
+  }
+
  private:
   void FakeNotifySwapTime(WebLayerTreeView::ReportTimeCallback callback) {
     callback_queue_.push(std::move(callback));
@@ -109,6 +131,7 @@ class ImagePaintTimingDetectorTest : public PageTestBase,
   }
 
   CallbackQueue callback_queue_;
+  std::string base_url_;
 };
 
 TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_NoImage) {
@@ -527,6 +550,69 @@ TEST_F(ImagePaintTimingDetectorTest, SVGImage) {
   EXPECT_TRUE(record);
   EXPECT_GT(record->first_size, 0);
   EXPECT_TRUE(record->loaded);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, BackgroundImage) {
+  RegisterMockedHttpURLLoad("white-1x1.png");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        background-image: url('white-1x1.png');
+      }
+    </style>
+    <div>
+      place-holder
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  ImageRecord* record = FindLastPaintCandidate();
+  EXPECT_TRUE(record);
+  EXPECT_EQ(CountRecords(), 1u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreBody) {
+  RegisterMockedHttpURLLoad("white-1x1.png");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        background-image: url('white-1x1.png');
+      }
+    </style>
+    <body>
+    </body>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(CountRecords(), 0u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreHtml) {
+  RegisterMockedHttpURLLoad("white-1x1.png");
+  SetBodyInnerHTML(R"HTML(
+    <html>
+    <style>
+      html {
+        background-image: url('white-1x1.png');
+      }
+    </style>
+    </html>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(CountRecords(), 0u);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreGradient) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div {
+        background-image: linear-gradient(blue, yellow);
+      }
+    </style>
+    <div>
+      place-holder
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(CountRecords(), 0u);
 }
 
 }  // namespace blink
