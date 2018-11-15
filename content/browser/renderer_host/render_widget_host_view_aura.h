@@ -414,6 +414,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            HitTestRegionListSubmitted);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DiscardDelegatedFramesWithMemoryPressure);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraInputMethodTest,
+                           OnCaretBoundsChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,
                            KeyboardObserverDestroyed);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraKeyboardTest,

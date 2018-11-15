@@ -6601,6 +6601,68 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusReasonMultipleEventsOnSameNode) {
             parent_view_->GetFocusReason());
 }
 
+class RenderWidgetHostViewAuraInputMethodTest
+    : public RenderWidgetHostViewAuraTest,
+      public ui::InputMethodObserver {
+ public:
+  RenderWidgetHostViewAuraInputMethodTest() = default;
+  ~RenderWidgetHostViewAuraInputMethodTest() override{};
+  void SetUp() override {
+    input_method_ = new ui::MockInputMethod(nullptr);
+    // transfers ownership.
+    ui::SetUpInputMethodForTesting(input_method_);
+    SetUpEnvironment();
+    text_input_client_ = nullptr;
+  }
+
+  // Override from ui::InputMethodObserver.
+  void OnFocus() override {}
+  void OnBlur() override {}
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override {
+    text_input_client_ = client;
+  }
+  void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
+  void OnShowVirtualKeyboardIfEnabled() override {}
+
+ protected:
+  // Not owned.
+  ui::MockInputMethod* input_method_ = nullptr;
+  const ui::TextInputClient* text_input_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraInputMethodTest);
+};
+
+// This test is for notifying InputMethod for surrounding text changes.
+TEST_F(RenderWidgetHostViewAuraInputMethodTest, OnCaretBoundsChanged) {
+  ui::InputMethod* input_method = parent_view_->GetInputMethod();
+  if (input_method != input_method_) {
+    // Some platform doesn't support mocking input method. e.g. InputMethodMus.
+    // In that case, ignore this test.
+    // TODO(shuchen): support mocking InputMethodMus, http://crbug.com/905518.
+    return;
+  }
+  ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
+  input_method->SetFocusedTextInputClient(parent_view_);
+  input_method->AddObserver(this);
+
+  parent_view_->SelectionChanged(base::string16(), 0, gfx::Range());
+  EXPECT_EQ(parent_view_, text_input_client_);
+
+  text_input_client_ = nullptr;
+
+  WidgetHostMsg_SelectionBounds_Params params;
+  params.is_anchor_first = true;
+  params.anchor_dir = blink::kWebTextDirectionLeftToRight;
+  params.focus_dir = blink::kWebTextDirectionLeftToRight;
+  params.anchor_rect = gfx::Rect(0, 0, 10, 10);
+  params.focus_rect = gfx::Rect(10, 10, 10, 10);
+  parent_view_->SelectionBoundsChanged(params);
+  EXPECT_EQ(parent_view_, text_input_client_);
+
+  input_method->RemoveObserver(this);
+}
+
 #if defined(OS_WIN)
 class MockInputMethodKeyboardController final
     : public ui::InputMethodKeyboardController {

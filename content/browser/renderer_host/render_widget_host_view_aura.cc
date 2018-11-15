@@ -2487,6 +2487,15 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
   if (!focused_view)
     return;
 
+  // IMF relies on the |OnCaretBoundsChanged| for the surrounding text changed
+  // events to IME. Explicitly call |OnCaretBoundsChanged| here so that IMF can
+  // know about the surrounding text changes when the caret bounds are not
+  // changed. e.g. When the rendered text is wider than the input field,
+  // deleting the last character won't change the caret bounds but will change
+  // the surrounding text.
+  if (GetInputMethod())
+    GetInputMethod()->OnCaretBoundsChanged(this);
+
 #if defined(USE_X11)
   const TextInputManager::TextSelection* selection =
       GetTextInputManager()->GetTextSelection(focused_view);
