@@ -377,13 +377,10 @@ void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
   client_->DidReceiveCompositorFrameAck(resources);
 }
 
-void DelegatedFrameHostAndroid::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    const gfx::PresentationFeedback& feedback) {
-  client_->DidPresentCompositorFrame(presentation_token, feedback);
-}
-
-void DelegatedFrameHostAndroid::OnBeginFrame(const viz::BeginFrameArgs& args) {
+void DelegatedFrameHostAndroid::OnBeginFrame(
+    const viz::BeginFrameArgs& args,
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+  client_->DidPresentCompositorFrames(feedbacks);
   if (enable_viz_) {
     NOTREACHED();
     return;

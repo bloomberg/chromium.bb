@@ -422,7 +422,7 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
 
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
-  submitter_->OnBeginFrame(args);
+  submitter_->OnBeginFrame(args, {});
   scoped_task_environment_.RunUntilIdle();
 
   {
@@ -447,7 +447,7 @@ TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 
-  submitter_->OnBeginFrame(args);
+  submitter_->OnBeginFrame(args, {});
   scoped_task_environment_.RunUntilIdle();
 }
 
@@ -534,7 +534,7 @@ TEST_F(VideoFrameSubmitterTest, IsOpaquePassedToResourceProvider) {
 
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
-  submitter_->OnBeginFrame(args);
+  submitter_->OnBeginFrame(args, {});
   scoped_task_environment_.RunUntilIdle();
 
   {
@@ -576,7 +576,7 @@ TEST_F(VideoFrameSubmitterTest, IsOpaquePassedToResourceProvider) {
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 
-  submitter_->OnBeginFrame(args);
+  submitter_->OnBeginFrame(args, {});
   scoped_task_environment_.RunUntilIdle();
 
   // Updating |is_opaque_| with the same value should not cause a frame submit.
@@ -603,7 +603,7 @@ TEST_F(VideoFrameSubmitterTest, OnBeginFrameSubmitsFrame) {
 
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
-  submitter_->OnBeginFrame(args);
+  submitter_->OnBeginFrame(args, {});
   scoped_task_environment_.RunUntilIdle();
 }
 
@@ -613,7 +613,7 @@ TEST_F(VideoFrameSubmitterTest, MissedFrameArgDoesNotProduceFrame) {
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
   args.type = viz::BeginFrameArgs::MISSED;
-  submitter_->OnBeginFrame(args);
+  submitter_->OnBeginFrame(args, {});
   scoped_task_environment_.RunUntilIdle();
 }
 
@@ -624,7 +624,7 @@ TEST_F(VideoFrameSubmitterTest, MissingProviderDoesNotProduceFrame) {
 
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
-  submitter_->OnBeginFrame(args);
+  submitter_->OnBeginFrame(args, {});
   scoped_task_environment_.RunUntilIdle();
 }
 
@@ -638,7 +638,7 @@ TEST_F(VideoFrameSubmitterTest, NoUpdateOnFrameDoesNotProduceFrame) {
 
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
-  submitter_->OnBeginFrame(args);
+  submitter_->OnBeginFrame(args, {});
   scoped_task_environment_.RunUntilIdle();
 }
 
@@ -651,7 +651,7 @@ TEST_F(VideoFrameSubmitterTest, NotRenderingDoesNotProduceFrame) {
 
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
-  submitter_->OnBeginFrame(args);
+  submitter_->OnBeginFrame(args, {});
   scoped_task_environment_.RunUntilIdle();
 }
 
@@ -688,7 +688,7 @@ TEST_F(VideoFrameSubmitterTest, WaitingForAckPreventsNewFrame) {
 
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
-  submitter_->OnBeginFrame(args);
+  submitter_->OnBeginFrame(args, {});
   scoped_task_environment_.RunUntilIdle();
 
   // DidNotProduceFrame should be called because no frame will be submitted
@@ -703,7 +703,7 @@ TEST_F(VideoFrameSubmitterTest, WaitingForAckPreventsNewFrame) {
       std::make_unique<base::SimpleTestTickClock>();
   args = begin_frame_source_->CreateBeginFrameArgs(BEGINFRAME_FROM_HERE,
                                                    new_time.get());
-  submitter_->OnBeginFrame(args);
+  submitter_->OnBeginFrame(args, {});
   scoped_task_environment_.RunUntilIdle();
 }
 

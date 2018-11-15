@@ -520,12 +520,9 @@ void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
   ReclaimResources(resources);
 }
 
-void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    const gfx::PresentationFeedback& feedback) {}
-
 void SynchronousLayerTreeFrameSink::OnBeginFrame(
-    const viz::BeginFrameArgs& args) {}
+    const viz::BeginFrameArgs& args,
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {}
 
 void SynchronousLayerTreeFrameSink::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {

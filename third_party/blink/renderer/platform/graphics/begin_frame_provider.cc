@@ -92,7 +92,9 @@ void BeginFrameProvider::RequestBeginFrame() {
   compositor_frame_sink_->SetNeedsBeginFrame(true);
 }
 
-void BeginFrameProvider::OnBeginFrame(const viz::BeginFrameArgs& args) {
+void BeginFrameProvider::OnBeginFrame(
+    const viz::BeginFrameArgs& args,
+    WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>) {
   // If there was no need for a BeginFrame, just skip it.
   if (needs_begin_frame_ && requested_needs_begin_frame_) {
     requested_needs_begin_frame_ = false;

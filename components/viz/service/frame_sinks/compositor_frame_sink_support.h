@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -78,6 +79,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool is_root() const { return is_root_; }
 
   FrameSinkManagerImpl* frame_sink_manager() { return frame_sink_manager_; }
+
+  const base::flat_map<uint32_t, gfx::PresentationFeedback>&
+  presentation_feedbacks() {
+    return presentation_feedbacks_;
+  }
 
   // Viz hit-test setup is only called when |is_root_| is true (except on
   // android webview).
@@ -296,6 +302,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
 
+  base::flat_map<uint32_t, gfx::PresentationFeedback> presentation_feedbacks_;
   uint32_t last_evicted_parent_sequence_number_ = 0;
 
   base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;

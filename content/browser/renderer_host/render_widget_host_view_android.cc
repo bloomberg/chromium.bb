@@ -942,12 +942,12 @@ void RenderWidgetHostViewAndroid::DidReceiveCompositorFrameAck(
   renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
 }
 
-void RenderWidgetHostViewAndroid::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    const gfx::PresentationFeedback& feedback) {
+void RenderWidgetHostViewAndroid::DidPresentCompositorFrames(
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
   DCHECK(using_browser_compositor_);
-  renderer_compositor_frame_sink_->DidPresentCompositorFrame(presentation_token,
-                                                             feedback);
+  presentation_feedbacks_ = feedbacks;
+  if (!presentation_feedbacks_.empty())
+    AddBeginFrameRequest(BEGIN_FRAME);
 }
 
 void RenderWidgetHostViewAndroid::ReclaimResources(
@@ -1526,7 +1526,9 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(viz::BeginFrameArgs args) {
   if (sync_compositor_) {
     sync_compositor_->BeginFrame(view_.GetWindowAndroid(), args);
   } else if (renderer_compositor_frame_sink_) {
-    renderer_compositor_frame_sink_->OnBeginFrame(args);
+    renderer_compositor_frame_sink_->OnBeginFrame(args,
+                                                  presentation_feedbacks_);
+    presentation_feedbacks_.clear();
   }
 }
 
