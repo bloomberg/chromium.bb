@@ -891,6 +891,18 @@ void PasswordManager::CreateFormManagers(
 void PasswordManager::ProcessSubmittedForm(
     const FormData& submitted_form,
     const PasswordManagerDriver* driver) {
+  if (!client_->IsSavingAndFillingEnabledForCurrentPage()) {
+    std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
+    if (password_manager_util::IsLoggingActive(client_)) {
+      logger.reset(
+          new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    }
+    RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::SAVING_DISABLED, submitted_form.origin,
+        logger.get());
+    return;
+  }
+
   NewPasswordFormManager* matching_form_manager = nullptr;
   for (const auto& manager : form_managers_) {
     if (manager->SetSubmittedFormIfIsManaged(submitted_form, driver)) {
