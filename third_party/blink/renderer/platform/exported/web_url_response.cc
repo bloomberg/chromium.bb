@@ -261,6 +261,10 @@ void WebURLResponse::SetIsLegacySymantecCert(bool value) {
   resource_response_->SetIsLegacySymantecCert(value);
 }
 
+void WebURLResponse::SetIsLegacyTLSVersion(bool value) {
+  resource_response_->SetIsLegacyTLSVersion(value);
+}
+
 void WebURLResponse::SetSecurityStyle(WebSecurityStyle security_style) {
   resource_response_->SetSecurityStyle(
       static_cast<ResourceResponse::SecurityStyle>(security_style));

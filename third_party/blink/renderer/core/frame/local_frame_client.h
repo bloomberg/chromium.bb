@@ -210,6 +210,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // certificate.
   virtual void ReportLegacySymantecCert(const KURL&, bool did_fail) {}
 
+  // The frame loaded a resource with a legacy TLS version that will be removed
+  // in the future. Prints a console message to warn about this.
+  virtual void ReportLegacyTLSVersion(const KURL&) {}
+
   // Will be called when |PerformanceTiming| events are updated
   virtual void DidChangePerformanceTiming() {}
 

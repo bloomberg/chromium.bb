@@ -151,4 +151,14 @@ bool LayoutTestContentRendererClient::IsIdleMediaSuspendEnabled() {
   return false;
 }
 
+bool LayoutTestContentRendererClient::SuppressLegacyTLSVersionConsoleMessage() {
+#if defined(OS_WIN)
+  // Blink uses an outdated test server on Windows. Until that's fixed (see
+  // https://crbug.com/747666), suppress the warning.
+  return true;
+#else
+  return false;
+#endif
+}
+
 }  // namespace content

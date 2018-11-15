@@ -192,6 +192,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // True if the response was intercepted by a plugin.
   bool intercepted_by_plugin = false;
 
+  // True if the response was sent over TLS 1.0 or 1.1, which are deprecated and
+  // will be removed in the future.
+  bool is_legacy_tls_version = false;
+
   // NOTE: When adding or changing fields here, also update
   // ResourceResponse::DeepCopy in resource_response.cc.
 };
