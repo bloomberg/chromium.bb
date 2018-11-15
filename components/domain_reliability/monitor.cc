@@ -78,7 +78,7 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
     const std::string& upload_reporter_string,
     const DomainReliabilityContext::UploadAllowedCallback&
         upload_allowed_callback,
-    const scoped_refptr<base::SingleThreadTaskRunner>& pref_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& network_thread)
     : time_(new ActualTime()),
       upload_reporter_string_(upload_reporter_string),
@@ -87,19 +87,19 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
           DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
       dispatcher_(time_.get()),
       context_manager_(this),
-      pref_task_runner_(pref_thread),
+      main_task_runner_(main_thread),
       network_task_runner_(network_thread),
       moved_to_network_thread_(false),
       discard_uploads_set_(false),
       weak_factory_(this) {
-  DCHECK(OnPrefThread());
+  DCHECK(OnMainThread());
 }
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
     const std::string& upload_reporter_string,
     const DomainReliabilityContext::UploadAllowedCallback&
         upload_allowed_callback,
-    const scoped_refptr<base::SingleThreadTaskRunner>& pref_thread,
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& network_thread,
     std::unique_ptr<MockableTime> time)
     : time_(std::move(time)),
@@ -109,12 +109,12 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
           DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
       dispatcher_(time_.get()),
       context_manager_(this),
-      pref_task_runner_(pref_thread),
+      main_task_runner_(main_thread),
       network_task_runner_(network_thread),
       moved_to_network_thread_(false),
       discard_uploads_set_(false),
       weak_factory_(this) {
-  DCHECK(OnPrefThread());
+  DCHECK(OnMainThread());
 }
 
 DomainReliabilityMonitor::~DomainReliabilityMonitor() {
@@ -122,12 +122,12 @@ DomainReliabilityMonitor::~DomainReliabilityMonitor() {
     net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
     DCHECK(OnNetworkThread());
   } else {
-    DCHECK(OnPrefThread());
+    DCHECK(OnMainThread());
   }
 }
 
-void DomainReliabilityMonitor::MoveToNetworkThread() {
-  DCHECK(OnPrefThread());
+void DomainReliabilityMonitor::InitializeOnNetworkThread() {
+  DCHECK(OnMainThread());
   DCHECK(!moved_to_network_thread_);
 
   network_task_runner_->PostTask(
