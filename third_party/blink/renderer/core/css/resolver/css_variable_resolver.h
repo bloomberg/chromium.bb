@@ -134,9 +134,26 @@ class CORE_EXPORT CSSVariableResolver {
 
   // Resolves a range which may contain var() or env() references.
   bool ResolveTokenRange(CSSParserTokenRange, const Options&, Result&);
+
+  // Return value for ResolveFallback.
+  enum class Fallback {
+    // Fallback not present.
+    kNone,
+    // Fallback present, but resolution failed (i.e. invalid variables
+    // referenced), or the result did not match the syntax registered for
+    // the referenced variable (if applicable).
+    kFail,
+    // Fallback present, resolution succeeded, and syntax matched (if
+    // applicable).
+    kSuccess
+  };
+
   // Resolves the fallback (if present) of a var() or env() reference, starting
   // from the comma.
-  bool ResolveFallback(CSSParserTokenRange, const Options&, Result&);
+  Fallback ResolveFallback(CSSParserTokenRange,
+                           const Options&,
+                           const PropertyRegistration*,
+                           Result&);
   // Resolves the contents of a var() or env() reference.
   bool ResolveVariableReference(CSSParserTokenRange,
                                 const Options&,
