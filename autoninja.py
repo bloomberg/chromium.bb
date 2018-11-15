@@ -32,10 +32,13 @@ input_args = sys.argv
 if (sys.platform.startswith('win') and len(sys.argv) == 2 and
     input_args[1].count(' ') > 0):
   input_args = sys.argv[:1] + sys.argv[1].split()
+
+# Ninja uses getopt_long, which allow to intermix non-option arguments.
+# To leave non supported parameters untouched, we do not use getopt.
 for index, arg in enumerate(input_args[1:]):
-  if arg == '-j':
+  if arg.startswith('-j'):
     j_specified = True
-  if arg == '-t':
+  if arg.startswith('-t'):
     t_specified = True
   if arg == '-C':
     # + 1 to get the next argument and +1 because we trimmed off input_args[0]
