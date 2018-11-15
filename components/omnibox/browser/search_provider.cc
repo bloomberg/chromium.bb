@@ -343,7 +343,7 @@ const AutocompleteInput SearchProvider::GetInput(bool is_keyword) const {
 
 bool SearchProvider::ShouldAppendExtraParams(
     const SearchSuggestionParser::SuggestResult& result) const {
-  return !result.from_keyword_provider() ||
+  return !result.from_keyword() ||
       providers_.default_provider().empty();
 }
 
@@ -1013,7 +1013,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     SearchSuggestionParser::SuggestResult verbatim(
         /*suggestion=*/trimmed_verbatim,
         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-        /*subtype_identifier=*/0, /*from_keyword_provider=*/false,
+        /*subtype_identifier=*/0, /*from_keyword=*/false,
         verbatim_relevance, relevance_from_server,
         /*input_text=*/trimmed_verbatim);
     if (has_answer)
@@ -1039,7 +1039,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         SearchSuggestionParser::SuggestResult verbatim(
             /*suggestion=*/trimmed_verbatim,
             AutocompleteMatchType::SEARCH_OTHER_ENGINE,
-            /*subtype_identifier=*/0, /*from_keyword_provider=*/true,
+            /*subtype_identifier=*/0, /*from_keyword=*/true,
             keyword_verbatim_relevance, keyword_relevance_from_server,
             /*input_text=*/trimmed_verbatim);
         AddMatchToMap(verbatim, std::string(),
@@ -1451,7 +1451,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
     const SearchSuggestionParser::NavigationResult& navigation) {
   base::string16 input;
   const bool trimmed_whitespace = base::TrimWhitespace(
-      navigation.from_keyword_provider() ?
+      navigation.from_keyword() ?
           keyword_input_.text() : input_.text(),
       base::TRIM_TRAILING, &input) != base::TRIM_NONE;
   AutocompleteMatch match(this, navigation.relevance(), false,
@@ -1514,6 +1514,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
       kRelevanceFromServerKey,
       navigation.relevance_from_server() ? kTrue : kFalse);
   match.RecordAdditionalInfo(kShouldPrefetchKey, kFalse);
+
+  match.from_keyword = navigation.from_keyword();
 
   return match;
 }

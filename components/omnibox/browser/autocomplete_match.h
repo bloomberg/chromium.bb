@@ -494,6 +494,9 @@ struct AutocompleteMatch {
   // it!
   base::string16 keyword;
 
+  // Set in matches originating from keyword results.
+  bool from_keyword;
+
   // Set to a matching pedal if appropriate.  The pedal is not owned, and the
   // owning OmniboxPedalProvider must outlive this.
   OmniboxPedal* pedal = nullptr;

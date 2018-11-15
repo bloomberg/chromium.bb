@@ -169,10 +169,14 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
     if (i->subtype_identifier > 0)
       suggestion->set_result_subtype_identifier(i->subtype_identifier);
     suggestion->set_has_tab_match(i->has_tab_match);
+    suggestion->set_is_keyword_suggestion(i->from_keyword);
   }
   for (auto i(log.providers_info.begin()); i != log.providers_info.end(); ++i) {
     OmniboxEventProto::ProviderInfo* provider_info =
         omnibox_event->add_provider_info();
     provider_info->CopyFrom(*i);
   }
+  omnibox_event->set_in_keyword_mode(log.in_keyword_mode);
+  if (log.in_keyword_mode)
+    omnibox_event->set_keyword_mode_entry_method(log.keyword_mode_entry_method);
 }
