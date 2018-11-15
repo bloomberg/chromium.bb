@@ -4,5 +4,9 @@
 
 include_rules = [
   "+net",
+  "+components/keyed_service/core",
+  "+content/public/browser",
+  "+content/public/test",
+  "+third_party/blink/public",
 ]
 

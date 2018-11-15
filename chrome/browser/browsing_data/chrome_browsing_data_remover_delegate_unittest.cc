@@ -496,9 +496,8 @@ class MockDomainReliabilityService : public DomainReliabilityService {
 
   std::unique_ptr<DomainReliabilityMonitor> CreateMonitor(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      const domain_reliability::DomainReliabilityContext::UploadAllowedCallback&
-          upload_allowed_callback) override {
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
+      override {
     NOTREACHED();
     return std::unique_ptr<DomainReliabilityMonitor>();
   }
@@ -546,21 +545,6 @@ class MockDomainReliabilityService : public DomainReliabilityService {
   base::Callback<bool(const GURL&)> last_filter_;
 };
 
-class DomainReliablityKeyedServiceWrapper : public KeyedService {
- public:
-  explicit DomainReliablityKeyedServiceWrapper(
-      std::unique_ptr<DomainReliabilityService> service)
-      : service_(std::move(service)) {}
-  ~DomainReliablityKeyedServiceWrapper() override = default;
-
-  DomainReliabilityService* service() { return service_.get(); }
-
- private:
-  std::unique_ptr<DomainReliabilityService> service_;
-
-  DISALLOW_COPY_AND_ASSIGN(DomainReliablityKeyedServiceWrapper);
-};
-
 struct TestingDomainReliabilityServiceFactoryUserData
     : public base::SupportsUserData::Data {
   TestingDomainReliabilityServiceFactoryUserData(
@@ -594,8 +578,7 @@ std::unique_ptr<KeyedService> TestingDomainReliabilityServiceFactoryFunction(
   EXPECT_FALSE(data->attached);
 
   data->attached = true;
-  return std::make_unique<DomainReliablityKeyedServiceWrapper>(
-      base::WrapUnique(data->service));
+  return base::WrapUnique(data->service);
 }
 
 std::unique_ptr<KeyedService> BuildProtocolHandlerRegistry(

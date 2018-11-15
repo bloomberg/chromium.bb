@@ -16,12 +16,17 @@
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/context.h"
 #include "components/domain_reliability/domain_reliability_export.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
 
 namespace base {
 class Value;
 }  // namespace base
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace net {
 class URLRequestContextGetter;
@@ -31,30 +36,29 @@ namespace domain_reliability {
 
 class DomainReliabilityMonitor;
 
-// DomainReliabilityService manages a Monitor that (could) live on another
-// thread (as provided by the URLRequestContextGetter's task runner) and
-// proxies (selected) method calls to it. Destruction of the Monitor (on that
-// thread) is the responsibility of the caller.
-class DOMAIN_RELIABILITY_EXPORT DomainReliabilityService {
+// DomainReliabilityService is a KeyedService that manages a Monitor that lives
+// on another thread (as provided by the URLRequestContextGetter's task runner)
+// and proxies (selected) method calls to it. Destruction of the Monitor (on
+// that thread) is the responsibility of the caller.
+class DOMAIN_RELIABILITY_EXPORT DomainReliabilityService
+    : public KeyedService {
  public:
   // Creates a DomainReliabilityService that will contain a Monitor with the
   // given upload reporter string.
   static DomainReliabilityService* Create(
-      const std::string& upload_reporter_string);
+      const std::string& upload_reporter_string,
+      content::BrowserContext* browser_context);
 
-  virtual ~DomainReliabilityService();
+  ~DomainReliabilityService() override;
 
   // Initializes the Service: given the task runner on which Monitor methods
   // should be called, creates the Monitor and returns it. Can be called at
   // most once, and must be called before any of the below methods can be
   // called. The caller is responsible for destroying the Monitor on the given
-  // task runner when it is no longer needed. |upload_allowed_callback| is
-  // called on the network thread before every upload to check if it's allowed.
+  // task runner when it is no longer needed.
   virtual std::unique_ptr<DomainReliabilityMonitor> CreateMonitor(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      const DomainReliabilityContext::UploadAllowedCallback&
-          upload_allowed_callback) = 0;
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner) = 0;
 
   // Clears browsing data on the associated Monitor. |Init()| must have been
   // called first.
