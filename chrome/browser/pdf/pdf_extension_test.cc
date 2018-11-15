@@ -30,6 +30,7 @@
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/browser/plugins/plugin_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -61,6 +62,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -430,6 +432,12 @@ class PDFPluginDisabledTest : public PDFExtensionTest {
   PDFPluginDisabledTest() {}
 
  protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PDFExtensionTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitch(switches::kEnablePluginPlaceholderTesting);
+  }
+
   void SetUpOnMainThread() override {
     PDFExtensionTest::SetUpOnMainThread();
 
@@ -487,6 +495,29 @@ IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, DirectNavigationToPDF) {
   ui_test_utils::NavigateToURL(browser(), pdf_url);
 
   // Validate that we downloaded a single PDF and didn't launch the PDF plugin.
+  EXPECT_EQ(pdf_url, AwaitAndGetLastDownloadedUrl());
+  EXPECT_EQ(1u, GetNumberOfDownloads());
+  EXPECT_EQ(0, CountPDFProcesses());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, EmbedPdfPlaceholderWithCSP) {
+  // Navigate to a page with CSP that uses <embed> to embed a PDF as a plugin.
+  GURL embed_page_url =
+      embedded_test_server()->GetURL("/pdf/pdf_embed_csp.html");
+  ui_test_utils::NavigateToURL(browser(), embed_page_url);
+  PluginTestUtils::WaitForPlaceholderReady(GetActiveWebContents(), "pdf_embed");
+
+  // Fake a click on the <embed>, then press Enter to trigger the download.
+  gfx::Point point_in_pdf(100, 100);
+  content::SimulateRoutedMouseClickAt(
+      GetActiveWebContents(), kDefaultKeyModifier,
+      blink::WebMouseEvent::Button::kLeft, point_in_pdf);
+  content::SimulateKeyPress(GetActiveWebContents(), ui::DomKey::ENTER,
+                            ui::DomCode::ENTER, ui::VKEY_RETURN, false, false,
+                            false, false);
+
+  // Validate that we downloaded a single PDF and didn't launch the PDF plugin.
+  GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   EXPECT_EQ(pdf_url, AwaitAndGetLastDownloadedUrl());
   EXPECT_EQ(1u, GetNumberOfDownloads());
   EXPECT_EQ(0, CountPDFProcesses());
