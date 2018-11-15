@@ -17,6 +17,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import java.util.Set;
 @RetryOnFailure
 public class InvalidationPreferencesTest {
     @Test
+    @FlakyTest(message = "https://crbug.com/905233")
     @SmallTest
     @Feature({"Sync"})
     public void testReadMissingData() {
@@ -45,6 +47,7 @@ public class InvalidationPreferencesTest {
     }
 
     @Test
+    @FlakyTest(message = "https://crbug.com/905233")
     @SmallTest
     @Feature({"Sync"})
     public void testReadWriteAndReadData() {
