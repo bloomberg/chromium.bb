@@ -102,30 +102,25 @@ void NnPredictTest::runNnPredictTest(const NN_CONFIG *const shape) {
 
   for (int iter = 0; iter < 10000 && !HasFatalFailure(); ++iter) {
     for (int node = 0; node < shape->num_inputs; node++) {
-      inputs[node] = (int32_t)rng_.Rand31() - (1 << 30);
-      inputs[node] /= (1 << 31);
+      inputs[node] = ((float)rng_.Rand31() - (1 << 30)) / (1 << 31);
     }
     for (int layer = 0; layer < shape->num_hidden_layers; layer++) {
       for (int node = 0; node < NN_MAX_NODES_PER_LAYER; node++) {
-        bias[layer][node] = (int32_t)rng_.Rand31() - (1 << 30);
-        bias[layer][node] /= (1 << 31);
+        bias[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1 << 31);
       }
       for (int node = 0; node < NN_MAX_NODES_PER_LAYER * NN_MAX_NODES_PER_LAYER;
            node++) {
-        weights[layer][node] = (int32_t)rng_.Rand31() - (1 << 30);
-        weights[layer][node] /= (1 << 31);
+        weights[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1 << 31);
       }
     }
     // Now the outputs:
     int layer = shape->num_hidden_layers;
     for (int node = 0; node < NN_MAX_NODES_PER_LAYER; node++) {
-      bias[layer][node] = (int32_t)rng_.Rand31() - (1 << 30);
-      bias[layer][node] /= (1 << 31);
+      bias[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1 << 31);
     }
     for (int node = 0; node < NN_MAX_NODES_PER_LAYER * NN_MAX_NODES_PER_LAYER;
          node++) {
-      weights[layer][node] = (int32_t)rng_.Rand31() - (1 << 30);
-      weights[layer][node] /= (1 << 31);
+      weights[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1 << 31);
     }
 
     av1_nn_predict_c(inputs, &nn_config, outputs_ref);
@@ -192,90 +187,13 @@ void NnPredictTest::runNnPredictSpeedTest(const NN_CONFIG *const shape,
 // runs of the encoder.  It also conveniently covers all the kernels
 // implemented.
 static const NN_CONFIG shapes[] = {
-  { .num_inputs = 10,
-    .num_outputs = 16,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 64 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 12,
-    .num_outputs = 1,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 12 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 12,
-    .num_outputs = 1,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 24 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 12,
-    .num_outputs = 1,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 32 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 18,
-    .num_outputs = 4,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 24 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 18,
-    .num_outputs = 4,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 32 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 4,
-    .num_outputs = 1,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 16 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 8,
-    .num_outputs = 1,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 16 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 8,
-    .num_outputs = 4,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 16 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 8,
-    .num_outputs = 1,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 24 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 8,
-    .num_outputs = 1,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 32 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 8,
-    .num_outputs = 1,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 64 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 9,
-    .num_outputs = 3,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 32 },
-    .weights = { 0 },
-    .bias = { 0 } },
-  { .num_inputs = 4,
-    .num_outputs = 4,
-    .num_hidden_layers = 1,
-    .num_hidden_nodes = { 8 },
-    .weights = { 0 },
-    .bias = { 0 } },
+  { 10, 16, 1, { 64 }, { 0 }, { 0 } }, { 12, 1, 1, { 12 }, { 0 }, { 0 } },
+  { 12, 1, 1, { 24 }, { 0 }, { 0 } },  { 12, 1, 1, { 32 }, { 0 }, { 0 } },
+  { 18, 4, 1, { 24 }, { 0 }, { 0 } },  { 18, 4, 1, { 32 }, { 0 }, { 0 } },
+  { 4, 1, 1, { 16 }, { 0 }, { 0 } },   { 8, 1, 1, { 16 }, { 0 }, { 0 } },
+  { 8, 4, 1, { 16 }, { 0 }, { 0 } },   { 8, 1, 1, { 24 }, { 0 }, { 0 } },
+  { 8, 1, 1, { 32 }, { 0 }, { 0 } },   { 8, 1, 1, { 64 }, { 0 }, { 0 } },
+  { 9, 3, 1, { 32 }, { 0 }, { 0 } },   { 4, 4, 1, { 8 }, { 0 }, { 0 } },
 };
 
 void NnPredictTest::runNnPredictTest_all(const NN_CONFIG *const shapes,
