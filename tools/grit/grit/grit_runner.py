@@ -155,7 +155,7 @@ class Options(object):
 
   def ReadOptions(self, args):
     """Reads options from the start of args and returns the remainder."""
-    (opts, args) = getopt.getopt(args, 'vxi:p:h:')
+    (opts, args) = getopt.getopt(args, 'vxi:p:h:', ('help',))
     for (key, val) in opts:
       if key == '-h': self.hash = val
       elif key == '-i': self.input = val
@@ -168,6 +168,9 @@ class Options(object):
         self.extra_verbose = True
         util.extra_verbose = True
       elif key == '-p': self.profile_dest = val
+      elif key == '--help':
+        PrintUsage()
+        sys.exit(0)
 
     if not self.input:
       if 'GRIT_INPUT' in os.environ:
