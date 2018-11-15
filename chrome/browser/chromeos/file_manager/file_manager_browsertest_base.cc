@@ -514,10 +514,12 @@ class LocalTestVolume : public TestVolume {
   // Adds this local volume. Returns true on success.
   virtual bool Mount(Profile* profile) = 0;
 
-  void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) {
-    const base::FilePath target_path =
-        root_path().AppendASCII(entry.target_path);
+  virtual void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) {
+    CreateEntryImpl(entry, root_path().AppendASCII(entry.target_path));
+  }
 
+  void CreateEntryImpl(const AddEntriesMessage::TestEntryInfo& entry,
+                       const base::FilePath& target_path) {
     entries_.insert(std::make_pair(target_path, entry));
     switch (entry.type) {
       case AddEntriesMessage::FILE: {
@@ -540,16 +542,18 @@ class LocalTestVolume : public TestVolume {
         NOTREACHED() << "Can't create a computer in a local volume: "
                      << target_path.value();
         break;
+      default:
+        NOTREACHED() << "Unsupported entry type for: " << target_path.value();
     }
 
-    ASSERT_TRUE(UpdateModifiedTime(entry));
+    ASSERT_TRUE(UpdateModifiedTime(entry, target_path));
   }
 
  private:
   // Updates the ModifiedTime of the entry, and its parent directories if
   // needed. Returns true on success.
-  bool UpdateModifiedTime(const AddEntriesMessage::TestEntryInfo& entry) {
-    const base::FilePath path = root_path().AppendASCII(entry.target_path);
+  bool UpdateModifiedTime(const AddEntriesMessage::TestEntryInfo& entry,
+                          const base::FilePath& path) {
     if (!base::TouchFile(path, entry.last_modified_time,
                          entry.last_modified_time)) {
       return false;
@@ -561,7 +565,7 @@ class LocalTestVolume : public TestVolume {
       const auto& it = entries_.find(path.DirName());
       if (it == entries_.end())
         return false;
-      return UpdateModifiedTime(it->second);
+      return UpdateModifiedTime(it->second, path.DirName());
     }
 
     return true;
@@ -578,11 +582,40 @@ class DownloadsTestVolume : public LocalTestVolume {
   DownloadsTestVolume() : LocalTestVolume("Downloads") {}
   ~DownloadsTestVolume() override = default;
 
+  void EnsureDownloadsFolderExists() {
+    if (!base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume))
+      return;
+
+    // When MyFiles is the volume create the Downloads folder under it.
+    auto downloads_folder = root_path().Append("Downloads");
+    if (!base::PathExists(downloads_folder)) {
+      CreateEntryImpl(AddEntriesMessage::TestEntryInfo(
+                          AddEntriesMessage::DIRECTORY, "", "Downloads"),
+                      downloads_folder);
+    }
+  }
+  // Forces the content to be created inside MyFiles/Downloads when MyFiles is
+  // the Volume, so tests are compatible with volume being MyFiles or Downloads.
+  // TODO(lucmult): Remove this special case once MyFiles volume has been
+  // rolled out.
+  base::FilePath base_path() const {
+    if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume))
+      return root_path().Append("Downloads");
+
+    return root_path();
+  }
+
   bool Mount(Profile* profile) override {
     if (!CreateRootDirectory(profile))
       return false;
+    EnsureDownloadsFolderExists();
     auto* volume = VolumeManager::Get(profile);
     return volume->RegisterDownloadsDirectoryForTesting(root_path());
+  }
+
+  void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) override {
+    base::FilePath target_path = base_path().Append(entry.target_path);
+    CreateEntryImpl(entry, target_path);
   }
 
   void Unmount(Profile* profile) {
@@ -1151,6 +1184,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   } else {
     disabled_features.emplace_back(chromeos::features::kDriveFs);
   }
+
+  if (IsMyFilesVolume())
+    enabled_features.emplace_back(chromeos::features::kMyFilesVolume);
+
   feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
@@ -1238,6 +1275,10 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 }
 
 bool FileManagerBrowserTestBase::GetTabletMode() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetEnableMyFilesVolume() const {
   return false;
 }
 

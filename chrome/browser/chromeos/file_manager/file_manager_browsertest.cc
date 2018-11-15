@@ -46,6 +46,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableMyFilesVolume() {
+    enable_myfiles_volume.emplace(true);
+    return *this;
+  }
+
   TestCase& DisableDriveFs() {
     enable_drivefs.emplace(false);
     return *this;
@@ -83,6 +88,9 @@ struct TestCase {
     if (test.enable_drivefs.value_or(false))
       name.append("_DriveFs");
 
+    if (test.enable_myfiles_volume.value_or(false))
+      name.append("_MyFilesVolume");
+
     return name;
   }
 
@@ -91,6 +99,7 @@ struct TestCase {
   bool trusted_events = false;
   bool tablet_mode = false;
   base::Optional<bool> enable_drivefs;
+  base::Optional<bool> enable_myfiles_volume;
   bool with_browser = false;
   bool needs_zip = false;
   bool offline = false;
@@ -152,6 +161,11 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   }
 
   bool GetTabletMode() const override { return GetParam().tablet_mode; }
+
+  bool GetEnableMyFilesVolume() const override {
+    return GetParam().enable_myfiles_volume.value_or(
+        FileManagerBrowserTestBase::GetEnableMyFilesVolume());
+  }
 
   bool GetEnableDriveFs() const override {
     return GetParam().enable_drivefs.value_or(
@@ -687,12 +701,13 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MyFiles, /* my_files.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("showMyFiles"),
-                      TestCase("hideSearchButton"),
-                      TestCase("myFilesDisplaysAndOpensEntries"),
-                      TestCase("directoryTreeRefresh"),
-                      TestCase("myFilesFolderRename"),
-                      TestCase("myFilesUpdatesChildren")));
+    ::testing::Values(
+        TestCase("showMyFiles"),
+        TestCase("hideSearchButton"),
+        TestCase("myFilesDisplaysAndOpensEntries"),
+        TestCase("directoryTreeRefresh"),
+        TestCase("myFilesFolderRename"),
+        TestCase("myFilesUpdatesChildren").EnableMyFilesVolume()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     InstallLinuxPackageDialog, /* install_linux_package_dialog.js */
