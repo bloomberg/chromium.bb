@@ -1897,6 +1897,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabActivityTest.java",
   "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabActivityIncognitoTest.java",
   "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabsDynamicModuleTest.java",
+  "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabsDynamicModuleTestUtils.java",
   "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabExternalNavigationTest.java",
   "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabFromChromeExternalNavigationTest.java",
   "javatests/src/org/chromium/chrome/browser/customtabs/CustomTabsConnectionTest.java",
