@@ -3269,18 +3269,6 @@
           'gtest_tests': 'webrtc_android_tests_with_baremetal_tests',
         },
       },
-      'Linux Builder': {
-        'additional_compile_targets': [
-          'frame_analyzer',
-          'jingle_unittests',
-          'remoting_unittests',
-        ],
-      },
-      'Linux Tester': {
-        'test_suites': {
-          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
-        },
-      },
       'Mac Builder': {
         'additional_compile_targets': [
           'frame_analyzer',
@@ -3294,6 +3282,18 @@
         },
       },
       'Mac Tester (long-running)': {},
+      'WebRTC Chromium Linux Builder': {
+        'additional_compile_targets': [
+          'frame_analyzer',
+          'jingle_unittests',
+          'remoting_unittests',
+        ],
+      },
+      'WebRTC Chromium Linux Tester': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
+        },
+      },
       'Win Builder': {
         'additional_compile_targets': [
           'frame_analyzer',
