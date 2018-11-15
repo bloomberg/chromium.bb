@@ -26,7 +26,6 @@
 #include "net/log/net_log_util.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
@@ -210,9 +209,30 @@ network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
 
 void GetNetworkConnectionTrackerFromUIThread(
     base::OnceCallback<void(network::NetworkConnectionTracker*)> callback) {
+  // TODO(fdoray): Investigate why this is needed. The IO thread is supposed to
+  // be initialized by the time the UI thread starts running tasks.
+  //
+  // GetNetworkConnectionTracker() will call CreateNetworkServiceOnIO(). Here it
+  // makes sure the IO thread is running when CreateNetworkServiceOnIO() is
+  // called.
+  if (!content::BrowserThread::IsThreadInitialized(
+          content::BrowserThread::IO)) {
+    // IO thread is not yet initialized. Try again in the next message pump.
+    bool task_posted = base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&GetNetworkConnectionTrackerFromUIThread,
+                                  std::move(callback)));
+    DCHECK(task_posted);
+    return;
+  }
+
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetNetworkConnectionTracker), std::move(callback));
+}
+
+network::NetworkConnectionTrackerAsyncGetter
+CreateNetworkConnectionTrackerAsyncGetter() {
+  return base::BindRepeating(&content::GetNetworkConnectionTrackerFromUIThread);
 }
 
 void SetNetworkConnectionTrackerForTesting(

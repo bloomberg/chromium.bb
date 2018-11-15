@@ -67,6 +67,16 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+void GetNetworkConnectionTrackerAsync(
+    base::OnceCallback<void(network::NetworkConnectionTracker*)> callback) {
+  std::move(callback).Run(
+      GetApplicationContext()->GetNetworkConnectionTracker());
+}
+
+}  // namespace
+
 IOSChromeMetricsServiceClient::IOSChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
     : metrics_state_manager_(state_manager),
@@ -196,7 +206,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   // Register metrics providers.
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<metrics::NetworkMetricsProvider>());
+      std::make_unique<metrics::NetworkMetricsProvider>(
+          base::BindRepeating(&GetNetworkConnectionTrackerAsync)));
 
   // Currently, we configure OmniboxMetricsProvider to not log events to UMA
   // if there is a single incognito session visible. In the future, it may

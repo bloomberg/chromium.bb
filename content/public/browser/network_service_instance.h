@@ -10,13 +10,13 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "content/common/content_export.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace net {
 class NetworkChangeNotifier;
 }  // namespace net
 
 namespace network {
-class NetworkConnectionTracker;
 class NetworkService;
 namespace mojom {
 class NetworkService;
@@ -78,6 +78,10 @@ CONTENT_EXPORT network::NetworkConnectionTracker* GetNetworkConnectionTracker();
 // GetNetworkConnectionTracker from the UI thread.
 CONTENT_EXPORT void GetNetworkConnectionTrackerFromUIThread(
     base::OnceCallback<void(network::NetworkConnectionTracker*)> callback);
+
+// Helper method to create a NetworkConnectionTrackerAsyncGetter.
+CONTENT_EXPORT network::NetworkConnectionTrackerAsyncGetter
+CreateNetworkConnectionTrackerAsyncGetter();
 
 // Sets the NetworkConnectionTracker instance to use. For testing only.
 // Must be called on the UI thread. Must be called before the first call to

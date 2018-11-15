@@ -4,7 +4,10 @@
 
 #include "services/network/test/test_network_connection_tracker.h"
 
+#include <utility>
+
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -14,6 +17,19 @@ namespace network {
 static TestNetworkConnectionTracker* g_test_network_connection_tracker_instance;
 
 namespace {
+
+using NetworkConnectionTrackerCallback =
+    base::OnceCallback<void(NetworkConnectionTracker*)>;
+
+void GetInstanceAsync(NetworkConnectionTrackerCallback callback) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](NetworkConnectionTrackerCallback callback) {
+            std::move(callback).Run(g_test_network_connection_tracker_instance);
+          },
+          std::move(callback)));
+}
 
 NetworkConnectionTracker* GetNonTestInstance() {
   return TestNetworkConnectionTracker::GetInstance();
@@ -36,6 +52,12 @@ TestNetworkConnectionTracker* TestNetworkConnectionTracker::GetInstance() {
 // static
 NetworkConnectionTrackerGetter TestNetworkConnectionTracker::CreateGetter() {
   return base::BindRepeating(&GetNonTestInstance);
+}
+
+// static
+NetworkConnectionTrackerAsyncGetter
+TestNetworkConnectionTracker::CreateAsyncGetter() {
+  return base::BindRepeating(&GetInstanceAsync);
 }
 
 TestNetworkConnectionTracker::TestNetworkConnectionTracker() {
