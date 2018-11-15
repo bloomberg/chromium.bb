@@ -198,7 +198,7 @@
     <color name="bottom_system_nav_color">@android:color/white</color>
     <color name="bottom_system_nav_divider_color">@color/black_alpha_12</color>
     <color name="search_box_hint">@color/default_text_color_secondary</color>
-    <color name="placeholder_thumbnail_bg_color">#DADCE0</color>
+    <color name="thumbnail_placeholder_on_white_bg">@color/modern_grey_100</color>
     <color name="clear_browsing_data_selected_tab_color">@color/modern_blue_600</color>
 
 </resources>
