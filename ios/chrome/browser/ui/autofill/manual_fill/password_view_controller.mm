@@ -27,21 +27,6 @@ NSString* const PasswordTableViewAccessibilityIdentifier =
 
 }  // namespace manual_fill
 
-namespace {
-
-typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  CredentialsSectionIdentifier = kSectionIdentifierEnumZero,
-  ActionsSectionIdentifier,
-};
-
-// This is the width used for |self.preferredContentSize|.
-constexpr float PopoverPreferredWidth = 320;
-
-// This is the maximum height used for |self.preferredContentSize|.
-constexpr float PopoverMaxHeight = 250;
-
-}  // namespace
-
 @interface PasswordViewController ()
 
 // Search controller if any.
@@ -51,40 +36,17 @@ constexpr float PopoverMaxHeight = 250;
 
 @implementation PasswordViewController
 
-@synthesize searchController = _searchController;
-
 - (instancetype)initWithSearchController:(UISearchController*)searchController {
-  self = [super initWithTableViewStyle:UITableViewStylePlain
-                           appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+  self = [super init];
   if (self) {
     _searchController = searchController;
-
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(handleKeyboardWillShow:)
-               name:UIKeyboardWillShowNotification
-             object:nil];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(handleKeyboardDidHide:)
-               name:UIKeyboardDidHideNotification
-             object:nil];
   }
   return self;
 }
 
 - (void)viewDidLoad {
-  // Super's |viewDidLoad| uses |styler.tableViewBackgroundColor| so it needs to
-  // be set before.
-  self.styler.tableViewBackgroundColor = [UIColor whiteColor];
-
   [super viewDidLoad];
 
-  self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-  self.tableView.sectionHeaderHeight = 0;
-  self.tableView.sectionFooterHeight = 20.0;
-  self.tableView.estimatedRowHeight = 200;
-  self.tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0);
   self.tableView.accessibilityIdentifier =
       manual_fill::PasswordTableViewAccessibilityIdentifier;
 
@@ -110,79 +72,11 @@ constexpr float PopoverMaxHeight = 250;
     UMA_HISTOGRAM_COUNTS_100("ManualFallback.PresentedOptions.Passwords",
                              credentials.count);
   }
-  [self presentItems:credentials inSection:CredentialsSectionIdentifier];
+  [self presentDataItems:(NSArray<TableViewItem*>*)credentials];
 }
 
 - (void)presentActions:(NSArray<ManualFillActionItem*>*)actions {
-  [self presentItems:actions inSection:ActionsSectionIdentifier];
-}
-
-#pragma mark - Private
-
-- (void)handleKeyboardDidHide:(NSNotification*)notification {
-  if (self.contentInsetsAlwaysEqualToSafeArea && !IsIPadIdiom()) {
-    // Resets the table view content inssets to be equal to the safe area
-    // insets.
-    self.tableView.contentInset = self.view.safeAreaInsets;
-  }
-}
-
-- (void)handleKeyboardWillShow:(NSNotification*)notification {
-  if (self.contentInsetsAlwaysEqualToSafeArea && !IsIPadIdiom()) {
-    // Sets the bottom inset to be equal to the height of the keyboard to
-    // override the behaviour in UITableViewController. Which adjust the scroll
-    // view insets to accommodate for the keyboard.
-    CGRect keyboardFrame =
-        [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    CGFloat keyboardHeight = keyboardFrame.size.height;
-    UIEdgeInsets safeInsets = self.view.safeAreaInsets;
-    self.tableView.contentInset =
-        UIEdgeInsetsMake(safeInsets.top, safeInsets.left,
-                         safeInsets.bottom - keyboardHeight, safeInsets.right);
-  }
-}
-
-// Presents |items| in the respective section. Handles creating or deleting the
-// section accordingly.
-- (void)presentItems:(NSArray<TableViewItem*>*)items
-           inSection:(SectionIdentifier)sectionIdentifier {
-  if (!self.tableViewModel) {
-    [self loadModel];
-  }
-  BOOL doesSectionExist =
-      [self.tableViewModel hasSectionForSectionIdentifier:sectionIdentifier];
-  // If there are no passed credentials, remove section if exist.
-  if (!items.count) {
-    if (doesSectionExist) {
-      [self.tableViewModel removeSectionWithIdentifier:sectionIdentifier];
-    }
-  } else {
-    if (!doesSectionExist) {
-      if (sectionIdentifier == CredentialsSectionIdentifier) {
-        [self.tableViewModel
-            insertSectionWithIdentifier:CredentialsSectionIdentifier
-                                atIndex:0];
-      } else {
-        [self.tableViewModel addSectionWithIdentifier:sectionIdentifier];
-      }
-    }
-    [self.tableViewModel
-        deleteAllItemsFromSectionWithIdentifier:sectionIdentifier];
-    for (TableViewItem* item in items) {
-      [self.tableViewModel addItem:item
-           toSectionWithIdentifier:sectionIdentifier];
-    }
-  }
-  [self.tableView reloadData];
-  if (IsIPadIdiom()) {
-    // Update the preffered content size on iPad so the popover shows the right
-    // size.
-    [self.tableView layoutIfNeeded];
-    CGSize systemLayoutSize = self.tableView.contentSize;
-    CGFloat preferredHeight = MIN(systemLayoutSize.height, PopoverMaxHeight);
-    self.preferredContentSize =
-        CGSizeMake(PopoverPreferredWidth, preferredHeight);
-  }
+  [self presentActionItems:actions];
 }
 
 @end
