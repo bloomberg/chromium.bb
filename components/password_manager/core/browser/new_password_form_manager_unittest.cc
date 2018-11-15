@@ -416,6 +416,22 @@ TEST_F(NewPasswordFormManagerTest, SetSubmitted) {
   EXPECT_FALSE(form_manager_->is_submitted());
 }
 
+TEST_F(NewPasswordFormManagerTest, SetSubmittedMultipleTimes) {
+  EXPECT_TRUE(
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_));
+  EXPECT_TRUE(form_manager_->is_submitted());
+
+  // Make the submitted form to be invalid password form.
+  submitted_form_.fields.clear();
+
+  // Expect that |form_manager_| is still in submitted state because the first
+  // time the submited form was valid.
+  EXPECT_TRUE(
+      form_manager_->SetSubmittedFormIfIsManaged(submitted_form_, &driver_));
+  EXPECT_TRUE(form_manager_->is_submitted());
+  EXPECT_TRUE(form_manager_->GetSubmittedForm());
+}
+
 // Tests that when NewPasswordFormManager receives saved matches it waits for
 // server predictions and fills on receving them.
 TEST_F(NewPasswordFormManagerTest, ServerPredictionsWithinDelay) {
