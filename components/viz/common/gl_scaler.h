@@ -187,6 +187,7 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
     };
 
     Parameters();
+    Parameters(const Parameters& other);
     ~Parameters();
   };
 
@@ -208,8 +209,9 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
 
   // Returns the currently-configured and resolved Parameters. Note that these
   // Parameters might not be exactly the same as those that were passed to
-  // Configure() because some properties (e.g., color spaces) are auto-resolved.
-  // Results are undefined if Configure() has never been called successfully.
+  // Configure() because some properties (e.g., color spaces) are auto-resolved;
+  // however, ParametersAreEquivalent() will still return true. Results are
+  // undefined if Configure() has never been called successfully.
   const Parameters& params() const { return params_; }
 
   // Scales a portion of |src_texture| and draws the result into |dest_texture|
@@ -257,6 +259,10 @@ class VIZ_COMMON_EXPORT GLScaler : public ContextLostObserver {
   static bool ParametersHasSameScaleRatio(const Parameters& params,
                                           const gfx::Vector2d& from,
                                           const gfx::Vector2d& to);
+
+  // Returns true if configuring a GLScaler with either |a| or |b| will produce
+  // identical behaviors and results.
+  static bool ParametersAreEquivalent(const Parameters& a, const Parameters& b);
 
  private:
   friend class GLScalerOverscanPixelTest;
