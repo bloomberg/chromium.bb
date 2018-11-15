@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -523,6 +524,14 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // TypedURLSyncBridge. Must be called from the UI thread.
   std::unique_ptr<syncer::ModelTypeControllerDelegate>
   GetTypedURLSyncControllerDelegate();
+
+  // Override |backend_task_runner_| for testing; needs to be called before
+  // Init.
+  void set_backend_task_runner_for_testing(
+      scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    DCHECK(!backend_task_runner_);
+    backend_task_runner_ = std::move(task_runner);
+  }
 
  protected:
   // These are not currently used, hopefully we can do something in the future
