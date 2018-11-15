@@ -75,6 +75,27 @@ class GuardedPageAllocator {
 
   // Structure for storing data about a slot.
   struct SlotMetadata {
+    // Information saved for allocations and deallocations.
+    struct AllocationInfo {
+      // (De)allocation thread id or base::kInvalidThreadId if no (de)allocation
+      // occurred.
+      base::PlatformThreadId tid = base::kInvalidThreadId;
+
+      // Pointer to stack trace addresses or null if no (de)allocation occurred.
+      const void* const* trace_addr = nullptr;
+
+      // Stack trace length or 0 if no (de)allocation occurred.
+      size_t trace_len = 0;
+
+     private:
+      // StackTrace object for this slot, it's allocated in
+      // SlotMetadata()::Init() and only used internally, trace_addr/len should
+      // be used by external consumers of the stack trace data.
+      base::debug::StackTrace* stacktrace = nullptr;
+
+      friend struct SlotMetadata;
+    };
+
     SlotMetadata();
     ~SlotMetadata();
 
@@ -94,29 +115,13 @@ class GuardedPageAllocator {
     // The allocation address.
     void* alloc_ptr = nullptr;
 
-    // (De)allocation thread id or base::kInvalidThreadId if no (de)allocation
-    // occurred.
-    base::PlatformThreadId alloc_tid = base::kInvalidThreadId;
-    base::PlatformThreadId dealloc_tid = base::kInvalidThreadId;
-
-    // Pointer to stack trace addresses or null if no (de)allocation occurred.
-    const void* const* alloc_trace_addr = nullptr;
-    const void* const* dealloc_trace_addr = nullptr;
-
-    // Stack trace length or 0 if no (de)allocation occurred.
-    size_t alloc_trace_len = 0;
-    size_t dealloc_trace_len = 0;
+    AllocationInfo alloc;
+    AllocationInfo dealloc;
 
    private:
-    // Call destructors on stacktrace_alloc and stacktrace_dealloc if
-    // constructors for them have previously been called.
+    // Call destructors on (de)alloc.stacktrace if constructors for them have
+    // previously been called.
     void Reset();
-
-    // StackTrace objects for this slot, they are allocated by Init() and only
-    // used internally, (de)alloc_trace_addr/len should be used by external
-    // consumers of the stack trace data.
-    base::debug::StackTrace* stacktrace_alloc = nullptr;
-    base::debug::StackTrace* stacktrace_dealloc = nullptr;
   };
 
   // Number of bits in the free_pages_ bitmap.
