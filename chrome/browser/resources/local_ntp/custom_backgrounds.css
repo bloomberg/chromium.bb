@@ -589,6 +589,7 @@ html[dir=rtl] .plus-icon {
   padding: 8px 8px 8px 8px;
   position: fixed;
   text-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
+  z-index: -1;
 }
 
 html[dir=rtl] #custom-bg-attr {
