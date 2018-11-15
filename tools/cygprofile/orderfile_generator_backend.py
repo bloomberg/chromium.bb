@@ -269,10 +269,6 @@ class ClankCompiler(object):
         'is_chrome_branded=true',
         'is_debug=false',
         'is_official_build=true',
-        # We have to build with no symbols if profiling and minimal symbols
-        # otherwise for libchrome.so to fit under the 4 GB limit.
-        # crbug.com/574476
-        'symbol_level=' + ('0' if instrumented else '1'),
         'target_cpu="' + self._arch + '"',
         'target_os="android"',
         'use_goma=' + str(self._use_goma).lower(),
