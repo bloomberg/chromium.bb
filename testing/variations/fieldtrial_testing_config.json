@@ -3766,6 +3766,31 @@
             ]
         }
     ],
+    "ProactiveTabFreezeAndDiscard": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "enabled",
+                    "params": {
+                        "HighLoadedTabCount": "1000",
+                        "ShouldPeriodicallyUnfreeze": "true",
+                        "ShouldProactivelyDiscard": "false",
+                        "ShouldProtectTabsSharingBrowsingInstance": "true"
+                    },
+                    "enable_features": [
+                        "ProactiveTabFreezeAndDiscard",
+                        "stop-non-timers-in-background"
+                    ]
+                }
+            ]
+        }
+    ],
     "ProgressBarAnimationAndroid": [
         {
             "platforms": [
@@ -4745,37 +4770,6 @@
                     "name": "TokenBinding",
                     "enable_features": [
                         "token-binding"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TooManyTabs": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "FreezeAndDiscardConservative",
-                    "params": {
-                        "HighLoadedTabCount": "1000",
-                        "HighOccludedTimeoutSeconds": "14400",
-                        "LowLoadedTabCount": "10",
-                        "LowOccludedTimeoutSeconds": "100000000",
-                        "ModerateLoadedTabsPerGbRam": "4",
-                        "ModerateOccludedTimeoutSeconds": "43200",
-                        "ShouldPeriodicallyUnfreeze": "true",
-                        "ShouldProactivelyDiscard": "true",
-                        "ShouldProtectTabsSharingBrowsingInstance": "true",
-                        "mainThreadTaskLoadLowThreshold": "25"
-                    },
-                    "enable_features": [
-                        "ProactiveTabFreezeAndDiscard",
-                        "stop-non-timers-in-background"
                     ]
                 }
             ]
