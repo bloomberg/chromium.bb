@@ -18,6 +18,7 @@ class TargetImpl {
   poke() { this.numPokes++; }
   ping() { return Promise.resolve(); }
   repeat(message, numbers) { return {message: message, numbers: numbers}; }
+  flatten(values) {}
   requestSubinterface(request, client) {}
 }
 
@@ -118,4 +119,13 @@ promise_test(() => {
     subinterfaceProxy.flush();
   });
 }, 'can send and receive interface requests and proxies');
+
+promise_test(() => {
+  let targetRouter = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
+  let targetProxy = targetRouter.createProxy();
+  targetRouter.flatten.addListener(values => ({values: values.map(v => v.x)}));
+  return targetProxy.flatten([{x: 1}, {x: 2}, {x: 3}]).then(reply => {
+    assert_array_equals(reply.values, [1, 2, 3]);
+  });
+}, 'regression test for complex array serialization');
 </script>

@@ -724,13 +724,34 @@ mojo.internal.computeTotalStructSize = function(structSpec, value) {
  * @param {number} length
  * @return {number}
  */
-mojo.internal.computeArraySize = function(arraySpec, length) {
+mojo.internal.computeInlineArraySize = function(arraySpec, value) {
   if (arraySpec.elementType === mojo.mojom.Bool) {
-    return mojo.internal.kArrayHeaderSize + (length + 7) >> 3;
+    return mojo.internal.kArrayHeaderSize + (value.length + 7) >> 3;
   } else {
     return mojo.internal.kArrayHeaderSize +
-        length * arraySpec.elementType.$.arrayElementSize;
+        value.length * arraySpec.elementType.$.arrayElementSize;
   }
+};
+
+/**
+ * @param {!mojo.internal.ArraySpec} arraySpec
+ * @param {number} length
+ * @return {number}
+ */
+mojo.internal.computeTotalArraySize = function(arraySpec, value) {
+  const inlineSize = mojo.internal.computeInlineArraySize(arraySpec, value);
+  if (!arraySpec.elementType.$.computePayloadSize)
+    return inlineSize;
+
+  let totalSize = inlineSize;
+  for (let elementValue of value) {
+    if (!mojo.internal.isNullOrUndefined(elementValue)) {
+      totalSize += mojo.internal.align(
+          arraySpec.elementType.$.computePayloadSize(elementValue), 8);
+    }
+  }
+
+  return totalSize;
 };
 
 /**
@@ -908,7 +929,7 @@ mojo.internal.Encoder = class {
    * @param {*} value
    */
   encodeArray(arraySpec, offset, value) {
-    const arraySize = mojo.internal.computeArraySize(arraySpec, value.length);
+    const arraySize = mojo.internal.computeInlineArraySize(arraySpec, value);
     const arrayData = this.message_.allocate(arraySize);
     const arrayEncoder = new mojo.internal.Encoder(this.message_, arrayData);
     this.encodeOffset(offset, arrayData.byteOffset);
@@ -1573,8 +1594,8 @@ mojo.mojom.String = {
       return decoder.decodeString(byteOffset);
     },
     computePayloadSize: function(value) {
-      return mojo.internal.computeArraySize(
-          {elementType: mojo.mojom.Uint8}, value.length);
+      return mojo.internal.computeTotalArraySize(
+          {elementType: mojo.mojom.Uint8}, value);
     },
     arrayElementSize: 8,
     isValidObjectKeyType: true,
@@ -1604,7 +1625,7 @@ mojo.mojom.Array = function(elementType, elementNullable) {
         return decoder.decodeArray(arraySpec, byteOffset);
       },
       computePayloadSize: function(value) {
-        return mojo.internal.computeArraySize(arraySpec, value.length);
+        return mojo.internal.computeTotalArraySize(arraySpec, value);
       },
       arrayElementSize: 8,
       isValidObjectKeyType: false,
@@ -1637,16 +1658,19 @@ mojo.mojom.Map = function(keyType, valueType, valueNullable) {
         return decoder.decodeMap(mapSpec, byteOffset);
       },
       computePayloadSize: function(value) {
-        const numEntries =
-            (value instanceof Map) ? value.size : Object.keys(value).length;
+        const keys = (value instanceof Map) ? Array.from(value.keys()) :
+                                              Object.keys(value);
+        const values = (value instanceof Map) ? Array.from(value.values()) :
+                                                keys.map(k => value[k]);
+
         return mojo.internal.kMapDataSize +
-            mojo.internal.computeArraySize({elementType: keyType}, numEntries) +
-            mojo.internal.computeArraySize(
+            mojo.internal.computeTotalArraySize({elementType: keyType}, keys) +
+            mojo.internal.computeTotalArraySize(
                 {
                   elementType: valueType,
                   elementNullable: valueNullable,
                 },
-                numEntries);
+                values);
       },
       arrayElementSize: 8,
       isValidObjectKeyType: false,
