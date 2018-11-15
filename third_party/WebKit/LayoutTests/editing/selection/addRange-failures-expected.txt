@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 29: The given range isn't in document.
+CONSOLE WARNING: line 29: addRange(): The given range isn't in document.
 CONSOLE WARNING: line 46: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Test error handling of Selection.addRange().
 
