@@ -169,6 +169,9 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // This should never be called from outside Frame or WebFrame.
   bool ConsumeTransientUserActivationInLocalTree();
 
+  // This should never be called from outside Frame or WebFrame.
+  void ClearUserActivationInLocalTree();
+
   bool HasBeenActivated() const {
     return user_activation_state_.HasBeenActive();
   }

@@ -687,6 +687,36 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SubframeOpenerSetForNewWindow) {
   EXPECT_EQ(nullptr, popup_root->opener());
 }
 
+// Tests that the user activation bits get cleared when a same-site document is
+// installed in the frame.
+IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
+                       ClearUserActivationForNewDocument) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Set the user activation bits.
+  root->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
+  EXPECT_TRUE(root->HasBeenActivated());
+  EXPECT_TRUE(root->HasTransientUserActivation());
+
+  // Install a new same-site document to check the clearing of user activation
+  // bits.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+}
+
 class CrossProcessFrameTreeBrowserTest : public ContentBrowserTest {
  public:
   CrossProcessFrameTreeBrowserTest() {}
@@ -837,6 +867,37 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
   EXPECT_EQ(main_frame_sandbox_flags, popup_root->active_sandbox_flags());
   EXPECT_EQ(main_frame_sandbox_flags,
             popup_root->current_frame_host()->active_sandbox_flags());
+}
+
+// Tests that the user activation bits get cleared when a cross-site document is
+// installed in the frame.
+IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
+                       ClearUserActivationForNewDocument) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
+
+  // Set the user activation bits.
+  root->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kNotifyActivation);
+  EXPECT_TRUE(root->HasBeenActivated());
+  EXPECT_TRUE(root->HasTransientUserActivation());
+
+  // Install a new cross-site document to check the clearing of user activation
+  // bits.
+  GURL cross_site_url(
+      embedded_test_server()->GetURL("foo.com", "/title2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), cross_site_url));
+
+  EXPECT_FALSE(root->HasBeenActivated());
+  EXPECT_FALSE(root->HasTransientUserActivation());
 }
 
 // FrameTreeBrowserTest variant where we isolate http://*.is, Iceland's top

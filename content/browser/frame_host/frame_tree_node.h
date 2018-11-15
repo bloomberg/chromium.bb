@@ -422,6 +422,8 @@ class CONTENT_EXPORT FrameTreeNode {
 
   bool ConsumeTransientUserActivation();
 
+  bool ClearUserActivation();
+
   // The next available browser-global FrameTreeNode ID.
   static int next_frame_tree_node_id_;
 
