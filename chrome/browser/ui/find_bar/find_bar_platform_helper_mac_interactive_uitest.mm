@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(FindBarPlatformHelperMacInteractiveUITest,
   FindBarController* find_bar_controller = browser()->GetFindBarController();
   ASSERT_NE(nullptr, find_bar_controller);
 
-  base::string16 empty_string(base::ASCIIToUTF16(""));
+  const base::string16 empty_string;
   find_bar_controller->SetText(empty_string);
 
   chrome::Find(browser());
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(FindBarPlatformHelperMacInteractiveUITest,
       browser_incognito->GetFindBarController();
   ASSERT_NE(nullptr, find_bar_controller);
 
-  base::string16 empty_string(base::ASCIIToUTF16(""));
+  const base::string16 empty_string;
   find_bar_controller->SetText(empty_string);
 
   chrome::Find(browser_incognito);
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(FindBarPlatformHelperMacInteractiveUITest,
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  base::string16 empty_string(base::ASCIIToUTF16(""));
+  const base::string16 empty_string;
   find_bar_controller->SetText(empty_string);
 
   chrome::Find(browser());
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(FindBarPlatformHelperMacInteractiveUITest,
   content::WebContents* first_active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  base::string16 empty_string(base::ASCIIToUTF16(""));
+  const base::string16 empty_string;
   find_bar_controller->SetText(empty_string);
 
   chrome::Find(browser());
