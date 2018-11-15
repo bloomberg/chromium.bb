@@ -115,7 +115,7 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
 
   void Create(const syncer::DeviceInfo& device_info,
               SessionStore::FactoryCompletionCallback callback) {
-    const std::string cache_guid = device_info.guid();
+    const std::string& cache_guid = device_info.guid();
     DCHECK(!cache_guid.empty());
 
     SessionStore::SessionInfo session_info;
@@ -161,7 +161,8 @@ class FactoryImpl : public base::SupportsWeakPtr<FactoryImpl> {
       return;
     }
 
-    store->ReadAllMetadata(base::BindOnce(
+    ModelTypeStore* store_raw = store.get();
+    store_raw->ReadAllMetadata(base::BindOnce(
         &FactoryImpl::OnReadAllMetadata, base::AsWeakPtr(this), session_info,
         std::move(callback), std::move(store), std::move(record_list)));
   }
@@ -455,7 +456,7 @@ SessionStore::SessionStore(
   }
 }
 
-SessionStore::~SessionStore() {}
+SessionStore::~SessionStore() = default;
 
 std::unique_ptr<syncer::DataBatch> SessionStore::GetSessionDataForKeys(
     const std::vector<std::string>& storage_keys) const {
