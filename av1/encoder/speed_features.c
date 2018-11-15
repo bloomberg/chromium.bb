@@ -107,6 +107,7 @@ static void set_good_speed_feature_framesize_dependent(
     sf->use_square_partition_only_threshold = BLOCK_128X128;
   } else {
     sf->use_square_partition_only_threshold = BLOCK_64X64;
+    sf->auto_min_max_partition_based_on_simple_motion = 1;
   }
 
   // TODO(huisu@google.com): train models for 720P and above.

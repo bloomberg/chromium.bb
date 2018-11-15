@@ -10,6 +10,7 @@
  */
 
 #include <limits.h>
+#include <float.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -3773,7 +3774,143 @@ static void simple_motion_search_prune_part(
 #undef MAX_NUM_CLASSES
 #undef NUM_FEATURES
 
-// TODO(jinging,jimbankoski,rbultje): properly skip partition types that are
+static int is_full_sb(AV1_COMMON *const cm, int mi_row, int mi_col,
+                      BLOCK_SIZE sb_size) {
+  const int sb_mi_wide = mi_size_wide[sb_size];
+  const int sb_mi_high = mi_size_high[sb_size];
+
+  return (mi_row + sb_mi_high) <= cm->mi_rows &&
+         (mi_col + sb_mi_wide) <= cm->mi_cols;
+}
+
+static int use_auto_min_max_partition(AV1_COMP *const cpi, BLOCK_SIZE sb_size,
+                                      int mi_row, int mi_col) {
+  AV1_COMMON *const cm = &cpi->common;
+
+  return !frame_is_intra_only(cm) &&
+         cpi->sf.auto_min_max_partition_based_on_simple_motion &&
+         sb_size == BLOCK_128X128 && is_full_sb(cm, mi_row, mi_col, sb_size) &&
+         cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index] !=
+             OVERLAY_UPDATE &&
+         cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index] !=
+             INTNL_OVERLAY_UPDATE;
+}
+
+static void get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
+                                           int mi_row, int mi_col,
+                                           float *features) {
+  AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+  BLOCK_SIZE mb_size = BLOCK_16X16;
+  BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  int f_idx = 0;
+
+  const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
+  aom_clear_system_state();
+  float log_q_sq = logf(1.0f + (float)(dc_q * dc_q) / 256.0f);
+
+  // Perform full-pixel single motion search in Y plane of 16x16 mbs in the sb
+  int mb_rows = block_size_high[sb_size] / block_size_high[mb_size];
+  int mb_cols = block_size_wide[sb_size] / block_size_wide[mb_size];
+
+  float sum_mv_row_sq = 0;
+  float sum_mv_row = 0;
+  float min_abs_mv_row = FLT_MAX;
+  float max_abs_mv_row = 0;
+
+  float sum_mv_col_sq = 0;
+  float sum_mv_col = 0;
+  float min_abs_mv_col = FLT_MAX;
+  float max_abs_mv_col = 0;
+
+  float sum_log_sse_sq = 0;
+  float sum_log_sse = 0;
+  float min_log_sse = FLT_MAX;
+  float max_log_sse = 0;
+
+  for (int mb_row = 0; mb_row < mb_rows; mb_row++)
+    for (int mb_col = 0; mb_col < mb_cols; mb_col++) {
+      int this_mi_row = mi_row + (mb_row << mi_size_high_log2[mb_size]);
+      int this_mi_col = mi_col + (mb_col << mi_size_wide_log2[mb_size]);
+      unsigned int sse = 0;
+      unsigned int var = 0;
+      const MV ref_mv_full = { .row = 0, .col = 0 };
+
+      av1_simple_motion_sse_var(cpi, x, this_mi_row, this_mi_col, mb_size,
+                                ref_mv_full, 0, &sse, &var);
+
+      aom_clear_system_state();
+      float mv_row = (float)(x->best_mv.as_mv.row / 8);
+      float mv_col = (float)(x->best_mv.as_mv.col / 8);
+      float log_sse = logf(1.0f + (float)sse);
+      float abs_mv_row = fabsf(mv_row);
+      float abs_mv_col = fabsf(mv_col);
+
+      sum_mv_row_sq += mv_row * mv_row;
+      sum_mv_row += mv_row;
+      sum_mv_col_sq += mv_col * mv_col;
+      sum_mv_col += mv_col;
+
+      if (abs_mv_row < min_abs_mv_row) min_abs_mv_row = abs_mv_row;
+      if (abs_mv_row > max_abs_mv_row) max_abs_mv_row = abs_mv_row;
+      if (abs_mv_col < min_abs_mv_col) min_abs_mv_col = abs_mv_col;
+      if (abs_mv_col > max_abs_mv_col) max_abs_mv_col = abs_mv_col;
+
+      sum_log_sse_sq += log_sse * log_sse;
+      sum_log_sse += log_sse;
+      if (log_sse < min_log_sse) min_log_sse = log_sse;
+      if (log_sse > max_log_sse) max_log_sse = log_sse;
+    }
+  aom_clear_system_state();
+  float avg_mv_row = sum_mv_row / 64.0f;
+  float var_mv_row = sum_mv_row_sq / 64.0f - avg_mv_row * avg_mv_row;
+
+  float avg_mv_col = sum_mv_col / 64.0f;
+  float var_mv_col = sum_mv_col_sq / 64.0f - avg_mv_col * avg_mv_col;
+
+  float avg_log_sse = sum_log_sse / 64.0f;
+  float var_log_sse = sum_log_sse_sq / 64.0f - avg_log_sse * avg_log_sse;
+
+  features[f_idx++] = avg_log_sse;
+  features[f_idx++] = avg_mv_col;
+  features[f_idx++] = avg_mv_row;
+  features[f_idx++] = log_q_sq;
+  features[f_idx++] = max_abs_mv_col;
+  features[f_idx++] = max_abs_mv_row;
+  features[f_idx++] = max_log_sse;
+  features[f_idx++] = min_abs_mv_col;
+  features[f_idx++] = min_abs_mv_row;
+  features[f_idx++] = min_log_sse;
+  features[f_idx++] = var_log_sse;
+  features[f_idx++] = var_mv_col;
+  features[f_idx++] = var_mv_row;
+}
+
+#define MAX_NUM_CLASSES 4
+static BLOCK_SIZE predict_max_partition(float *features) {
+  float scores[MAX_NUM_CLASSES] = { 0.0f }, probs[MAX_NUM_CLASSES] = { 0.0f };
+  const NN_CONFIG *nn_config = &av1_max_part_pred_nn_config;
+
+  aom_clear_system_state();
+  av1_nn_predict(features, nn_config, scores);
+
+  aom_clear_system_state();
+  av1_nn_softmax(scores, probs, MAX_NUM_CLASSES);
+
+  int result = 0;
+  float max_prob = probs[0];
+  for (int i = 1; i < MAX_NUM_CLASSES; ++i) {
+    if (probs[i] > max_prob) {
+      max_prob = probs[i];
+      result = i;
+    }
+  }
+
+  return (BLOCK_SIZE)((result + 2) * 3);
+}
+#undef MAX_NUM_CLASSES
+
+// TODO(jingning,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
 // results, for encoding speed-up.
 static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
@@ -5724,9 +5861,21 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 #if CONFIG_COLLECT_COMPONENT_TIMING
       start_timing(cpi, rd_pick_partition_time);
 #endif
-      rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
-                        sb_size, BLOCK_4X4, &dummy_rdc, INT64_MAX, pc_root,
-                        NULL);
+      if (use_auto_min_max_partition(cpi, sb_size, mi_row, mi_col)) {
+        float features[13] = { 0.0f };
+        get_max_min_partition_features(cpi, x, mi_row, mi_col, features);
+
+        BLOCK_SIZE max_sq_size = predict_max_partition(features);
+        max_sq_size = AOMMIN(max_sq_size, sb_size);
+
+        rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
+                          max_sq_size, BLOCK_4X4, &dummy_rdc, INT64_MAX,
+                          pc_root, NULL);
+      } else {
+        rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
+                          sb_size, BLOCK_4X4, &dummy_rdc, INT64_MAX, pc_root,
+                          NULL);
+      }
 #if CONFIG_COLLECT_COMPONENT_TIMING
       end_timing(cpi, rd_pick_partition_time);
 #endif
