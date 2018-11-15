@@ -234,7 +234,7 @@ cr.define('settings_sync_account_control', function() {
 
       assertVisible(testElement.$$('#sync-button'), false);
       assertVisible(testElement.$$('#turn-off'), true);
-      assertVisible(testElement.$$('#sync-paused-button'), false);
+      assertVisible(testElement.$$('#sync-error-button'), false);
 
       testElement.$$('#avatar-row .secondary-button').click();
       Polymer.dom.flush();
@@ -257,6 +257,8 @@ cr.define('settings_sync_account_control', function() {
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync isn\'t working'));
+      // The sync error button is shown to resolve the error.
+      assertVisible(testElement.$$('#sync-error-button'), true);
 
       testElement.syncStatus = {
         signedIn: true,
@@ -273,8 +275,8 @@ cr.define('settings_sync_account_control', function() {
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync is paused'));
-      // The sync-paused button is shown to resolve the error.
-      assertVisible(testElement.$$('#sync-paused-button'), true);
+      // The sync error button is shown to resolve the error.
+      assertVisible(testElement.$$('#sync-error-button'), true);
 
       testElement.syncStatus = {
         signedIn: true,
@@ -292,6 +294,7 @@ cr.define('settings_sync_account_control', function() {
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync disabled'));
+      assertVisible(testElement.$$('#sync-error-button'), false);
 
       testElement.syncStatus = {
         signedIn: true,
@@ -326,7 +329,7 @@ cr.define('settings_sync_account_control', function() {
       };
 
       assertVisible(testElement.$$('#turn-off'), false);
-      assertVisible(testElement.$$('#sync-paused-button'), false);
+      assertVisible(testElement.$$('#sync-error-button'), false);
 
       testElement.embeddedInSubpage = true;
       testElement.syncStatus = {
@@ -338,7 +341,7 @@ cr.define('settings_sync_account_control', function() {
         disabled: false,
       };
       assertVisible(testElement.$$('#turn-off'), false);
-      assertVisible(testElement.$$('#sync-paused-button'), true);
+      assertVisible(testElement.$$('#sync-error-button'), true);
 
       testElement.embeddedInSubpage = true;
       testElement.syncStatus = {
@@ -350,7 +353,20 @@ cr.define('settings_sync_account_control', function() {
         disabled: false,
       };
       assertVisible(testElement.$$('#turn-off'), false);
-      assertVisible(testElement.$$('#sync-paused-button'), true);
+      assertVisible(testElement.$$('#sync-error-button'), true);
+
+      testElement.embeddedInSubpage = true;
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        hasError: true,
+        hasUnrecoverableError: false,
+        statusAction: settings.StatusAction.ENTER_PASSPHRASE,
+        disabled: false,
+      };
+      assertVisible(testElement.$$('#turn-off'), false);
+      // Don't show passphrase error button on embedded page.
+      assertVisible(testElement.$$('#sync-error-button'), false);
 
       testElement.embeddedInSubpage = true;
       testElement.syncStatus = {
@@ -362,7 +378,7 @@ cr.define('settings_sync_account_control', function() {
         disabled: false,
       };
       assertVisible(testElement.$$('#turn-off'), false);
-      assertVisible(testElement.$$('#sync-paused-button'), false);
+      assertVisible(testElement.$$('#sync-error-button'), false);
     });
 
     test('hide buttons', function() {
@@ -377,7 +393,7 @@ cr.define('settings_sync_account_control', function() {
       };
 
       assertVisible(testElement.$$('#turn-off'), false);
-      assertVisible(testElement.$$('#sync-paused-button'), false);
+      assertVisible(testElement.$$('#sync-error-button'), false);
 
       testElement.syncStatus = {
         signedIn: true,
@@ -388,7 +404,18 @@ cr.define('settings_sync_account_control', function() {
         disabled: false,
       };
       assertVisible(testElement.$$('#turn-off'), false);
-      assertVisible(testElement.$$('#sync-paused-button'), false);
+      assertVisible(testElement.$$('#sync-error-button'), false);
+
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        hasError: true,
+        hasUnrecoverableError: false,
+        statusAction: settings.StatusAction.ENTER_PASSPHRASE,
+        disabled: false,
+      };
+      assertVisible(testElement.$$('#turn-off'), false);
+      assertVisible(testElement.$$('#sync-error-button'), false);
     });
   });
 });
