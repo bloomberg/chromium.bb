@@ -250,12 +250,11 @@ class UIControlsDesktopX11 : public UIControlsAura {
         DesktopWindowTreeHostX11::GetAllOpenWindows();
     for (std::vector<aura::Window*>::const_iterator it = windows.begin();
          it != windows.end(); ++it) {
-      if ((*it)->GetBoundsInScreen().Contains(point)) {
+      if ((*it)->GetBoundsInScreen().Contains(point) || (*it)->HasCapture())
         return (*it)->GetRootWindow();
-      }
     }
 
-    NOTREACHED() << "Coulding find RW for " << point.ToString() << " among "
+    NOTREACHED() << "Couldn't find RW for " << point.ToString() << " among "
                  << windows.size() << " RWs.";
     return NULL;
   }
