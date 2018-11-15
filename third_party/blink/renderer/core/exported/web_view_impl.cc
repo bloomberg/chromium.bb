@@ -3312,7 +3312,8 @@ void WebViewImpl::UpdateDeviceEmulationTransform() {
   // scales and fuzzy raster from the compositor, force all content to
   // pick ideal raster scales.
   visual_viewport_container_layer_->SetTransform(device_emulation_transform_);
-  layer_tree_view_->ForceRecalculateRasterScales();
+  if (layer_tree_view_)
+    layer_tree_view_->ForceRecalculateRasterScales();
 }
 
 PageScheduler* WebViewImpl::Scheduler() const {
