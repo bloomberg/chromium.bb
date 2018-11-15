@@ -8,8 +8,8 @@ Googlers can read more [here](https://goto.google.com/clusterfuzz).
 ## Status Links
 
 * [Buildbot] - status of all libFuzzer builds.
-* [ClusterFuzz Fuzzer Status] - fuzzing metrics, links to crashes and coverage
-reports.
+* [ClusterFuzz Fuzzer Status] - fuzzing metrics.
+* [Code Coverage] - code coverage of libFuzzer targets in Chrome.
 * [ClusterFuzz libFuzzer Logs] - individual fuzz target run logs.
 * [Corpus GCS Bucket] - current corpus for each fuzz target. Can be used to
 upload bootstrapped corpus.
@@ -46,8 +46,9 @@ goes into general corpus directory. Seed corpus is read-only.
 
 
 [Buildbot]: https://build.chromium.org/p/chromium.fyi/buildslaves/slave43-c1
+[Code Coverage]: https://chromium-coverage.appspot.com/reports/latest_fuzzers_only/linux/index.html
 [chromium_libfuzzer.py]: https://code.google.com/p/chromium/codesearch#chromium/build/scripts/slave/recipes/chromium_libfuzzer.py
-[ClusterFuzz Fuzzer Status]: https://clusterfuzz.com/fuzzer-stats
+[ClusterFuzz Fuzzer Stats]: https://clusterfuzz.com/v2/fuzzer-stats/by-fuzzer/fuzzer/libFuzzer/job/libfuzzer_chrome_asan
 [ClusterFuzz libFuzzer Logs]: https://console.cloud.google.com/storage/browser/clusterfuzz-libfuzzer-logs
 [Corpus GCS Bucket]: https://console.cloud.google.com/storage/clusterfuzz-corpus/libfuzzer
 [fuzzer_test.gni]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzer_test.gni
