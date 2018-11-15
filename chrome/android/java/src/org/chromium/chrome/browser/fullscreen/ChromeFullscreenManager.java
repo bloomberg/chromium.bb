@@ -122,7 +122,10 @@ public class ChromeFullscreenManager
         @Override
         public void run() {
             int visibility = shouldShowAndroidControls() ? View.VISIBLE : View.INVISIBLE;
-            if (mControlContainer.getView().getVisibility() == visibility) return;
+            if (mControlContainer == null
+                    || mControlContainer.getView().getVisibility() == visibility) {
+                return;
+            }
             // requestLayout is required to trigger a new gatherTransparentRegion(), which
             // only occurs together with a layout and let's SurfaceFlinger trim overlays.
             // This may be almost equivalent to using View.GONE, but we still use View.INVISIBLE
@@ -207,7 +210,7 @@ public class ChromeFullscreenManager
             }
         };
 
-        assert controlContainer != null;
+        assert controlContainer != null || mControlsPosition == ControlsPosition.NONE;
         mControlContainer = controlContainer;
 
         int controlContainerHeight =
@@ -399,7 +402,7 @@ public class ChromeFullscreenManager
     }
 
     /**
-     * @return The toolbar control container, null until {@link #initialize} is called.
+     * @return The toolbar control container, may be null.
      */
     @Nullable
     public ControlContainer getControlContainer() {
@@ -567,6 +570,7 @@ public class ChromeFullscreenManager
     }
 
     private boolean shouldShowAndroidControls() {
+        if (mControlContainer == null) return false;
         if (mHidingTokenHolder.hasTokens()) {
             return false;
         }

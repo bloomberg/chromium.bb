@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -59,6 +60,23 @@ public class TabState {
 
     /** Checks if the TabState header is loaded properly. */
     private static final long KEY_CHECKER = 0;
+
+    /**
+     * There's no official maximum size for a bundle, but if a Binder transaction fails and the
+     * parcel was bigger than 200kB, the platform blames it on the bundle being too large.
+     */
+    private static final int MAX_BUNDLE_SIZE = 200 * 1024;
+
+    private static final String TAB_STATE_BUNDLE_PREFIX = "tab_";
+    private static final String TIMESTAMP_MILLIS = TAB_STATE_BUNDLE_PREFIX + "timestampMillis";
+    private static final String CONTENT_STATE_BYTES =
+            TAB_STATE_BUNDLE_PREFIX + "contentsStateBytes";
+    private static final String PARENT_ID = TAB_STATE_BUNDLE_PREFIX + "parentId";
+    private static final String OPENER_APP_ID = TAB_STATE_BUNDLE_PREFIX + "openerAppId";
+    private static final String VERSION = TAB_STATE_BUNDLE_PREFIX + "version";
+    private static final String SHOULD_PRESERVE = TAB_STATE_BUNDLE_PREFIX + "shouldPreserve";
+    private static final String THEME_COLOR = TAB_STATE_BUNDLE_PREFIX + "themeColor";
+    private static final String IS_INCOGNITO = TAB_STATE_BUNDLE_PREFIX + "isIncognito";
 
     /** Overrides the Chrome channel/package name to test a variant channel-specific behaviour. */
     private static String sChannelNameOverrideForTest;
@@ -150,7 +168,7 @@ public class TabState {
     protected boolean mIsIncognito;
 
     /** Whether the theme color was set for this tab. */
-    private boolean mHasThemeColor;
+    protected boolean mHasThemeColor;
 
     /** @return Whether a Stable channel build of Chrome is being used. */
     private static boolean isStableChannelBuild() {
@@ -186,15 +204,15 @@ public class TabState {
     /**
      * Restores a particular TabState file from storage.
      * @param tabFile Location of the TabState file.
-     * @param isIncognito Whether the Tab is incognito or not.
+     * @param isEncrypted Whether the Tab state is encrypted or not.
      * @return TabState that has been restored, or null if it failed.
      */
-    public static TabState restoreTabState(File tabFile, boolean isIncognito) {
+    public static TabState restoreTabState(File tabFile, boolean isEncrypted) {
         FileInputStream stream = null;
         TabState tabState = null;
         try {
             stream = new FileInputStream(tabFile);
-            tabState = TabState.readState(stream, isIncognito);
+            tabState = TabState.readState(stream, isEncrypted);
         } catch (FileNotFoundException exception) {
             Log.e(TAG, "Failed to restore tab state for tab: " + tabFile);
         } catch (IOException exception) {
@@ -202,6 +220,28 @@ public class TabState {
         } finally {
             StreamUtil.closeQuietly(stream);
         }
+        return tabState;
+    }
+
+    /**
+     * Restores a particular TabState file from the provided Bundle.
+     * @param bundle The Bundle to restore TabState from.
+     * @return TabState that has been restored.
+     */
+    public static TabState restoreTabState(Bundle bundle) {
+        TabState tabState = new TabState();
+        tabState.timestampMillis = bundle.getLong(TIMESTAMP_MILLIS);
+        byte[] bytes = bundle.getByteArray(CONTENT_STATE_BYTES);
+        tabState.contentsState = new WebContentsState(ByteBuffer.allocateDirect(bytes.length));
+        tabState.contentsState.buffer().put(bytes);
+        tabState.parentId = bundle.getInt(PARENT_ID);
+        tabState.openerAppId = bundle.getString(OPENER_APP_ID);
+        tabState.contentsState.setVersion(bundle.getInt(VERSION));
+        tabState.shouldPreserve = bundle.getBoolean(SHOULD_PRESERVE);
+        tabState.themeColor = bundle.getInt(THEME_COLOR);
+        tabState.mHasThemeColor = ColorUtils.isValidThemeColor(tabState.themeColor);
+        tabState.mIsIncognito = bundle.getBoolean(IS_INCOGNITO);
+
         return tabState;
     }
 
@@ -305,6 +345,20 @@ public class TabState {
         }
     }
 
+    private static byte[] getContentStateByteArray(ByteBuffer buffer) {
+        byte[] contentsStateBytes = new byte[buffer.limit()];
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            buffer.rewind();
+            buffer.get(contentsStateBytes);
+        } else {
+            // For JellyBean and below a bug in MappedByteBufferAdapter causes rewind to not be
+            // propagated to the underlying ByteBuffer, and results in an underflow exception. See:
+            // http://b.android.com/53637.
+            for (int i = 0; i < buffer.limit(); i++) contentsStateBytes[i] = buffer.get(i);
+        }
+        return contentsStateBytes;
+    }
+
     /**
      * Writes the TabState to disk. This method may be called on either the UI or background thread.
      * @param file File to write the tab's state to.
@@ -317,18 +371,7 @@ public class TabState {
         // Create the byte array from contentsState before opening the FileOutputStream, in case
         // contentsState.buffer is an instance of MappedByteBuffer that is mapped to
         // the tab state file.
-        byte[] contentsStateBytes = new byte[state.contentsState.buffer().limit()];
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            state.contentsState.buffer().rewind();
-            state.contentsState.buffer().get(contentsStateBytes);
-        } else {
-            // For JellyBean and below a bug in MappedByteBufferAdapter causes rewind to not be
-            // propagated to the underlying ByteBuffer, and results in an underflow exception. See:
-            // http://b.android.com/53637.
-            for (int i = 0; i < state.contentsState.buffer().limit(); i++) {
-                contentsStateBytes[i] = state.contentsState.buffer().get(i);
-            }
-        }
+        byte[] contentsStateBytes = getContentStateByteArray(state.contentsState.buffer());
 
         DataOutputStream dataOutputStream = null;
         FileOutputStream fileOutputStream = null;
@@ -370,6 +413,33 @@ public class TabState {
             StreamUtil.closeQuietly(dataOutputStream);
             StreamUtil.closeQuietly(fileOutputStream);
         }
+    }
+
+    /**
+     * Writes the TabState to a bundle. This method may be called on either the UI or background
+     * thread.
+     * @param bundle Bundle to write the tab's state to.
+     * @param state State object obtained from from {@link Tab#getState()}.
+     */
+    public static void saveState(Bundle bundle, TabState state) {
+        if (state == null || state.contentsState == null) return;
+
+        byte[] contentsStateBytes = getContentStateByteArray(state.contentsState.buffer());
+
+        // Chrome Tab State only goes back 50 navigations, and the size of TabState typically caps
+        // out around 50kB.
+        // TODO(mthiesse): If this starts getting hit we'll need to reduce the history size or fall
+        // back to saving to disk.
+        assert contentsStateBytes.length < MAX_BUNDLE_SIZE;
+
+        bundle.putLong(TIMESTAMP_MILLIS, state.timestampMillis);
+        bundle.putByteArray(CONTENT_STATE_BYTES, contentsStateBytes);
+        bundle.putInt(PARENT_ID, state.parentId);
+        bundle.putString(OPENER_APP_ID, state.openerAppId);
+        bundle.putInt(VERSION, state.contentsState.version());
+        bundle.putBoolean(SHOULD_PRESERVE, state.shouldPreserve);
+        bundle.putInt(THEME_COLOR, state.themeColor);
+        bundle.putBoolean(IS_INCOGNITO, state.isIncognito());
     }
 
     /**

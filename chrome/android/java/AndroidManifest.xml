@@ -527,6 +527,14 @@ by a child template that "extends" this file.
             {{ self.supports_video_persistence() }} >
             {{ self.extra_web_rendering_activity_definitions() }}
         </activity>
+        <activity android:name="org.chromium.chrome.browser.NoTouchActivity"
+            android:theme="@style/MainTheme"
+            android:exported="false"
+            android:launchMode="singleTask"
+            {{ self.chrome_activity_common() }}
+            {{ self.supports_video_persistence() }} >
+            {{ self.extra_web_rendering_activity_definitions() }}
+        </activity>
 
         <activity android:name="org.chromium.chrome.browser.sync.ui.PassphraseActivity"
             android:theme="@style/MainTheme"
