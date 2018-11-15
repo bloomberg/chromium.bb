@@ -10,7 +10,6 @@ function generateContents(appIcon, appTitle, appPackageName) {
   const recommendAppsContainer = doc.getElementById('recommend-apps-container');
   const item = doc.createElement('div');
   item.classList.add('item');
-  item.classList.add('checked');
   item.setAttribute('data-packagename', appPackageName);
 
   const imagePicker = doc.createElement('div');
