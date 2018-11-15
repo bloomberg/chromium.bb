@@ -98,6 +98,7 @@
 #include "components/exo/wayland/wayland_input_delegate.h"
 #include "components/exo/wayland/wayland_keyboard_delegate.h"
 #include "components/exo/wayland/wayland_pointer_delegate.h"
+#include "components/exo/wayland/wayland_touch_delegate.h"
 #include "components/exo/wayland/zcr_notification_shell.h"
 #include "components/exo/wayland/zwp_text_input_manager.h"
 #include "components/exo/wm_helper.h"
@@ -3595,80 +3596,6 @@ const struct wl_keyboard_interface keyboard_implementation = {keyboard_release};
 
 ////////////////////////////////////////////////////////////////////////////////
 // wl_touch_interface:
-
-// Touch delegate class that accepts events for surfaces owned by the same
-// client as a touch resource.
-class WaylandTouchDelegate : public WaylandInputDelegate, public TouchDelegate {
- public:
-  explicit WaylandTouchDelegate(wl_resource* touch_resource)
-      : touch_resource_(touch_resource) {}
-
-  // Overridden from TouchDelegate:
-  void OnTouchDestroying(Touch* touch) override { delete this; }
-  bool CanAcceptTouchEventsForSurface(Surface* surface) const override {
-    wl_resource* surface_resource = GetSurfaceResource(surface);
-    // We can accept events for this surface if the client is the same as the
-    // touch resource.
-    return surface_resource &&
-           wl_resource_get_client(surface_resource) == client();
-  }
-  void OnTouchDown(Surface* surface,
-                   base::TimeTicks time_stamp,
-                   int id,
-                   const gfx::PointF& location) override {
-    wl_resource* surface_resource = GetSurfaceResource(surface);
-    DCHECK(surface_resource);
-    SendTimestamp(time_stamp);
-    wl_touch_send_down(touch_resource_, next_serial(),
-                       TimeTicksToMilliseconds(time_stamp), surface_resource,
-                       id, wl_fixed_from_double(location.x()),
-                       wl_fixed_from_double(location.y()));
-  }
-  void OnTouchUp(base::TimeTicks time_stamp, int id) override {
-    SendTimestamp(time_stamp);
-    wl_touch_send_up(touch_resource_, next_serial(),
-                     TimeTicksToMilliseconds(time_stamp), id);
-  }
-  void OnTouchMotion(base::TimeTicks time_stamp,
-                     int id,
-                     const gfx::PointF& location) override {
-    SendTimestamp(time_stamp);
-    wl_touch_send_motion(touch_resource_, TimeTicksToMilliseconds(time_stamp),
-                         id, wl_fixed_from_double(location.x()),
-                         wl_fixed_from_double(location.y()));
-  }
-  void OnTouchShape(int id, float major, float minor) override {
-    if (wl_resource_get_version(touch_resource_) >=
-        WL_TOUCH_SHAPE_SINCE_VERSION) {
-      wl_touch_send_shape(touch_resource_, id, wl_fixed_from_double(major),
-                          wl_fixed_from_double(minor));
-    }
-  }
-  void OnTouchFrame() override {
-    if (wl_resource_get_version(touch_resource_) >=
-        WL_TOUCH_FRAME_SINCE_VERSION) {
-      wl_touch_send_frame(touch_resource_);
-    }
-    wl_client_flush(client());
-  }
-  void OnTouchCancel() override {
-    wl_touch_send_cancel(touch_resource_);
-  }
-
- private:
-  // The client who own this touch instance.
-  wl_client* client() const { return wl_resource_get_client(touch_resource_); }
-
-  // Returns the next serial to use for keyboard events.
-  uint32_t next_serial() const {
-    return wl_display_next_serial(wl_client_get_display(client()));
-  }
-
-  // The touch resource associated with the touch.
-  wl_resource* const touch_resource_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandTouchDelegate);
-};
 
 void touch_release(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
