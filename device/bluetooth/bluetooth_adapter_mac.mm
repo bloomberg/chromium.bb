@@ -21,7 +21,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_adapter_mac_metrics.h"
@@ -31,6 +33,7 @@
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/bluetooth_low_energy_central_manager_delegate.h"
+#include "device/bluetooth/bluetooth_low_energy_device_watcher_mac.h"
 #include "device/bluetooth/bluetooth_low_energy_peripheral_manager_delegate.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 
@@ -52,6 +55,12 @@ namespace {
 
 // The frequency with which to poll the adapter for updates.
 const int kPollIntervalMs = 500;
+
+bool IsDeviceSystemPaired(const std::string& device_address) {
+  IOBluetoothDevice* device = [IOBluetoothDevice
+      deviceWithAddressString:base::SysUTF8ToNSString(device_address)];
+  return device && [device isPaired];
+}
 
 }  // namespace
 
@@ -125,6 +134,8 @@ BluetoothAdapterMac::BluetoothAdapterMac()
       should_update_name_(true),
       classic_discovery_manager_(
           BluetoothDiscoveryManagerMac::CreateClassic(this)),
+      device_paired_status_callback_(
+          base::BindRepeating(&IsDeviceSystemPaired)),
       weak_ptr_factory_(this) {
   if (IsLowEnergyAvailable()) {
     low_energy_discovery_manager_.reset(
@@ -339,6 +350,28 @@ BluetoothAdapterMac::GetHostControllerState() {
   return state;
 }
 
+void BluetoothAdapterMac::UpdateKnownLowEnergyDevices(
+    std::map<std::string, std::string> updated_low_energy_devices_info) {
+  std::map<std::string, std::string> changed_devices;
+  // Notify DeviceChanged() to devices that have been newly paired as well as to
+  // devices that have been removed from the pairing list.
+  std::set_symmetric_difference(
+      updated_low_energy_devices_info.begin(),
+      updated_low_energy_devices_info.end(), low_energy_devices_info_.begin(),
+      low_energy_devices_info_.end(),
+      std::inserter(changed_devices, changed_devices.end()));
+
+  low_energy_devices_info_ = std::move(updated_low_energy_devices_info);
+  for (const auto& info : changed_devices) {
+    auto it = devices_.find(
+        BluetoothLowEnergyDeviceMac::GetPeripheralHashAddress(info.first));
+    if (it == devices_.end())
+      continue;
+
+    NotifyDeviceChanged(it->second.get());
+  }
+}
+
 void BluetoothAdapterMac::SetCentralManagerForTesting(
     CBCentralManager* central_manager) {
   CHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
@@ -364,6 +397,19 @@ void BluetoothAdapterMac::SetHostControllerStateFunctionForTesting(
 void BluetoothAdapterMac::SetPowerStateFunctionForTesting(
     SetControllerPowerStateFunction power_state_function) {
   power_state_function_ = std::move(power_state_function);
+}
+
+void BluetoothAdapterMac::SetLowEnergyDeviceWatcherForTesting(
+    scoped_refptr<BluetoothLowEnergyDeviceWatcherMac>
+        bluetooth_low_energy_device_watcher) {
+  bluetooth_low_energy_device_watcher_ =
+      std::move(bluetooth_low_energy_device_watcher);
+  bluetooth_low_energy_device_watcher_->Init();
+}
+
+void BluetoothAdapterMac::SetGetDevicePairedStatusCallbackForTesting(
+    GetDevicePairedStatusCallback device_paired_status_callback) {
+  device_paired_status_callback_ = std::move(device_paired_status_callback);
 }
 
 void BluetoothAdapterMac::AddDiscoverySession(
@@ -496,6 +542,16 @@ void BluetoothAdapterMac::Init() {
   low_energy_advertisement_manager_->Init(ui_task_runner_,
                                           low_energy_peripheral_manager_);
   PollAdapter();
+
+  // To obtain list of low energy devices known to the system, we need to parse
+  // and watch system property list file for paired device addresses.
+  bluetooth_low_energy_device_watcher_ =
+      BluetoothLowEnergyDeviceWatcherMac::CreateAndStartWatching(
+          ui_task_runner_,
+          base::BindRepeating(&BluetoothAdapterMac::UpdateKnownLowEnergyDevices,
+                              weak_ptr_factory_.GetWeakPtr()));
+
+  bluetooth_low_energy_device_watcher_->ReadBluetoothPropertyListFile();
 }
 
 void BluetoothAdapterMac::InitForTest(
@@ -793,6 +849,17 @@ void BluetoothAdapterMac::DidDisconnectPeripheral(CBPeripheral* peripheral,
     return;
   }
   device_mac->DidDisconnectPeripheral(error);
+}
+
+bool BluetoothAdapterMac::IsBluetoothLowEnergyDeviceSystemPaired(
+    base::StringPiece device_identifier) const {
+  auto it = std::find_if(
+      low_energy_devices_info_.begin(), low_energy_devices_info_.end(),
+      [&](const auto& info) { return info.first == device_identifier; });
+  if (it == low_energy_devices_info_.end())
+    return false;
+
+  return device_paired_status_callback_.Run(it->second);
 }
 
 BluetoothLowEnergyDeviceMac*
