@@ -9,6 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "net/nqe/cached_network_quality.h"
 #include "net/nqe/network_id.h"
@@ -44,11 +45,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkQualitiesPrefDelegate {
   ForceReadPrefsForTesting() const;
 
  private:
+  // Called when pref service is initialized.
+  void OnPrefServiceInitialized(bool success);
+
   // Prefs manager that is owned by this service. Created on the UI thread, but
   // used and deleted on the IO thread.
   net::NetworkQualitiesPrefsManager prefs_manager_;
 
+  // Guaranteed to be non-null during the lifetime of |this|.
+  net::NetworkQualityEstimator* network_quality_estimator_;
+
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<NetworkQualitiesPrefDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkQualitiesPrefDelegate);
 };

@@ -56,6 +56,12 @@ class PrefDelegateImpl
   DISALLOW_COPY_AND_ASSIGN(PrefDelegateImpl);
 };
 
+// Returns true if |pref_service| has been initialized.
+bool IsPrefServiceInitialized(PrefService* pref_service) {
+  return pref_service->GetInitializationStatus() !=
+         PrefService::INITIALIZATION_STATUS_WAITING;
+}
+
 }  // namespace
 
 namespace network {
@@ -63,14 +69,30 @@ namespace network {
 NetworkQualitiesPrefDelegate::NetworkQualitiesPrefDelegate(
     PrefService* pref_service,
     net::NetworkQualityEstimator* network_quality_estimator)
-    : prefs_manager_(std::make_unique<PrefDelegateImpl>(pref_service)) {
+    : prefs_manager_(std::make_unique<PrefDelegateImpl>(pref_service)),
+      network_quality_estimator_(network_quality_estimator),
+      weak_ptr_factory_(this) {
   DCHECK(pref_service);
-  DCHECK(network_quality_estimator);
-  prefs_manager_.InitializeOnNetworkThread(network_quality_estimator);
+  DCHECK(network_quality_estimator_);
+
+  if (IsPrefServiceInitialized(pref_service)) {
+    OnPrefServiceInitialized(true);
+  } else {
+    // Register for a callback that will be invoked when |pref_service| is
+    // initialized.
+    pref_service->AddPrefInitObserver(
+        base::BindOnce(&NetworkQualitiesPrefDelegate::OnPrefServiceInitialized,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 NetworkQualitiesPrefDelegate::~NetworkQualitiesPrefDelegate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void NetworkQualitiesPrefDelegate::OnPrefServiceInitialized(bool success) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  prefs_manager_.InitializeOnNetworkThread(network_quality_estimator_);
 }
 
 void NetworkQualitiesPrefDelegate::ClearPrefs() {
@@ -80,7 +102,7 @@ void NetworkQualitiesPrefDelegate::ClearPrefs() {
 
 // static
 void NetworkQualitiesPrefDelegate::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kNetworkQualities, PrefRegistry::LOSSY_PREF);
+  registry->RegisterDictionaryPref(kNetworkQualities);
 }
 
 std::map<net::nqe::internal::NetworkID,
