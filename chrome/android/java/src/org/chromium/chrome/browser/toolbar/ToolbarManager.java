@@ -64,7 +64,6 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
-import org.chromium.chrome.browser.omnibox.QueryInOmnibox;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager.HomepageStateListener;
@@ -422,7 +421,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 if (mLocationBarModel.getTab() == null) return;
 
                 assert tab == mLocationBarModel.getTab();
-                QueryInOmnibox.setIgnoreSecurityLevelForSearchTerms(tab.getProfile(), false);
                 mLocationBar.updateSecurityIcon();
                 mLocationBar.setUrlToPageUrl();
             }
@@ -462,13 +460,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             }
 
             @Override
-            public void onPageLoadStarted(Tab tab, String url) {
-                QueryInOmnibox.setIgnoreSecurityLevelForSearchTerms(tab.getProfile(), true);
-            }
-
-            @Override
             public void onPageLoadFinished(Tab tab) {
-                QueryInOmnibox.setIgnoreSecurityLevelForSearchTerms(tab.getProfile(), false);
                 if (tab.isShowingErrorPage()) {
                     handleIPHForErrorPageShown(tab);
                     return;
@@ -492,7 +484,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             @Override
             public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
                 if (!toDifferentDocument) return;
-                QueryInOmnibox.setIgnoreSecurityLevelForSearchTerms(tab.getProfile(), true);
                 updateButtonStatus();
                 updateTabLoadingState(true);
             }
@@ -500,7 +491,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             @Override
             public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
                 if (!toDifferentDocument) return;
-                QueryInOmnibox.setIgnoreSecurityLevelForSearchTerms(tab.getProfile(), false);
                 updateTabLoadingState(true);
 
                 // If we made some progress, fast-forward to complete, otherwise just dismiss any
