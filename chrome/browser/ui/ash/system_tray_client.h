@@ -58,6 +58,8 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   void SetPrimaryTrayEnabled(bool enabled);
   void SetPrimaryTrayVisible(bool visible);
   void SetPerformanceTracingIconVisible(bool visible);
+  void SetLocaleList(std::vector<ash::mojom::LocaleInfoPtr> locale_list,
+                     const std::string& current_locale_iso_code);
 
   // ash::mojom::SystemTrayClient:
   void ShowSettings() override;
@@ -88,6 +90,7 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   void ShowNetworkSettings(const std::string& network_id) override;
   void ShowMultiDeviceSetup() override;
   void RequestRestartForUpdate() override;
+  void SetLocaleAndExit(const std::string& locale_iso_code) override;
 
  private:
   // Helper function shared by ShowNetworkSettings() and ShowNetworkConfigure().

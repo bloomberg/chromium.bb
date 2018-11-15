@@ -7,6 +7,15 @@ module ash.mojom;
 import "ash/public/interfaces/update.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 
+// The locale info to show in the locale feature detailed view.
+struct LocaleInfo {
+  // This ISO code of the locale.
+  string iso_code;
+
+  // The display name of the locale.
+  mojo_base.mojom.String16 display_name;
+};
+
 // Allows clients (e.g. Chrome browser) to control the ash system tray menu.
 interface SystemTray {
   // Sets the client interface.
@@ -32,6 +41,10 @@ interface SystemTray {
   // Shows or hides an item in the system tray indicating that performance
   // tracing is running.
   SetPerformanceTracingIconVisible(bool visible);
+
+  // Sets the list of supported UI locales. |current_locale_iso_code| refers to
+  // the locale currently used by the UI.
+  SetLocaleList(array<LocaleInfo> locale_list, string current_locale_iso_code);
 
   // Shows an icon in the system tray or a notification on the unified system
   // menu indicating that a software update is available. Once shown, the icon
@@ -166,4 +179,8 @@ interface SystemTrayClient {
 
   // Attempts to restart the system for update.
   RequestRestartForUpdate();
+
+  // Sets the UI locale to |locale_iso_code| and exit the session to take
+  // effect.
+  SetLocaleAndExit(string locale_iso_code);
 };

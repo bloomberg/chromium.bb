@@ -10,11 +10,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
@@ -25,6 +27,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -40,6 +43,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "net/base/network_change_notifier.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -146,6 +150,36 @@ void RestoreDefaultLocaleForNextSession() {
     profile->ChangeAppLocale(default_locale,
                              Profile::APP_LOCALE_CHANGED_VIA_DEMO_SESSION);
   }
+}
+
+// Returns the list of locales (and related info) supported by demo mode.
+std::vector<ash::mojom::LocaleInfoPtr> GetSupportedLocales() {
+  const base::flat_set<std::string> kSupportedLocales(
+      {"da", "en-GB", "en-US", "fi", "fr", "fr-CA", "nb", "nl", "sv"});
+
+  const std::vector<std::string>& available_locales =
+      l10n_util::GetAvailableLocales();
+  const std::string current_locale_iso_code =
+      ProfileManager::GetActiveUserProfile()->GetPrefs()->GetString(
+          language::prefs::kApplicationLocale);
+  std::vector<ash::mojom::LocaleInfoPtr> supported_locales;
+  for (const std::string& locale : available_locales) {
+    if (!kSupportedLocales.contains(locale))
+      continue;
+    ash::mojom::LocaleInfoPtr locale_info = ash::mojom::LocaleInfo::New();
+    locale_info->iso_code = locale;
+    locale_info->display_name = l10n_util::GetDisplayNameForLocale(
+        locale, current_locale_iso_code, true /* is_for_ui */);
+    const base::string16 native_display_name =
+        l10n_util::GetDisplayNameForLocale(locale, locale,
+                                           true /* is_for_ui */);
+    if (locale_info->display_name != native_display_name) {
+      locale_info->display_name +=
+          base::UTF8ToUTF16(" - ") + native_display_name;
+    }
+    supported_locales.push_back(std::move(locale_info));
+  }
+  return supported_locales;
 }
 
 }  // namespace
@@ -385,6 +419,14 @@ void DemoSession::OnSessionStateChanged() {
   if (session_manager::SessionManager::Get()->session_state() !=
       session_manager::SessionState::ACTIVE) {
     return;
+  }
+  // SystemTrayClient may not exist in unit tests.
+  if (SystemTrayClient::Get()) {
+    const std::string current_locale_iso_code =
+        ProfileManager::GetActiveUserProfile()->GetPrefs()->GetString(
+            language::prefs::kApplicationLocale);
+    SystemTrayClient::Get()->SetLocaleList(GetSupportedLocales(),
+                                           current_locale_iso_code);
   }
   RestoreDefaultLocaleForNextSession();
 

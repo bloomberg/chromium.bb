@@ -232,10 +232,12 @@ class Profile : public content::BrowserContext {
     APP_LOCALE_CHANGED_VIA_LOGIN,
     // From login to a public session.
     APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN,
-    // From AllowedLanguages policy
+    // From AllowedLanguages policy.
     APP_LOCALE_CHANGED_VIA_POLICY,
     // From demo session.
     APP_LOCALE_CHANGED_VIA_DEMO_SESSION,
+    // From system tray.
+    APP_LOCALE_CHANGED_VIA_SYSTEM_TRAY,
     // Source unknown.
     APP_LOCALE_CHANGED_VIA_UNKNOWN
   };

@@ -85,6 +85,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   void ShowVPNDetailedView();
   // Show the detailed view of IME. Called from the view.
   void ShowIMEDetailedView();
+  // Show the detailed view of locale. Called from the view.
+  void ShowLocaleDetailedView();
   // Show the detailed view of audio. Called from the view.
   void ShowAudioDetailedView();
   // Show the detailed view of notifier settings. Called from the view.

@@ -543,6 +543,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_SUBLABEL" desc="The sub label text shown under do not disturb button when all notifications are disabled.">
         Do not disturb
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOCALE" desc="The label used for locale button in system tray bubble.">
+        Language
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOCALE_TITLE" desc="The title shown in the locale detailed view.">
+        Languages
+      </message>
 
       <!-- Status tray supervised users. -->
       <message name="IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL" desc="Label shown instead of email for supervised users">
