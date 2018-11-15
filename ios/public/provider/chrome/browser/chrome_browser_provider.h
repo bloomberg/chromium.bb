@@ -18,7 +18,6 @@
 
 class AppDistributionProvider;
 class BrandedImageProvider;
-class ExternalSearchProvider;
 class FullscreenProvider;
 class MailtoHandlerProvider;
 class OmahaServiceProvider;
@@ -154,9 +153,6 @@ class ChromeBrowserProvider {
 
   // Returns a valid non-null instance of the mailto handler provider.
   virtual MailtoHandlerProvider* GetMailtoHandlerProvider() const;
-
-  // Returns an instance of the External Search provider.
-  virtual ExternalSearchProvider* GetExternalSearchProvider() const;
 
   // Returns an instance of the fullscreen provider.
   virtual FullscreenProvider* GetFullscreenProvider() const;

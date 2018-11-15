@@ -145,7 +145,6 @@
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/external_file_controller.h"
-#import "ios/chrome/browser/ui/external_search/external_search_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
@@ -575,9 +574,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // The updater that adjusts the toolbar's layout for fullscreen events.
   std::unique_ptr<FullscreenUIUpdater> _fullscreenUIUpdater;
-
-  // Coordinator for the External Search UI.
-  ExternalSearchCoordinator* _externalSearchCoordinator;
 
   // Coordinator for the Download Manager UI.
   DownloadManagerCoordinator* _downloadManagerCoordinator;
@@ -1384,7 +1380,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_qrScannerCoordinator disconnect];
   [self.popupMenuCoordinator stop];
   [_pageInfoCoordinator disconnect];
-  [_externalSearchCoordinator disconnect];
   [self.tabStripCoordinator stop];
   self.tabStripCoordinator = nil;
   self.tabStripView = nil;
@@ -2401,9 +2396,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _pageInfoCoordinator.loader = self;
   _pageInfoCoordinator.presentationProvider = self;
   _pageInfoCoordinator.tabModel = self.tabModel;
-
-  _externalSearchCoordinator = [[ExternalSearchCoordinator alloc] init];
-  _externalSearchCoordinator.dispatcher = _dispatcher;
 
   _paymentRequestManager = [[PaymentRequestManager alloc]
       initWithBaseViewController:self

@@ -54,7 +54,6 @@
 #include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
-#include "ios/chrome/browser/ui/external_search/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #include "ios/chrome/browser/ui/sad_tab/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
@@ -204,9 +203,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"drag_and_drop", flag_descriptions::kDragAndDropName,
      flag_descriptions::kDragAndDropDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDragAndDrop)},
-    {"external-search", flag_descriptions::kExternalSearchName,
-     flag_descriptions::kExternalSearchDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kExternalSearch)},
     {"ignores-viewport-scale-limits",
      flag_descriptions::kIgnoresViewportScaleLimitsName,
      flag_descriptions::kIgnoresViewportScaleLimitsDescription,

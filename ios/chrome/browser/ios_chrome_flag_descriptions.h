@@ -147,10 +147,6 @@ extern const char kDragAndDropDescription[];
 extern const char kNewClearBrowsingDataUIName[];
 extern const char kNewClearBrowsingDataUIDescription[];
 
-// Title and description for the flag to enable External Search.
-extern const char kExternalSearchName[];
-extern const char kExternalSearchDescription[];
-
 // Title and description for the flag to enable invaliations delivery via FCM.
 extern const char kFCMInvalidationsName[];
 extern const char kFCMInvalidationsDescription[];
