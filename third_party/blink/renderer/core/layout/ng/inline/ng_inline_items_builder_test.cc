@@ -405,6 +405,7 @@ static std::unique_ptr<LayoutInline> CreateLayoutInline(
   initialize_style(style.get());
   std::unique_ptr<LayoutInline> node = std::make_unique<LayoutInline>(nullptr);
   node->SetStyleInternal(std::move(style));
+  node->SetIsInLayoutNGInlineFormattingContext(true);
   return node;
 }
 

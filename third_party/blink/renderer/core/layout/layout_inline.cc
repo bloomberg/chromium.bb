@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_painter.h"
@@ -57,6 +58,19 @@ const NGPhysicalBoxFragment* ContainingBlockFlowFragmentOf(
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return nullptr;
   return node.ContainingBlockFlowFragment();
+}
+
+// TODO(xiaochengh): Deduplicate with a similar function in ng_paint_fragment.cc
+// ::before, ::after and ::first-letter can be hit test targets.
+bool CanBeHitTestTargetPseudoNodeStyle(const ComputedStyle& style) {
+  switch (style.StyleType()) {
+    case kPseudoIdBefore:
+    case kPseudoIdAfter:
+    case kPseudoIdFirstLetter:
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // anonymous namespace
@@ -299,17 +313,23 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (!AlwaysCreateLineBoxes()) {
-    bool always_create_line_boxes_new =
-        HasSelfPaintingLayer() || HasBoxDecorationBackground() ||
-        new_style.HasPadding() || new_style.HasMargin() ||
-        new_style.HasOutline();
-    if (old_style && always_create_line_boxes_new) {
-      DirtyLineBoxes(false);
-      SetNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::kStyleChange);
+  if (!IsInLayoutNGInlineFormattingContext()) {
+    if (!AlwaysCreateLineBoxes()) {
+      bool always_create_line_boxes_new =
+          HasSelfPaintingLayer() || HasBoxDecorationBackground() ||
+          new_style.HasPadding() || new_style.HasMargin() ||
+          new_style.HasOutline();
+      if (old_style && always_create_line_boxes_new) {
+        DirtyLineBoxes(false);
+        SetNeedsLayoutAndFullPaintInvalidation(
+            LayoutInvalidationReason::kStyleChange);
+      }
+      SetAlwaysCreateLineBoxes(always_create_line_boxes_new);
     }
-    SetAlwaysCreateLineBoxes(always_create_line_boxes_new);
+  } else {
+    if (!ShouldCreateBoxFragment()) {
+      UpdateShouldCreateBoxFragment();
+    }
   }
 
   // If we are changing to/from static, we need to reposition
@@ -336,6 +356,8 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
 }
 
 void LayoutInline::UpdateAlwaysCreateLineBoxes(bool full_layout) {
+  DCHECK(!IsInLayoutNGInlineFormattingContext());
+
   // Once we have been tainted once, just assume it will happen again. This way
   // effects like hover highlighting that change the background color will only
   // cause a layout on the first rollover.
@@ -372,6 +394,49 @@ void LayoutInline::UpdateAlwaysCreateLineBoxes(bool full_layout) {
     if (!full_layout)
       DirtyLineBoxes(false);
     SetAlwaysCreateLineBoxes();
+  }
+}
+
+bool LayoutInline::ComputeInitialShouldCreateBoxFragment(
+    const ComputedStyle& style) const {
+  if (style.HasBoxDecorationBackground() || style.HasPadding() ||
+      style.HasMargin())
+    return true;
+
+  return style.CanContainAbsolutePositionObjects() ||
+         style.CanContainFixedPositionObjects(false) ||
+         NGOutlineUtils::HasPaintedOutline(style, GetNode()) ||
+         CanBeHitTestTargetPseudoNodeStyle(style);
+}
+
+bool LayoutInline::ComputeInitialShouldCreateBoxFragment() const {
+  const ComputedStyle& style = StyleRef();
+  if (HasSelfPaintingLayer() || ComputeInitialShouldCreateBoxFragment(style) ||
+      ShouldApplyPaintContainment() || ShouldApplyLayoutContainment())
+    return true;
+
+  const ComputedStyle& first_line_style = FirstLineStyleRef();
+  if (UNLIKELY(&style != &first_line_style &&
+               ComputeInitialShouldCreateBoxFragment(first_line_style)))
+    return true;
+
+  return false;
+}
+
+void LayoutInline::UpdateShouldCreateBoxFragment() {
+  // Once we have been tainted once, just assume it will happen again. This way
+  // effects like hover highlighting that change the background color will only
+  // cause a layout on the first rollover.
+  if (IsInLayoutNGInlineFormattingContext()) {
+    if (ShouldCreateBoxFragment())
+      return;
+  } else {
+    SetIsInLayoutNGInlineFormattingContext(true);
+    SetShouldCreateBoxFragment(false);
+  }
+
+  if (ComputeInitialShouldCreateBoxFragment()) {
+    SetShouldCreateBoxFragment();
   }
 }
 

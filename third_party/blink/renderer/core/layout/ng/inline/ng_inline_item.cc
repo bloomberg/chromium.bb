@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
 
@@ -56,19 +55,6 @@ bool IsInlineBoxEndEmpty(const ComputedStyle& style,
   return true;
 }
 
-// TODO(xiaochengh): Deduplicate with a similar function in ng_paint_fragment.cc
-// ::before, ::after and ::first-letter can be hit test targets.
-bool CanBeHitTestTargetPseudoNodeStyle(const ComputedStyle& style) {
-  switch (style.StyleType()) {
-    case kPseudoIdBefore:
-    case kPseudoIdAfter:
-    case kPseudoIdFirstLetter:
-      return true;
-    default:
-      return false;
-  }
-}
-
 }  // namespace
 
 NGInlineItem::NGInlineItem(NGInlineItemType type,
@@ -87,7 +73,6 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       bidi_level_(UBIDI_LTR),
       shape_options_(kPreContext | kPostContext),
       is_empty_item_(false),
-      should_create_box_fragment_(false),
       style_variant_(static_cast<unsigned>(NGStyleVariant::kStandard)),
       end_collapse_type_(kNotCollapsible),
       is_end_collapsible_newline_(false),
@@ -113,7 +98,6 @@ NGInlineItem::NGInlineItem(const NGInlineItem& other,
       bidi_level_(other.bidi_level_),
       shape_options_(other.shape_options_),
       is_empty_item_(other.is_empty_item_),
-      should_create_box_fragment_(other.should_create_box_fragment_),
       style_variant_(other.style_variant_),
       end_collapse_type_(other.end_collapse_type_),
       is_end_collapsible_newline_(other.is_end_collapsible_newline_),
@@ -124,9 +108,20 @@ NGInlineItem::NGInlineItem(const NGInlineItem& other,
 
 NGInlineItem::~NGInlineItem() = default;
 
+bool NGInlineItem::ShouldCreateBoxFragment() const {
+  if (Type() == kOpenTag || Type() == kCloseTag)
+    return ToLayoutInline(layout_object_)->ShouldCreateBoxFragment();
+  DCHECK_EQ(Type(), kAtomicInline);
+  return false;
+}
+
+void NGInlineItem::SetShouldCreateBoxFragment() {
+  DCHECK(Type() == kOpenTag || Type() == kCloseTag);
+  ToLayoutInline(layout_object_)->SetShouldCreateBoxFragment();
+}
+
 void NGInlineItem::ComputeBoxProperties() {
   DCHECK(!is_empty_item_);
-  DCHECK(!should_create_box_fragment_);
 
   if (type_ == NGInlineItem::kText || type_ == NGInlineItem::kAtomicInline ||
       type_ == NGInlineItem::kControl)
@@ -134,24 +129,7 @@ void NGInlineItem::ComputeBoxProperties() {
 
   if (type_ == NGInlineItem::kOpenTag) {
     DCHECK(style_ && layout_object_ && layout_object_->IsLayoutInline());
-    if (style_->HasBoxDecorationBackground() || style_->HasPadding() ||
-        style_->HasMargin()) {
-      is_empty_item_ = IsInlineBoxStartEmpty(*style_, *layout_object_);
-      should_create_box_fragment_ = true;
-    } else {
-      is_empty_item_ = true;
-      should_create_box_fragment_ =
-          ToLayoutBoxModelObject(layout_object_)->HasSelfPaintingLayer() ||
-          style_->CanContainAbsolutePositionObjects() ||
-          style_->CanContainFixedPositionObjects(false) ||
-          NGOutlineUtils::HasPaintedOutline(*style_,
-                                            layout_object_->GetNode()) ||
-          ToLayoutBoxModelObject(layout_object_)
-              ->ShouldApplyPaintContainment() ||
-          ToLayoutBoxModelObject(layout_object_)
-              ->ShouldApplyLayoutContainment() ||
-          CanBeHitTestTargetPseudoNodeStyle(*style_);
-    }
+    is_empty_item_ = IsInlineBoxStartEmpty(*style_, *layout_object_);
     return;
   }
 
