@@ -2877,4 +2877,25 @@ TEST_F(PasswordManagerTest, ParsingOnSavingMetricRecorded) {
       ukm::builders::PasswordForm::kParsingOnSavingDifferenceName);
 }
 
+TEST_F(PasswordManagerTest, NoSavePromptWhenPasswordManagerDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  TurnOnNewParsingForSaving(&scoped_feature_list);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(false));
+
+  PasswordForm form(MakeSimpleForm());
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+
+  manager()->OnPasswordFormsParsed(&driver_, {form});
+
+  auto submitted_form = form;
+  submitted_form.form_data.fields[0].value = ASCIIToUTF16("username");
+  submitted_form.form_data.fields[1].value = ASCIIToUTF16("strong_password");
+
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+  manager()->OnPasswordFormSubmittedNoChecks(&driver_, submitted_form);
+}
+
 }  // namespace password_manager
