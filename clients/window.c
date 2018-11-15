@@ -278,7 +278,6 @@ struct window {
 
 	struct zwp_relative_pointer_v1 *relative_pointer;
 	struct zwp_locked_pointer_v1 *locked_pointer;
-	struct input *locked_input;
 	bool pointer_locked;
 	locked_pointer_locked_handler_t pointer_locked_handler;
 	locked_pointer_unlocked_handler_t pointer_unlocked_handler;
@@ -4866,7 +4865,6 @@ window_lock_pointer(struct window *window, struct input *input)
 					   &locked_pointer_listener,
 					   input);
 
-	window->locked_input = input;
 	window->locked_pointer = locked_pointer;
 	window->relative_pointer = relative_pointer;
 
@@ -4884,7 +4882,6 @@ window_unlock_pointer(struct window *window)
 	window->locked_pointer = NULL;
 	window->relative_pointer = NULL;
 	window->pointer_locked = false;
-	window->locked_input = NULL;
 }
 
 void
