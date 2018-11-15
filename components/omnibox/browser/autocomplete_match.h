@@ -136,14 +136,10 @@ struct AutocompleteMatch {
   AutocompleteMatch& operator=(const AutocompleteMatch& match);
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
-  // Gets the vector icon identifier for the icon to be shown for |type|. If
+  // Gets the vector icon identifier for the icon to be shown for this match. If
   // |is_bookmark| is true, returns a bookmark icon rather than what the type
-  // would determine.
-  static const gfx::VectorIcon& TypeToVectorIcon(Type type, bool is_bookmark);
-
-  // Gets the VectorIcon to be shown for a match, which may depend on match
-  // contents.  This is preferable to using TypeToVectorIcon when a match
-  // instance is available because it can make a more informed choice.
+  // would normally determine.  Note that in addition to |type|, the icon chosen
+  // may depend on match contents (e.g. Drive |document_type| or |pedal|).
   const gfx::VectorIcon& GetVectorIcon(bool is_bookmark) const;
 #endif
 

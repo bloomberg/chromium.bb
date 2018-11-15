@@ -133,8 +133,9 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
 
   // For tests, model_ will be null.
   if (!model_) {
-    const gfx::VectorIcon& vector_icon = AutocompleteMatch::TypeToVectorIcon(
-        AutocompleteMatchType::URL_WHAT_YOU_TYPED, /*is_bookmark=*/false);
+    AutocompleteMatch fake_match;
+    fake_match.type = AutocompleteMatchType::URL_WHAT_YOU_TYPED;
+    const gfx::VectorIcon& vector_icon = fake_match.GetVectorIcon(false);
     return gfx::CreateVectorIcon(vector_icon, dip_size, color);
   }
 
