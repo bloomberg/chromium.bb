@@ -408,15 +408,15 @@ deps = {
       'packages': [
         {
           'package': 'infra/tools/luci/isolate/${{platform}}',
-          'version': 'git_revision:b47dd589aae9f538adeaecc096a8dd1948d08012',
+          'version': 'git_revision:b4183943efee5d2a2d444c8551877ae96b78d8b2',
         },
         {
           'package': 'infra/tools/luci/isolated/${{platform}}',
-          'version': 'git_revision:b47dd589aae9f538adeaecc096a8dd1948d08012',
+          'version': 'git_revision:b4183943efee5d2a2d444c8551877ae96b78d8b2',
         },
         {
           'package': 'infra/tools/luci/swarming/${{platform}}',
-          'version': 'git_revision:b47dd589aae9f538adeaecc096a8dd1948d08012',
+          'version': 'git_revision:b4183943efee5d2a2d444c8551877ae96b78d8b2',
         },
       ],
       'dep_type': 'cipd',
