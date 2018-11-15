@@ -77,6 +77,7 @@ public class DetachedResourceRequestTest {
         mContext = InstrumentationRegistry.getInstrumentation()
                            .getTargetContext()
                            .getApplicationContext();
+        ThreadUtils.runOnUiThreadBlocking(OriginVerifier::clearCachedVerificationsForTesting);
     }
 
     @After
