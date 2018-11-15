@@ -460,11 +460,11 @@ class DCLayerTree::SwapChainPresenter {
                          gl::GLImageMemory* uv_image_memory);
 
   // Recreate swap chain using given size.  Use preferred YUV format if |yuv| is
-  // true, or BGRA otherwise.  Set protected video flags if |protected_video| is
-  // true. Returns true on success.
+  // true, or BGRA otherwise.  Set |protected_video_type|. Returns true on
+  // success.
   bool ReallocateSwapChain(const gfx::Size& swap_chain_size,
                            bool use_yuv_swap_chain,
-                           bool protected_video);
+                           ui::ProtectedVideoType protected_video_type);
 
   // Returns true if YUV swap chain should be preferred over BGRA swap chain.
   // This changes over time based on stats recorded in |presentation_history|.
@@ -494,6 +494,11 @@ class DCLayerTree::SwapChainPresenter {
   bool UpdateVisuals(const ui::DCRendererLayerParams& params,
                      const gfx::Size& swap_chain_size);
 
+  // Whether the video is protected
+  bool IsProtectedVideo(ui::ProtectedVideoType protected_video_type) const {
+    return (protected_video_type != ui::ProtectedVideoType::kClear);
+  }
+
   // Layer tree instance that owns this swap chain presenter.
   DCLayerTree* layer_tree_;
 
@@ -503,8 +508,9 @@ class DCLayerTree::SwapChainPresenter {
   // Whether the current swap chain is using the preferred YUV format.
   bool is_yuv_swapchain_ = false;
 
-  // Whether the current swap chain is presenting protected video.
-  bool is_protected_video_ = false;
+  // Whether the current swap chain is presenting protected video, software
+  // or hardware protection.
+  ui::ProtectedVideoType protected_video_type_ = ui::ProtectedVideoType::kClear;
 
   // Presentation history to track if swap chain was composited or used hardware
   // overlays.
@@ -662,7 +668,7 @@ bool DCLayerTree::SwapChainPresenter::ShouldUseYUVSwapChain() {
   // Always prefer YUV swap chain for protected video for now.
   // TODO(crbug.com/850799): Assess power/perf impact when protected video
   // swap chain is composited by DWM.
-  if (is_protected_video_)
+  if (IsProtectedVideo(protected_video_type_))
     return true;
 
   // Start out as YUV.
@@ -972,13 +978,13 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   bool toggle_yuv_swapchain = (use_yuv_swap_chain != is_yuv_swapchain_) &&
                               !failed_to_create_yuv_swapchain_;
   bool toggle_protected_video =
-      is_protected_video_ != params.is_protected_video;
+      protected_video_type_ != params.protected_video_type;
 
   bool first_present = false;
   if (!swap_chain_ || swap_chain_resized || toggle_yuv_swapchain ||
       toggle_protected_video) {
     if (!ReallocateSwapChain(swap_chain_size, use_yuv_swap_chain,
-                             params.is_protected_video)) {
+                             params.protected_video_type)) {
       return false;
     }
     first_present = true;
@@ -1224,7 +1230,7 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
 bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     const gfx::Size& swap_chain_size,
     bool use_yuv_swap_chain,
-    bool protected_video) {
+    ui::ProtectedVideoType protected_video_type) {
   TRACE_EVENT0("gpu", "DCLayerTree::SwapChainPresenter::ReallocateSwapChain");
   swap_chain_size_ = swap_chain_size;
 
@@ -1255,10 +1261,10 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
   desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
   desc.Flags =
       DXGI_SWAP_CHAIN_FLAG_YUV_VIDEO | DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO;
-  if (protected_video) {
-    desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
+  if (IsProtectedVideo(protected_video_type))
     desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
-  }
+  if (protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
+    desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
 
   HANDLE handle;
   if (!CreateSurfaceHandleHelper(&handle))
@@ -1300,10 +1306,10 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
   if (!is_yuv_swapchain_) {
     desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     desc.Flags = 0;
-    if (protected_video) {
-      desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
+    if (IsProtectedVideo(protected_video_type))
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
-    }
+    if (protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
+      desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.GetAddressOf());
@@ -1317,7 +1323,7 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
       return false;
     }
   }
-  is_protected_video_ = protected_video;
+  protected_video_type_ = protected_video_type;
   return true;
 }
 

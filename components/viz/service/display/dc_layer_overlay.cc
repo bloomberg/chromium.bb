@@ -31,10 +31,13 @@ DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
   dc_layer_overlay->filter = GL_LINEAR;
   dc_layer_overlay->color_space = quad->video_color_space;
   dc_layer_overlay->require_overlay = quad->require_overlay;
-  dc_layer_overlay->is_protected_video = quad->is_protected_video;
+  if (quad->is_protected_video) {
+    dc_layer_overlay->protected_video_type =
+        ui::ProtectedVideoType::kHardwareProtected;
+  }
   // Protected Videos have to go through the overlay swapchain path,
   // so they can be protected by Windows OS and hardware
-  if (dc_layer_overlay->is_protected_video)
+  if (dc_layer_overlay->IsProtectedVideo())
     dc_layer_overlay->require_overlay = true;
 
   return DCLayerOverlayProcessor::DC_LAYER_SUCCESS;
@@ -311,7 +314,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     // TODO(magchen): Collect all overlay candidates, and filter the list at the
     // end to find the best candidates (largest size?).
     if (is_root &&
-        (!processed_overlay_in_frame_ || dc_layer.is_protected_video) &&
+        (!processed_overlay_in_frame_ || dc_layer.IsProtectedVideo()) &&
         ProcessForOverlay(display_rect, quad_list, quad_rectangle,
                           occlusion_bounding_box, &it, damage_rect)) {
       // ProcessForOverlay makes the iterator point to the next value on

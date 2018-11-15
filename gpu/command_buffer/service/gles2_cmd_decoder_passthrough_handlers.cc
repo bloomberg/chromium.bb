@@ -1842,9 +1842,11 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleDCLayerCHROMIUM(
       reinterpret_cast<const volatile GLuint*>(mem + 8);
   const GLfloat* contents_rect = mem;
   const GLfloat* bounds_rect = mem + 4;
+  GLuint protected_video_type_param = c.protected_video_type;
+
   return DoScheduleDCLayerCHROMIUM(
       num_textures, contents_texture_ids, contents_rect, background_color,
-      edge_aa_mask, filter, bounds_rect, c.is_protected_video);
+      edge_aa_mask, filter, bounds_rect, protected_video_type_param);
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleSetColorSpaceMetadataCHROMIUM(

@@ -12797,12 +12797,22 @@ error::Error GLES2DecoderImpl::HandleScheduleDCLayerCHROMIUM(
     images.push_back(image);
   }
 
+  GLuint protected_video_type = c.protected_video_type;
+  if (protected_video_type >
+      static_cast<GLuint>(ui::ProtectedVideoType::kMaxValue)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
+                       "unknown protected video type");
+    return error::kNoError;
+  }
+  ui::ProtectedVideoType protected_video_type_param =
+      static_cast<ui::ProtectedVideoType>(protected_video_type);
+
   ui::DCRendererLayerParams params = ui::DCRendererLayerParams(
       dc_layer_shared_state_->is_clipped, dc_layer_shared_state_->clip_rect,
       dc_layer_shared_state_->z_order, dc_layer_shared_state_->transform,
       images, contents_rect, gfx::ToEnclosingRect(bounds_rect),
       c.background_color, c.edge_aa_mask, dc_layer_shared_state_->opacity,
-      filter, c.is_protected_video);
+      filter, protected_video_type_param);
   if (!surface_->ScheduleDCLayer(params)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleDCLayerCHROMIUM",
                        "failed to schedule DCLayer");

@@ -4717,7 +4717,7 @@ TEST_F(GLES2FormatTest, ScheduleDCLayerCHROMIUM) {
   void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(11),
                            static_cast<GLuint>(12), static_cast<GLuint>(13),
                            static_cast<GLuint>(14), static_cast<GLuint>(15),
-                           static_cast<GLuint>(16), static_cast<bool>(17));
+                           static_cast<GLuint>(16), static_cast<GLuint>(17));
   EXPECT_EQ(static_cast<uint32_t>(cmds::ScheduleDCLayerCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -4727,7 +4727,7 @@ TEST_F(GLES2FormatTest, ScheduleDCLayerCHROMIUM) {
   EXPECT_EQ(static_cast<GLuint>(14), cmd.filter);
   EXPECT_EQ(static_cast<GLuint>(15), cmd.shm_id);
   EXPECT_EQ(static_cast<GLuint>(16), cmd.shm_offset);
-  EXPECT_EQ(static_cast<bool>(17), static_cast<bool>(cmd.is_protected_video));
+  EXPECT_EQ(static_cast<GLuint>(17), cmd.protected_video_type);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

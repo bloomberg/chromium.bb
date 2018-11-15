@@ -887,7 +887,7 @@ error::Error DoScheduleDCLayerCHROMIUM(
     GLuint edge_aa_mask,
     GLenum filter,
     const GLfloat* bounds_rect,
-    bool is_protected_video);
+    GLuint protected_video_type);
 error::Error DoCommitOverlayPlanesCHROMIUM(uint64_t swap_id, GLbitfield flags);
 error::Error DoSetColorSpaceMetadataCHROMIUM(GLuint texture_id,
                                              gfx::ColorSpace color_space);

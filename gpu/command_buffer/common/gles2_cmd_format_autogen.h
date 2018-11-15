@@ -14174,7 +14174,7 @@ struct ScheduleDCLayerCHROMIUM {
             GLuint _filter,
             GLuint _shm_id,
             GLuint _shm_offset,
-            bool _is_protected_video) {
+            GLuint _protected_video_type) {
     SetHeader();
     num_textures = _num_textures;
     background_color = _background_color;
@@ -14182,7 +14182,7 @@ struct ScheduleDCLayerCHROMIUM {
     filter = _filter;
     shm_id = _shm_id;
     shm_offset = _shm_offset;
-    is_protected_video = _is_protected_video;
+    protected_video_type = _protected_video_type;
   }
 
   void* Set(void* cmd,
@@ -14192,10 +14192,10 @@ struct ScheduleDCLayerCHROMIUM {
             GLuint _filter,
             GLuint _shm_id,
             GLuint _shm_offset,
-            bool _is_protected_video) {
+            GLuint _protected_video_type) {
     static_cast<ValueType*>(cmd)->Init(_num_textures, _background_color,
                                        _edge_aa_mask, _filter, _shm_id,
-                                       _shm_offset, _is_protected_video);
+                                       _shm_offset, _protected_video_type);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -14206,7 +14206,7 @@ struct ScheduleDCLayerCHROMIUM {
   uint32_t filter;
   uint32_t shm_id;
   uint32_t shm_offset;
-  uint32_t is_protected_video;
+  uint32_t protected_video_type;
 };
 
 static_assert(sizeof(ScheduleDCLayerCHROMIUM) == 32,
@@ -14226,8 +14226,8 @@ static_assert(offsetof(ScheduleDCLayerCHROMIUM, shm_id) == 20,
 static_assert(offsetof(ScheduleDCLayerCHROMIUM, shm_offset) == 24,
               "offset of ScheduleDCLayerCHROMIUM shm_offset should be 24");
 static_assert(
-    offsetof(ScheduleDCLayerCHROMIUM, is_protected_video) == 28,
-    "offset of ScheduleDCLayerCHROMIUM is_protected_video should be 28");
+    offsetof(ScheduleDCLayerCHROMIUM, protected_video_type) == 28,
+    "offset of ScheduleDCLayerCHROMIUM protected_video_type should be 28");
 
 struct SetActiveURLCHROMIUM {
   typedef SetActiveURLCHROMIUM ValueType;
