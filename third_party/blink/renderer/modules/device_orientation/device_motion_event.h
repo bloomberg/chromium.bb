@@ -70,9 +70,6 @@ class DeviceMotionEvent final : public Event {
   DeviceMotionEvent(const AtomicString& event_type, const DeviceMotionData*);
 
   Member<const DeviceMotionData> device_motion_data_;
-  Member<DeviceAcceleration> acceleration_;
-  Member<DeviceAcceleration> acceleration_including_gravity_;
-  Member<DeviceRotationRate> rotation_rate_;
 };
 
 DEFINE_TYPE_CASTS(DeviceMotionEvent,
