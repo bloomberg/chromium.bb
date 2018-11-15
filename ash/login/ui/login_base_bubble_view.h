@@ -21,9 +21,6 @@ class ASH_EXPORT LoginBaseBubbleView : public views::BubbleDialogDelegateView {
                                gfx::NativeView parent_window);
   ~LoginBaseBubbleView() override;
 
-  // Returns whether or not this bubble should show persistently.
-  virtual bool IsPersistent() const;
-
   // views::BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;
