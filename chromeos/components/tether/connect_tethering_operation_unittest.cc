@@ -241,7 +241,8 @@ class ConnectTetheringOperationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ConnectTetheringOperationTest);
 };
 
-TEST_F(ConnectTetheringOperationTest, TestOperation_SuccessButInvalidResponse) {
+TEST_F(ConnectTetheringOperationTest,
+       DISABLED_TestOperation_SuccessButInvalidResponse) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulConnectTetheringResponse(_))
       .Times(0);
@@ -255,7 +256,8 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_SuccessButInvalidResponse) {
       true /* use_proto_without_ssid_and_password */);
 }
 
-TEST_F(ConnectTetheringOperationTest, TestOperation_SuccessWithValidResponse) {
+TEST_F(ConnectTetheringOperationTest,
+       DISABLED_TestOperation_SuccessWithValidResponse) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulConnectTetheringResponse(test_device_));
 
@@ -267,7 +269,7 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_SuccessWithValidResponse) {
       false /* use_proto_without_ssid_and_password */);
 }
 
-TEST_F(ConnectTetheringOperationTest, TestOperation_UnknownError) {
+TEST_F(ConnectTetheringOperationTest, DISABLED_TestOperation_UnknownError) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulConnectTetheringResponse(_))
       .Times(0);
@@ -280,7 +282,8 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_UnknownError) {
       false /* use_proto_without_ssid_and_password */);
 }
 
-TEST_F(ConnectTetheringOperationTest, TestOperation_ProvisioningFailed) {
+TEST_F(ConnectTetheringOperationTest,
+       DISABLED_TestOperation_ProvisioningFailed) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulConnectTetheringResponse(_))
       .Times(0);
@@ -293,7 +296,7 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_ProvisioningFailed) {
       false /* use_proto_without_ssid_and_password */);
 }
 
-TEST_F(ConnectTetheringOperationTest, TestCannotConnect) {
+TEST_F(ConnectTetheringOperationTest, DISABLED_TestCannotConnect) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulConnectTetheringResponse(_))
       .Times(0);
@@ -312,7 +315,7 @@ TEST_F(ConnectTetheringOperationTest, TestCannotConnect) {
       "InstantTethering.Performance.ConnectTetheringResponseDuration", 0);
 }
 
-TEST_F(ConnectTetheringOperationTest, TestOperation_SetupRequired) {
+TEST_F(ConnectTetheringOperationTest, DISABLED_TestOperation_SetupRequired) {
   operation_ = base::WrapUnique(new ConnectTetheringOperation(
       test_device_, fake_device_sync_client_.get(),
       fake_secure_channel_client_.get(), fake_ble_connection_manager_.get(),

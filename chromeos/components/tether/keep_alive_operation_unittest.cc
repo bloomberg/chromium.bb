@@ -135,7 +135,8 @@ class KeepAliveOperationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(KeepAliveOperationTest);
 };
 
-TEST_F(KeepAliveOperationTest, TestSendsKeepAliveTickleAndReceivesResponse) {
+TEST_F(KeepAliveOperationTest,
+       DISABLED_TestSendsKeepAliveTickleAndReceivesResponse) {
   EXPECT_FALSE(test_observer_->has_run_callback());
 
   SimulateDeviceAuthenticationAndVerifyMessageSent();
@@ -156,7 +157,7 @@ TEST_F(KeepAliveOperationTest, TestSendsKeepAliveTickleAndReceivesResponse) {
       kKeepAliveTickleResponseTime, 1);
 }
 
-TEST_F(KeepAliveOperationTest, TestCannotConnect) {
+TEST_F(KeepAliveOperationTest, DISABLED_TestCannotConnect) {
   // Simulate the device failing to connect.
   fake_ble_connection_manager_->SimulateUnansweredConnectionAttempts(
       test_device_.GetDeviceId(),

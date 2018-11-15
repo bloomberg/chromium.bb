@@ -295,14 +295,16 @@ class HostScannerOperationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HostScannerOperationTest);
 };
 
-TEST_F(HostScannerOperationTest, TestDevicesArePrioritizedDuringConstruction) {
+TEST_F(HostScannerOperationTest,
+       DISABLED_TestDevicesArePrioritizedDuringConstruction) {
   // Verification of device order prioritization occurs in ConstructOperation().
   ConstructOperation(test_devices_);
 
   VerifyTetherAvailabilityResponseDurationNotRecorded();
 }
 
-TEST_F(HostScannerOperationTest, TestOperation_OneDevice_UnknownError) {
+TEST_F(HostScannerOperationTest,
+       DISABLED_TestOperation_OneDevice_UnknownError) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(_))
       .Times(0);
@@ -313,7 +315,8 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_UnknownError) {
       false /* should_connection_be_preserved */);
 }
 
-TEST_F(HostScannerOperationTest, TestOperation_OneDevice_TetherAvailable) {
+TEST_F(HostScannerOperationTest,
+       DISABLED_TestOperation_OneDevice_TetherAvailable) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
 
@@ -323,7 +326,8 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_TetherAvailable) {
       true /* should_connection_be_preserved */);
 }
 
-TEST_F(HostScannerOperationTest, TestOperation_OneDevice_SetupRequired) {
+TEST_F(HostScannerOperationTest,
+       DISABLED_TestOperation_OneDevice_SetupRequired) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
 
@@ -333,7 +337,7 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_SetupRequired) {
       true /* should_connection_be_preserved */);
 }
 
-TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoReception) {
+TEST_F(HostScannerOperationTest, DISABLED_TestOperation_OneDevice_NoReception) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(_))
       .Times(0);
@@ -344,7 +348,7 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoReception) {
       false /* should_connection_be_preserved */);
 }
 
-TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoSimCard) {
+TEST_F(HostScannerOperationTest, DISABLED_TestOperation_OneDevice_NoSimCard) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(_))
       .Times(0);
@@ -356,7 +360,7 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoSimCard) {
 }
 
 TEST_F(HostScannerOperationTest,
-       TestOperation_OneDevice_NotificationsDisabled_Legacy) {
+       DISABLED_TestOperation_OneDevice_NotificationsDisabled_Legacy) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(_))
       .Times(0);
@@ -369,8 +373,9 @@ TEST_F(HostScannerOperationTest,
             test_observer_->gms_core_notifications_disabled_devices());
 }
 
-TEST_F(HostScannerOperationTest,
-       TestOperation_OneDevice_NotificationsDisabled_NotificationChannel) {
+TEST_F(
+    HostScannerOperationTest,
+    DISABLED_TestOperation_OneDevice_NotificationsDisabled_NotificationChannel) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(_))
       .Times(0);
@@ -383,7 +388,7 @@ TEST_F(HostScannerOperationTest,
             test_observer_->gms_core_notifications_disabled_devices());
 }
 
-TEST_F(HostScannerOperationTest, TestMultipleDevices) {
+TEST_F(HostScannerOperationTest, DISABLED_TestMultipleDevices) {
   EXPECT_CALL(*mock_tether_host_response_recorder_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
   EXPECT_CALL(*mock_tether_host_response_recorder_,
