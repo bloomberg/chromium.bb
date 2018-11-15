@@ -410,6 +410,19 @@ TEST_F(ParkableStringTest, AsanPoisoningTest) {
   EXPECT_TRUE(ParkAndWait(parkable));
   EXPECT_DEATH(EXPECT_NE(0, data[10]), "");
 }
+
+// Non-regression test for crbug.com/905137.
+TEST_F(ParkableStringTest, CorrectAsanPoisoning) {
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+  EXPECT_TRUE(parkable.Impl()->Park());
+  // A main thread task is posted once compression is done.
+  while (!scoped_task_environment_.MainThreadHasPendingTask()) {
+    parkable.Lock();
+    parkable.ToString();
+    parkable.Unlock();
+  }
+  RunPostedTasks();
+}
 #endif  // defined(ADDRESS_SANITIZER)
 
 TEST_F(ParkableStringTest, Compression) {
