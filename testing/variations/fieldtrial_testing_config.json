@@ -4981,6 +4981,26 @@
             ]
         }
     ],
+    "UpdateClientUseJSON": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "UpdateClientUseJSON",
+                    "enable_features": [
+                        "UpdateClientUseJSON"
+                    ]
+                }
+            ]
+        }
+    ],
     "UpdateMenuItem": [
         {
             "platforms": [
