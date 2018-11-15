@@ -21,17 +21,14 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2653
     'ReferrerTest.navigationWhenProxyInterceptsASpecificUrl',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2661
+    'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
 ]
 
 _REVISION_READY_TO_RUN_FILTER = {}
 _REVISION_READY_TO_RUN_FILTER['HEAD'] = [
     # marked as not yet implemented with chrome but already works
-    'ChildrenFindingTest.testShouldNotReturnRootElementWhenFindingChildrenById',
-    'ClearTest.shouldBeAbleToClearDateInput',
-    'ClearTest.shouldBeAbleToClearDatetimeLocalInput',
-    'ClearTest.shouldBeAbleToClearMonthInput',
-    'ClearTest.shouldBeAbleToClearTimeInput',
-    'ClearTest.shouldBeAbleToClearWeekInput',
 ]
 
 _OS_NEGATIVE_FILTER = {}
