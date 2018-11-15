@@ -212,6 +212,8 @@ struct BLINK_COMMON_EXPORT
         return blink::mojom::ManifestImageResource_Purpose::ANY;
       case ::blink::Manifest::ImageResource::Purpose::BADGE:
         return blink::mojom::ManifestImageResource_Purpose::BADGE;
+      case ::blink::Manifest::ImageResource::Purpose::MASKABLE:
+        return blink::mojom::ManifestImageResource_Purpose::MASKABLE;
     }
     NOTREACHED();
     return blink::mojom::ManifestImageResource_Purpose::ANY;
@@ -224,6 +226,9 @@ struct BLINK_COMMON_EXPORT
         return true;
       case blink::mojom::ManifestImageResource_Purpose::BADGE:
         *out = ::blink::Manifest::ImageResource::Purpose::BADGE;
+        return true;
+      case blink::mojom::ManifestImageResource_Purpose::MASKABLE:
+        *out = ::blink::Manifest::ImageResource::Purpose::MASKABLE;
         return true;
     }
 

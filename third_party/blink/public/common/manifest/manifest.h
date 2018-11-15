@@ -32,7 +32,8 @@ struct BLINK_COMMON_EXPORT Manifest {
     enum class Purpose {
       ANY = 0,
       BADGE,
-      IMAGE_RESOURCE_PURPOSE_LAST = BADGE,
+      MASKABLE,
+      IMAGE_RESOURCE_PURPOSE_LAST = MASKABLE,
     };
 
     ImageResource();
