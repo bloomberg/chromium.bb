@@ -38,7 +38,7 @@ function acquire() {
     () => { finishTest("FAIL - rejected"); });
   setTimeout(() => {
     current_status = "PASS";
-    context.resume();
+    resume_handle.resume();
   }, 50);
 }
 

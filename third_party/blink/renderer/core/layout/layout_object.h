@@ -30,6 +30,7 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -367,21 +368,24 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void AssertLaidOut() const {
 #ifndef NDEBUG
-    if (NeedsLayout())
+    if (NeedsLayout() && !LayoutBlockedByDisplayLock())
       ShowLayoutTreeForThis();
 #endif
-    SECURITY_DCHECK(!NeedsLayout());
+    SECURITY_DCHECK(!NeedsLayout() || LayoutBlockedByDisplayLock());
   }
 
   void AssertSubtreeIsLaidOut() const {
     for (const LayoutObject* layout_object = this; layout_object;
-         layout_object = layout_object->NextInPreOrder())
+         layout_object = layout_object->LayoutBlockedByDisplayLock()
+                             ? layout_object->NextInPreOrderAfterChildren()
+                             : layout_object->NextInPreOrder()) {
       layout_object->AssertLaidOut();
+    }
   }
 
   void AssertClearedPaintInvalidationFlags() const {
 #ifndef NDEBUG
-    if (PaintInvalidationStateIsDirty()) {
+    if (PaintInvalidationStateIsDirty() && !PrePaintBlockedByDisplayLock()) {
       ShowLayoutTreeForThis();
       NOTREACHED();
     }
@@ -390,8 +394,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void AssertSubtreeClearedPaintInvalidationFlags() const {
     for (const LayoutObject* layout_object = this; layout_object;
-         layout_object = layout_object->NextInPreOrder())
+         layout_object = layout_object->PrePaintBlockedByDisplayLock()
+                             ? layout_object->NextInPreOrderAfterChildren()
+                             : layout_object->NextInPreOrder()) {
       layout_object->AssertClearedPaintInvalidationFlags();
+    }
   }
 
 #endif
@@ -2168,6 +2175,31 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetOutlineMayBeAffectedByDescendants(b);
   }
 
+  bool LayoutBlockedByDisplayLock() const {
+    auto* context = GetDisplayLockContext();
+    return context && !context->ShouldLayout();
+  }
+
+  bool PrePaintBlockedByDisplayLock() const {
+    auto* context = GetDisplayLockContext();
+    return context && !context->ShouldPrePaint();
+  }
+
+  bool PaintBlockedByDisplayLock() const {
+    auto* context = GetDisplayLockContext();
+    return context && !context->ShouldPaint();
+  }
+
+  void NotifyDisplayLockDidPrePaint() const {
+    if (auto* context = GetDisplayLockContext())
+      context->DidPrePaint();
+  }
+
+  void NotifyDisplayLockDidPaint() const {
+    if (auto* context = GetDisplayLockContext())
+      context->DidPaint();
+  }
+
  protected:
   enum LayoutObjectType {
     kLayoutObjectBr,
@@ -2350,6 +2382,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutSize OffsetFromScrollableContainer(const LayoutObject*,
                                            bool ignore_scroll_offset) const;
 
+  void NotifyDisplayLockDidLayout() {
+    if (auto* context = GetDisplayLockContext())
+      context->DidLayout();
+  }
+
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a
   // given new style, without accessing the cache.
@@ -2432,6 +2469,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return AdjustVisualRectForInlineBox(PartialInvalidationVisualRect());
   }
   LayoutRect AdjustVisualRectForInlineBox(const LayoutRect&) const;
+
+  DisplayLockContext* GetDisplayLockContext() const {
+    if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+      return nullptr;
+    if (!GetNode() || !GetNode()->IsElementNode())
+      return nullptr;
+    return ToElement(GetNode())->GetDisplayLockContext();
+  }
 
   // This is set by Set[Subtree]ShouldDoFullPaintInvalidation, and cleared
   // during PrePaint in this object's InvalidatePaint(). It's different from

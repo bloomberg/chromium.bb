@@ -694,6 +694,7 @@ const char kPaddingChanged[] = "Padding changed";
 const char kTextControlChanged[] = "Text control changed";
 const char kSvgChanged[] = "SVG changed";
 const char kScrollbarChanged[] = "Scrollbar changed";
+const char kDisplayLockCommitting[] = "Display lock committing";
 }  // namespace LayoutInvalidationReason
 
 std::unique_ptr<TracedValue> InspectorLayoutInvalidationTrackingEvent::Data(

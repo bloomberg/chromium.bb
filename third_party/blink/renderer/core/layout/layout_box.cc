@@ -499,6 +499,9 @@ void LayoutBox::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
+  if (LayoutBlockedByDisplayLock())
+    return;
+
   LayoutObject* child = SlowFirstChild();
   if (!child) {
     ClearNeedsLayout();
@@ -513,6 +516,7 @@ void LayoutBox::UpdateLayout() {
   }
   UpdateAfterLayout();
   ClearNeedsLayout();
+  NotifyDisplayLockDidLayout();
 }
 
 // ClientWidth and ClientHeight represent the interior of an object excluding

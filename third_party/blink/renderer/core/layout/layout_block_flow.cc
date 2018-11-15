@@ -2362,7 +2362,7 @@ bool LayoutBlockFlow::MustDiscardMarginAfter() const {
 
 bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout());
+  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
   if (!child.IsWritingModeRoot()) {
     return child.IsLayoutBlockFlow()
                ? ToLayoutBlockFlow(&child)->MustDiscardMarginBefore()
@@ -2385,7 +2385,7 @@ bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
 
 bool LayoutBlockFlow::MustDiscardMarginAfterForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout());
+  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
   if (!child.IsWritingModeRoot()) {
     return child.IsLayoutBlockFlow()
                ? ToLayoutBlockFlow(&child)->MustDiscardMarginAfter()
@@ -2427,7 +2427,7 @@ void LayoutBlockFlow::SetMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg) {
 
 bool LayoutBlockFlow::MustSeparateMarginBeforeForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout());
+  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
   const ComputedStyle& child_style = child.StyleRef();
   if (!child.IsWritingModeRoot())
     return child_style.MarginBeforeCollapse() == EMarginCollapse::kSeparate;
@@ -2440,7 +2440,7 @@ bool LayoutBlockFlow::MustSeparateMarginBeforeForChild(
 
 bool LayoutBlockFlow::MustSeparateMarginAfterForChild(
     const LayoutBox& child) const {
-  DCHECK(!child.SelfNeedsLayout());
+  DCHECK(!child.SelfNeedsLayout() || child.LayoutBlockedByDisplayLock());
   const ComputedStyle& child_style = child.StyleRef();
   if (!child.IsWritingModeRoot())
     return child_style.MarginAfterCollapse() == EMarginCollapse::kSeparate;

@@ -433,6 +433,9 @@ void LayoutBlock::UpdateLayout() {
 
   LayoutAnalyzer::Scope analyzer(*this);
 
+  if (LayoutBlockedByDisplayLock())
+    return;
+
   bool needs_scroll_anchoring =
       HasOverflowClip() && GetScrollableArea()->ShouldPerformScrollAnchoring();
   if (needs_scroll_anchoring)
@@ -451,6 +454,7 @@ void LayoutBlock::UpdateLayout() {
 
   height_available_to_children_changed_ = false;
   cached_constraint_space_.reset();
+  NotifyDisplayLockDidLayout();
 }
 
 bool LayoutBlock::WidthAvailableToChildrenHasChanged() {

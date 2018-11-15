@@ -12,8 +12,10 @@
 
 namespace blink {
 
-class V8DisplayLockCallback;
 class DisplayLockSuspendedHandle;
+class Element;
+class V8DisplayLockCallback;
+class DisplayLockScopedLogger;
 class CORE_EXPORT DisplayLockContext final
     : public ScriptWrappable,
       public ActiveScriptWrappable<DisplayLockContext>,
@@ -22,7 +24,26 @@ class CORE_EXPORT DisplayLockContext final
   USING_GARBAGE_COLLECTED_MIXIN(DisplayLockContext);
 
  public:
-  DisplayLockContext(ExecutionContext*);
+  // Conceptually the states are private, but made public for debugging /
+  // logging.
+  enum State {
+    kUninitialized,
+    kSuspended,
+    kCallbacksPending,
+    kDisconnected,
+    kCommitting,
+    kResolving,
+    kResolved
+  };
+
+  enum LifecycleUpdateState {
+    kNeedsLayout,
+    kNeedsPrePaint,
+    kNeedsPaint,
+    kDone
+  };
+
+  DisplayLockContext(Element*, ExecutionContext*);
   ~DisplayLockContext() override;
 
   // GC functions.
@@ -37,14 +58,15 @@ class CORE_EXPORT DisplayLockContext final
   // co-operative work.
   bool HasPendingActivity() const final;
 
-  // Schedules a new callback. If this is the first callback to be scheduled,
-  // then a valid ScriptState must be provided, which will be used to create a
-  // new ScriptPromiseResolver. In other cases, the ScriptState is ignored.
-  void ScheduleTask(V8DisplayLockCallback*, ScriptState* = nullptr);
+  // Notify that the lock was requested. Note that for a new context, this has
+  // to be called first. For an existing lock, this will either extend the
+  // lifetime of the current lock, or start acquiring a new lock (depending on
+  // whether this lock is active or passive).
+  void RequestLock(V8DisplayLockCallback*, ScriptState*);
 
   // Returns true if the promise associated with this context was already
   // resolved (or rejected).
-  bool IsResolved() const { return !resolver_; }
+  bool IsResolved() const { return state_ == kResolved; }
 
   // Returns a ScriptPromise associated with this context.
   ScriptPromise Promise() const {
@@ -52,12 +74,28 @@ class CORE_EXPORT DisplayLockContext final
     return resolver_->Promise();
   }
 
+  // Called when the connected state may have changed.
+  void NotifyConnectedMayHaveChanged();
+
   // JavaScript interface implementation.
   void schedule(V8DisplayLockCallback*);
   DisplayLockSuspendedHandle* suspend();
 
+  // Lifecycle observation / state functions.
+  bool ShouldLayout() const;
+  void DidLayout();
+  bool ShouldPrePaint() const;
+  void DidPrePaint();
+  bool ShouldPaint() const;
+  void DidPaint();
+
  private:
   friend class DisplayLockSuspendedHandle;
+
+  // Schedules a new callback. If this is the first callback to be scheduled,
+  // then a valid ScriptState must be provided, which will be used to create a
+  // new ScriptPromiseResolver. In other cases, the ScriptState is ignored.
+  void ScheduleCallback(V8DisplayLockCallback*);
 
   // Processes the current queue of callbacks.
   void ProcessQueue();
@@ -78,10 +116,24 @@ class CORE_EXPORT DisplayLockContext final
   // callbacks or to resolve the associated promise.
   void ScheduleTaskIfNeeded();
 
+  // A function that finishes resolving the promise by establishing a microtask
+  // checkpoint. Note that this should be scheduled after entering the
+  // kResolving state. If the state is still kResolving after the microtask
+  // checkpoint finishes (ie, the lock was not re-acquired), we enter the final
+  // kResolved state.
+  void FinishResolution();
+
+  // Initiate a commit.
+  void StartCommit();
+
   HeapVector<Member<V8DisplayLockCallback>> callbacks_;
   Member<ScriptPromiseResolver> resolver_;
+  WeakMember<Element> element_;
+
   bool process_queue_task_scheduled_ = false;
   unsigned suspended_count_ = 0;
+  State state_ = kUninitialized;
+  LifecycleUpdateState lifecycle_update_state_ = kNeedsLayout;
 };
 
 }  // namespace blink
