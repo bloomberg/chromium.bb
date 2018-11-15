@@ -44,6 +44,27 @@ class SeneschalClientImpl : public SeneschalClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void UnsharePath(const vm_tools::seneschal::UnsharePathRequest& request,
+                   DBusMethodCallback<vm_tools::seneschal::UnsharePathResponse>
+                       callback) override {
+    dbus::MethodCall method_call(vm_tools::seneschal::kSeneschalInterface,
+                                 vm_tools::seneschal::kUnsharePathMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode UnsharePath protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    seneschal_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SeneschalClientImpl::OnDBusProtoResponse<
+                           vm_tools::seneschal::UnsharePathResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     seneschal_proxy_ = bus->GetObjectProxy(

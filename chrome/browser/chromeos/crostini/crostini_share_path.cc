@@ -59,6 +59,17 @@ void OnVmRestartedForSeneschal(
       base::BindOnce(&OnSeneschalSharePathResponse, std::move(callback)));
 }
 
+void OnSeneschalUnsharePathResponse(
+    base::OnceCallback<void(bool, std::string)> callback,
+    base::Optional<vm_tools::seneschal::UnsharePathResponse> response) {
+  if (!response) {
+    std::move(callback).Run(false, "System error");
+    return;
+  }
+  std::move(callback).Run(response.value().success(),
+                          response.value().failure_reason());
+}
+
 // Barrier Closure that captures the first instance of error.
 class ErrorCapture {
  public:
@@ -223,6 +234,48 @@ void CrostiniSharePath::CallSeneschalSharePath(
       base::BindOnce(&OnSeneschalSharePathResponse, std::move(callback)));
 }
 
+void CrostiniSharePath::CallSeneschalUnsharePath(
+    std::string vm_name,
+    const base::FilePath& path,
+    base::OnceCallback<void(bool, std::string)> callback) {
+  // Return success if VM is not currently running.
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
+  base::Optional<vm_tools::concierge::VmInfo> vm_info =
+      crostini_manager->GetVmInfo(vm_name);
+  if (!vm_info) {
+    std::move(callback).Run(true, "VM not running");
+    return;
+  }
+
+  // Convert path to a virtual path relative to one of the external mounts,
+  // then get it as a FilesSystemURL to convert to a path inside crostini,
+  // then remove /mnt/chromeos/ base dir prefix to get the path to unshare.
+  storage::ExternalMountPoints* mount_points =
+      storage::ExternalMountPoints::GetSystemInstance();
+  base::FilePath virtual_path;
+  base::FilePath inside;
+  bool result = mount_points->GetVirtualPath(path, &virtual_path);
+  if (result) {
+    storage::FileSystemURL url = mount_points->CreateCrackedFileSystemURL(
+        GURL(), storage::kFileSystemTypeExternal, virtual_path);
+    result = file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
+        profile_, url, &inside);
+  }
+  base::FilePath unshare_path;
+  if (!result || !crostini::ContainerChromeOSBaseDirectory().AppendRelativePath(
+                     inside, &unshare_path)) {
+    std::move(callback).Run(false, "Invalid path to unshare");
+    return;
+  }
+
+  vm_tools::seneschal::UnsharePathRequest request;
+  request.set_handle(vm_info->seneschal_server_handle());
+  request.set_path(unshare_path.value());
+  chromeos::DBusThreadManager::Get()->GetSeneschalClient()->UnsharePath(
+      request,
+      base::BindOnce(&OnSeneschalUnsharePathResponse, std::move(callback)));
+}
+
 void CrostiniSharePath::SharePath(
     std::string vm_name,
     const base::FilePath& path,
@@ -246,7 +299,7 @@ void CrostiniSharePath::SharePaths(
           &ErrorCapture::Run,
           base::Owned(new ErrorCapture(paths.size(), std::move(callback))));
   for (const auto& path : paths) {
-    CallSeneschalSharePath(kCrostiniDefaultVmName, path, persist,
+    CallSeneschalSharePath(vm_name, path, persist,
                            base::BindOnce(barrier, std::move(path)));
   }
 }
@@ -258,10 +311,9 @@ void CrostiniSharePath::UnsharePath(
   PrefService* pref_service = profile_->GetPrefs();
   ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
   base::ListValue* shared_paths = update.Get();
-  shared_paths->Remove(base::Value(path.value()), nullptr);
-  // TODO(joelhockey): Call to seneschal once UnsharePath is supported,
-  // and update FilesApp to watch for changes.
-  std::move(callback).Run(true, "");
+  if (!shared_paths->Remove(base::Value(path.value()), nullptr))
+    LOG(WARNING) << "Unshared path not in prefs: " << path.value();
+  CallSeneschalUnsharePath(vm_name, path, std::move(callback));
   for (Observer& observer : observers_) {
     observer.OnUnshare(path);
   }

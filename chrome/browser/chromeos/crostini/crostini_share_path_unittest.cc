@@ -65,14 +65,17 @@ class CrostiniSharePathTest : public testing::Test {
     EXPECT_EQ(fake_seneschal_client_->share_path_called(),
               expected_seneschal_client_called == SeneschalClientCalled::YES);
     if (expected_seneschal_client_called == SeneschalClientCalled::YES) {
-      EXPECT_EQ(fake_seneschal_client_->last_request().storage_location(),
-                *expected_seneschal_storage_location);
-      EXPECT_EQ(fake_seneschal_client_->last_request().shared_path().path(),
+      EXPECT_EQ(
+          fake_seneschal_client_->last_share_path_request().storage_location(),
+          *expected_seneschal_storage_location);
+      EXPECT_EQ(fake_seneschal_client_->last_share_path_request()
+                    .shared_path()
+                    .path(),
                 expected_seneschal_path);
     }
     EXPECT_EQ(success, expected_success == Success::YES);
     EXPECT_EQ(failure_reason, expected_failure_reason);
-    run_loop()->QuitClosure().Run();
+    run_loop()->Quit();
   }
 
   void SharePersistedPathsCallback(bool success, std::string failure_reason) {
@@ -80,7 +83,7 @@ class CrostiniSharePathTest : public testing::Test {
     EXPECT_EQ(
         profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths)->GetSize(),
         2U);
-    run_loop()->QuitClosure().Run();
+    run_loop()->Quit();
   }
 
   void SharePathErrorVmNotRunningCallback(base::OnceClosure closure,
@@ -90,6 +93,28 @@ class CrostiniSharePathTest : public testing::Test {
     EXPECT_EQ(success, false);
     EXPECT_EQ(failure_reason, "Cannot share, VM not running");
     std::move(closure).Run();
+  }
+
+  void UnsharePathCallback(
+      const base::FilePath& path,
+      SeneschalClientCalled expected_seneschal_client_called,
+      std::string expected_seneschal_path,
+      Success expected_success,
+      std::string expected_failure_reason,
+      bool success,
+      std::string failure_reason) {
+    const base::ListValue* prefs =
+        profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
+    EXPECT_EQ(prefs->Find(base::Value(path.value())), prefs->end());
+    EXPECT_EQ(fake_seneschal_client_->unshare_path_called(),
+              expected_seneschal_client_called == SeneschalClientCalled::YES);
+    if (expected_seneschal_client_called == SeneschalClientCalled::YES) {
+      EXPECT_EQ(fake_seneschal_client_->last_unshare_path_request().path(),
+                expected_seneschal_path);
+    }
+    EXPECT_EQ(success, expected_success == Success::YES);
+    EXPECT_EQ(failure_reason, expected_failure_reason);
+    run_loop()->Quit();
   }
 
   CrostiniSharePathTest()
@@ -479,6 +504,36 @@ TEST_F(CrostiniSharePathTest, RegisterPersistedPaths) {
   EXPECT_EQ(prefs->GetSize(), 1U);
   prefs->GetString(0, &path);
   EXPECT_EQ(path, "/");
+}
+
+TEST_F(CrostiniSharePathTest, UnsharePathSuccess) {
+  crostini_share_path()->UnsharePath(
+      "vm-running", shared_path_,
+      base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
+                     base::Unretained(this), shared_path_,
+                     SeneschalClientCalled::YES,
+                     "MyFiles/Downloads/already-shared", Success::YES, ""));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniSharePathTest, UnsharePathVmNotRunning) {
+  crostini_share_path()->UnsharePath(
+      "vm-not-running", shared_path_,
+      base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
+                     base::Unretained(this), shared_path_,
+                     SeneschalClientCalled::NO, "", Success::YES,
+                     "VM not running"));
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniSharePathTest, UnsharePathInvalidPath) {
+  base::FilePath invalid("invalid/path");
+  crostini_share_path()->UnsharePath(
+      "vm-running", invalid,
+      base::BindOnce(&CrostiniSharePathTest::UnsharePathCallback,
+                     base::Unretained(this), invalid, SeneschalClientCalled::NO,
+                     "", Success::NO, "Invalid path to unshare"));
+  run_loop()->Run();
 }
 
 }  // namespace crostini
