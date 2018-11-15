@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSSOM_TYPES_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSSOM_TYPES_H_
 
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {

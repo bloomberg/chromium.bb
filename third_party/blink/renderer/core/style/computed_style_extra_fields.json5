@@ -869,7 +869,7 @@
       field_group: "*->will-change",
       default_value: "Vector<CSSPropertyID>()",
       include_paths: ["third_party/blink/renderer/platform/wtf/vector.h",
-                      "third_party/blink/renderer/core/css_property_names.h"],
+                      "third_party/blink/renderer/core/css/css_property_names.h"],
     },
     {
       name: "WillChangeContents",

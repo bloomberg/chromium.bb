@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_cue.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/double_or_auto_keyword.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"

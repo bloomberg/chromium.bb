@@ -21,7 +21,7 @@
 #include "third_party/blink/renderer/core/html/html_details_element.h"
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"

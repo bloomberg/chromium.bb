@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/css/cssom/css_unsupported_style_value.h"
 
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 
 namespace blink {
 

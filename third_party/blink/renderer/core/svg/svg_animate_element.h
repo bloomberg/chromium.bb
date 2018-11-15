@@ -25,7 +25,7 @@
 
 #include <base/gtest_prod_util.h>
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"

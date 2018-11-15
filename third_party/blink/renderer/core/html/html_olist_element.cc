@@ -22,7 +22,7 @@
 
 #include "third_party/blink/renderer/core/html/html_olist_element.h"
 
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/list_item_ordinal.h"

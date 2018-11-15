@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"

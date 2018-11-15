@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PENDING_SUBSTITUTION_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PENDING_SUBSTITUTION_VALUE_H_
 
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
 
 namespace blink {
 

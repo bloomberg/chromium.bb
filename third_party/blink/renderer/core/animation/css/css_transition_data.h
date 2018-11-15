@@ -9,7 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/core/animation/css/css_timing_data.h"
-#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
