@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
@@ -32,6 +33,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
                            TextDirection)
       : NGContainerFragmentBuilder(style, writing_mode, TextDirection::kLtr),
         node_(node),
+        line_box_type_(NGPhysicalLineBoxFragment::kNormalLineBox),
         base_direction_(TextDirection::kLtr) {}
 
   void Reset();
@@ -39,6 +41,9 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   LayoutUnit LineHeight() const {
     return metrics_.LineHeight().ClampNegativeToZero();
   }
+
+  // Mark this line box is an "empty" line box. See NGLineBoxType.
+  void SetIsEmptyLineBox();
 
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
   void SetMetrics(const NGLineHeightMetrics& metrics) { metrics_ = metrics; }
@@ -204,6 +209,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   NGLineHeightMetrics metrics_;
   Vector<NGPositionedFloat> positioned_floats_;
 
+  NGPhysicalLineBoxFragment::NGLineBoxType line_box_type_;
   TextDirection base_direction_;
 
   friend class NGLayoutResult;

@@ -2102,6 +2102,7 @@ LayoutUnit NGBlockLayoutAlgorithm::ComputeLineBoxBaselineOffset(
     LayoutUnit line_box_block_offset) const {
   NGLineHeightMetrics metrics =
       line_box.BaselineMetrics(request.BaselineType());
+  DCHECK(!metrics.IsEmpty());
 
   // NGLineHeightMetrics is line-relative, which matches to the flow-relative
   // unless this box is in flipped-lines writing-mode.
@@ -2133,9 +2134,9 @@ bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
     const NGPhysicalLineBoxFragment* line_box =
         ToNGPhysicalLineBoxFragment(child);
 
-    // Skip over a line-box which is empty. These don't any baselines which
+    // Skip over a line-box which is empty. These don't have any baselines which
     // should be added.
-    if (line_box->Children().IsEmpty())
+    if (line_box->IsEmptyLineBox())
       return false;
 
     LayoutUnit offset =

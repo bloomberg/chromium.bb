@@ -17,8 +17,13 @@ namespace blink {
 void NGLineBoxFragmentBuilder::Reset() {
   children_.resize(0);
   offsets_.resize(0);
+  line_box_type_ = NGPhysicalLineBoxFragment::kNormalLineBox;
   metrics_ = NGLineHeightMetrics();
   size_.inline_size = LayoutUnit();
+}
+
+void NGLineBoxFragmentBuilder::SetIsEmptyLineBox() {
+  line_box_type_ = NGPhysicalLineBoxFragment::kEmptyLineBox;
 }
 
 NGLineBoxFragmentBuilder::Child*
@@ -78,6 +83,11 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
 }
 
 scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
+#if DCHECK_IS_ON()
+  if (line_box_type_ == NGPhysicalLineBoxFragment::kEmptyLineBox)
+    DCHECK_EQ(children_.size(), 0u);
+#endif
+
   writing_mode_ = ToLineWritingMode(writing_mode_);
 
   if (!break_token_)
