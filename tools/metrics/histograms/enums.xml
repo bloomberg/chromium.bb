@@ -38864,6 +38864,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Weak signature algorithm"/>
 </enum>
 
+<enum name="PasswordDropdownSelectedOption">
+  <int value="0" label="Password"/>
+  <int value="1" label="Manage passwords"/>
+  <int value="2" label="Generate password"/>
+</enum>
+
+<enum name="PasswordDropdownState">
+  <int value="0" label="Password suggestions"/>
+  <int value="1" label="Passwords and generate new password"/>
+</enum>
+
 <enum name="PasswordFormQueryVolume">
   <int value="0" label="New password query"/>
   <int value="1" label="Current query"/>

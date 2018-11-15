@@ -70,6 +70,10 @@ namespace password_manager {
 namespace {
 
 constexpr char kMainFrameUrl[] = "https://example.com/";
+constexpr char kDropdownSelectedHistogram[] =
+    "PasswordManager.PasswordDropdownItemSelected";
+constexpr char kDropdownShownHistogram[] =
+    "PasswordManager.PasswordDropdownShown";
 
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
@@ -286,11 +290,15 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
                 FillSuggestion(test_username_, test_password_));
     // Accepting a suggestion should trigger a call to hide the popup.
     EXPECT_CALL(*autofill_client, HideAutofillPopup());
+    base::HistogramTester histograms;
     password_autofill_manager_->DidAcceptSuggestion(
         test_username_, is_suggestion_on_password_field
                             ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
                             : autofill::POPUP_ITEM_ID_USERNAME_ENTRY,
         1);
+    histograms.ExpectUniqueSample(
+        kDropdownSelectedHistogram,
+        metrics_util::PasswordDropdownSelectedOption::kPassword, 1);
   }
 }
 
@@ -599,9 +607,9 @@ TEST_F(PasswordAutofillManagerTest, PreviewAndFillEmptyUsernameSuggestion) {
 // Tests that the "Manage passwords" suggestion is shown along with the password
 // popup.
 TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
-  const char kShownContextHistogram[] =
+  constexpr char kShownContextHistogram[] =
       "PasswordManager.ShowAllSavedPasswordsShownContext";
-  const char kAcceptedContextHistogram[] =
+  constexpr char kAcceptedContextHistogram[] =
       "PasswordManager.ShowAllSavedPasswordsAcceptedContext";
   base::HistogramTester histograms;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
@@ -633,6 +641,9 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
   password_autofill_manager_->OnShowPasswordSuggestions(
       base::i18n::RIGHT_TO_LEFT, test_username_, autofill::IS_PASSWORD_FIELD,
       element_bounds);
+  histograms.ExpectUniqueSample(kDropdownShownHistogram,
+                                metrics_util::PasswordDropdownState::kStandard,
+                                1);
 
   if (!IsPreLollipopAndroid()) {
     // Expect a sample only in the shown histogram.
@@ -654,6 +665,9 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
     histograms.ExpectUniqueSample(
         kAcceptedContextHistogram,
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD, 1);
+    histograms.ExpectUniqueSample(
+        kDropdownSelectedHistogram,
+        metrics_util::PasswordDropdownSelectedOption::kShowAll, 1);
     // Trigger UKM reporting, which happens at destruction time.
     ukm::SourceId expected_source_id = client->GetUkmSourceId();
     manager.reset();
@@ -720,6 +734,7 @@ TEST_F(PasswordAutofillManagerTest,
 
 TEST_F(PasswordAutofillManagerTest,
        MaybeShowPasswordSuggestionsWithGenerationSomeCredentials) {
+  base::HistogramTester histograms;
   auto client = std::make_unique<TestPasswordManagerClient>();
   auto autofill_client = std::make_unique<MockAutofillClient>();
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
@@ -750,12 +765,18 @@ TEST_F(PasswordAutofillManagerTest,
   EXPECT_TRUE(
       password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
           element_bounds, base::i18n::RIGHT_TO_LEFT));
+  histograms.ExpectUniqueSample(
+      kDropdownShownHistogram,
+      metrics_util::PasswordDropdownState::kStandardGenerate, 1);
 
   // Click "Generate password".
   EXPECT_CALL(*client, GeneratePassword());
   EXPECT_CALL(*autofill_client, HideAutofillPopup());
   password_autofill_manager_->DidAcceptSuggestion(
       base::string16(), autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY, 1);
+  histograms.ExpectUniqueSample(
+      kDropdownSelectedHistogram,
+      metrics_util::PasswordDropdownSelectedOption::kGenerate, 1);
 }
 
 }  // namespace password_manager

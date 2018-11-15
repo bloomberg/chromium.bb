@@ -179,6 +179,15 @@ void LogContextOfShowAllSavedPasswordsAccepted(
       SHOW_ALL_SAVED_PASSWORDS_CONTEXT_COUNT);
 }
 
+void LogPasswordDropdownShown(PasswordDropdownState state) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.PasswordDropdownShown", state);
+}
+
+void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.PasswordDropdownItemSelected",
+                            type);
+}
+
 void LogPasswordSuccessfulSubmissionIndicatorEvent(
     autofill::PasswordForm::SubmissionIndicatorEvent event) {
   UMA_HISTOGRAM_ENUMERATION(

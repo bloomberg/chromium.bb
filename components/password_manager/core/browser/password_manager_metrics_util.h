@@ -290,6 +290,26 @@ enum class LinuxBackendMigrationStatus {
   kMaxValue = kLoginDBReplaced
 };
 
+// Type of the password drop-down shown on focus field.
+enum class PasswordDropdownState {
+  // The passwords are listed and maybe the "Show all" button.
+  kStandard = 0,
+  // The drop down shows passwords and "Generate password" item.
+  kStandardGenerate = 1,
+  kMaxValue = kStandardGenerate
+};
+
+// Type of the item the user selects in the password drop-down.
+enum class PasswordDropdownSelectedOption {
+  // User selected a credential to fill.
+  kPassword = 0,
+  // User decided to open the password list.
+  kShowAll = 1,
+  // User selected to generate a password.
+  kGenerate = 2,
+  kMaxValue = kGenerate
+};
+
 // A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramBoolean(const std::string& name, bool sample);
@@ -367,6 +387,12 @@ void LogContextOfShowAllSavedPasswordsShown(
 // accepted.
 void LogContextOfShowAllSavedPasswordsAccepted(
     ShowAllSavedPasswordsContext context);
+
+// Log the type of the password dropdown when it's shown.
+void LogPasswordDropdownShown(PasswordDropdownState state);
+
+// Log the type of the password dropdown suggestion when chosen.
+void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type);
 
 // Log a password successful submission event.
 void LogPasswordSuccessfulSubmissionIndicatorEvent(
