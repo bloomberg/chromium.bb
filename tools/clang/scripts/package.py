@@ -327,6 +327,9 @@ def main():
         'lib/clang/*/lib/windows/clang_rt.asan_cxx-i386.lib',
         'lib/clang/*/lib/windows/clang_rt.asan_cxx-x86_64.lib',
 
+        # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
+        'lib/clang/*/lib/windows/clang_rt.fuzzer_no_main-x86_64.lib',
+
         # Thunk for AddressSanitizer needed for static build of a shared lib.
         'lib/clang/*/lib/windows/clang_rt.asan_dll_thunk-i386.lib',
         'lib/clang/*/lib/windows/clang_rt.asan_dll_thunk-x86_64.lib',
