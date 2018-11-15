@@ -332,8 +332,12 @@ void WebRuntimeFeatures::EnableRasterInducingScroll(bool enable) {
   RuntimeEnabledFeatures::SetRasterInducingScrollEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableScriptedSpeech(bool enable) {
-  RuntimeEnabledFeatures::SetScriptedSpeechEnabled(enable);
+void WebRuntimeFeatures::EnableScriptedSpeechRecognition(bool enable) {
+  RuntimeEnabledFeatures::SetScriptedSpeechRecognitionEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableScriptedSpeechSynthesis(bool enable) {
+  RuntimeEnabledFeatures::SetScriptedSpeechSynthesisEnabled(enable);
 }
 
 bool WebRuntimeFeatures::IsSlimmingPaintV2Enabled() {

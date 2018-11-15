@@ -267,14 +267,17 @@ const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 // Disables the use of a 3D software rasterizer.
 const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 
-// Disables the Web Speech API.
+// Disables the Web Speech API (both speech recognition and synthesis).
 const char kDisableSpeechAPI[]              = "disable-speech-api";
 
+// Disables the speech synthesis part of Web Speech API.
+const char kDisableSpeechSynthesisAPI[]     = "disable-speech-synthesis-api";
+
 // Disables adding the test certs in the network process.
-const char kDisableTestCerts[] = "disable-test-root-certs";
+const char kDisableTestCerts[]              = "disable-test-root-certs";
 
 // Disable multithreaded GPU compositing of web content.
-const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
+const char kDisableThreadedCompositing[]    = "disable-threaded-compositing";
 
 // Disable multithreaded, compositor scrolling of web content.
 const char kDisableThreadedScrolling[]      = "disable-threaded-scrolling";

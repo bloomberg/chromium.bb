@@ -148,8 +148,14 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableSharedWorkers))
     WebRuntimeFeatures::EnableSharedWorker(false);
 
-  if (command_line.HasSwitch(switches::kDisableSpeechAPI))
-    WebRuntimeFeatures::EnableScriptedSpeech(false);
+  if (command_line.HasSwitch(switches::kDisableSpeechAPI)) {
+    WebRuntimeFeatures::EnableScriptedSpeechRecognition(false);
+    WebRuntimeFeatures::EnableScriptedSpeechSynthesis(false);
+  }
+
+  if (command_line.HasSwitch(switches::kDisableSpeechSynthesisAPI)) {
+    WebRuntimeFeatures::EnableScriptedSpeechSynthesis(false);
+  }
 
   if (command_line.HasSwitch(switches::kDisableFileSystem))
     WebRuntimeFeatures::EnableFileSystem(false);
