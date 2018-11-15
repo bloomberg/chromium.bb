@@ -115,7 +115,6 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
       fail_install_if_unexpected_version_(false),
       extensions_enabled_(service_weak->extensions_enabled()),
       delete_source_(false),
-      create_app_shortcut_(false),
       service_weak_(service_weak),
       // See header file comment on |client_| for why we use a raw pointer here.
       client_(client.release()),
