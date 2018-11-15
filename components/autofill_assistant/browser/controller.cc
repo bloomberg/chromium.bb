@@ -325,6 +325,15 @@ void Controller::OnDestroy() {
   delete this;
 }
 
+void Controller::ScrollBy(float distanceXRatio, float distanceYRatio) {
+  GetWebController()->ScrollBy(distanceXRatio, distanceYRatio);
+  touchable_element_area_.UpdatePositions();
+}
+
+void Controller::UpdateTouchableArea() {
+  touchable_element_area_.UpdatePositions();
+}
+
 void Controller::DidAttachInterstitialPage() {
   GetUiController()->Shutdown();
 }
@@ -340,13 +349,6 @@ void Controller::DidGetUserInteraction(const blink::WebInputEvent::Type type) {
         script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
         StartPeriodicScriptChecks();
       }
-      break;
-
-    case blink::WebInputEvent::kGestureScrollEnd:
-    case blink::WebInputEvent::kGesturePinchEnd:
-      // This speeds up update of the area in case where we know something has
-      // happened.
-      touchable_element_area_.UpdatePositions();
       break;
 
     default:

@@ -8,8 +8,10 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -54,6 +56,10 @@ const char* const kScrollIntoViewScript =
     }
     node.scrollIntoViewIfNeeded();
   })";
+
+const char* const kScrollByScript =
+    R"(window.scrollBy(%f * window.visualViewport.width,
+                       %f * window.visualViewport.height))";
 
 // Javascript to select a value from a select box. Also fires a "change" event
 // to trigger any listeners. Changing the index directly does not trigger this.
@@ -1146,6 +1152,12 @@ void WebController::GetElementPosition(
       selectors, /* strict_mode= */ true,
       base::BindOnce(&WebController::OnFindElementForPosition,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::ScrollBy(float distanceXRatio, float distanceYRatio) {
+  devtools_client_->GetRuntime()->Evaluate(
+      base::StringPrintf(kScrollByScript, distanceXRatio, distanceYRatio),
+      base::DoNothing());
 }
 
 void WebController::OnFindElementForPosition(

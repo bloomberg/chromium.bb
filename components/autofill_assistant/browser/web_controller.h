@@ -131,6 +131,12 @@ class WebController {
       const std::vector<std::string>& selectors,
       base::OnceCallback<void(bool, const RectF&)> callback);
 
+  // Scroll the view by the given distance.
+  //
+  // Distances are floats between -1.0 and 1.0, with 1 corresponding to the size
+  // of the visible viewport.
+  virtual void ScrollBy(float distanceXRatio, float distanceYRatio);
+
  protected:
   friend class BatchElementChecker;
 
