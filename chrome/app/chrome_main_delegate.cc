@@ -562,8 +562,8 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
       base::Bind(&IsTraceEventArgsWhitelisted));
 
   // Setup tracing sampler profiler as early as possible at startup if needed.
-  tracing_sampler_profiler_ = std::make_unique<tracing::TracingSamplerProfiler>(
-      base::PlatformThread::CurrentId());
+  tracing_sampler_profiler_ =
+      tracing::TracingSamplerProfiler::CreateOnMainThread();
 
 #if defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
   v8_crashpad_support::SetUp();

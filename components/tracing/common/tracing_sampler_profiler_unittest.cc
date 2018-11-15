@@ -10,6 +10,7 @@
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/thread.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -128,8 +129,8 @@ class TracingSampleProfilerTest : public testing::Test {
 }  // namespace
 
 TEST_F(TracingSampleProfilerTest, OnSampleCompleted) {
-  TracingSamplerProfiler profiler(base::PlatformThread::CurrentId());
-  profiler.OnMessageLoopStarted();
+  auto profiler = TracingSamplerProfiler::CreateOnMainThread();
+  profiler->OnMessageLoopStarted();
   BeginTrace();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
@@ -143,12 +144,27 @@ TEST_F(TracingSampleProfilerTest, OnSampleCompleted) {
 
 TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
   BeginTrace();
-  TracingSamplerProfiler profiler(base::PlatformThread::CurrentId());
-  profiler.OnMessageLoopStarted();
+  auto profiler = TracingSamplerProfiler::CreateOnMainThread();
+  profiler->OnMessageLoopStarted();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
   EndTracing();
   base::RunLoop().RunUntilIdle();
+  if (IsStackUnwindingSupported())
+    EXPECT_GT(events_received_count(), 0U);
+  else
+    EXPECT_EQ(events_received_count(), 0U);
+}
+
+TEST_F(TracingSampleProfilerTest, SamplingChildThread) {
+  base::Thread sampled_thread("sampling_profiler_test");
+  sampled_thread.Start();
+  sampled_thread.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&TracingSamplerProfiler::CreateOnChildThread));
+  BeginTrace();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  EndTracing();
   if (IsStackUnwindingSupported())
     EXPECT_GT(events_received_count(), 0U);
   else
