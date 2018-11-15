@@ -112,5 +112,10 @@ Response BrowserHandler::SetWindowBounds(
   return Response::OK();
 }
 
+protocol::Response BrowserHandler::SetDockTile(Maybe<std::string> label,
+                                               Maybe<protocol::Binary> image) {
+  return Response::OK();
+}
+
 }  // namespace protocol
 }  // namespace headless

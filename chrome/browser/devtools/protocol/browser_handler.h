@@ -36,6 +36,9 @@ class BrowserHandler : public protocol::Browser::Backend {
       protocol::Maybe<std::string> browser_context_id) override;
   protocol::Response ResetPermissions(
       protocol::Maybe<std::string> browser_context_id) override;
+  protocol::Response SetDockTile(
+      protocol::Maybe<std::string> label,
+      protocol::Maybe<protocol::Binary> image) override;
 
  private:
   protocol::Response FindProfile(

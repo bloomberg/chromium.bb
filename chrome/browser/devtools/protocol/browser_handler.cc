@@ -5,9 +5,12 @@
 #include "chrome/browser/devtools/protocol/browser_handler.h"
 
 #include <set>
+#include <vector>
 
+#include "base/memory/ref_counted_memory.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
+#include "chrome/browser/devtools/devtools_dock_tile.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +21,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_png_rep.h"
 
 using PermissionOverrides = std::set<content::PermissionType>;
 using protocol::Maybe;
@@ -273,6 +278,17 @@ Response BrowserHandler::ResetPermissions(
   permission_manager->ResetPermissionOverridesForDevTools();
   contexts_with_overridden_permissions_.erase(browser_context_id.fromMaybe(""));
   return Response::FallThrough();
+}
+
+protocol::Response BrowserHandler::SetDockTile(
+    protocol::Maybe<std::string> label,
+    protocol::Maybe<protocol::Binary> image) {
+  std::vector<gfx::ImagePNGRep> reps;
+  if (image.isJust())
+    reps.emplace_back(image.fromJust().bytes(), 1);
+  DevToolsDockTile::Update(label.fromMaybe(std::string()),
+                           reps.size() ? gfx::Image(reps) : gfx::Image());
+  return Response::OK();
 }
 
 Response BrowserHandler::FindProfile(
