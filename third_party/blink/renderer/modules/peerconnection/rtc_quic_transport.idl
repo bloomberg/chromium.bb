@@ -13,7 +13,6 @@ enum RTCQuicTransportState {
 
 // https://w3c.github.io/webrtc-quic/#quic-transport*
 [
-   ActiveScriptWrappable,
    Constructor(RTCIceTransport transport, sequence<RTCCertificate> certificates),
    ConstructorCallWith=ExecutionContext,
    RaisesException=Constructor,

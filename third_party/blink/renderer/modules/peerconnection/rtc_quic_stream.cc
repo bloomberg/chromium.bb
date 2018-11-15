@@ -4,7 +4,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
 
 #include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
@@ -14,10 +13,7 @@ const uint32_t RTCQuicStream::kWriteBufferSize = 4 * 1024;
 RTCQuicStream::RTCQuicStream(ExecutionContext* context,
                              RTCQuicTransport* transport,
                              QuicStreamProxy* stream_proxy)
-    : EventTargetWithInlineData(),
-      ContextClient(context),
-      transport_(transport),
-      proxy_(stream_proxy) {
+    : ContextClient(context), transport_(transport), proxy_(stream_proxy) {
   DCHECK(transport_);
   DCHECK(proxy_);
 }
@@ -96,7 +92,7 @@ void RTCQuicStream::finish() {
     state_ = RTCQuicStreamState::kClosing;
   } else {
     DCHECK_EQ(state_, RTCQuicStreamState::kClosing);
-    Close();
+    Close(CloseReason::kReadWriteFinished);
   }
 }
 
@@ -104,27 +100,11 @@ void RTCQuicStream::reset() {
   if (IsClosed()) {
     return;
   }
-  proxy_->Reset();
-  readable_ = false;
-  Close();
-}
-
-void RTCQuicStream::Stop() {
-  readable_ = false;
-  state_ = RTCQuicStreamState::kClosed;
-  write_buffered_amount_ = 0;
-  proxy_ = nullptr;
-}
-
-void RTCQuicStream::Close() {
-  Stop();
-  transport_->RemoveStream(this);
+  Close(CloseReason::kLocalReset);
 }
 
 void RTCQuicStream::OnRemoteReset() {
-  DCHECK_NE(state_, RTCQuicStreamState::kClosed);
-  Close();
-  DispatchEvent(*Event::Create(event_type_names::kStatechange));
+  Close(CloseReason::kRemoteReset);
 }
 
 void RTCQuicStream::OnDataReceived(Vector<uint8_t> data, bool fin) {
@@ -139,7 +119,7 @@ void RTCQuicStream::OnDataReceived(Vector<uint8_t> data, bool fin) {
     state_ = RTCQuicStreamState::kClosing;
   } else {
     DCHECK_EQ(state_, RTCQuicStreamState::kClosing);
-    Close();
+    Close(CloseReason::kReadWriteFinished);
   }
   DispatchEvent(*Event::Create(event_type_names::kStatechange));
 }
@@ -147,6 +127,58 @@ void RTCQuicStream::OnDataReceived(Vector<uint8_t> data, bool fin) {
 void RTCQuicStream::OnWriteDataConsumed(uint32_t amount) {
   DCHECK_GE(write_buffered_amount_, amount);
   write_buffered_amount_ -= amount;
+}
+
+void RTCQuicStream::OnQuicTransportClosed(
+    RTCQuicTransport::CloseReason reason) {
+  switch (reason) {
+    case RTCQuicTransport::CloseReason::kContextDestroyed:
+      Close(CloseReason::kContextDestroyed);
+      break;
+    default:
+      Close(CloseReason::kQuicTransportClosed);
+      break;
+  }
+}
+
+void RTCQuicStream::Close(CloseReason reason) {
+  DCHECK_NE(state_, RTCQuicStreamState::kClosed);
+
+  // Tear down the QuicStreamProxy.
+  // If the Close is caused by a remote event or regular use of WriteData, the
+  // QuicStreamProxy will have already been deleted.
+  // If the Close is caused by the transport then the transport is responsible
+  // for deleting the QuicStreamProxy.
+  if (reason == CloseReason::kLocalReset) {
+    // This deletes the QuicStreamProxy.
+    proxy_->Reset();
+  }
+  proxy_ = nullptr;
+
+  // Remove this stream from the RTCQuicTransport unless closing from a
+  // transport-level event.
+  switch (reason) {
+    case CloseReason::kReadWriteFinished:
+    case CloseReason::kLocalReset:
+    case CloseReason::kRemoteReset:
+      transport_->RemoveStream(this);
+      break;
+    case CloseReason::kQuicTransportClosed:
+    case CloseReason::kContextDestroyed:
+      // The RTCQuicTransport will handle clearing its list of streams.
+      break;
+  }
+
+  // Clear observable state.
+  readable_ = false;
+  write_buffered_amount_ = 0;
+
+  // Change the state. Fire the statechange event only if the close is caused by
+  // a remote stream event.
+  state_ = RTCQuicStreamState::kClosed;
+  if (reason == CloseReason::kRemoteReset) {
+    DispatchEvent(*Event::Create(event_type_names::kStatechange));
+  }
 }
 
 const AtomicString& RTCQuicStream::InterfaceName() const {
