@@ -496,14 +496,19 @@ bool NewPasswordFormManager::SetSubmittedFormIfIsManaged(
     const PasswordManagerDriver* driver) {
   if (!DoesManage(submitted_form, driver))
     return false;
-  parsed_submitted_form_ =
+
+  std::unique_ptr<PasswordForm> parsed_submitted_form =
       ParseFormAndMakeLogging(submitted_form, FormDataParser::Mode::kSaving);
 
-  RecordMetricOnReadonly(parser_.readonly_status(), !!parsed_submitted_form_,
+  RecordMetricOnReadonly(parser_.readonly_status(), !!parsed_submitted_form,
                          FormDataParser::Mode::kSaving);
-  if (!parsed_submitted_form_)
-    return false;
 
+  // This function might be called multiple times. Consider as success if the
+  // submitted form was successfully parsed on a previous call.
+  if (!parsed_submitted_form)
+    return is_submitted_;
+
+  parsed_submitted_form_ = std::move(parsed_submitted_form);
   submitted_form_ = submitted_form;
   is_submitted_ = true;
 
