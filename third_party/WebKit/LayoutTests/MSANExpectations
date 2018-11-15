@@ -88,6 +88,10 @@ crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-paint/timeline-p
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/oopif/oopif-performance-cpu-profiles.js [ Pass Timeout ]
+crbug.com/902685 [ Linux ] http/tests/devtools/isolated-code-cache/same-origin-test.js [ Pass Timeout ]
+crbug.com/902685 [ Linux ] http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass Timeout ]
+crbug.com/902685 [ Linux ] virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Pass Timeout ]
+crbug.com/902685 [ Linux ] virtual/site-isolated-code-cache/http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Pass Timeout ]
 
 # Timing out consistenly on WebKit Linux Trusty MSAN
 crbug.com/798957 [ Linux ] http/tests/devtools/audits2/audits2-limited-run.js [ Skip ]
