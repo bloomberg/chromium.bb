@@ -57,8 +57,8 @@ class HostedAppBrowserController : public SiteEngagementObserver,
   bool IsForExperimentalHostedAppBrowser() const;
 
   // Whether the browser being controlled should be currently showing the
-  // location bar.
-  bool ShouldShowLocationBar() const;
+  // toolbar.
+  bool ShouldShowToolbar() const;
 
   // Returns true if the hosted app buttons should be shown in the frame for
   // this BrowserView.
@@ -67,7 +67,7 @@ class HostedAppBrowserController : public SiteEngagementObserver,
   // Updates the location bar visibility based on whether it should be
   // currently visible or not. If |animate| is set, the change will be
   // animated.
-  void UpdateLocationBarVisibility(bool animate) const;
+  void UpdateToolbarVisibility(bool animate) const;
 
   // Returns the app icon for the window to use in the task list.
   gfx::ImageSkia GetWindowAppIcon() const;

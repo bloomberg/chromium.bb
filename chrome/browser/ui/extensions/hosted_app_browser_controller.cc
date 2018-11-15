@@ -183,7 +183,7 @@ bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser() const {
   return base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing);
 }
 
-bool HostedAppBrowserController::ShouldShowLocationBar() const {
+bool HostedAppBrowserController::ShouldShowToolbar() const {
   // The extension can be null if this is invoked after uninstall.
   const Extension* extension = GetExtension();
   if (!extension)
@@ -194,7 +194,7 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
   const content::WebContents* web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
 
-  // Don't show a location bar until a navigation has occurred.
+  // Don't show a toolbar until a navigation has occurred.
   if (!web_contents || web_contents->GetLastCommittedURL().is_empty())
     return false;
 
@@ -211,16 +211,16 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
   // starts, even if the navigation hasn't committed yet.
   GURL visible_url = web_contents->GetVisibleURL();
 
-  // The current page must be secure for us to hide the location bar. However,
-  // the chrome-extension:// and chrome:// launch URL apps can hide the location
-  // bar, if the current WebContents URLs are the same as the launch scheme.
+  // The current page must be secure for us to hide the toolbar. However,
+  // the chrome-extension:// and chrome:// launch URL apps can hide the toolbar,
+  // if the current WebContents URLs are the same as the launch scheme.
   //
   // Note that the launch scheme may be insecure, but as long as the current
-  // page's scheme is secure, we can hide the location bar.
+  // page's scheme is secure, we can hide the toolbar.
   base::StringPiece secure_page_scheme =
       is_internal_launch_scheme ? launch_scheme : url::kHttpsScheme;
 
-  // Insecure page schemes show the location bar.
+  // Insecure page schemes show the toolbar.
   if (last_committed_url.scheme_piece() != secure_page_scheme ||
       visible_url.scheme_piece() != secure_page_scheme) {
     return true;
@@ -228,23 +228,21 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
 
   // Page URLs that are not within scope
   // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
-  // corresponding to |launch_url| show the location bar.
+  // corresponding to |launch_url| show the toolbar.
   if (!IsSameScope(launch_url, last_committed_url,
                    web_contents->GetBrowserContext()) ||
       !IsSameScope(launch_url, visible_url, web_contents->GetBrowserContext()))
     return true;
 
-  // Insecure external web sites show the location bar.
+  // Insecure external web sites show the toolbar.
   if (!is_internal_launch_scheme && !IsSiteSecure(web_contents))
     return true;
 
   return false;
 }
 
-void HostedAppBrowserController::UpdateLocationBarVisibility(
-    bool animate) const {
-  browser_->window()->GetLocationBar()->UpdateLocationBarVisibility(
-      ShouldShowLocationBar(), animate);
+void HostedAppBrowserController::UpdateToolbarVisibility(bool animate) const {
+  browser_->window()->UpdateToolbarVisibility(ShouldShowToolbar(), animate);
 }
 
 bool HostedAppBrowserController::ShouldShowHostedAppButtonContainer() const {
@@ -299,7 +297,7 @@ base::string16 HostedAppBrowserController::GetTitle() const {
   // current page as the title.
   // Note: We only do this when the CustomTab UI is enabled, as otherwise the
   // title of the current page will not be displayed anywhere.
-  if (ShouldShowLocationBar() &&
+  if (ShouldShowToolbar() &&
       base::FeatureList::IsEnabled(features::kDesktopPWAsCustomTabUI)) {
     const Extension* extension = GetExtension();
     return base::UTF8ToUTF16(extension->name());

@@ -325,7 +325,6 @@ class LocationBarView : public LocationBar,
   void UpdateSaveCreditCardIcon() override;
   void UpdateLocalCardMigrationIcon() override;
   void UpdateBookmarkStarVisibility() override;
-  void UpdateLocationBarVisibility(bool visible, bool animation) override;
   void SaveStateToContents(content::WebContents* contents) override;
   const OmniboxView* GetOmniboxView() const override;
   LocationBarTesting* GetLocationBarForTesting() override;
@@ -435,9 +434,6 @@ class LocationBarView : public LocationBar,
   // An [x] that appears in touch mode (when the OSK is visible) and allows the
   // user to clear all text.
   views::ImageButton* clear_all_button_ = nullptr;
-
-  // Animation to control showing / hiding the location bar.
-  gfx::SlideAnimation size_animation_{this};
 
   // Animation to change whole location bar background color on hover.
   gfx::SlideAnimation hover_animation_{this};
