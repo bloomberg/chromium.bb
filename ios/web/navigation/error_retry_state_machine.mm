@@ -28,6 +28,10 @@ ErrorRetryState ErrorRetryStateMachine::state() const {
   return state_;
 }
 
+void ErrorRetryStateMachine::SetNoNavigationError() {
+  state_ = ErrorRetryState::kNoNavigationError;
+}
+
 void ErrorRetryStateMachine::SetDisplayingWebError() {
   // Web error is displayed in two scenarios:
   // (1) Placeholder entry for network load error finished loading in web view.

@@ -80,6 +80,9 @@ class ErrorRetryStateMachine {
   // Returns the current error retry state.
   ErrorRetryState state() const;
 
+  // Transitions the state machine to kNoNavigationError.
+  void SetNoNavigationError();
+
   // Transitions the state machine to kDisplayingWebErrorForFailedNavigation.
   void SetDisplayingWebError();
 
