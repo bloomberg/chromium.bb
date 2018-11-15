@@ -795,5 +795,11 @@
     "prefix": "webgl-extra-video-texture-metadata",
     "base": "fast/webgl/video-metadata",
     "args": ["--enable-blink-features=ExtraWebGLVideoTextureMetadata"]
+  },
+  {
+    "prefix": "site-isolated-code-cache",
+    "base": "http/tests/devtools/isolated-code-cache",
+    "args": ["--enable-features=IsolatedCodeCache",
+             "--site-per-process"]
   }
 ]
