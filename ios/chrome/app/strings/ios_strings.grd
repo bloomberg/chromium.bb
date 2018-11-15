@@ -880,7 +880,7 @@ locale.  The strings in this file are specific to iOS.
         No Username
       </message>
       <message name="IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD" desc="The title for the manual fallback UI with all passwords without filter." meaning="The title for a list where the user is about to select a password or username to be filled in a form [Length: 10em]">
-        Use Other Password
+        Passwords
       </message>
       <message name="IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD_WITH_DOTS" desc="The title for the button in the manual fallback passwords UI that is used to open a list of all the user credentials where they can select one to fill a form. This button is showed at the same time as a different button with  IDS_IOS_MANUAL_FALLBACK_MANAGE_PASSWORDS as title. [30em]">
         Use Other Password...
