@@ -52,7 +52,7 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
   DCHECK(host_frame_sink_manager_);
   viz::ReportFirstSurfaceActivation should_report_first_surface_activation =
       viz::ReportFirstSurfaceActivation::kNo;
-#ifdef CHROME_OS
+#ifdef OS_CHROMEOS
   should_report_first_surface_activation =
       viz::ReportFirstSurfaceActivation::kYes;
 #endif
