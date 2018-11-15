@@ -655,6 +655,10 @@ void AssertIsShowingDistillablePage(bool online, GURL distillable_url) {
   FLAKY_testSavingToReadingListAndLoadBadNetwork
 #endif
 - (void)MAYBE_testSavingToReadingListAndLoadBadNetwork {
+  // TODO(crbug.com/905839): re-enable this test.
+  if (base::FeatureList::IsEnabled(web::features::kSlimNavigationManager))
+    EARL_GREY_TEST_DISABLED(@"Test disabled on SlimNavigationManager.");
+
   auto network_change_disabler =
       std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = std::make_unique<WifiNetworkChangeNotifier>();
