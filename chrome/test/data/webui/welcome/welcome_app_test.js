@@ -50,6 +50,10 @@ cr.define('onboarding_welcome_app_test', function() {
       testSetAsDefaultProxy = new TestNuxSetAsDefaultProxy();
       nux.NuxSetAsDefaultProxyImpl.instance_ = testSetAsDefaultProxy;
 
+      // Not used in test, but setting to test proxy anyway, in order to prevent
+      // calls to backend.
+      nux.BookmarkProxyImpl.instance_ = new TestBookmarkProxy();
+
       resetTestElement();
     });
 
@@ -109,6 +113,82 @@ cr.define('onboarding_welcome_app_test', function() {
       // At this point, there should be no steps in the returning user, so
       // welcome_app should try to go to NTP.
       return testWelcomeBrowserProxy.whenCalled('goToNewTabPage');
+    });
+
+    test('default-status check resolves with correct value', function() {
+      /**
+       * @param {!nux.DefaultBrowserInfo} status
+       * @param {boolean} expectedDefaultExists
+       * @return {!Promise}
+       */
+      function checkDefaultStatusResolveValue(status, expectedDefaultExists) {
+        testSetAsDefaultProxy.setDefaultStatus(status);
+        resetTestElement();
+
+        // Use the new-user route to test if nux-set-as-default module gets
+        // initialized.
+        welcome.navigateTo(welcome.Routes.NEW_USER, 1);
+        return test_util.waitForRender(testElement).then(() => {
+          // Use the existence of the nux-set-as-default as indication of
+          // whether or not the promise is resolved with the expected result.
+          assertEquals(
+              expectedDefaultExists, !!testElement.$$('nux-set-as-default'));
+        });
+      }
+
+      return checkDefaultStatusResolveValue(
+                 {
+                   // Allowed to set as default, and not default yet.
+                   isDefault: false,
+                   canBeDefault: true,
+                   isDisabledByPolicy: false,
+                   isUnknownError: false,
+                 },
+                 true)
+          .then(() => {
+            return checkDefaultStatusResolveValue(
+                {
+                  // Allowed to set as default, but already default.
+                  isDefault: true,
+                  canBeDefault: true,
+                  isDisabledByPolicy: false,
+                  isUnknownError: false,
+                },
+                false);
+          })
+          .then(() => {
+            return checkDefaultStatusResolveValue(
+                {
+                  // Not default yet, but this chrome install cannot be default.
+                  isDefault: false,
+                  canBeDefault: false,
+                  isDisabledByPolicy: false,
+                  isUnknownError: false,
+                },
+                false);
+          })
+          .then(() => {
+            return checkDefaultStatusResolveValue(
+                {
+                  // Not default yet, but setting default is disabled by policy.
+                  isDefault: false,
+                  canBeDefault: true,
+                  isDisabledByPolicy: true,
+                  isUnknownError: false,
+                },
+                false);
+          })
+          .then(() => {
+            return checkDefaultStatusResolveValue(
+                {
+                  // Not default yet, but there is some unknown error.
+                  isDefault: false,
+                  canBeDefault: true,
+                  isDisabledByPolicy: false,
+                  isUnknownError: true,
+                },
+                false);
+          });
     });
   });
 });

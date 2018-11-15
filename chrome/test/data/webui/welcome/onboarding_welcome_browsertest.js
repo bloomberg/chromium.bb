@@ -64,6 +64,7 @@ OnboardingWelcomeWelcomeAppTest = class extends OnboardingWelcomeBrowserTest {
     return super.extraLibraries.concat([
       '../settings/test_util.js',
       'welcome_app_test.js',
+      'test_bookmark_proxy.js',
       'test_welcome_browser_proxy.js',
       'test_nux_set_as_default_proxy.js',
     ]);
