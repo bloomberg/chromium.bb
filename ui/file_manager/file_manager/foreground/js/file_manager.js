@@ -26,6 +26,9 @@ function FileManager() {
   /** @private {importer.HistoryLoader} */
   this.historyLoader_ = null;
 
+  /** @private {Crostini} */
+  this.crostini_ = null;
+
   /**
    * ImportHistory. Non-null only once history observer is added in
    * {@code addHistoryObserver}.
@@ -498,6 +501,12 @@ FileManager.prototype = /** @struct */ {
     return this.historyLoader_;
   },
   /**
+   * @return {Crostini}
+   */
+  get crostini() {
+    return this.crostini_;
+  },
+  /**
    * @return {importer.ImportRunner}
    */
   get mediaImportHandler() {
@@ -897,6 +906,7 @@ FileManager.prototype = /** @struct */ {
                   this.fileBrowserBackground_.mediaScanner;
               this.historyLoader_ =
                   this.fileBrowserBackground_.historyLoader;
+              this.crostini_ = this.fileBrowserBackground_.crostini;
               metrics.recordInterval('Load.InitBackgroundPage');
               resolve();
             }.bind(this));
@@ -1139,13 +1149,9 @@ FileManager.prototype = /** @struct */ {
 
     // Create task controller.
     this.taskController_ = new TaskController(
-        this.dialogType,
-        this.volumeManager_,
-        this.ui_,
-        this.metadataModel_,
-        this.directoryModel_,
-        this.selectionHandler_,
-        this.metadataUpdateController_);
+        this.dialogType, this.volumeManager_, this.ui_, this.metadataModel_,
+        this.directoryModel_, this.selectionHandler_,
+        this.metadataUpdateController_, assert(this.crostini_));
 
     // Create search controller.
     this.searchController_ = new SearchController(
@@ -1219,8 +1225,6 @@ FileManager.prototype = /** @struct */ {
                     this.getSourceRestriction_())) :
             null);
 
-    chrome.fileManagerPrivate.onCrostiniSharedPathsChanged.addListener(
-        Crostini.onSharedPathsChanged.bind(null, assert(this.volumeManager_)));
     this.setupCrostini_();
     this.ui_.initDirectoryTree(directoryTree);
 
@@ -1237,8 +1241,8 @@ FileManager.prototype = /** @struct */ {
   FileManager.prototype.setupCrostini_ = function() {
     chrome.fileManagerPrivate.isCrostiniEnabled((crostiniEnabled) => {
       // Check for 'crostini-files' feature.
-      Crostini.IS_CROSTINI_FILES_ENABLED =
-          crostiniEnabled && loadTimeData.getBoolean('CROSTINI_FILES_ENABLED');
+      this.crostini_.setEnabled(
+          crostiniEnabled && loadTimeData.getBoolean('CROSTINI_FILES_ENABLED'));
 
       // Setup Linux files fake root.
       this.directoryTree.dataModel.linuxFilesItem = crostiniEnabled ?
@@ -1258,7 +1262,7 @@ FileManager.prototype = /** @struct */ {
       // Load any existing shared paths.
       chrome.fileManagerPrivate.getCrostiniSharedPaths((entries) => {
         for (let i = 0; i < entries.length; i++) {
-          Crostini.registerSharedPath(entries[i], assert(this.volumeManager_));
+          this.crostini_.registerSharedPath(entries[i]);
         }
       });
     });

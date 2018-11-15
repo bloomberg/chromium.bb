@@ -10,7 +10,10 @@
 ChromeEvent.prototype.dispatchEvent = (var_args) => {};
 
 /** @constructor */
-function FileManager() {}
+function FileManager() {
+  /** @type {Crostini} */
+  this.crostini;
+}
 FileManager.prototype.setupCrostini_ = () => {};
 
 /** @type {string} */

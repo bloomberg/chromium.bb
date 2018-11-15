@@ -28,7 +28,6 @@ js_type_check("closure_compile_module") {
     ":closure_compile_externs",
     ":column_visibility_controller",
     ":constants",
-    ":crostini",
     ":dialog_action_controller",
     ":dialog_type",
     ":directory_contents",
@@ -84,6 +83,7 @@ js_library("closure_compile_externs") {
     "$externs_path/metrics_private.js",
     "$externs_path/web_animations.js",
     "../../../externs/app_window_common.js",
+    "../../../externs/background/crostini.js",
     "../../../externs/background/drive_sync_handler.js",
     "../../../externs/background/file_browser_background.js",
     "../../../externs/background/file_browser_background_full.js",
@@ -213,22 +213,6 @@ js_library("dialog_action_controller") {
     "metadata:metadata_model",
     "ui:dialog_footer",
     "//ui/webui/resources/js/cr/ui:command",
-  ]
-}
-
-js_library("crostini") {
-  deps = [
-    "../../common/js:metrics",
-    "//ui/file_manager/base/js:volume_manager_types",
-    "//ui/file_manager/externs:volume_manager",
-  ]
-}
-
-js_unittest("crostini_unittest") {
-  deps = [
-    ":crostini",
-    "../../common/js:mock_entry",
-    "//ui/webui/resources/js:webui_resource_test",
   ]
 }
 
@@ -376,7 +360,6 @@ js_library("file_selection") {
 
 js_library("file_tasks") {
   deps = [
-    ":crostini",
     ":directory_model",
     ":task_history",
     "metadata:metadata_model",
@@ -683,7 +666,6 @@ js_library("webui_command_extender") {
 
 js_unit_tests("unit_tests") {
   deps = [
-    ":crostini_unittest",
     ":thumbnail_loader_unittest",
   ]
 }

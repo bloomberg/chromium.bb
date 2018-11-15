@@ -15,12 +15,13 @@
  * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
  * @param {chrome.fileManagerPrivate.FileTask} defaultTask
  * @param {!TaskHistory} taskHistory
+ * @param {!Crostini} crostini
  * @constructor
  * @struct
  */
 function FileTasks(
     volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes, tasks,
-    defaultTask, taskHistory) {
+    defaultTask, taskHistory, crostini) {
   /**
    * @private {!VolumeManager}
    * @const
@@ -74,6 +75,12 @@ function FileTasks(
    * @const
    */
   this.taskHistory_ = taskHistory;
+
+  /**
+   * @private {!Crostini}
+   * @const
+   */
+  this.crostini_ = crostini;
 }
 
 FileTasks.prototype = {
@@ -155,11 +162,12 @@ FileTasks.TaskPickerType = {
  * @param {!Array<!Entry>} entries
  * @param {!Array<?string>} mimeTypes
  * @param {!TaskHistory} taskHistory
+ * @param {!Crostini} crostini
  * @return {!Promise<!FileTasks>}
  */
 FileTasks.create = function(
     volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-    taskHistory) {
+    taskHistory, crostini) {
   var tasksPromise = new Promise(function(fulfill) {
     // getFileTasks supports only native entries.
     entries = entries.filter(util.isNativeEntry);
@@ -181,9 +189,8 @@ FileTasks.create = function(
       // a dialog with an error message, similar to when attempting to run
       // Crostini tasks with non-Crostini entries.
       if (entries.length !== 1 ||
-          !(Crostini.isCrostiniEntry(entries[0], volumeManager) ||
-            Crostini.canSharePath(
-                entries[0], false /* persist */, volumeManager))) {
+          !(FileTasks.isCrostiniEntry(entries[0], volumeManager) ||
+            crostini.canSharePath(entries[0], false /* persist */))) {
         taskItems = taskItems.filter(function(item) {
           var taskParts = item.taskId.split('|');
           var appId = taskParts[0];
@@ -213,7 +220,7 @@ FileTasks.create = function(
   return Promise.all([tasksPromise, defaultTaskPromise]).then(function(args) {
     return new FileTasks(
         volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-        args[0], args[1], taskHistory);
+        args[0], args[1], taskHistory, crostini);
   });
 };
 
@@ -549,6 +556,28 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
 };
 
 /**
+ * @param {!Entry} entry
+ * @param {!VolumeManager} volumeManager
+ * @return {boolean} True if the entry is from crostini.
+ */
+FileTasks.isCrostiniEntry = function(entry, volumeManager) {
+  return volumeManager.getLocationInfo(entry).rootType ===
+      VolumeManagerCommon.RootType.CROSTINI;
+};
+
+/**
+ * Returns true if task requires entries to be shared before executing task.
+ * @param {!chrome.fileManagerPrivate.FileTask} task Task to run.
+ * @return {boolean} true if task requires entries to be shared.
+ */
+FileTasks.taskRequiresCrostiniSharing = function(task) {
+  const taskParts = task.taskId.split('|');
+  const taskType = taskParts[1];
+  const actionId = taskParts[2];
+  return taskType === 'crostini' || actionId === 'install-linux-package';
+};
+
+/**
  * Checks if task is a crostini task and all entries are accessible to, or can
  * be shared with crostini.  Shares files as required if possible and invokes
  * callback, or shows Unable to Open error dialog and does not invoke callback.
@@ -560,7 +589,7 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
 FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
     task, callback) {
   // Check if this is a crostini task.
-  if (!Crostini.taskRequiresSharing(task))
+  if (!FileTasks.taskRequiresCrostiniSharing(task))
     return callback();
 
   let showUnableToOpen = false;
@@ -568,12 +597,11 @@ FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
 
   for (let i = 0; i < this.entries_.length; i++) {
     const entry = this.entries_[i];
-    if (Crostini.isCrostiniEntry(entry, this.volumeManager_) ||
-        Crostini.isPathShared(entry, this.volumeManager_)) {
+    if (FileTasks.isCrostiniEntry(entry, this.volumeManager_) ||
+        this.crostini_.isPathShared(entry)) {
       continue;
     }
-    if (!Crostini.canSharePath(
-            entry, false /* persist */, this.volumeManager_)) {
+    if (!this.crostini_.canSharePath(entry, false /* persist */)) {
       showUnableToOpen = true;
       break;
     }
@@ -613,7 +641,7 @@ FileTasks.prototype.maybeShareWithCrostiniOrShowDialog_ = function(
         }
         // Register paths as shared, and now we are ready to execute.
         entriesToShare.forEach((entry) => {
-          Crostini.registerSharedPath(entry, this.volumeManager_);
+          this.crostini_.registerSharedPath(entry);
         });
         callback();
       });
@@ -711,7 +739,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
               .create(
                   this.volumeManager_, this.metadataModel_,
                   this.directoryModel_, this.ui_, this.entries_,
-                  this.mimeTypes_, this.taskHistory_)
+                  this.mimeTypes_, this.taskHistory_, this.crostini_)
               .then(
                   function(tasks) {
                     tasks.executeDefault();

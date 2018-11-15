@@ -57,6 +57,7 @@ js_library("closure_compile_externs") {
     "$externs_path/metrics_private.js",
     "../../externs/app_window_common.js",
     "../../externs/background/file_browser_background.js",
+    "../../externs/background/crostini.js",
     "../../externs/entry_location.js",
     "../../externs/volume_info.js",
     "../../externs/volume_info_list.js",
@@ -74,7 +75,6 @@ js_library("check_select") {
 
 js_library("crostini_mount") {
   deps = [
-    "../foreground/js:crostini",
     "js:test_util",
     "//ui/webui/resources/js:webui_resource_test",
   ]
@@ -82,7 +82,6 @@ js_library("crostini_mount") {
 
 js_library("crostini_share") {
   deps = [
-    "../foreground/js:crostini",
     "js:test_util",
     "//ui/webui/resources/js:webui_resource_test",
   ]
@@ -90,7 +89,6 @@ js_library("crostini_share") {
 
 js_library("crostini_tasks") {
   deps = [
-    "../foreground/js:crostini",
     "js:test_util",
     "//ui/webui/resources/js:webui_resource_test",
   ]

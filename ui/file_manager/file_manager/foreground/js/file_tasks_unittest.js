@@ -15,6 +15,7 @@ var mockTaskHistory = {
 };
 
 loadTimeData.data = {
+  DRIVE_FS_ENABLED: false,
   MORE_ACTIONS_BUTTON_LABEL: 'MORE_ACTIONS_BUTTON_LABEL',
   NO_TASK_FOR_EXECUTABLE: 'NO_TASK_FOR_EXECUTABLE',
   NO_TASK_FOR_FILE_URL: 'NO_TASK_FOR_FILE_URL',
@@ -62,7 +63,7 @@ function setUp() {
  * @return {!FileManager}
  */
 function getMockFileManager() {
-  return {
+  const result = {
     volumeManager: {
       getLocationInfo: function(entry) {
         return {rootType: VolumeManagerCommon.RootType.DRIVE};
@@ -77,15 +78,19 @@ function getMockFileManager() {
       }
     },
     ui: {
-      alertDialog: {showHtml: function(title, text, onOk, onCancel, onShow) {}}
+      alertDialog:
+          {showHtml: function(title, text, onOk, onCancel, onShow) {}}
     },
     metadataModel: {},
     directoryModel: {
       getCurrentRootType: function() {
         return null;
       }
-    }
+    },
+    crostini: new Crostini(),
   };
+  result.crostini.init(result.volumeManager);
+  return result;
 }
 
 /**
@@ -111,7 +116,7 @@ function showHtmlOfAlertDialogIsCalled(entries, expectedTitle, expectedText) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, entries, [null],
-            mockTaskHistory)
+            mockTaskHistory, fileManager.crostini)
         .then(function(tasks) {
           tasks.executeDefault();
         });
@@ -138,7 +143,7 @@ function openSuggestAppsDialogIsCalled(entries, mimeTypes) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, entries, mimeTypes,
-            mockTaskHistory)
+            mockTaskHistory, fileManager.crostini)
         .then(function(tasks) {
           tasks.executeDefault();
         });
@@ -166,7 +171,7 @@ function showDefaultTaskDialogCalled(entries, mimeTypes) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, entries, mimeTypes,
-            mockTaskHistory)
+            mockTaskHistory, fileManager.crostini)
         .then(function(tasks) {
           tasks.executeDefault();
         });
@@ -231,7 +236,7 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
                 }
               }
             },
-            [entry], ['application/rtf'], mockTaskHistory)
+            [entry], ['application/rtf'], mockTaskHistory, fileManager.crostini)
         .then(function(tasks) {
           tasks.openSuggestAppsDialog(
               function() {}, function() {}, function() {});
@@ -256,7 +261,7 @@ function testOpenSuggestAppsDialogFailure(callback) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [entry], [null],
-            mockTaskHistory)
+            mockTaskHistory, fileManager.crostini)
         .then(function(tasks) {
           tasks.openSuggestAppsDialog(function() {}, function() {}, resolve);
         });
@@ -361,7 +366,7 @@ function testOpenWithMostRecentlyExecuted(callback) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            taskHistory)
+            taskHistory, fileManager.crostini)
         .then(function(tasks) {
           tasks.executeDefault();
           assertEquals(latestTaskId, executedTask);
@@ -426,7 +431,7 @@ function testOpenZipWithZipArchiver(callback) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            taskHistory)
+            taskHistory, fileManager.crostini)
         .then(function(tasks) {
           tasks.executeDefault();
           assertEquals(zipArchiverTaskId, executedTask);
@@ -470,7 +475,7 @@ function testOpenInstallLinuxPackageDialog(callback) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            mockTaskHistory)
+            mockTaskHistory, fileManager.crostini)
         .then(function(tasks) {
           tasks.executeDefault();
         });
@@ -487,7 +492,11 @@ function testMaybeShareCrostiniOrShowDialog() {
   const mockFsDownloads = new MockFileSystem('downloads');
   const sharedDir = new MockDirectoryEntry(mockFsDownloads, '/shared');
   const shared = new MockFileEntry(mockFsDownloads, '/shared/file');
-  Crostini.registerSharedPath(sharedDir, volumeManagerDownloads);
+
+  const crostini = new Crostini();
+  crostini.init(volumeManagerDownloads);
+  crostini.setEnabled(true);
+  crostini.registerSharedPath(sharedDir, volumeManagerDownloads);
   const notShared1 = new MockFileEntry(mockFsDownloads, '/notShared/file1');
   const notShared2 = new MockFileEntry(mockFsDownloads, '/notShared/file2');
   const otherNotShared =
@@ -510,6 +519,7 @@ function testMaybeShareCrostiniOrShowDialog() {
     }
     const fakeFilesTask = {
       entries_: entries,
+      crostini_: crostini,
       ui_: {
         alertDialog: {showHtml: showHtml},
         confirmDialog: {showHtml: showHtml},
@@ -530,12 +540,12 @@ function testMaybeShareCrostiniOrShowDialog() {
 
   expect('No entries', [], true, '', '');
 
-  Crostini.IS_CROSTINI_FILES_ENABLED = false;
+  crostini.setEnabled(false);
   expect(
       'Single entry, crostini-files not enabled', [notShared1], false,
       'UNABLE_TO_OPEN_CROSTINI_TITLE', 'UNABLE_TO_OPEN_CROSTINI');
 
-  Crostini.IS_CROSTINI_FILES_ENABLED = true;
+  crostini.setEnabled(true);
 
   expect('Single entry, not shared', [notShared1], true, '', '');
 
@@ -564,4 +574,16 @@ function testMaybeShareCrostiniOrShowDialog() {
   expect(
       '2 entries, 1 not sharable', [notShared1, unsharable], false,
       'UNABLE_TO_OPEN_CROSTINI_TITLE', 'UNABLE_TO_OPEN_CROSTINI');
+}
+
+function task(id) {
+  return /** @type{!chrome.fileManagerPrivate.FileTask} */ ({taskId: id});
+}
+
+function testTaskRequiresCrostiniSharing() {
+  assertTrue(
+      FileTasks.taskRequiresCrostiniSharing(task('app|crostini|open-with')));
+  assertTrue(FileTasks.taskRequiresCrostiniSharing(
+      task('appId|x|install-linux-package')));
+  assertFalse(FileTasks.taskRequiresCrostiniSharing(task('appId|x|open-with')));
 }

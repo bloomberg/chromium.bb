@@ -82,6 +82,9 @@ function FileBrowserBackgroundImpl() {
       this.progressCenter, this.historyLoader, this.dispositionChecker_,
       this.driveSyncHandler);
 
+  /** @type {!Crostini} */
+  this.crostini = new Crostini();
+
   /**
    * String assets.
    * @type {Object<string>}
@@ -101,7 +104,7 @@ function FileBrowserBackgroundImpl() {
   chrome.contextMenus.onClicked.addListener(
       this.onContextMenuClicked_.bind(this));
 
-  // Initializa string and volume manager related stuffs.
+  // Initialize string and volume manager related stuffs.
   this.initializationPromise_.then(function(strings) {
     this.stringData = strings;
     this.initContextMenu_();
@@ -110,6 +113,9 @@ function FileBrowserBackgroundImpl() {
       volumeManager.addEventListener(
           VolumeManagerCommon.VOLUME_ALREADY_MOUNTED,
           this.handleViewEvent_.bind(this));
+
+      this.crostini.init(volumeManager);
+      this.crostini.listen();
     }.bind(this));
 
     this.fileOperationManager = new FileOperationManager();

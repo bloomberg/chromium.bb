@@ -10,12 +10,13 @@
  * @param {!DirectoryModel} directoryModel
  * @param {!FileSelectionHandler} selectionHandler
  * @param {!MetadataUpdateController} metadataUpdateController
+ * @param {!Crostini} crostini
  * @constructor
  * @struct
  */
 function TaskController(
     dialogType, volumeManager, ui, metadataModel, directoryModel,
-    selectionHandler, metadataUpdateController) {
+    selectionHandler, metadataUpdateController, crostini) {
   /**
    * @private {DialogType}
    * @const
@@ -58,6 +59,13 @@ function TaskController(
    * @private
    */
   this.metadataUpdateController_ = metadataUpdateController;
+
+  /**
+   * @type {!Crostini}
+   * @const
+   * @private
+   */
+  this.crostini_ = crostini;
 
   /**
    * @type {!TaskHistory}
@@ -376,7 +384,7 @@ TaskController.prototype.getFileTasks = function() {
             .create(
                 this.volumeManager_, this.metadataModel_, this.directoryModel_,
                 this.ui_, selection.entries, assert(selection.mimeTypes),
-                this.taskHistory_)
+                this.taskHistory_, this.crostini_)
             .then(function(tasks) {
               if (this.selectionHandler_.selection !== selection) {
                 if (util.isSameEntries(this.tasksEntries_, selection.entries))
@@ -467,7 +475,7 @@ TaskController.prototype.executeEntryTask = function(entry) {
         .create(
             this.volumeManager_, this.metadataModel_, this.directoryModel_,
             this.ui_, [entry], [props[0].contentMimeType || null],
-            this.taskHistory_)
+            this.taskHistory_, this.crostini_)
         .then(function(tasks) {
           tasks.executeDefault();
         });
