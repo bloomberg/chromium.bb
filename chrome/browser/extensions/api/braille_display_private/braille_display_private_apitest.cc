@@ -31,8 +31,8 @@
 
 using chromeos::ProfileHelper;
 using chromeos::ScreenLocker;
+using chromeos::ScreenLockerTester;
 using user_manager::UserManager;
-using chromeos::test::ScreenLockerTester;
 using content::BrowserThread;
 
 namespace extensions {
@@ -338,7 +338,7 @@ class BrailleDisplayPrivateAPIUserTest : public BrailleDisplayPrivateApiTest {
 #endif
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
                        MAYBE_KeyEventOnLockScreen) {
-  std::unique_ptr<ScreenLockerTester> tester(ScreenLocker::GetTester());
+  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
   // Log in.
   session_manager::SessionManager::Get()->CreateSession(
       AccountId::FromUserEmailGaiaId(kTestUserName, kTestUserGaiaId),

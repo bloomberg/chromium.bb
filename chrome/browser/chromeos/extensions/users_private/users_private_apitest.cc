@@ -240,8 +240,8 @@ IN_PROC_BROWSER_TEST_F(UsersPrivateApiLoginStatusTest, User) {
 // Screenlock - logged in, screen locked.
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiLockStatusTest, ScreenLock) {
   chromeos::ScreenLocker::Show();
-  std::unique_ptr<chromeos::test::ScreenLockerTester> tester(
-      chromeos::ScreenLocker::GetTester());
+  std::unique_ptr<chromeos::ScreenLockerTester> tester =
+      chromeos::ScreenLockerTester::Create();
   content::WindowedNotificationObserver lock_state_observer(
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::NotificationService::AllSources());

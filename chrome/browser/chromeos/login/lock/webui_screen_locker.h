@@ -38,10 +38,6 @@ namespace login {
 class NetworkStateHelper;
 }
 
-namespace test {
-class WebUIScreenLockerTester;
-}
-
 // Displays a WebUI lock screen based on the Oobe account picker screen.
 class WebUIScreenLocker : public WebUILoginView,
                           public ScreenLocker::Delegate,
@@ -62,8 +58,9 @@ class WebUIScreenLocker : public WebUILoginView,
   // ScreenLockReady is called when all initialization has finished.
   void LockScreen();
 
+  bool webui_ready_for_testing() const { return webui_ready_; }
+
  private:
-  friend class test::WebUIScreenLockerTester;
 
   // Returns true if the lock screen should be preloaded.
   static bool ShouldPreloadLockScreen();
