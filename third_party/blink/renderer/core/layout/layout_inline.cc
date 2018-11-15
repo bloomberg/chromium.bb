@@ -724,8 +724,11 @@ void LayoutInline::Paint(const PaintInfo& paint_info) const {
 
 template <typename GeneratorContext>
 void LayoutInline::GenerateLineBoxRects(GeneratorContext& yield) const {
-  if (const NGPhysicalBoxFragment* box_fragment =
-          ContainingBlockFlowFragmentOf(*this)) {
+  if (IsInLayoutNGInlineFormattingContext()) {
+    const NGPhysicalBoxFragment* box_fragment =
+        ContainingBlockFlowFragmentOf(*this);
+    if (!box_fragment)
+      return;
     const auto& descendants =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     const LayoutBlock* block_for_flipping = nullptr;
@@ -929,8 +932,11 @@ LayoutPoint LayoutInline::FirstLineBoxTopLeft() const {
   // hand, sets the block-axis coordinate relatively to the block-start border
   // edge, which means that offsetLeft will be wrong when writing-mode is
   // vertical-rl.
-  if (const NGPhysicalBoxFragment* box_fragment =
-          ContainingBlockFlowFragmentOf(*this)) {
+  if (IsInLayoutNGInlineFormattingContext()) {
+    const NGPhysicalBoxFragment* box_fragment =
+        ContainingBlockFlowFragmentOf(*this);
+    if (!box_fragment)
+      return LayoutPoint();
     const auto& fragments =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     if (fragments.IsEmpty())
@@ -1124,8 +1130,11 @@ class LinesBoundingBoxGeneratorContext {
 }  // unnamed namespace
 
 LayoutRect LayoutInline::LinesBoundingBox() const {
-  if (const NGPhysicalBoxFragment* box_fragment =
-          ContainingBlockFlowFragmentOf(*this)) {
+  if (IsInLayoutNGInlineFormattingContext()) {
+    const NGPhysicalBoxFragment* box_fragment =
+        ContainingBlockFlowFragmentOf(*this);
+    if (!box_fragment)
+      return LayoutRect();
     NGPhysicalOffsetRect bounding_box;
     auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
@@ -1269,8 +1278,11 @@ LayoutRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
 }
 
 LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
-  if (const NGPhysicalBoxFragment* box_fragment =
-          ContainingBlockFlowFragmentOf(*this)) {
+  if (IsInLayoutNGInlineFormattingContext()) {
+    const NGPhysicalBoxFragment* box_fragment =
+        ContainingBlockFlowFragmentOf(*this);
+    if (!box_fragment)
+      return LayoutRect();
     NGPhysicalOffsetRect result;
     auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
