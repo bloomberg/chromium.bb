@@ -54,7 +54,26 @@ class ConnectToDeviceOperationBase
 
   ~ConnectToDeviceOperationBase() override = default;
 
-  virtual void AttemptConnectionToDevice(
+  void AttemptConnectionToDevice(ConnectionPriority connection_priority) {
+    has_started_connection_attempt_ = true;
+    PerformAttemptConnectionToDevice(connection_priority);
+  }
+
+  void CancelInternal() override {
+    if (has_started_connection_attempt_)
+      PerformCancellation();
+  }
+
+  void UpdateConnectionPriorityInternal(
+      ConnectionPriority connection_priority) override {
+    if (has_started_connection_attempt_)
+      PerformUpdateConnectionPriority(connection_priority);
+  }
+
+  virtual void PerformAttemptConnectionToDevice(
+      ConnectionPriority connection_priority) = 0;
+  virtual void PerformCancellation() = 0;
+  virtual void PerformUpdateConnectionPriority(
       ConnectionPriority connection_priority) = 0;
 
   const DeviceIdPair& device_id_pair() const { return device_id_pair_; }
@@ -62,6 +81,7 @@ class ConnectToDeviceOperationBase
  private:
   const DeviceIdPair& device_id_pair_;
   scoped_refptr<base::TaskRunner> task_runner_;
+  bool has_started_connection_attempt_ = false;
   base::WeakPtrFactory<ConnectToDeviceOperationBase> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectToDeviceOperationBase);

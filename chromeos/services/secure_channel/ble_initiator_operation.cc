@@ -71,7 +71,7 @@ BleInitiatorOperation::BleInitiatorOperation(
 
 BleInitiatorOperation::~BleInitiatorOperation() = default;
 
-void BleInitiatorOperation::AttemptConnectionToDevice(
+void BleInitiatorOperation::PerformAttemptConnectionToDevice(
     ConnectionPriority connection_priority) {
   is_attempt_active_ = true;
   ble_connection_manager_->AttemptBleInitiatorConnection(
