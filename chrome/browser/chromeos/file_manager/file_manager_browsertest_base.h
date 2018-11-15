@@ -66,7 +66,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   // Returns true if the test requires in guest mode.
   bool IsGuestModeTest() const { return GetGuestMode() == IN_GUEST_MODE; }
 
-  // Returns true if the test runs in tablet mode (aka Ash immersive mode).
+  // Returns true if the test runs in tablet mode.
   bool IsTabletModeTest() const { return GetTabletMode(); }
 
   // Returns true if the test requires DriveFS.
