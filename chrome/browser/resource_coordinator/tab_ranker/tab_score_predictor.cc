@@ -56,6 +56,7 @@ void PopulateRankerExample(assist_ranker::RankerExample* example,
   features["HasBeforeUnloadHandler"].set_bool_value(
       tab.has_before_unload_handler);
   features["HasFormEntry"].set_bool_value(tab.has_form_entry);
+  features["IsActive"].set_bool_value(window.is_active);
   features["IsPinned"].set_bool_value(tab.is_pinned);
   features["KeyEventCount"].set_int32_value(tab.key_event_count);
   features["MRUIndex"].set_int32_value(mru.index);
@@ -79,6 +80,7 @@ void PopulateRankerExample(assist_ranker::RankerExample* example,
     features["SiteEngagementScore"].set_int32_value(
         tab.site_engagement_score.value());
   }
+  features["ShowState"].set_int32_value(window.show_state);
   features["TabCount"].set_int32_value(window.tab_count);
   features["TimeFromBackgrounded"].set_int32_value(tab.time_from_backgrounded);
   features["TopDomain"].set_string_value(
