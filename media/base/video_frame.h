@@ -46,9 +46,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     kFrameSizeAlignment = 16,
     kFrameSizePadding = 16,
 
-    // Note: This value is dependent on what's used by ffmpeg, do not change
-    // without inspecting av_frame_get_buffer() first.
-    kFrameAddressAlignment = 32
+    kFrameAddressAlignment = VideoFrameLayout::kBufferAddressAlignment
   };
 
   enum {

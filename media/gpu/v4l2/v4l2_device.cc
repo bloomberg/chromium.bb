@@ -1288,9 +1288,14 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
         return base::nullopt;
     }
   }
+
+  // Some V4L2 devices expect buffers to be page-aligned. We cannot detect
+  // such devices individually, so set this as a video frame layout property.
+  constexpr size_t buffer_alignment = 0x1000;
+
   return VideoFrameLayout::CreateWithPlanes(
       video_format, gfx::Size(pix_mp.width, pix_mp.height), std::move(planes),
-      std::move(buffer_sizes));
+      std::move(buffer_sizes), buffer_alignment);
 }
 
 void V4L2Device::GetSupportedResolution(uint32_t pixelformat,

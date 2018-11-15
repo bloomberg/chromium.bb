@@ -1242,7 +1242,7 @@ void VideoFrame::AllocateMemory(bool zero_initialize_memory) {
   }
 
   uint8_t* data = reinterpret_cast<uint8_t*>(
-      base::AlignedAlloc(total_buffer_size, kFrameAddressAlignment));
+      base::AlignedAlloc(total_buffer_size, layout_.buffer_addr_align()));
   if (zero_initialize_memory) {
     memset(data, 0, total_buffer_size);
   }
