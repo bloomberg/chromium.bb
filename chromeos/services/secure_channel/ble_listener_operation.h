@@ -60,7 +60,7 @@ class BleListenerOperation
       scoped_refptr<base::TaskRunner> task_runner);
 
   // ConnectToDeviceOperationBase<BleListenerFailureType>:
-  void AttemptConnectionToDevice(
+  void PerformAttemptConnectionToDevice(
       ConnectionPriority connection_priority) override;
   void PerformCancellation() override;
   void PerformUpdateConnectionPriority(
