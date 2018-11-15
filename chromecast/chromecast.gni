@@ -101,6 +101,9 @@ declare_args() {
 
   # Set to true to enable wayland server
   enable_cast_wayland_server = false
+
+  # Whether to build cast for Android Things N version
+  build_for_android_things_n = false
 }
 
 declare_args() {
