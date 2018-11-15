@@ -102,16 +102,18 @@ public class JniProcessor extends AbstractProcessor {
     }
 
     public JniProcessor() {
-        // State of mNativesBuilder needs to be preserved between processing rounds.
-        FieldSpec testingFlag = FieldSpec.builder(TypeName.BOOLEAN, NATIVE_TEST_FIELD_NAME)
-                                        .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
-                                        .initializer("" + TESTING_ENABLED)
-                                        .build();
+        FieldSpec.Builder testingFlagBuilder =
+                FieldSpec.builder(TypeName.BOOLEAN, NATIVE_TEST_FIELD_NAME)
+                        .addModifiers(Modifier.STATIC, Modifier.PUBLIC);
+        if (TESTING_ENABLED) {
+            testingFlagBuilder.initializer("true");
+        }
 
+        // State of mNativesBuilder needs to be preserved between processing rounds.
         mNativesBuilder = TypeSpec.classBuilder(NATIVE_CLASS_NAME)
                                   .addAnnotation(createGeneratedAnnotation())
                                   .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                                  .addField(testingFlag);
+                                  .addField(testingFlagBuilder.build());
 
         try {
             sNativeMethodHashFunction = MessageDigest.getInstance("MD5");
