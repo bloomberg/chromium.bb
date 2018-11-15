@@ -5,7 +5,6 @@
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
-# TODO(crbug.com/826982): move to chrome/services.
 source_set("lib") {
   sources = [
     "app_registry/app_registry.cc",
