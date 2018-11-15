@@ -132,28 +132,28 @@ TEST_F(VisibleUnitsSentenceTest, startOfSentence) {
   Node* three = shadow_root->getElementById("three")->firstChild();
   Node* four = shadow_root->getElementById("four")->firstChild();
 
-  EXPECT_EQ(Position(one, 0),
+  EXPECT_EQ(Position(three, 0),
             StartOfSentence(CreateVisiblePositionInDOMTree(*one, 0))
                 .DeepEquivalent());
   EXPECT_EQ(PositionInFlatTree(three, 0),
             StartOfSentence(CreateVisiblePositionInFlatTree(*one, 0))
                 .DeepEquivalent());
 
-  EXPECT_EQ(Position(one, 0),
+  EXPECT_EQ(Position(three, 0),
             StartOfSentence(CreateVisiblePositionInDOMTree(*one, 1))
                 .DeepEquivalent());
   EXPECT_EQ(PositionInFlatTree(three, 0),
             StartOfSentence(CreateVisiblePositionInFlatTree(*one, 1))
                 .DeepEquivalent());
 
-  EXPECT_EQ(Position(one, 0),
+  EXPECT_EQ(Position(three, 0),
             StartOfSentence(CreateVisiblePositionInDOMTree(*two, 0))
                 .DeepEquivalent());
   EXPECT_EQ(PositionInFlatTree(three, 0),
             StartOfSentence(CreateVisiblePositionInFlatTree(*two, 0))
                 .DeepEquivalent());
 
-  EXPECT_EQ(Position(one, 0),
+  EXPECT_EQ(Position(three, 0),
             StartOfSentence(CreateVisiblePositionInDOMTree(*two, 1))
                 .DeepEquivalent());
   EXPECT_EQ(PositionInFlatTree(three, 0),
@@ -188,11 +188,7 @@ TEST_F(VisibleUnitsSentenceTest, SentenceBoundarySkipTextControl) {
             StartOfSentence(CreateVisiblePosition(Position(bar, 3)))
                 .DeepEquivalent());
 
-  // TODO(xiaochengh): Should be "foo"@0
-  const Node* xx = ToHTMLInputElement(GetDocument().QuerySelector("input"))
-                       ->InnerEditorElement()
-                       ->firstChild();
-  EXPECT_EQ(PositionInFlatTree(xx, 0),
+  EXPECT_EQ(PositionInFlatTree(foo, 0),
             StartOfSentence(CreateVisiblePosition(PositionInFlatTree(bar, 3)))
                 .DeepEquivalent());
 }
