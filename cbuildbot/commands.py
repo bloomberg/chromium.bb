@@ -753,11 +753,15 @@ def RunSignerTests(_buildroot, board):
   image_lib.SecurityTest(board=board)
 
 
-def RunUnitTests(buildroot, board, blacklist=None, extra_env=None):
+def RunUnitTests(buildroot, board, blacklist=None, extra_env=None,
+                 build_stage=True):
   cmd = ['cros_run_unit_tests', '--board=%s' % board]
 
   if blacklist:
     cmd += ['--blacklist_packages=%s' % ' '.join(blacklist)]
+
+  if not build_stage:
+    cmd += ['--assume-empty-sysroot']
 
   RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True,
                  extra_env=extra_env or {})

@@ -143,19 +143,18 @@ def GetCPEFromCPV(category, package, version):
   return cpes
 
 
-def GenerateSDKCPVList(board):
+def GenerateSDKCPVList(sysroot):
   """Find all SDK packages from package.provided
 
   Args:
-    board: The board to use when finding SDK packages.
+    sysroot: The board directory to use when finding SDK packages.
 
   Returns:
     A list of CPV Name strings, e.g.
     ["sys-libs/glibc-2.23-r9", "dev-lang/go-1.8.3-r1"]
   """
   # Look at packages in package.provided.
-  board_root = cros_build_lib.GetSysroot(board)
-  sdk_file_path = os.path.join(board_root, 'etc', 'portage',
+  sdk_file_path = os.path.join(sysroot, 'etc', 'portage',
                                'profile', 'package.provided')
   for line in osutils.ReadFile(sdk_file_path).splitlines():
     # Skip comments and empty lines.
@@ -165,12 +164,12 @@ def GenerateSDKCPVList(board):
     yield line
 
 
-def GenerateCPEList(deps_list, board):
+def GenerateCPEList(deps_list, sysroot):
   """Generate all CPEs for the packages included in deps_list and SDK packages
 
   Args:
     deps_list: A flattened dependency tree (cros_extract_deps format).
-    board: The board to use when finding SDK packages.
+    sysroot: The board directory to use when finding SDK packages.
 
   Returns:
     A list of CPE info for packages in deps_list and SDK packages, e.g.
@@ -194,7 +193,7 @@ def GenerateCPEList(deps_list, board):
   cpe_dump = []
 
   # Generage CPEs for SDK packages.
-  for sdk_cpv in GenerateSDKCPVList(board):
+  for sdk_cpv in GenerateSDKCPVList(sysroot):
     # Only add CPE for SDK CPVs missing in deps_list.
     if deps_list.get(sdk_cpv) is not None:
       continue
@@ -220,31 +219,45 @@ def GenerateCPEList(deps_list, board):
   return sorted(cpe_dump, key=lambda k: k['ComponentName'])
 
 
-def main(argv):
+def ParseArgs(argv):
+  """Parse command line arguments."""
   parser = commandline.ArgumentParser(description="""
 This extracts the dependency tree for the specified package, and outputs it
 to stdout, in a serialized JSON format.""")
-  parser.add_argument('--board', default=None,
-                      help='The board to use when computing deps.')
+  target = parser.add_mutually_exclusive_group()
+  target.add_argument('--sysroot', type='path', help='Path to the sysroot.')
+  target.add_argument('--board', help='Board name.')
+
   parser.add_argument('--format', default='deps',
                       choices=['deps', 'cpe'],
                       help='Output either traditional deps or CPE-only JSON.')
   parser.add_argument('--output-path', default=None,
                       help='Write output to the given path.')
   known_args, unknown_args = parser.parse_known_args(argv)
+  return (known_args, unknown_args)
 
-  lib_argv = []
-  if known_args.board:
-    lib_argv += ['--board=%s' % known_args.board]
-  lib_argv += ['--quiet', '--pretend', '--emptytree']
-  lib_argv.extend(unknown_args)
+
+def ExtractDeps(sysroot, package_list, formatting='deps'):
+  """Returns the set of dependencies for the packages in package_list"""
+  lib_argv = ['--quiet', '--pretend', '--emptytree']
+  lib_argv += ['--sysroot=%s' % sysroot]
+  lib_argv.extend(package_list)
 
   deps = DepGraphGenerator()
   deps.Initialize(lib_argv)
   deps_tree, _deps_info = deps.GenDependencyTree()
-  deps_list = FlattenDepTree(deps_tree, get_cpe=(known_args.format == 'cpe'))
-  if known_args.format == 'cpe':
-    deps_list = GenerateCPEList(deps_list, board=known_args.board)
+  flattened_deps = FlattenDepTree(deps_tree, get_cpe=(formatting == 'cpe'))
+  if formatting == 'cpe':
+    flattened_deps = GenerateCPEList(flattened_deps, sysroot)
+  return flattened_deps
+
+
+def main(argv):
+  known_args, unknown_args = ParseArgs(argv)
+
+  sysroot = known_args.sysroot or cros_build_lib.GetSysroot(known_args.board)
+  pkgs = list(unknown_args)
+  deps_list = ExtractDeps(sysroot, pkgs, known_args.format)
 
   deps_output = json.dumps(deps_list, sort_keys=True, indent=2)
   if known_args.output_path:
