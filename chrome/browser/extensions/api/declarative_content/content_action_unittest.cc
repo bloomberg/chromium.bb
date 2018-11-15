@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
@@ -71,28 +71,28 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
   TestExtensionEnvironment env;
   std::string error;
   std::unique_ptr<const ContentAction> result;
+  TestingProfile profile;
 
   // Test wrong data type passed.
   error.clear();
-  result = ContentAction::Create(
-      NULL, NULL, *ParseJson("[]"), &error);
+  result = ContentAction::Create(&profile, nullptr, *ParseJson("[]"), &error);
   EXPECT_THAT(error, HasSubstr("missing instanceType"));
   EXPECT_FALSE(result.get());
 
   // Test missing instanceType element.
   error.clear();
-  result = ContentAction::Create(
-      NULL, NULL, *ParseJson("{}"), &error);
+  result = ContentAction::Create(&profile, nullptr, *ParseJson("{}"), &error);
   EXPECT_THAT(error, HasSubstr("missing instanceType"));
   EXPECT_FALSE(result.get());
 
   // Test wrong instanceType element.
   error.clear();
-  result = ContentAction::Create(NULL, NULL, *ParseJson(
-      "{\n"
-      "  \"instanceType\": \"declarativeContent.UnknownType\",\n"
-      "}"),
-                                 &error);
+  result = ContentAction::Create(
+      &profile, nullptr,
+      *ParseJson("{\n"
+                 "  \"instanceType\": \"declarativeContent.UnknownType\",\n"
+                 "}"),
+      &error);
   EXPECT_THAT(error, HasSubstr("invalid instanceType"));
   EXPECT_FALSE(result.get());
 }
@@ -114,9 +114,10 @@ TEST(DeclarativeContentActionTest, ShowPageActionWithoutPageAction) {
           .Build();
   env.GetExtensionService()->AddExtension(extension.get());
 
+  TestingProfile profile;
   std::string error;
   std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      NULL, extension.get(),
+      &profile, extension.get(),
       *ParseJson("{\n"
                  "  \"instanceType\": \"declarativeContent.ShowPageAction\",\n"
                  "}"),
@@ -130,9 +131,10 @@ TEST(DeclarativeContentActionTest, ShowPageAction) {
 
   const Extension* extension = env.MakeExtension(
       *ParseJson("{\"page_action\": { \"default_title\": \"Extension\" } }"));
+  TestingProfile profile;
   std::string error;
   std::unique_ptr<const ContentAction> result = ContentAction::Create(
-      NULL, extension,
+      &profile, extension,
       *ParseJson("{\n"
                  "  \"instanceType\": \"declarativeContent.ShowPageAction\",\n"
                  "}"),
@@ -164,10 +166,8 @@ TEST(DeclarativeContentActionTest, SetIcon) {
   // Simulate the process of passing ImageData to SetIcon::Create.
   SkBitmap bitmap;
   EXPECT_TRUE(bitmap.tryAllocN32Pixels(19, 19));
-  bitmap.eraseARGB(0,0,0,0);
-  uint32_t* pixels = bitmap.getAddr32(0, 0);
-  for (int i = 0; i < 19 * 19; ++i)
-    pixels[i] = i;
+  // Fill the bitmap with red pixels.
+  bitmap.eraseARGB(255, 255, 0, 0);
   IPC::Message bitmap_pickle;
   IPC::WriteParam(&bitmap_pickle, bitmap);
   std::string binary_data = std::string(
@@ -183,11 +183,21 @@ TEST(DeclarativeContentActionTest, SetIcon) {
 
   const Extension* extension = env.MakeExtension(
       *ParseJson("{\"page_action\": { \"default_title\": \"Extension\" } }"));
+  base::HistogramTester histogram_tester;
+  TestingProfile profile;
   std::string error;
+  ContentAction::SetAllowInvisibleIconsForTest(false);
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(NULL, extension, *dict, &error);
+      ContentAction::Create(&profile, extension, *dict, &error);
+  ContentAction::SetAllowInvisibleIconsForTest(true);
   EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.DeclarativeSetIconWasVisible"),
+      testing::ElementsAre(base::Bucket(1, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.DeclarativeSetIconWasVisibleRendered"),
+              testing::ElementsAre(base::Bucket(1, 1)));
 
   ExtensionAction* page_action =
       ExtensionActionManager::Get(env.profile())->GetPageAction(*extension);
@@ -215,7 +225,7 @@ TEST(DeclarativeContentActionTest, SetInvisibleIcon) {
   bitmap.eraseARGB(0, 0, 0, 0);
   uint32_t* pixels = bitmap.getAddr32(0, 0);
   // Set a single pixel, which isn't enough to consider the icon visible.
-  pixels[0] = SkColorSetARGB(0xFF, 0xFF, 0xFF, 0xFF);
+  pixels[0] = SkColorSetARGB(255, 255, 0, 0);
   IPC::Message bitmap_pickle;
   IPC::WriteParam(&bitmap_pickle, bitmap);
   std::string binary_data = std::string(
@@ -232,13 +242,21 @@ TEST(DeclarativeContentActionTest, SetInvisibleIcon) {
   // Expect an error and no instance to be created.
   const Extension* extension = env.MakeExtension(
       *ParseJson(R"({"page_action": {"default_title": "Extension"}})"));
-  ContentAction::SetAllowInvisibleIconsForTest(false);
+  base::HistogramTester histogram_tester;
+  TestingProfile profile;
   std::string error;
+  ContentAction::SetAllowInvisibleIconsForTest(false);
   std::unique_ptr<const ContentAction> result =
-      ContentAction::Create(nullptr, extension, *dict, &error);
+      ContentAction::Create(&profile, extension, *dict, &error);
+  ContentAction::SetAllowInvisibleIconsForTest(true);
   EXPECT_EQ("The specified icon is not sufficiently visible", error);
   EXPECT_FALSE(result);
-  ContentAction::SetAllowInvisibleIconsForTest(true);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Extensions.DeclarativeSetIconWasVisible"),
+      testing::ElementsAre(base::Bucket(0, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.DeclarativeSetIconWasVisibleRendered"),
+              testing::ElementsAre(base::Bucket(0, 1)));
 }
 
 TEST_F(RequestContentScriptTest, MissingScripts) {

@@ -57,6 +57,7 @@ class ExtensionActionIconFactory : public extensions::IconImage::Observer {
   gfx::Image GetIcon(int tab_id);
 
  private:
+  Profile* profile_;
   const ExtensionAction* action_;
   Observer* observer_;
   const bool should_check_icons_;

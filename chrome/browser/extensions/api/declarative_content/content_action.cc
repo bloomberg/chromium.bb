@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/invalidate_type.h"
@@ -419,6 +420,11 @@ std::unique_ptr<ContentAction> SetIcon::Create(
       extensions::image_util::IsIconSufficientlyVisible(bitmap);
   UMA_HISTOGRAM_BOOLEAN("Extensions.DeclarativeSetIconWasVisible",
                         is_sufficiently_visible);
+  const bool is_sufficiently_visible_rendered =
+      extensions::ui_util::IsRenderedIconSufficientlyVisibleForBrowserContext(
+          bitmap, browser_context);
+  UMA_HISTOGRAM_BOOLEAN("Extensions.DeclarativeSetIconWasVisibleRendered",
+                        is_sufficiently_visible_rendered);
   if (!is_sufficiently_visible && !g_allow_invisible_icons_content_action) {
     *error = kIconNotSufficientlyVisible;
     return nullptr;
