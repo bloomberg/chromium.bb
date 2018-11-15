@@ -181,7 +181,10 @@ Still reading?
   </issue>
   <!-- TODO(crbug.com/804453): Remove this after fixing. -->
   <issue id="KeyboardInaccessibleWidget" severity="ignore"/>
-  <issue id="LintError" severity="Error"/>
+  <issue id="LintError">
+    <!-- We no longer supply class files to lint. -->
+    <ignore regexp="No `.class` files were found in project"/>
+  </issue>
   <issue id="LogConditional" severity="ignore"/>
   <issue id="LongLogTag" severity="ignore"/>
   <issue id="MissingApplicationIcon" severity="ignore"/>
