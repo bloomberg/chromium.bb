@@ -9,7 +9,9 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 IOSChromeSigninStatusMetricsProviderDelegate::
     IOSChromeSigninStatusMetricsProviderDelegate() {}
@@ -36,9 +38,9 @@ IOSChromeSigninStatusMetricsProviderDelegate::GetStatusOfAllAccounts() {
   accounts_status.num_opened_accounts = accounts_status.num_accounts;
 
   for (ios::ChromeBrowserState* browser_state : browser_state_list) {
-    SigninManager* manager = ios::SigninManagerFactory::GetForBrowserState(
+    auto* manager = IdentityManagerFactory::GetForBrowserState(
         browser_state->GetOriginalChromeBrowserState());
-    if (manager && manager->IsAuthenticated())
+    if (manager && manager->HasPrimaryAccount())
       accounts_status.num_signed_in_accounts++;
   }
 
