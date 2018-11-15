@@ -9,6 +9,7 @@
  * text being search for, and wraps them with a span that highlights them.
  */
 
+(function() {
 /**
  * Namespace for this file.  Depends on __gCrWeb having already been injected.
  */
@@ -31,81 +32,75 @@ __gCrWeb['findInPage']['spans'] = [];
  * TODO(justincohen): x-domain frames won't work.
  * @type {Array<Document>}
  */
-__gCrWeb['findInPage'].frameDocs = [];
-
-/**
- * Associate array to stash element styles while the element is highlighted.
- * @type {Object<Element,Object<string,string>>}
- */
-__gCrWeb['findInPage'].savedElementStyles = {};
+let frameDocs_ = [];
 
 /**
  * The style DOM element that we add.
  * @type {Element}
  */
-__gCrWeb['findInPage'].style = null;
+let styleElement_ = null;
 
 /**
  * Width we expect the page to be.  For example (320/480) for iphone,
  * (1024/768) for ipad.
  * @type {number}
  */
-__gCrWeb['findInPage'].pageWidth = 320;
+let pageWidth_ = 320;
 
 /**
  * Height we expect the page to be.
  * @type {number}
  */
-__gCrWeb['findInPage'].pageHeight = 480;
+let pageHeight_ = 480;
 
 /**
  * Maximum number of visible elements to count
  * @type {number}
  */
-__gCrWeb['findInPage'].maxVisibleElements = 100;
+const MAX_VISIBLE_ELEMENTS = 100;
 
 /**
  * A search is in progress.
  * @type {boolean}
  */
-__gCrWeb['findInPage'].searchInProgress = false;
+let searchInProgress_ = false;
 
 /**
  * Node names that are not going to be processed.
  * @type {Object}
  */
-__gCrWeb['findInPage'].ignoreNodeNames = {
- 'SCRIPT': 1,
- 'STYLE': 1,
- 'EMBED': 1,
- 'OBJECT': 1
+const IGNORE_NODE_NAMES = {
+  'SCRIPT': 1,
+  'STYLE': 1,
+  'EMBED': 1,
+  'OBJECT': 1
 };
 
 /**
  * Class name of CSS element.
  * @type {string}
  */
-__gCrWeb['findInPage'].CSS_CLASS_NAME = 'find_in_page';
+const CSS_CLASS_NAME = 'find_in_page';
 
 /**
  * ID of CSS style.
  * @type {string}
  */
-__gCrWeb['findInPage'].CSS_STYLE_ID = '__gCrWeb.findInPageStyle';
+const CSS_STYLE_ID = '__gCrWeb.findInPageStyle';
 
 /**
  * Result passed back to app to indicate no results for the query.
  * @type {string}
  */
-__gCrWeb['findInPage'].NO_RESULTS = '[0,[0,0,0]]';
+const NO_RESULTS = '[0,[0,0,0]]';
 
 /**
  * Regex to escape regex special characters in a string.
  * @type {RegExp}
  */
-__gCrWeb['findInPage'].REGEX_ESCAPER = /([.?*+^$[\]\\(){}|-])/g;
+const REGEX_ESCAPER = /([.?*+^$[\]\\(){}|-])/g;
 
-__gCrWeb['findInPage'].getCurrentSpan = function() {
+function getCurrentSpan_() {
   return __gCrWeb['findInPage']['spans'][__gCrWeb['findInPage']['index']];
 };
 
@@ -115,15 +110,15 @@ __gCrWeb['findInPage'].getCurrentSpan = function() {
  * @param {boolean} opt_split True to split up the phrase.
  * @return {RegExp} regex needed to find the text.
  */
-__gCrWeb['findInPage'].getRegex = function(findText, opt_split) {
-  var regexString = '';
+function getRegex_(findText, opt_split) {
+  let regexString = '';
   if (opt_split) {
-    var words = [];
-    var split = findText.split(' ');
-    for (var i = 0; i < split.length; i++) {
-      words.push(__gCrWeb['findInPage'].escapeRegex(split[i]));
+    let words = [];
+    let split = findText.split(' ');
+    for (let i = 0; i < split.length; i++) {
+      words.push(escapeRegex_(split[i]));
     }
-    var joinedWords = words.join('|');
+    let joinedWords = words.join('|');
     regexString = '(' +
         // Match at least one word.
         '\\b(?:' + joinedWords + ')' +
@@ -131,7 +126,7 @@ __gCrWeb['findInPage'].getRegex = function(findText, opt_split) {
         '(?:\\s*\\b(?:' + joinedWords + '))*' +
         ')';
   } else {
-    regexString = '(' + __gCrWeb['findInPage'].escapeRegex(findText) + ')';
+    regexString = '(' + escapeRegex_(findText) + ')';
   }
   return new RegExp(regexString, 'ig');
 };
@@ -150,8 +145,9 @@ __gCrWeb['findInPage'].time = function() {
  * @return {boolean} Find in page needs to return.
  */
 __gCrWeb['findInPage'].overTime = function() {
-  return (__gCrWeb['findInPage'].time() - __gCrWeb['findInPage'].startTime >
-          __gCrWeb['findInPage'].timeout);
+  return (
+      __gCrWeb['findInPage'].time() - __gCrWeb['findInPage'].startTime >
+      __gCrWeb['findInPage'].timeout);
 };
 
 /**
@@ -164,16 +160,16 @@ __gCrWeb['findInPage'].overTime = function() {
  * @return {string} How many results there are in the page in the form of
        [highlightedWordsCount, [index, pageLocationX, pageLocationY]].
  */
-__gCrWeb['findInPage']['highlightWord'] =
-    function(findText, opt_split, timeout) {
+__gCrWeb['findInPage']['highlightWord'] = function(
+    findText, opt_split, timeout) {
   if (__gCrWeb['findInPage']['spans'] &&
       __gCrWeb['findInPage']['spans'].length) {
     // Clean up a previous run.
-    __gCrWeb['findInPage']['clearHighlight']();
+    clearHighlight_();
   }
   if (!findText) {
     // No searching for emptyness.
-    return __gCrWeb['findInPage'].NO_RESULTS;
+    return NO_RESULTS;
   }
 
   // Store all DOM modifications to do them in a tight loop at once.
@@ -186,8 +182,8 @@ __gCrWeb['findInPage']['highlightWord'] =
   __gCrWeb['findInPage'].stack = [];
 
   // Push frames into stack too.
-  for (var i = __gCrWeb['findInPage'].frameDocs.length - 1; i >= 0; i--) {
-    var doc = __gCrWeb['findInPage'].frameDocs[i];
+  for (let i = frameDocs_.length - 1; i >= 0; i--) {
+    let doc = frameDocs_[i];
     __gCrWeb['findInPage'].stack.push(doc);
   }
 
@@ -199,10 +195,9 @@ __gCrWeb['findInPage']['highlightWord'] =
   __gCrWeb['findInPage'].replacementsIndex = 0;
   __gCrWeb['findInPage'].replacementNewNodesIndex = 0;
 
-  __gCrWeb['findInPage'].regex =
-      __gCrWeb['findInPage'].getRegex(findText, opt_split);
+  __gCrWeb['findInPage'].regex = getRegex_(findText, opt_split);
 
-  __gCrWeb['findInPage'].searchInProgress = true;
+  searchInProgress_ = true;
 
   return __gCrWeb['findInPage']['pumpSearch'](timeout);
 };
@@ -216,48 +211,47 @@ __gCrWeb['findInPage']['highlightWord'] =
                     whether the text was found and int idicates text position.
  */
 __gCrWeb['findInPage']['pumpSearch'] = function(timeout) {
-  var opt_split = false;
+  let opt_split = false;
   // TODO(justincohen): It would be better if this DCHECKed.
-  if (__gCrWeb['findInPage'].searchInProgress == false)
-    return __gCrWeb['findInPage'].NO_RESULTS;
+  if (searchInProgress_ == false)
+    return NO_RESULTS;
 
   __gCrWeb['findInPage'].timeout = timeout;
   __gCrWeb['findInPage'].startTime = __gCrWeb['findInPage'].time();
 
-  var regex = __gCrWeb['findInPage'].regex;
+  let regex = __gCrWeb['findInPage'].regex;
   // Go through every node in DFS fashion.
   while (__gCrWeb['findInPage'].node) {
-    var node = __gCrWeb['findInPage'].node;
-    var children = node.childNodes;
+    let node = __gCrWeb['findInPage'].node;
+    let children = node.childNodes;
     if (children && children.length) {
       // add all (reasonable) children
-      for (var i = children.length - 1; i >= 0; --i) {
-        var child = children[i];
+      for (let i = children.length - 1; i >= 0; --i) {
+        let child = children[i];
         if ((child.nodeType == 1 || child.nodeType == 3) &&
-            !__gCrWeb['findInPage'].ignoreNodeNames[child.nodeName]) {
+            !IGNORE_NODE_NAMES[child.nodeName]) {
           __gCrWeb['findInPage'].stack.push(children[i]);
         }
       }
     }
     if (node.nodeType == 3 && node.parentNode) {
-      var strIndex = 0;
-      var nodes = [];
-      var match;
+      let strIndex = 0;
+      let nodes = [];
+      let match;
       while (match = regex.exec(node.textContent)) {
         try {
-          var matchText = match[0];
+          let matchText = match[0];
 
           // If there is content before this match, add it to a new text node.
           if (match.index > 0) {
-            var nodeSubstr = node.textContent.substring(strIndex,
-                                                        match.index);
+            let nodeSubstr = node.textContent.substring(strIndex, match.index);
             nodes.push(node.ownerDocument.createTextNode(nodeSubstr));
           }
 
           // Now create our matched element.
-          var element = node.ownerDocument.createElement('chrome_find');
-          element.setAttribute('class', __gCrWeb['findInPage'].CSS_CLASS_NAME);
-          element.innerHTML = __gCrWeb['findInPage'].escapeHTML(matchText);
+          let element = node.ownerDocument.createElement('chrome_find');
+          element.setAttribute('class', CSS_CLASS_NAME);
+          element.innerHTML = escapeHTML_(matchText);
           nodes.push(element);
 
           strIndex = match.index + matchText.length;
@@ -268,15 +262,14 @@ __gCrWeb['findInPage']['pumpSearch'] = function(timeout) {
       if (nodes.length) {
         // Add any text after our matches to a new text node.
         if (strIndex < node.textContent.length) {
-          var substr = node.textContent.substring(strIndex,
-                                                  node.textContent.length);
+          let substr =
+              node.textContent.substring(strIndex, node.textContent.length);
           nodes.push(node.ownerDocument.createTextNode(substr));
         }
         __gCrWeb['findInPage'].replacements.push(
             {oldNode: node, newNodes: nodes});
         regex.lastIndex = 0;
       }
-
     }
 
     if (__gCrWeb['findInPage'].overTime())
@@ -291,26 +284,26 @@ __gCrWeb['findInPage']['pumpSearch'] = function(timeout) {
 
   // Insert each of the replacement nodes into the old node's parent, then
   // remove the old node.
-  var replacements = __gCrWeb['findInPage'].replacements;
+  let replacements = __gCrWeb['findInPage'].replacements;
 
   // Last position in replacements array.
-  var rIndex = __gCrWeb['findInPage'].replacementsIndex;
-  var rMax = replacements.length;
+  let rIndex = __gCrWeb['findInPage'].replacementsIndex;
+  let rMax = replacements.length;
   for (; rIndex < rMax; rIndex++) {
-    var replacement = replacements[rIndex];
-    var parent = replacement.oldNode.parentNode;
+    let replacement = replacements[rIndex];
+    let parent = replacement.oldNode.parentNode;
     if (parent == null)
       continue;
-    var rNodesMax = replacement.newNodes.length;
-    for (var rNodesIndex = __gCrWeb['findInPage'].replacementNewNodesIndex;
+    let rNodesMax = replacement.newNodes.length;
+    for (let rNodesIndex = __gCrWeb['findInPage'].replacementNewNodesIndex;
          rNodesIndex < rNodesMax; rNodesIndex++) {
       if (__gCrWeb['findInPage'].overTime()) {
         __gCrWeb['findInPage'].replacementsIndex = rIndex;
         __gCrWeb['findInPage'].replacementNewNodesIndex = rNodesIndex;
         return __gCrWeb.stringify([false]);
       }
-      parent.insertBefore(replacement.newNodes[rNodesIndex],
-                          replacement.oldNode);
+      parent.insertBefore(
+          replacement.newNodes[rNodesIndex], replacement.oldNode);
     }
     parent.removeChild(replacement.oldNode);
     __gCrWeb['findInPage'].replacementNewNodesIndex = 0;
@@ -318,15 +311,13 @@ __gCrWeb['findInPage']['pumpSearch'] = function(timeout) {
   // Save last position in replacements array.
   __gCrWeb['findInPage'].replacementsIndex = rIndex;
 
-  __gCrWeb['findInPage']['spans'] =
-      __gCrWeb['findInPage'].getAllElementsByClassName(
-          __gCrWeb['findInPage'].CSS_CLASS_NAME);
+  __gCrWeb['findInPage']['spans'] = getAllElementsByClassName_(CSS_CLASS_NAME);
 
   // Count visible elements.
-  var max = __gCrWeb['findInPage']['spans'].length;
-  var maxVisible = __gCrWeb['findInPage'].maxVisibleElements;
-  for (var index = __gCrWeb['findInPage'].visibleIndex; index < max; index++) {
-    var elem = __gCrWeb['findInPage']['spans'][index];
+  let max = __gCrWeb['findInPage']['spans'].length;
+  let maxVisible = MAX_VISIBLE_ELEMENTS;
+  for (let index = __gCrWeb['findInPage'].visibleIndex; index < max; index++) {
+    let elem = __gCrWeb['findInPage']['spans'][index];
     if (__gCrWeb['findInPage'].overTime()) {
       __gCrWeb['findInPage'].visibleIndex = index;
       return __gCrWeb.stringify([false]);
@@ -338,16 +329,15 @@ __gCrWeb['findInPage']['pumpSearch'] = function(timeout) {
       continue;
     }
 
-    if (__gCrWeb['findInPage'].isVisible(elem)) {
+    if (isVisible_(elem)) {
       __gCrWeb['findInPage'].visibleFound++;
       __gCrWeb['findInPage']['spans'][index].visibleIndex =
           __gCrWeb['findInPage'].visibleFound;
     }
   }
 
-  __gCrWeb['findInPage'].searchInProgress = false;
+  searchInProgress_ = false;
 
-  var pos;
   // Try again flow.
   // If opt_split is true, we are done since we won't do any better.
   // If opt_split is false, they were explicit about wanting the full thing
@@ -358,14 +348,14 @@ __gCrWeb['findInPage']['pumpSearch'] = function(timeout) {
     // Try to be more aggressive:
     return __gCrWeb['findInPage']['highlightWord'](findText, true);
   } else {
-    pos = __gCrWeb['findInPage']['goNext']();
+    let pos = __gCrWeb['findInPage']['goNext']();
     if (pos) {
       return '[' + __gCrWeb['findInPage'].visibleFound + ',' + pos + ']';
     } else if (opt_split === undefined) {
       // Nothing visible, go ahead and be more aggressive.
       return __gCrWeb['findInPage']['highlightWord'](findText, true);
     } else {
-      return __gCrWeb['findInPage'].NO_RESULTS;
+      return NO_RESULTS;
     }
   }
 };
@@ -375,25 +365,25 @@ __gCrWeb['findInPage']['pumpSearch'] = function(timeout) {
  * @param {NodeList} nodeList DOM node list.
  * @return {Array<Node>} array.
  */
-__gCrWeb['findInPage'].toArray = function(nodeList) {
-  var array = [];
-  for (var i = 0; i < nodeList.length; i++)
+function toArray_(nodeList) {
+  let array = [];
+  for (let i = 0; i < nodeList.length; i++)
     array[i] = nodeList[i];
   return array;
 };
 
 /**
- * Return all elements of class name, spread out over various frames.
+ * Return all elements of class name, spread out over letious frames.
  * @param {string} name of class.
  * @return {Array<Node>} array of elements matching class name.
  */
-__gCrWeb['findInPage'].getAllElementsByClassName = function(name) {
-  var nodeList = document.getElementsByClassName(name);
-  var elements = __gCrWeb['findInPage'].toArray(nodeList);
-  for (var i = __gCrWeb['findInPage'].frameDocs.length - 1; i >= 0; i--) {
-    var doc = __gCrWeb['findInPage'].frameDocs[i];
+function getAllElementsByClassName_(name) {
+  let nodeList = document.getElementsByClassName(name);
+  let elements = toArray_(nodeList);
+  for (let i = frameDocs_.length - 1; i >= 0; i--) {
+    let doc = frameDocs_[i];
     nodeList = doc.getElementsByClassName(name);
-    elements = elements.concat(__gCrWeb['findInPage'].toArray(nodeList));
+    elements = elements.concat(toArray_(nodeList));
   }
   return elements;
 };
@@ -402,40 +392,39 @@ __gCrWeb['findInPage'].getAllElementsByClassName = function(name) {
  * Removes all currently highlighted spans.
  * Note: It does not restore previous state, just removes the class name.
  */
-__gCrWeb['findInPage']['clearHighlight'] = function() {
+function clearHighlight_() {
   if (__gCrWeb['findInPage']['index'] >= 0) {
-    __gCrWeb['findInPage'].removeSelectHighlight(
-        __gCrWeb['findInPage'].getCurrentSpan());
+    removeSelectHighlight_(getCurrentSpan_());
   }
   // Store all DOM modifications to do them in a tight loop.
-  var modifications = [];
-  var length = __gCrWeb['findInPage']['spans'].length;
-  var prevParent = null;
-  for (var i = length - 1; i >= 0; i--) {
-    var elem = __gCrWeb['findInPage']['spans'][i];
-    var parentNode = elem.parentNode;
+  let modifications = [];
+  let length = __gCrWeb['findInPage']['spans'].length;
+  let prevParent = null;
+  for (let i = length - 1; i >= 0; i--) {
+    let elem = __gCrWeb['findInPage']['spans'][i];
+    let parentNode = elem.parentNode;
     // Safari has an occasional |elem.innerText| bug that drops the trailing
     // space.  |elem.innerText| would be more correct in this situation, but
     // since we only allow text in this element, grabbing the HTML value should
     // not matter.
-    var nodeText = elem.innerHTML;
+    let nodeText = elem.innerHTML;
     // If this element has the same parent as the previous, check if we should
     // add this node to the previous one.
     if (prevParent && prevParent.isSameNode(parentNode) &&
         elem.nextSibling.isSameNode(
             __gCrWeb['findInPage']['spans'][i + 1].previousSibling)) {
-      var prevMod = modifications[modifications.length - 1];
+      let prevMod = modifications[modifications.length - 1];
       prevMod.nodesToRemove.push(elem);
-      var elemText = elem.innerText;
+      let elemText = elem.innerText;
       if (elem.previousSibling) {
         prevMod.nodesToRemove.push(elem.previousSibling);
         elemText = elem.previousSibling.textContent + elemText;
       }
       prevMod.replacement.textContent =
           elemText + prevMod.replacement.textContent;
-    }
-    else { // Element isn't attached to previous, so create a new modification.
-      var nodesToRemove = [elem];
+    } else {
+      // Element isn't attached to previous, so create a new modification.
+      let nodesToRemove = [elem];
       if (elem.previousSibling && elem.previousSibling.nodeType == 3) {
         nodesToRemove.push(elem.previousSibling);
         nodeText = elem.previousSibling.textContent + nodeText;
@@ -444,16 +433,16 @@ __gCrWeb['findInPage']['clearHighlight'] = function() {
         nodesToRemove.push(elem.nextSibling);
         nodeText = nodeText + elem.nextSibling.textContent;
       }
-      var textNode = elem.ownerDocument.createTextNode(nodeText);
+      let textNode = elem.ownerDocument.createTextNode(nodeText);
       modifications.push({nodesToRemove: nodesToRemove, replacement: textNode});
     }
     prevParent = parentNode;
   }
-  var numMods = modifications.length;
+  let numMods = modifications.length;
   for (i = numMods - 1; i >= 0; i--) {
-    var mod = modifications[i];
-    for (var j = 0; j < mod.nodesToRemove.length; j++) {
-      var existing = mod.nodesToRemove[j];
+    let mod = modifications[i];
+    for (let j = 0; j < mod.nodesToRemove.length; j++) {
+      let existing = mod.nodesToRemove[j];
       if (j == 0) {
         existing.parentNode.replaceChild(mod.replacement, existing);
       } else {
@@ -470,7 +459,7 @@ __gCrWeb['findInPage']['clearHighlight'] = function() {
  * Increments the index of the current highlighted span or, if the index is
  * already at the end, sets it to the index of the first span in the page.
  */
-__gCrWeb['findInPage']['incrementIndex'] = function() {
+__gCrWeb['findInPage'].incrementIndex = function() {
   if (__gCrWeb['findInPage']['index'] >=
       __gCrWeb['findInPage']['spans'].length - 1) {
     __gCrWeb['findInPage']['index'] = 0;
@@ -491,35 +480,33 @@ __gCrWeb['findInPage']['goNext'] = function() {
   }
   if (__gCrWeb['findInPage']['index'] >= 0) {
     // Remove previous highlight.
-    __gCrWeb['findInPage'].removeSelectHighlight(
-        __gCrWeb['findInPage'].getCurrentSpan());
+    removeSelectHighlight_(getCurrentSpan_());
   }
   // Iterate through to the next index, but because they might not be visible,
   // keep trying until you find one that is.  Make sure we don't loop forever by
   // stopping on what we are currently highlighting.
-  var oldIndex = __gCrWeb['findInPage']['index'];
-  __gCrWeb['findInPage']['incrementIndex']();
-  while (!__gCrWeb['findInPage'].isVisible(
-              __gCrWeb['findInPage'].getCurrentSpan())) {
+  let oldIndex = __gCrWeb['findInPage']['index'];
+  __gCrWeb['findInPage'].incrementIndex();
+  while (!isVisible_(getCurrentSpan_())) {
     if (oldIndex === __gCrWeb['findInPage']['index']) {
       // Checked all spans but didn't find anything else visible.
       return '';
     }
-    __gCrWeb['findInPage']['incrementIndex']();
+    __gCrWeb['findInPage'].incrementIndex();
     if (0 === __gCrWeb['findInPage']['index'] && oldIndex < 0) {
       // Didn't find anything visible and haven't highlighted anything yet.
       return '';
     }
   }
   // Return scroll dimensions.
-  return __gCrWeb['findInPage'].findScrollDimensions();
+  return findScrollDimensions_();
 };
 
 /**
  * Decrements the index of the current highlighted span or, if the index is
  * already at the beginning, sets it to the index of the last span in the page.
  */
-__gCrWeb['findInPage']['decrementIndex'] = function() {
+__gCrWeb['findInPage'].decrementIndex = function() {
   if (__gCrWeb['findInPage']['index'] <= 0) {
     __gCrWeb['findInPage']['index'] =
         __gCrWeb['findInPage']['spans'].length - 1;
@@ -540,17 +527,15 @@ __gCrWeb['findInPage']['goPrev'] = function() {
   }
   if (__gCrWeb['findInPage']['index'] >= 0) {
     // Remove previous highlight.
-    __gCrWeb['findInPage'].removeSelectHighlight(
-        __gCrWeb['findInPage'].getCurrentSpan());
+    removeSelectHighlight_(getCurrentSpan_());
   }
   // Iterate through to the next index, but because they might not be visible,
   // keep trying until you find one that is.  Make sure we don't loop forever by
   // stopping on what we are currently highlighting.
-  var old = __gCrWeb['findInPage']['index'];
-  __gCrWeb['findInPage']['decrementIndex']();
-  while (!__gCrWeb['findInPage'].isVisible(
-             __gCrWeb['findInPage'].getCurrentSpan())) {
-    __gCrWeb['findInPage']['decrementIndex']();
+  let old = __gCrWeb['findInPage']['index'];
+  __gCrWeb['findInPage'].decrementIndex();
+  while (!isVisible_(getCurrentSpan_())) {
+    __gCrWeb['findInPage'].decrementIndex();
     if (old == __gCrWeb['findInPage']['index']) {
       // Checked all spans but didn't find anything.
       return '';
@@ -558,7 +543,7 @@ __gCrWeb['findInPage']['goPrev'] = function() {
   }
 
   // Return scroll dimensions.
-  return __gCrWeb['findInPage'].findScrollDimensions();
+  return findScrollDimensions_();
 };
 
 /**
@@ -566,39 +551,18 @@ __gCrWeb['findInPage']['goPrev'] = function() {
  * @param {number=} opt_index Index to replace __gCrWeb['findInPage']['index']
  *                  with.
  */
-__gCrWeb['findInPage'].addHighlightToIndex = function(opt_index) {
+function addHighlightToIndex_(opt_index) {
   if (opt_index !== undefined) {
     __gCrWeb['findInPage']['index'] = opt_index;
   }
-  __gCrWeb['findInPage'].addSelectHighlight(
-      __gCrWeb['findInPage'].getCurrentSpan());
-};
-
-/**
- * Updates the elements style, while saving the old style in
- * __gCrWeb['findInPage'].savedElementStyles.
- * @param {Element} element Element to update.
- * @param {string} style Name of the style to update.
- * @param {string} value New style value.
- */
-__gCrWeb['findInPage'].updateElementStyle = function(element, style, value) {
-  if (!__gCrWeb['findInPage'].savedElementStyles[element]) {
-    __gCrWeb['findInPage'].savedElementStyles[element] = {};
-  }
-  // We need to keep the original style setting for this element, so if we've
-  // already saved a value for this style don't update it.
-  if (!__gCrWeb['findInPage'].savedElementStyles[element][style]) {
-    __gCrWeb['findInPage'].savedElementStyles[element][style] =
-        element.style[style];
-  }
-  element.style[style] = value;
+  addSelectHighlight_(getCurrentSpan_());
 };
 
 /**
  * Adds selected highlight style to the specified element.
  * @param {Element} element Element to highlight.
  */
-__gCrWeb['findInPage'].addSelectHighlight = function(element) {
+function addSelectHighlight_(element) {
   element.className = (element.className || '') + ' findysel';
 };
 
@@ -606,17 +570,8 @@ __gCrWeb['findInPage'].addSelectHighlight = function(element) {
  * Removes selected highlight style from the specified element.
  * @param {Element} element Element to remove highlighting from.
  */
-__gCrWeb['findInPage'].removeSelectHighlight = function(element) {
+function removeSelectHighlight_(element) {
   element.className = (element.className || '').replace(/\sfindysel/g, '');
-
-  // Restore any styles we may have saved when adding the select highlighting.
-  var savedStyles = __gCrWeb['findInPage'].savedElementStyles[element];
-  if (savedStyles) {
-    for (var style in savedStyles) {
-      element.style[style] = savedStyles[style];
-    }
-    delete __gCrWeb['findInPage'].savedElementStyles[element];
-  }
 };
 
 /**
@@ -625,21 +580,17 @@ __gCrWeb['findInPage'].removeSelectHighlight = function(element) {
  * @param {Element} elem Element to find normalized coordinates for.
  * @return {Array<number>} Normalized coordinates.
  */
-__gCrWeb['findInPage'].getNormalizedCoordinates = function(elem) {
-  var fip = __gCrWeb['findInPage'];
-  var pos = fip.findAbsolutePosition(elem);
-  var maxX =
-      Math.max(fip.getBodyWidth(), pos[0] + elem.offsetWidth);
-  var maxY =
-      Math.max(fip.getBodyHeight(), pos[1] + elem.offsetHeight);
+function getNormalizedCoordinates_(elem) {
+  let pos = findAbsolutePosition_(elem);
+  let maxX = Math.max(getBodyWidth_(), pos[0] + elem.offsetWidth);
+  let maxY = Math.max(getBodyHeight_(), pos[1] + elem.offsetHeight);
   // Don't go too far off the screen in either direction.  Try to center if
   // possible.
-  var xPos = Math.max(0,
-      Math.min(maxX - window.innerWidth,
-               pos[0] - (window.innerWidth / 2)));
-  var yPos = Math.max(0,
-      Math.min(maxY - window.innerHeight,
-               pos[1] - (window.innerHeight / 2)));
+  let xPos = Math.max(
+      0, Math.min(maxX - window.innerWidth, pos[0] - (window.innerWidth / 2)));
+  let yPos = Math.max(
+      0,
+      Math.min(maxY - window.innerHeight, pos[1] - (window.innerHeight / 2)));
   return [xPos, yPos];
 };
 
@@ -649,8 +600,8 @@ __gCrWeb['findInPage'].getNormalizedCoordinates = function(elem) {
  * @param {Array<number>} coordinates Coordinates to scale.
  * @return {Array<number>} Scaled coordinates.
  */
-__gCrWeb['findInPage'].scaleCoordinates = function(coordinates) {
-  var scaleFactor = __gCrWeb['findInPage'].pageWidth / window.innerWidth;
+function scaleCoordinates_(coordinates) {
+  let scaleFactor = pageWidth_ / window.innerWidth;
   return [coordinates[0] * scaleFactor, coordinates[1] * scaleFactor];
 };
 
@@ -660,20 +611,20 @@ __gCrWeb['findInPage'].scaleCoordinates = function(coordinates) {
  *                  with.
  * @return {string} JSON encoded array of the scroll coordinates "[x, y]".
  */
-__gCrWeb['findInPage'].findScrollDimensions = function(opt_index) {
+function findScrollDimensions_(opt_index) {
   if (opt_index !== undefined) {
     __gCrWeb['findInPage']['index'] = opt_index;
   }
-  var elem = __gCrWeb['findInPage'].getCurrentSpan();
+  let elem = getCurrentSpan_();
   if (!elem) {
     return '';
   }
-  var normalized = __gCrWeb['findInPage'].getNormalizedCoordinates(elem);
-  var xPos = normalized[0];
-  var yPos = normalized[1];
+  let normalized = getNormalizedCoordinates_(elem);
+  let xPos = normalized[0];
+  let yPos = normalized[1];
 
   // Perform the scroll.
-  //window.scrollTo(xPos, yPos);
+  // window.scrollTo(xPos, yPos);
 
   if (xPos < window.pageXOffset ||
       xPos >= (window.pageXOffset + window.innerWidth) ||
@@ -681,12 +632,12 @@ __gCrWeb['findInPage'].findScrollDimensions = function(opt_index) {
       yPos >= (window.pageYOffset + window.innerHeight)) {
     // If it's off the screen.  Wait a bit to start the highlight animation so
     // that scrolling can get there first.
-    window.setTimeout(__gCrWeb['findInPage'].addHighlightToIndex, 250);
+    window.setTimeout(addHighlightToIndex_, 250);
   } else {
-    __gCrWeb['findInPage'].addHighlightToIndex();
+    addHighlightToIndex_();
   }
-  var scaled = __gCrWeb['findInPage'].scaleCoordinates(normalized);
-  var index = __gCrWeb['findInPage'].getCurrentSpan().visibleIndex;
+  let scaled = scaleCoordinates_(normalized);
+  let index = getCurrentSpan_().visibleIndex;
   scaled.unshift(index);
   return __gCrWeb.stringify(scaled);
 };
@@ -701,10 +652,10 @@ __gCrWeb['findInPage']['init'] = function(width, height) {
   if (__gCrWeb['findInPage'].hasInitialized) {
     return;
   }
-  __gCrWeb['findInPage'].pageWidth = width;
-  __gCrWeb['findInPage'].pageHeight = height;
-  __gCrWeb['findInPage'].frameDocs = __gCrWeb['findInPage'].frameDocuments();
-  __gCrWeb['findInPage'].enable();
+  pageWidth_ = width;
+  pageHeight_ = height;
+  frameDocs_ = getFrameDocuments_();
+  enable_();
   __gCrWeb['findInPage'].hasInitialized = true;
 };
 
@@ -713,12 +664,12 @@ __gCrWeb['findInPage']['init'] = function(width, height) {
  * @param {number} width Width of page.
  * @param {number} height Height of page.
  */
-__gCrWeb['findInPage']['fixZoom'] = function(width, height) {
-  __gCrWeb['findInPage'].pageWidth = width;
-  __gCrWeb['findInPage'].pageHeight = height;
-  if (__gCrWeb['findInPage'].style) {
-    __gCrWeb['findInPage'].removeStyle();
-    __gCrWeb['findInPage'].addStyle();
+function fixZoom_(width, height) {
+  pageWidth_ = width;
+  pageHeight_ = height;
+  if (styleElement_) {
+    removeStyle_();
+    addStyle_();
   }
 };
 
@@ -726,80 +677,74 @@ __gCrWeb['findInPage']['fixZoom'] = function(width, height) {
  * Enable the __gCrWeb['findInPage'] module.
  * Mainly just adds the style for the classes.
  */
-__gCrWeb['findInPage'].enable = function() {
-  if (__gCrWeb['findInPage'].style) {
+function enable_() {
+  if (styleElement_) {
     // Already enabled.
     return;
   }
-  __gCrWeb['findInPage'].addStyle();
+  addStyle_();
 };
 
 /**
  * Gets the scale ratio between the application window and the web document.
  * @return {number} Scale.
  */
-__gCrWeb['findInPage'].getPageScale = function() {
-  return (__gCrWeb['findInPage'].pageWidth /
-      __gCrWeb['findInPage'].getBodyWidth());
+function getPageScale_() {
+  return (pageWidth_ / getBodyWidth_());
 };
-
-/**
- * Maximum padding added to a highlighted item when selected.
- * @type {number}
- */
-__gCrWeb['findInPage'].MAX_HIGHLIGHT_PADDING = 10;
 
 /**
  * Adds the appropriate style element to the page.
  */
-__gCrWeb['findInPage'].addStyle = function() {
-  __gCrWeb['findInPage'].addDocumentStyle(document);
-  for (var i = __gCrWeb['findInPage'].frameDocs.length - 1; i >= 0; i--) {
-    var doc = __gCrWeb['findInPage'].frameDocs[i];
-    __gCrWeb['findInPage'].addDocumentStyle(doc);
+function addStyle_() {
+  addDocumentStyle_(document);
+  for (let i = frameDocs_.length - 1; i >= 0; i--) {
+    let doc = frameDocs_[i];
+    addDocumentStyle_(doc);
   }
 };
 
-__gCrWeb['findInPage'].addDocumentStyle = function(thisDocument) {
-  var styleContent = [];
+function addDocumentStyle_(thisDocument) {
+  let styleContent = [];
   function addCSSRule(name, style) {
     styleContent.push(name, '{', style, '}');
   };
-  var scale = __gCrWeb['findInPage'].getPageScale();
-  var zoom = (1.0 / scale);
-  var left = ((1 - scale) / 2 * 100);
-  addCSSRule('.' + __gCrWeb['findInPage'].CSS_CLASS_NAME,
-             'background-color:#ffff00 !important;' +
-             'padding:0px;margin:0px;' +
-             'overflow:visible !important;');
-  addCSSRule('.findysel',
-             'background-color:#ff9632 !important;' +
-             'padding:0px;margin:0px;' +
-             'overflow:visible !important;');
-  __gCrWeb['findInPage'].style = thisDocument.createElement('style');
-  __gCrWeb['findInPage'].style.id = __gCrWeb['findInPage'].CSS_STYLE_ID;
-  __gCrWeb['findInPage'].style.setAttribute('type', 'text/css');
-  __gCrWeb['findInPage'].style.appendChild(
-      thisDocument.createTextNode(styleContent.join('')));
-  thisDocument.body.appendChild(__gCrWeb['findInPage'].style);
+  let scale = getPageScale_();
+  let zoom = (1.0 / scale);
+  let left = ((1 - scale) / 2 * 100);
+  addCSSRule(
+      '.' + CSS_CLASS_NAME,
+      'background-color:#ffff00 !important;' +
+          'padding:0px;margin:0px;' +
+          'overflow:visible !important;');
+  addCSSRule(
+      '.findysel',
+      'background-color:#ff9632 !important;' +
+          'padding:0px;margin:0px;' +
+          'overflow:visible !important;');
+  styleElement_ = thisDocument.createElement('style');
+  styleElement_.id = CSS_STYLE_ID;
+  styleElement_.setAttribute('type', 'text/css');
+  styleElement_.appendChild(thisDocument.createTextNode(styleContent.join('')));
+  thisDocument.body.appendChild(styleElement_);
 };
 
 /**
  * Removes the style element from the page.
  */
-__gCrWeb['findInPage'].removeStyle = function() {
-  if (__gCrWeb['findInPage'].style) {
-    __gCrWeb['findInPage'].removeDocumentStyle(document);
-    for (var i = __gCrWeb['findInPage'].frameDocs.length - 1; i >= 0; i--) {
-      var doc = __gCrWeb['findInPage'].frameDocs[i];
-      __gCrWeb['findInPage'].removeDocumentStyle(doc);
+function removeStyle_() {
+  if (styleElement_) {
+    removeDocumentStyle_(document);
+    for (let i = frameDocs_.length - 1; i >= 0; i--) {
+      let doc = frameDocs_[i];
+      removeDocumentStyle_(doc);
     }
-    __gCrWeb['findInPage'].style = null;
+    styleElement_ = null;
   }
 };
 
-__gCrWeb['findInPage'].removeDocumentStyle = function(thisDocument) {
-  var style = thisDocument.getElementById(__gCrWeb['findInPage'].CSS_STYLE_ID);
+function removeDocumentStyle_(thisDocument) {
+  let style = thisDocument.getElementById(CSS_STYLE_ID);
   thisDocument.body.removeChild(style);
 };
 
@@ -808,25 +753,26 @@ __gCrWeb['findInPage'].removeDocumentStyle = function(thisDocument) {
  * Basically just removes the style and class names.
  */
 __gCrWeb['findInPage']['disable'] = function() {
-  if (__gCrWeb['findInPage'].style) {
-    __gCrWeb['findInPage'].removeStyle();
-    window.setTimeout(__gCrWeb['findInPage']['clearHighlight'], 0);
+  if (styleElement_) {
+    removeStyle_();
+    window.setTimeout(clearHighlight_, 0);
   }
   __gCrWeb['findInPage'].hasInitialized = false;
 };
 
 /**
-* Returns the width of the document.body.  Sometimes though the body lies to
-* try to make the page not break rails, so attempt to find those as well.
-* An example: wikipedia pages for the ipad.
-* @return {number} Width of the document body.
-*/
-__gCrWeb['findInPage'].getBodyWidth = function() {
-  var body = document.body;
-  var documentElement = document.documentElement;
-  return Math.max(body.scrollWidth, documentElement.scrollWidth,
-                  body.offsetWidth, documentElement.offsetWidth,
-                  body.clientWidth, documentElement.clientWidth);
+ * Returns the width of the document.body.  Sometimes though the body lies to
+ * try to make the page not break rails, so attempt to find those as well.
+ * An example: wikipedia pages for the ipad.
+ * @return {number} Width of the document body.
+ */
+function getBodyWidth_() {
+  let body = document.body;
+  let documentElement = document.documentElement;
+  return Math.max(
+      body.scrollWidth, documentElement.scrollWidth, body.offsetWidth,
+      documentElement.offsetWidth, body.clientWidth,
+      documentElement.clientWidth);
 };
 
 /**
@@ -835,12 +781,13 @@ __gCrWeb['findInPage'].getBodyWidth = function() {
  * An example: wikipedia pages for the ipad.
  * @return {number} Height of the document body.
  */
-__gCrWeb['findInPage'].getBodyHeight = function() {
-  var body = document.body;
-  var documentElement = document.documentElement;
-  return Math.max(body.scrollHeight, documentElement.scrollHeight,
-                  body.offsetHeight, documentElement.offsetHeight,
-                  body.clientHeight, documentElement.clientHeight);
+function getBodyHeight_() {
+  let body = document.body;
+  let documentElement = document.documentElement;
+  return Math.max(
+      body.scrollHeight, documentElement.scrollHeight, body.offsetHeight,
+      documentElement.offsetHeight, body.clientHeight,
+      documentElement.clientHeight);
 };
 
 /**
@@ -848,18 +795,18 @@ __gCrWeb['findInPage'].getBodyHeight = function() {
  * @param {Element} elem Element to check.
  * @return {boolean} Whether elem is visible or not.
  */
-__gCrWeb['findInPage'].isVisible = function(elem) {
+function isVisible_(elem) {
   if (!elem) {
     return false;
   }
-  var top = 0;
-  var left = 0;
-  var bottom = Infinity;
-  var right = Infinity;
+  let top = 0;
+  let left = 0;
+  let bottom = Infinity;
+  let right = Infinity;
 
-  var originalElement = elem;
-  var nextOffsetParent = originalElement.offsetParent;
-  var computedStyle =
+  let originalElement = elem;
+  let nextOffsetParent = originalElement.offsetParent;
+  let computedStyle =
       elem.ownerDocument.defaultView.getComputedStyle(elem, null);
 
   // We are currently handling all scrolling through the app, which means we can
@@ -867,23 +814,20 @@ __gCrWeb['findInPage'].isVisible = function(elem) {
   // for now this function returns false if the element is scrolled outside the
   // viewable area of its ancestors.
   // TODO(justincohen): handle scrolling within the DOM.
-  var pageHeight = __gCrWeb['findInPage'].getBodyHeight();
-  var pageWidth = __gCrWeb['findInPage'].getBodyWidth();
+  let bodyHeight = getBodyHeight_();
+  let bodyWidth = getBodyWidth_();
 
   while (elem && elem.nodeName.toUpperCase() != 'BODY') {
-    if (elem.style.display === 'none' ||
-        elem.style.visibility === 'hidden' ||
-        elem.style.opacity === 0 ||
-        computedStyle.display === 'none' ||
-        computedStyle.visibility === 'hidden' ||
-        computedStyle.opacity === 0) {
+    if (elem.style.display === 'none' || elem.style.visibility === 'hidden' ||
+        elem.style.opacity === 0 || computedStyle.display === 'none' ||
+        computedStyle.visibility === 'hidden' || computedStyle.opacity === 0) {
       return false;
     }
 
     // For the original element and all ancestor offsetParents, trim down the
     // visible area of the original element.
     if (elem.isSameNode(originalElement) || elem.isSameNode(nextOffsetParent)) {
-      var visible = elem.getBoundingClientRect();
+      let visible = elem.getBoundingClientRect();
       if (elem.style.overflow === 'hidden' &&
           (visible.width === 0 || visible.height === 0))
         return false;
@@ -894,13 +838,13 @@ __gCrWeb['findInPage'].isVisible = function(elem) {
       right = Math.min(right, visible.right + window.pageXOffset);
 
       // The element is not within the original viewport.
-      var notWithinViewport = top < 0 || left < 0;
+      let notWithinViewport = top < 0 || left < 0;
 
       // The element is flowing off the boundary of the page. Note this is
       // not comparing to the size of the window, but the calculated offset
       // size of the document body. This can happen if the element is within
       // a scrollable container in the page.
-      var offPage = right > pageWidth || bottom > pageHeight;
+      let offPage = right > bodyWidth || bottom > bodyHeight;
       if (notWithinViewport || offPage) {
         return false;
       }
@@ -918,18 +862,20 @@ __gCrWeb['findInPage'].isVisible = function(elem) {
  * @param {Element} elem Element to check.
  * @return {Array<number>} [x, y] positions.
  */
-__gCrWeb['findInPage'].findAbsolutePosition = function(elem) {
-  var boundingRect = elem.getBoundingClientRect();
-  return [boundingRect.left + window.pageXOffset,
-      boundingRect.top + window.pageYOffset];
+function findAbsolutePosition_(elem) {
+  let boundingRect = elem.getBoundingClientRect();
+  return [
+    boundingRect.left + window.pageXOffset,
+    boundingRect.top + window.pageYOffset
+  ];
 };
 
 /**
  * @param {string} text Text to escape.
  * @return {string} escaped text.
  */
-__gCrWeb['findInPage'].escapeHTML = function(text) {
-  var unusedDiv = document.createElement('div');
+function escapeHTML_(text) {
+  let unusedDiv = document.createElement('div');
   unusedDiv.innerText = text;
   return unusedDiv.innerHTML;
 };
@@ -939,20 +885,20 @@ __gCrWeb['findInPage'].escapeHTML = function(text) {
  * @param {string} text Text to escape.
  * @return {string} escaped text.
  */
-__gCrWeb['findInPage'].escapeRegex = function(text) {
-  return text.replace(__gCrWeb['findInPage'].REGEX_ESCAPER, '\\$1');
+function escapeRegex_(text) {
+  return text.replace(REGEX_ESCAPER, '\\$1');
 };
 
 /**
  * Gather all iframes in the main window.
  * @return {Array<Document>} frames.
  */
-__gCrWeb['findInPage'].frameDocuments = function() {
-  var windowsToSearch = [window];
-  var documents = [];
+function getFrameDocuments_() {
+  let windowsToSearch = [window];
+  let documents = [];
   while (windowsToSearch.length != 0) {
-    var win = windowsToSearch.pop();
-    for (var i = win.frames.length - 1; i >= 0; i--) {
+    let win = windowsToSearch.pop();
+    for (let i = win.frames.length - 1; i >= 0; i--) {
       // The following try/catch catches a webkit error when searching a page
       // with iframes. See crbug.com/702566 for details.
       // To verify that this is still necessary:
@@ -975,3 +921,5 @@ __gCrWeb['findInPage'].frameDocuments = function() {
 };
 
 window.addEventListener('pagehide', __gCrWeb['findInPage']['disable']);
+
+})();
