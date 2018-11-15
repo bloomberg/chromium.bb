@@ -4,7 +4,8 @@
 
 [
     RuntimeEnabled=WorkerTaskQueue,
-    ImplementedAs=WindowTaskWorklet
+    ImplementedAs=WindowTaskWorklet,
+    SecureContext
 ] partial interface Window {
     [SameObject] readonly attribute TaskWorklet taskWorklet;
 };
