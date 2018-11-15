@@ -153,7 +153,7 @@ class PasswordAccessoryBridge {
                     };
                 }
                 items.add(Item.createSuggestion(field.getDisplayText(), field.getA11yDescription(),
-                        field.isObfuscated(), itemSelectedCallback, this ::fetchFavicon));
+                        field.isObfuscated(), itemSelectedCallback, this::fetchFavicon));
             }
         }
 
