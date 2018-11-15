@@ -241,7 +241,12 @@ void GraphicsLayer::RemoveFromParent() {
     SetParent(nullptr);
   }
 
-  CcLayer()->RemoveFromParent();
+  // When using layer lists, cc::Layers are created and removed in
+  // PaintArtifactCompositor.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    CcLayer()->RemoveFromParent();
+  }
 }
 
 void GraphicsLayer::SetOffsetFromLayoutObject(const IntSize& offset) {
@@ -519,7 +524,10 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
 
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
-  CcLayer()->InsertChild(contents_layer_, 0);
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    CcLayer()->InsertChild(contents_layer_, 0);
+  }
   cc::PictureLayer* border_cc_layer =
       contents_clipping_mask_layer_ ? contents_clipping_mask_layer_->CcLayer()
                                     : nullptr;
