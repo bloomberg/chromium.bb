@@ -14,6 +14,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -545,7 +546,7 @@ void DemoSetupController::LoadDemoResourcesCrOSComponent() {
   }
 
   cros_component_manager->Load(
-      DemoSession::kDemoModeResourcesComponentName,
+      DemoResources::kDemoModeResourcesComponentName,
       component_updater::CrOSComponentManager::MountPolicy::kMount,
       component_updater::CrOSComponentManager::UpdatePolicy::kDontForce,
       base::BindOnce(&DemoSetupController::OnDemoResourcesCrOSComponentLoaded,

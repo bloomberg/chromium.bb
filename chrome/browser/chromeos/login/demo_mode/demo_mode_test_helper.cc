@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/component_updater/fake_cros_component_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_paths.h"
@@ -70,7 +71,7 @@ void DemoModeTestHelper::InitializeSessionWithPendingComponent(
 base::FilePath DemoModeTestHelper::GetDemoResourcesPath() {
   return components_temp_dir_.GetPath()
       .AppendASCII("cros-components")
-      .AppendASCII(DemoSession::kDemoModeResourcesComponentName);
+      .AppendASCII(DemoResources::kDemoModeResourcesComponentName);
 }
 
 void DemoModeTestHelper::InitializeCrosComponentManager() {
@@ -82,7 +83,7 @@ void DemoModeTestHelper::InitializeCrosComponentManager() {
   // so components don't load instantly.
   cros_component_manager->set_queue_load_requests(true);
   cros_component_manager->set_supported_components(
-      {DemoSession::kDemoModeResourcesComponentName});
+      {DemoResources::kDemoModeResourcesComponentName});
 
   browser_process_platform_part_test_api_.InitializeCrosComponentManager(
       std::move(cros_component_manager));
@@ -95,13 +96,13 @@ void DemoModeTestHelper::FinishLoadingComponent() {
   // TODO(michaelpg): Update once offline Demo Mode also uses a CrOS component.
   if (DemoSession::GetDemoConfig() == DemoSession::DemoModeConfig::kOnline) {
     CHECK(fake_cros_component_manager_->FinishLoadRequest(
-        DemoSession::kDemoModeResourcesComponentName,
+        DemoResources::kDemoModeResourcesComponentName,
         component_updater::FakeCrOSComponentManager::ComponentInfo(
             component_updater::CrOSComponentManager::Error::NONE,
             base::FilePath("/dev/null"), GetDemoResourcesPath())));
   } else {
     CHECK(!fake_cros_component_manager_->HasPendingInstall(
-        DemoSession::kDemoModeResourcesComponentName));
+        DemoResources::kDemoModeResourcesComponentName));
   }
 
   run_loop.Run();
@@ -114,7 +115,7 @@ void DemoModeTestHelper::FailLoadingComponent() {
   // TODO(michaelpg): Update once offline Demo Mode also uses a CrOS component.
   if (DemoSession::GetDemoConfig() == DemoSession::DemoModeConfig::kOnline) {
     CHECK(fake_cros_component_manager_->FinishLoadRequest(
-        DemoSession::kDemoModeResourcesComponentName,
+        DemoResources::kDemoModeResourcesComponentName,
         component_updater::FakeCrOSComponentManager::ComponentInfo(
             component_updater::CrOSComponentManager::Error::INSTALL_FAILURE,
             base::FilePath(), base::FilePath())));
