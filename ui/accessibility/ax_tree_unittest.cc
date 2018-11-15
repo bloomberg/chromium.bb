@@ -1472,4 +1472,83 @@ TEST(AXTreeTest, ChildTreeIds) {
   EXPECT_EQ(0U, child_tree_93_nodes.size());
 }
 
+// Simple test for PosInSet and SetSize.
+TEST(AXTreeTest, GetPosInSetSetSize) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(4);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kList;
+  tree_update.nodes[0].child_ids = {2, 3, 4};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kListItem;
+  AXTree tree(tree_update);
+
+  AXNode* item1 = tree.GetFromId(2);
+  EXPECT_EQ(item1->PosInSet(), 1);
+  EXPECT_EQ(item1->SetSize(), 3);
+  AXNode* item2 = tree.GetFromId(3);
+  EXPECT_EQ(item2->PosInSet(), 2);
+  EXPECT_EQ(item2->SetSize(), 3);
+  AXNode* item3 = tree.GetFromId(4);
+  EXPECT_EQ(item3->PosInSet(), 3);
+  EXPECT_EQ(item3->SetSize(), 3);
+}
+
+// A test for PosInSet and SetSize on a list containing various roles.
+TEST(AXTreeTest, GetPosInSetSetSizeDiverseList) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(9);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kList;
+  tree_update.nodes[0].child_ids = {2, 3, 4, 5, 6, 7, 8, 9};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kMenuItem;
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].role = ax::mojom::Role::kMenuItem;
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].role = ax::mojom::Role::kArticle;
+  tree_update.nodes[6].id = 7;
+  tree_update.nodes[6].role = ax::mojom::Role::kArticle;
+  tree_update.nodes[7].id = 8;
+  tree_update.nodes[7].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[8].id = 9;
+  tree_update.nodes[8].role = ax::mojom::Role::kImage;
+  AXTree tree(tree_update);
+
+  AXNode* listitem1 = tree.GetFromId(2);
+  EXPECT_EQ(listitem1->PosInSet(), 1);
+  EXPECT_EQ(listitem1->SetSize(), 3);
+  AXNode* listitem2 = tree.GetFromId(3);
+  EXPECT_EQ(listitem2->PosInSet(), 2);
+  EXPECT_EQ(listitem2->SetSize(), 3);
+  AXNode* menuitem1 = tree.GetFromId(4);
+  EXPECT_EQ(menuitem1->PosInSet(), 1);
+  EXPECT_EQ(menuitem1->SetSize(), 2);
+  AXNode* menuitem2 = tree.GetFromId(5);
+  EXPECT_EQ(menuitem2->PosInSet(), 2);
+  EXPECT_EQ(menuitem2->SetSize(), 2);
+  AXNode* article1 = tree.GetFromId(6);
+  EXPECT_EQ(article1->PosInSet(), 1);
+  EXPECT_EQ(article1->SetSize(), 2);
+  AXNode* article2 = tree.GetFromId(7);
+  EXPECT_EQ(article2->PosInSet(), 2);
+  EXPECT_EQ(article2->SetSize(), 2);
+  AXNode* listitem3 = tree.GetFromId(8);
+  EXPECT_EQ(listitem3->PosInSet(), 3);
+  EXPECT_EQ(listitem3->SetSize(), 3);
+  AXNode* image1 = tree.GetFromId(9);
+  EXPECT_EQ(image1->PosInSet(), 0);
+  EXPECT_EQ(image1->SetSize(), 0);
+}
+
 }  // namespace ui

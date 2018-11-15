@@ -473,4 +473,68 @@ void AXNode::IdVectorToNodeVector(std::vector<int32_t>& ids,
   }
 }
 
+bool AXNode::IsPosInSetUsedInRole() const {
+  switch (data().role) {
+    case ax::mojom::Role::kArticle:
+    case ax::mojom::Role::kListItem:
+    case ax::mojom::Role::kMenuItem:
+    case ax::mojom::Role::kMenuItemRadio:
+    case ax::mojom::Role::kTab:
+    case ax::mojom::Role::kMenuItemCheckBox:
+    case ax::mojom::Role::kTreeItem:
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kRadioButton:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+// Finds the position of this node within a list.
+// Only takes into account elements that have same role as node.
+int32_t AXNode::PosInSet() const {
+  AXNode* parent = GetUnignoredParent();
+
+  // Error checks
+  if (!parent)
+    return 0;
+  if (parent->data().role != ax::mojom::Role::kList)
+    return 0;
+  if (!IsPosInSetUsedInRole())
+    return 0;
+
+  int position = 0;
+  for (int i = 0; i < parent->GetUnignoredChildCount(); ++i) {
+    AXNode* candidate = parent->GetUnignoredChildAtIndex(i);
+    if (candidate->data().role == data().role)
+      ++position;
+    if (candidate == this)
+      return position;
+  }
+  return 0;
+}
+
+// Finds the total number of elements of the list this node is contained within.
+// Only counts the elements that have the same role as node.
+int32_t AXNode::SetSize() const {
+  AXNode* parent = GetUnignoredParent();
+
+  // Error checks
+  if (!parent)
+    return 0;
+  if (parent->data().role != ax::mojom::Role::kList)
+    return 0;
+  if (!IsPosInSetUsedInRole())
+    return 0;
+
+  int count = 0;
+  for (int i = 0; i < parent->GetUnignoredChildCount(); ++i) {
+    AXNode* child = parent->GetUnignoredChildAtIndex(i);
+    if (child->data().role == data().role)
+      ++count;
+  }
+  return count;
+}
+
 }  // namespace ui

@@ -181,6 +181,15 @@ class AX_EXPORT AXNode final {
     return data().GetHtmlAttribute(attribute, value);
   }
 
+  // Returns the position of node within a list. Returns 1-based index if
+  // contained within a list, and 0 if not.
+  int32_t PosInSet() const;
+  // Returns the total number of nodes in the same list as node. Returns 0
+  // if the node is not contained wihtin a list.
+  int32_t SetSize() const;
+  // Returns true if the aria-posinset attribute is used in node's role
+  bool IsPosInSetUsedInRole() const;
+
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
   base::string16 GetInheritedString16Attribute(
