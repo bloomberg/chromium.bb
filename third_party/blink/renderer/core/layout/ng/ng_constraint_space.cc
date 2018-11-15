@@ -156,6 +156,7 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
 
 bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
   return AreSizesEqual(other) &&
+         bfc_offset_.block_offset == other.bfc_offset_.block_offset &&
          initial_containing_block_size_ ==
              other.initial_containing_block_size_ &&
          MaySkipLayout(other);

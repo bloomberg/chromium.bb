@@ -253,6 +253,10 @@ class CORE_EXPORT NGConstraintSpace final {
   // the block will fail to clear).
   NGFloatTypes AdjoiningFloatTypes() const { return adjoining_floats_; }
 
+  // Return true if there were any earlier floats that may affect the current
+  // layout.
+  bool HasFloats() const { return !ExclusionSpace().IsEmpty(); }
+
   bool HasClearanceOffset() const {
     return clearance_offset_ != LayoutUnit::Min();
   }
@@ -287,7 +291,7 @@ class CORE_EXPORT NGConstraintSpace final {
   // Return true if the two constraint spaces are similar enough that it *may*
   // be possible to skip re-layout. If true is returned, the caller is expected
   // to verify that any constraint space size (available size, percentage size,
-  // and so on) changes won't require re-layout, before skipping.
+  // and so on) and BFC offset changes won't require re-layout, before skipping.
   bool MaySkipLayout(const NGConstraintSpace& other) const {
     return fragmentainer_block_size_ == other.fragmentainer_block_size_ &&
            fragmentainer_space_at_bfc_start_ ==
@@ -301,7 +305,7 @@ class CORE_EXPORT NGConstraintSpace final {
            writing_mode_ == other.writing_mode_ &&
            direction_ == other.direction_ &&
            margin_strut_ == other.margin_strut_ &&
-           bfc_offset_ == other.bfc_offset_ &&
+           bfc_offset_.line_offset == other.bfc_offset_.line_offset &&
            floats_bfc_block_offset_ == other.floats_bfc_block_offset_ &&
            exclusion_space_ == other.exclusion_space_ &&
            clearance_offset_ == other.clearance_offset_ &&

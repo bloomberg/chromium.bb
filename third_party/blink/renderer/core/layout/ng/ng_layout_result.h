@@ -40,7 +40,11 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     // enough to store.
   };
 
-  NGLayoutResult(const NGLayoutResult&);
+  // Create a copy of NGLayoutResult with |BfcBlockOffset| replaced by the given
+  // parameter. Note, when |bfc_block_offset| is |nullopt|, |BfcBlockOffset| is
+  // still replaced with |nullopt|.
+  NGLayoutResult(const NGLayoutResult&,
+                 base::Optional<LayoutUnit> bfc_block_offset);
   ~NGLayoutResult();
 
   const NGPhysicalFragment* PhysicalFragment() const {
@@ -126,6 +130,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   NGLayoutResult(NGLayoutResultStatus, NGBoxFragmentBuilder*);
   NGLayoutResult(scoped_refptr<const NGPhysicalFragment> physical_fragment,
                  NGLineBoxFragmentBuilder*);
+
+  // We don't need copy constructor today. Delete this to clarify that the
+  // default copy constructor will not work because RefCounted can't be copied.
+  NGLayoutResult(const NGLayoutResult&) = delete;
 
   NGLink root_fragment_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
