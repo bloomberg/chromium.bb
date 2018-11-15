@@ -69,10 +69,25 @@ Polymer({
   /** @private {?settings.LocalDataBrowserProxy} */
   localDataBrowserProxy_: null,
 
+  /** @private {?Element} */
+  button_: null,
+
   /** @override */
   created: function() {
     this.localDataBrowserProxy_ =
         settings.LocalDataBrowserProxyImpl.getInstance();
+  },
+
+  /** @override */
+  detached: function() {
+    if (this.button_)
+      this.unlisten(this.button_, 'keydown', 'onButtonKeydown_');
+  },
+
+  /** @param {!KeyboardEvent} e */
+  onButtonKeydown_: function(e) {
+    if (e.shiftKey && e.key === 'Tab')
+      this.focus();
   },
 
   /**
@@ -120,7 +135,14 @@ Polymer({
   onSiteGroupChanged_: function(siteGroup) {
     this.displayName_ = this.siteRepresentation_(siteGroup, -1);
 
-    if (!this.grouped_(SiteGroup)) {
+    // Update the button listener.
+    if (this.button_)
+      this.unlisten(this.button_, 'keydown', 'onButtonKeydown_');
+    this.button_ = /** @type Element */
+        (this.root.querySelector('#toggleButton *:not([hidden]) button'));
+    this.listen(assert(this.button_), 'keydown', 'onButtonKeydown_');
+
+    if (!this.grouped_(siteGroup)) {
       // Ensure ungrouped |siteGroup|s do not get stuck in an opened state.
       if (this.$.collapseChild.opened)
         this.toggleCollapsible_();
@@ -370,9 +392,6 @@ Polymer({
    * @private
    */
   onFocus_: function() {
-    const button = /** @type Element */
-        (this.root.querySelector('#toggleButton *:not([hidden]) button'));
-    button.focus();
-    this.tabIndex = -1;
+    this.button_.focus();
   },
 });
