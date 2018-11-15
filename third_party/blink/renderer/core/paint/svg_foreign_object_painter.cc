@@ -45,8 +45,7 @@ void SVGForeignObjectPainter::PaintLayer(const PaintInfo& paint_info) {
       // cull rects under transform are intentionally reset to infinity,
       // to improve cache invalidation performance in the pre-paint tree
       // walk (see https://http://crrev.com/482854).
-      LayoutRect(LayoutRect::InfiniteIntRect()),
-      paint_info.GetGlobalPaintFlags(), LayoutSize());
+      CullRect::Infinite(), paint_info.GetGlobalPaintFlags(), LayoutSize());
   PaintLayerPainter(*layout_svg_foreign_object_.Layer())
       .Paint(paint_info.context, layer_painting_info, paint_info.PaintFlags());
 }

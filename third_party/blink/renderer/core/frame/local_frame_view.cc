@@ -2820,7 +2820,7 @@ void LocalFrameView::PaintTree() {
       }
 
       PaintInternal(graphics_context, kGlobalPaintNormalPhase,
-                    CullRect(LayoutRect::InfiniteIntRect()));
+                    CullRect::Infinite());
       paint_controller_->CommitNewDisplayItems();
     }
   } else {

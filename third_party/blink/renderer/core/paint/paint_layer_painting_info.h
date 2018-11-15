@@ -47,7 +47,7 @@
 
 #include "base/logging.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 #if DCHECK_IS_ON()
@@ -88,20 +88,20 @@ struct PaintLayerPaintingInfo {
   STACK_ALLOCATED();
 
  public:
-  PaintLayerPaintingInfo(PaintLayer* in_root_layer,
-                         const LayoutRect& in_dirty_rect,
+  PaintLayerPaintingInfo(PaintLayer* root_layer,
+                         const CullRect& cull_rect,
                          GlobalPaintFlags global_paint_flags,
-                         const LayoutSize& in_sub_pixel_accumulation)
-      : root_layer(in_root_layer),
-        paint_dirty_rect(in_dirty_rect),
-        sub_pixel_accumulation(in_sub_pixel_accumulation),
+                         const LayoutSize& sub_pixel_accumulation)
+      : root_layer(root_layer),
+        cull_rect(cull_rect),
+        sub_pixel_accumulation(sub_pixel_accumulation),
         global_paint_flags_(global_paint_flags) {}
 
   GlobalPaintFlags GetGlobalPaintFlags() const { return global_paint_flags_; }
 
   // TODO(jchaffraix): We should encapsulate all these fields.
   const PaintLayer* root_layer;
-  LayoutRect paint_dirty_rect;  // relative to rootLayer;
+  CullRect cull_rect;  // relative to rootLayer;
   LayoutSize sub_pixel_accumulation;
 
  private:

@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_result.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/squashing_disallowed_reasons.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -912,7 +913,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void AppendSingleFragmentIgnoringPagination(
       PaintLayerFragments&,
       const PaintLayer* root_layer,
-      const LayoutRect* dirty_rect,
+      const CullRect* cull_rect,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const LayoutPoint* offset_from_root = nullptr,
@@ -921,7 +922,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void CollectFragments(
       PaintLayerFragments&,
       const PaintLayer* root_layer,
-      const LayoutRect* dirty_rect,
+      const CullRect* cull_rect,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const LayoutPoint* offset_from_root = nullptr,
@@ -960,12 +961,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // shouldCreateSubsequence() in PaintLayerPainter.cpp for the cases we use
   // subsequence when painting a PaintLayer.
 
-  LayoutRect PreviousPaintDirtyRect() const {
-    return previous_paint_dirty_rect_;
-  }
-  void SetPreviousPaintDirtyRect(const LayoutRect& rect) {
-    previous_paint_dirty_rect_ = rect;
-  }
+  CullRect PreviousCullRect() const { return previous_cull_rect_; }
+  void SetPreviousCullRect(const CullRect& rect) { previous_cull_rect_ = rect; }
 
   PaintResult PreviousPaintResult() const {
     return static_cast<PaintResult>(previous_paint_result_);
@@ -1336,7 +1333,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   std::unique_ptr<PaintLayerStackingNode> stacking_node_;
 
-  LayoutRect previous_paint_dirty_rect_;
+  CullRect previous_cull_rect_;
 
   std::unique_ptr<PaintLayerRareData> rare_data_;
 

@@ -262,7 +262,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction,
                           IsSameId(touchaction, DisplayItem::kHitTest)));
 
   const auto& hit_test_client = *touchaction->EnclosingLayer();
-  EXPECT_SUBSEQUENCE(hit_test_client, 1u, 2u);
+  EXPECT_SUBSEQUENCE(hit_test_client, 1, 2);
 
   PaintChunk::Id root_chunk_id(scrolling_client, kDocumentBackgroundType);
   auto root_chunk_properties =
@@ -289,7 +289,7 @@ TEST_F(BlockPainterTestWithPaintTouchAction,
   EXPECT_EQ(2, NumCachedNewItems());
   CommitAndFinishCycle();
 
-  EXPECT_SUBSEQUENCE(hit_test_client, 1u, 2u);
+  EXPECT_SUBSEQUENCE(hit_test_client, 1, 2);
 
   EXPECT_THAT(
       RootPaintController().PaintChunks(),

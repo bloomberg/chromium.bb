@@ -28,7 +28,7 @@ class PaintLayerPainterTest : public PaintControllerPaintTest {
 
     PaintLayer* target_layer =
         ToLayoutBox(GetLayoutObjectByElementId(element_name))->Layer();
-    PaintLayerPaintingInfo painting_info(nullptr, LayoutRect(),
+    PaintLayerPaintingInfo painting_info(nullptr, CullRect(),
                                          kGlobalPaintNormalPhase, LayoutSize());
     bool invisible =
         PaintLayerPainter(*target_layer)
@@ -282,7 +282,7 @@ TEST_P(PaintLayerPainterTest,
     </div>
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  // PaintResult of all subsequences will be MayBeClippedByPaintDirtyRect.
+  // PaintResult of all subsequences will be MayBeClippedByCullRect.
   IntRect interest_rect(0, 0, 50, 300);
   Paint(&interest_rect);
 
@@ -352,11 +352,11 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
               ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
                           IsSameId(content1, kBackgroundType)));
   // |target| is partially painted.
-  EXPECT_EQ(kMayBeClippedByPaintDirtyRect, target_layer->PreviousPaintResult());
-  EXPECT_EQ(LayoutRect(0, 0, 800, 4600),
-            target_layer->PreviousPaintDirtyRect());
+  EXPECT_EQ(kMayBeClippedByCullRect, target_layer->PreviousPaintResult());
+  EXPECT_EQ(CullRect(IntRect(0, 0, 800, 4600)),
+            target_layer->PreviousCullRect());
   // |target| created subsequence.
-  EXPECT_SUBSEQUENCE(*target_layer, 1u, 2u);
+  EXPECT_SUBSEQUENCE(*target_layer, 1, 2);
 
   // Change something that triggers a repaint but |target| should use cached
   // subsequence.
@@ -373,11 +373,11 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
               ElementsAre(IsSameId(&view_client, kDocumentBackgroundType),
                           IsSameId(content1, kBackgroundType)));
   // |target| is still partially painted.
-  EXPECT_EQ(kMayBeClippedByPaintDirtyRect, target_layer->PreviousPaintResult());
-  EXPECT_EQ(LayoutRect(0, 0, 800, 4600),
-            target_layer->PreviousPaintDirtyRect());
+  EXPECT_EQ(kMayBeClippedByCullRect, target_layer->PreviousPaintResult());
+  EXPECT_EQ(CullRect(IntRect(0, 0, 800, 4600)),
+            target_layer->PreviousCullRect());
   // |target| still created subsequence (cached).
-  EXPECT_SUBSEQUENCE(*target_layer, 1u, 2u);
+  EXPECT_SUBSEQUENCE(*target_layer, 1, 2);
 
   // Scroll the view so that both |content1| and |content2| are in the interest
   // rect.
@@ -397,11 +397,11 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
                           IsSameId(content1, kBackgroundType),
                           IsSameId(content2, kBackgroundType)));
   // |target| is still partially painted.
-  EXPECT_EQ(kMayBeClippedByPaintDirtyRect, target_layer->PreviousPaintResult());
-  EXPECT_EQ(LayoutRect(0, 0, 800, 7600),
-            target_layer->PreviousPaintDirtyRect());
+  EXPECT_EQ(kMayBeClippedByCullRect, target_layer->PreviousPaintResult());
+  EXPECT_EQ(CullRect(IntRect(0, 0, 800, 7600)),
+            target_layer->PreviousCullRect());
   // |target| still created subsequence (repainted).
-  EXPECT_SUBSEQUENCE(*target_layer, 1u, 3u);
+  EXPECT_SUBSEQUENCE(*target_layer, 1, 3);
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {

@@ -145,9 +145,7 @@ struct CORE_EXPORT PaintInfo {
 
   const CullRect& GetCullRect() const { return cull_rect_; }
 
-  void ApplyInfiniteCullRect() {
-    cull_rect_ = CullRect(LayoutRect::InfiniteIntRect());
-  }
+  void ApplyInfiniteCullRect() { cull_rect_ = CullRect::Infinite(); }
 
   void TransformCullRect(const TransformPaintPropertyNode* transform) {
     cull_rect_.ApplyTransform(transform);

@@ -271,7 +271,7 @@ LayoutRect PaintLayerClipper::LocalClipRect(
 void PaintLayerClipper::CalculateRectsWithGeometryMapper(
     const ClipRectsContext& context,
     const FragmentData& fragment_data,
-    const LayoutRect* paint_dirty_rect,
+    const CullRect* cull_rect,
     LayoutRect& layer_bounds,
     ClipRect& background_rect,
     ClipRect& foreground_rect,
@@ -293,8 +293,8 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
       context, fragment_data, kRespectOverflowClip, background_rect);
 
   foreground_rect.Reset();
-  if (paint_dirty_rect)
-    background_rect.Intersect(*paint_dirty_rect);
+  if (cull_rect)
+    background_rect.Intersect(LayoutRect(cull_rect->Rect()));
 
   if (ShouldClipOverflow(context)) {
     LayoutBoxModelObject& layout_object = layer_.GetLayoutObject();
@@ -313,7 +313,7 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
 void PaintLayerClipper::CalculateRects(
     const ClipRectsContext& context,
     const FragmentData* fragment_data,
-    const LayoutRect* paint_dirty_rect,
+    const CullRect* cull_rect,
     LayoutRect& layer_bounds,
     ClipRect& background_rect,
     ClipRect& foreground_rect,
@@ -326,7 +326,7 @@ void PaintLayerClipper::CalculateRects(
     // TODO(chrishtr): find the root cause of not having a fragment and fix it.
     if (!fragment_data->HasLocalBorderBoxProperties())
       return;
-    CalculateRectsWithGeometryMapper(context, *fragment_data, paint_dirty_rect,
+    CalculateRectsWithGeometryMapper(context, *fragment_data, cull_rect,
                                      layer_bounds, background_rect,
                                      foreground_rect, offset_from_root);
     return;
@@ -340,8 +340,8 @@ void PaintLayerClipper::CalculateRects(
     CalculateBackgroundClipRect(context, background_rect);
     background_rect.Move(context.sub_pixel_accumulation);
   }
-  if (paint_dirty_rect)
-    background_rect.Intersect(*paint_dirty_rect);
+  if (cull_rect)
+    background_rect.Intersect(LayoutRect(cull_rect->Rect()));
 
   foreground_rect = background_rect;
 

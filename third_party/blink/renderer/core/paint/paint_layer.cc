@@ -117,7 +117,7 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
   LayoutUnit layout_units[4];
   IntSize size;
   Persistent<PaintLayerScrollableArea> scrollable_area;
-  LayoutRect previous_dirty_rect;
+  CullRect previous_cull_rect;
 };
 
 static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
@@ -1662,7 +1662,7 @@ bool PaintLayer::HasOverflowControls() const {
 void PaintLayer::AppendSingleFragmentIgnoringPagination(
     PaintLayerFragments& fragments,
     const PaintLayer* root_layer,
-    const LayoutRect* dirty_rect,
+    const CullRect* cull_rect,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
     ShouldRespectOverflowClipType respect_overflow_clip,
     const LayoutPoint* offset_from_root,
@@ -1674,7 +1674,7 @@ void PaintLayer::AppendSingleFragmentIgnoringPagination(
       respect_overflow_clip, sub_pixel_accumulation);
   Clipper(kUseGeometryMapper)
       .CalculateRects(clip_rects_context, &GetLayoutObject().FirstFragment(),
-                      dirty_rect, fragment.layer_bounds,
+                      cull_rect, fragment.layer_bounds,
                       fragment.background_rect, fragment.foreground_rect,
                       offset_from_root);
   fragment.root_fragment_data = &root_layer->GetLayoutObject().FirstFragment();
@@ -1703,7 +1703,7 @@ bool PaintLayer::ShouldFragmentCompositedBounds(
 void PaintLayer::CollectFragments(
     PaintLayerFragments& fragments,
     const PaintLayer* root_layer,
-    const LayoutRect* dirty_rect,
+    const CullRect* cull_rect,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
     ShouldRespectOverflowClipType respect_overflow_clip,
     const LayoutPoint* offset_from_root,
@@ -1760,20 +1760,20 @@ void PaintLayer::CollectFragments(
         overlay_scrollbar_clip_behavior, respect_overflow_clip,
         sub_pixel_accumulation);
 
-    base::Optional<LayoutRect> fragment_dirty_rect;
-    if (dirty_rect) {
-      // |dirty_rect| is in the coordinate space of |root_layer| (i.e. the
+    base::Optional<CullRect> fragment_cull_rect;
+    if (cull_rect) {
+      // |cull_rect| is in the coordinate space of |root_layer| (i.e. the
       // space of |root_layer|'s first fragment). Map the rect to the space of
       // the current root fragment.
-      fragment_dirty_rect = *dirty_rect;
-      first_root_fragment_data.MapRectToFragment(*root_fragment_data,
-                                                 *fragment_dirty_rect);
+      auto rect = cull_rect->Rect();
+      first_root_fragment_data.MapRectToFragment(*root_fragment_data, rect);
+      fragment_cull_rect.emplace(rect);
     }
 
     Clipper(kUseGeometryMapper)
         .CalculateRects(
             clip_rects_context, fragment_data,
-            fragment_dirty_rect ? &*fragment_dirty_rect : nullptr,
+            fragment_cull_rect ? &*fragment_cull_rect : nullptr,
             fragment.layer_bounds, fragment.background_rect,
             fragment.foreground_rect,
             offset_from_root_can_be_used ? offset_from_root : nullptr);
