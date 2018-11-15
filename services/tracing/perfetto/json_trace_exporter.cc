@@ -387,10 +387,56 @@ void JSONTraceExporter::OnTraceData(std::vector<perfetto::TracePacket> packets,
         NOTREACHED();
       }
     }
+
+    for (auto& legacy_ftrace_output : bundle.legacy_ftrace_output()) {
+      legacy_system_ftrace_output_ += legacy_ftrace_output;
+    }
+
+    for (auto& legacy_json_trace : bundle.legacy_json_trace()) {
+      // Tracing agents should only add this field when there is some data.
+      DCHECK(!legacy_json_trace.data().empty());
+      switch (legacy_json_trace.type()) {
+        case perfetto::protos::ChromeLegacyJsonTrace::USER_TRACE:
+          if (has_output_first_event_) {
+            out += ",\n";
+          } else {
+            has_output_first_event_ = true;
+          }
+          out += legacy_json_trace.data();
+          break;
+        case perfetto::protos::ChromeLegacyJsonTrace::SYSTEM_TRACE:
+          if (legacy_system_trace_events_.empty()) {
+            legacy_system_trace_events_ = "{";
+          } else {
+            legacy_system_trace_events_ += ",";
+          }
+          legacy_system_trace_events_ += legacy_json_trace.data();
+          break;
+        default:
+          NOTREACHED();
+      }
+    }
   }
 
   if (!has_more) {
     out += "]";
+
+    if (!legacy_system_ftrace_output_.empty() ||
+        !legacy_system_trace_events_.empty()) {
+      // Should only have system events (e.g. ETW) or system ftrace output.
+      DCHECK(legacy_system_ftrace_output_.empty() ||
+             legacy_system_trace_events_.empty());
+      out += ",\"systemTraceEvents\":";
+      if (!legacy_system_ftrace_output_.empty()) {
+        std::string escaped;
+        base::EscapeJSONString(legacy_system_ftrace_output_,
+                               true /* put_in_quotes */, &escaped);
+        out += escaped;
+      } else {
+        out += legacy_system_trace_events_ + "}";
+      }
+    }
+
     if (!metadata_->empty()) {
       out += ",\"metadata\":";
       std::string json_value;
