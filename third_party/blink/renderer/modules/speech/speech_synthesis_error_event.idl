@@ -22,7 +22,7 @@ enum SpeechSynthesisErrorCode {
 [
     Exposed=Window,
     Constructor(DOMString type, SpeechSynthesisErrorEventInit eventInitDict),
-    RuntimeEnabled=ScriptedSpeech
+    RuntimeEnabled=ScriptedSpeechSynthesis
 ] interface SpeechSynthesisErrorEvent : SpeechSynthesisEvent {
     readonly attribute SpeechSynthesisErrorCode error;
 };
