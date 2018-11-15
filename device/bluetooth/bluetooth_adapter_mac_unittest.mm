@@ -9,9 +9,15 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_path_watcher.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -19,6 +25,7 @@
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #import "device/bluetooth/bluetooth_low_energy_device_mac.h"
+#include "device/bluetooth/bluetooth_low_energy_device_watcher_mac.h"
 #import "device/bluetooth/test/mock_bluetooth_cbperipheral_mac.h"
 #import "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
 #import "device/bluetooth/test/test_bluetooth_adapter_observer.h"
@@ -38,16 +45,71 @@ void IOBluetoothPreferenceSetControllerPowerState(int state);
 }
 
 namespace {
+
+const char kTestPropertyListFileName[] = "test_property_list_file.plist";
+
 // |kTestHashAddress| is the hash corresponding to identifier |kTestNSUUID|.
 const char kTestNSUUID[] = "00000000-1111-2222-3333-444444444444";
 const char kTestHashAddress[] = "D1:6F:E3:22:FD:5B";
 const int kTestRssi = 0;
+
+NSDictionary* CreateTestPropertyListData() {
+  return @{
+    @"CoreBluetoothCache" : @{
+      @"00000000-1111-2222-3333-444444444444" : @{
+        @"DeviceAddress" : @"22-22-22-22-22-22",
+        @"DeviceAddressType" : @1,
+        @"ServiceChangedHandle" : @3,
+        @"ServiceChangeSubscribed" : @0,
+        @"ServiceDiscoveryComplete" : @0
+      }
+    }
+  };
+}
+
+bool IsTestDeviceSystemPaired(const std::string& address) {
+  return true;
+}
+
 }  // namespace
 
 namespace device {
 
 class BluetoothAdapterMacTest : public testing::Test {
  public:
+  class FakeBluetoothLowEnergyDeviceWatcherMac
+      : public BluetoothLowEnergyDeviceWatcherMac {
+   public:
+    FakeBluetoothLowEnergyDeviceWatcherMac(
+        scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner,
+        LowEnergyDeviceListUpdatedCallback callback)
+        : BluetoothLowEnergyDeviceWatcherMac(ui_thread_task_runner, callback),
+          weak_ptr_factory_(this) {}
+
+    void SimulatePropertyListFileChanged(
+        const base::FilePath& path,
+        const std::string& changed_file_content) {
+      auto expected_file_size = changed_file_content.length();
+      ASSERT_EQ(static_cast<int>(expected_file_size),
+                base::WriteFile(path, changed_file_content.data(),
+                                expected_file_size));
+      OnPropertyListFileChangedOnFileThread(path, false /* error */);
+    }
+
+   private:
+    ~FakeBluetoothLowEnergyDeviceWatcherMac() override = default;
+
+    void Init() override { ReadBluetoothPropertyListFile(); }
+
+    void ReadBluetoothPropertyListFile() override {
+      low_energy_device_list_updated_callback().Run(
+          ParseBluetoothDevicePropertyListData(CreateTestPropertyListData()));
+    }
+
+    base::WeakPtrFactory<FakeBluetoothLowEnergyDeviceWatcherMac>
+        weak_ptr_factory_;
+  };
+
   BluetoothAdapterMacTest()
       : ui_task_runner_(new base::TestSimpleTaskRunner()),
         adapter_(new BluetoothAdapterMac()),
@@ -55,8 +117,24 @@ class BluetoothAdapterMacTest : public testing::Test {
         observer_(adapter_),
         callback_count_(0),
         error_callback_count_(0) {
+    adapter_mac_->SetGetDevicePairedStatusCallbackForTesting(
+        base::BindRepeating(&IsTestDeviceSystemPaired));
     adapter_mac_->InitForTest(ui_task_runner_);
+    fake_low_energy_device_watcher_ =
+        base::MakeRefCounted<FakeBluetoothLowEnergyDeviceWatcherMac>(
+            ui_task_runner_,
+            base::BindRepeating(
+                &BluetoothAdapterMac::UpdateKnownLowEnergyDevices,
+                adapter_mac_->weak_ptr_factory_.GetWeakPtr()));
   }
+
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    test_property_list_file_path_ =
+        temp_dir_.GetPath().AppendASCII(kTestPropertyListFileName);
+  }
+
+  void TearDown() override { scoped_task_environment_.RunUntilIdle(); }
 
   // Helper methods for setup and access to BluetoothAdapterMacTest's members.
   void PollAdapter() { adapter_mac_->PollAdapter(); }
@@ -141,6 +219,11 @@ class BluetoothAdapterMacTest : public testing::Test {
 
   int NumDiscoverySessions() { return adapter_mac_->num_discovery_sessions_; }
 
+  void SetFakeLowEnergyDeviceWatcher() {
+    adapter_mac_->SetLowEnergyDeviceWatcherForTesting(
+        fake_low_energy_device_watcher_);
+  }
+
   // Generic callbacks.
   void Callback() { ++callback_count_; }
   void ErrorCallback() { ++error_callback_count_; }
@@ -149,9 +232,12 @@ class BluetoothAdapterMacTest : public testing::Test {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> ui_task_runner_;
   scoped_refptr<BluetoothAdapter> adapter_;
   BluetoothAdapterMac* adapter_mac_;
+  scoped_refptr<FakeBluetoothLowEnergyDeviceWatcherMac>
+      fake_low_energy_device_watcher_;
   TestBluetoothAdapterObserver observer_;
 
   // Owned by |adapter_mac_|.
@@ -159,6 +245,8 @@ class BluetoothAdapterMacTest : public testing::Test {
 
   int callback_count_;
   int error_callback_count_;
+  base::ScopedTempDir temp_dir_;
+  base::FilePath test_property_list_file_path_;
 };
 
 // Test if private IOBluetooth APIs are callable on all supported macOS
@@ -312,6 +400,129 @@ TEST_F(BluetoothAdapterMacTest, LowEnergyDeviceUpdatedNewDevice) {
   LowEnergyDeviceUpdated(mock_peripheral, advertisement_data, kTestRssi);
   EXPECT_EQ(1, NumDevices());
   EXPECT_TRUE(DevicePresent(mock_peripheral));
+}
+
+TEST_F(BluetoothAdapterMacTest, GetSystemPairedLowEnergyDevice) {
+  SetFakeLowEnergyDeviceWatcher();
+  ui_task_runner_->RunUntilIdle();
+  EXPECT_TRUE(
+      adapter_mac_->IsBluetoothLowEnergyDeviceSystemPaired(kTestNSUUID));
+}
+
+TEST_F(BluetoothAdapterMacTest, GetNewlyPairedLowEnergyDevice) {
+  constexpr char kPropertyListFileContentWithAddedDevice[] =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" "
+      "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"
+      "<plist version=\"1.0\">"
+      "<dict>"
+      "   <key>CoreBluetoothCache</key>"
+      "     <dict> "
+      "      <key>E7F8589A-A7D9-4B94-9A08-D89076A159F4</key>"
+      "      <dict> "
+      "         <key>DeviceAddress</key>"
+      "         <string>11-11-11-11-11-11</string>"
+      "         <key>DeviceAddressType</key>"
+      "         <integer>1</integer>"
+      "         <key>ServiceChangedHandle</key>"
+      "         <integer>3</integer>"
+      "         <key>ServiceChangeSubscribed</key>"
+      "         <integer>0</integer>"
+      "         <key>ServiceDiscoveryComplete</key>"
+      "         <integer>0</integer>"
+      "      </dict>"
+      "      <key>00000000-1111-2222-3333-444444444444</key>"
+      "      <dict> "
+      "         <key>DeviceAddress</key>"
+      "         <string>22-22-22-22-22-22</string>"
+      "         <key>DeviceAddressType</key>"
+      "         <integer>1</integer>"
+      "         <key>ServiceChangedHandle</key>"
+      "         <integer>3</integer>"
+      "         <key>ServiceChangeSubscribed</key>"
+      "         <integer>0</integer>"
+      "         <key>ServiceDiscoveryComplete</key>"
+      "         <integer>0</integer>"
+      "      </dict>"
+
+      "     </dict>"
+      "</dict>"
+      "</plist>";
+
+  const char kTestAddedDeviceNSUUID[] = "E7F8589A-A7D9-4B94-9A08-D89076A159F4";
+
+  ASSERT_TRUE(SetMockCentralManager(CBCentralManagerStatePoweredOn));
+
+  base::scoped_nsobject<CBPeripheral> mock_peripheral_one(
+      CreateMockPeripheral(kTestNSUUID));
+  ASSERT_TRUE(mock_peripheral_one);
+
+  LowEnergyDeviceUpdated(
+      mock_peripheral_one,
+      base::scoped_nsobject<NSDictionary>(AdvertisementData()), kTestRssi);
+
+  base::scoped_nsobject<CBPeripheral> mock_peripheral_two(
+      CreateMockPeripheral(kTestAddedDeviceNSUUID));
+  ASSERT_TRUE(mock_peripheral_two);
+
+  LowEnergyDeviceUpdated(
+      mock_peripheral_two,
+      base::scoped_nsobject<NSDictionary>(AdvertisementData()), kTestRssi);
+  observer_.Reset();
+
+  // BluetoothAdapterMac only notifies observers of changed devices detected by
+  // BluetoothLowEnergyDeviceWatcherMac if the device has been already known to
+  // the system(i.e. the changed device is in BluetoothAdatper::devices_). As
+  // so, add mock devices prior to setting BluetoothLowenergyDeviceWatcherMac.
+  SetFakeLowEnergyDeviceWatcher();
+
+  EXPECT_EQ(1, observer_.device_changed_count());
+  observer_.Reset();
+
+  fake_low_energy_device_watcher_->SimulatePropertyListFileChanged(
+      test_property_list_file_path_, kPropertyListFileContentWithAddedDevice);
+  ui_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1, observer_.device_changed_count());
+  EXPECT_TRUE(adapter_mac_->IsBluetoothLowEnergyDeviceSystemPaired(
+      kTestAddedDeviceNSUUID));
+}
+
+TEST_F(BluetoothAdapterMacTest, NotifyObserverWhenDeviceIsUnpaired) {
+  constexpr char kPropertyListFileContentWithRemovedDevice[] =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" "
+      "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">"
+      "<plist version=\"1.0\">"
+      "<dict>"
+      "   <key>CoreBluetoothCache</key>"
+      "     <dict> "
+      "     </dict>"
+      "</dict>"
+      "</plist>";
+
+  if (!SetMockCentralManager(CBCentralManagerStatePoweredOn))
+    return;
+
+  base::scoped_nsobject<CBPeripheral> mock_peripheral(
+      CreateMockPeripheral(kTestNSUUID));
+  if (!mock_peripheral)
+    return;
+
+  LowEnergyDeviceUpdated(
+      mock_peripheral, base::scoped_nsobject<NSDictionary>(AdvertisementData()),
+      kTestRssi);
+  observer_.Reset();
+
+  SetFakeLowEnergyDeviceWatcher();
+  EXPECT_EQ(1, observer_.device_changed_count());
+  observer_.Reset();
+
+  fake_low_energy_device_watcher_->SimulatePropertyListFileChanged(
+      test_property_list_file_path_, kPropertyListFileContentWithRemovedDevice);
+  ui_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1, observer_.device_changed_count());
+  EXPECT_FALSE(
+      adapter_mac_->IsBluetoothLowEnergyDeviceSystemPaired(kTestNSUUID));
 }
 
 }  // namespace device
