@@ -382,6 +382,13 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
 }
 
 void PrePaintTreeWalk::Walk(const LayoutObject& object) {
+  if (object.PrePaintBlockedByDisplayLock())
+    return;
+  // TODO(vmpstr): Technically we should do this after prepaint finishes, but
+  // due to a possible early out this is more convenient. We should change this
+  // to RAII.
+  object.NotifyDisplayLockDidPrePaint();
+
   // We need to be careful not to have a reference to the parent context, since
   // this reference will be to the context_storage_ memory which may be
   // reallocated during this function call.

@@ -1883,6 +1883,8 @@ Node::InsertionNotificationRequest Element::InsertedInto(
       if (LocalFrameView* frame_view = GetDocument().View())
         frame_view->SetIntersectionObservationState(LocalFrameView::kRequired);
     }
+    if (rare_data->GetDisplayLockContext())
+      rare_data->GetDisplayLockContext()->NotifyConnectedMayHaveChanged();
   }
 
   if (isConnected()) {
@@ -1920,7 +1922,10 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
     // AttachLayoutTree again. We don't clear pseudo elements on
     // DetachLayoutTree() if we intend to attach again to avoid recreating the
     // pseudo elements.
-    GetElementRareData()->ClearPseudoElements();
+    ElementRareData* rare_data = GetElementRareData();
+    rare_data->ClearPseudoElements();
+    if (rare_data->GetDisplayLockContext())
+      rare_data->GetDisplayLockContext()->NotifyConnectedMayHaveChanged();
   }
 
   if (Fullscreen::IsFullscreenElement(*this)) {
@@ -3518,10 +3523,15 @@ void Element::SetNeedsResizeObserverUpdate() {
 
 ScriptPromise Element::acquireDisplayLock(ScriptState* script_state,
                                           V8DisplayLockCallback* callback) {
-  auto* context =
-      EnsureElementRareData().EnsureDisplayLockContext(GetExecutionContext());
-  context->ScheduleTask(callback, script_state);
+  auto* context = EnsureElementRareData().EnsureDisplayLockContext(
+      this, GetExecutionContext());
+  context->RequestLock(callback, script_state);
   return context->Promise();
+}
+
+DisplayLockContext* Element::GetDisplayLockContext() const {
+  return HasRareData() ? GetElementRareData()->GetDisplayLockContext()
+                       : nullptr;
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()

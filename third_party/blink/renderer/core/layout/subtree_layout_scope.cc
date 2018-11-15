@@ -40,7 +40,7 @@ SubtreeLayoutScope::SubtreeLayoutScope(LayoutObject& root) : root_(root) {
 }
 
 SubtreeLayoutScope::~SubtreeLayoutScope() {
-  CHECK(!root_.NeedsLayout());
+  CHECK(!root_.NeedsLayout() || root_.LayoutBlockedByDisplayLock());
 
 #if DCHECK_IS_ON()
   for (auto* layout_object : layout_objects_to_layout_)

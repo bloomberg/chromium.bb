@@ -48,6 +48,7 @@
 
 namespace blink {
 
+class Element;
 class ResizeObservation;
 class ResizeObserver;
 
@@ -188,11 +189,15 @@ class ElementRareData : public NodeRareData {
   }
   ResizeObserverDataMap& EnsureResizeObserverData();
 
-  DisplayLockContext* EnsureDisplayLockContext(ExecutionContext* context) {
+  DisplayLockContext* EnsureDisplayLockContext(Element* element,
+                                               ExecutionContext* context) {
     if (!display_lock_context_ || display_lock_context_->IsResolved()) {
-      display_lock_context_ = new DisplayLockContext(context);
+      display_lock_context_ = new DisplayLockContext(element, context);
     }
     return display_lock_context_.Get();
+  }
+  DisplayLockContext* GetDisplayLockContext() const {
+    return display_lock_context_;
   }
 
   const AtomicString& GetNonce() const { return nonce_; }
@@ -229,7 +234,7 @@ class ElementRareData : public NodeRareData {
 
   TraceWrapperMember<AccessibleNode> accessible_node_;
 
-  Member<DisplayLockContext> display_lock_context_;
+  WeakMember<DisplayLockContext> display_lock_context_;
 
   explicit ElementRareData(NodeRenderingData*);
 };

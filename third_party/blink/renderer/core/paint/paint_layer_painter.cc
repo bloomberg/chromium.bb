@@ -99,6 +99,12 @@ PaintResult PaintLayerPainter::Paint(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags paint_flags) {
+  if (paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock())
+    return kFullyPainted;
+  // TODO(vmpstr): This should be called after paint succeeds, but due to
+  // multiple early outs this is more convenient. We should use RAII here.
+  paint_layer_.GetLayoutObject().NotifyDisplayLockDidPaint();
+
   if (paint_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
     return kFullyPainted;
 

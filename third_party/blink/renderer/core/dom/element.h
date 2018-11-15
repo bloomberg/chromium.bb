@@ -57,6 +57,7 @@ class DOMRectList;
 class DOMStringMap;
 class DOMTokenList;
 class Document;
+class DisplayLockContext;
 class ElementAnimations;
 class ElementIntersectionObserverData;
 class ElementRareData;
@@ -887,6 +888,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void SetNeedsResizeObserverUpdate();
 
   ScriptPromise acquireDisplayLock(ScriptState*, V8DisplayLockCallback*);
+  DisplayLockContext* GetDisplayLockContext() const;
 
  protected:
   Element(const QualifiedName& tag_name, Document*, ConstructionType);
