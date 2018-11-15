@@ -52,14 +52,40 @@ unsigned PreviousSentencePositionBoundary(const UChar* characters,
   return iterator->preceding(length);
 }
 
-unsigned StartSentenceBoundary(const UChar* characters,
-                               unsigned length,
-                               unsigned,
-                               BoundarySearchContextAvailability,
-                               bool&) {
-  TextBreakIterator* iterator = SentenceBreakIterator(characters, length);
-  // FIXME: The following function can return -1; we don't handle that.
-  return iterator->preceding(length);
+PositionInFlatTree StartOfSentenceInternal(const PositionInFlatTree& position) {
+  class Finder final : public TextSegments::Finder {
+    STACK_ALLOCATED();
+
+   public:
+    Position Find(const String text, unsigned passed_offset) final {
+      DCHECK_LE(passed_offset, text.length());
+      // "move_by_sentence_boundary.html" requires to skip a space characters
+      // between sentences.
+      const unsigned offset = FindNonSpaceCharacter(text, passed_offset);
+      TextBreakIterator* iterator =
+          SentenceBreakIterator(text.Characters16(), text.length());
+      const int result = iterator->preceding(offset);
+      if (result == kTextBreakDone) {
+        if (text.length()) {
+          // Block boundaries are also sentence boundaries.
+          return Position::Before(0);
+        }
+        return Position();
+      }
+      return Position::Before(result);
+    }
+
+   private:
+    static unsigned FindNonSpaceCharacter(const String text,
+                                          unsigned passed_offset) {
+      for (unsigned offset = passed_offset; offset; --offset) {
+        if (text[offset - 1] != ' ')
+          return offset;
+      }
+      return 0;
+    }
+  } finder;
+  return TextSegments::FindBoundaryBackward(position, &finder);
 }
 
 // TODO(yosin) This includes the space after the punctuation that marks the end
@@ -139,13 +165,6 @@ PositionInFlatTree NextSentencePositionInternal(
     bool should_stop_finding_ = false;
   } finder;
   return TextSegments::FindBoundaryForward(position, &finder);
-}
-
-template <typename Strategy>
-VisiblePositionTemplate<Strategy> StartOfSentenceAlgorithm(
-    const VisiblePositionTemplate<Strategy>& c) {
-  DCHECK(c.IsValid()) << c;
-  return CreateVisiblePosition(PreviousBoundary(c, StartSentenceBoundary));
 }
 
 }  // namespace
@@ -241,12 +260,26 @@ VisiblePosition PreviousSentencePosition(const VisiblePosition& c) {
       prev, c.DeepEquivalent());
 }
 
+// ----
+
+PositionInFlatTree StartOfSentencePosition(const PositionInFlatTree& position) {
+  const PositionInFlatTree result = StartOfSentenceInternal(position);
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+             PositionInFlatTreeWithAffinity(result), position)
+      .GetPosition();
+}
+
+Position StartOfSentencePosition(const Position& position) {
+  return ToPositionInDOMTree(
+      StartOfSentencePosition(ToPositionInFlatTree(position)));
+}
+
 VisiblePosition StartOfSentence(const VisiblePosition& c) {
-  return StartOfSentenceAlgorithm<EditingStrategy>(c);
+  return CreateVisiblePosition(StartOfSentencePosition(c.DeepEquivalent()));
 }
 
 VisiblePositionInFlatTree StartOfSentence(const VisiblePositionInFlatTree& c) {
-  return StartOfSentenceAlgorithm<EditingInFlatTreeStrategy>(c);
+  return CreateVisiblePosition(StartOfSentencePosition(c.DeepEquivalent()));
 }
 
 }  // namespace blink
