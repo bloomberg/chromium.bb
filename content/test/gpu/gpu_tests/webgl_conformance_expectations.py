@@ -109,6 +109,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
     self.Fail('conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html',
         ['linux', 'nvidia'], bug=772651)
+    self.Fail('conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html',
+        ['android', 'nvidia'], bug=905370)
     self.Fail('conformance/glsl/bugs/' +
         'vector-scalar-arithmetic-inside-loop-complex.html',
         ['nvidia'], bug=772651)
