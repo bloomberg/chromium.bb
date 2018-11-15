@@ -213,6 +213,8 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // Called by TRACE_EVENT* macros, don't call this directly.
   // If |copy| is set, |name|, |arg_name1| and |arg_name2| will be deep copied
   // into the event; see "Memory scoping note" and TRACE_EVENT_COPY_XXX above.
+
+  // TODO(898794): Remove methods below when all callers have been updated.
   TraceEventHandle AddTraceEvent(
       char phase,
       const unsigned char* category_group_enabled,
