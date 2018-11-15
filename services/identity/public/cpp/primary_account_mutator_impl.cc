@@ -33,12 +33,11 @@ void PrimaryAccountMutatorImpl::ClearPrimaryAccount(
 }
 
 bool PrimaryAccountMutatorImpl::IsSettingPrimaryAccountAllowed() const {
-  NOTIMPLEMENTED();
-  return false;
+  return signin_manager_->IsSigninAllowed();
 }
 
 void PrimaryAccountMutatorImpl::SetSettingPrimaryAccountAllowed(bool allowed) {
-  NOTIMPLEMENTED();
+  signin_manager_->SetSigninAllowed(allowed);
 }
 
 bool PrimaryAccountMutatorImpl::IsClearingPrimaryAccountAllowed() const {

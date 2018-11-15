@@ -163,7 +163,12 @@ class SigninManager : public SigninManagerBase,
   // Returns true if there's a signin in progress.
   bool AuthInProgress() const override;
 
+  // Returns whether sign-in is allowed.
+  // TODO(crbug.com/806778): Remove method in super-class.
   bool IsSigninAllowed() const override;
+
+  // Sets whether sign-in is allowed or not.
+  void SetSigninAllowed(bool allowed);
 
   // Returns true if the passed username is allowed by policy. Virtual for
   // mocking in tests.

@@ -324,6 +324,10 @@ bool SigninManager::IsSigninAllowed() const {
   return signin_allowed_.GetValue();
 }
 
+void SigninManager::SetSigninAllowed(bool allowed) {
+  signin_allowed_.SetValue(allowed);
+}
+
 void SigninManager::OnSigninAllowedPrefChanged() {
   if (!IsSigninAllowed() && (IsAuthenticated() || AuthInProgress()))
     SignOut(signin_metrics::SIGNOUT_PREF_CHANGED,
