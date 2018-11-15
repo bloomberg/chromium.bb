@@ -176,7 +176,10 @@ void ParkableStringImpl::Unlock() {
   // the owning thread may concurrently call |ToString()|. It is then allowed
   // to use the string until the end of the current owning thread task.
   // Requires DCHECK_IS_ON() for the |owning_thread_| check.
-  if (CanParkNow() && owning_thread_ == CurrentThread()) {
+  //
+  // Checking the owning thread first as CanParkNow() can only be called from
+  // the owning thread.
+  if (owning_thread_ == CurrentThread() && CanParkNow()) {
     AsanPoisonString(string_);
   }
 #endif  // defined(ADDRESS_SANITIZER) && DCHECK_IS_ON()
@@ -318,6 +321,11 @@ void ParkableStringImpl::CompressInBackground(
                params->size);
 
   base::ElapsedTimer timer;
+#if defined(ADDRESS_SANITIZER)
+  // Lock the string to prevent a concurrent |Unlock()| on the main thread from
+  // poisoning the string in the meantime.
+  params->string->Lock();
+#endif  // defined(ADDRESS_SANITIZER)
   // Compression touches the string.
   AsanUnpoisonString(params->string->string_);
   base::StringPiece data(reinterpret_cast<const char*>(params->data),
@@ -332,7 +340,9 @@ void ParkableStringImpl::CompressInBackground(
         reinterpret_cast<const uint8_t*>(compressed_string.c_str()),
         compressed_string.size());
   }
-  AsanPoisonString(params->string->string_);
+#if defined(ADDRESS_SANITIZER)
+  params->string->Unlock();
+#endif  // defined(ADDRESS_SANITIZER)
 
   auto* task_runner = params->callback_task_runner.get();
   size_t size = params->size;
