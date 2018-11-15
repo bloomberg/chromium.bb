@@ -26,7 +26,11 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
     return;
   viz::FrameSinkId frame_sink_id(GetNextUInt32(fuzz), GetNextUInt32(fuzz));
   uint32_t flags = GetNextUInt32(fuzz);
-  uint32_t reasons = GetNextUInt32(fuzz);
+  // The reasons' value is kNotAsyncHitTest if the flag's value is kHitTestAsk.
+  uint32_t reasons =
+      (flags | viz::HitTestRegionFlags::kHitTestAsk)
+          ? fuzz->ConsumeUint32InRange(1, std::numeric_limits<uint32_t>::max())
+          : viz::AsyncHitTestReasons::kNotAsyncHitTest;
   gfx::Rect rect(fuzz->ConsumeUint8(), fuzz->ConsumeUint8(),
                  fuzz->ConsumeUint16(), fuzz->ConsumeUint16());
   int32_t child_count =
