@@ -5,6 +5,7 @@
 #include "media/gpu/v4l2/v4l2_device.h"
 
 #include <cstring>
+#include <sstream>
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,11 +82,12 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutNV12) {
   EXPECT_EQ(expected_planes, layout->planes());
   EXPECT_EQ(std::vector<size_t>({86400u}), layout->buffer_sizes());
   EXPECT_EQ(86400u, layout->GetTotalBufferSize());
-  EXPECT_EQ(
-      "VideoFrameLayout format: PIXEL_FORMAT_NV12, coded_size: 300x180, "
-      "num_buffers: 1, buffer_sizes: [86400], num_planes: 2, "
-      "planes (stride, offset): [(320, 0), (320, 57600)]",
-      layout->ToString());
+  std::ostringstream ostream;
+  ostream << *layout;
+  EXPECT_EQ(ostream.str(),
+            "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 300x180, "
+            "planes (stride, offset): [(320, 0), (320, 57600)], "
+            "buffer_sizes: [86400])");
 }
 
 // Test V4L2FormatToVideoFrameLayout with YUV420 pixelformat, which has one
@@ -102,11 +104,12 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutYUV420) {
   EXPECT_EQ(expected_planes, layout->planes());
   EXPECT_EQ(std::vector<size_t>({86400u}), layout->buffer_sizes());
   EXPECT_EQ(86400u, layout->GetTotalBufferSize());
-  EXPECT_EQ(
-      "VideoFrameLayout format: PIXEL_FORMAT_I420, coded_size: 300x180, "
-      "num_buffers: 1, buffer_sizes: [86400], num_planes: 3, "
-      "planes (stride, offset): [(320, 0), (160, 57600), (160, 72000)]",
-      layout->ToString());
+  std::ostringstream ostream;
+  ostream << *layout;
+  EXPECT_EQ(ostream.str(),
+            "VideoFrameLayout(format: PIXEL_FORMAT_I420, coded_size: 300x180, "
+            "planes (stride, offset): [(320, 0), (160, 57600), (160, 72000)], "
+            "buffer_sizes: [86400])");
 }
 
 // Test V4L2FormatToVideoFrameLayout with single planar v4l2_format.

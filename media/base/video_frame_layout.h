@@ -39,9 +39,8 @@ class MEDIA_EXPORT VideoFrameLayout {
     Plane() = default;
     Plane(int32_t stride, size_t offset) : stride(stride), offset(offset) {}
 
-    bool operator==(const Plane& rhs) const {
-      return stride == rhs.stride && offset == rhs.offset;
-    }
+    bool operator==(const Plane& rhs) const;
+    bool operator!=(const Plane& rhs) const;
 
     // Strides of a plane, typically greater or equal to the
     // width of the surface divided by the horizontal sampling period. Note that
@@ -106,8 +105,8 @@ class MEDIA_EXPORT VideoFrameLayout {
   // Returns sum of bytes of all buffers.
   size_t GetTotalBufferSize() const;
 
-  // Composes VideoFrameLayout as human readable string.
-  std::string ToString() const;
+  bool operator==(const VideoFrameLayout& rhs) const;
+  bool operator!=(const VideoFrameLayout& rhs) const;
 
   // Returns the required memory alignment for buffers.
   size_t buffer_addr_align() const {
@@ -144,8 +143,12 @@ class MEDIA_EXPORT VideoFrameLayout {
 };
 
 // Outputs VideoFrameLayout::Plane to stream.
-std::ostream& operator<<(std::ostream& ostream,
-                         const VideoFrameLayout::Plane& plane);
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& ostream,
+                                      const VideoFrameLayout::Plane& plane);
+
+// Outputs VideoFrameLayout to stream.
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& ostream,
+                                      const VideoFrameLayout& layout);
 
 }  // namespace media
 
