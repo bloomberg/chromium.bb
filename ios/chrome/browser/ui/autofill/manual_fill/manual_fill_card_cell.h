@@ -7,11 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/autofill/manual_fill/credit_card.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
-
-namespace autofill {
-class CreditCard;
-}  // namespace autofill
 
 @protocol CardListDelegate;
 @protocol ManualFillContentDelegate;
@@ -19,7 +16,7 @@ class CreditCard;
 // Wrapper to show card cells in a ChromeTableViewController.
 @interface ManualFillCardItem : TableViewItem
 
-- (instancetype)initWithCreditCard:(const autofill::CreditCard&)card
+- (instancetype)initWithCreditCard:(ManualFillCreditCard*)card
                    contentDelegate:
                        (id<ManualFillContentDelegate>)contentDelegate
                 navigationDelegate:(id<CardListDelegate>)navigationDelegate
@@ -34,7 +31,7 @@ class CreditCard;
 @interface ManualFillCardCell : UITableViewCell
 
 // Updates the cell with credit card and the |delegate| to be notified.
-- (void)setUpWithCreditCard:(const autofill::CreditCard&)card
+- (void)setUpWithCreditCard:(ManualFillCreditCard*)card
             contentDelegate:(id<ManualFillContentDelegate>)contentDelegate
          navigationDelegate:(id<CardListDelegate>)navigationDelegate;
 

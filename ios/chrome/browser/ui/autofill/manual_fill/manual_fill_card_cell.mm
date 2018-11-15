@@ -6,10 +6,9 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/credit_card.h"
-#import "components/autofill/ios/browser/credit_card_util.h"
-#include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_list_delegate.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/credit_card.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
@@ -31,7 +30,7 @@
 @property(nonatomic, weak, readonly) id<CardListDelegate> navigationDelegate;
 
 // The credit card for this item.
-@property(nonatomic, assign) autofill::CreditCard card;
+@property(nonatomic, readonly) ManualFillCreditCard* card;
 
 @end
 
@@ -40,7 +39,7 @@
 @synthesize navigationDelegate = _navigationDelegate;
 @synthesize card = _card;
 
-- (instancetype)initWithCreditCard:(const autofill::CreditCard&)card
+- (instancetype)initWithCreditCard:(ManualFillCreditCard*)card
                    contentDelegate:
                        (id<ManualFillContentDelegate>)contentDelegate
                 navigationDelegate:(id<CardListDelegate>)navigationDelegate {
@@ -68,15 +67,6 @@ namespace {
 
 // Left and right margins of the cell content.
 static const CGFloat sideMargins = 16;
-
-// The multiplier for the base system spacing at the top margin.
-static const CGFloat TopSystemSpacingMultiplier = 1.58;
-
-// The multiplier for the base system spacing between elements (vertical).
-static const CGFloat MiddleSystemSpacingMultiplier = 1.83;
-
-// The multiplier for the base system spacing at the bottom margin.
-static const CGFloat BottomSystemSpacingMultiplier = 2.26;
 
 // Margin left and right of expiration buttons.
 static const CGFloat ExpirationMarginWidth = 16.0;
@@ -107,20 +97,11 @@ static const CGFloat ExpirationMarginWidth = 16.0;
 @property(nonatomic, weak) id<CardListDelegate> navigationDelegate;
 
 // The credit card data for this cell.
-@property(nonatomic, assign) autofill::CreditCard card;
+@property(nonatomic, assign) ManualFillCreditCard* card;
 
 @end
 
 @implementation ManualFillCardCell
-
-@synthesize cardLabel = _cardLabel;
-@synthesize cardNumberButton = _cardNumberButton;
-@synthesize cardholderButton = _cardholderButton;
-@synthesize expirationMonthButton = _expirationMonthButton;
-@synthesize expirationYearButton = _expirationYearButton;
-@synthesize contentDelegate = _contentDelegate;
-@synthesize navigationDelegate = _navigationDelegate;
-@synthesize card = _card;
 
 #pragma mark - Public
 
@@ -133,9 +114,10 @@ static const CGFloat ExpirationMarginWidth = 16.0;
   [self.expirationYearButton setTitle:@"" forState:UIControlStateNormal];
   self.contentDelegate = nil;
   self.navigationDelegate = nil;
+  self.card = nil;
 }
 
-- (void)setUpWithCreditCard:(const autofill::CreditCard&)card
+- (void)setUpWithCreditCard:(ManualFillCreditCard*)card
             contentDelegate:(id<ManualFillContentDelegate>)contentDelegate
          navigationDelegate:(id<CardListDelegate>)navigationDelegate {
   if (self.contentView.subviews.count == 0) {
@@ -146,12 +128,11 @@ static const CGFloat ExpirationMarginWidth = 16.0;
   self.card = card;
 
   NSString* cardName = @"";
-  if (card.bank_name().empty()) {
-    cardName = base::SysUTF16ToNSString(card.NetworkForDisplay());
+  if (card.bankName.length) {
+    cardName = card.network;
   } else {
-    cardName = base::SysUTF16ToNSString(card.NetworkForDisplay() +
-                                        base::ASCIIToUTF16(" ") +
-                                        base::ASCIIToUTF16(card.bank_name()));
+    cardName =
+        [NSString stringWithFormat:@"%@ %@", card.network, card.bankName];
   }
 
   NSMutableAttributedString* attributedString =
@@ -164,28 +145,15 @@ static const CGFloat ExpirationMarginWidth = 16.0;
               }];
   self.cardLabel.attributedText = attributedString;
 
-  // Unicode characters used in card number:
-  //  - 0x0020 - Space.
-  //  - 0x2060 - WORD-JOINER (makes string undivisible).
-  constexpr base::char16 separator[] = {0x2060, 0x0020, 0};
-  const base::string16 digits = card.LastFourDigits();
-  NSString* obfuscatedCardNumber = base::SysUTF16ToNSString(
-      autofill::kMidlineEllipsis + base::string16(separator) +
-      autofill::kMidlineEllipsis + base::string16(separator) +
-      autofill::kMidlineEllipsis + base::string16(separator) + digits);
-  [self.cardNumberButton setTitle:obfuscatedCardNumber
+  [self.cardNumberButton setTitle:card.obfuscatedNumber
+                         forState:UIControlStateNormal];
+  [self.cardholderButton setTitle:card.cardHolder
                          forState:UIControlStateNormal];
 
-  NSString* cardholder = autofill::GetCreditCardName(
-      card, GetApplicationContext()->GetApplicationLocale());
-  [self.cardholderButton setTitle:cardholder forState:UIControlStateNormal];
-
-  [self.expirationMonthButton
-      setTitle:[NSString stringWithFormat:@"%02d", card.expiration_month()]
-      forState:UIControlStateNormal];
-  [self.expirationYearButton
-      setTitle:[NSString stringWithFormat:@"%04d", card.expiration_year()]
-      forState:UIControlStateNormal];
+  [self.expirationMonthButton setTitle:card.expirationMonth
+                              forState:UIControlStateNormal];
+  [self.expirationYearButton setTitle:card.expirationYear
+                             forState:UIControlStateNormal];
 }
 
 #pragma mark - Private
@@ -199,56 +167,53 @@ static const CGFloat ExpirationMarginWidth = 16.0;
   grayLine.translatesAutoresizingMaskIntoConstraints = NO;
   [self.contentView addSubview:grayLine];
 
-  self.cardLabel = [self createLabel];
+  self.cardLabel = CreateLabel();
   [self.contentView addSubview:self.cardLabel];
-  [self setHorizontalConstraintsForViews:@[ self.cardLabel ]
-                                   guide:grayLine
-                                   shift:0];
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.cardLabel ], grayLine,
+                                                0);
 
   self.cardNumberButton =
-      [self createButtonForAction:@selector(userDidTapCardNumber:)];
+      CreateButtonWithSelectorAndTarget(@selector(userDidTapCardNumber:), self);
   [self.contentView addSubview:self.cardNumberButton];
-  [self setHorizontalConstraintsForViews:@[ self.cardNumberButton ]
-                                   guide:grayLine
-                                   shift:0];
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.cardNumberButton ],
+                                                grayLine, 0);
 
   self.cardholderButton =
-      [self createButtonForAction:@selector(userDidTapCardInfo:)];
+      CreateButtonWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
   [self.contentView addSubview:self.cardholderButton];
-  [self setHorizontalConstraintsForViews:@[ self.cardholderButton ]
-                                   guide:grayLine
-                                   shift:0];
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.cardholderButton ],
+                                                grayLine, 0);
 
   // Expiration line.
   self.expirationMonthButton =
-      [self createButtonForAction:@selector(userDidTapCardInfo:)];
-  [self setHorizontalMarginConstraintsForButton:self.expirationMonthButton
-                                          width:ExpirationMarginWidth];
+      CreateButtonWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
+  HorizontalConstraintsMarginForButtonWithWidth(self.expirationMonthButton,
+                                                ExpirationMarginWidth);
   [self.contentView addSubview:self.expirationMonthButton];
   self.expirationYearButton =
-      [self createButtonForAction:@selector(userDidTapCardInfo:)];
-  [self setHorizontalMarginConstraintsForButton:self.expirationYearButton
-                                          width:ExpirationMarginWidth];
+      CreateButtonWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
+  HorizontalConstraintsMarginForButtonWithWidth(self.expirationYearButton,
+                                                ExpirationMarginWidth);
   [self.contentView addSubview:self.expirationYearButton];
-  UILabel* expirationSeparatorLabel = [self createLabel];
+  UILabel* expirationSeparatorLabel = CreateLabel();
   expirationSeparatorLabel.text = @"/";
   [self.contentView addSubview:expirationSeparatorLabel];
-  [self syncBaselinesForViews:@[
-    expirationSeparatorLabel, self.expirationYearButton
-  ]
-                       onView:self.expirationMonthButton];
-  [self setHorizontalConstraintsForViews:@[
-    self.expirationMonthButton, expirationSeparatorLabel,
-    self.expirationYearButton
-  ]
-                                   guide:grayLine
-                                   shift:-ExpirationMarginWidth];
+  SyncBaselinesForViewsOnView(
+      @[ expirationSeparatorLabel, self.expirationYearButton ],
+      self.expirationMonthButton);
+  HorizontalConstraintsForViewsOnGuideWithShift(
+      @[
+        self.expirationMonthButton, expirationSeparatorLabel,
+        self.expirationYearButton
+      ],
+      grayLine, -ExpirationMarginWidth);
 
-  [self setVerticalSpacingConstraintsForViews:@[
-    self.cardLabel, self.cardNumberButton, self.cardholderButton,
-    self.expirationMonthButton
-  ]
-                                    container:self.contentView];
+  VerticalConstraintsSpacingForViewsInContainer(
+      @[
+        self.cardLabel, self.cardNumberButton, self.cardholderButton,
+        self.expirationMonthButton
+      ],
+      self.contentView);
 
   id<LayoutGuideProvider> safeArea = self.contentView.safeAreaLayoutGuide;
 
@@ -267,117 +232,16 @@ static const CGFloat ExpirationMarginWidth = 16.0;
 }
 
 - (void)userDidTapCardNumber:(UIButton*)sender {
-  if (self.card.record_type() == autofill::CreditCard::MASKED_SERVER_CARD) {
+  NSString* number = self.card.number;
+  if (!number.length) {
     [self.navigationDelegate requestFullCreditCard:self.card];
   } else {
-    [self.contentDelegate
-        userDidPickContent:base::SysUTF16ToNSString(
-                               autofill::CreditCard::StripSeparators(
-                                   self.card.GetRawInfo(
-                                       autofill::CREDIT_CARD_NUMBER)))
-                  isSecure:NO];
+    [self.contentDelegate userDidPickContent:number isSecure:NO];
   }
 }
 
 - (void)userDidTapCardInfo:(UIButton*)sender {
   [self.contentDelegate userDidPickContent:sender.titleLabel.text isSecure:NO];
-}
-
-// Creates a blank button for the given |action|.
-- (UIButton*)createButtonForAction:(SEL)action {
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
-  [button setTitleColor:UIColor.cr_manualFillTintColor
-               forState:UIControlStateNormal];
-  button.translatesAutoresizingMaskIntoConstraints = NO;
-  button.titleLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  button.titleLabel.adjustsFontForContentSizeCategory = YES;
-  [button addTarget:self
-                action:action
-      forControlEvents:UIControlEventTouchUpInside];
-  return button;
-}
-
-// Creates horizontal constraints for given |button| based on given |width| on
-// both sides.
-- (void)setHorizontalMarginConstraintsForButton:(UIButton*)button
-                                          width:(CGFloat)width {
-  [NSLayoutConstraint activateConstraints:@[
-    [button.leadingAnchor
-        constraintEqualToAnchor:button.titleLabel.leadingAnchor
-                       constant:-width],
-    [button.trailingAnchor
-        constraintEqualToAnchor:button.titleLabel.trailingAnchor
-                       constant:width],
-  ]];
-}
-
-// Sets vertical layout for the button or labels rows in |views| inside
-// |container|.
-- (void)setVerticalSpacingConstraintsForViews:(NSArray<UIView*>*)views
-                                    container:(UIView*)container {
-  NSMutableArray* verticalConstraints = [[NSMutableArray alloc] init];
-  // Multipliers of these constraints are calculated based on a 24 base
-  // system spacing.
-  NSLayoutYAxisAnchor* previousAnchor = container.topAnchor;
-  CGFloat multiplier = TopSystemSpacingMultiplier;
-  for (UIView* view in views) {
-    [verticalConstraints
-        addObject:[view.firstBaselineAnchor
-                      constraintEqualToSystemSpacingBelowAnchor:previousAnchor
-                                                     multiplier:multiplier]];
-    multiplier = MiddleSystemSpacingMultiplier;
-    previousAnchor = view.lastBaselineAnchor;
-  }
-  multiplier = BottomSystemSpacingMultiplier;
-  [verticalConstraints
-      addObject:[container.bottomAnchor
-                    constraintEqualToSystemSpacingBelowAnchor:previousAnchor
-                                                   multiplier:multiplier]];
-  [NSLayoutConstraint activateConstraints:verticalConstraints];
-}
-
-// Sets constraints for the given |views|, so at to lay them out horizontally,
-// parallel to the given |guide| view, and applying the given constant |shift|
-// to the whole row.
-- (void)setHorizontalConstraintsForViews:(NSArray<UIView*>*)views
-                                   guide:(UIView*)guide
-                                   shift:(CGFloat)shift {
-  NSMutableArray* horizontalConstraints = [[NSMutableArray alloc] init];
-  NSLayoutXAxisAnchor* previousAnchor = guide.leadingAnchor;
-  for (UIView* view in views) {
-    [horizontalConstraints
-        addObject:[view.leadingAnchor constraintEqualToAnchor:previousAnchor
-                                                     constant:shift]];
-    previousAnchor = view.trailingAnchor;
-    shift = 0;
-  }
-  if (views.count > 0) {
-    [horizontalConstraints
-        addObject:[views.lastObject.trailingAnchor
-                      constraintLessThanOrEqualToAnchor:guide.trailingAnchor
-                                               constant:shift]];
-  }
-  [NSLayoutConstraint activateConstraints:horizontalConstraints];
-}
-
-// Sets all baseline anchors for the gievn |views| to match the one on |onView|.
-- (void)syncBaselinesForViews:(NSArray<UIView*>*)views onView:(UIView*)onView {
-  NSMutableArray* baselinesConstraints = [[NSMutableArray alloc] init];
-  for (UIView* view in views) {
-    [baselinesConstraints
-        addObject:[view.firstBaselineAnchor
-                      constraintEqualToAnchor:onView.firstBaselineAnchor]];
-  }
-  [NSLayoutConstraint activateConstraints:baselinesConstraints];
-}
-
-// Creates a blank label.
-- (UILabel*)createLabel {
-  UILabel* label = [[UILabel alloc] init];
-  label.translatesAutoresizingMaskIntoConstraints = NO;
-  label.adjustsFontForContentSizeCategory = YES;
-  return label;
 }
 
 @end
