@@ -98,41 +98,36 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <TextView
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/chip_init_not_ok"
+            <org.chromium.ui.widget.ButtonCompat
+                android:id="@+id/button_init_not_ok"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minHeight="36dp"
                 android:minWidth="120dp"
                 android:singleLine="true"
                 android:gravity="center"
-                android:textAppearance="@style/TextAppearance.AutofillAssistantButtonHairline"
-                android:background="@drawable/autofill_assistant_button_hairline_bg"
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp"
                 android:paddingTop="9dp"
                 android:paddingBottom="9dp"
-                android:text="@string/no_thanks"/>
+                android:text="@string/no_thanks"
+                style="@style/TextButton" />
 
-            <TextView
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/chip_init_ok"
+            <org.chromium.ui.widget.ButtonCompat
+                android:id="@+id/button_init_ok"
                 android:gravity="center"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:textAppearance="@style/TextAppearance.AutofillAssistantFilledButton"
                 android:minHeight="36dp"
                 android:minWidth="120dp"
                 android:singleLine="true"
-                android:background="@drawable/autofill_assistant_button_filled_bg"
-                android:textColor="@color/modern_grey_50"
                 android:paddingStart="24dp"
                 android:paddingEnd="24dp"
                 android:paddingTop="9dp"
                 android:paddingBottom="9dp"
-                android:text="@string/init_ok"  />
+                android:text="@string/init_ok"
+                style="FilledButton" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

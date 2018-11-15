@@ -755,9 +755,9 @@ class AutofillAssistantUiDelegate {
 
         initView.findViewById(R.id.close_button)
                 .setOnClickListener(unusedView -> onInitClicked(controller, false, initView));
-        initView.findViewById(R.id.chip_init_ok)
+        initView.findViewById(R.id.button_init_ok)
                 .setOnClickListener(unusedView -> onInitClicked(controller, true, initView));
-        initView.findViewById(R.id.chip_init_not_ok)
+        initView.findViewById(R.id.button_init_not_ok)
                 .setOnClickListener(unusedView -> onInitClicked(controller, false, initView));
     }
 
