@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
-#include "third_party/blink/renderer/core/css/css_test_helper.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"

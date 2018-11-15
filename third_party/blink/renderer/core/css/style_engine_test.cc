@@ -12,10 +12,8 @@
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
-#include "third_party/blink/renderer/core/css/property_descriptor.h"
-#include "third_party/blink/renderer/core/css/property_registration.h"
-#include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
@@ -38,6 +36,8 @@
 
 namespace blink {
 
+using namespace css_test_helpers;
+
 class StyleEngineTest : public testing::Test {
  protected:
   void SetUp() override;
@@ -55,10 +55,6 @@ class StyleEngineTest : public testing::Test {
   };
   RuleSetInvalidation ScheduleInvalidationsForRules(TreeScope&,
                                                     const String& css_text);
-  void RegisterProperty(const String& name,
-                        const String& syntax,
-                        const String& initial_value,
-                        bool inherits);
 
   // A wrapper to add a reason for UpdateAllLifecyclePhases
   void UpdateAllLifecyclePhases() {
@@ -89,21 +85,6 @@ StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
   rule_sets.insert(&rule_set);
   GetStyleEngine().ScheduleInvalidationsForRuleSets(tree_scope, rule_sets);
   return kRuleSetInvalidationsScheduled;
-}
-
-void StyleEngineTest::RegisterProperty(const String& name,
-                                       const String& syntax,
-                                       const String& initial_value,
-                                       bool inherits) {
-  DummyExceptionStateForTesting exception_state;
-  PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
-  property_descriptor->setName(name);
-  property_descriptor->setSyntax(syntax);
-  property_descriptor->setInitialValue(initial_value);
-  property_descriptor->setInherits(false);
-  PropertyRegistration::registerProperty(&GetDocument(), property_descriptor,
-                                         exception_state);
-  ASSERT_FALSE(exception_state.HadException());
 }
 
 TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
@@ -1644,7 +1625,7 @@ TEST_F(StyleEngineTest, InitialDataCreation) {
   EXPECT_FALSE(GetStyleEngine().MaybeCreateAndGetInitialData());
 
   // After registering, there should be initial data.
-  RegisterProperty("--x", "<length>", "10px", false);
+  RegisterProperty(GetDocument(), "--x", "<length>", "10px", false);
   auto data1 = GetStyleEngine().MaybeCreateAndGetInitialData();
   EXPECT_TRUE(data1);
 
@@ -1660,7 +1641,7 @@ TEST_F(StyleEngineTest, InitialDataCreation) {
 
   // After registering a new property, initial data should be invalidated,
   // such that the new initial data is different.
-  RegisterProperty("--y", "<color>", "black", false);
+  RegisterProperty(GetDocument(), "--y", "<color>", "black", false);
   EXPECT_NE(data1, GetStyleEngine().MaybeCreateAndGetInitialData());
 }
 

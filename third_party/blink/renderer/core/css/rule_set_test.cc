@@ -30,17 +30,19 @@
 #include "third_party/blink/renderer/core/css/rule_set.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/css/css_test_helper.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
+using namespace css_test_helpers;
+
 namespace {
 
 StyleRule* CreateDummyStyleRule() {
-  CSSTestHelper helper;
-  helper.AddCSSRules("#id { color: tomato; }");
-  const RuleSet& rule_set = helper.GetRuleSet();
+  TestStyleSheet sheet;
+  sheet.AddCSSRules("#id { color: tomato; }");
+  const RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules = rule_set.IdRules("id");
   DCHECK_EQ(1u, rules->size());
   return rules->at(0)->Rule();
@@ -49,10 +51,10 @@ StyleRule* CreateDummyStyleRule() {
 }  // namespace
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_CustomPseudoElements) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules("summary::-webkit-details-marker { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules("summary::-webkit-details-marker { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   AtomicString str("-webkit-details-marker");
   const HeapVector<Member<const RuleData>>* rules =
       rule_set.ShadowPseudoElementRules(str);
@@ -61,10 +63,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_CustomPseudoElements) {
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_Id) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules("#id { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules("#id { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   AtomicString str("id");
   const HeapVector<Member<const RuleData>>* rules = rule_set.IdRules(str);
   ASSERT_EQ(1u, rules->size());
@@ -72,10 +74,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_Id) {
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_NthChild) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules("div:nth-child(2) { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules("div:nth-child(2) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   AtomicString str("div");
   const HeapVector<Member<const RuleData>>* rules = rule_set.TagRules(str);
   ASSERT_EQ(1u, rules->size());
@@ -83,10 +85,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_NthChild) {
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_ClassThenId) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(".class#id { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(".class#id { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   AtomicString str("id");
   // id is prefered over class even if class preceeds it in the selector.
   const HeapVector<Member<const RuleData>>* rules = rule_set.IdRules(str);
@@ -96,10 +98,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_ClassThenId) {
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_IdThenClass) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules("#id.class { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules("#id.class { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   AtomicString str("id");
   const HeapVector<Member<const RuleData>>* rules = rule_set.IdRules(str);
   ASSERT_EQ(1u, rules->size());
@@ -107,10 +109,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_IdThenClass) {
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_AttrThenId) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules("[attr]#id { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules("[attr]#id { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   AtomicString str("id");
   const HeapVector<Member<const RuleData>>* rules = rule_set.IdRules(str);
   ASSERT_EQ(1u, rules->size());
@@ -119,10 +121,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_AttrThenId) {
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_TagThenAttrThenId) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules("div[attr]#id { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules("div[attr]#id { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   AtomicString str("id");
   const HeapVector<Member<const RuleData>>* rules = rule_set.IdRules(str);
   ASSERT_EQ(1u, rules->size());
@@ -131,10 +133,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_TagThenAttrThenId) {
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules("div::content { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules("div::content { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   AtomicString str("div");
   const HeapVector<Member<const RuleData>>* rules = rule_set.TagRules(str);
   ASSERT_EQ(1u, rules->size());
@@ -143,46 +145,46 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_DivWithContent) {
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_Host) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(":host { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(":host { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(1u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostWithId) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(":host(#x) { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(":host(#x) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(1u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostContext) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(":host-context(*) { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(":host-context(*) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(1u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostContextWithId) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(":host-context(#x) { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(":host-context(#x) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(1u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostAndHostContextNotInRightmost) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(":host-context(#x) .y, :host(.a) > #b  { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(":host-context(#x) .y, :host(.a) > #b  { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* shadow_rules =
       rule_set.ShadowHostRules();
   const HeapVector<Member<const RuleData>>* id_rules = rule_set.IdRules("b");
@@ -194,74 +196,74 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_HostAndHostContextNotInRightmost) {
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostAndClass) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(".foo:host { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(".foo:host { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(0u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_HostContextAndClass) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(".foo:host-context(*) { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(".foo:host-context(*) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules = rule_set.ShadowHostRules();
   ASSERT_EQ(0u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_Focus) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(":focus { }");
-  helper.AddCSSRules("[attr]:focus { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(":focus { }");
+  sheet.AddCSSRules("[attr]:focus { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules =
       rule_set.FocusPseudoClassRules();
   ASSERT_EQ(2u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_LinkVisited) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(":link { }");
-  helper.AddCSSRules("[attr]:link { }");
-  helper.AddCSSRules(":visited { }");
-  helper.AddCSSRules("[attr]:visited { }");
-  helper.AddCSSRules(":-webkit-any-link { }");
-  helper.AddCSSRules("[attr]:-webkit-any-link { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(":link { }");
+  sheet.AddCSSRules("[attr]:link { }");
+  sheet.AddCSSRules(":visited { }");
+  sheet.AddCSSRules("[attr]:visited { }");
+  sheet.AddCSSRules(":-webkit-any-link { }");
+  sheet.AddCSSRules("[attr]:-webkit-any-link { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules =
       rule_set.LinkPseudoClassRules();
   ASSERT_EQ(6u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_Cue) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules("::cue(b) { }");
-  helper.AddCSSRules("video::cue(u) { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules("::cue(b) { }");
+  sheet.AddCSSRules("video::cue(u) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules = rule_set.CuePseudoRules();
   ASSERT_EQ(2u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_PlaceholderPseudo) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules("::placeholder { }");
-  helper.AddCSSRules("input::placeholder { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules("::placeholder { }");
+  sheet.AddCSSRules("input::placeholder { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   auto* rules = rule_set.ShadowPseudoElementRules("-webkit-input-placeholder");
   ASSERT_EQ(2u, rules->size());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoMatches) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(".a :matches(.b+.c, .d>:matches(.e, .f)) { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(".a :matches(.b+.c, .d>:matches(.e, .f)) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   {
     AtomicString str("c");
     const HeapVector<Member<const RuleData>>* rules = rule_set.ClassRules(str);
@@ -283,10 +285,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoMatches) {
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoWhere) {
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(".a :where(.b+.c, .d>:where(.e, .f)) { }");
-  RuleSet& rule_set = helper.GetRuleSet();
+  sheet.AddCSSRules(".a :where(.b+.c, .d>:where(.e, .f)) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
   {
     AtomicString str("c");
     const HeapVector<Member<const RuleData>>* rules = rule_set.ClassRules(str);
@@ -310,9 +312,9 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoWhere) {
 TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoMatchesTooLarge) {
   // RuleData cannot support selectors at index 8192 or beyond so the expansion
   // is limited to this size
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(
+  sheet.AddCSSRules(
       ":matches(.a#a, .b#b, .c#c, .d#d) + "
       ":matches(.e#e, .f#f, .g#g, .h#h) + "
       ":matches(.i#i, .j#j, .k#k, .l#l) + "
@@ -321,22 +323,22 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoMatchesTooLarge) {
       ":matches(.u#u, .v#v, .w#w, .x#x) { }",
       true);
 
-  RuleSet& rule_set = helper.GetRuleSet();
+  RuleSet& rule_set = sheet.GetRuleSet();
   ASSERT_EQ(0u, rule_set.RuleCount());
 }
 
 TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoWhereTooLarge) {
   // RuleData cannot support selectors at index 8192 or beyond so the expansion
   // is limited to this size
-  CSSTestHelper helper;
+  TestStyleSheet sheet;
 
-  helper.AddCSSRules(
+  sheet.AddCSSRules(
       ":where(.a#a, .b#b, .c#c, .d#d) + :where(.e#e, .f#f, .g#g, .h#h) + "
       ":where(.i#i, .j#j, .k#k, .l#l) + :where(.m#m, .n#n, .o#o, .p#p) + "
       ":where(.q#q, .r#r, .s#s, .t#t) + :where(.u#u, .v#v, .w#w, .x#x) { }",
       true);
 
-  RuleSet& rule_set = helper.GetRuleSet();
+  RuleSet& rule_set = sheet.GetRuleSet();
   ASSERT_EQ(0u, rule_set.RuleCount());
 }
 
@@ -358,9 +360,9 @@ TEST(RuleSetTest, SelectorIndexLimit) {
 
   builder.Append("b,span {}");
 
-  CSSTestHelper helper;
-  helper.AddCSSRules(builder.ToString().Ascii().data());
-  const RuleSet& rule_set = helper.GetRuleSet();
+  TestStyleSheet sheet;
+  sheet.AddCSSRules(builder.ToString().Ascii().data());
+  const RuleSet& rule_set = sheet.GetRuleSet();
   const HeapVector<Member<const RuleData>>* rules = rule_set.TagRules("b");
   ASSERT_EQ(1u, rules->size());
   EXPECT_EQ("b", rules->at(0)->Selector().TagQName().LocalName());
