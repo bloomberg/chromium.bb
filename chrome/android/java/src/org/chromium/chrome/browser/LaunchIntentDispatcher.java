@@ -422,8 +422,15 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         maybePrefetchDnsInBackground();
 
         Intent newIntent = new Intent(mIntent);
-        Class<?> tabbedActivityClass =
-                MultiWindowUtils.getInstance().getTabbedActivityForIntent(newIntent, mActivity);
+        Class<?> tabbedActivityClass = null;
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.NO_TOUCH_MODE)) {
+            // When in No Touch Mode we don't support tabs, and replace the TabbedActivity with the
+            // NoTouchActivity.
+            tabbedActivityClass = NoTouchActivity.class;
+        } else {
+            tabbedActivityClass =
+                    MultiWindowUtils.getInstance().getTabbedActivityForIntent(newIntent, mActivity);
+        }
         newIntent.setClassName(
                 mActivity.getApplicationContext().getPackageName(), tabbedActivityClass.getName());
         newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);

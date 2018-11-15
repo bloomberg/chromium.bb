@@ -554,6 +554,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 ControlContainer controlContainer =
                         (ControlContainer) findViewById(R.id.control_container);
 
+                if (controlContainer == null) {
+                    // omnibox_results_container_stub anchors off of control_container, and will
+                    // crash during layout if control_container doesn't exist.
+                    UiUtils.removeViewFromParent(findViewById(R.id.omnibox_results_container_stub));
+                }
+
                 // Inflate the correct toolbar layout for the device.
                 int toolbarLayoutId = getToolbarLayoutId();
                 if (toolbarLayoutId != NO_TOOLBAR_LAYOUT && controlContainer != null) {

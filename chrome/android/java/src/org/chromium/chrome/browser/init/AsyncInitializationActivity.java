@@ -277,10 +277,9 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         @LaunchIntentDispatcher.Action
         int dispatchAction = maybeDispatchLaunchIntent(getIntent());
         if (dispatchAction != LaunchIntentDispatcher.Action.CONTINUE) {
-            abortLaunch();
+            abortLaunch(dispatchAction);
             return;
         }
-
         if (DocumentModeAssassin.getInstance().isMigrationNecessary()) {
             // Some Samsung devices load fonts from disk, crbug.com/691706.
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
@@ -297,14 +296,14 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
 
         Intent intent = getIntent();
         if (!isStartedUpCorrectly(intent)) {
-            abortLaunch();
+            abortLaunch(LaunchIntentDispatcher.Action.FINISH_ACTIVITY_REMOVE_TASK);
             return;
         }
 
         if (requiresFirstRunToBeCompleted(intent)
                 && FirstRunFlowSequencer.launch(this, intent, false /* requiresBroadcast */,
                            shouldPreferLightweightFre(intent))) {
-            abortLaunch();
+            abortLaunch(LaunchIntentDispatcher.Action.FINISH_ACTIVITY_REMOVE_TASK);
             return;
         }
 
@@ -332,22 +331,28 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      */
     protected void initializeStartupMetrics() {}
 
-    private void abortLaunch() {
+    private void abortLaunch(@LaunchIntentDispatcher.Action int dispatchAction) {
         super.onCreate(null);
-        ApiCompatibilityUtils.finishAndRemoveTask(this);
-        overridePendingTransition(0, R.anim.no_anim);
+        if (dispatchAction == LaunchIntentDispatcher.Action.FINISH_ACTIVITY) {
+            finish();
+            return;
+        } else {
+            assert dispatchAction == LaunchIntentDispatcher.Action.FINISH_ACTIVITY_REMOVE_TASK;
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
 
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP
-                || Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1) {
-            // On L ApiCompatibilityUtils.finishAndRemoveTask() sometimes fails, which causes
-            // NPE in onStart() later, see crbug.com/781396. We can't let this activity to
-            // start, and we don't want to crash either. So try finishing one more time and
-            // suicide if that fails.
-            if (!isFinishing()) {
-                finish();
-                if (!isFinishing()) Process.killProcess(Process.myPid());
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP
+                    || Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1) {
+                // On L ApiCompatibilityUtils.finishAndRemoveTask() sometimes fails, which causes
+                // NPE in onStart() later, see crbug.com/781396. We can't let this activity to
+                // start, and we don't want to crash either. So try finishing one more time and
+                // suicide if that fails.
+                if (!isFinishing()) {
+                    finish();
+                    if (!isFinishing()) Process.killProcess(Process.myPid());
+                }
             }
         }
+        overridePendingTransition(0, R.anim.no_anim);
     }
 
     /**
