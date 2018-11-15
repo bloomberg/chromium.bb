@@ -2966,7 +2966,7 @@ void RasterDecoderImpl::DeletePaintCacheTextBlobsINTERNALHelper(
     return;
   }
 
-  paint_cache_->Purge(cc::PaintDataType::kTextBlob, n, paint_cache_ids);
+  paint_cache_->Purge(cc::PaintCacheDataType::kTextBlob, n, paint_cache_ids);
 }
 
 void RasterDecoderImpl::DeletePaintCachePathsINTERNALHelper(
@@ -2979,7 +2979,7 @@ void RasterDecoderImpl::DeletePaintCachePathsINTERNALHelper(
     return;
   }
 
-  paint_cache_->Purge(cc::PaintDataType::kPath, n, paint_cache_ids);
+  paint_cache_->Purge(cc::PaintCacheDataType::kPath, n, paint_cache_ids);
 }
 
 void RasterDecoderImpl::DoClearPaintCacheINTERNAL() {

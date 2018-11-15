@@ -170,7 +170,7 @@ void PaintOpWriter::Write(const SkPath& path) {
   if (!valid_)
     return;
 
-  if (options_.paint_cache->Get(PaintDataType::kPath, id))
+  if (options_.paint_cache->Get(PaintCacheDataType::kPath, id))
     return;
   uint64_t bytes_required = path.writeToMemory(nullptr);
   if (bytes_required > remaining_bytes_) {
@@ -180,7 +180,7 @@ void PaintOpWriter::Write(const SkPath& path) {
 
   size_t bytes_written = path.writeToMemory(memory_);
   DCHECK_EQ(bytes_written, bytes_required);
-  options_.paint_cache->Put(PaintDataType::kPath, id, bytes_written);
+  options_.paint_cache->Put(PaintCacheDataType::kPath, id, bytes_written);
   *bytes_to_skip = bytes_written;
   memory_ += bytes_written;
   remaining_bytes_ -= bytes_written;
@@ -311,7 +311,7 @@ void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
   if (!valid_)
     return;
 
-  if (options_.paint_cache->Get(PaintDataType::kTextBlob, blob_id))
+  if (options_.paint_cache->Get(PaintCacheDataType::kTextBlob, blob_id))
     return;
 
   auto encodeTypeface = [](SkTypeface* tf, void* ctx) -> sk_sp<SkData> {
@@ -329,7 +329,8 @@ void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
     return;
   }
 
-  options_.paint_cache->Put(PaintDataType::kTextBlob, blob_id, bytes_written);
+  options_.paint_cache->Put(PaintCacheDataType::kTextBlob, blob_id,
+                            bytes_written);
   *size_memory = bytes_written;
   memory_ += bytes_written;
   remaining_bytes_ -= bytes_written;

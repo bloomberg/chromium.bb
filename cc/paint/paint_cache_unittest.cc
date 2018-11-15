@@ -33,7 +33,9 @@ SkPath CreatePath() {
 
 class PaintCacheTest : public ::testing::TestWithParam<uint32_t> {
  public:
-  PaintDataType GetType() { return static_cast<PaintDataType>(GetParam()); }
+  PaintCacheDataType GetType() {
+    return static_cast<PaintCacheDataType>(GetParam());
+  }
 };
 
 TEST_P(PaintCacheTest, ClientBasic) {
@@ -65,7 +67,7 @@ TEST_P(PaintCacheTest, ClientPurgeAll) {
 TEST_P(PaintCacheTest, ServiceBasic) {
   ServicePaintCache service_cache;
   switch (GetType()) {
-    case PaintDataType::kTextBlob: {
+    case PaintCacheDataType::kTextBlob: {
       auto blob = CreateBlob();
       auto id = blob->uniqueID();
       EXPECT_EQ(nullptr, service_cache.GetTextBlob(id));
@@ -76,7 +78,7 @@ TEST_P(PaintCacheTest, ServiceBasic) {
 
       service_cache.PutTextBlob(id, blob);
     } break;
-    case PaintDataType::kPath: {
+    case PaintCacheDataType::kPath: {
       auto path = CreatePath();
       auto id = path.getGenerationID();
       EXPECT_EQ(nullptr, service_cache.GetPath(id));
@@ -98,7 +100,7 @@ INSTANTIATE_TEST_CASE_P(
     P,
     PaintCacheTest,
     ::testing::Range(static_cast<uint32_t>(0),
-                     static_cast<uint32_t>(PaintDataType::kLast)));
+                     static_cast<uint32_t>(PaintCacheDataType::kLast)));
 
 }  // namespace
 }  // namespace cc
