@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -67,6 +68,15 @@ void ImmersiveGestureDragHandler::OnGestureEvent(ui::GestureEvent* event) {
     DCHECK(tablet_mode_app_window_drag_controller_);
     if (tablet_mode_app_window_drag_controller_->DragWindowFromTop(event))
       event->SetHandled();
+  } else if (tablet_mode_app_window_drag_controller_ &&
+             tablet_mode_app_window_drag_controller_->drag_delegate()
+                 ->dragged_window()) {
+    // Set the event as handled during app window drag if CanDrag(event) is
+    // false. Then the gesture events that triggered outside of the dragged
+    // window will not be proceeded to break the drag. Note, browser window
+    // doesn't use TabletModeWindowAppWindowDragController but WindowResizer to
+    // do window drag. It has its own logic to deal with the case.
+    event->SetHandled();
   }
 }
 

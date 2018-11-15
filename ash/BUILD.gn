@@ -1826,6 +1826,7 @@ test("ash_unittests") {
     "wm/fullscreen_window_finder_unittest.cc",
     "wm/gestures/overview_gesture_handler_unittest.cc",
     "wm/immersive_fullscreen_controller_unittest.cc",
+    "wm/immersive_gesture_drag_handler_unittest.cc",
     "wm/lock_action_handler_layout_manager_unittest.cc",
     "wm/lock_layout_manager_unittest.cc",
     "wm/lock_state_controller_unittest.cc",
