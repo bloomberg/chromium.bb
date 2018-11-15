@@ -48,7 +48,7 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(
   } else {
     // Only one possible task type exists currently: "script".
     TaskAttributionTiming* attribution_entry =
-        TaskAttributionTiming::Create("script", "iframe", culprit_frame_src,
+        TaskAttributionTiming::Create("unknown", "iframe", culprit_frame_src,
                                       culprit_frame_id, culprit_frame_name);
     attribution_.push_back(*attribution_entry);
   }
