@@ -999,6 +999,7 @@ PeopleHandler::GetSyncStatusDictionary() {
                                     &link_label,
                                     &action_type) == sync_ui_util::SYNC_ERROR;
   sync_status->SetString("statusText", status_label);
+  sync_status->SetString("statusActionText", link_label);
   sync_status->SetBoolean("hasError", status_has_error);
   sync_status->SetString("statusAction", GetSyncErrorAction(action_type));
 

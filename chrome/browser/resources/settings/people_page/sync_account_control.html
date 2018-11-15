@@ -201,12 +201,11 @@
             disabled="[[syncStatus.setupInProgress]]">
           $i18n{turnOffSync}
         </paper-button>
-        <paper-button id="sync-paused-button" class="action-button"
-            hidden="[[!shouldShowSigninAgainButton_(
-                syncStatus.signedIn, syncStatus.hasError,
-                syncStatus.statusAction)]]"
-            on-click="onSigninTap_" disabled="[[syncStatus.setupInProgress]]">
-          $i18n{signInAgain}
+        <paper-button id="sync-error-button" class="action-button"
+            hidden="[[!shouldShowErrorActionButton_(syncStatus)]]"
+            on-click="onErrorButtonTap_"
+            disabled="[[syncStatus.setupInProgress]]">
+          [[syncStatus.statusActionText]]
         </paper-button>
       </div>
       <template is="dom-if" if="[[!syncStatus.signedIn]]" restamp>

@@ -30,6 +30,7 @@ settings.StoredAccount;
  *            signedInUsername: (string|undefined),
  *            signinAllowed: (boolean|undefined),
  *            statusAction: (!settings.StatusAction),
+ *            statusActionText: (string|undefined),
  *            statusText: (string|undefined),
  *            supervisedUser: (boolean|undefined),
  *            syncSystemEnabled: (boolean|undefined)}}

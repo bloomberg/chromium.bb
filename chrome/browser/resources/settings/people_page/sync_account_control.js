@@ -258,10 +258,16 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowSigninAgainButton_: function() {
+  shouldShowErrorActionButton_: function() {
+    if (this.embeddedInSubpage &&
+        this.syncStatus.statusAction ==
+            settings.StatusAction.ENTER_PASSPHRASE) {
+      // In a subpage the passphrase button is not required.
+      return false;
+    }
     return !this.hideButtons && !!this.syncStatus.signedIn &&
         !!this.syncStatus.hasError &&
-        this.syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE;
+        this.syncStatus.statusAction != settings.StatusAction.NO_ACTION;
   },
 
   /**
@@ -284,9 +290,34 @@ Polymer({
   },
 
   /** @private */
+  onErrorButtonTap_: function() {
+    switch (this.syncStatus.statusAction) {
+      case settings.StatusAction.REAUTHENTICATE:
+        this.syncBrowserProxy_.startSignIn();
+        break;
+      case settings.StatusAction.SIGNOUT_AND_SIGNIN:
+        if (this.syncStatus.domain)
+          settings.navigateTo(settings.routes.SIGN_OUT);
+        else {
+          // Silently sign the user out without deleting their profile and
+          // prompt them to sign back in.
+          this.syncBrowserProxy_.signOut(false);
+          this.syncBrowserProxy_.startSignIn();
+        }
+        break;
+      case settings.StatusAction.UPGRADE_CLIENT:
+        settings.navigateTo(settings.routes.ABOUT);
+        break;
+      case settings.StatusAction.ENTER_PASSPHRASE:
+      case settings.StatusAction.CONFIRM_SYNC_SETTINGS:
+      default:
+        settings.navigateTo(settings.routes.SYNC);
+    }
+  },
+
+  /** @private */
   onSigninTap_: function() {
     this.syncBrowserProxy_.startSignIn();
-
     // Need to close here since one menu item also triggers this function.
     if (this.$$('#menu')) {
       /** @type {!CrActionMenuElement} */ (this.$$('#menu')).close();

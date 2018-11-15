@@ -364,13 +364,13 @@ Polymer({
   onSyncTap_: function() {
     // When unified-consent is enabled, users can go to sync subpage regardless
     // of sync status.
-    // TODO(scottchen): figure out how to deal with sync error states in the
-    //    subpage (https://crbug.com/824546).
     if (this.unifiedConsentEnabled_) {
       settings.navigateTo(settings.routes.SYNC);
       return;
     }
 
+    // TODO(crbug.com/862983): Remove this code once UnifiedConsent is rolled
+    // out to 100%.
     assert(this.syncStatus.signedIn);
     assert(this.syncStatus.syncSystemEnabled);
 
