@@ -1209,8 +1209,11 @@ TEST_F(OopPixelTest, ClearingTransparentInternalTile) {
   options.preclear = true;
   options.preclear_color = SK_ColorRED;
 
-  // Make a non-empty but noop display list to avoid early outs.
-  auto display_item_list = MakeNoopDisplayItemList();
+  // Note that clearing of the tile should supersede any early outs due to an
+  // empty display list. This is due to the fact that partial raster may in fact
+  // result in no items being generated, in which case a clear should still
+  // happen. See crbug.com/901897.
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
 
   auto oop_result = Raster(display_item_list, options);
   auto gpu_result = RasterExpectedBitmap(display_item_list, options);

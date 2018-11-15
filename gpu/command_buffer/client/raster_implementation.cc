@@ -1263,7 +1263,11 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   gfx::Rect query_rect =
       gfx::ScaleToEnclosingRect(playback_rect, 1.f / post_scale);
   list->rtree_.Search(query_rect, &temp_raster_offsets_);
-  if (temp_raster_offsets_.empty())
+  // We can early out if we have nothing to draw and we don't need a clear. Note
+  // that if there is nothing to draw, but a clear is required, then those
+  // commands would be serialized in the preamble and it's important to play
+  // those back.
+  if (temp_raster_offsets_.empty() && !requires_clear)
     return;
 
   // TODO(enne): Tune these numbers
