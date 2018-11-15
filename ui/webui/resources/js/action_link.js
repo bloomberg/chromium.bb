@@ -27,90 +27,78 @@
 //
 // NOTE: <action-link> and document.createElement('action-link') don't work.
 
-/**
- * See crbug.com/837381
- * @suppress {deprecated}
- *
- * @constructor
- * @extends {HTMLAnchorElement}
- */
-var ActionLink = document.registerElement('action-link', {
-  prototype: {
-    __proto__: HTMLAnchorElement.prototype,
+class ActionLink extends HTMLAnchorElement {
+  connectedCallback() {
+    // Action links can start disabled (e.g. <a is="action-link" disabled>).
+    this.tabIndex = this.disabled ? -1 : 0;
 
-    /** @this {ActionLink} */
-    createdCallback: function() {
-      // Action links can start disabled (e.g. <a is="action-link" disabled>).
-      this.tabIndex = this.disabled ? -1 : 0;
+    if (!this.hasAttribute('role'))
+      this.setAttribute('role', 'link');
 
-      if (!this.hasAttribute('role'))
-        this.setAttribute('role', 'link');
-
-      this.addEventListener('keydown', function(e) {
-        if (!this.disabled && e.key == 'Enter' && !this.href) {
-          // Schedule a click asynchronously because other 'keydown' handlers
-          // may still run later (e.g. document.addEventListener('keydown')).
-          // Specifically options dialogs break when this timeout isn't here.
-          // NOTE: this affects the "trusted" state of the ensuing click. I
-          // haven't found anything that breaks because of this (yet).
-          window.setTimeout(this.click.bind(this), 0);
-        }
-      });
-
-      function preventDefault(e) {
-        e.preventDefault();
+    this.addEventListener('keydown', function(e) {
+      if (!this.disabled && e.key == 'Enter' && !this.href) {
+        // Schedule a click asynchronously because other 'keydown' handlers
+        // may still run later (e.g. document.addEventListener('keydown')).
+        // Specifically options dialogs break when this timeout isn't here.
+        // NOTE: this affects the "trusted" state of the ensuing click. I
+        // haven't found anything that breaks because of this (yet).
+        window.setTimeout(this.click.bind(this), 0);
       }
+    });
 
-      function removePreventDefault() {
-        document.removeEventListener('selectstart', preventDefault);
-        document.removeEventListener('mouseup', removePreventDefault);
-      }
+    function preventDefault(e) {
+      e.preventDefault();
+    }
 
-      this.addEventListener('mousedown', function() {
-        // This handlers strives to match the behavior of <a href="...">.
+    function removePreventDefault() {
+      document.removeEventListener('selectstart', preventDefault);
+      document.removeEventListener('mouseup', removePreventDefault);
+    }
 
-        // While the mouse is down, prevent text selection from dragging.
-        document.addEventListener('selectstart', preventDefault);
-        document.addEventListener('mouseup', removePreventDefault);
+    this.addEventListener('mousedown', function() {
+      // This handlers strives to match the behavior of <a href="...">.
 
-        // If focus started via mouse press, don't show an outline.
-        if (document.activeElement != this)
-          this.classList.add('no-outline');
-      });
+      // While the mouse is down, prevent text selection from dragging.
+      document.addEventListener('selectstart', preventDefault);
+      document.addEventListener('mouseup', removePreventDefault);
 
-      this.addEventListener('blur', function() {
-        this.classList.remove('no-outline');
-      });
-    },
+      // If focus started via mouse press, don't show an outline.
+      if (document.activeElement != this)
+        this.classList.add('no-outline');
+    });
 
-    /** @type {boolean} */
-    set disabled(disabled) {
-      if (disabled)
-        HTMLAnchorElement.prototype.setAttribute.call(this, 'disabled', '');
-      else
-        HTMLAnchorElement.prototype.removeAttribute.call(this, 'disabled');
-      this.tabIndex = disabled ? -1 : 0;
-    },
-    get disabled() {
-      return this.hasAttribute('disabled');
-    },
+    this.addEventListener('blur', function() {
+      this.classList.remove('no-outline');
+    });
+  }
 
-    /** @override */
-    setAttribute: function(attr, val) {
-      if (attr.toLowerCase() == 'disabled')
-        this.disabled = true;
-      else
-        HTMLAnchorElement.prototype.setAttribute.apply(this, arguments);
-    },
+  /** @param {boolean} disabled */
+  set disabled(disabled) {
+    if (disabled)
+      HTMLAnchorElement.prototype.setAttribute.call(this, 'disabled', '');
+    else
+      HTMLAnchorElement.prototype.removeAttribute.call(this, 'disabled');
+    this.tabIndex = disabled ? -1 : 0;
+  }
 
-    /** @override */
-    removeAttribute: function(attr) {
-      if (attr.toLowerCase() == 'disabled')
-        this.disabled = false;
-      else
-        HTMLAnchorElement.prototype.removeAttribute.apply(this, arguments);
-    },
-  },
+  get disabled() {
+    return this.hasAttribute('disabled');
+  }
 
-  extends: 'a',
-});
+  /** @override */
+  setAttribute(attr, val) {
+    if (attr.toLowerCase() == 'disabled')
+      this.disabled = true;
+    else
+      HTMLAnchorElement.prototype.setAttribute.apply(this, arguments);
+  }
+
+  /** @override */
+  removeAttribute(attr) {
+    if (attr.toLowerCase() == 'disabled')
+      this.disabled = false;
+    else
+      HTMLAnchorElement.prototype.removeAttribute.apply(this, arguments);
+  }
+}
+customElements.define('action-link', ActionLink, {extends: 'a'});
