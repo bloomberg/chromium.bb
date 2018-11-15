@@ -3452,7 +3452,7 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
   }
 
   IndicatorState GetIndicatorState() {
-    return controller_->drag_delegate_for_testing()
+    return controller_->drag_delegate()
         ->split_view_drag_indicators_for_testing()
         ->current_indicator_state();
   }
