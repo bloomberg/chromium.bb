@@ -492,4 +492,37 @@ TEST_F(ExploreSitesServiceImplTest, UnparseableCatalogHistograms) {
                                   ExploreSitesCatalogError::kParseFailure, 1);
 }
 
+TEST_F(ExploreSitesServiceImplTest, BlacklistNonCanonicalUrls) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chrome::android::kExploreSites);
+
+  service()->UpdateCatalogFromNetwork(
+      false /*is_immediate_fetch*/, kAcceptLanguages,
+      base::BindOnce(&ExploreSitesServiceImplTest::UpdateCatalogDoneCallback,
+                     base::Unretained(this)));
+  // Simulate fetching using the test loader factory and test data.
+  SimulateFetcherData(test_data());
+
+  // Wait for callback to get called.
+  PumpLoop();
+  ASSERT_TRUE(success());
+  ASSERT_EQ(1, callback_count());
+  service()->GetCatalog(base::BindOnce(
+      &ExploreSitesServiceImplTest::CatalogCallback, base::Unretained(this)));
+  PumpLoop();
+  ValidateTestCatalog();
+
+  // This will fail if canonicalization does not work correctly because
+  // kSite1Url is the canonicalized version of the URL inserted in to the
+  // database.
+  service()->BlacklistSite(kSite1Url);
+  PumpLoop();
+
+  service()->GetCatalog(base::BindOnce(
+      &ExploreSitesServiceImplTest::CatalogCallback, base::Unretained(this)));
+  PumpLoop();
+
+  EXPECT_EQ(1U, database_categories()->at(0).sites.size());
+}
+
 }  // namespace explore_sites
