@@ -11,6 +11,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/local_card_migration_dialog_controller.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
@@ -22,6 +23,7 @@ class LocalCardMigrationDialog;
 // dialog that the migration dialog interrupted.
 class LocalCardMigrationDialogControllerImpl
     : public LocalCardMigrationDialogController,
+      public content::WebContentsObserver,
       public content::WebContentsUserData<
           LocalCardMigrationDialogControllerImpl> {
  public:
@@ -29,17 +31,19 @@ class LocalCardMigrationDialogControllerImpl
 
   void ShowOfferDialog(
       std::unique_ptr<base::DictionaryValue> legal_message,
-      LocalCardMigrationDialog* local_card_migration_dialog,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       AutofillClient::LocalCardMigrationCallback
           start_migrating_cards_callback);
 
-  // When migration is finished, show a feedback dialog containing
-  // all the upload results for cards that the user selected to upload.
-  void ShowFeedbackDialog(
+  // When migration is finished, show a credit card icon in the omnibox.
+  void ShowCreditCardIcon(
       const base::string16& tip_message,
-      LocalCardMigrationDialog* local_card_migration_dialog,
       const std::vector<MigratableCreditCard>& migratable_credit_cards);
+
+  // If the user clicks on the credit card icon in the omnibox, we show
+  // the feedback dialog containing the uploading results of the cards that
+  // the user selected to upload.
+  void ShowFeedbackDialog();
 
   // LocalCardMigrationDialogController:
   LocalCardMigrationDialogState GetViewState() const override;
@@ -53,6 +57,9 @@ class LocalCardMigrationDialogControllerImpl
   void OnLegalMessageLinkClicked(const GURL& url) override;
   void OnDialogClosed() override;
 
+  // Returns nullptr if no dialog is currently shown.
+  LocalCardMigrationDialog* local_card_migration_dialog_view() const;
+
  protected:
   explicit LocalCardMigrationDialogControllerImpl(
       content::WebContents* web_contents);
@@ -63,9 +70,9 @@ class LocalCardMigrationDialogControllerImpl
 
   void OpenUrl(const GURL& url);
 
-  content::WebContents* web_contents_;
+  void UpdateIcon();
 
-  LocalCardMigrationDialog* local_card_migration_dialog_;
+  LocalCardMigrationDialog* local_card_migration_dialog_ = nullptr;
 
   PrefService* pref_service_;
 

@@ -30,7 +30,7 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/accelerator_utils.h"
-#include "chrome/browser/ui/autofill/local_card_migration_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
@@ -876,10 +876,10 @@ void SaveCreditCard(Browser* browser) {
 void MigrateLocalCards(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  autofill::LocalCardMigrationBubbleControllerImpl* controller =
-      autofill::LocalCardMigrationBubbleControllerImpl::FromWebContents(
-          web_contents);
-  controller->ReshowBubble();
+  autofill::ManageMigrationUiController* controller =
+      autofill::ManageMigrationUiController::FromWebContents(web_contents);
+  // Show migration-related Ui when the user clicks the credit card icon.
+  controller->OnUserClickingCreditCardIcon();
 }
 
 void Translate(Browser* browser) {

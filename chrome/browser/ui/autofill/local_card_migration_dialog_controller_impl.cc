@@ -14,8 +14,12 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog.h"
+#include "chrome/browser/ui/autofill/local_card_migration_dialog_factory.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
@@ -30,8 +34,7 @@ namespace autofill {
 
 LocalCardMigrationDialogControllerImpl::LocalCardMigrationDialogControllerImpl(
     content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      local_card_migration_dialog_(nullptr),
+    : content::WebContentsObserver(web_contents),
       pref_service_(
           user_prefs::UserPrefs::Get(web_contents->GetBrowserContext())) {}
 
@@ -43,7 +46,6 @@ LocalCardMigrationDialogControllerImpl::
 
 void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
     std::unique_ptr<base::DictionaryValue> legal_message,
-    LocalCardMigrationDialog* local_card_migration_dialog,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     AutofillClient::LocalCardMigrationCallback start_migrating_cards_callback) {
   if (local_card_migration_dialog_)
@@ -57,10 +59,13 @@ void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
     return;
   }
 
-  local_card_migration_dialog_ = local_card_migration_dialog;
+  local_card_migration_dialog_ =
+      CreateLocalCardMigrationDialogView(this, web_contents());
   start_migrating_cards_callback_ = std::move(start_migrating_cards_callback);
   migratable_credit_cards_ = migratable_credit_cards;
   view_state_ = LocalCardMigrationDialogState::kOffered;
+  // If the credit card icon is being shown, remove the icon.
+  UpdateIcon();
   local_card_migration_dialog_->ShowDialog();
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 
@@ -68,16 +73,14 @@ void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_SHOWN);
 }
 
-void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog(
+void LocalCardMigrationDialogControllerImpl::ShowCreditCardIcon(
     const base::string16& tip_message,
-    LocalCardMigrationDialog* local_card_migration_dialog,
     const std::vector<MigratableCreditCard>& migratable_credit_cards) {
   if (local_card_migration_dialog_)
     local_card_migration_dialog_->CloseDialog();
 
   migratable_credit_cards_ = migratable_credit_cards;
   tip_message_ = tip_message;
-  local_card_migration_dialog_ = local_card_migration_dialog;
 
   view_state_ = LocalCardMigrationDialogState::kFinished;
   for (const auto& cc : migratable_credit_cards) {
@@ -87,7 +90,13 @@ void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog(
       break;
     }
   }
+  UpdateIcon();
+}
 
+void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog() {
+  local_card_migration_dialog_ =
+      CreateLocalCardMigrationDialogView(this, web_contents());
+  UpdateIcon();
   local_card_migration_dialog_->ShowDialog();
 }
 
@@ -153,10 +162,24 @@ void LocalCardMigrationDialogControllerImpl::OnDialogClosed() {
     local_card_migration_dialog_ = nullptr;
 }
 
+LocalCardMigrationDialog*
+LocalCardMigrationDialogControllerImpl::local_card_migration_dialog_view()
+    const {
+  return local_card_migration_dialog_;
+}
+
 void LocalCardMigrationDialogControllerImpl::OpenUrl(const GURL& url) {
-  web_contents_->OpenURL(content::OpenURLParams(
+  web_contents()->OpenURL(content::OpenURLParams(
       url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK, false));
+}
+
+void LocalCardMigrationDialogControllerImpl::UpdateIcon() {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  DCHECK(browser);
+  LocationBar* location_bar = browser->window()->GetLocationBar();
+  DCHECK(location_bar);
+  location_bar->UpdateLocalCardMigrationIcon();
 }
 
 }  // namespace autofill

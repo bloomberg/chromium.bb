@@ -22,8 +22,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 #if !defined(OS_ANDROID)
-#include "components/autofill/core/browser/ui/local_card_migration_bubble_controller.h"
-#include "components/autofill/core/browser/ui/local_card_migration_dialog_controller.h"
+#include "chrome/browser/ui/autofill/manage_migration_ui_controller.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "components/zoom/zoom_observer.h"
 #endif  // !defined(OS_ANDROID)
