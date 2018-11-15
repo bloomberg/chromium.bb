@@ -2,14 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("///build/config/sanitizers/sanitizers.gni")
+
 # Engine should be compiled without coverage (infinite loop in trace_cmp).
 fuzzing_engine_remove_configs = [
   "//build/config/coverage:default_coverage",
   "//build/config/sanitizers:default_sanitizer_flags",
 ]
 
-fuzzing_engine_add_configs =
-    [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
+fuzzing_engine_add_configs = []
+
+if (is_msan) {
+  fuzzing_engine_add_configs +=
+      [ "//build/config/sanitizers:default_sanitizer_flags_but_coverage" ]
+}
 
 source_set("libfuzzer") {
   sources = [
@@ -41,11 +47,7 @@ source_set("libfuzzer") {
   ]
 
   configs -= fuzzing_engine_remove_configs
-  if (!is_win) {
-    # TODO(crbug.com/883948): Remove the check for is_win when libFuzzer on
-    # Windows handles the nosanitize attribute properly.
-    configs += fuzzing_engine_add_configs
-  }
+  configs += fuzzing_engine_add_configs
 }
 
 source_set("afl_driver") {
