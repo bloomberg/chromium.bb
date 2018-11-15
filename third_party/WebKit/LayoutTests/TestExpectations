@@ -5255,3 +5255,4 @@ crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-paint-order.htm
 #Sheriff 2018-11-14
 crbug.com/905694 [ Linux ] virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Failure Pass ]
 crbug.com/905772 [ Linux ] virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-profile-partition-alloc.js [ Failure Pass ]
+crbug.com/905827 [ Mac10.13 ] fast/dom/StyleSheet/stylesheet-move-between-documents-crash.html [ Failure Pass ]
