@@ -7,21 +7,18 @@
 #include <vector>
 
 #include "base/metrics/user_metrics.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/address.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_consumer.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/address_form.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/address_list_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_address_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/web/public/web_state/web_state.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -35,7 +32,7 @@ NSString* const ManageAddressAccessibilityIdentifier =
 @interface ManualFillAddressMediator ()
 
 // All available addresses.
-@property(nonatomic, assign) std::vector<autofill::AutofillProfile*> profiles;
+@property(nonatomic, strong) NSArray<ManualFillAddress*>* addresses;
 
 @end
 
@@ -45,7 +42,13 @@ NSString* const ManageAddressAccessibilityIdentifier =
     (std::vector<autofill::AutofillProfile*>)profiles {
   self = [super init];
   if (self) {
-    _profiles = profiles;
+    NSMutableArray<ManualFillAddress*>* manualFillAddresses =
+        [[NSMutableArray alloc] initWithCapacity:profiles.size()];
+    for (autofill::AutofillProfile* profile : profiles) {
+      [manualFillAddresses
+          addObject:[[ManualFillAddress alloc] initWithProfile:*profile]];
+    }
+    _addresses = manualFillAddresses;
   }
   return self;
 }
@@ -68,11 +71,11 @@ NSString* const ManageAddressAccessibilityIdentifier =
   }
 
   NSMutableArray* items =
-      [[NSMutableArray alloc] initWithCapacity:self.profiles.size()];
-  for (autofill::AutofillProfile* profile : self.profiles) {
-    auto item = [[ManualFillAddressItem alloc]
-        initWithAutofillProfile:*profile
-                       delegate:self.contentDelegate];
+      [[NSMutableArray alloc] initWithCapacity:self.addresses.count];
+  for (ManualFillAddress* address in self.addresses) {
+    auto item =
+        [[ManualFillAddressItem alloc] initWithAddress:address
+                                              delegate:self.contentDelegate];
     [items addObject:item];
   }
 

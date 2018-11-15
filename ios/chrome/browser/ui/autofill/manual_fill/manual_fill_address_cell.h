@@ -7,11 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/autofill/manual_fill/address.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
-
-namespace autofill {
-class AutofillProfile;
-}  // namespace autofill
 
 // TODO(crbug.com/845472): rename, see
 // https://crrev.com/c/1317853/7/ios/chrome/browser/ui/autofill/manual_fill/manual_fill_address_cell.h#17.
@@ -21,9 +18,8 @@ class AutofillProfile;
 @interface ManualFillAddressItem : TableViewItem
 
 // Inits an address with a |profile| and the |delegate| for user selection.
-- (instancetype)initWithAutofillProfile:
-                    (const autofill::AutofillProfile&)profile
-                               delegate:(id<ManualFillContentDelegate>)delegate
+- (instancetype)initWithAddress:(ManualFillAddress*)address
+                       delegate:(id<ManualFillContentDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
@@ -35,8 +31,8 @@ class AutofillProfile;
 @interface ManualFillAddressCell : UITableViewCell
 
 // Updates the cell with address and the |delegate| to be notified.
-- (void)setUpWithAutofillProfile:(const autofill::AutofillProfile&)profile
-                        delegate:(id<ManualFillContentDelegate>)delegate;
+- (void)setUpWithAddress:(ManualFillAddress*)profile
+                delegate:(id<ManualFillContentDelegate>)delegate;
 
 @end
 
