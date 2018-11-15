@@ -389,6 +389,7 @@ group("libwebp") {
     ":libwebp_mux",
     ":libwebp_utils",
   ]
+  public_deps = [ ":libwebp_webp" ]
   public_configs = [ ":libwebp_config" ]
   if (use_dsp_neon) {
     deps += [ ":libwebp_dsp_neon" ]
