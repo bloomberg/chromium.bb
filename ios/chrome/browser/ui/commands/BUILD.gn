@@ -11,7 +11,6 @@ source_set("commands") {
     "browsing_data_commands.h",
     "command_dispatcher.h",
     "command_dispatcher.mm",
-    "external_search_commands.h",
     "load_query_commands.h",
     "omnibox_suggestion_commands.h",
     "open_new_tab_command.h",

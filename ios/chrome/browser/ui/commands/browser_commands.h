@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
-#import "ios/chrome/browser/ui/commands/external_search_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
@@ -22,7 +21,6 @@ class GURL;
 // which in practice is the BrowserViewController instance displaying the tab.
 @protocol BrowserCommands<NSObject,
                           ActivityServiceCommands,
-                          ExternalSearchCommands,
                           PageInfoCommands,
                           PopupMenuCommands,
                           QRScannerCommands,
