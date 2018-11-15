@@ -33,8 +33,8 @@
     <Expand>
       <Item Name="Length">length_</Item>
       <Item Name="Hash">hash_</Item>
-      <Item Name="AsciiText" Condition="is8_bit_">(this+1),[length_]s</Item>
-      <Item Name="UnicodeText" Condition="!is8_bit_">(this+1),[length_]su</Item>
+      <Item Name="AsciiText" Condition="is8_bit_">(char*)(this+1),[length_]s</Item>
+      <Item Name="UnicodeText" Condition="!is8_bit_">(wchar_t*)(this+1),[length_]su</Item>
     </Expand>
   </Type>
   <Type Name="WTF::AtomicString">
