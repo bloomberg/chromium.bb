@@ -86,14 +86,28 @@ scoped_refptr<CSSVariableData> ComputedVariableData(
 
 }  // namespace
 
-bool CSSVariableResolver::ResolveFallback(CSSParserTokenRange range,
-                                          const Options& options,
-                                          Result& result) {
+CSSVariableResolver::Fallback CSSVariableResolver::ResolveFallback(
+    CSSParserTokenRange range,
+    const Options& options,
+    const PropertyRegistration* registration,
+    Result& result) {
   if (range.AtEnd())
-    return false;
+    return Fallback::kNone;
   DCHECK_EQ(range.Peek().GetType(), kCommaToken);
   range.Consume();
-  return ResolveTokenRange(range, options, result);
+  size_t first_fallback_token = result.tokens.size();
+  if (!ResolveTokenRange(range, options, result))
+    return Fallback::kFail;
+  if (registration) {
+    CSSParserTokenRange range(result.tokens);
+    range = range.MakeSubRange(&range.Peek(first_fallback_token), range.end());
+    const CSSParserContext* context =
+        StrictCSSParserContext(state_.GetDocument().GetSecureContextMode());
+    const bool is_animation_tainted = false;
+    if (!registration->Syntax().Parse(range, context, is_animation_tainted))
+      return Fallback::kFail;
+  }
+  return Fallback::kSuccess;
 }
 
 scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
@@ -379,8 +393,11 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
     non_inherited_variables_ = state_.Style()->NonInheritedVariables();
   }
 
-  if (registry_ && !is_env_variable) {
-    registry_->MarkReferenced(variable_name);
+  const PropertyRegistration* registration = nullptr;
+  if (registry_) {
+    registration = registry_->Registration(variable_name);
+    if (!is_env_variable)
+      registry_->MarkReferenced(variable_name);
   }
 
   scoped_refptr<CSSVariableData> variable_data =
@@ -390,7 +407,8 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
   if (!variable_data) {
     // TODO(alancutter): Append the registered initial custom property value if
     // we are disallowing an animation tainted value.
-    return ResolveFallback(range, options, result);
+    return ResolveFallback(range, options, registration, result) ==
+           Fallback::kSuccess;
   }
 
   result.tokens.AppendVector(variable_data->Tokens());
@@ -402,7 +420,13 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
   result.absolutized &= variable_data->IsAbsolutized();
 
   Result trash;
-  ResolveFallback(range, options, trash);
+  Fallback fallback = ResolveFallback(range, options, registration, trash);
+
+  // For registered properties, the fallback (if present) must be valid, even
+  // if it's not used.
+  if (registration && fallback == Fallback::kFail)
+    return false;
+
   return true;
 }
 
