@@ -89,11 +89,10 @@ void GCInfoTable::Resize() {
   // Commit the new size and allow read/write.
   // TODO(ajwong): SetSystemPagesAccess should be part of RecommitSystemPages to
   // avoid having two calls here.
-  bool ok = base::SetSystemPagesAccess(current_table_end, table_size_delta,
-                                       base::PageReadWrite);
-  CHECK(ok);
-  ok = base::RecommitSystemPages(current_table_end, table_size_delta,
-                                 base::PageReadWrite);
+  base::SetSystemPagesAccess(current_table_end, table_size_delta,
+                             base::PageReadWrite);
+  bool ok = base::RecommitSystemPages(current_table_end, table_size_delta,
+                                      base::PageReadWrite);
   CHECK(ok);
 
 #if DCHECK_IS_ON()

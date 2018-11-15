@@ -1185,10 +1185,10 @@ TEST_F(PartitionAllocTest, MappingCollision) {
   map2 = AllocPages(page_base + kSuperPageSize, kPageAllocationGranularity,
                     kPageAllocationGranularity, PageReadWrite);
   EXPECT_TRUE(map2);
-  EXPECT_TRUE(
-      SetSystemPagesAccess(map1, kPageAllocationGranularity, PageInaccessible));
-  EXPECT_TRUE(
-      SetSystemPagesAccess(map2, kPageAllocationGranularity, PageInaccessible));
+  EXPECT_TRUE(TrySetSystemPagesAccess(map1, kPageAllocationGranularity,
+                                      PageInaccessible));
+  EXPECT_TRUE(TrySetSystemPagesAccess(map2, kPageAllocationGranularity,
+                                      PageInaccessible));
 
   PartitionPage* page_in_third_super_page = GetFullPage(kTestAllocSize);
   FreePages(map1, kPageAllocationGranularity);

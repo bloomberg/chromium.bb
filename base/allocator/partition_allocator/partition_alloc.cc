@@ -222,15 +222,13 @@ bool PartitionReallocDirectMappedInPlace(PartitionRootGeneric* root,
     // Shrink by decommitting unneeded pages and making them inaccessible.
     size_t decommit_size = current_size - new_size;
     root->DecommitSystemPages(char_ptr + new_size, decommit_size);
-    CHECK(SetSystemPagesAccess(char_ptr + new_size, decommit_size,
-                               PageInaccessible));
+    SetSystemPagesAccess(char_ptr + new_size, decommit_size, PageInaccessible);
   } else if (new_size <=
              internal::PartitionDirectMapExtent::FromPage(page)->map_size) {
     // Grow within the actually allocated memory. Just need to make the
     // pages accessible again.
     size_t recommit_size = new_size - current_size;
-    CHECK(SetSystemPagesAccess(char_ptr + current_size, recommit_size,
-                               PageReadWrite));
+    SetSystemPagesAccess(char_ptr + current_size, recommit_size, PageReadWrite);
     root->RecommitSystemPages(char_ptr + current_size, recommit_size);
 
 #if DCHECK_IS_ON()
