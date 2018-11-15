@@ -109,7 +109,6 @@ source_set("manual_fill_ui") {
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill/manual_fill:manual_fill",
-    "//ios/chrome/browser/ui/autofill/manual_fill/resources:addresses",
     "//ios/chrome/browser/ui/autofill/manual_fill/resources:mf_arrow_down",
     "//ios/chrome/browser/ui/autofill/manual_fill/resources:mf_arrow_up",
     "//ios/chrome/browser/ui/autofill/manual_fill/resources:mf_gradient",
@@ -120,6 +119,7 @@ source_set("manual_fill_ui") {
     "//ios/chrome/common/ui_util:ui_util",
     "//net:net",
     "//third_party/material_design_icons:ic_credit_card",
+    "//third_party/material_design_icons:ic_place",
     "//third_party/material_design_icons:ic_vpn_key",
     "//ui/base:base",
   ]

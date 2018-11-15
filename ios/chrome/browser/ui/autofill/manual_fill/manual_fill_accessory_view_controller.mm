@@ -139,7 +139,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
     [icons addObject:self.cardsButton];
 
     self.accountButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    UIImage* accountImage = [UIImage imageNamed:@"addresses"];
+    UIImage* accountImage = [UIImage imageNamed:@"ic_place"];
     [self.accountButton setImage:accountImage forState:UIControlStateNormal];
     self.accountButton.tintColor = tintColor;
     self.accountButton.translatesAutoresizingMaskIntoConstraints = NO;
