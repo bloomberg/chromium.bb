@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewPager;
 import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
@@ -34,7 +33,7 @@ public class ManualFillingCoordinator {
      */
     public void initialize(WindowAndroid windowAndroid,
             ViewProvider<KeyboardAccessoryView> accessoryViewProvider,
-            ViewProvider<ViewPager> viewPagerProvider) {
+            ViewProvider<AccessorySheetView> viewPagerProvider) {
         KeyboardAccessoryCoordinator keyboardAccessory =
                 new KeyboardAccessoryCoordinator(mMediator, accessoryViewProvider);
         viewPagerProvider.whenLoaded(viewPager -> {

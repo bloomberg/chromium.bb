@@ -3,13 +3,28 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<android.support.v4.view.ViewPager
+<org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/keyboard_accessory_sheet"
-    android:background="@android:color/white"
     android:fillViewport="true"
     android:paddingTop="0dp"
     android:layout_gravity="start|top"
-    android:layout_height="@dimen/keyboard_accessory_sheet_height"
     android:layout_width="match_parent"
-    android:visibility="gone"/>
+    android:layout_height="@dimen/keyboard_accessory_sheet_height"
+    android:visibility="gone">
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/keyboard_accessory_sheet"
+        android:background="@android:color/white"
+        android:fillViewport="true"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"/>
+
+    <ImageView
+        android:id="@+id/accessory_sheet_shadow"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_shadow_height"
+        android:src="@drawable/modern_toolbar_shadow"
+        android:scaleType="fitXY"
+        android:visibility="gone"
+        android:importantForAccessibility="no" />
+</org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetView>

@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.CREDENTIALS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.SCROLL_LISTENER;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
@@ -16,6 +20,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetViewBinder.ItemViewHolder;
 import org.chromium.chrome.browser.modelutil.ListModel;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
 
@@ -24,11 +29,11 @@ import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
  * as bottom sheet below the keyboard accessory.
  */
 public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.Tab.Listener {
-    private final Context mContext;
-    private final ListModel<Item> mModel = new ListModel<>();
-    private final KeyboardAccessoryData.Observer<Item[]> mMediator =
-            (t, items) -> mModel.set(items);
-
+    private final PropertyModel mModel = new PropertyModel.Builder(CREDENTIALS, SCROLL_LISTENER)
+                                                 .with(CREDENTIALS, new ListModel<>())
+                                                 .with(SCROLL_LISTENER, null)
+                                                 .build();
+    private final PasswordAccessorySheetMediator mMediator;
     private final KeyboardAccessoryData.Tab mTab;
 
     @VisibleForTesting
@@ -66,10 +71,12 @@ public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.
     /**
      * Creates the passwords tab.
      * @param context The {@link Context} containing resources like icons and layouts for this tab.
+     * @param scrollListener An optional listener that will be bound to the inflated recycler view.
      */
-    public PasswordAccessorySheetCoordinator(Context context) {
-        mContext = context;
-        mTab = new KeyboardAccessoryData.Tab(IconProvider.getInstance().getIcon(mContext),
+    public PasswordAccessorySheetCoordinator(
+            Context context, @Nullable RecyclerView.OnScrollListener scrollListener) {
+        mMediator = new PasswordAccessorySheetMediator(mModel, scrollListener);
+        mTab = new KeyboardAccessoryData.Tab(IconProvider.getInstance().getIcon(context),
                 context.getString(R.string.password_accessory_sheet_toggle),
                 context.getString(R.string.password_accessory_sheet_opened),
                 R.layout.password_accessory_sheet, AccessoryTabType.PASSWORDS, this);
@@ -77,14 +84,12 @@ public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.
 
     @Override
     public void onTabCreated(ViewGroup view) {
-        PasswordAccessorySheetViewBinder.initializeView(
-                view.findViewById(R.id.password_items), createAdapter(mModel));
+        PasswordAccessorySheetViewBinder.initializeView((RecyclerView) view, mModel);
     }
 
     @Override
     public void onTabShown() {
-        KeyboardAccessoryMetricsRecorder.recordActionImpression(AccessoryAction.MANAGE_PASSWORDS);
-        KeyboardAccessoryMetricsRecorder.recordSheetSuggestions(AccessoryTabType.PASSWORDS, mModel);
+        mMediator.onTabShown();
     }
 
     /**
@@ -99,7 +104,6 @@ public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.
                 ItemViewHolder::create);
     }
 
-    // TODO(fhorschig): There is only one. Make this a ctor param and self-destruct with it.
     /**
      * Registered item providers can replace the currently shown data in the password sheet.
      * @param itemProvider The provider this component will listen to.
@@ -119,6 +123,6 @@ public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.
 
     @VisibleForTesting
     ListModel<Item> getModelForTesting() {
-        return mModel;
+        return mMediator.getModelForTesting();
     }
 }

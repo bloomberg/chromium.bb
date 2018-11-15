@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.ACTIVE_TAB_INDEX;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.NO_ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TABS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TOP_SHADOW_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.VISIBLE;
 
 import android.support.annotation.Nullable;
 import android.support.annotation.Px;
+import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
@@ -24,6 +26,14 @@ import org.chromium.chrome.browser.modelutil.PropertyObservable;
  */
 class AccessorySheetMediator implements PropertyObservable.PropertyObserver<PropertyKey> {
     private final PropertyModel mModel;
+    private final RecyclerView.OnScrollListener mScrollListener =
+            new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    if (recyclerView == null) return;
+                    mModel.set(TOP_SHADOW_VISIBLE, recyclerView.canScrollVertically(-1));
+                }
+            };
 
     AccessorySheetMediator(PropertyModel model) {
         mModel = model;
@@ -59,6 +69,10 @@ class AccessorySheetMediator implements PropertyObservable.PropertyObserver<Prop
 
     boolean isShown() {
         return mModel.get(VISIBLE);
+    }
+
+    RecyclerView.OnScrollListener getScrollListener() {
+        return mScrollListener;
     }
 
     void addTab(KeyboardAccessoryData.Tab tab) {
@@ -118,7 +132,8 @@ class AccessorySheetMediator implements PropertyObservable.PropertyObserver<Prop
             }
             return;
         }
-        if (propertyKey == ACTIVE_TAB_INDEX || propertyKey == AccessorySheetProperties.HEIGHT) {
+        if (propertyKey == ACTIVE_TAB_INDEX || propertyKey == AccessorySheetProperties.HEIGHT
+                || propertyKey == TOP_SHADOW_VISIBLE) {
             return;
         }
         assert false : "Every property update needs to be handled explicitly!";

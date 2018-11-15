@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.CREDENTIALS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.SCROLL_LISTENER;
+
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -16,15 +19,13 @@ import android.text.method.PasswordTransformationMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 
 /**
  * This stateless class provides methods to bind the items in a {@link ListModel <Item>}
@@ -185,21 +186,13 @@ class PasswordAccessorySheetViewBinder {
         }
     }
 
-    static void initializeView(RecyclerView view, RecyclerViewAdapter adapter) {
+    public static void initializeView(RecyclerView view, PropertyModel model) {
         view.setLayoutManager(
                 new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
         view.setItemAnimator(null);
-        view.setAdapter(adapter);
-        // TODO(fhorschig): Move the shadow into the sheet and reflect visibility in its model.
-        final ImageView topShadow =
-                ((FrameLayout) view.getParent()).findViewById(R.id.accessory_sheet_shadow);
-        view.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (recyclerView == null) return;
-                topShadow.setVisibility(
-                        recyclerView.canScrollVertically(-1) ? View.VISIBLE : View.GONE);
-            }
-        });
+        view.setAdapter(PasswordAccessorySheetCoordinator.createAdapter(model.get(CREDENTIALS)));
+        if (model.get(SCROLL_LISTENER) != null) {
+            view.addOnScrollListener(model.get(SCROLL_LISTENER));
+        }
     }
 }

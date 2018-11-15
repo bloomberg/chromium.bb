@@ -8,10 +8,10 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryS
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.HEIGHT;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.NO_ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TABS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.TOP_SHADOW_VISIBLE;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetProperties.VISIBLE;
 
 import android.os.Build;
-import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -24,31 +24,33 @@ import org.chromium.chrome.browser.modelutil.PropertyModel;
  * {@link AccessorySheetViewBinder} which will modify the view accordingly.
  */
 class AccessorySheetViewBinder {
-    public static void bind(PropertyModel model, ViewPager viewPager, PropertyKey propertyKey) {
+    public static void bind(PropertyModel model, AccessorySheetView view, PropertyKey propertyKey) {
         if (propertyKey == TABS) {
-            viewPager.setAdapter(
-                    AccessorySheetCoordinator.createTabViewAdapter(model.get(TABS), viewPager));
+            view.setAdapter(AccessorySheetCoordinator.createTabViewAdapter(
+                    model.get(TABS), view.getViewPager()));
         } else if (propertyKey == VISIBLE) {
-            viewPager.bringToFront(); // Ensure toolbars and other containers are overlaid.
-            viewPager.setVisibility(model.get(VISIBLE) ? View.VISIBLE : View.GONE);
+            view.bringToFront(); // Ensure toolbars and other containers are overlaid.
+            view.setVisibility(model.get(VISIBLE) ? View.VISIBLE : View.GONE);
             if (model.get(VISIBLE) && model.get(ACTIVE_TAB_INDEX) != NO_ACTIVE_TAB) {
-                announceOpenedTab(viewPager, model.get(TABS).get(model.get(ACTIVE_TAB_INDEX)));
+                announceOpenedTab(view, model.get(TABS).get(model.get(ACTIVE_TAB_INDEX)));
             }
         } else if (propertyKey == HEIGHT) {
-            ViewGroup.LayoutParams p = viewPager.getLayoutParams();
+            ViewGroup.LayoutParams p = view.getLayoutParams();
             p.height = model.get(HEIGHT);
-            viewPager.setLayoutParams(p);
+            view.setLayoutParams(p);
+        } else if (propertyKey == TOP_SHADOW_VISIBLE) {
+            view.setTopShadowVisible(model.get(TOP_SHADOW_VISIBLE));
         } else if (propertyKey == ACTIVE_TAB_INDEX) {
             if (model.get(ACTIVE_TAB_INDEX) != NO_ACTIVE_TAB) {
-                viewPager.setCurrentItem(model.get(ACTIVE_TAB_INDEX));
+                view.setCurrentItem(model.get(ACTIVE_TAB_INDEX));
             }
         } else {
             assert false : "Every possible property update needs to be handled!";
         }
         // Layout requests happen automatically since Kitkat and redundant requests cause warnings.
-        if (viewPager != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            viewPager.post(() -> {
-                ViewParent parent = viewPager.getParent();
+        if (view != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            view.post(() -> {
+                ViewParent parent = view.getParent();
                 if (parent != null) {
                     parent.requestLayout();
                 }
