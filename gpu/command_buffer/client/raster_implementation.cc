@@ -1388,18 +1388,18 @@ void RasterImplementation::FlushPaintCachePurgedEntries() {
     return;
 
   paint_cache_->Purge(&temp_paint_cache_purged_data_);
-  for (uint32_t i = static_cast<uint32_t>(cc::PaintDataType::kTextBlob);
-       i < cc::PaintDataTypeCount; ++i) {
+  for (uint32_t i = static_cast<uint32_t>(cc::PaintCacheDataType::kTextBlob);
+       i < cc::PaintCacheDataTypeCount; ++i) {
     auto& ids = temp_paint_cache_purged_data_[i];
     if (ids.empty())
       continue;
 
-    switch (static_cast<cc::PaintDataType>(i)) {
-      case cc::PaintDataType::kTextBlob:
+    switch (static_cast<cc::PaintCacheDataType>(i)) {
+      case cc::PaintCacheDataType::kTextBlob:
         helper_->DeletePaintCacheTextBlobsINTERNALImmediate(ids.size(),
                                                             ids.data());
         break;
-      case cc::PaintDataType::kPath:
+      case cc::PaintCacheDataType::kPath:
         helper_->DeletePaintCachePathsINTERNALImmediate(ids.size(), ids.data());
         break;
     }

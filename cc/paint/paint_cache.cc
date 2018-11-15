@@ -25,11 +25,13 @@ ClientPaintCache::ClientPaintCache(size_t max_budget_bytes)
     : cache_map_(CacheMap::NO_AUTO_EVICT), max_budget_(max_budget_bytes) {}
 ClientPaintCache::~ClientPaintCache() = default;
 
-bool ClientPaintCache::Get(PaintDataType type, PaintCacheId id) {
+bool ClientPaintCache::Get(PaintCacheDataType type, PaintCacheId id) {
   return cache_map_.Get(std::make_pair(type, id)) != cache_map_.end();
 }
 
-void ClientPaintCache::Put(PaintDataType type, PaintCacheId id, size_t size) {
+void ClientPaintCache::Put(PaintCacheDataType type,
+                           PaintCacheId id,
+                           size_t size) {
   auto key = std::make_pair(type, id);
   DCHECK(cache_map_.Peek(key) == cache_map_.end());
 
@@ -40,7 +42,7 @@ void ClientPaintCache::Put(PaintDataType type, PaintCacheId id, size_t size) {
 void ClientPaintCache::Purge(PurgedData* purged_data) {
   while (bytes_used_ > max_budget_) {
     auto it = cache_map_.rbegin();
-    PaintDataType type = it->first.first;
+    PaintCacheDataType type = it->first.first;
     PaintCacheId id = it->first.second;
 
     (*purged_data)[static_cast<uint32_t>(type)].push_back(id);
@@ -76,14 +78,14 @@ SkPath* ServicePaintCache::GetPath(PaintCacheId id) {
   return it == cached_paths_.end() ? nullptr : &it->second;
 }
 
-void ServicePaintCache::Purge(PaintDataType type,
+void ServicePaintCache::Purge(PaintCacheDataType type,
                               size_t n,
                               const volatile PaintCacheId* ids) {
   switch (type) {
-    case PaintDataType::kTextBlob:
+    case PaintCacheDataType::kTextBlob:
       EraseFromMap(&cached_blobs_, n, ids);
       return;
-    case PaintDataType::kPath:
+    case PaintCacheDataType::kPath:
       EraseFromMap(&cached_paths_, n, ids);
       return;
   }
