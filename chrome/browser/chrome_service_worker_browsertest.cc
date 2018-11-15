@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,10 +23,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/favicon/content/content_favicon_driver.h"
+#include "components/favicon/core/favicon_driver_observer.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -34,6 +38,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
@@ -331,12 +336,51 @@ class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerFetchTest);
 };
 
-class ChromeServiceWorkerManifestFetchTest
-    : public ChromeServiceWorkerFetchTest {
- protected:
-  ChromeServiceWorkerManifestFetchTest() {}
-  ~ChromeServiceWorkerManifestFetchTest() override {}
+class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
+ public:
+  explicit FaviconUpdateWaiter(content::WebContents* web_contents)
+      : updated_(false), scoped_observer_(this) {
+    scoped_observer_.Add(
+        favicon::ContentFaviconDriver::FromWebContents(web_contents));
+  }
 
+  void Wait() {
+    if (updated_)
+      return;
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  void OnFaviconUpdated(favicon::FaviconDriver* favicon_driver,
+                        NotificationIconType notification_icon_type,
+                        const GURL& icon_url,
+                        bool icon_url_changed,
+                        const gfx::Image& image) override {
+    updated_ = true;
+    if (!quit_closure_.is_null())
+      std::move(quit_closure_).Run();
+  }
+
+  bool updated_;
+  ScopedObserver<favicon::FaviconDriver, FaviconUpdateWaiter> scoped_observer_;
+  base::OnceClosure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(FaviconUpdateWaiter);
+};
+
+class ChromeServiceWorkerLinkFetchTest : public ChromeServiceWorkerFetchTest {
+ protected:
+  ChromeServiceWorkerLinkFetchTest() {}
+  ~ChromeServiceWorkerLinkFetchTest() override {}
+  void SetUpOnMainThread() override {
+    // Map all hosts to localhost and setup the EmbeddedTestServer for
+    // redirects.
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ChromeServiceWorkerFetchTest::SetUpOnMainThread();
+  }
   std::string ExecuteManifestFetchTest(const std::string& url,
                                        const std::string& cross_origin) {
     std::string js(
@@ -352,6 +396,29 @@ class ChromeServiceWorkerManifestFetchTest
     js += "document.head.appendChild(link);";
     ExecuteJavaScriptForTests(js);
     return GetManifestAndIssuedRequests();
+  }
+
+  std::string ExecuteFaviconFetchTest(const std::string& url) {
+    FaviconUpdateWaiter waiter(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    std::string js(
+        base::StringPrintf("reportOnFetch = false;"
+                           "var link = document.createElement('link');"
+                           "link.rel = 'icon';"
+                           "link.href = '%s';"
+                           "document.head.appendChild(link);",
+                           url.c_str()));
+    ExecuteJavaScriptForTests(js);
+    waiter.Wait();
+    return ExecuteScriptAndExtractString("reportRequests();");
+  }
+
+  void CopyTestFile(const std::string& src, const std::string& dst) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::FilePath test_data_dir;
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    EXPECT_TRUE(base::CopyFile(test_data_dir.AppendASCII(src),
+                               service_worker_dir_.GetPath().AppendASCII(dst)));
   }
 
  private:
@@ -385,37 +452,55 @@ class ChromeServiceWorkerManifestFetchTest
     continuation.Run();
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerManifestFetchTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerLinkFetchTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerManifestFetchTest, SameOrigin) {
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerLinkFetchTest, ManifestSameOrigin) {
   // <link rel="manifest" href="manifest.json">
   EXPECT_EQ(RequestString(GetURL("/manifest.json"), "cors", "omit"),
             ExecuteManifestFetchTest("manifest.json", ""));
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerManifestFetchTest,
-                       SameOriginUseCredentials) {
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerLinkFetchTest,
+                       ManifestSameOriginUseCredentials) {
   // <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
   EXPECT_EQ(RequestString(GetURL("/manifest.json"), "cors", "include"),
             ExecuteManifestFetchTest("manifest.json", "use-credentials"));
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerManifestFetchTest, OtherOrigin) {
-  // <link rel="manifest" href="https://www.example.com/manifest.json">
-  EXPECT_EQ(
-      RequestString("https://www.example.com/manifest.json", "cors", "omit"),
-      ExecuteManifestFetchTest("https://www.example.com/manifest.json", ""));
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerLinkFetchTest, ManifestOtherOrigin) {
+  // <link rel="manifest" href="http://www.example.com:PORT/manifest.json">
+  const std::string url = embedded_test_server()
+                              ->GetURL("www.example.com", "/manifest.json")
+                              .spec();
+  EXPECT_EQ(RequestString(url, "cors", "omit"),
+            ExecuteManifestFetchTest(url, ""));
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerManifestFetchTest,
-                       OtherOriginUseCredentials) {
-  // <link rel="manifest" href="https://www.example.com/manifest.json"
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerLinkFetchTest,
+                       ManifestOtherOriginUseCredentials) {
+  // <link rel="manifest" href="http://www.example.com:PORT/manifest.json"
   //  crossorigin="use-credentials">
-  EXPECT_EQ(
-      RequestString("https://www.example.com/manifest.json", "cors", "include"),
-      ExecuteManifestFetchTest("https://www.example.com/manifest.json",
-                               "use-credentials"));
+  const std::string url = embedded_test_server()
+                              ->GetURL("www.example.com", "/manifest.json")
+                              .spec();
+  EXPECT_EQ(RequestString(url, "cors", "include"),
+            ExecuteManifestFetchTest(url, "use-credentials"));
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerLinkFetchTest, FaviconSameOrigin) {
+  // <link rel="favicon" href="fav.png">
+  CopyTestFile("favicon/icon.png", "fav.png");
+  EXPECT_EQ(RequestString(GetURL("/fav.png"), "no-cors", "include"),
+            ExecuteFaviconFetchTest("/fav.png"));
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerLinkFetchTest, FaviconOtherOrigin) {
+  // <link rel="favicon" href="http://www.example.com:PORT/fav.png">
+  CopyTestFile("favicon/icon.png", "fav.png");
+  const std::string url =
+      embedded_test_server()->GetURL("www.example.com", "/fav.png").spec();
+  EXPECT_EQ("", ExecuteFaviconFetchTest(url));
 }
 
 #if BUILDFLAG(ENABLE_NACL)
