@@ -137,8 +137,12 @@ cr.define('md_history', function() {
         this.row_ = new HistoryFocusRow(
             this.$['main-container'], null, new FocusRowDelegate(this));
         this.row_.makeActive(this.ironListTabIndex == 0);
+
+        // Adding listeners asynchronously to reduce blocking time, since these
+        // history items are items in a potentially long list.
         this.listen(this, 'focus', 'onFocus_');
         this.listen(this, 'dom-change', 'onDomChange_');
+        this.listen(this.$.checkbox, 'keydown', 'onCheckboxKeydown_');
       });
     },
 
@@ -146,6 +150,7 @@ cr.define('md_history', function() {
     detached: function() {
       this.unlisten(this, 'focus', 'onFocus_');
       this.unlisten(this, 'dom-change', 'onDomChange_');
+      this.unlisten(this.$.checkbox, 'keydown', 'onCheckboxKeydown_');
       if (this.row_)
         this.row_.destroy();
     },
@@ -164,8 +169,12 @@ cr.define('md_history', function() {
         this.row_.getEquivalentElement(this.lastFocused).focus();
       else
         this.row_.getFirstFocusable().focus();
+    },
 
-      this.tabIndex = -1;
+    /** @param {!KeyboardEvent} e */
+    onCheckboxKeydown_: function(e) {
+      if (e.shiftKey && e.key === 'Tab')
+        this.focus();
     },
 
     /**
