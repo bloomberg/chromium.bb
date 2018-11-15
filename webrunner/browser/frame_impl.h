@@ -79,6 +79,9 @@ class FrameImpl : public chromium::web::Frame,
                          fuchsia::mem::Buffer script,
                          chromium::web::ExecuteMode mode,
                          ExecuteJavaScriptCallback callback) override;
+  void PostMessage(chromium::web::WebMessage message,
+                   fidl::StringPtr targetOrigin,
+                   PostMessageCallback callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FrameImplTest, DelayedNavigationEventAck);

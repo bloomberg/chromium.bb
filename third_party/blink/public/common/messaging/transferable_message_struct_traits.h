@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_COMMON_MESSAGING_TRANSFERABLE_MESSAGE_STRUCT_TRAITS_H_
-#define THIRD_PARTY_BLINK_COMMON_MESSAGING_TRANSFERABLE_MESSAGE_STRUCT_TRAITS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGING_TRANSFERABLE_MESSAGE_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGING_TRANSFERABLE_MESSAGE_STRUCT_TRAITS_H_
 
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
-#include "third_party/blink/common/messaging/cloneable_message_struct_traits.h"
+#include "third_party/blink/public/common/messaging/cloneable_message_struct_traits.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -51,4 +51,4 @@ struct BLINK_COMMON_EXPORT
 
 }  // namespace mojo
 
-#endif  // THIRD_PARTY_BLINK_COMMON_MESSAGING_TRANSFERABLE_MESSAGE_STRUCT_TRAITS_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MESSAGING_TRANSFERABLE_MESSAGE_STRUCT_TRAITS_H_

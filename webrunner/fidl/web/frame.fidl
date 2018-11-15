@@ -69,6 +69,17 @@ interface Frame {
      vector<string> origins, fuchsia.mem.Buffer script, ExecuteMode mode) ->
      (bool success);
 
+  // Posts a message to the frame's onMessage handler.
+  //
+  // |targetOrigin| restricts message delivery to the specified origin.
+  // If |targetOrigin| is "*", then the message will be sent to the document
+  // regardless of its origin.
+  // See html.spec.whatwg.org/multipage/web-messaging.html sect. 9.4.3
+  // for more details on how the target origin policy is applied.
+  //
+  // Returns |false| if |message| is invalid or |targetOrigin| is missing.
+  5: PostMessage(WebMessage message, string targetOrigin) -> (bool success);
+
   // Sets the observer for handling page navigation events.
   //
   // |observer|: The observer to use. Unregisters any existing observers
@@ -80,3 +91,40 @@ interface Frame {
   // and console.error().
   101: SetJavaScriptLogLevel(LogLevel level);
 };
+
+struct WebMessage {
+  // The message payload, encoded as an UTF-8 string.
+  fuchsia.mem.Buffer data;
+
+  // List of objects transferred into the MessagePort from the FIDL client.
+  // TODO(crbug.com/893236): make this a vector when FIDL-354 is fixed.
+  IncomingTransferable? incoming_transfer;
+
+  // List of objects transferred out of the MessagePort to the FIDL client.
+  OutgoingTransferable? outgoing_transfer;
+};
+
+union OutgoingTransferable {
+  request<MessagePort> message_port;
+};
+
+union IncomingTransferable {
+  MessagePort message_port;
+};
+
+// Represents one end of an HTML5 MessageChannel. Can be used to send
+// and exchange Messages with the peered MessagePort in the Frame's script
+// context. The port is destroyed when either end of the MessagePort channel
+// is torn down.
+interface MessagePort {
+  // Sends a WebMessage to the peer.
+  1: PostMessage(WebMessage message) -> (bool success);
+
+  // Asynchronously reads the next message from the channel.
+  // The client should invoke the callback when it is ready to process
+  // another message.
+  // Unreceived messages are buffered on the sender's side and bounded
+  // by its available resources.
+  2: ReceiveMessage() -> (WebMessage message);
+};
+

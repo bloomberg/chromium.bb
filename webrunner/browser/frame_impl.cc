@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -24,6 +25,8 @@
 #include "ui/wm/core/base_focus_rules.h"
 #include "url/gurl.h"
 #include "webrunner/browser/context_impl.h"
+#include "webrunner/browser/message_port_impl.h"
+#include "webrunner/browser/vmo_util.h"
 
 namespace webrunner {
 
@@ -339,19 +342,12 @@ void FrameImpl::ExecuteJavaScript(fidl::VectorPtr<::fidl::StringPtr> origins,
     return;
   }
 
-  std::string script_utf8;
-  script_utf8.reserve(script.size);
-  zx_status_t status = script.vmo.read(&script_utf8.front(), 0, script.size);
-  ZX_CHECK(status == ZX_OK, status) << "zx_vmo_read";
-
   base::string16 script_utf16;
-  if (!base::UTF8ToUTF16(&script_utf8.front(), script.size, &script_utf16)) {
+  if (!ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
     DLOG(WARNING) << "Ignored non-UTF8 script passed to ExecuteJavaScript().";
     callback(false);
     return;
   }
-  script_utf8.clear();
-  script_utf8.shrink_to_fit();
 
   std::vector<std::string> origins_strings;
   for (const auto& origin : *origins)
@@ -473,5 +469,50 @@ FrameImpl::OriginScopedScript::OriginScopedScript(
     : origins(std::move(origins)), script(script) {}
 
 FrameImpl::OriginScopedScript::~OriginScopedScript() = default;
+
+void FrameImpl::PostMessage(chromium::web::WebMessage message,
+                            fidl::StringPtr target_origin,
+                            PostMessageCallback callback) {
+  constexpr char kWildcardOrigin[] = "*";
+
+  if (target_origin->empty()) {
+    callback(false);
+    return;
+  }
+
+  base::Optional<base::string16> target_origin_utf16;
+  if (*target_origin != kWildcardOrigin)
+    target_origin_utf16 = base::UTF8ToUTF16(*target_origin);
+
+  base::string16 data_utf16;
+  if (!ReadUTF8FromVMOAsUTF16(message.data, &data_utf16)) {
+    DLOG(WARNING) << "PostMessage() rejected non-UTF8 |message.data|.";
+    callback(false);
+    return;
+  }
+
+  // Include outgoing MessagePorts in the message.
+  std::vector<mojo::ScopedMessagePipeHandle> message_ports;
+  if (message.outgoing_transfer) {
+    if (!message.outgoing_transfer->is_message_port()) {
+      DLOG(WARNING) << "|outgoing_transfer| is not a MessagePort.";
+      callback(false);
+      return;
+    }
+
+    mojo::ScopedMessagePipeHandle port = MessagePortImpl::FromFidl(
+        std::move(message.outgoing_transfer->message_port()));
+    if (!port) {
+      callback(false);
+      return;
+    }
+    message_ports.push_back(std::move(port));
+  }
+
+  content::MessagePortProvider::PostMessageToFrame(
+      web_contents_.get(), base::string16(), target_origin_utf16,
+      std::move(data_utf16), std::move(message_ports));
+  callback(true);
+}
 
 }  // namespace webrunner
