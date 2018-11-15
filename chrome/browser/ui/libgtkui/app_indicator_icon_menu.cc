@@ -116,7 +116,7 @@ void AppIndicatorIconMenu::OnMenuItemActivated(GtkWidget* menu_item) {
     return;
 
   // The menu item can still be activated by hotkeys even if it is disabled.
-  if (menu_model_->IsEnabledAt(id))
+  if (model->IsEnabledAt(id))
     ExecuteCommand(model, id);
 }
 
