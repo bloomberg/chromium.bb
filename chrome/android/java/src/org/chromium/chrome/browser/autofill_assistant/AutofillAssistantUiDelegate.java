@@ -787,6 +787,7 @@ class AutofillAssistantUiDelegate {
         // Make sure we wrap content in the container.
         mBottomBarAnimations.setBottomBarHeightToWrapContent();
         mPaymentRequest.show(mCarouselScroll, callback);
+        enableProgressBarPulsing();
     }
 
     /** Close and destroy the payment request UI. */
@@ -794,5 +795,6 @@ class AutofillAssistantUiDelegate {
         mPaymentRequest.close();
         mPaymentRequest = null;
         mBottomBarAnimations.setBottomBarHeightToFixed();
+        disableProgressBarPulsing();
     }
 }
