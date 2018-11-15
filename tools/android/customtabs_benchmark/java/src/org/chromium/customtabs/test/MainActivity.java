@@ -319,7 +319,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         private final String mSpeculationMode;
         private final int mDelayToMayLaunchUrl;
         private final int mDelayToLaunchUrl;
-        public boolean mWarmupCompleted = false;
+        public boolean mWarmupCompleted;
         private long mIntentSentMs = NONE;
         private long mPageLoadStartedMs = NONE;
         private long mPageLoadFinishedMs = NONE;

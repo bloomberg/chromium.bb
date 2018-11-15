@@ -41,9 +41,9 @@ public class TabCountProvider {
      */
     private TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
 
-    private int mTabCount = 0;
+    private int mTabCount;
 
-    private boolean mIsIncognito = false;
+    private boolean mIsIncognito;
 
     TabCountProvider() {
         mTabCountObservers = new ObserverList<TabCountObserver>();

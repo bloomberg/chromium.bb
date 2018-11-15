@@ -31,7 +31,7 @@ public class FeedProcessScopeFactory {
 
     /** Flag that tracks whether we've ever been disabled via enterprise policy. Should only be
      * accessed through isFeedProcessScopeEnabled(). */
-    private static boolean sEverDisabledForPolicy = false;
+    private static boolean sEverDisabledForPolicy;
     private static PrefChangeRegistrar sPrefChangeRegistrar;
     private static FeedAppLifecycle sFeedAppLifecycle;
     private static FeedProcessScope sFeedProcessScope;

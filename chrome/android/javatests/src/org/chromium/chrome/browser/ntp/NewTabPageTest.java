@@ -140,7 +140,7 @@ public class NewTabPageTest {
             UrlUtils.getIsolatedTestFilePath("/chrome/test/data/android/feed/hello_world.gcl.bin");
 
     // Anything not parameterized runs with Feed disabled.
-    private boolean mInterestFeedEnabled = false;
+    private boolean mInterestFeedEnabled;
     private Tab mTab;
     private NewTabPage mNtp;
     private View mFakebox;

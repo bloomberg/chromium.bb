@@ -33,7 +33,7 @@ public class NotificationsPreferences extends PreferenceFragment {
     // The following fields are only set if Feed is disabled, and should be null checked before
     // being used.
     private ChromeSwitchPreference mSuggestionsPref;
-    private SnippetsBridge mSnippetsBridge = null;
+    private SnippetsBridge mSnippetsBridge;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
