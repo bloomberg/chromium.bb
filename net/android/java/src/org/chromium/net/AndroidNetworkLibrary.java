@@ -32,6 +32,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.base.compat.ApiHelperForP;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.FileDescriptor;
@@ -64,10 +65,6 @@ import java.util.Set;
 class AndroidNetworkLibrary {
     private static final String TAG = "AndroidNetworkLibrary";
 
-    // Cached Method for LinkProperties.isPrivateDnsActive().
-    private static Method sIsPrivateDnsActiveMethod;
-    // Cached Method for LinkProperties.getPrivateDnsServerName().
-    private static Method sGetPrivateDnsServerNameMethod;
     // Cached value indicating if app has ACCESS_NETWORK_STATE permission.
     private static Boolean sHaveAccessNetworkState;
 
@@ -342,18 +339,7 @@ class AndroidNetworkLibrary {
      */
     static boolean isPrivateDnsActive(LinkProperties linkProperties) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && linkProperties != null) {
-            // TODO(pauljensen): When Android P SDK is available, remove reflection.
-            try {
-                // This could be racy if called on multiple threads, but races will
-                // end in the same result so it's not a problem.
-                if (sIsPrivateDnsActiveMethod == null) {
-                    sIsPrivateDnsActiveMethod =
-                            linkProperties.getClass().getMethod("isPrivateDnsActive");
-                }
-                return ((Boolean) sIsPrivateDnsActiveMethod.invoke(linkProperties)).booleanValue();
-            } catch (Exception e) {
-                Log.e(TAG, "Can not call LinkProperties.isPrivateDnsActive():", e);
-            }
+            return ApiHelperForP.isPrivateDnsActive(linkProperties);
         }
         return false;
     }
@@ -363,18 +349,7 @@ class AndroidNetworkLibrary {
      */
     private static String getPrivateDnsServerName(LinkProperties linkProperties) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && linkProperties != null) {
-            // TODO(pauljensen): When Android P SDK is available, remove reflection.
-            try {
-                // This could be racy if called on multiple threads, but races will
-                // end in the same result so it's not a problem.
-                if (sGetPrivateDnsServerNameMethod == null) {
-                    sGetPrivateDnsServerNameMethod =
-                            linkProperties.getClass().getMethod("getPrivateDnsServerName");
-                }
-                return (String) sGetPrivateDnsServerNameMethod.invoke(linkProperties);
-            } catch (Exception e) {
-                Log.e(TAG, "Can not call LinkProperties.getPrivateDnsServerName():", e);
-            }
+            return ApiHelperForP.getPrivateDnsServerName(linkProperties);
         }
         return null;
     }
