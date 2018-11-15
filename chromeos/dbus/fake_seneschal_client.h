@@ -21,16 +21,30 @@ class CHROMEOS_EXPORT FakeSeneschalClient : public SeneschalClient {
   void SharePath(const vm_tools::seneschal::SharePathRequest& request,
                  DBusMethodCallback<vm_tools::seneschal::SharePathResponse>
                      callback) override;
+  void UnsharePath(const vm_tools::seneschal::UnsharePathRequest& request,
+                   DBusMethodCallback<vm_tools::seneschal::UnsharePathResponse>
+                       callback) override;
 
   bool share_path_called() const { return share_path_called_; }
+  bool unshare_path_called() const { return unshare_path_called_; }
 
   void set_share_path_response(
       const vm_tools::seneschal::SharePathResponse& share_path_response) {
     share_path_response_ = share_path_response;
   }
 
-  const vm_tools::seneschal::SharePathRequest& last_request() const {
-    return last_request_;
+  void set_unshare_path_response(
+      const vm_tools::seneschal::UnsharePathResponse& unshare_path_response) {
+    unshare_path_response_ = unshare_path_response;
+  }
+
+  const vm_tools::seneschal::SharePathRequest& last_share_path_request() const {
+    return last_share_path_request_;
+  }
+
+  const vm_tools::seneschal::UnsharePathRequest& last_unshare_path_request()
+      const {
+    return last_unshare_path_request_;
   }
 
  protected:
@@ -40,9 +54,12 @@ class CHROMEOS_EXPORT FakeSeneschalClient : public SeneschalClient {
   void InitializeProtoResponses();
 
   bool share_path_called_ = false;
+  bool unshare_path_called_ = false;
 
-  vm_tools::seneschal::SharePathRequest last_request_;
+  vm_tools::seneschal::SharePathRequest last_share_path_request_;
+  vm_tools::seneschal::UnsharePathRequest last_unshare_path_request_;
   vm_tools::seneschal::SharePathResponse share_path_response_;
+  vm_tools::seneschal::UnsharePathResponse unshare_path_response_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSeneschalClient);
 };
