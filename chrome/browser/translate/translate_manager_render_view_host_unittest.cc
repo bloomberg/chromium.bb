@@ -22,6 +22,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/translate/translate_fake_page.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
@@ -119,63 +120,6 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
   std::unique_ptr<TranslateBubbleModel> model_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTranslateBubbleFactory);
-};
-
-class FakePageImpl : public translate::mojom::Page {
- public:
-  FakePageImpl()
-      : called_translate_(false),
-        called_revert_translation_(false),
-        binding_(this) {}
-  ~FakePageImpl() override {}
-
-  translate::mojom::PagePtr BindToNewPagePtr() {
-    binding_.Close();
-    translate_callback_pending_.Reset();
-    translate::mojom::PagePtr page;
-    binding_.Bind(mojo::MakeRequest(&page));
-    return page;
-  }
-
-  // translate::mojom::Page implementation.
-  void Translate(const std::string& translate_script,
-                 const std::string& source_lang,
-                 const std::string& target_lang,
-                 TranslateCallback callback) override {
-    // Ensure pending callback gets called.
-    if (translate_callback_pending_) {
-      std::move(translate_callback_pending_)
-          .Run(true, "", "", translate::TranslateErrors::NONE);
-    }
-
-    called_translate_ = true;
-    source_lang_ = source_lang;
-    target_lang_ = target_lang;
-
-    translate_callback_pending_ = std::move(callback);
-  }
-
-  void RevertTranslation() override { called_revert_translation_ = true; }
-
-  void PageTranslated(bool cancelled,
-                      const std::string& source_lang,
-                      const std::string& target_lang,
-                      translate::TranslateErrors::Type error) {
-    std::move(translate_callback_pending_)
-        .Run(cancelled, source_lang, target_lang, error);
-  }
-
-  bool called_translate_;
-  base::Optional<std::string> source_lang_;
-  base::Optional<std::string> target_lang_;
-  bool called_revert_translation_;
-
- private:
-  TranslateCallback translate_callback_pending_;
-
-  mojo::Binding<translate::mojom::Page> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakePageImpl);
 };
 
 }  // namespace

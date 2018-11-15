@@ -12,10 +12,10 @@ import org.chromium.content_public.browser.WebContents;
  */
 public class TranslateBridge {
     /**
-     * Translates the given tab.
+     * Translates the given tab when the necessary state has been computed (e.g. source language).
      */
-    public static void translateTab(Tab tab) {
-        nativeTranslate(tab.getWebContents());
+    public static void translateTabWhenReady(Tab tab) {
+        nativeManualTranslateWhenReady(tab.getWebContents());
     }
 
     /**
@@ -32,7 +32,7 @@ public class TranslateBridge {
         return nativeShouldShowManualTranslateIPH(tab.getWebContents());
     }
 
-    private static native void nativeTranslate(WebContents webContents);
+    private static native void nativeManualTranslateWhenReady(WebContents webContents);
     private static native boolean nativeCanManuallyTranslate(WebContents webContents);
     private static native boolean nativeShouldShowManualTranslateIPH(WebContents webContents);
 }
