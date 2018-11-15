@@ -190,12 +190,8 @@ declare_args() {
 # If it wasn't manually set, set to an appropriate default.
 assert(symbol_level >= -1 && symbol_level <= 2, "Invalid symbol_level")
 if (symbol_level == -1) {
-  if (is_android && use_order_profiling) {
-    # With instrumentation enabled, debug info puts libchrome.so over 4gb, which
-    # causes the linker to produce an invalid ELF. http://crbug.com/574476
-    symbol_level = 0
-  } else if (is_android && !is_component_build &&
-             !(android_64bit_target_cpu && !build_apk_secondary_abi)) {
+  if (is_android && !is_component_build &&
+      !(android_64bit_target_cpu && !build_apk_secondary_abi)) {
     # Reduce symbol level when it will cause invalid elf files to be created
     # (due to file size). https://crbug.com/648948.
     symbol_level = 1
