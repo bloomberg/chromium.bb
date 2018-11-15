@@ -84,16 +84,22 @@ bool ParseManifest(const base::Value& manifest_node,
       p.hash_sha256 = hash_sha256->GetString();
 
     const auto* size = package.FindKey("size");
-    if (size && size->is_int())
-      p.size = size->GetInt();
+    if (size && (size->is_int() || size->is_double())) {
+      const auto val = size->GetDouble();
+      if (0 <= val && val < kProtocolMaxInt)
+        p.size = size->GetDouble();
+    }
 
     const auto* hashdiff_sha256 = package.FindKey("hashdiff_sha256");
     if (hashdiff_sha256 && hashdiff_sha256->is_string())
       p.hashdiff_sha256 = hashdiff_sha256->GetString();
 
     const auto* sizediff = package.FindKey("sizediff");
-    if (sizediff && sizediff->is_int())
-      p.sizediff = sizediff->GetInt();
+    if (sizediff && (sizediff->is_int() || sizediff->is_double())) {
+      const auto val = sizediff->GetDouble();
+      if (0 <= val && val < kProtocolMaxInt)
+        p.sizediff = sizediff->GetDouble();
+    }
 
     result->manifest.packages.push_back(std::move(p));
   }

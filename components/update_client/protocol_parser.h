@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_PROTOCOL_PARSER_H_
 #define COMPONENTS_UPDATE_CLIENT_PROTOCOL_PARSER_H_
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -32,12 +33,12 @@ class ProtocolParser {
         // Attributes for the full update.
         std::string name;
         std::string hash_sha256;
-        int size = 0;
+        int64_t size = 0;
 
         // Attributes for the differential update.
         std::string namediff;
         std::string hashdiff_sha256;
-        int sizediff = 0;
+        int64_t sizediff = 0;
       };
 
       Manifest();

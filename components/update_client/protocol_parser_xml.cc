@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -109,14 +110,15 @@ bool ParsePackageTag(xmlNode* package,
   p.fingerprint = GetAttribute(package, "fp");
 
   p.hash_sha256 = GetAttribute(package, "hash_sha256");
-  int size = 0;
-  if (base::StringToInt(GetAttribute(package, "size"), &size)) {
+  int64_t size = 0;
+  if (base::StringToInt64(GetAttribute(package, "size"), &size) && size >= 0) {
     p.size = size;
   }
 
   p.hashdiff_sha256 = GetAttribute(package, "hashdiff_sha256");
-  int sizediff = 0;
-  if (base::StringToInt(GetAttribute(package, "sizediff"), &sizediff)) {
+  int64_t sizediff = 0;
+  if (base::StringToInt64(GetAttribute(package, "sizediff"), &sizediff) &&
+      sizediff >= 0) {
     p.sizediff = sizediff;
   }
 
