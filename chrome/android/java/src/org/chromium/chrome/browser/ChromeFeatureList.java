@@ -147,6 +147,8 @@ public abstract class ChromeFeatureList {
     }
 
     // Alphabetical:
+    public static final String ALLOW_REMOTE_CONTEXT_FOR_NOTIFICATIONS =
+            "AllowRemoteContextForNotifications";
     public static final String AUTOFILL_ALLOW_NON_HTTP_ACTIVATION =
             "AutofillAllowNonHttpActivation";
     public static final String ADJUST_WEBAPK_INSTALLATION_SPACE = "AdjustWebApkInstallationSpace";

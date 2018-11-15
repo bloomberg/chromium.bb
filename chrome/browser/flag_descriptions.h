@@ -1344,6 +1344,9 @@ extern const char kAiaFetchingDescription[];
 extern const char kAccessibilityTabSwitcherName[];
 extern const char kAccessibilityTabSwitcherDescription[];
 
+extern const char kAllowRemoteContextForNotificationsName[];
+extern const char kAllowRemoteContextForNotificationsDescription[];
+
 extern const char kAndroidAutofillAccessibilityName[];
 extern const char kAndroidAutofillAccessibilityDescription[];
 

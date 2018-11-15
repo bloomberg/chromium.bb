@@ -93,7 +93,8 @@ public class TrustedWebActivityClient {
 
         Bitmap bitmap = service.getSmallIconBitmap();
         if (!builder.hasStatusBarIconBitmap()) {
-            builder.setStatusBarIconForUntrustedRemoteApp(id, bitmap);
+            builder.setStatusBarIconForUntrustedRemoteApp(id, bitmap,
+                    service.getComponentName().getPackageName());
         }
         if (!builder.hasSmallIconForContent()) {
             builder.setContentSmallIconForUntrustedRemoteApp(bitmap);
