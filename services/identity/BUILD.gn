@@ -46,6 +46,7 @@ source_set("tests") {
     "//mojo/public/cpp/bindings:bindings",
     "//services/identity/public/cpp",
     "//services/identity/public/cpp:test_support",
+    "//services/identity/public/cpp:tests",
     "//services/identity/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
