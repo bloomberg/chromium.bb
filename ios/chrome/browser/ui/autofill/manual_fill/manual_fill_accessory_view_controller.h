@@ -41,6 +41,14 @@ extern NSString* const AccessoryCreditCardAccessibilityIdentifier;
 // shown above the keyboard on iPhone and above the manual fill view.
 @interface ManualFillAccessoryViewController : UIViewController
 
+// Changing this property hides and shows the address button.
+@property(nonatomic, assign, getter=isAddressButtonHidden)
+    BOOL addressButtonHidden;
+
+// Changing this property hides and shows the credit card button.
+@property(nonatomic, assign, getter=isCreditCardButtonHidden)
+    BOOL creditCardButtonHidden;
+
 // Changing this property hides and shows the password button.
 @property(nonatomic, assign, getter=isPasswordButtonHidden)
     BOOL passwordButtonHidden;
