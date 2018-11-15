@@ -135,9 +135,10 @@ TabletModeController::TabletModeController()
     Shell::Get()->window_tree_host_manager()->AddObserver(this);
     chromeos::AccelerometerReader::GetInstance()->AddObserver(this);
     ui::InputDeviceManager::GetInstance()->AddObserver(this);
-    bluetooth_devices_observer_ = std::make_unique<BluetoothDevicesObserver>(
-        base::BindRepeating(&TabletModeController::UpdateBluetoothDevice,
-                            base::Unretained(this)));
+    bluetooth_devices_observer_ =
+        std::make_unique<BluetoothDevicesObserver>(base::BindRepeating(
+            &TabletModeController::OnBluetoothAdapterOrDeviceChanged,
+            base::Unretained(this)));
   }
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
@@ -613,20 +614,19 @@ void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
   }
 }
 
-void TabletModeController::UpdateBluetoothDevice(
+void TabletModeController::OnBluetoothAdapterOrDeviceChanged(
     device::BluetoothDevice* device) {
   // We only care about pointing type bluetooth device change. Note KEYBOARD
   // type is also included here as sometimes a bluetooth keyboard comes with a
   // touch pad.
-  if (device->GetDeviceType() != device::BluetoothDeviceType::MOUSE &&
-      device->GetDeviceType() !=
-          device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO &&
-      device->GetDeviceType() != device::BluetoothDeviceType::KEYBOARD &&
-      device->GetDeviceType() != device::BluetoothDeviceType::TABLET) {
-    return;
+  if (!device ||
+      device->GetDeviceType() == device::BluetoothDeviceType::MOUSE ||
+      device->GetDeviceType() ==
+          device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO ||
+      device->GetDeviceType() == device::BluetoothDeviceType::KEYBOARD ||
+      device->GetDeviceType() == device::BluetoothDeviceType::TABLET) {
+    HandlePointingDeviceAddedOrRemoved();
   }
-
-  HandlePointingDeviceAddedOrRemoved();
 }
 
 void TabletModeController::UpdateInternalInputDevicesEventBlocker() {

@@ -73,9 +73,9 @@ class ASH_EXPORT VirtualKeyboardController
   // Force enable the keyboard and show it, even in laptop mode.
   void ForceShowKeyboard();
 
-  // Callback function of |bluetooth_devices_observer_|. Called when |device|
-  // changes.
-  void UpdateBluetoothDevice(device::BluetoothDevice* device);
+  // Callback function of |bluetooth_devices_observer_|. Called when the
+  // bluetooth adapter or |device| changes.
+  void OnBluetoothAdapterOrDeviceChanged(device::BluetoothDevice* device);
 
   // True if an external keyboard is connected.
   bool has_external_keyboard_;

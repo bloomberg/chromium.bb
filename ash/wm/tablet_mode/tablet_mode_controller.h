@@ -205,9 +205,9 @@ class ASH_EXPORT TabletModeController
   // sent from device manager. This will exit tablet mode if needed.
   void HandlePointingDeviceAddedOrRemoved();
 
-  // Callback function for |bluetooth_devices_observer_|. Called when |device|
-  // changes.
-  void UpdateBluetoothDevice(device::BluetoothDevice* device);
+  // Callback function of |bluetooth_devices_observer_|. Called when the
+  // bluetooth adapter or |device| changes.
+  void OnBluetoothAdapterOrDeviceChanged(device::BluetoothDevice* device);
 
   // Update the internal mouse and keyboard event blocker |event_blocker_|
   // according to current configuration. The internal input events should be
