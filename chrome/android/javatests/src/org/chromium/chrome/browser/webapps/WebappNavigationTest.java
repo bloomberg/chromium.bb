@@ -361,8 +361,11 @@ public class WebappNavigationTest {
         WebappActivityTestRule.assertToolbarShowState(activity, true);
 
         // Navigate back to in-scope through a close button.
-        ThreadUtils.runOnUiThreadBlocking(() -> activity.getToolbarManager()
-                .getToolbarLayout().findViewById(R.id.close_button).callOnClick());
+        ThreadUtils.runOnUiThreadBlocking(()
+                                                  -> activity.getToolbarManager()
+                                                             .getToolbarLayoutForTesting()
+                                                             .findViewById(R.id.close_button)
+                                                             .callOnClick());
 
         // We should end up on most recent in-scope URL.
         ChromeTabUtils.waitForTabPageLoaded(tab, otherInScopeUrl);
@@ -398,10 +401,11 @@ public class WebappNavigationTest {
 
         // Close the Minimal UI.
         WebappActivityTestRule.assertToolbarShowState(activity, true);
-        ThreadUtils.runOnUiThreadBlocking(() -> activity.getToolbarManager()
-                                                        .getToolbarLayout()
-                                                        .findViewById(R.id.close_button)
-                                                        .callOnClick());
+        ThreadUtils.runOnUiThreadBlocking(()
+                                                  -> activity.getToolbarManager()
+                                                             .getToolbarLayoutForTesting()
+                                                             .findViewById(R.id.close_button)
+                                                             .callOnClick());
 
         // The WebappActivity should be navigated to the page prior to the redirect.
         ChromeTabUtils.waitForTabPageLoaded(activity.getActivityTab(), initialInScopeUrl);

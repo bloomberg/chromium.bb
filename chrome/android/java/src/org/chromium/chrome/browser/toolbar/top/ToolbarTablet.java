@@ -376,12 +376,12 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    public boolean isReadyForTextureCapture() {
+    boolean isReadyForTextureCapture() {
         return !urlHasFocus();
     }
 
     @Override
-    public void onTabOrModelChanged() {
+    void onTabOrModelChanged() {
         super.onTabOrModelChanged();
         boolean incognito = isIncognito();
         if (mUseLightColorAssets == null || mUseLightColorAssets != incognito) {
@@ -443,13 +443,13 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    public void onTabContentViewChanged() {
+    void onTabContentViewChanged() {
         super.onTabContentViewChanged();
         updateNtp();
     }
 
     @Override
-    public void updateButtonVisibility() {
+    void updateButtonVisibility() {
         if (FeatureUtilities.isNewTabPageButtonEnabled()) {
             mHomeButton.setVisibility(isIncognito() ? GONE : VISIBLE);
         }
@@ -457,21 +457,21 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    public void updateBackButtonVisibility(boolean canGoBack) {
+    void updateBackButtonVisibility(boolean canGoBack) {
         boolean enableButton = canGoBack && !mIsInTabSwitcherMode;
         mBackButton.setEnabled(enableButton);
         mBackButton.setFocusable(enableButton);
     }
 
     @Override
-    public void updateForwardButtonVisibility(boolean canGoForward) {
+    void updateForwardButtonVisibility(boolean canGoForward) {
         boolean enableButton = canGoForward && !mIsInTabSwitcherMode;
         mForwardButton.setEnabled(enableButton);
         mForwardButton.setFocusable(enableButton);
     }
 
     @Override
-    public void updateReloadButtonVisibility(boolean isReloading) {
+    void updateReloadButtonVisibility(boolean isReloading) {
         if (isReloading) {
             mReloadButton.getDrawable().setLevel(
                     getResources().getInteger(R.integer.reload_button_level_stop));
@@ -489,7 +489,7 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    public void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) {
+    void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) {
         if (isBookmarked) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
             // Non-incognito mode shows a blue filled star.
@@ -509,7 +509,7 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    public void setTabSwitcherMode(
+    void setTabSwitcherMode(
             boolean inTabSwitcherMode, boolean showToolbar, boolean delayAnimation) {
         if (mShowTabStack && inTabSwitcherMode) {
             mIsInTabSwitcherMode = true;
@@ -541,12 +541,12 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    public void setTabCountProvider(TabCountProvider tabCountProvider) {
+    void setTabCountProvider(TabCountProvider tabCountProvider) {
         tabCountProvider.addObserver(this);
     }
 
     @Override
-    public void onAccessibilityStatusChanged(boolean enabled) {
+    void onAccessibilityStatusChanged(boolean enabled) {
         // If Memex is enabled, don't allow the accessibility tab switcher button to be disabled.
         if (!enabled && ChromeFeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MEMEX)) {
@@ -557,17 +557,17 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    public void setBookmarkClickHandler(OnClickListener listener) {
+    void setBookmarkClickHandler(OnClickListener listener) {
         mBookmarkListener = listener;
     }
 
     @Override
-    public void setOnTabSwitcherClickHandler(OnClickListener listener) {
+    void setOnTabSwitcherClickHandler(OnClickListener listener) {
         mTabSwitcherListener = listener;
     }
 
     @Override
-    public void onHomeButtonUpdate(boolean homeButtonEnabled) {
+    void onHomeButtonUpdate(boolean homeButtonEnabled) {
         mHomeButton.setVisibility(homeButtonEnabled ? VISIBLE : GONE);
     }
 
@@ -577,12 +577,12 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    public boolean useLightDrawables() {
+    boolean useLightDrawables() {
         return mUseLightColorAssets != null && mUseLightColorAssets;
     }
 
     @Override
-    public void showAppMenuUpdateBadge() {
+    void showAppMenuUpdateBadge() {
         super.showAppMenuUpdateBadge();
         if (!mIsInTabSwitcherMode) {
             if (mUseLightColorAssets != null && mUseLightColorAssets) {

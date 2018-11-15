@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.chrome.browser.widget.ViewResourceFrameLayout;
-import org.chromium.ui.AsyncViewProvider;
 import org.chromium.ui.AsyncViewStub;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -72,14 +71,14 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
     public void getProgressBarDrawingInfo(DrawingInfo drawingInfoOut) {
         if (mToolbar == null) return;
         // TODO(yusufo): Avoid casting to the layout without making the interface bigger.
-        ToolbarProgressBar progressBar = ((ToolbarLayout) mToolbar).getProgressBar();
+        ToolbarProgressBar progressBar = mToolbar.getProgressBar();
         if (progressBar != null) progressBar.getDrawingInfo(drawingInfoOut);
     }
 
     @Override
     public int getToolbarBackgroundColor() {
         if (mToolbar == null) return 0;
-        return ((ToolbarLayout) mToolbar).getToolbarDataProvider().getPrimaryColor();
+        return mToolbar.getPrimaryColor();
     }
 
     @Override
@@ -101,29 +100,32 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
                         !DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
                         && FeatureUtilities.shouldInflateToolbarOnBackgroundThread());
                 toolbarStub.inflate();
-                AsyncViewProvider<ToolbarLayout> toolbarProvider =
-                        AsyncViewProvider.of(toolbarStub, R.id.toolbar);
-                toolbarProvider.whenLoaded(this ::onToolbarInflationComplete);
+
             } else {
                 ViewStub toolbarStub = (ViewStub) viewStub;
                 toolbarStub.setLayoutResource(toolbarLayoutId);
                 toolbarStub.inflate();
-
-                onToolbarInflationComplete(findViewById(R.id.toolbar));
             }
         }
     }
 
-    private void onToolbarInflationComplete(ToolbarLayout toolbar) {
+    /**
+     * @param toolbar The toolbar contained inside this control container. Should be called
+     *                after inflation is complete.
+     */
+    public void setToolbar(Toolbar toolbar) {
         mToolbar = toolbar;
         mToolbarContainer.setToolbar(mToolbar);
-        if (mToolbar instanceof ToolbarTablet) {
+
+        View toolbarView = findViewById(R.id.toolbar);
+        assert toolbarView != null;
+
+        if (toolbarView instanceof ToolbarTablet) {
             // On tablet, draw a fake tab strip and toolbar until the compositor is
             // ready to draw the real tab strip. (On phone, the toolbar is made entirely
             // of Android views, which are already initialized.)
             setBackgroundResource(R.drawable.toolbar_background);
         }
-        assert mToolbar != null;
     }
 
     @Override

@@ -294,7 +294,7 @@ public class WebappActivity extends SingleTabActivity {
                 (ToolbarControlContainer) findViewById(R.id.control_container));
         getToolbarManager().initializeWithNative(getTabModelSelector(),
                 getFullscreenManager().getBrowserVisibilityDelegate(), getFindToolbarManager(),
-                null, layoutDriver, null, null, null, view -> onToolbarCloseButtonClicked(), null);
+                null, layoutDriver, null, null, null, view -> onToolbarCloseButtonClicked());
         getToolbarManager().setShowTitle(true);
         getToolbarManager().setCloseButtonDrawable(null); // Hides close button.
 
@@ -717,7 +717,7 @@ public class WebappActivity extends SingleTabActivity {
             getToolbarManager().setCloseButtonDrawable(
                     TintedDrawable.constructTintedDrawable(this, R.drawable.btn_close));
             // Applies light or dark tint to icons depending on the theme color.
-            getToolbarManager().getToolbarLayout().getLocationBar().updateVisualsForState();
+            getToolbarManager().updateLocationBarVisualsForState();
         } else {
             getToolbarManager().setCloseButtonDrawable(null);
         }

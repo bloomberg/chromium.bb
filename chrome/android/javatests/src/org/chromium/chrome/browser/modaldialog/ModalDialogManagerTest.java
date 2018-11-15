@@ -84,8 +84,10 @@ public class ModalDialogManagerTest {
         mModalDialogViews = new ModalDialogView[MAX_DIALOGS];
         for (int i = 0; i < MAX_DIALOGS; i++) mModalDialogViews[i] = createDialog(i);
         mTestObserver = new TestObserver();
-        mActivity.getToolbarManager().getToolbarLayout().getLocationBar().addUrlFocusChangeListener(
-                mTestObserver);
+        mActivity.getToolbarManager()
+                .getToolbarLayoutForTesting()
+                .getLocationBar()
+                .addUrlFocusChangeListener(mTestObserver);
         TabModalPresenter presenter =
                 (TabModalPresenter) mManager.getPresenterForTest(ModalDialogType.TAB);
         presenter.disableAnimationForTest();

@@ -502,7 +502,7 @@ public class ToolbarPhone
      * Sets up click and key listeners once we have native library available to handle clicks.
      */
     @Override
-    public void onNativeLibraryReady() {
+    void onNativeLibraryReady() {
         super.onNativeLibraryReady();
 
         getLocationBar().onNativeLibraryReady();
@@ -2607,18 +2607,18 @@ public class ToolbarPhone
     }
 
     @Override
-    public boolean useLightDrawables() {
+    boolean useLightDrawables() {
         return mUseLightToolbarDrawables;
     }
 
     @Override
-    public void setMenuButtonHighlightDrawable(boolean highlighting) {
+    void setMenuButtonHighlightDrawable(boolean highlighting) {
         highlighting &= !isTabSwitcherAnimationRunning();
         super.setMenuButtonHighlightDrawable(highlighting);
     }
 
     @Override
-    public void setTabModelSelector(TabModelSelector selector) {
+    void setTabModelSelector(TabModelSelector selector) {
         mTabModelSelector = selector;
         if (mIncognitoToggleTabLayout != null) {
             mIncognitoToggleTabLayout.setTabModelSelector(mTabModelSelector);
@@ -2626,7 +2626,7 @@ public class ToolbarPhone
     }
 
     @Override
-    public void showAppMenuUpdateBadge() {
+    void showAppMenuUpdateBadge() {
         if (getMenuBadge() == null) return;
         super.showAppMenuUpdateBadge();
 
@@ -2649,7 +2649,7 @@ public class ToolbarPhone
     }
 
     @Override
-    public void removeAppMenuUpdateBadge(boolean animate) {
+    void removeAppMenuUpdateBadge(boolean animate) {
         if (getMenuBadge() == null) return;
         super.removeAppMenuUpdateBadge(animate);
 
@@ -2661,7 +2661,7 @@ public class ToolbarPhone
     }
 
     @Override
-    public void enableExperimentalButton(
+    void enableExperimentalButton(
             OnClickListener onClickListener, int drawableResId, int contentDescriptionResId) {
         if (mExperimentalButton == null) {
             ViewStub viewStub = findViewById(R.id.experimental_button_stub);
@@ -2701,12 +2701,12 @@ public class ToolbarPhone
     }
 
     @Override
-    public View getExperimentalButtonView() {
+    View getExperimentalButtonView() {
         return mExperimentalButton;
     }
 
     @Override
-    public void disableExperimentalButton() {
+    void disableExperimentalButton() {
         if (mExperimentalButton == null || mExperimentalButton.getVisibility() == View.GONE) {
             return;
         }
