@@ -361,7 +361,6 @@ extern const char kImportDialogSavedPasswords[];
 extern const char kImportDialogSearchEngine[];
 
 extern const char kProfileAvatarIndex[];
-extern const char kProfileLocalAvatarIndex[];
 extern const char kProfileUsingDefaultName[];
 extern const char kProfileName[];
 extern const char kProfileUsingDefaultAvatar[];
