@@ -15,17 +15,6 @@
     android:orientation="horizontal"
     android:visibility="gone" >
 
-    <!-- TODO(crbug.com/806868): Make the autofill assistant chip layouts into
-         styles and use those for these buttons.
-    -->
-    <org.chromium.ui.widget.ButtonCompat
-        android:id="@+id/button_secondary"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:minHeight="36dp"
-        android:text="@string/cancel"
-        style="@style/TextButton" />
-
     <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/button_primary"
         android:layout_width="wrap_content"

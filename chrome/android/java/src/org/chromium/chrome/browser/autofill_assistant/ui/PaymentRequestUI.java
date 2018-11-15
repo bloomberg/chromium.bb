@@ -109,7 +109,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private FadingEdgeScrollView mPaymentContainer;
     private LinearLayout mPaymentContainerLayout;
     private ViewGroup mBottomBar;
-    private Button mCancelButton;
     private Button mPayButton;
     private View mSpinnyLayout;
     private CheckBox mTermsCheckBox;
@@ -307,8 +306,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mBottomBar = (ViewGroup) mRequestView.findViewById(R.id.bottom_bar);
         mPayButton = (Button) mBottomBar.findViewById(R.id.button_primary);
         mPayButton.setOnClickListener(this);
-        mCancelButton = (Button) mBottomBar.findViewById(R.id.button_secondary);
-        mCancelButton.setOnClickListener(this);
 
         // Terms and services accepted checkbox. The state is passively propagated along to the
         // client when the pay/continue button is clicked.
@@ -601,9 +598,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             expand(mPaymentMethodSection);
         } else if (v == mPayButton) {
             processPayButton();
-        } else if (v == mCancelButton) {
-            dismiss();
-            return;
         }
 
         updatePayButtonEnabled();
@@ -736,9 +730,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             // Expand all the dividers.
             for (int i = 0; i < mSectionSeparators.size(); i++) mSectionSeparators.get(i).expand();
             mPaymentContainerLayout.requestLayout();
-
-            // Switch the 'edit' button to a 'cancel' button.
-            mCancelButton.setText(mContext.getString(R.string.cancel));
 
             // Disable all but the first button.
             updateSectionButtons();
