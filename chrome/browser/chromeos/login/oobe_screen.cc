@@ -47,8 +47,7 @@ const char* kScreenNames[] = {
     "device-disabled",                 // SCREEN_DEVICE_DISABLED
     "unrecoverable-cryptohome-error",  // SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR
     "userBoard",                       // SCREEN_USER_SELECTION
-    // SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE
-    "ad-password-change",
+    "ad-password-change",            // SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE
     "encryption-migration",          // SCREEN_ENCRYPTION_MIGRATION
     "voice-interaction-value-prop",  // SCREEN_VOICE_INTERACTION_VALUE_PROP
     "wait-for-container-ready",      // SCREEN_WAIT_FOR_CONTAINTER_READY
