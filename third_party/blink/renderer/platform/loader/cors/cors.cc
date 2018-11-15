@@ -31,9 +31,7 @@ namespace {
 base::Optional<std::string> GetHeaderValue(const HTTPHeaderMap& header_map,
                                            const AtomicString& header_name) {
   if (header_map.Contains(header_name)) {
-    const AtomicString& atomic_value = header_map.Get(header_name);
-    CString string_value = atomic_value.GetString().Utf8();
-    return std::string(string_value.data(), string_value.length());
+    return WebString(header_map.Get(header_name)).Latin1();
   }
   return base::nullopt;
 }
@@ -295,15 +293,12 @@ bool CalculateCredentialsFlag(
 
 bool IsCORSSafelistedMethod(const String& method) {
   DCHECK(!method.IsNull());
-  CString utf8_method = method.Utf8();
-  return network::cors::IsCORSSafelistedMethod(
-      std::string(utf8_method.data(), utf8_method.length()));
+  return network::cors::IsCORSSafelistedMethod(WebString(method).Latin1());
 }
 
 bool IsCORSSafelistedContentType(const String& media_type) {
-  CString utf8_media_type = media_type.Utf8();
   return network::cors::IsCORSSafelistedContentType(
-      std::string(utf8_media_type.data(), utf8_media_type.length()));
+      WebString(media_type).Latin1());
 }
 
 bool IsNoCORSSafelistedHeader(const String& name, const String& value) {
@@ -327,9 +322,7 @@ Vector<String> CORSUnsafeRequestHeaderNames(const HTTPHeaderMap& headers) {
 }
 
 bool IsForbiddenHeaderName(const String& name) {
-  CString utf8_name = name.Utf8();
-  return network::cors::IsForbiddenHeader(
-      std::string(utf8_name.data(), utf8_name.length()));
+  return network::cors::IsForbiddenHeader(WebString(name).Latin1());
 }
 
 bool ContainsOnlyCORSSafelistedHeaders(const HTTPHeaderMap& header_map) {
