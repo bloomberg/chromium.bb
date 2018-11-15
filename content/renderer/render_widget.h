@@ -226,7 +226,7 @@ class CONTENT_EXPORT RenderWidget
   // sent (only ACKs) and the process is free to exit when there are no other
   // active RenderWidgets. The RenderWidget is not used for compositing as there
   // is no WebWidget that should display content when swapped out.
-  void SetSwappedOut(bool is_swapped_out) { is_swapped_out_ = is_swapped_out; }
+  void SetSwappedOut(bool is_swapped_out);
   bool is_swapped_out() const { return is_swapped_out_; }
 
   // This is true once a Close IPC has been received. The actual action of
@@ -363,11 +363,6 @@ class CONTENT_EXPORT RenderWidget
       const cc::ManagedMemoryPolicy& policy,
       const gfx::Size& initial_screen_size,
       float initial_device_scale_factor);
-
-  // Initiates the compositor to set up IPC channels and begin its scheduler.
-  void StartCompositor();
-  // Pauses the compositor's scheduler and tears down its IPC channels.
-  void StopCompositor();
 
   LayerTreeView* layer_tree_view() const { return layer_tree_view_.get(); }
   WidgetInputHandlerManager* widget_input_handler_manager() {
@@ -567,7 +562,15 @@ class CONTENT_EXPORT RenderWidget
 
   static scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner();
 
+  // Creates the compositor, but leaves it in a stopped state, where it will
+  // not set up IPC channels or begin trying to produce frames until started
+  // via StartCompositor().
   LayerTreeView* InitializeLayerTreeView();
+
+  // Initiates the compositor to set up IPC channels and begin its scheduler.
+  void StartCompositor();
+  // Pauses the compositor's scheduler and tears down its IPC channels.
+  void StopCompositor();
 
   void DoDeferredClose();
   void NotifyOnClose();
