@@ -282,13 +282,12 @@ void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAckInternal(
   client_->DidReceiveCompositorFrameAck();
 }
 
-void DirectLayerTreeFrameSink::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    const gfx::PresentationFeedback& feedback) {
-  client_->DidPresentCompositorFrame(presentation_token, feedback);
-}
+void DirectLayerTreeFrameSink::OnBeginFrame(
+    const BeginFrameArgs& args,
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
+  for (const auto& pair : feedbacks)
+    client_->DidPresentCompositorFrame(pair.first, pair.second);
 
-void DirectLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
   DCHECK_LE(pipeline_reporting_frame_times_.size(), 25u);
   // Note that client_name is constant during the lifetime of the process and
   // it's either "Browser" or "Renderer".

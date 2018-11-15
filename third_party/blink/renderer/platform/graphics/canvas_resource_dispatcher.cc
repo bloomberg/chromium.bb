@@ -285,12 +285,6 @@ void CanvasResourceDispatcher::DidReceiveCompositorFrameAck(
   DCHECK_GE(pending_compositor_frames_, 0);
 }
 
-void CanvasResourceDispatcher::DidPresentCompositorFrame(
-    uint32_t presentation_token,
-    ::gfx::mojom::blink::PresentationFeedbackPtr feedback) {
-  NOTIMPLEMENTED();
-}
-
 void CanvasResourceDispatcher::SetNeedsBeginFrame(bool needs_begin_frame) {
   if (needs_begin_frame_ == needs_begin_frame)
     return;
@@ -313,7 +307,8 @@ void CanvasResourceDispatcher::SetNeedsBeginFrameInternal() {
 }
 
 void CanvasResourceDispatcher::OnBeginFrame(
-    const viz::BeginFrameArgs& begin_frame_args) {
+    const viz::BeginFrameArgs& begin_frame_args,
+    WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>) {
   current_begin_frame_ack_ = viz::BeginFrameAck(begin_frame_args, false);
   if (pending_compositor_frames_ >= kMaxPendingCompositorFrames ||
       (begin_frame_args.type == viz::BeginFrameArgs::MISSED &&
