@@ -1580,7 +1580,7 @@ void HostProcess::StartHost() {
   // will request that the user enable this permission for us if they are on an
   // affected platform and the permission has not already been approved.
   if (base::mac::IsAtLeastOS10_14()) {
-    mac::PromptUserToChangeTrustStateIfNeeded();
+    mac::PromptUserToChangeTrustStateIfNeeded(context_->ui_task_runner());
   }
 #endif
 
