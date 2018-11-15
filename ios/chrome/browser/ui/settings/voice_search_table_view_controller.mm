@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/voicesearch_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/voice_search_table_view_controller.h"
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_switch_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_prefs.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -37,7 +35,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface VoicesearchCollectionViewController () {
+@interface VoiceSearchTableViewController () {
   PrefService* _prefs;  // weak
   StringPrefMember _selectedLanguage;
   BooleanPrefMember _ttsEnabled;
@@ -49,34 +47,40 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (BOOL)currentLanguageSupportsTTS;
 @end
 
-@implementation VoicesearchCollectionViewController
-
-#pragma mark - Initialization
+@implementation VoiceSearchTableViewController
 
 - (instancetype)initWithPrefs:(PrefService*)prefs {
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_IOS_VOICE_SEARCH_SETTING_TITLE);
     _prefs = prefs;
     _selectedLanguage.Init(prefs::kVoiceSearchLocale, _prefs);
     _ttsEnabled.Init(prefs::kVoiceSearchTTS, _prefs);
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
   return self;
 }
 
+#pragma mark - UIViewController
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  self.tableView.rowHeight = UITableViewAutomaticDimension;
+
+  [self loadModel];
+}
+
+#pragma mark - ChromeTableViewController
+
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
 
   // TTS section.
   [model addSectionWithIdentifier:SectionIdentifierTTS];
-  LegacySettingsSwitchItem* tts =
-      [[LegacySettingsSwitchItem alloc] initWithType:ItemTypeTTSEnabled];
+  SettingsSwitchItem* tts =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeTTSEnabled];
   tts.text = l10n_util::GetNSString(IDS_IOS_VOICE_SEARCH_SETTING_TTS);
   BOOL enabled = [self currentLanguageSupportsTTS];
   tts.on = enabled && _ttsEnabled.GetValue();
@@ -94,14 +98,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierLanguages];
   // Add default locale option.  Using an empty string for the voice search
   // locale pref indicates using the default locale.
-  SettingsTextItem* defaultItem =
-      [[SettingsTextItem alloc] initWithType:ItemTypeLanguagesLanguageOption];
+  TableViewDetailTextItem* defaultItem = [[TableViewDetailTextItem alloc]
+      initWithType:ItemTypeLanguagesLanguageOption];
   defaultItem.text =
       l10n_util::GetNSStringF(IDS_IOS_VOICE_SEARCH_SETTINGS_DEFAULT_LOCALE,
                               localeConfig->GetDefaultLocale().display_name);
   defaultItem.accessoryType = selectedLocaleCode.empty()
-                                  ? MDCCollectionViewCellAccessoryCheckmark
-                                  : MDCCollectionViewCellAccessoryNone;
+                                  ? UITableViewCellAccessoryCheckmark
+                                  : UITableViewCellAccessoryNone;
   [model addItem:defaultItem
       toSectionWithIdentifier:SectionIdentifierLanguages];
   // Add locale list.
@@ -110,30 +114,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
     NSString* languageName = base::SysUTF16ToNSString(locale.display_name);
     BOOL checked = (locale.code == selectedLocaleCode);
 
-    SettingsTextItem* languageItem =
-        [[SettingsTextItem alloc] initWithType:ItemTypeLanguagesLanguageOption];
+    TableViewDetailTextItem* languageItem = [[TableViewDetailTextItem alloc]
+        initWithType:ItemTypeLanguagesLanguageOption];
     languageItem.text = languageName;
-    languageItem.accessoryType = checked
-                                     ? MDCCollectionViewCellAccessoryCheckmark
-                                     : MDCCollectionViewCellAccessoryNone;
+    languageItem.accessoryType = checked ? UITableViewCellAccessoryCheckmark
+                                         : UITableViewCellAccessoryNone;
     [model addItem:languageItem
         toSectionWithIdentifier:SectionIdentifierLanguages];
   }
 }
 
-#pragma mark - UICollectionViewDelegate
+#pragma mark - UITableViewDelegate
 
-- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
-                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell =
-      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
-  NSInteger itemType =
-      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell =
+      [super tableView:tableView cellForRowAtIndexPath:indexPath];
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
 
   if (itemType == ItemTypeTTSEnabled) {
     // Have the switch send a message on UIControlEventValueChanged.
-    LegacySettingsSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(cell);
+    SettingsSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+    switchCell.selectionStyle = UITableViewCellSelectionStyleNone;
     [switchCell.switchView addTarget:self
                               action:@selector(ttsToggled:)
                     forControlEvents:UIControlEventValueChanged];
@@ -142,12 +145,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return cell;
 }
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didSelectRowAtIndexPath:indexPath];
 
-  CollectionViewModel* model = self.collectionViewModel;
-  CollectionViewItem* item = [model itemAtIndexPath:indexPath];
+  TableViewModel* model = self.tableViewModel;
+  TableViewItem* item = [model itemAtIndexPath:indexPath];
 
   // Language options.
   if (item.type == ItemTypeLanguagesLanguageOption) {
@@ -168,34 +171,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // Update the UI.
     [self markAsCheckedLanguageAtIndex:index];
   }
-}
-
-#pragma mark MDCCollectionViewStylingDelegate
-
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  switch (type) {
-    case ItemTypeTTSEnabled:
-      return YES;
-    default:
-      return NO;
-  }
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 #pragma mark - Actions
 
 - (void)ttsToggled:(id)sender {
   NSIndexPath* switchPath =
-      [self.collectionViewModel indexPathForItemType:ItemTypeTTSEnabled
-                                   sectionIdentifier:SectionIdentifierTTS];
+      [self.tableViewModel indexPathForItemType:ItemTypeTTSEnabled
+                              sectionIdentifier:SectionIdentifierTTS];
 
-  LegacySettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
-          [self.collectionViewModel itemAtIndexPath:switchPath]);
-  LegacySettingsSwitchCell* switchCell =
-      base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(
-          [self.collectionView cellForItemAtIndexPath:switchPath]);
+  SettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+          [self.tableViewModel itemAtIndexPath:switchPath]);
+  SettingsSwitchCell* switchCell =
+      base::mac::ObjCCastStrict<SettingsSwitchCell>(
+          [self.tableView cellForRowAtIndexPath:switchPath]);
 
   // Update the model and the preference with the current value of the switch.
   DCHECK_EQ(switchCell.switchView, sender);
@@ -208,16 +199,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)markAsCheckedLanguageAtIndex:(NSUInteger)index {
   // Update the collection view model with the new selected language.
-  NSArray* languageItems = [self.collectionViewModel
+  NSArray* languageItems = [self.tableViewModel
       itemsInSectionWithIdentifier:SectionIdentifierLanguages];
   NSMutableArray* modifiedItems = [NSMutableArray array];
   for (NSUInteger ii = 0; ii < [languageItems count]; ++ii) {
-    MDCCollectionViewCellAccessoryType type =
-        (ii == index) ? MDCCollectionViewCellAccessoryCheckmark
-                      : MDCCollectionViewCellAccessoryNone;
+    UITableViewCellAccessoryType type = (ii == index)
+                                            ? UITableViewCellAccessoryCheckmark
+                                            : UITableViewCellAccessoryNone;
 
-    SettingsTextItem* textItem = base::mac::ObjCCastStrict<SettingsTextItem>(
-        [languageItems objectAtIndex:ii]);
+    TableViewDetailTextItem* textItem =
+        base::mac::ObjCCastStrict<TableViewDetailTextItem>(
+            [languageItems objectAtIndex:ii]);
     if (textItem.accessoryType != type) {
       textItem.accessoryType = type;
       [modifiedItems addObject:textItem];
@@ -227,11 +219,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Some languages do not support TTS.  Disable the switch for those
   // languages.
   NSIndexPath* switchPath =
-      [self.collectionViewModel indexPathForItemType:ItemTypeTTSEnabled
-                                   sectionIdentifier:SectionIdentifierTTS];
-  LegacySettingsSwitchCell* switchCell =
-      base::mac::ObjCCastStrict<LegacySettingsSwitchCell>(
-          [self.collectionView cellForItemAtIndexPath:switchPath]);
+      [self.tableViewModel indexPathForItemType:ItemTypeTTSEnabled
+                              sectionIdentifier:SectionIdentifierTTS];
+  SettingsSwitchCell* switchCell =
+      base::mac::ObjCCastStrict<SettingsSwitchCell>(
+          [self.tableView cellForRowAtIndexPath:switchPath]);
 
   BOOL enabled = [self currentLanguageSupportsTTS];
   BOOL on = enabled && _ttsEnabled.GetValue();
@@ -239,14 +231,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UISwitch* switchView = switchCell.switchView;
   switchView.enabled = enabled;
   switchCell.textLabel.textColor =
-      [LegacySettingsSwitchCell defaultTextColorForState:switchView.state];
+      [SettingsSwitchCell defaultTextColorForState:switchView.state];
   if (on != switchView.isOn) {
     [switchView setOn:on animated:YES];
   }
   // Also update the switch item.
-  LegacySettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<LegacySettingsSwitchItem>(
-          [self.collectionViewModel itemAtIndexPath:switchPath]);
+  SettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<SettingsSwitchItem>(
+          [self.tableViewModel itemAtIndexPath:switchPath]);
   switchItem.enabled = enabled;
   switchItem.on = on;
 

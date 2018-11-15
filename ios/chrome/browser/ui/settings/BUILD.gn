@@ -101,8 +101,8 @@ source_set("settings") {
     "time_range_selector_collection_view_controller.mm",
     "translate_table_view_controller.h",
     "translate_table_view_controller.mm",
-    "voicesearch_collection_view_controller.h",
-    "voicesearch_collection_view_controller.mm",
+    "voice_search_table_view_controller.h",
+    "voice_search_table_view_controller.mm",
   ]
   deps = [
     "resources:app_icon_placeholder",
@@ -295,7 +295,7 @@ source_set("unit_tests") {
     "sync_settings_collection_view_controller_unittest.mm",
     "time_range_selector_collection_view_controller_unittest.mm",
     "translate_table_view_controller_unittest.mm",
-    "voicesearch_collection_view_controller_unittest.mm",
+    "voice_search_table_view_controller_unittest.mm",
   ]
   deps = [
     ":settings",
