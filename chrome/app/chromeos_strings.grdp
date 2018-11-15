@@ -3225,8 +3225,8 @@
   <message name="IDS_ASSISTANT_READY_SCREEN_TITLE" desc="Title for assistant ready screen.">
     Your Assistant is ready
   </message>
-  <message name="IDS_ASSISTANT_READY_SCREEN_MESSAGE" desc="Message for assistant ready screen.">
-    When your Chromebook is set up, press the Assistant button or say "Ok Google" to get help from your Assistant anytime.
+  <message name="IDS_ASSISTANT_READY_SCREEN_MESSAGE" desc="Message for Assistant ready screen.">
+    When your Chromebook is set up, press the Assistant button or say "Ok Google", if turned on, to get help from your Assistant anytime.
   </message>
   <message name="IDS_ASSISTANT_CONTINUE_BUTTON" desc="Continue button for asssitant optin flow.">
     Continue
@@ -3243,8 +3243,8 @@
   <message name="IDS_ASSISTANT_VOICE_MATCH_TITLE" desc="Title for assistant voice match screen.">
     Access your Assistant with Voice Match
   </message>
-  <message name="IDS_ASSISTANT_VOICE_MATCH_MESSAGE" desc="Message for assistant voice match screen.">
-    Your Assisatant uses these recordings to create your voice model, which is stored in your device. Delete or retrain the model in assistant settings. View or delete voice commands in your Google activity controls.
+  <message name="IDS_ASSISTANT_VOICE_MATCH_MESSAGE" desc="Message for Assistant voice match screen.">
+    Your Assistant uses these recordings to create your voice model, which is stored in your device. Delete or retrain the model in Assistant settings. View or delete voice commands in your Google activity controls.
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_RECORDING" desc="Title for recording in assistant voice match screen.">
     Teach the Assistant to recognize your voice
@@ -3252,8 +3252,8 @@
   <message name="IDS_ASSISTANT_VOICE_MATCH_COMPLETED" desc="Title for completed assistant voice match screen.">
     Ok Google is all set
   </message>
-  <message name="IDS_ASSISTANT_VOICE_MATCH_FOOTER" desc="Footer message for assistant voice match screen.">
-    Recording "Ok Google" 3 times creates your voice model, which is stored on your device. Delete or retrain the model in assistant settings. View or delete voice commands in your Google activity controls.
+  <message name="IDS_ASSISTANT_VOICE_MATCH_FOOTER" desc="Footer message for Assistant voice match screen.">
+    Recording "Ok Google" 3 times creates your voice model, which is stored on your device. Delete or retrain the model in Assistant settings. View or delete voice commands in your Google activity controls.
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_INSTRUCTION0" desc="Instruction message for assistant voice match recording.">
     Say "Ok Google"
