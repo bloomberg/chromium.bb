@@ -713,6 +713,13 @@ InProcessCommandBuffer::OnCommandBatchProcessed() {
 
 void InProcessCommandBuffer::OnParseError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
+  // There is a race between service side FlushOnGpuThread() calling
+  // UpdateLastStateOnGpuThread() and client side calling GetLastState().
+  // Update last_state_ now before notifying client side to save the
+  // error and make the race benign.
+  UpdateLastStateOnGpuThread();
+
   PostOrRunClientCallback(
       base::BindOnce(&InProcessCommandBuffer::OnContextLost,
                      client_thread_weak_ptr_factory_.GetWeakPtr()));
