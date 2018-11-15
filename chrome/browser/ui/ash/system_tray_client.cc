@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -218,6 +219,12 @@ void SystemTrayClient::SetPrimaryTrayVisible(bool visible) {
 
 void SystemTrayClient::SetPerformanceTracingIconVisible(bool visible) {
   system_tray_->SetPerformanceTracingIconVisible(visible);
+}
+
+void SystemTrayClient::SetLocaleList(
+    std::vector<ash::mojom::LocaleInfoPtr> locale_list,
+    const std::string& current_locale_iso_code) {
+  system_tray_->SetLocaleList(std::move(locale_list), current_locale_iso_code);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -442,6 +449,12 @@ void SystemTrayClient::RequestRestartForUpdate() {
                               : browser_shutdown::RebootPolicy::kOptionalReboot;
 
   browser_shutdown::NotifyAndTerminate(true /* fast_path */, reboot_policy);
+}
+
+void SystemTrayClient::SetLocaleAndExit(const std::string& locale_iso_code) {
+  ProfileManager::GetActiveUserProfile()->ChangeAppLocale(
+      locale_iso_code, Profile::APP_LOCALE_CHANGED_VIA_SYSTEM_TRAY);
+  chrome::AttemptUserExit();
 }
 
 void SystemTrayClient::HandleUpdateAvailable() {

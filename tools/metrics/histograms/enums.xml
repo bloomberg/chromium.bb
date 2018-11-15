@@ -49105,6 +49105,7 @@ would be helpful to identify which type is being sent.
   <int value="25" label="VPN"/>
   <int value="26" label="Night light"/>
   <int value="27" label="Do not disturb"/>
+  <int value="28" label="Language"/>
 </enum>
 
 <enum name="SystemNotificationType">

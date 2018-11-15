@@ -20,6 +20,8 @@
 #include "ash/system/cast/unified_cast_detailed_view_controller.h"
 #include "ash/system/ime/ime_feature_pod_controller.h"
 #include "ash/system/ime/unified_ime_detailed_view_controller.h"
+#include "ash/system/locale/locale_feature_pod_controller.h"
+#include "ash/system/locale/unified_locale_detailed_view_controller.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_feature_pod_controller.h"
@@ -265,6 +267,10 @@ void UnifiedSystemTrayController::ShowIMEDetailedView() {
   ShowDetailedView(std::make_unique<UnifiedIMEDetailedViewController>(this));
 }
 
+void UnifiedSystemTrayController::ShowLocaleDetailedView() {
+  ShowDetailedView(std::make_unique<UnifiedLocaleDetailedViewController>(this));
+}
+
 void UnifiedSystemTrayController::ShowAudioDetailedView() {
   ShowDetailedView(std::make_unique<UnifiedAudioDetailedViewController>(this));
 }
@@ -343,6 +349,7 @@ void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<VPNFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<IMEFeaturePodController>(this));
+  AddFeaturePodItem(std::make_unique<LocaleFeaturePodController>(this));
 
   // If you want to add a new feature pod item, add here.
 }

@@ -67,6 +67,13 @@ void SystemTrayModel::SetPerformanceTracingIconVisible(bool visible) {
   tracing()->SetIsTracing(visible);
 }
 
+void SystemTrayModel::SetLocaleList(
+    std::vector<mojom::LocaleInfoPtr> locale_list,
+    const std::string& current_locale_iso_code) {
+  locale_list_ = std::move(locale_list);
+  current_locale_iso_code_ = current_locale_iso_code;
+}
+
 void SystemTrayModel::ShowUpdateIcon(mojom::UpdateSeverity severity,
                                      bool factory_reset_required,
                                      bool rollback,
