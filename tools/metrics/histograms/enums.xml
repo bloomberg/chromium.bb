@@ -34396,6 +34396,14 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="kCopyStateFrom"/>
 </enum>
 
+<enum name="NavigationPredictorActionTaken">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="None"/>
+  <int value="2" label="A host was preresolved"/>
+  <int value="3" label="A host was preconnected to"/>
+  <int value="4" label="A URL was prefetched"/>
+</enum>
+
 <enum name="NavigationScheme">
   <int value="0" label="(Unknown)"/>
   <int value="1" label="http"/>

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -18,6 +19,10 @@
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
+}
+
+namespace url {
+class Origin;
 }
 
 class SiteEngagementService;
@@ -36,6 +41,21 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   // Create and bind NavigationPredictor.
   static void Create(mojo::InterfaceRequest<AnchorElementMetricsHost> request,
                      content::RenderFrameHost* render_frame_host);
+
+  // This enum should remain synchronized with enum
+  // NavigationPredictorActionTaken in enums.xml. Order of enum values should
+  // not be changed since the values are recorded in UMA.
+  enum class Action {
+    kUnknown = 0,
+    kNone = 1,
+    kPreresolve = 2,
+    kPreconnect = 3,
+    kPrefetch = 4,
+    kMaxValue = kPrefetch,
+  };
+
+ protected:
+  base::Optional<GURL> prefetch_url_;
 
  private:
   // Struct holding navigation score, rank and other info of the anchor element.
@@ -82,6 +102,12 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost {
   // action to take, or decide not to do anything. Example actions including
   // preresolve, preload, prerendering, etc.
   void MaybeTakeActionOnLoad(
+      const url::Origin& document_origin,
+      const std::vector<std::unique_ptr<NavigationScore>>&
+          sorted_navigation_scores);
+
+  base::Optional<GURL> GetUrlToPrefetch(
+      const url::Origin& document_origin,
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores) const;
 
