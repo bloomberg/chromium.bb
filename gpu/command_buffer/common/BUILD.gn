@@ -86,6 +86,8 @@ jumbo_source_set("common_sources") {
     "mailbox.h",
     "mailbox_holder.cc",
     "mailbox_holder.h",
+    "presentation_feedback_utils.cc",
+    "presentation_feedback_utils.h",
     "scheduling_priority.cc",
     "scheduling_priority.h",
     "shared_image_trace_utils.cc",
