@@ -672,7 +672,9 @@ void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
     bool switched_to_chunk_state = false;
 
     for (const auto& item : display_items.ItemsInPaintChunk(chunk)) {
-      DCHECK(item.IsDrawing());
+      if (!item.IsDrawing())
+        continue;
+
       auto record =
           static_cast<const DrawingDisplayItem&>(item).GetPaintRecord();
       // If we have an empty paint record, then we would prefer not to draw it.

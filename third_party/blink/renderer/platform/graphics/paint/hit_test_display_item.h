@@ -5,18 +5,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_HIT_TEST_DISPLAY_ITEM_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_HIT_TEST_DISPLAY_ITEM_H_
 
-#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 
 #include "third_party/blink/renderer/platform/graphics/hit_test_rect.h"
 
 namespace blink {
 
 // A special DrawingDisplayItem containing hit test data.
-class PLATFORM_EXPORT HitTestDisplayItem final : public DrawingDisplayItem {
+class PLATFORM_EXPORT HitTestDisplayItem final : public DisplayItem {
  public:
   HitTestDisplayItem(const DisplayItemClient& client,
                      const HitTestRect& hit_test_rect)
-      : DrawingDisplayItem(client, kHitTest, nullptr, false, sizeof(*this)),
+      : DisplayItem(client, kHitTest, sizeof(*this)),
         hit_test_rect_(hit_test_rect) {
     DCHECK(RuntimeEnabledFeatures::PaintTouchActionRectsEnabled());
   }

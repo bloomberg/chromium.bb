@@ -25,14 +25,13 @@ namespace blink {
 // PaintRecord, and is in the space of the DisplayItemList. This allows the
 // visual_rect to be compared between DrawingDisplayItems, and to give bounds
 // around what the user can actually see from the PaintRecord.
-class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
  public:
   DISABLE_CFI_PERF
   DrawingDisplayItem(const DisplayItemClient& client,
                      Type type,
                      sk_sp<const PaintRecord> record,
-                     bool known_to_be_opaque = false,
-                     size_t derived_size = sizeof(DrawingDisplayItem));
+                     bool known_to_be_opaque = false);
 
   void Replay(GraphicsContext&) const final;
   void AppendToDisplayItemList(const FloatSize& visual_rect_offset,
@@ -46,14 +45,13 @@ class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
     return known_to_be_opaque_;
   }
 
-  bool Equals(const DisplayItem& other) const override;
-
- protected:
-#if DCHECK_IS_ON()
-  void PropertiesAsJSON(JSONObject&) const override;
-#endif
+  bool Equals(const DisplayItem& other) const final;
 
  private:
+#if DCHECK_IS_ON()
+  void PropertiesAsJSON(JSONObject&) const final;
+#endif
+
   sk_sp<const PaintRecord> record_;
 
   // True if there are no transparent areas. Only used for SlimmingPaintV2.
@@ -65,9 +63,8 @@ DISABLE_CFI_PERF
 inline DrawingDisplayItem::DrawingDisplayItem(const DisplayItemClient& client,
                                               Type type,
                                               sk_sp<const PaintRecord> record,
-                                              bool known_to_be_opaque,
-                                              size_t derived_size)
-    : DisplayItem(client, type, derived_size),
+                                              bool known_to_be_opaque)
+    : DisplayItem(client, type, sizeof(*this)),
       record_(record && record->size() ? std::move(record) : nullptr),
       known_to_be_opaque_(known_to_be_opaque) {
   DCHECK(IsDrawingType(type));
