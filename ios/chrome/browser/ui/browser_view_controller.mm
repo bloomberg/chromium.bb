@@ -115,7 +115,6 @@
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
-#import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #import "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
@@ -135,7 +134,6 @@
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
@@ -187,7 +185,6 @@
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
-#import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/static_content/static_html_native_content.h"
 #import "ios/chrome/browser/ui/tabs/background_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/foreground_tab_animation_view.h"
@@ -424,7 +421,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     CRWNativeContentProvider,
                                     CRWWebStateDelegate,
                                     DialogPresenterDelegate,
-                                    FormInputAccessoryCoordinatorDelegate,
                                     FullscreenUIElement,
                                     InfobarPositioner,
                                     KeyCommandsPlumbing,
@@ -474,9 +470,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Handles presentation of JavaScript dialogs.
   std::unique_ptr<JavaScriptDialogPresenterImpl> _javaScriptDialogPresenter;
-
-  // Handles command dispatching.
-  CommandDispatcher* _dispatcher;
 
   // Keyboard commands provider.  It offloads most of the keyboard commands
   // management off of the BVC.
@@ -558,9 +551,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for displaying Repost Form dialog.
   RepostFormCoordinator* _repostFormCoordinator;
 
-  // Coordinator for displaying snackbars.
-  SnackbarCoordinator* _snackbarCoordinator;
-
   ToolbarCoordinatorAdaptor* _toolbarCoordinatorAdaptor;
 
   // The toolbar UI updater for the toolbar managed by |_toolbarCoordinator|.
@@ -593,10 +583,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for UI related to launching external apps.
   AppLauncherCoordinator* _appLauncherCoordinator;
 
-  // Coordinator in charge of the presenting autofill options above the
-  // keyboard.
-  FormInputAccessoryCoordinator* _formInputAccessoryCoordinator;
-
   // Fake status bar view used to blend the toolbar into the status bar.
   UIView* _fakeStatusBarView;
 
@@ -609,6 +595,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   BrowserContainerCoordinator* _browserContainerCoordinator;
 }
 
+// Command dispatcher.
+@property(nonatomic, weak) CommandDispatcher* commandDispatcher;
 // The browser's side swipe controller.  Lazily instantiated on the first call.
 @property(nonatomic, strong, readonly) SideSwipeController* sideSwipeController;
 // The dialog presenter for this BVC's tab model.
@@ -880,6 +868,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @synthesize typingShield = _typingShield;
 @synthesize active = _active;
 // Private synthesized properties
+@synthesize commandDispatcher = _commandDispatcher;
 @synthesize visible = _visible;
 @synthesize viewVisible = _viewVisible;
 @synthesize broadcasting = _broadcasting;
@@ -920,7 +909,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           initWithTabModel:(TabModel*)model
               browserState:(ios::ChromeBrowserState*)browserState
          dependencyFactory:(BrowserViewControllerDependencyFactory*)factory
-applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
+applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
+         commandDispatcher:(CommandDispatcher*)commandDispatcher {
   self = [super initWithNibName:nil bundle:base::mac::FrameworkBundle()];
   if (self) {
     DCHECK(factory);
@@ -928,13 +918,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _dependencyFactory = factory;
     _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
                                         presentingViewController:self];
-    _dispatcher = [[CommandDispatcher alloc] init];
-    [_dispatcher startDispatchingToTarget:self
-                              forProtocol:@protocol(UrlLoader)];
-    [_dispatcher startDispatchingToTarget:self
-                              forProtocol:@protocol(BrowserCommands)];
-    [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
-                              forProtocol:@protocol(ApplicationCommands)];
+    self.commandDispatcher = commandDispatcher;
+    [self.commandDispatcher startDispatchingToTarget:self
+                                         forProtocol:@protocol(UrlLoader)];
+    [self.commandDispatcher
+        startDispatchingToTarget:self
+                     forProtocol:@protocol(BrowserCommands)];
+    [self.commandDispatcher
+        startDispatchingToTarget:applicationCommandEndpoint
+                     forProtocol:@protocol(ApplicationCommands)];
     // -startDispatchingToTarget:forProtocol: doesn't pick up protocols the
     // passed protocol conforms to, so ApplicationSettingsCommands is explicitly
     // dispatched to the endpoint as well. Since this is potentially
@@ -942,7 +934,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     DCHECK(!applicationCommandEndpoint ||
            [applicationCommandEndpoint
                conformsToProtocol:@protocol(ApplicationSettingsCommands)]);
-    [_dispatcher
+    [self.commandDispatcher
         startDispatchingToTarget:applicationCommandEndpoint
                      forProtocol:@protocol(ApplicationSettingsCommands)];
     // -startDispatchingToTarget:forProtocol: doesn't pick up protocols the
@@ -952,15 +944,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     DCHECK(!applicationCommandEndpoint ||
            [applicationCommandEndpoint
                conformsToProtocol:@protocol(BrowsingDataCommands)]);
-    [_dispatcher startDispatchingToTarget:applicationCommandEndpoint
-                              forProtocol:@protocol(BrowsingDataCommands)];
+    [self.commandDispatcher
+        startDispatchingToTarget:applicationCommandEndpoint
+                     forProtocol:@protocol(BrowsingDataCommands)];
     _toolbarCoordinatorAdaptor =
         [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
     self.toolbarInterface = _toolbarCoordinatorAdaptor;
-
-    _snackbarCoordinator = [[SnackbarCoordinator alloc] init];
-    _snackbarCoordinator.dispatcher = _dispatcher;
-    [_snackbarCoordinator start];
 
     _storeKitCoordinator =
         [[StoreKitCoordinator alloc] initWithBaseViewController:self];
@@ -986,13 +975,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
     _appLauncherCoordinator =
         [[AppLauncherCoordinator alloc] initWithBaseViewController:self];
-
-    _formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
-        initWithBaseViewController:self
-                      browserState:browserState
-                      webStateList:model.webStateList];
-    _formInputAccessoryCoordinator.delegate = self;
-    [_formInputAccessoryCoordinator start];
 
     _javaScriptDialogPresenter.reset(
         new JavaScriptDialogPresenterImpl(_dialogPresenter));
@@ -1034,7 +1016,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       UrlLoader>)dispatcher {
   return static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
                         PopupMenuCommands, FakeboxFocuser, SnackbarCommands,
-                        ToolbarCommands, UrlLoader>>(_dispatcher);
+                        ToolbarCommands, UrlLoader>>(self.commandDispatcher);
 }
 
 - (UIView*)contentArea {
@@ -1385,8 +1367,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.tabStripView = nil;
 
   _browserState = nullptr;
-  [_dispatcher stopDispatchingToTarget:self];
-  _dispatcher = nil;
+  [self.commandDispatcher stopDispatchingToTarget:self];
+  self.commandDispatcher = nil;
 }
 
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
@@ -2096,7 +2078,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   topToolbarCoordinator.URLLoader = self;
   topToolbarCoordinator.webStateList = self.tabModel.webStateList;
   topToolbarCoordinator.dispatcher = self.dispatcher;
-  topToolbarCoordinator.commandDispatcher = _dispatcher;
+  topToolbarCoordinator.commandDispatcher = self.commandDispatcher;
   topToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
   [topToolbarCoordinator start];
 
@@ -2132,13 +2114,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self updateBroadcastState];
   if (_voiceSearchController)
     _voiceSearchController->SetDispatcher(
-        static_cast<id<LoadQueryCommands>>(_dispatcher));
+        static_cast<id<LoadQueryCommands>>(self.commandDispatcher));
 
   if (IsIPadIdiom()) {
     self.tabStripCoordinator =
         [[TabStripLegacyCoordinator alloc] initWithBaseViewController:self];
     self.tabStripCoordinator.browserState = _browserState;
-    self.tabStripCoordinator.dispatcher = _dispatcher;
+    self.tabStripCoordinator.dispatcher = self.commandDispatcher;
     self.tabStripCoordinator.tabModel = self.tabModel;
     self.tabStripCoordinator.presentationProvider = self;
     self.tabStripCoordinator.animationWaitDuration =
@@ -2329,7 +2311,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Create child coordinators.
   _activityServiceCoordinator = [[ActivityServiceLegacyCoordinator alloc]
       initWithBaseViewController:self];
-  _activityServiceCoordinator.dispatcher = _dispatcher;
+  _activityServiceCoordinator.dispatcher = self.commandDispatcher;
   _activityServiceCoordinator.tabModel = self.tabModel;
   _activityServiceCoordinator.browserState = _browserState;
   _activityServiceCoordinator.positionProvider =
@@ -2338,7 +2320,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   _qrScannerCoordinator =
       [[QRScannerLegacyCoordinator alloc] initWithBaseViewController:self];
-  _qrScannerCoordinator.dispatcher = _dispatcher;
+  _qrScannerCoordinator.dispatcher = self.commandDispatcher;
   _qrScannerCoordinator.presentationProvider = self;
 
   // DownloadManagerCoordinator is already created.
@@ -2352,7 +2334,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       initWithBaseViewController:self
                     browserState:self.browserState];
   self.popupMenuCoordinator.bubblePresenter = self.bubblePresenter;
-  self.popupMenuCoordinator.dispatcher = _dispatcher;
+  self.popupMenuCoordinator.dispatcher = self.commandDispatcher;
   self.popupMenuCoordinator.webStateList = self.tabModel.webStateList;
   self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
   [self.popupMenuCoordinator start];
@@ -2392,7 +2374,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]
       initWithBaseViewController:self
                     browserState:_browserState];
-  _pageInfoCoordinator.dispatcher = _dispatcher;
+  _pageInfoCoordinator.dispatcher = self.commandDispatcher;
   _pageInfoCoordinator.loader = self;
   _pageInfoCoordinator.presentationProvider = self;
   _pageInfoCoordinator.tabModel = self.tabModel;
@@ -3017,7 +2999,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
           provider->CreateVoiceSearchController(_browserState);
       if (self.primaryToolbarCoordinator) {
         _voiceSearchController->SetDispatcher(
-            static_cast<id<LoadQueryCommands>>(_dispatcher));
+            static_cast<id<LoadQueryCommands>>(self.commandDispatcher));
       }
     }
   }
@@ -3279,20 +3261,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)displaySavedPasswordList {
   [self.dispatcher showSavedPasswordsSettingsFromViewController:self];
-}
-
-#pragma mark - FormInputAccessoryCoordinatorDelegate
-
-- (void)openPasswordSettings {
-  [self.dispatcher showSavedPasswordsSettingsFromViewController:self];
-}
-
-- (void)openAddressSettings {
-  [self.dispatcher showProfileSettingsFromViewController:self];
-}
-
-- (void)openCreditCardSettings {
-  [self.dispatcher showCreditCardSettingsFromViewController:self];
 }
 
 #pragma mark - CRWWebStateDelegate methods.

@@ -17,6 +17,7 @@
 
 @class BrowserViewController;
 @class BrowserViewControllerDependencyFactory;
+@class CommandDispatcher;
 @class TabModel;
 
 // Base class for performance tests that require a browser view controller.  The
@@ -53,6 +54,7 @@ class PerfTestWithBVC : public PerfTest {
   TabModel* tab_model_;
   TabModel* otr_tab_model_;
 
+  CommandDispatcher* command_dispatcher_;
   BrowserViewControllerDependencyFactory* bvc_factory_;
   BrowserViewController* bvc_;
   UIWindow* window_;
