@@ -201,8 +201,7 @@ AccountRelation AccountInvestigator::DiscernRelation(
 void AccountInvestigator::TryPeriodicReport() {
   std::vector<ListedAccount> signed_in_accounts, signed_out_accounts;
   if (cookie_service_->ListAccounts(&signed_in_accounts,
-                                    &signed_out_accounts,
-                                    "ChromiumAccountInvestigator")) {
+                                    &signed_out_accounts)) {
     DoPeriodicReport(signed_in_accounts, signed_out_accounts);
   } else {
     periodic_pending_ = true;

@@ -49,7 +49,7 @@ class GaiaAuthFetcherIOS : public GaiaAuthFetcher {
 
   GaiaAuthFetcherIOS(
       GaiaAuthConsumer* consumer,
-      const std::string& source,
+      gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       web::BrowserState* browser_state);
   ~GaiaAuthFetcherIOS() override;

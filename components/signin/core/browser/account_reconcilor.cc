@@ -118,7 +118,7 @@ bool AccountsNeedUpdate(
     const signin::MultiloginParameters& parameters,
     const std::vector<gaia::ListedAccount>& existing_accounts) {
   if (parameters.mode ==
-      signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER) {
+      gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER) {
     // In UPDATE mode accounts_to_send are guaranteed to be not empty.
     DCHECK(!parameters.accounts_to_send.empty());
     if (existing_accounts.empty())
@@ -143,7 +143,7 @@ std::string PickFirstGaiaAccount(
     const signin::MultiloginParameters& parameters,
     const std::vector<gaia::ListedAccount>& gaia_accounts) {
   if (parameters.mode ==
-          signin::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER &&
+          gaia::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER &&
       !gaia_accounts.empty()) {
     return gaia_accounts[0].id;
   }
@@ -380,7 +380,7 @@ void AccountReconcilor::OnAuthErrorChanged(
   // This should cover well the Mirror and Desktop Identity Consistency cases as
   // the cookies are always bound to the refresh tokens in these cases.
   if (error != GoogleServiceAuthError::AuthErrorNone())
-    cookie_manager_service_->TriggerListAccounts(delegate_->GetGaiaApiSource());
+    cookie_manager_service_->TriggerListAccounts();
 }
 
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
@@ -465,8 +465,7 @@ void AccountReconcilor::StartReconcile() {
 
   // Rely on the GCMS to manage calls to and responses from ListAccounts.
   std::vector<gaia::ListedAccount> gaia_accounts;
-  if (cookie_manager_service_->ListAccounts(&gaia_accounts, nullptr,
-                                            delegate_->GetGaiaApiSource())) {
+  if (cookie_manager_service_->ListAccounts(&gaia_accounts, nullptr)) {
     OnGaiaAccountsInCookieUpdated(
         gaia_accounts, std::vector<gaia::ListedAccount>(),
         GoogleServiceAuthError(GoogleServiceAuthError::NONE));
@@ -628,7 +627,7 @@ std::vector<std::string> AccountReconcilor::LoadValidAccountsFromTokenService()
 void AccountReconcilor::OnReceivedManageAccountsResponse(
     signin::GAIAServiceType service_type) {
   if (service_type == signin::GAIA_SERVICE_TYPE_ADDSESSION) {
-    cookie_manager_service_->TriggerListAccounts(delegate_->GetGaiaApiSource());
+    cookie_manager_service_->TriggerListAccounts();
   }
 }
 

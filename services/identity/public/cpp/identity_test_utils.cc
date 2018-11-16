@@ -321,7 +321,7 @@ void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
   cookie_manager->SetListAccountsResponseWithParams(gaia_cookie_accounts);
 
   cookie_manager->set_list_accounts_stale_for_testing(true);
-  cookie_manager->ListAccounts(nullptr, nullptr, "test");
+  cookie_manager->ListAccounts(nullptr, nullptr);
 
   run_loop.Run();
 }

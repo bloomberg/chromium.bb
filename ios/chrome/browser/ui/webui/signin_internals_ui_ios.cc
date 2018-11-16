@@ -80,9 +80,8 @@ bool SignInInternalsUIIOS::OverrideHandleWebUIIOSMessage(
           ios::GaiaCookieManagerServiceFactory::GetForBrowserState(
               browser_state);
       std::vector<gaia::ListedAccount> signed_out_accounts;
-      if (cookie_manager_service->ListAccounts(
-              &cookie_accounts, &signed_out_accounts,
-              "ChromiumSignInInternalsUIIOS")) {
+      if (cookie_manager_service->ListAccounts(&cookie_accounts,
+                                               &signed_out_accounts)) {
         about_signin_internals->OnGaiaAccountsInCookieUpdated(
             cookie_accounts, signed_out_accounts,
             GoogleServiceAuthError(GoogleServiceAuthError::NONE));

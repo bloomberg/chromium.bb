@@ -1012,8 +1012,8 @@ void ProfileSyncService::OnEngineInitialized(
   std::vector<gaia::ListedAccount> signed_out_accounts;
   GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
   if (gaia_cookie_manager_service_ &&
-      gaia_cookie_manager_service_->ListAccounts(
-          &accounts, &signed_out_accounts, "ChromiumProfileSyncService")) {
+      gaia_cookie_manager_service_->ListAccounts(&accounts,
+                                                 &signed_out_accounts)) {
     OnGaiaAccountsInCookieUpdated(accounts, signed_out_accounts, error);
   }
 

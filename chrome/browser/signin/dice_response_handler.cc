@@ -33,7 +33,6 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
@@ -185,7 +184,7 @@ DiceResponseHandler::DiceTokenFetcher::DiceTokenFetcher(
   account_reconcilor_lock_ =
       std::make_unique<AccountReconcilor::Lock>(account_reconcilor);
   gaia_auth_fetcher_ = signin_client->CreateGaiaAuthFetcher(
-      this, GaiaConstants::kChromeSource, signin_client->GetURLLoaderFactory());
+      this, gaia::GaiaSource::kChrome, signin_client->GetURLLoaderFactory());
   VLOG(1) << "Start fetching token for account: " << email;
   gaia_auth_fetcher_->StartAuthCodeForOAuth2TokenExchange(authorization_code_);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

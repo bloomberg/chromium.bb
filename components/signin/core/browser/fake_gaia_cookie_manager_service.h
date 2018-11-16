@@ -48,8 +48,6 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
                                           const std::string& gaia_id2);
 
  private:
-  std::string GetSourceForRequest(
-      const GaiaCookieManagerService::GaiaCookieRequest& request) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
   // Provide a fake response for calls to /ListAccounts.

@@ -12,7 +12,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -34,7 +33,7 @@ OAuth2TokenFetcher::OAuth2TokenFetcher(
     OAuth2TokenFetcher::Delegate* delegate,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : delegate_(delegate),
-      auth_fetcher_(this, GaiaConstants::kChromeSource, url_loader_factory),
+      auth_fetcher_(this, gaia::GaiaSource::kChrome, url_loader_factory),
       retry_count_(0) {
   DCHECK(delegate);
 }

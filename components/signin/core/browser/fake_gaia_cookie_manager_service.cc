@@ -100,14 +100,6 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccounts(
         true /* verified */}});
 }
 
-std::string FakeGaiaCookieManagerService::GetSourceForRequest(
-    const GaiaCookieManagerService::GaiaCookieRequest& request) {
-  // Always return the default.  This value must match the source used in the
-  // SetXXXResponseYYY methods above so that the test URLFetcher factory will
-  // be able to find the URLs.
-  return GaiaConstants::kChromeSource;
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 FakeGaiaCookieManagerService::GetURLLoaderFactory() {
   return shared_loader_factory_

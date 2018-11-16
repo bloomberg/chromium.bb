@@ -369,7 +369,7 @@ SyncAuthManager::SyncAccountInfo SyncAuthManager::DetermineAccountToUse()
     // Check if there is a content area signed-in account, and we have a refresh
     // token for it.
     std::vector<AccountInfo> cookie_accounts =
-        identity_manager_->GetAccountsInCookieJar("SyncAuthManager");
+        identity_manager_->GetAccountsInCookieJar();
     if (!cookie_accounts.empty() &&
         identity_manager_->HasAccountWithRefreshToken(
             cookie_accounts[0].account_id)) {

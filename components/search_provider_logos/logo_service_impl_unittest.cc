@@ -296,13 +296,13 @@ class SigninHelper {
   void SignIn() {
     cookie_service_.SetListAccountsResponseOneAccount("user@gmail.com",
                                                       "gaia_id");
-    cookie_service_.TriggerListAccounts("test_source");
+    cookie_service_.TriggerListAccounts();
     task_environment_->RunUntilIdle();
   }
 
   void SignOut() {
     cookie_service_.SetListAccountsResponseNoAccounts();
-    cookie_service_.TriggerListAccounts("test_source");
+    cookie_service_.TriggerListAccounts();
     task_environment_->RunUntilIdle();
   }
 

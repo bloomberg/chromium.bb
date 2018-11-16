@@ -128,7 +128,7 @@ void IOSChromeSigninClient::DelayNetworkCall(const base::Closure& callback) {
 
 std::unique_ptr<GaiaAuthFetcher> IOSChromeSigninClient::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
-    const std::string& source,
+    gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return std::make_unique<GaiaAuthFetcherIOS>(
       consumer, source, url_loader_factory, browser_state_);

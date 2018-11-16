@@ -16,7 +16,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace arc {
@@ -126,7 +125,7 @@ void ArcAuthContext::StartFetchers() {
   }
 
   ubertoken_fetcher_.reset(
-      new UbertokenFetcher(token_service_, this, GaiaConstants::kChromeOSSource,
+      new UbertokenFetcher(token_service_, this, gaia::GaiaSource::kChromeOS,
                            profile_->GetURLLoaderFactory()));
   ubertoken_fetcher_->StartFetchingToken(account_id_);
 }
@@ -157,8 +156,8 @@ void ArcAuthContext::OnFetcherError(const GoogleServiceAuthError& error) {
 
 void ArcAuthContext::OnUbertokenSuccess(const std::string& token) {
   ResetFetchers();
-  merger_fetcher_.reset(new GaiaAuthFetcher(
-      this, GaiaConstants::kChromeOSSource, profile_->GetURLLoaderFactory()));
+  merger_fetcher_.reset(new GaiaAuthFetcher(this, gaia::GaiaSource::kChromeOS,
+                                            profile_->GetURLLoaderFactory()));
   merger_fetcher_->StartMergeSession(token, std::string());
 }
 

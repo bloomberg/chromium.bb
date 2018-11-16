@@ -28,8 +28,8 @@ bool MirrorAccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
   return true;
 }
 
-std::string MirrorAccountReconcilorDelegate::GetGaiaApiSource() const {
-  return "ChromiumAccountReconcilor";
+gaia::GaiaSource MirrorAccountReconcilorDelegate::GetGaiaApiSource() const {
+  return gaia::GaiaSource::kAccountReconcilorMirror;
 }
 
 bool MirrorAccountReconcilorDelegate::ShouldAbortReconcileIfPrimaryHasError()
@@ -54,9 +54,9 @@ MirrorAccountReconcilorDelegate::GetChromeAccountsForReconcile(
     const std::vector<std::string>& chrome_accounts,
     const std::string& primary_account,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
-    const signin::MultiloginMode mode) const {
-  DCHECK(mode ==
-         signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER);
+    const gaia::MultiloginMode mode) const {
+  DCHECK_EQ(mode,
+            gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER);
   return ReorderChromeAccountsForReconcile(chrome_accounts, primary_account,
                                            gaia_accounts);
   }

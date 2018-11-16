@@ -81,7 +81,9 @@ class SpyReconcilorDelegate : public signin::AccountReconcilorDelegate {
 
   bool IsAccountConsistencyEnforced() const override { return true; }
 
-  std::string GetGaiaApiSource() const override { return "TestSource"; }
+  gaia::GaiaSource GetGaiaApiSource() const override {
+    return gaia::GaiaSource::kChrome;
+  }
 
   bool ShouldAbortReconcileIfPrimaryHasError() const override { return true; }
 
@@ -275,10 +277,6 @@ class AccountReconcilorTest : public ::testing::Test {
       GaiaCookieManagerService::Observer* observer,
       const GoogleServiceAuthError& error);
 
-  GURL get_check_connection_info_url() {
-    return get_check_connection_info_url_;
-  }
-
   void SetAccountConsistency(signin::AccountConsistencyMethod method);
 
   PrefService* pref_service() { return &pref_service_; }
@@ -297,7 +295,6 @@ class AccountReconcilorTest : public ::testing::Test {
   identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<MockAccountReconcilor> mock_reconcilor_;
   base::HistogramTester histogram_tester_;
-  GURL get_check_connection_info_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilorTest);
 };
@@ -363,9 +360,6 @@ AccountReconcilorTest::AccountReconcilorTest()
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
   pref_service_.registry()->RegisterBooleanPref(
       prefs::kTokenServiceDiceCompatible, false);
-  get_check_connection_info_url_ =
-      GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
-          GaiaConstants::kChromeSource);
 
   account_tracker_.Initialize(&pref_service_, base::FilePath());
   cookie_manager_service_.SetListAccountsResponseHttpNotFound();
@@ -691,7 +685,7 @@ std::vector<Cookie> FakeSetAccountsInCookie(
     const std::vector<Cookie>& cookies_before_reconcile) {
   std::vector<Cookie> cookies_after_reconcile;
   if (parameters.mode ==
-      signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER) {
+      gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER) {
     for (const std::string& account : parameters.accounts_to_send) {
       cookies_after_reconcile.push_back({account, true});
     }
@@ -919,7 +913,7 @@ TEST_P(AccountReconcilorTestTable, TableRowTest) {
   ConfigureCookieManagerService(cookies);
 
   // Call list accounts now so that the next call completes synchronously.
-  cookie_manager_service()->ListAccounts(nullptr, nullptr, "foo");
+  cookie_manager_service()->ListAccounts(nullptr, nullptr);
   base::RunLoop().RunUntilIdle();
 
   // Setup expectations.
@@ -1036,16 +1030,16 @@ TEST_P(AccountReconcilorTestDiceMultilogin, TableRowTest) {
   std::vector<Cookie> cookies_after_reconcile = cookies;
 
   // Call list accounts now so that the next call completes synchronously.
-  cookie_manager_service()->ListAccounts(nullptr, nullptr, "foo");
+  cookie_manager_service()->ListAccounts(nullptr, nullptr);
   base::RunLoop().RunUntilIdle();
 
   // Setup expectations.
   testing::InSequence mock_sequence;
   if (GetParam().gaia_api_calls_multilogin[0] != '\0') {
-    signin::MultiloginMode mode =
+    gaia::MultiloginMode mode =
         GetParam().gaia_api_calls_multilogin[0] == 'U'
-            ? signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER
-            : signin::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER;
+            ? gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER
+            : gaia::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER;
     // Generate expected array of accounts in cookies and set fake gaia
     // response.
     std::vector<std::string> accounts_to_send;
@@ -1143,7 +1137,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceReconcileWithoutSignin) {
   } else {
     std::vector<std::string> accounts_to_send = {account_id};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -1211,7 +1205,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest,
     // Send accounts to Gaia in any order, it will determine the order itself in
     // PRESERVE order.
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -1284,7 +1278,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceLastKnownFirstAccount) {
     // chrome accounts accordingly even in PRESERVE mode.
     std::vector<std::string> accounts_to_send = {account_id_2, account_id_1};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -1352,7 +1346,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, UnverifiedAccountMerge) {
     // cookies and not sign out unveridied accounts.
     std::vector<std::string> accounts_to_send = {chrome_account_id};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -1494,7 +1488,7 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, MigrationClearSecondaryTokens) {
   } else {
     std::vector<std::string> accounts_to_send = {account_id_1};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params)).Times(1);
     ;
@@ -1705,7 +1699,7 @@ TEST_P(AccountReconcilorTestMirrorMultilogin, TableRowTest) {
   ConfigureCookieManagerService(cookies);
 
   // Call list accounts now so that the next call completes synchronously.
-  cookie_manager_service()->ListAccounts(nullptr, nullptr, "foo");
+  cookie_manager_service()->ListAccounts(nullptr, nullptr);
   base::RunLoop().RunUntilIdle();
 
   // Setup expectations.
@@ -1722,7 +1716,7 @@ TEST_P(AccountReconcilorTestMirrorMultilogin, TableRowTest) {
             accounts_[GetParam().cookies_after_reconcile[i]].email));
       }
       const signin::MultiloginParameters params(
-          signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+          gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
           accounts_to_send);
       EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params))
           .Times(1);
@@ -1789,7 +1783,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, TokensNotLoaded) {
   } else {
     std::vector<std::string> accounts_to_send = {account_id};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -1818,7 +1812,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, GetAccountsFromCookieSuccess) {
   } else {
     std::vector<std::string> accounts_to_send = {account_id};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -1834,8 +1828,8 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, GetAccountsFromCookieSuccess) {
 
   std::vector<gaia::ListedAccount> accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;
-  ASSERT_TRUE(cookie_manager_service()->ListAccounts(
-      &accounts, &signed_out_accounts, GaiaConstants::kChromeSource));
+  ASSERT_TRUE(
+      cookie_manager_service()->ListAccounts(&accounts, &signed_out_accounts));
   ASSERT_EQ(1u, accounts.size());
   ASSERT_EQ(account_id, accounts[0].id);
   ASSERT_EQ(0u, signed_out_accounts.size());
@@ -1856,8 +1850,8 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, GetAccountsFromCookieFailure) {
 
   std::vector<gaia::ListedAccount> accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;
-  ASSERT_FALSE(cookie_manager_service()->ListAccounts(
-      &accounts, &signed_out_accounts, GaiaConstants::kChromeSource));
+  ASSERT_FALSE(
+      cookie_manager_service()->ListAccounts(&accounts, &signed_out_accounts));
   ASSERT_EQ(0u, accounts.size());
   ASSERT_EQ(0u, signed_out_accounts.size());
 
@@ -1906,8 +1900,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   base::RunLoop().RunUntilIdle();
   std::vector<gaia::ListedAccount> accounts;
   // This will be the first call to ListAccounts.
-  ASSERT_FALSE(cookie_manager_service()->ListAccounts(
-      &accounts, nullptr, GaiaConstants::kChromeSource));
+  ASSERT_FALSE(cookie_manager_service()->ListAccounts(&accounts, nullptr));
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 }
 
@@ -2049,7 +2042,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, StartReconcileAddToCookie) {
   } else {
     std::vector<std::string> accounts_to_send = {account_id, account_id2};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -2159,7 +2152,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   } else {
     std::vector<std::string> accounts_to_send = {account_id, account_id2};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -2207,7 +2200,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   } else {
     std::vector<std::string> accounts_to_send = {account_id};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -2273,7 +2266,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   } else {
     std::vector<std::string> accounts_to_send = {account_id, account_id2};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -2313,7 +2306,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
     std::vector<std::string> accounts_to_send = {account_id, account_id2,
                                                  account_id3};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -2363,7 +2356,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, StartReconcileBadPrimary) {
   } else {
     std::vector<std::string> accounts_to_send = {account_id, account_id2};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -2526,7 +2519,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest,
   } else {
     std::vector<std::string> accounts_to_send = {account_id};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -2566,7 +2559,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, NoLoopWithBadPrimary) {
   } else {
     std::vector<std::string> accounts_to_send = {account_id1, account_id2};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
@@ -2633,7 +2626,7 @@ TEST_P(AccountReconcilorMirrorEndpointParamTest, WontMergeAccountsWithError) {
   } else {
     std::vector<std::string> accounts_to_send = {account_id1};
     const signin::MultiloginParameters params(
-        signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+        gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
         accounts_to_send);
     EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
   }
