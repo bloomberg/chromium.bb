@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Scott Graham <scottmg@chromium.org>
+Date: Mon, 11 Sep 2017 13:37:46 -0700
+Subject: [PATCH 9/9] fuchsia: Use dot-file locking for sqlite
+
+---
+ third_party/sqlite/src/src/os_unix.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/third_party/sqlite/src/src/os_unix.c b/third_party/sqlite/src/src/os_unix.c
+index ebae2eb47043..96802e62d7cb 100644
+--- a/third_party/sqlite/src/src/os_unix.c
++++ b/third_party/sqlite/src/src/os_unix.c
+@@ -7866,6 +7866,10 @@ int sqlite3_os_init(void){
+     UNIXVFS("unix",          autolockIoFinder ),
+ #elif OS_VXWORKS
+     UNIXVFS("unix",          vxworksIoFinder ),
++#elif __Fuchsia__
++    /* None of the system calls for other exclusion methods are currently
++    ** implemented on Fuchsia, so use simple dot-file locking for now. */
++    UNIXVFS("unix",          dotlockIoFinder ),
+ #else
+     UNIXVFS("unix",          posixIoFinder ),
+ #endif
+-- 
+2.18.0
+

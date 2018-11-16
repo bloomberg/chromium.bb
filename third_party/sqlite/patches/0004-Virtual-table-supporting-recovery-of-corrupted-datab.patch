@@ -1,8 +1,7 @@
-From 6b03399ecd95ced641e71e8157f28a56f61b6cb0 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Sat, 20 Jul 2013 11:42:21 -0700
-Subject: [PATCH 04/10] Virtual table supporting recovery of corrupted
- databases.
+Subject: [PATCH 4/9] Virtual table supporting recovery of corrupted databases.
 
 "recover" implements a virtual table which uses the SQLite pager layer
 to read table pages and pull out the data which is structurally sound
@@ -34,19 +33,19 @@ third_party/sqlite/src/src/{recover,recover-alt}.c .
  create mode 100644 third_party/sqlite/src/test/recover2.test
 
 diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
-index 3c7f14120b8b..e975ed9a732c 100644
+index ef2b67bd5116..f44fab7f777d 100644
 --- a/third_party/sqlite/src/main.mk
 +++ b/third_party/sqlite/src/main.mk
 @@ -77,6 +77,8 @@ LIBOBJ+= vdbe.o parse.o \
  	 vdbetrace.o wal.o walker.o where.o wherecode.o whereexpr.o \
-          utf.o vtab.o
+          utf.o vtab.o window.o
  
 +LIBOBJ += recover.o recover_varint.o
 +
  LIBOBJ += sqlite3session.o
  
  # All of the source code files.
-@@ -404,6 +406,8 @@ TESTSRC2 = \
+@@ -407,6 +409,8 @@ TESTSRC2 = \
    $(TOP)/src/prepare.c \
    $(TOP)/src/printf.c \
    $(TOP)/src/random.c \
@@ -55,7 +54,7 @@ index 3c7f14120b8b..e975ed9a732c 100644
    $(TOP)/src/pcache.c \
    $(TOP)/src/pcache1.c \
    $(TOP)/src/select.c \
-@@ -869,6 +873,7 @@ TESTFIXTURE_FLAGS += -DSQLITE_DEFAULT_PAGE_SIZE=1024
+@@ -873,6 +877,7 @@ TESTFIXTURE_FLAGS += -DSQLITE_DEFAULT_PAGE_SIZE=1024
  TESTFIXTURE_FLAGS += -DSQLITE_ENABLE_STMTVTAB
  TESTFIXTURE_FLAGS += -DSQLITE_ENABLE_DBPAGE_VTAB
  TESTFIXTURE_FLAGS += -DTCLSH_INIT_PROC=sqlite3TestInit
@@ -64,10 +63,10 @@ index 3c7f14120b8b..e975ed9a732c 100644
  testfixture$(EXE): $(TESTSRC2) libsqlite3.a $(TESTSRC) $(TOP)/src/tclsqlite.c
  	$(TCCX) $(TCL_FLAGS) $(TESTFIXTURE_FLAGS)                            \
 diff --git a/third_party/sqlite/src/src/main.c b/third_party/sqlite/src/src/main.c
-index eb6f1f447c82..348a4ea5c907 100644
+index 24ca264d6408..f070fed33989 100644
 --- a/third_party/sqlite/src/src/main.c
 +++ b/third_party/sqlite/src/src/main.c
-@@ -3140,6 +3140,14 @@ static int openDatabase(
+@@ -3197,6 +3197,14 @@ static int openDatabase(
    }
  #endif
  
@@ -3901,5 +3900,5 @@ index 000000000000..8aa4e049a010
 +
 +finish_test
 -- 
-2.17.0
+2.18.0
 
