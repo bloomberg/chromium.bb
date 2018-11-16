@@ -106,6 +106,32 @@ message StartVmRequest {
   string owner_id = 7;
 }
 
+// Information that must be included with every StartPluginVm request.
+message StartPluginVmRequest {
+  // An identifier for this VM.
+  string name = 1;
+
+  // The cryptohome id of the owner of this VM.
+  string owner_id = 2;
+
+  // The number of CPUs to give to the VM.  Cannot be larger than the number of
+  // CPUs on the device and cannot be 0.
+  uint32 cpus = 3;
+
+  // Parameters to pass to the plugin process.
+  string params = 4;
+
+  // The IPv4 address to assign to the VM in network-byte order.  Must be in the
+  // 100.115.92.128/28 subnet and must not be already assigned to another VM.
+  fixed32 guest_ipv4_address = 5;
+
+  // The EUI-48 MAC address to assign to the host side of the ethernet interface
+  // to the VM. Must be exactly 6 bytes and must not be in use by another VM.
+  // Must have the locally administered bit (0x02) set and the multicast bit
+  // (0x01) unset.
+  bytes host_mac_address = 6;
+}
+
 enum VmStatus {
   // Unknown status.
   VM_STATUS_UNKNOWN = 0;

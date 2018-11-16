@@ -26,6 +26,7 @@ const char kSyncVmTimesMethod[] = "SyncVmTimes";
 const char kAttachUsbDeviceMethod[] = "AttachUsbDevice";
 const char kDetachUsbDeviceMethod[] = "DetachUsbDevice";
 const char kListUsbDeviceMethod[] = "ListUsbDevices";
+const char kStartPluginVmMethod[] = "StartPluginVm";
 
 const char kContainerStartupFailedSignal[] = "ContainerStartupFailed";
 
