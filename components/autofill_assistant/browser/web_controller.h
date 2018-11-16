@@ -165,6 +165,43 @@ class WebController {
  private:
   friend class WebControllerBrowserTest;
 
+  // Helper class to get element's position when is stable and the frame it
+  // belongs finished visual update.
+  class ElementPositionGetter {
+   public:
+    ElementPositionGetter();
+    ~ElementPositionGetter();
+
+    // |devtools_client| must outlive this class which is guarantteed by the
+    // owner of this class.
+    void Start(content::RenderFrameHost* frame_host,
+               DevtoolsClient* devtools_client,
+               std::string element_object_id,
+               base::OnceCallback<void(int, int)> callback);
+
+   private:
+    void OnVisualStateUpdatedCallback(bool state);
+    void GetAndWaitBoxModelStable(DevtoolsClient* devtools_client,
+                                  std::string object_id,
+                                  int point_x,
+                                  int point_y,
+                                  int remaining_rounds);
+    void OnGetBoxModelForStableCheck(
+        DevtoolsClient* devtools_client,
+        std::string object_id,
+        int point_x,
+        int point_y,
+        int remaining_rounds,
+        std::unique_ptr<dom::GetBoxModelResult> result);
+    void OnResult(int x, int y);
+
+    base::OnceCallback<void(int, int)> callback_;
+    bool visual_state_updated_;
+
+    base::WeakPtrFactory<ElementPositionGetter> weak_ptr_factory_;
+    DISALLOW_COPY_AND_ASSIGN(ElementPositionGetter);
+  };
+
   // Perform a mouse left button click on the element given by |selectors| and
   // return the result through callback.
   // CSS selectors in |selectors| are ordered from top frame to the frame
@@ -221,28 +258,12 @@ class WebController {
                         base::OnceCallback<void(bool)> callback,
                         bool is_a_click,
                         std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void OnVisualStateCallback(base::OnceCallback<void(bool)> callback,
-                             std::string object_id,
-                             bool is_a_click,
-                             bool state);
-  void GetAndWaitBoxModelStable(base::OnceCallback<void(bool)> callback,
-                                std::string object_id,
-                                bool is_a_click,
-                                int point_x,
-                                int point_y,
-                                int remaining_rounds);
-  void OnGetBoxModelForStableCheck(
+  void TapOrClickOnCoordinates(
+      std::unique_ptr<ElementPositionGetter> element_position_getter,
       base::OnceCallback<void(bool)> callback,
-      std::string object_id,
       bool is_a_click,
-      int point_x,
-      int point_y,
-      int remaining_rounds,
-      std::unique_ptr<dom::GetBoxModelResult> result);
-  void TapOrClickOnCoordinates(base::OnceCallback<void(bool)> callback,
-                               bool is_a_click,
-                               int x,
-                               int y);
+      int x,
+      int y);
   void OnDispatchPressMouseEvent(
       base::OnceCallback<void(bool)> callback,
       int x,

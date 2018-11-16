@@ -17,13 +17,13 @@ found in the LICENSE file.
         button.parentNode.removeChild(button);
       }
 
-      var removeTouchArea = function() {
-        var touch_area = document.getElementById("touch_area");
+      var removeTouchArea = function(element) {
+        var touch_area = document.getElementById(element);
         touch_area.parentNode.removeChild(touch_area);
       }
 
-      var moveTouchArea = function() {
-        var touch_area = document.getElementById("touch_area");
+      var moveTouchAreaTwo = function() {
+        var touch_area = document.getElementById("touch_area_two");
         setTimeout(function(){touch_area.style.left = "100px";}, 100);
         setTimeout(function(){touch_area.style.left = "200px";}, 200);
         setTimeout(function(){touch_area.style.left = "300px";}, 300);
@@ -40,7 +40,14 @@ found in the LICENSE file.
     </style>
   </head>
 
-  <body onload="moveTouchArea()">
+  <body onload="moveTouchAreaTwo()">
+    <!-- Touch area can be accessed without needing scroll.-->
+    <div>
+      <p id="touch_area_one" ontouchend="removeTouchArea('touch_area_one')">
+        Touchable Area One</p>
+      <br>
+    </div>
+
     <!--
     Intentionally make this section has the full height of the window
     to force scroll when operating on the elements below not in this
@@ -51,13 +58,14 @@ found in the LICENSE file.
     </div>
 
     <div>
-      <button id="button" type="button" onclick=
-          "removeButton()">Test Button</button>
+      <p id="touch_area_two" ontouchend="removeTouchArea('touch_area_two')">
+        Touchable Area Two</p>
       <br>
     </div>
 
     <div>
-      <p id="touch_area" ontouchend="removeTouchArea()">Touchable Area</p>
+      <button id="button" type="button" onclick=
+          "removeButton()">Test Button</button>
       <br>
     </div>
 
