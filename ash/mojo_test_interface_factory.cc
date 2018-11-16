@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "ash/login/login_screen_test_api.h"
 #include "ash/metrics/time_to_first_present_recorder_test_api.h"
+#include "ash/public/interfaces/login_screen_test_api.mojom.h"
 #include "ash/public/interfaces/shelf_test_api.mojom.h"
 #include "ash/public/interfaces/shell_test_api.mojom.h"
 #include "ash/public/interfaces/status_area_widget_test_api.mojom.h"
@@ -25,6 +27,11 @@ namespace {
 
 // These functions aren't strictly necessary, but exist to make threading and
 // arguments clearer.
+
+void BindLoginScreenTestApiOnMainThread(
+    mojom::LoginScreenTestApiRequest request) {
+  LoginScreenTestApi::BindRequest(std::move(request));
+}
 
 void BindShelfTestApiOnMainThread(mojom::ShelfTestApiRequest request) {
   ShelfTestApi::BindRequest(std::move(request));
@@ -54,6 +61,8 @@ void BindTimeToFirstPresentRecorderTestApiOnMainThread(
 void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+  registry->AddInterface(base::Bind(&BindLoginScreenTestApiOnMainThread),
+                         main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindShelfTestApiOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindShellTestApiOnMainThread),

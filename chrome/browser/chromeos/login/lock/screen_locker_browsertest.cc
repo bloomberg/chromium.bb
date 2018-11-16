@@ -147,6 +147,42 @@ class WebUiScreenLockerTest : public ScreenLockerTest {
   DISALLOW_COPY_AND_ASSIGN(WebUiScreenLockerTest);
 };
 
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
+  // Show lock screen and wait until it is shown.
+  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
+  content::WindowedNotificationObserver lock_state_observer(
+      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+      content::NotificationService::AllSources());
+  ScreenLocker::Show();
+  if (!tester->IsLocked())
+    lock_state_observer.Wait();
+  EXPECT_EQ(session_manager::SessionState::LOCKED,
+            session_manager::SessionManager::Get()->session_state());
+
+  // Inject fake authentication credentials.
+  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
+                           user_manager::StubAccountId());
+  user_context.SetKey(Key("pass"));
+  tester->InjectStubUserContext(user_context);
+  EXPECT_TRUE(tester->IsLocked());
+
+  // Submit a bad password.
+  tester->EnterPassword(user_manager::StubAccountId(), "fail");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(tester->IsLocked());
+
+  // Submit the correct password. Successful authentication clears the lock
+  // screen and tells the SessionManager to announce this over DBus.
+  tester->EnterPassword(user_manager::StubAccountId(), "pass");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(tester->IsLocked());
+  EXPECT_EQ(
+      1, fake_session_manager_client_->notify_lock_screen_shown_call_count());
+  EXPECT_EQ(session_manager::SessionState::ACTIVE,
+            session_manager::SessionManager::Get()->session_state());
+  EXPECT_TRUE(VerifyLockScreenDismissed());
+}
+
 IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestBasic) {
   // WebUiScreenLockerTest fails with Mash because of unexpected window
   // structure. Fortunately we will deprecate the WebUI-based screen locker
@@ -168,10 +204,10 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestBasic) {
   user_context.SetKey(Key("pass"));
   tester->InjectStubUserContext(user_context);
   EXPECT_TRUE(tester->IsLocked());
-  tester->EnterPassword("fail");
+  tester->EnterPassword(user_manager::StubAccountId(), "fail");
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(tester->IsLocked());
-  tester->EnterPassword("pass");
+  tester->EnterPassword(user_manager::StubAccountId(), "pass");
   content::RunAllPendingInMessageLoop();
   // Successful authentication clears the lock screen and tells the
   // SessionManager to announce this over DBus.
@@ -236,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, MAYBE_TestFullscreenExit) {
                            user_manager::StubAccountId());
   user_context.SetKey(Key("pass"));
   tester->InjectStubUserContext(user_context);
-  tester->EnterPassword("pass");
+  tester->EnterPassword(user_manager::StubAccountId(), "pass");
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());
   {
@@ -277,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, MAYBE_TestFullscreenExit) {
     EXPECT_TRUE(tester->IsLocked());
   }
 
-  tester->EnterPassword("pass");
+  tester->EnterPassword(user_manager::StubAccountId(), "pass");
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(tester->IsLocked());
 
@@ -286,15 +322,6 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, MAYBE_TestFullscreenExit) {
   EXPECT_EQ(
       2,
       fake_session_manager_client_->notify_lock_screen_dismissed_call_count());
-}
-
-void SimulateKeyPress(views::Widget* widget, ui::KeyboardCode key_code) {
-  ui_controls::SendKeyPress(widget->GetNativeWindow(), key_code, false, false,
-                            false, false);
-}
-
-void UnlockKeyPress(views::Widget* widget) {
-  SimulateKeyPress(widget, ui::VKEY_SPACE);
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {

@@ -304,6 +304,12 @@ LoginPasswordView::TestApi::TestApi(LoginPasswordView* view) : view_(view) {}
 
 LoginPasswordView::TestApi::~TestApi() = default;
 
+void LoginPasswordView::TestApi::SubmitPassword(const std::string& password) {
+  view_->textfield_->SetText(base::ASCIIToUTF16(password));
+  view_->UpdateUiState();
+  view_->SubmitPassword();
+}
+
 views::Textfield* LoginPasswordView::TestApi::textfield() const {
   return view_->textfield_;
 }

@@ -49,6 +49,7 @@
         ],
         // Test-only interfaces.
         "test": [
+          "ash.mojom.LoginScreenTestApi",
           "ash.mojom.ShelfTestApi",
           "ash.mojom.ShellTestApi",
           "ash.mojom.StatusAreaWidgetTestApi",
