@@ -3,8 +3,8 @@ PASS Add null candidate should reject with TypeError
 FAIL Add ICE candidate before setting remote description should reject with InvalidStateError assert_throws: function "function() { throw e }" threw object "OperationError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': Error processing ICE candidate" that is not a DOMException InvalidStateError: property "code" is equal to 0, expected 11
 PASS Add ICE candidate after setting remote description should succeed
 PASS Add ICE candidate with RTCIceCandidate should succeed
-FAIL Add candidate with only valid sdpMid should succeed promise_test: Unhandled rejection with value: object "OperationError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': Error processing ICE candidate"
-FAIL Add candidate with only valid sdpMLineIndex should succeed promise_test: Unhandled rejection with value: object "OperationError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': Error processing ICE candidate"
+PASS Add candidate with only valid sdpMid should succeed
+PASS Add candidate with only valid sdpMLineIndex should succeed
 PASS addIceCandidate with first sdpMid and sdpMLineIndex add candidate to first media stream
 PASS addIceCandidate with second sdpMid and sdpMLineIndex should add candidate to second media stream
 PASS Add candidate for first media stream with null usernameFragment should add candidate to first media stream
