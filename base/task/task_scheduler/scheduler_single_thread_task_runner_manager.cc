@@ -129,6 +129,10 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
 
   void OnMainExit(SchedulerWorker* /* worker */) override {}
 
+  void EnableFlushPriorityQueueSequencesOnDestroyForTesting() {
+    priority_queue_.EnableFlushSequencesOnDestroyForTesting();
+  }
+
  private:
   const std::string thread_name_;
   const SchedulerWorker::ThreadLabel thread_label_;
@@ -486,8 +490,11 @@ void SchedulerSingleThreadTaskRunnerManager::JoinForTesting() {
     local_workers = std::move(workers_);
   }
 
-  for (const auto& worker : local_workers)
+  for (const auto& worker : local_workers) {
+    static_cast<SchedulerWorkerDelegate*>(worker->delegate())
+        ->EnableFlushPriorityQueueSequencesOnDestroyForTesting();
     worker->JoinForTesting();
+  }
 
   {
     AutoSchedulerLock auto_lock(lock_);
