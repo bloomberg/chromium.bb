@@ -349,8 +349,6 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalFailure) {
 class CrostiniManagerRestartTest : public CrostiniManagerTest,
                                    public CrostiniManager::RestartObserver {
  public:
-  void SetUp() override { CrostiniManagerTest::SetUp(); }
-
   void RestartCrostiniCallback(base::OnceClosure closure,
                                CrostiniResult result) {
     restart_crostini_callback_count_++;

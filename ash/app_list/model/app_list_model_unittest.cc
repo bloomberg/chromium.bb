@@ -220,17 +220,7 @@ TEST_F(AppListModelTest, AppOrder) {
   }
 }
 
-class AppListModelFolderTest : public AppListModelTest {
- public:
-  AppListModelFolderTest() {}
-  ~AppListModelFolderTest() override {}
-
-  // testing::Test overrides:
-  void SetUp() override { AppListModelTest::SetUp(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppListModelFolderTest);
-};
+using AppListModelFolderTest = AppListModelTest;
 
 TEST_F(AppListModelFolderTest, FolderItem) {
   AppListFolderItem* folder = new AppListFolderItem("folder1");

@@ -33,8 +33,6 @@ class MarkOperationDoneTaskTest : public PrefetchTaskTestBase {
   MarkOperationDoneTaskTest() = default;
   ~MarkOperationDoneTaskTest() override = default;
 
-  void SetUp() override { PrefetchTaskTestBase::SetUp(); }
-
   int64_t InsertAwaitingGCMOperation(std::string name) {
     return InsertPrefetchItemInStateWithOperation(
         name, PrefetchItemState::AWAITING_GCM);

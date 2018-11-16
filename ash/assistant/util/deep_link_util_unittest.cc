@@ -16,16 +16,7 @@ namespace ash {
 namespace assistant {
 namespace util {
 
-class DeepLinkUnitTest : public AshTestBase {
- protected:
-  DeepLinkUnitTest() = default;
-  ~DeepLinkUnitTest() override = default;
-
-  void SetUp() override { AshTestBase::SetUp(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeepLinkUnitTest);
-};
+using DeepLinkUnitTest = AshTestBase;
 
 TEST_F(DeepLinkUnitTest, CreateAssistantSettingsDeepLink) {
   ASSERT_EQ(GURL("googleassistant://settings"),
