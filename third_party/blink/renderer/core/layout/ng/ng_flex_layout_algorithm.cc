@@ -164,15 +164,15 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   // flexboxes are supported.
   LayoutUnit final_content_block_size =
       block_size - flex_container_border_scrollbar_padding.BlockSum();
+  if (!algorithm.IsMultiline() && !algorithm.FlexLines().IsEmpty())
+    algorithm.FlexLines()[0].cross_axis_extent = final_content_block_size;
+
   for (FlexLine& line_context : algorithm.FlexLines()) {
     for (wtf_size_t child_number = 0;
          child_number < line_context.line_items.size(); ++child_number) {
       FlexItem& flex_item = line_context.line_items[child_number];
       if (flex_item.Alignment() == ItemPosition::kStretch) {
-        flex_item.ComputeStretchedSize(
-            // TODO(dgrogan): Change this to line_context.cross_axis_extent once
-            // lines are also sized and spaced.
-            final_content_block_size);
+        flex_item.ComputeStretchedSize();
         NGConstraintSpaceBuilder space_builder(
             ConstraintSpace(), flex_item.box->StyleRef().GetWritingMode(),
             /* is_new_fc */ true);

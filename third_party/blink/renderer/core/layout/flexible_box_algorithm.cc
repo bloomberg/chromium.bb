@@ -41,7 +41,9 @@ FlexItem::FlexItem(LayoutBox* box,
                    MinMaxSize min_max_sizes,
                    LayoutUnit main_axis_border_and_padding,
                    LayoutUnit main_axis_margin)
-    : box(box),
+    : algorithm(nullptr),
+      line_number(0),
+      box(box),
       flex_base_content_size(flex_base_content_size),
       min_max_sizes(min_max_sizes),
       hypothetical_main_content_size(
@@ -104,10 +106,9 @@ LayoutUnit FlexItem::MarginBoxAscent() const {
   return ascent + FlowAwareMarginBefore();
 }
 
-LayoutUnit FlexItem::AvailableAlignmentSpace(
-    LayoutUnit line_cross_axis_extent) const {
+LayoutUnit FlexItem::AvailableAlignmentSpace() const {
   LayoutUnit cross_extent = CrossAxisMarginExtent() + cross_axis_size;
-  return line_cross_axis_extent - cross_extent;
+  return Line()->cross_axis_extent - cross_extent;
 }
 
 bool FlexItem::HasAutoMarginsInCrossAxis() const {
@@ -140,7 +141,7 @@ void FlexItem::UpdateAutoMarginsInMainAxis(LayoutUnit auto_margin_offset) {
   }
 }
 
-void FlexItem::ComputeStretchedSize(LayoutUnit line_cross_axis_extent) {
+void FlexItem::ComputeStretchedSize() {
   // TODO(dgrogan): Pass resolved cross-axis MinMaxSize to FlexItem
   // constructor. Then use cross_axis_min_max.ClampSizeToMinAndMax instead of
   // relying on legacy in this method.
@@ -149,13 +150,14 @@ void FlexItem::ComputeStretchedSize(LayoutUnit line_cross_axis_extent) {
   if (MainAxisIsInlineAxis() && box->StyleRef().LogicalHeight().IsAuto()) {
     LayoutUnit stretched_logical_height =
         std::max(box->BorderAndPaddingLogicalHeight(),
-                 line_cross_axis_extent - CrossAxisMarginExtent());
+                 Line()->cross_axis_extent - CrossAxisMarginExtent());
     cross_axis_size = box->ConstrainLogicalHeightByMinMax(
         stretched_logical_height, box->IntrinsicContentLogicalHeight());
   } else if (!MainAxisIsInlineAxis() &&
              box->StyleRef().LogicalWidth().IsAuto()) {
-    LayoutUnit child_width = (line_cross_axis_extent - CrossAxisMarginExtent())
-                                 .ClampNegativeToZero();
+    LayoutUnit child_width =
+        (Line()->cross_axis_extent - CrossAxisMarginExtent())
+            .ClampNegativeToZero();
     // This probably doesn't work in NG because flexbox might not yet know its
     // CrossAxisContentExtent()
     cross_axis_size = box->ConstrainLogicalWidthByMinMax(
@@ -401,7 +403,7 @@ FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
   wtf_size_t start_index = next_item_index_;
 
   for (; next_item_index_ < all_items_.size(); ++next_item_index_) {
-    const FlexItem& flex_item = all_items_[next_item_index_];
+    FlexItem& flex_item = all_items_[next_item_index_];
     DCHECK(!flex_item.box->IsOutOfFlowPositioned());
     if (IsMultiline() &&
         sum_hypothetical_main_size +
@@ -417,6 +419,7 @@ FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
     total_weighted_flex_shrink += flex_item.box->StyleRef().FlexShrink() *
                                   flex_item.flex_base_content_size;
     sum_hypothetical_main_size += flex_item.HypotheticalMainAxisMarginBoxSize();
+    flex_item.line_number = flex_lines_.size();
   }
 
   DCHECK(next_item_index_ > start_index ||

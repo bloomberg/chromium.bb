@@ -379,6 +379,13 @@ void LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems(
   LayoutUnit cross_axis_start_edge = line_contexts.IsEmpty()
                                          ? LayoutUnit()
                                          : line_contexts[0].cross_axis_offset;
+  // If we have a single line flexbox, the line height is all the available
+  // space. For flex-direction: row, this means we need to use the height, so
+  // we do this after calling updateLogicalHeight.
+  if (!IsMultiline() && !line_contexts.IsEmpty()) {
+    line_contexts[0].cross_axis_extent = CrossAxisContentExtent();
+  }
+
   AlignFlexLines(line_contexts);
 
   AlignChildren(line_contexts);
@@ -1504,21 +1511,11 @@ void LayoutFlexibleBox::LayoutColumnReverse(FlexItemVectorView& children,
 }
 
 void LayoutFlexibleBox::AlignFlexLines(Vector<FlexLine>& line_contexts) {
-  if (line_contexts.IsEmpty())
+  if (line_contexts.IsEmpty() || !IsMultiline())
     return;
 
   const StyleContentAlignmentData align_content =
       FlexLayoutAlgorithm::ResolvedAlignContent(StyleRef());
-
-  // If we have a single line flexbox or a multiline line flexbox with only one
-  // flex line, the line height is all the available space. For
-  // flex-direction: row, this means we need to use the height, so we do this
-  // after calling updateLogicalHeight.
-  if (!IsMultiline()) {
-    line_contexts[0].cross_axis_extent = CrossAxisContentExtent();
-    return;
-  }
-
   if (align_content.GetPosition() == ContentPosition::kFlexStart)
     return;
 
@@ -1562,7 +1559,6 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
 
   for (FlexLine& line_context : line_contexts) {
     LayoutUnit min_margin_after_baseline = LayoutUnit::Max();
-    LayoutUnit line_cross_axis_extent = line_context.cross_axis_extent;
     LayoutUnit max_ascent = line_context.max_ascent;
 
     for (FlexItem& flex_item : line_context.line_items) {
@@ -1570,26 +1566,24 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
 
       if (UpdateAutoMarginsInCrossAxis(
               *flex_item.box,
-              std::max(LayoutUnit(), flex_item.AvailableAlignmentSpace(
-                                         line_cross_axis_extent))))
+              std::max(LayoutUnit(), flex_item.AvailableAlignmentSpace())))
         continue;
 
       ItemPosition position = flex_item.Alignment();
       if (position == ItemPosition::kStretch) {
-        flex_item.ComputeStretchedSize(line_cross_axis_extent);
+        flex_item.ComputeStretchedSize();
         ApplyStretchAlignmentToChild(flex_item);
       }
-      LayoutUnit available_space =
-          flex_item.AvailableAlignmentSpace(line_cross_axis_extent);
+      LayoutUnit available_space = flex_item.AvailableAlignmentSpace();
       LayoutUnit offset = AlignmentOffset(
           available_space, position, flex_item.MarginBoxAscent(), max_ascent,
           StyleRef().FlexWrap() == EFlexWrap::kWrapReverse);
       AdjustAlignmentForChild(*flex_item.box, offset);
       if (position == ItemPosition::kBaseline &&
           StyleRef().FlexWrap() == EFlexWrap::kWrapReverse) {
-        min_margin_after_baseline = std::min(
-            min_margin_after_baseline,
-            flex_item.AvailableAlignmentSpace(line_cross_axis_extent) - offset);
+        min_margin_after_baseline =
+            std::min(min_margin_after_baseline,
+                     flex_item.AvailableAlignmentSpace() - offset);
       }
     }
     min_margin_after_baselines.push_back(min_margin_after_baseline);
