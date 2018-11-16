@@ -47,6 +47,7 @@ class PrimaryAccountMutator {
   // whether the operation succeeded or not. To succeed, this requires that:
   //    - setting the primary account is allowed,
   //    - the account username is allowed by policy,
+  //    - there is not already a primary account set,
   //    - the account is known by the IdentityManager.
   virtual bool SetPrimaryAccount(const std::string& account_id) = 0;
 

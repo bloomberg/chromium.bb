@@ -21,8 +21,20 @@ PrimaryAccountMutatorImpl::~PrimaryAccountMutatorImpl() {}
 
 bool PrimaryAccountMutatorImpl::SetPrimaryAccount(
     const std::string& account_id) {
-  NOTIMPLEMENTED();
-  return false;
+  if (!IsSettingPrimaryAccountAllowed())
+    return false;
+
+  if (signin_manager_->IsAuthenticated())
+    return false;
+
+  AccountInfo account_info = account_tracker_->GetAccountInfo(account_id);
+  if (account_info.account_id != account_id || account_info.email.empty())
+    return false;
+
+  // TODO(crbug.com/889899): should check that the account email is allowed.
+
+  signin_manager_->OnExternalSigninCompleted(account_info.email);
+  return true;
 }
 
 void PrimaryAccountMutatorImpl::ClearPrimaryAccount(
