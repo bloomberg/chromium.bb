@@ -55,6 +55,7 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/latency_info_swap_promise.h"
@@ -5462,6 +5463,65 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   }
 
   host_impl_->browser_controls_manager()->ScrollEnd();
+  host_impl_->ScrollEnd(EndState().get());
+}
+
+TEST_F(LayerTreeHostImplBrowserControlsTest,
+       MovingBrowserControlsChangesViewportClip) {
+  // TODO(bokan): This test is checking pre-blink-gen-property-tree behavior
+  // and can be removed once that flag ships. See crbug.com/901083.
+  if (DefaultSettings().use_layer_lists)
+    return;
+
+  SetupBrowserControlsAndScrollLayerWithVirtualViewport(
+      gfx::Size(50, 50), gfx::Size(25, 25), gfx::Size(100, 100));
+
+  LayerTreeImpl* active_tree = host_impl_->active_tree();
+
+  // Create a content layer beneath the outer viewport scroll layer.
+  int id = host_impl_->OuterViewportScrollLayer()->id();
+  host_impl_->OuterViewportScrollLayer()->test_properties()->AddChild(
+      LayerImpl::Create(host_impl_->active_tree(), id + 2));
+  LayerImpl* content =
+      active_tree->OuterViewportScrollLayer()->test_properties()->children[0];
+  content->SetBounds(gfx::Size(100, 100));
+  host_impl_->active_tree()->PushPageScaleFromMainThread(2.f, 2.f, 4.f);
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+  DrawFrame();
+
+  LayerImpl* inner_container = active_tree->InnerViewportContainerLayer();
+  LayerImpl* outer_container = active_tree->OuterViewportContainerLayer();
+  LayerImpl* outer_scroll = active_tree->OuterViewportScrollLayer();
+  auto* property_trees = host_impl_->active_tree()->property_trees();
+  ClipNode* outer_clip_node =
+      property_trees->clip_tree.Node(outer_scroll->clip_tree_index());
+
+  // The browser controls should start off showing so the viewport should be
+  // shrunk.
+  EXPECT_EQ(50, host_impl_->browser_controls_manager()->ContentTopOffset());
+  ASSERT_EQ(gfx::Size(50, 50), inner_container->bounds());
+  ASSERT_EQ(gfx::Size(25, 25), outer_container->bounds());
+  EXPECT_EQ(gfx::SizeF(100, 100), active_tree->ScrollableSize());
+  EXPECT_EQ(gfx::SizeF(50, 50), outer_clip_node->clip.size());
+
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_
+                ->ScrollBegin(BeginState(gfx::Point()).get(),
+                              InputHandler::TOUCHSCREEN)
+                .thread);
+
+  // Hide the browser controls by 10px. The outer clip should expand by 10px as
+  // well because the clip node doesn't account for the "resize to
+  // minimum-scale" that occurs for the outer viewport layer (hence, why the
+  // outer viewport layer is half the size of the inner in this test).
+  {
+    host_impl_->ScrollBy(
+        UpdateState(gfx::Point(0, 0), gfx::Vector2dF(0.f, 10.f)).get());
+    ASSERT_EQ(40, host_impl_->browser_controls_manager()->ContentTopOffset());
+    EXPECT_EQ(gfx::SizeF(50, 60), outer_clip_node->clip.size());
+  }
+
   host_impl_->ScrollEnd(EndState().get());
 }
 
