@@ -2927,6 +2927,7 @@ id<GREYMatcher> SearchIconButton() {
   [super tearDown];
   GREYAssert(chrome_test_util::ClearBookmarks(),
              @"Not all bookmarks were removed.");
+
   // Clear position cache so that Bookmarks starts at the root folder in next
   // test.
   ios::ChromeBrowserState* browser_state =

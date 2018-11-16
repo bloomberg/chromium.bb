@@ -10,15 +10,62 @@ config("config") {
 }
 
 ios_framework_bundle("gtx") {
-  output_name = "GTX"
-  info_plist = "src/FrameworkFiles/Info.plist"
+  output_name = "GTXiLib"
+  info_plist = "Info.plist"
 
   testonly = true
   sources = [
     "src/Classes/GTXAccessibilityTree.h",
+    "src/Classes/GTXAccessibilityTree.m",
+    "src/Classes/GTXAnalytics.h",
+    "src/Classes/GTXAnalytics.m",
+    "src/Classes/GTXAnalyticsUtils.h",
+    "src/Classes/GTXAnalyticsUtils.m",
+    "src/Classes/GTXAssertions.h",
+    "src/Classes/GTXBlacklistBlock.h",
+    "src/Classes/GTXBlacklistBlock.m",
+    "src/Classes/GTXBlacklistFactory.h",
+    "src/Classes/GTXBlacklistFactory.m",
+    "src/Classes/GTXBlacklisting.h",
+    "src/Classes/GTXCheckBlock.h",
+    "src/Classes/GTXCheckBlock.m",
+    "src/Classes/GTXChecking.h",
+    "src/Classes/GTXChecksCollection.h",
+    "src/Classes/GTXChecksCollection.m",
+    "src/Classes/GTXCommon.h",
+    "src/Classes/GTXElementBlacklist.h",
+    "src/Classes/GTXElementBlacklist.m",
+    "src/Classes/GTXErrorReporter.h",
+    "src/Classes/GTXErrorReporter.m",
+    "src/Classes/GTXImageAndColorUtils.h",
+    "src/Classes/GTXImageAndColorUtils.m",
+    "src/Classes/GTXImageRGBAData.h",
+    "src/Classes/GTXImageRGBAData.m",
+    "src/Classes/GTXLogging.h",
+    "src/Classes/GTXPluginXCTestCase.h",
+    "src/Classes/GTXPluginXCTestCase.m",
+    "src/Classes/GTXTestCase.h",
+    "src/Classes/GTXTestCase.m",
+    "src/Classes/GTXTestEnvironment.h",
+    "src/Classes/GTXTestEnvironment.m",
+    "src/Classes/GTXTestSuite.h",
+    "src/Classes/GTXTestSuite.m",
+    "src/Classes/GTXToolKit.h",
+    "src/Classes/GTXToolKit.m",
+    "src/Classes/GTXiLib.h",
+    "src/Classes/GTXiLibCore.h",
+    "src/Classes/GTXiLibCore.m",
+    "src/Classes/NSError+GTXAdditions.h",
+    "src/Classes/NSError+GTXAdditions.m",
+  ]
+  public_headers = [
+    "src/Classes/GTXAccessibilityTree.h",
     "src/Classes/GTXAnalytics.h",
     "src/Classes/GTXAnalyticsUtils.h",
     "src/Classes/GTXAssertions.h",
+    "src/Classes/GTXBlacklistBlock.h",
+    "src/Classes/GTXBlacklistFactory.h",
+    "src/Classes/GTXBlacklisting.h",
     "src/Classes/GTXCheckBlock.h",
     "src/Classes/GTXChecking.h",
     "src/Classes/GTXChecksCollection.h",
@@ -30,13 +77,16 @@ ios_framework_bundle("gtx") {
     "src/Classes/GTXLogging.h",
     "src/Classes/GTXPluginXCTestCase.h",
     "src/Classes/GTXTestCase.h",
+    "src/Classes/GTXTestEnvironment.h",
     "src/Classes/GTXTestSuite.h",
     "src/Classes/GTXToolKit.h",
     "src/Classes/GTXiLib.h",
     "src/Classes/GTXiLibCore.h",
     "src/Classes/NSError+GTXAdditions.h",
   ]
-  public_headers = [ "src/Classes/GTXiLib.h" ]
+  deps = [
+    "//build/config/ios:xctest",
+  ]
 
   libs = [
     "CoreGraphics.framework",
