@@ -173,7 +173,8 @@ TEST_F(FullscreenShellSurfaceTest, Bounds) {
   surface->Commit();
   gfx::Rect fullscreen_bounds =
       fullscreen_surface->GetWidget()->GetWindowBoundsInScreen();
-  EXPECT_EQ(fullscreen_bounds.size(), new_root_bounds.size());
+  gfx::Rect expected_bounds(new_root_bounds.size());
+  EXPECT_EQ(fullscreen_bounds, expected_bounds);
 }
 
 }  // namespace
