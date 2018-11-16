@@ -1,2 +1,14 @@
-{%- macro union_def(union, generate_fuzzing) -%}
-{%- endmacro %}
+
+mojo.mojom.Union(
+    {{union.name}}, '{{union.name}}',
+    {
+{%- for field in union.fields %}
+      '{{field.name}}': {
+        'ordinal': {{field.ordinal}},
+        'type': {{field.kind|lite_js_type}},
+{%-    if field.kind.is_nullable %}
+        'nullable': true,
+{%-    endif %}
+      },
+{%- endfor %}
+    });

@@ -72,6 +72,7 @@ action("precompile_templates") {
     "$mojom_generator_root/generators/js_templates/lite/struct_definition.tmpl",
     "$mojom_generator_root/generators/js_templates/lite/struct_externs.tmpl",
     "$mojom_generator_root/generators/js_templates/lite/union_definition.tmpl",
+    "$mojom_generator_root/generators/js_templates/lite/union_externs.tmpl",
     "$mojom_generator_root/generators/js_templates/module.amd.tmpl",
     "$mojom_generator_root/generators/js_templates/module_definition.tmpl",
     "$mojom_generator_root/generators/js_templates/struct_definition.tmpl",

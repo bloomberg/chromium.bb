@@ -19,6 +19,7 @@ class TargetImpl {
   ping() { return Promise.resolve(); }
   repeat(message, numbers) { return {message: message, numbers: numbers}; }
   flatten(values) {}
+  flattenUnions(unions) {}
   requestSubinterface(request, client) {}
 }
 
@@ -121,11 +122,42 @@ promise_test(() => {
 }, 'can send and receive interface requests and proxies');
 
 promise_test(() => {
-  let targetRouter = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
-  let targetProxy = targetRouter.createProxy();
+  const targetRouter = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
+  const targetProxy = targetRouter.createProxy();
   targetRouter.flatten.addListener(values => ({values: values.map(v => v.x)}));
   return targetProxy.flatten([{x: 1}, {x: 2}, {x: 3}]).then(reply => {
     assert_array_equals(reply.values, [1, 2, 3]);
   });
 }, 'regression test for complex array serialization');
+
+promise_test(() => {
+  const targetRouter = new liteJsTest.mojom.TestMessageTargetCallbackRouter;
+  const targetProxy = targetRouter.createProxy();
+  targetRouter.flattenUnions.addListener(unions => {
+    return {x: unions.filter(u => u.x !== undefined).map(u => u.x),
+            s: unions.filter(u => u.s !== undefined).map(u => u.s.x)};
+  });
+
+  return targetProxy.flattenUnions(
+      [{x: 1}, {x: 2}, {s: {x: 3}}, {s: {x: 4}}, {x: 5}, {s: {x: 6}}])
+      .then(reply => {
+    assert_array_equals(reply.x, [1, 2, 5]);
+    assert_array_equals(reply.s, [3, 4, 6]);
+  });
+}, 'can serialize and deserialize unions');
+
+promise_test(() => {
+  let impl = new TargetImpl;
+  let proxy = impl.target.createProxy();
+
+  // Poke a bunch of times. These should never race with the assertion below,
+  // because the |flushForTesting| request/response is ordered against other
+  // messages on |proxy|.
+  const kNumPokes = 100;
+  for (let i = 0; i < kNumPokes; ++i)
+    proxy.poke();
+  return proxy.flushForTesting().then(() => {
+    assert_equals(impl.numPokes, kNumPokes);
+  });
+}, 'can use generated flushForTesting API for synchronization in tests');
 </script>

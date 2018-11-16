@@ -417,9 +417,8 @@ class Generator(generator.Generator):
     if (mojom.IsStructKind(kind) or
         mojom.IsEnumKind(kind)):
       return kind.module.namespace + "." + kind.name
-    # TODO(calamity): Support unions properly.
     if mojom.IsUnionKind(kind):
-      return "Object"
+      return kind.module.namespace + "." + kind.name
     if mojom.IsArrayKind(kind):
       return "Array<%s>" % self._ClosureType(kind.kind)
     if mojom.IsMapKind(kind) and self._IsStringableKind(kind.key_kind):

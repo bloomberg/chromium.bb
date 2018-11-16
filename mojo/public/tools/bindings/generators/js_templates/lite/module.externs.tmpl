@@ -28,3 +28,8 @@ goog.provide('{{module.namespace}}.{{constant.name}}');
 {%- for struct in structs -%}
 {%-   include "lite/struct_externs.tmpl" %}
 {%  endfor -%}
+
+{#--- Union definitions #}
+{%- for union in unions -%}
+{%-   include "lite/union_externs.tmpl" %}
+{%  endfor -%}
