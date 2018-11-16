@@ -405,11 +405,6 @@ void HTMLFormElement::Submit(Event* event,
 void HTMLFormElement::ConstructFormDataSet(
     HTMLFormControlElement* submit_button,
     FormData& form_data) {
-  // TODO(tkent): We might move the event dispatching later than the
-  // ListedElements iteration.
-  if (RuntimeEnabledFeatures::FormDataEventEnabled())
-    DispatchEvent(*FormDataEvent::Create(form_data));
-
   if (submit_button)
     submit_button->SetActivatedSubmit(true);
   for (ListedElement* control : ListedElements()) {
@@ -423,6 +418,9 @@ void HTMLFormElement::ConstructFormDataSet(
         form_data.SetContainsPasswordData(true);
     }
   }
+  if (RuntimeEnabledFeatures::FormDataEventEnabled())
+    DispatchEvent(*FormDataEvent::Create(form_data));
+
   if (submit_button)
     submit_button->SetActivatedSubmit(false);
 }
