@@ -28,12 +28,14 @@ def compare_builders(name, main_builders, sub_builders):
   sub_names = [', '.join(builder.name) for builder in sub_builders]
 
   if main_names != sub_names:
-    print '%s: bot name lists different:' % name
+    print ('bot name lists different between main waterfall ' +
+           'and stand-alone %s waterfall:' % name)
     print '\n'.join(difflib.unified_diff(main_names, sub_names,
-                                         fromfile='main', tofile='sub',
+                                         fromfile='main', tofile=name,
                                          lineterm=''))
     print
-    return
+    return False
+  return True
 
 
 def main():
@@ -51,9 +53,13 @@ def main():
         subwaterfall = builder.category.split('|', 1)[0]
         subwaterfalls[subwaterfall].append(builder)
 
+  all_good = True
   for console in project.consoles:
     if console.id in subwaterfalls:
-      compare_builders(console.id, subwaterfalls[console.id], console.builders)
+      if not compare_builders(console.id, subwaterfalls[console.id],
+                              console.builders):
+        all_good = False
+  return 0 if all_good else 1
 
 
 if __name__ == '__main__':
