@@ -9662,6 +9662,9 @@ TEST_F(HttpCacheTest, InvalidLoadFlagCombination) {
 // Tests that we can read metadata after validating the entry and with READ mode
 // transactions.
 TEST_F(HttpCacheTest, ReadMetadata) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(net::features::kIsolatedCodeCache);
+  ASSERT_FALSE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
   MockHttpCache cache;
 
   // Write to the cache
