@@ -81,6 +81,11 @@ class VaapiJpegEncodeAccelerator::Encoder {
   base::RepeatingCallback<void(int32_t, size_t)> video_frame_ready_cb_;
   base::RepeatingCallback<void(int32_t, Status)> notify_error_cb_;
 
+  // The current VA surface used for encoding.
+  VASurfaceID va_surface_id_;
+  // The size of the surface associated with |va_surface_id_|.
+  gfx::Size surface_size_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(Encoder);
@@ -94,7 +99,8 @@ VaapiJpegEncodeAccelerator::Encoder::Encoder(
       jpeg_encoder_(new VaapiJpegEncoder(vaapi_wrapper)),
       vaapi_wrapper_(std::move(vaapi_wrapper)),
       video_frame_ready_cb_(std::move(video_frame_ready_cb)),
-      notify_error_cb_(std::move(notify_error_cb)) {
+      notify_error_cb_(std::move(notify_error_cb)),
+      va_surface_id_(VA_INVALID_SURFACE) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -110,17 +116,26 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
 
   const int buffer_id = request->buffer_id;
   gfx::Size input_size = request->video_frame->coded_size();
-  std::vector<VASurfaceID> va_surfaces;
-  if (!vaapi_wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, input_size, 1,
-                                      &va_surfaces)) {
-    VLOGF(1) << "Failed to create VA surface";
-    notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
-    return;
+
+  // Recreate VASurface if the video frame's size changed.
+  if (input_size != surface_size_ || va_surface_id_ == VA_INVALID_SURFACE) {
+    vaapi_wrapper_->DestroySurfaces();
+    va_surface_id_ = VA_INVALID_SURFACE;
+    surface_size_ = gfx::Size();
+
+    std::vector<VASurfaceID> va_surfaces;
+    if (!vaapi_wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, input_size, 1,
+                                        &va_surfaces)) {
+      VLOGF(1) << "Failed to create VA surface";
+      notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
+      return;
+    }
+    va_surface_id_ = va_surfaces[0];
+    surface_size_ = input_size;
   }
-  VASurfaceID va_surface_id = va_surfaces[0];
 
   if (!vaapi_wrapper_->UploadVideoFrameToSurface(request->video_frame,
-                                                 va_surface_id)) {
+                                                 va_surface_id_)) {
     VLOGF(1) << "Failed to upload video frame to VA surface";
     notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
     return;
@@ -159,7 +174,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
   std::vector<uint8_t> exif_buffer_dummy(exif_buffer_size, 0);
   size_t exif_offset = 0;
   if (!jpeg_encoder_->Encode(input_size, exif_buffer_dummy.data(),
-                             exif_buffer_size, request->quality, va_surface_id,
+                             exif_buffer_size, request->quality, va_surface_id_,
                              cached_output_buffer_id_, &exif_offset)) {
     VLOGF(1) << "Encode JPEG failed";
     notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
@@ -170,7 +185,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
   // would wait until encoding is finished.
   size_t encoded_size = 0;
   if (!vaapi_wrapper_->DownloadFromCodedBuffer(
-          cached_output_buffer_id_, va_surface_id,
+          cached_output_buffer_id_, va_surface_id_,
           static_cast<uint8_t*>(request->output_shm->memory()),
           request->output_shm->size(), &encoded_size)) {
     VLOGF(1) << "Failed to retrieve output image from VA coded buffer";
