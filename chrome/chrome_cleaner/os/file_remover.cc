@@ -9,9 +9,12 @@
 #include <unordered_set>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/synchronization/waitable_event.h"
+#include "chrome/chrome_cleaner/interfaces/zip_archiver.mojom.h"
 #include "chrome/chrome_cleaner/logging/proto/removal_status.pb.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
 #include "chrome/chrome_cleaner/os/file_path_sanitization.h"
@@ -77,13 +80,33 @@ bool IsSafeNameForDeletion(const base::FilePath& path) {
   return false;
 }
 
+void OnArchiveDone(FileRemover::QuarantineResultCallback archival_done_callback,
+                   mojom::ZipArchiverResultCode result_code) {
+  switch (result_code) {
+    // If the archive exists, |path| has already been quarantined.
+    case mojom::ZipArchiverResultCode::kSuccess:
+    case mojom::ZipArchiverResultCode::kZipFileExists:
+      std::move(archival_done_callback).Run(QUARANTINE_STATUS_QUARANTINED);
+      return;
+    case mojom::ZipArchiverResultCode::kIgnoredSourceFile:
+      std::move(archival_done_callback).Run(QUARANTINE_STATUS_SKIPPED);
+      return;
+    default:
+      LOG(ERROR) << "ZipArchiver returned an error code: " << result_code;
+      break;
+  }
+  std::move(archival_done_callback).Run(QUARANTINE_STATUS_ERROR);
+}
+
 }  // namespace
 
 FileRemover::FileRemover(std::shared_ptr<DigestVerifier> digest_verifier,
+                         std::unique_ptr<SandboxedZipArchiver> archiver,
                          const LayeredServiceProviderAPI& lsp,
                          const FilePathSet& deletion_allowed_paths,
                          base::RepeatingClosure reboot_needed_callback)
     : digest_verifier_(digest_verifier),
+      archiver_(std::move(archiver)),
       deletion_allowed_paths_(deletion_allowed_paths),
       reboot_needed_callback_(reboot_needed_callback) {
   LSPPathToGUIDs providers;
@@ -96,18 +119,21 @@ FileRemover::FileRemover(std::shared_ptr<DigestVerifier> digest_verifier,
 
 FileRemover::~FileRemover() = default;
 
-bool FileRemover::RemoveNow(const base::FilePath& path) const {
+void FileRemover::RemoveNow(const base::FilePath& path,
+                            DoneCallback callback) const {
   FileRemovalStatusUpdater* removal_status_updater =
       FileRemovalStatusUpdater::GetInstance();
   switch (CanRemove(path)) {
     case DeletionValidationStatus::FORBIDDEN:
       removal_status_updater->UpdateRemovalStatus(
           path, REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL);
-      return false;
+      std::move(callback).Run(false);
+      return;
     case DeletionValidationStatus::INACTIVE:
       removal_status_updater->UpdateRemovalStatus(
           path, REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION);
-      return true;
+      std::move(callback).Run(true);
+      return;
     case DeletionValidationStatus::ALLOWED:
       // No-op. Proceed to removal.
       break;
@@ -116,45 +142,30 @@ bool FileRemover::RemoveNow(const base::FilePath& path) const {
   chrome_cleaner::ScopedDisableWow64Redirection disable_wow64_redirection;
   if (!base::PathExists(path)) {
     removal_status_updater->UpdateRemovalStatus(path, REMOVAL_STATUS_NOT_FOUND);
-    return true;
+    std::move(callback).Run(true);
+    return;
   }
-  if (!base::DeleteFile(path, /*recursive=*/false)) {
-    // If the attempt to delete the file fails, propagate the failure as
-    // normal so that the engine knows about it and can try a backup action,
-    // but also register the file for post-reboot removal in case the engine
-    // doesn't have any effective backup action.
-    //
-    // A potential downside to this implementation is that if the file is
-    // later successfully deleted, we might ask users to reboot when no
-    // reboot is needed.
-    if (RegisterFileForPostRebootRemoval(path)) {
-      reboot_needed_callback_.Run();
-      removal_status_updater->UpdateRemovalStatus(
-          path, REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK);
-    } else {
-      removal_status_updater->UpdateRemovalStatus(
-          path, REMOVAL_STATUS_FAILED_TO_REMOVE);
-    }
-    return false;
-  }
-  removal_status_updater->UpdateRemovalStatus(path, REMOVAL_STATUS_REMOVED);
-  DeleteEmptyDirectories(path.DirName());
-  return true;
+
+  TryToQuarantine(
+      path, base::BindOnce(&FileRemover::RemoveFile, base::Unretained(this),
+                           path, base::Passed(&callback)));
 }
 
-bool FileRemover::RegisterPostRebootRemoval(
-    const base::FilePath& file_path) const {
+void FileRemover::RegisterPostRebootRemoval(const base::FilePath& file_path,
+                                            DoneCallback callback) const {
   FileRemovalStatusUpdater* removal_status_updater =
       FileRemovalStatusUpdater::GetInstance();
   switch (CanRemove(file_path)) {
     case DeletionValidationStatus::FORBIDDEN:
       removal_status_updater->UpdateRemovalStatus(
           file_path, REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL);
-      return false;
+      std::move(callback).Run(false);
+      return;
     case DeletionValidationStatus::INACTIVE:
       removal_status_updater->UpdateRemovalStatus(
           file_path, REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION);
-      return true;
+      std::move(callback).Run(true);
+      return;
     case DeletionValidationStatus::ALLOWED:
       // No-op. Proceed to removal.
       break;
@@ -164,19 +175,13 @@ bool FileRemover::RegisterPostRebootRemoval(
   if (!base::PathExists(file_path)) {
     removal_status_updater->UpdateRemovalStatus(file_path,
                                                 REMOVAL_STATUS_NOT_FOUND);
-    return true;
+    std::move(callback).Run(true);
+    return;
   }
-  if (!RegisterFileForPostRebootRemoval(file_path)) {
-    PLOG(ERROR) << "Failed to schedule delete file: "
-                << chrome_cleaner::SanitizePath(file_path);
-    removal_status_updater->UpdateRemovalStatus(
-        file_path, REMOVAL_STATUS_FAILED_TO_SCHEDULE_FOR_REMOVAL);
-    return false;
-  }
-  reboot_needed_callback_.Run();
-  removal_status_updater->UpdateRemovalStatus(
-      file_path, REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL);
-  return true;
+
+  TryToQuarantine(file_path, base::BindOnce(&FileRemover::ScheduleRemoval,
+                                            base::Unretained(this), file_path,
+                                            base::Passed(&callback)));
 }
 
 FileRemoverAPI::DeletionValidationStatus FileRemover::CanRemove(
@@ -231,6 +236,83 @@ FileRemoverAPI::DeletionValidationStatus FileRemover::IsFileRemovalAllowed(
              << file_path.Extension() << "'. Full path '"
              << chrome_cleaner::SanitizePath(file_path) << "'";
   return DeletionValidationStatus::INACTIVE;
+}
+
+void FileRemover::TryToQuarantine(const base::FilePath& path,
+                                  QuarantineResultCallback callback) const {
+  // The quarantine feature is disabled.
+  if (archiver_ == nullptr) {
+    std::move(callback).Run(QUARANTINE_STATUS_DISABLED);
+    return;
+  }
+
+  archiver_->Archive(path, base::BindOnce(&OnArchiveDone, std::move(callback)));
+}
+
+void FileRemover::RemoveFile(const base::FilePath& path,
+                             DoneCallback removal_done_callback,
+                             QuarantineStatus quarantine_status) const {
+  FileRemovalStatusUpdater* removal_status_updater =
+      FileRemovalStatusUpdater::GetInstance();
+  removal_status_updater->UpdateQuarantineStatus(path, quarantine_status);
+  if (quarantine_status == QUARANTINE_STATUS_ERROR) {
+    removal_status_updater->UpdateRemovalStatus(
+        path, REMOVAL_STATUS_ERROR_IN_ARCHIVER);
+    std::move(removal_done_callback).Run(false);
+    return;
+  }
+
+  if (!base::DeleteFile(path, /*recursive=*/false)) {
+    // If the attempt to delete the file fails, propagate the failure as
+    // normal so that the engine knows about it and can try a backup action,
+    // but also register the file for post-reboot removal in case the engine
+    // doesn't have any effective backup action.
+    //
+    // A potential downside to this implementation is that if the file is
+    // later successfully deleted, we might ask users to reboot when no
+    // reboot is needed. See b/66944160 for more details.
+    if (RegisterFileForPostRebootRemoval(path)) {
+      reboot_needed_callback_.Run();
+      removal_status_updater->UpdateRemovalStatus(
+          path, REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL_FALLBACK);
+    } else {
+      removal_status_updater->UpdateRemovalStatus(
+          path, REMOVAL_STATUS_FAILED_TO_REMOVE);
+    }
+    std::move(removal_done_callback).Run(false);
+    return;
+  }
+  removal_status_updater->UpdateRemovalStatus(path, REMOVAL_STATUS_REMOVED);
+  DeleteEmptyDirectories(path.DirName());
+  std::move(removal_done_callback).Run(true);
+}
+
+void FileRemover::ScheduleRemoval(
+    const base::FilePath& file_path,
+    FileRemover::DoneCallback removal_done_callback,
+    QuarantineStatus quarantine_status) const {
+  FileRemovalStatusUpdater* removal_status_updater =
+      FileRemovalStatusUpdater::GetInstance();
+  removal_status_updater->UpdateQuarantineStatus(file_path, quarantine_status);
+  if (quarantine_status == QUARANTINE_STATUS_ERROR) {
+    removal_status_updater->UpdateRemovalStatus(
+        file_path, REMOVAL_STATUS_ERROR_IN_ARCHIVER);
+    std::move(removal_done_callback).Run(false);
+    return;
+  }
+
+  if (!RegisterFileForPostRebootRemoval(file_path)) {
+    PLOG(ERROR) << "Failed to schedule delete file: "
+                << chrome_cleaner::SanitizePath(file_path);
+    removal_status_updater->UpdateRemovalStatus(
+        file_path, REMOVAL_STATUS_FAILED_TO_SCHEDULE_FOR_REMOVAL);
+    std::move(removal_done_callback).Run(false);
+    return;
+  }
+  reboot_needed_callback_.Run();
+  removal_status_updater->UpdateRemovalStatus(
+      file_path, REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL);
+  std::move(removal_done_callback).Run(true);
 }
 
 }  // namespace chrome_cleaner

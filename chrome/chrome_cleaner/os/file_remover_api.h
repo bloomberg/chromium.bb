@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chrome/chrome_cleaner/os/file_path_set.h"
 
@@ -21,16 +22,20 @@ class FileRemoverAPI {
     FORBIDDEN,
     INACTIVE,
   };
+  // Callback used for the asynchronous versions of RemoveNow
+  // and RegisterPostRebootRemoval.
+  typedef base::OnceCallback<void(bool)> DoneCallback;
 
   virtual ~FileRemoverAPI() {}
 
   // Remove file at |path| from the user's disk. Return false on failure.
-  virtual bool RemoveNow(const base::FilePath& path) const = 0;
+  virtual void RemoveNow(const base::FilePath& path,
+                         DoneCallback callback) const = 0;
 
   // Register the file in |file_path| to be deleted after a machine reboot.
   // Return false on failure.
-  virtual bool RegisterPostRebootRemoval(
-      const base::FilePath& file_path) const = 0;
+  virtual void RegisterPostRebootRemoval(const base::FilePath& file_path,
+                                         DoneCallback callback) const = 0;
 
   // Check if file at |path| is not whitelisted and can be deleted.
   virtual DeletionValidationStatus CanRemove(

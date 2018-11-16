@@ -4,11 +4,12 @@
 
 #include "chrome/chrome_cleaner/os/file_removal_status_updater.h"
 
+#include <vector>
+
 #include "base/base_paths.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/chrome_cleaner/os/file_path_sanitization.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {
@@ -127,6 +128,60 @@ TEST_F(FileRemovalStatusUpdaterTest, UpdateRemovalStatus) {
       instance_->Clear();
     }
   }
+}
+
+TEST_F(FileRemovalStatusUpdaterTest, UpdateQuarantineStatus) {
+  // Creates a vector of all QuarantineStatus enum values to improve readability
+  // of loops in this test and ensure that all QuarantineStatus enumerators are
+  // checked.
+  std::vector<QuarantineStatus> all_quarantine_status;
+  for (int i = QuarantineStatus_MIN; i <= QuarantineStatus_MAX; ++i) {
+    // Status cannot be set to QUARANTINE_STATUS_UNSPECIFIED - this is guarded
+    // by an assert.
+    QuarantineStatus status = static_cast<QuarantineStatus>(i);
+    if (QuarantineStatus_IsValid(status) &&
+        status != QUARANTINE_STATUS_UNSPECIFIED)
+      all_quarantine_status.push_back(status);
+  }
+
+  for (QuarantineStatus status : all_quarantine_status) {
+    for (QuarantineStatus new_status : all_quarantine_status) {
+      // Empty the map for the next test.
+      instance_->Clear();
+
+      // Quarantine status should be |QUARANTINE_STATUS_UNSPECIFIED| if the file
+      // is not in the map.
+      EXPECT_EQ(QUARANTINE_STATUS_UNSPECIFIED,
+                instance_->GetQuarantineStatus(file_1_));
+
+      instance_->UpdateQuarantineStatus(file_1_, status);
+      // It should always succeed to override |QUARANTINE_STATUS_UNSPECIFIED|.
+      EXPECT_EQ(status, instance_->GetQuarantineStatus(file_1_));
+
+      instance_->UpdateQuarantineStatus(file_1_, new_status);
+      // It should always succeed to override the old quarantine status.
+      EXPECT_EQ(new_status, instance_->GetQuarantineStatus(file_1_));
+    }
+  }
+}
+
+TEST_F(FileRemovalStatusUpdaterTest, MixedRemovalQuarantineUpdate) {
+  instance_->UpdateRemovalStatus(file_1_, REMOVAL_STATUS_REMOVED);
+  // The initial quarantine status should be |QUARANTINE_STATUS_UNSPECIFIED|.
+  EXPECT_EQ(QUARANTINE_STATUS_UNSPECIFIED,
+            instance_->GetQuarantineStatus(file_1_));
+
+  instance_->UpdateQuarantineStatus(file_1_, QUARANTINE_STATUS_QUARANTINED);
+  // |UpdateQuarantineStatus| should not change removal status.
+  EXPECT_EQ(REMOVAL_STATUS_REMOVED, instance_->GetRemovalStatus(file_1_));
+
+  instance_->UpdateQuarantineStatus(file_2_, QUARANTINE_STATUS_SKIPPED);
+  // The initial removal status should be |REMOVAL_STATUS_UNSPECIFIED|.
+  EXPECT_EQ(REMOVAL_STATUS_UNSPECIFIED, instance_->GetRemovalStatus(file_2_));
+
+  instance_->UpdateRemovalStatus(file_2_, REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL);
+  // |UpdateRemovalStatus| should not change quarantine status.
+  EXPECT_EQ(QUARANTINE_STATUS_SKIPPED, instance_->GetQuarantineStatus(file_2_));
 }
 
 TEST_F(FileRemovalStatusUpdaterTest, PathSanitization) {

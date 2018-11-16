@@ -5,16 +5,24 @@
 #include "chrome/chrome_cleaner/os/file_remover.h"
 
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/multiprocess_test.h"
 #include "base/test/scoped_path_override.h"
+#include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/logging/proto/removal_status.pb.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
 #include "chrome/chrome_cleaner/os/file_removal_status_updater.h"
@@ -22,13 +30,21 @@
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
 #include "chrome/chrome_cleaner/os/system_util.h"
 #include "chrome/chrome_cleaner/os/whitelisted_directory.h"
+#include "chrome/chrome_cleaner/test/file_remover_test_util.h"
 #include "chrome/chrome_cleaner/test/reboot_deletion_helper.h"
 #include "chrome/chrome_cleaner/test/resources/grit/test_resources.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
 #include "chrome/chrome_cleaner/test/test_layered_service_provider.h"
+#include "chrome/chrome_cleaner/test/test_name_helper.h"
 #include "chrome/chrome_cleaner/test/test_strings.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
+#include "chrome/chrome_cleaner/zip_archiver/broker/sandbox_setup.h"
+#include "chrome/chrome_cleaner/zip_archiver/sandboxed_zip_archiver.h"
+#include "chrome/chrome_cleaner/zip_archiver/target/sandbox_setup.h"
+#include "sandbox/win/src/sandbox.h"
+#include "sandbox/win/src/sandbox_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/multiprocess_func_list.h"
 
 namespace chrome_cleaner {
 
@@ -47,7 +63,8 @@ class FileRemoverTest : public ::testing::Test {
  protected:
   FileRemoverTest()
       : default_file_remover_(
-            nullptr,
+            /*digest_verifier=*/nullptr,
+            /*archiver=*/nullptr,
             LayeredServiceProviderWrapper(),
             /*deletion_allowed_paths=*/{},
             base::BindRepeating(&FileRemoverTest::RebootRequired,
@@ -66,12 +83,12 @@ class FileRemoverTest : public ::testing::Test {
     FileRemovalStatusUpdater* removal_status_updater =
         FileRemovalStatusUpdater::GetInstance();
 
-    EXPECT_FALSE(remover->RemoveNow(path));
+    VerifyRemoveNowFailure(path, remover);
     EXPECT_EQ(removal_status_updater->GetRemovalStatus(path),
               REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL);
 
     removal_status_updater->Clear();
-    EXPECT_FALSE(remover->RegisterPostRebootRemoval(path));
+    VerifyRegisterPostRebootRemovalFailure(path, remover);
     EXPECT_EQ(removal_status_updater->GetRemovalStatus(path),
               REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL);
 
@@ -80,6 +97,7 @@ class FileRemoverTest : public ::testing::Test {
   }
 
   FileRemover default_file_remover_;
+  base::MessageLoop message_loop_;
   bool reboot_required_ = false;
 };
 
@@ -94,7 +112,7 @@ TEST_F(FileRemoverTest, RemoveNowValidFile) {
   EXPECT_TRUE(CreateEmptyFile(file_path));
 
   // Removing it must succeed.
-  EXPECT_TRUE(default_file_remover_.RemoveNow(file_path));
+  VerifyRemoveNowSuccess(file_path, &default_file_remover_);
   EXPECT_FALSE(base::PathExists(file_path));
   EXPECT_EQ(
       FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(file_path),
@@ -113,14 +131,14 @@ TEST_F(FileRemoverTest, RemoveNowAbsentFile) {
   EXPECT_FALSE(base::PathExists(file_path));
 
   // Removing it must not generate an error.
-  EXPECT_TRUE(default_file_remover_.RemoveNow(file_path));
+  VerifyRemoveNowSuccess(file_path, &default_file_remover_);
   EXPECT_EQ(removal_status_updater->GetRemovalStatus(file_path),
             REMOVAL_STATUS_NOT_FOUND);
 
   // Ensure the non-existant files with non-existant parents don't generate an
   // error.
   base::FilePath file_path_deeper = file_path.Append(kRemoveFile2);
-  EXPECT_TRUE(default_file_remover_.RemoveNow(file_path_deeper));
+  VerifyRemoveNowSuccess(file_path_deeper, &default_file_remover_);
   EXPECT_EQ(removal_status_updater->GetRemovalStatus(file_path_deeper),
             REMOVAL_STATUS_NOT_FOUND);
 }
@@ -131,8 +149,8 @@ TEST_F(FileRemoverTest, NoKnownFileRemoval) {
 
   FileRemover remover(
       DigestVerifier::CreateFromResource(IDS_TEST_SAMPLE_DLL_DIGEST),
-      LayeredServiceProviderWrapper(), /*deletion_allowed_paths=*/{},
-      base::DoNothing::Repeatedly());
+      /*archiver=*/nullptr, LayeredServiceProviderWrapper(),
+      /*deletion_allowed_paths=*/{}, base::DoNothing::Repeatedly());
 
   // Copy the sample DLL to the temp folder.
   base::FilePath dll_path = GetSampleDLLPath();
@@ -171,7 +189,8 @@ TEST_F(FileRemoverTest, NoLSPRemoval) {
   TestLayeredServiceProvider lsp;
   lsp.AddProvider(kGUID1, provider_path);
 
-  FileRemover remover(nullptr, lsp, /*deletion_allowed_paths=*/{},
+  FileRemover remover(/*digest_verifier=*/nullptr, /*archiver=*/nullptr, lsp,
+                      /*deletion_allowed_paths=*/{},
                       base::DoNothing::Repeatedly());
 
   TestBlacklistedRemoval(&remover, provider_path);
@@ -226,7 +245,7 @@ TEST_F(FileRemoverTest, RemoveNowDoesNotDeleteFolders) {
   ASSERT_TRUE(CreateEmptyFile(file_path1));
 
   // The folder should not be removed.
-  EXPECT_FALSE(default_file_remover_.RemoveNow(subfolder_path));
+  VerifyRemoveNowFailure(subfolder_path, &default_file_remover_);
   EXPECT_EQ(
       FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(subfolder_path),
       REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL);
@@ -252,7 +271,7 @@ TEST_F(FileRemoverTest, RemoveNowDeletesEmptyFolders) {
       FileRemovalStatusUpdater::GetInstance();
 
   // Delete a file in a folder with other stuff, so the folder isn't deleted.
-  EXPECT_TRUE(default_file_remover_.RemoveNow(file_path1));
+  VerifyRemoveNowSuccess(file_path1, &default_file_remover_);
   EXPECT_EQ(removal_status_updater->GetRemovalStatus(file_path1),
             REMOVAL_STATUS_REMOVED);
   EXPECT_TRUE(base::PathExists(subfolder_path));
@@ -262,7 +281,7 @@ TEST_F(FileRemoverTest, RemoveNowDeletesEmptyFolders) {
 
   // Delete the file and ensure the two parent folders are deleted since they
   // are now empty.
-  EXPECT_TRUE(default_file_remover_.RemoveNow(file_path2));
+  VerifyRemoveNowSuccess(file_path2, &default_file_remover_);
   EXPECT_EQ(removal_status_updater->GetRemovalStatus(file_path2),
             REMOVAL_STATUS_REMOVED);
   EXPECT_FALSE(base::PathExists(subfolder_path));
@@ -281,7 +300,7 @@ TEST_F(FileRemoverTest, RemoveNowDeletesEmptyFoldersNotTemp) {
   ASSERT_TRUE(CreateEmptyFile(file_path));
 
   // Delete the file and ensure Temp isn't deleted since it is whitelisted.
-  EXPECT_TRUE(default_file_remover_.RemoveNow(file_path));
+  VerifyRemoveNowSuccess(file_path, &default_file_remover_);
   EXPECT_EQ(
       FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(file_path),
       REMOVAL_STATUS_REMOVED);
@@ -298,7 +317,7 @@ TEST_F(FileRemoverTest, RegisterPostRebootRemoval) {
   // When trying to delete a whitelisted file, we should fail to register the
   // file for removal, and no reboot should be required.
   base::FilePath exe_path = PreFetchedPaths::GetInstance()->GetExecutablePath();
-  EXPECT_FALSE(default_file_remover_.RegisterPostRebootRemoval(exe_path));
+  VerifyRegisterPostRebootRemovalFailure(exe_path, &default_file_remover_);
   EXPECT_EQ(removal_status_updater->GetRemovalStatus(exe_path),
             REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL);
   EXPECT_FALSE(reboot_required_);
@@ -309,7 +328,7 @@ TEST_F(FileRemoverTest, RegisterPostRebootRemoval) {
 
   // When trying to delete an non-existant file, we should return success, but
   // not require a reboot.
-  EXPECT_TRUE(default_file_remover_.RegisterPostRebootRemoval(file_path));
+  VerifyRegisterPostRebootRemovalSuccess(file_path, &default_file_remover_);
   EXPECT_EQ(removal_status_updater->GetRemovalStatus(file_path),
             REMOVAL_STATUS_NOT_FOUND);
   EXPECT_FALSE(reboot_required_);
@@ -317,7 +336,7 @@ TEST_F(FileRemoverTest, RegisterPostRebootRemoval) {
   // When trying to delete a real file, we should return success and require a
   // reboot.
   ASSERT_TRUE(CreateEmptyFile(file_path));
-  EXPECT_TRUE(default_file_remover_.RegisterPostRebootRemoval(file_path));
+  VerifyRegisterPostRebootRemovalSuccess(file_path, &default_file_remover_);
   EXPECT_EQ(removal_status_updater->GetRemovalStatus(file_path),
             REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL);
   EXPECT_TRUE(reboot_required_);
@@ -336,7 +355,8 @@ TEST_F(FileRemoverTest, RegisterPostRebootRemoval_Directories) {
       FileRemovalStatusUpdater::GetInstance();
 
   // Directories shouldn't be registered for deletion.
-  EXPECT_FALSE(default_file_remover_.RegisterPostRebootRemoval(subfolder_path));
+  VerifyRegisterPostRebootRemovalFailure(subfolder_path,
+                                         &default_file_remover_);
   EXPECT_EQ(removal_status_updater->GetRemovalStatus(subfolder_path),
             REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL);
 
@@ -345,7 +365,8 @@ TEST_F(FileRemoverTest, RegisterPostRebootRemoval_Directories) {
   removal_status_updater->Clear();
   base::FilePath file_path1 = subfolder_path.Append(kRemoveFile1);
   ASSERT_TRUE(CreateEmptyFile(file_path1));
-  EXPECT_FALSE(default_file_remover_.RegisterPostRebootRemoval(subfolder_path));
+  VerifyRegisterPostRebootRemovalFailure(subfolder_path,
+                                         &default_file_remover_);
   EXPECT_EQ(removal_status_updater->GetRemovalStatus(subfolder_path),
             REMOVAL_STATUS_BLACKLISTED_FOR_REMOVAL);
 }
@@ -359,7 +380,7 @@ TEST_F(FileRemoverTest, NotActiveFileType) {
 
   EXPECT_EQ(ValidationStatus::INACTIVE,
             FileRemover::IsFileRemovalAllowed(path, {}, {}));
-  EXPECT_TRUE(default_file_remover_.RemoveNow(path));
+  VerifyRemoveNowSuccess(path, &default_file_remover_);
   EXPECT_EQ(REMOVAL_STATUS_NOT_REMOVED_INACTIVE_EXTENSION,
             FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
   EXPECT_TRUE(base::PathExists(path));
@@ -372,12 +393,13 @@ TEST_F(FileRemoverTest, NotActiveFileAllowed) {
   ASSERT_TRUE(
       CreateFileInFolder(path.DirName(), path.BaseName().value().c_str()));
 
-  FileRemover remover(nullptr, LayeredServiceProviderWrapper(),
-                      {path.value().c_str()}, base::DoNothing::Repeatedly());
+  FileRemover remover(/*digest_verifier=*/nullptr, /*archiver=*/nullptr,
+                      LayeredServiceProviderWrapper(), {path.value().c_str()},
+                      base::DoNothing::Repeatedly());
 
   EXPECT_EQ(ValidationStatus::ALLOWED, FileRemover::IsFileRemovalAllowed(
                                            path, {path.value().c_str()}, {}));
-  EXPECT_TRUE(remover.RemoveNow(path));
+  VerifyRemoveNowSuccess(path, &remover);
   EXPECT_EQ(REMOVAL_STATUS_REMOVED,
             FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
   EXPECT_FALSE(base::PathExists(path));
@@ -391,15 +413,210 @@ TEST_F(FileRemoverTest, DosMzExecutable) {
   CreateFileWithContent(path, kMzExecutable, sizeof(kMzExecutable));
   ASSERT_TRUE(base::PathExists(path));
 
-  FileRemover remover(nullptr, LayeredServiceProviderWrapper(),
-                      {path.value().c_str()}, base::DoNothing::Repeatedly());
+  FileRemover remover(/*digest_verifier=*/nullptr, /*archiver=*/nullptr,
+                      LayeredServiceProviderWrapper(), {path.value().c_str()},
+                      base::DoNothing::Repeatedly());
 
   EXPECT_EQ(ValidationStatus::ALLOWED,
             FileRemover::IsFileRemovalAllowed(path, {}, {}));
-  EXPECT_TRUE(remover.RemoveNow(path));
+  VerifyRemoveNowSuccess(path, &remover);
   EXPECT_EQ(REMOVAL_STATUS_REMOVED,
             FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
   EXPECT_FALSE(base::PathExists(path));
 }
+
+namespace {
+
+constexpr char kTestPassword[] = "1234";
+constexpr char kTestContent[] = "Hello World";
+constexpr wchar_t kTestFileName[] = L"temp_file.exe";
+constexpr wchar_t kTestExpectArchiveName[] =
+    L"temp_file.exe_"
+    L"A591A6D40BF420404A011733CFB7B190D62C65BF0BCDA32B57B277D9AD9F146E.zip";
+
+class FileRemoverQuarantineTest : public base::MultiProcessTest,
+                                  public ::testing::WithParamInterface<bool> {
+ public:
+  void SetUp() override {
+    use_reboot_removal_ = GetParam();
+
+    scoped_refptr<MojoTaskRunner> mojo_task_runner = MojoTaskRunner::Create();
+    ZipArchiverSandboxSetupHooks setup_hooks(
+        mojo_task_runner.get(), base::BindOnce([] {
+          FAIL() << "ZipArchiver sandbox connection error";
+        }));
+    ASSERT_EQ(RESULT_CODE_SUCCESS,
+              StartSandboxTarget(MakeCmdLine("FileRemoverQuarantineTargetMain"),
+                                 &setup_hooks, SandboxType::kTest));
+
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    auto zip_archiver = std::make_unique<SandboxedZipArchiver>(
+        mojo_task_runner, setup_hooks.TakeZipArchiverPtr(), temp_dir_.GetPath(),
+        kTestPassword);
+    file_remover_ = std::make_unique<FileRemover>(
+        /*digest_verifier=*/nullptr, std::move(zip_archiver),
+        LayeredServiceProviderWrapper(), FilePathSet(),
+        base::DoNothing::Repeatedly());
+  }
+
+ protected:
+  // Do removal corresponding to |use_reboot_removal_|. Also do corresponding
+  // check for file existence and removal status.
+  void DoAndExpectCorrespondingRemoval(const base::FilePath& path) {
+    if (use_reboot_removal_) {
+      VerifyRegisterPostRebootRemovalSuccess(path, file_remover_.get());
+      EXPECT_EQ(
+          REMOVAL_STATUS_SCHEDULED_FOR_REMOVAL,
+          FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
+      EXPECT_TRUE(base::PathExists(path));
+    } else {
+      VerifyRemoveNowSuccess(path, file_remover_.get());
+      EXPECT_EQ(
+          REMOVAL_STATUS_REMOVED,
+          FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
+      EXPECT_FALSE(base::PathExists(path));
+    }
+    return;
+  }
+
+  bool use_reboot_removal_ = false;
+  base::MessageLoop message_loop_;
+  base::ScopedTempDir temp_dir_;
+  std::unique_ptr<FileRemover> file_remover_;
+};
+
+}  // namespace
+
+MULTIPROCESS_TEST_MAIN(FileRemoverQuarantineTargetMain) {
+  sandbox::TargetServices* sandbox_target_services =
+      sandbox::SandboxFactory::GetTargetServices();
+  DCHECK(sandbox_target_services);
+
+  // |RunZipArchiverSandboxTarget| won't return. The mojo error handler will
+  // abort this process when the connection is broken.
+  RunZipArchiverSandboxTarget(*base::CommandLine::ForCurrentProcess(),
+                              sandbox_target_services);
+
+  return 0;
+}
+
+TEST_P(FileRemoverQuarantineTest, QuarantineFile) {
+  const base::FilePath path = temp_dir_.GetPath().Append(kTestFileName);
+  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+
+  DoAndExpectCorrespondingRemoval(path);
+  EXPECT_EQ(QUARANTINE_STATUS_QUARANTINED,
+            FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(path));
+
+  const base::FilePath expected_archive_path =
+      temp_dir_.GetPath().Append(kTestExpectArchiveName);
+  EXPECT_TRUE(base::PathExists(expected_archive_path));
+}
+
+TEST_P(FileRemoverQuarantineTest, FailToQuarantine) {
+  const base::FilePath path = temp_dir_.GetPath().Append(kTestFileName);
+  // Acquire exclusive read access to the file, so the archiver can't open the
+  // file.
+  base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_READ |
+                            base::File::FLAG_EXCLUSIVE_READ);
+  ASSERT_TRUE(file.IsValid());
+
+  (use_reboot_removal_)
+      ? VerifyRegisterPostRebootRemovalFailure(path, file_remover_.get())
+      : VerifyRemoveNowFailure(path, file_remover_.get());
+  EXPECT_EQ(REMOVAL_STATUS_ERROR_IN_ARCHIVER,
+            FileRemovalStatusUpdater::GetInstance()->GetRemovalStatus(path));
+  EXPECT_EQ(QUARANTINE_STATUS_ERROR,
+            FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(path));
+  EXPECT_TRUE(base::PathExists(path));
+}
+
+TEST_P(FileRemoverQuarantineTest, DuplicatedFile) {
+  const base::FilePath path = temp_dir_.GetPath().Append(kTestFileName);
+  const base::FilePath expected_archive_path =
+      temp_dir_.GetPath().Append(kTestExpectArchiveName);
+
+  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+  DoAndExpectCorrespondingRemoval(path);
+  EXPECT_EQ(QUARANTINE_STATUS_QUARANTINED,
+            FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(path));
+  EXPECT_TRUE(base::PathExists(expected_archive_path));
+
+  // The file should not be archived twice if there is already one with the same
+  // name and content in the quarantine. So the modified time of the archive
+  // should not be updated.
+  base::File::Info old_info;
+  ASSERT_TRUE(base::GetFileInfo(expected_archive_path, &old_info));
+
+  // Recreate the source file and remove it again.
+  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+  DoAndExpectCorrespondingRemoval(path);
+  // Although the file won't be archived again, it still has a backup in the
+  // quarantine. So the status should be |QUARANTINE_STATUS_QUARANTINED|.
+  EXPECT_EQ(QUARANTINE_STATUS_QUARANTINED,
+            FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(path));
+  EXPECT_TRUE(base::PathExists(expected_archive_path));
+
+  base::File::Info new_info;
+  ASSERT_TRUE(base::GetFileInfo(expected_archive_path, &new_info));
+  EXPECT_EQ(old_info.last_modified, new_info.last_modified);
+}
+
+TEST_P(FileRemoverQuarantineTest, DoNotQuarantineSymbolicLink) {
+  const base::FilePath path = temp_dir_.GetPath().Append(L"source_temp_file");
+  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+
+  const base::FilePath sym_path = temp_dir_.GetPath().Append(kTestFileName);
+  ASSERT_NE(0, ::CreateSymbolicLink(sym_path.AsUTF16Unsafe().c_str(),
+                                    path.AsUTF16Unsafe().c_str(), 0));
+
+  DoAndExpectCorrespondingRemoval(sym_path);
+  EXPECT_EQ(
+      QUARANTINE_STATUS_SKIPPED,
+      FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(sym_path));
+
+  const base::FilePath expected_archive_path =
+      temp_dir_.GetPath().Append(kTestExpectArchiveName);
+  EXPECT_FALSE(base::PathExists(expected_archive_path));
+  // The original file should exist.
+  EXPECT_TRUE(base::PathExists(path));
+}
+
+TEST_P(FileRemoverQuarantineTest, QuarantineDefaultFileStream) {
+  const base::FilePath path = temp_dir_.GetPath().Append(kTestFileName);
+  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+
+  base::FilePath stream_path(base::StrCat({path.AsUTF16Unsafe(), L"::$data"}));
+  CreateFileWithContent(stream_path, kTestContent, strlen(kTestContent));
+
+  DoAndExpectCorrespondingRemoval(stream_path);
+  EXPECT_EQ(QUARANTINE_STATUS_QUARANTINED,
+            FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(
+                stream_path));
+
+  const base::FilePath expected_archive_path =
+      temp_dir_.GetPath().Append(kTestExpectArchiveName);
+  EXPECT_TRUE(base::PathExists(expected_archive_path));
+}
+
+TEST_P(FileRemoverQuarantineTest, DoNotQuarantineNonDefaultFileStream) {
+  const base::FilePath path = temp_dir_.GetPath().Append(kTestFileName);
+  CreateFileWithContent(path, kTestContent, strlen(kTestContent));
+
+  base::FilePath stream_path(
+      base::StrCat({path.AsUTF16Unsafe(), L":stream:$data"}));
+  CreateFileWithContent(stream_path, kTestContent, strlen(kTestContent));
+
+  DoAndExpectCorrespondingRemoval(stream_path);
+  EXPECT_EQ(QUARANTINE_STATUS_SKIPPED,
+            FileRemovalStatusUpdater::GetInstance()->GetQuarantineStatus(
+                stream_path));
+}
+
+INSTANTIATE_TEST_CASE_P(All,
+                        FileRemoverQuarantineTest,
+                        testing::Bool(),
+                        GetParamNameForTest());
 
 }  // namespace chrome_cleaner
