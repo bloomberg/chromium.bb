@@ -85,6 +85,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Exposed for testing.
   SeparatorView* separator_view() const { return separator_view_; }
 
+  // Exposed for testing.
+  bool is_animating_label() const { return slide_animation_.is_animating(); }
+
   void set_next_element_interior_padding(int padding) {
     next_element_interior_padding_ = padding;
   }
