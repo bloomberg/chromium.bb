@@ -151,6 +151,8 @@ class SSLConnectJob : public ConnectJob {
   // Otherwise, it returns a net error code.
   int ConnectInternal() override;
 
+  void ChangePriorityInternal(RequestPriority priority) override;
+
   scoped_refptr<SSLSocketParams> params_;
   TransportClientSocketPool* const transport_pool_;
   SOCKSClientSocketPool* const socks_pool_;
