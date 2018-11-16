@@ -346,6 +346,7 @@ TEST_F(ScopedTaskEnvironmentTest, LifetimeObserver) {
   EXPECT_CALL(lifetime_observer, OnScopedTaskEnvironmentDestroyed());
   task_environment.reset();
   testing::Mock::VerifyAndClearExpectations(&lifetime_observer);
+  ScopedTaskEnvironment::SetLifetimeObserver(nullptr);
 }
 
 INSTANTIATE_TEST_CASE_P(
