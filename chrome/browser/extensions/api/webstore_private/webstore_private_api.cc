@@ -281,8 +281,9 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
   // Check the management policy before the installation process begins.
   Profile* profile = chrome_details_.GetProfile();
   base::string16 policy_error;
-  bool allow = ExtensionSystem::Get(profile)->
-      management_policy()->UserMayLoad(dummy_extension_.get(), &policy_error);
+  bool allow =
+      ExtensionSystem::Get(profile)->management_policy()->UserMayInstall(
+          dummy_extension_.get(), &policy_error);
   if (!allow) {
     bool blocked_for_child = false;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
