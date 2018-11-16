@@ -13,6 +13,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/async_operation.h"
+#include "base/win/scoped_hstring.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_winrt.h"
 #include "device/bluetooth/test/bluetooth_test_win.h"
 #include "device/bluetooth/test/fake_device_information_pairing_winrt.h"
@@ -68,7 +69,11 @@ HRESULT FakeBluetoothLEDeviceWinrt::get_DeviceId(HSTRING* value) {
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::get_Name(HSTRING* value) {
-  return E_NOTIMPL;
+  if (!name_)
+    return E_FAIL;
+
+  *value = base::win::ScopedHString::Create(*name_).release();
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::get_GattServices(
@@ -95,12 +100,14 @@ HRESULT FakeBluetoothLEDeviceWinrt::GetGattService(
 HRESULT FakeBluetoothLEDeviceWinrt::add_NameChanged(
     ITypedEventHandler<BluetoothLEDevice*, IInspectable*>* handler,
     EventRegistrationToken* token) {
-  return E_NOTIMPL;
+  name_changed_handler_ = handler;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::remove_NameChanged(
     EventRegistrationToken token) {
-  return E_NOTIMPL;
+  name_changed_handler_ = nullptr;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::add_GattServicesChanged(
@@ -251,6 +258,12 @@ void FakeBluetoothLEDeviceWinrt::SimulateDeviceBreaksConnection() {
   // Simulate a Gatt Disconnecion regardless of the reference count.
   status_ = BluetoothConnectionStatus_Disconnected;
   connection_status_changed_handler_->Invoke(this, nullptr);
+}
+
+void FakeBluetoothLEDeviceWinrt::SimulateGattNameChange(
+    const std::string& new_name) {
+  name_ = new_name;
+  name_changed_handler_->Invoke(this, nullptr);
 }
 
 void FakeBluetoothLEDeviceWinrt::SimulateGattServicesDiscovered(

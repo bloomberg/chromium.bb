@@ -127,6 +127,7 @@ class FakeBluetoothLEDeviceWinrt
       BluetoothDevice::ConnectErrorCode error_code);
   void SimulateGattDisconnection();
   void SimulateDeviceBreaksConnection();
+  void SimulateGattNameChange(const std::string& new_name);
   void SimulateGattServicesDiscovered(const std::vector<std::string>& uuids);
   void SimulateGattServicesChanged();
   void SimulateGattServiceRemoved(BluetoothRemoteGattService* service);
@@ -140,6 +141,7 @@ class FakeBluetoothLEDeviceWinrt
  private:
   BluetoothTestWinrt* bluetooth_test_winrt_ = nullptr;
   uint32_t reference_count_ = 1u;
+  base::Optional<std::string> name_;
 
   ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus status_ =
       ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus_Disconnected;
@@ -166,6 +168,11 @@ class FakeBluetoothLEDeviceWinrt
   std::vector<Microsoft::WRL::ComPtr<FakeGattDeviceServiceWinrt>>
       fake_services_;
   uint16_t service_attribute_handle_ = 0;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Bluetooth::BluetoothLEDevice*,
+      IInspectable*>>
+      name_changed_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothLEDeviceWinrt);
 };
