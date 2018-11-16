@@ -2993,6 +2993,7 @@ static int drmParseSubsystemType(int maj, int min)
         { "/pci", DRM_BUS_PCI },
         { "/usb", DRM_BUS_USB },
         { "/platform", DRM_BUS_PLATFORM },
+        { "/spi", DRM_BUS_PLATFORM },
         { "/host1x", DRM_BUS_HOST1X },
         { "/virtio", DRM_BUS_VIRTIO },
     };
