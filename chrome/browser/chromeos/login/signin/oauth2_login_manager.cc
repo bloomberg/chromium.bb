@@ -12,16 +12,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_client.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
@@ -163,10 +162,9 @@ ProfileOAuth2TokenService* OAuth2LoginManager::GetTokenService() {
 }
 
 std::string OAuth2LoginManager::GetPrimaryAccountId() {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(user_profile_);
   const std::string primary_account_id =
-      signin_manager->GetAuthenticatedAccountId();
+      IdentityManagerFactory::GetForProfile(user_profile_)
+          ->GetPrimaryAccountId();
   LOG_IF(ERROR, primary_account_id.empty()) << "Primary account id is empty.";
   return primary_account_id;
 }
