@@ -31,15 +31,6 @@
             android:layout_height="match_parent"
             android:layout_width="0dp"
             android:layout_weight="1"/>
-
-        <ImageButton
-            android:id="@+id/close_button"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/btn_delete_24dp"
-            android:tint="@color/light_icon_color"
-            android:background="?attr/selectableItemBackground"
-            android:contentDescription="@string/close" />
     </LinearLayout>
 
     <LinearLayout
