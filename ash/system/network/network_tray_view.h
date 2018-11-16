@@ -36,6 +36,9 @@ class NetworkTrayView : public TrayItemView,
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
@@ -51,6 +54,7 @@ class NetworkTrayView : public TrayItemView,
   void UpdateIcon(bool tray_icon_visible, const gfx::ImageSkia& image);
 
   base::string16 connection_status_string_;
+  base::string16 connection_status_tooltip_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkTrayView);
 };
