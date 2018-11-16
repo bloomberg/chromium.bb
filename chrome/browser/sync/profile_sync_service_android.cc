@@ -34,7 +34,6 @@
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/engine/net/network_resources.h"
-#include "components/sync/syncable/read_transaction.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "content/public/browser/browser_thread.h"
@@ -231,13 +230,6 @@ void ProfileSyncServiceAndroid::SetPreferredDataTypes(
     types.Put(static_cast<syncer::ModelType>(types_vector[i]));
   }
   sync_service_->GetUserSettings()->SetChosenDataTypes(sync_everything, types);
-}
-
-jboolean ProfileSyncServiceAndroid::IsCryptographerReady(
-    JNIEnv* env,
-    const JavaParamRef<jobject>&) {
-  syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
-  return sync_service_->IsCryptographerReady(&trans);
 }
 
 jboolean ProfileSyncServiceAndroid::IsEncryptEverythingAllowed(

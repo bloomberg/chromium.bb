@@ -117,10 +117,6 @@ bool FakeSyncService::SetDecryptionPassphrase(const std::string& passphrase) {
   return false;
 }
 
-bool FakeSyncService::IsCryptographerReady(const BaseTransaction* trans) const {
-  return false;
-}
-
 UserShare* FakeSyncService::GetUserShare() const {
   return user_share_.get();
 }

@@ -79,8 +79,6 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
       const base::android::JavaParamRef<jobject>& obj,
       jboolean sync_everything,
       const base::android::JavaParamRef<jintArray>& model_type_selection);
-  jboolean IsCryptographerReady(JNIEnv* env,
-                                const base::android::JavaParamRef<jobject>&);
   jboolean IsEncryptEverythingAllowed(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

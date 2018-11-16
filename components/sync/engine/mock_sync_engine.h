@@ -50,7 +50,6 @@ class MockSyncEngine : public SyncEngine {
   MOCK_METHOD0(GetDetailedStatus, Status());
   MOCK_CONST_METHOD1(HasUnsyncedItemsForTest,
                      void(base::OnceCallback<void(bool)>));
-  MOCK_CONST_METHOD1(IsCryptographerReady, bool(const BaseTransaction*));
   MOCK_CONST_METHOD1(GetModelSafeRoutingInfo, void(ModelSafeRoutingInfo*));
   MOCK_CONST_METHOD0(FlushDirectory, void());
   MOCK_METHOD0(RequestBufferedProtocolEventsAndEnableForwarding, void());

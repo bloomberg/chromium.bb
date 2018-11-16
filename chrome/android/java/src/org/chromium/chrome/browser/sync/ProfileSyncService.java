@@ -275,11 +275,6 @@ public class ProfileSyncService {
         nativeSetEncryptionPassphrase(mNativeProfileSyncServiceAndroid, passphrase);
     }
 
-    public boolean isCryptographerReady() {
-        assert isEngineInitialized();
-        return nativeIsCryptographerReady(mNativeProfileSyncServiceAndroid);
-    }
-
     public boolean setDecryptionPassphrase(String passphrase) {
         assert isEngineInitialized();
         return nativeSetDecryptionPassphrase(mNativeProfileSyncServiceAndroid, passphrase);
@@ -563,7 +558,6 @@ public class ProfileSyncService {
             long nativeProfileSyncServiceAndroid, String passphrase);
     private native void nativeSetEncryptionPassphrase(
             long nativeProfileSyncServiceAndroid, String passphrase);
-    private native boolean nativeIsCryptographerReady(long nativeProfileSyncServiceAndroid);
     private native int nativeGetPassphraseType(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasExplicitPassphraseTime(long nativeProfileSyncServiceAndroid);
     private native long nativeGetExplicitPassphraseTime(long nativeProfileSyncServiceAndroid);
