@@ -27,7 +27,7 @@
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -44,7 +44,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_auth_status_provider.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -61,6 +60,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
@@ -299,9 +299,9 @@ class OAuth2Test : public OobeBaseTest {
     WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
 
     // Check for existence of refresh token.
-    ProfileOAuth2TokenService* token_service =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-    EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
+    EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id));
 
     EXPECT_EQ(GetOAuthStatusFromLocalState(account_id),
               user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
@@ -498,9 +498,9 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_PRE_MergeSession) {
                       /*is_under_advanced_protectionis_true=*/false);
   // Check for existence of refresh token.
   std::string account_id = PickAccountId(profile(), kTestGaiaId, kTestEmail);
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile());
+  EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id));
 
   EXPECT_EQ(GetOAuthStatusFromLocalState(account_id),
             user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
@@ -603,11 +603,11 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_OverlappingContinueSessionRestore) {
             GetSessionRestoreStrategy());
 
   // Checks that refresh token is not yet loaded.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile());
   const std::string account_id =
       PickAccountId(profile(), kTestGaiaId, kTestEmail);
-  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(account_id));
+  EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(account_id));
 
   // Invokes ContinueSessionRestore multiple times and there should be
   // no DCHECK failures.
@@ -621,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_OverlappingContinueSessionRestore) {
 
   // Session restore can finish normally and token is loaded.
   WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
+  EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id));
 }
 
 // Tests that user session is terminated if merge session fails for an online
