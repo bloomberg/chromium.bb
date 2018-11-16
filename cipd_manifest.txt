@@ -22,7 +22,7 @@ $VerifiedPlatform linux-mips64 linux-mips64le linux-mipsle
 infra/tools/luci/vpython/${platform} git_revision:66410e06ff82b4e79e849977e4e58c0a261d9953
 
 # LUCI editor
-infra/tools/luci/led/${platform} git_revision:84ea61f5ae35ab1d514c8a1b421559cd600e4b03
+infra/tools/luci/led/${platform} git_revision:522debceb9aeba7dbce7f811687a640656d4e8cd
 
 # Mac toolchain installer
 infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89
