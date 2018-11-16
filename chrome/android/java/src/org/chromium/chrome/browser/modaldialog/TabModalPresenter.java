@@ -195,9 +195,12 @@ public class TabModalPresenter
         Resources resources = mChromeActivity.getResources();
         int scrimVerticalMargin =
                 resources.getDimensionPixelSize(R.dimen.tab_modal_scrim_vertical_margin);
-        int containerVerticalMargin =
-                resources.getDimensionPixelSize(mChromeActivity.getControlContainerHeightResource())
-                - scrimVerticalMargin;
+
+        int containerVerticalMargin = -scrimVerticalMargin;
+        int containerHeightResource = mChromeActivity.getControlContainerHeightResource();
+        if (containerHeightResource != ChromeActivity.NO_CONTROL_CONTAINER) {
+            containerVerticalMargin += resources.getDimensionPixelSize(containerHeightResource);
+        }
 
         MarginLayoutParams params = (MarginLayoutParams) mDialogContainer.getLayoutParams();
         params.width = ViewGroup.MarginLayoutParams.MATCH_PARENT;

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.metrics.RecordHistogram;
@@ -19,7 +18,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
@@ -92,10 +90,8 @@ public class NoTouchActivity extends SingleTabActivity {
 
     @Override
     public void finishNativeInitialization() {
-        View urlBar = null;
-        ControlContainer controlContainer = null;
-        initializeCompositorContent(new LayoutManager(getCompositorViewHolder()), urlBar,
-                (ViewGroup) findViewById(android.R.id.content), controlContainer);
+        initializeCompositorContent(new LayoutManager(getCompositorViewHolder()), null /* urlBar */,
+                (ViewGroup) findViewById(android.R.id.content), null /* controlContainer */);
 
         if (getFullscreenManager() != null) getFullscreenManager().setTab(getActivityTab());
         super.finishNativeInitialization();

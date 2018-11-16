@@ -204,7 +204,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     /**
      * No control container to inflate during initialization.
      */
-    static final int NO_CONTROL_CONTAINER = -1;
+    public static final int NO_CONTROL_CONTAINER = -1;
 
     /**
      * No toolbar layout to inflate during initialization.
@@ -342,8 +342,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // not go through ChromeLauncherActivity that would have normally triggered this.
         mPartnerBrowserRefreshNeeded = !PartnerBrowserCustomizations.isInitialized();
 
-        ApplicationInitialization.enableFullscreenFlags(
-                getResources(), this, getControlContainerHeightResource());
+        ApplicationInitialization.enableFullscreenFlags(getResources());
         getWindow().setBackgroundDrawable(getBackgroundDrawable());
 
         mFullscreenManager = createFullscreenManager();
@@ -824,6 +823,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return The resource id for the layout to use for {@link ControlContainer}. 0 by default.
      */
     protected int getControlContainerLayoutId() {
+        return NO_CONTROL_CONTAINER;
+    }
+
+    /**
+     * @return The resource id that contains how large the browser controls are.
+     */
+    public int getControlContainerHeightResource() {
         return NO_CONTROL_CONTAINER;
     }
 
@@ -1579,13 +1585,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
                     boolean hasUserGesture, Intent intent) {}
         };
-    }
-
-    /**
-     * @return The resource id that contains how large the browser controls are.
-     */
-    public int getControlContainerHeightResource() {
-        return R.dimen.control_container_height;
     }
 
     @Override

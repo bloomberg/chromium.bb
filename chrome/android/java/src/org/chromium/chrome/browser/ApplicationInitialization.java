@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.util.TypedValue;
 
@@ -23,10 +22,8 @@ public final class ApplicationInitialization {
     /**
      * Enable fullscreen related startup flags.
      * @param resources Resources to use while calculating initialization constants.
-     * @param resControlContainerHeight The resource id for the height of the browser controls.
      */
-    public static void enableFullscreenFlags(
-            Resources resources, Context context, int resControlContainerHeight) {
+    public static void enableFullscreenFlags(Resources resources) {
         CommandLine commandLine = CommandLine.getInstance();
         if (commandLine.hasSwitch(ChromeSwitches.DISABLE_FULLSCREEN)) return;
 
