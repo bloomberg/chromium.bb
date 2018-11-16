@@ -10,6 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class CWVAutofillController;
+@class CWVAutofillForm;
 @class CWVAutofillFormSuggestion;
 @class CWVCreditCard;
 @class CWVCreditCardVerifier;
@@ -42,6 +43,12 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision) {
 @protocol CWVAutofillControllerDelegate<NSObject>
 
 @optional
+
+// Called to notify of all autofillable forms in the document after page load.
+// Autofillable forms are any form that has the potential to be autofilled
+// using a CWVAutofillSuggestion, regardless if any such suggestions exist yet.
+- (void)autofillController:(CWVAutofillController*)autofillController
+    didFindAutofillableForms:(NSArray<CWVAutofillForm*>*)forms;
 
 // Called when a form field element receives a "focus" event.
 - (void)autofillController:(CWVAutofillController*)autofillController

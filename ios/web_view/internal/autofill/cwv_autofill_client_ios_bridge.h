@@ -14,6 +14,7 @@
 
 namespace autofill {
 class CreditCard;
+class FormStructure;
 }  // namespace autofill
 
 // WebView extension of AutofillClientIOSBridge.
@@ -35,6 +36,10 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 
 // Bridge for AutofillClient's method |LoadRiskData|.
 - (void)loadRiskData:(base::OnceCallback<void(const std::string&)>)callback;
+
+// Bridge for AutofillClient's method |PropagateAutofillPredictions|.
+- (void)propagateAutofillPredictionsForForms:
+    (const std::vector<autofill::FormStructure*>&)forms;
 
 @end
 

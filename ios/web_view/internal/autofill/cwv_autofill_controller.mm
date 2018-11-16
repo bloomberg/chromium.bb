@@ -11,6 +11,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
@@ -29,6 +30,7 @@
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
+#import "ios/web_view/internal/autofill/cwv_autofill_form_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_verifier_internal.h"
@@ -434,6 +436,22 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 
 - (void)loadRiskData:(base::OnceCallback<void(const std::string&)>)callback {
   [_verifier loadRiskData:std::move(callback)];
+}
+
+- (void)propagateAutofillPredictionsForForms:
+    (const std::vector<autofill::FormStructure*>&)forms {
+  if (![_delegate respondsToSelector:@selector
+                  (autofillController:didFindAutofillableForms:)]) {
+    return;
+  }
+  NSMutableArray<CWVAutofillForm*>* autofillForms = [NSMutableArray array];
+  for (autofill::FormStructure* formStructure : forms) {
+    CWVAutofillForm* autofillForm =
+        [[CWVAutofillForm alloc] initWithFormStructure:*formStructure];
+    [autofillForms addObject:autofillForm];
+  }
+  [_delegate autofillController:self
+       didFindAutofillableForms:[autofillForms copy]];
 }
 
 #pragma mark - AutofillDriverIOSBridge
