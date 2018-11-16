@@ -99,6 +99,7 @@
 #include "components/exo/wayland/wayland_keyboard_delegate.h"
 #include "components/exo/wayland/wayland_pointer_delegate.h"
 #include "components/exo/wayland/wayland_touch_delegate.h"
+#include "components/exo/wayland/wl_seat.h"
 #include "components/exo/wayland/wl_shell.h"
 #include "components/exo/wayland/zcr_gaming_input.h"
 #include "components/exo/wayland/zcr_keyboard_configuration.h"
@@ -1701,118 +1702,6 @@ void bind_data_device_manager(wl_client* client,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// wl_pointer_interface:
-
-void pointer_set_cursor(wl_client* client,
-                        wl_resource* resource,
-                        uint32_t serial,
-                        wl_resource* surface_resource,
-                        int32_t hotspot_x,
-                        int32_t hotspot_y) {
-  GetUserDataAs<Pointer>(resource)->SetCursor(
-      surface_resource ? GetUserDataAs<Surface>(surface_resource) : nullptr,
-      gfx::Point(hotspot_x, hotspot_y));
-}
-
-void pointer_release(wl_client* client, wl_resource* resource) {
-  wl_resource_destroy(resource);
-}
-
-const struct wl_pointer_interface pointer_implementation = {pointer_set_cursor,
-                                                            pointer_release};
-
-
-////////////////////////////////////////////////////////////////////////////////
-// wl_keyboard_interface:
-
-#if BUILDFLAG(USE_XKBCOMMON)
-
-void keyboard_release(wl_client* client, wl_resource* resource) {
-  wl_resource_destroy(resource);
-}
-
-const struct wl_keyboard_interface keyboard_implementation = {keyboard_release};
-
-#endif
-
-////////////////////////////////////////////////////////////////////////////////
-// wl_touch_interface:
-
-void touch_release(wl_client* client, wl_resource* resource) {
-  wl_resource_destroy(resource);
-}
-
-const struct wl_touch_interface touch_implementation = {touch_release};
-
-////////////////////////////////////////////////////////////////////////////////
-// wl_seat_interface:
-
-void seat_get_pointer(wl_client* client, wl_resource* resource, uint32_t id) {
-  wl_resource* pointer_resource = wl_resource_create(
-      client, &wl_pointer_interface, wl_resource_get_version(resource), id);
-
-  SetImplementation(
-      pointer_resource, &pointer_implementation,
-      std::make_unique<Pointer>(new WaylandPointerDelegate(pointer_resource)));
-}
-
-void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
-#if BUILDFLAG(USE_XKBCOMMON)
-  uint32_t version = wl_resource_get_version(resource);
-  wl_resource* keyboard_resource =
-      wl_resource_create(client, &wl_keyboard_interface, version, id);
-
-  WaylandKeyboardDelegate* delegate =
-      new WaylandKeyboardDelegate(keyboard_resource);
-  std::unique_ptr<Keyboard> keyboard =
-      std::make_unique<Keyboard>(delegate, GetUserDataAs<Seat>(resource));
-  keyboard->AddObserver(delegate);
-  SetImplementation(keyboard_resource, &keyboard_implementation,
-                    std::move(keyboard));
-
-  // TODO(reveman): Keep repeat info synchronized with chromium and the host OS.
-  if (version >= WL_KEYBOARD_REPEAT_INFO_SINCE_VERSION)
-    wl_keyboard_send_repeat_info(keyboard_resource, 40, 500);
-#else
-  NOTIMPLEMENTED();
-#endif
-}
-
-void seat_get_touch(wl_client* client, wl_resource* resource, uint32_t id) {
-  wl_resource* touch_resource = wl_resource_create(
-      client, &wl_touch_interface, wl_resource_get_version(resource), id);
-
-  SetImplementation(
-      touch_resource, &touch_implementation,
-      std::make_unique<Touch>(new WaylandTouchDelegate(touch_resource)));
-}
-
-void seat_release(wl_client* client, wl_resource* resource) {
-  wl_resource_destroy(resource);
-}
-
-const struct wl_seat_interface seat_implementation = {
-    seat_get_pointer, seat_get_keyboard, seat_get_touch, seat_release};
-
-const uint32_t seat_version = 6;
-
-void bind_seat(wl_client* client, void* data, uint32_t version, uint32_t id) {
-  wl_resource* resource = wl_resource_create(
-      client, &wl_seat_interface, std::min(version, seat_version), id);
-
-  wl_resource_set_implementation(resource, &seat_implementation, data, nullptr);
-
-  if (version >= WL_SEAT_NAME_SINCE_VERSION)
-    wl_seat_send_name(resource, "default");
-
-  uint32_t capabilities = WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_TOUCH;
-#if BUILDFLAG(USE_XKBCOMMON)
-  capabilities |= WL_SEAT_CAPABILITY_KEYBOARD;
-#endif
-  wl_seat_send_capabilities(resource, capabilities);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // wp_viewport_interface:
 
 // Implements the viewport interface to a Surface. The "viewport"-state is set
@@ -2619,7 +2508,7 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &wl_data_device_manager_interface,
                    data_device_manager_version, display_,
                    bind_data_device_manager);
-  wl_global_create(wl_display_.get(), &wl_seat_interface, seat_version,
+  wl_global_create(wl_display_.get(), &wl_seat_interface, kWlSeatVersion,
                    display_->seat(), bind_seat);
   wl_global_create(wl_display_.get(), &wp_viewporter_interface, 1, display_,
                    bind_viewporter);
