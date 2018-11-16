@@ -786,6 +786,13 @@ HRESULT CGaiaCredentialBase::GetSerialization(
   // If HandleAutologon returns S_FALSE, then there was not enough information
   // to log the user on.  Display the Gaia sign in page.
   if (hr == S_FALSE) {
+    // Logon process is still running, return that serialization is not
+    // finished so that a second logon stub isn't started.
+    if (logon_ui_process_ != INVALID_HANDLE_VALUE) {
+      *cpgsr = CPGSR_NO_CREDENTIAL_NOT_FINISHED;
+      return S_OK;
+    }
+
     LOGFN(INFO) << "HandleAutologon hr=" << putHR(hr);
     TellOmahaDidRun();
 
@@ -846,6 +853,7 @@ HRESULT CGaiaCredentialBase::CreateAndRunLogonStub() {
 
   // Save the handle to the logon UI process so that it can be killed should
   // the credential be Unadvise()d.
+  DCHECK_EQ(logon_ui_process_, INVALID_HANDLE_VALUE);
   logon_ui_process_ = uiprocinfo->procinfo.process_handle();
 
   uiprocinfo->credential = this;
@@ -1075,8 +1083,7 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
 
     // Either WaitForLoginUIImpl did not fail or there should be an error
     // message to display.
-    DCHECK(sts > 0 || status_text != nullptr);
-
+    DCHECK(sts == STATUS_SUCCESS || status_text != nullptr);
     hr = uiprocinfo->credential->ReportError(sts, STATUS_SUCCESS, status_text);
     if (FAILED(hr)) {
       LOGFN(ERROR) << "uiprocinfo->credential->ReportError hr=" << putHR(hr);

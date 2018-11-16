@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
 #include "base/time/time.h"
@@ -30,20 +31,25 @@ namespace credential_provider {
 namespace testing {
 
 // Corresponding default email and username for tests that don't override them.
-const char kDefaultEmail[] = "foo@gmail.com";
-const wchar_t kDefaultUsername[] = L"foo";
+constexpr char kDefaultEmail[] = "foo@gmail.com";
+constexpr wchar_t kDefaultUsername[] = L"foo";
 
 namespace switches {
 
-const char kGlsOutputFile[] = "gls-output-file";
+constexpr char kGlsOutputFile[] = "gls-output-file";
+
+constexpr char kStartGlsEventName[] = "start-gls-event-name";
 
 }  // namespace switches
 
 class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
     : public IUnknown {
  public:
-  virtual HRESULT STDMETHODCALLTYPE SetGlsEmailAddress(const char* email) = 0;
+  virtual HRESULT STDMETHODCALLTYPE
+  SetGlsEmailAddress(const std::string& email) = 0;
   virtual HRESULT STDMETHODCALLTYPE WaitForGls() = 0;
+  virtual HRESULT STDMETHODCALLTYPE
+  SetStartGlsEventName(const base::string16& event_name) = 0;
   virtual BSTR STDMETHODCALLTYPE GetFinalUsername() = 0;
   virtual bool STDMETHODCALLTYPE AreCredentialsValid() = 0;
 };
@@ -71,8 +77,10 @@ class ATL_NO_VTABLE CTestCredential
   END_COM_MAP()
 
   // ITestCredential.
-  IFACEMETHODIMP SetGlsEmailAddress(const char* email) override;
+  IFACEMETHODIMP SetGlsEmailAddress(const std::string& email) override;
   IFACEMETHODIMP WaitForGls() override;
+  IFACEMETHODIMP SetStartGlsEventName(
+      const base::string16& event_name) override;
   BSTR STDMETHODCALLTYPE GetFinalUsername() override;
   bool STDMETHODCALLTYPE AreCredentialsValid() override;
 
@@ -98,8 +106,11 @@ class ATL_NO_VTABLE CTestCredential
   // Temporary file used to store JSON response from fake GLS.  This file is
   // used as the stdout of GLS.
   base::FilePath temp_json_file_;
+
   std::string gls_email_ = kDefaultEmail;
   base::WaitableEvent gls_done_;
+  base::win::ScopedHandle process_continue_event_;
+  base::string16 start_gls_event_name_;
 };
 
 CTestCredential::CTestCredential()
@@ -113,7 +124,7 @@ CTestCredential::~CTestCredential() {
     base::DeleteFile(temp_json_file_, false);
 }
 
-HRESULT CTestCredential::SetGlsEmailAddress(const char* email) {
+HRESULT CTestCredential::SetGlsEmailAddress(const std::string& email) {
   gls_email_ = email;
   return S_OK;
 }
@@ -122,6 +133,14 @@ HRESULT CTestCredential::WaitForGls() {
   return gls_done_.TimedWait(base::TimeDelta::FromSeconds(30))
              ? S_OK
              : HRESULT_FROM_WIN32(WAIT_TIMEOUT);
+}
+
+HRESULT CTestCredential::SetStartGlsEventName(
+    const base::string16& event_name) {
+  if (!start_gls_event_name_.empty())
+    return HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
+  start_gls_event_name_ = event_name;
+  return S_OK;
 }
 
 BSTR CTestCredential::GetFinalUsername() {
@@ -183,8 +202,14 @@ HRESULT CTestCredential::GetGlsCommandline(const wchar_t* /*email*/,
   command_line->AppendSwitchASCII(::switches::kTestChildProcess, "gls_main");
   command_line->AppendSwitchPath(switches::kGlsOutputFile, temp_json_file_);
 
+  if (!start_gls_event_name_.empty()) {
+    command_line->AppendSwitchNative(switches::kStartGlsEventName,
+                                     start_gls_event_name_);
+  }
+
   // Reset the manual event since GLS will be started upon return.
   gls_done_.Reset();
+
   return S_OK;
 }
 
@@ -204,6 +229,21 @@ MULTIPROCESS_TEST_MAIN(gls_main) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::FilePath path =
       command_line->GetSwitchValuePath(switches::kGlsOutputFile);
+
+  // If a start event name is specified, the process waits for an event from the
+  // tester telling it that it can start running.
+  if (command_line->HasSwitch(switches::kStartGlsEventName)) {
+    base::string16 start_event_name =
+        command_line->GetSwitchValueNative(switches::kStartGlsEventName);
+    if (!start_event_name.empty()) {
+      base::win::ScopedHandle start_event_handle(::CreateEvent(
+          nullptr, false, false, base::UTF16ToWide(start_event_name).c_str()));
+      if (start_event_handle.IsValid()) {
+        base::WaitableEvent start_event(std::move(start_event_handle));
+        start_event.Wait();
+      }
+    }
+  }
 
   std::string contents;
   if (base::ReadFileToString(path, &contents)) {
@@ -249,6 +289,8 @@ class GcpGaiaCredentialBaseTest : public ::testing::Test {
  public:
   GcpGaiaCredentialBaseTest();
 
+  HRESULT StartLogonProcess(ICredentialProviderCredential* cred);
+  HRESULT WaitForLogonProcess(ICredentialProviderCredential* cred);
   HRESULT StartLogonProcessAndWait(ICredentialProviderCredential* cred);
 
   FakeOSUserManager* fake_os_user_manager() { return &fake_os_user_manager_; }
@@ -272,7 +314,7 @@ GcpGaiaCredentialBaseTest::GcpGaiaCredentialBaseTest() {
   EXPECT_EQ(S_OK, policy->StorePrivateData(kLsaKeyGaiaPassword, L"password"));
 }
 
-HRESULT GcpGaiaCredentialBaseTest::StartLogonProcessAndWait(
+HRESULT GcpGaiaCredentialBaseTest::StartLogonProcess(
     ICredentialProviderCredential* cred) {
   BOOL auto_login;
   EXPECT_EQ(S_OK, cred->SetSelected(&auto_login));
@@ -288,12 +330,23 @@ HRESULT GcpGaiaCredentialBaseTest::StartLogonProcessAndWait(
   EXPECT_EQ(nullptr, status_text);
   EXPECT_EQ(CPSI_NONE, status_icon);
   EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+  return S_OK;
+}
 
+HRESULT GcpGaiaCredentialBaseTest::WaitForLogonProcess(
+    ICredentialProviderCredential* cred) {
   CComPtr<testing::ITestCredential> test;
   EXPECT_EQ(S_OK, cred->QueryInterface(__uuidof(testing::ITestCredential),
                                        reinterpret_cast<void**>(&test)));
   EXPECT_EQ(S_OK, test->WaitForGls());
 
+  return S_OK;
+}
+
+HRESULT GcpGaiaCredentialBaseTest::StartLogonProcessAndWait(
+    ICredentialProviderCredential* cred) {
+  EXPECT_EQ(S_OK, StartLogonProcess(cred));
+  EXPECT_EQ(S_OK, WaitForLogonProcess(cred));
   return S_OK;
 }
 
@@ -366,6 +419,75 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Finish) {
                                                      &sid));
   ::LocalFree(sid);
 
+  ASSERT_EQ(S_OK, gaia_cred->Terminate());
+}
+
+TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_MultipleCalls) {
+  FakeGaiaCredentialProvider provider;
+
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<testing::ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  constexpr wchar_t kStartGlsEventName[] =
+      L"GetSerialization_MultipleCalls_Wait";
+  base::win::ScopedHandle start_event_handle(
+      ::CreateEvent(nullptr, false, false, kStartGlsEventName));
+  ASSERT_TRUE(start_event_handle.IsValid());
+  ASSERT_EQ(S_OK, test->SetStartGlsEventName(kStartGlsEventName));
+  base::WaitableEvent start_event(std::move(start_event_handle));
+
+  ASSERT_EQ(S_OK, StartLogonProcess(cred));
+
+  // Calling GetSerialization again while the credential is waiting for the
+  // logon process should yield CPGSR_NO_CREDENTIAL_NOT_FINISHED as a
+  // response.
+  CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE cpgsr;
+  CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION cpcs;
+  wchar_t* status_text;
+  CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
+  EXPECT_EQ(S_OK,
+            cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
+  EXPECT_EQ(nullptr, status_text);
+  EXPECT_EQ(CPSI_NONE, status_icon);
+  EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+
+  // Signal that the gls process can finish.
+  start_event.Signal();
+
+  ASSERT_EQ(S_OK, WaitForLogonProcess(cred));
+  ASSERT_EQ(S_OK, gaia_cred->Terminate());
+}
+
+TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Cancel) {
+  FakeGaiaCredentialProvider provider;
+
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<testing::ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  // This event is merely used to keep the gls running while it is cancelled
+  // through SetDeselected().
+  constexpr wchar_t kStartGlsEventName[] = L"GetSerialization_Cancel_Signal";
+  base::win::ScopedHandle start_event_handle(
+      ::CreateEvent(nullptr, false, false, kStartGlsEventName));
+  ASSERT_TRUE(start_event_handle.IsValid());
+  ASSERT_EQ(S_OK, test->SetStartGlsEventName(kStartGlsEventName));
+  base::WaitableEvent start_event(std::move(start_event_handle));
+
+  ASSERT_EQ(S_OK, StartLogonProcess(cred));
+
+  // Deselect the credential provider so that it cancels the GLS process and
+  // returns.
+  ASSERT_EQ(S_OK, cred->SetDeselected());
+
+  ASSERT_EQ(S_OK, WaitForLogonProcess(cred));
   ASSERT_EQ(S_OK, gaia_cred->Terminate());
 }
 
