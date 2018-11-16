@@ -166,4 +166,13 @@ interface BridgedNativeWidgetHost {
 
   // Handle "Move focus to the window toolbar" shortcut.
   OnFocusWindowToolbar();
+
+  // Return in |element_token| the token for the AX node for this view. Return
+  // the pid of the browser process to be registered as a remote UI process. Set
+  // the AX node for this view to have the element indicated by |window_token|
+  // as its window and the element indicated by |view_token| as its parent.
+  [Sync]
+  GetAccessibilityTokens(array<uint8> window_token,
+                         array<uint8> view_token) =>
+      (int64 host_pid, array<uint8> element_token);
 };
