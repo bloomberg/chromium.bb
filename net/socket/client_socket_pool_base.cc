@@ -68,6 +68,14 @@ std::unique_ptr<StreamSocket> ConnectJob::PassSocket() {
   return std::move(socket_);
 }
 
+void ConnectJob::ChangePriority(RequestPriority priority) {
+  // Priority of a job that ignores limits should not be changed because it
+  // should always be MAXIMUM_PRIORITY.
+  DCHECK_EQ(ClientSocketPool::RespectLimits::ENABLED, respect_limits());
+  set_priority(priority);
+  ChangePriorityInternal(priority);
+}
+
 int ConnectJob::Connect() {
   if (!timeout_duration_.is_zero())
     timer_.Start(FROM_HERE, timeout_duration_, this, &ConnectJob::OnTimeout);
@@ -159,7 +167,13 @@ void ClientSocketPoolBaseHelper::Request::AssignJob(ConnectJob* job) {
   DCHECK(job);
   DCHECK(!job_);
   job_ = job;
-  // TODO(chlily): Make job priority match request priority.
+  // If the priority of the new job does not match the priority of |this|,
+  // change the job's priority but only if the job respects limits. If the job
+  // ignores limits, then the priority should not be changed because it should
+  // always be MAXIMUM_PRIORITY.
+  if (job_->priority() != priority_ &&
+      job_->respect_limits() == ClientSocketPool::RespectLimits::ENABLED)
+    job_->ChangePriority(priority_);
 }
 
 ConnectJob* ClientSocketPoolBaseHelper::Request::ReleaseJob() {
@@ -1409,6 +1423,14 @@ void ClientSocketPoolBaseHelper::Group::SanityCheck() const {
         ConnectJob* job2 = pointer2.value()->job();
         DCHECK(job2);
         DCHECK_NE(job, job2);
+      }
+      // The request's priority matches the job's priority, unless the job has
+      // RespectLimits::DISABLED, in which case the job should have
+      // MAXIMUM_PRIORITY.
+      if (job->respect_limits() == ClientSocketPool::RespectLimits::ENABLED) {
+        DCHECK_EQ(pointer.value()->priority(), job->priority());
+      } else {
+        DCHECK_EQ(MAXIMUM_PRIORITY, job->priority());
       }
     } else {
       // Check that any subsequent requests do not have a job.

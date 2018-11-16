@@ -68,6 +68,7 @@ class MockHostResolverBase::RequestImpl
       : request_host_(request_host),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
+        priority_(parameters_.initial_priority),
         host_resolver_flags_(ParametersToHostResolverFlags(parameters_)),
         id_(0),
         resolver_(resolver),
@@ -138,6 +139,10 @@ class MockHostResolverBase::RequestImpl
 
   size_t id() { return id_; }
 
+  RequestPriority priority() const { return priority_; }
+
+  void set_priority(RequestPriority priority) { priority_ = priority; }
+
   void set_id(size_t id) {
     DCHECK_GT(id, 0u);
     DCHECK_EQ(0u, id_);
@@ -150,6 +155,7 @@ class MockHostResolverBase::RequestImpl
  private:
   const HostPortPair request_host_;
   const ResolveHostParameters parameters_;
+  RequestPriority priority_;
   int host_resolver_flags_;
 
   base::Optional<AddressList> address_results_;
@@ -176,7 +182,9 @@ class MockHostResolverBase::LegacyRequestImpl : public HostResolver::Request {
 
   ~LegacyRequestImpl() override {}
 
-  void ChangeRequestPriority(RequestPriority priority) override {}
+  void ChangeRequestPriority(RequestPriority priority) override {
+    inner_request_->set_priority(priority);
+  }
 
   int Start() {
     return inner_request_->Start(base::BindOnce(
@@ -290,12 +298,6 @@ int MockHostResolverBase::ResolveStaleFromCache(
   return rv;
 }
 
-void MockHostResolverBase::DetachRequest(size_t id) {
-  auto it = requests_.find(id);
-  CHECK(it != requests_.end());
-  requests_.erase(it);
-}
-
 HostCache* MockHostResolverBase::GetHostCache() {
   return cache_.get();
 }
@@ -318,6 +320,41 @@ void MockHostResolverBase::ResolveAllPending() {
         FROM_HERE,
         base::Bind(&MockHostResolverBase::ResolveNow, AsWeakPtr(), i->first));
   }
+}
+
+void MockHostResolverBase::ResolveNow(size_t id) {
+  auto it = requests_.find(id);
+  if (it == requests_.end())
+    return;  // was canceled
+
+  RequestImpl* req = it->second;
+  requests_.erase(it);
+
+  AddressList addresses;
+  int error = ResolveProc(
+      req->request_host(),
+      DnsQueryTypeToAddressFamily(req->parameters().dns_query_type),
+      req->host_resolver_flags(), req->parameters().source, &addresses);
+  if (error == OK && !req->parameters().is_speculative)
+    req->set_address_results(addresses);
+  req->OnAsyncCompleted(id, error);
+}
+
+void MockHostResolverBase::DetachRequest(size_t id) {
+  auto it = requests_.find(id);
+  CHECK(it != requests_.end());
+  requests_.erase(it);
+}
+
+MockHostResolverBase::RequestImpl* MockHostResolverBase::request(size_t id) {
+  RequestMap::iterator request = requests_.find(id);
+  DCHECK(request != requests_.end());
+  return (*request).second;
+}
+
+RequestPriority MockHostResolverBase::request_priority(size_t id) {
+  DCHECK(request(id));
+  return request(id)->priority();
 }
 
 // start id from 1 to distinguish from NULL RequestHandle
@@ -449,24 +486,6 @@ int MockHostResolverBase::ResolveProc(const HostPortPair& host,
   if (rv == OK)
     *addresses = AddressList::CopyWithPort(addr, host.port());
   return rv;
-}
-
-void MockHostResolverBase::ResolveNow(size_t id) {
-  auto it = requests_.find(id);
-  if (it == requests_.end())
-    return;  // was canceled
-
-  RequestImpl* req = it->second;
-  requests_.erase(it);
-
-  AddressList addresses;
-  int error = ResolveProc(
-      req->request_host(),
-      DnsQueryTypeToAddressFamily(req->parameters().dns_query_type),
-      req->host_resolver_flags(), req->parameters().source, &addresses);
-  if (error == OK && !req->parameters().is_speculative)
-    req->set_address_results(addresses);
-  req->OnAsyncCompleted(id, error);
 }
 
 //-----------------------------------------------------------------------------
