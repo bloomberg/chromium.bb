@@ -9,10 +9,5 @@
 # -keep for **.test.**.
 -keepnames class **.test.** { *; }
 
-# These are Java classes which aren't part of the Android sdk. They are
-# referenced by some test-only libraries.
--dontwarn java.lang.ClassValue
--dontwarn java.lang.instrument.ClassFileTransformer
-
 # Do not mark classes as final, as doing so may interfere with mocking.
 -optimizations !class/marking/final
