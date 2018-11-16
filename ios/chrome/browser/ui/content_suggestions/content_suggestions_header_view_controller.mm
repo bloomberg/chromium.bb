@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_utils.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -197,7 +198,7 @@ using base::UserMetricsAction;
                [self topInset];
   }
 
-  return offsetY;
+  return AlignValueToPixel(offsetY);
 }
 
 - (CGFloat)headerHeight {
