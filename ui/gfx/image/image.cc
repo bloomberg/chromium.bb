@@ -580,36 +580,9 @@ ImageSkia Image::AsImageSkia() const {
   return IsEmpty() ? ImageSkia() : *ToImageSkia();
 }
 
-#if defined(OS_IOS)
-UIImage* Image::AsUIImage() const {
-  return IsEmpty() ? nil : ToUIImage();
-}
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 NSImage* Image::AsNSImage() const {
   return IsEmpty() ? nil : ToNSImage();
-}
-#endif
-
-scoped_refptr<base::RefCountedMemory> Image::Copy1xPNGBytes() const {
-  scoped_refptr<base::RefCountedMemory> original = As1xPNGBytes();
-  scoped_refptr<base::RefCountedBytes> copy(new base::RefCountedBytes());
-  copy->data().assign(original->front(), original->front() + original->size());
-  return copy;
-}
-
-ImageSkia* Image::CopyImageSkia() const {
-  return new ImageSkia(*ToImageSkia());
-}
-
-SkBitmap* Image::CopySkBitmap() const {
-  return new SkBitmap(*ToSkBitmap());
-}
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-NSImage* Image::CopyNSImage() const {
-  NSImage* image = ToNSImage();
-  base::mac::NSObjectRetain(image);
-  return image;
 }
 #endif
 

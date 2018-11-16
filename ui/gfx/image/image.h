@@ -134,24 +134,9 @@ class GFX_EXPORT Image {
   // image is empty.
   ImageSkia AsImageSkia() const;
 
-  // Same as ToSkBitmap(), but returns nil if this image is empty.
-#if defined(OS_IOS)
-  UIImage* AsUIImage() const;
-#elif defined(OS_MACOSX)
-  NSImage* AsNSImage() const;
-#endif
-
-  // Performs a conversion, like above, but returns a copy of the result rather
-  // than a weak pointer. The caller is responsible for deleting the result.
-  // Note that the result is only a copy in terms of memory management; the
-  // backing pixels are shared amongst all copies (a fact of each of the
-  // converted representations, rather than a limitation imposed by Image) and
-  // so the result should be considered immutable.
-  scoped_refptr<base::RefCountedMemory> Copy1xPNGBytes() const;
-  ImageSkia* CopyImageSkia() const;
-  SkBitmap* CopySkBitmap() const;
+  // Same as ToNSImage(), but returns nil if this image is empty.
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  NSImage* CopyNSImage() const;
+  NSImage* AsNSImage() const;
 #endif
 
   // Inspects the representations map to see if the given type exists.

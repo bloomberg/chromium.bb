@@ -435,41 +435,6 @@ TEST_F(ImageTest, PlatformToPlatform) {
   EXPECT_EQ(25, image.Height());
 }
 
-TEST_F(ImageTest, PlatformToSkiaToCopy) {
-  const gfx::ImageSkia* image_skia = NULL;
-  {
-    gfx::Image image(gt::CreatePlatformImage());
-    image_skia = image.CopyImageSkia();
-  }
-  EXPECT_TRUE(image_skia);
-  EXPECT_FALSE(image_skia->isNull());
-  delete image_skia;
-
-  const SkBitmap* bitmap = NULL;
-  {
-    gfx::Image image(gt::CreatePlatformImage());
-    bitmap = image.CopySkBitmap();
-  }
-
-  EXPECT_TRUE(bitmap);
-  EXPECT_FALSE(bitmap->isNull());
-  delete bitmap;
-}
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-TEST_F(ImageTest, SkiaToCocoaCopy) {
-  NSImage* ns_image;
-
-  {
-    gfx::Image image(gt::CreateImageSkia(25, 25));
-    ns_image = image.CopyNSImage();
-  }
-
-  EXPECT_TRUE(ns_image);
-  base::mac::NSObjectRelease(ns_image);
-}
-#endif
-
 TEST_F(ImageTest, CheckSkiaColor) {
   gfx::Image image(gt::CreatePlatformImage());
 

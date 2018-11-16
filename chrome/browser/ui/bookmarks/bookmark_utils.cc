@@ -301,10 +301,9 @@ gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
   int resource_id = color_utils::IsDark(text_color)
                         ? IDR_BOOKMARK_BAR_FOLDER
                         : IDR_BOOKMARK_BAR_FOLDER_WHITE;
-  std::unique_ptr<gfx::ImageSkia> image(ui::ResourceBundle::GetSharedInstance()
-                                            .GetNativeImageNamed(resource_id)
-                                            .CopyImageSkia());
-  return *image.get();
+  return *ui::ResourceBundle::GetSharedInstance()
+              .GetNativeImageNamed(resource_id)
+              .ToImageSkia();
 #else
   return GetFolderIcon(ui::MaterialDesignController::touch_ui()
                            ? vector_icons::kFolderTouchIcon
