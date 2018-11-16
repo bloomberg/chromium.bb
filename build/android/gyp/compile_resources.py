@@ -757,7 +757,6 @@ def main(args):
       options.aapt_path,
       options.aapt2_path,
       options.android_manifest,
-      debug_temp_resources_dir,
       options.shared_resources_whitelist,
       options.resources_config_path,
   ]
@@ -775,6 +774,7 @@ def main(args):
       input_paths=input_paths,
       input_strings=input_strings,
       output_paths=output_paths,
+      force=bool(debug_temp_resources_dir),
       depfile_deps=options.dependencies_res_zips + options.extra_r_text_files,
       add_pydeps=False)
 
