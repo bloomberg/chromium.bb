@@ -281,6 +281,10 @@ def main():
         'lib/clang/*/lib/linux/libclang_rt.asan_cxx-x86_64.a',
         'lib/clang/*/lib/linux/libclang_rt.asan_cxx-x86_64.a.syms',
 
+        # AddressSanitizer Android runtime.
+        'lib/clang/*/lib/linux/libclang_rt.asan-aarch64-android.so',
+        'lib/clang/*/lib/linux/libclang_rt.asan-arm-android.so',
+
         # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
         'lib/clang/*/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a',
 
@@ -295,6 +299,8 @@ def main():
         # Profile runtime (used by profiler and code coverage).
         'lib/clang/*/lib/linux/libclang_rt.profile-i386.a',
         'lib/clang/*/lib/linux/libclang_rt.profile-x86_64.a',
+        'lib/clang/*/lib/linux/libclang_rt.profile-aarch64-android.a',
+        'lib/clang/*/lib/linux/libclang_rt.profile-arm-android.a',
 
         # ThreadSanitizer C runtime (pure C won't link with *_cxx).
         'lib/clang/*/lib/linux/libclang_rt.tsan-x86_64.a',
