@@ -714,7 +714,7 @@ int HttpProxyClientSocketWrapper::DoRestartWithAuthComplete(int result) {
     has_restarted_ = true;
 
     // Release any auth state bound to the connection. The new connection will
-    // start the current scheme from scratch.
+    // start the current scheme and identity from scratch.
     if (http_auth_controller_)
       http_auth_controller_->OnConnectionClosed();
   }

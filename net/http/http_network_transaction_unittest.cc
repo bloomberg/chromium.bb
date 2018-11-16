@@ -4288,6 +4288,128 @@ TEST_F(HttpNetworkTransactionTest,
   session->CloseAllConnections();
 }
 
+// This test exercises an odd edge case where the proxy closes the connection
+// after the authentication handshake is complete. Presumably this technique is
+// used in lieu of returning a 403 or 5xx status code when the authentication
+// succeeds, but the user is not authorized to connect to the destination
+// server. There's no standard for what a proxy should do to indicate a blocked
+// site.
+TEST_F(HttpNetworkTransactionTest,
+       AuthAllowsDefaultCredentialsTunnelConnectionClosesBeforeBody) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://www.example.org/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // Configure against proxy server "myproxy:70".
+  session_deps_.proxy_resolution_service =
+      ProxyResolutionService::CreateFixedFromPacResult(
+          "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  auto auth_handler_factory = std::make_unique<HttpAuthHandlerMock::Factory>();
+  auth_handler_factory->set_do_init_from_challenge(true);
+
+  // Create two mock AuthHandlers. This is because the transaction gets retried
+  // after the first ERR_CONNECTION_CLOSED since it's ambiguous whether there
+  // was a real network error.
+  //
+  // The handlers support both default and explicit credentials. The retry
+  // mentioned above should be able to reuse the default identity. Thus there
+  // should never be a need to prompt for explicit credentials.
+  auto mock_handler = std::make_unique<HttpAuthHandlerMock>();
+  mock_handler->set_allows_default_credentials(true);
+  mock_handler->set_allows_explicit_credentials(true);
+  mock_handler->set_connection_based(true);
+  auth_handler_factory->AddMockHandler(mock_handler.release(),
+                                       HttpAuth::AUTH_PROXY);
+  mock_handler = std::make_unique<HttpAuthHandlerMock>();
+  mock_handler->set_allows_default_credentials(true);
+  mock_handler->set_allows_explicit_credentials(true);
+  mock_handler->set_connection_based(true);
+  auth_handler_factory->AddMockHandler(mock_handler.release(),
+                                       HttpAuth::AUTH_PROXY);
+  session_deps_.http_auth_handler_factory = std::move(auth_handler_factory);
+
+  NetLog net_log;
+  session_deps_.net_log = &net_log;
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+
+  // Data for both sockets.
+  //
+  // Writes are for the tunnel establishment attempts and the
+  // authentication handshake.
+  MockWrite data_writes1[] = {
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: auth_token\r\n\r\n"),
+
+      MockWrite("CONNECT www.example.org:443 HTTP/1.1\r\n"
+                "Host: www.example.org:443\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: auth_token\r\n\r\n"),
+  };
+
+  // The server side of the authentication handshake. Note that the response to
+  // the final CONNECT request is ERR_CONNECTION_CLOSED.
+  MockRead data_reads1[] = {
+      MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
+      MockRead("Content-Length: 0\r\n"),
+      MockRead("Proxy-Connection: keep-alive\r\n"),
+      MockRead("Proxy-Authenticate: Mock\r\n\r\n"),
+
+      MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
+      MockRead("Content-Length: 0\r\n"),
+      MockRead("Proxy-Connection: keep-alive\r\n"),
+      MockRead("Proxy-Authenticate: Mock foo\r\n\r\n"),
+
+      MockRead(SYNCHRONOUS, ERR_CONNECTION_CLOSED),
+  };
+
+  StaticSocketDataProvider data1(data_reads1, data_writes1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+
+  // The second socket is for the reconnection attempt. Data is identical to the
+  // first attempt.
+  StaticSocketDataProvider data2(data_reads1, data_writes1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+
+  // Two rounds per handshake. After one retry, the error is propagated up the
+  // stack.
+  for (int i = 0; i < 4; ++i) {
+    EXPECT_THAT(callback.GetResult(rv), IsOk());
+
+    const HttpResponseInfo* response = trans->GetResponseInfo();
+    ASSERT_TRUE(response);
+    ASSERT_TRUE(response->headers);
+    EXPECT_EQ(407, response->headers->response_code());
+    ASSERT_TRUE(trans->IsReadyToRestartForAuth());
+
+    rv = trans->RestartWithAuth(AuthCredentials(), callback.callback());
+  }
+
+  // One shall be the number thou shalt retry, and the number of the retrying
+  // shall be one.  Two shalt thou not retry, neither retry thou zero, excepting
+  // that thou then proceed to one.  Three is right out.  Once the number one,
+  // being the first number, be reached, then lobbest thou thy
+  // ERR_CONNECTION_CLOSED towards they network transaction, who shall snuff it.
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.GetResult(rv));
+
+  trans.reset();
+  session->CloseAllConnections();
+}
+
 // Test a proxy auth scheme that allows default credentials and a proxy server
 // that hangs up when credentials are initially sent, and sends a challenge
 // again they are retried.
