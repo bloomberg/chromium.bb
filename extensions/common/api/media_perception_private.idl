@@ -63,6 +63,12 @@ namespace mediaPerceptionPrivate {
     MOJO_CONNECTION_FAILURE
   };
 
+  enum Feature {
+    AUTOZOOM,
+    HOTWORD_DETECTION,
+    OCCUPANCY_DETECTION
+  };
+
   enum ComponentType {
     // The smaller component with limited functionality (smaller size and
     // limited models).
@@ -198,6 +204,9 @@ namespace mediaPerceptionPrivate {
     // only be set when setting state to <code>RUNNING</code> and configuration
     // to whiteboard.
     Whiteboard? whiteboard;
+
+    // A list of enabled media perception features.
+    Feature[]? features;
   };
 
   dictionary BoundingBox {

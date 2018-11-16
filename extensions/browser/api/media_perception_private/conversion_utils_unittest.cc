@@ -515,6 +515,11 @@ TEST(MediaPerceptionConversionUtilsTest, StateProtoToIdl) {
       kWhiteboardBottomRightY);
   state.mutable_whiteboard()->set_aspect_ratio(kWhiteboardAspectRatio);
 
+  state.add_features(mri::State::FEATURE_AUTOZOOM);
+  state.add_features(mri::State::FEATURE_HOTWORD_DETECTION);
+  state.add_features(mri::State::FEATURE_OCCUPANCY_DETECTION);
+  state.add_features(mri::State::FEATURE_UNSET);
+
   media_perception::State state_result =
       media_perception::StateProtoToIdl(state);
   EXPECT_EQ(state_result.status, media_perception::STATUS_RUNNING);
@@ -532,6 +537,16 @@ TEST(MediaPerceptionConversionUtilsTest, StateProtoToIdl) {
                    kWhiteboardBottomRightX, kWhiteboardBottomRightY);
   ASSERT_TRUE(state_result.whiteboard->aspect_ratio);
   EXPECT_EQ(*state_result.whiteboard->aspect_ratio, kWhiteboardAspectRatio);
+
+  ASSERT_TRUE(state_result.features);
+  ASSERT_TRUE(state_result.features.get());
+  ASSERT_EQ(state_result.features.get()->size(), 3u);
+  EXPECT_EQ(state_result.features.get()->at(0),
+            media_perception::FEATURE_AUTOZOOM);
+  EXPECT_EQ(state_result.features.get()->at(1),
+            media_perception::FEATURE_HOTWORD_DETECTION);
+  EXPECT_EQ(state_result.features.get()->at(2),
+            media_perception::FEATURE_OCCUPANCY_DETECTION);
 
   state.set_status(mri::State::STARTED);
   state.set_device_context(kTestDeviceContext);
@@ -569,6 +584,14 @@ TEST(MediaPerceptionConversionUtilsTest, StateIdlToProto) {
       MakePointIdl(kWhiteboardBottomRightX, kWhiteboardBottomRightY);
   state.whiteboard->aspect_ratio =
       std::make_unique<double>(kWhiteboardAspectRatio);
+
+  state.features =
+      std::make_unique<std::vector<media_perception::Feature>>();
+  state.features->emplace_back(media_perception::FEATURE_AUTOZOOM);
+  state.features->emplace_back(media_perception::FEATURE_HOTWORD_DETECTION);
+  state.features->emplace_back(media_perception::FEATURE_OCCUPANCY_DETECTION);
+  state.features->emplace_back(media_perception::FEATURE_NONE);
+
   state_proto = StateIdlToProto(state);
   EXPECT_EQ(state_proto.status(), mri::State::RUNNING);
   ASSERT_TRUE(state_proto.has_configuration());
@@ -588,6 +611,12 @@ TEST(MediaPerceptionConversionUtilsTest, StateIdlToProto) {
                      kWhiteboardBottomRightX, kWhiteboardBottomRightY);
   ASSERT_TRUE(state_proto.whiteboard().has_aspect_ratio());
   EXPECT_EQ(state_proto.whiteboard().aspect_ratio(), kWhiteboardAspectRatio);
+
+  ASSERT_EQ(state_proto.features_size(), 4);
+  EXPECT_EQ(state_proto.features(0), mri::State::FEATURE_AUTOZOOM);
+  EXPECT_EQ(state_proto.features(1), mri::State::FEATURE_HOTWORD_DETECTION);
+  EXPECT_EQ(state_proto.features(2), mri::State::FEATURE_OCCUPANCY_DETECTION);
+  EXPECT_EQ(state_proto.features(3), mri::State::FEATURE_UNSET);
 
   state.status = media_perception::STATUS_SUSPENDED;
   state.device_context = std::make_unique<std::string>(kTestDeviceContext);

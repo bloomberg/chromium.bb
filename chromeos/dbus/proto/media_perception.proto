@@ -87,6 +87,17 @@ message State {
   // Corners and aspect ratio of the whiteboard in the image frame. Should only
   // be set when setting state to running and configuration to whiteboard.
   optional Whiteboard whiteboard = 5;
+
+  enum Feature {
+    // UNSET is not a real feature value.
+    FEATURE_UNSET = 0;
+    FEATURE_AUTOZOOM = 1;
+    FEATURE_HOTWORD_DETECTION = 2;
+    FEATURE_OCCUPANCY_DETECTION = 3;
+  }
+
+  // A list of enabled media perception features.
+  repeated Feature features = 6;
 }
 
 // This is the output of the MediaPerceptionSinkCalculator.
