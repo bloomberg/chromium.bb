@@ -4,7 +4,7 @@ vars = {
   "chromium_url": "https://chromium.googlesource.com",
 
   # When changing these, also update the svn revisions in deps_revisions.gni
-  "clang_format_revision": "0653eee0c81ea04715c635dd0885e8096ff6ba6d",
+  "clang_format_revision": "96636aa0e9f047f17447f2d45a094d0b59ed7917",
   "libcxx_revision":       "640fa255b9c7441eeace90f96e237ca68bd8c7b6",
   "libcxxabi_revision":    "794d4c0c33d99585ae99a069e99ff2c06aa98b56",
   "libunwind_revision":    "94edd59b16d2084a62699290f9cfdf120d74eedf",
