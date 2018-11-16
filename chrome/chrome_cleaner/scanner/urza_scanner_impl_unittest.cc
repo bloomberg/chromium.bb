@@ -118,7 +118,6 @@ void set_difference(const std::set<T>& set1,
 
 class TestScanner : public UrzaScannerImpl {
  public:
-  TestScanner() = default;
   explicit TestScanner(const MatchingOptions& options,
                        SignatureMatcherAPI* signature_matcher,
                        RegistryLogger* registry_logger)
