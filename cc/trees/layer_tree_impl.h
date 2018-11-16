@@ -181,7 +181,6 @@ class CC_EXPORT LayerTreeImpl {
   void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
   void PushSurfaceRangesTo(LayerTreeImpl* tree_impl);
-  void PushRegisteredElementIdsTo(LayerTreeImpl* tree_impl);
 
   void MoveChangeTrackingToLayers();
 
@@ -608,11 +607,6 @@ class CC_EXPORT LayerTreeImpl {
 
   LayerTreeLifecycle& lifecycle() { return lifecycle_; }
 
-  const std::unordered_set<ElementId, ElementIdHash>&
-  elements_in_property_trees() {
-    return elements_in_property_trees_;
-  }
-
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
@@ -625,8 +619,6 @@ class CC_EXPORT LayerTreeImpl {
   bool ClampBrowserControlsShownRatio();
 
  private:
-  friend class LayerTreeHost;
-
   TransformNode* PageScaleTransformNode();
   void UpdatePageScaleNode();
 
@@ -680,7 +672,7 @@ class CC_EXPORT LayerTreeImpl {
   base::flat_set<LayerImpl*> layers_that_should_push_properties_;
 
   // Set of ElementIds which are present in the |layer_list_|.
-  std::unordered_set<ElementId, ElementIdHash> elements_in_property_trees_;
+  std::unordered_set<ElementId, ElementIdHash> elements_in_layer_list_;
 
   std::unordered_map<ElementId, float, ElementIdHash>
       element_id_to_opacity_animations_;

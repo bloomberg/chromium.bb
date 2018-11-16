@@ -2294,41 +2294,6 @@ TEST_P(PaintArtifactCompositorTest, UpdatePopulatesCompositedElementIds) {
   EXPECT_TRUE(composited_element_ids.count(effect->GetCompositorElementId()));
 }
 
-// If we have both a transform and an opacity animation, they should both be
-// included in the composited element id set returned from
-// |PaintArtifactCompositor::Update(...)|.
-TEST_P(PaintArtifactCompositorTest, UniqueAnimationCompositedElementIds) {
-  TransformPaintPropertyNode::State transform_state;
-  transform_state.direct_compositing_reasons =
-      CompositingReason::kActiveTransformAnimation;
-  transform_state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-      31, CompositorElementIdNamespace::kPrimaryTransform);
-  auto transform =
-      TransformPaintPropertyNode::Create(t0(), std::move(transform_state));
-
-  EffectPaintPropertyNode::State effect_state;
-  effect_state.local_transform_space = transform;
-  effect_state.output_clip = &c0();
-  effect_state.opacity = 2.0 / 255.0;
-  effect_state.direct_compositing_reasons =
-      CompositingReason::kActiveOpacityAnimation;
-  effect_state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-      41, CompositorElementIdNamespace::kPrimaryEffect);
-  auto effect = EffectPaintPropertyNode::Create(e0(), std::move(effect_state));
-
-  TestPaintArtifact artifact;
-  artifact.Chunk(*transform, c0(), *effect)
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
-
-  CompositorElementIdSet composited_element_ids;
-  Update(artifact.Build(), composited_element_ids);
-
-  EXPECT_EQ(2u, composited_element_ids.size());
-  EXPECT_TRUE(
-      composited_element_ids.count(transform->GetCompositorElementId()));
-  EXPECT_TRUE(composited_element_ids.count(effect->GetCompositorElementId()));
-}
-
 TEST_P(PaintArtifactCompositorTest, SkipChunkWithOpacityZero) {
   UpdateWithArtifactWithOpacity(0, false, false);
   ASSERT_EQ(0u, ContentLayerCount());
@@ -2478,18 +2443,15 @@ TEST_P(PaintArtifactCompositorTest, UpdateManagesLayerElementIds) {
 
     Update(artifact.Build());
     ASSERT_EQ(1u, ContentLayerCount());
-    ASSERT_TRUE(GetLayerTreeHost().IsElementInList(
-        element_id, cc::ElementListType::ACTIVE));
+    ASSERT_TRUE(GetLayerTreeHost().LayerByElementId(element_id));
   }
 
   {
     TestPaintArtifact artifact;
-    ASSERT_TRUE(GetLayerTreeHost().IsElementInList(
-        element_id, cc::ElementListType::ACTIVE));
+    ASSERT_TRUE(GetLayerTreeHost().LayerByElementId(element_id));
     Update(artifact.Build());
     ASSERT_EQ(0u, ContentLayerCount());
-    ASSERT_FALSE(GetLayerTreeHost().IsElementInList(
-        element_id, cc::ElementListType::ACTIVE));
+    ASSERT_FALSE(GetLayerTreeHost().LayerByElementId(element_id));
   }
 }
 

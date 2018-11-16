@@ -500,9 +500,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void PushPropertyTreesTo(LayerTreeImpl* tree_impl);
   void PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl);
-  // TODO(flackr): This list should be on the property trees and pushed
-  // as part of PushPropertyTreesTo.
-  void PushRegisteredElementIdsTo(LayerTreeImpl* tree_impl);
   void PushSurfaceRangesTo(LayerTreeImpl* tree_impl);
   void PushLayerTreeHostPropertiesTo(LayerTreeHostImpl* host_impl);
 
@@ -513,17 +510,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
                        ElementListType list_type,
                        Layer* layer);
   void UnregisterElement(ElementId element_id, ElementListType list_type);
-
-  // Registers the new active element ids, updating |registered_element_ids_|,
-  // and unregisters any element ids that were previously registered. This is
-  // similar to |RegisterElement| and |UnregisterElement| but for layer lists
-  // where we do not have a unique element id to layer mapping.
-  using ElementIdSet = std::unordered_set<ElementId, ElementIdHash>;
-  void SetActiveRegisteredElementIds(const ElementIdSet&);
-  const ElementIdSet& elements_in_property_trees() {
-    return elements_in_property_trees_;
-  }
-
   void SetElementIdsForTesting();
 
   void BuildPropertyTreesForTesting();
@@ -795,10 +781,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   std::unordered_map<int, Layer*> layer_id_map_;
 
   std::unordered_map<ElementId, Layer*, ElementIdHash> element_layers_map_;
-
-  // The set of registered element ids when using layer list mode. In non-layer-
-  // list mode, |element_layers_map_| is used.
-  ElementIdSet elements_in_property_trees_;
 
   bool in_paint_layer_contents_ = false;
 

@@ -1557,7 +1557,6 @@ void LayerTreeHost::RegisterElement(ElementId element_id,
                                     ElementListType list_type,
                                     Layer* layer) {
   element_layers_map_[element_id] = layer;
-  elements_in_property_trees_.insert(element_id);
   mutator_host_->RegisterElement(element_id, list_type);
 }
 
@@ -1565,27 +1564,6 @@ void LayerTreeHost::UnregisterElement(ElementId element_id,
                                       ElementListType list_type) {
   mutator_host_->UnregisterElement(element_id, list_type);
   element_layers_map_.erase(element_id);
-  elements_in_property_trees_.erase(element_id);
-}
-
-void LayerTreeHost::SetActiveRegisteredElementIds(const ElementIdSet& ids) {
-  DCHECK(IsUsingLayerLists());
-
-  // Unregister ids that should no longer be registered.
-  for (auto id_iter = elements_in_property_trees_.begin();
-       id_iter != elements_in_property_trees_.end();) {
-    const auto& id = *(id_iter++);
-    if (!ids.count(id))
-      UnregisterElement(id, ElementListType::ACTIVE);
-  }
-
-  // Register new ids that were not already registered.
-  for (const auto& id : ids) {
-    if (!elements_in_property_trees_.count(id)) {
-      elements_in_property_trees_.insert(id);
-      mutator_host_->RegisterElement(id, ElementListType::ACTIVE);
-    }
-  }
 }
 
 static void SetElementIdForTesting(Layer* layer) {
@@ -1607,10 +1585,6 @@ void LayerTreeHost::BuildPropertyTreesForTesting() {
 
 bool LayerTreeHost::IsElementInList(ElementId element_id,
                                     ElementListType list_type) const {
-  if (IsUsingLayerLists()) {
-    return list_type == ElementListType::ACTIVE &&
-           elements_in_property_trees_.count(element_id);
-  }
   return list_type == ElementListType::ACTIVE && LayerByElementId(element_id);
 }
 

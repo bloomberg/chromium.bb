@@ -701,12 +701,9 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
-       OpacityAnimationCreatesTransformAndFilterNodes) {
+       OpacityAnimationDoesNotCreateTransformNode) {
   LoadTestData("opacity-animation.html");
-  // TODO(flackr): Verify that after https://crbug.com/900241 is fixed we no
-  // longer create transform or filter nodes for opacity animations.
-  EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Transform());
-  EXPECT_NE(nullptr, PaintPropertiesForElement("target")->Filter());
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Transform());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -4849,9 +4846,6 @@ TEST_P(PaintPropertyTreeBuilderTest,
   SetBodyInnerHTML("<div id='target' style='opacity: 0.5'></div");
   const ObjectPaintProperties* properties = PaintPropertiesForElement("target");
   EXPECT_TRUE(properties->Effect());
-  // TODO(flackr): Revisit whether effect ElementId should still exist when
-  // animations are no longer keyed off of the existence it:
-  // https://crbug.com/900241
   EXPECT_NE(CompositorElementId(),
             properties->Effect()->GetCompositorElementId());
 }

@@ -53,10 +53,6 @@ CompositorTargetProperty::Type CompositorKeyframeModel::TargetProperty() const {
       keyframe_model_->target_property_id());
 }
 
-void CompositorKeyframeModel::SetElementId(CompositorElementId element_id) {
-  keyframe_model_->set_element_id(element_id);
-}
-
 double CompositorKeyframeModel::Iterations() const {
   return keyframe_model_->iterations();
 }

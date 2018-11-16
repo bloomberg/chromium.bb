@@ -494,10 +494,6 @@ Bug(none) svg/wicd/test-rightsizing-b.xhtml [ Crash Failure ]
 Bug(none) transforms/transformed-caret.html [ Pass Failure ]
 Bug(none) paint/invalidation/scroll/scroll-in-transformed-layer.html [ Failure ]
 Bug(none) paint/invalidation/scroll/scroll-with-transformed-parent-layer.html [ Failure ]
-Bug(none) fast/overflow/overflow-text-hit-testing.html [ Failure ]
-Bug(none) compositing/reflections/nested-reflection-animated.html [ Failure ]
-Bug(none) compositing/transitions/scale-transition-no-start.html [ Failure ]
-Bug(none) virtual/threaded/animations/skew-notsequential-compositor.html [ Failure ]
 
 crbug.com/644358 fast/block/float/float-overhanging-grandparent-change-self-painting.html [ Crash ]
 
@@ -564,9 +560,6 @@ crbug.com/589265 compositing/masks/mask-layer-size.html [ Failure ]
 crbug.com/589265 fast/borders/border-radius-with-composited-child.html [ Failure ]
 crbug.com/589265 fast/clip/overflow-border-radius-composited-parent.html [ Failure ]
 crbug.com/589265 fast/clip/overflow-border-radius-composited.html [ Failure ]
-
-# Opacity not applied to descendant of animated filter node.
-crbug.com/905859 transitions/opacity-transform-transitions-inside-iframe.html [ Failure ]
 
 # Notes about rebaselined tests:
 #

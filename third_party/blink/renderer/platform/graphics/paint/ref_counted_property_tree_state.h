@@ -50,6 +50,12 @@ class PLATFORM_EXPORT RefCountedPropertyTreeState {
     return PropertyTreeState(transform_.get(), clip_.get(), effect_.get());
   }
 
+  // Returns the compositor element id, if any, for this property state. If
+  // neither the effect nor transform nodes have a compositor element id then a
+  // default instance is returned.
+  const CompositorElementId GetCompositorElementId(
+      const CompositorElementIdSet& element_ids) const;
+
   void ClearChangedToRoot() const {
     Transform()->ClearChangedToRoot();
     Clip()->ClearChangedToRoot();

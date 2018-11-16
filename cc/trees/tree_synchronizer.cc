@@ -87,25 +87,6 @@ void PushLayerList(OwnedLayerImplMap* old_layers,
 }
 
 template <typename LayerTreeType>
-void PushElementsInPropertyTreesTo(LayerTreeType* host,
-                                   LayerTreeImpl* tree_impl) {
-  for (auto id_iter = tree_impl->elements_in_property_trees().begin();
-       id_iter != tree_impl->elements_in_property_trees().end();) {
-    const auto& id = *(id_iter++);
-    if (!host->elements_in_property_trees().count(id))
-      tree_impl->RemoveFromElementLayerList(id);
-  }
-
-  for (const auto& id : host->elements_in_property_trees()) {
-    if (!tree_impl->IsElementInLayerList(id)) {
-      // TODO(flackr): We should expose adding element ids without a
-      // layer pointer.
-      tree_impl->AddToElementLayerList(id, nullptr);
-    }
-  }
-}
-
-template <typename LayerTreeType>
 void SynchronizeTreesInternal(LayerTreeType* source_tree,
                               LayerTreeImpl* tree_impl,
                               PropertyTrees* property_trees) {
@@ -173,8 +154,6 @@ void TreeSynchronizer::PushLayerProperties(LayerTreeImpl* pending_tree,
   PushLayerPropertiesInternal(layers.begin(), layers.end(), active_tree);
   PushLayerPropertiesInternal(picture_layers.begin(), picture_layers.end(),
                               active_tree);
-  if (pending_tree->settings().use_layer_lists)
-    PushElementsInPropertyTreesTo(pending_tree, active_tree);
   pending_tree->ClearLayersThatShouldPushProperties();
 }
 
@@ -184,10 +163,6 @@ void TreeSynchronizer::PushLayerProperties(LayerTreeHost* host_tree,
   TRACE_EVENT1("cc", "TreeSynchronizer::PushLayerPropertiesTo.Main",
                "layer_count", layers.size());
   PushLayerPropertiesInternal(layers.begin(), layers.end(), impl_tree);
-  // When using layer lists, we may not have layers for all property tree
-  // node ids and need to synchronize the registered id list.
-  if (host_tree->IsUsingLayerLists())
-    PushElementsInPropertyTreesTo(host_tree, impl_tree);
   host_tree->ClearLayersThatShouldPushProperties();
 }
 

@@ -128,7 +128,6 @@ class CORE_EXPORT CompositorAnimations {
                                          double animation_playback_rate);
 
   static void GetAnimationOnCompositor(
-      const Element&,
       const Timing&,
       int group,
       base::Optional<double> start_time,
