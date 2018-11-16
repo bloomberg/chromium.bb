@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread_restrictions.h"
 
 namespace ui {
 
@@ -19,7 +18,6 @@ base::FilePath GetInputPathInSys(const base::FilePath& path) {
 }
 
 InputDeviceType GetInputDeviceTypeFromPath(const base::FilePath& path) {
-  base::AssertBlockingAllowedDeprecated();
   std::string event_node = path.BaseName().value();
   if (event_node.empty() ||
       !base::StartsWith(event_node, "event", base::CompareCase::SENSITIVE))
