@@ -406,6 +406,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
                               const gfx::ScrollOffset& scroll_offset,
                               LayerTreeImpl* layer_tree_impl);
   gfx::Size container_bounds(int scroll_node_id) const;
+  gfx::SizeF scroll_bounds(int scroll_node_id) const;
   ScrollNode* CurrentlyScrollingNode();
   const ScrollNode* CurrentlyScrollingNode() const;
 #if DCHECK_IS_ON()
