@@ -115,7 +115,7 @@ class KEYBOARD_EXPORT ContainerBehavior {
   virtual bool OccludedBoundsAffectWorkspaceLayout() const = 0;
 
   // Sets floating keyboard drggable rect.
-  virtual bool SetDraggableArea(const gfx::Rect& rect) = 0;
+  virtual void SetDraggableArea(const gfx::Rect& rect) = 0;
 
  protected:
   Delegate* delegate_;

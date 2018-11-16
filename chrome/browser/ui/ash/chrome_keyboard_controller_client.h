@@ -79,6 +79,10 @@ class ChromeKeyboardControllerClient
   void SetContainerType(keyboard::mojom::ContainerType container_type,
                         const base::Optional<gfx::Rect>& target_bounds,
                         base::OnceCallback<void(bool)> callback);
+  void SetKeyboardLocked(bool locked);
+  void SetOccludedBounds(const std::vector<gfx::Rect>& bounds);
+  void SetHitTestBounds(const std::vector<gfx::Rect>& bounds);
+  void SetDraggableArea(const gfx::Rect& bounds);
 
   // Returns true if overscroll is enabled by the config or command line.
   bool IsKeyboardOverscrollEnabled();
@@ -101,14 +105,13 @@ class ChromeKeyboardControllerClient
 
  private:
   // keyboard::mojom::KeyboardControllerObserver:
+  void OnKeyboardEnableFlagsChanged(
+      const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags) override;
   void OnKeyboardEnabledChanged(bool enabled) override;
   void OnKeyboardConfigChanged(
       keyboard::mojom::KeyboardConfigPtr config) override;
   void OnKeyboardVisibilityChanged(bool visible) override;
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
-
-  void OnGetEnableFlags(
-      const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags);
 
   // Returns either the test profile or the active user profile.
   Profile* GetProfile();

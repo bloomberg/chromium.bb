@@ -238,7 +238,7 @@ class KEYBOARD_EXPORT KeyboardController
                         base::OnceCallback<void(bool)> callback);
 
   // Sets floating keyboard draggable rect.
-  bool SetDraggableArea(const gfx::Rect& rect);
+  void SetDraggableArea(const gfx::Rect& rect);
 
   // InputMethodKeyboardController overrides:
   bool DisplayVirtualKeyboard() override;
@@ -252,6 +252,10 @@ class KEYBOARD_EXPORT KeyboardController
   bool keyboard_locked() const { return keyboard_locked_; }
   void set_keyboard_locked(bool lock) { keyboard_locked_ = lock; }
 
+  void set_container_behavior_for_test(
+      std::unique_ptr<ContainerBehavior> container_behavior) {
+    container_behavior_ = std::move(container_behavior);
+  }
   KeyboardControllerState GetStateForTest() const { return state_; }
   ui::InputMethod* GetInputMethodForTest();
   void EnsureCaretInWorkAreaForTest(const gfx::Rect& occluded_bounds);

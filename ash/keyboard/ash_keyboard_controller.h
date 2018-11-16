@@ -73,6 +73,10 @@ class ASH_EXPORT AshKeyboardController
   void SetContainerType(keyboard::mojom::ContainerType container_type,
                         const base::Optional<gfx::Rect>& target_bounds,
                         SetContainerTypeCallback callback) override;
+  void SetKeyboardLocked(bool locked) override;
+  void SetOccludedBounds(const std::vector<gfx::Rect>& bounds) override;
+  void SetHitTestBounds(const std::vector<gfx::Rect>& bounds) override;
+  void SetDraggableArea(const gfx::Rect& bounds) override;
   void AddObserver(
       mojom::KeyboardControllerObserverAssociatedPtrInfo observer) override;
 
@@ -105,6 +109,9 @@ class ASH_EXPORT AshKeyboardController
   void OnKeyboardConfigChanged() override;
   void OnKeyboardVisibilityStateChanged(bool is_visible) override;
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
+  void OnKeyboardEnableFlagsChanged(
+      std::set<keyboard::mojom::KeyboardEnableFlag>& keyboard_enable_flags)
+      override;
   void OnKeyboardEnabledChanged(bool is_enabled) override;
 
   SessionController* session_controller_;  // unowned

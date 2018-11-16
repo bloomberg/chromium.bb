@@ -164,6 +164,27 @@ void AshKeyboardController::SetContainerType(
                                          std::move(callback));
 }
 
+void AshKeyboardController::SetKeyboardLocked(bool locked) {
+  keyboard_controller_->set_keyboard_locked(locked);
+}
+
+void AshKeyboardController::SetOccludedBounds(
+    const std::vector<gfx::Rect>& bounds) {
+  // TODO(https://crbug.com/826617): Support occluded bounds with multiple
+  // rectangles.
+  keyboard_controller_->SetOccludedBounds(bounds.empty() ? gfx::Rect()
+                                                         : bounds[0]);
+}
+
+void AshKeyboardController::SetHitTestBounds(
+    const std::vector<gfx::Rect>& bounds) {
+  keyboard_controller_->SetHitTestBounds(bounds);
+}
+
+void AshKeyboardController::SetDraggableArea(const gfx::Rect& bounds) {
+  keyboard_controller_->SetDraggableArea(bounds);
+}
+
 void AshKeyboardController::OnSessionStateChanged(
     session_manager::SessionState state) {
   if (!keyboard_controller_->IsKeyboardEnableRequested())
@@ -245,6 +266,15 @@ void AshKeyboardController::OnKeyboardVisibleBoundsChanged(
     const gfx::Rect& bounds) {
   observers_.ForAllPtrs([&bounds](mojom::KeyboardControllerObserver* observer) {
     observer->OnKeyboardVisibleBoundsChanged(bounds);
+  });
+}
+
+void AshKeyboardController::OnKeyboardEnableFlagsChanged(
+    std::set<keyboard::mojom::KeyboardEnableFlag>& keyboard_enable_flags) {
+  std::vector<keyboard::mojom::KeyboardEnableFlag> flags(
+      keyboard_enable_flags.begin(), keyboard_enable_flags.end());
+  observers_.ForAllPtrs([&flags](mojom::KeyboardControllerObserver* observer) {
+    observer->OnKeyboardEnableFlagsChanged(flags);
   });
 }
 
