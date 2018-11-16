@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_COLOR_PARAMS_H_
 
 #include "components/viz/common/resources/resource_format.h"
-#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -24,6 +23,20 @@ class ColorSpace;
 }
 
 namespace blink {
+
+enum CanvasColorSpace {
+  kSRGBCanvasColorSpace,
+  kLinearRGBCanvasColorSpace,
+  kRec2020CanvasColorSpace,
+  kP3CanvasColorSpace,
+  kMaxCanvasColorSpace = kP3CanvasColorSpace
+};
+
+enum CanvasPixelFormat {
+  kRGBA8CanvasPixelFormat,
+  kF16CanvasPixelFormat,
+  kMaxCanvasPixelFormat = kF16CanvasPixelFormat
+};
 
 class PLATFORM_EXPORT CanvasColorParams {
  public:
@@ -61,9 +74,7 @@ class PLATFORM_EXPORT CanvasColorParams {
 
   // The pixel format to use for allocating SkSurfaces.
   SkColorType GetSkColorType() const;
-  static SkColorType PixelFormatToSkColorType(CanvasPixelFormat pixel_format) {
-    return ::blink::PixelFormatToSkColorType(pixel_format);
-  }
+  static SkColorType PixelFormatToSkColorType(CanvasPixelFormat pixel_format);
   uint8_t BytesPerPixel() const;
 
   // The color space in which pixels read from the canvas via a shader will be
@@ -75,9 +86,7 @@ class PLATFORM_EXPORT CanvasColorParams {
   gfx::ColorSpace GetStorageGfxColorSpace() const;
   sk_sp<SkColorSpace> GetSkColorSpace() const;
   static sk_sp<SkColorSpace> CanvasColorSpaceToSkColorSpace(
-      CanvasColorSpace color_space) {
-    return ::blink::CanvasColorSpaceToSkColorSpace(color_space);
-  }
+      CanvasColorSpace color_space);
   SkAlphaType GetSkAlphaType() const;
   const SkSurfaceProps* GetSkSurfaceProps() const;
 

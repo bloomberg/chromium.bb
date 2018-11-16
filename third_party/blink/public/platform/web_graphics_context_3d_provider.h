@@ -33,7 +33,6 @@
 
 #include <cstdint>
 #include "base/callback_forward.h"
-#include "base/logging.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 class GrContext;
@@ -61,53 +60,6 @@ class GLHelper;
 
 namespace blink {
 
-enum CanvasColorSpace {
-  kSRGBCanvasColorSpace,
-  kLinearRGBCanvasColorSpace,
-  kRec2020CanvasColorSpace,
-  kP3CanvasColorSpace,
-  kMaxCanvasColorSpace = kP3CanvasColorSpace
-};
-
-enum CanvasPixelFormat {
-  kRGBA8CanvasPixelFormat,
-  kF16CanvasPixelFormat,
-  kMaxCanvasPixelFormat = kF16CanvasPixelFormat
-};
-
-inline SkColorType PixelFormatToSkColorType(CanvasPixelFormat pixel_format) {
-  switch (pixel_format) {
-    case kF16CanvasPixelFormat:
-      return kRGBA_F16_SkColorType;
-    case kRGBA8CanvasPixelFormat:
-      return kN32_SkColorType;
-  }
-  NOTREACHED();
-  return kN32_SkColorType;
-}
-
-inline sk_sp<SkColorSpace> CanvasColorSpaceToSkColorSpace(
-    CanvasColorSpace color_space) {
-  SkColorSpace::Gamut gamut = SkColorSpace::kSRGB_Gamut;
-  SkColorSpace::RenderTargetGamma gamma = SkColorSpace::kSRGB_RenderTargetGamma;
-  switch (color_space) {
-    case kSRGBCanvasColorSpace:
-      break;
-    case kLinearRGBCanvasColorSpace:
-      gamma = SkColorSpace::kLinear_RenderTargetGamma;
-      break;
-    case kRec2020CanvasColorSpace:
-      gamut = SkColorSpace::kRec2020_Gamut;
-      gamma = SkColorSpace::kLinear_RenderTargetGamma;
-      break;
-    case kP3CanvasColorSpace:
-      gamut = SkColorSpace::kDCIP3_D65_Gamut;
-      gamma = SkColorSpace::kLinear_RenderTargetGamma;
-      break;
-  }
-  return SkColorSpace::MakeRGB(gamma, gamut);
-}
-
 class WebGraphicsContext3DProvider {
  public:
   virtual ~WebGraphicsContext3DProvider() = default;
@@ -125,11 +77,11 @@ class WebGraphicsContext3DProvider {
   virtual void SetLostContextCallback(base::RepeatingClosure) = 0;
   virtual void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char* msg, int32_t id)>) = 0;
-  // Return a static software image decode cache that matches this color
-  // space and pixel format.
+  // Return a static software image decode cache for a given color type and
+  // space.
   virtual cc::ImageDecodeCache* ImageDecodeCache(
-      CanvasColorSpace color_space,
-      CanvasPixelFormat pixel_format) = 0;
+      SkColorType color_type,
+      sk_sp<SkColorSpace> color_space) = 0;
 };
 
 }  // namespace blink

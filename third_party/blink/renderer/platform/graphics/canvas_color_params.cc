@@ -124,6 +124,19 @@ SkColorType CanvasColorParams::GetSkColorType() const {
   return PixelFormatToSkColorType(pixel_format_);
 }
 
+// static
+SkColorType CanvasColorParams::PixelFormatToSkColorType(
+    CanvasPixelFormat pixel_format) {
+  switch (pixel_format) {
+    case kF16CanvasPixelFormat:
+      return kRGBA_F16_SkColorType;
+    case kRGBA8CanvasPixelFormat:
+      return kN32_SkColorType;
+  }
+  NOTREACHED();
+  return kN32_SkColorType;
+}
+
 SkAlphaType CanvasColorParams::GetSkAlphaType() const {
   if (opacity_mode_ == kOpaque)
     return kOpaque_SkAlphaType;
@@ -169,6 +182,28 @@ gfx::ColorSpace CanvasColorParams::GetStorageGfxColorSpace() const {
 
 sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpace() const {
   return CanvasColorSpaceToSkColorSpace(color_space_);
+}
+
+sk_sp<SkColorSpace> CanvasColorParams::CanvasColorSpaceToSkColorSpace(
+    CanvasColorSpace color_space) {
+  SkColorSpace::Gamut gamut = SkColorSpace::kSRGB_Gamut;
+  SkColorSpace::RenderTargetGamma gamma = SkColorSpace::kSRGB_RenderTargetGamma;
+  switch (color_space) {
+    case kSRGBCanvasColorSpace:
+      break;
+    case kLinearRGBCanvasColorSpace:
+      gamma = SkColorSpace::kLinear_RenderTargetGamma;
+      break;
+    case kRec2020CanvasColorSpace:
+      gamut = SkColorSpace::kRec2020_Gamut;
+      gamma = SkColorSpace::kLinear_RenderTargetGamma;
+      break;
+    case kP3CanvasColorSpace:
+      gamut = SkColorSpace::kDCIP3_D65_Gamut;
+      gamma = SkColorSpace::kLinear_RenderTargetGamma;
+      break;
+  }
+  return SkColorSpace::MakeRGB(gamma, gamut);
 }
 
 gfx::BufferFormat CanvasColorParams::GetBufferFormat() const {
