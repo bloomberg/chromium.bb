@@ -196,6 +196,12 @@ fuzzer_test("v8_multi_return_fuzzer") {
   deps = [
     "//v8:multi_return_fuzzer",
   ]
+  asan_options = [
+    "allow_user_segv_handler=1",
+    "handle_sigtrap=1",
+  ]
+  msan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [ "handle_sigtrap=1" ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
@@ -205,6 +211,12 @@ fuzzer_test("v8_wasm_code_fuzzer") {
     "//v8:wasm_code_fuzzer",
   ]
   libfuzzer_options = [ "max_len=500" ]
+  asan_options = [
+    "allow_user_segv_handler=1",
+    "handle_sigtrap=1",
+  ]
+  msan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [ "handle_sigtrap=1" ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
@@ -214,6 +226,12 @@ fuzzer_test("v8_wasm_compile_fuzzer") {
     "//v8:wasm_compile_fuzzer",
   ]
   libfuzzer_options = [ "max_len=500" ]
+  asan_options = [
+    "allow_user_segv_handler=1",
+    "handle_sigtrap=1",
+  ]
+  msan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [ "handle_sigtrap=1" ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
@@ -225,6 +243,12 @@ fuzzer_test("v8_wasm_fuzzer") {
   dict = "dicts/v8_wasm.dict"
   seed_corpus = "//v8/test/fuzzer/wasm_corpus/"
   libfuzzer_options = [ "max_len=500" ]
+  asan_options = [
+    "allow_user_segv_handler=1",
+    "handle_sigtrap=1",
+  ]
+  msan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [ "handle_sigtrap=1" ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
@@ -236,6 +260,12 @@ fuzzer_test("v8_wasm_async_fuzzer") {
   dict = "dicts/v8_wasm.dict"
   seed_corpus = "//v8/test/fuzzer/wasm_corpus/"
   libfuzzer_options = [ "max_len=500" ]
+  asan_options = [
+    "allow_user_segv_handler=1",
+    "handle_sigtrap=1",
+  ]
+  msan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [ "handle_sigtrap=1" ]
   environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
@@ -400,6 +430,12 @@ fuzzer_test("v8_fully_instrumented_fuzzer") {
     "//v8:v8_libplatform",
   ]
   dict = "dicts/generated/javascript.dict"
+  asan_options = [
+    "allow_user_segv_handler=1",
+    "handle_sigtrap=1",
+  ]
+  msan_options = [ "handle_sigtrap=1" ]
+  ubsan_options = [ "handle_sigtrap=1" ]
   libfuzzer_options = [ "only_ascii=1" ]
 }
 
