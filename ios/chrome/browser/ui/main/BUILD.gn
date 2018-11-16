@@ -27,7 +27,10 @@ source_set("main") {
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/tabs:tabs_internal",
+    "//ios/chrome/browser/ui/autofill",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/snackbar",
     "//ios/public/provider/chrome/browser",
   ]
   public_deps = [

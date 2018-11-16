@@ -19,6 +19,7 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class BrowserViewControllerDependencyFactory;
+@class CommandDispatcher;
 class GURL;
 @protocol OmniboxFocuser;
 @protocol PopupMenuCommands;
@@ -50,6 +51,7 @@ class ChromeBrowserState;
               browserState:(ios::ChromeBrowserState*)browserState
          dependencyFactory:(BrowserViewControllerDependencyFactory*)factory
 applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
+         commandDispatcher:(CommandDispatcher*)commandDispatcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil

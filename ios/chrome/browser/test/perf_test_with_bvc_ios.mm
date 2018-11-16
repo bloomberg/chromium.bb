@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
@@ -106,6 +107,7 @@ void PerfTestWithBVC::SetUp() {
                browserState:chrome_browser_state_
                                 ->GetOffTheRecordChromeBrowserState()];
 
+  command_dispatcher_ = [[CommandDispatcher alloc] init];
   // Create the browser view controller with its testing factory.
   bvc_factory_ = [[BrowserViewControllerDependencyFactory alloc]
       initWithBrowserState:chrome_browser_state_.get()
@@ -114,7 +116,8 @@ void PerfTestWithBVC::SetUp() {
                 initWithTabModel:tab_model_
                     browserState:chrome_browser_state_.get()
                dependencyFactory:bvc_factory_
-      applicationCommandEndpoint:nil];
+      applicationCommandEndpoint:nil
+               commandDispatcher:command_dispatcher_];
   [bvc_ setActive:YES];
 
   // Create a real window to give to the browser view controller.

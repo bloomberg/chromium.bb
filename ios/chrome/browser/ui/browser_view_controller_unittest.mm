@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
@@ -216,11 +217,13 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     tabModel_ = tabModel;
     tab_ = currentTab;
     dependencyFactory_ = factory;
+    command_dispatcher_ = [[CommandDispatcher alloc] init];
     bvc_ = [[BrowserViewController alloc]
                   initWithTabModel:tabModel_
                       browserState:chrome_browser_state_.get()
                  dependencyFactory:factory
-        applicationCommandEndpoint:nil];
+        applicationCommandEndpoint:nil
+                 commandDispatcher:command_dispatcher_];
 
     // Load TemplateURLService.
     TemplateURLService* template_url_service =
@@ -265,6 +268,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   BrowserViewControllerHelper* bvcHelper_;
   PKAddPassesViewController* passKitViewController_;
   OCMockObject* dependencyFactory_;
+  CommandDispatcher* command_dispatcher_;
   BrowserViewController* bvc_;
   UIWindow* window_;
 };
