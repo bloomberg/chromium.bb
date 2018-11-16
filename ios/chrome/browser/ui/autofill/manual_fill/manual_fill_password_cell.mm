@@ -6,6 +6,7 @@
 
 #include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
@@ -50,12 +51,6 @@
 namespace {
 // Left and right margins of the cell content.
 static const CGFloat sideMargins = 16;
-// The multiplier for the base system spacing at the top margin.
-static const CGFloat TopSystemSpacingMultiplier = 1.58;
-// The multiplier for the base system spacing between elements (vertical).
-static const CGFloat MiddleSystemSpacingMultiplier = 1.83;
-// The multiplier for the base system spacing at the bottom margin.
-static const CGFloat BottomSystemSpacingMultiplier = 2.26;
 }  // namespace
 
 @interface ManualFillPasswordCell ()
@@ -147,62 +142,31 @@ static const CGFloat BottomSystemSpacingMultiplier = 2.26;
   grayLine.translatesAutoresizingMaskIntoConstraints = NO;
   [self.contentView addSubview:grayLine];
 
-  self.siteNameLabel = [[UILabel alloc] init];
+  self.siteNameLabel = CreateLabel();
   self.siteNameLabel.translatesAutoresizingMaskIntoConstraints = NO;
   self.siteNameLabel.adjustsFontForContentSizeCategory = YES;
   [self.contentView addSubview:self.siteNameLabel];
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.siteNameLabel ],
+                                                grayLine, 0);
 
-  self.usernameButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [self.usernameButton setTitleColor:UIColor.cr_manualFillTintColor
-                            forState:UIControlStateNormal];
-  self.usernameButton.translatesAutoresizingMaskIntoConstraints = NO;
-  self.usernameButton.titleLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  self.usernameButton.titleLabel.adjustsFontForContentSizeCategory = YES;
-  [self.usernameButton addTarget:self
-                          action:@selector(userDidTapUsernameButton:)
-                forControlEvents:UIControlEventTouchUpInside];
+  self.usernameButton = CreateButtonWithSelectorAndTarget(
+      @selector(userDidTapUsernameButton:), self);
   [self.contentView addSubview:self.usernameButton];
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.usernameButton ],
+                                                grayLine, 0);
 
-  self.passwordButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [self.passwordButton setTitleColor:UIColor.cr_manualFillTintColor
-                            forState:UIControlStateNormal];
-  self.passwordButton.translatesAutoresizingMaskIntoConstraints = NO;
-  self.passwordButton.titleLabel.font =
-      [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  self.passwordButton.titleLabel.adjustsFontForContentSizeCategory = YES;
-  [self.passwordButton addTarget:self
-                          action:@selector(userDidTapPasswordButton:)
-                forControlEvents:UIControlEventTouchUpInside];
+  self.passwordButton = CreateButtonWithSelectorAndTarget(
+      @selector(userDidTapPasswordButton:), self);
   [self.contentView addSubview:self.passwordButton];
+  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.passwordButton ],
+                                                grayLine, 0);
+
+  VerticalConstraintsSpacingForViewsInContainer(
+      @[ self.siteNameLabel, self.usernameButton, self.passwordButton ],
+      self.contentView);
 
   id<LayoutGuideProvider> safeArea = self.contentView.safeAreaLayoutGuide;
 
-  NSArray* verticalConstraints;
-  // Multipliers of these constraints are calculated based on a 24 base
-  // system spacing.
-  verticalConstraints = @[
-    [self.siteNameLabel.firstBaselineAnchor
-        constraintEqualToSystemSpacingBelowAnchor:self.contentView.topAnchor
-                                       multiplier:TopSystemSpacingMultiplier],
-    [self.usernameButton.firstBaselineAnchor
-        constraintEqualToSystemSpacingBelowAnchor:self.siteNameLabel
-                                                      .lastBaselineAnchor
-                                       multiplier:
-                                           MiddleSystemSpacingMultiplier],
-    [self.passwordButton.firstBaselineAnchor
-        constraintEqualToSystemSpacingBelowAnchor:self.usernameButton
-                                                      .lastBaselineAnchor
-                                       multiplier:
-                                           MiddleSystemSpacingMultiplier],
-    [self.contentView.bottomAnchor
-        constraintEqualToSystemSpacingBelowAnchor:self.passwordButton
-                                                      .lastBaselineAnchor
-                                       multiplier:
-                                           BottomSystemSpacingMultiplier],
-  ];
-
-  [NSLayoutConstraint activateConstraints:verticalConstraints];
   [NSLayoutConstraint activateConstraints:@[
     // Common vertical constraints.
     [grayLine.bottomAnchor
@@ -214,19 +178,6 @@ static const CGFloat BottomSystemSpacingMultiplier = 2.26;
                                            constant:sideMargins],
     [safeArea.trailingAnchor constraintEqualToAnchor:grayLine.trailingAnchor
                                             constant:sideMargins],
-
-    [self.siteNameLabel.leadingAnchor
-        constraintEqualToAnchor:grayLine.leadingAnchor],
-    [self.siteNameLabel.trailingAnchor
-        constraintEqualToAnchor:grayLine.trailingAnchor],
-    [self.usernameButton.leadingAnchor
-        constraintEqualToAnchor:grayLine.leadingAnchor],
-    [self.usernameButton.trailingAnchor
-        constraintLessThanOrEqualToAnchor:grayLine.trailingAnchor],
-    [self.passwordButton.leadingAnchor
-        constraintEqualToAnchor:grayLine.leadingAnchor],
-    [self.passwordButton.trailingAnchor
-        constraintLessThanOrEqualToAnchor:grayLine.trailingAnchor],
   ]];
 }
 
