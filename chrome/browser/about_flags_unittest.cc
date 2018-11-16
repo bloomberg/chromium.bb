@@ -70,7 +70,7 @@ std::set<std::string> GetAllSwitchesAndFeaturesForTesting() {
 
 struct FlagMetadataEntry {
   std::vector<std::string> owners;
-  int expire_milestone;
+  int expiry_milestone;
 };
 
 using FlagMetadataMap = std::map<std::string, FlagMetadataEntry>;
@@ -92,10 +92,12 @@ FlagMetadataMap LoadFlagMetadata() {
   for (const auto& entry : metadata_json->GetList()) {
     std::string name = entry.FindKey("name")->GetString();
     std::vector<std::string> owners;
-    for (const auto& owner : entry.FindKey("owners")->GetList())
-      owners.push_back(owner.GetString());
-    int expire_milestone = entry.FindKey("expire_milestone")->GetInt();
-    metadata[name] = FlagMetadataEntry{owners, expire_milestone};
+    if (const base::Value* e = entry.FindKey("owners")) {
+      for (const auto& owner : e->GetList())
+        owners.push_back(owner.GetString());
+    }
+    int expiry_milestone = entry.FindKey("expiry_milestone")->GetInt();
+    metadata[name] = FlagMetadataEntry{owners, expiry_milestone};
   }
 
   return metadata;
@@ -116,7 +118,7 @@ TEST(AboutFlagsTest, NoSeparators) {
 
 // Makes sure that every flag has an owner and an expiry entry in
 // flag-metadata.json.
-TEST(AboutFlagsTest, DISABLED_EveryFlagHasMetadata) {
+TEST(AboutFlagsTest, EveryFlagHasMetadata) {
   size_t count;
   const flags_ui::FeatureEntry* entries = testing::GetFeatureEntries(&count);
   FlagMetadataMap metadata = LoadFlagMetadata();
@@ -128,8 +130,25 @@ TEST(AboutFlagsTest, DISABLED_EveryFlagHasMetadata) {
       missing_flags.push_back(entries[i].internal_name);
   }
 
+  std::sort(missing_flags.begin(), missing_flags.end());
+
   EXPECT_EQ(0u, missing_flags.size())
       << "Missing flags: " << base::JoinString(missing_flags, "\n  ");
+}
+
+TEST(AboutFlagsTest, DISABLED_EveryFlagHasNonEmptyOwners) {
+  FlagMetadataMap metadata = LoadFlagMetadata();
+  std::vector<std::string> sad_flags;
+
+  for (const auto& it : metadata) {
+    if (it.second.owners.empty())
+      sad_flags.push_back(it.first);
+  }
+
+  std::sort(sad_flags.begin(), sad_flags.end());
+
+  EXPECT_EQ(0u, sad_flags.size())
+      << "Flags missing owners: " << base::JoinString(sad_flags, "\n  ");
 }
 
 class AboutFlagsHistogramTest : public ::testing::Test {

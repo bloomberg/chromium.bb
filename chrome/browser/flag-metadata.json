@@ -1,7 +1,9 @@
 // This file lists metadata for chrome://flags entries. This metadata is not
 // ever used in the built browser or in any compiled code, but is used as part
 // of the review process and to clean up flags that have become obsolete or
-// unused.
+// unused. For more details, see:
+//
+//    https://sites.google.com/a/chromium.org/dev/flag-ownership
 //
 // This file is a list of json objects; each object contains these keys:
 //
@@ -11,7 +13,7 @@
 //   owners: the person(s) or team(s) responsible for this flag. The value is a
 //   list of strings, each of which is either an email address, or any other
 //   text, in which case it is assumed to be the username part of an
-//   @chromium.org email address.
+//   @chromium.org email address. This list must be nonempty.
 //
 //   expiry_milestone: the milestone after which this flag is obsolete.
 //   Specifically, after the milestone with the given number branches, this flag
@@ -21,8 +23,3273 @@
 
 [
   {
+    "name": "AffiliationBasedMatching",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "BundledConnectionHelp",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ChromeVoxArcSupport",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "PasswordImport",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ProtectSyncCredentialOnReauth",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "SupervisedUserCommittedInterstitials",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "WebRtcUseEchoCanceller3",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "account-consistency",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "allow-insecure-localhost",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "allow-nacl-socket-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "allow-previews",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "allow-remote-context-for-notifications",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "allow-sxg-certs-without-extension",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "allow-touchpad-three-finger-click",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "android-files-in-files-app",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "android-payment-apps",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "android-site-settings-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "arc-available-for-child",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "arc-boot-completed-broadcast",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "arc-file-picker-experiment",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "arc-input-method",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "arc-native-bridge-experiment",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "arc-usb-host",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "arc-vpn",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-debug-shortcuts",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-disable-login-dim-and-blur",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-disable-smooth-screen-rotation",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-enable-cursor-motion-blur",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-enable-docked-magnifier",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-enable-mirrored-screen",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-enable-night-light",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-enable-notification-expansion-animation",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-enable-notification-scroll-bar",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-enable-trilinear-filtering",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-enable-unified-desktop",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-keyboard-shortcut-viewer-app",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-shelf-color",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ash-shelf-color-scheme",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "auto-fetch-on-net-error-page",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-cache-query-responses",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-dropdown-layout",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-dynamic-forms",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-enable-company-name",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-enforce-min-required-fields-for-heuristics",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-enforce-min-required-fields-for-query",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-enforce-min-required-fields-for-upload",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-keyboard-accessory-view",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-no-local-save-on-upload-success",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-prefilled-fields",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-preview-style",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-primary-info-style",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-rationalize-repeated-server-predictions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autofill-restrict-formless-form-extraction",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "automatic-password-generation",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "automatic-tab-discarding",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "autoplay-policy",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "background-loader-for-downloads",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "background-task-component-update",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "bookmark-apps",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "bypass-app-banner-engagement-checks",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "calculate-native-win-occlusion",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "cct-module",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "cct-module-cache",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "cct-module-post-message",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "clear-old-browsing-data",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "click-to-open-pdf",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "clipboard-content-setting",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "composited-layer-borders",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "concurrent-background-loading-on-svelte",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "content-suggestions-category-order",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "content-suggestions-category-ranker",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "content-suggestions-debug-log",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "contextual-search",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "contextual-search-ml-tap-suppression",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "contextual-search-ranker-query",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "contextual-search-second-tap",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "contextual-search-unity-integration",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "contextual-suggestions-button",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "contextual-suggestions-iph-reverse-scroll",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "contextual-suggestions-opt-out",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "create-app-windows-in-app",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "cros-regions-mode",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "cross-process-guests",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "crostini-usb-support",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "data-saver-server-previews",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "debug-packed-apps",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "default-tile-height",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "default-tile-width",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "device-discovery-notifications",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "direct-manipulation-stylus",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-accelerated-2d-canvas",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-accelerated-mjpeg-decode",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-accelerated-video-decode",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-audio-support-for-desktop-share",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-captive-portal-bypass-proxy",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-cast-streaming-hw-encoding",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-cloud-import",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-cros-component",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-crostini-files",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-eol-notification",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-explicit-dma-fences",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-hosted-app-shim-creation",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-hosted-apps-in-windows",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-hyperlink-auditing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-ipc-flooding-protection",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-javascript-harmony-shipping",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-lock-screen-apps",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-mtp-write-support",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-multi-mirroring",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-new-korean-ime",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-new-zip-unpacker",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-office-editing-component-app",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-pull-to-refresh-effect",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-pushstate-throttle",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-software-rasterizer",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-system-timezone-automatic-detection",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-tablet-splitview",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-threaded-scrolling",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-touch-adjustment",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-voice-input",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-webrtc-hw-decoding",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disable-webrtc-hw-encoding",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disallow-doc-written-script-loads",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "disallow-unsafe-http-downloads",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "discover-app",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "document-passive-event-listeners",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "document-passive-wheel-event-listeners",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "dont-prefetch-libraries",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "doodles-on-local-ntp",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "double-tap-to-zoom-in-tablet-mode",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "download-home-v2",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "download-progress-infobar",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-accessibility-object-model",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-accessibility-tab-switcher",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-android-autofill-accessibility",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-android-pay-integration-v1",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-android-pay-integration-v2",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-android-spellchecker",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-app-banners",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-app-data-search",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-app-list-search-autocomplete",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-app-notification-status-messaging",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-app-shortcut-search",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-appcontainer",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-apps-grid-gap",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-arc-cups-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-arc-unified-audio-focus",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-assistant-voice-match",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-async-dns",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-async-image-decoding",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-audio-focus",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-account-wallet-storage",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-credit-card-ablation-experiment",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-credit-card-local-card-migration",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-credit-card-upload",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-credit-card-upload-editable-cardholder-name",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-credit-card-upload-editable-expiration-date",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-credit-card-upload-google-pay-on-android-branding",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-local-card-migration-show-feedback",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-manual-fallback",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-native-dropdown-views",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-refresh-style",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-save-card-dialog-unlabeled-expiration-date",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-save-card-sign-in-after-local-save",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-save-credit-card-uses-strike-system",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autofill-send-experiment-ids-in-payments-rpcs",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autoplay-ignore-web-audio",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-autoplay-unified-sound-settings",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-av1-decoder",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-background-blur",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ble-advertising-in-apps",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-blink-heap-unified-garbage-collection",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-bloated-renderer-detection",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-block-tab-unders",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-brotli",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-bulk-printers",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-canvas-2d-image-chromium",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-captive-portal-random-url",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-chrome-duet",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-chrome-memex",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-chromeos-account-manager",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-chromevox-developer-option",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-client-lo-fi",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-clipboard-provider",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-cloud-print-xps",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-cloud-printer-handler",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-command-line-on-non-rooted-devices",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-content-fullscreen",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-content-suggestions-new-favicon-server",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-content-suggestions-thumbnail-dominant-color",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-continue-reading",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-credit-card-assist",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-cros-ime-service",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-css-fragment-identifiers",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-custom-context-menu",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-custom-feedback-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-data-reduction-proxy-main-menu",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-data-reduction-proxy-savings-promo",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-data-reduction-proxy-server-experiment",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-data-reduction-proxy-with-network-service",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-datasaver-prompt",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-desktop-pwas",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-desktop-pwas-custom-tab-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-desktop-pwas-link-capturing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-desktop-pwas-stay-in-window",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-devtools-experiments",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-display-cutout-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-downloads-location-change",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-drag-apps-in-tablet-mode",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-drag-tabs-in-tablet-mode",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-draw-occlusion",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-drive-fs",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-drive-search-in-app-launcher",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-embedded-extension-options",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-emoji-context-menu",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-emoji-handwriting-voice-on-ime-menu",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-encryption-migration",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ephemeral-tab",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-experimental-accessibility-features",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-experimental-app-banners",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-experimental-crostini-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-experimental-fullscreen-exit-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-experimental-productivity-features",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-experimental-web-platform-features",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-fast-unload",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-first-run-ui-transitions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-floating-virtual-keyboard",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-font-cache-scaling",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-framebusting-needs-sameorigin-or-usergesture",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-fullscreen-handwriting-virtual-keyboard",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-fullscreen-in-tab-detaching",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-fullscreen-toolbar-reveal",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-future-v8-vm-features",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-gamepad-extensions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-gamepad-vibration",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-generic-sensor",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-generic-sensor-extra-classes",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-gpu-appcontainer",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-gpu-rasterization",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-hdr",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-heavy-page-capping",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-history-entry-requires-user-gesture",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-home-launcher",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-home-launcher-gestures",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-homepage-tile",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-horizontal-tab-switcher",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-hosted-app-quit-notification",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-html-base-username-detector",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-image-capture-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-improved-language-settings",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-incognito-window-counter",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-input-ime-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-javascript-harmony",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-layered-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-layout-ng",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-lazy-frame-loading",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-lazy-image-loading",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-lite-page-server-previews",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-lock-screen-notification",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-lookalike-url-navigation-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-mark-http-as",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-md-incognito-ntp",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-media-controls-expand-gesture",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-media-session-ash-media-keys",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-memory-coordinator",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-message-center-new-style-notification",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-modal-permission-dialog-view",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-modern-media-controls",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-myfiles-volume",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-nacl",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-nacl-debug",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-native-google-assistant",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-native-notifications",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-navigation-tracing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-network-logging-to-file",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-new-contacts-picker",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-new-photo-picker",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-new-print-preview",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-new-remote-playback-pipeline",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-new-style-launcher",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-noscript-previews",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-nostate-prefetch",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-notification-indicator",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ntlm-v2",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ntp-asset-download-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ntp-bookmark-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ntp-button",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ntp-offline-page-download-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ntp-remote-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ntp-snippets-increased-visibility",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ntp-suggestions-notifications",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-nup-printing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-offer-store-unmasked-wallet-cards",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-offline-auto-reload",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-offline-auto-reload-visible-only",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-offline-previews",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-omnibox-voice-search-always-visible",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-oobe-recommend-apps-screen",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-oop-rasterization",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-optimization-hints",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-origin-trials",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-osk-overscroll",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-overflow-icons-for-media-controls",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-overview-swipe-to-close",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-parallel-downloading",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-per-user-timezone",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-physical-keyboard-autocorrect",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-picture-in-picture",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-pinch",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-pixel-canvas-recording",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-play-store-search",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-policy-tool",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-potentially-annoying-security-features",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-previews-android-omnibox-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-print-preview-register-promos",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-query-in-omnibox",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-quic",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-reader-mode-in-cct",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-recurrent-interstitial",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-regional-locales-as-display-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-request-tablet-site",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-resampling-input-events",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-resampling-scroll-events",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-resource-load-scheduler",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-resource-loading-hints",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-scroll-anchor-serialization",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-send-tab-to-self",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-service-worker-imported-script-update-check",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-service-worker-long-running-message",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-service-worker-servicification",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-settings-shortcut-search",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-shill-sandboxing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-show-autofill-signatures",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-signed-http-exchange",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-simple-cache-backend",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-site-exploration-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-site-per-process",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sole-integration",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-special-locale",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-speculative-service-worker-start-on-query-input",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-spelling-feedback-field-trial",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-stylus-virtual-keyboard",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-suggestions-with-substring-match",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-surfacecontrol",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-surfaces-for-videos",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-app-list",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-apps",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-dictionary",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-extension-settings",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-extensions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-favicons",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-history-delete-directives",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-passwords",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-preferences",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-priority-preferences",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-search-engines",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-supervised-users",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-pseudo-uss-themes",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-user-consent-separate-type",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-uss-bookmarks",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-sync-uss-sessions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-system-webapps",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-tab-modal-js-dialog-android",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-tcp-fast-open",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-text-suggestions-touch-bar",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-touch-drag-drop",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-touchable-app-context-menu",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-touchscreen-calibration",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-ui-devtools",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-usbguard",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-use-zoom-for-dsf",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-usermedia-screen-capturing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-v8-context-snapshot",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-v8-orinoco",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-vaapi-jpeg-image-decode-acceleration",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-video-player-chromecast-support",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-virtual-keyboard",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-virtual-keyboard-md-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-virtual-keyboard-ukm",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-viz-display-compositor",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-viz-hit-test-draw-quad",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-web-authentication-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-web-authentication-ble-support",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-web-authentication-cable-support",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-web-authentication-ctap2-support",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-web-authentication-testing-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-web-authentication-touch-id",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-web-payments-method-section-order-v2",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-web-payments-single-app-ui-skip",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webassembly",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webassembly-baseline",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webassembly-threads",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webgl-draft-extensions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webnfc",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webrtc-h264-with-openh264-ffmpeg",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webrtc-hide-local-ips-with-mdns",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webrtc-hw-h264-encoding",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webrtc-hw-vp8-encoding",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webrtc-hybrid-agc",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webrtc-new-encode-cpu-load-estimator",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webrtc-remote-event-log",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webrtc-srtp-aes-gcm",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webrtc-srtp-encrypted-headers",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webrtc-stun-origin",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-websocket-auth-connection-reuse",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-webvr",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-wifi-credential-sync",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-zero-copy",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-zero-state-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-zero-suggest-redirect-to-chrome",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable_android_messages_integration",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable_android_messages_prod_endpoint",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable_unified_multidevice_settings",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable_unified_multidevice_setup",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enforce-tls13-downgrade",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enumerate-audio-devices",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "expensive-background-timer-throttling",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "explore-sites",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "extension-active-script-permission",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "extension-apis",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "extension-content-verification",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "extensions-on-chrome-urls",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "fcm-invalidations",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "file-manager-touch-mode",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "fill-on-account-select",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "force-color-profile",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "force-effective-connection-type",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "force-enable-home-page-button",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "force-enable-stylus-tools",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "force-pnacl-subzero",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "force-show-update-menu-badge",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "force-tablet-mode",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "force-text-direction",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "force-ui-direction",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "force-unified-consent-bump",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "force-update-menu-type",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "gdi-text-printing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "gesture-editing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "gesture-typing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "gpu-rasterization-msaa-sample-count",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "grant-notifications-to-dse",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "happiness-tracking-surveys-for-desktop",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "harmony-await-optimization",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "hide-active-apps-from-shelf",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "ignore-gpu-blacklist",
-    "owners": [ "graphics-dev" ],
-    "expiry_milestone": -1
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ignore-previews-blocklist",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "in-product-help-demo-mode-choice",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "incognito-strings",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "increase-input-audio-buffer-size",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "infinite-session-restore",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "input-view",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "instant-tethering",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "interest-feed-content-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "just-in-time-service-worker-payment-app",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "keep-prefetched-content-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "keyboard-lock-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "language-settings",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "lcd-text-aa",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "left-to-right-urls",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "load-media-router-component-extension",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "lsd-permission-prompt",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "mac-rtl",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "mac-v2-sandbox",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "mac-views-task-manager",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "mash",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "material-design-ink-drop-animation-speed",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "media-router-cast-allow-all-ips",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "memlog",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "memlog-keep-small-allocations",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "memlog-sampling",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "memlog-stack-mode",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "memory-pressure-thresholds",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "mhtml-generator-option",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "modal-permission-prompts",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "multidevice-service",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "nacl-debug-mask",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "network-portal-notification",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "network-service",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "network-service-in-process",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "new-audio-rendering-mixing-strategy",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "new-net-error-page-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "new-password-form-parsing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "new-password-form-parsing-for-saving",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "new-tab-button-position",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "new-usb-backend",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "newblue",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "no-credit-card-abort",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ntp-backgrounds",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ntp-custom-links",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ntp-icons",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ntp-ui-md",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "num-raster-threads",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-bookmarks",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-indicator-always-http-probe",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-indicator-choice",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-alternate-dino-page",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-ct",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-ct-suppress-completed-notification",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-ct-v2",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-failed-download",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-in-downloads-home-open-in-cct",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-limitless-prefetching",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-live-page-sharing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-load-signal-collecting",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-pending-download",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-prefetching",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-renovations",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-resource-based-snapshot",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offline-pages-sharing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "offlining-recent-pages",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-display-title-for-current-url",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-drive-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-new-answer-layout",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-pedal-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-reverse-answers",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-rich-entity-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-spare-renderer",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-tab-switch-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-tail-suggestions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-ui-elide-suggestion-url-after-host",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-ui-hide-steady-state-url-path-query-and-ref",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-ui-hide-steady-state-url-scheme",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-ui-hide-steady-state-url-trivial-subdomains",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-ui-jog-textfield-on-popup",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-ui-max-autocomplete-matches",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-ui-show-suggestion-favicons",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-ui-swap-title-and-url",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "openvr",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "opt-in-ime-menu",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "out-of-blink-cors",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "overlay-scrollbars",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "overlay-scrollbars-flash-after-scroll-update",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "overlay-scrollbars-flash-when-mouse-enter",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "overlay-strategies",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "overscroll-history-navigation",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "overscroll-start-threshold",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "page-almost-idle",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "passive-event-listeners-due-to-fling",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "passive-listener-default",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "password-search",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "passwords-keyboard-accessory",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "passwords-migrate-linux-to-login-db",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "pay-with-google-v1",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "pdf-form-save",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "pdf-isolation",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "per-method-can-make-payment-quota",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "postscript-printing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "proactive-tab-freeze-and-discard",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "progress-bar-throttle",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "protect-sync-credential",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "pull-to-refresh",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "pwa-improved-splash-screen",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "pwa-persistent-notification",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "quick-unlock-fingerprint",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "quick-unlock-pin",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "quick-unlock-pin-signin",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "reader-mode-heuristics",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "reduced-referrer-granularity",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "remove-navigation-history",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "reset-app-list-install-state",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "rewrite-leveldb-on-deletion",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "safe-browsing-use-local-blacklists-v2",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "safe-search-url-reporting",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "sampling-heap-profiler",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "save-page-as-mhtml",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "save-previous-document-resources-until",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "service-worker-payment-apps",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "set-market-url-for-testing",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "shared-array-buffer",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "shelf-hover-previews",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "show-autofill-type-predictions",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "show-managed-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "show-overdraw-feedback",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "show-saved-copy",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "show-taps",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "show-touch-hud",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "silent-debugger-extension-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "simplified-ntp",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "simplify-https-indicator",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "single-click-autofill",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "single-process-mash",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "single-tab-mode",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "site-characteristics-database",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "site-isolation-trial-opt-out",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "site-settings",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "slide-top-chrome-with-page-scrolls",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "smart-text-selection",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "smooth-scrolling",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "sound-content-setting",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "spannable-inline-autocomplete",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ssl-committed-interstitials",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "stop-in-background",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "stop-non-timers-in-background",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "sync-USS-autofill-profile",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "sync-USS-autofill-wallet-data",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "sync-standalone-transport",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "sync-support-secondary-account",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "sys-internals",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "system-keyboard-lock",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "tab-for-desktop-share",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "tab-strip-keyboard-focus",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "third-party-doodles",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "tint-gl-composited-content",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "tls13-variant",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "top-chrome-touch-ui",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "top-sites-from-site-engagement",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "touch-events",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "touch-selection-strategy",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "touchpad-overscroll-history-navigation",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "trace-export-events-to-etw",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "trace-upload-url",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "translate",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "translate-android-manual-trigger",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "translate-explicit-ask",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "translate-force-trigger-on-english",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "translate-ranker-enforcement",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "try-supported-channel-layouts",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ui-disable-partial-swap",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ui-show-composited-layer-borders",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "ui-slow-animations",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "unfiltered-bluetooth-devices",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "unified-consent",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "unsafely-treat-insecure-origin-as-secure",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "upcoming-ui-features",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "update-menu-item-custom-summary",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "use-angle",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "use-ddljson-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "use-google-local-ntp",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "use-monitor-color-space",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "use-multilogin-endpoint",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "use-new-accept-language-header",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "use-pdf-compositor-service-for-print",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "use-suggestions-even-if-few",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "use-sync-sandbox",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "use-winrt-midi-api",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "user-activation-v2",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "v8-cache-options",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "video-fullscreen-orientation-lock",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "video-rotate-to-fullscreen",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "views-cast-dialog",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "virtual-keyboard-overscroll",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "wake-on-wifi-packet",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "wallet-service-use-sandbox",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "web-payments",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "web-payments-modifiers",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "webrtc-unified-plan-by-default",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "webvr-vsync-align",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "webxr",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "webxr-gamepad-support",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "webxr-hit-test",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "webxr-orientation-sensor-device",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "webxr-render-path",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "windows10-custom-titlebar",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "xr-sandbox",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
   }
 ]

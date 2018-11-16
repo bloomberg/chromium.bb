@@ -2834,6 +2834,7 @@ test("unit_tests") {
   ]
 
   data = [
+    "../browser/flag-metadata.json",
     "data/",
     "//base/test/data/",
     "//chrome/third_party/mock4js/",
