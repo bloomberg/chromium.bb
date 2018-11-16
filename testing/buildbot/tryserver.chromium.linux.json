@@ -679,6 +679,21 @@
         },
         "test": "wtf_unittests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--num-retries=3"
+        ],
+        "isolate_coverage_data": true,
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 12
+        }
+      }
     ]
   }
 }
