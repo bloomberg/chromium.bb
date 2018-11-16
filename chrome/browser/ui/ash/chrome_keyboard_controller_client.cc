@@ -100,6 +100,12 @@ void ChromeKeyboardControllerClient::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void ChromeKeyboardControllerClient::NotifyKeyboardLoaded() {
+  is_keyboard_loaded_ = true;
+  for (auto& observer : observers_)
+    observer.OnKeyboardLoaded();
+}
+
 keyboard::mojom::KeyboardConfig
 ChromeKeyboardControllerClient::GetKeyboardConfig() {
   if (!cached_keyboard_config_) {

@@ -6,9 +6,6 @@
 #define UI_KEYBOARD_TEST_KEYBOARD_TEST_UTIL_H_
 
 #include "ui/aura/test/test_window_delegate.h"
-#include "ui/aura/window.h"
-#include "ui/base/ime/dummy_input_method.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_ui.h"
 
 namespace gfx {
@@ -22,9 +19,6 @@ bool WaitUntilShown();
 
 // Waits until the keyboard starts to hide, with possible pending animations.
 bool WaitUntilHidden();
-
-// Waits until the keyboard web contents has loaded.
-bool WaitUntilLoaded();
 
 // Returns true if the keyboard is about to show or already shown.
 bool IsKeyboardShowing();

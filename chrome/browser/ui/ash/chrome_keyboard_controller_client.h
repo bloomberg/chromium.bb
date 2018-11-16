@@ -37,7 +37,12 @@ class ChromeKeyboardControllerClient
 
     // Forwards the 'OnKeyboardVisibilityChanged' mojo observer method.
     // This is used by oobe and login to adjust the UI.
-    virtual void OnKeyboardVisibilityChanged(bool visible) = 0;
+    virtual void OnKeyboardVisibilityChanged(bool visible) {}
+
+    // Notifies observers when the keyboard content (i.e. the extension) has
+    // loaded. Note: if the content is already loaded when the observer is
+    // added, this will not be triggered, but see is_keyboard_loaded().
+    virtual void OnKeyboardLoaded() {}
   };
 
   // This class uses a static getter and only supports a single instance.
@@ -53,6 +58,10 @@ class ChromeKeyboardControllerClient
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // In Classic Ash, notifies this that the contents have loaded, triggering
+  // OnKeyboardLoaded.
+  void NotifyKeyboardLoaded();
 
   // Returns the cached KeyboardConfig value.
   keyboard::mojom::KeyboardConfig GetKeyboardConfig();
@@ -94,6 +103,7 @@ class ChromeKeyboardControllerClient
   aura::Window* GetKeyboardWindow() const;
 
   bool is_keyboard_enabled() { return is_keyboard_enabled_; }
+  bool is_keyboard_loaded() { return is_keyboard_loaded_; }
   bool is_keyboard_visible() { return is_keyboard_visible_; }
 
   void FlushForTesting();
@@ -129,6 +139,9 @@ class ChromeKeyboardControllerClient
 
   // Tracks the enabled state of the keyboard.
   bool is_keyboard_enabled_ = false;
+
+  // Tracks when the keyboard content has loaded.
+  bool is_keyboard_loaded_ = false;
 
   // Tracks the visible state of the keyboard.
   bool is_keyboard_visible_ = false;
