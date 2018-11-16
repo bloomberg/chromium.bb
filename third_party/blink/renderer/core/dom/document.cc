@@ -53,7 +53,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v0_custom_element_constructor_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_creation_options.h"
@@ -948,9 +948,9 @@ Element* Document::CreateElementForBinding(const AtomicString& name,
   return Element::Create(QualifiedName(g_null_atom, name, g_null_atom), this);
 }
 
-AtomicString GetTypeExtension(Document* document,
-                              const StringOrDictionary& string_or_options,
-                              ExceptionState& exception_state) {
+AtomicString GetTypeExtension(
+    Document* document,
+    const StringOrElementCreationOptions& string_or_options) {
   if (string_or_options.IsNull())
     return AtomicString();
 
@@ -960,12 +960,11 @@ AtomicString GetTypeExtension(Document* document,
     return AtomicString(string_or_options.GetAsString());
   }
 
-  if (string_or_options.IsDictionary()) {
-    Dictionary dict = string_or_options.GetAsDictionary();
-    v8::Local<v8::Value> value;
-    if (dict.HasProperty("is", exception_state) && dict.Get("is", value)) {
-      return ToCoreAtomicString(v8::Local<v8::String>::Cast(value));
-    }
+  if (string_or_options.IsElementCreationOptions()) {
+    const ElementCreationOptions& options =
+        *string_or_options.GetAsElementCreationOptions();
+    if (options.hasIs())
+      return AtomicString(options.is());
   }
 
   return AtomicString();
@@ -974,7 +973,7 @@ AtomicString GetTypeExtension(Document* document,
 // https://dom.spec.whatwg.org/#dom-document-createelement
 Element* Document::CreateElementForBinding(
     const AtomicString& local_name,
-    const StringOrDictionary& string_or_options,
+    const StringOrElementCreationOptions& string_or_options,
     ExceptionState& exception_state) {
   if (string_or_options.IsNull()) {
     return CreateElementForBinding(local_name, exception_state);
@@ -995,14 +994,14 @@ Element* Document::CreateElementForBinding(
                            ? html_names::xhtmlNamespaceURI
                            : g_null_atom);
 
-  bool is_v1 = string_or_options.IsDictionary() || !RegistrationContext();
-  bool create_v1_builtin = string_or_options.IsDictionary();
+  bool is_v1 =
+      string_or_options.IsElementCreationOptions() || !RegistrationContext();
+  bool create_v1_builtin = string_or_options.IsElementCreationOptions();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.IsString();
 
   // 3.
-  const AtomicString& is =
-      GetTypeExtension(this, string_or_options, exception_state);
+  const AtomicString& is = GetTypeExtension(this, string_or_options);
 
   // 5. Let element be the result of creating an element given ...
   Element* element =
@@ -1057,10 +1056,11 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 }
 
 // https://dom.spec.whatwg.org/#internal-createelementns-steps
-Element* Document::createElementNS(const AtomicString& namespace_uri,
-                                   const AtomicString& qualified_name,
-                                   const StringOrDictionary& string_or_options,
-                                   ExceptionState& exception_state) {
+Element* Document::createElementNS(
+    const AtomicString& namespace_uri,
+    const AtomicString& qualified_name,
+    const StringOrElementCreationOptions& string_or_options,
+    ExceptionState& exception_state) {
   if (string_or_options.IsNull())
     return createElementNS(namespace_uri, qualified_name, exception_state);
 
@@ -1070,14 +1070,14 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
   if (q_name == QualifiedName::Null())
     return nullptr;
 
-  bool is_v1 = string_or_options.IsDictionary() || !RegistrationContext();
-  bool create_v1_builtin = string_or_options.IsDictionary();
+  bool is_v1 =
+      string_or_options.IsElementCreationOptions() || !RegistrationContext();
+  bool create_v1_builtin = string_or_options.IsElementCreationOptions();
   bool should_create_builtin =
       create_v1_builtin || string_or_options.IsString();
 
   // 2.
-  const AtomicString& is =
-      GetTypeExtension(this, string_or_options, exception_state);
+  const AtomicString& is = GetTypeExtension(this, string_or_options);
 
   if (!IsValidElementName(this, qualified_name)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidCharacterError,
