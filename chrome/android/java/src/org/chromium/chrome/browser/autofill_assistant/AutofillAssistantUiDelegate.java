@@ -12,6 +12,7 @@ import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.media.ThumbnailUtils;
@@ -34,18 +35,16 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.json.JSONObject;
-
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill_assistant.ui.BottomBarAnimations;
 import org.chromium.chrome.browser.autofill_assistant.ui.TouchEventFilter;
 import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -53,14 +52,13 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /** Delegate to interact with the assistant UI. */
 class AutofillAssistantUiDelegate {
@@ -72,15 +70,20 @@ class AutofillAssistantUiDelegate {
     /** How long the snackbars created by {@link #showAutofillAssistantStoppedSnackbar} stay up. */
     static final int SNACKBAR_DELAY_MS = 5_000;
 
-    // TODO(crbug.com/806868): Use correct user locale and remove suppressions.
     @SuppressLint("ConstantLocale")
-    private static final SimpleDateFormat sDetailsTimeFormat =
-            new SimpleDateFormat("H:mma", Locale.getDefault());
+    private static final SimpleDateFormat sDetailsTimeFormat;
+    static {
+        DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault());
+        String timeFormatPattern =
+                (df instanceof SimpleDateFormat) ? ((SimpleDateFormat) df).toPattern() : "H:mm";
+        sDetailsTimeFormat = new SimpleDateFormat(timeFormatPattern, Locale.getDefault());
+    }
+
     @SuppressLint("ConstantLocale")
     private static final SimpleDateFormat sDetailsDateFormat =
             new SimpleDateFormat("EEE, MMM d", Locale.getDefault());
 
-    private final ChromeActivity mActivity;
+    private final CustomTabActivity mActivity;
     private final Client mClient;
     private final ViewGroup mCoordinatorView;
     private final View mFullContainer;
@@ -141,6 +144,14 @@ class AutofillAssistantUiDelegate {
         void onCardSelected(String guid);
 
         /**
+         * Called when button for acknowledging Details differ was clicked.
+         *
+         * @param displayedDetails Details that were shown.
+         * @param canContinue Whether the permission to continue was granted.
+         */
+        void onDetailsAcknowledged(Details displayedDetails, boolean canContinue);
+
+        /**
          * Returns current details.
          */
         Details getDetails();
@@ -197,107 +208,6 @@ class AutofillAssistantUiDelegate {
         }
     }
 
-    /**
-     * Java side equivalent of autofill_assistant::DetailsProto.
-     */
-    static class Details {
-        private final String mTitle;
-        private final String mUrl;
-        @Nullable
-        private final Date mDate;
-        private final String mDescription;
-        private final boolean mIsFinal;
-
-        private static final Details EMPTY_DETAILS = new Details("", "", null, "", false);
-
-        public Details(String title, String url, @Nullable Date date, String description,
-                boolean isFinal) {
-            this.mTitle = title;
-            this.mUrl = url;
-            this.mDate = date;
-            this.mDescription = description;
-            this.mIsFinal = isFinal;
-        }
-
-        String getTitle() {
-            return mTitle;
-        }
-
-        String getUrl() {
-            return mUrl;
-        }
-
-        @Nullable
-        Date getDate() {
-            return mDate;
-        }
-
-        String getDescription() {
-            return mDescription;
-        }
-
-        JSONObject toJSONObject() {
-            // Details are part of the feedback form, hence they need a JSON representation.
-            Map<String, String> movieDetails = new HashMap<>();
-            movieDetails.put("title", mTitle);
-            movieDetails.put("url", mUrl);
-            if (mDate != null) movieDetails.put("date", mDate.toString());
-            movieDetails.put("description", mDescription);
-            return new JSONObject(movieDetails);
-        }
-
-        /**
-         * Whether the details are not subject to change anymore. If set to false the animated
-         * placeholders will be displayed in place of missing data.
-         */
-        boolean isFinal() {
-            return mIsFinal;
-        }
-
-        boolean isEmpty() {
-            return mTitle.isEmpty() && mUrl.isEmpty() && mDescription.isEmpty() && mDate == null;
-        }
-
-        /**
-         * Returns true  {@code details} are similar to {@code this}. In order for details to be
-         * similar the conditions apply:
-         *
-         * <p>
-         * <ul>
-         *   <li> Same date.
-         *   <li> TODO(crbug.com/806868): 60% of characters match within title.
-         * </ul>
-         */
-        boolean isSimilarTo(AutofillAssistantUiDelegate.Details details) {
-            if (this.isEmpty() || details.isEmpty()) {
-                return true;
-            }
-
-            return this.getDate().equals(details.getDate());
-        }
-
-        static Details getEmptyDetails() {
-            return EMPTY_DETAILS;
-        }
-
-        /**
-         * Merges {@code oldDetails} with the {@code newDetails} filling the missing fields. The
-         * distinction is important, as the fields from old version take precedence, with the
-         * exception of isFinal field.
-         */
-        static Details merge(Details oldDetails, Details newDetails) {
-            String title =
-                    oldDetails.getTitle().isEmpty() ? newDetails.getTitle() : oldDetails.getTitle();
-            String url = oldDetails.getUrl().isEmpty() ? newDetails.getUrl() : oldDetails.getUrl();
-            Date date = oldDetails.getDate() == null ? newDetails.getDate() : oldDetails.getDate();
-            String description = oldDetails.getDescription().isEmpty()
-                    ? newDetails.getDescription()
-                    : oldDetails.getDescription();
-            boolean isFinal = newDetails.isFinal();
-            return new Details(title, url, date, description, isFinal);
-        }
-    }
-
     // Names borrowed from :
     // - https://guidelines.googleplex.com/googlematerial/components/chips.html
     // - https://guidelines.googleplex.com/googlematerial/components/buttons.html
@@ -309,7 +219,7 @@ class AutofillAssistantUiDelegate {
      * @param activity The ChromeActivity
      * @param client The client to forward events to
      */
-    public AutofillAssistantUiDelegate(ChromeActivity activity, Client client) {
+    public AutofillAssistantUiDelegate(CustomTabActivity activity, Client client) {
         mActivity = activity;
         mClient = client;
 
@@ -527,6 +437,13 @@ class AutofillAssistantUiDelegate {
         mBottomBarAnimations.hideCarousel();
     }
 
+    /**
+     * Closes the Chrome Custom Tab.
+     */
+    public void closeCustomTab() {
+        mActivity.finishAndClose(false);
+    }
+
     /** Called to show overlay. */
     public void showOverlay() {
         mTouchEventFilter.setEnableFiltering(true);
@@ -546,7 +463,11 @@ class AutofillAssistantUiDelegate {
         showStatusMessage(mActivity.getString(R.string.autofill_assistant_give_up));
     }
 
-    /** Called to show contextual information. */
+    /**
+     * Shows the details.
+     *
+     * <p>If some fields changed compared to the old details, the diff mode is entered.
+     * */
     public void showDetails(Details details) {
         Drawable defaultImage = AppCompatResources.getDrawable(
                 mActivity, R.drawable.autofill_assistant_default_details);
@@ -554,13 +475,12 @@ class AutofillAssistantUiDelegate {
         updateDetailsAnimation(details, (GradientDrawable) defaultImage);
 
         mDetailsTitle.setText(details.getTitle());
-        String detailsText = getDetailsText(details);
-        mDetailsText.setText(detailsText);
+        mDetailsText.setText(makeDetailsText(details));
 
         String url = details.getUrl();
         if (!url.isEmpty()) {
-            // The URL is safe given because it comes from the knowledge graph and is hosted on
-            // Google servers.
+            // The URL is safe because it comes from the knowledge graph and is hosted on Google
+            // servers.
             CachedImageFetcher.getInstance().fetchImage(url, image -> {
                 if (image != null) {
                     mDetailsImage.setImageDrawable(getRoundedImage(image));
@@ -580,6 +500,61 @@ class AutofillAssistantUiDelegate {
         // Make sure the Autofill Assistant is visible.
         show();
         mBottomBarAnimations.showDetails();
+
+        boolean shouldShowDiffMode = details.getFieldsChanged().size() > 0;
+        if (shouldShowDiffMode) {
+            enableDiffModeForDetails(details);
+        } else {
+            mClient.onDetailsAcknowledged(details, /* canContinue= */ true);
+        }
+    }
+
+    /**
+     * Shows additional UI elements asking to confirm details change.
+     *
+     * TODO(crbug.com/806868): Create own Controller for managing details state.
+     */
+    private void enableDiffModeForDetails(Details details) {
+        enableProgressBarPulsing();
+        // For detailsText we compare only Date.
+        if (details.getFieldsChanged().contains(Details.DetailsField.DATE)) {
+            mDetailsText.setTypeface(mDetailsText.getTypeface(), Typeface.BOLD_ITALIC);
+        } else {
+            mDetailsText.setTextColor(ApiCompatibilityUtils.getColor(
+                    mActivity.getResources(), R.color.modern_grey_300));
+        }
+
+        if (!details.getFieldsChanged().contains(Details.DetailsField.TITLE)) {
+            mDetailsTitle.setTextColor(ApiCompatibilityUtils.getColor(
+                    mActivity.getResources(), R.color.modern_grey_300));
+        }
+
+        // Show new UI parts.
+        String oldMessage = mClient.getStatusMessage();
+        showStatusMessage(mActivity.getString(R.string.autofill_assistant_details_differ));
+
+        ArrayList<View> childViews = new ArrayList<>();
+        TextView continueChip = createChipView(
+                mActivity.getString(R.string.continue_button), ChipStyle.BUTTON_FILLED);
+        continueChip.setOnClickListener(unusedView -> {
+            // Reset UI changes.
+            ApiCompatibilityUtils.setTextAppearance(mDetailsTitle, R.style.BlackCaptionDefault);
+            mDetailsTitle.setTypeface(mDetailsTitle.getTypeface(), Typeface.BOLD);
+            ApiCompatibilityUtils.setTextAppearance(mDetailsText, R.style.BlackCaption);
+            clearCarousel();
+            showStatusMessage(oldMessage);
+            disableProgressBarPulsing();
+
+            mClient.onDetailsAcknowledged(details, /* canContinue= */ true);
+        });
+        childViews.add(continueChip);
+        TextView cancelChip = createChipView(
+                mActivity.getString(R.string.autofill_assistant_details_differ_go_back),
+                ChipStyle.BUTTON_HAIRLINE);
+        cancelChip.setOnClickListener(
+                unusedView -> mClient.onDetailsAcknowledged(details, /* canContinue= */ false));
+        childViews.add(cancelChip);
+        setCarouselChildViews(childViews, /* alignRight= */ true);
     }
 
     private void updateDetailsAnimation(Details details, GradientDrawable defaultImage) {
@@ -613,7 +588,7 @@ class AutofillAssistantUiDelegate {
                 if (details.getTitle().isEmpty()) {
                     mDetailsTitle.setBackgroundColor((int) animation.getAnimatedValue());
                 }
-                if (getDetailsText(details).isEmpty()) {
+                if (makeDetailsText(details).isEmpty()) {
                     mDetailsText.setBackgroundColor((int) animation.getAnimatedValue());
                 }
                 defaultImage.setColor((int) animation.getAnimatedValue());
@@ -622,17 +597,18 @@ class AutofillAssistantUiDelegate {
         }
     }
 
-    private String getDetailsText(Details details) {
+    /** Creates text for display based on date and description.*/
+    private String makeDetailsText(Details details) {
         List<String> parts = new ArrayList<>();
+
         Date date = details.getDate();
         if (date != null) {
             parts.add(sDetailsTimeFormat.format(date).toLowerCase(Locale.getDefault()));
             parts.add(sDetailsDateFormat.format(date));
         }
 
-        String description = details.getDescription();
-        if (description != null && !description.isEmpty()) {
-            parts.add(description);
+        if (details.getDescription() != null && !details.getDescription().isEmpty()) {
+            parts.add(details.getDescription());
         }
 
         // TODO(crbug.com/806868): Use a view instead of this dot text.

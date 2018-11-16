@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_SHOW_DETAILS_ACTION_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
@@ -19,6 +20,11 @@ class ShowDetailsAction : public Action {
   // Overrides Action:
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
+  void OnShowDetails(ProcessActionCallback callback,
+                     ActionDelegate* delegate,
+                     bool can_continue);
+
+  base::WeakPtrFactory<ShowDetailsAction> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShowDetailsAction);
 };

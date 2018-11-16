@@ -138,6 +138,9 @@ class ActionDelegate {
   // Shut down Autofill Assistant at the end of the current script.
   virtual void Shutdown() = 0;
 
+  // Shut down Autofill Assistant and close the CCT.
+  virtual void CloseCustomTab() = 0;
+
   // Restart Autofill Assistant at the end of the current script with a cleared
   // state.
   virtual void Restart() = 0;
@@ -159,7 +162,8 @@ class ActionDelegate {
   virtual void HideDetails() = 0;
 
   // Show contextual information.
-  virtual bool ShowDetails(const DetailsProto& details) = 0;
+  virtual void ShowDetails(const DetailsProto& details,
+                           base::OnceCallback<void(bool)> callback) = 0;
 
   // Show the progress bar with |message| and set it at |progress|%.
   virtual void ShowProgressBar(int progress, const std::string& message) = 0;

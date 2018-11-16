@@ -205,6 +205,11 @@ void ScriptExecutor::Shutdown() {
   }
 }
 
+void ScriptExecutor::CloseCustomTab() {
+  at_end_ = CLOSE_CUSTOM_TAB;
+  should_stop_script_ = true;
+}
+
 void ScriptExecutor::Restart() {
   at_end_ = RESTART;
 }
@@ -234,8 +239,10 @@ void ScriptExecutor::HideDetails() {
   delegate_->GetUiController()->HideDetails();
 }
 
-bool ScriptExecutor::ShowDetails(const DetailsProto& details) {
-  return delegate_->GetUiController()->ShowDetails(details);
+void ScriptExecutor::ShowDetails(const DetailsProto& details,
+                                 base::OnceCallback<void(bool)> callback) {
+  return delegate_->GetUiController()->ShowDetails(details,
+                                                   std::move(callback));
 }
 
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
