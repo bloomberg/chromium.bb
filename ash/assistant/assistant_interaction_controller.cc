@@ -4,7 +4,6 @@
 
 #include "ash/assistant/assistant_interaction_controller.h"
 
-#include <map>
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller.h"
@@ -17,6 +16,7 @@
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/deep_link_util.h"
+#include "ash/assistant/util/histogram_util.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -233,6 +233,12 @@ void AssistantInteractionController::OnMicStateChanged(MicState mic_state) {
     Shell::Get()->accessibility_controller()->SilenceSpokenFeedback();
 }
 
+void AssistantInteractionController::OnResponseChanged(
+    const std::shared_ptr<AssistantResponse>& response) {
+  assistant::util::IncrementAssistantQueryCountForEntryPoint(
+      assistant_controller_->ui_controller()->model()->entry_point());
+}
+
 void AssistantInteractionController::OnResponseDestroying(
     AssistantResponse& response) {
   response.RemoveObserver(this);
@@ -254,6 +260,13 @@ void AssistantInteractionController::OnResponseDestroying(
 
 void AssistantInteractionController::OnInteractionStarted(
     bool is_voice_interaction) {
+  if (is_voice_interaction) {
+    // If the Assistant UI is not visible yet, and |is_voice_interaction| is
+    // true, then it will be sure that Assistant is fired via OKG. ShowUi will
+    // not update the Assistant entry point if the UI is already visible.
+    assistant_controller_->ui_controller()->ShowUi(AssistantSource::kHotword);
+  }
+
   model_.SetInteractionState(InteractionState::kActive);
 
   // In the case of a voice interaction, we assume that the mic is open and

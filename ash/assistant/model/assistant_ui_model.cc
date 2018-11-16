@@ -36,6 +36,10 @@ void AssistantUiModel::SetVisibility(AssistantVisibility visibility,
   const AssistantVisibility old_visibility = visibility_;
   visibility_ = visibility;
 
+  // Cache the Assistant entry point used for query count UMA metric.
+  if (visibility == AssistantVisibility::kVisible)
+    entry_point_ = source;
+
   NotifyUiVisibilityChanged(old_visibility, source);
 }
 

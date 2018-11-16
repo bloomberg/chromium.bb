@@ -112,7 +112,7 @@ void AssistantUiController::OnInteractionStateChanged(
 
   // If there is an active interaction, we need to show Assistant UI if it is
   // not already showing. We don't have enough information here to know what
-  // the interaction source is, but at the moment we have no need to know.
+  // the interaction source is.
   ShowUi(AssistantSource::kUnspecified);
 }
 

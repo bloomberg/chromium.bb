@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_ASSISTANT_INTERACTION_CONTROLLER_H_
 #define ASH_ASSISTANT_ASSISTANT_INTERACTION_CONTROLLER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -68,6 +69,8 @@ class AssistantInteractionController
   void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnInputModalityChanged(InputModality input_modality) override;
   void OnMicStateChanged(MicState mic_state) override;
+  void OnResponseChanged(
+      const std::shared_ptr<AssistantResponse>& response) override;
 
   // AssistantResponseObserver:
   void OnResponseDestroying(AssistantResponse& response) override;
