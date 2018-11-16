@@ -124,6 +124,12 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'in-parameter-passed-as-inout-argument-and-global.html',
         ['nvidia'], bug=792210)
 
+    # Newly introduced flaky failure.
+    # TODO(kbr): re-enable after fixing test.
+    self.Flaky('conformance/textures/misc/' +
+               'canvas-teximage-after-multiple-drawimages.html',
+               bug=905682)
+
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
     self.Skip('conformance/rendering/texture-switch-performance.html',
