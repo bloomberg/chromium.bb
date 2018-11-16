@@ -652,6 +652,7 @@ PDFViewer.prototype = {
     document.documentElement.dir = strings.textdirection;
     document.documentElement.lang = strings.language;
 
+    loadTimeData.data = strings;
     $('toolbar').strings = strings;
     $('zoom-toolbar').strings = strings;
     $('password-screen').strings = strings;
@@ -798,6 +799,9 @@ PDFViewer.prototype = {
    * @private
    */
   saveData_: function(messageData) {
+    if (!loadTimeData.getBoolean('pdfFormSaveEnabled'))
+      throw new Error('Internal error: save not enabled.');
+
     // Verify a token that was created by this instance is included to avoid
     // being spammed.
     if (!this.pendingTokens_.delete(messageData.token))
