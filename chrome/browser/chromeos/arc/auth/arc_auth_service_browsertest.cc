@@ -497,10 +497,12 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, AccountRemovalsArePropagated) {
 
   EXPECT_EQ(0, auth_instance().num_account_removed_calls_);
 
-  chromeos::AccountManager::AccountKey account_key{
-      kSecondaryAccountGaiaId,
-      chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
-  auth_service().OnAccountRemoved(account_key);
+  AccountTrackerService* account_tracker_service =
+      AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile());
+  const std::string account_id =
+      account_tracker_service->FindAccountInfoByEmail(kSecondaryAccountEmail)
+          .account_id;
+  account_tracker_service->RemoveAccount(account_id);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, auth_instance().num_account_removed_calls_);

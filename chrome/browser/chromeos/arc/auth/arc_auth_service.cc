@@ -196,6 +196,13 @@ ArcAuthService::ArcAuthService(content::BrowserContext* browser_context,
 
   ArcSessionManager::Get()->AddObserver(this);
 
+  // |ArcAuthService| needs to listen on |AccountTrackerService| for account
+  // removals (See crbug.com/904978) and |AccountManager| for account updates
+  // (|ArcAuthService| cannot rely on |AccountTrackerService| for account
+  // updates because |AccountTrackerService| does not notify its observers when
+  // an account's LST changes).
+  account_tracker_service_->AddObserver(this);
+
   if (chromeos::switches::IsAccountManagerEnabled()) {
     // TODO(sinhak): This will need to be independent of Profile, when
     // Multi-Profile on Chrome OS is launched.
@@ -210,6 +217,7 @@ ArcAuthService::~ArcAuthService() {
   if (chromeos::switches::IsAccountManagerEnabled())
     account_manager_->RemoveObserver(this);
 
+  account_tracker_service_->RemoveObserver(this);
   ArcSessionManager::Get()->RemoveObserver(this);
   arc_bridge_service_->auth()->RemoveObserver(this);
   arc_bridge_service_->auth()->SetHost(nullptr);
@@ -466,9 +474,18 @@ void ArcAuthService::OnTokenUpserted(
 
 void ArcAuthService::OnAccountRemoved(
     const chromeos::AccountManager::AccountKey& account_key) {
+  // Ignore this notification. We depend on
+  // |AccountTrackerService::Observer::OnAccountRemoved| for account removal
+  // notifications. See crbug.com/904978.
+}
+
+void ArcAuthService::OnAccountRemoved(const AccountInfo& account_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  DCHECK(!IsPrimaryAccount(account_key));
+  DCHECK(!account_info.gaia.empty());
+  DCHECK(!IsPrimaryAccount(chromeos::AccountManager::AccountKey{
+      account_info.gaia /* id */, chromeos::account_manager::AccountType::
+                                      ACCOUNT_TYPE_GAIA /* account_type */}));
 
   // Ignore the update if ARC has not been provisioned yet.
   if (!arc::IsArcProvisioned(profile_))
@@ -479,10 +496,9 @@ void ArcAuthService::OnAccountRemoved(
   if (!instance)
     return;
 
-  const std::string account_name =
-      account_mapper_util_.AccountKeyToGaiaAccountInfo(account_key).email;
-  DCHECK(!account_name.empty());
-  instance->OnAccountUpdated(account_name, mojom::AccountUpdateType::REMOVAL);
+  DCHECK(!account_info.email.empty());
+  instance->OnAccountUpdated(account_info.email,
+                             mojom::AccountUpdateType::REMOVAL);
 }
 
 void ArcAuthService::OnArcInitialStart() {

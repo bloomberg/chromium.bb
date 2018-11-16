@@ -20,8 +20,8 @@
 #include "components/arc/common/auth.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 
-class AccountTrackerService;
 class Profile;
 
 namespace content {
@@ -44,6 +44,7 @@ class ArcAuthService : public KeyedService,
                        public mojom::AuthHost,
                        public ConnectionObserver<mojom::AuthInstance>,
                        public chromeos::AccountManager::Observer,
+                       public AccountTrackerService::Observer,
                        public ArcSessionManager::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
@@ -86,6 +87,9 @@ class ArcAuthService : public KeyedService,
       const chromeos::AccountManager::AccountKey& account_key) override;
   void OnAccountRemoved(
       const chromeos::AccountManager::AccountKey& account_key) override;
+
+  // AccountTrackerService::Observer:
+  void OnAccountRemoved(const AccountInfo& account_info) override;
 
   // ArcSessionManager::Observer:
   void OnArcInitialStart() override;
