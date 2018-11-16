@@ -54,16 +54,20 @@ class SamplingAllocatorShimsTest : public base::MultiProcessTest {
 };
 
 // Return whether some of the allocations returned by the calling the allocate
-// parameter are sampled to the guarded allocator.
+// parameter are sampled to the guarded allocator. Keep count of failures
+// encountered.
 bool allocationCheck(std::function<void*(void)> allocate,
-                     std::function<void(void*)> free) {
+                     std::function<void(void*)> free,
+                     int* failures) {
   size_t guarded = 0;
   size_t unguarded = 0;
   for (size_t i = 0; i < kLoopIterations; i++) {
     std::unique_ptr<void, decltype(free)> alloc(allocate(), free);
     EXPECT_NE(alloc.get(), nullptr);
-    if (!alloc.get())
+    if (!alloc.get()) {
+      *failures += 1;
       return false;
+    }
 
     if (GetGpaForTesting().PointerIsMine(alloc.get()))
       guarded++;
@@ -71,46 +75,57 @@ bool allocationCheck(std::function<void*(void)> allocate,
       unguarded++;
   }
 
-  return guarded > 0 && unguarded > 0;
+  if (guarded > 0 && unguarded > 0)
+    return true;
+
+  *failures += 1;
+  return false;
 }
 
 MULTIPROCESS_TEST_MAIN(BasicFunctionality) {
   InstallAllocatorHooks(GuardedPageAllocator::kGpaMaxPages, kSamplingFrequency);
 
   const size_t page_size = base::GetPageSize();
+  int failures = 0;
 
-  EXPECT_TRUE(allocationCheck([&] { return malloc(page_size); }, &free));
-  EXPECT_TRUE(allocationCheck([&] { return calloc(1, page_size); }, &free));
   EXPECT_TRUE(
-      allocationCheck([&] { return realloc(nullptr, page_size); }, &free));
+      allocationCheck([&] { return malloc(page_size); }, &free, &failures));
+  EXPECT_TRUE(
+      allocationCheck([&] { return calloc(1, page_size); }, &free, &failures));
+  EXPECT_TRUE(allocationCheck([&] { return realloc(nullptr, page_size); },
+                              &free, &failures));
 
-#if defined(OS_WIN)
+#if !defined(OS_WIN)
   EXPECT_TRUE(allocationCheck(
-      [&] { return _aligned_malloc(page_size, page_size); }, &_aligned_free));
-  EXPECT_TRUE(allocationCheck([&] { return _aligned_malloc(page_size, 1); },
-                              &_aligned_free));
-#else
-  EXPECT_TRUE(allocationCheck(
-      [&] { return aligned_alloc(page_size, page_size); }, &free));
-  EXPECT_TRUE(
-      allocationCheck([&] { return aligned_alloc(1, page_size); }, &free));
+      [&] { return aligned_alloc(page_size, page_size); }, &free, &failures));
+  EXPECT_TRUE(allocationCheck([&] { return aligned_alloc(1, page_size); },
+                              &free, &failures));
 #endif
 
-  EXPECT_TRUE(
-      allocationCheck([&] { return std::malloc(page_size); }, &std::free));
-  EXPECT_TRUE(
-      allocationCheck([&] { return std::calloc(1, page_size); }, &std::free));
+  EXPECT_TRUE(allocationCheck([&] { return std::malloc(page_size); },
+                              &std::free, &failures));
+  EXPECT_TRUE(allocationCheck([&] { return std::calloc(1, page_size); },
+                              &std::free, &failures));
   EXPECT_TRUE(allocationCheck([&] { return std::realloc(nullptr, page_size); },
-                              &std::free));
+                              &std::free, &failures));
 
   EXPECT_TRUE(allocationCheck([] { return new int; },
-                              [](void* ptr) { delete (int*)ptr; }));
+                              [](void* ptr) { delete (int*)ptr; }, &failures));
   EXPECT_TRUE(allocationCheck([] { return new int[4]; },
-                              [](void* ptr) { delete[](int*) ptr; }));
+                              [](void* ptr) { delete[](int*) ptr; },
+                              &failures));
 
-  EXPECT_FALSE(allocationCheck([&] { return malloc(page_size + 1); }, &free));
+  if (failures)
+    return kFailure;
 
-  return kSuccess;
+  EXPECT_FALSE(
+      allocationCheck([&] { return malloc(page_size + 1); }, &free, &failures));
+
+  // Make sure exactly 1 negative test case was hit.
+  if (failures == 1)
+    return kSuccess;
+
+  return kFailure;
 }
 
 TEST_F(SamplingAllocatorShimsTest, BasicFunctionality) {
