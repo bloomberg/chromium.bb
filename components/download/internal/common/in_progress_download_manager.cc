@@ -355,9 +355,8 @@ void InProgressDownloadManager::StartDownloadWithItem(
     base::Optional<DownloadDBEntry> entry_opt =
         download_db_cache_->RetrieveEntry(download->GetGuid());
     if (!entry_opt.has_value()) {
-      download_db_cache_->AddOrReplaceEntry(CreateDownloadDBEntryFromItem(
-          *download, UkmInfo(info->download_source, GetUniqueDownloadId()),
-          info->fetch_error_body, info->request_headers));
+      download_db_cache_->AddOrReplaceEntry(
+          CreateDownloadDBEntryFromItem(*download));
     }
     download->RemoveObserver(download_db_cache_.get());
     download->AddObserver(download_db_cache_.get());

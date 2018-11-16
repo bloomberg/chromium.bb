@@ -10,6 +10,7 @@
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_item_impl.h"
 #include "components/download/public/common/download_source.h"
 #include "components/download/public/common/resume_mode.h"
 #include "net/base/net_errors.h"
@@ -67,20 +68,9 @@ COMPONENTS_DOWNLOAD_EXPORT int GetLoadFlags(DownloadUrlParameters* params,
 COMPONENTS_DOWNLOAD_EXPORT std::unique_ptr<net::HttpRequestHeaders>
 GetAdditionalRequestHeaders(DownloadUrlParameters* params);
 
-// Helper functions for DownloadItem -> DownloadEntry for InProgressCache.
-COMPONENTS_DOWNLOAD_EXPORT DownloadEntry CreateDownloadEntryFromItem(
-    const DownloadItem& item,
-    const std::string& request_origin,
-    DownloadSource download_source,
-    bool fetch_error_body,
-    const DownloadUrlParameters::RequestHeadersType& request_headers);
-
 // Helper functions for DownloadItem -> DownloadDBEntry for DownloadDB.
-COMPONENTS_DOWNLOAD_EXPORT DownloadDBEntry CreateDownloadDBEntryFromItem(
-    const DownloadItem& item,
-    const UkmInfo& ukm_info,
-    bool fetch_error_body,
-    const DownloadUrlParameters::RequestHeadersType& request_headers);
+COMPONENTS_DOWNLOAD_EXPORT DownloadDBEntry
+CreateDownloadDBEntryFromItem(const DownloadItemImpl& item);
 
 // Helper function to convert DownloadDBEntry to DownloadEntry.
 // TODO(qinmin): remove this function after DownloadEntry is deprecated.

@@ -10,7 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
-#include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
@@ -350,22 +349,7 @@ std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
   return headers;
 }
 
-DownloadEntry CreateDownloadEntryFromItem(
-    const DownloadItem& item,
-    const std::string& request_origin,
-    DownloadSource download_source,
-    bool fetch_error_body,
-    const DownloadUrlParameters::RequestHeadersType& request_headers) {
-  return DownloadEntry(item.GetGuid(), request_origin, download_source,
-                       fetch_error_body, request_headers,
-                       GetUniqueDownloadId());
-}
-
-DownloadDBEntry CreateDownloadDBEntryFromItem(
-    const DownloadItem& item,
-    const UkmInfo& ukm_info,
-    bool fetch_error_body,
-    const DownloadUrlParameters::RequestHeadersType& request_headers) {
+DownloadDBEntry CreateDownloadDBEntryFromItem(const DownloadItemImpl& item) {
   DownloadDBEntry entry;
   DownloadInfo download_info;
   download_info.guid = item.GetGuid();
@@ -376,8 +360,8 @@ DownloadDBEntry CreateDownloadDBEntryFromItem(
   in_progress_info.site_url = item.GetSiteUrl();
   in_progress_info.tab_url = item.GetTabUrl();
   in_progress_info.tab_referrer_url = item.GetTabReferrerUrl();
-  in_progress_info.fetch_error_body = fetch_error_body;
-  in_progress_info.request_headers = request_headers;
+  in_progress_info.fetch_error_body = item.fetch_error_body();
+  in_progress_info.request_headers = item.request_headers();
   in_progress_info.etag = item.GetETag();
   in_progress_info.last_modified = item.GetLastModifiedTime();
   in_progress_info.mime_type = item.GetMimeType();
@@ -399,7 +383,8 @@ DownloadDBEntry CreateDownloadDBEntryFromItem(
 
   download_info.in_progress_info = in_progress_info;
 
-  download_info.ukm_info = ukm_info;
+  download_info.ukm_info =
+      UkmInfo(item.download_source(), item.ukm_download_id());
   entry.download_info = download_info;
   return entry;
 }
