@@ -137,6 +137,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void ScrollPlugin(int id_to_make_visible);
   ax::mojom::EventFrom GetEventFrom();
   void ScheduleSendAccessibilityEventsIfNeeded();
+  void RecordImageMetrics(AXContentTreeUpdate* update);
 
   // The RenderFrameImpl that owns us.
   RenderFrameImpl* render_frame_;
