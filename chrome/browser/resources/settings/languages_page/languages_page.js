@@ -226,10 +226,8 @@ Polymer({
       menu.querySelector('#uiLanguageItem').hidden = true;
 
     // The UI language choice doesn't persist for guests.
-    if (loadTimeData.getBoolean('isGuest') &&
-        !loadTimeData.getBoolean('isDemoSession')) {
+    if (loadTimeData.getBoolean('isGuest'))
       menu.querySelector('#uiLanguageItem').hidden = true;
-    }
   },
 
   /**
