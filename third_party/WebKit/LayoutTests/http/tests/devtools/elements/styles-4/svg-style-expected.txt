@@ -13,6 +13,6 @@ svg:rect[Attributes Style] { ()
 
 [expanded] 
 :not(svg), :not(foreignObject) > svg { (user agent stylesheet)
-    transform-origin: 0px 0px 0px;
+    transform-origin: 0px 0px;
 
 

@@ -1510,15 +1510,20 @@ TransformOrigin StyleBuilderConverter::ConvertTransformOrigin(
     StyleResolverState& state,
     const CSSValue& value) {
   const CSSValueList& list = ToCSSValueList(value);
-  DCHECK_EQ(list.length(), 3U);
+  DCHECK_GE(list.length(), 2u);
   DCHECK(list.Item(0).IsPrimitiveValue() || list.Item(0).IsIdentifierValue());
   DCHECK(list.Item(1).IsPrimitiveValue() || list.Item(1).IsIdentifierValue());
-  DCHECK(list.Item(2).IsPrimitiveValue());
+  float z = 0;
+  if (list.length() == 3) {
+    DCHECK(list.Item(2).IsPrimitiveValue());
+    z = StyleBuilderConverter::ConvertComputedLength<float>(state,
+                                                            list.Item(2));
+  }
 
   return TransformOrigin(
       ConvertPositionLength<CSSValueLeft, CSSValueRight>(state, list.Item(0)),
       ConvertPositionLength<CSSValueTop, CSSValueBottom>(state, list.Item(1)),
-      StyleBuilderConverter::ConvertComputedLength<float>(state, list.Item(2)));
+      z);
 }
 
 ScrollSnapType StyleBuilderConverter::ConvertSnapType(StyleResolverState&,

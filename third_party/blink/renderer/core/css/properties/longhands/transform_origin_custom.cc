@@ -30,11 +30,8 @@ const CSSValue* TransformOrigin::ParseSingleValue(
     list->Append(*result_y);
     CSSValue* result_z = css_property_parser_helpers::ConsumeLength(
         range, context.Mode(), kValueRangeAll);
-    if (!result_z) {
-      result_z =
-          CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kPixels);
-    }
-    list->Append(*result_z);
+    if (result_z)
+      list->Append(*result_z);
     return list;
   }
   return nullptr;
