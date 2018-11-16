@@ -27,6 +27,7 @@ namespace tracing {
 namespace {
 
 const size_t kTraceEventBufferSizeInBytes = 100 * 1024;
+const size_t kPerfettoRingbufferSizeInKBs = 1024 * 300;
 
 void AppendProtoArrayAsJSON(std::string* out,
                             const perfetto::protos::ChromeTracedValue& array);
@@ -288,7 +289,7 @@ JSONTraceExporter::JSONTraceExporter(const std::string& config,
 
   // Start tracing.
   perfetto::TraceConfig trace_config;
-  trace_config.add_buffers()->set_size_kb(4096 * 100);
+  trace_config.add_buffers()->set_size_kb(kPerfettoRingbufferSizeInKBs);
 
   auto* trace_event_config = trace_config.add_data_sources()->mutable_config();
   trace_event_config->set_name(mojom::kTraceEventDataSourceName);
