@@ -100,8 +100,9 @@ std::unique_ptr<UiDevToolsServer> UiDevToolsServer::CreateForViews(
     int port = GetUiDevToolsPort(enable_devtools_flag, default_port);
     server = base::WrapUnique(new UiDevToolsServer(port, kUIDevtoolsServerTag));
     network::mojom::TCPServerSocketPtr server_socket;
-    CreateTCPServerSocket(mojo::MakeRequest(&server_socket), network_context,
-                          port, kUIDevtoolsServerTag,
+    auto request = mojo::MakeRequest(&server_socket);
+    CreateTCPServerSocket(std::move(request), network_context, port,
+                          kUIDevtoolsServerTag,
                           base::BindOnce(&UiDevToolsServer::MakeServer,
                                          server->weak_ptr_factory_.GetWeakPtr(),
                                          std::move(server_socket)));

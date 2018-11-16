@@ -177,7 +177,10 @@ test("components_unittests") {
   ]
 
   if (toolkit_views && use_aura) {
-    deps += [ "//components/ui_devtools/views:unit_tests" ]
+    deps += [
+      "//components/ui_devtools:unit_tests",
+      "//components/ui_devtools/views:unit_tests",
+    ]
   }
 
   if (enable_nacl) {
