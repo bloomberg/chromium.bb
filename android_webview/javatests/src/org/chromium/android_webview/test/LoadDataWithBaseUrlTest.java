@@ -544,4 +544,31 @@ public class LoadDataWithBaseUrlTest {
                 RecordHistogram.getHistogramValueCountForTesting(
                         AwContents.DATA_BASE_URL_SCHEME_HISTOGRAM_NAME, expectedSchemeEnum));
     }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testWindowOriginForHttpSchemeUrl() throws Throwable {
+        String baseUri = "https://google.com";
+        AwSettings contentSettings = mActivityTestRule.getAwSettingsOnUiThread(mAwContents);
+        contentSettings.setJavaScriptEnabled(true);
+        loadDataWithBaseUrlSync("", "text/html", false, baseUri, null);
+        Assert.assertEquals("\"https://google.com\"",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        mAwContents, mContentsClient, "window.origin;"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testWindowOriginForCustomSchemeUrl() throws Throwable {
+        String baseUri = "x-thread://-86516399/2465766146407674724";
+        AwSettings contentSettings = mActivityTestRule.getAwSettingsOnUiThread(mAwContents);
+        contentSettings.setJavaScriptEnabled(true);
+        loadDataWithBaseUrlSync("", "text/html", false, baseUri, null);
+        // TODO(dcheng): https://crbug.com/896059 this should be fixed as "x-thread://".
+        Assert.assertEquals("\"null\"",
+                mActivityTestRule.executeJavaScriptAndWaitForResult(
+                        mAwContents, mContentsClient, "window.origin;"));
+    }
 }
