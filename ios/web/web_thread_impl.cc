@@ -17,10 +17,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_executor.h"
-#include "base/threading/thread_restrictions.h"
 #include "ios/web/public/web_task_traits.h"
 #include "ios/web/public/web_thread_delegate.h"
-#include "net/url_request/url_fetcher.h"
 
 namespace web {
 
@@ -223,11 +221,6 @@ void WebThreadImpl::Init() {
         base::subtle::NoBarrier_Load(&globals.io_thread_delegate);
     if (delegate)
       reinterpret_cast<WebThreadDelegate*>(delegate)->Init();
-
-    // Though this thread is called the "IO" thread, it actually just routes
-    // messages around; it shouldn't be allowed to perform any blocking disk
-    // I/O.
-    base::DisallowUnresponsiveTasks();
   }
 }
 
@@ -262,8 +255,6 @@ void WebThreadImpl::Run(base::RunLoop* run_loop) {
 
 void WebThreadImpl::CleanUp() {
   if (identifier_ == WebThread::IO) {
-    IOThreadPreCleanUp();
-
     WebThreadGlobals& globals = g_globals.Get();
     WebThreadDelegateAtomicPtr delegate =
         base::subtle::NoBarrier_Load(&globals.io_thread_delegate);
@@ -279,14 +270,6 @@ void WebThreadImpl::Initialize() {
   DCHECK(identifier_ >= 0 && identifier_ < ID_COUNT);
   DCHECK(globals.threads[identifier_] == nullptr);
   globals.threads[identifier_] = this;
-}
-
-void WebThreadImpl::IOThreadPreCleanUp() {
-  // Kill all things that might be holding onto
-  // net::URLRequest/net::URLRequestContexts.
-
-  // Destroy all URLRequests started by URLFetchers.
-  net::URLFetcher::CancelAll();
 }
 
 WebThreadImpl::~WebThreadImpl() {

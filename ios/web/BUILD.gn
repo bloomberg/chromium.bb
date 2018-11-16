@@ -71,6 +71,8 @@ source_set("web") {
     "url_util.cc",
     "web_client.mm",
     "web_kit_constants.cc",
+    "web_sub_thread.cc",
+    "web_sub_thread.h",
     "web_thread_impl.cc",
     "web_thread_impl.h",
     "web_view_creation_util.mm",
