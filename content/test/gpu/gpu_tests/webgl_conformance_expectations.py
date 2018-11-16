@@ -668,6 +668,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/renderbuffers/' +
         'stencil-renderbuffer-initialization.html',
         ['linux', 'passthrough', 'amd'], bug=794339)
+    self.Fail('conformance/rendering/' +
+        'draw-webgl-to-canvas-2d-repeatedly.html',
+        ['linux', 'amd', 'passthrough'], bug=906066)
 
     ####################
     # Android failures #
