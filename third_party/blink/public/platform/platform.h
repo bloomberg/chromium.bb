@@ -344,7 +344,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // get a factory bundle from the browser process, and compose a new factory
   // using both the bundle and this default.
   //
-  // TODO(kinuko): See if we can deprecate this too.
+  // TODO(kinuko): https://crbug.com/891872: See if we can deprecate this too.
   virtual std::unique_ptr<WebURLLoaderFactory> CreateDefaultURLLoaderFactory() {
     return nullptr;
   }
