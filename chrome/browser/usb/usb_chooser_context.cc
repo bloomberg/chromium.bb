@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
@@ -279,15 +280,16 @@ bool UsbChooserContext::HasDevicePermission(
 
 void UsbChooserContext::GetDevices(
     device::mojom::UsbDeviceManager::GetDevicesCallback callback) {
-  if (is_initialized_) {
-    std::vector<device::mojom::UsbDeviceInfoPtr> device_list;
-    for (const auto& pair : devices_) {
-      device_list.push_back(pair.second->Clone());
-    }
-    std::move(callback).Run(std::move(device_list));
-  } else {
+  if (!is_initialized_) {
     pending_get_devices_requests_.push(std::move(callback));
+    return;
   }
+
+  std::vector<device::mojom::UsbDeviceInfoPtr> device_list;
+  for (const auto& pair : devices_)
+    device_list.push_back(pair.second->Clone());
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(device_list)));
 }
 
 void UsbChooserContext::GetDevice(
