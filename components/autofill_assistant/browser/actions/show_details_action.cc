@@ -11,7 +11,8 @@
 
 namespace autofill_assistant {
 
-ShowDetailsAction::ShowDetailsAction(const ActionProto& proto) : Action(proto) {
+ShowDetailsAction::ShowDetailsAction(const ActionProto& proto)
+    : Action(proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_show_details());
 }
 
@@ -24,9 +25,20 @@ void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
     UpdateProcessedAction(ACTION_APPLIED);
     std::move(callback).Run(std::move(processed_action_proto_));
   } else {
-    bool result = delegate->ShowDetails(proto_.show_details().details());
-    UpdateProcessedAction(result ? ACTION_APPLIED : OTHER_ACTION_STATUS);
-    std::move(callback).Run(std::move(processed_action_proto_));
+    delegate->ShowDetails(proto_.show_details().details(),
+                          base::BindOnce(&ShowDetailsAction::OnShowDetails,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         std::move(callback), delegate));
   }
+}
+
+void ShowDetailsAction::OnShowDetails(ProcessActionCallback callback,
+                                      ActionDelegate* delegate,
+                                      bool can_continue) {
+  if (!can_continue) {
+    delegate->CloseCustomTab();
+  }
+  UpdateProcessedAction(ACTION_APPLIED);
+  std::move(callback).Run(std::move(processed_action_proto_));
 }
 }  // namespace autofill_assistant

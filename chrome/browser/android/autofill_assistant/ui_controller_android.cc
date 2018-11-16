@@ -131,6 +131,11 @@ void UiControllerAndroid::ShutdownGracefully() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
+void UiControllerAndroid::CloseCustomTab() {
+  Java_AutofillAssistantUiController_onCloseCustomTab(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+}
+
 void UiControllerAndroid::UpdateScripts(
     const std::vector<ScriptHandle>& scripts) {
   std::vector<std::string> script_paths;
@@ -254,6 +259,14 @@ void UiControllerAndroid::OnAccessToken(
   }
 }
 
+void UiControllerAndroid::OnShowDetails(JNIEnv* env,
+                                        const JavaParamRef<jobject>& jcaller,
+                                        jboolean jcan_continue) {
+  if (show_details_callback_) {
+    std::move(show_details_callback_).Run(jcan_continue);
+  }
+}
+
 base::android::ScopedJavaLocalRef<jstring>
 UiControllerAndroid::GetPrimaryAccountName(
     JNIEnv* env,
@@ -312,7 +325,9 @@ void UiControllerAndroid::HideDetails() {
       AttachCurrentThread(), java_autofill_assistant_ui_controller_);
 }
 
-bool UiControllerAndroid::ShowDetails(const DetailsProto& details) {
+void UiControllerAndroid::ShowDetails(const DetailsProto& details,
+                                      base::OnceCallback<void(bool)> callback) {
+  show_details_callback_ = std::move(callback);
   int year = details.datetime().date().year();
   int month = details.datetime().date().month();
   int day = details.datetime().date().day();
