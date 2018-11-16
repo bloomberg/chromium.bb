@@ -50,7 +50,8 @@ EtwTracingAgent::EtwTracingAgent(service_manager::Connector* connector)
                 tracing::mojom::TraceDataType::OBJECT,
                 false /* supports_explicit_clock_sync */,
                 base::kNullProcessId),
-      thread_("EtwConsumerThread"),
+      tracing_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       is_tracing_(false) {
   DCHECK(!g_etw_tracing_agent);
   g_etw_tracing_agent = this;
@@ -73,14 +74,12 @@ void EtwTracingAgent::StartTracing(const std::string& config,
   }
   is_tracing_ = true;
 
-  // Start the consumer thread and start consuming events.
-  thread_.Start();
-
   // Tracing agents, e.g. this, live as long as BrowserMainLoop lives and so
   // using base::Unretained here is safe.
-  thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&EtwTracingAgent::TraceAndConsumeOnThread,
-                                base::Unretained(this)));
+  tracing_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&EtwTracingAgent::TraceAndConsumeOnTracingSequence,
+                     base::Unretained(this)));
   std::move(callback).Run(true /* success */);
 }
 
@@ -93,16 +92,14 @@ void EtwTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
   recorder_ = std::move(recorder);
   // Stop consuming and flush events. Tracing agents, e.g. this, live as long as
   // BrowserMainLoop lives and so using base::Unretained here is safe.
-  thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&EtwTracingAgent::FlushOnThread, base::Unretained(this)));
+  tracing_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&EtwTracingAgent::FlushOnTracingSequence,
+                                base::Unretained(this)));
 }
 
 void EtwTracingAgent::OnStopSystemTracingDone(const std::string& output) {
   recorder_->AddChunk(output);
   recorder_.reset();
-  // Stop the consumer thread.
-  thread_.Stop();
   is_tracing_ = false;
 }
 
@@ -217,7 +214,9 @@ void EtwTracingAgent::AppendEventToBuffer(EVENT_TRACE* event) {
   events_->Append(std::move(value));
 }
 
-void EtwTracingAgent::TraceAndConsumeOnThread() {
+void EtwTracingAgent::TraceAndConsumeOnTracingSequence() {
+  DCHECK(tracing_task_runner_->RunsTasksInCurrentSequence());
+
   // Create the events buffer.
   events_.reset(new base::ListValue());
 
@@ -231,7 +230,9 @@ void EtwTracingAgent::TraceAndConsumeOnThread() {
   Close();
 }
 
-void EtwTracingAgent::FlushOnThread() {
+void EtwTracingAgent::FlushOnTracingSequence() {
+  DCHECK(tracing_task_runner_->RunsTasksInCurrentSequence());
+
   // Add the header information to the stream.
   auto header = std::make_unique<base::DictionaryValue>();
   header->SetString("name", "ETW");
