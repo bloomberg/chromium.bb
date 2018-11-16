@@ -52,8 +52,8 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t)>) override;
   cc::ImageDecodeCache* ImageDecodeCache(
-      blink::CanvasColorSpace color_space,
-      blink::CanvasPixelFormat pixel_format) override;
+      SkColorType color_type,
+      sk_sp<SkColorSpace> color_space) override;
 
   ws::ContextProviderCommandBuffer* context_provider() const {
     return provider_.get();
@@ -66,7 +66,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   scoped_refptr<ws::ContextProviderCommandBuffer> provider_;
   std::unique_ptr<viz::GLHelper> gl_helper_;
   base::RepeatingClosure context_lost_callback_;
-  base::flat_map<std::pair<blink::CanvasColorSpace, blink::CanvasPixelFormat>,
+  base::flat_map<std::pair<SkColorType, uint64_t>,
                  std::unique_ptr<cc::ImageDecodeCache>>
       image_decode_cache_map_;
 

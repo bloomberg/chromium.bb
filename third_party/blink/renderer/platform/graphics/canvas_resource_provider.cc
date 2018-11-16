@@ -751,7 +751,8 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheRGBA8() {
 
   if (IsAccelerated() && context_provider_wrapper_) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
-        color_space, kRGBA8CanvasPixelFormat);
+        kN32_SkColorType,
+        blink::CanvasColorParams::CanvasColorSpaceToSkColorSpace(color_space));
   }
 
   return Image::SharedCCDecodeCache(color_space, kRGBA8CanvasPixelFormat);
@@ -765,7 +766,8 @@ cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
 
   if (IsAccelerated() && context_provider_wrapper_) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
-        color_space, kF16CanvasPixelFormat);
+        kRGBA_F16_SkColorType,
+        blink::CanvasColorParams::CanvasColorSpaceToSkColorSpace(color_space));
   }
   return Image::SharedCCDecodeCache(color_space, kF16CanvasPixelFormat);
 }
