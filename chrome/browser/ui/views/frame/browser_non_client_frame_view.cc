@@ -202,23 +202,28 @@ SkColor BrowserNonClientFrameView::GetTabForegroundColor(TabState state) const {
   SkColor background_color;
   SkColor default_color;
   if (state == TAB_ACTIVE) {
-    const int color_id = ShouldPaintAsActive()
-                             ? ThemeProperties::COLOR_TAB_TEXT
-                             : ThemeProperties::COLOR_TAB_TEXT_INACTIVE;
-
     background_color = GetTabBackgroundColor(TAB_ACTIVE);
-    default_color = GetThemeOrDefaultColor(color_id);
+    default_color = GetThemeOrDefaultColor(ThemeProperties::COLOR_TAB_TEXT);
   } else {
-    const int color_id =
-        ShouldPaintAsActive()
-            ? ThemeProperties::COLOR_BACKGROUND_TAB_TEXT
-            : ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE;
-    if (GetThemeProvider()->HasCustomColor(color_id))
-      return GetThemeOrDefaultColor(color_id);
+    // If there's a custom color for the background-tab inactive-frame case, use
+    // that instead of alpha blending.
+    if (!ShouldPaintAsActive() &&
+        GetThemeProvider()->HasCustomColor(
+            ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE)) {
+      return GetThemeOrDefaultColor(
+          ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE);
+    }
 
     background_color = GetTabBackgroundColor(TAB_INACTIVE);
-    default_color = color_utils::IsDark(background_color) ? gfx::kGoogleGrey400
-                                                          : gfx::kGoogleGrey800;
+
+    const int color_id = ThemeProperties::COLOR_BACKGROUND_TAB_TEXT;
+    if (GetThemeProvider()->HasCustomColor(color_id)) {
+      default_color = GetThemeOrDefaultColor(color_id);
+    } else {
+      default_color = color_utils::IsDark(background_color)
+                          ? gfx::kGoogleGrey400
+                          : gfx::kGoogleGrey800;
+    }
   }
 
   if (!ShouldPaintAsActive()) {

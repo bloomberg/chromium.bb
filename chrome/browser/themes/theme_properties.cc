@@ -38,7 +38,6 @@ base::Optional<SkColor> GetDarkModeColor(int id) {
   switch (id) {
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
     case ThemeProperties::COLOR_TAB_TEXT:
-    case ThemeProperties::COLOR_TAB_TEXT_INACTIVE:
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
     case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT_INACTIVE:
     case ThemeProperties::COLOR_NTP_TEXT:
@@ -73,7 +72,6 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
       return SkColorSetRGB(0x32, 0x36, 0x39);
     case ThemeProperties::COLOR_BOOKMARK_TEXT:
     case ThemeProperties::COLOR_TAB_TEXT:
-    case ThemeProperties::COLOR_TAB_TEXT_INACTIVE:
     case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_ACTIVE:
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
       return gfx::kGoogleGrey100;
@@ -227,7 +225,6 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
       return SK_ColorWHITE;
     case COLOR_BOOKMARK_TEXT:
     case COLOR_TAB_TEXT:
-    case COLOR_TAB_TEXT_INACTIVE:
       return gfx::kGoogleGrey800;
     case COLOR_BACKGROUND_TAB_TEXT:
     case COLOR_BACKGROUND_TAB_TEXT_INACTIVE:

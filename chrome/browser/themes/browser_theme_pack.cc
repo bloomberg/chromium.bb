@@ -59,7 +59,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 60;
+const int kThemePackVersion = 61;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -244,7 +244,6 @@ constexpr StringToIntTable kOverwritableColorTable[] = {
      TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE},
     {"toolbar", TP::COLOR_TOOLBAR},
     {"tab_text", TP::COLOR_TAB_TEXT},
-    {"tab_text_inactive", TP::COLOR_TAB_TEXT_INACTIVE},
     {"tab_background_text", TP::COLOR_BACKGROUND_TAB_TEXT},
     {"tab_background_text_inactive", TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
     {"tab_background_text_incognito", TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO},
