@@ -446,11 +446,11 @@ void Unpack<WebGLImageConversion::kDataFormatBGRA8, uint8_t, uint8_t>(
   uint32_t* destination32 = reinterpret_cast_ptr<uint32_t*>(destination);
 
 #if defined(ARCH_CPU_X86_FAMILY)
-  SIMD::UnpackOneRowOfBGRA8LittleToRGBA8(source32, destination32,
+  simd::UnpackOneRowOfBGRA8LittleToRGBA8(source32, destination32,
                                          pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::unpackOneRowOfBGRA8LittleToRGBA8MSA(source32, destination32,
+  simd::unpackOneRowOfBGRA8LittleToRGBA8MSA(source32, destination32,
                                             pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
@@ -474,14 +474,14 @@ void Unpack<WebGLImageConversion::kDataFormatRGBA5551, uint16_t, uint8_t>(
     uint8_t* destination,
     unsigned pixels_per_row) {
 #if defined(ARCH_CPU_X86_FAMILY)
-  SIMD::UnpackOneRowOfRGBA5551LittleToRGBA8(source, destination,
+  simd::UnpackOneRowOfRGBA5551LittleToRGBA8(source, destination,
                                             pixels_per_row);
 #endif
 #if WTF_CPU_ARM_NEON
-  SIMD::UnpackOneRowOfRGBA5551ToRGBA8(source, destination, pixels_per_row);
+  simd::UnpackOneRowOfRGBA5551ToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::unpackOneRowOfRGBA5551ToRGBA8MSA(source, destination, pixels_per_row);
+  simd::unpackOneRowOfRGBA5551ToRGBA8MSA(source, destination, pixels_per_row);
 #endif
 
   for (unsigned i = 0; i < pixels_per_row; ++i) {
@@ -504,14 +504,14 @@ void Unpack<WebGLImageConversion::kDataFormatRGBA4444, uint16_t, uint8_t>(
     uint8_t* destination,
     unsigned pixels_per_row) {
 #if defined(ARCH_CPU_X86_FAMILY)
-  SIMD::UnpackOneRowOfRGBA4444LittleToRGBA8(source, destination,
+  simd::UnpackOneRowOfRGBA4444LittleToRGBA8(source, destination,
                                             pixels_per_row);
 #endif
 #if WTF_CPU_ARM_NEON
-  SIMD::UnpackOneRowOfRGBA4444ToRGBA8(source, destination, pixels_per_row);
+  simd::UnpackOneRowOfRGBA4444ToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::unpackOneRowOfRGBA4444ToRGBA8MSA(source, destination, pixels_per_row);
+  simd::unpackOneRowOfRGBA4444ToRGBA8MSA(source, destination, pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     uint16_t packed_value = source[0];
@@ -720,10 +720,10 @@ void Pack<WebGLImageConversion::kDataFormatR8,
                    uint8_t* destination,
                    unsigned pixels_per_row) {
 #if defined(ARCH_CPU_X86_FAMILY)
-  SIMD::PackOneRowOfRGBA8LittleToR8(source, destination, pixels_per_row);
+  simd::PackOneRowOfRGBA8LittleToR8(source, destination, pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::packOneRowOfRGBA8LittleToR8MSA(source, destination, pixels_per_row);
+  simd::packOneRowOfRGBA8LittleToR8MSA(source, destination, pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -777,10 +777,10 @@ void Pack<WebGLImageConversion::kDataFormatRA8,
                    uint8_t* destination,
                    unsigned pixels_per_row) {
 #if defined(ARCH_CPU_X86_FAMILY)
-  SIMD::PackOneRowOfRGBA8LittleToRA8(source, destination, pixels_per_row);
+  simd::PackOneRowOfRGBA8LittleToRA8(source, destination, pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::packOneRowOfRGBA8LittleToRA8MSA(source, destination, pixels_per_row);
+  simd::packOneRowOfRGBA8LittleToRA8MSA(source, destination, pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -889,10 +889,10 @@ void Pack<WebGLImageConversion::kDataFormatRGBA8,
                    uint8_t* destination,
                    unsigned pixels_per_row) {
 #if defined(ARCH_CPU_X86_FAMILY)
-  SIMD::PackOneRowOfRGBA8LittleToRGBA8(source, destination, pixels_per_row);
+  simd::PackOneRowOfRGBA8LittleToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::packOneRowOfRGBA8LittleToRGBA8MSA(source, destination, pixels_per_row);
+  simd::packOneRowOfRGBA8LittleToRGBA8MSA(source, destination, pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -919,11 +919,11 @@ void Pack<WebGLImageConversion::kDataFormatRGBA4444,
                     uint16_t* destination,
                     unsigned pixels_per_row) {
 #if WTF_CPU_ARM_NEON
-  SIMD::PackOneRowOfRGBA8ToUnsignedShort4444(source, destination,
+  simd::PackOneRowOfRGBA8ToUnsignedShort4444(source, destination,
                                              pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::packOneRowOfRGBA8ToUnsignedShort4444MSA(source, destination,
+  simd::packOneRowOfRGBA8ToUnsignedShort4444MSA(source, destination,
                                                 pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
@@ -987,11 +987,11 @@ void Pack<WebGLImageConversion::kDataFormatRGBA5551,
                     uint16_t* destination,
                     unsigned pixels_per_row) {
 #if WTF_CPU_ARM_NEON
-  SIMD::PackOneRowOfRGBA8ToUnsignedShort5551(source, destination,
+  simd::PackOneRowOfRGBA8ToUnsignedShort5551(source, destination,
                                              pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::packOneRowOfRGBA8ToUnsignedShort5551MSA(source, destination,
+  simd::packOneRowOfRGBA8ToUnsignedShort5551MSA(source, destination,
                                                 pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
@@ -1055,11 +1055,11 @@ void Pack<WebGLImageConversion::kDataFormatRGB565,
                     uint16_t* destination,
                     unsigned pixels_per_row) {
 #if WTF_CPU_ARM_NEON
-  SIMD::PackOneRowOfRGBA8ToUnsignedShort565(source, destination,
+  simd::PackOneRowOfRGBA8ToUnsignedShort565(source, destination,
                                             pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::packOneRowOfRGBA8ToUnsignedShort565MSA(source, destination,
+  simd::packOneRowOfRGBA8ToUnsignedShort565MSA(source, destination,
                                                pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
