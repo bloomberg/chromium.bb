@@ -1671,36 +1671,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [dict(zip(CIDBConnection.BAD_CL_ANNOTATION_KEYS, values))
             for values in results]
 
-  @minimum_schema(65)
-  def GetMostRecentBuild(self, waterfall, build_config, milestone_version=None):
-    """Returns basic information about most recent completed build.
-
-    Args:
-      waterfall: waterfall of the build.
-      build_config: config name of the build.
-      milestone_version: optional milestone_version to filter upon.
-
-    Returns:
-      A dictionary with keys BUILD_STATUS_KEYS, or None if no results.
-    """
-    where_clauses = ['waterfall = "%s"' % waterfall,
-                     'build_config = "%s"' % build_config,
-                     'final = 1']
-    if milestone_version:
-      where_clauses.append('milestone_version = "%d"' % milestone_version)
-
-    query = (
-        'SELECT %s'
-        ' FROM buildTable'
-        ' WHERE %s'
-        ' ORDER BY id DESC'
-        ' LIMIT 1' %
-        (', '.join(self.BUILD_STATUS_KEYS), ' AND '.join(where_clauses)))
-
-    results = self._Execute(query).fetchall()
-    return (dict(zip(self.BUILD_STATUS_KEYS, results[0]))
-            if len(results) else None)
-
   @minimum_schema(26)
   def GetAnnotationsForBuilds(self, build_ids):
     """Returns the annotations for given build_ids.

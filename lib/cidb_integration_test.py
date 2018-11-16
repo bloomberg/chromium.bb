@@ -450,14 +450,6 @@ class DataSeries0Test(CIDBIntegrationTest):
     last_status = readonly_db.GetBuildHistory('master-paladin', 1,
                                               platform_version='6029.0.0-rc3')
     self.assertEqual(len(last_status), 0)
-    last_build = readonly_db.GetMostRecentBuild('chromeos', 'master-paladin')
-    self.assertEqual(last_build['id'], 601)
-    last_build = readonly_db.GetMostRecentBuild('chromeos', 'master-paladin',
-                                                38)
-    self.assertEqual(last_build['id'], 601)
-    last_build = readonly_db.GetMostRecentBuild('chromeos', 'master-paladin',
-                                                39)
-    self.assertEqual(last_build, None)
     # Make sure keys are sorted correctly.
     build_ids = []
     for index, status in enumerate(last_status):

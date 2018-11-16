@@ -1389,10 +1389,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   hw_test_list = HWTestList(ge_build_config)
 
 
-  # Android PFQ masters.
-  # Any additions of Android PFQ masters should be reflected by a
-  # change in lib/constants.py SOM_BUILDS to add Sheriff-o-Matic coverage.
-
   # Android MST master.
   mst_master_config = site_config.Add(
       constants.MST_ANDROID_PFQ_MASTER,
