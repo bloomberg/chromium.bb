@@ -15,6 +15,8 @@
 
 namespace blink {
 
+class ScriptPromise;
+
 enum class RTCQuicStreamState { kNew, kOpening, kOpen, kClosing, kClosed };
 
 // The RTCQuicStream does not need to be ActiveScriptWrappable since the
@@ -59,6 +61,10 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   void write(NotShared<DOMUint8Array> data, ExceptionState& exception_state);
   void finish();
   void reset();
+  ScriptPromise waitForWriteBufferedAmountBelow(
+      ScriptState* script_state,
+      uint32_t threshold,
+      ExceptionState& exception_state);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
 
   // EventTarget overrides.
@@ -66,13 +72,17 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
 
   // For garbage collection.
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
+  class PendingWriteBufferedAmountPromise;
+
   // QuicStreamProxy::Delegate overrides.
   void OnRemoteReset() override;
   void OnDataReceived(Vector<uint8_t> data, bool fin) override;
   void OnWriteDataConsumed(uint32_t amount) override;
+
+  bool RaiseIfNotWritable(ExceptionState&);
 
   // Permenantly closes the RTCQuicStream with the given reason.
   // The RTCQuicStream must not already be closed.
@@ -81,12 +91,24 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
 
   bool IsClosed() const { return state_ == RTCQuicStreamState::kClosed; }
 
+  void RejectPendingWaitForWriteBufferedAmountBelowPromises();
+
   Member<RTCQuicTransport> transport_;
   RTCQuicStreamState state_ = RTCQuicStreamState::kOpen;
   bool readable_ = true;
   uint32_t read_buffered_amount_ = 0;
+
+  // Amount of bytes written but may not yet have been sent by the underlying
+  // P2PQuicStream.
+  // write() increases this number.
+  // OnDataSent() decreases this number.
   uint32_t write_buffered_amount_ = 0;
+  // True if finish() has been called.
   bool wrote_fin_ = false;
+  // Pending waitForWriteBufferedAmountBelow Promises.
+  HeapVector<Member<PendingWriteBufferedAmountPromise>>
+      pending_write_buffered_amount_promises_;
+
   QuicStreamProxy* proxy_;
 };
 

@@ -5600,6 +5600,7 @@ interface RTCQuicStream : EventTarget
     method constructor
     method finish
     method reset
+    method waitForWriteBufferedAmountBelow
     method write
     setter onstatechange
 interface RTCQuicStreamEvent : Event
