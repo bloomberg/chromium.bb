@@ -21,6 +21,10 @@ namespace browser_sync {
 class ProfileSyncService;
 }
 
+namespace identity {
+class IdentityManager;
+}
+
 class AccountTrackerService;
 class AuthenticationServiceDelegate;
 @class ChromeIdentity;
@@ -39,6 +43,7 @@ class AuthenticationService : public KeyedService,
                         ProfileOAuth2TokenService* token_service,
                         SyncSetupService* sync_setup_service,
                         AccountTrackerService* account_tracker,
+                        identity::IdentityManager* identity_manager,
                         SigninManager* signin_manager,
                         browser_sync::ProfileSyncService* sync_service);
   ~AuthenticationService() override;
@@ -198,6 +203,7 @@ class AuthenticationService : public KeyedService,
   ProfileOAuth2TokenService* token_service_ = nullptr;
   SyncSetupService* sync_setup_service_ = nullptr;
   AccountTrackerService* account_tracker_ = nullptr;
+  identity::IdentityManager* identity_manager_ = nullptr;
   SigninManager* signin_manager_ = nullptr;
   browser_sync::ProfileSyncService* sync_service_ = nullptr;
 

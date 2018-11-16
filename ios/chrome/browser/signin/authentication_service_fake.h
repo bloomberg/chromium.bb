@@ -10,6 +10,10 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
+namespace identity {
+class IdentityManager;
+}
+
 namespace web {
 class BrowserState;
 }
@@ -43,6 +47,7 @@ class AuthenticationServiceFake : public AuthenticationService {
                             ProfileOAuth2TokenService* token_service,
                             SyncSetupService* sync_setup_service,
                             AccountTrackerService* account_tracker,
+                            identity::IdentityManager* identity_manager,
                             SigninManager* signin_manager,
                             browser_sync::ProfileSyncService* sync_service);
 

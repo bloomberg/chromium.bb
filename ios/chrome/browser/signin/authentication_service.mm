@@ -31,6 +31,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
+#import "services/identity/public/cpp/identity_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -69,12 +70,14 @@ AuthenticationService::AuthenticationService(
     ProfileOAuth2TokenService* token_service,
     SyncSetupService* sync_setup_service,
     AccountTrackerService* account_tracker,
+    identity::IdentityManager* identity_manager,
     SigninManager* signin_manager,
     browser_sync::ProfileSyncService* sync_service)
     : pref_service_(pref_service),
       token_service_(token_service),
       sync_setup_service_(sync_setup_service),
       account_tracker_(account_tracker),
+      identity_manager_(identity_manager),
       signin_manager_(signin_manager),
       sync_service_(sync_service),
       identity_service_observer_(this),
@@ -82,6 +85,7 @@ AuthenticationService::AuthenticationService(
   DCHECK(pref_service_);
   DCHECK(sync_setup_service_);
   DCHECK(account_tracker_);
+  DCHECK(identity_manager_);
   DCHECK(signin_manager_);
   DCHECK(sync_service_);
   token_service_->AddObserver(this);
@@ -222,7 +226,11 @@ void AuthenticationService::ComputeHaveAccountsChanged() {
   // While the AuthenticationService is in background, changes should be shown
   // to the user and |should_prompt| is true.
   ReloadCredentialsFromIdentities(!is_in_foreground_ /* should_prompt */);
-  std::vector<std::string> new_accounts = token_service_->GetAccounts();
+  std::vector<AccountInfo> new_accounts_info =
+      identity_manager_->GetAccountsWithRefreshTokens();
+  std::vector<std::string> new_accounts;
+  for (const AccountInfo& account_info : new_accounts_info)
+    new_accounts.push_back(account_info.account_id);
   std::vector<std::string> old_accounts = GetAccountsInPrefs();
   std::sort(new_accounts.begin(), new_accounts.end());
   std::sort(old_accounts.begin(), old_accounts.end());
@@ -270,10 +278,11 @@ void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
 }
 
 void AuthenticationService::StoreAccountsInPrefs() {
-  std::vector<std::string> accounts(token_service_->GetAccounts());
+  std::vector<AccountInfo> accounts(
+      identity_manager_->GetAccountsWithRefreshTokens());
   base::ListValue accounts_pref_value;
-  for (const std::string& account : accounts)
-    accounts_pref_value.AppendString(account);
+  for (const AccountInfo& account_info : accounts)
+    accounts_pref_value.AppendString(account_info.account_id);
   pref_service_->Set(prefs::kSigninLastAccounts, accounts_pref_value);
 }
 
@@ -299,7 +308,7 @@ ChromeIdentity* AuthenticationService::GetAuthenticatedIdentity() {
     return nil;
 
   std::string authenticated_account_id =
-      signin_manager_->GetAuthenticatedAccountId();
+      identity_manager_->GetPrimaryAccountId();
 
   std::string authenticated_gaia_id =
       account_tracker_->GetAccountInfo(authenticated_account_id).gaia;
@@ -328,7 +337,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
   std::string new_authenticated_account_id =
       account_tracker_->SeedAccountInfo(info);
   std::string old_authenticated_account_id =
-      signin_manager_->GetAuthenticatedAccountId();
+      identity_manager_->GetPrimaryAccountId();
   // |SigninManager::SetAuthenticatedAccountId| simply ignores the call if
   // there is already a signed in user. Check that there is no signed in account
   // or that the new signed in account matches the old one to avoid a mismatch
@@ -342,6 +351,8 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
   // Update the SigninManager with the new logged in identity.
   std::string new_authenticated_username =
       account_tracker_->GetAccountInfo(new_authenticated_account_id).email;
+  // TODO(crbug.com/889902): Remove the SigninManager usage once the
+  // alternative API for this call is available.
   signin_manager_->OnExternalSigninCompleted(new_authenticated_username);
 
   // Reload all credentials to match the desktop model. Exclude all the
@@ -375,8 +386,9 @@ void AuthenticationService::SignOut(
   bool is_managed = IsAuthenticatedIdentityManaged();
 
   sync_service_->RequestStop(syncer::SyncService::CLEAR_DATA);
-  signin_manager_->SignOut(signout_source,
-                           signin_metrics::SignoutDelete::IGNORE_METRIC);
+  identity_manager_->ClearPrimaryAccount(
+      identity::IdentityManager::ClearAccountTokensAction::kDefault,
+      signout_source, signin_metrics::SignoutDelete::IGNORE_METRIC);
   breakpad_helper::SetCurrentlySignedIn(false);
   cached_mdm_infos_.clear();
   if (is_managed) {
@@ -576,21 +588,21 @@ bool AuthenticationService::IsAuthenticated() {
     // Reload credentials to ensure that the user is still authenticated.
     ReloadCredentialsFromIdentities(true /* should_prompt */);
   }
-  return signin_manager_->IsAuthenticated();
+  return identity_manager_->HasPrimaryAccount();
 }
 
 NSString* AuthenticationService::GetAuthenticatedUserEmail() {
   if (!IsAuthenticated())
     return nil;
   std::string authenticated_username =
-      signin_manager_->GetAuthenticatedAccountInfo().email;
+      identity_manager_->GetPrimaryAccountInfo().email;
   DCHECK_LT(0U, authenticated_username.length());
   return base::SysUTF8ToNSString(authenticated_username);
 }
 
 bool AuthenticationService::IsAuthenticatedIdentityManaged() {
   std::string hosted_domain =
-      signin_manager_->GetAuthenticatedAccountInfo().hosted_domain;
+      identity_manager_->GetPrimaryAccountInfo().hosted_domain;
   return !hosted_domain.empty() &&
          hosted_domain != AccountTrackerService::kNoHostedDomainFound;
 }
