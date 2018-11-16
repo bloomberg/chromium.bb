@@ -381,8 +381,11 @@ void AppListItemView::OnTouchDragTimer(
 }
 
 void AppListItemView::CancelContextMenu() {
-  if (context_menu_)
-    context_menu_->Cancel();
+  if (!context_menu_)
+    return;
+
+  menu_close_initiated_from_drag_ = true;
+  context_menu_->Cancel();
 }
 
 void AppListItemView::OnDragEnded() {
@@ -799,6 +802,14 @@ void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void AppListItemView::OnMenuClosed() {
+  if (!menu_close_initiated_from_drag_) {
+    // If the menu was not closed due to a drag sequence(e.g. multi touch) reset
+    // the drag state.
+    SetState(STATE_NORMAL);
+    SetTouchDragging(false);
+  }
+
+  menu_close_initiated_from_drag_ = false;
   OnBlur();
 }
 
