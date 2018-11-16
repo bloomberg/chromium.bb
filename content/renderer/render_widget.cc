@@ -810,10 +810,6 @@ void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
   // for a RenderWidget without a main frame.
   CHECK(!is_frozen_);
 
-  // During shutdown we can just ignore this message.
-  if (!GetWebWidget())
-    return;
-
   was_shown_time_ = base::TimeTicks::Now();
   // See OnWasHidden
   SetHidden(false);
