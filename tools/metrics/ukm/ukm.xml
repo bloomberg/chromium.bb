@@ -1226,10 +1226,11 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="TriggerEvent">
     <summary>
-      Emits an integer in the range 0-1 to indicate whether the peeking sheet
-      was ever triggered and how it was triggered. A value of 0 indicates
-      never-shown, a 1 indicates peeked in response to a reverse-scroll (the
-      only trigger currently supported).
+      Emits an integer in the range 0-2 to indicate whether the contextual
+      suggestions UI was ever triggered and how it was triggered. A value of 0
+      indicates never-shown, a 1 indicates peeked in response to a
+      reverse-scroll (deprecated), and 2 indicates that the toolbar button was
+      shown (the only trigger currently supported).
     </summary>
   </metric>
 </event>
