@@ -5,6 +5,8 @@
 '''Tool to create a new, empty .grd file with all the basic sections.
 '''
 
+import getopt
+
 from grit.tool import interface
 from grit import constants
 from grit import util
@@ -59,8 +61,14 @@ where in the file.'''
   def ShortDescription(self):
     return 'Create a new empty .grd file.'
 
-  def Run(self, global_options, my_arguments):
-    if not len(my_arguments) == 1:
+  def ParseOptions(self, args):
+    """Set this objects and return all non-option arguments."""
+    own_opts, args = getopt.getopt(args, '')
+    return args
+
+  def Run(self, opts, args):
+    args = self.ParseOptions(args)
+    if len(args) != 1:
       print 'This tool requires exactly one argument, the name of the output file.'
       return 2
     filename = my_arguments[0]
