@@ -10,7 +10,6 @@
 
 #include <algorithm>
 #include <array>
-#include <iterator>
 #include <utility>
 #include <vector>
 
@@ -23,16 +22,14 @@
 namespace device {
 namespace fido_parsing_utils {
 
-// Comparator object that calls std::lexicographical_compare on the begin and
-// end iterators of the passed in ranges. Useful when comparing sequence
-// containers that are of different types, but have similar semantics.
-struct RangeLess {
+// Comparator object that calls base::make_span on its arguments before
+// comparing them with operator<. Useful when comparing sequence containers that
+// are of different types, but have similar semantics.
+struct SpanLess {
   template <typename T, typename U>
   constexpr bool operator()(T&& lhs, U&& rhs) const {
-    using std::begin;
-    using std::end;
-    return std::lexicographical_compare(begin(lhs), end(lhs), begin(rhs),
-                                        end(rhs));
+    return base::make_span(std::forward<T>(lhs)) <
+           base::make_span(std::forward<U>(rhs));
   }
 
   using is_transparent = void;

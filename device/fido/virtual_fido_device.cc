@@ -4,7 +4,6 @@
 
 #include "device/fido/virtual_fido_device.h"
 
-#include <algorithm>
 #include <tuple>
 #include <utility>
 
@@ -157,11 +156,9 @@ VirtualFidoDevice::RegistrationData* VirtualFidoDevice::FindRegistrationData(
   if (it == mutable_state()->registrations.end())
     return nullptr;
 
-  if (!std::equal(application_parameter.begin(), application_parameter.end(),
-                  it->second.application_parameter.begin(),
-                  it->second.application_parameter.end())) {
+  if (application_parameter !=
+      base::make_span(it->second.application_parameter))
     return nullptr;
-  }
 
   return &(it->second);
 }
