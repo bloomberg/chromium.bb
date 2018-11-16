@@ -9,8 +9,12 @@ namespace chrome_cleaner {
 // An array of signatures that only contains the sentinel value and represents
 // an empty array.
 const PUPData::UwSSignature dummy_signatures[] = {
-    {PUPData::kInvalidUwSId, PUPData::FLAGS_NONE, nullptr,
-     PUPData::kMaxFilesToRemoveSmallUwS, kNoDisk, kNoRegistry,
+    {PUPData::kInvalidUwSId,
+     PUPData::FLAGS_NONE,
+     nullptr,
+     PUPData::kMaxFilesToRemoveSmallUwS,
+     kNoDisk,
+     kNoRegistry,
      kNoCustomMatcher}};
 
 // While testing we will set up special signatures but we still can't have
