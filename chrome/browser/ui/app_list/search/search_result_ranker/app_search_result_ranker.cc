@@ -10,6 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor.pb.h"
@@ -41,7 +42,7 @@ std::unique_ptr<AppLaunchPredictor> CreatePredictor(
 // Save |proto| to |predictor_filename|.
 void SaveToDiskOnWorkerThread(const base::FilePath& predictor_filename,
                               const AppLaunchPredictorProto& proto) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   std::string proto_str;
   if (!proto.SerializeToString(&proto_str))
@@ -55,7 +56,7 @@ void SaveToDiskOnWorkerThread(const base::FilePath& predictor_filename,
 std::unique_ptr<AppLaunchPredictor> LoadPredictorFromDiskOnWorkerThread(
     const base::FilePath& predictor_filename,
     const std::string predictor_name) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // Loads proto string from local disk.
   std::string proto_str;
