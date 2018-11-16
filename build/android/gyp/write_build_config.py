@@ -1032,7 +1032,8 @@ def main(argv):
   # TODO(tiborg): Remove creation of JNI info for type group and java_library
   # once we can generate the JNI registration based on APK / module targets as
   # opposed to groups and libraries.
-  if is_apk_or_module_target or options.type in ('group', 'java_library'):
+  if is_apk_or_module_target or options.type in (
+      'group', 'java_library', 'junit_binary'):
     config['jni'] = {}
     all_java_sources = [c['java_sources_file'] for c in all_library_deps
                         if 'java_sources_file' in c]

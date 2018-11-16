@@ -386,25 +386,25 @@ if (enable_java_templates) {
 
   # Declare a jni registration target.
   #
-  # This target generates a header file calling JNI registration functions
-  # created by generate_jni and generate_jar_jni.
+  # This target generates a srcjar containing a copy of GEN_JNI.java, which has
+  # the native methods of all dependent java files. It can also create a .h file
+  # for use with manual JNI registration.
   #
   # See base/android/jni_generator/jni_registration_generator.py for more info
   # about the format of the header file.
   #
   # Variables
-  #   target: The Apk target to generate registrations for.
-  #   output: Path to the generated .h file.
-  #   exception_files: List of .java files that should be ignored when searching
-  #     for native methods. (optional)
+  #   target: The Apk target to use for the java sources list.
+  #   header_output: Path to the generated .h file (optional).
+  #   sources_blacklist: List of .java files that should be skipped. (optional)
   #   namespace: Registration functions will be wrapped into this. (optional)
   #
   # Example
   #   generate_jni_registration("chrome_jni_registration") {
   #     target = ":chrome_public_apk"
-  #     output = "$root_gen_dir/chrome/browser/android/${target_name}.h"
-  #     exception_files = [
-  #       "//base/android/java/src/org/chromium/base/library_loader/Linker.java",
+  #     header_output = "$target_gen_dir/$target_name.h"
+  #     sources_blacklist = [
+  #       "//path/to/Exception.java",
   #     ]
   #   }
   template("generate_jni_registration") {
@@ -413,6 +413,7 @@ if (enable_java_templates) {
       _build_config = get_label_info(invoker.target, "target_gen_dir") + "/" +
                       get_label_info(invoker.target, "name") + ".build_config"
       _rebased_build_config = rebase_path(_build_config, root_build_dir)
+      _srcjar_output = "$target_gen_dir/$target_name.srcjar"
 
       script = "//base/android/jni_generator/jni_registration_generator.py"
       deps = [
@@ -422,22 +423,29 @@ if (enable_java_templates) {
         _build_config,
       ]
       outputs = [
-        invoker.output,
+        _srcjar_output,
       ]
       depfile = "$target_gen_dir/$target_name.d"
 
       args = [
         # This is a list of .sources files.
-        "--sources_files=@FileArg($_rebased_build_config:jni:all_source)",
-        "--output",
-        rebase_path(invoker.output, root_build_dir),
+        "--sources-files=@FileArg($_rebased_build_config:jni:all_source)",
+        "--srcjar-path",
+        rebase_path(_srcjar_output, root_build_dir),
         "--depfile",
         rebase_path(depfile, root_build_dir),
       ]
-      if (defined(invoker.exception_files)) {
-        _rebase_exception_java_files =
-            rebase_path(invoker.exception_files, root_build_dir)
-        args += [ "--no_register_java=$_rebase_exception_java_files" ]
+      if (defined(invoker.header_output)) {
+        outputs += [ invoker.header_output ]
+        args += [
+          "--header-path",
+          rebase_path(invoker.header_output, root_build_dir),
+        ]
+      }
+      if (defined(invoker.sources_blacklist)) {
+        _rebase_sources_blacklist =
+            rebase_path(invoker.sources_blacklist, root_build_dir)
+        args += [ "--sources-blacklist=$_rebase_sources_blacklist" ]
       }
       if (defined(invoker.namespace)) {
         args += [ "--namespace=${invoker.namespace}" ]
@@ -1266,6 +1274,12 @@ if (enable_java_templates) {
       }
     }
 
+    _jni_srcjar_target = "${target_name}__final_jni"
+    _outer_target_name = target_name
+    generate_jni_registration(_jni_srcjar_target) {
+      target = ":$_outer_target_name"
+    }
+
     java_library_impl(_java_binary_target_name) {
       forward_variables_from(invoker, "*", [ "deps" ])
       type = "junit_binary"
@@ -1285,6 +1299,7 @@ if (enable_java_templates) {
         srcjar_deps = []
       }
       srcjar_deps += [
+        ":$_jni_srcjar_target",
         ":$_prepare_resources_target",
 
         # This dep is required for any targets that depend on //base:base_java.
@@ -1730,6 +1745,7 @@ if (enable_java_templates) {
         jar_excluded_patterns = []
       }
       jar_excluded_patterns += [
+        "*/GEN_JNI.class",
         "*/R.class",
         "*/R\$*.class",
         "*/Manifest.class",
@@ -1866,6 +1882,13 @@ if (enable_java_templates) {
   #   generate_buildconfig_java: If defined and false, skip generating the
   #     BuildConfig java class describing the build configuration. The default
   #     is true for non-test APKs.
+  #   generate_final_jni: If defined and false, skip generating the
+  #     GEN_JNI srcjar.
+  #   jni_registration_header: If specified, causes the
+  #     ${target_name}__final_jni target to additionally output a
+  #     header file to this path for use with manual JNI registration.
+  #   jni_sources_blacklist: List of source path to exclude from the
+  #     final_jni step.
   #   firebase_app_id: The value for BuildConfig.FIREBASE_APP_ID (optional).
   #     Identifier is sent with crash reports to enable Java stack deobfuscation.
   #   aapt_locale_whitelist: If set, all locales not in this list will be
@@ -2089,6 +2112,12 @@ if (enable_java_templates) {
       _generate_buildconfig_java = invoker.generate_buildconfig_java
     }
 
+    # JNI generation usually goes hand-in-hand with buildconfig generation.
+    _generate_final_jni = _generate_buildconfig_java
+    if (defined(invoker.generate_final_jni)) {
+      _generate_final_jni = invoker.generate_final_jni
+    }
+
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
     if (_proguard_enabled) {
@@ -2305,7 +2334,7 @@ if (enable_java_templates) {
         }
       }
 
-      java_cpp_template("${_template_name}__native_libraries_java") {
+      java_cpp_template("${_template_name}__native_libraries_srcjar") {
         package_path = "org/chromium/base/library_loader"
         sources = [
           "//base/android/java/templates/NativeLibraries.template",
@@ -2344,7 +2373,7 @@ if (enable_java_templates) {
           defines += [ "ENABLE_CHROMIUM_LINKER_TESTS" ]
         }
       }
-      _srcjar_deps += [ ":${_template_name}__native_libraries_java" ]
+      _srcjar_deps += [ ":${_template_name}__native_libraries_srcjar" ]
     }
 
     _extra_native_libs = []
@@ -2361,7 +2390,7 @@ if (enable_java_templates) {
     }
 
     if (_generate_buildconfig_java) {
-      generate_build_config_srcjar("${_template_name}__build_config_java") {
+      generate_build_config_srcjar("${_template_name}__build_config_srcjar") {
         forward_variables_from(invoker, [ "firebase_app_id" ])
         use_final_fields = true
         build_config = _build_config
@@ -2374,7 +2403,20 @@ if (enable_java_templates) {
           ":$_build_config_target",
         ]
       }
-      _srcjar_deps += [ ":${_template_name}__build_config_java" ]
+      _srcjar_deps += [ ":${_template_name}__build_config_srcjar" ]
+    }
+
+    if (_generate_final_jni) {
+      generate_jni_registration("${_template_name}__final_jni") {
+        target = ":$_template_name"
+        if (defined(invoker.jni_registration_header)) {
+          header_output = invoker.jni_registration_header
+        }
+        if (defined(invoker.jni_sources_blacklist)) {
+          sources_blacklist = invoker.jni_sources_blacklist
+        }
+      }
+      _srcjar_deps += [ ":${_template_name}__final_jni" ]
     }
 
     _java_target = "${_template_name}__java"
@@ -2870,9 +2912,12 @@ if (enable_java_templates) {
                                "final_apk_path",
                                "firebase_app_id",
                                "generate_buildconfig_java",
+                               "generate_final_jni",
                                "input_jars_paths",
                                "java_files",
                                "javac_args",
+                               "jni_registration_header",
+                               "jni_sources_blacklist",
                                "keystore_name",
                                "keystore_password",
                                "keystore_path",
@@ -2974,10 +3019,14 @@ if (enable_java_templates) {
                                "enable_chromium_linker_tests",
                                "enable_multidex",
                                "firebase_app_id",
+                               "generate_buildconfig_java",
+                               "generate_final_jni",
                                "input_jars_paths",
                                "is_base_module",
                                "java_files",
                                "javac_args",
+                               "jni_registration_header",
+                               "jni_sources_blacklist",
                                "load_library_from_apk",
                                "loadable_modules",
                                "min_sdk_version",

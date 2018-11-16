@@ -213,7 +213,7 @@ if (enable_arcore) {
 if (current_toolchain == default_toolchain) {
   generate_jni_registration("jni_registration") {
     target = ":java"
-    output = "$target_gen_dir/${target_name}.h"
+    header_output = "$target_gen_dir/${target_name}.h"
     namespace = "vr"
   }
 }

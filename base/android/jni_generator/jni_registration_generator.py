@@ -3,18 +3,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generate JNI registration entry points
+"""Generates GEN_JNI.java and helper for manual JNI registration.
 
 Creates a header file with two static functions: RegisterMainDexNatives() and
 RegisterNonMainDexNatives(). Together, these will use manual JNI registration
 to register all native methods that exist within an application."""
 
 import argparse
-import jni_generator
 import multiprocessing
 import os
 import string
 import sys
+import zipfile
+
+import jni_generator
 from util import build_utils
 
 
@@ -31,41 +33,50 @@ MERGEABLE_KEYS = [
 ]
 
 
-def GenerateJNIHeader(java_file_paths, output_file, args):
-  """Generate a header file including two registration functions.
+def _Generate(java_file_paths, srcjar_path, header_path=None, namespace=''):
+  """Generates files required to perform JNI registration.
 
-  Forward declares all JNI registration functions created by jni_generator.py.
-  Calls the functions in RegisterMainDexNatives() if they are main dex. And
-  calls them in RegisterNonMainDexNatives() if they are non-main dex.
+  Generates a srcjar containing a single class, GEN_JNI, that contains all
+  native method declarations.
+
+  Optionally generates a header file that provides functions
+  (RegisterMainDexNatives and RegisterNonMainDexNatives) to perform
+  JNI registration.
 
   Args:
-      java_file_paths: A list of java file paths.
-      output_file: A relative path to output file.
-      args: All input arguments.
+    java_file_paths: A list of java file paths.
+    srcjar_path: Path to the GEN_JNI srcjar.
+    header_path: If specified, generates a header file in this location.
+    namespace: If specified, sets the namespace for the generated header file.
   """
   # Without multiprocessing, script takes ~13 seconds for chrome_public_apk
   # on a z620. With multiprocessing, takes ~2 seconds.
   pool = multiprocessing.Pool()
-  paths = (p for p in java_file_paths if p not in args.no_register_java)
-  results = [d for d in pool.imap_unordered(_DictForPath, paths) if d]
+  results = [d for d in pool.imap_unordered(_DictForPath, java_file_paths) if d]
   pool.close()
 
   # Sort to make output deterministic.
   results.sort(key=lambda d: d['FULL_CLASS_NAME'])
 
-  combined_dict = {}
-  for key in MERGEABLE_KEYS:
-    combined_dict[key] = ''.join(d.get(key, '') for d in results)
+  if header_path:
+    combined_dict = {}
+    for key in MERGEABLE_KEYS:
+      combined_dict[key] = ''.join(d.get(key, '') for d in results)
 
-  combined_dict['HEADER_GUARD'] = \
-      os.path.splitext(output_file)[0].replace('/', '_').upper() + '_'
-  combined_dict['NAMESPACE'] = args.namespace
+    combined_dict['HEADER_GUARD'] = \
+        os.path.splitext(header_path)[0].replace('/', '_').upper() + '_'
+    combined_dict['NAMESPACE'] = namespace
 
-  header_content = CreateFromDict(combined_dict)
-  if output_file:
-    jni_generator.WriteOutput(output_file, header_content)
-  else:
-    print header_content
+    header_content = CreateFromDict(combined_dict)
+    with build_utils.AtomicOutput(header_path) as f:
+      f.write(header_content)
+
+  with build_utils.AtomicOutput(srcjar_path) as f:
+    with zipfile.ZipFile(f, 'w') as srcjar:
+      # TODO(abenner): Write GEN_JNI.java here.
+      # build_utils.AddToZipHermetic(srcjar, 'org/chromium/base/GEN_JNI.java',
+      #     data='$CONTENT')
+      pass
 
 
 def _DictForPath(path):
@@ -439,15 +450,22 @@ def main(argv):
   arg_parser = argparse.ArgumentParser()
   build_utils.AddDepfileOption(arg_parser)
 
-  arg_parser.add_argument('--sources_files',
-                          help='A list of .sources files which contain Java '
-                          'file paths. Must be used with --output.')
-  arg_parser.add_argument('--output',
-                          help='The output file path.')
-  arg_parser.add_argument('--no_register_java',
-                          default=[],
-                          help='A list of Java files which should be ignored '
-                          'by the parser.')
+  arg_parser.add_argument(
+      '--sources-files',
+      required=True,
+      help='A list of .sources files which contain Java '
+      'file paths.')
+  arg_parser.add_argument(
+      '--header-path', help='Path to output header file (optional).')
+  arg_parser.add_argument(
+      '--srcjar-path',
+      required=True,
+      help='Path to output srcjar for GEN_JNI.java.')
+  arg_parser.add_argument(
+      '--sources-blacklist',
+      default=[],
+      help='A list of Java files which should be ignored '
+      'by the parser.')
   arg_parser.add_argument('--namespace',
                           default='',
                           help='Namespace to wrap the registration functions '
@@ -455,21 +473,25 @@ def main(argv):
   args = arg_parser.parse_args(build_utils.ExpandFileArgs(argv[1:]))
   args.sources_files = build_utils.ParseGnList(args.sources_files)
 
-  if not args.sources_files:
-    print '\nError: Must specify --sources_files.'
-    return 1
-
   java_file_paths = []
   for f in args.sources_files:
     # java_file_paths stores each Java file path as a string.
-    java_file_paths += build_utils.ReadSourcesList(f)
-  output_file = args.output
-  GenerateJNIHeader(java_file_paths, output_file, args)
+    java_file_paths += [
+        p for p in build_utils.ReadSourcesList(f)
+        if p not in args.sources_blacklist
+    ]
+  _Generate(
+      java_file_paths,
+      args.srcjar_path,
+      header_path=args.header_path,
+      namespace=args.namespace)
 
   if args.depfile:
-    build_utils.WriteDepfile(args.depfile, output_file,
-                             args.sources_files + java_file_paths,
-                             add_pydeps=False)
+    build_utils.WriteDepfile(
+        args.depfile,
+        args.srcjar_path,
+        args.sources_files + java_file_paths,
+        add_pydeps=False)
 
 
 if __name__ == '__main__':
