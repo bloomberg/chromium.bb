@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_client.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -180,6 +181,7 @@ class AuthenticationServiceTest : public PlatformTest,
         SyncSetupServiceFactory::GetForBrowserState(browser_state_.get()),
         ios::AccountTrackerServiceFactory::GetForBrowserState(
             browser_state_.get()),
+        IdentityManagerFactory::GetForBrowserState(browser_state_.get()),
         ios::SigninManagerFactory::GetForBrowserState(browser_state_.get()),
         ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
     authentication_service_->Initialize(
@@ -425,24 +427,27 @@ TEST_F(AuthenticationServiceTest,
   authentication_service_->SignIn(identity_, std::string());
 
   identity_service_->AddIdentities(@[ @"foo3" ]);
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForBrowserState(
-          browser_state_.get());
-  std::vector<std::string> accounts = token_service->GetAccounts();
-  std::sort(accounts.begin(), accounts.end());
+
+  auto account_compare_func = [](const AccountInfo& first,
+                                 const AccountInfo& second) {
+    return first.account_id < second.account_id;
+  };
+  std::vector<AccountInfo> accounts =
+      identity_manager()->GetAccountsWithRefreshTokens();
+  std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(2u, accounts.size());
   AccountTrackerService* account_tracker =
       ios::AccountTrackerServiceFactory::GetForBrowserState(
           browser_state_.get());
   switch (account_tracker->GetMigrationState()) {
     case AccountTrackerService::MIGRATION_NOT_STARTED:
-      EXPECT_EQ("foo2@foo.com", accounts[0]);
-      EXPECT_EQ("foo@foo.com", accounts[1]);
+      EXPECT_EQ("foo2@foo.com", accounts[0].account_id);
+      EXPECT_EQ("foo@foo.com", accounts[1].account_id);
       break;
     case AccountTrackerService::MIGRATION_IN_PROGRESS:
     case AccountTrackerService::MIGRATION_DONE:
-      EXPECT_EQ("foo2ID", accounts[0]);
-      EXPECT_EQ("fooID", accounts[1]);
+      EXPECT_EQ("foo2ID", accounts[0].account_id);
+      EXPECT_EQ("fooID", accounts[1].account_id);
       break;
     case AccountTrackerService::NUM_MIGRATION_STATES:
       FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
@@ -456,20 +461,20 @@ TEST_F(AuthenticationServiceTest,
 
   // Accounts are reloaded, "foo3@foo.com" is added as it is now in
   // ChromeIdentityService.
-  accounts = token_service->GetAccounts();
-  std::sort(accounts.begin(), accounts.end());
+  accounts = identity_manager()->GetAccountsWithRefreshTokens();
+  std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(3u, accounts.size());
   switch (account_tracker->GetMigrationState()) {
     case AccountTrackerService::MIGRATION_NOT_STARTED:
-      EXPECT_EQ("foo2@foo.com", accounts[0]);
-      EXPECT_EQ("foo3@foo.com", accounts[1]);
-      EXPECT_EQ("foo@foo.com", accounts[2]);
+      EXPECT_EQ("foo2@foo.com", accounts[0].account_id);
+      EXPECT_EQ("foo3@foo.com", accounts[1].account_id);
+      EXPECT_EQ("foo@foo.com", accounts[2].account_id);
       break;
     case AccountTrackerService::MIGRATION_IN_PROGRESS:
     case AccountTrackerService::MIGRATION_DONE:
-      EXPECT_EQ("foo2ID", accounts[0]);
-      EXPECT_EQ("foo3ID", accounts[1]);
-      EXPECT_EQ("fooID", accounts[2]);
+      EXPECT_EQ("foo2ID", accounts[0].account_id);
+      EXPECT_EQ("foo3ID", accounts[1].account_id);
+      EXPECT_EQ("fooID", accounts[2].account_id);
       break;
     case AccountTrackerService::NUM_MIGRATION_STATES:
       FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
