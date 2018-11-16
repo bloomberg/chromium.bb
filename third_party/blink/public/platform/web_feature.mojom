@@ -2086,6 +2086,7 @@ enum WebFeature {
   kLegacyTLSVersionInMainFrameResource = 2634,
   kLegacyTLSVersionInSubresource = 2635,
   kLegacyTLSVersionInSubframeMainResource = 2636,
+  kRTCMaxAudioBufferSize = 2637,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
