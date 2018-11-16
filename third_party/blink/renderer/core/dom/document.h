@@ -180,7 +180,7 @@ class SerializedScriptValue;
 class Settings;
 class SlotAssignmentEngine;
 class SnapCoordinator;
-class StringOrElementCreationOptions;
+class StringOrDictionary;
 class StyleEngine;
 class StyleResolver;
 class StylePropertyMapReadOnly;
@@ -321,14 +321,14 @@ class CORE_EXPORT Document : public ContainerNode,
   Element* CreateElementForBinding(const AtomicString& local_name,
                                    ExceptionState& = ASSERT_NO_EXCEPTION);
   Element* CreateElementForBinding(const AtomicString& local_name,
-                                   const StringOrElementCreationOptions&,
+                                   const StringOrDictionary&,
                                    ExceptionState&);
   Element* createElementNS(const AtomicString& namespace_uri,
                            const AtomicString& qualified_name,
                            ExceptionState&);
   Element* createElementNS(const AtomicString& namespace_uri,
                            const AtomicString& qualified_name,
-                           const StringOrElementCreationOptions&,
+                           const StringOrDictionary&,
                            ExceptionState&);
   DocumentFragment* createDocumentFragment();
   Text* createTextNode(const String& data);

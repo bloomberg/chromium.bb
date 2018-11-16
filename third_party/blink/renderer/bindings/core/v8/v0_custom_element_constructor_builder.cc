@@ -384,13 +384,14 @@ static void ConstructCustomElement(
       maybe_type->IsUndefined()) {
     return;
   }
-  TOSTRING_VOID(V8StringResource<kTreatNullAsNullString>, type, maybe_type);
+  TOSTRING_VOID(V8StringResource<>, type, maybe_type);
 
   ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
                                  "CustomElement");
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
   Element* element = document->createElementNS(
-      namespace_uri, tag_name, StringOrElementCreationOptions::FromString(type),
+      namespace_uri, tag_name,
+      StringOrDictionary::FromString(maybe_type->IsNull() ? g_null_atom : type),
       exception_state);
   if (element) {
     UseCounter::Count(document, WebFeature::kV0CustomElementsConstruct);
