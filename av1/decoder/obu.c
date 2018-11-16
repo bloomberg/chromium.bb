@@ -405,7 +405,7 @@ static void yv12_tile_copy(const YV12_BUFFER_CONFIG *src, int hstart1,
   uint8_t *dst8 = dst->buffers[plane] + vstart2 * dst_stride + hstart2;
 
   for (row = vstart1; row < vend1; ++row) {
-    for (col = 0; col < (hend1 - hstart1); ++col) *dst8++ = *src16++;
+    for (col = 0; col < (hend1 - hstart1); ++col) *dst8++ = (uint8_t)(*src16++);
     src16 += src_stride - (hend1 - hstart1);
     dst8 += dst_stride - (hend1 - hstart1);
   }
