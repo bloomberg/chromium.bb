@@ -292,8 +292,6 @@ class MAYBE_PrintRenderFrameHelperTest : public PrintRenderFrameHelperTestBase {
   MAYBE_PrintRenderFrameHelperTest() {}
   ~MAYBE_PrintRenderFrameHelperTest() override {}
 
-  void SetUp() override { PrintRenderFrameHelperTestBase::SetUp(); }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintRenderFrameHelperTest);
 };

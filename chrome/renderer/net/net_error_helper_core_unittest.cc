@@ -2436,8 +2436,6 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ManualReloadShowsError) {
 class NetErrorHelperCoreHistogramTest
     : public NetErrorHelperCoreAutoReloadTest {
  public:
-  void SetUp() override { NetErrorHelperCoreAutoReloadTest::SetUp(); }
-
   static const char kCountAtStop[];
   static const char kErrorAtStop[];
   static const char kCountAtSuccess[];
