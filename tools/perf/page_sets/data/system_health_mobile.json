@@ -144,6 +144,9 @@
         "load:media:imgur": {
             "DEFAULT": "system_health_mobile_035.wprgo"
         },
+        "load:media:imgur:2018": {
+            "DEFAULT": "system_health_mobile_f78afe9f96.wprgo"
+        },
         "load:media:soundcloud": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },

@@ -159,6 +159,9 @@
         "load:media:imgur": {
             "DEFAULT": "system_health_desktop_025.wprgo"
         },
+        "load:media:imgur:2018": {
+            "DEFAULT": "system_health_desktop_de90b5422c.wprgo"
+        },
         "load:media:soundcloud": {
             "DEFAULT": "system_health_desktop_003.wprgo"
         },
