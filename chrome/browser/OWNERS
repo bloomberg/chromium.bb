@@ -69,6 +69,9 @@ per-file chrome_webusb_browser_client*=rockot@google.com
 
 per-file exo_parts.*=reveman@chromium.org
 
+per-file flag-metadata.json=avi@chromium.org
+per-file flag-metadata.json=ellyjones@chromium.org
+
 per-file io_thread*=mmenke@chromium.org
 per-file io_thread*=rch@chromium.org
 per-file io_thread*=rsleevi@chromium.org
