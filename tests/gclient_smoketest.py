@@ -881,7 +881,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertEqual(out, output_json)
 
   def testSetDep(self):
-    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     fake_deps = os.path.join(self.root_dir, 'DEPS.fake')
     with open(fake_deps, 'w') as f:
       f.write('\n'.join([
@@ -895,12 +894,6 @@ class GClientSmokeGIT(GClientSmokeBase):
           '  },',
           '  "bar": "url@bar_rev",',
           '}',
-          'hooks = [{',
-          '  "name": "uses_builtin_var",',
-          '  "pattern": ".",',
-          '  "action": ["python", "fake.py",',
-          '             "--with-android={checkout_android}"],',
-          '}]',
       ]))
 
     results = self.gclient([
@@ -923,16 +916,9 @@ class GClientSmokeGIT(GClientSmokeBase):
           '  },',
           '  "bar": "url@new_bar",',
           '}',
-          'hooks = [{',
-          '  "name": "uses_builtin_var",',
-          '  "pattern": ".",',
-          '  "action": ["python", "fake.py",',
-          '             "--with-android={checkout_android}"],',
-          '}]',
     ], contents)
 
   def testGetDep(self):
-    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     fake_deps = os.path.join(self.root_dir, 'DEPS.fake')
     with open(fake_deps, 'w') as f:
       f.write('\n'.join([
@@ -946,12 +932,6 @@ class GClientSmokeGIT(GClientSmokeBase):
           '  },',
           '  "bar": "url@bar_rev",',
           '}',
-          'hooks = [{',
-          '  "name": "uses_builtin_var",',
-          '  "pattern": ".",',
-          '  "action": ["python", "fake.py",',
-          '             "--with-android={checkout_android}"],',
-          '}]',
       ]))
 
     results = self.gclient([
