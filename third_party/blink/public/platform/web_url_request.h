@@ -329,6 +329,11 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT const WebString GetRequestedWith() const;
   BLINK_PLATFORM_EXPORT void SetRequestedWith(const WebString&);
 
+  // https://fetch.spec.whatwg.org/#concept-request-window
+  // See network::ResourceRequest::fetch_window_id for details.
+  BLINK_PLATFORM_EXPORT const base::UnguessableToken& GetFetchWindowId() const;
+  BLINK_PLATFORM_EXPORT void SetFetchWindowId(const base::UnguessableToken&);
+
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();
   BLINK_PLATFORM_EXPORT const ResourceRequest& ToResourceRequest() const;

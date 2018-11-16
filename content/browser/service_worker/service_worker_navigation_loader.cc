@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
@@ -88,10 +89,12 @@ ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
     NavigationLoaderInterceptor::FallbackCallback fallback_callback,
     Delegate* delegate,
     const network::ResourceRequest& tentative_resource_request,
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
     : loader_callback_(std::move(callback)),
       fallback_callback_(std::move(fallback_callback)),
       delegate_(delegate),
+      provider_host_(std::move(provider_host)),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       binding_(this),
       weak_factory_(this) {
@@ -172,6 +175,10 @@ void ServiceWorkerNavigationLoader::StartRequest(
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
   resource_request_ = resource_request;
+  if (provider_host_ && provider_host_->fetch_request_window_id()) {
+    resource_request_.fetch_window_id =
+        base::make_optional(provider_host_->fetch_request_window_id());
+  }
 
   DCHECK(delegate_);
   DCHECK(!binding_.is_bound());
@@ -367,6 +374,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
   // A response with status code 0 is Blink telling us to respond with
   // network error.
   if (response->status_code == 0) {
+    // TODO(falken): Use more specific errors. Or just add ERR_SERVICE_WORKER?
     CommitCompleted(net::ERR_FAILED);
     return;
   }

@@ -442,6 +442,13 @@ void WebURLRequest::SetRequestedWith(const WebString& value) {
   resource_request_->SetRequestedWith(value);
 }
 
+const base::UnguessableToken& WebURLRequest::GetFetchWindowId() const {
+  return resource_request_->GetFetchWindowId();
+}
+void WebURLRequest::SetFetchWindowId(const base::UnguessableToken& id) {
+  resource_request_->SetFetchWindowId(id);
+}
+
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {
   DCHECK(resource_request_);
   return *resource_request_;

@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -271,6 +272,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   net::HttpRequestHeaders custom_proxy_pre_cache_headers_;
   net::HttpRequestHeaders custom_proxy_post_cache_headers_;
   bool custom_proxy_use_alternate_proxy_list_ = false;
+
+  // Indicates the originating frame of the request, see
+  // network::ResourceRequest::fetch_window_id for details.
+  base::Optional<base::UnguessableToken> fetch_window_id_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
 

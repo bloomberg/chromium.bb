@@ -6,6 +6,8 @@
 
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_message_filter.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/web_contents/web_contents_getter_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/net/url_request_user_data.h"
@@ -72,6 +74,7 @@ void ResourceRequestInfo::AllocateForTesting(
       0,                                         // request_id
       render_frame_id,                           // render_frame_id
       is_main_frame,                             // is_main_frame
+      {},                                        // fetch_window_id
       resource_type,                             // resource_type
       ui::PAGE_TRANSITION_LINK,                  // transition_type
       false,                                     // is_download
@@ -140,6 +143,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     int request_id,
     int render_frame_id,
     bool is_main_frame,
+    const base::UnguessableToken& fetch_window_id,
     ResourceType resource_type,
     ui::PageTransition transition_type,
     bool is_download,
@@ -167,6 +171,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       request_id_(request_id),
       render_frame_id_(render_frame_id),
       is_main_frame_(is_main_frame),
+      fetch_window_id_(fetch_window_id),
       is_download_(is_download),
       is_stream_(is_stream),
       allow_download_(allow_download),
@@ -197,10 +202,18 @@ ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {
 
 ResourceRequestInfo::WebContentsGetter
 ResourceRequestInfoImpl::GetWebContentsGetterForRequest() const {
-  // PlzNavigate: navigation requests are created with a valid FrameTreeNode ID
-  // and invalid RenderProcessHost and RenderFrameHost IDs. The FrameTreeNode
-  // ID should be used to access the WebContents.
-  if (frame_tree_node_id_ != -1) {
+  // If we have a window id, try to use that.
+  if (fetch_window_id_) {
+    ResourceRequestInfo::WebContentsGetter getter =
+        WebContentsGetterRegistry::GetInstance()->Get(fetch_window_id_);
+    if (getter)
+      return getter;
+  }
+
+  // Navigation requests are created with a valid FrameTreeNode ID and invalid
+  // RenderProcessHost and RenderFrameHost IDs. The FrameTreeNode ID should be
+  // used to access the WebContents.
+  if (frame_tree_node_id_ != RenderFrameHost::kNoFrameTreeNodeId) {
     DCHECK(IsBrowserSideNavigationEnabled());
     return base::Bind(WebContents::FromFrameTreeNodeId, frame_tree_node_id_);
   }

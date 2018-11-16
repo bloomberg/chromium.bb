@@ -77,6 +77,7 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
     original->URLLoaderFactory()->Clone(MakeRequest(&factory_clone));
     request->SetURLLoaderFactory(std::move(factory_clone));
   }
+  request->SetWindowId(original->WindowId());
   return request;
 }
 
@@ -188,15 +189,24 @@ Request* Request::CreateRequestWithRequestOrString(
   // "Let |signal| be null."
   AbortSignal* signal = nullptr;
 
-  // TODO(yhirano): Implement the following steps:
+  // The spec says:
   // - "Let |window| be client."
   // - "If |request|'s window is an environment settings object and its
-  //   origin is same origin with entry settings object's origin, set
+  //   origin is same origin with current settings object's origin, set
   //   |window| to |request|'s window."
   // - "If |init|'s window member is present and it is not null, throw a
   //   TypeError."
   // - "If |init|'s window member is present, set |window| to no-window."
   //
+  // We partially do this: if |request|'s window is present, it is copied to
+  // the new request in the following step. There is no same-origin check
+  // because |request|'s window is implemented as |FetchRequestData.window_id_|
+  // and is an opaque id that this renderer doesn't understand. It's only set on
+  // |input_request| when a service worker intercepted the request from a
+  // (same-origin) frame, so it must be same-origin.
+  //
+  // TODO(yhirano): Add support for |init.window|.
+
   // "Set |request| to a new request whose url is |request|'s current url,
   // method is |request|'s method, header list is a copy of |request|'s
   // header list, unsafe-request flag is set, client is entry settings object,

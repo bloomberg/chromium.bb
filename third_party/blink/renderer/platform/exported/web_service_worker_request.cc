@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 
+#include "base/unguessable_token.h"
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -42,6 +43,7 @@ class WebServiceWorkerRequestPrivate
   WebString client_id_;
   bool is_reload_ = false;
   bool is_history_navigation_ = false;
+  base::UnguessableToken window_id_;
 };
 
 WebServiceWorkerRequest::WebServiceWorkerRequest()
@@ -269,6 +271,14 @@ void WebServiceWorkerRequest::SetIsHistoryNavigation(bool b) {
 
 bool WebServiceWorkerRequest::IsHistoryNavigation() const {
   return private_->is_history_navigation_;
+}
+
+void WebServiceWorkerRequest::SetWindowId(const base::UnguessableToken& id) {
+  private_->window_id_ = id;
+}
+
+const base::UnguessableToken& WebServiceWorkerRequest::GetWindowId() const {
+  return private_->window_id_;
 }
 
 }  // namespace blink

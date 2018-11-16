@@ -308,6 +308,8 @@ void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
   web_request->SetKeepalive(request.keepalive);
   web_request->SetIsHistoryNavigation(request.transition_type &
                                       ui::PAGE_TRANSITION_FORWARD_BACK);
+  if (request.fetch_window_id)
+    web_request->SetWindowId(*request.fetch_window_id);
 }
 
 // Finds an event callback keyed by |event_id| from |map|, and runs the callback

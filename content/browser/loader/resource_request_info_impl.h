@@ -52,6 +52,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       int request_id,
       int render_frame_id,
       bool is_main_frame,
+      const base::UnguessableToken& fetch_window_id,
       ResourceType resource_type,
       ui::PageTransition transition_type,
       bool is_download,
@@ -210,6 +211,10 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     first_auth_attempt_ = first_auth_attempt;
   }
 
+  const base::UnguessableToken& fetch_window_id() const {
+    return fetch_window_id_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetached);
@@ -225,6 +230,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int request_id_;
   int render_frame_id_;
   bool is_main_frame_;
+  base::UnguessableToken fetch_window_id_;
   bool is_download_;
   bool is_stream_;
   bool allow_download_;

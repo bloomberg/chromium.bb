@@ -960,6 +960,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       -1,  // frame_tree_node_id
       request_data.plugin_child_id, request_id, request_data.render_frame_id,
       request_data.is_main_frame,
+      request_data.fetch_window_id ? *request_data.fetch_window_id
+                                   : base::UnguessableToken(),
       static_cast<ResourceType>(request_data.resource_type),
       static_cast<ui::PageTransition>(request_data.transition_type),
       false,  // is download
@@ -1165,6 +1167,7 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       ChildProcessHost::kInvalidUniqueID,  // plugin_child_id
       MakeRequestID(), render_frame_route_id,
       false,  // is_main_frame
+      {},     // fetch_window_id
       RESOURCE_TYPE_SUB_RESOURCE, ui::PAGE_TRANSITION_LINK,
       download,  // is_download
       false,     // is_stream
@@ -1516,8 +1519,9 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       info.frame_tree_node_id,
       ChildProcessHost::kInvalidUniqueID,  // plugin_child_id
       global_request_id.request_id,
-      -1,  // request_data.render_frame_id,
-      info.is_main_frame, resource_type, info.common_params.transition,
+      -1,                      // request_data.render_frame_id,
+      info.is_main_frame, {},  // fetch_window_id
+      resource_type, info.common_params.transition,
       false,  // is download
       false,  // is stream
       IsNavigationDownloadAllowed(info.common_params.download_policy),

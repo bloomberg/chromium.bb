@@ -33,7 +33,7 @@ class MockServiceWorkerURLRequestJob : public ServiceWorkerURLRequestJob {
       : ServiceWorkerURLRequestJob(
             nullptr,
             nullptr,
-            "",
+            nullptr,
             nullptr,
             nullptr,
             network::mojom::FetchRequestMode::kNoCors,
