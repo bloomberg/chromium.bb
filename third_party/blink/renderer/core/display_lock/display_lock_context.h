@@ -80,6 +80,7 @@ class CORE_EXPORT DisplayLockContext final
   // JavaScript interface implementation.
   void schedule(V8DisplayLockCallback*);
   DisplayLockSuspendedHandle* suspend();
+  Element* lockedElement() const;
 
   // Lifecycle observation / state functions.
   bool ShouldLayout() const;

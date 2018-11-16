@@ -164,6 +164,10 @@ DisplayLockSuspendedHandle* DisplayLockContext::suspend() {
   return new DisplayLockSuspendedHandle(this);
 }
 
+Element* DisplayLockContext::lockedElement() const {
+  return element_;
+}
+
 void DisplayLockContext::ProcessQueue() {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
   // It's important to clear this before running the tasks, since the tasks can
