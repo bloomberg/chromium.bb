@@ -99,7 +99,7 @@ class CastWebViewDefault : public CastWebView,
   std::unique_ptr<content::WebContents> web_contents_;
   CastWebContentsImpl cast_web_contents_;
   std::unique_ptr<shell::CastContentWindow> window_;
-  bool did_start_navigation_;
+  bool resize_window_when_navigation_starts_;
   base::TimeDelta shutdown_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWebViewDefault);

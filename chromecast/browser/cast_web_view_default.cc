@@ -68,7 +68,7 @@ CastWebViewDefault::CastWebViewDefault(
                          web_contents_.get(),
                          params.enabled_for_dev),
       window_(shell::CastContentWindow::Create(params.window_params)),
-      did_start_navigation_(false) {
+      resize_window_when_navigation_starts_(true) {
   DCHECK(delegate_);
   DCHECK(web_contents_manager_);
   DCHECK(browser_context_);
@@ -154,6 +154,7 @@ void CastWebViewDefault::GrantScreenAccess() {
 }
 
 void CastWebViewDefault::RevokeScreenAccess() {
+  resize_window_when_navigation_starts_ = false;
   window_->RevokeScreenAccess();
 }
 
@@ -290,10 +291,10 @@ void CastWebViewDefault::DidFirstVisuallyNonEmptyPaint() {
 
 void CastWebViewDefault::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (did_start_navigation_) {
+  if (!resize_window_when_navigation_starts_) {
     return;
   }
-  did_start_navigation_ = true;
+  resize_window_when_navigation_starts_ = false;
 
 #if defined(USE_AURA)
   // Resize window

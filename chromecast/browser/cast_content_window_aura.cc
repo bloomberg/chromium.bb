@@ -6,10 +6,14 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace chromecast {
 namespace shell {
@@ -120,6 +124,11 @@ void CastContentWindowAura::CreateWindowForWebContents(
 void CastContentWindowAura::GrantScreenAccess() {
   has_screen_access_ = true;
   if (window_) {
+#if !BUILDFLAG(IS_CAST_AUDIO_ONLY)
+    gfx::Size display_size =
+        display::Screen::GetScreen()->GetPrimaryDisplay().size();
+    window_->SetBounds(gfx::Rect(display_size.width(), display_size.height()));
+#endif
     window_->Show();
   }
 }
@@ -128,6 +137,10 @@ void CastContentWindowAura::RevokeScreenAccess() {
   has_screen_access_ = false;
   if (window_) {
     window_->Hide();
+    // Because rendering a larger window may require more system resources,
+    // resize the window to one pixel while hidden.
+    LOG(INFO) << "Resizing window to 1x1 pixel while hidden";
+    window_->SetBounds(gfx::Rect(1, 1));
   }
 }
 
