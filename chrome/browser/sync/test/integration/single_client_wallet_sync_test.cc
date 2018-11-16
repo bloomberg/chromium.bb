@@ -349,10 +349,10 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnDisableSync) {
   EXPECT_EQ(nullptr, pdm->GetPaymentsCustomerData());
 
   // Turn sync on again, the data should come back.
-  GetSyncService(0)->RequestStart();
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   // RequestStop(CLEAR_DATA) also clears the "first setup complete" flag, so
   // set it again.
-  GetSyncService(0)->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
   // Wait until Sync restores the card and it arrives at PDM.
   WaitForNumberOfCards(pdm, 1);
 
@@ -376,14 +376,14 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnStopSync) {
   EXPECT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
 
   // Turn off sync, the card should be gone.
-  GetSyncService(0)->RequestStop(syncer::SyncService::KEEP_DATA);
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
   WaitForNumberOfCards(pdm, 0);
 
   EXPECT_EQ(0uL, pdm->GetCreditCards().size());
   EXPECT_EQ(nullptr, pdm->GetPaymentsCustomerData());
 
   // Turn sync on again, the data should come back.
-  GetSyncService(0)->RequestStart();
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
   // Wait until Sync restores the card and it arrives at PDM.
   WaitForNumberOfCards(pdm, 1);
 
@@ -828,7 +828,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
   // Simulate the user opting in to full Sync: Make the account primary, and
   // set first-time setup to complete.
   secondary_account_helper::MakeAccountPrimary(profile(), "user@email.com");
-  GetSyncService(0)->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
   // Wait for Sync to get reconfigured into feature mode.
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
@@ -905,7 +905,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_EQ(syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
             GetSyncService(0)->GetTransportState());
 
-  GetSyncService(0)->OnUserChoseDatatypes(
+  GetSyncService(0)->GetUserSettings()->SetChosenDataTypes(
       /*sync_everything=*/false, syncer::ModelTypeSet(syncer::AUTOFILL));
 
   // Once the user finishes the setup, we can actually configure.
@@ -913,7 +913,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_EQ(syncer::SyncService::TransportState::CONFIGURING,
             GetSyncService(0)->GetTransportState());
 
-  GetSyncService(0)->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
   // Wait for Sync to get reconfigured into feature mode.
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
@@ -988,7 +988,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   // STEP 2. Turn off Sync-the-feature temporarily (e.g. the Sync feature toggle
   // on Android), i.e. leave the Sync data around.
-  GetSyncService(0)->RequestStop(syncer::SyncService::KEEP_DATA);
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(false);
 
   // Wait for Sync to get reconfigured into transport mode.
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
@@ -1013,7 +1013,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   EXPECT_EQ(0U, GetServerCards(profile_data).size());
 
   // STEP 3. Turn Sync-the-feature on again.
-  GetSyncService(0)->RequestStart();
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
 
   // Wait for Sync to get reconfigured into full feature mode again.
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
@@ -1057,8 +1057,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   EXPECT_EQ(0U, GetServerCards(profile_data).size());
 
   // STEP 5. Turn Sync-the-feature on again.
-  GetSyncService(0)->RequestStart();
-  GetSyncService(0)->SetFirstSetupComplete();
+  GetSyncService(0)->GetUserSettings()->SetSyncRequested(true);
+  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete();
 
   // Wait for Sync to get reconfigured into full feature mode again.
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(

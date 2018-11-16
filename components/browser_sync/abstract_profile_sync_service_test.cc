@@ -180,7 +180,7 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
   EXPECT_CALL(*components, CreateSyncEngine(_, _, _, _))
       .WillOnce(Return(ByMove(std::move(engine))));
 
-  sync_service_->SetFirstSetupComplete();
+  sync_service_->GetUserSettings()->SetFirstSetupComplete();
 }
 
 base::Callback<syncer::SyncService*(void)>
