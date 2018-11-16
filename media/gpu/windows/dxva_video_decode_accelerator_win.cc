@@ -66,6 +66,7 @@
 
 namespace {
 
+#if defined(ARCH_CPU_X86_FAMILY)
 // AMD
 // Path is appended on to the PROGRAM_FILES base path.
 const wchar_t kAMDVPXDecoderDLLPath[] =
@@ -85,6 +86,7 @@ const CLSID CLSID_AMDWebmMfVp9Dec = {
     0x67d6,
     0x48ab,
     {0x89, 0xfb, 0xa6, 0xec, 0x65, 0x55, 0x49, 0x70}};
+#endif
 
 const wchar_t kMSVP9DecoderDLLName[] = L"MSVP9DEC.dll";
 
@@ -1586,6 +1588,8 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
       program_files_key = base::DIR_PROGRAM_FILES6432;
     }
 
+// Avoid loading AMD VP9 decoder on Windows ARM64.
+#if defined(ARCH_CPU_X86_FAMILY)
     // AMD
     if (!decoder_dll &&
         enable_accelerated_vpx_decode_ & gpu::GpuPreferences::VPX_VENDOR_AMD &&
@@ -1600,6 +1604,7 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
                                       LOAD_WITH_ALTERED_SEARCH_PATH);
       }
     }
+#endif
   }
 
   if (!decoder_dll) {
