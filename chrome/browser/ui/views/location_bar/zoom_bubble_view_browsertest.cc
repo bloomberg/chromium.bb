@@ -39,15 +39,9 @@ void ShowInActiveTab(Browser* browser) {
 
 }  // namespace
 
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-#define MAYBE_NonImmersiveFullscreen DISABLED_NonImmersiveFullscreen
-#else
-#define MAYBE_NonImmersiveFullscreen NonImmersiveFullscreen
-#endif
 // Test whether the zoom bubble is anchored and whether it is visible when in
 // non-immersive fullscreen.
-IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, MAYBE_NonImmersiveFullscreen) {
+IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, NonImmersiveFullscreen) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
 
