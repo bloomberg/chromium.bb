@@ -51,6 +51,7 @@ include_rules = [
   "+media/midi",  # For midi switches
   "+media/mojo",  # For mojo media services.
   "+media/renderers",
+  "+media/webrtc",  # For webrtc media switches.
   "+ppapi/c",  # For various types.
   "+ppapi/host",
   "+ppapi/proxy",

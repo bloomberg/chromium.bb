@@ -225,6 +225,12 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
     source_params.processing = media::AudioSourceParameters::ProcessingConfig(
         rtc_audio_device->GetAudioProcessingId(),
         audio_processing_properties_.ToAudioProcessingSettings());
+    if (source_params.processing->settings.automatic_gain_control !=
+            media::AutomaticGainControlType::kDisabled &&
+        base::FeatureList::IsEnabled(features::kWebRtcHybridAgc)) {
+      source_params.processing->settings.automatic_gain_control =
+          media::AutomaticGainControlType::kHybridExperimental;
+    }
   } else {
     audio_processor_ = new rtc::RefCountedObject<MediaStreamAudioProcessor>(
         audio_processing_properties_, rtc_audio_device);

@@ -115,6 +115,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "media/midi/midi_switches.h"
+#include "media/webrtc/webrtc_switches.h"
 #include "net/base/features.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"

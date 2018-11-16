@@ -27,6 +27,8 @@ COMPONENT_EXPORT(MEDIA_WEBRTC)
 extern const base::Feature kWebRtcAecNoiseTransparency;
 COMPONENT_EXPORT(MEDIA_WEBRTC)
 extern const base::Feature kWebRtcApmInAudioService;
+COMPONENT_EXPORT(MEDIA_WEBRTC)
+extern const base::Feature kWebRtcHybridAgc;
 
 }  // namespace features
 
