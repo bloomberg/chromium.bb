@@ -53,7 +53,6 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -379,7 +378,6 @@ void WindowSelector::Init(const WindowList& windows,
 
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
 
-  Shell::Get()->activation_client()->AddObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
 
   display::Screen::GetScreen()->AddObserver(this);
@@ -389,6 +387,8 @@ void WindowSelector::Init(const WindowList& windows,
       mojom::AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED);
 
   UpdateShelfVisibility();
+
+  ignore_activations_ = false;
 }
 
 // NOTE: The work done in Shutdown() is not done in the destructor because it
@@ -769,6 +769,48 @@ bool WindowSelector::IsWindowGridAnimating() {
   return false;
 }
 
+void WindowSelector::OnWindowActivating(
+    ::wm::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  if (ignore_activations_ || !gained_active ||
+      gained_active == GetTextFilterWidgetWindow()) {
+    return;
+  }
+
+  auto* grid = GetGridWithRootWindow(gained_active->GetRootWindow());
+  if (!grid)
+    return;
+  const auto& windows = grid->window_list();
+
+  auto iter = std::find_if(
+      windows.begin(), windows.end(),
+      [gained_active](const std::unique_ptr<WindowSelectorItem>& window) {
+        return window->Contains(gained_active);
+      });
+
+  if (iter == windows.end() && showing_text_filter_ &&
+      lost_active == GetTextFilterWidgetWindow()) {
+    return;
+  }
+
+  // Do not cancel overview mode if the window activation was caused by
+  // snapping window to one side of the screen.
+  if (Shell::Get()->IsSplitViewModeActive())
+    return;
+
+  // Do not cancel overview mode if the window activation was caused while
+  // dragging overview mode offscreen.
+  if (IsSlidingOutOverviewFromShelf())
+    return;
+
+  // Don't restore focus on exit if a window was just activated.
+  ResetFocusRestoreWindow(false);
+  if (iter != windows.end())
+    selected_item_ = iter->get();
+  CancelSelection();
+}
+
 void WindowSelector::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
   CancelSelection();
@@ -821,53 +863,6 @@ void WindowSelector::OnWindowDestroying(aura::Window* window) {
   observed_windows_.erase(window);
   if (window == restore_focus_window_)
     restore_focus_window_ = nullptr;
-}
-
-void WindowSelector::OnWindowActivated(ActivationReason reason,
-                                       aura::Window* gained_active,
-                                       aura::Window* lost_active) {
-  if (ignore_activations_ || !gained_active ||
-      gained_active == GetTextFilterWidgetWindow()) {
-    return;
-  }
-
-  auto* grid = GetGridWithRootWindow(gained_active->GetRootWindow());
-  if (!grid)
-    return;
-  const auto& windows = grid->window_list();
-
-  auto iter = std::find_if(
-      windows.begin(), windows.end(),
-      [gained_active](const std::unique_ptr<WindowSelectorItem>& window) {
-        return window->Contains(gained_active);
-      });
-
-  if (iter == windows.end() && showing_text_filter_ &&
-      lost_active == GetTextFilterWidgetWindow()) {
-    return;
-  }
-
-  // Do not cancel overview mode if the window activation was caused by
-  // snapping window to one side of the screen.
-  if (Shell::Get()->IsSplitViewModeActive())
-    return;
-
-  // Do not cancel overview mode if the window activation was caused while
-  // dragging overview mode offscreen.
-  if (IsSlidingOutOverviewFromShelf())
-    return;
-
-  // Don't restore focus on exit if a window was just activated.
-  ResetFocusRestoreWindow(false);
-  if (iter != windows.end())
-    selected_item_ = iter->get();
-  CancelSelection();
-}
-
-void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
-                                                 aura::Window* actual_active) {
-  OnWindowActivated(ActivationReason::ACTIVATION_CLIENT, request_active,
-                    actual_active);
 }
 
 void WindowSelector::ContentsChanged(views::Textfield* sender,
@@ -1083,7 +1078,6 @@ void WindowSelector::RemoveAllObservers() {
     window->RemoveObserver(this);
   observed_windows_.clear();
 
-  Shell::Get()->activation_client()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   if (restore_focus_window_)
     restore_focus_window_->RemoveObserver(this);

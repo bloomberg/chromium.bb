@@ -31,6 +31,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -251,9 +252,12 @@ class WindowSelectorController::OverviewBlurController
 
 WindowSelectorController::WindowSelectorController()
     : overview_blur_controller_(std::make_unique<OverviewBlurController>()),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  Shell::Get()->activation_client()->AddObserver(this);
+}
 
 WindowSelectorController::~WindowSelectorController() {
+  Shell::Get()->activation_client()->RemoveObserver(this);
   overview_blur_controller_.reset();
 
   // Destroy widgets that may be still animating if shell shuts down soon after
@@ -318,7 +322,7 @@ bool WindowSelectorController::ToggleOverview(
       return true;
     }
 
-    // Suspend occlusion tracker until the enter animation is complete.
+    // Suspend occlusion tracker until the exit animation is complete.
     reset_pauser_task_.Cancel();
     occlusion_tracker_pauser_ =
         std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
@@ -352,10 +356,10 @@ bool WindowSelectorController::ToggleOverview(
     for (const auto& animation : delayed_animations_)
       animation->Shutdown();
     if (!delayed_animations_.empty())
-      OnStartingAnimationComplete(/*canceled=*/true);
+      OnEndingAnimationComplete(/*canceled=*/true);
     delayed_animations_.clear();
 
-    // Suspend occlusion tracker until the exit animation is complete.
+    // Suspend occlusion tracker until the enter animation is complete.
     reset_pauser_task_.Cancel();
     occlusion_tracker_pauser_ =
         std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
@@ -537,7 +541,7 @@ void WindowSelectorController::OnSelectionEnded() {
     return;
 
   if (!start_animations_.empty())
-    OnEndingAnimationComplete(/*canceled=*/true);
+    OnStartingAnimationComplete(/*canceled=*/true);
   start_animations_.clear();
 
   window_selector_->UpdateMaskAndShadow(/*show=*/false);
@@ -545,14 +549,17 @@ void WindowSelectorController::OnSelectionEnded() {
   Shell::Get()->NotifyOverviewModeEnding();
   auto* window_selector = window_selector_.release();
   window_selector->Shutdown();
-  // There may be no delayed animations in tests, so unblur right away.
-  if (delayed_animations_.empty() && IsBlurAllowed())
-    overview_blur_controller_->Unblur();
   // Don't delete |window_selector_| yet since the stack is still using it.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, window_selector);
   last_selection_time_ = base::Time::Now();
   Shell::Get()->NotifyOverviewModeEnded();
   is_shutting_down_ = false;
+  // There may be no delayed animations in tests, so unblur right away.
+  if (delayed_animations_.empty()) {
+    if (IsBlurAllowed())
+      overview_blur_controller_->Unblur();
+    OnEndingAnimationComplete(/*canceled=*/false);
+  }
 }
 
 void WindowSelectorController::AddDelayedAnimationObserver(
@@ -576,6 +583,23 @@ void WindowSelectorController::RemoveAndDestroyAnimationObserver(
       overview_blur_controller_->Unblur();
 
     OnEndingAnimationComplete(/*canceled=*/false);
+  }
+}
+
+void WindowSelectorController::OnWindowActivating(ActivationReason reason,
+                                                  aura::Window* gained_active,
+                                                  aura::Window* lost_active) {
+  if (window_selector_)
+    window_selector_->OnWindowActivating(reason, gained_active, lost_active);
+}
+
+void WindowSelectorController::OnAttemptToReactivateWindow(
+    aura::Window* request_active,
+    aura::Window* actual_active) {
+  if (window_selector_) {
+    window_selector_->OnWindowActivating(
+        ::wm::ActivationChangeObserver::ActivationReason::ACTIVATION_CLIENT,
+        request_active, actual_active);
   }
 }
 
