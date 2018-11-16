@@ -270,7 +270,8 @@ class TestFirmwareSigner(cros_test_lib.RunCommandTempDirTestCase):
 
   def testSignOneWithEC(self):
     fs = firmware.FirmwareSigner()
-    ks = keys_unittest.KeysetMock(os.path.join(self.tempdir, 'keyset'))
+    keyset_dir = os.path.join(self.tempdir, 'keyset')
+    ks = keys_unittest.KeysetMock(keyset_dir)
     ks.CreateDummyKeys()
 
     shellball_dir = os.path.join(self.tempdir, 'shellball')
@@ -283,7 +284,8 @@ class TestFirmwareSigner(cros_test_lib.RunCommandTempDirTestCase):
 
   def testSignOneWithLoem(self):
     fs = firmware.FirmwareSigner()
-    ks = keys_unittest.KeysetMock(os.path.join(self.tempdir, 'keyset'))
+    keyset_dir = os.path.join(self.tempdir, 'keyset')
+    ks = keys_unittest.KeysetMock(keyset_dir)
     ks.CreateDummyKeys()
     ks_subset = ks.GetSubKeyset('ACME')
 
@@ -301,7 +303,8 @@ class TestFirmwareSigner(cros_test_lib.RunCommandTempDirTestCase):
 
   def testSignWithSignerConfig(self):
     fs = firmware.FirmwareSigner()
-    ks = keys_unittest.KeysetMock(os.path.join(self.tempdir, 'keyset'))
+    keyset_dir = os.path.join(self.tempdir, 'keyset')
+    ks = keys_unittest.KeysetMock(keyset_dir)
     ks.CreateDummyKeys()
 
     shellball_dir = os.path.join(self.tempdir, 'shellball')
@@ -318,15 +321,17 @@ class TestFirmwareSigner(cros_test_lib.RunCommandTempDirTestCase):
       bios_path = os.path.join(shellball_dir, board_config['firmware_image'])
       self.assertCommandContains(['futility', 'sign', bios_path])
 
-  def testSignWithNoSignerConfig(self):
+  def testSignWithNoSignerConfigUnified(self):
+    """Test signing unified builds with no signer_config.csv provided."""
     fs = firmware.FirmwareSigner()
-    ks = keys_unittest.KeysetMock(os.path.join(self.tempdir, 'keyset'))
+    keyset_dir = os.path.join(self.tempdir, 'keyset')
+    ks = keys_unittest.KeysetMock(keyset_dir)
     ks.CreateDummyKeys()
 
     shellball_dir = os.path.join(self.tempdir, 'shellball')
 
-    test_bios = ('bios.bin',
-                 'bios.loem1.bin')
+    test_bios = ('bios.loem1.bin',
+                 'bios.loem2.bin')
 
     for bios in test_bios:
       osutils.Touch(os.path.join(shellball_dir, bios), makedirs=True)
@@ -338,6 +343,29 @@ class TestFirmwareSigner(cros_test_lib.RunCommandTempDirTestCase):
       self.assertCommandContains(['futility', 'sign', bios_path])
 
     self.assertExists(os.path.join(shellball_dir, 'keyset.loem1'))
+    self.assertExists(os.path.join(shellball_dir, 'keyset.loem2'))
+
+  def testSignWithNoSignerConfigNonUnified(self):
+    """Test signing non-unified build with no signer_config.csv provided."""
+    fs = firmware.FirmwareSigner()
+    keyset_dir = os.path.join(self.tempdir, 'keyset')
+    ks = keys_unittest.KeysetMock(keyset_dir, has_loem_ini=False)
+    ks.CreateDummyKeys()
+
+    shellball_dir = os.path.join(self.tempdir, 'shellball')
+
+    test_bios = ('bios.bin',)
+
+    for bios in test_bios:
+      osutils.Touch(os.path.join(shellball_dir, bios), makedirs=True)
+
+    fs.Sign(ks, shellball_dir, None)
+
+    for bios in test_bios:
+      bios_path = os.path.join(shellball_dir, bios)
+      self.assertCommandContains(['futility', 'sign', bios_path])
+
+    self.assertExists(os.path.join(shellball_dir, 'keyset'))
 
 
 class TestGBBSigner(cros_test_lib.RunCommandTempDirTestCase):

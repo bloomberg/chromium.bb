@@ -49,12 +49,19 @@ class KeysetMock(keys.Keyset):
 
   SUBKEYS = ('loem1', 'loem2', 'loem3', 'loem4')
 
-  ALIAS = ('ACME', 'SHINRA')
+  ALIAS = ('ACME', 'SHINRA', 'WILE', 'COYOTE')
 
-  def __init__(self, keydir):
+  def __init__(self, keydir, has_loem_ini=True):
     super(KeysetMock, self).__init__()
 
     self.keydir = keydir
+    osutils.SafeMakedirs(keydir)
+    self.has_loem_ini = has_loem_ini
+
+    if not has_loem_ini:
+      self.KEYS_WITH_SUBKEYS = ()
+      self.SUBKEYS = ()
+      self.ALIAS = ()
 
     for key_name in KeysetMock.KEYS:
       self.AddKey(keys.KeyPair(key_name, keydir))
@@ -68,10 +75,13 @@ class KeysetMock(keys.Keyset):
 
   def WriteIniFile(self):
     """Writes alias to file"""
-    with open(os.path.join(self.keydir, 'loem.ini'), 'w') as conf:
-      conf.write('[loem]\n'
-                 '1 = ACME\n'
-                 '2 = SHINRA')
+    if not self.has_loem_ini:
+      return
+    lines = ['[loem]']
+    lines += ['%d = %s' % (i, alias)
+              for i, alias in enumerate(self.ALIAS, 1)]
+    contents = '\n'.join(lines) + '\n'
+    osutils.WriteFile(os.path.join(self.keydir, 'loem.ini'), contents)
 
   def CreateDummyKeys(self):
     """Creates dummy keys from stored keys."""
@@ -91,17 +101,17 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
 
   def testRejectsEmptyName(self):
     with self.assertRaises(ValueError):
-      keys.KeyPair('', self.tempdir, version=1)
+      keys.KeyPair('', self.tempdir)
 
   def testRejectsNameWithSlash(self):
     with self.assertRaises(ValueError):
-      keys.KeyPair('/foo', self.tempdir, version=1)
+      keys.KeyPair('/foo', self.tempdir)
     with self.assertRaises(ValueError):
-      keys.KeyPair('foo/bar', self.tempdir, version=1)
+      keys.KeyPair('foo/bar', self.tempdir)
 
   def testRejectsLeadingDot(self):
     with self.assertRaises(ValueError):
-      keys.KeyPair('.foo', self.tempdir, version=1)
+      keys.KeyPair('.foo', self.tempdir)
 
   def testCoercesVersionToInt(self):
     k1 = keys.KeyPair('key1', self.tempdir, version='1')
