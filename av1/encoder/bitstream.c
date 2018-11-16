@@ -3580,8 +3580,8 @@ static uint32_t write_frame_header_obu(AV1_COMP *cpi,
   return aom_wb_bytes_written(&wb);
 }
 
-static uint32_t write_tile_group_header(uint8_t *const dst, int startTile,
-                                        int endTile, int tiles_log2,
+static uint32_t write_tile_group_header(uint8_t *const dst, int start_tile,
+                                        int end_tile, int tiles_log2,
                                         int tile_start_and_end_present_flag) {
   struct aom_write_bit_buffer wb = { dst, 0 };
   uint32_t size = 0;
@@ -3591,8 +3591,8 @@ static uint32_t write_tile_group_header(uint8_t *const dst, int startTile,
   aom_wb_write_bit(&wb, tile_start_and_end_present_flag);
 
   if (tile_start_and_end_present_flag) {
-    aom_wb_write_literal(&wb, startTile, tiles_log2);
-    aom_wb_write_literal(&wb, endTile, tiles_log2);
+    aom_wb_write_literal(&wb, start_tile, tiles_log2);
+    aom_wb_write_literal(&wb, end_tile, tiles_log2);
   }
 
   size = aom_wb_bytes_written(&wb);
