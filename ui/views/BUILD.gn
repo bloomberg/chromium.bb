@@ -466,6 +466,8 @@ jumbo_component("views") {
     "cocoa/bridged_native_widget_host_impl.mm",
     "cocoa/drag_drop_client_mac.h",
     "cocoa/drag_drop_client_mac.mm",
+    "cocoa/scoped_accessibility_focus.h",
+    "cocoa/scoped_accessibility_focus.mm",
     "cocoa/tooltip_manager_mac.h",
     "cocoa/tooltip_manager_mac.mm",
     "controls/button/label_button_label.cc",

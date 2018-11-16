@@ -8,6 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
+#include "ui/base/cocoa/remote_accessibility_api.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
@@ -17,6 +18,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme_mac.h"
+#include "ui/views/cocoa/scoped_accessibility_focus.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -97,6 +99,7 @@ BridgedNativeWidgetHostImpl::BridgedNativeWidgetHostImpl(NativeWidgetMac* owner)
 }
 
 BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
+  scoped_accessibility_focus_.reset();
   DCHECK(children_.empty());
   if (bridge_factory_host_) {
     bridge_ptr_.reset();
@@ -122,6 +125,20 @@ BridgedNativeWidgetHostImpl::~BridgedNativeWidgetHostImpl() {
 
 NativeWidgetMacNSWindow* BridgedNativeWidgetHostImpl::GetLocalNSWindow() const {
   return local_window_.get();
+}
+
+gfx::NativeViewAccessible BridgedNativeWidgetHostImpl::GetParentViewAccessible()
+    const {
+  if (bridge_impl_)
+    return bridge_impl_->ns_view();
+  return remote_view_accessible_.get();
+}
+
+gfx::NativeViewAccessible BridgedNativeWidgetHostImpl::GetWindowAccessible()
+    const {
+  if (bridge_impl_)
+    return bridge_impl_->ns_window();
+  return remote_window_accessible_.get();
 }
 
 views_bridge_mac::mojom::BridgedNativeWidget*
@@ -457,7 +474,7 @@ NSView* BridgedNativeWidgetHostImpl::GetGlobalCaptureView() {
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl, views_bridge_mac::BridgedNativeWidgetHostHelper:
 
-NSView* BridgedNativeWidgetHostImpl::GetNativeViewAccessible() {
+id BridgedNativeWidgetHostImpl::GetNativeViewAccessible() {
   return root_view_ ? root_view_->GetNativeViewAccessible() : nil;
 }
 
@@ -772,6 +789,13 @@ void BridgedNativeWidgetHostImpl::OnWindowKeyStatusChanged(
     bool is_key,
     bool is_content_first_responder,
     bool full_keyboard_access_enabled) {
+  if (is_key) {
+    scoped_accessibility_focus_ =
+        std::make_unique<ScopedAccessibilityFocus>(this);
+  } else {
+    scoped_accessibility_focus_.reset();
+  }
+
   is_window_key_ = is_key;
   Widget* widget = native_widget_mac_->GetWidget();
   if (!widget->OnNativeWidgetActivationChanged(is_key))
@@ -984,6 +1008,23 @@ void BridgedNativeWidgetHostImpl::GetWindowFrameTitlebarHeight(
   float titlebar_height = 0;
   GetWindowFrameTitlebarHeight(&override_titlebar_height, &titlebar_height);
   std::move(callback).Run(override_titlebar_height, titlebar_height);
+}
+
+void BridgedNativeWidgetHostImpl::GetAccessibilityTokens(
+    const std::vector<uint8_t>& window_token,
+    const std::vector<uint8_t>& view_token,
+    GetAccessibilityTokensCallback callback) {
+  remote_window_accessible_ =
+      ui::RemoteAccessibility::GetRemoteElementFromToken(window_token);
+  remote_view_accessible_ =
+      ui::RemoteAccessibility::GetRemoteElementFromToken(view_token);
+  [remote_view_accessible_ setWindowUIElement:remote_window_accessible_.get()];
+  [remote_view_accessible_
+      setTopLevelUIElement:remote_window_accessible_.get()];
+
+  id element_id = GetNativeViewAccessible();
+  std::move(callback).Run(
+      getpid(), ui::RemoteAccessibility::GetTokenForLocalElement(element_id));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

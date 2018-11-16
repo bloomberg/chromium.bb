@@ -128,6 +128,8 @@ jumbo_component("base") {
     "cocoa/ns_view_ids.mm",
     "cocoa/quartz_util.h",
     "cocoa/quartz_util.mm",
+    "cocoa/remote_accessibility_api.h",
+    "cocoa/remote_accessibility_api.mm",
     "cocoa/remote_layer_api.h",
     "cocoa/remote_layer_api.mm",
     "cocoa/secure_password_input.h",

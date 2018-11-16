@@ -25,6 +25,10 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegateMac::GetParent() {
   if (view()->parent())
     return view()->parent()->GetNativeViewAccessible();
 
+  // TODO(ccameron): This should return the NSAccessibilityRemoteUIElement for
+  // the NSView in the viewer process. This requires that Widget have a
+  // method to retrieve this object, which will not necessarily coincide with
+  // GetNativeView.
   if (view()->GetWidget())
     return view()->GetWidget()->GetNativeView().GetNativeNSView();
 
