@@ -4,11 +4,11 @@
 
 ### MSan
 
-You need to [download prebuilt instrumented libraries](https://www.chromium.org/developers/testing/memorysanitizer#TOC-How-to-build-and-run)
-to use MSan ([crbug/653712](https://bugs.chromium.org/p/chromium/issues/detail?id=653712)):
-```bash
-GYP_DEFINES='use_goma=1 msan=1 use_prebuilt_instrumented_libraries=1' gclient runhooks
-```
+Memory Sanitizer (MSan) in Chromium only supports Ubuntu Precise/Trusty and not
+Rodete.
+Thus, our [reproduce tool] cannot reproduce bugs found using MSan.
+You can try to reproduce them manually by using [these instructions] on how to
+run MSan-instrumented code in docker.
 
 ### UBSan
 
@@ -142,4 +142,6 @@ fuzzer_test("my_fuzzer") {
 [Address Sanitizer]: http://clang.llvm.org/docs/AddressSanitizer.html
 [Memory Sanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html
 [Undefined Behavior Sanitizer]: http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+[reproduce tool]: https://github.com/google/clusterfuzz-tools
+[these instructions]: https://www.chromium.org/developers/testing/memorysanitizer#TOC-Running-on-other-distros-using-Docker
 
