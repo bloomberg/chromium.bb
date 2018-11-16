@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/line/line_layout_state.h"
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
 #include "third_party/blink/renderer/core/layout/line/word_measurement.h"
+#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/svg/line/svg_root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/vertical_position_cache.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -1718,15 +1719,17 @@ void LayoutBlockFlow::ComputeInlinePreferredLogicalWidths(
 
         bool clear_previous_float;
         if (child->IsFloating()) {
-          const ComputedStyle& child_style = child->StyleRef();
-          clear_previous_float =
-              (prev_float &&
-               ((prev_float->StyleRef().Floating() == EFloat::kLeft &&
-                 (child_style.Clear() == EClear::kBoth ||
-                  child_style.Clear() == EClear::kLeft)) ||
-                (prev_float->StyleRef().Floating() == EFloat::kRight &&
-                 (child_style.Clear() == EClear::kBoth ||
-                  child_style.Clear() == EClear::kRight))));
+          if (prev_float) {
+            EFloat f = ResolvedFloating(prev_float->StyleRef(), style_to_use);
+            EClear c = ResolvedClear(child->StyleRef(), style_to_use);
+            clear_previous_float =
+                ((f == EFloat::kLeft &&
+                  (c == EClear::kBoth || c == EClear::kLeft)) ||
+                 (f == EFloat::kRight &&
+                  (c == EClear::kBoth || c == EClear::kRight)));
+          } else {
+            clear_previous_float = false;
+          }
           prev_float = child;
         } else {
           clear_previous_float = false;

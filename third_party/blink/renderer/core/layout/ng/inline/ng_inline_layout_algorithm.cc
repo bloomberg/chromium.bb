@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
@@ -646,8 +647,9 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
   if (layout_object && layout_object->IsBR()) {
     NGBfcOffset bfc_offset = {ContainerBfcOffset().line_offset,
                               ContainerBfcOffset().block_offset + content_size};
-    AdjustToClearance(exclusion_space.ClearanceOffset(item.Style()->Clear()),
-                      &bfc_offset);
+    AdjustToClearance(
+        exclusion_space.ClearanceOffset(ResolvedClear(*item.Style(), Style())),
+        &bfc_offset);
     content_size = bfc_offset.block_offset - ContainerBfcOffset().block_offset;
   }
 
@@ -855,9 +857,9 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
     if (item.Type() == NGInlineItem::kFloating) {
       NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
 
-      AddUnpositionedFloat(
-          &unpositioned_floats_, &container_builder_,
-          NGUnpositionedFloat(node, /* break_token */ nullptr));
+      AddUnpositionedFloat(&unpositioned_floats_, &container_builder_,
+                           NGUnpositionedFloat(node, /* break_token */ nullptr),
+                           ConstraintSpace());
     }
 
     // Abort if we've found something that makes this a non-empty inline.

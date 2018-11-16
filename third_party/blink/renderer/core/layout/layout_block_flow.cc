@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
+#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
@@ -2900,7 +2901,7 @@ LayoutUnit LayoutBlockFlow::GetClearDelta(LayoutBox* child,
 
   // At least one float is present. We need to perform the clearance
   // computation.
-  EClear clear = child->StyleRef().Clear();
+  EClear clear = ResolvedClear(child->StyleRef(), StyleRef());
   LayoutUnit logical_bottom = LowestFloatLogicalBottom(clear);
 
   // We also clear floats if we are too big to sit on the same line as a float
@@ -3736,7 +3737,7 @@ LayoutPoint LayoutBlockFlow::ComputeLogicalLocationForFloat(
 
   LayoutUnit float_logical_left;
 
-  if (child_box->StyleRef().Floating() == EFloat::kLeft) {
+  if (ResolvedFloating(child_box->StyleRef(), StyleRef()) == EFloat::kLeft) {
     LayoutUnit height_remaining_left = LayoutUnit(1);
     LayoutUnit height_remaining_right = LayoutUnit(1);
     float_logical_left = LogicalLeftOffsetForPositioningFloat(
@@ -3793,8 +3794,12 @@ FloatingObject* LayoutBlockFlow::InsertFloatingObject(LayoutBox& float_box) {
   }
 
   // Create the special object entry & append it to the list
-
-  std::unique_ptr<FloatingObject> new_obj = FloatingObject::Create(&float_box);
+  EFloat f = ResolvedFloating(float_box.StyleRef(), StyleRef());
+  DCHECK(f == EFloat::kLeft || f == EFloat::kRight);
+  FloatingObject::Type type = f == EFloat::kLeft ? FloatingObject::kFloatLeft
+                                                 : FloatingObject::kFloatRight;
+  std::unique_ptr<FloatingObject> new_obj =
+      FloatingObject::Create(&float_box, type);
   return floating_objects_->Add(std::move(new_obj));
 }
 
@@ -3921,9 +3926,9 @@ LayoutUnit LayoutBlockFlow::PositionAndLayoutFloat(
   // FIXME Investigate if this can be removed. crbug.com/370006
   child.SetShouldCheckForPaintInvalidation();
 
-  logical_top_margin_edge =
-      std::max(logical_top_margin_edge,
-               LowestFloatLogicalBottom(child.StyleRef().Clear()));
+  logical_top_margin_edge = std::max(
+      logical_top_margin_edge,
+      LowestFloatLogicalBottom(ResolvedClear(child.StyleRef(), StyleRef())));
 
   bool is_paginated = View()->GetLayoutState()->IsPaginated();
   if (is_paginated && !ChildrenInline()) {

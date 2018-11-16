@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
@@ -940,7 +941,7 @@ static LayoutUnit ComputeContentSize(
       if (mode == NGLineBreakerMode::kMinContent) {
         result = std::max(result, child_sizes.min_size + child_inline_margins);
       } else {
-        const EClear float_clear = float_style.Clear();
+        const EClear float_clear = ResolvedClear(float_style, style);
 
         // If this float clears the previous float we start a new "line".
         // This is subtly different to block layout which will only reset either
@@ -957,7 +958,7 @@ static LayoutUnit ComputeContentSize(
         // such float should not affect the content size.
         floats_inline_size +=
             (child_sizes.max_size + child_inline_margins).ClampNegativeToZero();
-        previous_float_type = float_style.Floating();
+        previous_float_type = ResolvedFloating(float_style, style);
       }
     }
 
