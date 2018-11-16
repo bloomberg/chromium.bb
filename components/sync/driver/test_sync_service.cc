@@ -199,10 +199,6 @@ bool TestSyncService::SetDecryptionPassphrase(const std::string& passphrase) {
   return false;
 }
 
-bool TestSyncService::IsCryptographerReady(const BaseTransaction* trans) const {
-  return false;
-}
-
 UserShare* TestSyncService::GetUserShare() const {
   return nullptr;
 }

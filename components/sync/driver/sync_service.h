@@ -24,7 +24,6 @@ class GURL;
 
 namespace syncer {
 
-class BaseTransaction;
 class JsController;
 class ProtocolEventObserver;
 class SyncCycleSnapshot;
@@ -354,11 +353,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // copy of encrypted keys; returns true otherwise.
   virtual bool SetDecryptionPassphrase(const std::string& passphrase)
       WARN_UNUSED_RESULT = 0;
-
-  // Checks whether the Cryptographer is ready to encrypt and decrypt updates
-  // for sensitive data types. Caller must be holding a syncer::BaseTransaction
-  // to ensure thread safety.
-  virtual bool IsCryptographerReady(const BaseTransaction* trans) const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // ACCESS TO INNER OBJECTS

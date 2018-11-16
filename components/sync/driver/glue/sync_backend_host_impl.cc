@@ -239,12 +239,6 @@ void SyncBackendHostImpl::HasUnsyncedItemsForTest(
       std::move(cb));
 }
 
-bool SyncBackendHostImpl::IsCryptographerReady(
-    const BaseTransaction* trans) const {
-  return initialized() && trans->GetCryptographer() &&
-         trans->GetCryptographer()->is_ready();
-}
-
 void SyncBackendHostImpl::GetModelSafeRoutingInfo(
     ModelSafeRoutingInfo* out) const {
   if (initialized()) {

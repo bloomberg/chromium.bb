@@ -58,7 +58,6 @@ class SharedURLLoaderFactory;
 
 namespace syncer {
 class BackendMigrator;
-class BaseTransaction;
 class DeviceInfoSyncBridge;
 class DeviceInfoTracker;
 class ModelTypeControllerDelegate;
@@ -254,8 +253,6 @@ class ProfileSyncService : public syncer::SyncService,
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override
       WARN_UNUSED_RESULT;
-  bool IsCryptographerReady(
-      const syncer::BaseTransaction* trans) const override;
   syncer::UserShare* GetUserShare() const override;
   void ReenableDatatype(syncer::ModelType type) override;
   void ReadyForStartChanged(syncer::ModelType type) override;

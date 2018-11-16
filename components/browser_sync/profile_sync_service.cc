@@ -1460,12 +1460,6 @@ base::Time ProfileSyncService::GetExplicitPassphraseTime() const {
   return crypto_.GetExplicitPassphraseTime();
 }
 
-bool ProfileSyncService::IsCryptographerReady(
-    const syncer::BaseTransaction* trans) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return engine_ && engine_->IsCryptographerReady(trans);
-}
-
 void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

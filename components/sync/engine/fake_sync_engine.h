@@ -72,8 +72,6 @@ class FakeSyncEngine : public SyncEngine {
   void HasUnsyncedItemsForTest(
       base::OnceCallback<void(bool)> cb) const override;
 
-  bool IsCryptographerReady(const BaseTransaction* trans) const override;
-
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const override;
 
   void FlushDirectory() const override;
