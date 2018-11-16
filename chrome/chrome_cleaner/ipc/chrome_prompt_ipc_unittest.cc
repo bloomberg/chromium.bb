@@ -226,6 +226,7 @@ class ChromePromptIPCChildProcess : public ChildProcess {
 
     std::vector<base::FilePath> files_to_delete;
     std::vector<base::string16> registry_keys;
+    std::vector<base::string16> extension_ids;
     if (uws_expected()) {
       files_to_delete.push_back(kBadFilePath);
       if (with_registry_keys())
@@ -234,6 +235,7 @@ class ChromePromptIPCChildProcess : public ChildProcess {
 
     chrome_prompt_ipc->PostPromptUserTask(
         std::move(files_to_delete), std::move(registry_keys),
+        std::move(extension_ids),
         base::BindOnce(&ChromePromptIPCChildProcess::ReceivePromptResult,
                        base::Unretained(this), base::Passed(&done)));
   }
