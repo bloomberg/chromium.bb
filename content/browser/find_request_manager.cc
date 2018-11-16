@@ -760,7 +760,14 @@ void FindRequestManager::FinalUpdateReceived(int request_id,
                             true /* matches_only */, false /* wrap */);
     }
   }
-  DCHECK(target_rfh);
+  if (!target_rfh) {
+    // Sometimes when the WebContents is deleted/navigated, we got into this
+    // situation. We don't care about this WebContents anyways so it's ok to
+    // just not ask for the active match and return immediately.
+    // TODO(rakina): Understand what leads to this situation.
+    // See: https://crbug.com/884679.
+    return;
+  }
 
   // Forward the find reply without |final_update| set because the active match
   // has not yet been found.
