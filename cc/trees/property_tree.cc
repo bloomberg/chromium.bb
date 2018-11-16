@@ -1305,14 +1305,7 @@ void ScrollTree::clear() {
 
 gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
   const ScrollNode* scroll_node = Node(scroll_node_id);
-  gfx::SizeF scroll_bounds =
-      gfx::SizeF(scroll_node->bounds.width(), scroll_node->bounds.height());
-
-  if (scroll_node->scrolls_inner_viewport) {
-    scroll_bounds.Enlarge(
-        property_trees()->inner_viewport_scroll_bounds_delta().x(),
-        property_trees()->inner_viewport_scroll_bounds_delta().y());
-  }
+  gfx::SizeF scroll_bounds = this->scroll_bounds(scroll_node_id);
 
   if (!scroll_node->scrollable || scroll_bounds.IsEmpty())
     return gfx::ScrollOffset();
@@ -1335,6 +1328,16 @@ gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
   max_offset.Scale(1 / scale_factor);
   max_offset.SetToMax(gfx::ScrollOffset());
   return max_offset;
+}
+
+gfx::SizeF ScrollTree::scroll_bounds(int scroll_node_id) const {
+  const ScrollNode* scroll_node = Node(scroll_node_id);
+  gfx::SizeF bounds(scroll_node->bounds);
+  if (scroll_node->scrolls_inner_viewport) {
+    const auto& delta = property_trees()->inner_viewport_scroll_bounds_delta();
+    bounds.Enlarge(delta.x(), delta.y());
+  }
+  return bounds;
 }
 
 void ScrollTree::OnScrollOffsetAnimated(ElementId id,
