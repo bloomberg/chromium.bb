@@ -6,13 +6,22 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <string>
+
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/sync/base/hash_util.h"
+#include "components/sync/engine/model_type_processor.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
+#include "components/sync/model/entity_data.h"
+#include "components/sync/model_impl/in_memory_metadata_change_list.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
-#include "components/sync_sessions/sessions_sync_manager.h"
+#include "components/sync_sessions/session_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -75,8 +84,7 @@ struct RecentTabsBuilderTestHelper::SessionInfo {
   std::vector<WindowInfo> windows;
 };
 
-RecentTabsBuilderTestHelper::RecentTabsBuilderTestHelper()
-    : max_tab_node_id_(0) {
+RecentTabsBuilderTestHelper::RecentTabsBuilderTestHelper() {
   start_time_ = base::Time::Now();
 }
 
@@ -176,32 +184,32 @@ base::string16 RecentTabsBuilderTestHelper::GetTabTitle(int session_index,
   return title;
 }
 
-void RecentTabsBuilderTestHelper::ExportToSessionsSyncManager(
-    sync_sessions::SessionsSyncManager* manager) {
-  syncer::SyncChangeList changes;
+void RecentTabsBuilderTestHelper::ExportToSessionSync(
+    syncer::ModelTypeProcessor* processor,
+    sync_sessions::OpenTabsUIDelegate* verification_delegate) {
+  syncer::UpdateResponseDataList updates;
+
   for (int s = 0; s < GetSessionCount(); ++s) {
-    sync_pb::EntitySpecifics session_entity;
-    sync_pb::SessionSpecifics* meta = session_entity.mutable_session();
-    BuildSessionSpecifics(s, meta);
+    sync_pb::SessionSpecifics header_specifics = BuildHeaderSpecifics(s);
     for (int w = 0; w < GetWindowCount(s); ++w) {
-      BuildWindowSpecifics(s, w, meta);
+      AddWindowToHeaderSpecifics(s, w, &header_specifics);
       for (int t = 0; t < GetTabCount(s, w); ++t) {
-        sync_pb::EntitySpecifics entity;
-        sync_pb::SessionSpecifics* tab_base = entity.mutable_session();
-        BuildTabSpecifics(s, w, t, tab_base);
-        changes.push_back(syncer::SyncChange(
-            FROM_HERE, syncer::SyncChange::ACTION_ADD,
-            syncer::SyncData::CreateRemoteData(tab_base->tab_node_id(), entity,
-                                               GetTabTimestamp(s, w, t))));
+        updates.push_back(BuildUpdateResponseData(BuildTabSpecifics(s, w, t),
+                                                  GetTabTimestamp(s, w, t)));
       }
     }
-    changes.push_back(
-        syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD,
-                           syncer::SyncData::CreateRemoteData(
-                               1, session_entity, GetSessionTimestamp(s))));
+
+    updates.push_back(
+        BuildUpdateResponseData(header_specifics, GetSessionTimestamp(s)));
   }
-  manager->ProcessSyncChanges(FROM_HERE, changes);
-  VerifyExport(manager->GetOpenTabsUIDelegate());
+
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.set_initial_sync_done(true);
+  processor->OnUpdateReceived(model_type_state, updates);
+  // ClientTagBasedModelTypeProcessor uses ModelTypeProcessorProxy during
+  // activation, which involves task posting for receiving updates.
+  base::RunLoop().RunUntilIdle();
+  VerifyExport(verification_delegate);
 }
 
 void RecentTabsBuilderTestHelper::VerifyExport(
@@ -241,22 +249,22 @@ RecentTabsBuilderTestHelper::GetTabTitlesSortedByRecency() {
   return titles;
 }
 
-void RecentTabsBuilderTestHelper::BuildSessionSpecifics(
-    int session_index,
-    sync_pb::SessionSpecifics* meta) {
+sync_pb::SessionSpecifics RecentTabsBuilderTestHelper::BuildHeaderSpecifics(
+    int session_index) {
+  sync_pb::SessionSpecifics specifics;
   SessionID session_id = GetSessionID(session_index);
-  meta->set_session_tag(ToSessionTag(session_id));
-  sync_pb::SessionHeader* header = meta->mutable_header();
+  specifics.set_session_tag(ToSessionTag(session_id));
+  sync_pb::SessionHeader* header = specifics.mutable_header();
   header->set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_CROS);
   header->set_client_name(ToSessionName(session_id));
+  return specifics;
 }
 
-void RecentTabsBuilderTestHelper::BuildWindowSpecifics(
+void RecentTabsBuilderTestHelper::AddWindowToHeaderSpecifics(
     int session_index,
     int window_index,
-    sync_pb::SessionSpecifics* meta) {
-  sync_pb::SessionHeader* header = meta->mutable_header();
-  sync_pb::SessionWindow* window = header->add_window();
+    sync_pb::SessionSpecifics* specifics) {
+  sync_pb::SessionWindow* window = specifics->mutable_header()->add_window();
   SessionID window_id = GetWindowID(session_index, window_index);
   window->set_window_id(window_id.id());
   window->set_selected_tab_index(0);
@@ -265,18 +273,19 @@ void RecentTabsBuilderTestHelper::BuildWindowSpecifics(
     window->add_tab(GetTabID(session_index, window_index, i).id());
 }
 
-void RecentTabsBuilderTestHelper::BuildTabSpecifics(
+sync_pb::SessionSpecifics RecentTabsBuilderTestHelper::BuildTabSpecifics(
     int session_index,
     int window_index,
-    int tab_index,
-    sync_pb::SessionSpecifics* tab_base) {
+    int tab_index) {
+  sync_pb::SessionSpecifics specifics;
+
   SessionID session_id = GetSessionID(session_index);
   SessionID window_id = GetWindowID(session_index, window_index);
   SessionID tab_id = GetTabID(session_index, window_index, tab_index);
 
-  tab_base->set_session_tag(ToSessionTag(session_id));
-  tab_base->set_tab_node_id(++max_tab_node_id_);
-  sync_pb::SessionTab* tab = tab_base->mutable_tab();
+  specifics.set_session_tag(ToSessionTag(session_id));
+  specifics.set_tab_node_id(++max_tab_node_id_);
+  sync_pb::SessionTab* tab = specifics.mutable_tab();
   tab->set_window_id(window_id.id());
   tab->set_tab_id(tab_id.id());
   tab->set_tab_visual_index(1);
@@ -289,4 +298,23 @@ void RecentTabsBuilderTestHelper::BuildTabSpecifics(
   navigation->set_title(base::UTF16ToUTF8(GetTabTitle(
       session_index, window_index, tab_index)));
   navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
+
+  return specifics;
+}
+
+syncer::UpdateResponseData RecentTabsBuilderTestHelper::BuildUpdateResponseData(
+    const sync_pb::SessionSpecifics& specifics,
+    base::Time timestamp) {
+  syncer::EntityData entity;
+  *entity.specifics.mutable_session() = specifics;
+  entity.creation_time = timestamp;
+  entity.modification_time = timestamp;
+  entity.client_tag_hash = syncer::GenerateSyncableHash(
+      syncer::SESSIONS, sync_sessions::SessionStore::GetClientTag(specifics));
+  entity.id = entity.client_tag_hash;
+
+  syncer::UpdateResponseData update;
+  update.entity = entity.PassToPtr();
+  update.response_version = ++next_response_version_;
+  return update;
 }

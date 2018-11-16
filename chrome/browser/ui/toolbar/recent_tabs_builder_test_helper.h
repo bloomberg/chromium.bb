@@ -18,7 +18,11 @@ class SessionSpecifics;
 
 namespace sync_sessions {
 class OpenTabsUIDelegate;
-class SessionsSyncManager;
+}
+
+namespace syncer {
+class ModelTypeProcessor;
+struct UpdateResponseData;
 }
 
 // Utility class to help add recent tabs for testing.
@@ -50,20 +54,23 @@ class RecentTabsBuilderTestHelper {
                        int window_index,
                        int tab_index);
 
-  void ExportToSessionsSyncManager(sync_sessions::SessionsSyncManager* manager);
+  void ExportToSessionSync(
+      syncer::ModelTypeProcessor* processor,
+      sync_sessions::OpenTabsUIDelegate* verification_delegate);
 
   std::vector<base::string16> GetTabTitlesSortedByRecency();
 
  private:
-  void BuildSessionSpecifics(int session_index,
-                             sync_pb::SessionSpecifics* meta);
-  void BuildWindowSpecifics(int session_index,
-                            int window_index,
-                            sync_pb::SessionSpecifics* meta);
-  void BuildTabSpecifics(int session_index,
-                         int window_index,
-                         int tab_index,
-                         sync_pb::SessionSpecifics* tab_base);
+  sync_pb::SessionSpecifics BuildHeaderSpecifics(int session_index);
+  void AddWindowToHeaderSpecifics(int session_index,
+                                  int window_index,
+                                  sync_pb::SessionSpecifics* specifics);
+  sync_pb::SessionSpecifics BuildTabSpecifics(int session_index,
+                                              int window_index,
+                                              int tab_index);
+  syncer::UpdateResponseData BuildUpdateResponseData(
+      const sync_pb::SessionSpecifics& specifics,
+      base::Time timestamp);
   void VerifyExport(sync_sessions::OpenTabsUIDelegate* delegate);
 
   struct TabInfo;
@@ -73,7 +80,8 @@ class RecentTabsBuilderTestHelper {
   std::vector<SessionInfo> sessions_;
   base::Time start_time_;
 
-  int max_tab_node_id_;
+  int max_tab_node_id_ = 0;
+  int next_response_version_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(RecentTabsBuilderTestHelper);
 };
