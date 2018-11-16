@@ -357,7 +357,7 @@ class TestCacheStorageCache : public CacheStorageCache {
   void Init() { InitBackend(); }
 
  private:
-  CacheStorageCacheHandle CreateCacheHandle() override {
+  CacheStorageCacheHandle CreateHandle() override {
     // Returns an empty handle. There is no need for CacheStorage and its
     // handles in these tests.
     return CacheStorageCacheHandle();

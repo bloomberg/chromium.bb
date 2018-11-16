@@ -578,6 +578,29 @@ base::WeakPtr<CacheStorageCache> CacheStorageCache::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+CacheStorageCacheHandle CacheStorageCache::CreateHandle() {
+  return CacheStorageCacheHandle(weak_ptr_factory_.GetWeakPtr());
+}
+
+void CacheStorageCache::AddHandleRef() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  handle_ref_count_ += 1;
+}
+
+void CacheStorageCache::DropHandleRef() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(handle_ref_count_ > 0);
+  handle_ref_count_ -= 1;
+  if (handle_ref_count_ == 0 && cache_storage_) {
+    cache_storage_->CacheUnreferenced(this);
+  }
+}
+
+void CacheStorageCache::AssertUnreferenced() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!handle_ref_count_);
+}
+
 void CacheStorageCache::Match(
     std::unique_ptr<ServiceWorkerFetchRequest> request,
     blink::mojom::QueryParamsPtr match_params,
@@ -801,7 +824,7 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
   // last reference to this instance. Hold a handle for the duration of this
   // loop. (Asynchronous tasks scheduled by the operations use weak ptrs which
   // will no-op automatically.)
-  CacheStorageCacheHandle handle = CreateCacheHandle();
+  CacheStorageCacheHandle handle = CreateHandle();
 
   for (auto& operation : operations) {
     switch (operation->operation_type) {
@@ -1744,10 +1767,9 @@ void CacheStorageCache::UpdateCacheSize(base::OnceClosure callback) {
   // Note that the callback holds a cache handle to keep the cache alive during
   // the operation since this UpdateCacheSize is often run after an operation
   // completes and runs its callback.
-  CalculateCacheSize(base::AdaptCallbackForRepeating(
-      base::BindOnce(&CacheStorageCache::UpdateCacheSizeGotSize,
-                     weak_ptr_factory_.GetWeakPtr(), CreateCacheHandle(),
-                     std::move(callback))));
+  CalculateCacheSize(base::AdaptCallbackForRepeating(base::BindOnce(
+      &CacheStorageCache::UpdateCacheSizeGotSize,
+      weak_ptr_factory_.GetWeakPtr(), CreateHandle(), std::move(callback))));
 }
 
 void CacheStorageCache::UpdateCacheSizeGotSize(
@@ -2124,8 +2146,8 @@ void CacheStorageCache::PopulateResponseBody(
       std::make_unique<storage::BlobDataBuilder>(response->blob->uuid);
 
   disk_cache::Entry* temp_entry = entry.get();
-  auto data_handle = base::MakeRefCounted<BlobDataHandle>(CreateCacheHandle(),
-                                                          std::move(entry));
+  auto data_handle =
+      base::MakeRefCounted<BlobDataHandle>(CreateHandle(), std::move(entry));
   blob_data_handles_.insert(data_handle.get());
   blob_data->AppendDiskCacheEntryWithSideData(
       std::move(data_handle), temp_entry, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA);
@@ -2134,10 +2156,6 @@ void CacheStorageCache::PopulateResponseBody(
 
   storage::BlobImpl::Create(std::move(blob_handle),
                             MakeRequest(&response->blob->blob));
-}
-
-CacheStorageCacheHandle CacheStorageCache::CreateCacheHandle() {
-  return cache_storage_->CreateCacheHandle(this);
 }
 
 int64_t CacheStorageCache::PaddedCacheSize() const {

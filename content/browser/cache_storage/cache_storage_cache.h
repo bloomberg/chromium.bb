@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
@@ -40,10 +41,8 @@ class QuotaManagerProxy;
 namespace content {
 class CacheStorage;
 class CacheStorageBlobToDiskCache;
-class CacheStorageCacheHandle;
 class CacheStorageCacheObserver;
 class CacheStorageScheduler;
-class TestCacheStorageCache;
 enum class CacheStorageOwner;
 
 namespace proto {
@@ -232,6 +231,12 @@ class CONTENT_EXPORT CacheStorageCache {
   void SetObserver(CacheStorageCacheObserver* observer);
 
   base::WeakPtr<CacheStorageCache> AsWeakPtr();
+
+  // virtual for testing
+  virtual CacheStorageCacheHandle CreateHandle();
+  void AddHandleRef();
+  void DropHandleRef();
+  void AssertUnreferenced() const;
 
  private:
   // QueryCache types:
@@ -475,9 +480,6 @@ class CONTENT_EXPORT CacheStorageCache {
   void PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
                             blink::mojom::FetchAPIResponse* response);
 
-  // Virtual for testing.
-  virtual CacheStorageCacheHandle CreateCacheHandle();
-
   // Be sure to check |backend_state_| before use.
   std::unique_ptr<disk_cache::Backend> backend_;
 
@@ -501,6 +503,7 @@ class CONTENT_EXPORT CacheStorageCache {
   std::unique_ptr<crypto::SymmetricKey> cache_padding_key_;
   int64_t last_reported_size_ = 0;
   size_t max_query_size_bytes_;
+  size_t handle_ref_count_ = 0;
   CacheStorageCacheObserver* cache_observer_;
 
   // Owns the elements of the list
@@ -520,6 +523,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // the callback passed to CloseImpl.
   base::OnceClosure post_backend_closed_callback_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CacheStorageCache> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageCache);
