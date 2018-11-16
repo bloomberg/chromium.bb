@@ -676,6 +676,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                   GetClientsCallback callback) override;
   void GetClient(const std::string& client_uuid,
                  GetClientCallback callback) override;
+  void GetClientInternal(const std::string& client_uuid,
+                         GetClientCallback callback);
   void OpenNewTab(const GURL& url, OpenNewTabCallback callback) override;
   void OpenPaymentHandlerWindow(
       const GURL& url,
@@ -789,6 +791,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void NotifyControlleeAdded(const std::string& uuid,
                              const ServiceWorkerClientInfo& info);
   void NotifyControlleeRemoved(const std::string& uuid);
+
+  void GetClientOnExecutionReady(const std::string& client_uuid,
+                                 GetClientCallback callback,
+                                 bool success);
 
   const int64_t version_id_;
   const int64_t registration_id_;

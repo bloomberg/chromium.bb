@@ -383,6 +383,7 @@ interface FetchEvent : ExtendableEvent
     getter isReload
     getter preloadResponse
     getter request
+    getter resultingClientId
     method constructor
     method respondWith
 interface File : Blob

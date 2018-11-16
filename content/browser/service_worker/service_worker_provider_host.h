@@ -130,6 +130,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       public service_manager::mojom::InterfaceProvider {
  public:
   using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
+  using ExecutionReadyCallback = base::OnceClosure;
 
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerNetworkProvider will later be created in the renderer, should
@@ -269,6 +270,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // TODO(kinuko): revisit this if we start to use the ControllerServiceWorker
   // for posting messages.
   mojom::ControllerServiceWorkerPtr GetControllerServiceWorkerPtr();
+
+  // Sets the |document_url_|, |topmost_frame_url_| and updates the uuid if it's
+  // cross origin transition. This is for service worker clients.
+  void UpdateURLs(const GURL& document_url, const GURL& topmost_frame_url);
 
   // Sets the |document_url_|.  When this object is for a client,
   // |matching_registrations_| gets also updated to ensure that |document_url_|
@@ -458,6 +463,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // activity and schedules an update at a convenient time.
   void AddServiceWorkerToUpdate(scoped_refptr<ServiceWorkerVersion> version);
 
+  // For service worker clients. |callback| is called when this client becomes
+  // execution ready or if it is destroyed first.
+  void AddExecutionReadyCallback(ExecutionReadyCallback callback);
+
   bool is_execution_ready() const { return is_execution_ready_; }
 
  private:
@@ -598,8 +607,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                                     const char* error_prefix,
                                     Args... args);
 
+  // Sets |execution_ready_| and runs execution ready callbacks.
+  void SetExecutionReady();
+
+  void RunExecutionReadyCallbacks();
+
   // A GUID that is web-exposed as FetchEvent.clientId.
-  const std::string client_uuid_;
+  std::string client_uuid_;
 
   // For window clients. A token used internally to identify this context in
   // requests. Corresponds to the Fetch specification's concept of a request's
@@ -698,10 +712,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
 
-  // For service worker clients. True if the main resource for this host has
-  // finished loading. When false, the document URL may still change due to
-  // redirects.
+  // For service worker clients. |is_execution_ready_| is true if the main
+  // resource for this host has finished loading. When false, the document URL
+  // may still change due to redirects.
   bool is_execution_ready_ = false;
+  std::vector<ExecutionReadyCallback> execution_ready_callbacks_;
 
   // For service worker clients. The service workers in the chain of redirects
   // during the main resource request for this client. These workers should be

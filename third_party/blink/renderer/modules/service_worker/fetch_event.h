@@ -60,6 +60,7 @@ class MODULES_EXPORT FetchEvent final
 
   Request* request() const;
   String clientId() const;
+  String resultingClientId() const;
   bool isReload() const;
 
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
@@ -98,6 +99,7 @@ class MODULES_EXPORT FetchEvent final
   std::unique_ptr<WebURLResponse> preload_response_;
   Member<DataPipeBytesConsumer::CompletionNotifier> body_completion_notifier_;
   String client_id_;
+  String resulting_client_id_;
   bool is_reload_;
 };
 

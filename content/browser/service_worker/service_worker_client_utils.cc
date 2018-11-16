@@ -5,7 +5,9 @@
 #include "content/browser/service_worker/service_worker_client_utils.h"
 
 #include <algorithm>
+#include <memory>
 #include <tuple>
+#include <utility>
 
 #include "base/location.h"
 #include "base/macros.h"
@@ -280,6 +282,8 @@ void AddWindowClient(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (host->client_type() != blink::mojom::ServiceWorkerClientType::kWindow)
     return;
+  if (!host->is_execution_ready())
+    return;
   client_info->push_back(std::make_tuple(host->process_id(), host->frame_id(),
                                          host->create_time(),
                                          host->client_uuid()));
@@ -294,6 +298,8 @@ void AddNonWindowClient(const ServiceWorkerProviderHost* host,
     return;
   if (client_type != blink::mojom::ServiceWorkerClientType::kAll &&
       client_type != host_client_type)
+    return;
+  if (!host->is_execution_ready())
     return;
 
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(

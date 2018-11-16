@@ -401,6 +401,8 @@ void ServiceWorkerGlobalScopeProxy::DispatchFetchEvent(
   event_init->setRequest(request);
   event_init->setClientId(
       web_request.IsMainResourceLoad() ? WebString() : web_request.ClientId());
+  event_init->setResultingClientId(
+      !web_request.IsMainResourceLoad() ? WebString() : web_request.ClientId());
   event_init->setIsReload(web_request.IsReload());
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();

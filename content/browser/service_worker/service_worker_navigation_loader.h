@@ -28,6 +28,7 @@
 namespace content {
 
 class ServiceWorkerVersion;
+class ServiceWorkerProviderHost;
 
 // S13nServiceWorker:
 // ServiceWorkerNavigationLoader is the URLLoader used for main resource
@@ -143,8 +144,9 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   void CommitResponseBody(mojo::ScopedDataPipeConsumerHandle response_body);
   void CommitResponseBodyEmpty();
 
-  // Calls url_loader_client_->OnComplete().
-  void CommitCompleted(int error_code);
+  // Calls url_loader_client_->OnComplete(). |reason| will be recorded as an
+  // argument of TRACE_EVENT.
+  void CommitCompleted(int error_code, const char* reason);
 
   // network::mojom::URLLoader:
   void FollowRedirect(const base::Optional<std::vector<std::string>>&

@@ -69,11 +69,11 @@ class ServiceWorkerNavigationLoader::StreamWaiter
   // Implements mojom::ServiceWorkerStreamCallback.
   void OnCompleted() override {
     // Destroys |this|.
-    owner_->CommitCompleted(net::OK);
+    owner_->CommitCompleted(net::OK, "Stream has completed.");
   }
   void OnAborted() override {
     // Destroys |this|.
-    owner_->CommitCompleted(net::ERR_ABORTED);
+    owner_->CommitCompleted(net::ERR_ABORTED, "Stream has aborted.");
   }
 
  private:
@@ -201,7 +201,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
   ServiceWorkerVersion* active_worker =
       delegate_->GetServiceWorkerVersion(&result);
   if (!active_worker) {
-    CommitCompleted(net::ERR_FAILED);
+    CommitCompleted(net::ERR_FAILED, "No active worker");
     return;
   }
 
@@ -221,12 +221,19 @@ void ServiceWorkerNavigationLoader::StartRequest(
       << "We assumed there would be no data pipe getter elements here, but "
          "there are. Add code here to clone the body before proceeding.";
 
+  if (!provider_host_) {
+    // We lost |provider_host_| (for the client) somehow before dispatching
+    // FetchEvent.
+    CommitCompleted(net::ERR_ABORTED, "No provider host");
+    return;
+  }
+
   // Dispatch the fetch event.
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       std::move(resource_request_to_pass),
       std::string() /* request_body_blob_uuid */,
       0 /* request_body_blob_size */, nullptr /* request_body_blob */,
-      std::string() /* client_id */, active_worker,
+      provider_host_->client_uuid(), active_worker,
       net::NetLogWithSource() /* TODO(scottmg): net log? */,
       base::BindOnce(&ServiceWorkerNavigationLoader::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(),
@@ -270,11 +277,12 @@ void ServiceWorkerNavigationLoader::CommitResponseBodyEmpty() {
   // pipe.producer_handle is closed here.
 }
 
-void ServiceWorkerNavigationLoader::CommitCompleted(int error_code) {
-  TRACE_EVENT_WITH_FLOW1("ServiceWorker",
-                         "ServiceWorkerNavigationLoader::CommitCompleted", this,
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                         "error_code", net::ErrorToString(error_code));
+void ServiceWorkerNavigationLoader::CommitCompleted(int error_code,
+                                                    const char* reason) {
+  TRACE_EVENT_WITH_FLOW2(
+      "ServiceWorker", "ServiceWorkerNavigationLoader::CommitCompleted", this,
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "error_code",
+      net::ErrorToString(error_code), "reason", TRACE_STR_COPY(reason));
 
   DCHECK(url_loader_client_.is_bound());
   TransitionToStatus(Status::kCompleted);
@@ -339,7 +347,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
   if (!delegate_ || !delegate_->RequestStillValid(&result)) {
     // The navigation or shared worker startup is cancelled. Just abort.
-    CommitCompleted(net::ERR_ABORTED);
+    CommitCompleted(net::ERR_ABORTED, "No delegate");
     return;
   }
 
@@ -375,7 +383,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
   // network error.
   if (response->status_code == 0) {
     // TODO(falken): Use more specific errors. Or just add ERR_SERVICE_WORKER?
-    CommitCompleted(net::ERR_FAILED);
+    CommitCompleted(net::ERR_FAILED, "Zero response status");
     return;
   }
 
@@ -453,7 +461,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
         &data_pipe);
     if (error != net::OK) {
       CommitResponseBodyEmpty();
-      CommitCompleted(error);
+      CommitCompleted(error, "Failed to read blob body");
       return;
     }
     TRACE_EVENT_WITH_FLOW1("ServiceWorker",
@@ -472,7 +480,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
                          "result", "no body");
 
   CommitResponseBodyEmpty();
-  CommitCompleted(net::OK);
+  CommitCompleted(net::OK, "No body exists.");
 }
 
 // URLLoader implementation----------------------------------------
@@ -500,7 +508,7 @@ void ServiceWorkerNavigationLoader::PauseReadingBodyFromNet() {}
 void ServiceWorkerNavigationLoader::ResumeReadingBodyFromNet() {}
 
 void ServiceWorkerNavigationLoader::OnBlobReadingComplete(int net_error) {
-  CommitCompleted(net_error);
+  CommitCompleted(net_error, "Blob has been read.");
   body_as_blob_.reset();
 }
 
@@ -520,7 +528,7 @@ void ServiceWorkerNavigationLoader::OnConnectionClosed() {
 
   // Respond to the request if it's not yet responded to.
   if (status_ != Status::kCompleted)
-    CommitCompleted(net::ERR_ABORTED);
+    CommitCompleted(net::ERR_ABORTED, "Disconnected pipe before completed");
 
   url_loader_client_.reset();
   DeleteIfNeeded();

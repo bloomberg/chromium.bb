@@ -11,6 +11,7 @@
 ] interface FetchEvent : ExtendableEvent {
     [SameObject] readonly attribute Request request;
     readonly attribute DOMString clientId;
+    readonly attribute DOMString resultingClientId;
     readonly attribute boolean isReload;
 
     [CallWith=ScriptState, RaisesException] void respondWith(Promise<Response> r);

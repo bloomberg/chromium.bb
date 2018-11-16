@@ -433,7 +433,7 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
 #if DCHECK_IS_ON()
   if (blink::ServiceWorkerUtils::IsServicificationEnabled()) {
     DCHECK((request_body_blob_uuid_.empty() && request_body_blob_size_ == 0 &&
-            !request_body_blob_ && client_id_.empty()));
+            !request_body_blob_));
   }
 #endif  // DCHECK_IS_ON()
   net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,

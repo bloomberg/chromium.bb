@@ -326,8 +326,6 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       is_started_(false),
       fetch_response_type_(network::mojom::FetchResponseType::kDefault),
       provider_host_(std::move(provider_host)),
-      client_id_(provider_host_ ? provider_host_->client_uuid()
-                                : std::string()),
       blob_storage_context_(blob_storage_context),
       resource_context_(resource_context),
       request_mode_(request_mode),
@@ -973,6 +971,12 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
     return;
   }
 
+  if (!provider_host_) {
+    RecordResult(ServiceWorkerMetrics::REQUEST_JOB_ERROR_NO_PROVIDER_HOST);
+    DeliverErrorResponse();
+    return;
+  }
+
   worker_already_activated_ =
       active_worker->status() == ServiceWorkerVersion::ACTIVATED;
   initial_worker_status_ = active_worker->running_status();
@@ -992,7 +996,8 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
   DCHECK(!fetch_dispatcher_);
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       std::move(resource_request), blob_uuid, blob_size, std::move(blob),
-      client_id_, base::WrapRefCounted(active_worker), request()->net_log(),
+      provider_host_->client_uuid(), base::WrapRefCounted(active_worker),
+      request()->net_log(),
       base::BindOnce(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(),
                      base::WrapRefCounted(active_worker)),
