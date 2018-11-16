@@ -219,8 +219,8 @@
   },
   {
     "name": "autofill-cache-query-responses",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "rogerm" ],
+    "expiry_milestone": 72
   },
   {
     "name": "autofill-dropdown-layout",
@@ -229,38 +229,38 @@
   },
   {
     "name": "autofill-dynamic-forms",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "sebsg" ],
+    "expiry_milestone": 72
   },
   {
     "name": "autofill-enable-company-name",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "sebsg" ],
+    "expiry_milestone": 73
   },
   {
     "name": "autofill-enforce-min-required-fields-for-heuristics",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "rogerm" ],
+    "expiry_milestone": 72
   },
   {
     "name": "autofill-enforce-min-required-fields-for-query",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "rogerm" ],
+    "expiry_milestone": 72
   },
   {
     "name": "autofill-enforce-min-required-fields-for-upload",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "rogerm" ],
+    "expiry_milestone": 72
   },
   {
     "name": "autofill-keyboard-accessory-view",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ftirelo" ],
+    "expiry_milestone": 74
   },
   {
     "name": "autofill-no-local-save-on-upload-success",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "sebsg" ],
+    "expiry_milestone": 71
   },
   {
     "name": "autofill-prefilled-fields",
@@ -269,22 +269,22 @@
   },
   {
     "name": "autofill-preview-style",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ftirelo" ],
+    "expiry_milestone": 73
   },
   {
     "name": "autofill-primary-info-style",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ftirelo" ],
+    "expiry_milestone": 73
   },
   {
     "name": "autofill-rationalize-repeated-server-predictions",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "parastoog" ],
+    "expiry_milestone": 71
   },
   {
     "name": "autofill-restrict-formless-form-extraction",
-    // "owners": [ "your-team" ],
+    "owners": [ "rogerm" ],
     "expiry_milestone": 76
   },
   {
@@ -694,8 +694,8 @@
   },
   {
     "name": "enable-android-autofill-accessibility",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "ftirelo" ],
+    "expiry_milestone": 73
   },
   {
     "name": "enable-android-pay-integration-v1",
