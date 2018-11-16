@@ -2913,8 +2913,7 @@ MULTIPROCESS_TEST_MAIN(MoreThanBufferSizeChildMain) {
   return 0;
 }
 
-// Times out on Android. http://crbug.com/902674.
-TEST_F(FileUtilTest, DISABLED_ReadFileToStringWithNamedPipe) {
+TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
   FilePath pipe_path =
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("test_pipe"));
   ASSERT_EQ(0, mkfifo(pipe_path.value().c_str(), 0600));
