@@ -24,6 +24,7 @@ import org.chromium.payments.mojom.PaymentOptions;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -34,13 +35,6 @@ import java.util.Map;
  */
 @JNINamespace("autofill_assistant")
 public class AutofillAssistantUiController implements AutofillAssistantUiDelegate.Client {
-    /** Prefix for Intent extras relevant to this feature. */
-    private static final String INTENT_EXTRA_PREFIX =
-            "org.chromium.chrome.browser.autofill_assistant.";
-
-    /** Special parameter that enables the feature. */
-    private static final String PARAMETER_ENABLED = "ENABLED";
-
     /** OAuth2 scope that RPCs require. */
     private static final String AUTH_TOKEN_TYPE =
             "oauth2:https://www.googleapis.com/auth/userinfo.profile";
@@ -49,8 +43,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private final String mInitialUrl;
 
     // TODO(crbug.com/806868): Move mCurrentDetails and mStatusMessage to a Model (refactor to MVC).
-    private AutofillAssistantUiDelegate.Details mCurrentDetails =
-            AutofillAssistantUiDelegate.Details.getEmptyDetails();
+    private Details mCurrentDetails = Details.EMPTY_DETAILS;
     private String mStatusMessage;
 
     /** Native pointer to the UIController. */
@@ -83,6 +76,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             CustomTabActivity activity, Map<String, String> parameters) {
         mWebContents = activity.getActivityTab().getWebContents();
         mInitialUrl = activity.getInitialIntent().getDataString();
+
         mUiControllerAndroid =
                 nativeInit(mWebContents, parameters.keySet().toArray(new String[parameters.size()]),
                         parameters.values().toArray(new String[parameters.size()]),
@@ -112,7 +106,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @Override
-    public AutofillAssistantUiDelegate.Details getDetails() {
+    public Details getDetails() {
         return mCurrentDetails;
     }
 
@@ -149,6 +143,12 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     @Override
     public void onCardSelected(String guid) {
         nativeOnCardSelected(mUiControllerAndroid, guid);
+    }
+
+    @Override
+    public void onDetailsAcknowledged(Details displayedDetails, boolean canContinue) {
+        mCurrentDetails = displayedDetails;
+        nativeOnShowDetails(mUiControllerAndroid, canContinue);
     }
 
     @Override
@@ -195,6 +195,11 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     @CalledByNative
     private void onShutdown() {
         mUiDelegateHolder.shutdown();
+    }
+
+    @CalledByNative
+    private void onCloseCustomTab() {
+        mUiDelegateHolder.closeCustomTab();
     }
 
     @CalledByNative
@@ -272,21 +277,16 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /**
      * Updates the currently shown details.
      *
-     * @return false if details were rejected.
+     * @param newDetails details to display.
      */
-    boolean maybeUpdateDetails(AutofillAssistantUiDelegate.Details newDetails) {
-        if (!mCurrentDetails.isSimilarTo(newDetails)) {
-            return false;
-        }
-
+    void maybeUpdateDetails(Details newDetails) {
         if (mCurrentDetails.isEmpty() && newDetails.isEmpty()) {
             // No update on UI needed.
-            return true;
+            nativeOnShowDetails(mUiControllerAndroid, /* canContinue= */ true);
         }
 
-        mCurrentDetails = AutofillAssistantUiDelegate.Details.merge(mCurrentDetails, newDetails);
-        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.showDetails(mCurrentDetails));
-        return true;
+        Details mergedDetails = Details.merge(mCurrentDetails, newDetails);
+        mUiDelegateHolder.performUiOperation(uiDelegate -> uiDelegate.showDetails(mergedDetails));
     }
 
     @CalledByNative
@@ -295,7 +295,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @CalledByNative
-    private boolean onShowDetails(String title, String url, String description, int year, int month,
+    private void onShowDetails(String title, String url, String description, int year, int month,
             int day, int hour, int minute, int second) {
         Date date;
         if (year > 0 && month > 0 && day > 0 && hour >= 0 && minute >= 0 && second >= 0) {
@@ -308,8 +308,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
             date = null;
         }
 
-        return maybeUpdateDetails(new AutofillAssistantUiDelegate.Details(
-                title, url, date, description, /* isFinal= */ true));
+        maybeUpdateDetails(new Details(
+                title, url, date, description, /* isFinal= */ true, Collections.emptySet()));
     }
 
     @CalledByNative
@@ -449,6 +449,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);
     private native void nativeOnCardSelected(long nativeUiControllerAndroid, String guid);
+    private native void nativeOnShowDetails(long nativeUiControllerAndroid, boolean canContinue);
     private native void nativeOnGetPaymentInformation(long nativeUiControllerAndroid,
             boolean succeed, @Nullable PersonalDataManager.CreditCard card,
             @Nullable PersonalDataManager.AutofillProfile address, @Nullable String payerName,

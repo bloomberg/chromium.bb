@@ -52,6 +52,9 @@ class ScriptExecutor : public ActionDelegate {
     // Shut down Autofill Assistant after a delay.
     SHUTDOWN_GRACEFULLY,
 
+    // Shut down Autofill Assistant and CCT.
+    CLOSE_CUSTOM_TAB,
+
     // Reset all state and restart.
     RESTART
   };
@@ -115,13 +118,15 @@ class ScriptExecutor : public ActionDelegate {
       base::OnceCallback<void(bool, const std::string&)> callback) override;
   void LoadURL(const GURL& url) override;
   void Shutdown() override;
+  void CloseCustomTab() override;
   void Restart() override;
   ClientMemory* GetClientMemory() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   content::WebContents* GetWebContents() override;
   void StopCurrentScriptAndShutdown(const std::string& message) override;
   void HideDetails() override;
-  bool ShowDetails(const DetailsProto& details) override;
+  void ShowDetails(const DetailsProto& details,
+                   base::OnceCallback<void(bool)> callback) override;
   void ShowProgressBar(int progress, const std::string& message) override;
   void HideProgressBar() override;
   void ShowOverlay() override;

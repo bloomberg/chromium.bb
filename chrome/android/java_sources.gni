@@ -130,6 +130,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantStudy.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiDelegate.java",
+  "java/src/org/chromium/chrome/browser/autofill_assistant/Details.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/FeedbackContext.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/UiDelegateHolder.java",
   "java/src/org/chromium/chrome/browser/autofill_assistant/ui/BottomBarAnimations.java",
