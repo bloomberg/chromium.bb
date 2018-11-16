@@ -188,7 +188,10 @@ config("chromium_sqlite3_compile_options") {
     }
   }
 
-  if (is_debug || dcheck_always_on) {
+  if (use_fuzzing_engine && (is_debug || dcheck_always_on)) {
+    # Enable SQLite's assert() macros.
+    defines += [ "SQLITE_DEBUG" ]
+
     # Check preconditions when SQLite APIs are called. See
     # https://sqlite.org/compile.html#enable_api_armor
     defines += [ "SQLITE_ENABLE_API_ARMOR" ]
@@ -204,12 +207,18 @@ config("sqlite_warnings") {
     # fts3EvalSelectDeferred sqlite3Fts3InitHashTable
     # sqlite3Fts3InitTok).
     cflags += [ "-Wno-unused-function" ]
+
+    if (use_fuzzing_engine && (is_debug || dcheck_always_on)) {
+      cflags += [
+        "-Wno-implicit-function-declaration",
+        "-Wno-string-conversion"
+      ]
+    }
   }
   if (is_linux) {
     cflags += [
-      # SQLite doesn"t believe in compiler warnings,
-      # preferring testing.
-      #   http://www.sqlite.org/faq.html#q17
+      # SQLite doesn't believe in compiler warnings, preferring testing.
+      # http://www.sqlite.org/faq.html#q17
       "-Wno-int-to-pointer-cast",
       "-Wno-pointer-to-int-cast",
     ]
