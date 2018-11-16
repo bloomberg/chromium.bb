@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/reporting_permissions_checker.h"
 #include "components/domain_reliability/monitor.h"
+#include "components/prefs/pref_member.h"
 #include "net/base/network_delegate_impl.h"
 
 class ChromeExtensionsNetworkDelegate;
@@ -68,6 +69,11 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // Not inlined because we assign a scoped_refptr, which requires us to include
   // the header file. Here we just forward-declare it.
   void set_cookie_settings(content_settings::CookieSettings* cookie_settings);
+
+  void set_force_google_safe_search(
+      BooleanPrefMember* force_google_safe_search) {
+    force_google_safe_search_ = force_google_safe_search;
+  }
 
   void set_domain_reliability_monitor(
       std::unique_ptr<domain_reliability::DomainReliabilityMonitor> monitor) {
@@ -167,6 +173,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
   // Weak, owned by our owner.
+  BooleanPrefMember* force_google_safe_search_ = nullptr;
   std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
       domain_reliability_monitor_;
   std::unique_ptr<ReportingPermissionsChecker> reporting_permissions_checker_;
