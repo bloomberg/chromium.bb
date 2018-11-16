@@ -135,6 +135,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/login_event_recorder.h"
+#include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
@@ -639,6 +640,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
       g_browser_process->local_state());
 
   wake_on_wifi_manager_.reset(new WakeOnWifiManager());
+  fast_transition_observer_.reset(
+      new FastTransitionObserver(g_browser_process->local_state()));
   network_throttling_observer_.reset(
       new NetworkThrottlingObserver(g_browser_process->local_state()));
 
@@ -1078,6 +1081,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_metrics_reporter_.reset();
   renderer_freezer_.reset();
   wake_on_wifi_manager_.reset();
+  fast_transition_observer_.reset();
   network_throttling_observer_.reset();
   ScreenLocker::ShutDownClass();
   low_disk_notification_.reset();

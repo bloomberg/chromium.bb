@@ -253,6 +253,15 @@ void ShillPropertyHandler::SetNetworkThrottlingStatus(
                  network_handler::ErrorCallback()));
 }
 
+void ShillPropertyHandler::SetFastTransitionStatus(bool enabled) {
+  base::Value value(enabled);
+  shill_manager_->SetProperty(
+      shill::kWifiGlobalFTEnabledProperty, value, base::DoNothing(),
+      base::BindRepeating(&network_handler::ShillErrorCallbackFunction,
+                          "SetFastTransitionStatus failed", "Manager",
+                          network_handler::ErrorCallback()));
+}
+
 void ShillPropertyHandler::RequestScanByType(const std::string& type) const {
   shill_manager_->RequestScan(
       type, base::DoNothing(),
