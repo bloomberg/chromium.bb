@@ -62,9 +62,25 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
     const network::ResourceResponseHead& /* response_head */,
     bool* /* defer */,
     std::vector<std::string>* to_be_removed_headers,
-    net::HttpRequestHeaders* /* modified_headers */) {
+    net::HttpRequestHeaders* modified_headers) {
   if (!variations::ShouldAppendVariationHeaders(redirect_info.new_url))
     to_be_removed_headers->push_back(variations::kClientDataHeader);
+
+  if (dynamic_params_.youtube_restrict >
+          safe_search_util::YOUTUBE_RESTRICT_OFF &&
+      dynamic_params_.youtube_restrict <
+          safe_search_util::YOUTUBE_RESTRICT_COUNT) {
+    safe_search_util::ForceYouTubeRestrict(
+        redirect_info.new_url, modified_headers,
+        static_cast<safe_search_util::YouTubeRestrictMode>(
+            dynamic_params_.youtube_restrict));
+  }
+
+  if (!dynamic_params_.allowed_domains_for_apps.empty() &&
+      redirect_info.new_url.DomainIs("google.com")) {
+    modified_headers->SetHeader(safe_search_util::kGoogleAppsAllowedDomains,
+                                dynamic_params_.allowed_domains_for_apps);
+  }
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
