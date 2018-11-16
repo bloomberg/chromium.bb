@@ -935,8 +935,8 @@ util.isDescendantEntry = function(ancestorEntry, childEntry) {
       if (util.isSameEntry(ancestorChild, childEntry))
         return true;
 
-      // rootEntry might not be resolved yet.
-      const volumeEntry = ancestorChild.rootEntry;
+      // root entry might not be resolved yet.
+      const volumeEntry = ancestorChild.getNativeEntry();
       return volumeEntry &&
           (util.isSameEntry(volumeEntry, childEntry) ||
            util.isDescendantEntry(volumeEntry, childEntry));
@@ -1495,4 +1495,21 @@ util.isNativeEntry = function(entry) {
   entry = util.toFilesAppEntry(entry);
   // Only FilesAppEntry types has |type_name| attribute.
   return entry.type_name === undefined;
+};
+
+/**
+ * For FilesAppEntry types that wraps a native entry, returns the native entry
+ * to be able to send to fileManagerPrivate API.
+ * @param {Entry|FilesAppEntry} entry
+ * @return {Entry|FilesAppEntry}
+ */
+util.unwrapEntry = function(entry) {
+  if (!entry)
+    return entry;
+
+  const nativeEntry = entry.getNativeEntry && entry.getNativeEntry();
+  if (nativeEntry)
+    return nativeEntry;
+
+  return entry;
 };

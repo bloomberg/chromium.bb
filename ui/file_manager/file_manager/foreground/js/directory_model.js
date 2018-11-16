@@ -967,11 +967,6 @@ DirectoryModel.prototype.updateAndSelectNewDirectory = function(newDirectory) {
  */
 DirectoryModel.prototype.changeDirectoryEntry = function(
     dirEntry, opt_callback) {
-  // If it's a VolumeEntry which wraps an actual entry, we should use the
-  // unwrapped entry.
-  if (dirEntry instanceof VolumeEntry)
-    dirEntry = assert(dirEntry.rootEntry);
-
   // Increment the sequence value.
   this.changeDirectorySequence_++;
   this.clearSearch_();

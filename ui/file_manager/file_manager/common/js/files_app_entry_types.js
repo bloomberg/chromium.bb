@@ -107,6 +107,14 @@ class FilesAppEntry {
    * @return {boolean}
    */
   get isNativeType() {}
+
+  /**
+   * Returns a FileSystemEntry if this instance has one, returns null if it
+   * doesn't have or the entry hasn't been resolved yet. It's used to unwrap a
+   * FilesAppEntry to be able to send to FileSystem API or fileManagerPrivate.
+   * @return {Entry}
+   */
+  getNativeEntry() {}
 }
 
 /**
@@ -388,6 +396,11 @@ class EntryList {
     }
     return false;
   }
+
+  /** @override */
+  getNativeEntry() {
+    return null;
+  }
 }
 
 /**
@@ -435,13 +448,6 @@ class VolumeEntry {
   get volumeInfo() {
     return this.volumeInfo_;
   }
-  /**
-   * @return {DirectoryEntry} for this volume. This method is only valid for
-   * VolumeEntry instances.
-   */
-  get rootEntry() {
-    return this.rootEntry_;
-  }
 
   /**
    * @return {!FileSystem} FileSystem for this volume.
@@ -464,6 +470,37 @@ class VolumeEntry {
   }
   get isFile() {
     return this.rootEntry_.isFile;
+  }
+
+  /**
+   * @see https://github.com/google/closure-compiler/blob/master/externs/browser/fileapi.js
+   * @param {string} path Entry fullPath.
+   * @param {!FileSystemFlags=} options
+   * @param {function(!DirectoryEntry)=} success
+   * @param {function(!FileError)=} error
+   */
+  getDirectory(path, options, success, error) {
+    if (!this.rootEntry_) {
+      error && setTimeout(error, 0, new Error('root entry not resolved yet.'));
+      return;
+    }
+    return this.rootEntry_.getDirectory(path, options, success, error);
+  }
+
+  /**
+   * @see https://github.com/google/closure-compiler/blob/master/externs/browser/fileapi.js
+   * @param {string} path
+   * @param {!FileSystemFlags=} options
+   * @param {function(!FileEntry)=} success
+   * @param {function(!FileError)=} error
+   * @return {undefined}
+   */
+  getFile(path, options, success, error) {
+    if (!this.rootEntry_) {
+      error && setTimeout(error, 0, new Error('root entry not resolved yet.'));
+      return;
+    }
+    return this.rootEntry_.getFile(path, options, success, error);
   }
 
   /**
@@ -511,6 +548,11 @@ class VolumeEntry {
   /** @override */
   get isNativeType() {
     return true;
+  }
+
+  /** @override */
+  getNativeEntry() {
+    return this.rootEntry_;
   }
 
   /**
@@ -674,6 +716,11 @@ class FakeEntry {
   /** @override */
   get isNativeType() {
     return false;
+  }
+
+  /** @override */
+  getNativeEntry() {
+    return null;
   }
 
   /**
