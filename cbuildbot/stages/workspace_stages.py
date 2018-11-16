@@ -25,6 +25,7 @@ import os
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -57,6 +58,22 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
         **kwargs)
 
     self._orig_root = builder_run.buildroot
+
+  def GetWorkspaceRepo(self):
+    """Fetch a repo object for the workspace.
+
+    Returns:
+      repository.RepoRepository instance for the workspace.
+    """
+    # TODO: Properly select the manifest. Currently hard coded to internal
+    # branch checkouts.
+    site_config = config_lib.GetConfig()
+    manifest_url = site_config.params['MANIFEST_INT_URL']
+
+    return repository.RepoRepository(
+        manifest_url, self._build_root,
+        branch=self._run.config.workspace_branch,
+        git_cache_dir=self._run.options.git_cache_dir)
 
   def GetWorkspaceVersionInfo(self):
     """Fetch a VersionInfo for the workspace.
@@ -91,7 +108,7 @@ class WorkspaceSyncStage(WorkspaceStageBase):
     logging.info('Syncing %s branch into %s',
                  self._run.config.workspace_branch, self._build_root)
 
-    repo = self.GetRepoRepository()
+    repo = self.GetWorkspaceRepo()
     repo.PreLoad()
     repo.BuildRootGitCleanup(prune_all=True)
     repo.Sync(detach=True)
@@ -137,7 +154,7 @@ class WorkspacePublishBuildspecStage(WorkspaceStageBase):
     manifest_versions_ext = os.path.join(
         self._orig_root, site_params.EXTERNAL_MANIFEST_VERSIONS_PATH)
 
-    repo = self.GetRepoRepository()
+    repo = self.GetWorkspaceRepo()
 
     # TODO: Add 'patch' support somehow,
     if repo.branch == 'master':
