@@ -89,6 +89,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     // |device| changes:
     //  * GetAddress()
     //  * GetAppearance()
+    //  * GetName() (Chrome OS and Windows only)
     //  * GetBluetoothClass()
     //  * GetInquiryRSSI()
     //  * GetInquiryTxPower()

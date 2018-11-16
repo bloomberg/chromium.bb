@@ -293,6 +293,30 @@ TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
       base::ContainsKey(uuids, BluetoothUUID(kTestUUIDGenericAttribute)));
 }
 
+// Verifies that the device name can be populated by later advertisement
+// packets and is persistent.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, LowEnergyDeviceNameDelayed) {
+#else
+// This test does not yet pass on any other platform.
+TEST_F(BluetoothTest, DISABLED_LowEnergyDeviceNameDelayed) {
+#endif
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  ASSERT_TRUE(device);
+  // GetName() returns a base::Optional<std:string> however some backends still
+  // return an empty string rather than nullopt when no name is available.
+  EXPECT_TRUE(!device->GetName().has_value() || device->GetName()->empty());
+
+  SimulateLowEnergyDevice(1);
+  EXPECT_EQ(base::UTF8ToUTF16(kTestDeviceName), device->GetNameForDisplay());
+}
+
 // Device with no advertised Service UUIDs.
 #if defined(OS_WIN)
 TEST_P(BluetoothTestWinrt, LowEnergyDeviceNoUUIDs) {
@@ -2128,6 +2152,36 @@ TEST_F(BluetoothTest, MAYBE_GetPrimaryServicesByUUID) {
 
     EXPECT_NE(services[0]->GetIdentifier(), services[1]->GetIdentifier());
   }
+}
+
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, GattConnectedNameChange) {
+#else
+// The SimulateGattNameChange() function is not yet available on other
+// platforms.
+TEST_F(BluetoothTest, DISABLED_GattConnectedNameChange) {
+#endif
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  // GetName() returns a base::Optional<std:string> however some backends still
+  // return an empty string rather than nullopt when no name is available.
+  EXPECT_TRUE(!device->GetName() || device->GetName()->empty());
+
+  TestBluetoothAdapterObserver observer(adapter_);
+  SimulateGattNameChange(device, kTestDeviceName);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_EQ(base::UTF8ToUTF16(kTestDeviceName), device->GetNameForDisplay());
 }
 
 }  // namespace device

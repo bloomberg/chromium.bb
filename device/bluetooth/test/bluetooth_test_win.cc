@@ -120,9 +120,8 @@ class TestBluetoothDeviceWinrt : public BluetoothDeviceWinrt {
  public:
   TestBluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter,
                            uint64_t raw_address,
-                           base::Optional<std::string> local_name,
                            BluetoothTestWinrt* bluetooth_test_winrt)
-      : BluetoothDeviceWinrt(adapter, raw_address, std::move(local_name)),
+      : BluetoothDeviceWinrt(adapter, raw_address),
         bluetooth_test_winrt_(bluetooth_test_winrt) {}
 
   HRESULT GetBluetoothLEDeviceStaticsActivationFactory(
@@ -183,10 +182,9 @@ class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
   }
 
   std::unique_ptr<BluetoothDeviceWinrt> CreateDevice(
-      uint64_t raw_address,
-      base::Optional<std::string> local_name) override {
-    return std::make_unique<TestBluetoothDeviceWinrt>(
-        this, raw_address, std::move(local_name), bluetooth_test_winrt_);
+      uint64_t raw_address) override {
+    return std::make_unique<TestBluetoothDeviceWinrt>(this, raw_address,
+                                                      bluetooth_test_winrt_);
   }
 
  private:
@@ -819,6 +817,17 @@ void BluetoothTestWinrt::SimulateGattConnection(BluetoothDevice* device) {
       static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
   DCHECK(ble_device);
   ble_device->SimulateGattConnection();
+}
+
+void BluetoothTestWinrt::SimulateGattNameChange(BluetoothDevice* device,
+                                                const std::string& new_name) {
+  if (!GetParam() || !PlatformSupportsLowEnergy())
+    return BluetoothTestWin::SimulateGattNameChange(device, new_name);
+
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateGattNameChange(new_name);
 }
 
 void BluetoothTestWinrt::SimulateGattConnectionError(
