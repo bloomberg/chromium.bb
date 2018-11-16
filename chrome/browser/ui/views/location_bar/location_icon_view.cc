@@ -29,7 +29,7 @@ LocationIconView::LocationIconView(const gfx::FontList& font_list,
     : IconLabelBubbleView(font_list), delegate_(delegate) {
   label()->SetElideBehavior(gfx::ELIDE_MIDDLE);
   set_id(VIEW_ID_LOCATION_ICON);
-  Update();
+  Update(true);
   SetUpForInOutAnimation();
 }
 
@@ -174,11 +174,11 @@ bool LocationIconView::ShouldAnimateTextVisibilityChange() const {
           level == SecurityLevel::HTTP_SHOW_WARNING);
 }
 
-void LocationIconView::UpdateTextVisibility() {
+void LocationIconView::UpdateTextVisibility(bool suppress_animations) {
   SetLabel(GetText());
 
   bool should_show = ShouldShowText();
-  if (!ShouldAnimateTextVisibilityChange())
+  if (!ShouldAnimateTextVisibilityChange() || suppress_animations)
     ResetSlideAnimation(should_show);
   else if (should_show)
     AnimateIn(base::nullopt);
@@ -204,8 +204,8 @@ void LocationIconView::OnIconFetched(const gfx::Image& image) {
   SetImage(image.AsImageSkia());
 }
 
-void LocationIconView::Update() {
-  UpdateTextVisibility();
+void LocationIconView::Update(bool suppress_animations) {
+  UpdateTextVisibility(suppress_animations);
   UpdateIcon();
 
   bool is_editing_or_empty = delegate_->IsEditingOrEmpty();

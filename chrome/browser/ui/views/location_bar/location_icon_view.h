@@ -82,8 +82,10 @@ class LocationIconView : public IconLabelBubbleView {
   // Returns what the minimum width for the label text.
   int GetMinimumLabelTextWidth() const;
 
-  // Updates the icon's ink drop mode and focusable behavior.
-  void Update();
+  // Updates the icon's ink drop mode, focusable behavior, text and security
+  // status. |suppress_animations| indicates whether this update should suppress
+  // the text change animation (e.g. when swapping tabs).
+  void Update(bool suppress_animations);
 
   // Returns text to be placed in the view.
   // - For secure/insecure pages, returns text describing the URL's security
@@ -128,7 +130,8 @@ class LocationIconView : public IconLabelBubbleView {
 
   // Updates visibility of the text and determines whether the transition
   // (if any) should be animated.
-  void UpdateTextVisibility();
+  // If |suppress_animations| is true, the text change will not be animated.
+  void UpdateTextVisibility(bool suppress_animations);
 
   // Updates Icon based on the current state and theme.
   void UpdateIcon();

@@ -592,7 +592,7 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
     return;
 
   RefreshBackground();
-  location_icon_view_->Update();
+  location_icon_view_->Update(/*suppress_animations=*/false);
   RefreshClearAllButtonIcon();
   SchedulePaint();
 }
@@ -606,7 +606,7 @@ void LocationBarView::Update(const WebContents* contents) {
   RefreshContentSettingViews();
 
   RefreshPageActionIconViews();
-  location_icon_view_->Update();
+  location_icon_view_->Update(/*suppress_animations=*/contents);
 
   if (star_view_) {
     // TODO(calamity): Refactor Update to use PageActionIconView::Refresh.
@@ -1085,7 +1085,7 @@ void LocationBarView::AnimationCanceled(const gfx::Animation* animation) {
 // LocationBarView, private OmniboxEditController implementation:
 
 void LocationBarView::OnChanged() {
-  location_icon_view_->Update();
+  location_icon_view_->Update(/*suppress_animations=*/false);
   clear_all_button_->SetVisible(GetLocationBarModel()->input_in_progress() &&
                                 !omnibox_view_->text().empty() &&
                                 IsVirtualKeyboardVisible(GetWidget()));
@@ -1159,7 +1159,7 @@ void LocationBarView::OnTouchUiChanged() {
     view->SetFontList(font_list);
   if (save_credit_card_icon_view_)
     save_credit_card_icon_view_->SetFontList(font_list);
-  location_icon_view_->Update();
+  location_icon_view_->Update(/*suppress_animations=*/false);
   Layout();
   SchedulePaint();
 }
