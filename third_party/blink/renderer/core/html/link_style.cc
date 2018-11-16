@@ -263,7 +263,7 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   if (GetResource()) {
     RemovePendingSheet();
     ClearResource();
-    ClearFetchFollowingCORS();
+    ClearFetchFollowingCors();
   }
 
   if (!owner_->ShouldLoadLink())
@@ -292,7 +292,7 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   AddPendingSheet(blocking ? kBlocking : kNonBlocking);
 
   if (params.cross_origin != kCrossOriginAttributeNotSet) {
-    SetFetchFollowingCORS();
+    SetFetchFollowingCors();
   }
 
   // Load stylesheets that are not needed for the layout immediately with low

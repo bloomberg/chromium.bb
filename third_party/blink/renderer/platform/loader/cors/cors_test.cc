@@ -11,7 +11,7 @@ namespace blink {
 
 namespace {
 
-class CORSExposedHeadersTest : public testing::Test {
+class CorsExposedHeadersTest : public testing::Test {
  public:
   using CredentialsMode = network::mojom::FetchCredentialsMode;
 
@@ -24,7 +24,7 @@ class CORSExposedHeadersTest : public testing::Test {
   }
 };
 
-TEST_F(CORSExposedHeadersTest, ValidInput) {
+TEST_F(CorsExposedHeadersTest, ValidInput) {
   EXPECT_EQ(Parse(CredentialsMode::kOmit, "valid"),
             WebHTTPHeaderSet({"valid"}));
 
@@ -37,14 +37,14 @@ TEST_F(CORSExposedHeadersTest, ValidInput) {
             WebHTTPHeaderSet({"a"}));
 }
 
-TEST_F(CORSExposedHeadersTest, DuplicatedEntries) {
+TEST_F(CorsExposedHeadersTest, DuplicatedEntries) {
   EXPECT_EQ(Parse(CredentialsMode::kOmit, "a, a"), WebHTTPHeaderSet{"a"});
 
   EXPECT_EQ(Parse(CredentialsMode::kOmit, "a, a, b"),
             WebHTTPHeaderSet({"a", "b"}));
 }
 
-TEST_F(CORSExposedHeadersTest, InvalidInput) {
+TEST_F(CorsExposedHeadersTest, InvalidInput) {
   EXPECT_TRUE(Parse(CredentialsMode::kOmit, "not valid").empty());
 
   EXPECT_TRUE(Parse(CredentialsMode::kOmit, "///").empty());
@@ -69,7 +69,7 @@ TEST_F(CORSExposedHeadersTest, InvalidInput) {
           .empty());
 }
 
-TEST_F(CORSExposedHeadersTest, Wildcard) {
+TEST_F(CorsExposedHeadersTest, Wildcard) {
   ResourceResponse response;
   response.AddHTTPHeaderField("access-control-expose-headers", "a, b, *");
   response.AddHTTPHeaderField("b", "-");
@@ -87,7 +87,7 @@ TEST_F(CORSExposedHeadersTest, Wildcard) {
       WebHTTPHeaderSet({"access-control-expose-headers", "b", "c", "d", "*"}));
 }
 
-TEST_F(CORSExposedHeadersTest, Asterisk) {
+TEST_F(CorsExposedHeadersTest, Asterisk) {
   ResourceResponse response;
   response.AddHTTPHeaderField("access-control-expose-headers", "a, b, *");
   response.AddHTTPHeaderField("b", "-");

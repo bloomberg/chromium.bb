@@ -101,7 +101,7 @@ enum FetchImportanceMode {
 };
 
 struct FetchAPIRequest {
-  network.mojom.FetchRequestMode mode = network.mojom.FetchRequestMode.kNoCORS;
+  network.mojom.FetchRequestMode mode = network.mojom.FetchRequestMode.kNoCors;
   bool is_main_resource_load = false;
   RequestContextType request_context_type =
     RequestContextType.UNSPECIFIED;

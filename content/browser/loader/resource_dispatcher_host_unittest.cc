@@ -658,12 +658,12 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
             // Enabled features
             {},
             // Disabled features
-            {network::features::kOutOfBlinkCORS});
+            {network::features::kOutOfBlinkCors});
         break;
       case TestMode::kWithOutOfBlinkCors:
         scoped_feature_list_.InitWithFeatures(
             // Enabled features
-            {network::features::kOutOfBlinkCORS,
+            {network::features::kOutOfBlinkCors,
              blink::features::kServiceWorkerServicification},
             // Disabled features
             {});
@@ -867,7 +867,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
   }
 
   bool IsAborted(const network::TestURLLoaderClient& client) {
-    // TODO(toyoshim): Once NetworkService or OutOfBlinkCORS is enabled, these
+    // TODO(toyoshim): Once NetworkService or OutOfBlinkCors is enabled, these
     // expectations below should be receiving a completion with ERR_ABORTED.
     if (!client.has_received_completion())
       return client.has_received_connection_error();

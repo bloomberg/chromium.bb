@@ -45,7 +45,7 @@ class CORE_EXPORT FetchResponseData final
   static FetchResponseData* CreateWithBuffer(BodyStreamBuffer*);
 
   FetchResponseData* CreateBasicFilteredResponse() const;
-  FetchResponseData* CreateCORSFilteredResponse(
+  FetchResponseData* CreateCorsFilteredResponse(
       const WebHTTPHeaderSet& exposed_headers) const;
   FetchResponseData* CreateOpaqueFilteredResponse() const;
   FetchResponseData* CreateOpaqueRedirectFilteredResponse() const;

@@ -79,7 +79,7 @@ void RegisterContentSchemes(bool lock_schemes) {
 
   schemes.cors_enabled_schemes.push_back(kChromeUIScheme);
   for (auto& scheme : schemes.cors_enabled_schemes)
-    url::AddCORSEnabledScheme(scheme.c_str());
+    url::AddCorsEnabledScheme(scheme.c_str());
 
   // TODO(mkwst): Investigate whether chrome-error should be included in
   // csp_bypassing_schemes.

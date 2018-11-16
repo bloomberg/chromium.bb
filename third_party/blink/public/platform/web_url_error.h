@@ -59,7 +59,7 @@ struct WebURLError {
                                     HasCopyInCache,
                                     IsWebSecurityViolation,
                                     const WebURL&);
-  BLINK_PLATFORM_EXPORT WebURLError(const network::CORSErrorStatus&,
+  BLINK_PLATFORM_EXPORT WebURLError(const network::CorsErrorStatus&,
                                     HasCopyInCache,
                                     const WebURL&);
 
@@ -68,7 +68,7 @@ struct WebURLError {
   bool has_copy_in_cache() const { return has_copy_in_cache_; }
   bool is_web_security_violation() const { return is_web_security_violation_; }
   const WebURL& url() const { return url_; }
-  const base::Optional<network::CORSErrorStatus> cors_error_status() const {
+  const base::Optional<network::CorsErrorStatus> cors_error_status() const {
     return cors_error_status_;
   }
 
@@ -91,7 +91,7 @@ struct WebURLError {
   WebURL url_;
 
   // Optional CORS error details.
-  base::Optional<network::CORSErrorStatus> cors_error_status_;
+  base::Optional<network::CorsErrorStatus> cors_error_status_;
 };
 
 }  // namespace blink

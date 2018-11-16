@@ -21,9 +21,9 @@ enum class ResourceType : uint8_t;
 // CORS error strings related utility functions.
 namespace cors {
 
-// Stringify CORSError mainly for inspector messages. Generated string should
+// Stringify CorsError mainly for inspector messages. Generated string should
 // not be exposed to JavaScript for security reasons.
-PLATFORM_EXPORT String GetErrorString(const network::CORSErrorStatus& status,
+PLATFORM_EXPORT String GetErrorString(const network::CorsErrorStatus& status,
                                       const KURL& initial_request_url,
                                       const KURL& last_request_url,
                                       const SecurityOrigin& origin,

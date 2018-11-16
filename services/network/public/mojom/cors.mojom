@@ -4,16 +4,14 @@
 
 module network.mojom;
 
-// TODO(crbug.com/875759): Rename to Cors* rather than CORS*.
-
 // A policy to decide if CORS-preflight fetch should be performed.
-enum CORSPreflightPolicy {
+enum CorsPreflightPolicy {
   kConsiderPreflight,
   kPreventPreflight,
 };
 
 // Error conditions of the CORS check.
-enum CORSError {
+enum CorsError {
   // Access control
   kDisallowedByMode,
   kInvalidResponse,
@@ -40,7 +38,7 @@ enum CORSError {
   kInvalidAllowCredentials,
 
   // The scheme is not for CORS.
-  kCORSDisabledScheme,
+  kCorsDisabledScheme,
 
   // Preflight:
   // Failed to check HTTP response ok status in a CORS-preflight response.
@@ -97,7 +95,7 @@ enum CORSError {
 };
 
 // Determine which Cors exception takes precedence when multiple matches occur.
-enum CORSOriginAccessMatchPriority {
+enum CorsOriginAccessMatchPriority {
   kNoMatchingOrigin,
   kDefaultPriority,
   kLowPriority,

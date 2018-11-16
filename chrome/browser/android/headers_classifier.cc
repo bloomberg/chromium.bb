@@ -19,7 +19,7 @@ jboolean JNI_HeaderClassifier_IsCorsSafelistedHeader(
   std::string header_name(ConvertJavaStringToUTF8(env, j_header_name));
   std::string header_value(ConvertJavaStringToUTF8(env, j_header_value));
 
-  return network::cors::IsCORSSafelistedHeader(header_name, header_value);
+  return network::cors::IsCorsSafelistedHeader(header_name, header_value);
 }
 
 }  // namespace android

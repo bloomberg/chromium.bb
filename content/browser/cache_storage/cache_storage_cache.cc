@@ -95,7 +95,7 @@ network::mojom::FetchResponseType ProtoResponseTypeToFetchResponseType(
     case proto::CacheResponse::BASIC_TYPE:
       return network::mojom::FetchResponseType::kBasic;
     case proto::CacheResponse::CORS_TYPE:
-      return network::mojom::FetchResponseType::kCORS;
+      return network::mojom::FetchResponseType::kCors;
     case proto::CacheResponse::DEFAULT_TYPE:
       return network::mojom::FetchResponseType::kDefault;
     case proto::CacheResponse::ERROR_TYPE:
@@ -114,7 +114,7 @@ proto::CacheResponse::ResponseType FetchResponseTypeToProtoResponseType(
   switch (response_type) {
     case network::mojom::FetchResponseType::kBasic:
       return proto::CacheResponse::BASIC_TYPE;
-    case network::mojom::FetchResponseType::kCORS:
+    case network::mojom::FetchResponseType::kCors:
       return proto::CacheResponse::CORS_TYPE;
     case network::mojom::FetchResponseType::kDefault:
       return proto::CacheResponse::DEFAULT_TYPE;
@@ -365,7 +365,7 @@ bool ShouldPadResponseType(network::mojom::FetchResponseType response_type,
                            bool has_urls) {
   switch (response_type) {
     case network::mojom::FetchResponseType::kBasic:
-    case network::mojom::FetchResponseType::kCORS:
+    case network::mojom::FetchResponseType::kCors:
     case network::mojom::FetchResponseType::kDefault:
     case network::mojom::FetchResponseType::kError:
       return false;

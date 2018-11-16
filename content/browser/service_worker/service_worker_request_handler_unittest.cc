@@ -99,7 +99,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     ServiceWorkerRequestHandler::InitializeHandler(
         request, context_wrapper(), &blob_storage_context_,
         helper_->mock_render_process_id(), kMockProviderId, skip_service_worker,
-        network::mojom::FetchRequestMode::kNoCORS,
+        network::mojom::FetchRequestMode::kNoCors,
         network::mojom::FetchCredentialsMode::kOmit,
         network::mojom::FetchRedirectMode::kFollow,
         std::string() /* integrity */, false /* keepalive */, resource_type,

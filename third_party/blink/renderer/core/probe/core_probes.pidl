@@ -98,7 +98,7 @@ interface CoreProbes {
   void didReceiveBlob(ExecutionContext*, unsigned long identifier, DocumentLoader*, BlobDataHandle*);
   void didReceiveEncodedDataLength(ExecutionContext*, DocumentLoader* loader, unsigned long identifier, int encodedDataLength);
   void didFinishLoading(ExecutionContext*, unsigned long identifier, DocumentLoader*, TimeTicks finishTime, int64_t encoded_data_length, int64_t decodedBodyLength, bool should_report_corb_blocking);
-  void didReceiveCORSRedirectResponse(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
+  void didReceiveCorsRedirectResponse(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
   void didFailLoading(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceError&);
   void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
   void willDispatchEventSourceEvent(ExecutionContext*, unsigned long identifier, const AtomicString& eventName, const AtomicString& eventId, const String& data);
@@ -151,7 +151,7 @@ interface CoreProbes {
   V8Compile([Keep] ExecutionContext* context, const String& file_name, int line, int column);
   ParseHTML(Document* document, HTMLDocumentParser* parser);
   void forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState, bool* result);
-  void shouldForceCORSPreflight(ExecutionContext*, bool* result);
+  void shouldForceCorsPreflight(ExecutionContext*, bool* result);
   void shouldBlockRequest(ExecutionContext*, const KURL&, bool* result);
   void shouldBypassServiceWorker(ExecutionContext* context, bool* result);
   void consoleTimeStamp(ExecutionContext*, const String& title);

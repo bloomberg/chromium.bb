@@ -130,7 +130,7 @@ FetchRequestData::FetchRequestData()
       same_origin_data_url_flag_(false),
       referrer_string_(Referrer::ClientReferrerString()),
       referrer_policy_(kReferrerPolicyDefault),
-      mode_(network::mojom::FetchRequestMode::kNoCORS),
+      mode_(network::mojom::FetchRequestMode::kNoCors),
       credentials_(network::mojom::FetchCredentialsMode::kOmit),
       cache_mode_(mojom::FetchCacheMode::kDefault),
       redirect_(network::mojom::FetchRedirectMode::kFollow),

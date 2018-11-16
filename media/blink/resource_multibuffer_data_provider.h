@@ -111,7 +111,7 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
 
   // Copy of url_data_->cors_mode()
   // const to make it obvious that redirects cannot change it.
-  const UrlData::CORSMode cors_mode_;
+  const UrlData::CorsMode cors_mode_;
 
   // The origin for the initial request.
   // const to make it obvious that redirects cannot change it.

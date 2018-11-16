@@ -445,8 +445,8 @@ extern const char kEnableNupPrintingDescription[];
 extern const char kEnableOptimizationHintsName[];
 extern const char kEnableOptimizationHintsDescription[];
 
-extern const char kEnableOutOfBlinkCORSName[];
-extern const char kEnableOutOfBlinkCORSDescription[];
+extern const char kEnableOutOfBlinkCorsName[];
+extern const char kEnableOutOfBlinkCorsDescription[];
 
 extern const char kVizDisplayCompositorName[];
 extern const char kVizDisplayCompositorDescription[];

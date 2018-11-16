@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, DynamicManifest) {
 // If a page's manifest lives in a different origin, it should follow the CORS
 // rules and requesting the manifest should return an empty manifest (unless the
 // response contains CORS headers).
-IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifest) {
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CorsManifest) {
   ASSERT_TRUE(cors_embedded_test_server()->Start());
   ASSERT_NE(embedded_test_server()->port(),
             cors_embedded_test_server()->port());
@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifest) {
 
 // If a page's manifest lives in a different origin, it should be accessible if
 // it has valid access controls headers.
-IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CORSManifestWithAcessControls) {
+IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, CorsManifestWithAcessControls) {
   ASSERT_TRUE(cors_embedded_test_server()->Start());
   ASSERT_NE(embedded_test_server()->port(),
             cors_embedded_test_server()->port());

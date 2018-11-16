@@ -23,7 +23,7 @@ class UrlIndexTest : public testing::Test {
   UrlIndexTest() : url_index_(nullptr) {}
 
   scoped_refptr<UrlData> GetByUrl(const GURL& gurl,
-                                  UrlData::CORSMode cors_mode) {
+                                  UrlData::CorsMode cors_mode) {
     scoped_refptr<UrlData> ret = url_index_.GetByUrl(gurl, cors_mode);
     EXPECT_EQ(ret->url(), gurl);
     EXPECT_EQ(ret->cors_mode(), cors_mode);

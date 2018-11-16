@@ -399,7 +399,7 @@ bool MixedContentChecker::ShouldBlockFetch(
   // launching external applications via URLs. http://crbug.com/318788 and
   // https://crbug.com/393481
   if (frame_type == network::mojom::RequestContextFrameType::kNested &&
-      !SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(url.Protocol()))
+      !SchemeRegistry::ShouldTreatURLSchemeAsCorsEnabled(url.Protocol()))
     context_type = WebMixedContentContextType::kOptionallyBlockable;
 
   switch (context_type) {
@@ -783,7 +783,7 @@ WebMixedContentContextType MixedContentChecker::ContextTypeForInspector(
   // subframe.
   if (request.GetFrameType() ==
           network::mojom::RequestContextFrameType::kNested &&
-      !SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
+      !SchemeRegistry::ShouldTreatURLSchemeAsCorsEnabled(
           request.Url().Protocol())) {
     return WebMixedContentContextType::kOptionallyBlockable;
   }

@@ -35,9 +35,9 @@ bool IsSecureScheme(const std::string& scheme) {
 }
 
 // Should return the same value as SecurityOrigin::isLocal and
-// SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled.
-bool ShouldTreatURLSchemeAsCORSEnabled(const GURL& url) {
-  return base::ContainsValue(url::GetCORSEnabledSchemes(), url.scheme());
+// SchemeRegistry::shouldTreatURLSchemeAsCorsEnabled.
+bool ShouldTreatURLSchemeAsCorsEnabled(const GURL& url) {
+  return base::ContainsValue(url::GetCorsEnabledSchemes(), url.scheme());
 }
 
 // Should return the same value as the resource URL checks assigned to
@@ -168,7 +168,7 @@ bool MixedContentNavigationThrottle::ShouldBlockNavigation(bool for_redirect) {
   blink::WebMixedContentContextType mixed_context_type =
       handle_impl->mixed_content_context_type();
 
-  if (!ShouldTreatURLSchemeAsCORSEnabled(handle_impl->GetURL()))
+  if (!ShouldTreatURLSchemeAsCorsEnabled(handle_impl->GetURL()))
     mixed_context_type =
         blink::WebMixedContentContextType::kOptionallyBlockable;
 

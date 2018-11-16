@@ -125,7 +125,7 @@ void MediaElementEventListener::UpdateSources(ExecutionContext* context) {
     sources_.insert(track->Component()->Source());
 
   if (!media_element_->currentSrc().IsEmpty() &&
-      !media_element_->IsMediaDataCORSSameOrigin()) {
+      !media_element_->IsMediaDataCorsSameOrigin()) {
     for (auto source : sources_)
       MediaStreamCenter::Instance().DidStopMediaStreamSource(source);
   }
@@ -155,7 +155,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
   }
 
   ExecutionContext* context = ExecutionContext::From(script_state);
-  if (!element.currentSrc().IsEmpty() && !element.IsMediaDataCORSSameOrigin()) {
+  if (!element.currentSrc().IsEmpty() && !element.IsMediaDataCorsSameOrigin()) {
     exception_state.ThrowSecurityError(
         "Cannot capture from element with cross-origin data");
     return nullptr;

@@ -59,9 +59,9 @@ enum SynchronousPolicy : uint8_t {
 
 // Used by the ThreadableLoader to turn off part of the CORS handling
 // logic in the ResourceFetcher to use its own CORS handling logic.
-enum CORSHandlingByResourceFetcher {
-  kDisableCORSHandlingByResourceFetcher,
-  kEnableCORSHandlingByResourceFetcher,
+enum CorsHandlingByResourceFetcher {
+  kDisableCorsHandlingByResourceFetcher,
+  kEnableCorsHandlingByResourceFetcher,
 };
 
 // Was the request generated from a "parser-inserted" element?
@@ -83,7 +83,7 @@ struct ResourceLoaderOptions {
         content_security_policy_option(kCheckContentSecurityPolicy),
         request_initiator_context(kDocumentContext),
         synchronous_policy(kRequestAsynchronously),
-        cors_handling_by_resource_fetcher(kEnableCORSHandlingByResourceFetcher),
+        cors_handling_by_resource_fetcher(kEnableCorsHandlingByResourceFetcher),
         cors_flag(false),
         parser_disposition(kParserInserted),
         cache_aware_loading_enabled(kNotCacheAwareLoadingEnabled) {}
@@ -96,10 +96,10 @@ struct ResourceLoaderOptions {
   RequestInitiatorContext request_initiator_context;
   SynchronousPolicy synchronous_policy;
 
-  // When set to kDisableCORSHandlingByResourceFetcher, the ResourceFetcher
+  // When set to kDisableCorsHandlingByResourceFetcher, the ResourceFetcher
   // suppresses part of its CORS handling logic.
   // Used by ThreadableLoader which does CORS handling by itself.
-  CORSHandlingByResourceFetcher cors_handling_by_resource_fetcher;
+  CorsHandlingByResourceFetcher cors_handling_by_resource_fetcher;
 
   // Corresponds to the CORS flag in the Fetch spec.
   bool cors_flag;

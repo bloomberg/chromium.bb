@@ -31,7 +31,7 @@ URLLoaderFactory::URLLoaderFactory(
     NetworkContext* context,
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
-    cors::CORSURLLoaderFactory* cors_url_loader_factory)
+    cors::CorsURLLoaderFactory* cors_url_loader_factory)
     : context_(context),
       params_(std::move(params)),
       resource_scheduler_client_(std::move(resource_scheduler_client)),
@@ -140,7 +140,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
 
   auto loader = std::make_unique<URLLoader>(
       context_->url_request_context(), network_service_client,
-      base::BindOnce(&cors::CORSURLLoaderFactory::DestroyURLLoader,
+      base::BindOnce(&cors::CorsURLLoaderFactory::DestroyURLLoader,
                      base::Unretained(cors_url_loader_factory_)),
       std::move(request), options, url_request, report_raw_headers,
       std::move(client),

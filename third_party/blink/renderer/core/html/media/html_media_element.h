@@ -301,7 +301,7 @@ class CORE_EXPORT HTMLMediaElement
   bool IsSafeToLoadURL(const KURL&, InvalidURLAction);
 
   // Checks to see if current media data is CORS-same-origin.
-  bool IsMediaDataCORSSameOrigin() const;
+  bool IsMediaDataCorsSameOrigin() const;
 
   // Returns this media element is in a cross-origin frame.
   bool IsInCrossOriginFrame() const;
@@ -525,7 +525,7 @@ class CORE_EXPORT HTMLMediaElement
 
   void ChangeNetworkStateFromLoadingToIdle();
 
-  WebMediaPlayer::CORSMode CorsMode() const;
+  WebMediaPlayer::CorsMode CorsMode() const;
 
   // Returns the "direction of playback" value as specified in the HTML5 spec.
   enum DirectionOfPlayback { kBackward, kForward };

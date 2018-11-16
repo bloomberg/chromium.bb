@@ -302,12 +302,12 @@ class PLATFORM_EXPORT ResourceResponse final {
   }
   bool IsOpaqueResponseFromServiceWorker() const;
   // https://html.spec.whatwg.org/#cors-same-origin
-  bool IsCORSSameOrigin() const {
-    return network::cors::IsCORSSameOriginResponseType(response_type_);
+  bool IsCorsSameOrigin() const {
+    return network::cors::IsCorsSameOriginResponseType(response_type_);
   }
   // https://html.spec.whatwg.org/#cors-cross-origin
-  bool IsCORSCrossOrigin() const {
-    return network::cors::IsCORSCrossOriginResponseType(response_type_);
+  bool IsCorsCrossOrigin() const {
+    return network::cors::IsCorsCrossOriginResponseType(response_type_);
   }
 
   // See ServiceWorkerResponseInfo::url_list_via_service_worker.

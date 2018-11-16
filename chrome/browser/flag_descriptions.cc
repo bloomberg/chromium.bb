@@ -696,8 +696,8 @@ const char kEnableOptimizationHintsDescription[] =
     "into decisions for what optimizations to perform on some pages on slow "
     "networks.";
 
-const char kEnableOutOfBlinkCORSName[] = "Out of blink CORS";
-const char kEnableOutOfBlinkCORSDescription[] =
+const char kEnableOutOfBlinkCorsName[] = "Out of blink CORS";
+const char kEnableOutOfBlinkCorsDescription[] =
     "CORS handling logic is moved out of blink.";
 
 const char kExperimentalAccessibilityFeaturesName[] =

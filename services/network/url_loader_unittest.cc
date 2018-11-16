@@ -2510,7 +2510,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
   request.resource_type = kResourceType;
-  request.fetch_request_mode = mojom::FetchRequestMode::kCORS;
+  request.fetch_request_mode = mojom::FetchRequestMode::kCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
 
   base::RunLoop delete_run_loop;
@@ -2546,7 +2546,7 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
   request.resource_type = kResourceType;
-  request.fetch_request_mode = mojom::FetchRequestMode::kNoCORS;
+  request.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
 
   base::RunLoop delete_run_loop;
@@ -2586,7 +2586,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
   request.resource_type = kResourceType;
-  request.fetch_request_mode = mojom::FetchRequestMode::kNoCORS;
+  request.fetch_request_mode = mojom::FetchRequestMode::kNoCors;
   request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
 
   base::RunLoop delete_run_loop;

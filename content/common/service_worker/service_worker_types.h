@@ -92,7 +92,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   // Be sure to update EstimatedStructSize(), Serialize(), and ParseFromString()
   // when adding members.
   network::mojom::FetchRequestMode mode =
-      network::mojom::FetchRequestMode::kNoCORS;
+      network::mojom::FetchRequestMode::kNoCors;
   bool is_main_resource_load = false;
   blink::mojom::RequestContextType request_context_type =
       blink::mojom::RequestContextType::UNSPECIFIED;

@@ -40,7 +40,7 @@ struct CONTENT_EXPORT SyncLoadResponse {
   int extended_error_code = 0;
 
   // Optional CORS error details.
-  base::Optional<network::CORSErrorStatus> cors_error;
+  base::Optional<network::CorsErrorStatus> cors_error;
 
   // The final URL of the response.  This may differ from the request URL in
   // the case of a server redirect.

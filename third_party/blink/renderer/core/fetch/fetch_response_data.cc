@@ -81,7 +81,7 @@ FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
   return response;
 }
 
-FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
+FetchResponseData* FetchResponseData::CreateCorsFilteredResponse(
     const WebHTTPHeaderSet& exposed_headers) const {
   DCHECK_EQ(type_, Type::kDefault);
   // "A CORS filtered response is a filtered response whose type is |CORS|,
@@ -92,7 +92,7 @@ FetchResponseData* FetchResponseData::CreateCORSFilteredResponse(
   // parsing `Access-Control-Expose-Headers` in internal response's header
   // list."
   FetchResponseData* response =
-      new FetchResponseData(Type::kCORS, status_, status_message_);
+      new FetchResponseData(Type::kCors, status_, status_message_);
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     const String& name = header.first;
@@ -194,7 +194,7 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state,
 
   switch (type_) {
     case Type::kBasic:
-    case Type::kCORS:
+    case Type::kCors:
       DCHECK(internal_response_);
       DCHECK_EQ(buffer_, internal_response_->buffer_);
       DCHECK_EQ(internal_response_->type_, Type::kDefault);
@@ -293,7 +293,7 @@ FetchResponseData::FetchResponseData(Type type,
       response_time_(base::Time::Now()) {}
 
 void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
-  if (type_ == Type::kBasic || type_ == Type::kCORS) {
+  if (type_ == Type::kBasic || type_ == Type::kCors) {
     DCHECK(internal_response_);
     internal_response_->buffer_ = buffer;
     buffer_ = buffer;

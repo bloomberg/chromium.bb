@@ -41,7 +41,7 @@
 
 namespace network {
 namespace mojom {
-enum class CORSPreflightPolicy : int32_t;
+enum class CorsPreflightPolicy : int32_t;
 enum class FetchCredentialsMode : int32_t;
 enum class FetchRedirectMode : int32_t;
 enum class FetchRequestMode : int32_t;
@@ -284,8 +284,8 @@ class WebURLRequest {
   // https://wicg.github.io/cors-rfc1918/#external-request
   BLINK_PLATFORM_EXPORT bool IsExternalRequest() const;
 
-  BLINK_PLATFORM_EXPORT network::mojom::CORSPreflightPolicy
-  GetCORSPreflightPolicy() const;
+  BLINK_PLATFORM_EXPORT network::mojom::CorsPreflightPolicy
+  GetCorsPreflightPolicy() const;
 
   BLINK_PLATFORM_EXPORT void SetNavigationStartTime(base::TimeTicks);
 

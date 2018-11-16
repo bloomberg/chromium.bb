@@ -240,7 +240,7 @@ void SecurityPolicy::AddOriginAccessAllowListEntry(
     const String& destination_protocol,
     const String& destination_domain,
     bool allow_destination_subdomains,
-    const network::mojom::CORSOriginAccessMatchPriority priority) {
+    const network::mojom::CorsOriginAccessMatchPriority priority) {
   MutexLocker lock(GetMutex());
   GetOriginAccessList().AddAllowListEntryForOrigin(
       source_origin.ToUrlOrigin(), network::mojom::CorsOriginPattern::New(
@@ -254,7 +254,7 @@ void SecurityPolicy::AddOriginAccessBlockListEntry(
     const String& destination_protocol,
     const String& destination_domain,
     bool allow_destination_subdomains,
-    const network::mojom::CORSOriginAccessMatchPriority priority) {
+    const network::mojom::CorsOriginAccessMatchPriority priority) {
   MutexLocker lock(GetMutex());
   GetOriginAccessList().AddBlockListEntryForOrigin(
       source_origin.ToUrlOrigin(), network::mojom::CorsOriginPattern::New(

@@ -26,7 +26,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
   const cc::Layer* GetCcLayer() { return layer_.get(); }
 
   // WebMediaPlayer
-  LoadTiming Load(LoadType, const WebMediaPlayerSource&, CORSMode) override {
+  LoadTiming Load(LoadType, const WebMediaPlayerSource&, CorsMode) override {
     network_state_ = kNetworkStateLoaded;
     client_->NetworkStateChanged();
     ready_state_ = kReadyStateHaveEnoughData;

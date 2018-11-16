@@ -243,7 +243,7 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SysconfNprocessorsOnln, {
     RunNaClIntegrationTest(path);
 })
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, CrossOriginCORS) {
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, CrossOriginCors) {
   RunLoadTest(FILE_PATH_LITERAL("cross_origin/cors.html"));
 }
 
@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, SameOriginCookie) {
   RunLoadTest(FILE_PATH_LITERAL("cross_origin/same_origin_cookie.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, CORSNoCookie) {
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, CorsNoCookie) {
   RunLoadTest(FILE_PATH_LITERAL("cross_origin/cors_no_cookie.html"));
 }
 

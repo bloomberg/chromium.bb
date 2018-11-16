@@ -53,7 +53,7 @@ class CorsOriginAccessListBrowserTest
       case TestMode::kOutOfBlinkCorsWithServicification:
         scoped_feature_list_.InitWithFeatures(
             // Enabled features
-            {network::features::kOutOfBlinkCORS,
+            {network::features::kOutOfBlinkCors,
              network::features::kNetworkService,
              blink::features::kServiceWorkerServicification},
             // Disabled features
@@ -62,7 +62,7 @@ class CorsOriginAccessListBrowserTest
       case TestMode::kOutOfBlinkCorsWithoutServicification:
         scoped_feature_list_.InitWithFeatures(
             // Enabled features
-            {network::features::kOutOfBlinkCORS},
+            {network::features::kOutOfBlinkCors},
             // Disabled features
             {network::features::kNetworkService,
              blink::features::kServiceWorkerServicification});
@@ -105,7 +105,7 @@ class CorsOriginAccessListBrowserTest
     std::vector<network::mojom::CorsOriginPatternPtr> list1;
     list1.push_back(network::mojom::CorsOriginPattern::New(
         scheme, host, allow_subdomains,
-        network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority));
+        network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
     bool first_list_done = false;
     BrowserContext::SetCorsOriginAccessListsForOrigin(
         shell()->web_contents()->GetBrowserContext(),
@@ -117,7 +117,7 @@ class CorsOriginAccessListBrowserTest
     std::vector<network::mojom::CorsOriginPatternPtr> list2;
     list2.push_back(network::mojom::CorsOriginPattern::New(
         scheme, host, allow_subdomains,
-        network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority));
+        network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
     bool second_list_done = false;
     BrowserContext::SetCorsOriginAccessListsForOrigin(
         shell()->web_contents()->GetBrowserContext(),
@@ -277,7 +277,7 @@ INSTANTIATE_TEST_CASE_P(
     CorsOriginAccessListBrowserTest,
     ::testing::Values(TestMode::kOutOfBlinkCorsWithoutServicification));
 
-// TODO(toyoshim): Instantiates tests for the case kOutOfBlinkCORS is disabled
+// TODO(toyoshim): Instantiates tests for the case kOutOfBlinkCors is disabled
 // and remove relevant LayoutTests if it's possible.
 
 }  // namespace

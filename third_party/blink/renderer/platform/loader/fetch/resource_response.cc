@@ -402,7 +402,7 @@ void ResourceResponse::SetCTPolicyCompliance(CTPolicyCompliance compliance) {
 }
 
 bool ResourceResponse::IsOpaqueResponseFromServiceWorker() const {
-  return IsCORSCrossOrigin() && WasFetchedViaServiceWorker();
+  return IsCorsCrossOrigin() && WasFetchedViaServiceWorker();
 }
 
 KURL ResourceResponse::OriginalURLViaServiceWorker() const {

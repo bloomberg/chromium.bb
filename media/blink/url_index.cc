@@ -57,7 +57,7 @@ void ResourceMultiBuffer::OnEmpty() {
   url_data_->OnEmpty();
 }
 
-UrlData::UrlData(const GURL& url, CORSMode cors_mode, UrlIndex* url_index)
+UrlData::UrlData(const GURL& url, CorsMode cors_mode, UrlIndex* url_index)
     : url_(url),
       have_data_origin_(false),
       cors_mode_(cors_mode),
@@ -77,7 +77,7 @@ UrlData::~UrlData() {
   DCHECK_EQ(0, preloading_);
 }
 
-std::pair<GURL, UrlData::CORSMode> UrlData::key() const {
+std::pair<GURL, UrlData::CorsMode> UrlData::key() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return std::make_pair(url(), cors_mode());
 }
@@ -399,7 +399,7 @@ void UrlIndex::RemoveUrlData(const scoped_refptr<UrlData>& url_data) {
 }
 
 scoped_refptr<UrlData> UrlIndex::GetByUrl(const GURL& gurl,
-                                          UrlData::CORSMode cors_mode) {
+                                          UrlData::CorsMode cors_mode) {
   auto i = indexed_data_.find(std::make_pair(gurl, cors_mode));
   if (i != indexed_data_.end() && i->second->Valid()) {
     return i->second;
@@ -409,7 +409,7 @@ scoped_refptr<UrlData> UrlIndex::GetByUrl(const GURL& gurl,
 }
 
 scoped_refptr<UrlData> UrlIndex::NewUrlData(const GURL& url,
-                                            UrlData::CORSMode cors_mode) {
+                                            UrlData::CorsMode cors_mode) {
   return new UrlData(url, cors_mode, this);
 }
 

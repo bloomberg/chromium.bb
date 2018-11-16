@@ -1040,16 +1040,16 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   // in case the upload listeners are added after the request is started.
   upload_events_allowed_ =
       same_origin_request_ || upload_events ||
-      !cors::IsCORSSafelistedMethod(method_) ||
-      !cors::ContainsOnlyCORSSafelistedHeaders(request_headers_);
+      !cors::IsCorsSafelistedMethod(method_) ||
+      !cors::ContainsOnlyCorsSafelistedHeaders(request_headers_);
 
   ResourceRequest request(url_);
   request.SetRequestorOrigin(GetSecurityOrigin());
   request.SetHTTPMethod(method_);
   request.SetRequestContext(mojom::RequestContextType::XML_HTTP_REQUEST);
   request.SetFetchRequestMode(
-      upload_events ? network::mojom::FetchRequestMode::kCORSWithForcedPreflight
-                    : network::mojom::FetchRequestMode::kCORS);
+      upload_events ? network::mojom::FetchRequestMode::kCorsWithForcedPreflight
+                    : network::mojom::FetchRequestMode::kCors);
   request.SetFetchCredentialsMode(
       with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
                         : network::mojom::FetchCredentialsMode::kSameOrigin);

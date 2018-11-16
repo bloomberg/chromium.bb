@@ -26,9 +26,9 @@ class OriginAccessList;
 // Wrapper class that adds cross-origin resource sharing capabilities
 // (https://fetch.spec.whatwg.org/#http-cors-protocol), delegating requests as
 // well as potential preflight requests to the supplied
-// |network_loader_factory|. It is owned by the CORSURLLoaderFactory that
+// |network_loader_factory|. It is owned by the CorsURLLoaderFactory that
 // created it.
-class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
+class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
     : public mojom::URLLoader,
       public mojom::URLLoaderClient {
  public:
@@ -37,7 +37,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   // Assumes network_loader_factory outlives this loader.
   // TODO(yhirano): Remove |request_finalizer| when the network service is
   // fully enabled.
-  CORSURLLoader(
+  CorsURLLoader(
       mojom::URLLoaderRequest loader_request,
       int32_t routing_id,
       int32_t request_id,
@@ -51,7 +51,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
       const OriginAccessList* origin_access_list,
       PreflightController* preflight_controller);
 
-  ~CORSURLLoader() override;
+  ~CorsURLLoader() override;
 
   // Starts processing the request. This is expected to be called right after
   // the constructor.
@@ -85,7 +85,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   void StartRequest();
   void StartNetworkRequest(
       int net_error,
-      base::Optional<CORSErrorStatus> status,
+      base::Optional<CorsErrorStatus> status,
       base::Optional<PreflightTimingInfo> preflight_timing_info);
 
   // Called when there is a connection error on the upstream pipe used for the
@@ -97,7 +97,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   void OnConnectionError();
 
-  void SetCORSFlagIfNeeded();
+  void SetCorsFlagIfNeeded();
 
   static base::Optional<std::string> GetHeaderString(
       const ResourceResponseHead& response,
@@ -112,7 +112,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   DeleteCallback delete_callback_;
 
-  // This raw URLLoaderFactory pointer is shared with the CORSURLLoaderFactory
+  // This raw URLLoaderFactory pointer is shared with the CorsURLLoaderFactory
   // that created and owns this object.
   mojom::URLLoaderFactory* network_loader_factory_;
 
@@ -164,9 +164,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   PreflightController* preflight_controller_;
 
   // Used to run asynchronous class instance bound callbacks safely.
-  base::WeakPtrFactory<CORSURLLoader> weak_factory_;
+  base::WeakPtrFactory<CorsURLLoader> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(CORSURLLoader);
+  DISALLOW_COPY_AND_ASSIGN(CorsURLLoader);
 };
 
 }  // namespace cors

@@ -362,7 +362,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   // ... the URL from which the script was obtained, ...</spec>
   const KURL& base_url = source_code.Url();
   return ClassicScript::Create(source_code, base_url, options_,
-                               resource->GetResponse().IsCORSSameOrigin()
+                               resource->GetResponse().IsCorsSameOrigin()
                                    ? SanitizeScriptErrors::kDoNotSanitize
                                    : SanitizeScriptErrors::kSanitize);
 }

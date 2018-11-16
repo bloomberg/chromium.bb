@@ -131,7 +131,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
     request->url = GURL("http://www.example.com/");
     request->priority = net::LOW;
     request->appcache_host_id = 0;
-    request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
+    request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCors;
     request->fetch_frame_type = network::mojom::RequestContextFrameType::kNone;
 
     const RequestExtraData extra_data;

@@ -19,7 +19,7 @@ namespace network {
 
 namespace cors {
 
-CORSURLLoaderFactory::CORSURLLoaderFactory(
+CorsURLLoaderFactory::CorsURLLoaderFactory(
     NetworkContext* context,
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
@@ -37,11 +37,11 @@ CORSURLLoaderFactory::CORSURLLoaderFactory(
   DCHECK(origin_access_list_);
   bindings_.AddBinding(this, std::move(request));
   bindings_.set_connection_error_handler(base::BindRepeating(
-      &CORSURLLoaderFactory::DeleteIfNeeded, base::Unretained(this)));
+      &CorsURLLoaderFactory::DeleteIfNeeded, base::Unretained(this)));
   preflight_controller_ = context_->cors_preflight_controller();
 }
 
-CORSURLLoaderFactory::CORSURLLoaderFactory(
+CorsURLLoaderFactory::CorsURLLoaderFactory(
     bool disable_web_security,
     std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
     const base::RepeatingCallback<void(int)>& preflight_finalizer,
@@ -57,14 +57,14 @@ CORSURLLoaderFactory::CORSURLLoaderFactory(
   preflight_controller_ = owned_preflight_controller_.get();
 }
 
-CORSURLLoaderFactory::~CORSURLLoaderFactory() = default;
+CorsURLLoaderFactory::~CorsURLLoaderFactory() = default;
 
-void CORSURLLoaderFactory::OnLoaderCreated(
+void CorsURLLoaderFactory::OnLoaderCreated(
     std::unique_ptr<mojom::URLLoader> loader) {
   loaders_.insert(std::move(loader));
 }
 
-void CORSURLLoaderFactory::DestroyURLLoader(mojom::URLLoader* loader) {
+void CorsURLLoaderFactory::DestroyURLLoader(mojom::URLLoader* loader) {
   auto it = loaders_.find(loader);
   DCHECK(it != loaders_.end());
   loaders_.erase(it);
@@ -72,7 +72,7 @@ void CORSURLLoaderFactory::DestroyURLLoader(mojom::URLLoader* loader) {
   DeleteIfNeeded();
 }
 
-void CORSURLLoaderFactory::CreateLoaderAndStart(
+void CorsURLLoaderFactory::CreateLoaderAndStart(
     mojom::URLLoaderRequest request,
     int32_t routing_id,
     int32_t request_id,
@@ -85,11 +85,11 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS) &&
+  if (base::FeatureList::IsEnabled(features::kOutOfBlinkCors) &&
       !disable_web_security_) {
-    auto loader = std::make_unique<CORSURLLoader>(
+    auto loader = std::make_unique<CorsURLLoader>(
         std::move(request), routing_id, request_id, options,
-        base::BindOnce(&CORSURLLoaderFactory::DestroyURLLoader,
+        base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
                        base::Unretained(this)),
         resource_request, std::move(client), traffic_annotation,
         network_loader_factory_.get(), preflight_finalizer_,
@@ -104,28 +104,28 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
   }
 }
 
-void CORSURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
+void CorsURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
   // The cloned factories stop working when this factory is destructed.
   bindings_.AddBinding(this, std::move(request));
 }
 
-void CORSURLLoaderFactory::ClearBindings() {
+void CorsURLLoaderFactory::ClearBindings() {
   bindings_.CloseAllBindings();
 }
 
-void CORSURLLoaderFactory::DeleteIfNeeded() {
+void CorsURLLoaderFactory::DeleteIfNeeded() {
   if (!context_)
     return;
   if (bindings_.empty() && loaders_.empty())
     context_->DestroyURLLoaderFactory(this);
 }
 
-bool CORSURLLoaderFactory::IsSane(const ResourceRequest& request) {
+bool CorsURLLoaderFactory::IsSane(const ResourceRequest& request) {
   // CORS needs a proper origin (including a unique opaque origin). If the
   // request doesn't have one, CORS cannot work.
   if (!request.request_initiator &&
       request.fetch_request_mode != mojom::FetchRequestMode::kNavigate &&
-      request.fetch_request_mode != mojom::FetchRequestMode::kNoCORS) {
+      request.fetch_request_mode != mojom::FetchRequestMode::kNoCors) {
     LOG(WARNING) << "|fetch_request_mode| is " << request.fetch_request_mode
                  << ", but |request_initiator| is not set.";
     return false;

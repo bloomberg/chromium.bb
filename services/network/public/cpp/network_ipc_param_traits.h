@@ -89,8 +89,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
 #endif  // INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_IPC_PARAM_TRAITS_H_
 
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CORSError,
-                          network::mojom::CORSError::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CorsError,
+                          network::mojom::CorsError::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchCredentialsMode,
                           network::mojom::FetchCredentialsMode::kMaxValue)
@@ -104,10 +104,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchRequestMode,
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::RequestContextFrameType,
                           network::mojom::RequestContextFrameType::kMaxValue)
 
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CORSPreflightPolicy,
-                          network::mojom::CORSPreflightPolicy::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CorsPreflightPolicy,
+                          network::mojom::CorsPreflightPolicy::kMaxValue)
 
-IPC_STRUCT_TRAITS_BEGIN(network::CORSErrorStatus)
+IPC_STRUCT_TRAITS_BEGIN(network::CorsErrorStatus)
   IPC_STRUCT_TRAITS_MEMBER(cors_error)
   IPC_STRUCT_TRAITS_MEMBER(failed_parameter)
 IPC_STRUCT_TRAITS_END()

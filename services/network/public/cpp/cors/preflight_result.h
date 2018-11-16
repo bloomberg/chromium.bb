@@ -42,11 +42,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightResult final {
       const base::Optional<std::string>& allow_methods_header,
       const base::Optional<std::string>& allow_headers_header,
       const base::Optional<std::string>& max_age_header,
-      base::Optional<mojom::CORSError>* detected_error);
+      base::Optional<mojom::CorsError>* detected_error);
   ~PreflightResult();
 
   // Checks if the given |method| is allowed by the CORS-preflight response.
-  base::Optional<CORSErrorStatus> EnsureAllowedCrossOriginMethod(
+  base::Optional<CorsErrorStatus> EnsureAllowedCrossOriginMethod(
       const std::string& method) const;
 
   // Checks if the given all |headers| are allowed by the CORS-preflight
@@ -55,7 +55,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightResult final {
   // (https://fetch.spec.whatwg.org/#forbidden-header-name) because they may be
   // added by the user agent. They must be checked separately and rejected for
   // JavaScript-initiated requests.
-  base::Optional<CORSErrorStatus> EnsureAllowedCrossOriginHeaders(
+  base::Optional<CorsErrorStatus> EnsureAllowedCrossOriginHeaders(
       const net::HttpRequestHeaders& headers,
       bool is_revalidating) const;
 
@@ -74,7 +74,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightResult final {
  protected:
   explicit PreflightResult(const mojom::FetchCredentialsMode credentials_mode);
 
-  base::Optional<mojom::CORSError> Parse(
+  base::Optional<mojom::CorsError> Parse(
       const base::Optional<std::string>& allow_methods_header,
       const base::Optional<std::string>& allow_headers_header,
       const base::Optional<std::string>& max_age_header);

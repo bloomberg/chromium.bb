@@ -115,9 +115,9 @@ void ResourceMultiBufferDataProvider::Start() {
     options.expose_all_response_headers = true;
     // The author header set is empty, no preflight should go ahead.
     options.preflight_policy =
-        network::mojom::CORSPreflightPolicy::kPreventPreflight;
+        network::mojom::CorsPreflightPolicy::kPreventPreflight;
 
-    request->SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
+    request->SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
     if (url_data_->cors_mode() != UrlData::CORS_USE_CREDENTIALS) {
       request->SetFetchCredentialsMode(
           network::mojom::FetchCredentialsMode::kSameOrigin);
@@ -337,7 +337,7 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
 
   // This is vital for security!
   destination_url_data->set_is_cors_cross_origin(
-      network::cors::IsCORSCrossOriginResponseType(response_type));
+      network::cors::IsCorsCrossOriginResponseType(response_type));
 
   if (destination_url_data != url_data_) {
     // At this point, we've encountered a redirect, or found a better url data

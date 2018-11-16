@@ -96,7 +96,7 @@ GURL AppendUrlSeparator(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
-bool ShouldFailRequestDueToCORS(const network::ResourceRequest& request) {
+bool ShouldFailRequestDueToCors(const network::ResourceRequest& request) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity)) {
     return false;
@@ -104,7 +104,7 @@ bool ShouldFailRequestDueToCORS(const network::ResourceRequest& request) {
 
   const auto mode = request.fetch_request_mode;
   if (mode == network::mojom::FetchRequestMode::kNavigate ||
-      mode == network::mojom::FetchRequestMode::kNoCORS) {
+      mode == network::mojom::FetchRequestMode::kNoCors) {
     return false;
   }
 
@@ -733,12 +733,12 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
-  // FileURLLoader doesn't support CORS and it's not covered by CORSURLLoader,
+  // FileURLLoader doesn't support CORS and it's not covered by CorsURLLoader,
   // so we need to reject requests that need CORS manually.
-  if (ShouldFailRequestDueToCORS(request)) {
+  if (ShouldFailRequestDueToCors(request)) {
     client->OnComplete(
-        network::URLLoaderCompletionStatus(network::CORSErrorStatus(
-            network::mojom::CORSError::kCORSDisabledScheme)));
+        network::URLLoaderCompletionStatus(network::CorsErrorStatus(
+            network::mojom::CorsError::kCorsDisabledScheme)));
     return;
   }
 

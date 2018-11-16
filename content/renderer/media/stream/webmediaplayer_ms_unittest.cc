@@ -719,7 +719,7 @@ MockMediaStreamVideoRenderer* WebMediaPlayerMSTest::LoadAndGetFrameProvider(
                          blink::WebMediaPlayer::kReadyStateHaveNothing));
   player_->Load(blink::WebMediaPlayer::kLoadTypeURL,
                 blink::WebMediaPlayerSource(),
-                blink::WebMediaPlayer::kCORSModeUnspecified);
+                blink::WebMediaPlayer::kCorsModeUnspecified);
   compositor_ = player_->compositor_.get();
   EXPECT_TRUE(!!compositor_);
   compositor_->SetAlgorithmEnabledForTesting(algorithm_enabled);
@@ -866,7 +866,7 @@ TEST_P(WebMediaPlayerMSTest, NoWaitForFrameForAudio) {
 
   player_->Load(blink::WebMediaPlayer::kLoadTypeURL,
                 blink::WebMediaPlayerSource(),
-                blink::WebMediaPlayer::kCORSModeUnspecified);
+                blink::WebMediaPlayer::kCorsModeUnspecified);
 
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);

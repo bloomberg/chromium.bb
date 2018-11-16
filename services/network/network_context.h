@@ -80,7 +80,7 @@ class URLRequestContextBuilderMojo;
 class WebSocketFactory;
 
 namespace cors {
-class CORSURLLoaderFactory;
+class CorsURLLoaderFactory;
 }  // namespace cors
 
 // A NetworkContext creates and manages access to a URLRequestContext.
@@ -321,7 +321,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Destroys the specified factory. Called by the factory itself when it has
   // no open pipes.
-  void DestroyURLLoaderFactory(cors::CORSURLLoaderFactory* url_loader_factory);
+  void DestroyURLLoaderFactory(cors::CorsURLLoaderFactory* url_loader_factory);
 
   size_t GetNumOutstandingResolveHostRequestsForTesting() const;
 
@@ -441,7 +441,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // This must be below |url_request_context_| so that the URLRequestContext
   // outlives all the URLLoaderFactories and URLLoaders that depend on it.
-  std::set<std::unique_ptr<cors::CORSURLLoaderFactory>,
+  std::set<std::unique_ptr<cors::CorsURLLoaderFactory>,
            base::UniquePtrComparator>
       url_loader_factories_;
 

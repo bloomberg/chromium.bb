@@ -29,18 +29,18 @@ void Append(StringBuilder& builder, std::initializer_list<StringView> views) {
   }
 }
 
-bool IsPreflightError(network::mojom::CORSError error_code) {
+bool IsPreflightError(network::mojom::CorsError error_code) {
   switch (error_code) {
-    case network::mojom::CORSError::kPreflightWildcardOriginNotAllowed:
-    case network::mojom::CORSError::kPreflightMissingAllowOriginHeader:
-    case network::mojom::CORSError::kPreflightMultipleAllowOriginValues:
-    case network::mojom::CORSError::kPreflightInvalidAllowOriginValue:
-    case network::mojom::CORSError::kPreflightAllowOriginMismatch:
-    case network::mojom::CORSError::kPreflightInvalidAllowCredentials:
-    case network::mojom::CORSError::kPreflightInvalidStatus:
-    case network::mojom::CORSError::kPreflightDisallowedRedirect:
-    case network::mojom::CORSError::kPreflightMissingAllowExternal:
-    case network::mojom::CORSError::kPreflightInvalidAllowExternal:
+    case network::mojom::CorsError::kPreflightWildcardOriginNotAllowed:
+    case network::mojom::CorsError::kPreflightMissingAllowOriginHeader:
+    case network::mojom::CorsError::kPreflightMultipleAllowOriginValues:
+    case network::mojom::CorsError::kPreflightInvalidAllowOriginValue:
+    case network::mojom::CorsError::kPreflightAllowOriginMismatch:
+    case network::mojom::CorsError::kPreflightInvalidAllowCredentials:
+    case network::mojom::CorsError::kPreflightInvalidStatus:
+    case network::mojom::CorsError::kPreflightDisallowedRedirect:
+    case network::mojom::CorsError::kPreflightMissingAllowExternal:
+    case network::mojom::CorsError::kPreflightInvalidAllowExternal:
       return true;
     default:
       return false;
@@ -49,7 +49,7 @@ bool IsPreflightError(network::mojom::CORSError error_code) {
 
 }  // namespace
 
-String GetErrorString(const network::CORSErrorStatus& status,
+String GetErrorString(const network::CorsErrorStatus& status,
                       const KURL& initial_request_url,
                       const KURL& last_request_url,
                       const SecurityOrigin& origin,
@@ -61,7 +61,7 @@ String GetErrorString(const network::CORSErrorStatus& status,
       "response serves your needs, set the request's mode to 'no-cors' to "
       "fetch the resource with CORS disabled.";
 
-  using CORSError = network::mojom::CORSError;
+  using CorsError = network::mojom::CorsError;
   const StringView hint(status.failed_parameter.data(),
                         status.failed_parameter.size());
 
@@ -86,14 +86,14 @@ String GetErrorString(const network::CORSErrorStatus& status,
   }
 
   switch (status.cors_error) {
-    case CORSError::kDisallowedByMode:
+    case CorsError::kDisallowedByMode:
       builder.Append("Cross origin requests are not allowed by request mode.");
       break;
-    case CORSError::kInvalidResponse:
+    case CorsError::kInvalidResponse:
       builder.Append("The response is invalid.");
       break;
-    case CORSError::kWildcardOriginNotAllowed:
-    case CORSError::kPreflightWildcardOriginNotAllowed:
+    case CorsError::kWildcardOriginNotAllowed:
+    case CorsError::kPreflightWildcardOriginNotAllowed:
       builder.Append(
           "The value of the 'Access-Control-Allow-Origin' header in the "
           "response must not be the wildcard '*' when the request's "
@@ -104,8 +104,8 @@ String GetErrorString(const network::CORSErrorStatus& status,
             "XMLHttpRequest is controlled by the withCredentials attribute.");
       }
       break;
-    case CORSError::kMissingAllowOriginHeader:
-    case CORSError::kPreflightMissingAllowOriginHeader:
+    case CorsError::kMissingAllowOriginHeader:
+    case CorsError::kPreflightMissingAllowOriginHeader:
       builder.Append(
           "No 'Access-Control-Allow-Origin' header is present on the "
           "requested resource.");
@@ -115,8 +115,8 @@ String GetErrorString(const network::CORSErrorStatus& status,
             "mode to 'no-cors' to fetch the resource with CORS disabled.");
       }
       break;
-    case CORSError::kMultipleAllowOriginValues:
-    case CORSError::kPreflightMultipleAllowOriginValues:
+    case CorsError::kMultipleAllowOriginValues:
+    case CorsError::kPreflightMultipleAllowOriginValues:
       Append(builder,
              {"The 'Access-Control-Allow-Origin' header contains multiple "
               "values '",
@@ -124,23 +124,23 @@ String GetErrorString(const network::CORSErrorStatus& status,
       if (initiator_name == fetch_initiator_type_names::kFetch)
         builder.Append(kNoCorsInformation);
       break;
-    case CORSError::kInvalidAllowOriginValue:
-    case CORSError::kPreflightInvalidAllowOriginValue:
+    case CorsError::kInvalidAllowOriginValue:
+    case CorsError::kPreflightInvalidAllowOriginValue:
       Append(builder, {"The 'Access-Control-Allow-Origin' header contains the "
                        "invalid value '",
                        hint, "'."});
       if (initiator_name == fetch_initiator_type_names::kFetch)
         builder.Append(kNoCorsInformation);
       break;
-    case CORSError::kAllowOriginMismatch:
-    case CORSError::kPreflightAllowOriginMismatch:
+    case CorsError::kAllowOriginMismatch:
+    case CorsError::kPreflightAllowOriginMismatch:
       Append(builder, {"The 'Access-Control-Allow-Origin' header has a value '",
                        hint, "' that is not equal to the supplied origin."});
       if (initiator_name == fetch_initiator_type_names::kFetch)
         builder.Append(kNoCorsInformation);
       break;
-    case CORSError::kInvalidAllowCredentials:
-    case CORSError::kPreflightInvalidAllowCredentials:
+    case CorsError::kInvalidAllowCredentials:
+    case CorsError::kPreflightInvalidAllowCredentials:
       Append(builder,
              {"The value of the 'Access-Control-Allow-Credentials' header in "
               "the response is '",
@@ -154,25 +154,25 @@ String GetErrorString(const network::CORSErrorStatus& status,
             "attribute.");
       }
       break;
-    case CORSError::kCORSDisabledScheme:
+    case CorsError::kCorsDisabledScheme:
       Append(builder,
              {"Cross origin requests are only supported for protocol schemes: ",
-              SchemeRegistry::ListOfCORSEnabledURLSchemes(), "."});
+              SchemeRegistry::ListOfCorsEnabledURLSchemes(), "."});
       break;
-    case CORSError::kPreflightInvalidStatus:
+    case CorsError::kPreflightInvalidStatus:
       builder.Append("It does not have HTTP ok status.");
       break;
-    case CORSError::kPreflightDisallowedRedirect:
+    case CorsError::kPreflightDisallowedRedirect:
       builder.Append("Redirect is not allowed for a preflight request.");
       break;
-    case CORSError::kPreflightMissingAllowExternal:
+    case CorsError::kPreflightMissingAllowExternal:
       builder.Append(
           "No 'Access-Control-Allow-External' header was present in the "
           "preflight response for this external request (This is an "
           "experimental header which is defined in "
           "'https://wicg.github.io/cors-rfc1918/').");
       break;
-    case CORSError::kPreflightInvalidAllowExternal:
+    case CorsError::kPreflightInvalidAllowExternal:
       Append(builder,
              {"The 'Access-Control-Allow-External' header in the preflight "
               "response for this external request had a value of '",
@@ -180,27 +180,27 @@ String GetErrorString(const network::CORSErrorStatus& status,
               "',  not 'true' (This is an experimental header which is defined "
               "in 'https://wicg.github.io/cors-rfc1918/')."});
       break;
-    case CORSError::kInvalidAllowMethodsPreflightResponse:
+    case CorsError::kInvalidAllowMethodsPreflightResponse:
       builder.Append(
           "Cannot parse Access-Control-Allow-Methods response header field in "
           "preflight response.");
       break;
-    case CORSError::kInvalidAllowHeadersPreflightResponse:
+    case CorsError::kInvalidAllowHeadersPreflightResponse:
       builder.Append(
           "Cannot parse Access-Control-Allow-Headers response header field in "
           "preflight response.");
       break;
-    case CORSError::kMethodDisallowedByPreflightResponse:
+    case CorsError::kMethodDisallowedByPreflightResponse:
       Append(builder, {"Method ", hint,
                        " is not allowed by Access-Control-Allow-Methods in "
                        "preflight response."});
       break;
-    case CORSError::kHeaderDisallowedByPreflightResponse:
+    case CorsError::kHeaderDisallowedByPreflightResponse:
       Append(builder, {"Request header field ", hint,
                        " is not allowed by "
                        "Access-Control-Allow-Headers in preflight response."});
       break;
-    case CORSError::kRedirectContainsCredentials:
+    case CorsError::kRedirectContainsCredentials:
       Append(builder, {"Redirect location '", hint,
                        "' contains a username and password, which is "
                        "disallowed for cross-origin requests."});

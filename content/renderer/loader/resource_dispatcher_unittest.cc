@@ -97,7 +97,7 @@ class ResourceDispatcherTest : public testing::Test,
     request->referrer_policy = Referrer::GetDefaultReferrerPolicy();
     request->resource_type = RESOURCE_TYPE_SUB_RESOURCE;
     request->priority = net::LOW;
-    request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCORS;
+    request->fetch_request_mode = network::mojom::FetchRequestMode::kNoCors;
     request->fetch_frame_type = network::mojom::RequestContextFrameType::kNone;
 
     const RequestExtraData extra_data;

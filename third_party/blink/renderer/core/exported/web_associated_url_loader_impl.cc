@@ -208,9 +208,9 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     return;
 
   if (options_.expose_all_response_headers ||
-      (fetch_request_mode_ != network::mojom::FetchRequestMode::kCORS &&
+      (fetch_request_mode_ != network::mojom::FetchRequestMode::kCors &&
        fetch_request_mode_ !=
-           network::mojom::FetchRequestMode::kCORSWithForcedPreflight)) {
+           network::mojom::FetchRequestMode::kCorsWithForcedPreflight)) {
     // Use the original ResourceResponse.
     client_->DidReceiveResponse(WrappedResourceResponse(response));
     return;
@@ -374,7 +374,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       allow_load = validator.IsSafe();
     }
   }
-  new_request.ToMutableResourceRequest().SetCORSPreflightPolicy(
+  new_request.ToMutableResourceRequest().SetCorsPreflightPolicy(
       options_.preflight_policy);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
@@ -398,7 +398,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
 
     if (options_.grant_universal_access) {
       const auto mode = new_request.GetFetchRequestMode();
-      DCHECK(mode == network::mojom::FetchRequestMode::kNoCORS ||
+      DCHECK(mode == network::mojom::FetchRequestMode::kNoCors ||
              mode == network::mojom::FetchRequestMode::kNavigate);
       scoped_refptr<SecurityOrigin> origin =
           SecurityOrigin::CreateUniqueOpaque();

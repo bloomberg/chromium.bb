@@ -52,7 +52,7 @@ class ServiceWorkerControlleeRequestHandlerTest
         const GURL& url,
         ResourceType type,
         network::mojom::FetchRequestMode fetch_type =
-            network::mojom::FetchRequestMode::kNoCORS)
+            network::mojom::FetchRequestMode::kNoCors)
         : test_(test),
           resource_type_(type),
           request_(test->url_request_context_.CreateRequest(
@@ -462,7 +462,7 @@ TEST_P(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
   // CORS request should be returned to renderer for CORS checking.
   ServiceWorkerRequestTestResources sub_test_resources_cors(
       this, GURL("https://host/scope/doc/subresource"), RESOURCE_TYPE_SCRIPT,
-      network::mojom::FetchRequestMode::kCORS);
+      network::mojom::FetchRequestMode::kCors);
   ServiceWorkerURLRequestJob* sub_cors_job =
       sub_test_resources_cors.MaybeCreateJob();
 

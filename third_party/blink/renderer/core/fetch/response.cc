@@ -44,20 +44,20 @@ namespace blink {
 
 namespace {
 
-template <typename CORSHeadersContainer>
+template <typename CorsHeadersContainer>
 FetchResponseData* FilterResponseData(
     network::mojom::FetchResponseType response_type,
     FetchResponseData* response,
-    CORSHeadersContainer& headers) {
+    CorsHeadersContainer& headers) {
   switch (response_type) {
     case network::mojom::FetchResponseType::kBasic:
       return response->CreateBasicFilteredResponse();
       break;
-    case network::mojom::FetchResponseType::kCORS: {
+    case network::mojom::FetchResponseType::kCors: {
       WebHTTPHeaderSet header_names;
       for (const auto& header : headers)
         header_names.insert(header.Ascii().data());
-      return response->CreateCORSFilteredResponse(header_names);
+      return response->CreateCorsFilteredResponse(header_names);
       break;
     }
     case network::mojom::FetchResponseType::kOpaque:
@@ -364,7 +364,7 @@ String Response::type() const {
   switch (response_->GetType()) {
     case network::mojom::FetchResponseType::kBasic:
       return "basic";
-    case network::mojom::FetchResponseType::kCORS:
+    case network::mojom::FetchResponseType::kCors:
       return "cors";
     case network::mojom::FetchResponseType::kDefault:
       return "default";

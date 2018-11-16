@@ -609,7 +609,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   if (response.head.was_fetched_via_service_worker) {
     switch (response.head.response_type) {
       case network::mojom::FetchResponseType::kBasic:
-      case network::mojom::FetchResponseType::kCORS:
+      case network::mojom::FetchResponseType::kCors:
       case network::mojom::FetchResponseType::kDefault:
       case network::mojom::FetchResponseType::kError:
         // Non-opaque responses shouldn't be blocked.

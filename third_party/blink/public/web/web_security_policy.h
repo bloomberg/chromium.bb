@@ -72,20 +72,20 @@ class WebSecurityPolicy {
   // In the case where both an allowlist and blocklist rule of the same
   // priority match a request the blocklist rule takes priority.
   // Callers should use
-  // network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority as the
+  // network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority as the
   // default priority unless overriding existing entries is explicitly needed.
   BLINK_EXPORT static void AddOriginAccessAllowListEntry(
       const WebURL& source_origin,
       const WebString& destination_protocol,
       const WebString& destination_host,
       bool allow_destination_subdomains,
-      const network::mojom::CORSOriginAccessMatchPriority priority);
+      const network::mojom::CorsOriginAccessMatchPriority priority);
   BLINK_EXPORT static void AddOriginAccessBlockListEntry(
       const WebURL& source_origin,
       const WebString& destination_protocol,
       const WebString& destination_host,
       bool disallow_destination_subdomains,
-      const network::mojom::CORSOriginAccessMatchPriority priority);
+      const network::mojom::CorsOriginAccessMatchPriority priority);
   BLINK_EXPORT static void ClearOriginAccessListForOrigin(
       const WebURL& source_origin);
   BLINK_EXPORT static void ClearOriginAccessList();

@@ -788,13 +788,13 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   if (!params.Url().IsValid())
     return ResourceRequestBlockedReason::kOther;
 
-  if (!RuntimeEnabledFeatures::OutOfBlinkCORSEnabled() &&
+  if (!RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
       options.cors_handling_by_resource_fetcher ==
-          kEnableCORSHandlingByResourceFetcher) {
+          kEnableCorsHandlingByResourceFetcher) {
     const scoped_refptr<const SecurityOrigin> origin =
         resource_request.RequestorOrigin();
     DCHECK(!options.cors_flag);
-    params.MutableOptions().cors_flag = cors::CalculateCORSFlag(
+    params.MutableOptions().cors_flag = cors::CalculateCorsFlag(
         params.Url(), origin.get(), resource_request.GetFetchRequestMode());
     // TODO(yhirano): Reject requests for non CORS-enabled schemes.
     // See https://crrev.com/c/1298828.
@@ -802,10 +802,10 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         resource_request.GetFetchCredentialsMode(),
         cors::CalculateResponseTainting(
             params.Url(), resource_request.GetFetchRequestMode(), origin.get(),
-            params.Options().cors_flag ? CORSFlag::Set : CORSFlag::Unset)));
+            params.Options().cors_flag ? CorsFlag::Set : CorsFlag::Unset)));
   }
 
-  if (RuntimeEnabledFeatures::OutOfBlinkCORSEnabled() &&
+  if (RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
       resource_request.GetFetchCredentialsMode() ==
           network::mojom::FetchCredentialsMode::kOmit) {
     // See comments at network::ResourceRequest::fetch_credentials_mode.

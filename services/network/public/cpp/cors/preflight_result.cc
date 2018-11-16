@@ -93,10 +93,10 @@ std::unique_ptr<PreflightResult> PreflightResult::Create(
     const base::Optional<std::string>& allow_methods_header,
     const base::Optional<std::string>& allow_headers_header,
     const base::Optional<std::string>& max_age_header,
-    base::Optional<mojom::CORSError>* detected_error) {
+    base::Optional<mojom::CorsError>* detected_error) {
   std::unique_ptr<PreflightResult> result =
       base::WrapUnique(new PreflightResult(credentials_mode));
-  base::Optional<mojom::CORSError> error =
+  base::Optional<mojom::CorsError> error =
       result->Parse(allow_methods_header, allow_headers_header, max_age_header);
   if (error) {
     if (detected_error)
@@ -112,25 +112,25 @@ PreflightResult::PreflightResult(
 
 PreflightResult::~PreflightResult() = default;
 
-base::Optional<CORSErrorStatus> PreflightResult::EnsureAllowedCrossOriginMethod(
+base::Optional<CorsErrorStatus> PreflightResult::EnsureAllowedCrossOriginMethod(
     const std::string& method) const {
   // Request method is normalized to upper case, and comparison is performed in
   // case-sensitive way, that means access control header should provide an
   // upper case method list.
   const std::string normalized_method = base::ToUpperASCII(method);
   if (methods_.find(normalized_method) != methods_.end() ||
-      IsCORSSafelistedMethod(normalized_method)) {
+      IsCorsSafelistedMethod(normalized_method)) {
     return base::nullopt;
   }
 
   if (!credentials_ && methods_.find("*") != methods_.end())
     return base::nullopt;
 
-  return CORSErrorStatus(mojom::CORSError::kMethodDisallowedByPreflightResponse,
+  return CorsErrorStatus(mojom::CorsError::kMethodDisallowedByPreflightResponse,
                          method);
 }
 
-base::Optional<CORSErrorStatus>
+base::Optional<CorsErrorStatus>
 PreflightResult::EnsureAllowedCrossOriginHeaders(
     const net::HttpRequestHeaders& headers,
     bool is_revalidating) const {
@@ -140,14 +140,14 @@ PreflightResult::EnsureAllowedCrossOriginHeaders(
   // Forbidden headers are forbidden to be used by JavaScript, and checked
   // beforehand. But user-agents may add these headers internally, and it's
   // fine.
-  for (const auto& name : CORSUnsafeNotForbiddenRequestHeaderNames(
+  for (const auto& name : CorsUnsafeNotForbiddenRequestHeaderNames(
            headers.GetHeaderVector(), is_revalidating)) {
     // Header list check is performed in case-insensitive way. Here, we have a
     // parsed header list set in lower case, and search each header in lower
     // case.
     if (headers_.find(name) == headers_.end()) {
-      return CORSErrorStatus(
-          mojom::CORSError::kHeaderDisallowedByPreflightResponse, name);
+      return CorsErrorStatus(
+          mojom::CorsError::kHeaderDisallowedByPreflightResponse, name);
     }
   }
   return base::nullopt;
@@ -175,7 +175,7 @@ bool PreflightResult::EnsureAllowedRequest(
   return true;
 }
 
-base::Optional<mojom::CORSError> PreflightResult::Parse(
+base::Optional<mojom::CorsError> PreflightResult::Parse(
     const base::Optional<std::string>& allow_methods_header,
     const base::Optional<std::string>& allow_headers_header,
     const base::Optional<std::string>& max_age_header) {
@@ -184,11 +184,11 @@ base::Optional<mojom::CORSError> PreflightResult::Parse(
 
   // Keeps parsed method case for case-sensitive search.
   if (!ParseAccessControlAllowList(allow_methods_header, &methods_, false))
-    return mojom::CORSError::kInvalidAllowMethodsPreflightResponse;
+    return mojom::CorsError::kInvalidAllowMethodsPreflightResponse;
 
   // Holds parsed headers in lower case for case-insensitive search.
   if (!ParseAccessControlAllowList(allow_headers_header, &headers_, true))
-    return mojom::CORSError::kInvalidAllowHeadersPreflightResponse;
+    return mojom::CorsError::kInvalidAllowHeadersPreflightResponse;
 
   base::TimeDelta expiry_delta;
   if (max_age_header) {

@@ -214,10 +214,10 @@ bool IsLocalFile(const GURL& url) {
 
 class BufferedDataSourceHostImpl;
 
-STATIC_ASSERT_ENUM(WebMediaPlayer::kCORSModeUnspecified,
+STATIC_ASSERT_ENUM(WebMediaPlayer::kCorsModeUnspecified,
                    UrlData::CORS_UNSPECIFIED);
-STATIC_ASSERT_ENUM(WebMediaPlayer::kCORSModeAnonymous, UrlData::CORS_ANONYMOUS);
-STATIC_ASSERT_ENUM(WebMediaPlayer::kCORSModeUseCredentials,
+STATIC_ASSERT_ENUM(WebMediaPlayer::kCorsModeAnonymous, UrlData::CORS_ANONYMOUS);
+STATIC_ASSERT_ENUM(WebMediaPlayer::kCorsModeUseCredentials,
                    UrlData::CORS_USE_CREDENTIALS);
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
@@ -418,7 +418,7 @@ void WebMediaPlayerImpl::DemuxerDestructionHelper(
 WebMediaPlayer::LoadTiming WebMediaPlayerImpl::Load(
     LoadType load_type,
     const blink::WebMediaPlayerSource& source,
-    CORSMode cors_mode) {
+    CorsMode cors_mode) {
   DVLOG(1) << __func__;
   // Only URL or MSE blob URL is supported.
   DCHECK(source.IsURL());
@@ -590,7 +590,7 @@ void WebMediaPlayerImpl::OnDisplayTypeChanged(
 
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
                                 const blink::WebURL& url,
-                                CORSMode cors_mode) {
+                                CorsMode cors_mode) {
   TRACE_EVENT1("media", "WebMediaPlayerImpl::DoLoad", "id", media_log_->id());
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -633,7 +633,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
     StartPipeline();
   } else {
     auto url_data =
-        url_index_->GetByUrl(url, static_cast<UrlData::CORSMode>(cors_mode));
+        url_index_->GetByUrl(url, static_cast<UrlData::CorsMode>(cors_mode));
     // Notify |this| of bytes received by the network.
     url_data->AddBytesReceivedCallback(BindToCurrentLoop(base::BindRepeating(
         &WebMediaPlayerImpl::OnBytesReceived, AsWeakPtr())));

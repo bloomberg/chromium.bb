@@ -575,7 +575,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     // TODO(falken): It'd be nicer to also check the request body was sent to
     // network but it requires more complicated network mocking and it was hard
     // getting EmbeddedTestServer working with these tests (probably
-    // CORSFallbackResponse is too heavy). We also have Web Platform Tests that
+    // CorsFallbackResponse is too heavy). We also have Web Platform Tests that
     // cover this case in fetch-event.https.html.
   }
 
@@ -1260,7 +1260,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
 }
 
 // Test when the service worker responds with network fallback to CORS request.
-TEST_F(ServiceWorkerSubresourceLoaderTest, CORSFallbackResponse) {
+TEST_F(ServiceWorkerSubresourceLoaderTest, CorsFallbackResponse) {
   fake_controller_.RespondWithFallback();
 
   network::mojom::URLLoaderFactoryPtr factory =
@@ -1274,31 +1274,31 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CORSFallbackResponse) {
   const TestCase kTests[] = {
       {network::mojom::FetchRequestMode::kSameOrigin,
        base::Optional<url::Origin>(), false},
-      {network::mojom::FetchRequestMode::kNoCORS, base::Optional<url::Origin>(),
+      {network::mojom::FetchRequestMode::kNoCors, base::Optional<url::Origin>(),
        false},
-      {network::mojom::FetchRequestMode::kCORS, base::Optional<url::Origin>(),
+      {network::mojom::FetchRequestMode::kCors, base::Optional<url::Origin>(),
        true},
-      {network::mojom::FetchRequestMode::kCORSWithForcedPreflight,
+      {network::mojom::FetchRequestMode::kCorsWithForcedPreflight,
        base::Optional<url::Origin>(), true},
       {network::mojom::FetchRequestMode::kNavigate,
        base::Optional<url::Origin>(), false},
       {network::mojom::FetchRequestMode::kSameOrigin,
        url::Origin::Create(GURL("https://www.example.com/")), false},
-      {network::mojom::FetchRequestMode::kNoCORS,
+      {network::mojom::FetchRequestMode::kNoCors,
        url::Origin::Create(GURL("https://www.example.com/")), false},
-      {network::mojom::FetchRequestMode::kCORS,
+      {network::mojom::FetchRequestMode::kCors,
        url::Origin::Create(GURL("https://www.example.com/")), false},
-      {network::mojom::FetchRequestMode::kCORSWithForcedPreflight,
+      {network::mojom::FetchRequestMode::kCorsWithForcedPreflight,
        url::Origin::Create(GURL("https://www.example.com/")), false},
       {network::mojom::FetchRequestMode::kNavigate,
        url::Origin::Create(GURL("https://other.example.com/")), false},
       {network::mojom::FetchRequestMode::kSameOrigin,
        url::Origin::Create(GURL("https://other.example.com/")), false},
-      {network::mojom::FetchRequestMode::kNoCORS,
+      {network::mojom::FetchRequestMode::kNoCors,
        url::Origin::Create(GURL("https://other.example.com/")), false},
-      {network::mojom::FetchRequestMode::kCORS,
+      {network::mojom::FetchRequestMode::kCors,
        url::Origin::Create(GURL("https://other.example.com/")), true},
-      {network::mojom::FetchRequestMode::kCORSWithForcedPreflight,
+      {network::mojom::FetchRequestMode::kCorsWithForcedPreflight,
        url::Origin::Create(GURL("https://other.example.com/")), true},
       {network::mojom::FetchRequestMode::kNavigate,
        url::Origin::Create(GURL("https://other.example.com/")), false}};

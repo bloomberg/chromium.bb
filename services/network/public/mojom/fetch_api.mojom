@@ -11,9 +11,9 @@ module network.mojom;
 // See the "FetchRequestMode" enum in enums.xml.
 enum FetchRequestMode {
   kSameOrigin,
-  kNoCORS,
-  kCORS,
-  kCORSWithForcedPreflight,
+  kNoCors,
+  kCors,
+  kCorsWithForcedPreflight,
   kNavigate,
   // Add a new type here, then update enums.xml.
 };
@@ -41,7 +41,7 @@ enum FetchCredentialsMode {
 // See the "FetchResponseType" enum in enums.xml.
 enum FetchResponseType {
   kBasic,
-  kCORS,
+  kCors,
   kDefault,
   kError,
   kOpaque,

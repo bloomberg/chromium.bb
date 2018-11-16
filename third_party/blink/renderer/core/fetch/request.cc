@@ -355,14 +355,14 @@ Request* Request::CreateRequestWithRequestOrString(
   if (init->mode() == "same-origin") {
     request->SetMode(network::mojom::FetchRequestMode::kSameOrigin);
   } else if (init->mode() == "no-cors") {
-    request->SetMode(network::mojom::FetchRequestMode::kNoCORS);
+    request->SetMode(network::mojom::FetchRequestMode::kNoCors);
   } else if (init->mode() == "cors") {
-    request->SetMode(network::mojom::FetchRequestMode::kCORS);
+    request->SetMode(network::mojom::FetchRequestMode::kCors);
   } else {
     // |inputRequest| is directly checked here instead of setting and
     // checking |fallbackMode| as specified in the spec.
     if (!input_request)
-      request->SetMode(network::mojom::FetchRequestMode::kCORS);
+      request->SetMode(network::mojom::FetchRequestMode::kCors);
   }
 
   // This is not yet standardized, but we can assume the following:
@@ -474,16 +474,16 @@ Request* Request::CreateRequestWithRequestOrString(
   // "Empty |r|'s request's header list."
   r->request_->HeaderList()->ClearList();
   // "If |r|'s request's mode is "no-cors", run these substeps:
-  if (r->GetRequest()->Mode() == network::mojom::FetchRequestMode::kNoCORS) {
+  if (r->GetRequest()->Mode() == network::mojom::FetchRequestMode::kNoCors) {
     // "If |r|'s request's method is not a CORS-safelisted method, throw a
     // TypeError."
-    if (!cors::IsCORSSafelistedMethod(r->GetRequest()->Method())) {
+    if (!cors::IsCorsSafelistedMethod(r->GetRequest()->Method())) {
       exception_state.ThrowTypeError("'" + r->GetRequest()->Method() +
                                      "' is unsupported in no-cors mode.");
       return nullptr;
     }
     // "Set |r|'s Headers object's guard to "request-no-cors"."
-    r->getHeaders()->SetGuard(Headers::kRequestNoCORSGuard);
+    r->getHeaders()->SetGuard(Headers::kRequestNoCorsGuard);
   }
   // "If |signal| is not null, then make |r|’s signal follow |signal|."
   if (signal)
@@ -758,10 +758,10 @@ String Request::mode() const {
   switch (request_->Mode()) {
     case network::mojom::FetchRequestMode::kSameOrigin:
       return "same-origin";
-    case network::mojom::FetchRequestMode::kNoCORS:
+    case network::mojom::FetchRequestMode::kNoCors:
       return "no-cors";
-    case network::mojom::FetchRequestMode::kCORS:
-    case network::mojom::FetchRequestMode::kCORSWithForcedPreflight:
+    case network::mojom::FetchRequestMode::kCors:
+    case network::mojom::FetchRequestMode::kCorsWithForcedPreflight:
       return "cors";
     case network::mojom::FetchRequestMode::kNavigate:
       return "navigate";

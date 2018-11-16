@@ -633,7 +633,7 @@ void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
     mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
-  url_loader_factories_.emplace(std::make_unique<cors::CORSURLLoaderFactory>(
+  url_loader_factories_.emplace(std::make_unique<cors::CorsURLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
       std::move(request), &cors_origin_access_list_));
 }
@@ -683,7 +683,7 @@ void NetworkContext::DisableQuic() {
 }
 
 void NetworkContext::DestroyURLLoaderFactory(
-    cors::CORSURLLoaderFactory* url_loader_factory) {
+    cors::CorsURLLoaderFactory* url_loader_factory) {
   auto it = url_loader_factories_.find(url_loader_factory);
   DCHECK(it != url_loader_factories_.end());
   url_loader_factories_.erase(it);

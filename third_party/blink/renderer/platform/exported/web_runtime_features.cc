@@ -84,8 +84,8 @@ void WebRuntimeFeatures::EnableOriginTrialControlledFeatures(bool enable) {
   RuntimeEnabledFeatures::SetOriginTrialControlledFeaturesEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableOutOfBlinkCORS(bool enable) {
-  RuntimeEnabledFeatures::SetOutOfBlinkCORSEnabled(enable);
+void WebRuntimeFeatures::EnableOutOfBlinkCors(bool enable) {
+  RuntimeEnabledFeatures::SetOutOfBlinkCorsEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableAccelerated2dCanvas(bool enable) {

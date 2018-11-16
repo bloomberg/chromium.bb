@@ -101,7 +101,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   blink::WebMediaPlayer::LoadTiming Load(
       LoadType load_type,
       const blink::WebMediaPlayerSource& source,
-      CORSMode cors_mode) override;
+      CorsMode cors_mode) override;
 
   // WebSurfaceLayerBridgeObserver implementation.
   void OnWebLayerUpdated() override;

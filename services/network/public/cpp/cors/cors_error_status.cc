@@ -11,20 +11,20 @@ namespace network {
 // Note: |cors_error| is initialized to kLast to keep the value inside the
 // valid enum value range. The value is meaningless and should be overriden
 // immediately by IPC desrtialization code.
-CORSErrorStatus::CORSErrorStatus()
-    : CORSErrorStatus(mojom::CORSError::kMaxValue) {}
+CorsErrorStatus::CorsErrorStatus()
+    : CorsErrorStatus(mojom::CorsError::kMaxValue) {}
 
-CORSErrorStatus::CORSErrorStatus(const CORSErrorStatus& status) = default;
+CorsErrorStatus::CorsErrorStatus(const CorsErrorStatus& status) = default;
 
-CORSErrorStatus::CORSErrorStatus(mojom::CORSError error) : cors_error(error) {}
+CorsErrorStatus::CorsErrorStatus(mojom::CorsError error) : cors_error(error) {}
 
-CORSErrorStatus::CORSErrorStatus(mojom::CORSError error,
+CorsErrorStatus::CorsErrorStatus(mojom::CorsError error,
                                  const std::string& failed_parameter)
     : cors_error(error), failed_parameter(failed_parameter) {}
 
-CORSErrorStatus::~CORSErrorStatus() = default;
+CorsErrorStatus::~CorsErrorStatus() = default;
 
-bool CORSErrorStatus::operator==(const CORSErrorStatus& rhs) const {
+bool CorsErrorStatus::operator==(const CorsErrorStatus& rhs) const {
   return cors_error == rhs.cors_error &&
          failed_parameter == rhs.failed_parameter;
 }

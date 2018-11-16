@@ -389,11 +389,11 @@ void ResourceLoader::Start() {
     throttle_option = ResourceLoadScheduler::ThrottleOption::kStoppable;
   }
 
-  if (ShouldCheckCORSInResourceLoader()) {
+  if (ShouldCheckCorsInResourceLoader()) {
     const auto origin = resource_->GetOrigin();
     response_tainting_ = cors::CalculateResponseTainting(
         request.Url(), request.GetFetchRequestMode(), origin.get(),
-        GetCORSFlag() ? CORSFlag::Set : CORSFlag::Unset);
+        GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
   }
 
   if (request.IsAutomaticUpgrade()) {
@@ -610,13 +610,13 @@ bool ResourceLoader::WillFollowRedirect(
       return false;
     }
 
-    if (ShouldCheckCORSInResourceLoader()) {
+    if (ShouldCheckCorsInResourceLoader()) {
       scoped_refptr<const SecurityOrigin> origin = resource_->GetOrigin();
-      base::Optional<network::CORSErrorStatus> cors_error =
+      base::Optional<network::CorsErrorStatus> cors_error =
           cors::CheckRedirectLocation(
               new_url, fetch_request_mode, origin.get(),
-              GetCORSFlag() ? CORSFlag::Set : CORSFlag::Unset);
-      if (!cors_error && GetCORSFlag()) {
+              GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
+      if (!cors_error && GetCorsFlag()) {
         cors_error =
             cors::CheckAccess(new_url, redirect_response.HttpStatusCode(),
                               redirect_response.HttpHeaderFields(),
@@ -652,7 +652,7 @@ bool ResourceLoader::WillFollowRedirect(
                                            cross_origin);
 
   base::Optional<ResourceResponse> redirect_response_with_type;
-  if (ShouldCheckCORSInResourceLoader()) {
+  if (ShouldCheckCorsInResourceLoader()) {
     new_request->SetAllowStoredCredentials(cors::CalculateCredentialsFlag(
         fetch_credentials_mode, response_tainting_));
     if (!redirect_response.WasFetchedViaServiceWorker()) {
@@ -717,24 +717,24 @@ bool ResourceLoader::WillFollowRedirect(
     return false;
   }
 
-  if (ShouldCheckCORSInResourceLoader()) {
+  if (ShouldCheckCorsInResourceLoader()) {
     bool new_cors_flag =
-        GetCORSFlag() || cors::CalculateCORSFlag(new_request->Url(),
+        GetCorsFlag() || cors::CalculateCorsFlag(new_request->Url(),
                                                  resource_->GetOrigin().get(),
                                                  fetch_request_mode);
     resource_->MutableOptions().cors_flag = new_cors_flag;
     // Cross-origin requests are only allowed certain registered schemes.
-    if (GetCORSFlag() && !SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
+    if (GetCorsFlag() && !SchemeRegistry::ShouldTreatURLSchemeAsCorsEnabled(
                              new_request->Url().Protocol())) {
       HandleError(
           ResourceError(new_request->Url(),
-                        network::CORSErrorStatus(
-                            network::mojom::CORSError::kCORSDisabledScheme)));
+                        network::CorsErrorStatus(
+                            network::mojom::CorsError::kCorsDisabledScheme)));
       return false;
     }
     response_tainting_ = cors::CalculateResponseTainting(
         new_request->Url(), fetch_request_mode, resource_->GetOrigin().get(),
-        GetCORSFlag() ? CORSFlag::Set : CORSFlag::Unset);
+        GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
   }
 
   report_raw_headers = new_request->ReportRawHeaders();
@@ -827,8 +827,8 @@ void ResourceLoader::DidReceiveResponse(
 
   if (response.WasFetchedViaServiceWorker()) {
     if (options.cors_handling_by_resource_fetcher ==
-            kEnableCORSHandlingByResourceFetcher &&
-        fetch_request_mode == network::mojom::FetchRequestMode::kCORS &&
+            kEnableCorsHandlingByResourceFetcher &&
+        fetch_request_mode == network::mojom::FetchRequestMode::kCors &&
         response.WasFallbackRequiredByServiceWorker()) {
       ResourceRequest last_request = resource_->LastResourceRequest();
       DCHECK(!last_request.GetSkipServiceWorker());
@@ -871,11 +871,11 @@ void ResourceLoader::DidReceiveResponse(
   }
 
   base::Optional<ResourceResponse> response_with_type;
-  if (ShouldCheckCORSInResourceLoader() &&
+  if (ShouldCheckCorsInResourceLoader() &&
       !response.WasFetchedViaServiceWorker() &&
       !(resource_->IsCacheValidator() && response.HttpStatusCode() == 304)) {
-    if (GetCORSFlag()) {
-      base::Optional<network::CORSErrorStatus> cors_error = cors::CheckAccess(
+    if (GetCorsFlag()) {
+      base::Optional<network::CorsErrorStatus> cors_error = cors::CheckAccess(
           response.Url(), response.HttpStatusCode(),
           response.HttpHeaderFields(),
           initial_request.GetFetchCredentialsMode(), *resource_->GetOrigin());
@@ -1029,10 +1029,10 @@ void ResourceLoader::HandleError(const ResourceError& error) {
     Restart(resource_->GetResourceRequest());
     return;
   }
-  if (error.CORSErrorStatus()) {
+  if (error.CorsErrorStatus()) {
     Context().AddErrorConsoleMessage(
         cors::GetErrorString(
-            *error.CORSErrorStatus(), resource_->GetResourceRequest().Url(),
+            *error.CorsErrorStatus(), resource_->GetResourceRequest().Url(),
             resource_->LastResourceRequest().Url(), *resource_->GetOrigin(),
             resource_->GetType(), resource_->Options().initiator_info.name),
         FetchContext::kJSSource);
@@ -1218,10 +1218,10 @@ ResourceLoader::CheckResponseNosniff(mojom::RequestContextType request_context,
   return base::nullopt;
 }
 
-bool ResourceLoader::ShouldCheckCORSInResourceLoader() const {
-  return !RuntimeEnabledFeatures::OutOfBlinkCORSEnabled() &&
+bool ResourceLoader::ShouldCheckCorsInResourceLoader() const {
+  return !RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
          resource_->Options().cors_handling_by_resource_fetcher ==
-             kEnableCORSHandlingByResourceFetcher;
+             kEnableCorsHandlingByResourceFetcher;
 }
 
 }  // namespace blink

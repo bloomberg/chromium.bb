@@ -290,7 +290,7 @@ bool MultibufferDataSource::IsCorsCrossOrigin() const {
   return url_data()->is_cors_cross_origin();
 }
 
-UrlData::CORSMode MultibufferDataSource::cors_mode() const {
+UrlData::CorsMode MultibufferDataSource::cors_mode() const {
   return url_data()->cors_mode();
 }
 

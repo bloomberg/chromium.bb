@@ -286,7 +286,7 @@ void ChromeExtensionsClient::AddOriginAccessPermissions(
     origin_patterns->push_back(network::mojom::CorsOriginPattern::New(
         content::kChromeUIScheme, chrome::kChromeUIThemeHost,
         false /*allow_destination_subdomains*/,
-        network::mojom::CORSOriginAccessMatchPriority::kMaxPriority));
+        network::mojom::CorsOriginAccessMatchPriority::kMaxPriority));
   }
 
   // TODO(jstritar): We should try to remove this special case. Also, these
@@ -297,7 +297,7 @@ void ChromeExtensionsClient::AddOriginAccessPermissions(
     origin_patterns->push_back(network::mojom::CorsOriginPattern::New(
         content::kChromeUIScheme, chrome::kChromeUIExtensionIconHost,
         false /*allow_destination_subdomains*/,
-        network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority));
+        network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
   }
 }
 

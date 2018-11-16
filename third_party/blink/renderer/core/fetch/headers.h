@@ -28,7 +28,7 @@ class CORE_EXPORT Headers final : public ScriptWrappable,
   enum Guard {
     kImmutableGuard,
     kRequestGuard,
-    kRequestNoCORSGuard,
+    kRequestNoCorsGuard,
     kResponseGuard,
     kNoneGuard
   };

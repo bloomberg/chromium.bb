@@ -2118,7 +2118,7 @@ void TestRunner::AddOriginAccessAllowListEntry(
       url, blink::WebString::FromUTF8(destination_protocol),
       blink::WebString::FromUTF8(destination_host),
       allow_destination_subdomains,
-      network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+      network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 }
 
 void TestRunner::SetTextSubpixelPositioning(bool value) {

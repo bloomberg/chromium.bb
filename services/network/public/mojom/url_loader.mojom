@@ -17,7 +17,7 @@ struct URLResponseHead;
 struct URLRequestRedirectInfo;
 
 [Native]
-struct CORSErrorStatus;
+struct CorsErrorStatus;
 
 [Native]
 struct URLLoaderCompletionStatus;

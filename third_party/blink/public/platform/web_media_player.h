@@ -88,10 +88,10 @@ class WebMediaPlayer {
     kPreloadAuto,
   };
 
-  enum CORSMode {
-    kCORSModeUnspecified,
-    kCORSModeAnonymous,
-    kCORSModeUseCredentials,
+  enum CorsMode {
+    kCorsModeUnspecified,
+    kCorsModeAnonymous,
+    kCorsModeUseCredentials,
   };
 
   // Reported to UMA. Do not change existing values.
@@ -147,7 +147,7 @@ class WebMediaPlayer {
 
   virtual ~WebMediaPlayer() = default;
 
-  virtual LoadTiming Load(LoadType, const WebMediaPlayerSource&, CORSMode) = 0;
+  virtual LoadTiming Load(LoadType, const WebMediaPlayerSource&, CorsMode) = 0;
 
   // Playback controls.
   virtual void Play() = 0;

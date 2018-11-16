@@ -84,7 +84,7 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
 
   // Print warning if CORS restrictions cause MediaElementAudioSource to output
   // zeroes.
-  void PrintCORSMessage(const String& message);
+  void PrintCorsMessage(const String& message);
 
   // This Persistent doesn't make a reference cycle. The reference from
   // HTMLMediaElement to AudioSourceProvideClient, which

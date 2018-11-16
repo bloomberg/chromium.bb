@@ -70,7 +70,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessList {
   static void AddForOrigin(const url::Origin& source_origin,
                            const mojom::CorsOriginPatternPtr& pattern,
                            PatternMap* map);
-  static network::mojom::CORSOriginAccessMatchPriority
+  static network::mojom::CorsOriginAccessMatchPriority
   GetHighestPriorityOfRuleForOrigin(const std::string& source,
                                     const url::Origin& destination_origin,
                                     const PatternMap& map);

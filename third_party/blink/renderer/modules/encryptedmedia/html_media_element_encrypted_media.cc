@@ -409,7 +409,7 @@ void HTMLMediaElementEncryptedMedia::Encrypted(
   DVLOG(EME_LOG_LEVEL) << __func__;
 
   Event* event;
-  if (media_element_->IsMediaDataCORSSameOrigin()) {
+  if (media_element_->IsMediaDataCorsSameOrigin()) {
     event = CreateEncryptedEvent(init_data_type, init_data, init_data_length);
   } else {
     // Current page is not allowed to see content from the media file,
