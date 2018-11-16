@@ -9343,6 +9343,17 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="Error Offline"/>
   <int value="9" label="Error Fetching Ssh Keys"/>
   <int value="10" label="Error Mounting Container"/>
+  <int value="11" label="Error Setting Up Container"/>
+  <int value="12" label="User Cancelled At Start"/>
+  <int value="13" label="User Cancelled While Installing Image Loader"/>
+  <int value="14" label="User Cancelled While Starting Concierge"/>
+  <int value="15" label="User Cancelled While Creating Disk Image"/>
+  <int value="16" label="User Cancelled While Starting Termina VM"/>
+  <int value="17" label="User Cancelled While Creating Container"/>
+  <int value="18" label="User Cancelled While Starting Container"/>
+  <int value="19" label="User Cancelled While Setting Up Container"/>
+  <int value="20" label="User Cancelled While Fetching SSH Keys"/>
+  <int value="21" label="User Cancelled While Mounting Container"/>
 </enum>
 
 <enum name="CrostiniUISurface">
