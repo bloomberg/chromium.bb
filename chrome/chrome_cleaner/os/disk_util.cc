@@ -590,7 +590,8 @@ bool ComputeSHA256DigestOfPath(const base::FilePath& path,
                                std::string* digest) {
   DCHECK(digest);
 
-  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                            base::File::FLAG_SHARE_DELETE);
   if (!file.IsValid())
     return false;
 

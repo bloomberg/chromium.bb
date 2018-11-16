@@ -31,7 +31,7 @@ enum RemovalStatusOverridePermission {
   // when previous knowledge was FAILED_TO_REMOVE.
   kOkToOverride,
   // This should never happen in the code, and we should raise an error.
-  // TODO: Currently there is no error, and kNotAllowed is
+  // TODO(joenotcharles): Currently there is no error, and kNotAllowed is
   // implemented as kSkip. This is because DCHECK writes an error message to
   // the log, and until recently this took the logging lock which might already
   // be held while checking this permission. Now that it's safe to DCHECK while

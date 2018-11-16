@@ -12,8 +12,9 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/system/sys_info.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/chrome_cleaner/constants/quarantine_constants.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -22,6 +23,10 @@ namespace chrome_cleaner {
 namespace {
 
 using mojom::ZipArchiverResultCode;
+
+// According to the zip structure and tests, zipping one file with STORE
+// compression level should not increase the file size more than 1KB.
+constexpr int64_t kZipAdditionalSize = 1024;
 
 constexpr wchar_t kDefaultFileStreamSuffix[] = L"::$DATA";
 constexpr uint32_t kMinimizedReadAccess =
@@ -66,14 +71,32 @@ void RunArchiver(mojom::ZipArchiverPtr* zip_archiver_ptr,
                 filename, password, std::move(callback));
 }
 
-void OnArchiveDone(ZipArchiverResultCode* return_code,
-                   base::WaitableEvent* waitable_event,
+void OnArchiveDone(const base::FilePath& zip_file_path,
+                   SandboxedZipArchiver::ArchiveResultCallback result_callback,
                    ZipArchiverResultCode result_code) {
-  *return_code = static_cast<ZipArchiverResultCode>(result_code);
-  waitable_event->Signal();
+  if (result_code != ZipArchiverResultCode::kSuccess) {
+    // The zip file handle has been closed by mojo. Delete the incomplete zip
+    // file directly.
+    if (!base::DeleteFile(zip_file_path, /*recursive=*/false))
+      LOG(ERROR) << "Failed to delete the incomplete zip file.";
+  }
+  // Call |result_callback| for SandboxedZipArchiver::Archive.
+  std::move(result_callback).Run(result_code);
 }
 
 }  // namespace
+
+namespace internal {
+
+// Zip file name format: "|filename|_|file_hash|.zip"
+base::string16 ConstructZipArchiveFileName(const base::string16& filename,
+                                           const std::string& file_hash) {
+  const std::string normalized_file_hash = base::ToUpperASCII(file_hash);
+  return base::StrCat(
+      {filename, L"_", base::UTF8ToUTF16(normalized_file_hash), L".zip"});
+}
+
+}  // namespace internal
 
 SandboxedZipArchiver::SandboxedZipArchiver(
     scoped_refptr<MojoTaskRunner> mojo_task_runner,
@@ -94,66 +117,76 @@ SandboxedZipArchiver::~SandboxedZipArchiver() = default;
 // password-protected zip file stored in the |dst_archive_folder|. The format of
 // zip file name is "|basename of the source file|_|hexdigest of the source file
 // hash|.zip".
-ZipArchiverResultCode SandboxedZipArchiver::Archive(
-    const base::FilePath& src_file_path,
-    base::FilePath* output_zip_file_path) {
-  DCHECK(output_zip_file_path);
-
+void SandboxedZipArchiver::Archive(const base::FilePath& src_file_path,
+                                   ArchiveResultCallback result_callback) {
   // Open the source file with minimized rights for reading.
-  // Without |FILE_SHARE_WRITE| and |FILE_SHARE_DELETE|, |src_file_path| cannot
-  // be manipulated or replaced until |DoArchive| returns. This prevents the
-  // following checks from TOCTTOU. Because |base::IsLink| doesn't work on
-  // Windows, use |FILE_FLAG_OPEN_REPARSE_POINT| to open a symbolic link then
-  // check. To eliminate any TOCTTOU, use |FILE_FLAG_BACKUP_SEMANTICS| to open a
-  // directory then check.
+  // Allowing all sharing accesses increases the chances of being able to open
+  // and archive the file. Because |base::IsLink| doesn't work on Windows, use
+  // |FILE_FLAG_OPEN_REPARSE_POINT| to open a symbolic link then check. To
+  // eliminate TOCTTOU, use |FILE_FLAG_BACKUP_SEMANTICS| to open a directory
+  // then check.
   base::File src_file(::CreateFile(
       src_file_path.AsUTF16Unsafe().c_str(), kMinimizedReadAccess,
-      FILE_SHARE_READ, nullptr, OPEN_EXISTING,
-      FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS, nullptr));
+      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
+      OPEN_EXISTING, FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+      nullptr));
   if (!src_file.IsValid()) {
     LOG(ERROR) << "Unable to open the source file.";
-    return ZipArchiverResultCode::kErrorCannotOpenSourceFile;
+    std::move(result_callback)
+        .Run(ZipArchiverResultCode::kErrorCannotOpenSourceFile);
+    return;
   }
 
   BY_HANDLE_FILE_INFORMATION src_file_info;
   if (!::GetFileInformationByHandle(src_file.GetPlatformFile(),
                                     &src_file_info)) {
     LOG(ERROR) << "Unable to get the source file information.";
-    return ZipArchiverResultCode::kErrorIO;
+    std::move(result_callback).Run(ZipArchiverResultCode::kErrorIO);
+    return;
   }
 
   // Don't archive symbolic links.
-  if (src_file_info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-    return ZipArchiverResultCode::kIgnoredSourceFile;
+  if (src_file_info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+    std::move(result_callback).Run(ZipArchiverResultCode::kIgnoredSourceFile);
+    return;
+  }
 
   // Don't archive directories. And |ZipArchiver| shouldn't get called with a
   // directory path.
   if (src_file_info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
     LOG(ERROR) << "Tried to archive a directory.";
-    return ZipArchiverResultCode::kIgnoredSourceFile;
+    std::move(result_callback).Run(ZipArchiverResultCode::kIgnoredSourceFile);
+    return;
   }
 
   base::string16 sanitized_src_filename;
-  if (!GetSanitizedFileName(src_file_path, &sanitized_src_filename))
-    return ZipArchiverResultCode::kIgnoredSourceFile;
+  if (!GetSanitizedFileName(src_file_path, &sanitized_src_filename)) {
+    std::move(result_callback).Run(ZipArchiverResultCode::kIgnoredSourceFile);
+    return;
+  }
 
-  // TODO(veranika): Check the source file size once the limit is determined.
+  const ZipArchiverResultCode result_code = CheckFileSize(&src_file);
+  if (result_code != ZipArchiverResultCode::kSuccess) {
+    std::move(result_callback).Run(result_code);
+    return;
+  }
 
   std::string src_file_hash;
   if (!ComputeSHA256DigestOfPath(src_file_path, &src_file_hash)) {
     LOG(ERROR) << "Unable to hash the source file.";
-    return ZipArchiverResultCode::kErrorIO;
+    std::move(result_callback).Run(ZipArchiverResultCode::kErrorIO);
+    return;
   }
 
-  // Zip file name format: "|source basename|_|src_file_hash|.zip"
-  const base::FilePath zip_filename(
-      base::StrCat({sanitized_src_filename, L"_",
-                    base::UTF8ToUTF16(src_file_hash), L".zip"}));
+  const base::string16 zip_filename = internal::ConstructZipArchiveFileName(
+      sanitized_src_filename, src_file_hash);
   const base::FilePath zip_file_path = dst_archive_folder_.Append(zip_filename);
 
   // Fail if the zip file exists.
-  if (base::PathExists(zip_file_path))
-    return ZipArchiverResultCode::kZipFileExists;
+  if (base::PathExists(zip_file_path)) {
+    std::move(result_callback).Run(ZipArchiverResultCode::kZipFileExists);
+    return;
+  }
 
   // Create and open the zip file with minimized rights for writing.
   base::File zip_file(::CreateFile(zip_file_path.AsUTF16Unsafe().c_str(),
@@ -161,60 +194,63 @@ ZipArchiverResultCode SandboxedZipArchiver::Archive(
                                    CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr));
   if (!zip_file.IsValid()) {
     LOG(ERROR) << "Unable to create the zip file.";
-    return ZipArchiverResultCode::kErrorCannotCreateZipFile;
+    std::move(result_callback)
+        .Run(ZipArchiverResultCode::kErrorCannotCreateZipFile);
+    return;
   }
 
   const std::string filename_in_zip = base::UTF16ToUTF8(sanitized_src_filename);
-  ZipArchiverResultCode result_code =
-      DoArchive(std::move(src_file), std::move(zip_file), filename_in_zip);
-  if (result_code != ZipArchiverResultCode::kSuccess) {
-    // The |zip_file| has been closed when returned from the scope of
-    // |DoArchive|. Delete the incomplete zip file directly.
-    if (!base::DeleteFile(zip_file_path, /*recursive=*/false))
-      LOG(ERROR) << "Failed to delete the incomplete zip file.";
-
-    return result_code;
-  }
-
-  *output_zip_file_path = zip_file_path;
-  return ZipArchiverResultCode::kSuccess;
-}
-
-ZipArchiverResultCode SandboxedZipArchiver::DoArchive(
-    base::File src_file,
-    base::File zip_file,
-    const std::string& filename_in_zip) {
-  ZipArchiverResultCode result_code;
-  base::WaitableEvent waitable_event(
-      base::WaitableEvent::ResetPolicy::MANUAL,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-
+  // Do archive.
   // Unretained pointer of |zip_archiver_ptr_| is safe because its deleter
   // is run on the same task runner. If |zip_archiver_ptr_| is destructed later,
   // the deleter will be scheduled after this task.
+  auto done_callback =
+      base::BindOnce(OnArchiveDone, zip_file_path, std::move(result_callback));
   mojo_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          RunArchiver, base::Unretained(zip_archiver_ptr_.get()),
-          mojo::WrapPlatformFile(src_file.TakePlatformFile()),
-          mojo::WrapPlatformFile(zip_file.TakePlatformFile()), filename_in_zip,
-          zip_password_,
-          base::BindOnce(OnArchiveDone, &result_code, &waitable_event)));
+      base::BindOnce(RunArchiver, base::Unretained(zip_archiver_ptr_.get()),
+                     mojo::WrapPlatformFile(src_file.TakePlatformFile()),
+                     mojo::WrapPlatformFile(zip_file.TakePlatformFile()),
+                     filename_in_zip, zip_password_, std::move(done_callback)));
+}
 
-  waitable_event.Wait();
-  return result_code;
+ZipArchiverResultCode SandboxedZipArchiver::CheckFileSize(base::File* file) {
+  const int64_t file_size = file->GetLength();
+  if (file_size == -1) {
+    LOG(ERROR) << "Unable to get the file size.";
+    return ZipArchiverResultCode::kErrorIO;
+  }
+  if (file_size > kQuarantineSourceSizeLimit) {
+    LOG(ERROR) << "Source file is too big.";
+    return ZipArchiverResultCode::kErrorSourceFileTooBig;
+  }
+
+  const int64_t dst_disk_space =
+      base::SysInfo::AmountOfFreeDiskSpace(dst_archive_folder_);
+  if (dst_disk_space == -1) {
+    LOG(ERROR) << "Unable to get the free disk space.";
+    return ZipArchiverResultCode::kErrorIO;
+  }
+  if (file_size + kZipAdditionalSize > dst_disk_space) {
+    LOG(ERROR) << "Not enough disk space.";
+    return ZipArchiverResultCode::kErrorNotEnoughDiskSpace;
+  }
+
+  return ZipArchiverResultCode::kSuccess;
 }
 
 ResultCode SpawnZipArchiverSandbox(
     const base::FilePath& dst_archive_folder,
     const std::string& zip_password,
     scoped_refptr<MojoTaskRunner> mojo_task_runner,
-    base::OnceClosure connection_error_handler,
+    const SandboxConnectionErrorCallback& connection_error_callback,
     std::unique_ptr<SandboxedZipArchiver>* sandboxed_zip_archiver) {
-  ZipArchiverSandboxSetupHooks setup_hooks(mojo_task_runner,
-                                           std::move(connection_error_handler));
   DCHECK(sandboxed_zip_archiver);
 
+  auto error_handler =
+      base::BindOnce(connection_error_callback, SandboxType::kZipArchiver);
+  ZipArchiverSandboxSetupHooks setup_hooks(mojo_task_runner,
+                                           std::move(error_handler));
   ResultCode result_code =
       SpawnSandbox(&setup_hooks, SandboxType::kZipArchiver);
   if (result_code == RESULT_CODE_SUCCESS) {
