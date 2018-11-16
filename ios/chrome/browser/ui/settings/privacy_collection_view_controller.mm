@@ -32,7 +32,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/dataplan_usage_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/handoff_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/handoff_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
@@ -335,7 +335,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   switch (itemType) {
     case ItemTypeOtherDevicesHandoff:
-      controller = [[HandoffCollectionViewController alloc]
+      controller = [[HandoffTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeWebServicesSendUsageData:
