@@ -47,6 +47,7 @@ const CGFloat kIconImageSize = 28;
   cell.switchView.on = self.on;
   cell.textLabel.textColor =
       [SettingsSwitchCell defaultTextColorForState:cell.switchView.state];
+  cell.selectionStyle = UITableViewCellSelectionStyleNone;
 
   // Update the icon image, if one is present.
   UIImage* iconImage = nil;
