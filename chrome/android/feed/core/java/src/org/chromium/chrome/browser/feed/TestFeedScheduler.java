@@ -18,9 +18,6 @@ class TestFeedScheduler implements FeedScheduler {
     public void onFixedTimer(Runnable onCompletion) {}
 
     @Override
-    public void onTaskReschedule() {}
-
-    @Override
     public void onSuggestionConsumed() {}
 
     @Override

@@ -117,12 +117,6 @@ public class FeedSchedulerBridge implements FeedScheduler {
     }
 
     @Override
-    public void onTaskReschedule() {
-        assert mNativeBridge != 0;
-        nativeOnTaskReschedule(mNativeBridge);
-    }
-
-    @Override
     public void onSuggestionConsumed() {
         assert mNativeBridge != 0;
         nativeOnSuggestionConsumed(mNativeBridge);
@@ -158,6 +152,5 @@ public class FeedSchedulerBridge implements FeedScheduler {
     private native void nativeOnForegrounded(long nativeFeedSchedulerBridge);
     private native void nativeOnFixedTimer(
             long nativeFeedSchedulerBridge, Callback<Void> onCompletion);
-    private native void nativeOnTaskReschedule(long nativeFeedSchedulerBridge);
     private native void nativeOnSuggestionConsumed(long nativeFeedSchedulerBridge);
 }
