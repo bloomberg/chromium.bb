@@ -11,10 +11,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/display_provider.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
-#include "components/viz/service/frame_sinks/root_compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_impl.h"
 
@@ -61,7 +59,7 @@ FrameSinkManagerImpl::~FrameSinkManagerImpl() {
 
   // All mojom::CompositorFrameSinks and BeginFrameSources should be deleted by
   // this point.
-  DCHECK(sink_map_.empty());
+  DCHECK(sink_map_.empty() && root_sink_map_.empty());
   DCHECK(registered_sources_.empty());
 
   surface_manager_.RemoveObserver(this);
@@ -93,6 +91,7 @@ void FrameSinkManagerImpl::ForceShutdown() {
     binding_.Close();
 
   sink_map_.clear();
+  root_sink_map_.clear();
 }
 
 void FrameSinkManagerImpl::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
@@ -122,6 +121,7 @@ void FrameSinkManagerImpl::InvalidateFrameSinkId(
 
   // Destroy the [Root]CompositorFrameSinkImpl if there is one.
   sink_map_.erase(frame_sink_id);
+  root_sink_map_.erase(frame_sink_id);
 
   frame_sink_data_.erase(frame_sink_id);
 }
@@ -146,7 +146,7 @@ void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
 void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
     mojom::RootCompositorFrameSinkParamsPtr params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!base::ContainsKey(sink_map_, params->frame_sink_id));
+  DCHECK(!base::ContainsKey(root_sink_map_, params->frame_sink_id));
   DCHECK(display_provider_);
 
   // We are transfering ownership of |params| so remember FrameSinkId here.
@@ -156,7 +156,7 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   auto root_compositor_frame_sink = RootCompositorFrameSinkImpl::Create(
       std::move(params), this, display_provider_);
   if (root_compositor_frame_sink)
-    sink_map_[frame_sink_id] = std::move(root_compositor_frame_sink);
+    root_sink_map_[frame_sink_id] = std::move(root_compositor_frame_sink);
 }
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(
@@ -174,6 +174,7 @@ void FrameSinkManagerImpl::DestroyCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     DestroyCompositorFrameSinkCallback callback) {
   sink_map_.erase(frame_sink_id);
+  root_sink_map_.erase(frame_sink_id);
   std::move(callback).Run();
 }
 
