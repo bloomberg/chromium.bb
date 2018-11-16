@@ -393,8 +393,12 @@ void LoginShelfView::AboutToRequestFocusFromTabTraversal(bool reverse) {
     // Focus should leave the system tray.
     Shell::Get()->system_tray_notifier()->NotifyFocusOut(reverse);
 
-    // If OOBE dialog is showing, it will take focus.
-    Shell::Get()->login_screen_controller()->FocusOobeDialog();
+    // If the dialog is hidden, let views handle the focus automatically.
+    // Otherwise, forward a focus request to the OOBE dialog.
+    if (dialog_state_ != mojom::OobeDialogState::HIDDEN &&
+        dialog_state_ != mojom::OobeDialogState::NONE) {
+      Shell::Get()->login_screen_controller()->FocusOobeDialog();
+    }
   } else {
     // Focus goes to status area.
     Shelf::ForWindow(GetWidget()->GetNativeWindow())
