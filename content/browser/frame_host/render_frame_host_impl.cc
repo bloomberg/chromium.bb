@@ -2259,9 +2259,6 @@ void RenderFrameHostImpl::SwapOut(
 
   if (web_ui())
     web_ui()->RenderFrameHostSwappingOut();
-
-  if (frame_tree_node_->IsMainFrame())
-    render_view_host_->SetIsActive(false);
 }
 
 void RenderFrameHostImpl::OnBeforeUnloadACK(

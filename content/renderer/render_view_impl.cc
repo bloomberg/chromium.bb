@@ -431,14 +431,15 @@ cc::BrowserControlsState ContentToCc(BrowserControlsState state) {
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
                                const mojom::CreateViewParams& params)
-    : RenderWidget(params.main_frame_widget_routing_id,
-                   compositor_deps,
-                   WidgetType::kFrame,
-                   params.visual_properties.screen_info,
-                   params.visual_properties.display_mode,
-                   params.swapped_out,
-                   params.hidden,
-                   params.never_visible),
+    : RenderWidget(
+          params.main_frame_widget_routing_id,
+          compositor_deps,
+          WidgetType::kFrame,
+          params.visual_properties.screen_info,
+          params.visual_properties.display_mode,
+          /*swapped_out=*/params.main_frame_routing_id == MSG_ROUTING_NONE,
+          params.hidden,
+          params.never_visible),
       routing_id_(params.view_id),
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
@@ -537,7 +538,6 @@ void RenderViewImpl::Initialize(
         opener_frame, params->devtools_main_frame_token,
         params->replicated_frame_state, params->has_committed_real_load);
   } else {
-    CHECK(params->swapped_out);
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
                                        params->replicated_frame_state,
@@ -1405,7 +1405,6 @@ WebView* RenderViewImpl::CreateView(
       reply->cloned_session_storage_namespace_id;
   DCHECK(!view_params->session_storage_namespace_id.empty())
       << "Session storage namespace must be populated.";
-  view_params->swapped_out = false;
   view_params->replicated_frame_state.frame_policy.sandbox_flags =
       sandbox_flags;
   view_params->replicated_frame_state.name = frame_name_utf8;
