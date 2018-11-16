@@ -45,8 +45,12 @@ void GuardedPageAllocator::Init(size_t num_pages) {
 }
 
 GuardedPageAllocator::~GuardedPageAllocator() {
-  if (num_pages_)
+  if (num_pages_) {
     UnmapPages();
+
+    for (size_t i = 0; i < num_pages_; i++)
+      data_[i].Destroy();
+  }
 }
 
 void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
@@ -92,7 +96,7 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
   MarkPageInaccessible(reinterpret_cast<void*>(GetPageAddr(addr)));
 
   size_t slot = AddrToSlot(GetPageAddr(addr));
-  DCHECK_EQ(ptr, data_[slot].alloc_ptr);
+  DCHECK_EQ(addr, data_[slot].alloc_ptr);
   // Check for double free.
   if (data_[slot].dealloc.trace_addr) {
     double_free_detected_ = true;
@@ -110,7 +114,7 @@ size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
   DCHECK(PointerIsMine(ptr));
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   size_t slot = AddrToSlot(GetPageAddr(addr));
-  DCHECK_EQ(ptr, data_[slot].alloc_ptr);
+  DCHECK_EQ(addr, data_[slot].alloc_ptr);
   return data_[slot].alloc_size;
 }
 
@@ -216,18 +220,6 @@ size_t GuardedPageAllocator::AddrToSlot(uintptr_t addr) const {
   return slot;
 }
 
-GuardedPageAllocator::SlotMetadata::SlotMetadata() {}
-
-GuardedPageAllocator::SlotMetadata::~SlotMetadata() {
-  if (!alloc.stacktrace)
-    return;
-
-  Reset();
-
-  free(alloc.stacktrace);
-  free(dealloc.stacktrace);
-}
-
 void GuardedPageAllocator::SlotMetadata::Init() {
   // new is not used so that we can explicitly call the constructor when we
   // want to collect a stack trace.
@@ -237,6 +229,16 @@ void GuardedPageAllocator::SlotMetadata::Init() {
   dealloc.stacktrace =
       static_cast<StackTrace*>(malloc(sizeof(*dealloc.stacktrace)));
   CHECK(dealloc.stacktrace);
+}
+
+void GuardedPageAllocator::SlotMetadata::Destroy() {
+  CHECK(alloc.stacktrace);
+  CHECK(dealloc.stacktrace);
+
+  Reset();
+
+  free(alloc.stacktrace);
+  free(dealloc.stacktrace);
 }
 
 void GuardedPageAllocator::SlotMetadata::Reset() {
@@ -253,7 +255,7 @@ void GuardedPageAllocator::SlotMetadata::RecordAllocation(size_t size,
   Reset();
 
   alloc_size = size;
-  alloc_ptr = ptr;
+  alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
 
   alloc.tid = base::PlatformThread::CurrentId();
   new (alloc.stacktrace) StackTrace();
