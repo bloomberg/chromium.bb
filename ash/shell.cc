@@ -1175,12 +1175,7 @@ void Shell::Init(
         std::make_unique<DockedMagnifierController>();
   }
 
-  viz::mojom::VideoDetectorObserverPtr observer;
-  video_detector_ =
-      std::make_unique<VideoDetector>(mojo::MakeRequest(&observer));
-  aura_env_->context_factory_private()
-      ->GetHostFrameSinkManager()
-      ->AddVideoDetectorObserver(std::move(observer));
+  video_detector_ = std::make_unique<VideoDetector>();
 
   tooltip_controller_.reset(new views::corewm::TooltipController(
       std::unique_ptr<views::corewm::Tooltip>(new views::corewm::TooltipAura)));
