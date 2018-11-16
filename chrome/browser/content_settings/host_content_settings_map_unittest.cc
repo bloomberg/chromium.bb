@@ -2150,3 +2150,79 @@ TEST_F(HostContentSettingsMapTest, GetPatternsFromScopingType) {
   EXPECT_EQ(settings[0].secondary_pattern,
             ContentSettingsPattern::FromURLNoWildcard(secondary_url));
 }
+
+// Tests if changing a settings in incognito mode does not affects the regular
+// mode.
+TEST_F(HostContentSettingsMapTest, IncognitoChangesDoNotPersist) {
+  TestingProfile profile;
+  auto* regular_map = HostContentSettingsMapFactory::GetForProfile(&profile);
+  auto* incognito_map = HostContentSettingsMapFactory::GetForProfile(
+      profile.GetOffTheRecordProfile());
+  auto* registry = content_settings::WebsiteSettingsRegistry::GetInstance();
+  auto* content_setting_registry =
+      content_settings::ContentSettingsRegistry::GetInstance();
+
+  GURL url("https://example.com");
+  ContentSettingsPattern pattern = ContentSettingsPattern::FromURL(url);
+  content_settings::SettingInfo setting_info;
+
+  for (const content_settings::WebsiteSettingsInfo* info : *registry) {
+    SCOPED_TRACE(info->name());
+
+    // Get regular profile default value.
+    std::unique_ptr<base::Value> original_value =
+        regular_map->GetWebsiteSetting(url, url, info->type(), std::string(),
+                                       &setting_info);
+    // Get a different valid value for incognito mode.
+    std::unique_ptr<base::Value> new_value;
+    if (content_setting_registry->Get(info->type())) {
+      // If no original value is available, the settings does not have any valid
+      // values and no more steps are required.
+      if (!original_value)
+        continue;
+      int current_value;
+      original_value->GetAsInteger(&current_value);
+
+      for (int another_value = 0;
+           another_value < ContentSetting::CONTENT_SETTING_NUM_SETTINGS;
+           another_value++) {
+        if (another_value != current_value &&
+            content_setting_registry->Get(info->type())
+                ->IsSettingValid(static_cast<ContentSetting>(another_value))) {
+          new_value = std::make_unique<base::Value>(another_value);
+          break;
+        }
+      }
+      ASSERT_TRUE(new_value)
+          << "Every content setting should have at least two values.";
+    } else {
+      new_value = std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+      static_cast<base::DictionaryValue*>(new_value.get())
+          ->SetPath({"foo", "bar"}, base::Value(0));
+    }
+    // Ensure a different value is received (|original_value| can be null for
+    // website settings).
+    DCHECK(!original_value || *original_value != *new_value);
+
+    // Set the different value in incognito mode.
+    base::Value incognito_value = new_value->Clone();
+    incognito_map->SetWebsiteSettingCustomScope(
+        pattern, pattern, info->type(), std::string(), std::move(new_value));
+
+    // Ensure incognito mode value is changed.
+    EXPECT_EQ(incognito_value,
+              *incognito_map->GetWebsiteSetting(url, url, info->type(),
+                                                std::string(), &setting_info));
+
+    // Ensure regular mode value is not changed.
+    std::unique_ptr<base::Value> regular_mode_value =
+        regular_map->GetWebsiteSetting(url, url, info->type(), std::string(),
+                                       &setting_info);
+    if (regular_mode_value) {
+      ASSERT_TRUE(original_value);
+      EXPECT_EQ(*original_value, *regular_mode_value);
+    } else {
+      EXPECT_FALSE(original_value);
+    }
+  }
+}
