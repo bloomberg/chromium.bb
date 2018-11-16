@@ -77,9 +77,6 @@ void OptimizationGuideService::ProcessHintsInBackground(
     const ComponentInfo& component_info) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
 
-  // TODO(crbug.com/783246): Add crash loop detection to ensure bad component
-  // updates do not crash Chrome.
-
   if (!component_info.hints_version.IsValid()) {
     RecordProcessHintsResult(ProcessHintsResult::FAILED_INVALID_PARAMETERS);
     return;
