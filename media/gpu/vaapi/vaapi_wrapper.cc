@@ -888,13 +888,15 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
                                   std::vector<VASurfaceID>* va_surfaces) {
   base::AutoLock auto_lock(*va_lock_);
   DVLOG(2) << "Creating " << num_surfaces << " surfaces";
-
   DCHECK(va_surfaces->empty());
-  DCHECK(va_surface_ids_.empty());
-  DCHECK_EQ(va_surface_format_, 0u);
-  va_surface_ids_.resize(num_surfaces);
+
+  if (!va_surface_ids_.empty() || va_surface_format_ != 0u) {
+    LOG(ERROR) << "Surfaces should be destroyed before creating new surfaces";
+    return false;
+  }
 
   // Allocate surfaces in driver.
+  va_surface_ids_.resize(num_surfaces);
   VAStatus va_res =
       vaCreateSurfaces(va_display_, va_format, size.width(), size.height(),
                        &va_surface_ids_[0], va_surface_ids_.size(), NULL, 0);
