@@ -114,6 +114,32 @@ public class WebApkUtils {
         return result;
     }
 
+    /** Builds a context for the passed in remote package name. */
+    public static Context fetchRemoteContext(Context context, String remotePackageName) {
+        try {
+            return context.getApplicationContext().createPackageContext(remotePackageName, 0);
+        } catch (NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /** Returns the uid for the passed in remote package name. */
+    public static int getRemotePackageUid(Context context, String remotePackageName) {
+        if (remotePackageName == null) {
+            return -1;
+        }
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            ApplicationInfo appInfo = packageManager.getApplicationInfo(
+                    remotePackageName, PackageManager.GET_META_DATA);
+            return appInfo.uid;
+        } catch (NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
     /**
      * Android uses padding_left under API level 17 and uses padding_start after that.
      * If we set the padding in resource file, android will create duplicated resource xml
