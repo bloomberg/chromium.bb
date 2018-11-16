@@ -2831,7 +2831,9 @@ def CMDgetdep(parser, args):
         'DEPS file %s does not exist.' % options.deps_file)
   with open(options.deps_file) as f:
     contents = f.read()
-  local_scope = gclient_eval.Exec(contents, options.deps_file)
+  client = GClient.LoadCurrentConfig(options)
+  local_scope = gclient_eval.Exec(contents, options.deps_file,
+                                  builtin_vars=client.get_builtin_vars())
 
   for var in options.vars:
     print(gclient_eval.GetVar(local_scope, var))
@@ -2881,7 +2883,9 @@ def CMDsetdep(parser, args):
         'DEPS file %s does not exist.' % options.deps_file)
   with open(options.deps_file) as f:
     contents = f.read()
-  local_scope = gclient_eval.Exec(contents, options.deps_file)
+  client = GClient.LoadCurrentConfig(options)
+  local_scope = gclient_eval.Exec(contents, options.deps_file,
+                                  builtin_vars=client.get_builtin_vars())
 
   for var in options.vars:
     name, _, value = var.partition('=')
