@@ -12,6 +12,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/installable/installable_data.h"
+#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/web_application_info.h"
@@ -61,6 +63,26 @@ void WebAppDataRetriever::GetWebApplicationInfo(
       &WebAppDataRetriever::OnGetWebApplicationInfo,
       weak_ptr_factory_.GetWeakPtr(), std::move(chrome_render_frame),
       web_contents, entry->GetUniqueID()));
+}
+
+void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
+    content::WebContents* web_contents,
+    CheckInstallabilityCallback callback) {
+  InstallableManager* installable_manager =
+      InstallableManager::FromWebContents(web_contents);
+  DCHECK(installable_manager);
+
+  // TODO(crbug.com/829232) Unify with other calls to GetData.
+  InstallableParams params;
+  params.check_eligibility = true;
+  params.valid_primary_icon = true;
+  params.valid_manifest = true;
+  params.has_worker = true;
+  // Do not wait_for_worker. OnDidPerformInstallableCheck is always invoked.
+  installable_manager->GetData(
+      params, base::BindRepeating(
+                  &WebAppDataRetriever::OnDidPerformInstallableCheck,
+                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void WebAppDataRetriever::GetIcons(const GURL& app_url,
@@ -130,6 +152,16 @@ void WebAppDataRetriever::OnGetWebApplicationInfo(
 
 void WebAppDataRetriever::OnGetWebApplicationInfoFailed() {
   std::move(get_web_app_info_callback_).Run(nullptr);
+}
+
+void WebAppDataRetriever::OnDidPerformInstallableCheck(
+    CheckInstallabilityCallback callback,
+    const InstallableData& data) {
+  DCHECK(data.manifest_url.is_valid() || data.manifest->IsEmpty());
+
+  const bool is_installable = data.error_code == NO_ERROR_DETECTED;
+
+  std::move(callback).Run(*data.manifest, is_installable);
 }
 
 }  // namespace web_app

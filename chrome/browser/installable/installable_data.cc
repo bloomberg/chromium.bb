@@ -23,4 +23,6 @@ InstallableData::InstallableData(InstallableStatusCode error_code,
       valid_manifest(valid_manifest),
       has_worker(has_worker) {}
 
+InstallableData::InstallableData(const InstallableData&) = default;
+
 InstallableData::~InstallableData() = default;

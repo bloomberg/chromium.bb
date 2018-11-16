@@ -24,6 +24,7 @@ struct InstallableData {
                   const SkBitmap* badge_icon,
                   bool valid_manifest,
                   bool has_worker);
+  InstallableData(const InstallableData&);
   ~InstallableData();
 
   // NO_ERROR_DETECTED if there were no issues.

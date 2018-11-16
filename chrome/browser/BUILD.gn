@@ -5109,6 +5109,8 @@ static_library("test_support") {
     "download/download_test_file_activity_observer.h",
     "history/history_test_utils.cc",
     "history/history_test_utils.h",
+    "installable/fake_installable_manager.cc",
+    "installable/fake_installable_manager.h",
     "media/webrtc/fake_desktop_media_list.cc",
     "media/webrtc/fake_desktop_media_list.h",
     "media/webrtc/fake_desktop_media_picker_factory.cc",

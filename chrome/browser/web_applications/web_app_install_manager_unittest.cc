@@ -11,6 +11,7 @@
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/installable/fake_installable_manager.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -23,34 +24,10 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/gurl.h"
 
 namespace web_app {
-
-class TestInstallableManager : public InstallableManager {
- public:
-  explicit TestInstallableManager(content::WebContents* web_contents)
-      : InstallableManager(web_contents) {}
-
-  static TestInstallableManager* CreateForWebContents(
-      content::WebContents* web_contents) {
-    auto manager = std::make_unique<TestInstallableManager>(web_contents);
-    TestInstallableManager* result = manager.get();
-    web_contents->SetUserData(UserDataKey(), std::move(manager));
-    return result;
-  }
-
-  void SetData(std::unique_ptr<InstallableData> data) {
-    data_ = std::move(data);
-  }
-
-  void GetData(const InstallableParams& params,
-               const InstallableCallback& callback) override {
-    callback.Run(*std::move(data_));
-  }
-
-  std::unique_ptr<InstallableData> data_;
-};
 
 class WebAppInstallManagerTest : public WebAppTest {
  public:
@@ -91,25 +68,6 @@ class WebAppInstallManagerTest : public WebAppTest {
     // Required by InstallableManager.
     // Causes eligibility check to return NOT_FROM_SECURE_ORIGIN for GetData.
     SecurityStateTabHelper::CreateForWebContents(web_contents());
-  }
-
-  void CreateTestInstallableManager(const GURL& manifest_url,
-                                    blink::Manifest* manifest) {
-    const InstallableStatusCode installable_code = NO_ERROR_DETECTED;
-    const bool valid_manifest = true;
-    const bool has_worker = true;
-
-    // Not used in WebAppInstallManager:
-    const GURL icon_url;
-    const std::unique_ptr<SkBitmap> icon;
-
-    auto installable_data = std::make_unique<InstallableData>(
-        installable_code, manifest_url, manifest, icon_url, icon.get(),
-        icon_url, icon.get(), valid_manifest, has_worker);
-
-    TestInstallableManager* installable_manager =
-        TestInstallableManager::CreateForWebContents(web_contents());
-    installable_manager->SetData(std::move(installable_data));
   }
 
   static base::NullableString16 ToNullableUTF16(const std::string& str) {
@@ -230,14 +188,16 @@ TEST_F(WebAppInstallManagerTest, InstallableCheck) {
   const GURL manifest_scope = GURL("https://example.com/scope");
   const base::Optional<SkColor> manifest_theme_color = 0xAABBCCDD;
 
-  blink::Manifest manifest;
-  manifest.short_name = ToNullableUTF16("Short Name from Manifest");
-  manifest.name = ToNullableUTF16(manifest_name);
-  manifest.start_url = manifest_start_url;
-  manifest.scope = manifest_scope;
-  manifest.theme_color = manifest_theme_color;
+  auto manifest = std::make_unique<blink::Manifest>();
+  manifest->short_name = ToNullableUTF16("Short Name from Manifest");
+  manifest->name = ToNullableUTF16(manifest_name);
+  manifest->start_url = manifest_start_url;
+  manifest->scope = manifest_scope;
+  manifest->theme_color = manifest_theme_color;
 
-  CreateTestInstallableManager(GURL("https://example.com/manifest"), &manifest);
+  FakeInstallableManager::CreateForWebContentsWithManifest(
+      web_contents(), NO_ERROR_DETECTED, GURL("https://example.com/manifest"),
+      std::move(manifest));
 
   base::RunLoop run_loop;
   bool callback_called = false;
