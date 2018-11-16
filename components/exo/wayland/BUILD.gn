@@ -53,6 +53,8 @@ source_set("wayland") {
     "zcr_keyboard_extension.h",
     "zcr_notification_shell.cc",
     "zcr_notification_shell.h",
+    "zcr_remote_shell.cc",
+    "zcr_remote_shell.h",
     "zwp_input_timestamps_manager.cc",
     "zwp_input_timestamps_manager.h",
     "zwp_text_input_manager.cc",
