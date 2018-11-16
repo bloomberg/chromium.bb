@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
-#include "base/threading/thread_restrictions.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_sample_types.h"
 
@@ -252,7 +251,6 @@ void AudioDebugFileWriter::AudioFileWriter::WriteHeader() {
 void AudioDebugFileWriter::AudioFileWriter::StartRecording(base::File file) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!file_.IsValid());
-  base::AssertBlockingAllowedDeprecated();
 
   file_ = std::move(file);
   WriteHeader();
