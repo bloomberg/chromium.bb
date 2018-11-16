@@ -1858,13 +1858,14 @@ android_app_bundle("chrome_public_bundle") {
   # Signing is very slow, only do that for official builds.
   sign_bundle = is_official_build
 
-  enable_language_splits = true
+  enable_language_splits = enable_chrome_language_splits
 }
 
 android_app_bundle("chrome_modern_public_bundle") {
   bundle_name = "ChromeModernPublic"
   base_module_target = ":chrome_modern_public_base_module"
   proguard_enabled = !is_java_debug
+  enable_language_splits = enable_chrome_language_splits
   if (modularize_vr) {
     extra_modules = [
       {
@@ -1885,6 +1886,7 @@ android_app_bundle("monochrome_public_bundle") {
     }
     proguard_android_sdk_dep = webview_framework_dep
   }
+  enable_language_splits = enable_chrome_language_splits
   if (modularize_ar) {
     extra_modules = [
       {
