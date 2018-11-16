@@ -792,6 +792,212 @@ TEST_F(RTCQuicStreamTest, ReadIntoThrowsIfClosed) {
   RunUntilIdle();
 }
 
+// The following group tests waitForReadable().
+
+// Test that a waitForReadable() promise resolves once OnDataReceived() delivers
+// enough data.
+TEST_F(RTCQuicStreamTest, WaitForReadableResolves) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  ScriptPromise promise =
+      stream->waitForReadable(scope.GetScriptState(), 3, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(v8::Promise::kPending,
+            promise.V8Value().As<v8::Promise>()->State());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({1, 2, 3}, /*fin=*/false);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that a waitForReadable() promise resolves immediately if sufficient data
+// is already in the receive buffer.
+TEST_F(RTCQuicStreamTest, WaitForReadableResolveImmediately) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({1, 2, 3}, /*fin=*/false);
+
+  RunUntilIdle();
+
+  ScriptPromise promise =
+      stream->waitForReadable(scope.GetScriptState(), 3, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise.V8Value().As<v8::Promise>()->State());
+
+  RunUntilIdle();
+}
+
+// Test that a waitForReadable() promise does not resolve until OnDataReceived()
+// delivers at least the readable amount.
+TEST_F(RTCQuicStreamTest, WaitForReadableDoesNotResolveUntilExceedsThreshold) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  ScriptPromise promise =
+      stream->waitForReadable(scope.GetScriptState(), 5, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(v8::Promise::kPending,
+            promise.V8Value().As<v8::Promise>()->State());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({1, 2, 3}, /*fin=*/false);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kPending,
+            promise.V8Value().As<v8::Promise>()->State());
+
+  stream_delegate->OnDataReceived({4, 5}, /*fin=*/false);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that if two waitForReadable() promises are waiting on different readable
+// amounts, OnDataReceived() which satisfies the first readable amount but not
+// the second will only resolve the first promise. Once OnDataReceived() is
+// received again with readable amount satisfying the second promise then it
+// will be resolved.
+TEST_F(RTCQuicStreamTest, TwoWaitForReadablePromisesResolveInSequence) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  ScriptPromise promise_3 =
+      stream->waitForReadable(scope.GetScriptState(), 3, ASSERT_NO_EXCEPTION);
+  ScriptPromise promise_5 =
+      stream->waitForReadable(scope.GetScriptState(), 5, ASSERT_NO_EXCEPTION);
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({1, 2, 3}, /*fin=*/false);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise_3.V8Value().As<v8::Promise>()->State());
+  EXPECT_EQ(v8::Promise::kPending,
+            promise_5.V8Value().As<v8::Promise>()->State());
+
+  stream_delegate->OnDataReceived({4, 5}, /*fin=*/false);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise_5.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that if two waitForReadable() promises are waiting on different
+// thresholds and a single OnDataReceived() is received such that the readable
+// amount satisfies both promises then they are both resolved.
+TEST_F(RTCQuicStreamTest, TwoWaitForReadablePromisesResolveTogether) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  ScriptPromise promise_3 =
+      stream->waitForReadable(scope.GetScriptState(), 3, ASSERT_NO_EXCEPTION);
+  ScriptPromise promise_5 =
+      stream->waitForReadable(scope.GetScriptState(), 5, ASSERT_NO_EXCEPTION);
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({1, 2, 3, 4, 5}, /*fin=*/false);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise_3.V8Value().As<v8::Promise>()->State());
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise_5.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that a remote finish immediately resolves all pending waitForReadable()
+// promises.
+TEST_F(RTCQuicStreamTest, RemoteFinishResolvesPendingWaitForReadablePromises) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  ScriptPromise promise_3 =
+      stream->waitForReadable(scope.GetScriptState(), 3, ASSERT_NO_EXCEPTION);
+  ScriptPromise promise_5 =
+      stream->waitForReadable(scope.GetScriptState(), 5, ASSERT_NO_EXCEPTION);
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({}, /*fin=*/true);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise_3.V8Value().As<v8::Promise>()->State());
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise_5.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that calling waitForReadable() resolves immediately if the finish has
+// been received via OnDataReceived() but not yet read out via readInto().
+// Note: If the finish has been read out via readInto(), waitForReadable() will
+// throw an exception since the stream is no longer readable.
+TEST_F(RTCQuicStreamTest, WaitForReadableResolvesImmediatelyIfRemoteFinished) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({}, /*fin=*/true);
+
+  RunUntilIdle();
+
+  ScriptPromise promise =
+      stream->waitForReadable(scope.GetScriptState(), 5, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise.V8Value().As<v8::Promise>()->State());
+}
+
 // The following group tests state transitions with reset(), finish(), remote
 // reset() and remote finish()
 

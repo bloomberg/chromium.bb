@@ -5602,6 +5602,7 @@ interface RTCQuicStream : EventTarget
     method finish
     method readInto
     method reset
+    method waitForReadable
     method waitForWriteBufferedAmountBelow
     method write
     setter onstatechange
