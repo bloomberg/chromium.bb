@@ -117,6 +117,69 @@ mojo.internal.loadMojomIfNecessary = function(id, relativePath) {
 };
 
 /**
+ * Handles incoming interface control messages on a proxy or router endpoint.
+ */
+mojo.internal.ControlMessageHandler = class {
+  /** @param {!MojoHandle} handle */
+  constructor(handle) {
+    /** @private {!MojoHandle} */
+    this.handle_ = handle;
+
+    /** @private {!Map<number, !Promise>} */
+    this.pendingFlushResolvers_ = new Map;
+  }
+
+  sendRunMessage(requestId, input) {
+    return new Promise(resolve => {
+      const control = mojo['interfaceControl'];
+      mojo.internal.serializeAndSendMessage(
+          this.handle_, control['kRunMessageId'], requestId,
+          mojo.internal.kMessageFlagExpectsResponse,
+          control['RunMessageParams'], {'input': input});
+      this.pendingFlushResolvers_.set(requestId, resolve);
+    });
+  }
+
+  maybeHandleControlMessage(header, buffer) {
+    const kRunMessageId = mojo['interfaceControl']['kRunMessageId'];
+    if (header.ordinal === kRunMessageId) {
+      const data = new DataView(buffer, header.headerSize);
+      const decoder = new mojo.internal.Decoder(data, []);
+      if (header.flags & mojo.internal.kMessageFlagExpectsResponse)
+        return this.handleRunRequest_(header.requestId, decoder);
+      else
+        return this.handleRunResponse_(header.requestId, decoder);
+    }
+
+    return false;
+  }
+
+  handleRunRequest_(requestId, decoder) {
+    const control = mojo['interfaceControl'];
+    const input = decoder.decodeStructInline(
+        control['RunMessageParams'].$.structSpec)['input'];
+    if (input.hasOwnProperty('flushForTesting')) {
+      mojo.internal.serializeAndSendMessage(
+          this.handle_, control['kRunMessageId'], requestId,
+          mojo.internal.kMessageFlagIsResponse,
+          control['RunResponseMessageParams'], {'output': null});
+      return true;
+    }
+
+    return false;
+  }
+
+  handleRunResponse_(requestId, decoder) {
+    const resolver = this.pendingFlushResolvers_.get(requestId);
+    if (!resolver)
+      return false;
+
+    resolver();
+    return true;
+  }
+};
+
+/**
  * Captures metadata about a request which was sent by a local proxy, for which
  * a response is expected.
  */
@@ -173,6 +236,9 @@ mojo.internal.InterfaceProxyBase = class {
     /** @private {!Map<number, !mojo.internal.PendingResponse>} */
     this.pendingResponses_ = new Map;
 
+    /** @private {mojo.internal.ControlMessageHandler} */
+    this.controlMessageHandler_ = null;
+
     if (opt_handle instanceof MojoHandle)
       this.bindHandle(opt_handle);
   }
@@ -190,6 +256,8 @@ mojo.internal.InterfaceProxyBase = class {
     reader.onRead = this.onMessageReceived_.bind(this);
     reader.onError = this.onError_.bind(this);
     reader.start();
+    this.controlMessageHandler_ =
+        new mojo.internal.ControlMessageHandler(handle);
 
     this.reader_ = reader;
     this.nextRequestId_ = 0;
@@ -217,7 +285,7 @@ mojo.internal.InterfaceProxyBase = class {
     }
 
     // The pipe has already been closed, so just drop the message.
-    if (this.reader_.isStopped())
+    if (!this.reader_ || this.reader_.isStopped())
       return Promise.reject();
 
     const requestId = this.nextRequestId_++;
@@ -240,6 +308,15 @@ mojo.internal.InterfaceProxyBase = class {
   }
 
   /**
+   * @return {!Promise}
+   * @export
+   */
+  flushForTesting() {
+    return this.controlMessageHandler_.sendRunMessage(
+        this.nextRequestId_++, {'flushForTesting': {}});
+  }
+
+  /**
    * @param {!ArrayBuffer} buffer
    * @param {!Array<MojoHandle>} handles
    * @private
@@ -247,6 +324,8 @@ mojo.internal.InterfaceProxyBase = class {
   onMessageReceived_(buffer, handles) {
     const data = new DataView(buffer);
     const header = mojo.internal.deserializeMessageHeader(data);
+    if (this.controlMessageHandler_.maybeHandleControlMessage(header, buffer))
+      return;
     if (!(header.flags & mojo.internal.kMessageFlagIsResponse) ||
         header.flags & mojo.internal.kMessageFlagExpectsResponse) {
       return this.onError_('Received unexpected request message');
@@ -421,6 +500,9 @@ mojo.internal.InterfaceTarget = class {
 
     /** @private {!Map<number, !mojo.internal.MessageHandler>} */
     this.messageHandlers_ = new Map;
+
+    /** @private {mojo.internal.ControlMessageHandler} */
+    this.controlMessageHandler_ = null;
   }
 
   /**
@@ -446,6 +528,8 @@ mojo.internal.InterfaceTarget = class {
     reader.onRead = this.onMessageReceived_.bind(this, handle);
     reader.onError = this.onError_.bind(this, handle);
     reader.start();
+    this.controlMessageHandler_ =
+        new mojo.internal.ControlMessageHandler(handle);
   }
 
   /**
@@ -457,6 +541,8 @@ mojo.internal.InterfaceTarget = class {
   onMessageReceived_(handle, buffer, handles) {
     const data = new DataView(buffer);
     const header = mojo.internal.deserializeMessageHeader(data);
+    if (this.controlMessageHandler_.maybeHandleControlMessage(header, buffer))
+      return;
     if (header.flags & mojo.internal.kMessageFlagIsResponse)
       throw new Error('Received unexpected response on interface target');
     const handler = this.messageHandlers_.get(header.ordinal);
@@ -593,6 +679,9 @@ mojo.internal.kArrayHeaderSize = 8;
 mojo.internal.kStructHeaderSize = 8;
 
 /** @const {number} */
+mojo.internal.kUnionDataSize = 16;
+
+/** @const {number} */
 mojo.internal.kMessageV0HeaderSize = 24;
 
 /** @const {number} */
@@ -702,6 +791,10 @@ mojo.internal.getInt64 = function(dataView, byteOffset) {
 };
 
 /**
+ * This computes the total amount of buffer space required to hold a struct
+ * value and all its fields, including indirect objects like arrays, structs,
+ * and nullable unions.
+ *
  * @param {!mojo.internal.StructSpec} structSpec
  * @param {*} value
  * @return {number}
@@ -712,10 +805,49 @@ mojo.internal.computeTotalStructSize = function(structSpec, value) {
     const fieldValue = value[field.name];
     if (field.type.$.computePayloadSize &&
         !mojo.internal.isNullOrUndefined(fieldValue)) {
-      size +=
-          mojo.internal.align(field.type.$.computePayloadSize(fieldValue), 8);
+      size += mojo.internal.align(
+          field.type.$.computePayloadSize(fieldValue, field.nullable), 8);
     }
   }
+  return size;
+};
+
+/**
+ * @param {!mojo.internal.UnionSpec} unionSpec
+ * @param {*} value
+ * @return {number}
+ */
+mojo.internal.computeTotalUnionSize = function(unionSpec, nullable, value) {
+  // Unions are normally inlined since they're always a fixed width of 16
+  // bytes, but nullable union-typed fields require indirection. Hence this
+  // unique special case where a union field requires additional storage
+  // beyond the struct's own packed field data only when it's nullable.
+  let size = nullable ? mojo.internal.kUnionDataSize : 0;
+
+  const keys = Object.keys(value);
+  if (keys.length !== 1) {
+    throw new Error(
+        `Value for ${unionSpec.name} must be an Object with a ` +
+        'single property named one of: ' +
+        Object.keys(unionSpec.fields).join(','));
+  }
+
+  const tag = keys[0];
+  const field = unionSpec.fields[tag];
+  const fieldValue = value[tag];
+  if (!mojo.internal.isNullOrUndefined(fieldValue)) {
+    if (field['type'].$.unionSpec) {
+      // Nested unions are always encoded with indirection, which we induce by
+      // claiming the field is nullable even if it's not.
+      size += mojo.internal.align(
+          field['type'].$.computePayloadSize(fieldValue, true /* nullable */),
+          8);
+    } else if (field['type'].$.computePayloadSize) {
+      size += mojo.internal.align(
+          field['type'].$.computePayloadSize(fieldValue, field['nullable']), 8);
+    }
+  }
+
   return size;
 };
 
@@ -729,7 +861,8 @@ mojo.internal.computeInlineArraySize = function(arraySpec, value) {
     return mojo.internal.kArrayHeaderSize + (value.length + 7) >> 3;
   } else {
     return mojo.internal.kArrayHeaderSize +
-        value.length * arraySpec.elementType.$.arrayElementSize;
+        value.length *
+        arraySpec.elementType.$.arrayElementSize(arraySpec.elementNullable);
   }
 };
 
@@ -873,7 +1006,7 @@ mojo.internal.Encoder = class {
   }
 
   encodeInt16(offset, value) {
-    this.data._setInt16(offset, value, mojo.internal.kHostLittleEndian);
+    this.data_.setInt16(offset, value, mojo.internal.kHostLittleEndian);
   }
 
   encodeUint16(offset, value) {
@@ -958,8 +1091,10 @@ mojo.internal.Encoder = class {
           }
           arraySpec.elementType.$.encodeNull(arrayEncoder, byteOffset);
         }
-        arraySpec.elementType.$.encode(e, arrayEncoder, byteOffset, 0);
-        byteOffset += arraySpec.elementType.$.arrayElementSize;
+        arraySpec.elementType.$.encode(
+            e, arrayEncoder, byteOffset, 0, arraySpec.elementNullable);
+        byteOffset +=
+            arraySpec.elementType.$.arrayElementSize(arraySpec.elementNullable);
       }
     }
   }
@@ -998,7 +1133,6 @@ mojo.internal.Encoder = class {
    * @param {!mojo.internal.StructSpec} structSpec
    * @param {number} offset
    * @param {!Object} value
-   * @return {number} The offset into the message where the struct begins.
    */
   encodeStruct(structSpec, offset, value) {
     const structData = this.message_.allocate(
@@ -1030,8 +1164,40 @@ mojo.internal.Encoder = class {
       }
 
       field.type.$.encode(
-          value[field.name], this, byteOffset, field.packedBitOffset);
+          value[field.name], this, byteOffset, field.packedBitOffset,
+          field.nullable);
     }
+  }
+
+  /**
+   * @param {!mojo.internal.UnionSpec} unionSpec
+   * @param {number} offset
+   * @param {boolean} nullable
+   * @param {!Object} value
+   */
+  encodeUnion(unionSpec, offset, nullable, value) {
+    let unionEncoder = this;
+    if (nullable) {
+      const unionData = this.message_.allocate(mojo.internal.kUnionDataSize);
+      this.encodeOffset(offset, unionData.byteOffset);
+      offset = 0;
+      unionEncoder = new mojo.internal.Encoder(this.message_, unionData);
+    }
+
+    const keys = Object.keys(value);
+    if (keys.length !== 1) {
+      throw new Error(
+          `Value for ${unionSpec.name} must be an Object with a ` +
+          'single property named one of: ' +
+          Object.keys(unionSpec.fields).join(','));
+    }
+
+    const tag = keys[0];
+    const field = unionSpec.fields[tag];
+    unionEncoder.encodeUint32(offset, mojo.internal.kUnionDataSize);
+    unionEncoder.encodeUint32(offset + 4, field['ordinal']);
+    field['type'].$.encode(
+        value[tag], unionEncoder, offset + 8, 0, field['nullable']);
   }
 };
 
@@ -1158,7 +1324,8 @@ mojo.internal.Decoder = class {
         if (element === null && !arraySpec.elementNullable)
           throw new Error('Received unexpected array element');
         result.push(element);
-        byteOffset += arraySpec.elementType.$.arrayElementSize;
+        byteOffset +=
+            arraySpec.elementType.$.arrayElementSize(arraySpec.elementNullable);
       }
     }
     return result;
@@ -1239,6 +1406,40 @@ mojo.internal.Decoder = class {
     return result;
   }
 
+  /**
+   * @param {!mojo.internal.UnionSpec} unionSpec
+   * @param {number} offset
+   * @param {boolean} nullable
+   */
+  decodeUnion(unionSpec, offset, nullable) {
+    let unionDecoder = this;
+    if (nullable) {
+      const unionOffset = this.decodeOffset(offset);
+      if (!unionOffset)
+        return null;
+      unionDecoder = new mojo.internal.Decoder(
+          new DataView(this.data_.buffer, unionOffset), this.handles_);
+      offset = 0;
+    }
+
+    const ordinal = unionDecoder.decodeUint32(offset + 4);
+    for (const fieldName in unionSpec.fields) {
+      const field = unionSpec.fields[fieldName];
+      if (field['ordinal'] === ordinal) {
+        const fieldValue = field['type'].$.decode(
+            unionDecoder, offset + 8, 0, field['nullable']);
+        if (fieldValue === null && !field['nullable']) {
+          throw new Error(
+              `Received ${unionSpec.name} with invalid null ` +
+              `field: ${field['name']}`);
+        }
+        const value = {};
+        value[fieldName] = fieldValue;
+        return value;
+      }
+    }
+  }
+
   decodeInterfaceProxy(type, offset) {
     const handle = this.decodeHandle(offset);
     const version = this.decodeUint32(offset + 4);  // TODO: support versioning
@@ -1310,10 +1511,10 @@ mojo.internal.deserializeMessageHeader = function(data) {
 
 /**
  * @typedef {{
- *   encode: function(*, !mojo.internal.Encoder, number, number),
- *   decode: function(!mojo.internal.Decoder, number, number):*,
+ *   encode: function(*, !mojo.internal.Encoder, number, number, boolean),
+ *   decode: function(!mojo.internal.Decoder, number, number, boolean):*,
  *   isValidObjectKeyType: boolean,
- *   arrayElementSize: (number|undefined),
+ *   arrayElementSize: function(boolean):(number|undefined),
  *   arraySpec: (!mojo.internal.ArraySpec|undefined),
  *   mapSpec: (!mojo.internal.MapSpec|undefined),
  *   structSpec: (!mojo.internal.StructSpec|undefined),
@@ -1367,6 +1568,23 @@ mojo.internal.StructFieldSpec;
 mojo.internal.StructSpec;
 
 /**
+ * @typedef {{
+ *   name: string,
+ *   ordinal: number,
+ *   nullable: boolean
+ * }}
+ */
+mojo.internal.UnionFieldSpec;
+
+/**
+ * @typedef {{
+ *   name: string,
+ *   fields: !Object<string, !mojo.internal.UnionFieldSpec>
+ * }}
+ */
+mojo.internal.UnionSpec;
+
+/**
  * Mojom type specifications and corresponding encode/decode routines. These
  * are stored in struct and union specifications to describe how fields should
  * be serialized and deserialized.
@@ -1382,10 +1600,10 @@ mojo.mojom = {};
  */
 mojo.mojom.Bool = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeBool(byteOffset, bitOffset, value);
     },
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeBool(byteOffset, bitOffset);
     },
     isValidObjectKeyType: true,
@@ -1398,13 +1616,13 @@ mojo.mojom.Bool = {
  */
 mojo.mojom.Int8 = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeInt8(byteOffset, value);
     },
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeInt8(byteOffset);
     },
-    arrayElementSize: 1,
+    arrayElementSize: nullable => 1,
     isValidObjectKeyType: true,
   },
 };
@@ -1415,13 +1633,13 @@ mojo.mojom.Int8 = {
  */
 mojo.mojom.Uint8 = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeUint8(byteOffset, value);
     },
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeUint8(byteOffset);
     },
-    arrayElementSize: 1,
+    arrayElementSize: nullable => 1,
     isValidObjectKeyType: true,
   },
 };
@@ -1432,13 +1650,13 @@ mojo.mojom.Uint8 = {
  */
 mojo.mojom.Int16 = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeInt16(byteOffset, value);
     },
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeInt16(byteOffset);
     },
-    arrayElementSize: 2,
+    arrayElementSize: nullable => 2,
     isValidObjectKeyType: true,
   },
 };
@@ -1449,13 +1667,13 @@ mojo.mojom.Int16 = {
  */
 mojo.mojom.Uint16 = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeUint16(byteOffset, value);
     },
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeUint16(byteOffset);
     },
-    arrayElementSize: 2,
+    arrayElementSize: nullable => 2,
     isValidObjectKeyType: true,
   },
 };
@@ -1466,13 +1684,13 @@ mojo.mojom.Uint16 = {
  */
 mojo.mojom.Int32 = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeInt32(byteOffset, value);
     },
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeInt32(byteOffset);
     },
-    arrayElementSize: 4,
+    arrayElementSize: nullable => 4,
     isValidObjectKeyType: true,
   },
 };
@@ -1483,13 +1701,13 @@ mojo.mojom.Int32 = {
  */
 mojo.mojom.Uint32 = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeUint32(byteOffset, value);
     },
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeUint32(byteOffset);
     },
-    arrayElementSize: 4,
+    arrayElementSize: nullable => 4,
     isValidObjectKeyType: true,
   },
 };
@@ -1500,13 +1718,13 @@ mojo.mojom.Uint32 = {
  */
 mojo.mojom.Int64 = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeInt64(byteOffset, value);
     },
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeInt64(byteOffset);
     },
-    arrayElementSize: 8,
+    arrayElementSize: nullable => 8,
     isValidObjectKeyType: true,
   },
 };
@@ -1517,13 +1735,13 @@ mojo.mojom.Int64 = {
  */
 mojo.mojom.Uint64 = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeUint64(byteOffset, value);
     },
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeUint64(byteOffset);
     },
-    arrayElementSize: 8,
+    arrayElementSize: nullable => 8,
     isValidObjectKeyType: true,
   },
 };
@@ -1534,13 +1752,13 @@ mojo.mojom.Uint64 = {
  */
 mojo.mojom.Float = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeFloat(byteOffset, value);
     },
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeFloat(byteOffset);
     },
-    arrayElementSize: 4,
+    arrayElementSize: nullable => 4,
     isValidObjectKeyType: true,
   },
 };
@@ -1551,13 +1769,13 @@ mojo.mojom.Float = {
  */
 mojo.mojom.Double = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeDouble(byteOffset, value);
     },
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeDouble(byteOffset);
     },
-    arrayElementSize: 8,
+    arrayElementSize: nullable => 8,
     isValidObjectKeyType: true,
   },
 };
@@ -1568,14 +1786,14 @@ mojo.mojom.Double = {
  */
 mojo.mojom.Handle = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeHandle(byteOffset, value);
     },
     encodeNull: function(encoder, byteOffset) {},
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeHandle(byteOffset);
     },
-    arrayElementSize: 4,
+    arrayElementSize: nullable => 4,
     isValidObjectKeyType: false,
   },
 };
@@ -1586,18 +1804,18 @@ mojo.mojom.Handle = {
  */
 mojo.mojom.String = {
   $: {
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeString(byteOffset, value);
     },
     encodeNull: function(encoder, byteOffset) {},
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeString(byteOffset);
     },
-    computePayloadSize: function(value) {
+    computePayloadSize: function(value, nullable) {
       return mojo.internal.computeTotalArraySize(
           {elementType: mojo.mojom.Uint8}, value);
     },
-    arrayElementSize: 8,
+    arrayElementSize: nullable => 8,
     isValidObjectKeyType: true,
   }
 };
@@ -1617,17 +1835,17 @@ mojo.mojom.Array = function(elementType, elementNullable) {
   return {
     $: {
       arraySpec: arraySpec,
-      encode: function(value, encoder, byteOffset, bitOffset) {
+      encode: function(value, encoder, byteOffset, bitOffset, nullable) {
         encoder.encodeArray(arraySpec, byteOffset, value);
       },
       encodeNull: function(encoder, byteOffset) {},
-      decode: function(decoder, byteOffset, bitOffset) {
+      decode: function(decoder, byteOffset, bitOffset, nullable) {
         return decoder.decodeArray(arraySpec, byteOffset);
       },
-      computePayloadSize: function(value) {
+      computePayloadSize: function(value, nullable) {
         return mojo.internal.computeTotalArraySize(arraySpec, value);
       },
-      arrayElementSize: 8,
+      arrayElementSize: nullable => 8,
       isValidObjectKeyType: false,
     },
   };
@@ -1650,14 +1868,14 @@ mojo.mojom.Map = function(keyType, valueType, valueNullable) {
   return {
     $: {
       mapSpec: mapSpec,
-      encode: function(value, encoder, byteOffset, bitOffset) {
+      encode: function(value, encoder, byteOffset, bitOffset, nullable) {
         encoder.encodeMap(mapSpec, byteOffset, value);
       },
       encodeNull: function(encoder, byteOffset) {},
-      decode: function(decoder, byteOffset, bitOffset) {
+      decode: function(decoder, byteOffset, bitOffset, nullable) {
         return decoder.decodeMap(mapSpec, byteOffset);
       },
-      computePayloadSize: function(value) {
+      computePayloadSize: function(value, nullable) {
         const keys = (value instanceof Map) ? Array.from(value.keys()) :
                                               Object.keys(value);
         const values = (value instanceof Map) ? Array.from(value.values()) :
@@ -1672,7 +1890,7 @@ mojo.mojom.Map = function(keyType, valueType, valueNullable) {
                 },
                 values);
       },
-      arrayElementSize: 8,
+      arrayElementSize: nullable => 8,
       isValidObjectKeyType: false,
     },
   };
@@ -1686,16 +1904,16 @@ mojo.mojom.Map = function(keyType, valueType, valueNullable) {
 mojo.mojom.Enum = function(properties) {
   return {
     $: {
-      encode: function(value, encoder, byteOffset, bitOffset) {
+      encode: function(value, encoder, byteOffset, bitOffset, nullable) {
         // TODO: Do some sender-side error checking on the input value.
         encoder.encodeUint32(byteOffset, value);
       },
-      decode: function(decoder, byteOffset, bitOffset) {
+      decode: function(decoder, byteOffset, bitOffset, nullable) {
         const value = decoder.decodeInt32(byteOffset);
         // TODO: validate
         return value;
       },
-      arrayElementSize: 4,
+      arrayElementSize: nullable => 4,
       isValidObjectKeyType: true,
     },
   };
@@ -1739,17 +1957,46 @@ mojo.mojom.Struct = function(objectToBlessAsType, name, packedSize, fields) {
   };
   objectToBlessAsType.$ = {
     structSpec: structSpec,
-    encode: function(value, encoder, byteOffset, bitOffset) {
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeStruct(structSpec, byteOffset, value);
     },
     encodeNull: function(encoder, byteOffset) {},
-    decode: function(decoder, byteOffset, bitOffset) {
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
       return decoder.decodeStruct(structSpec, byteOffset);
     },
-    computePayloadSize: function(value) {
+    computePayloadSize: function(value, nullable) {
       return mojo.internal.computeTotalStructSize(structSpec, value);
     },
-    arrayElementSize: 8,
+    arrayElementSize: nullable => 8,
+    isValidObjectKeyType: false,
+  };
+};
+
+/**
+ * @param {!Object} objectToBlessAsUnion
+ * @param {string} name
+ * @param {!Object} fields
+ * @export
+ */
+mojo.mojom.Union = function(objectToBlessAsUnion, name, fields) {
+  /** @type {!mojo.internal.UnionSpec} */
+  const unionSpec = {
+    name: name,
+    fields: fields,
+  };
+  objectToBlessAsUnion.$ = {
+    unionSpec: unionSpec,
+    encode: function(value, encoder, byteOffset, bitOffset, nullable) {
+      encoder.encodeUnion(unionSpec, byteOffset, nullable, value);
+    },
+    encodeNull: function(encoder, byteOffset) {},
+    decode: function(decoder, byteOffset, bitOffset, nullable) {
+      return decoder.decodeUnion(unionSpec, byteOffset, nullable);
+    },
+    computePayloadSize: function(value, nullable) {
+      return mojo.internal.computeTotalUnionSize(unionSpec, nullable, value);
+    },
+    arrayElementSize: nullable => (nullable ? 8 : 16),
     isValidObjectKeyType: false,
   };
 };
@@ -1767,7 +2014,7 @@ mojo.mojom.InterfaceProxy = function(type) {
        * @param {number} byteOffset
        * @param {number} bitOffset
        */
-      encode: function(value, encoder, byteOffset, bitOffset) {
+      encode: function(value, encoder, byteOffset, bitOffset, nullable) {
         if (!(value instanceof type))
           throw new Error('Invalid proxy type. Expected ' + type.name);
         if (!value.proxy.handle)
@@ -1780,10 +2027,10 @@ mojo.mojom.InterfaceProxy = function(type) {
       encodeNull: function(encoder, byteOffset) {
         encoder.encodeUint32(byteOffset, 0xffffffff);
       },
-      decode: function(decoder, byteOffset, bitOffset) {
+      decode: function(decoder, byteOffset, bitOffset, nullable) {
         return decoder.decodeInterfaceProxy(type, byteOffset);
       },
-      arrayElementSize: 8,
+      arrayElementSize: nullable => 8,
       isValidObjectKeyType: false,
     },
   };
@@ -1796,7 +2043,7 @@ mojo.mojom.InterfaceProxy = function(type) {
 mojo.mojom.InterfaceRequest = function(type) {
   return {
     $: {
-      encode: function(value, encoder, byteOffset, bitOffset) {
+      encode: function(value, encoder, byteOffset, bitOffset, nullable) {
         if (!(value instanceof type))
           throw new Error('Invalid request type. Expected ' + type.name);
         if (!value.handle)
@@ -1806,10 +2053,10 @@ mojo.mojom.InterfaceRequest = function(type) {
       encodeNull: function(encoder, byteOffset) {
         encoder.encodeUint32(byteOffset, 0xffffffff);
       },
-      decode: function(decoder, byteOffset, bitOffset) {
+      decode: function(decoder, byteOffset, bitOffset, nullable) {
         return decoder.decodeInterfaceRequest(type, byteOffset);
       },
-      arrayElementSize: 4,
+      arrayElementSize: nullable => 8,
       isValidObjectKeyType: false,
     },
   };
@@ -1823,10 +2070,10 @@ mojo.mojom.AssociatedInterfaceProxy = function(type) {
   return {
     $: {
       type: type,
-      encode: function(value, encoder, byteOffset, bitOffset) {
+      encode: function(value, encoder, byteOffset, bitOffset, nullable) {
         throw new Error('Associated interfaces not supported yet.');
       },
-      decode: function(decoder, byteOffset, bitOffset) {
+      decode: function(decoder, byteOffset, bitOffset, nullable) {
         throw new Error('Associated interfaces not supported yet.');
       },
     },
@@ -1841,10 +2088,10 @@ mojo.mojom.AssociatedInterfaceRequest = function(type) {
   return {
     $: {
       type: type,
-      encode: function(value, encoder, byteOffset, bitOffset) {
+      encode: function(value, encoder, byteOffset, bitOffset, nullable) {
         throw new Error('Associated interfaces not supported yet.');
       },
-      decode: function(decoder, byteOffset, bitOffset) {
+      decode: function(decoder, byteOffset, bitOffset, nullable) {
         throw new Error('Associated interfaces not supported yet.');
       },
     },

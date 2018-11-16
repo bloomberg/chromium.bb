@@ -8,6 +8,11 @@ struct TestStruct {
   int32 x;
 };
 
+union TestUnion {
+  int32 x;
+  TestStruct s;
+};
+
 // An interface whose definition covers various types of message signatures in
 // order to exercise the lite JS mojom bindings.
 interface TestMessageTarget {
@@ -22,6 +27,7 @@ interface TestMessageTarget {
       => (string? message, array<int32>? numbers);
 
   Flatten(array<TestStruct> values) => (array<int32> values);
+  FlattenUnions(array<TestUnion> unions) => (array<int32> x, array<int32> s);
 
   RequestSubinterface(Subinterface& request, SubinterfaceClient client);
 };

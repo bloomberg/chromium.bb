@@ -71,6 +71,12 @@ class {{interface.name}}Proxy {
         ]);
   }
 {%-  endfor %}
+
+
+  /** @return {!Promise} */
+  flushForTesting() {
+    return this.proxy.flushForTesting();
+  }
 }
 
 /**
