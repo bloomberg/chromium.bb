@@ -35,6 +35,8 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP_TYPES) ServiceFilter {
 
   ~ServiceFilter();
 
+  ServiceFilter& operator=(const ServiceFilter& other);
+
   // Returns a ServiceFilter which only filters by service name. When locating a
   // service instance using such a filter, the Service Manager will consider an
   // instance to be a potential match as long as its service name matches

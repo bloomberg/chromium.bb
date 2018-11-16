@@ -183,7 +183,7 @@ void SpellcheckService::InitForRenderer(
 
   content::BrowserContext* context =
       content::BrowserContext::GetBrowserContextForServiceInstanceGroup(
-          *renderer_identity.instance_group());
+          renderer_identity.instance_group());
   if (SpellcheckServiceFactory::GetForContext(context) != this)
     return;
 
@@ -208,8 +208,8 @@ void SpellcheckService::InitForRenderer(
   spellcheck::mojom::SpellCheckerPtr spellchecker;
   ChromeService::GetInstance()->connector()->BindInterface(
       service_manager::ServiceFilter::ByNameWithIdInGroup(
-          chrome::mojom::kRendererServiceName, *renderer_identity.instance_id(),
-          *renderer_identity.instance_group()),
+          chrome::mojom::kRendererServiceName, renderer_identity.instance_id(),
+          renderer_identity.instance_group()),
       &spellchecker);
   spellchecker->Initialize(std::move(dictionaries), custom_words, enable);
 }
@@ -299,8 +299,8 @@ void SpellcheckService::OnCustomDictionaryChanged(
     ChromeService::GetInstance()->connector()->BindInterface(
         service_manager::ServiceFilter::ByNameWithIdInGroup(
             chrome::mojom::kRendererServiceName,
-            *renderer_identity.instance_id(),
-            *renderer_identity.instance_group()),
+            renderer_identity.instance_id(),
+            renderer_identity.instance_group()),
         &spellchecker);
     spellchecker->CustomDictionaryChanged(additions, deletions);
   }

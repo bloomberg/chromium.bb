@@ -45,7 +45,7 @@ class Target : public service_manager::Service,
   }
 
   void GetInstanceId(GetInstanceIdCallback callback) override {
-    std::move(callback).Run(*context()->identity().instance_id());
+    std::move(callback).Run(context()->identity().instance_id());
   }
 
   service_manager::BinderRegistry registry_;

@@ -121,7 +121,7 @@ class ProvidedService : public Service,
   }
 
   void GetInstanceId(GetInstanceIdCallback callback) override {
-    std::move(callback).Run(*service_binding_.identity().instance_id());
+    std::move(callback).Run(service_binding_.identity().instance_id());
   }
 
   // test::mojom::BlockedInterface:
@@ -130,16 +130,16 @@ class ProvidedService : public Service,
   }
 
   // test::mojom::IdentityTest:
-  void ConnectToClassAppWithIdentity(
-      const service_manager::Identity& target,
-      ConnectToClassAppWithIdentityCallback callback) override {
+  void ConnectToClassAppWithFilter(
+      const service_manager::ServiceFilter& filter,
+      ConnectToClassAppWithFilterCallback callback) override {
     mojom::ConnectResult result;
     base::Optional<Identity> resolved_identity;
     base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
     service_binding_.GetConnector()->WarmService(
-        target, base::BindOnce(&QuitLoop, &loop, &result, &resolved_identity));
+        filter, base::BindOnce(&QuitLoop, &loop, &result, &resolved_identity));
     loop.Run();
-    std::move(callback).Run(static_cast<int32_t>(result), *resolved_identity);
+    std::move(callback).Run(static_cast<int32_t>(result), resolved_identity);
   }
 
   // base::SimpleThread:
@@ -243,7 +243,7 @@ class ConnectTestService : public Service,
   }
 
   void GetInstanceId(GetInstanceIdCallback callback) override {
-    std::move(callback).Run(*service_binding_.identity().instance_id());
+    std::move(callback).Run(service_binding_.identity().instance_id());
   }
 
   void OnConnectionError() {

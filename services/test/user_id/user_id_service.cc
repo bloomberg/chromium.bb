@@ -34,7 +34,7 @@ void UserIdService::BindUserIdRequest(
 }
 
 void UserIdService::GetInstanceGroup(GetInstanceGroupCallback callback) {
-  std::move(callback).Run(context()->identity().instance_group().value());
+  std::move(callback).Run(context()->identity().instance_group());
 }
 
 }  // namespace user_id

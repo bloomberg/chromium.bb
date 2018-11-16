@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -30,7 +31,6 @@
 #include "services/catalog/entry.h"
 #include "services/catalog/instance.h"
 #include "services/catalog/public/mojom/constants.mojom.h"
-#include "services/service_manager/connect_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -50,10 +50,6 @@ namespace service_manager {
 namespace {
 
 const char kCapability_ServiceManager[] = "service_manager:service_manager";
-
-bool Succeeded(mojom::ConnectResult result) {
-  return result == mojom::ConnectResult::SUCCEEDED;
-}
 
 // Returns the set of capabilities required from the target.
 CapabilitySet GetRequestedCapabilities(const InterfaceProviderSpec& source_spec,
@@ -90,13 +86,8 @@ base::ProcessId GetCurrentPid() {
 InterfaceSet GetInterfacesToExpose(const InterfaceProviderSpec& source_spec,
                                    const Identity& target,
                                    const InterfaceProviderSpec& target_spec) {
+  DCHECK(target.IsValid());
   InterfaceSet exposed_interfaces;
-  // TODO(beng): remove this once we can assert that an InterfaceRegistry must
-  //             always be constructed with a valid identity.
-  if (!target.IsValid()) {
-    exposed_interfaces.insert("*");
-    return exposed_interfaces;
-  }
   CapabilitySet capabilities = GetRequestedCapabilities(source_spec, target);
   for (const auto& capability : capabilities) {
     auto it = target_spec.provides.find(capability);
@@ -106,11 +97,6 @@ InterfaceSet GetInterfacesToExpose(const InterfaceProviderSpec& source_spec,
     }
   }
   return exposed_interfaces;
-}
-
-Identity CreateCatalogIdentity() {
-  return Identity(catalog::mojom::kServiceName, kSystemInstanceGroup,
-                  base::Token{});
 }
 
 const InterfaceProviderSpec& GetEmptyInterfaceProviderSpec() {
@@ -179,9 +165,11 @@ bool AllowsInterface(const Identity& source,
 
 }  // namespace
 
-Identity CreateServiceManagerIdentity() {
-  return Identity(service_manager::mojom::kServiceName, kSystemInstanceGroup,
-                  base::Token{});
+const Identity& GetServiceManagerInstanceIdentity() {
+  static base::NoDestructor<Identity> id{service_manager::mojom::kServiceName,
+                                         kSystemInstanceGroup, base::Token{},
+                                         base::Token::CreateRandom()};
+  return *id;
 }
 
 // Encapsulates a connection to an instance of a service, tracked by the
@@ -212,12 +200,7 @@ class ServiceManager::Instance
       pid_ = GetCurrentPid();
     }
     DCHECK_GT(id_, 0u);
-
-    // All service instances must have a valid instance group, instance ID, and
-    // GUID assigned at construction time.
-    DCHECK(!identity_.instance_group().value_or(base::Token{}).is_zero());
-    DCHECK(identity_.instance_id());
-    DCHECK(!identity_.globally_unique_id().value_or(base::Token{}).is_zero());
+    DCHECK(identity_.IsValid());
   }
 
   void Stop() {
@@ -258,6 +241,7 @@ class ServiceManager::Instance
     }
 
     std::unique_ptr<ConnectParams> params(std::move(*in_params));
+
     Instance* source =
         service_manager_->GetExistingInstance(params->source());
     if (!source)
@@ -344,7 +328,12 @@ class ServiceManager::Instance
   }
 
   const Identity& identity() const { return identity_; }
-  void set_identity(const Identity& identity) { identity_ = identity; }
+
+  void set_identity(const Identity& identity) {
+    DCHECK(identity.IsValid());
+    identity_ = identity;
+  }
+
   uint32_t id() const { return id_; }
 
   // Service:
@@ -395,12 +384,15 @@ class ServiceManager::Instance
           service_manager_(service_manager),
           target_(std::move(target)),
           source_binding_(this, std::move(source_request)) {
+      DCHECK(source_identity_.IsValid());
+      DCHECK(target_identity_.IsValid());
       target_.set_connection_error_handler(base::BindOnce(
           &InterfaceProviderImpl::OnConnectionError, base::Unretained(this)));
       source_binding_.set_connection_error_handler(base::BindOnce(
           &InterfaceProviderImpl::OnConnectionError, base::Unretained(this)));
     }
-    ~InterfaceProviderImpl() override {}
+
+    ~InterfaceProviderImpl() override = default;
 
    private:
     // mojom::InterfaceProvider:
@@ -449,23 +441,20 @@ class ServiceManager::Instance
   };
 
   // mojom::Connector implementation:
-  void BindInterface(const service_manager::ServiceFilter& service_filter,
+  void BindInterface(const service_manager::ServiceFilter& target_filter,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe,
                      BindInterfaceCallback callback) override {
-    Identity target(
-        service_filter.service_name(), service_filter.instance_group(),
-        service_filter.instance_id(), service_filter.globally_unique_id());
     mojom::ConnectResult result =
-        ValidateConnectParams(&target, nullptr, nullptr, &interface_name);
-    if (!Succeeded(result)) {
-      std::move(callback).Run(result, Identity());
+        ValidateConnectParams(target_filter, interface_name);
+    if (result != mojom::ConnectResult::SUCCEEDED) {
+      std::move(callback).Run(result, base::nullopt);
       return;
     }
 
     std::unique_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(identity_);
-    params->set_target(target);
+    params->set_target(target_filter);
     params->set_interface_request_info(interface_name,
                                        std::move(interface_pipe));
     params->set_connection_callback(std::move(callback));
@@ -476,7 +465,7 @@ class ServiceManager::Instance
                     QueryServiceCallback callback) override {
     std::string sandbox_type;
     bool success = service_manager_->QueryCatalog(
-        Identity(service_name, identity_.instance_group()), &sandbox_type);
+        service_name, identity_.instance_group(), &sandbox_type);
     if (success) {
       std::move(callback).Run(mojom::ServiceInfo::New(sandbox_type));
     } else {
@@ -484,22 +473,19 @@ class ServiceManager::Instance
     }
   }
 
-  void WarmService(const ServiceFilter& service_filter,
+  void WarmService(const ServiceFilter& target_filter,
                    WarmServiceCallback callback) override {
-    Identity target(
-        service_filter.service_name(), service_filter.instance_group(),
-        service_filter.instance_id(), service_filter.globally_unique_id());
-    mojom::ConnectResult result =
-        ValidateConnectParams(&target, nullptr, nullptr, nullptr);
+    mojom::ConnectResult result = ValidateConnectParams(
+        target_filter, base::nullopt /* interface_name */);
 
-    if (!Succeeded(result)) {
-      std::move(callback).Run(result, Identity());
+    if (result != mojom::ConnectResult::SUCCEEDED) {
+      std::move(callback).Run(result, base::nullopt);
       return;
     }
 
     std::unique_ptr<ConnectParams> params(new ConnectParams);
     params->set_source(identity_);
-    params->set_target(target);
+    params->set_target(target_filter);
     params->set_connection_callback(std::move(callback));
     service_manager_->Connect(std::move(params));
   }
@@ -509,19 +495,35 @@ class ServiceManager::Instance
       mojo::ScopedMessagePipeHandle service_handle,
       mojom::PIDReceiverRequest pid_receiver_request,
       RegisterServiceInstanceCallback callback) override {
-    Identity target = identity;
-    mojom::ServicePtr service;
-    service.Bind(mojom::ServicePtrInfo(std::move(service_handle), 0));
+    mojom::ServicePtr service(
+        mojom::ServicePtrInfo(std::move(service_handle), 0));
+
+    if (!options_.can_create_other_service_instances) {
+      LOG(ERROR) << "Instance: " << identity_.name() << " attempting "
+                 << "to register an instance for a process it created for "
+                 << "target: " << identity.name() << " without "
+                 << "the 'can_create_other_service_instances' option.";
+      std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED);
+      return;
+    }
+
+    if (service_manager_->GetExistingInstance(identity)) {
+      LOG(ERROR) << "Instance already exists: " << identity.ToString();
+      std::move(callback).Run(mojom::ConnectResult::INVALID_ARGUMENT);
+      return;
+    }
+
+    auto target_filter = ServiceFilter::ForExactIdentity(identity);
     mojom::ConnectResult result = ValidateConnectParams(
-        &target, &service, &pid_receiver_request, nullptr);
-    if (!Succeeded(result)) {
+        target_filter, base::nullopt /* interface_name */);
+    if (result != mojom::ConnectResult::SUCCEEDED) {
       std::move(callback).Run(result);
       return;
     }
 
-    std::unique_ptr<ConnectParams> params(new ConnectParams);
+    auto params = std::make_unique<ConnectParams>();
     params->set_source(identity_);
-    params->set_target(target);
+    params->set_target(target_filter);
     params->set_client_process_info(std::move(service),
                                     std::move(pid_receiver_request));
     params->set_connection_callback(base::BindOnce(
@@ -561,69 +563,15 @@ class ServiceManager::Instance
   }
 
   mojom::ConnectResult ValidateConnectParams(
-      Identity* target,
-      mojom::ServicePtr* service,
-      mojom::PIDReceiverRequest* pid_receiver_request,
-      const std::string* target_interface_name) {
-    if (!target->instance_group())
-      target->set_instance_group(identity_.instance_group());
-    if (!target->instance_id())
-      target->set_instance_id(base::Token{});
-
-    mojom::ConnectResult result = ValidateIdentity(*target);
-    if (!Succeeded(result))
-      return result;
-
-    result = ValidateClientProcessInfo(service, pid_receiver_request, *target);
-    if (!Succeeded(result))
-      return result;
-    return ValidateConnectionSpec(*target, target_interface_name);
-  }
-
-  mojom::ConnectResult ValidateIdentity(const Identity& identity) {
-    if (identity.name().empty()) {
-      LOG(ERROR) << "Error: empty service name.";
+      const ServiceFilter& target_filter,
+      const base::Optional<std::string>& target_interface_name) {
+    if (target_filter.service_name().empty()) {
+      DLOG(ERROR) << "ServiceFilter has no service name.";
       return mojom::ConnectResult::INVALID_ARGUMENT;
     }
-    if (identity.instance_group()->is_zero()) {
-      LOG(ERROR) << "Error: invalid instance group.";
-      return mojom::ConnectResult::INVALID_ARGUMENT;
-    }
-    return mojom::ConnectResult::SUCCEEDED;
-  }
 
-  mojom::ConnectResult ValidateClientProcessInfo(
-      mojom::ServicePtr* service,
-      mojom::PIDReceiverRequest* pid_receiver_request,
-      const Identity& target) {
-    if (service && pid_receiver_request &&
-        (service->is_bound() || pid_receiver_request->is_pending())) {
-      if (!options_.can_create_other_service_instances) {
-        LOG(ERROR) << "Instance: " << identity_.name() << " attempting "
-                   << "to register an instance for a process it created for "
-                   << "target: " << target.name() << " without the "
-                   << "'can_create_other_service_instances' option.";
-        return mojom::ConnectResult::ACCESS_DENIED;
-      }
-
-      if (!service->is_bound() || !pid_receiver_request->is_pending()) {
-        LOG(ERROR) << "Must supply both service AND "
-                   << "pid_receiver_request when sending client process info";
-        return mojom::ConnectResult::INVALID_ARGUMENT;
-      }
-      if (service_manager_->GetExistingInstance(target)) {
-        LOG(ERROR) << "Cannot find a client process matching existing identity:"
-                   << "Name: " << target.ToString();
-        return mojom::ConnectResult::INVALID_ARGUMENT;
-      }
-    }
-    return mojom::ConnectResult::SUCCEEDED;
-  }
-
-  mojom::ConnectResult ValidateConnectionSpec(
-      const Identity& target,
-      const std::string* target_interface_name) {
     const InterfaceProviderSpec& connection_spec = GetConnectionSpec();
+
     // TODO(beng): Need to do the following additional policy validation of
     // whether this instance is allowed to connect using:
     // - non-null client process info.
@@ -635,34 +583,40 @@ class ServiceManager::Instance
                 SHARED_ACROSS_INSTANCE_GROUPS ||
         options_.can_connect_to_instances_in_any_group;
 
-    if (!skip_instance_group_check &&
-        target.instance_group() != identity_.instance_group() &&
-        target.instance_group() != kSystemInstanceGroup) {
+    if (!skip_instance_group_check && target_filter.instance_group() &&
+        target_filter.instance_group() != identity_.instance_group() &&
+        target_filter.instance_group() != kSystemInstanceGroup) {
       LOG(ERROR) << "Instance " << identity_.ToString() << " attempting to "
-                 << "connect to " << target.ToString() << " without the "
-                 << " 'can_connect_to_instances_in_any_group' option.";
+                 << "connect to " << target_filter.service_name() << " in "
+                 << "group " << target_filter.instance_group()->ToString()
+                 << " without the 'can_connect_to_instances_in_any_group' "
+                 << "option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
-    if (target.instance_id().has_value() && !target.instance_id()->is_zero() &&
+    if (target_filter.instance_id() &&
+        !target_filter.instance_id()->is_zero() &&
         !options_.can_connect_to_other_services_with_any_instance_name) {
       LOG(ERROR)
           << "Instance " << identity_.ToString() << " attempting to connect to "
-          << target.ToString() << " without the "
+          << target_filter.service_name() << " with instance ID "
+          << target_filter.instance_id()->ToString() << " without the "
           << "'can_connect_to_other_services_with_any_instance_name' option.";
       return mojom::ConnectResult::ACCESS_DENIED;
     }
 
     if (allow_any_application_ ||
-        connection_spec.requires.find(target.name()) !=
+        connection_spec.requires.find(target_filter.service_name()) !=
             connection_spec.requires.end()) {
       return mojom::ConnectResult::SUCCEEDED;
     }
+
     if (target_interface_name) {
-      ReportBlockedInterface(identity_.name(), target.name(),
+      ReportBlockedInterface(identity_.name(), target_filter.service_name(),
                              *target_interface_name);
     } else {
-      ReportBlockedStartService(identity_.name(), target.name());
+      ReportBlockedStartService(identity_.name(), target_filter.service_name());
     }
+
     return mojom::ConnectResult::ACCESS_DENIED;
   }
 
@@ -792,23 +746,50 @@ class ServiceManager::IdentityToInstanceMap {
  public:
   // An entry in any of the mappings owned by this object.
   struct Entry {
-    Entry(const base::Token& token, Instance* instance)
-        : token(token), instance(instance) {
-      DCHECK(!token.is_zero());
+    Entry(const base::Token& guid, Instance* instance)
+        : guid(guid), instance(instance) {
+      DCHECK(!guid.is_zero());
       DCHECK(instance);
     }
     Entry(const Entry&) = default;
     ~Entry() = default;
 
-    base::Token token;
+    base::Token guid;
     Instance* instance = nullptr;
+  };
+
+  struct RegularInstanceKey {
+    RegularInstanceKey(const std::string& service_name,
+                       const base::Token& instance_group,
+                       const base::Token& instance_id)
+        : service_name(service_name),
+          instance_group(instance_group),
+          instance_id(instance_id) {}
+    RegularInstanceKey(const RegularInstanceKey&) = default;
+    ~RegularInstanceKey() = default;
+
+    bool operator==(const RegularInstanceKey& other) const {
+      return service_name == other.service_name &&
+             instance_group == other.instance_group &&
+             instance_id == other.instance_id;
+    }
+
+    bool operator<(const RegularInstanceKey& other) const {
+      return std::tie(service_name, instance_group, instance_id) <
+             std::tie(other.service_name, other.instance_group,
+                      other.instance_id);
+    }
+
+    const std::string service_name;
+    const base::Token instance_group;
+    const base::Token instance_id;
   };
 
   struct SharedInstanceKey {
     SharedInstanceKey(const std::string& service_name,
                       const base::Token& instance_id)
         : service_name(service_name), instance_id(instance_id) {}
-    SharedInstanceKey(const SharedInstanceKey& other) = default;
+    SharedInstanceKey(const SharedInstanceKey&) = default;
     ~SharedInstanceKey() = default;
 
     bool operator==(const SharedInstanceKey& other) const {
@@ -830,31 +811,28 @@ class ServiceManager::IdentityToInstanceMap {
   ~IdentityToInstanceMap() = default;
 
   void Insert(const Identity& identity, InstanceType type, Instance* instance) {
-    // All inserted identities must specify a valid instance group, instance ID,
-    // and GUID.
-    DCHECK(identity.instance_group().has_value());
-    DCHECK(!identity.instance_group()->is_zero());
-    DCHECK(identity.instance_id().has_value());
-    DCHECK(identity.globally_unique_id().has_value());
-    DCHECK(!identity.globally_unique_id()->is_zero());
-
+    DCHECK(identity.IsValid());
     DCHECK_NE(instance, nullptr);
     DCHECK_EQ(Get(identity), nullptr);
     switch (type) {
-      case InstanceType::kRegular:
-        regular_instances_[identity.WithoutGloballyUniqueId()].emplace_back(
-            *identity.globally_unique_id(), instance);
+      case InstanceType::kRegular: {
+        const RegularInstanceKey key{identity.name(), identity.instance_group(),
+                                     identity.instance_id()};
+        regular_instances_[key].emplace_back(identity.globally_unique_id(),
+                                             instance);
         break;
+      }
 
-      case InstanceType::kSharedAcrossInstanceGroups:
-        shared_instances_[SharedInstanceKey(identity.name(),
-                                            *identity.instance_id())]
-            .emplace_back(*identity.globally_unique_id(), instance);
+      case InstanceType::kSharedAcrossInstanceGroups: {
+        const SharedInstanceKey key{identity.name(), identity.instance_id()};
+        shared_instances_[key].emplace_back(identity.globally_unique_id(),
+                                            instance);
         break;
+      }
 
       case InstanceType::kSingleton:
         singleton_instances_[identity.name()].emplace_back(
-            *identity.globally_unique_id(), instance);
+            identity.globally_unique_id(), instance);
         break;
 
       default:
@@ -862,48 +840,58 @@ class ServiceManager::IdentityToInstanceMap {
     }
   }
 
-  Instance* Get(const Identity& identity) {
-    DCHECK(identity.instance_group());
-    DCHECK(identity.instance_id());
+  Instance* Get(const ServiceFilter& filter) {
+    DCHECK(filter.instance_group());
+    DCHECK(filter.instance_id());
+    DCHECK(!filter.globally_unique_id() ||
+           !filter.globally_unique_id()->is_zero());
 
-    auto regular_iter =
-        regular_instances_.find(identity.WithoutGloballyUniqueId());
-    if (regular_iter != regular_instances_.end())
-      return FindMatchingInstance(regular_iter->second, identity);
+    const RegularInstanceKey regular_key{
+        filter.service_name(), *filter.instance_group(), *filter.instance_id()};
+    auto regular_iter = regular_instances_.find(regular_key);
+    if (regular_iter != regular_instances_.end()) {
+      return FindMatchingInstance(regular_iter->second,
+                                  filter.globally_unique_id());
+    }
 
+    const SharedInstanceKey shared_key{filter.service_name(),
+                                       *filter.instance_id()};
     auto shared_iter = shared_instances_.find(
-        SharedInstanceKey(identity.name(), *identity.instance_id()));
-    if (shared_iter != shared_instances_.end())
-      return FindMatchingInstance(shared_iter->second, identity);
+        SharedInstanceKey(filter.service_name(), *filter.instance_id()));
+    if (shared_iter != shared_instances_.end()) {
+      return FindMatchingInstance(shared_iter->second,
+                                  filter.globally_unique_id());
+    }
 
-    auto singleton_iter = singleton_instances_.find(identity.name());
-    if (singleton_iter != singleton_instances_.end())
-      return FindMatchingInstance(singleton_iter->second, identity);
+    auto singleton_iter = singleton_instances_.find(filter.service_name());
+    if (singleton_iter != singleton_instances_.end()) {
+      return FindMatchingInstance(singleton_iter->second,
+                                  filter.globally_unique_id());
+    }
 
     return nullptr;
   }
 
   bool Erase(const Identity& identity) {
-    DCHECK(!identity.instance_group().value_or(base::Token{}).is_zero());
-    DCHECK(identity.instance_id());
-    DCHECK(!identity.globally_unique_id().value_or(base::Token{}).is_zero());
+    DCHECK(identity.IsValid());
 
-    auto regular_iter =
-        regular_instances_.find(identity.WithoutGloballyUniqueId());
+    const RegularInstanceKey regular_key{
+        identity.name(), identity.instance_group(), identity.instance_id()};
+    auto regular_iter = regular_instances_.find(regular_key);
     if (regular_iter != regular_instances_.end()) {
       auto& entries = regular_iter->second;
-      if (EraseEntry(*identity.globally_unique_id(), &entries)) {
+      if (EraseEntry(identity.globally_unique_id(), &entries)) {
         if (entries.empty())
           regular_instances_.erase(regular_iter);
         return true;
       }
     }
 
-    auto shared_iter = shared_instances_.find(
-        SharedInstanceKey(identity.name(), *identity.instance_id()));
+    const SharedInstanceKey shared_key{identity.name(), identity.instance_id()};
+    auto shared_iter = shared_instances_.find(shared_key);
     if (shared_iter != shared_instances_.end()) {
       auto& entries = shared_iter->second;
-      if (EraseEntry(*identity.globally_unique_id(), &entries)) {
+      if (EraseEntry(identity.globally_unique_id(), &entries)) {
         if (entries.empty())
           shared_instances_.erase(shared_iter);
         return true;
@@ -913,7 +901,7 @@ class ServiceManager::IdentityToInstanceMap {
     auto singleton_iter = singleton_instances_.find(identity.name());
     if (singleton_iter != singleton_instances_.end()) {
       auto& entries = singleton_iter->second;
-      if (EraseEntry(*identity.globally_unique_id(), &entries)) {
+      if (EraseEntry(identity.globally_unique_id(), &entries)) {
         if (entries.empty())
           singleton_instances_.erase(singleton_iter);
         return true;
@@ -937,35 +925,35 @@ class ServiceManager::IdentityToInstanceMap {
   }
 
  private:
-  // Maps an Identity (sans globally unique ID) to a list of (Token, Instance*)
-  // entries.
-  using RegularInstanceMap = std::map<Identity, std::vector<Entry>>;
+  // Maps a 3-tuple of (service name, instance group, instance ID) to a list of
+  // service instances and their GUIDs.
+  using RegularInstanceMap = std::map<RegularInstanceKey, std::vector<Entry>>;
 
-  // Maps an Identity (sans instance group and globally unique ID) to a list of
-  // (Token, Instance*) entries.
+  // Maps a 2-tuple of (service name, instance ID) to a list of shared service
+  // instances and their GUIDs.
   using SharedInstanceMap = std::map<SharedInstanceKey, std::vector<Entry>>;
 
-  // Maps a service name to a list of (Token, Instance*) entries.
+  // Maps a service name to a list of singleton instances and their GUIDs.
   using SingletonInstanceMap = std::map<std::string, std::vector<Entry>>;
 
   Instance* FindMatchingInstance(const std::vector<Entry>& entries,
-                                 const Identity& identity) {
+                                 const base::Optional<base::Token>& guid) {
     DCHECK(!entries.empty());
-    if (!identity.globally_unique_id().has_value())
+    if (!guid.has_value())
       return entries.front().instance;
 
     for (const auto& entry : entries) {
-      if (entry.token == identity.globally_unique_id().value())
+      if (entry.guid == *guid)
         return entry.instance;
     }
 
     return nullptr;
   }
 
-  bool EraseEntry(const base::Token& token, std::vector<Entry>* entries) {
+  bool EraseEntry(const base::Token& guid, std::vector<Entry>* entries) {
     auto it = std::find_if(
         entries->begin(), entries->end(),
-        [&token](const Entry& entry) { return entry.token == token; });
+        [&guid](const Entry& entry) { return entry.guid == guid; });
     if (it == entries->end())
       return false;
 
@@ -1006,7 +994,7 @@ ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
   specs[mojom::kServiceManager_ConnectorSpec] = std::move(spec);
 
   service_manager_instance_ = CreateInstance(
-      Identity(), CreateServiceManagerIdentity(), InstanceType::kSingleton,
+      GetServiceManagerInstanceIdentity(), InstanceType::kSingleton,
       std::move(specs), catalog::ServiceOptions());
 
   mojom::ServicePtr service;
@@ -1048,40 +1036,57 @@ void ServiceManager::SetInstanceQuitCallback(
 void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
   TRACE_EVENT_INSTANT1("service_manager", "ServiceManager::Connect",
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
-                       params->target().name());
-  DCHECK(!params->source().instance_group().value_or(base::Token{}).is_zero());
-  DCHECK(!params->target().instance_group().value_or(base::Token{}).is_zero());
-  DCHECK(params->source().instance_id());
-  DCHECK(params->target().instance_id());
-  DCHECK(!params->source().globally_unique_id() ||
-         !params->source().globally_unique_id()->is_zero());
-  DCHECK(!params->target().globally_unique_id() ||
-         !params->target().globally_unique_id()->is_zero());
-  DCHECK(!params->HasClientProcessInfo() ||
-         GetExistingInstance(params->target()) == nullptr);
+                       params->target().service_name());
+  const Identity& source = params->source();
+  DCHECK(source.IsValid());
 
-  // Connect to an existing matching instance, if possible.
-  if (!params->HasClientProcessInfo() && ConnectToExistingInstance(&params))
-    return;
+  ServiceFilter target_filter = params->target();
 
-  // If there was no existing instance but the source specified a specific
-  // globally unique ID for the target, ignore the request. That instance is
-  // obviously no longer running. If it has "client info" (i.e. it's an
-  // explicit service instance registration), we allow it.
-  if (!params->HasClientProcessInfo() && params->target().globally_unique_id())
-    return;
+  // If the target filter does not specify an instance group, we assume the
+  // source's own.
+  if (!target_filter.instance_group())
+    target_filter.set_instance_group(source.instance_group());
+
+  // If the target filter does not specify an instance ID, we assume zero.
+  if (!target_filter.instance_id())
+    target_filter.set_instance_id(base::Token{});
+
+  if (!params->HasClientProcessInfo()) {
+    // Connect to an existing matching instance, if possible.
+    Instance* instance = identity_to_instance_->Get(target_filter);
+    if (instance) {
+      if (params->HasInterfaceRequestInfo()) {
+        instance->CallOnBindInterface(&params);
+      } else {
+        // This is a StartService request and the instance is already running.
+        // Make sure the response identity is properly resolved.
+        params->set_response_data(mojom::ConnectResult::SUCCEEDED,
+                                  instance->identity());
+      }
+      return;
+    }
+
+    // If there was no existing instance but the request specified a specific
+    // globally unique ID for the target, ignore the request. That instance is
+    // obviously no longer running.
+    if (target_filter.globally_unique_id())
+      return;
+  }
+
+  // Beyond this point, in order to fulfill the connection request we need to
+  // start a new instance of the target service.
 
   const catalog::Entry* entry =
-      catalog_.GetInstanceForGroup(*params->target().instance_group())
-          ->Resolve(params->target().name());
+      catalog_.GetInstanceForGroup(*target_filter.instance_group())
+          ->Resolve(target_filter.service_name());
   if (!entry) {
-    LOG(ERROR) << "Failed to resolve service name: " << params->target().name();
+    LOG(ERROR) << "Failed to resolve service name: "
+               << target_filter.service_name();
     params->set_response_data(mojom::ConnectResult::INVALID_ARGUMENT,
-                              Identity());
+                              base::nullopt);
     return;
   }
 
-  const base::Token& instance_id = *params->target().instance_id();
   const InterfaceProviderSpecMap& interface_provider_specs =
       entry->interface_provider_specs();
 
@@ -1093,16 +1098,12 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
   bool singleton_instance =
       entry->options().instance_sharing ==
       catalog::ServiceOptions::InstanceSharingType::SINGLETON;
-  const Identity original_target(params->target());
 
   // Services that have "shared_across_instance_groups" value of
   // "instance_sharing" option are allowed to field connection requests from
   // instances in any instance group. They also run with a synthetic instance
   // group generated here. The instance group provided via |Connect()| is
-  // ignored. Additionally services with the "shared_across_instance_groups"
-  // value are not tied to the lifetime of the service that started them,
-  // instead they are owned by the Service Manager.
-  Identity source_identity_for_creation;
+  // ignored.
 
   InstanceType instance_type;
   if (singleton_instance)
@@ -1112,81 +1113,89 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
   else
     instance_type = InstanceType::kRegular;
 
-  Identity target;
-  // |HasClientProcessInfo()| implies that this Connect call came from
-  // |Connector.RegisterServiceInstance()| or |ServiceManager::RegisterService|
-  // directly. In both cases, we are given an explicit Identity we should use
-  // and should therefore ignore the various overriding behaviors below.
+  Identity new_instance_identity;
   if (params->HasClientProcessInfo()) {
-    source_identity_for_creation = params->source();
-    target = original_target;
-    DCHECK(target.instance_group());
-    DCHECK(target.instance_id());
-    DCHECK(target.globally_unique_id());
+    // This is a service instance registration, so we should use the exact
+    // Identity given by the caller.
+    if (!target_filter.globally_unique_id() ||
+        target_filter.globally_unique_id()->is_zero()) {
+      params->set_response_data(mojom::ConnectResult::INVALID_ARGUMENT,
+                                base::nullopt);
+      return;
+    }
+    new_instance_identity = Identity(
+        target_filter.service_name(), *target_filter.instance_group(),
+        *target_filter.instance_id(), *target_filter.globally_unique_id());
   } else if (instance_type == InstanceType::kSingleton) {
-    source_identity_for_creation = CreateServiceManagerIdentity();
-    target = Identity(params->target().name(), base::Token::CreateRandom(),
-                      base::Token{});
+    // For singleton instances, we generate a random group ID along with the
+    // random GUID.
+    new_instance_identity =
+        Identity(target_filter.service_name(), base::Token::CreateRandom(),
+                 base::Token{}, base::Token::CreateRandom());
   } else if (instance_type == InstanceType::kSharedAcrossInstanceGroups) {
-    source_identity_for_creation = CreateServiceManagerIdentity();
-    target = Identity(params->target().name(), base::Token::CreateRandom(),
-                      instance_id);
+    // For services shared across instance groups, we respect the target
+    // instance ID but still generate a random group ID along with the random
+    // GUID.
+    new_instance_identity =
+        Identity(target_filter.service_name(), base::Token::CreateRandom(),
+                 *target_filter.instance_id(), base::Token::CreateRandom());
   } else {
     DCHECK_EQ(instance_type, InstanceType::kRegular);
-    source_identity_for_creation = params->source();
-    target = Identity(params->target().name(),
-                      params->target().instance_group(), instance_id);
+    new_instance_identity =
+        Identity(target_filter.service_name(), *target_filter.instance_group(),
+                 *target_filter.instance_id(), base::Token::CreateRandom());
   }
-  params->set_target(target);
 
-  bool result_interface_provider_specs_empty = interface_provider_specs.empty();
-  Instance* instance =
-      CreateInstance(source_identity_for_creation, target, instance_type,
-                     interface_provider_specs, options);
+  // The catalog was unable to read a manifest for this service. We can't do
+  // anything more.
+  if (interface_provider_specs.empty()) {
+    LOG(ERROR)
+        << "Error: The catalog was unable to read a manifest for service \""
+        << entry->name() << "\".";
+    params->set_response_data(mojom::ConnectResult::ACCESS_DENIED,
+                              base::nullopt);
+    return;
+  }
+
+  Instance* instance = CreateInstance(new_instance_identity, instance_type,
+                                      interface_provider_specs, options);
 
   // Below are various paths through which a new Instance can be bound to a
   // Service proxy.
   if (params->HasClientProcessInfo()) {
-    // This branch should be reachable only via a call to RegisterService() . We
-    // start the instance but return early before we connect to it. Clients will
-    // call Connect() with the target identity subsequently.
+    // If this is a service registration via |RegisterService()| or
+    // |Connector.RegisterServiceInstance()|, we're done.
     instance->BindPIDReceiver(params->TakePIDReceiverRequest());
     instance->StartWithService(params->TakeService());
-    return;
-  }
-  // The catalog was unable to read a manifest for this service. We can't do
-  // anything more.
-  if (result_interface_provider_specs_empty) {
-    LOG(ERROR)
-        << "Error: The catalog was unable to read a manifest for service \""
-        << entry->name() << "\".";
-    params->set_response_data(mojom::ConnectResult::ACCESS_DENIED, Identity());
     return;
   }
 
   if (entry->parent()) {
     // This service is provided by another service via a ServiceFactory.
-    base::Token factory_instance_id = instance_id;
-
+    //
     // We normally ignore the target instance group and generate a unique
     // instance group identifier when starting shared instances, but when those
     // instances need to be started by a service factory, it's conceivable that
     // the factory itself may be part of the originally targeted instance group.
     // In that case we use the originally targeted instance group to identify
     // the factory service.
-    Identity packaged_service_target(instance->identity());
-    packaged_service_target.set_instance_group(
-        original_target.instance_group());
-    instance->set_identity(packaged_service_target);
+    //
+    // TODO(https://904240): This is super weird and hard to rationalize. Maybe
+    // it's the wrong thing to do.
+    instance->set_identity(
+        Identity(new_instance_identity.name(), *target_filter.instance_group(),
+                 new_instance_identity.instance_id(),
+                 new_instance_identity.globally_unique_id()));
 
-    Identity factory(entry->parent()->name(), original_target.instance_group(),
-                     factory_instance_id);
+    auto factory_filter = ServiceFilter::ByNameWithIdInGroup(
+        entry->parent()->name(), *target_filter.instance_id(),
+        *target_filter.instance_group());
 
     mojom::PIDReceiverPtr pid_receiver;
     instance->BindPIDReceiver(mojo::MakeRequest(&pid_receiver));
 
     mojom::ServicePtr service;
-    CreateServiceWithFactory(factory, target.name(),
+    CreateServiceWithFactory(factory_filter, target_filter.service_name(),
                              mojo::MakeRequest(&service),
                              std::move(pid_receiver));
     instance->StartWithService(std::move(service));
@@ -1198,7 +1207,7 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
             UtilitySandboxTypeFromString(entry->sandbox_type()))) {
       OnInstanceError(instance);
       params->set_response_data(mojom::ConnectResult::INVALID_ARGUMENT,
-                                Identity());
+                                base::nullopt);
       return;
     }
   }
@@ -1211,17 +1220,17 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
 
 void ServiceManager::StartService(const std::string& service_name) {
   auto params = std::make_unique<ConnectParams>();
-  params->set_source(CreateServiceManagerIdentity());
+  params->set_source(GetServiceManagerInstanceIdentity());
   params->set_target(
-      Identity(service_name, kSystemInstanceGroup, base::Token{}));
+      ServiceFilter::ByNameInGroup(service_name, kSystemInstanceGroup));
   Connect(std::move(params));
 }
 
-bool ServiceManager::QueryCatalog(const Identity& identity,
+bool ServiceManager::QueryCatalog(const std::string& service_name,
+                                  const base::Token& instance_group,
                                   std::string* sandbox_type) {
   const catalog::Entry* entry =
-      catalog_.GetInstanceForGroup(*identity.instance_group())
-          ->Resolve(identity.name());
+      catalog_.GetInstanceForGroup(instance_group)->Resolve(service_name);
   if (!entry)
     return false;
   *sandbox_type = entry->sandbox_type();
@@ -1240,14 +1249,9 @@ void ServiceManager::RegisterService(
     pid_receiver->SetPID(GetCurrentPid());
   }
 
-  DCHECK(identity.instance_group());
-  Identity target(
-      identity.name(), identity.instance_group(),
-      identity.instance_id() ? identity.instance_id() : base::Token{},
-      identity.globally_unique_id() ? identity.globally_unique_id()
-                                    : base::Token::CreateRandom());
-  params->set_source(target);
-  params->set_target(target);
+  DCHECK(identity.IsValid());
+  params->set_source(identity);
+  params->set_target(ServiceFilter::ForExactIdentity(identity));
   params->set_client_process_info(
       std::move(service), std::move(pid_receiver_request));
   Connect(std::move(params));
@@ -1266,9 +1270,11 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
   InterfaceProviderSpecMap specs;
   specs[mojom::kServiceManager_ConnectorSpec] = std::move(spec);
 
-  Instance* instance = CreateInstance(
-      CreateServiceManagerIdentity(), CreateCatalogIdentity(),
-      InstanceType::kSingleton, std::move(specs), catalog::ServiceOptions());
+  Identity id{catalog::mojom::kServiceName, kSystemInstanceGroup, base::Token{},
+              base::Token::CreateRandom()};
+  Instance* instance =
+      CreateInstance(id, InstanceType::kSingleton, std::move(specs),
+                     catalog::ServiceOptions());
   instance->StartWithService(std::move(catalog));
 }
 
@@ -1302,7 +1308,7 @@ void ServiceManager::OnInstanceStopped(const Identity& identity) {
 
 ServiceManager::Instance* ServiceManager::GetExistingInstance(
     const Identity& identity) const {
-  return identity_to_instance_->Get(identity);
+  return identity_to_instance_->Get(ServiceFilter::ForExactIdentity(identity));
 }
 
 void ServiceManager::EraseInstanceIdentity(Instance* instance) {
@@ -1331,52 +1337,14 @@ void ServiceManager::NotifyServicePIDReceived(const Identity& identity,
       });
 }
 
-bool ServiceManager::ConnectToExistingInstance(
-    std::unique_ptr<ConnectParams>* params) {
-  Instance* instance = GetExistingInstance((*params)->target());
-  if (!instance)
-    return false;
-
-  if ((*params)->HasInterfaceRequestInfo()) {
-    instance->CallOnBindInterface(params);
-  } else {
-    // This is a StartService request and the instance is already running.
-    // Make sure the response identity is properly resolved.
-    (*params)->set_response_data(mojom::ConnectResult::SUCCEEDED,
-                                 instance->identity());
-  }
-  return true;
-}
-
 ServiceManager::Instance* ServiceManager::CreateInstance(
-    const Identity& source,
-    const Identity& target,
+    const Identity& identity,
     InstanceType instance_type,
     const InterfaceProviderSpecMap& specs,
     const catalog::ServiceOptions& options) {
-  CHECK(target.instance_group());
+  DCHECK(identity.IsValid());
 
-  // Ensure that new instances always have an instance ID. If none is given, the
-  // default is zero.
-  base::Token instance_id;
-  if (target.instance_id())
-    instance_id = *target.instance_id();
-
-  // We add a newly minted globally unique ID to the target Identity here if
-  // one wasn't provided. This ensures that every new Instance has a globally
-  // unique ID as part of its Identity.
-  base::Token globally_unique_id;
-  if (target.globally_unique_id()) {
-    DCHECK(!target.globally_unique_id()->is_zero());
-    globally_unique_id = *target.globally_unique_id();
-  } else {
-    globally_unique_id = base::Token::CreateRandom();
-  }
-
-  Identity target_with_unique_id(target.name(), target.instance_group(),
-                                 instance_id, globally_unique_id);
-  auto instance =
-      std::make_unique<Instance>(this, target_with_unique_id, specs, options);
+  auto instance = std::make_unique<Instance>(this, identity, specs, options);
   Instance* raw_instance = instance.get();
 
   instances_.insert(std::make_pair(raw_instance, std::move(instance)));
@@ -1384,8 +1352,7 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
   // NOTE: |instance| has been passed elsewhere. Use |raw_instance| from this
   // point forward. It's safe for the extent of this method.
 
-  identity_to_instance_->Insert(target_with_unique_id, instance_type,
-                                raw_instance);
+  identity_to_instance_->Insert(identity, instance_type, raw_instance);
 
   mojom::RunningServiceInfoPtr info = raw_instance->CreateRunningServiceInfo();
   listeners_.ForAllPtrs([&info](mojom::ServiceManagerListener* listener) {
@@ -1404,32 +1371,38 @@ void ServiceManager::AddListener(mojom::ServiceManagerListenerPtr listener) {
 }
 
 void ServiceManager::CreateServiceWithFactory(
-    const Identity& service_factory,
+    const ServiceFilter& service_factory_filter,
     const std::string& name,
     mojom::ServiceRequest request,
     mojom::PIDReceiverPtr pid_receiver) {
-  mojom::ServiceFactory* factory = GetServiceFactory(service_factory);
+  mojom::ServiceFactory* factory = GetServiceFactory(service_factory_filter);
   factory->CreateService(std::move(request), name, std::move(pid_receiver));
 }
 
 mojom::ServiceFactory* ServiceManager::GetServiceFactory(
-    const Identity& service_factory_identity) {
-  auto it = service_factories_.find(service_factory_identity);
+    const ServiceFilter& filter) {
+  auto it = service_factories_.find(filter);
   if (it != service_factories_.end())
     return it->second.get();
 
   mojom::ServiceFactoryPtr factory;
-  BindInterface(this, CreateServiceManagerIdentity(), service_factory_identity,
-                &factory);
+  auto params = std::make_unique<ConnectParams>();
+  params->set_source(GetServiceManagerInstanceIdentity());
+  params->set_target(filter);
+  params->set_interface_request_info(
+      service_manager::mojom::ServiceFactory::Name_,
+      mojo::MakeRequest(&factory).PassMessagePipe());
+  Connect(std::move(params));
+
   mojom::ServiceFactory* factory_interface = factory.get();
   factory.set_connection_error_handler(
       base::BindOnce(&service_manager::ServiceManager::OnServiceFactoryLost,
-                     weak_ptr_factory_.GetWeakPtr(), service_factory_identity));
-  service_factories_[service_factory_identity] = std::move(factory);
+                     weak_ptr_factory_.GetWeakPtr(), filter));
+  service_factories_[filter] = std::move(factory);
   return factory_interface;
 }
 
-void ServiceManager::OnServiceFactoryLost(const Identity& which) {
+void ServiceManager::OnServiceFactoryLost(const ServiceFilter& which) {
   // Remove the mapping.
   auto it = service_factories_.find(which);
   DCHECK(it != service_factories_.end());

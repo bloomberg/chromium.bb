@@ -131,8 +131,9 @@ class ServiceManagerListenerTest : public testing::Test, public Service {
     mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
     mojom::PIDReceiverPtr pid_receiver;
     service_manager_.RegisterService(
-        Identity(service_name, kSystemInstanceGroup), std::move(proxy),
-        mojo::MakeRequest(&pid_receiver));
+        Identity(service_name, kSystemInstanceGroup, base::Token{},
+                 base::Token::CreateRandom()),
+        std::move(proxy), mojo::MakeRequest(&pid_receiver));
     pid_receiver->SetPID(fake_pid);
     return request;
   }
@@ -158,8 +159,7 @@ TEST_F(ServiceManagerListenerTest, InstancesHaveUniqueIdentity) {
   uint32_t pid1;
   WaitForServiceStarted(&identity1, &pid1);
   EXPECT_EQ(kTestTargetServiceName, identity1.name());
-  ASSERT_TRUE(identity1.globally_unique_id().has_value());
-  EXPECT_FALSE(identity1.globally_unique_id()->is_zero());
+  EXPECT_FALSE(identity1.globally_unique_id().is_zero());
   EXPECT_EQ(kTestTargetPid1, pid1);
 
   // We retain a Connector from the first instance before disconnecting it. This
@@ -177,8 +177,7 @@ TEST_F(ServiceManagerListenerTest, InstancesHaveUniqueIdentity) {
   uint32_t pid2;
   WaitForServiceStarted(&identity2, &pid2);
   EXPECT_EQ(kTestTargetServiceName, identity2.name());
-  ASSERT_TRUE(identity2.globally_unique_id().has_value());
-  EXPECT_FALSE(identity2.globally_unique_id()->is_zero());
+  EXPECT_FALSE(identity2.globally_unique_id().is_zero());
   EXPECT_EQ(kTestTargetPid2, pid2);
 
   // This is the important part of the test. The globally unique IDs of both
@@ -187,8 +186,7 @@ TEST_F(ServiceManagerListenerTest, InstancesHaveUniqueIdentity) {
   EXPECT_EQ(identity1.name(), identity2.name());
   EXPECT_EQ(identity1.instance_group(), identity2.instance_group());
   EXPECT_EQ(identity1.instance_id(), identity2.instance_id());
-  EXPECT_NE(identity1.globally_unique_id().value(),
-            identity2.globally_unique_id().value());
+  EXPECT_NE(identity1.globally_unique_id(), identity2.globally_unique_id());
 }
 
 }  // namespace

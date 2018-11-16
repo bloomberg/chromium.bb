@@ -106,8 +106,8 @@ mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
   child_command_line->AppendArguments(parent_command_line, false);
   child_command_line->AppendSwitchASCII(switches::kServiceName, target.name());
 #ifndef NDEBUG
-  child_command_line->AppendSwitchASCII(
-      "g", target.instance_group().value_or(base::Token{}).ToString());
+  child_command_line->AppendSwitchASCII("g",
+                                        target.instance_group().ToString());
 #endif
 
   if (!IsUnsandboxedSandboxType(sandbox_type)) {

@@ -60,6 +60,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       child_identity_(
           mojom::kRendererServiceName,
           BrowserContext::GetServiceInstanceGroupFor(browser_context),
+          base::Token::CreateRandom(),
           base::Token::CreateRandom()),
       url_loader_factory_(nullptr),
       weak_ptr_factory_(this) {

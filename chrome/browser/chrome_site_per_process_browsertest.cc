@@ -1023,7 +1023,7 @@ class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
       const service_manager::BindSourceInfo& source_info) {
     content::RenderProcessHost* host =
         content::RenderProcessHost::FromRendererInstanceId(
-            *source_info.identity.instance_id());
+            source_info.identity.instance_id());
     auto spell_check_host = std::make_unique<MockSpellCheckHost>(host);
     spell_check_host->SpellCheckHostRequest(std::move(request));
     spell_check_hosts_.push_back(std::move(spell_check_host));

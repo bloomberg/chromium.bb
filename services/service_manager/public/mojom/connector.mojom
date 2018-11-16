@@ -34,51 +34,24 @@ struct Identity {
   // running service instances can only reach (via Connector) other service
   // instances running in the same instance group. This facilitates a mode of
   // isolation which is useful for modeling, e.g., different users in a multi-
-  // user system.
-  //
-  // If this is null in an Identity passed to |Connector.BindInterface()|, it is
-  // implied that the connecting service wants to connect to an instance in its
-  // own instance group.
-  //
-  // Only services with appropriate permissions (declared in manifest options
-  // via |can_connect_to_instances_in_any_group|) may explicitly choose other
-  // instance groups when making outgoing service interface requests.
-  //
-  // When a new service instance is initialized and the Service Manager provides
-  // its Identity via |Service.OnStart()|, that Identity always includes a valid
-  // instance group ID.
-  mojo_base.mojom.Token? instance_group;
+  // user system. Must always be non-zero.
+  mojo_base.mojom.Token instance_group;
 
-  // When making outgoing connections to a service, the |instance_id| field may
-  // be used to select one of multiple instances within the instance group. This
-  // is only meaningful if the target service is not designated as a singleton
-  // service in its manifest.
+  // Disambiguates multiple instances of the same service potentially running
+  // within the same instance group. Used for more granular isolation of
+  // instances. May be zero.
   //
-  // May be (and is typically) null, indicating an instance with the default
-  // instance ID.
-  mojo_base.mojom.Token? instance_id;
+  // At any given moment, there can be at most ONE service instance running with
+  // any given combination of |name|, |instance_group|, and |instance_id|.
+  mojo_base.mojom.Token instance_id;
 
   // A Token which globally and uniquely identifies a service instance across
-  // space and time.
+  // space and time. This value is generated and assigned by the Service Manager
+  // when starting a new instance, or is given to the Service Manager by a
+  // privileged client using the |Connector.RegisterServiceInstance()| API.
   //
-  // This value is generated and assigned by the Service Manager when starting
-  // a new instance and is given in the Identity passed to the instance via
-  // |Service.OnStart()|.
-  //
-  // This may also be used to reliably correlate events on a
-  // ServiceManagerListener interface with a specific service instance, given
-  // that other metadata (like |instance_id| above, or service process PID) may
-  // be reused over short periods of time and can thus lead to ambiguity in the
-  // relationship among multiple such events.
-  //
-  // NOTE: If a specific |globally_unique_id| is provided in an Identity passed
-  // to |Connector.BindInterface()|, the Service Manager will only establish a
-  // connection to the target service if all other provided fields above match a
-  // running instance AND that instance has the provided |globally_unique_id|.
-  // The Service Manager will never start a new instance on behalf of such a
-  // request. That is to say, clients cannot elicit new instance creation with
-  // a specific |globally_unique_id|.
-  mojo_base.mojom.Token? globally_unique_id;
+  // In either case, this value is always unique to a single service instance.
+  mojo_base.mojom.Token globally_unique_id;
 };
 
 // Static metadata about a service the Service Manager knows about. This is

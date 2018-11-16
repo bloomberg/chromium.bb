@@ -226,7 +226,7 @@ void Catalog::BindCatalogRequest(
     mojom::CatalogRequest request,
     const service_manager::BindSourceInfo& source_info) {
   Instance* instance =
-      GetInstanceForGroup(*source_info.identity.instance_group());
+      GetInstanceForGroup(source_info.identity.instance_group());
   instance->BindCatalog(std::move(request));
 }
 

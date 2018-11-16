@@ -36,9 +36,9 @@ namespace service_manager {
 
 class ServiceContext;
 
-// Creates an identity for the Service Manager, used when the Service Manager
-// connects to services.
-Identity CreateServiceManagerIdentity();
+// Creates an identity for the singular Service Manager instance which is always
+// present in the system.
+const Identity& GetServiceManagerInstanceIdentity();
 
 class ServiceManager {
  public:
@@ -78,9 +78,11 @@ class ServiceManager {
                        mojom::ServicePtr service,
                        mojom::PIDReceiverRequest pid_receiver_request);
 
-  // Determine information about |Identity| from its manifests. Returns
+  // Determine information about |service_name| from its manifests. Returns
   // false if the identity does not have a catalog entry.
-  bool QueryCatalog(const Identity& identity, std::string* sandbox_type);
+  bool QueryCatalog(const std::string& service_name,
+                    const base::Token& instance_group,
+                    std::string* sandbox_type);
 
   // Completes a connection between a source and target application as defined
   // by |params|. If no existing instance of the target service is running, one
@@ -124,9 +126,7 @@ class ServiceManager {
   // Called by an Instance as it's being destroyed.
   void OnInstanceStopped(const Identity& identity);
 
-  // Returns a running instance matching |identity|. This might be an instance
-  // running as in a different instance group or with a different instance ID if
-  // the service is shared across instance groups or is a singleton.
+  // Returns a running instance identified by |identity|.
   Instance* GetExistingInstance(const Identity& identity) const;
 
   // Erases any identities mapping to |instance|. Following this call it is
@@ -138,13 +138,7 @@ class ServiceManager {
 
   void NotifyServicePIDReceived(const Identity& identity, base::ProcessId pid);
 
-  // Attempts to complete the connection requested by |params| by connecting to
-  // an existing instance. If there is an existing instance, |params| is taken,
-  // and this function returns true.
-  bool ConnectToExistingInstance(std::unique_ptr<ConnectParams>* params);
-
-  Instance* CreateInstance(const Identity& source,
-                           const Identity& target,
+  Instance* CreateInstance(const Identity& identity,
                            InstanceType instance_type,
                            const InterfaceProviderSpecMap& specs,
                            const catalog::ServiceOptions& options);
@@ -152,15 +146,15 @@ class ServiceManager {
   // Called from the instance implementing mojom::ServiceManager.
   void AddListener(mojom::ServiceManagerListenerPtr listener);
 
-  void CreateServiceWithFactory(const Identity& service_factory,
+  void CreateServiceWithFactory(const ServiceFilter& service_factory_filter,
                                 const std::string& name,
                                 mojom::ServiceRequest request,
                                 mojom::PIDReceiverPtr pid_receiver);
-  // Returns a running ServiceFactory for |service_factory_identity|.
-  // If there is not one running one is started for |source_identity|.
-  mojom::ServiceFactory* GetServiceFactory(
-      const Identity& service_factory_identity);
-  void OnServiceFactoryLost(const Identity& which);
+
+  // Returns a running ServiceFactory for |filter|. If there is not one running,
+  // one is started.
+  mojom::ServiceFactory* GetServiceFactory(const ServiceFilter& filter);
+  void OnServiceFactoryLost(const ServiceFilter& which);
 
   base::WeakPtr<ServiceManager> GetWeakPtr();
 
@@ -178,7 +172,7 @@ class ServiceManager {
   // Instance still has an entry in |instances_|.
   Instance* service_manager_instance_;
 
-  std::map<Identity, mojom::ServiceFactoryPtr> service_factories_;
+  std::map<ServiceFilter, mojom::ServiceFactoryPtr> service_factories_;
   mojo::InterfacePtrSet<mojom::ServiceManagerListener> listeners_;
   base::Callback<void(const Identity&)> instance_quit_callback_;
   std::unique_ptr<ServiceProcessLauncherFactory>
