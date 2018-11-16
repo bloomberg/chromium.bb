@@ -142,6 +142,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     private boolean mUnselectAllOnDismiss;
     private String mLastSelectedText;
     private int mLastSelectionOffset;
+    private boolean mIsInHandleDragging;
 
     // Tracks whether a touch selection is currently active.
     private boolean mHasSelection;
@@ -1241,7 +1242,9 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             case SelectionEventType.SELECTION_HANDLES_MOVED:
                 mSelectionRect.set(left, top, right, bottom);
                 invalidateContentRect();
-                performHapticFeedback();
+                if (mIsInHandleDragging) {
+                    performHapticFeedback();
+                }
                 break;
 
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
@@ -1257,6 +1260,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
             case SelectionEventType.SELECTION_HANDLE_DRAG_STARTED:
                 hideActionMode(true);
+                mIsInHandleDragging = true;
                 break;
 
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
@@ -1264,6 +1268,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 if (mHandleObserver != null) {
                     mHandleObserver.handleDragStopped();
                 }
+                mIsInHandleDragging = false;
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_SHOWN:
@@ -1278,7 +1283,9 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 } else {
                     destroyPastePopup();
                 }
-                performHapticFeedback();
+                if (mIsInHandleDragging) {
+                    performHapticFeedback();
+                }
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_TAPPED:
@@ -1300,6 +1307,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             case SelectionEventType.INSERTION_HANDLE_DRAG_STARTED:
                 mWasPastePopupShowingOnInsertionDragStart = isPastePopupShowing();
                 destroyPastePopup();
+                mIsInHandleDragging = true;
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED:
@@ -1311,6 +1319,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 if (mHandleObserver != null) {
                     mHandleObserver.handleDragStopped();
                 }
+                mIsInHandleDragging = false;
                 break;
 
             default:
@@ -1325,7 +1334,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         }
     }
 
-    private GestureListenerManagerImpl getGestureListenerManager() {
+    @VisibleForTesting
+    /* package */ GestureListenerManagerImpl getGestureListenerManager() {
         return GestureListenerManagerImpl.fromWebContents(mWebContents);
     }
 
@@ -1356,7 +1366,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return mPopupController;
     }
 
-    private void performHapticFeedback() {
+    @VisibleForTesting
+    /* package */ void performHapticFeedback() {
         if (BuildInfo.isAtLeastQ()) {
             mView.performHapticFeedback(HapticFeedbackConstants.TEXT_HANDLE_MOVE);
         }
