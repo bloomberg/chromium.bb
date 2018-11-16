@@ -168,9 +168,6 @@ class CC_PAINT_EXPORT PaintOp {
     SkColorSpace* color_space = nullptr;
     bool can_use_lcd_text = false;
     bool context_supports_distance_field_text = true;
-    // If true, will calculate a fixed scale for PaintRecord-backed PaintShaders
-    // based on the current canvas scale.  May be turned off for tests.
-    bool scale_paint_record_shaders = true;
     int max_texture_size = 0;
     size_t max_texture_bytes = 0.f;
     SkMatrix original_ctm = SkMatrix::I();
