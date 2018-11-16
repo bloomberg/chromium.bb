@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
+#include "third_party/blink/renderer/core/feature_policy/layout_animations_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
@@ -113,12 +114,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
   // TODO(crbug.com/838263): Support site-defined list of acceptable properties
   // through feature policy declarations.
   bool property_maybe_blocked_by_feature_policy =
-      css_property.IDEquals(CSSPropertyBottom) ||
-      css_property.IDEquals(CSSPropertyHeight) ||
-      css_property.IDEquals(CSSPropertyLeft) ||
-      css_property.IDEquals(CSSPropertyRight) ||
-      css_property.IDEquals(CSSPropertyTop) ||
-      css_property.IDEquals(CSSPropertyWidth);
+      LayoutAnimationsPolicy::AffectedCSSProperties().Contains(&css_property);
   if (allow_all_animations_ || !property_maybe_blocked_by_feature_policy) {
     switch (css_property.PropertyID()) {
       case CSSPropertyBaselineShift:

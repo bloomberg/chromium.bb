@@ -20,6 +20,7 @@ namespace blink {
 
 class CSSStyleSheet;
 class Document;
+class StyleRuleKeyframe;
 class StyleSheetContents;
 
 class CORE_EXPORT CSSParserContext
@@ -109,6 +110,13 @@ class CORE_EXPORT CSSParserContext
   ContentSecurityPolicyDisposition ShouldCheckContentSecurityPolicy() const {
     return should_check_content_security_policy_;
   }
+
+  // TODO(ekaramad): We currently only report @keyframes violations. We need to
+  // report CSS transitions as well (https://crbug.com/906147).
+  // TODO(ekaramad): We should provide a source location in the violation
+  // report (https://crbug.com/906150, ).
+  bool IsLayoutAnimationsPolicyEnforced() const;
+  void ReportLayoutAnimationsViolationIfNeeded(const StyleRuleKeyframe&) const;
 
   void Trace(blink::Visitor*);
 

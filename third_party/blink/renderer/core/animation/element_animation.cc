@@ -14,10 +14,30 @@
 #include "third_party/blink/renderer/core/animation/timing_input.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/layout_animations_policy.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
+namespace {
+
+// A helper method which is used to trigger a violation report for cases where
+// the |element.animate| API is used to animate a CSS property which is blocked
+// by the feature policy 'layout-animations'.
+void ReportFeaturePolicyViolationsIfNecessary(
+    const Document& document,
+    const KeyframeEffectModelBase& effect) {
+  if (document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kLayoutAnimations))
+    return;
+  for (const auto* blocked_property :
+       LayoutAnimationsPolicy::AffectedCSSProperties()) {
+    if (effect.Affects(PropertyHandle(*blocked_property)))
+      LayoutAnimationsPolicy::ReportViolation(*blocked_property, document);
+  }
+}
+
+}  // namespace
 
 Animation* ElementAnimation::animate(
     ScriptState* script_state,
@@ -81,6 +101,7 @@ HeapVector<Member<Animation>> ElementAnimation::getAnimations(
 Animation* ElementAnimation::animateInternal(Element& element,
                                              KeyframeEffectModelBase* effect,
                                              const Timing& timing) {
+  ReportFeaturePolicyViolationsIfNecessary(element.GetDocument(), *effect);
   KeyframeEffect* keyframe_effect =
       KeyframeEffect::Create(&element, effect, timing);
   return element.GetDocument().Timeline().Play(keyframe_effect);

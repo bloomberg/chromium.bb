@@ -547,7 +547,12 @@ StyleRuleBase* CSSParserImpl::ConsumeQualifiedRule(
       return nullptr;  // Parse error, EOF instead of qualified rule block
 
     CSSParserTokenStream::BlockGuard guard(stream);
-    return ConsumeKeyframeStyleRule(prelude, prelude_offset, stream);
+    StyleRuleKeyframe* keyframe_style_rule =
+        ConsumeKeyframeStyleRule(prelude, prelude_offset, stream);
+    if (context_->IsLayoutAnimationsPolicyEnforced()) {
+      context_->ReportLayoutAnimationsViolationIfNeeded(*keyframe_style_rule);
+    }
+    return keyframe_style_rule;
   }
 
   NOTREACHED();
