@@ -125,6 +125,8 @@ message SharePathRequest {
     REMOVABLE = 4;
     // The user's MyFiles/ directory /home/user/<owner_id>/MyFiles.
     MY_FILES = 5;
+    // The user's PlayFiles/ directory /run/arc/sdcard/write/emulated/0.
+    PLAY_FILES = 6;
   }
   StorageLocation storage_location = 3;
 
