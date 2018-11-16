@@ -382,7 +382,7 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
       browser_sync::ProfileSyncService* sync_service = GetProfileSyncService();
       if (sync_service) {
-        sync_service->SetFirstSetupComplete();
+        sync_service->GetUserSettings()->SetFirstSetupComplete();
         EnableUnifiedConsentIfNeeded();
       }
       break;

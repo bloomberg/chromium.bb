@@ -449,7 +449,7 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
     case LoginUIService::SYNC_WITH_DEFAULT_SETTINGS: {
       ProfileSyncService* profile_sync_service = GetProfileSyncService();
       if (profile_sync_service) {
-        profile_sync_service->SetFirstSetupComplete();
+        profile_sync_service->GetUserSettings()->SetFirstSetupComplete();
         EnableUnifiedConsentIfNeeded();
       }
       FinishProfileSyncServiceSetup();
