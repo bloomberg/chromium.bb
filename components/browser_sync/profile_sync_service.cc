@@ -19,6 +19,7 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/sync_auth_manager.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
+#include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info.h"
@@ -28,6 +29,7 @@
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/stop_source.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/device_info/device_info_sync_bridge.h"
 #include "components/sync/device_info/device_info_tracker.h"
 #include "components/sync/driver/backend_migrator.h"
@@ -560,10 +562,12 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.http_factory_getter = MakeHttpPostProviderFactoryGetter();
   params.credentials = auth_manager_->GetCredentials();
   DCHECK(!params.credentials.account_id.empty() || IsLocalSyncEnabled());
-  invalidation::InvalidationService* invalidator =
-      sync_client_->GetInvalidationService();
-  params.invalidator_client_id =
-      invalidator ? invalidator->GetInvalidatorClientId() : "",
+  if (!base::FeatureList::IsEnabled(switches::kSyncE2ELatencyMeasurement)) {
+    invalidation::InvalidationService* invalidator =
+        sync_client_->GetInvalidationService();
+    params.invalidator_client_id =
+        invalidator ? invalidator->GetInvalidatorClientId() : std::string();
+  }
   params.sync_manager_factory =
       std::make_unique<syncer::SyncManagerFactory>(network_connection_tracker_);
   // The first time we start up the engine we want to ensure we have a clean

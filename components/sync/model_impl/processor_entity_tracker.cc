@@ -5,8 +5,12 @@
 #include "components/sync/model_impl/processor_entity_tracker.h"
 
 #include "base/base64.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
@@ -14,6 +18,10 @@
 namespace syncer {
 
 namespace {
+
+// Max number of sever version for which E2E latency is calculated.
+// Used for E2E latency measurements with UMA.
+const size_t kMaxTrackedCommittedServerVersions = 20;
 
 void HashSpecifics(const sync_pb::EntitySpecifics& specifics,
                    std::string* hash) {
@@ -129,6 +137,28 @@ bool ProcessorEntityTracker::UpdateIsReflection(int64_t update_version) const {
   return metadata_.server_version() >= update_version;
 }
 
+void ProcessorEntityTracker::RecordEntityUpdateLatency(int64_t update_version,
+                                                       const ModelType& type) {
+  auto first_greater =
+      unsynced_time_per_committed_server_version_.upper_bound(update_version);
+  if (first_greater == unsynced_time_per_committed_server_version_.begin()) {
+    return;
+  }
+
+  DCHECK(base::FeatureList::IsEnabled(switches::kSyncE2ELatencyMeasurement));
+
+  for (auto it = unsynced_time_per_committed_server_version_.begin();
+       it != first_greater; ++it) {
+    const base::TimeDelta latency = base::Time::Now() - it->second;
+    base::UmaHistogramLongTimes(
+        std::string("Sync.E2ELatency.") + ModelTypeToHistogramSuffix(type),
+        latency);
+  }
+
+  unsynced_time_per_committed_server_version_.erase(
+      unsynced_time_per_committed_server_version_.begin(), first_greater);
+}
+
 void ProcessorEntityTracker::RecordIgnoredUpdate(
     const UpdateResponseData& update) {
   DCHECK(metadata_.server_id().empty() ||
@@ -176,7 +206,7 @@ void ProcessorEntityTracker::MakeLocalChange(std::unique_ptr<EntityData> data) {
 
   // IncrementSequenceNumber should be called before UpdateSpecificHash since
   // it remembers specifics hash before the modifications.
-  IncrementSequenceNumber();
+  IncrementSequenceNumber(modification_time);
   UpdateSpecificsHash(data->specifics);
   if (!data->creation_time.is_null())
     metadata_.set_creation_time(TimeToProtoTime(data->creation_time));
@@ -189,7 +219,7 @@ void ProcessorEntityTracker::MakeLocalChange(std::unique_ptr<EntityData> data) {
 }
 
 bool ProcessorEntityTracker::Delete() {
-  IncrementSequenceNumber();
+  IncrementSequenceNumber(base::Time::Now());
   metadata_.set_modification_time(TimeToProtoTime(base::Time::Now()));
   metadata_.set_is_deleted(true);
   metadata_.clear_specifics_hash();
@@ -231,6 +261,7 @@ void ProcessorEntityTracker::InitializeCommitRequestData(
   request->sequence_number = metadata_.sequence_number();
   request->base_version = metadata_.server_version();
   request->specifics_hash = metadata_.specifics_hash();
+  request->unsynced_time = unsynced_time_;
   commit_requested_sequence_number_ = metadata_.sequence_number();
 }
 
@@ -243,6 +274,13 @@ void ProcessorEntityTracker::ReceiveCommitResponse(
   // sent to the server, so it cannot behave correctly.
   DCHECK(commit_only || data.response_version > metadata_.server_version())
       << data.response_version << " vs " << metadata_.server_version();
+
+  if (base::FeatureList::IsEnabled(switches::kSyncE2ELatencyMeasurement) &&
+      unsynced_time_per_committed_server_version_.size() <
+          kMaxTrackedCommittedServerVersions) {
+    unsynced_time_per_committed_server_version_[metadata_.server_version()] =
+        data.unsynced_time;
+  }
 
   // The server can assign us a new ID in a commit response.
   metadata_.set_server_id(data.id);
@@ -270,13 +308,16 @@ void ProcessorEntityTracker::ClearTransientSyncState() {
   commit_requested_sequence_number_ = metadata_.acked_sequence_number();
 }
 
-void ProcessorEntityTracker::IncrementSequenceNumber() {
+void ProcessorEntityTracker::IncrementSequenceNumber(
+    base::Time modification_time) {
   DCHECK(metadata_.has_sequence_number());
   if (!IsUnsynced()) {
     // Update the base specifics hash if this entity wasn't already out of sync.
     metadata_.set_base_specifics_hash(metadata_.specifics_hash());
+    unsynced_time_ = modification_time;
   }
   metadata_.set_sequence_number(metadata_.sequence_number() + 1);
+  DCHECK(IsUnsynced());
 }
 
 size_t ProcessorEntityTracker::EstimateMemoryUsage() const {
@@ -285,6 +326,8 @@ size_t ProcessorEntityTracker::EstimateMemoryUsage() const {
   memory_usage += EstimateMemoryUsage(storage_key_);
   memory_usage += EstimateMemoryUsage(metadata_);
   memory_usage += EstimateMemoryUsage(commit_data_);
+  memory_usage +=
+      EstimateMemoryUsage(unsynced_time_per_committed_server_version_);
   return memory_usage;
 }
 

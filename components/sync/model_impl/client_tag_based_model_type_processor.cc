@@ -568,7 +568,7 @@ void ClientTagBasedModelTypeProcessor::GetLocalChanges(
                        weak_ptr_factory_for_worker_.GetWeakPtr(), max_entries,
                        std::move(callback), std::move(storage_keys_to_load)));
   } else {
-    // All commit data can be availbale in memory for those entries passed in
+    // All commit data can be available in memory for those entries passed in
     // the .put() method.
     CommitLocalChanges(max_entries, std::move(callback));
   }
@@ -752,6 +752,11 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::ProcessUpdate(
                   << " client_tag_hash: " << client_tag_hash;
     return nullptr;
   }
+
+  if (entity) {
+    entity->RecordEntityUpdateLatency(update.response_version, type_);
+  }
+
   if (entity && entity->UpdateIsReflection(update.response_version)) {
     // Seen this update before; just ignore it.
     return nullptr;
@@ -791,7 +796,7 @@ ProcessorEntityTracker* ClientTagBasedModelTypeProcessor::ProcessUpdate(
              << update.encryption_key_name << " -> "
              << model_type_state_.encryption_key_name();
 
-    entity->IncrementSequenceNumber();
+    entity->IncrementSequenceNumber(base::Time::Now());
     if (entity->RequiresCommitData()) {
       // If there is no pending commit data, then either this update wasn't
       // in conflict or the remote data won; either way the remote data is
@@ -892,7 +897,7 @@ void ClientTagBasedModelTypeProcessor::RecommitAllForEncryption(
       // metadata will be persisted in UpdateStorageKey().
       continue;
     }
-    entity->IncrementSequenceNumber();
+    entity->IncrementSequenceNumber(base::Time::Now());
     if (entity->RequiresCommitData()) {
       entities_needing_data.push_back(entity->storage_key());
     }
