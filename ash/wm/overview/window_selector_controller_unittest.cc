@@ -5,20 +5,24 @@
 #include "ash/wm/overview/window_selector_controller.h"
 
 #include "ash/shell.h"
+#include "ash/shell_observer.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_resizer.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
 
+namespace ash {
 namespace {
 
-gfx::Point CalculateDragPoint(const ash::WindowResizer& resizer,
+gfx::Point CalculateDragPoint(const WindowResizer& resizer,
                               int delta_x,
                               int delta_y) {
   gfx::Point location = resizer.GetInitialLocation();
@@ -27,9 +31,50 @@ gfx::Point CalculateDragPoint(const ash::WindowResizer& resizer,
   return location;
 }
 
-}  // namespace
+// TODO(sammiequan): consolidate this and TestOverviewObserver
+// in window_selector_unittest.
+class TestShellObserver : public ShellObserver {
+ public:
+  enum AnimationState {
+    UNKNOWN,
+    COMPLETED,
+    CANCELED,
+  };
 
-namespace ash {
+  TestShellObserver() { Shell::Get()->AddShellObserver(this); }
+  ~TestShellObserver() override { Shell::Get()->RemoveShellObserver(this); }
+
+  // ShellObserver:
+  void OnOverviewModeStartingAnimationComplete(bool canceled) override {
+    EXPECT_EQ(UNKNOWN, starting_animation_state_);
+    starting_animation_state_ = canceled ? CANCELED : COMPLETED;
+  }
+  void OnOverviewModeEndingAnimationComplete(bool canceled) override {
+    EXPECT_EQ(UNKNOWN, ending_animation_state_);
+    ending_animation_state_ = canceled ? CANCELED : COMPLETED;
+  }
+
+  void Reset() {
+    starting_animation_state_ = UNKNOWN;
+    ending_animation_state_ = UNKNOWN;
+  }
+
+  bool is_ended() const { return ending_animation_state_ != UNKNOWN; }
+  bool is_started() const { return starting_animation_state_ != UNKNOWN; }
+  AnimationState starting_animation_state() const {
+    return starting_animation_state_;
+  }
+  AnimationState ending_animation_state() const {
+    return ending_animation_state_;
+  }
+
+ private:
+  AnimationState starting_animation_state_ = UNKNOWN;
+  AnimationState ending_animation_state_ = UNKNOWN;
+  DISALLOW_COPY_AND_ASSIGN(TestShellObserver);
+};
+
+}  // namespace
 
 using WindowSelectorControllerTest = AshTestBase;
 
@@ -47,6 +92,59 @@ TEST_F(WindowSelectorControllerTest,
   GetEventGenerator()->PressKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   resizer->CompleteDrag();
+}
+
+TEST_F(WindowSelectorControllerTest, AnimationCallbacks) {
+  ui::ScopedAnimationDurationScaleMode non_zero(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  TestShellObserver observer;
+  // Enter without windows.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(TestShellObserver::COMPLETED, observer.starting_animation_state());
+
+  // Exit winhtout windows still creates an animation.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
+
+  while (!observer.is_ended())
+    base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(TestShellObserver::COMPLETED, observer.ending_animation_state());
+
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<aura::Window> window1(
+      CreateTestWindowInShellWithBounds(bounds));
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithBounds(bounds));
+
+  observer.Reset();
+  ASSERT_EQ(TestShellObserver::UNKNOWN, observer.starting_animation_state());
+  ASSERT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
+
+  // Enter with windows.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.starting_animation_state());
+
+  // Exit with windows.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(TestShellObserver::CANCELED, observer.starting_animation_state());
+  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.ending_animation_state());
+
+  observer.Reset();
+
+  // Enter again.
+  Shell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(TestShellObserver::CANCELED, observer.ending_animation_state());
+  EXPECT_EQ(TestShellObserver::UNKNOWN, observer.starting_animation_state());
+
+  // Activating window while entering animation should cancel the overview.
+  wm::ActivateWindow(window1.get());
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(TestShellObserver::CANCELED, observer.starting_animation_state());
 }
 
 class OverviewVirtualKeyboardTest : public WindowSelectorControllerTest {

@@ -675,7 +675,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
       vpn_list_(std::make_unique<VpnList>()),
       window_cycle_controller_(std::make_unique<WindowCycleController>()),
-      window_selector_controller_(std::make_unique<WindowSelectorController>()),
       display_configurator_(std::make_unique<display::DisplayConfigurator>()),
       display_output_protection_(std::make_unique<DisplayOutputProtection>(
           display_configurator_.get())),
@@ -1063,7 +1062,9 @@ void Shell::Init(
       std::make_unique<::wm::FocusController>(new wm::AshFocusRules());
   focus_controller_->AddObserver(this);
 
-  screen_position_controller_.reset(new ScreenPositionController);
+  window_selector_controller_ = std::make_unique<WindowSelectorController>();
+
+  screen_position_controller_ = std::make_unique<ScreenPositionController>();
 
   // Must be before CreatePrimaryHost().
   window_service_owner_ =

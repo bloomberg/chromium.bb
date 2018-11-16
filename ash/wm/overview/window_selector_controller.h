@@ -22,7 +22,9 @@ class WindowSelectorTest;
 
 // Manages a window selector which displays an overview of all windows and
 // allows selecting a window to activate it.
-class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
+class ASH_EXPORT WindowSelectorController
+    : public WindowSelectorDelegate,
+      public ::wm::ActivationChangeObserver {
  public:
   enum class AnimationCompleteReason {
     kCompleted,
@@ -83,6 +85,16 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override;
   void RemoveAndDestroyStartAnimationObserver(
       DelayedAnimationObserver* animation_observer) override;
+
+  // ::wm::ActivationChangeObserver:
+  void OnWindowActivating(ActivationReason reason,
+                          aura::Window* gained_active,
+                          aura::Window* lost_active) override;
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override {}
+  void OnAttemptToReactivateWindow(aura::Window* request_active,
+                                   aura::Window* actual_active) override;
 
   WindowSelector* window_selector() { return window_selector_.get(); }
 
