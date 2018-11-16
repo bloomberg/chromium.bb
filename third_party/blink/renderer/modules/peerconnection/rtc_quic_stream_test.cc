@@ -8,6 +8,7 @@
 // for the main thread / worker thread.
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_p2p_quic_stream.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport_test.h"
@@ -330,6 +331,181 @@ TEST_F(RTCQuicStreamTest, WriteThrowsIfRemoteReset) {
   stream->write(CreateUint8ArrayOfLength(1), scope.GetExceptionState());
   EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
             scope.GetExceptionState().CodeAs<DOMExceptionCode>());
+
+  RunUntilIdle();
+}
+
+// The following group tests waitForWriteBufferedAmountBelow().
+
+// Test that a waitForWriteBufferedAmountBelow() promise resolves once
+// OnWriteDataConsumed() frees up enough write buffer space.
+TEST_F(RTCQuicStreamTest, WaitForWriteBufferedAmountBelowResolves) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+  stream->write(CreateUint8ArrayOfLength(stream->maxWriteBufferedAmount()),
+                ASSERT_NO_EXCEPTION);
+
+  ScriptPromise promise = stream->waitForWriteBufferedAmountBelow(
+      scope.GetScriptState(), stream->maxWriteBufferedAmount() - 1,
+      ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(v8::Promise::kPending,
+            promise.V8Value().As<v8::Promise>()->State());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnWriteDataConsumed(1);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that a waitForWriteBufferedAmount() promise does not resolve until
+// OnWriteDataConsumed() frees up exactly the threshold amount.
+TEST_F(RTCQuicStreamTest,
+       WaitForWriteBufferedAmountBelowDoesNotResolveUntilExceedsThreshold) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+  stream->write(CreateUint8ArrayOfLength(stream->maxWriteBufferedAmount()),
+                ASSERT_NO_EXCEPTION);
+
+  ScriptPromise promise = stream->waitForWriteBufferedAmountBelow(
+      scope.GetScriptState(), stream->maxWriteBufferedAmount() - 10,
+      ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(v8::Promise::kPending,
+            promise.V8Value().As<v8::Promise>()->State());
+
+  RunUntilIdle();
+
+  // Post OnWriteDataConsumed(9) -- this should not resolve the promise since
+  // we're waiting for 10 bytes to be available.
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnWriteDataConsumed(9);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kPending,
+            promise.V8Value().As<v8::Promise>()->State());
+
+  // Post OnWriteDataConsumed(1) -- this should resolve the promise since now we
+  // have 9 + 1 = 10 bytes available.
+  stream_delegate->OnWriteDataConsumed(1);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that if two waitForWriteBufferedAmount() promises are waiting on
+// different thresholds, OnWriteDataConsumed() which satisfies the first
+// threshold but not the second will only resolve the first promise. Once
+// OnWriteDataConsumed() is received again past the second threshold then the
+// second promise will be resolved.
+TEST_F(RTCQuicStreamTest,
+       TwoWaitForWriteBufferedAmountBelowPromisesResolveInSequence) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+  stream->write(CreateUint8ArrayOfLength(stream->maxWriteBufferedAmount()),
+                ASSERT_NO_EXCEPTION);
+
+  ScriptPromise promise_10 = stream->waitForWriteBufferedAmountBelow(
+      scope.GetScriptState(), stream->maxWriteBufferedAmount() - 10,
+      ASSERT_NO_EXCEPTION);
+  ScriptPromise promise_90 = stream->waitForWriteBufferedAmountBelow(
+      scope.GetScriptState(), stream->maxWriteBufferedAmount() - 90,
+      ASSERT_NO_EXCEPTION);
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnWriteDataConsumed(10);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise_10.V8Value().As<v8::Promise>()->State());
+  EXPECT_EQ(v8::Promise::kPending,
+            promise_90.V8Value().As<v8::Promise>()->State());
+
+  stream_delegate->OnWriteDataConsumed(80);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise_90.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that if two waitForWriteBufferedAmount() promises are waiting on
+// different thresholds and a single OnWriteDataConsumed() is received such that
+// the buffered amount is below both thresholds then both promises are resolved.
+TEST_F(RTCQuicStreamTest,
+       TwoWaitForWriteBufferedAmountBelowPromisesResolveTogether) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+  stream->write(CreateUint8ArrayOfLength(stream->maxWriteBufferedAmount()),
+                ASSERT_NO_EXCEPTION);
+
+  ScriptPromise promise_10 = stream->waitForWriteBufferedAmountBelow(
+      scope.GetScriptState(), stream->maxWriteBufferedAmount() - 10,
+      ASSERT_NO_EXCEPTION);
+  ScriptPromise promise_90 = stream->waitForWriteBufferedAmountBelow(
+      scope.GetScriptState(), stream->maxWriteBufferedAmount() - 90,
+      ASSERT_NO_EXCEPTION);
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnWriteDataConsumed(90);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise_10.V8Value().As<v8::Promise>()->State());
+  EXPECT_EQ(v8::Promise::kFulfilled,
+            promise_90.V8Value().As<v8::Promise>()->State());
+}
+
+// Test that there is no crash when the ExecutionContext is being destroyed and
+// there are pending waitForWriteBufferedAmountBelow() promises. If the
+// RTCQuicStream attempts to resolve the promise in ContextDestroyed, it will
+// likely crash since the v8::Isolate is being torn down.
+TEST_F(
+    RTCQuicStreamTest,
+    NoCrashIfPendingWaitForWriteBufferedAmountBelowPromisesOnContextDestroyed) {
+  V8TestingScope scope;
+
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>();
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+  stream->write(CreateUint8ArrayOfLength(stream->maxWriteBufferedAmount()),
+                ASSERT_NO_EXCEPTION);
+
+  stream->waitForWriteBufferedAmountBelow(scope.GetScriptState(), 0,
+                                          ASSERT_NO_EXCEPTION);
 
   RunUntilIdle();
 }

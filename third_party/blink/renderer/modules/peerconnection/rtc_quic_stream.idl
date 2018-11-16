@@ -24,6 +24,8 @@ enum RTCQuicStreamState {
     [RaisesException] void write(Uint8Array data);
     void finish();
     void reset();
+    [CallWith=ScriptState, RaisesException]
+    Promise<void> waitForWriteBufferedAmountBelow(unsigned long amount);
     attribute EventHandler onstatechange;
     // TODO(crbug.com/868068): Implement remaining methods, attributes, and events.
 };

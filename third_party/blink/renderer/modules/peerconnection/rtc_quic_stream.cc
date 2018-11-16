@@ -3,12 +3,30 @@
 // found in the LICENSE file.
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
 const uint32_t RTCQuicStream::kWriteBufferSize = 4 * 1024;
+
+class RTCQuicStream::PendingWriteBufferedAmountPromise
+    : public GarbageCollected<PendingWriteBufferedAmountPromise> {
+ public:
+  PendingWriteBufferedAmountPromise(ScriptPromiseResolver* promise_resolver,
+                                    uint32_t threshold)
+      : promise_resolver_(promise_resolver), threshold_(threshold) {}
+
+  ScriptPromiseResolver* promise_resolver() const { return promise_resolver_; }
+  uint32_t threshold() const { return threshold_; }
+
+  void Trace(Visitor* visitor) { visitor->Trace(promise_resolver_); }
+
+ private:
+  Member<ScriptPromiseResolver> promise_resolver_;
+  uint32_t threshold_;
+};
 
 RTCQuicStream::RTCQuicStream(ExecutionContext* context,
                              RTCQuicTransport* transport,
@@ -54,9 +72,7 @@ uint32_t RTCQuicStream::maxWriteBufferedAmount() const {
 
 void RTCQuicStream::write(NotShared<DOMUint8Array> data,
                           ExceptionState& exception_state) {
-  if (IsClosed() || wrote_fin_) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The stream is not writable.");
+  if (RaiseIfNotWritable(exception_state)) {
     return;
   }
   if (data.View()->length() == 0) {
@@ -90,6 +106,7 @@ void RTCQuicStream::finish() {
   if (readable_) {
     DCHECK_EQ(state_, RTCQuicStreamState::kOpen);
     state_ = RTCQuicStreamState::kClosing;
+    RejectPendingWaitForWriteBufferedAmountBelowPromises();
   } else {
     DCHECK_EQ(state_, RTCQuicStreamState::kClosing);
     Close(CloseReason::kReadWriteFinished);
@@ -101,6 +118,57 @@ void RTCQuicStream::reset() {
     return;
   }
   Close(CloseReason::kLocalReset);
+}
+
+ScriptPromise RTCQuicStream::waitForWriteBufferedAmountBelow(
+    ScriptState* script_state,
+    uint32_t threshold,
+    ExceptionState& exception_state) {
+  if (RaiseIfNotWritable(exception_state)) {
+    return ScriptPromise();
+  }
+  ScriptPromiseResolver* promise_resolver =
+      ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = promise_resolver->Promise();
+  if (write_buffered_amount_ <= threshold) {
+    promise_resolver->Resolve();
+  } else {
+    pending_write_buffered_amount_promises_.push_back(
+        new PendingWriteBufferedAmountPromise(promise_resolver, threshold));
+  }
+  return promise;
+}
+
+bool RTCQuicStream::RaiseIfNotWritable(ExceptionState& exception_state) {
+  if (wrote_fin_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The stream is not writable: finish() has been called.");
+    return true;
+  }
+  if (IsClosed()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The stream is not writable: The stream is closed.");
+    return true;
+  }
+  return false;
+}
+
+void RTCQuicStream::RejectPendingWaitForWriteBufferedAmountBelowPromises() {
+  // TODO(https://github.com/w3c/webrtc-quic/issues/81): The promise resolve
+  // order is under specified.
+  for (PendingWriteBufferedAmountPromise* pending_promise :
+       pending_write_buffered_amount_promises_) {
+    ExceptionState exception_state(
+        pending_promise->promise_resolver()->GetScriptState()->GetIsolate(),
+        ExceptionState::kExecutionContext, "RTCQuicStream",
+        "waitForWriteBufferedAmountBelow");
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The stream is no longer writable.");
+    pending_promise->promise_resolver()->Reject(exception_state);
+  }
+  pending_write_buffered_amount_promises_.clear();
 }
 
 void RTCQuicStream::OnRemoteReset() {
@@ -127,6 +195,18 @@ void RTCQuicStream::OnDataReceived(Vector<uint8_t> data, bool fin) {
 void RTCQuicStream::OnWriteDataConsumed(uint32_t amount) {
   DCHECK_GE(write_buffered_amount_, amount);
   write_buffered_amount_ -= amount;
+  // TODO(https://github.com/w3c/webrtc-quic/issues/81): The promise resolve
+  // order is under specified.
+  for (auto* it = pending_write_buffered_amount_promises_.begin();
+       it != pending_write_buffered_amount_promises_.end();) {
+    PendingWriteBufferedAmountPromise* pending_promise = *it;
+    if (write_buffered_amount_ <= pending_promise->threshold()) {
+      pending_promise->promise_resolver()->Resolve();
+      it = pending_write_buffered_amount_promises_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 void RTCQuicStream::OnQuicTransportClosed(
@@ -173,6 +253,12 @@ void RTCQuicStream::Close(CloseReason reason) {
   readable_ = false;
   write_buffered_amount_ = 0;
 
+  // It's illegal to resolve or reject promises when the ExecutionContext is
+  // being destroyed.
+  if (reason != CloseReason::kContextDestroyed) {
+    RejectPendingWaitForWriteBufferedAmountBelowPromises();
+  }
+
   // Change the state. Fire the statechange event only if the close is caused by
   // a remote stream event.
   state_ = RTCQuicStreamState::kClosed;
@@ -191,6 +277,7 @@ ExecutionContext* RTCQuicStream::GetExecutionContext() const {
 
 void RTCQuicStream::Trace(blink::Visitor* visitor) {
   visitor->Trace(transport_);
+  visitor->Trace(pending_write_buffered_amount_promises_);
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);
 }
