@@ -21,6 +21,7 @@ import org.chromium.base.ApplicationStatus.WindowFocusChangedListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -213,12 +214,11 @@ public class ChromeFullscreenManager
         assert controlContainer != null || mControlsPosition == ControlsPosition.NONE;
         mControlContainer = controlContainer;
 
-        int controlContainerHeight =
-                mActivity.getResources().getDimensionPixelSize(resControlContainerHeight);
-
         switch (mControlsPosition) {
             case ControlsPosition.TOP:
-                mTopControlContainerHeight = controlContainerHeight;
+                assert resControlContainerHeight != ChromeActivity.NO_CONTROL_CONTAINER;
+                mTopControlContainerHeight =
+                        mActivity.getResources().getDimensionPixelSize(resControlContainerHeight);
                 break;
             case ControlsPosition.NONE:
                 // Treat the case of no controls as controls always being totally offscreen.
