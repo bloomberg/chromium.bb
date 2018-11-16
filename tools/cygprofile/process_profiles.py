@@ -232,21 +232,15 @@ class SymbolOffsetProcessor(object):
     """
     dump_offset_to_symbol_info = self._GetDumpOffsetToSymbolInfo()
     logging.info('Offset to Symbol size = %d', len(dump_offset_to_symbol_info))
-    offsets_not_found = 0
     for i in items:
       dump_offset = get(i)
       idx = dump_offset / 2
       assert dump_offset >= 0 and idx < len(dump_offset_to_symbol_info), (
           'Dump offset out of binary range')
       symbol_info = dump_offset_to_symbol_info[idx]
-      if symbol_info is None:
-        offsets_not_found += 1
-        update(i, None)
-      else:
-        update(i, symbol_info.offset)
-    if offsets_not_found:
-      logging.warning('%d return addresses don\'t map to any symbol',
-                      offsets_not_found)
+      assert symbol_info, ('A return address (offset = 0x{:08x}) does not map '
+          'to any symbol'.format(dump_offset))
+      update(i, symbol_info.offset)
 
   def _GetDumpOffsetToSymbolInfo(self):
     """Computes an array mapping each word in .text to a symbol.
