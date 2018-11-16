@@ -167,8 +167,7 @@ void FidoHidDevice::OnAllocateChannel(std::vector<uint8_t> nonce,
   auto received_nonce = base::make_span(payload).first(8);
   // Received a broadcast message for a different client. Disregard and continue
   // reading.
-  if (!std::equal(nonce.begin(), nonce.end(), received_nonce.begin(),
-                  received_nonce.end())) {
+  if (base::make_span(nonce) != received_nonce) {
     auto repeating_callback =
         base::AdaptCallbackForRepeating(std::move(callback));
     ArmTimeout(repeating_callback);
