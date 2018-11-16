@@ -164,6 +164,35 @@ suite('RuntimeHostPermissions', function() {
     return whenClosed.then(() => {
       Polymer.dom.flush();
       expectEquals(HostAccess.ON_SPECIFIC_SITES, selectHostAccess.value);
+
+      // Simulate the new host being added.
+      const updatedPermissions = {
+        hostAccess: HostAccess.ON_SPECIFIC_SITES,
+        hasAllHosts: true,
+        hosts: [
+          {host: 'https://example.com/*', granted: true},
+          {host: 'https://*/*', granted: false},
+        ],
+      };
+      element.permissions = updatedPermissions;
+      Polymer.dom.flush();
+
+      // Open the dialog by clicking to edit the host permission.
+      const editHost = element.$$('.edit-host');
+      editHost.click();
+      const actionMenu = element.$$('cr-action-menu');
+      const actionMenuEdit = actionMenu.querySelector('#action-menu-edit');
+      assertTrue(!!actionMenuEdit);
+      actionMenuEdit.click();
+      Polymer.dom.flush();
+
+      // Verify that the dialog does not want to update the old host access.
+      // Regression test for https://crbug.com/903082.
+      const dialog = element.$$('extensions-runtime-hosts-dialog');
+      assertTrue(!!dialog);
+      expectTrue(dialog.$.dialog.open);
+      expectFalse(dialog.updateHostAccess);
+      expectEquals('https://example.com/*', dialog.currentSite);
     });
   });
 
