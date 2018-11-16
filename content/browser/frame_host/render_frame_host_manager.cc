@@ -430,8 +430,7 @@ void RenderFrameHostManager::DiscardUnusedFrame(
   // shortly, since |render_frame_host| is its last active frame and will be
   // deleted below.  See https://crbug.com/627400.
   if (frame_tree_node_->IsMainFrame()) {
-    rvh->set_main_frame_routing_id(MSG_ROUTING_NONE);
-    rvh->SetIsActive(false);
+    rvh->SetMainFrameRoutingId(MSG_ROUTING_NONE);
     rvh->set_is_swapped_out(true);
   }
 
@@ -2233,7 +2232,10 @@ void RenderFrameHostManager::CommitPending() {
   // to MSG_ROUTING_NONE.
   if (is_main_frame) {
     RenderViewHostImpl* rvh = render_frame_host_->render_view_host();
-    rvh->set_main_frame_routing_id(render_frame_host_->routing_id());
+    // Recall if the RenderViewHostImpl had a main frame routing id already. If
+    // not then it is transitioning from swapped out to active.
+    bool was_active = rvh->is_active();
+    rvh->SetMainFrameRoutingId(render_frame_host_->routing_id());
 
     // If the RenderViewHost is transitioning from swapped out to active state,
     // it was reused, so dispatch a RenderViewReady event.  For example, this
@@ -2242,12 +2244,11 @@ void RenderFrameHostManager::CommitPending() {
     //
     // TODO(alexmos):  Remove this and move RenderViewReady consumers to use
     // the main frame's RenderFrameCreated instead.
-    if (!rvh->is_active())
+    if (!was_active)
       rvh->PostRenderViewReady();
 
-    rvh->SetIsActive(true);
     rvh->set_is_swapped_out(false);
-    old_render_frame_host->render_view_host()->set_main_frame_routing_id(
+    old_render_frame_host->render_view_host()->SetMainFrameRoutingId(
         MSG_ROUTING_NONE);
   }
 

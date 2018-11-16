@@ -214,7 +214,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       frames_ref_count_(0),
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
-      is_active_(!swapped_out),
       is_swapped_out_(swapped_out),
       routing_id_(routing_id),
       main_frame_routing_id_(main_frame_routing_id),
@@ -245,7 +244,7 @@ RenderViewHostImpl::RenderViewHostImpl(
   // make their way to the new renderer once its restarted.
   GetProcess()->EnableSendQueue();
 
-  if (!is_active_)
+  if (!is_active())
     GetWidget()->UpdatePriority();
 
   base::PostTaskWithTraits(
@@ -345,11 +344,10 @@ bool RenderViewHostImpl::CreateRenderView(
       delegate_->GetSessionStorageNamespace(instance_.get())->id();
   // Ensure the RenderView sets its opener correctly.
   params->opener_frame_route_id = opener_frame_route_id;
-  params->swapped_out = !is_active_;
   params->replicated_frame_state = replicated_frame_state;
   params->proxy_routing_id = proxy_route_id;
-  params->hidden = is_active_ ? GetWidget()->is_hidden()
-                              : GetWidget()->delegate()->IsHidden();
+  params->hidden = is_active() ? GetWidget()->is_hidden()
+                               : GetWidget()->delegate()->IsHidden();
   params->never_visible = delegate_->IsNeverVisible();
   params->window_was_created_with_opener = window_was_created_with_opener;
   if (main_rfh) {
@@ -380,10 +378,8 @@ bool RenderViewHostImpl::CreateRenderView(
   return true;
 }
 
-void RenderViewHostImpl::SetIsActive(bool is_active) {
-  if (is_active_ == is_active)
-    return;
-  is_active_ = is_active;
+void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
+  main_frame_routing_id_ = routing_id;
   GetWidget()->UpdatePriority();
 }
 
@@ -900,11 +896,11 @@ bool RenderViewHostImpl::MayRenderWidgetForwardKeyboardEvent(
 }
 
 bool RenderViewHostImpl::ShouldContributePriorityToProcess() {
-  return is_active_;
+  return is_active();
 }
 
 void RenderViewHostImpl::RequestSetBounds(const gfx::Rect& bounds) {
-  if (is_active_)
+  if (is_active())
     delegate_->RequestSetBounds(bounds);
 }
 

@@ -108,11 +108,12 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
  public:
   // Creates a new RenderView. Note that if the original opener has been closed,
   // |params.window_was_created_with_opener| will be true and
-  // |params.opener_frame_route_id| will be MSG_ROUTING_NONE. When
-  // |params.swapped_out| is true, |params.proxy_routing_id| is specified, so a
-  // RenderFrameProxy can be created for this RenderView's main RenderFrame. The
-  // opener should provide a non-null value for |show_callback| if it needs to
-  // send an additional IPC to finish making this view visible.
+  // |params.opener_frame_route_id| will be MSG_ROUTING_NONE.
+  // When |params.proxy_routing_id| instead of |params.main_frame_routing_id| is
+  // specified, a RenderFrameProxy will be created for this RenderView's main
+  // RenderFrame.
+  // The opener should provide a non-null value for |show_callback| if it needs
+  // to send an additional IPC to finish making this view visible.
   static RenderViewImpl* Create(
       CompositorDependencies* compositor_deps,
       mojom::CreateViewParamsPtr params,

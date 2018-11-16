@@ -349,7 +349,6 @@ void RenderViewTest::SetUp() {
       mojo::MakeRequest(&view_params->main_frame_interface_provider));
   view_params->session_storage_namespace_id =
       blink::AllocateSessionStorageNamespaceId();
-  view_params->swapped_out = false;
   view_params->replicated_frame_state = FrameReplicationState();
   view_params->proxy_routing_id = MSG_ROUTING_NONE;
   view_params->hidden = false;
