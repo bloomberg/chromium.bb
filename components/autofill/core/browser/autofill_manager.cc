@@ -1098,7 +1098,7 @@ void AutofillManager::Reset() {
   AutofillHandler::Reset();
   form_interactions_ukm_logger_.reset(
       new AutofillMetrics::FormInteractionsUkmLogger(
-          client_->GetUkmRecorder()));
+          client_->GetUkmRecorder(), client_->GetUkmSourceId()));
   address_form_event_logger_.reset(new AutofillMetrics::FormEventLogger(
       /*is_for_credit_card=*/false, driver()->IsInMainFrame(),
       form_interactions_ukm_logger_.get()));
@@ -1151,7 +1151,8 @@ AutofillManager::AutofillManager(
           std::make_unique<AutocompleteHistoryManager>(driver, client)),
       form_interactions_ukm_logger_(
           std::make_unique<AutofillMetrics::FormInteractionsUkmLogger>(
-              client->GetUkmRecorder())),
+              client->GetUkmRecorder(),
+              client->GetUkmSourceId())),
       address_form_event_logger_(
           std::make_unique<AutofillMetrics::FormEventLogger>(
               /*is_for_credit_card=*/false,
@@ -1497,9 +1498,7 @@ void AutofillManager::OnFormsParsed(
   DCHECK(!form_structures.empty());
 
   // Setup the url for metrics that we will collect for this form.
-  form_interactions_ukm_logger_->OnFormsParsed(
-      form_structures[0]->ToFormData().main_frame_origin.GetURL(),
-      client_->GetUkmSourceId());
+  form_interactions_ukm_logger_->OnFormsParsed(client_->GetUkmSourceId());
 
   std::vector<FormStructure*> non_queryable_forms;
   std::vector<FormStructure*> queryable_forms;

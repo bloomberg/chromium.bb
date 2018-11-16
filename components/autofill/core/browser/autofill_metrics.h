@@ -779,16 +779,22 @@ class AutofillMetrics {
   // Utility to log URL keyed form interaction events.
   class FormInteractionsUkmLogger {
    public:
-    explicit FormInteractionsUkmLogger(ukm::UkmRecorder* ukm_recorder);
+    FormInteractionsUkmLogger(ukm::UkmRecorder* ukm_recorder,
+                              const ukm::SourceId source_id);
 
     bool has_pinned_timestamp() const { return !pinned_timestamp_.is_null(); }
     void set_pinned_timestamp(base::TimeTicks t) { pinned_timestamp_ = t; }
 
-    const GURL& url() const { return url_; }
-
-    // Initializes this logger with a valid url and source_id.
-    // Unless forms is parsed no autofill UKM can be recorded.
-    void OnFormsParsed(const GURL& url, const ukm::SourceId source_id);
+    // Initializes this logger with a source_id. Unless forms is parsed no
+    // autofill UKM is recorded. However due to autofill_manager resets,
+    // it is possible to have the UKM being recorded after the forms were
+    // parsed. So, rely on autofill_client to pass correct source_id
+    // However during some cases there is a race for setting AutofillClient
+    // and generation of new source_id (by UKM) as they are both observing tab
+    // navigation. Ideally we need to refactor ownership of this logger
+    // so as not to rely on OnFormsParsed to record the metrics correctly.
+    // TODO(nikunjb): Refactor the logger to be owned by AutofillClient.
+    void OnFormsParsed(const ukm::SourceId source_id);
     void LogInteractedWithForm(bool is_for_credit_card,
                                size_t local_record_type_count,
                                size_t server_record_type_count,
@@ -839,8 +845,7 @@ class AutofillMetrics {
         const base::TimeTicks& form_parsed_timestamp) const;
 
     ukm::UkmRecorder* ukm_recorder_;  // Weak reference.
-    ukm::SourceId source_id_ = -1;
-    GURL url_;
+    ukm::SourceId source_id_;
     base::TimeTicks pinned_timestamp_;
   };
 

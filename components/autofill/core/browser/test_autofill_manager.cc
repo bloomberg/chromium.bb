@@ -142,8 +142,7 @@ void TestAutofillManager::AddSeenForm(
   form_structure->SetFieldTypes(heuristic_types, server_types);
   AddSeenFormStructure(std::move(form_structure));
 
-  form_interactions_ukm_logger()->OnFormsParsed(form.main_frame_origin.GetURL(),
-                                                client_->GetUkmSourceId());
+  form_interactions_ukm_logger()->OnFormsParsed(client_->GetUkmSourceId());
 }
 
 void TestAutofillManager::AddSeenFormStructure(
