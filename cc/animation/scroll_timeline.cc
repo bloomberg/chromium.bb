@@ -11,14 +11,26 @@
 
 namespace cc {
 
+namespace {
+bool IsVertical(ScrollTimeline::ScrollDirection direction) {
+  return direction == ScrollTimeline::ScrollUp ||
+         direction == ScrollTimeline::ScrollDown;
+}
+
+bool IsReverse(ScrollTimeline::ScrollDirection direction) {
+  return direction == ScrollTimeline::ScrollUp ||
+         direction == ScrollTimeline::ScrollLeft;
+}
+}  // namespace
+
 ScrollTimeline::ScrollTimeline(base::Optional<ElementId> scroller_id,
-                               ScrollDirection orientation,
+                               ScrollDirection direction,
                                base::Optional<double> start_scroll_offset,
                                base::Optional<double> end_scroll_offset,
                                double time_range)
     : active_id_(),
       pending_id_(scroller_id),
-      orientation_(orientation),
+      direction_(direction),
       start_scroll_offset_(start_scroll_offset),
       end_scroll_offset_(end_scroll_offset),
       time_range_(time_range) {}
@@ -26,7 +38,7 @@ ScrollTimeline::ScrollTimeline(base::Optional<ElementId> scroller_id,
 ScrollTimeline::~ScrollTimeline() {}
 
 std::unique_ptr<ScrollTimeline> ScrollTimeline::CreateImplInstance() const {
-  return std::make_unique<ScrollTimeline>(pending_id_, orientation_,
+  return std::make_unique<ScrollTimeline>(pending_id_, direction_,
                                           start_scroll_offset_,
                                           end_scroll_offset_, time_range_);
 }
@@ -58,11 +70,15 @@ double ScrollTimeline::CurrentTime(const ScrollTree& scroll_tree,
   gfx::ScrollOffset scroll_dimensions =
       scroll_tree.MaxScrollOffset(scroll_node->id);
 
-  double current_offset = (orientation_ == Vertical) ? offset.y() : offset.x();
-  double max_offset = (orientation_ == Vertical) ? scroll_dimensions.y()
-                                                 : scroll_dimensions.x();
-  DCHECK_GE(current_offset, 0);
+  double max_offset =
+      IsVertical(direction_) ? scroll_dimensions.y() : scroll_dimensions.x();
+  double current_physical_offset =
+      IsVertical(direction_) ? offset.y() : offset.x();
+  double current_offset = IsReverse(direction_)
+                              ? max_offset - current_physical_offset
+                              : current_physical_offset;
   DCHECK_GE(max_offset, 0);
+  DCHECK_GE(current_offset, 0);
 
   double resolved_start_scroll_offset = start_scroll_offset_.value_or(0);
   double resolved_end_scroll_offset = end_scroll_offset_.value_or(max_offset);

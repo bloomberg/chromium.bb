@@ -136,26 +136,56 @@ base::Optional<CompositorElementId> GetCompositorScrollElementId(
 // web concepts of 'block' and 'inline' direction into absolute vertical or
 // horizontal directions.
 //
+// This implements a subset of the conversions documented in
+// https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
+//
 // TODO(smcgruer): If the writing mode of a scroller changes, we have to update
 // any related cc::ScrollTimeline somehow.
 CompositorScrollTimeline::ScrollDirection ConvertOrientation(
     ScrollTimeline::ScrollDirection orientation,
-    bool is_horizontal_writing_mode) {
-  switch (orientation) {
-    case ScrollTimeline::Block:
-      return is_horizontal_writing_mode ? CompositorScrollTimeline::Vertical
-                                        : CompositorScrollTimeline::Horizontal;
-    case ScrollTimeline::Inline:
-      return is_horizontal_writing_mode ? CompositorScrollTimeline::Horizontal
-                                        : CompositorScrollTimeline::Vertical;
-    case ScrollTimeline::Horizontal:
-      return CompositorScrollTimeline::Horizontal;
-    case ScrollTimeline::Vertical:
-      return CompositorScrollTimeline::Vertical;
-    default:
-      NOTREACHED();
-      return CompositorScrollTimeline::Vertical;
+    const ComputedStyle* style) {
+  // Easy cases; physical is always physical.
+  if (orientation == ScrollTimeline::Horizontal)
+    return CompositorScrollTimeline::ScrollRight;
+  if (orientation == ScrollTimeline::Vertical)
+    return CompositorScrollTimeline::ScrollDown;
+
+  // Harder cases; first work out which axis is which, and then for each check
+  // which edge we start at.
+
+  // writing-mode: horizontal-tb
+  bool is_horizontal_writing_mode =
+      style ? style->IsHorizontalWritingMode() : true;
+  // writing-mode: vertical-lr
+  bool is_flipped_lines_writing_mode =
+      style ? style->IsFlippedLinesWritingMode() : false;
+  // direction: ltr;
+  bool is_ltr_direction = style ? style->IsLeftToRightDirection() : true;
+
+  if (orientation == ScrollTimeline::Block) {
+    if (is_horizontal_writing_mode) {
+      // For horizontal writing mode, block is vertical. The starting edge is
+      // always the top.
+      return CompositorScrollTimeline::ScrollDown;
+    }
+    // For vertical writing mode, the block axis is horizontal. The starting
+    // edge depends on if we are lr or rl.
+    return is_flipped_lines_writing_mode ? CompositorScrollTimeline::ScrollRight
+                                         : CompositorScrollTimeline::ScrollLeft;
   }
+
+  DCHECK_EQ(orientation, ScrollTimeline::Inline);
+  if (is_horizontal_writing_mode) {
+    // For horizontal writing mode, inline is horizontal. The starting edge
+    // depends on the directionality.
+    return is_ltr_direction ? CompositorScrollTimeline::ScrollRight
+                            : CompositorScrollTimeline::ScrollLeft;
+  }
+  // For vertical writing mode, inline is vertical. The starting edge still
+  // depends on the directionality; whether it is vertical-lr or vertical-rl
+  // does not matter.
+  return is_ltr_direction ? CompositorScrollTimeline::ScrollDown
+                          : CompositorScrollTimeline::ScrollUp;
 }
 
 // Converts a blink::ScrollTimeline into a cc::ScrollTimeline.
@@ -181,9 +211,8 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
   // correct orientation and start/end offset information.
   LayoutBox* box = scroll_source->GetLayoutBox();
 
-  CompositorScrollTimeline::ScrollDirection orientation =
-      ConvertOrientation(scroll_timeline->GetOrientation(),
-                         box ? box->IsHorizontalWritingMode() : true);
+  CompositorScrollTimeline::ScrollDirection orientation = ConvertOrientation(
+      scroll_timeline->GetOrientation(), box ? box->Style() : nullptr);
 
   base::Optional<double> start_scroll_offset;
   base::Optional<double> end_scroll_offset;
