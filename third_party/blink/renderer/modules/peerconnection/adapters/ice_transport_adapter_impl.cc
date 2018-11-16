@@ -19,8 +19,8 @@ class QuicPacketTransportAdapter : public P2PQuicPacketTransport,
     DCHECK(p2p_transport_channel_);
     p2p_transport_channel_->SignalReadPacket.connect(
         this, &QuicPacketTransportAdapter::OnReadPacket);
-    p2p_transport_channel_->SignalWritableState.connect(
-        this, &QuicPacketTransportAdapter::OnWritableState);
+    p2p_transport_channel_->SignalReadyToSend.connect(
+        this, &QuicPacketTransportAdapter::OnReadyToSend);
   }
 
   ~QuicPacketTransportAdapter() override {
@@ -62,14 +62,12 @@ class QuicPacketTransportAdapter : public P2PQuicPacketTransport,
     }
     receive_delegate_->OnPacketDataReceived(buffer, buffer_length);
   }
-  void OnWritableState(rtc::PacketTransportInternal* packet_transport) {
+  void OnReadyToSend(rtc::PacketTransportInternal* packet_transport) {
     DCHECK_EQ(packet_transport, p2p_transport_channel_);
     if (!write_observer_) {
       return;
     }
-    if (p2p_transport_channel_->writable()) {
-      write_observer_->OnCanWrite();
-    }
+    write_observer_->OnCanWrite();
   }
 
   cricket::P2PTransportChannel* p2p_transport_channel_;

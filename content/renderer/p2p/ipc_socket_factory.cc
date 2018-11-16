@@ -613,8 +613,8 @@ void IpcPacketSocket::OnSendComplete(
         "IpcPacketSocket: sending is unblocked. %d packets in flight.",
         static_cast<int>(in_flight_packet_records_.size())));
 
-    SignalReadyToSend(this);
     writable_signal_expected_ = false;
+    SignalReadyToSend(this);
   }
 }
 
