@@ -43,6 +43,8 @@ source_set("wayland") {
     "wayland_pointer_delegate.h",
     "wayland_touch_delegate.cc",
     "wayland_touch_delegate.h",
+    "zcr_gaming_input.cc",
+    "zcr_gaming_input.h",
     "zcr_keyboard_configuration.cc",
     "zcr_keyboard_configuration.h",
     "zcr_keyboard_extension.cc",
