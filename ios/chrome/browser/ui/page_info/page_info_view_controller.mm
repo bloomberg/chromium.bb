@@ -14,6 +14,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/fancy_ui/bidi_container_view.h"
+#import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #include "ios/chrome/browser/ui/page_info/page_info_model.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_reloading.h"
@@ -258,6 +259,8 @@ void PageInfoModelBubbleBridge::PerformLayout() {
     [containerView_ setOpaque:NO];
     [containerView_ setAlpha:0];
     [containerView_ setAccessibilityViewIsModal:YES];
+    containerView_.accessibilityIdentifier =
+        kPageInfoViewAccessibilityIdentifier;
 
     popupContainer_ = [[UIView alloc] initWithFrame:CGRectZero];
     [popupContainer_ setBackgroundColor:[UIColor whiteColor]];
