@@ -990,6 +990,14 @@ constexpr char kRemoveHostnameIpMappingMethod[] = "RemoveHostnameIpMapping";
 
 namespace arc {
 
+namespace keymaster {
+constexpr char kArcKeymasterServiceName[] = "org.chromium.ArcKeymaster";
+constexpr char kArcKeymasterServicePath[] = "/org/chromium/ArcKeymaster";
+constexpr char kArcKeymasterInterfaceName[] = "org.chromium.ArcKeymaster";
+// Methods
+constexpr char kBootstrapMojoConnectionMethod[] = "BootstrapMojoConnection";
+}  // namespace keymaster
+
 namespace obb_mounter {
 // D-Bus service constants.
 constexpr char kArcObbMounterInterface[] =
