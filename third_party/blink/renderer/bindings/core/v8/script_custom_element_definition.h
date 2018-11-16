@@ -42,7 +42,8 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       V8VoidFunction* disconnected_callback,
       V8CustomElementAdoptedCallback* adopted_callback,
       V8CustomElementAttributeChangedCallback* attribute_changed_callback,
-      HashSet<AtomicString>&& observed_attributes);
+      HashSet<AtomicString>&& observed_attributes,
+      const Vector<String>& disabled_features);
 
   ScriptCustomElementDefinition(
       ScriptState*,
@@ -52,7 +53,8 @@ class CORE_EXPORT ScriptCustomElementDefinition final
       V8VoidFunction* disconnected_callback,
       V8CustomElementAdoptedCallback* adopted_callback,
       V8CustomElementAttributeChangedCallback* attribute_changed_callback,
-      HashSet<AtomicString>&& observed_attributes);
+      HashSet<AtomicString>&& observed_attributes,
+      const Vector<String>& disabled_features);
   ~ScriptCustomElementDefinition() override = default;
 
   void Trace(Visitor*) override;

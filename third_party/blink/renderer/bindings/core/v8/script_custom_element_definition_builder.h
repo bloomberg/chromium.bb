@@ -62,6 +62,7 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
   Member<V8CustomElementAdoptedCallback> adopted_callback_;
   Member<V8CustomElementAttributeChangedCallback> attribute_changed_callback_;
   HashSet<AtomicString> observed_attributes_;
+  Vector<String> disabled_features_;
 };
 
 }  // namespace blink

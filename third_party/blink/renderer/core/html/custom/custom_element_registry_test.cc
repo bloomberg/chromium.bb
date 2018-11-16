@@ -171,7 +171,8 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
             descriptor,
             {
                 "attr1", "attr2", html_names::kContenteditableAttr.LocalName(),
-            }) {}
+            },
+            {}) {}
 
   void Trace(blink::Visitor* visitor) override {
     TestCustomElementDefinition::Trace(visitor);

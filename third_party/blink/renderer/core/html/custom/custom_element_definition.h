@@ -122,7 +122,8 @@ class CORE_EXPORT CustomElementDefinition
   CustomElementDefinition(const CustomElementDescriptor&);
 
   CustomElementDefinition(const CustomElementDescriptor&,
-                          const HashSet<AtomicString>& observed_attributes);
+                          const HashSet<AtomicString>& observed_attributes,
+                          const Vector<String>& disabled_features);
 
   void AddDefaultStylesTo(Element&);
 
@@ -139,6 +140,7 @@ class CORE_EXPORT CustomElementDefinition
   HashSet<AtomicString> observed_attributes_;
   bool has_style_attribute_changed_callback_;
   bool added_default_style_sheet_ = false;
+  bool disable_internals_ = false;
 
   HeapVector<Member<CSSStyleSheet>> default_style_sheets_;
 
