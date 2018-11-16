@@ -822,6 +822,46 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ShutdownDuringRevoke) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RevokeRetries) {
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
+  const std::string url = GaiaUrls::GetInstance()->oauth2_revoke_url().spec();
+  // Revokes will remain in "pending" state.
+  client_->test_url_loader_factory()->ClearResponses();
+
+  oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+  EXPECT_FALSE(client_->test_url_loader_factory()->IsPending(url));
+
+  oauth2_service_delegate_->RevokeCredentials("account_id");
+  EXPECT_EQ(1u, oauth2_service_delegate_->server_revokes_.size());
+  EXPECT_TRUE(client_->test_url_loader_factory()->IsPending(url));
+  // Fail and retry.
+  client_->test_url_loader_factory()->SimulateResponseForPendingRequest(
+      url, std::string(), net::HTTP_INTERNAL_SERVER_ERROR);
+  EXPECT_TRUE(client_->test_url_loader_factory()->IsPending(url));
+  EXPECT_EQ(1u, oauth2_service_delegate_->server_revokes_.size());
+  // Fail and retry.
+  client_->test_url_loader_factory()->SimulateResponseForPendingRequest(
+      url, std::string(), net::HTTP_INTERNAL_SERVER_ERROR);
+  EXPECT_TRUE(client_->test_url_loader_factory()->IsPending(url));
+  EXPECT_EQ(1u, oauth2_service_delegate_->server_revokes_.size());
+  // Do not retry after third attempt.
+  client_->test_url_loader_factory()->SimulateResponseForPendingRequest(
+      url, std::string(), net::HTTP_INTERNAL_SERVER_ERROR);
+  EXPECT_FALSE(client_->test_url_loader_factory()->IsPending(url));
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+
+  // No retry after success.
+  oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");
+  oauth2_service_delegate_->RevokeCredentials("account_id");
+  EXPECT_EQ(1u, oauth2_service_delegate_->server_revokes_.size());
+  EXPECT_TRUE(client_->test_url_loader_factory()->IsPending(url));
+  client_->test_url_loader_factory()->SimulateResponseForPendingRequest(
+      url, std::string(), net::HTTP_OK);
+  EXPECT_FALSE(client_->test_url_loader_factory()->IsPending(url));
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+}
+
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, UpdateInvalidToken) {
   // Add the invalid token.
   InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);

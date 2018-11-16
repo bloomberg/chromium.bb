@@ -223,20 +223,23 @@ class MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken
   RevokeServerRefreshToken(
       MutableProfileOAuth2TokenServiceDelegate* token_service_delegate,
       SigninClient* client,
-      const std::string& refresh_token);
+      const std::string& refresh_token,
+      int attempt);
   ~RevokeServerRefreshToken() override;
 
-  // Starts the network request.
-  static void Start(base::WeakPtr<RevokeServerRefreshToken> rsrt,
-                    const std::string& refresh_token);
-
  private:
+  // Starts the network request.
+  void Start();
+  // Returns true if the request should be retried.
+  bool ShouldRetry(GaiaAuthConsumer::TokenRevocationStatus status);
   // GaiaAuthConsumer overrides:
   void OnOAuth2RevokeTokenCompleted(
       GaiaAuthConsumer::TokenRevocationStatus status) override;
 
   MutableProfileOAuth2TokenServiceDelegate* token_service_delegate_;
   GaiaAuthFetcher fetcher_;
+  std::string refresh_token_;
+  int attempt_;
   base::WeakPtrFactory<RevokeServerRefreshToken> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RevokeServerRefreshToken);
@@ -246,43 +249,70 @@ MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
     RevokeServerRefreshToken(
         MutableProfileOAuth2TokenServiceDelegate* token_service_delegate,
         SigninClient* client,
-        const std::string& refresh_token)
+        const std::string& refresh_token,
+        int attempt)
     : token_service_delegate_(token_service_delegate),
       fetcher_(this,
                GaiaConstants::kChromeSource,
                token_service_delegate_->GetURLLoaderFactory()),
+      refresh_token_(refresh_token),
+      attempt_(attempt),
       weak_ptr_factory_(this) {
   RecordRefreshTokenRevocationRequestEvent(
       TokenRevocationRequestProgress::kRequestCreated);
   client->DelayNetworkCall(
       base::Bind(&MutableProfileOAuth2TokenServiceDelegate::
                      RevokeServerRefreshToken::Start,
-                 weak_ptr_factory_.GetWeakPtr(), refresh_token));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-// static
-void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::Start(
-    base::WeakPtr<RevokeServerRefreshToken> rsrt,
-    const std::string& refresh_token) {
-  if (!rsrt)
-    return;
+void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
+    Start() {
   RecordRefreshTokenRevocationRequestEvent(
       TokenRevocationRequestProgress::kRequestStarted);
-  rsrt->fetcher_.StartRevokeOAuth2Token(refresh_token);
+  fetcher_.StartRevokeOAuth2Token(refresh_token_);
 }
 
 MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
     ~RevokeServerRefreshToken() {
 }
 
+bool MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
+    ShouldRetry(GaiaAuthConsumer::TokenRevocationStatus status) {
+  // Token revocation can be retried up to 3 times.
+  if (attempt_ >= 2)
+    return false;
+
+  switch (status) {
+    case GaiaAuthConsumer::TokenRevocationStatus::kServerError:
+    case GaiaAuthConsumer::TokenRevocationStatus::kConnectionFailed:
+    case GaiaAuthConsumer::TokenRevocationStatus::kConnectionTimeout:
+    case GaiaAuthConsumer::TokenRevocationStatus::kConnectionCanceled:
+      return true;
+    case GaiaAuthConsumer::TokenRevocationStatus::kSuccess:
+    case GaiaAuthConsumer::TokenRevocationStatus::kInvalidToken:
+    case GaiaAuthConsumer::TokenRevocationStatus::kInvalidRequest:
+    case GaiaAuthConsumer::TokenRevocationStatus::kUnknownError:
+      return false;
+  }
+}
+
 void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
     OnOAuth2RevokeTokenCompleted(
         GaiaAuthConsumer::TokenRevocationStatus status) {
-  RecordRefreshTokenRevocationRequestEvent(
-      (status == GaiaAuthConsumer::TokenRevocationStatus::kSuccess)
-          ? TokenRevocationRequestProgress::kRequestSucceeded
-          : TokenRevocationRequestProgress::kRequestFailed);
   UMA_HISTOGRAM_ENUMERATION("Signin.RefreshTokenRevocationStatus", status);
+  if (ShouldRetry(status)) {
+    token_service_delegate_->server_revokes_.push_back(
+        std::make_unique<RevokeServerRefreshToken>(
+            token_service_delegate_, token_service_delegate_->client_,
+            refresh_token_, attempt_ + 1));
+  } else {
+    RecordRefreshTokenRevocationRequestEvent(
+        (status == GaiaAuthConsumer::TokenRevocationStatus::kSuccess)
+            ? TokenRevocationRequestProgress::kRequestSucceeded
+            : TokenRevocationRequestProgress::kRequestFailed);
+    UMA_HISTOGRAM_ENUMERATION("Signin.RefreshTokenRevocationCompleted", status);
+  }
   // |this| pointer will be deleted when removed from the vector, so don't
   // access any members after call to erase().
   token_service_delegate_->server_revokes_.erase(std::find_if(
@@ -875,8 +905,8 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsOnServer(
 
   // Keep track or all server revoke requests.  This way they can be deleted
   // before the token service is shutdown and won't outlive the profile.
-  server_revokes_.push_back(
-      std::make_unique<RevokeServerRefreshToken>(this, client_, refresh_token));
+  server_revokes_.push_back(std::make_unique<RevokeServerRefreshToken>(
+      this, client_, refresh_token, 0));
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::CancelWebTokenFetch() {
