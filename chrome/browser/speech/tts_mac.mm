@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_platform.h"
-#include "extensions/browser/extension_function.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -112,6 +111,8 @@ bool TtsPlatformImplMac::Speak(
 
   NSString* utterance_nsstring =
       [NSString stringWithUTF8String:utterance_.c_str()];
+  if (!utterance_nsstring)
+    return false;
 
   // Deliberately construct a new speech synthesizer every time Speak is
   // called, otherwise there's no way to know whether calls to the delegate

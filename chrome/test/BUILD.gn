@@ -24,6 +24,7 @@ import("//remoting/remoting_enable.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/catalog/public/tools/catalog.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 import("//ui/base/ui_features.gni")
@@ -5778,6 +5779,31 @@ if (!is_android && !is_fuchsia) {
       "//testing/scripts/common.py",
       "//testing/xvfb.py",
       "//testing/scripts/run_telemetry_as_googletest.py",
+    ]
+  }
+}
+
+# Note: this compiles and runs on Mac but may cause
+# system instability; if you try it out, close other
+# programs and then reboot afterwards. It should be
+# possible to make it work on Linux if you use the
+# --enable-speech-dispatcher flag.
+if (is_win) {
+  fuzzer_test("tts_platform_fuzzer") {
+    sources = [
+      "../browser/speech/mock_tts_controller.cc",
+      "../browser/speech/tts_controller.h",
+      "../browser/speech/tts_mac.mm",
+      "../browser/speech/tts_platform.cc",
+      "../browser/speech/tts_platform.h",
+      "../browser/speech/tts_platform_fuzzer.cc",
+      "../browser/speech/tts_win.cc",
+    ]
+
+    deps = [
+      "//base",
+      "//base/test:test_support",
+      "//ui/base",
     ]
   }
 }
