@@ -63,7 +63,7 @@ class MockWebIDBCallbacks : public blink::WebIDBCallbacks {
                void(long long oldVersion,
                     blink::WebIDBDatabase*,
                     const blink::WebIDBMetadata&,
-                    unsigned short dataLoss,
+                    mojom::IDBDataLoss dataLoss,
                     blink::WebString dataLossMessage));
   MOCK_METHOD0(Detach, void());
 

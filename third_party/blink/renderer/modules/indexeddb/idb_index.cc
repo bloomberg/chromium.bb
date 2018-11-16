@@ -131,7 +131,7 @@ IDBRequest* IDBIndex::openCursor(ScriptState* script_state,
         transaction_->InactiveErrorMessage());
     return nullptr;
   }
-  WebIDBCursorDirection direction =
+  mojom::IDBCursorDirection direction =
       IDBCursor::StringToDirection(direction_string);
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
       ExecutionContext::From(script_state), range, exception_state);
@@ -149,13 +149,14 @@ IDBRequest* IDBIndex::openCursor(ScriptState* script_state,
 
 IDBRequest* IDBIndex::openCursor(ScriptState* script_state,
                                  IDBKeyRange* key_range,
-                                 WebIDBCursorDirection direction,
+                                 mojom::IDBCursorDirection direction,
                                  IDBRequest::AsyncTraceState metrics) {
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
   request->SetCursorDetails(indexed_db::kCursorKeyAndValue, direction);
   BackendDB()->OpenCursor(transaction_->Id(), object_store_->Id(), Id(),
-                          key_range, direction, false, kWebIDBTaskTypeNormal,
+                          key_range, direction, false,
+                          mojom::IDBTaskType::Normal,
                           request->CreateWebCallbacks().release());
   return request;
 }
@@ -214,7 +215,7 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* script_state,
         transaction_->InactiveErrorMessage());
     return nullptr;
   }
-  WebIDBCursorDirection direction =
+  mojom::IDBCursorDirection direction =
       IDBCursor::StringToDirection(direction_string);
   IDBKeyRange* key_range = IDBKeyRange::FromScriptValue(
       ExecutionContext::From(script_state), range, exception_state);
@@ -229,9 +230,9 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* script_state,
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
   request->SetCursorDetails(indexed_db::kCursorKeyOnly, direction);
-  BackendDB()->OpenCursor(transaction_->Id(), object_store_->Id(), Id(),
-                          key_range, direction, true, kWebIDBTaskTypeNormal,
-                          request->CreateWebCallbacks().release());
+  BackendDB()->OpenCursor(
+      transaction_->Id(), object_store_->Id(), Id(), key_range, direction, true,
+      mojom::IDBTaskType::Normal, request->CreateWebCallbacks().release());
   return request;
 }
 

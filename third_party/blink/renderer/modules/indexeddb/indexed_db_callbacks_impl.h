@@ -47,7 +47,7 @@ class IndexedDBCallbacksImpl : public mojom::blink::IDBCallbacks {
   void Blocked(int64_t existing_version) override;
   void UpgradeNeeded(mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
                      int64_t old_version,
-                     WebIDBDataLoss data_loss,
+                     mojom::IDBDataLoss data_loss,
                      const String& data_loss_message,
                      const WebIDBMetadata& metadata) override;
   void SuccessDatabase(mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,

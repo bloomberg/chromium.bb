@@ -99,7 +99,7 @@ void IDBOpenDBRequest::EnqueueUpgradeNeeded(
     int64_t old_version,
     std::unique_ptr<WebIDBDatabase> backend,
     const IDBDatabaseMetadata& metadata,
-    WebIDBDataLoss data_loss,
+    mojom::IDBDataLoss data_loss,
     String data_loss_message) {
   IDB_TRACE("IDBOpenDBRequest::onUpgradeNeeded()");
   if (!ShouldEnqueueEvent()) {

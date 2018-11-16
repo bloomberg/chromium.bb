@@ -285,7 +285,7 @@ interface IDBDatabase {
               bool include_transaction,
               bool no_records,
               bool values,
-              uint16 operation_types);
+              uint32 operation_types);
   RemoveObservers(array<int32> observers);
   Get(int64 transaction_id,
       int64 object_store_id,

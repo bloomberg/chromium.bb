@@ -82,7 +82,7 @@ class IDBRequestTest : public testing::Test {
     HashSet<String> transaction_scope = {"store"};
     transaction_ = IDBTransaction::CreateNonVersionChange(
         scope.GetScriptState(), kTransactionId, transaction_scope,
-        kWebIDBTransactionModeReadOnly, db_.Get());
+        mojom::IDBTransactionMode::ReadOnly, db_.Get());
 
     IDBKeyPath store_key_path("primaryKey");
     scoped_refptr<IDBObjectStoreMetadata> store_metadata = base::AdoptRef(
@@ -257,7 +257,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
 
     scope.GetExecutionContext()->NotifyContextDestroyed();
     callbacks->OnUpgradeNeeded(kOldVersion, backend.release(), metadata,
-                               kWebIDBDataLossNone, String());
+                               mojom::IDBDataLoss::None, String());
   }
 
   {

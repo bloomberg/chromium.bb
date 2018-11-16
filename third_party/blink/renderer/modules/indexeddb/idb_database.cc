@@ -248,7 +248,7 @@ int32_t IDBDatabase::AddObserver(
     bool include_transaction,
     bool no_records,
     bool values,
-    const std::bitset<kWebIDBOperationTypeCount>& operation_types) {
+    std::bitset<blink::kIDBOperationTypeCount> operation_types) {
   int32_t observer_id = NextObserverId();
   observers_.Set(observer_id, observer);
   Backend()->AddObserver(transaction_id, observer_id, include_transaction,
@@ -419,9 +419,9 @@ IDBTransaction* IDBDatabase::transaction(
     object_store_ids.push_back(object_store_id);
   }
 
-  WebIDBTransactionMode mode = IDBTransaction::StringToMode(mode_string);
-  if (mode != kWebIDBTransactionModeReadOnly &&
-      mode != kWebIDBTransactionModeReadWrite) {
+  mojom::IDBTransactionMode mode = IDBTransaction::StringToMode(mode_string);
+  if (mode != mojom::IDBTransactionMode::ReadOnly &&
+      mode != mojom::IDBTransactionMode::ReadWrite) {
     exception_state.ThrowTypeError(
         "The mode provided ('" + mode_string +
         "') is not one of 'readonly' or 'readwrite'.");

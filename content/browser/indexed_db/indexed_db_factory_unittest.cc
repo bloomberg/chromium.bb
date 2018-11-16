@@ -55,7 +55,7 @@ class MockIDBFactory : public IndexedDBFactoryImpl {
     leveldb::Status s;
     auto backing_store = OpenBackingStore(origin, data_directory,
                                           &data_loss_info, &disk_full, &s);
-    EXPECT_EQ(blink::kWebIDBDataLossNone, data_loss_info.status);
+    EXPECT_EQ(blink::mojom::IDBDataLoss::None, data_loss_info.status);
     return backing_store;
   }
 
@@ -760,7 +760,7 @@ namespace {
 
 class DataLossCallbacks final : public MockIndexedDBCallbacks {
  public:
-  blink::WebIDBDataLoss data_loss() const { return data_loss_; }
+  blink::mojom::IDBDataLoss data_loss() const { return data_loss_; }
   void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
                  const IndexedDBDatabaseMetadata& metadata) override {
     if (!connection_)
@@ -779,7 +779,7 @@ class DataLossCallbacks final : public MockIndexedDBCallbacks {
 
  private:
   ~DataLossCallbacks() final {}
-  blink::WebIDBDataLoss data_loss_ = blink::kWebIDBDataLossNone;
+  blink::mojom::IDBDataLoss data_loss_ = blink::mojom::IDBDataLoss::None;
 };
 
 TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
@@ -798,7 +798,7 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
     auto callbacks = base::MakeRefCounted<DataLossCallbacks>();
 
     const int64_t transaction_id = 1;
-    blink::WebIDBDataLoss result;
+    blink::mojom::IDBDataLoss result;
     auto db_callbacks = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
 
     {
@@ -833,28 +833,54 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
     return result;
   };
 
-  using blink::kWebIDBDataLossNone;
-  using blink::kWebIDBDataLossTotal;
   static const struct {
     const char* origin;
     IndexedDBDataFormatVersion open_version_1;
     IndexedDBDataFormatVersion open_version_2;
-    blink::WebIDBDataLoss expected_data_loss;
+    blink::mojom::IDBDataLoss expected_data_loss;
   } kTestCases[] = {
-      {"http://same-version.com/", {3, 4}, {3, 4}, kWebIDBDataLossNone},
-      {"http://blink-upgrade.com/", {3, 4}, {3, 5}, kWebIDBDataLossNone},
-      {"http://v8-upgrade.com/", {3, 4}, {4, 4}, kWebIDBDataLossNone},
-      {"http://both-upgrade.com/", {3, 4}, {4, 5}, kWebIDBDataLossNone},
-      {"http://blink-downgrade.com/", {3, 4}, {3, 3}, kWebIDBDataLossTotal},
-      {"http://v8-downgrade.com/", {3, 4}, {2, 4}, kWebIDBDataLossTotal},
-      {"http://both-downgrade.com/", {3, 4}, {2, 3}, kWebIDBDataLossTotal},
-      {"http://v8-up-blink-down.com/", {3, 4}, {4, 2}, kWebIDBDataLossTotal},
-      {"http://v8-down-blink-up.com/", {3, 4}, {2, 5}, kWebIDBDataLossTotal},
+      {"http://same-version.com/",
+       {3, 4},
+       {3, 4},
+       blink::mojom::IDBDataLoss::None},
+      {"http://blink-upgrade.com/",
+       {3, 4},
+       {3, 5},
+       blink::mojom::IDBDataLoss::None},
+      {"http://v8-upgrade.com/",
+       {3, 4},
+       {4, 4},
+       blink::mojom::IDBDataLoss::None},
+      {"http://both-upgrade.com/",
+       {3, 4},
+       {4, 5},
+       blink::mojom::IDBDataLoss::None},
+      {"http://blink-downgrade.com/",
+       {3, 4},
+       {3, 3},
+       blink::mojom::IDBDataLoss::Total},
+      {"http://v8-downgrade.com/",
+       {3, 4},
+       {2, 4},
+       blink::mojom::IDBDataLoss::Total},
+      {"http://both-downgrade.com/",
+       {3, 4},
+       {2, 3},
+       blink::mojom::IDBDataLoss::Total},
+      {"http://v8-up-blink-down.com/",
+       {3, 4},
+       {4, 2},
+       blink::mojom::IDBDataLoss::Total},
+      {"http://v8-down-blink-up.com/",
+       {3, 4},
+       {2, 5},
+       blink::mojom::IDBDataLoss::Total},
   };
   for (const auto& test : kTestCases) {
     SCOPED_TRACE(test.origin);
     const Origin origin = Origin::Create(GURL(test.origin));
-    ASSERT_EQ(kWebIDBDataLossNone, try_open(origin, test.open_version_1));
+    ASSERT_EQ(blink::mojom::IDBDataLoss::None,
+              try_open(origin, test.open_version_1));
     EXPECT_EQ(test.expected_data_loss, try_open(origin, test.open_version_2));
   }
 }

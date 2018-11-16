@@ -125,7 +125,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   bool connection_created_ = false;
 
   // Used to assert that OnSuccess is only called if there was no data loss.
-  blink::WebIDBDataLoss data_loss_;
+  blink::mojom::IDBDataLoss data_loss_;
 
   // The "blocked" event should be sent at most once per request.
   bool sent_blocked_ = false;
