@@ -26982,6 +26982,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="GCMNetworkChannel"/>
 </enum>
 
+<enum name="InvalidatorState">
+  <int value="0" label="Enabled"/>
+  <int value="1" label="Error"/>
+  <int value="2" label="Credentials Rejected"/>
+  <int value="3" label="Shutting Down"/>
+</enum>
+
 <enum name="IOSExternalURLRequestStatus">
   <int value="0" label="MainFrameAllowed"/>
   <int value="1" label="SubframeAllowed"/>

@@ -290,6 +290,8 @@ void TiclInvalidationService::OnUseGCMChannelChanged() {
 
 void TiclInvalidationService::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
+  UMA_HISTOGRAM_ENUMERATION("Invalidations.StatusChanged", state);
+
   if (state == syncer::INVALIDATION_CREDENTIALS_REJECTED) {
     // This may be due to normal OAuth access token expiration.  If so, we must
     // fetch a new one using our refresh token.  Resetting the invalidator's
