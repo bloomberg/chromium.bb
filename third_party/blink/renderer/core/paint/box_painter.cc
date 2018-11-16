@@ -139,12 +139,17 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
       BackgroundIsKnownToBeOpaque(paint_info))
     recorder.SetKnownToBeOpaque();
 
+  const auto skip_background = layout_box_.BackgroundTransfersToView() ||
+                               (paint_info.SkipRootBackground() &&
+                                paint_info.PaintContainer() == &layout_box_);
+
   bool needs_end_layer = false;
   if (!painting_scrolling_background) {
     // FIXME: Should eventually give the theme control over whether the box
     // shadow should paint, since controls could have custom shadows of their
     // own.
-    BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect, style);
+    BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect, style, true,
+                                         true, skip_background);
 
     if (BleedAvoidanceIsClipping(box_decoration_data.bleed_avoidance)) {
       state_saver.Save();
@@ -166,10 +171,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   bool theme_painted =
       box_decoration_data.has_appearance &&
       !theme_painter.Paint(layout_box_, paint_info, snapped_paint_rect);
-  bool should_paint_background =
-      !theme_painted && (!paint_info.SkipRootBackground() ||
-                         paint_info.PaintContainer() != &layout_box_);
-  if (should_paint_background) {
+  if (!theme_painted && !skip_background) {
     PaintBackground(paint_info, paint_rect,
                     box_decoration_data.background_color,
                     box_decoration_data.bleed_avoidance);
