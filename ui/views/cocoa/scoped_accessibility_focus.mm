@@ -8,29 +8,29 @@
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
 
-#include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
+#include "ui/views/cocoa/bridged_native_widget_host_impl.h"
 
 namespace views {
 
 namespace {
 bool g_has_swizzled_method = false;
-views_bridge_mac::BridgedNativeWidgetHostHelper* g_overridden_key_element = nil;
+BridgedNativeWidgetHostImpl* g_overridden_key_element = nil;
 
 // Swizzled method for -[NSApplication accessibilityFocusedUIElement]. This
 // will return the overridden element if one is present. Otherwise, it will
 // return the key window.
 id SwizzledAccessibilityFocusedUIElement(NSApplication* app, SEL) {
   if (g_overridden_key_element) {
-    return [g_overridden_key_element->GetNativeViewAccessible()
+    return [g_overridden_key_element->GetLocalNSWindow()
                 accessibilityFocusedUIElement];
   }
-  return [app keyWindow];
+  return [[app keyWindow] accessibilityFocusedUIElement];
 }
 }  // namespace
 
 ScopedAccessibilityFocus::ScopedAccessibilityFocus(
-    views_bridge_mac::BridgedNativeWidgetHostHelper* host_helper)
-    : host_helper_(host_helper) {
+    BridgedNativeWidgetHostImpl* host)
+    : host_(host) {
   if (!g_has_swizzled_method) {
     Method method = class_getInstanceMethod(
         [NSApplication class], @selector(accessibilityFocusedUIElement));
@@ -38,11 +38,11 @@ ScopedAccessibilityFocus::ScopedAccessibilityFocus(
                              (IMP)SwizzledAccessibilityFocusedUIElement);
     g_has_swizzled_method = true;
   }
-  g_overridden_key_element = host_helper_;
+  g_overridden_key_element = host_;
 }
 
 ScopedAccessibilityFocus::~ScopedAccessibilityFocus() {
-  if (g_overridden_key_element == host_helper_)
+  if (g_overridden_key_element == host_)
     g_overridden_key_element = nullptr;
 }
 
