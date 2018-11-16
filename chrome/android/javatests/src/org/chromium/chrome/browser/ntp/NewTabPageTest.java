@@ -76,8 +76,6 @@ import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
@@ -196,7 +194,6 @@ public class NewTabPageTest {
     @DisabledTest(message = "https://crbug.com/813589")
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
-    @DisableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
     public void testRender() throws IOException {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         RenderTestRule.sanitize(mNtp.getView());
@@ -206,17 +203,6 @@ public class NewTabPageTest {
 
         RecyclerViewTestUtils.scrollToBottom(mNtp.getNewTabPageView().getRecyclerView());
         mRenderTestRule.render(mNtp.getView().getRootView(), "new_tab_page_scrolled");
-    }
-
-    @Test
-    @DisabledTest(message = "https://crbug.com/848983")
-    @MediumTest
-    @Feature({"NewTabPage", "RenderTest"})
-    @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
-    public void testRender_Simplified() throws IOException {
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        RenderTestRule.sanitize(mNtp.getView());
-        mRenderTestRule.render(mNtp.getView().getRootView(), "simplified_new_tab_page");
     }
 
     @Test

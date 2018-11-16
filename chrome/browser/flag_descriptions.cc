@@ -2751,9 +2751,6 @@ const char kSpannableInlineAutocompleteDescription[] =
     "A new type of inline autocomplete for the omnibox that works with "
     "keyboards that compose text.";
 
-const char kSimplifiedNtpName[] = "Simplified NTP";
-const char kSimplifiedNtpDescription[] = "Show a simplified New Tab Page.";
-
 const char kSiteExplorationUiName[] = "Site Exploration UI";
 const char kSiteExplorationUiDescription[] =
     "Show site suggestions in the Exploration UI";

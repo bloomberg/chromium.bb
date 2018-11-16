@@ -660,7 +660,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/feedback/ProcessIdFeedbackSource.java",
   "java/src/org/chromium/chrome/browser/feedback/ScreenshotSource.java",
   "java/src/org/chromium/chrome/browser/feedback/ScreenshotTask.java",
-  "java/src/org/chromium/chrome/browser/feedback/SimplifiedNtpFeedbackSource.java",
   "java/src/org/chromium/chrome/browser/feedback/StaticScreenshotSource.java",
   "java/src/org/chromium/chrome/browser/feedback/SystemInfoFeedbackSource.java",
   "java/src/org/chromium/chrome/browser/feedback/UrlFeedbackSource.java",

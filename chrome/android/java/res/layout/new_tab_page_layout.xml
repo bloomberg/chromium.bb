@@ -66,13 +66,6 @@
             app:tint="@color/dark_mode_tint" />
     </view>
 
-    <ViewStub
-        android:id="@+id/shortcuts_stub"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inflatedId="@+id/shortcuts"
-        android:layout="@layout/ntp_shortcuts" />
-
     <!-- Middle spacer -->
     <View
         android:id="@+id/ntp_middle_spacer"
