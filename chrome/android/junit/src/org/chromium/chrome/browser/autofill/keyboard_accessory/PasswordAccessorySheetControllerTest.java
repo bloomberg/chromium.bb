@@ -9,10 +9,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import android.support.v7.widget.RecyclerView;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +30,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -64,11 +69,16 @@ public class PasswordAccessorySheetControllerTest {
 
     @Test
     public void testSetsViewAdapterOnTabCreation() {
+        FrameLayout layout = mock(FrameLayout.class);
+        when(layout.findViewById(R.id.password_items)).thenReturn(mMockView);
+        when(layout.findViewById(R.id.accessory_sheet_shadow)).thenReturn(mock(ImageView.class));
+        when(mMockView.getParent()).thenReturn(layout);
         KeyboardAccessoryData.Tab tab = mCoordinator.getTab();
         assertNotNull(tab);
         assertNotNull(tab.getListener());
-        tab.getListener().onTabCreated(mMockView);
+        tab.getListener().onTabCreated(layout);
         verify(mMockView).setAdapter(any());
+        verify(mMockView).addOnScrollListener(any());
     }
 
     @Test
