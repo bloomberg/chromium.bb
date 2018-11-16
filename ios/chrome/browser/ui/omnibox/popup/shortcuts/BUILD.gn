@@ -43,6 +43,7 @@ source_set("shortcuts_internal") {
   deps = [
     "//components/ntp_tiles",
     "//components/reading_list/core",
+    "//components/reading_list/ios",
     "//ios/chrome/browser/ntp_tiles",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands:commands",

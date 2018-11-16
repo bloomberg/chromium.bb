@@ -24,4 +24,10 @@
   return self;
 }
 
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.tile.countLabel.text = nil;
+  self.tile.countContainer.hidden = YES;
+}
+
 @end
