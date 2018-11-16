@@ -38,8 +38,9 @@ public class WebApkServiceFactory extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        ClassLoader webApkClassLoader =
-                HostBrowserClassLoader.getClassLoaderInstance(this, WEBAPK_SERVICE_IMPL_CLASS_NAME);
+        final String hostBrowserPackage = HostBrowserUtils.getCachedHostBrowserPackage(this);
+        ClassLoader webApkClassLoader = HostBrowserClassLoader.getClassLoaderInstance(
+                this, hostBrowserPackage, WEBAPK_SERVICE_IMPL_CLASS_NAME);
         if (webApkClassLoader == null) {
             Log.w(TAG, "Unable to create ClassLoader.");
             return null;
@@ -50,7 +51,7 @@ public class WebApkServiceFactory extends Service {
                     webApkClassLoader.loadClass(WEBAPK_SERVICE_IMPL_CLASS_NAME);
             Constructor<?> webApkServiceImplConstructor =
                     webApkServiceImplClass.getConstructor(Context.class, Bundle.class);
-            int hostBrowserUid = HostBrowserUtils.getHostBrowserUid(this);
+            int hostBrowserUid = WebApkUtils.getRemotePackageUid(this, hostBrowserPackage);
             Bundle bundle = new Bundle();
             bundle.putInt(KEY_SMALL_ICON_ID, R.drawable.notification_badge);
             bundle.putInt(KEY_HOST_BROWSER_UID, hostBrowserUid);
