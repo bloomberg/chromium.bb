@@ -45,6 +45,7 @@
 namespace blink {
 
 class FlexItem;
+class FlexLine;
 class FlexLayoutAlgorithm;
 class LayoutBox;
 struct MinMaxSize;
@@ -106,7 +107,7 @@ class FlexItem {
 
   LayoutUnit MarginBoxAscent() const;
 
-  LayoutUnit AvailableAlignmentSpace(LayoutUnit) const;
+  LayoutUnit AvailableAlignmentSpace() const;
 
   bool HasAutoMarginsInCrossAxis() const;
 
@@ -114,9 +115,12 @@ class FlexItem {
 
   // Computes the cross-axis size that a stretched item should have and stores
   // it in cross_axis_size. DCHECKs if the item is not stretch aligned.
-  void ComputeStretchedSize(LayoutUnit line_cross_axis_extent);
+  void ComputeStretchedSize();
+
+  inline const FlexLine* Line() const;
 
   FlexLayoutAlgorithm* algorithm;
+  wtf_size_t line_number;
   LayoutBox* box;
   const LayoutUnit flex_base_content_size;
   const MinMaxSize min_max_sizes;
@@ -293,6 +297,7 @@ class FlexLayoutAlgorithm {
 
   bool IsHorizontalFlow() const;
   bool IsColumnFlow() const;
+  bool IsMultiline() const { return style_->FlexWrap() != EFlexWrap::kNowrap; }
   static bool IsHorizontalFlow(const ComputedStyle&);
   bool IsLeftToRightFlow() const;
   TransformedWritingMode GetTransformedWritingMode() const;
@@ -318,7 +323,6 @@ class FlexLayoutAlgorithm {
 
  private:
   EOverflow MainAxisOverflowForChild(const LayoutBox& child) const;
-  bool IsMultiline() const { return style_->FlexWrap() != EFlexWrap::kNowrap; }
 
   const ComputedStyle* style_;
   const LayoutUnit line_break_length_;
@@ -327,6 +331,10 @@ class FlexLayoutAlgorithm {
   size_t next_item_index_;
   DISALLOW_COPY_AND_ASSIGN(FlexLayoutAlgorithm);
 };
+
+inline const FlexLine* FlexItem::Line() const {
+  return &algorithm->FlexLines()[line_number];
+}
 
 }  // namespace blink
 
