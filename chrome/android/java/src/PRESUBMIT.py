@@ -116,8 +116,6 @@ def _CheckAlertDialogBuilder(input_api, output_api):
           'password/ExportWarningDialogFragment.java',
       'chrome/android/java/src/org/chromium/chrome/browser/share/'
           'ShareHelper.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/preferences/'
-          'ProtectedContentResetCredentialConfirmDialogFragment.java',
       'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/'
           'OtherFormsOfHistoryDialogFragment.java',
       'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/'

@@ -39,8 +39,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.media.cdm.MediaDrmCredentialManager;
-import org.chromium.chrome.browser.media.cdm.MediaDrmCredentialManager.MediaDrmCredentialManagerCallback;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -50,7 +48,6 @@ import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
-import org.chromium.chrome.browser.preferences.ProtectedContentResetCredentialConfirmDialogFragment;
 import org.chromium.chrome.browser.preferences.SearchUtils;
 import org.chromium.chrome.browser.preferences.website.Website.StoredDataClearedCallback;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -72,7 +69,6 @@ import java.util.Map;
 public class SingleCategoryPreferences extends PreferenceFragment
         implements OnPreferenceChangeListener, OnPreferenceClickListener,
                    AddExceptionPreference.SiteAddedCallback,
-                   ProtectedContentResetCredentialConfirmDialogFragment.Listener,
                    View.OnClickListener {
     // The key to use to pass which category this preference should display,
     // e.g. Location/Popups/All sites (if blank).
@@ -322,21 +318,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
             mSearch = query;
             if (queryHasChanged) getInfoForOrigins();
         });
-
-        if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
-            // Add a menu item to reset protected media identifier device credentials.
-            MenuItem resetMenu =
-                    menu.add(Menu.NONE, Menu.NONE, Menu.NONE, R.string.reset_device_credentials);
-            resetMenu.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem menuItem) {
-                    ProtectedContentResetCredentialConfirmDialogFragment
-                            .newInstance(SingleCategoryPreferences.this)
-                            .show(getFragmentManager(), null);
-                    return true;
-                }
-            });
-        }
 
         MenuItem help = menu.add(
                 Menu.NONE, R.id.menu_id_targeted_help, Menu.NONE, R.string.menu_help);
@@ -895,19 +876,5 @@ public class SingleCategoryPreferences extends PreferenceFragment
         } else {
             ManagedPreferencesUtils.showManagedByAdministratorToast(getActivity());
         }
-    }
-
-    // ProtectedContentResetCredentialConfirmDialogFragment.Listener:
-    @Override
-    public void resetDeviceCredential() {
-        MediaDrmCredentialManager.resetCredentials(new MediaDrmCredentialManagerCallback() {
-            @Override
-            public void onCredentialResetFinished(boolean succeeded) {
-                if (succeeded) return;
-                Toast.makeText(getActivity(), getString(R.string.protected_content_reset_failed),
-                             Toast.LENGTH_SHORT)
-                        .show();
-            }
-        });
     }
 }

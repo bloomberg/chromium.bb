@@ -568,16 +568,6 @@ bool MediaDrmBridge::IsSecureCodecRequired() {
   return true;
 }
 
-void MediaDrmBridge::ResetDeviceCredentials(
-    const ResetCredentialsCB& callback) {
-  DVLOG(1) << __func__;
-
-  DCHECK(!reset_credentials_cb_);
-  reset_credentials_cb_ = callback;
-  JNIEnv* env = AttachCurrentThread();
-  Java_MediaDrmBridge_resetDeviceCredentials(env, j_media_drm_);
-}
-
 void MediaDrmBridge::Unprovision() {
   DVLOG(1) << __func__;
 
@@ -803,16 +793,6 @@ void MediaDrmBridge::OnSessionExpirationUpdate(
                      base::Time::FromDoubleT(expiry_time_ms / 1000.0)));
 }
 
-void MediaDrmBridge::OnResetDeviceCredentialsCompleted(
-    JNIEnv* env,
-    const JavaParamRef<jobject>&,
-    bool success) {
-  DVLOG(2) << __func__ << ": success:" << success;
-  DCHECK(reset_credentials_cb_);
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(reset_credentials_cb_), success));
-}
-
 //------------------------------------------------------------------------------
 // The following are private methods.
 
@@ -859,7 +839,7 @@ MediaDrmBridge::MediaDrmBridge(
       base::android::BuildInfo::GetInstance()->sdk_int() >=
           base::android::SDK_VERSION_MARSHMALLOW &&
       // origin id can be empty when MediaDrmBridge is created by
-      // CreateWithoutSessionSupport, which is used to reset credentials.
+      // CreateWithoutSessionSupport, which is used for unprovisioning.
       !origin_id.empty();
 
   ScopedJavaLocalRef<jstring> j_security_origin = ConvertUTF8ToJavaString(
