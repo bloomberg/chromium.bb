@@ -1338,7 +1338,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       NavigationUIData* navigation_data,
       bool is_main_frame,
       ui::PageTransition page_transition,
-      bool has_user_gesture);
+      bool has_user_gesture,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers);
 
   // Creates an OverlayWindow to be used for Picture-in-Picture. This window
   // will house the content shown when in Picture-in-Picture mode. This will
