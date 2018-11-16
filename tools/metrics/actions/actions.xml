@@ -19971,6 +19971,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Tray_SwipeToClose_Successful">
+  <obsolete>
+    No longer needed since swipe on the tray bubble to close it has been
+    disabled and unified system tray has been launched.
+  </obsolete>
   <owner>omrilio@chromium.org</owner>
   <owner>minch@chromium.org</owner>
   <description>
@@ -19981,6 +19985,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Tray_SwipeToClose_Unsuccessful">
+  <obsolete>
+    No longer needed since swipe on the tray bubble to close has been disabled
+    and unified system tray has been launched.
+  </obsolete>
   <owner>omrilio@chromium.org</owner>
   <owner>minch@chromium.org</owner>
   <description>
@@ -19991,6 +19999,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Tray_SwipeToOpen_Successful">
+  <obsolete>
+    No longer needed since swipe on the status area tray to open it has been
+    disabled and unified system tray has been launched.
+  </obsolete>
   <owner>omrilio@chromium.org</owner>
   <owner>minch@chromium.org</owner>
   <description>
@@ -20001,6 +20013,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Tray_SwipeToOpen_Unsuccessful">
+  <obsolete>
+    No longer needed since swipe on the status area tray to open it has been
+    disabled and unified system tray has been launched.
+  </obsolete>
   <owner>omrilio@chromium.org</owner>
   <owner>minch@chromium.org</owner>
   <description>
