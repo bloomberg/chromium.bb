@@ -11,7 +11,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionDataUseItem;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoUtils;
@@ -66,12 +65,8 @@ public class DataReductionProxySettings {
 
     private static DataReductionProxySettings sSettings;
 
-    private static final String DATA_REDUCTION_HAS_EVER_BEEN_ENABLED_PREF =
-            "BANDWIDTH_REDUCTION_PROXY_HAS_EVER_BEEN_ENABLED";
     public static final String DATA_REDUCTION_FIRST_ENABLED_TIME =
             "BANDWIDTH_REDUCTION_FIRST_ENABLED_TIME";
-
-    private static final String PARAM_PERSISTENT_MENU_ITEM_ENABLED = "persistent_menu_item_enabled";
 
     private static final long DATA_REDUCTION_MAIN_MENU_ITEM_SAVED_KB_THRESHOLD = 100;
 
@@ -176,32 +171,10 @@ public class DataReductionProxySettings {
      * Returns true if the Data Reduction Proxy menu item should be shown in the main menu.
      */
     public boolean shouldUseDataReductionMainMenuItem() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DATA_REDUCTION_MAIN_MENU)) return false;
+        if (!isDataReductionProxyEnabled()) return false;
 
-        boolean data_reduction_main_menu_item_allowed = false;
-        if (ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                    ChromeFeatureList.DATA_REDUCTION_MAIN_MENU, PARAM_PERSISTENT_MENU_ITEM_ENABLED,
-                    false)) {
-            // If the Data Reduction Proxy is enabled, set the pref storing that the proxy has
-            // ever been enabled.
-            if (isDataReductionProxyEnabled()) {
-                ContextUtils.getAppSharedPreferences()
-                        .edit()
-                        .putBoolean(DATA_REDUCTION_HAS_EVER_BEEN_ENABLED_PREF, true)
-                        .apply();
-            }
-            data_reduction_main_menu_item_allowed =
-                    ContextUtils.getAppSharedPreferences().getBoolean(
-                            DATA_REDUCTION_HAS_EVER_BEEN_ENABLED_PREF, false);
-        } else {
-            data_reduction_main_menu_item_allowed = isDataReductionProxyEnabled();
-        }
-
-        if (data_reduction_main_menu_item_allowed) {
-            return ConversionUtils.bytesToKilobytes(getContentLengthSavedInHistorySummary())
-                    >= DATA_REDUCTION_MAIN_MENU_ITEM_SAVED_KB_THRESHOLD;
-        }
-        return false;
+        return ConversionUtils.bytesToKilobytes(getContentLengthSavedInHistorySummary())
+                >= DATA_REDUCTION_MAIN_MENU_ITEM_SAVED_KB_THRESHOLD;
     }
 
     /** Returns true if the SPDY proxy is managed by an administrator's policy. */

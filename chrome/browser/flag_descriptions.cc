@@ -2428,11 +2428,6 @@ const char kEnableCustomFeedbackUiDescription[] =
     "Enables a custom feedback UI when submitting feedback through Google "
     "Feedback. Works with Google Play Services v10.2+";
 
-const char kEnableDataReductionProxyMainMenuName[] =
-    "Enable Data Saver main menu item";
-const char kEnableDataReductionProxyMainMenuDescription[] =
-    "Enables the Data Saver menu item in the main menu";
-
 const char kEnableMediaControlsExpandGestureName[] =
     "Enable Media Controls Expand Gesture";
 const char kEnableMediaControlsExpandGestureDescription[] =

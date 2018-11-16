@@ -92,30 +92,11 @@ public class DataSaverAppMenuTest {
     }
 
     /**
-     * Verify the Data Saver item does not show when the feature isn't on, and the proxy is enabled.
-     */
-    @Test
-    @SmallTest
-    @CommandLineFlags.Add("disable-field-trial-config")
-    @Feature({"Browser", "Main"})
-    public void testMenuDataSaverNoFeature() throws Throwable {
-        mActivityTestRule.runOnUiThread((Runnable) () -> {
-            ContextUtils.getAppSharedPreferences().edit().clear().apply();
-            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-            DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                    mActivityTestRule.getActivity().getApplicationContext(), true);
-            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-        });
-    }
-
-    /**
      * Verify the Data Saver footer shows with the flag when the proxy is on and the user has saved
      * at least 100KB of data.
      */
     @Test
     @SmallTest
-    @CommandLineFlags.Add({"enable-features=DataReductionProxyMainMenu",
-            "disable-field-trial-config"})
     @Feature({"Browser", "Main"})
     public void testMenuDataSaver() throws Throwable {
         mActivityTestRule.runOnUiThread((Runnable) () -> {
@@ -143,48 +124,6 @@ public class DataSaverAppMenuTest {
             DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
                     mActivityTestRule.getActivity().getApplicationContext(), false);
             Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-        });
-    }
-
-    /**
-     * Verify the Data Saver footer shows with the flag when the proxy turns on and remains in the
-     * main menu.
-     */
-    @Test
-    @SmallTest
-    @CommandLineFlags.Add({"enable-features=DataReductionProxyMainMenu<DataReductionProxyMainMenu",
-            "force-fieldtrials=DataReductionProxyMainMenu/Enabled",
-            "force-fieldtrial-params=DataReductionProxyMainMenu.Enabled:"
-                    + "persistent_menu_item_enabled/true",
-            "disable-field-trial-config"})
-    @Feature({"Browser", "Main"})
-    public void testMenuDataSaverPersistent() throws Throwable {
-        mActivityTestRule.runOnUiThread((Runnable) () -> {
-            ContextUtils.getAppSharedPreferences().edit().clear().apply();
-            // Data Saver hasn't been turned on, the footer shouldn't show.
-            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-
-            // Turn Data Saver on, the footer should not be shown, as the user hasn't saved any
-            // bytes yet.
-            DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                    mActivityTestRule.getActivity().getApplicationContext(), true);
-            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-
-            // The user has only saved 50KB so far. Ensure footer is not shown since it is not above
-            // the threshold yet.
-            mSettings.setContentLengthSavedInHistorySummary(50 * 1024);
-            Assert.assertEquals(0, mAppMenuHandler.getDelegate().getFooterResourceId());
-
-            // The user has now saved 100KB. Ensure the footer is shown.
-            mSettings.setContentLengthSavedInHistorySummary(100 * 1024);
-            Assert.assertEquals(R.layout.data_reduction_main_menu_item,
-                    mAppMenuHandler.getDelegate().getFooterResourceId());
-
-            // Ensure the footer remains if the proxy is turned off.
-            DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                    mActivityTestRule.getActivity().getApplicationContext(), false);
-            Assert.assertEquals(R.layout.data_reduction_main_menu_item,
-                    mAppMenuHandler.getDelegate().getFooterResourceId());
         });
     }
 }
