@@ -2,7 +2,6 @@
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Creates a zip archive with policy template files.
 """
 
@@ -47,7 +46,7 @@ def main(argv):
   options, args = parser.parse_args(argv[1:])
 
   # Process file list, possibly expanding language placeholders.
-  _LANG_PLACEHOLDER = "${lang}";
+  _LANG_PLACEHOLDER = "${lang}"
   languages = filter(bool, options.languages.split(','))
   file_list = []
   for file_to_add in options.files:

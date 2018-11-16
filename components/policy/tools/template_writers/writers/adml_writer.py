@@ -48,13 +48,13 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
       assert text == self.strings_seen[id]
     else:
       self.strings_seen[id] = text
-      string_elem = self.AddElement(
-          self._string_table_elem, 'string', {'id': id})
+      string_elem = self.AddElement(self._string_table_elem, 'string',
+                                    {'id': id})
       string_elem.appendChild(self._doc.createTextNode(text))
 
   def _GetAdmxElementType(self, policy):
     '''Returns the ADMX element type for a particular Policy.'''
-    return AdmxElementType.GetType(policy, allow_multi_strings = False)
+    return AdmxElementType.GetType(policy, allow_multi_strings=False)
 
   def WritePolicy(self, policy):
     '''Generates the ADML elements for a Policy.
@@ -91,8 +91,8 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
 
     self._AddString(policy_name, policy_caption)
     self._AddString(policy_name + '_Explain', policy_explain)
-    presentation_elem = self.AddElement(
-        self._presentation_table_elem, 'presentation', {'id': policy_name})
+    presentation_elem = self.AddElement(self._presentation_table_elem,
+                                        'presentation', {'id': policy_name})
 
     admx_element_type = self._GetAdmxElementType(policy)
     if admx_element_type == AdmxElementType.MAIN:
@@ -111,8 +111,10 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
       self._AddString(policy_name + '_Legacy', legacy_label)
       label_elem.appendChild(self._doc.createTextNode(legacy_label))
       # New multi-line textbox, easier to use than old single-line textbox:
-      multitextbox_elem = self.AddElement(presentation_elem, 'multiTextBox',
-          {'refId': policy_name, 'defaultHeight': '8'})
+      multitextbox_elem = self.AddElement(presentation_elem, 'multiTextBox', {
+          'refId': policy_name,
+          'defaultHeight': '8'
+      })
       multitextbox_elem.appendChild(self._doc.createTextNode(policy_label))
     elif admx_element_type == AdmxElementType.INT:
       textbox_elem = self.AddElement(presentation_elem, 'decimalTextBox',
@@ -183,7 +185,7 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
 
     # Dicts are pretty simple - json.dumps them onto multiple lines.
     if isinstance(example_value, dict):
-      value_as_text = json.dumps(example_value, indent = 2)
+      value_as_text = json.dumps(example_value, indent=2)
       return self._GetLocalizedMessage('example_value') + '\n\n' + value_as_text
 
     # Lists are the more complicated - the example value we show the user
@@ -195,7 +197,7 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
       if policy_type == 'dict':
         # If the policy type is dict, that means they get to enter in the
         # whole policy as JSON, including the JSON array square brackets:
-        value_as_text = json.dumps(example_value, indent = 2)
+        value_as_text = json.dumps(example_value, indent=2)
 
       elif policy_type is not None and 'list' in policy_type:
         # But if the policy type is list, then they get to enter each item
@@ -218,11 +220,10 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     # Other types - mostly booleans - we don't show example values.
     return None
 
-
   def _GetLegacySingleLineLabel(self, policy_label):
     '''Generates a label for a legacy single-line textbox.'''
-    return (self._GetLocalizedMessage('legacy_single_line_label')
-        .replace('$6', policy_label))
+    return (self._GetLocalizedMessage('legacy_single_line_label').replace(
+        '$6', policy_label))
 
   def _GetLocalizedMessage(self, msg_id):
     '''Returns the localized message of the given message ID.'''
@@ -230,8 +231,7 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
 
   def BeginTemplate(self):
     dom_impl = minidom.getDOMImplementation('')
-    self._doc = dom_impl.createDocument(None, 'policyDefinitionResources',
-                                        None)
+    self._doc = dom_impl.createDocument(None, 'policyDefinitionResources', None)
     if self._GetChromiumVersionString() is not None:
       self.AddComment(self._doc.documentElement, self.config['build'] + \
           ' version: ' + self._GetChromiumVersionString())
@@ -246,7 +246,7 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     self._string_table_elem = self.AddElement(resources_elem, 'stringTable')
     self._AddBaseStrings()
     self._presentation_table_elem = self.AddElement(resources_elem,
-                                                   'presentationTable')
+                                                    'presentationTable')
 
   def Init(self):
     # Map of all strings seen.
@@ -262,5 +262,3 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     # names correctly.
     # TODO(markusheintz): Find a better formatting that works with gpedit.
     return self._doc.toxml()
-
-

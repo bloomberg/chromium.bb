@@ -5,12 +5,14 @@
 
 from writers import template_writer
 
+
 def GetWriter(config):
   '''Factory method for instanciating the GoogleADMXWriter. Every Writer needs a
   GetWriter method because the TemplateFormatter uses this method to
   instantiate a Writer.
   '''
-  return GoogleADMXWriter(None, config)   # platforms unused
+  return GoogleADMXWriter(None, config)  # platforms unused
+
 
 class GoogleADMXWriter(template_writer.TemplateWriter):
   '''Simple writer that writes fixed google.admx files.

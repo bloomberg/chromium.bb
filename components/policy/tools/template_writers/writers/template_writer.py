@@ -73,8 +73,8 @@ class TemplateWriter(object):
         continue
       if '*' in self.platforms:
         return True
-      if any(platform in self.platforms for platform in
-             supported_on['platforms']):
+      if any(
+          platform in self.platforms for platform in supported_on['platforms']):
         return True
     return False
 
@@ -86,8 +86,11 @@ class TemplateWriter(object):
     '''Checks if the given policy can be mandatory.'''
     return policy.get('features', {}).get('can_be_mandatory', True)
 
-  def IsPolicySupportedOnPlatform(
-      self, policy, platform, product=None, management=None):
+  def IsPolicySupportedOnPlatform(self,
+                                  policy,
+                                  platform,
+                                  product=None,
+                                  management=None):
     '''Checks if |policy| is supported on |product| for |platform|. If
     |product| is not specified, only the platform support is checked.
     If |management| is specified, also checks for support for Chrome OS

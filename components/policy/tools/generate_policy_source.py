@@ -2,7 +2,6 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 '''python %prog [options] platform chromium_os_flag template
 
 platform specifies which platform source is being generated for
@@ -21,7 +20,6 @@ import textwrap
 import types
 from xml.sax.saxutils import escape as xml_escape
 
-
 CHROME_POLICY_KEY = 'SOFTWARE\\\\Policies\\\\Google\\\\Chrome'
 CHROMIUM_POLICY_KEY = 'SOFTWARE\\\\Policies\\\\Chromium'
 
@@ -38,27 +36,20 @@ class PolicyDetails:
   # TODO(joaodasilva): refactor the 'dict' type into a more generic 'json' type
   # that can also be used to represent lists of other JSON objects.
   TYPE_MAP = {
-    'dict':             ('Type::DICTIONARY',  'string',       'String',
-                        'string'),
-    'external':         ('TYPE_EXTERNAL',     'string',       'String',
-                        'invalid'),
-    'int':              ('Type::INTEGER',     'int64',        'Integer',
-                        'integer'),
-    'int-enum':         ('Type::INTEGER',     'int64',        'Integer',
-                        'choice'),
-    'list':             ('Type::LIST',        'StringList',   'StringList',
-                        'string'),
-    'main':             ('Type::BOOLEAN',     'bool',         'Boolean',
-                        'bool'),
-    'string':           ('Type::STRING',      'string',       'String',
-                        'string'),
-    'string-enum':      ('Type::STRING',      'string',       'String',
-                        'choice'),
-    'string-enum-list': ('Type::LIST',        'StringList',   'StringList',
-                        'multi-select'),
+      'dict': ('Type::DICTIONARY', 'string', 'String', 'string'),
+      'external': ('TYPE_EXTERNAL', 'string', 'String', 'invalid'),
+      'int': ('Type::INTEGER', 'int64', 'Integer', 'integer'),
+      'int-enum': ('Type::INTEGER', 'int64', 'Integer', 'choice'),
+      'list': ('Type::LIST', 'StringList', 'StringList', 'string'),
+      'main': ('Type::BOOLEAN', 'bool', 'Boolean', 'bool'),
+      'string': ('Type::STRING', 'string', 'String', 'string'),
+      'string-enum': ('Type::STRING', 'string', 'String', 'choice'),
+      'string-enum-list': ('Type::LIST', 'StringList', 'StringList',
+                           'multi-select'),
   }
 
   class EnumItem:
+
     def __init__(self, item):
       self.caption = PolicyDetails._RemovePlaceholders(item['caption'])
       self.value = item['value']
@@ -75,9 +66,8 @@ class PolicyDetails:
     self.is_deprecated = policy.get('deprecated', False)
     self.is_device_only = policy.get('device_only', False)
     self.is_future = policy.get('future', False)
-    self.supported_chrome_os_management = \
-        policy.get('supported_chrome_os_management',
-                   ['active_directory', 'google_cloud'])
+    self.supported_chrome_os_management = policy.get(
+        'supported_chrome_os_management', ['active_directory', 'google_cloud'])
     self.schema = policy['schema']
     self.validation_schema = policy.get('validation_schema')
     self.has_enterprise_default = 'default_for_enterprise_users' in policy
@@ -86,15 +76,17 @@ class PolicyDetails:
 
     expected_platform = 'chrome_os' if is_chromium_os else os.lower()
     self.platforms = []
-    for platform, version_range in [ p.split(':')
-                                     for p in policy['supported_on'] ]:
+    for platform, version_range in [
+        p.split(':') for p in policy['supported_on']
+    ]:
       if self.is_device_only and platform != 'chrome_os':
-        raise RuntimeError('is_device_only is only allowed for Chrome OS: "%s"'
-                           % p)
-      if platform not in ['chrome_frame', 'chrome_os',
-                          'android', 'webview_android',
-                          'chrome.win', 'chrome.linux', 'chrome.mac',
-                          'chrome.fuchsia', 'chrome.*']:
+        raise RuntimeError(
+            'is_device_only is only allowed for Chrome OS: "%s"' % p)
+      if platform not in [
+          'chrome_frame', 'chrome_os', 'android', 'webview_android',
+          'chrome.win', 'chrome.linux', 'chrome.mac', 'chrome.fuchsia',
+          'chrome.*'
+      ]:
         raise RuntimeError('Platform "%s" is not supported' % platform)
 
       split_result = version_range.split('-')
@@ -122,8 +114,8 @@ class PolicyDetails:
     self.is_supported = expected_platform in self.platforms
 
     if not PolicyDetails.TYPE_MAP.has_key(policy['type']):
-      raise NotImplementedError('Unknown policy type for %s: %s' %
-                                (policy['name'], policy['type']))
+      raise NotImplementedError(
+          'Unknown policy type for %s: %s' % (policy['name'], policy['type']))
     self.policy_type, self.protobuf_type, self.policy_protobuf_type, \
         self.restriction_type = PolicyDetails.TYPE_MAP[policy['type']]
 
@@ -137,7 +129,7 @@ class PolicyDetails:
     if items is None:
       self.items = None
     else:
-      self.items = [ PolicyDetails.EnumItem(entry) for entry in items ]
+      self.items = [PolicyDetails.EnumItem(entry) for entry in items]
 
   PH_PATTERN = re.compile('<ph[^>]*>([^<]*|[^<]*<ex>([^<]*)</ex>[^<]*)</ph>')
 
@@ -146,7 +138,7 @@ class PolicyDetails:
       raise RuntimeError('Policy ' + self.name + ' has to contain a list of '
                          'tags!\n An empty list is also valid but means '
                          'setting this policy can never harm the user\'s '
-                         'privacy or security.\n');
+                         'privacy or security.\n')
     for tag in self.tags:
       if not tag in valid_tags:
         raise RuntimeError('Invalid Tag:' + tag + '!\n'
@@ -180,47 +172,69 @@ def ParseVersionFile(version_path):
 
 def main():
   parser = OptionParser(usage=__doc__)
-  parser.add_option('--pch', '--policy-constants-header', dest='header_path',
-                    help='generate header file of policy constants',
-                    metavar='FILE')
-  parser.add_option('--pcc', '--policy-constants-source', dest='source_path',
-                    help='generate source file of policy constants',
-                    metavar='FILE')
-  parser.add_option('--cpp', '--cloud-policy-protobuf',
-                    dest='cloud_policy_proto_path',
-                    help='generate cloud policy protobuf file',
-                    metavar='FILE')
-  parser.add_option('--cpfrp', '--cloud-policy-full-runtime-protobuf',
-                    dest='cloud_policy_full_runtime_proto_path',
-                    help='generate cloud policy full runtime protobuf',
-                    metavar='FILE')
-  parser.add_option('--csp', '--chrome-settings-protobuf',
-                    dest='chrome_settings_proto_path',
-                    help='generate chrome settings protobuf file',
-                    metavar='FILE')
-  parser.add_option('--csfrp', '--chrome-settings-full-runtime-protobuf',
-                    dest='chrome_settings_full_runtime_proto_path',
-                    help='generate chrome settings full runtime protobuf',
-                    metavar='FILE')
-  parser.add_option('--ard', '--app-restrictions-definition',
-                    dest='app_restrictions_path',
-                    help='generate an XML file as specified by '
-                    'Android\'s App Restriction Schema',
-                    metavar='FILE')
-  parser.add_option('--rth', '--risk-tag-header',
-                    dest='risk_header_path',
-                    help='generate header file for policy risk tags',
-                    metavar='FILE')
-  parser.add_option('--crospch', '--cros-policy-constants-header',
-                    dest='cros_constants_header_path',
-                    help='generate header file of policy constants for use in '
-                         'Chrome OS',
-                    metavar='FILE')
-  parser.add_option('--crospcc', '--cros-policy-constants-source',
-                    dest='cros_constants_source_path',
-                    help='generate source file of policy constants for use in '
-                         'Chrome OS',
-                    metavar='FILE')
+  parser.add_option(
+      '--pch',
+      '--policy-constants-header',
+      dest='header_path',
+      help='generate header file of policy constants',
+      metavar='FILE')
+  parser.add_option(
+      '--pcc',
+      '--policy-constants-source',
+      dest='source_path',
+      help='generate source file of policy constants',
+      metavar='FILE')
+  parser.add_option(
+      '--cpp',
+      '--cloud-policy-protobuf',
+      dest='cloud_policy_proto_path',
+      help='generate cloud policy protobuf file',
+      metavar='FILE')
+  parser.add_option(
+      '--cpfrp',
+      '--cloud-policy-full-runtime-protobuf',
+      dest='cloud_policy_full_runtime_proto_path',
+      help='generate cloud policy full runtime protobuf',
+      metavar='FILE')
+  parser.add_option(
+      '--csp',
+      '--chrome-settings-protobuf',
+      dest='chrome_settings_proto_path',
+      help='generate chrome settings protobuf file',
+      metavar='FILE')
+  parser.add_option(
+      '--csfrp',
+      '--chrome-settings-full-runtime-protobuf',
+      dest='chrome_settings_full_runtime_proto_path',
+      help='generate chrome settings full runtime protobuf',
+      metavar='FILE')
+  parser.add_option(
+      '--ard',
+      '--app-restrictions-definition',
+      dest='app_restrictions_path',
+      help='generate an XML file as specified by '
+      'Android\'s App Restriction Schema',
+      metavar='FILE')
+  parser.add_option(
+      '--rth',
+      '--risk-tag-header',
+      dest='risk_header_path',
+      help='generate header file for policy risk tags',
+      metavar='FILE')
+  parser.add_option(
+      '--crospch',
+      '--cros-policy-constants-header',
+      dest='cros_constants_header_path',
+      help='generate header file of policy constants for use in '
+      'Chrome OS',
+      metavar='FILE')
+  parser.add_option(
+      '--crospcc',
+      '--cros-policy-constants-source',
+      dest='cros_constants_source_path',
+      help='generate source file of policy constants for use in '
+      'Chrome OS',
+      metavar='FILE')
   (opts, args) = parser.parse_args()
 
   if len(args) != 4:
@@ -237,10 +251,12 @@ def main():
   major_version = ParseVersionFile(version_path)
   template_file_contents = _LoadJSONFile(template_file_name)
   risk_tags = RiskTags(template_file_contents)
-  policy_details = [ PolicyDetails(policy, major_version, os, is_chromium_os,
-                                   risk_tags.GetValidTags())
-                    for policy in template_file_contents['policy_definitions']
-                    if policy['type'] != 'group' ]
+  policy_details = [
+      PolicyDetails(policy, major_version, os, is_chromium_os,
+                    risk_tags.GetValidTags())
+      for policy in template_file_contents['policy_definitions']
+      if policy['type'] != 'group'
+  ]
   risk_tags.ComputeMaxTags(policy_details)
   sorted_policy_details = sorted(policy_details, key=lambda policy: policy.name)
 
@@ -248,8 +264,8 @@ def main():
     if path:
       with open(path, 'w') as f:
         _OutputGeneratedWarningHeader(f, template_file_name, xml)
-        writer(sorted and sorted_policy_details or policy_details,
-               os, f, risk_tags)
+        writer(sorted and sorted_policy_details or policy_details, os, f,
+               risk_tags)
 
   if opts.header_path:
     GenerateFile(opts.header_path, _WritePolicyConstantHeader, sorted=True)
@@ -261,35 +277,39 @@ def main():
     GenerateFile(opts.cloud_policy_proto_path, _WriteCloudPolicyProtobuf)
   if opts.cloud_policy_full_runtime_proto_path:
     GenerateFile(opts.cloud_policy_full_runtime_proto_path,
-        _WriteCloudPolicyFullRuntimeProtobuf)
+                 _WriteCloudPolicyFullRuntimeProtobuf)
   if opts.chrome_settings_proto_path:
     GenerateFile(opts.chrome_settings_proto_path, _WriteChromeSettingsProtobuf)
   if opts.chrome_settings_full_runtime_proto_path:
     GenerateFile(opts.chrome_settings_full_runtime_proto_path,
-        _WriteChromeSettingsFullRuntimeProtobuf)
+                 _WriteChromeSettingsFullRuntimeProtobuf)
 
   if os == 'android' and opts.app_restrictions_path:
     GenerateFile(opts.app_restrictions_path, _WriteAppRestrictions, xml=True)
 
   # Generated code for Chrome OS (unused in Chromium).
   if opts.cros_constants_header_path:
-    GenerateFile(opts.cros_constants_header_path,
-        _WriteChromeOSPolicyConstantsHeader, sorted=True)
+    GenerateFile(
+        opts.cros_constants_header_path,
+        _WriteChromeOSPolicyConstantsHeader,
+        sorted=True)
   if opts.cros_constants_source_path:
-    GenerateFile(opts.cros_constants_source_path,
-        _WriteChromeOSPolicyConstantsSource, sorted=True)
+    GenerateFile(
+        opts.cros_constants_source_path,
+        _WriteChromeOSPolicyConstantsSource,
+        sorted=True)
 
   return 0
 
 
 #------------------ shared helpers ---------------------------------#
 
+
 def _OutputGeneratedWarningHeader(f, template_file_path, xml_style):
   left_margin = '//'
   if xml_style:
     left_margin = '    '
-    f.write('<?xml version="1.0" encoding="utf-8"?>\n'
-            '<!--\n')
+    f.write('<?xml version="1.0" encoding="utf-8"?>\n' '<!--\n')
   else:
     f.write('//\n')
 
@@ -328,6 +348,7 @@ def _LoadJSONFile(json_file):
 
 #------------------ policy constants header ------------------------#
 
+
 def _WritePolicyConstantHeader(policies, os, f, risk_tags):
   f.write('#ifndef CHROME_COMMON_POLICY_CONSTANTS_H_\n'
           '#define CHROME_COMMON_POLICY_CONSTANTS_H_\n'
@@ -358,13 +379,12 @@ def _WritePolicyConstantHeader(policies, os, f, risk_tags):
           '// Returns the PolicyDetails for |policy| if |policy| is a known\n'
           '// Chrome policy, otherwise returns NULL.\n'
           'const PolicyDetails* GetChromePolicyDetails('
-              'const std::string& policy);\n'
+          'const std::string& policy);\n'
           '\n'
           '// Returns the schema data of the Chrome policy schema.\n'
           'const internal::SchemaData* GetChromeSchemaData();\n'
           '\n')
-  f.write('// Key names for the policy settings.\n'
-          'namespace key {\n\n')
+  f.write('// Key names for the policy settings.\n' 'namespace key {\n\n')
   for policy in policies:
     # TODO(joaodasilva): Include only supported policies in
     # configuration_policy_handler.cc and configuration_policy_handler_list.cc
@@ -377,7 +397,7 @@ def _WritePolicyConstantHeader(policies, os, f, risk_tags):
           '  STRING,\n'
           '  JSON,\n'
           '  EXTERNAL,\n'
-          '};\n\n');
+          '};\n\n')
 
   # User policy proto pointers, one struct for each protobuf type.
   protobuf_types = _GetProtobufTypes(policies)
@@ -387,10 +407,11 @@ def _WritePolicyConstantHeader(policies, os, f, risk_tags):
   f.write('\n}  // namespace policy\n\n'
           '#endif  // CHROME_COMMON_POLICY_CONSTANTS_H_\n')
 
+
 def _WriteChromePolicyAccessHeader(f, protobuf_type):
   f.write('// Read access to the protobufs of all supported %s user policies.\n'
           % protobuf_type.lower())
-  f.write('struct %sPolicyAccess {\n' %  protobuf_type)
+  f.write('struct %sPolicyAccess {\n' % protobuf_type)
   f.write('  const char* policy_key;\n'
           '  bool (enterprise_management::CloudPolicySettings::'
           '*has_proto)() const;\n'
@@ -400,20 +421,21 @@ def _WriteChromePolicyAccessHeader(f, protobuf_type):
   if protobuf_type == 'String':
     f.write('  const StringPolicyType type;\n')
   f.write('};\n')
-  f.write('extern const %sPolicyAccess k%sPolicyAccess[];\n\n'
-          % (protobuf_type, protobuf_type))
+  f.write('extern const %sPolicyAccess k%sPolicyAccess[];\n\n' %
+          (protobuf_type, protobuf_type))
 
 
 #------------------ policy constants source ------------------------#
 
 # A mapping of the simple schema types to base::Value::Types.
 SIMPLE_SCHEMA_NAME_MAP = {
-  'boolean': 'Type::BOOLEAN',
-  'integer': 'Type::INTEGER',
-  'null'   : 'Type::NONE',
-  'number' : 'Type::DOUBLE',
-  'string' : 'Type::STRING',
+    'boolean': 'Type::BOOLEAN',
+    'integer': 'Type::INTEGER',
+    'null': 'Type::NONE',
+    'number': 'Type::DOUBLE',
+    'string': 'Type::STRING',
 }
+
 
 class SchemaNodesGenerator:
   """Builds the internal structs to represent a JSON schema."""
@@ -433,11 +455,11 @@ class SchemaNodesGenerator:
     self.int_enums = []
     self.string_enums = []
     self.simple_types = {
-      'boolean': None,
-      'integer': None,
-      'null': None,
-      'number': None,
-      'string': None,
+        'boolean': None,
+        'integer': None,
+        'null': None,
+        'number': None,
+        'string': None,
     }
     self.stringlist_type = None
     self.ranges = {}
@@ -464,23 +486,20 @@ class SchemaNodesGenerator:
 
   def GetSimpleType(self, name):
     if self.simple_types[name] == None:
-      self.simple_types[name] = self.AppendSchema(
-          SIMPLE_SCHEMA_NAME_MAP[name],
-          -1,
-          'simple type: ' + name)
+      self.simple_types[name] = self.AppendSchema(SIMPLE_SCHEMA_NAME_MAP[name],
+                                                  -1, 'simple type: ' + name)
     return self.simple_types[name]
 
   def GetStringList(self):
     if self.stringlist_type == None:
-      self.stringlist_type = self.AppendSchema(
-          'Type::LIST',
-          self.GetSimpleType('string'),
-          'simple type: stringlist')
+      self.stringlist_type = self.AppendSchema('Type::LIST',
+                                               self.GetSimpleType('string'),
+                                               'simple type: stringlist')
     return self.stringlist_type
 
   def SchemaHaveRestriction(self, schema):
-    return any(keyword in schema for keyword in
-        ['minimum', 'maximum', 'enum', 'pattern'])
+    return any(keyword in schema
+               for keyword in ['minimum', 'maximum', 'enum', 'pattern'])
 
   def IsConsecutiveInterval(self, seq):
     sortedSeq = sorted(seq)
@@ -492,14 +511,15 @@ class SchemaNodesGenerator:
     possible_values = schema['enum']
     if self.IsConsecutiveInterval(possible_values):
       index = self.AppendRestriction(max(possible_values), min(possible_values))
-      return self.AppendSchema('Type::INTEGER', index,
+      return self.AppendSchema(
+          'Type::INTEGER', index,
           'integer with enumeration restriction (use range instead): %s' % name)
     offset_begin = len(self.int_enums)
     self.int_enums += possible_values
     offset_end = len(self.int_enums)
     return self.AppendSchema('Type::INTEGER',
-        self.AppendRestriction(offset_begin, offset_end),
-        'integer with enumeration restriction: %s' % name)
+                             self.AppendRestriction(offset_begin, offset_end),
+                             'integer with enumeration restriction: %s' % name)
 
   def GetEnumStringType(self, schema, name):
     assert all(type(x) == str for x in schema['enum'])
@@ -507,8 +527,8 @@ class SchemaNodesGenerator:
     self.string_enums += schema['enum']
     offset_end = len(self.string_enums)
     return self.AppendSchema('Type::STRING',
-        self.AppendRestriction(offset_begin, offset_end),
-        'string with enumeration restriction: %s' % name)
+                             self.AppendRestriction(offset_begin, offset_end),
+                             'string with enumeration restriction: %s' % name)
 
   def GetEnumType(self, schema, name):
     if len(schema['enum']) == 0:
@@ -528,11 +548,10 @@ class SchemaNodesGenerator:
     # here might be slightly different from re2.
     # TODO(binjin): Add a python wrapper of re2 and use it here.
     re.compile(pattern)
-    index = len(self.string_enums);
-    self.string_enums.append(pattern);
-    return self.AppendSchema('Type::STRING',
-        self.AppendRestriction(index, index),
-        'string with pattern restriction: %s' % name);
+    index = len(self.string_enums)
+    self.string_enums.append(pattern)
+    return self.AppendSchema('Type::STRING', self.AppendRestriction(
+        index, index), 'string with pattern restriction: %s' % name)
 
   def GetRangedType(self, schema, name):
     if schema['type'] != 'integer':
@@ -549,9 +568,8 @@ class SchemaNodesGenerator:
     index = self.AppendRestriction(
         str(max_value) if max_value_set else 'INT_MAX',
         str(min_value) if min_value_set else 'INT_MIN')
-    return self.AppendSchema('Type::INTEGER',
-        index,
-        'integer with ranged restriction: %s' % name)
+    return self.AppendSchema('Type::INTEGER', index,
+                             'integer with ranged restriction: %s' % name)
 
   def Generate(self, schema, name):
     """Generates the structs for the given schema.
@@ -580,7 +598,8 @@ class SchemaNodesGenerator:
       # The 'type' may be missing if the schema has a '$ref' attribute.
       if schema['items'].get('type', '') == 'string':
         return self.GetStringList()
-      return self.AppendSchema('Type::LIST',
+      return self.AppendSchema(
+          'Type::LIST',
           self.GenerateAndCollectID(schema['items'], 'items of ' + name))
     elif schema['type'] == 'object':
       # Reserve an index first, so that dictionaries come before their
@@ -590,8 +609,7 @@ class SchemaNodesGenerator:
 
       if 'additionalProperties' in schema:
         additionalProperties = self.GenerateAndCollectID(
-            schema['additionalProperties'],
-            'additionalProperties of ' + name)
+            schema['additionalProperties'], 'additionalProperties of ' + name)
       else:
         additionalProperties = -1
 
@@ -600,14 +618,15 @@ class SchemaNodesGenerator:
       # recursive calls to Generate() append the necessary child nodes; if
       # |properties| were a generator then this wouldn't work.
       sorted_properties = sorted(schema.get('properties', {}).items())
-      properties = [
-          (self.GetString(key), self.GenerateAndCollectID(subschema, key))
-          for key, subschema in sorted_properties ]
+      properties = [(self.GetString(key),
+                     self.GenerateAndCollectID(subschema, key))
+                    for key, subschema in sorted_properties]
 
       pattern_properties = []
       for pattern, subschema in schema.get('patternProperties', {}).items():
         pattern_properties.append((self.GetString(pattern),
-            self.GenerateAndCollectID(subschema, pattern)));
+                                   self.GenerateAndCollectID(
+                                       subschema, pattern)))
 
       begin = len(self.property_nodes)
       self.property_nodes += properties
@@ -712,12 +731,12 @@ class SchemaNodesGenerator:
     f.write('  kPropertyNodes,\n' if self.property_nodes else '  NULL,\n')
     f.write('  kProperties,\n' if self.properties_nodes else '  NULL,\n')
     f.write('  kRestrictionNodes,\n' if self.restriction_nodes else '  NULL,\n')
-    f.write(
-        '  kRequiredProperties,\n' if self.required_properties else '  NULL,\n')
+    f.write('  kRequiredProperties,\n' if self
+            .required_properties else '  NULL,\n')
     f.write('  kIntegerEnumerations,\n' if self.int_enums else '  NULL,\n')
     f.write('  kStringEnumerations,\n' if self.string_enums else '  NULL,\n')
-    f.write('  %d,  // validation_schema root index\n'
-        % self.validation_schema_root_index)
+    f.write('  %d,  // validation_schema root index\n' %
+            self.validation_schema_root_index)
     f.write('  nullptr,  // schema_nodes_metadata\n')
     f.write('};\n\n')
 
@@ -742,8 +761,9 @@ class SchemaNodesGenerator:
     """
     self.schema_nodes = map(partial(self.ResolveID, 1), self.schema_nodes)
     self.property_nodes = map(partial(self.ResolveID, 1), self.property_nodes)
-    self.properties_nodes = map(partial(self.ResolveID, 3),
-        self.properties_nodes)
+    self.properties_nodes = map(
+        partial(self.ResolveID, 3), self.properties_nodes)
+
 
 def _GenerateDefaultValue(value):
   """Converts a JSON object into a base::Value entry. Returns a tuple, the first
@@ -756,8 +776,7 @@ def _GenerateDefaultValue(value):
 
   |value|: The deserialized value to convert to base::Value."""
   if type(value) == bool or type(value) == int:
-    return [], 'std::make_unique<base::Value>(%s)' %\
-                    json.dumps(value)
+    return [], 'std::make_unique<base::Value>(%s)' % json.dumps(value)
   elif type(value) == str:
     return [], 'std::make_unique<base::Value>("%s")' % value
   elif type(value) == list:
@@ -770,6 +789,7 @@ def _GenerateDefaultValue(value):
       setup.append('default_value->Append(%s);' % fetch)
     return setup, 'std::move(default_value)'
   return [], None
+
 
 def _WritePolicyConstantSource(policies, os, f, risk_tags):
   f.write('#include "components/policy/policy_constants.h"\n'
@@ -791,12 +811,12 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
 
   # Generate the Chrome schema.
   chrome_schema = {
-    'type': 'object',
-    'properties': {},
+      'type': 'object',
+      'properties': {},
   }
   chrome_validation_schema = {
-    'type': 'object',
-    'properties': {},
+      'type': 'object',
+      'properties': {},
   }
   shared_strings = {}
   for policy in policies:
@@ -804,8 +824,8 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
     if policy.is_supported:
       chrome_schema['properties'][policy.name] = policy.schema
       if policy.validation_schema is not None:
-        (chrome_validation_schema
-            ['properties'][policy.name]) = policy.validation_schema
+        (chrome_validation_schema['properties'][policy.name]
+        ) = policy.validation_schema
 
   # Note: this list must be kept in sync with the known property list of the
   # Chrome schema, so that binary searching in the PropertyNode array gets the
@@ -817,12 +837,10 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
     if policy.is_supported:
       f.write('  // %s\n' % policy.name)
       f.write('  { %-14s %-16s %3s, %24s,\n'
-              '    %s },\n' % (
-                  'true,' if policy.is_deprecated else 'false,',
-                  'true,' if policy.is_device_only else 'false,',
-                  policy.id,
-                  policy.max_size,
-                  risk_tags.ToInitString(policy.tags)))
+              '    %s },\n' % ('true,' if policy.is_deprecated else 'false,',
+                               'true,' if policy.is_device_only else 'false,',
+                               policy.id, policy.max_size,
+                               risk_tags.ToInitString(policy.tags)))
   f.write('};\n\n')
 
   schema_generator = SchemaNodesGenerator(shared_strings)
@@ -838,8 +856,7 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
   schema_generator.ResolveReferences()
   schema_generator.Write(f)
 
-  f.write('\n'
-          'namespace {\n')
+  f.write('\n' 'namespace {\n')
 
   f.write('bool CompareKeys(const internal::PropertyNode& node,\n'
           '                 const std::string& key) {\n'
@@ -866,12 +883,12 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
 
   for policy in policies:
     if policy.has_enterprise_default and policy.is_supported:
-      declare_default_stmts, fetch_default =\
-          _GenerateDefaultValue(policy.enterprise_default)
+      declare_default_stmts, fetch_default = _GenerateDefaultValue(
+          policy.enterprise_default)
       if not fetch_default:
-        raise RuntimeError('Type %s of policy %s is not supported at '
-                           'enterprise defaults' % (policy.policy_type,
-                                                    policy.name))
+        raise RuntimeError(
+            'Type %s of policy %s is not supported at '
+            'enterprise defaults' % (policy.policy_type, policy.name))
 
       # Convert declare_default_stmts to a string with the correct identation.
       if declare_default_stmts:
@@ -879,22 +896,21 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
       else:
         declare_default = ''
 
-      f.write('  if (!policy_map->Get(key::k%s)) {\n'
-              '%s'
-              '    policy_map->Set(key::k%s,\n'
-              '                    POLICY_LEVEL_MANDATORY,\n'
-              '                    POLICY_SCOPE_USER,\n'
-              '                    POLICY_SOURCE_ENTERPRISE_DEFAULT,\n'
-              '                    %s,\n'
-              '                    nullptr);\n'
-              '  }\n' % (policy.name, declare_default, policy.name,
-                         fetch_default))
+      f.write(
+          '  if (!policy_map->Get(key::k%s)) {\n'
+          '%s'
+          '    policy_map->Set(key::k%s,\n'
+          '                    POLICY_LEVEL_MANDATORY,\n'
+          '                    POLICY_SCOPE_USER,\n'
+          '                    POLICY_SOURCE_ENTERPRISE_DEFAULT,\n'
+          '                    %s,\n'
+          '                    nullptr);\n'
+          '  }\n' % (policy.name, declare_default, policy.name, fetch_default))
 
-  f.write('}\n'
-          '#endif\n\n')
+  f.write('}\n' '#endif\n\n')
 
   f.write('const PolicyDetails* GetChromePolicyDetails('
-              'const std::string& policy) {\n'
+          'const std::string& policy) {\n'
           '  // First index in kPropertyNodes of the Chrome policies.\n'
           '  static const int begin_index = %s;\n'
           '  // One-past-the-end of the Chrome policies in kPropertyNodes.\n'
@@ -932,13 +948,15 @@ def _WritePolicyConstantSource(policies, os, f, risk_tags):
     f.write('const char k{name}[] = "{name}";\n'.format(name=policy.name))
   f.write('\n}  // namespace key\n\n')
 
-  supported_user_policies = [p for p in policies
-                             if p.is_supported and not p.is_device_only]
+  supported_user_policies = [
+      p for p in policies if p.is_supported and not p.is_device_only
+  ]
   protobuf_types = _GetProtobufTypes(supported_user_policies)
   for protobuf_type in protobuf_types:
     _WriteChromePolicyAccessSource(supported_user_policies, f, protobuf_type)
 
   f.write('\n}  // namespace policy\n')
+
 
 # Return the StringPolicyType enum value for a particular policy type.
 def _GetStringPolicyType(policy_type):
@@ -950,30 +968,32 @@ def _GetStringPolicyType(policy_type):
     return 'StringPolicyType::EXTERNAL'
   raise RuntimeError('Invalid string type: ' + policy_type + '!\n')
 
+
 # Writes an array that contains the pointers to the proto field for each policy
 # in |policies| of the given |protobuf_type|.
 def _WriteChromePolicyAccessSource(policies, f, protobuf_type):
-  f.write('const %sPolicyAccess k%sPolicyAccess[] = {\n'
-          % (protobuf_type, protobuf_type))
+  f.write('const %sPolicyAccess k%sPolicyAccess[] = {\n' % (protobuf_type,
+                                                            protobuf_type))
   extra_args = ''
   for policy in policies:
     if policy.policy_protobuf_type == protobuf_type:
       name = policy.name
       if protobuf_type == 'String':
-          extra_args = ',\n   ' + _GetStringPolicyType(policy.policy_type)
+        extra_args = ',\n   ' + _GetStringPolicyType(policy.policy_type)
       f.write('  {key::k%s,\n'
               '   &em::CloudPolicySettings::has_%s,\n'
-              '   &em::CloudPolicySettings::%s%s},\n'
-              % (name, name.lower(), name.lower(), extra_args))
+              '   &em::CloudPolicySettings::%s%s},\n' %
+              (name, name.lower(), name.lower(), extra_args))
   # The list is nullptr-terminated.
-  f.write('  {nullptr, nullptr, nullptr},\n'
-          '};\n\n')
+  f.write('  {nullptr, nullptr, nullptr},\n' '};\n\n')
 
 
 #------------------ policy risk tag header -------------------------#
 
+
 class RiskTags(object):
   '''Generates files and strings to translate the parsed risk tags.'''
+
   # TODO(fhorschig|tnagel): Add, Check & Generate translation descriptions.
 
   def __init__(self, template_file_contents):
@@ -986,7 +1006,7 @@ class RiskTags(object):
     values.append('  RISK_TAG_COUNT')
     values.append('  RISK_TAG_NONE')
     enum_text = 'enum RiskTag {\n'
-    enum_text +=',\n'.join(values) + '\n};\n'
+    enum_text += ',\n'.join(values) + '\n};\n'
     return enum_text
 
   def GetMaxTags(self):
@@ -1005,7 +1025,7 @@ class RiskTags(object):
     self.max_tags = 0
     for policy in policies:
       if not policy.is_supported or policy.tags == None:
-        continue;
+        continue
       self.max_tags = max(len(policy.tags), self.max_tags)
 
   def _ToEnum(self, tag):
@@ -1024,8 +1044,9 @@ class RiskTags(object):
         raise RuntimeError('Tag ' + tag['name'] + ' has no description!')
       if tag.get('user-description', None) == None:
         raise RuntimeError('Tag ' + tag['name'] + ' has no user-description!')
-      self.enum_for_tag[tag['name']] = "RISK_TAG_" + \
-                                       tag['name'].replace("-","_").upper()
+      self.enum_for_tag[tag['name']] = "RISK_TAG_" + tag['name'].replace(
+          "-", "_").upper()
+
 
 def _WritePolicyRiskTagHeader(policies, os, f, risk_tags):
   f.write('#ifndef CHROME_COMMON_POLICY_RISK_TAG_H_\n'
@@ -1034,7 +1055,7 @@ def _WritePolicyRiskTagHeader(policies, os, f, risk_tags):
           '#include <stddef.h>\n'
           '\n'
           'namespace policy {\n'
-          '\n' + \
+          '\n' +
           '// The tag of a policy indicates which impact a policy can have on\n'
           '// a user\'s privacy and/or security. Ordered descending by \n'
           '// impact.\n'
@@ -1043,13 +1064,13 @@ def _WritePolicyRiskTagHeader(policies, os, f, risk_tags):
           '\n' + risk_tags.GenerateEnum() + '\n'
           '// This constant describes how many risk tags were used by the\n'
           '// policy which uses the most risk tags. \n'
-          'const size_t kMaxRiskTagCount = ' + \
-                risk_tags.GetMaxTags() + ';\n'
+          'const size_t kMaxRiskTagCount = ' + risk_tags.GetMaxTags() + ';\n'
           '\n'
           '}  // namespace policy\n'
           '\n'
           '#endif  // CHROME_COMMON_POLICY_RISK_TAG_H_'
           '\n')
+
 
 #------------------ policy protobufs -------------------------------#
 
@@ -1066,7 +1087,6 @@ package enterprise_management;
 import "cloud_policy.proto";
 
 '''
-
 
 CLOUD_POLICY_PROTO_HEAD = '''
 syntax = "proto2";
@@ -1113,7 +1133,6 @@ message StringListPolicyProto {
 
 '''
 
-
 # Field IDs [1..RESERVED_IDS] will not be used in the wrapping protobuf.
 RESERVED_IDS = 2
 
@@ -1125,19 +1144,22 @@ def _WritePolicyProto(f, policy, fields):
     for item in policy.items:
       _OutputComment(f, '  %s: %s' % (str(item.value), item.caption))
   if policy.policy_type == 'Type::DICTIONARY':
-    _OutputComment(f, '\nValue schema:\n%s' %
-                   json.dumps(policy.schema, sort_keys=True, indent=4,
-                              separators=(',', ': ')))
+    _OutputComment(
+        f, '\nValue schema:\n%s' % json.dumps(
+            policy.schema, sort_keys=True, indent=4, separators=(',', ': ')))
   _OutputComment(f, '\nSupported on: %s' % ', '.join(policy.platforms))
   if policy.can_be_recommended and not policy.can_be_mandatory:
-    _OutputComment(f, '\nNote: this policy must have a RECOMMENDED ' +\
-                      'PolicyMode set in PolicyOptions.')
+    _OutputComment(
+        f, '\nNote: this policy must have a RECOMMENDED ' +
+        'PolicyMode set in PolicyOptions.')
   f.write('message %sProto {\n' % policy.name)
   f.write('  optional PolicyOptions policy_options = 1;\n')
   f.write('  optional %s %s = 2;\n' % (policy.protobuf_type, policy.name))
   f.write('}\n\n')
-  fields += [ '  optional %sProto %s = %s;\n' %
-              (policy.name, policy.name, policy.id + RESERVED_IDS) ]
+  fields += [
+      '  optional %sProto %s = %s;\n' % (policy.name, policy.name,
+                                         policy.id + RESERVED_IDS)
+  ]
 
 
 def _WriteChromeSettingsProtobuf(policies, os, f, risk_tags):
@@ -1160,12 +1182,12 @@ def _WriteChromeSettingsProtobuf(policies, os, f, risk_tags):
 def _WriteChromeSettingsFullRuntimeProtobuf(policies, os, f, risk_tags):
   # For full runtime, disable LITE_RUNTIME switch and import full runtime
   # version of cloud_policy.proto.
-  f.write(CHROME_SETTINGS_PROTO_HEAD.replace(
-      "option optimize_for = LITE_RUNTIME;",
-      "//option optimize_for = LITE_RUNTIME;").replace(
-          "import \"cloud_policy.proto\";",
-          "import \"cloud_policy_full_runtime.proto\";"
-      ))
+  f.write(
+      CHROME_SETTINGS_PROTO_HEAD.replace(
+          "option optimize_for = LITE_RUNTIME;",
+          "//option optimize_for = LITE_RUNTIME;").replace(
+              "import \"cloud_policy.proto\";",
+              "import \"cloud_policy_full_runtime.proto\";"))
   fields = []
   f.write('// PBs for individual settings.\n\n')
   for policy in policies:
@@ -1186,28 +1208,30 @@ def _WriteCloudPolicyProtobuf(policies, os, f, risk_tags):
   f.write('message CloudPolicySettings {\n')
   for policy in policies:
     if policy.is_supported and not policy.is_device_only:
-      f.write('  optional %sPolicyProto %s = %s;\n' %
-              (policy.policy_protobuf_type, policy.name,
-               policy.id + RESERVED_IDS))
+      f.write(
+          '  optional %sPolicyProto %s = %s;\n' %
+          (policy.policy_protobuf_type, policy.name, policy.id + RESERVED_IDS))
   f.write('}\n\n')
 
 
 def _WriteCloudPolicyFullRuntimeProtobuf(policies, os, f, risk_tags):
   # For full runtime, disable LITE_RUNTIME switch
-  f.write(CLOUD_POLICY_PROTO_HEAD.replace(
-      "option optimize_for = LITE_RUNTIME;",
-      "//option optimize_for = LITE_RUNTIME;"))
+  f.write(
+      CLOUD_POLICY_PROTO_HEAD.replace("option optimize_for = LITE_RUNTIME;",
+                                      "//option optimize_for = LITE_RUNTIME;"))
   f.write('message CloudPolicySettings {\n')
   for policy in policies:
     if policy.is_supported and not policy.is_device_only:
-      f.write('  optional %sPolicyProto %s = %s;\n' %
-              (policy.policy_protobuf_type, policy.name,
-               policy.id + RESERVED_IDS))
+      f.write(
+          '  optional %sPolicyProto %s = %s;\n' %
+          (policy.policy_protobuf_type, policy.name, policy.id + RESERVED_IDS))
   f.write('}\n\n')
+
 
 #------------------ Chrome OS policy constants header --------------#
 
 # This code applies to Active Directory management only.
+
 
 # Filter for _GetSupportedChromeOSPolicies().
 def _IsSupportedChromeOSPolicy(type, policy):
@@ -1225,6 +1249,7 @@ def _IsSupportedChromeOSPolicy(type, policy):
     return False
   return True
 
+
 # Returns a list of supported user and/or device policies `by filtering
 # |policies|. |type| may be 'user', 'device' or 'both'.
 def _GetSupportedChromeOSPolicies(policies, type):
@@ -1232,6 +1257,7 @@ def _GetSupportedChromeOSPolicies(policies, type):
     raise RuntimeError('Unsupported type "%s"' % type)
 
   return filter(partial(_IsSupportedChromeOSPolicy, type), policies)
+
 
 # Returns the set of all policy.policy_protobuf_type strings from |policies|.
 def _GetProtobufTypes(policies):
@@ -1249,8 +1275,8 @@ def _WriteChromeOSPolicyAccessHeader(f, protobuf_type):
           '      (enterprise_management::CloudPolicySettings::'
           '*mutable_proto_ptr)();\n'
           '};\n' % (protobuf_type, protobuf_type))
-  f.write('extern const %sPolicyAccess k%sPolicyAccess[];\n\n'
-          % (protobuf_type, protobuf_type))
+  f.write('extern const %sPolicyAccess k%sPolicyAccess[];\n\n' %
+          (protobuf_type, protobuf_type))
 
 
 # Writes policy_constants.h for use in Chrome OS.
@@ -1261,8 +1287,7 @@ def _WriteChromeOSPolicyConstantsHeader(policies, os, f, risk_tags):
   # Forward declarations.
   supported_user_policies = _GetSupportedChromeOSPolicies(policies, 'user')
   protobuf_types = _GetProtobufTypes(supported_user_policies)
-  f.write('namespace enterprise_management {\n'
-          'class CloudPolicySettings;\n')
+  f.write('namespace enterprise_management {\n' 'class CloudPolicySettings;\n')
   for protobuf_type in protobuf_types:
     f.write('class %sPolicyProto;\n' % protobuf_type)
   f.write('}  // namespace enterprise_management\n\n')
@@ -1291,19 +1316,19 @@ def _WriteChromeOSPolicyConstantsHeader(policies, os, f, risk_tags):
 
 #------------------ Chrome OS policy constants source --------------#
 
+
 # Writes an array that contains the pointers to the mutable proto field for each
 # policy in |policies| of the given |protobuf_type|.
 def _WriteChromeOSPolicyAccessSource(policies, f, protobuf_type):
-  f.write('constexpr %sPolicyAccess k%sPolicyAccess[] = {\n'
-          % (protobuf_type, protobuf_type))
+  f.write('constexpr %sPolicyAccess k%sPolicyAccess[] = {\n' % (protobuf_type,
+                                                                protobuf_type))
   for policy in policies:
     if policy.policy_protobuf_type == protobuf_type:
       f.write('  {key::k%s,\n'
-              '   &em::CloudPolicySettings::mutable_%s},\n'
-              % (policy.name, policy.name.lower()))
+              '   &em::CloudPolicySettings::mutable_%s},\n' %
+              (policy.name, policy.name.lower()))
   # The list is nullptr-terminated.
-  f.write('  {nullptr, nullptr},\n'
-          '};\n\n')
+  f.write('  {nullptr, nullptr},\n' '};\n\n')
 
 
 # Writes policy_constants.cc for use in Chrome OS.
@@ -1322,10 +1347,10 @@ def _WriteChromeOSPolicyConstantsSource(policies, os, f, risk_tags):
 
   # Device policy keys.
   supported_device_policies = _GetSupportedChromeOSPolicies(policies, 'device')
-  f.write('const char* kDevicePolicyKeys[] = {\n\n');
+  f.write('const char* kDevicePolicyKeys[] = {\n\n')
   for policy in supported_device_policies:
     f.write('  key::k%s,\n' % policy.name)
-  f.write('  nullptr};\n\n');
+  f.write('  nullptr};\n\n')
 
   # User policy proto pointers, one struct for each protobuf type.
   supported_user_policies = _GetSupportedChromeOSPolicies(policies, 'user')
@@ -1338,11 +1363,11 @@ def _WriteChromeOSPolicyConstantsSource(policies, os, f, risk_tags):
 
 #------------------ app restrictions -------------------------------#
 
+
 def _WriteAppRestrictions(policies, os, f, risk_tags):
 
   def WriteRestrictionCommon(key):
-    f.write('    <restriction\n'
-            '        android:key="%s"\n' % key)
+    f.write('    <restriction\n' '        android:key="%s"\n' % key)
     f.write('        android:title="@string/%sTitle"\n' % key)
     f.write('        android:description="@string/%sDesc"\n' % key)
 
@@ -1365,9 +1390,10 @@ def _WriteAppRestrictions(policies, os, f, risk_tags):
           'http://schemas.android.com/apk/res/android">\n\n')
   for policy in policies:
     if (policy.is_supported and policy.restriction_type != 'invalid' and
-         not policy.is_deprecated and not policy.is_future):
+        not policy.is_deprecated and not policy.is_future):
       WriteAppRestriction(policy)
   f.write('</restrictions>')
+
 
 if __name__ == '__main__':
   sys.exit(main())

@@ -7,7 +7,9 @@ import unittest
 
 import generate_policy_source
 
+
 class CppGenerationTest(unittest.TestCase):
+
   def testDefaultValueGeneration(self):
     """Tests generation of default policy values."""
     # Bools
@@ -40,7 +42,7 @@ class CppGenerationTest(unittest.TestCase):
         'auto default_value = std::make_unique<base::ListValue>();',
         'default_value->Append(std::make_unique<base::Value>(1));',
         'default_value->Append(std::make_unique<base::Value>("2"));'
-      ], stmts)
+    ], stmts)
     self.assertEqual('std::move(default_value)', expr)
 
     # Recursive lists are not supported.

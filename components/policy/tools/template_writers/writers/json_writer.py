@@ -8,16 +8,14 @@ import json
 from textwrap import TextWrapper
 from writers import template_writer
 
-
-TEMPLATE_HEADER="""\
+TEMPLATE_HEADER = """\
 // Policy template for Linux.
 // Uncomment the policies you wish to activate and change their values to
 // something useful for your case. The provided values are for reference only
 // and do not provide meaningful defaults!
 {"""
 
-
-HEADER_DELIMETER="""\
+HEADER_DELIMETER = """\
   //-------------------------------------------------------------------------"""
 
 
@@ -60,7 +58,7 @@ class JsonWriter(template_writer.TemplateWriter):
     self._out.append(line)
     self._out.append(HEADER_DELIMETER)
     description = self._text_wrapper.wrap(policy['desc'])
-    self._out += description;
+    self._out += description
     line = '  //"%s": %s' % (policy['name'], example_value_str)
     self._out.append('')
     self._out.append(line)
@@ -83,10 +81,10 @@ class JsonWriter(template_writer.TemplateWriter):
     self._first_written = True
     # Create the TextWrapper object once.
     self._text_wrapper = TextWrapper(
-        initial_indent = '  // ',
-        subsequent_indent = '  // ',
-        break_long_words = False,
-        width = 80)
+        initial_indent='  // ',
+        subsequent_indent='  // ',
+        break_long_words=False,
+        width=80)
 
   def GetTemplateText(self):
     return '\n'.join(self._out)
