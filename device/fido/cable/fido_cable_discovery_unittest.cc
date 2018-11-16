@@ -116,8 +116,9 @@ MATCHER_P2(IsAdvertisementContent,
          manufacturer_data_payload[1] == 0x15 &&  // Manufacturer Data Type
          manufacturer_data_payload[2] == 0x20 &&  // Cable Flags
          manufacturer_data_payload[3] == kTestCableVersionNumber &&
-         base::make_span(manufacturer_data_payload).subspan(4) ==
-             expected_client_eid;
+         std::equal(manufacturer_data_payload.begin() + 4,
+                    manufacturer_data_payload.end(),
+                    expected_client_eid.begin(), expected_client_eid.end());
 
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   const auto service_data = arg->service_data();
@@ -131,7 +132,8 @@ MATCHER_P2(IsAdvertisementContent,
   return (service_data_value[0] >> 5 & 1) &&
          service_data_value[1] == kTestCableVersionNumber &&
          service_data_value.size() == 18u &&
-         base::make_span(service_data_value).subspan(2) == expected_client_eid;
+         std::equal(service_data_value.begin() + 2, service_data_value.end(),
+                    expected_client_eid.begin(), expected_client_eid.end());
 
 #endif
 

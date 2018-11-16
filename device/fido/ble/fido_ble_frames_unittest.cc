@@ -4,6 +4,7 @@
 
 #include "device/fido/ble/fido_ble_frames.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +39,9 @@ TEST(FidoBleFramesTest, InitializationFragment) {
       FidoBleFrameInitializationFragment::Parse(buffer, &parsed_fragment));
 
   EXPECT_EQ(kDataLength, parsed_fragment.data_length());
-  EXPECT_EQ(base::make_span(data), parsed_fragment.fragment());
+  EXPECT_TRUE(std::equal(data.begin(), data.end(),
+                         parsed_fragment.fragment().begin(),
+                         parsed_fragment.fragment().end()));
   EXPECT_EQ(FidoBleDeviceCommand::kMsg, parsed_fragment.command());
 }
 
@@ -58,7 +61,9 @@ TEST(FidoBleFramesTest, ContinuationFragment) {
   ASSERT_TRUE(
       FidoBleFrameContinuationFragment::Parse(buffer, &parsed_fragment));
 
-  EXPECT_EQ(base::make_span(data), parsed_fragment.fragment());
+  EXPECT_TRUE(std::equal(data.begin(), data.end(),
+                         parsed_fragment.fragment().begin(),
+                         parsed_fragment.fragment().end()));
   EXPECT_EQ(kSequence, parsed_fragment.sequence());
 }
 
