@@ -32,6 +32,7 @@ from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
+from chromite.lib import osutils
 
 BUILD_PACKAGES_PREBUILTS = '10774.0.0'
 BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '6302.0.0'
@@ -98,6 +99,42 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
     return version_info > manifest_version.VersionInfo(limit)
 
 
+class WorkspaceCleanStage(WorkspaceStageBase):
+  """Clean a working directory checkout."""
+
+  category = constants.CI_INFRA_STAGE
+
+  def PerformStage(self):
+    """Clean stuff!."""
+    logging.info('Cleaning: %s', self._build_root)
+
+    repo = self.GetWorkspaceRepo()
+
+    #
+    # TODO: This logic is copied from cbuildbot_launch, need to share.
+    #
+
+    logging.info('Remove Chroot.')
+    chroot_dir = os.path.join(repo.directory, constants.DEFAULT_CHROOT_DIR)
+    if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
+      cros_sdk_lib.CleanupChrootMount(chroot_dir, delete=True)
+
+    logging.info('Remove Chrome checkout.')
+    osutils.RmDir(os.path.join(repo.directory, '.cache', 'distfiles'),
+                  ignore_missing=True, sudo=True)
+
+    try:
+      # If there is any failure doing the cleanup, wipe everything.
+      # The previous run might have been killed in the middle leaving stale git
+      # locks. Clean those up, first.
+      repo.PreLoad()
+      repo.CleanStaleLocks()
+      repo.BuildRootGitCleanup(prune_all=True)
+    except Exception:
+      logging.info('Checkout cleanup failed, wiping buildroot:', exc_info=True)
+      repository.ClearBuildRoot(repo.directory)
+
+
 class WorkspaceSyncStage(WorkspaceStageBase):
   """Clean a working directory checkout."""
 
@@ -109,8 +146,6 @@ class WorkspaceSyncStage(WorkspaceStageBase):
                  self._run.config.workspace_branch, self._build_root)
 
     repo = self.GetWorkspaceRepo()
-    repo.PreLoad()
-    repo.BuildRootGitCleanup(prune_all=True)
     repo.Sync(detach=True)
 
 
