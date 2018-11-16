@@ -531,7 +531,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         if (!mIsSyncEnabled) return;
 
         boolean syncEverything = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
-        mProfileSyncService.setPreferredDataTypes(syncEverything, getSelectedModelTypes());
+        mProfileSyncService.setChosenDataTypes(syncEverything, getSelectedModelTypes());
         // Update the invalidation listener with the set of types we are enabling.
         InvalidationController invController = InvalidationController.get();
         invController.ensureStartedAndUpdateRegisteredTypes();
@@ -689,7 +689,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         }
 
         Set<Integer> syncTypes =
-                mIsSyncEnabled ? mProfileSyncService.getPreferredDataTypes() : new ArraySet<>();
+                mIsSyncEnabled ? mProfileSyncService.getChosenDataTypes() : new ArraySet<>();
         mSyncAutofill.setChecked(syncTypes.contains(ModelType.AUTOFILL));
         mSyncAutofill.setEnabled(true);
         mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARKS));

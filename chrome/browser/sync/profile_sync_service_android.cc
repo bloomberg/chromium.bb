@@ -210,6 +210,14 @@ ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetActiveDataTypes(
   return JNI_ProfileSyncService_ModelTypeSetToJavaIntArray(env, types);
 }
 
+ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetChosenDataTypes(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  syncer::ModelTypeSet types =
+      sync_service_->GetUserSettings()->GetChosenDataTypes();
+  return JNI_ProfileSyncService_ModelTypeSetToJavaIntArray(env, types);
+}
+
 ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetPreferredDataTypes(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -217,7 +225,7 @@ ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetPreferredDataTypes(
   return JNI_ProfileSyncService_ModelTypeSetToJavaIntArray(env, types);
 }
 
-void ProfileSyncServiceAndroid::SetPreferredDataTypes(
+void ProfileSyncServiceAndroid::SetChosenDataTypes(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean sync_everything,
