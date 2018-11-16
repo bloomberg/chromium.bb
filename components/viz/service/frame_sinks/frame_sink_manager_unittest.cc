@@ -80,7 +80,8 @@ class FrameSinkManagerTest : public testing::Test {
 
   // Checks if a [Root]CompositorFrameSinkImpl exists for |frame_sink_id|.
   bool CompositorFrameSinkExists(const FrameSinkId& frame_sink_id) {
-    return base::ContainsKey(manager_.sink_map_, frame_sink_id);
+    return base::ContainsKey(manager_.sink_map_, frame_sink_id) ||
+           base::ContainsKey(manager_.root_sink_map_, frame_sink_id);
   }
 
   // testing::Test implementation.

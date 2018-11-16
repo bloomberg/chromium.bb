@@ -22,8 +22,10 @@
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/constants.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/frame_sink_observer.h"
 #include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
+#include "components/viz/service/frame_sinks/root_compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_manager.h"
 #include "components/viz/service/frame_sinks/video_detector.h"
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
@@ -280,8 +282,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // on destruction.
   base::flat_map<FrameSinkId, CompositorFrameSinkSupport*> support_map_;
 
-  // [Root]CompositorFrameSinkImpls are owned in this map.
-  base::flat_map<FrameSinkId, std::unique_ptr<mojom::CompositorFrameSink>>
+  // [Root]CompositorFrameSinkImpls are owned in these maps.
+  base::flat_map<FrameSinkId, std::unique_ptr<RootCompositorFrameSinkImpl>>
+      root_sink_map_;
+  base::flat_map<FrameSinkId, std::unique_ptr<CompositorFrameSinkImpl>>
       sink_map_;
 
   base::flat_set<std::unique_ptr<FrameSinkVideoCapturerImpl>,
