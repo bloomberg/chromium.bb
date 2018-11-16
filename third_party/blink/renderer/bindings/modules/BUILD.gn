@@ -195,6 +195,7 @@ source_set("generated") {
     ":event_modules_names",
     ":event_target_modules_names",
     "//media/midi:mojo_blink_headers",
+    "//third_party/blink/public/mojom:mojom_modules_blink_headers",
     "//third_party/blink/renderer/core",
     "//third_party/blink/renderer/platform/wtf",
     "//v8",

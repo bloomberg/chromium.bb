@@ -8,6 +8,7 @@
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
 namespace {
@@ -65,7 +66,7 @@ bool IndexedDBTransactionCoordinator::IsRunningVersionChangeTransaction()
     const {
   return !started_transactions_.empty() &&
          (*started_transactions_.begin())->mode() ==
-             blink::kWebIDBTransactionModeVersionChange;
+             blink::mojom::IDBTransactionMode::VersionChange;
 }
 
 #ifndef NDEBUG
@@ -114,7 +115,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
   // connection sequencing in IndexedDBDatabase.)
   std::set<int64_t> locked_scope;
   for (auto* transaction : started_transactions_) {
-    if (transaction->mode() == blink::kWebIDBTransactionModeReadWrite) {
+    if (transaction->mode() == blink::mojom::IDBTransactionMode::ReadWrite) {
       // Started read/write transactions have exclusive access to the object
       // stores within their scopes.
       locked_scope.insert(transaction->scope().begin(),
@@ -133,7 +134,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
       transaction->Start();
       DCHECK_EQ(IndexedDBTransaction::STARTED, transaction->state());
     }
-    if (transaction->mode() == blink::kWebIDBTransactionModeReadWrite) {
+    if (transaction->mode() == blink::mojom::IDBTransactionMode::ReadWrite) {
       // Either the transaction started, so it has exclusive access to the
       // stores in its scope, or per the spec the transaction which was
       // created first must get access first, so the stores are also locked.
@@ -168,14 +169,14 @@ bool IndexedDBTransactionCoordinator::CanStartTransaction(
   }
   DCHECK(queued_transactions_.count(transaction));
   switch (transaction->mode()) {
-    case blink::kWebIDBTransactionModeVersionChange:
+    case blink::mojom::IDBTransactionMode::VersionChange:
       DCHECK_EQ(1u, queued_transactions_.size());
       DCHECK(started_transactions_.empty());
       DCHECK(locked_scope.empty());
       return true;
 
-    case blink::kWebIDBTransactionModeReadOnly:
-    case blink::kWebIDBTransactionModeReadWrite:
+    case blink::mojom::IDBTransactionMode::ReadOnly:
+    case blink::mojom::IDBTransactionMode::ReadWrite:
       return !DoSetsIntersect(transaction->scope(), locked_scope);
   }
   NOTREACHED();

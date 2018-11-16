@@ -25,8 +25,6 @@ deps = [
   "//third_party/blink/renderer/platform/wtf",
 ]
 type_mappings = [
-  "blink.mojom.IDBCursorDirection=::blink::WebIDBCursorDirection",
-  "blink.mojom.IDBDataLoss=::blink::WebIDBDataLoss",
   "blink.mojom.IDBDatabaseMetadata=::blink::WebIDBMetadata",
   "blink.mojom.IDBIndexKeys=::blink::WebIDBIndexKeys",
   "blink.mojom.IDBIndexMetadata=::blink::WebIDBMetadata::Index",
@@ -34,8 +32,4 @@ type_mappings = [
   "blink.mojom.IDBKeyPath=::blink::WebIDBKeyPath",
   "blink.mojom.IDBKeyRange=::blink::WebIDBKeyRange",
   "blink.mojom.IDBObjectStoreMetadata=::blink::WebIDBMetadata::ObjectStore",
-  "blink.mojom.IDBOperationType=::blink::WebIDBOperationType",
-  "blink.mojom.IDBPutMode=::blink::WebIDBPutMode",
-  "blink.mojom.IDBTaskType=::blink::WebIDBTaskType",
-  "blink.mojom.IDBTransactionMode=::blink::WebIDBTransactionMode",
 ]

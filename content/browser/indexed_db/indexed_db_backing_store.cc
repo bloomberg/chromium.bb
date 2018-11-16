@@ -411,7 +411,7 @@ bool ObjectStoreCursorOptions(
     int64_t database_id,
     int64_t object_store_id,
     const IndexedDBKeyRange& range,
-    blink::WebIDBCursorDirection direction,
+    blink::mojom::IDBCursorDirection direction,
     IndexedDBBackingStore::Cursor::CursorOptions* cursor_options,
     Status* status) {
   cursor_options->database_id = database_id;
@@ -420,11 +420,11 @@ bool ObjectStoreCursorOptions(
   bool lower_bound = range.lower().IsValid();
   bool upper_bound = range.upper().IsValid();
   cursor_options->forward =
-      (direction == blink::kWebIDBCursorDirectionNextNoDuplicate ||
-       direction == blink::kWebIDBCursorDirectionNext);
+      (direction == blink::mojom::IDBCursorDirection::NextNoDuplicate ||
+       direction == blink::mojom::IDBCursorDirection::Next);
   cursor_options->unique =
-      (direction == blink::kWebIDBCursorDirectionNextNoDuplicate ||
-       direction == blink::kWebIDBCursorDirectionPrevNoDuplicate);
+      (direction == blink::mojom::IDBCursorDirection::NextNoDuplicate ||
+       direction == blink::mojom::IDBCursorDirection::PrevNoDuplicate);
 
   if (!lower_bound) {
     cursor_options->low_key =
@@ -480,7 +480,7 @@ bool IndexCursorOptions(
     int64_t object_store_id,
     int64_t index_id,
     const IndexedDBKeyRange& range,
-    blink::WebIDBCursorDirection direction,
+    blink::mojom::IDBCursorDirection direction,
     IndexedDBBackingStore::Cursor::CursorOptions* cursor_options,
     Status* status) {
   IDB_TRACE("IndexedDBBackingStore::IndexCursorOptions");
@@ -495,11 +495,11 @@ bool IndexCursorOptions(
   bool lower_bound = range.lower().IsValid();
   bool upper_bound = range.upper().IsValid();
   cursor_options->forward =
-      (direction == blink::kWebIDBCursorDirectionNextNoDuplicate ||
-       direction == blink::kWebIDBCursorDirectionNext);
+      (direction == blink::mojom::IDBCursorDirection::NextNoDuplicate ||
+       direction == blink::mojom::IDBCursorDirection::Next);
   cursor_options->unique =
-      (direction == blink::kWebIDBCursorDirectionNextNoDuplicate ||
-       direction == blink::kWebIDBCursorDirectionPrevNoDuplicate);
+      (direction == blink::mojom::IDBCursorDirection::NextNoDuplicate ||
+       direction == blink::mojom::IDBCursorDirection::PrevNoDuplicate);
 
   if (!lower_bound) {
     cursor_options->low_key =
@@ -976,7 +976,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   DCHECK(!path_base.empty());
   *is_disk_full = false;
 
-  data_loss_info->status = blink::kWebIDBDataLossNone;
+  data_loss_info->status = blink::mojom::IDBDataLoss::None;
   *status = Status::OK();
 
   std::unique_ptr<LevelDBComparator> comparator(std::make_unique<Comparator>());
@@ -1015,7 +1015,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     if (leveldb_env::IndicatesDiskFull(*status)) {
       *is_disk_full = true;
     } else if (status->IsCorruption()) {
-      data_loss_info->status = blink::kWebIDBDataLossTotal;
+      data_loss_info->status = blink::mojom::IDBDataLoss::Total;
       data_loss_info->message = leveldb_env::GetCorruptionMessage(*status);
     }
   }
@@ -1030,7 +1030,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
           indexed_db::INDEXED_DB_BACKING_STORE_OPEN_FAILED_PRIOR_CORRUPTION,
           origin);
       db.reset();
-      data_loss_info->status = blink::kWebIDBDataLossTotal;
+      data_loss_info->status = blink::mojom::IDBDataLoss::Total;
       data_loss_info->message =
           "IndexedDB (database was corrupt): " + corruption_message;
     } else if (!IsSchemaKnown(db.get(), &is_schema_known)) {
@@ -1041,7 +1041,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
               INDEXED_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA,
           origin);
       db.reset();
-      data_loss_info->status = blink::kWebIDBDataLossTotal;
+      data_loss_info->status = blink::mojom::IDBDataLoss::Total;
       data_loss_info->message = "I/O error checking schema";
     } else if (!is_schema_known) {
       LOG(ERROR) << "IndexedDB backing store had unknown schema, treating it "
@@ -1050,7 +1050,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
           indexed_db::INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA,
           origin);
       db.reset();
-      data_loss_info->status = blink::kWebIDBDataLossTotal;
+      data_loss_info->status = blink::mojom::IDBDataLoss::Total;
       data_loss_info->message = "Unknown schema";
     }
   }
@@ -1418,14 +1418,16 @@ Status IndexedDBBackingStore::DeleteRange(
   Status s;
   std::unique_ptr<IndexedDBBackingStore::Cursor> start_cursor =
       OpenObjectStoreCursor(transaction, database_id, object_store_id,
-                            key_range, blink::kWebIDBCursorDirectionNext, &s);
+                            key_range, blink::mojom::IDBCursorDirection::Next,
+                            &s);
   if (!s.ok())
     return s;
   if (!start_cursor)
     return Status::OK();  // Empty range == delete success.
   std::unique_ptr<IndexedDBBackingStore::Cursor> end_cursor =
       OpenObjectStoreCursor(transaction, database_id, object_store_id,
-                            key_range, blink::kWebIDBCursorDirectionPrev, &s);
+                            key_range, blink::mojom::IDBCursorDirection::Prev,
+                            &s);
 
   if (!s.ok())
     return s;
@@ -2969,7 +2971,7 @@ IndexedDBBackingStore::OpenObjectStoreCursor(
     int64_t database_id,
     int64_t object_store_id,
     const IndexedDBKeyRange& range,
-    blink::WebIDBCursorDirection direction,
+    blink::mojom::IDBCursorDirection direction,
     Status* s) {
   IDB_TRACE("IndexedDBBackingStore::OpenObjectStoreCursor");
   LevelDBTransaction* leveldb_transaction = transaction->transaction();
@@ -2995,7 +2997,7 @@ IndexedDBBackingStore::OpenObjectStoreKeyCursor(
     int64_t database_id,
     int64_t object_store_id,
     const IndexedDBKeyRange& range,
-    blink::WebIDBCursorDirection direction,
+    blink::mojom::IDBCursorDirection direction,
     Status* s) {
   IDB_TRACE("IndexedDBBackingStore::OpenObjectStoreKeyCursor");
   LevelDBTransaction* leveldb_transaction = transaction->transaction();
@@ -3022,7 +3024,7 @@ IndexedDBBackingStore::OpenIndexKeyCursor(
     int64_t object_store_id,
     int64_t index_id,
     const IndexedDBKeyRange& range,
-    blink::WebIDBCursorDirection direction,
+    blink::mojom::IDBCursorDirection direction,
     Status* s) {
   IDB_TRACE("IndexedDBBackingStore::OpenIndexKeyCursor");
   *s = Status::OK();
@@ -3047,7 +3049,7 @@ IndexedDBBackingStore::OpenIndexCursor(
     int64_t object_store_id,
     int64_t index_id,
     const IndexedDBKeyRange& range,
-    blink::WebIDBCursorDirection direction,
+    blink::mojom::IDBCursorDirection direction,
     Status* s) {
   IDB_TRACE("IndexedDBBackingStore::OpenIndexCursor");
   LevelDBTransaction* leveldb_transaction = transaction->transaction();
