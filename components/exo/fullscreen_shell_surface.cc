@@ -269,6 +269,7 @@ void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(
   params.show_state = show_state;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
   params.parent = WMHelper::GetInstance()->GetRootWindowForNewWindows();
+  params.bounds = gfx::Rect(params.parent->bounds().size());
 
   widget_ = new views::Widget();
   widget_->Init(params);
