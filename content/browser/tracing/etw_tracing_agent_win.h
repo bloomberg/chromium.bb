@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/threading/thread.h"
+#include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "base/win/event_trace_consumer.h"
 #include "base/win/event_trace_controller.h"
@@ -61,11 +61,13 @@ class EtwTracingAgent : public base::win::EtwTraceConsumerBase<EtwTracingAgent>,
   bool StopKernelSessionTracing();
 
   void OnStopSystemTracingDone(const std::string& output);
-  void TraceAndConsumeOnThread();
-  void FlushOnThread();
+  void TraceAndConsumeOnTracingSequence();
+  void FlushOnTracingSequence();
+
+  // Task runner used to communicate with the native tracing interface.
+  scoped_refptr<base::SequencedTaskRunner> tracing_task_runner_;
 
   std::unique_ptr<base::ListValue> events_;
-  base::Thread thread_;
   TRACEHANDLE session_handle_;
   base::win::EtwTraceProperties properties_;
   tracing::mojom::RecorderPtr recorder_;
