@@ -260,7 +260,7 @@ typedef struct AV1Decoder {
 // Returns 0 on success. Sets pbi->common.error.error_code to a nonzero error
 // code and returns a nonzero value on failure.
 int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,
-                                const uint8_t **dest);
+                                const uint8_t **psource);
 
 // Get the frame at a particular index in the output queue
 int av1_get_raw_frame(AV1Decoder *pbi, size_t index, YV12_BUFFER_CONFIG **sd,
@@ -281,7 +281,7 @@ aom_codec_err_t av1_copy_new_frame_dec(AV1_COMMON *cm,
 struct AV1Decoder *av1_decoder_create(BufferPool *const pool);
 
 void av1_decoder_remove(struct AV1Decoder *pbi);
-void av1_dealloc_dec_jobs(struct AV1DecTileMTData *tile_jobs_sync);
+void av1_dealloc_dec_jobs(struct AV1DecTileMTData *tile_mt_info);
 
 void av1_dec_row_mt_dealloc(AV1DecRowMTSync *dec_row_mt_sync);
 

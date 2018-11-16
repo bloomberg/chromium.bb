@@ -3647,7 +3647,7 @@ static int compare_tile_buffers(const void *a, const void *b) {
 static void enqueue_tile_jobs(AV1Decoder *pbi, AV1_COMMON *cm,
                               int tile_rows_start, int tile_rows_end,
                               int tile_cols_start, int tile_cols_end,
-                              int startTile, int endTile) {
+                              int start_tile, int end_tile) {
   AV1DecTileMT *tile_mt_info = &pbi->tile_mt_info;
   TileJobsDec *tile_job_queue = tile_mt_info->job_queue;
   tile_mt_info->jobs_enqueued = 0;
@@ -3655,8 +3655,8 @@ static void enqueue_tile_jobs(AV1Decoder *pbi, AV1_COMMON *cm,
 
   for (int row = tile_rows_start; row < tile_rows_end; row++) {
     for (int col = tile_cols_start; col < tile_cols_end; col++) {
-      if (row * cm->tile_cols + col < startTile ||
-          row * cm->tile_cols + col > endTile)
+      if (row * cm->tile_cols + col < start_tile ||
+          row * cm->tile_cols + col > end_tile)
         continue;
       tile_job_queue->tile_buffer = &pbi->tile_buffers[row][col];
       tile_job_queue->tile_data = pbi->tile_data + row * cm->tile_cols + col;
