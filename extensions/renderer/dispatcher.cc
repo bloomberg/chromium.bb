@@ -977,21 +977,38 @@ void Dispatcher::OnMessageInvoke(const std::string& extension_id,
 void Dispatcher::OnDispatchEvent(
     const ExtensionMsg_DispatchEvent_Params& params,
     const base::ListValue& event_args) {
+  content::RenderFrame* background_frame =
+      ExtensionFrameHelper::GetBackgroundPageFrame(params.extension_id);
+
   std::unique_ptr<WebScopedUserGesture> web_user_gesture;
-  if (params.is_user_gesture)
-    web_user_gesture.reset(new WebScopedUserGesture(nullptr));
+  // Synthesize a user gesture if this was in response to user action; this is
+  // necessary if the gesture was e.g. by clicking on the extension toolbar
+  // icon, context menu entry, etc.
+  //
+  // This will only add an active user gesture for the background page, so any
+  // listeners in different frames (like a popup or tab) won't be able to use
+  // the user gesture. This is intentional, since frames other than the
+  // background page should have their own user gestures, such as through button
+  // clicks.
+  if (params.is_user_gesture && background_frame) {
+    ScriptContext* background_context =
+        ScriptContextSet::GetMainWorldContextForFrame(background_frame);
+    if (background_context && bindings_system_->HasEventListenerInContext(
+                                  params.event_name, background_context)) {
+      web_user_gesture.reset(
+          new WebScopedUserGesture(background_frame->GetWebFrame()));
+    }
+  }
 
   DispatchEvent(params.extension_id, params.event_name, event_args,
                 &params.filtering_info);
 
-  // Tell the browser process when an event has been dispatched with a lazy
-  // background page active.
-  const Extension* extension =
-      RendererExtensionRegistry::Get()->GetByID(params.extension_id);
-  if (extension && BackgroundInfo::HasLazyBackgroundPage(extension)) {
-    content::RenderFrame* background_frame =
-        ExtensionFrameHelper::GetBackgroundPageFrame(params.extension_id);
-    if (background_frame) {
+  if (background_frame) {
+    // Tell the browser process when an event has been dispatched with a lazy
+    // background page active.
+    const Extension* extension =
+        RendererExtensionRegistry::Get()->GetByID(params.extension_id);
+    if (extension && BackgroundInfo::HasLazyBackgroundPage(extension)) {
       background_frame->Send(new ExtensionHostMsg_EventAck(
           background_frame->GetRoutingID(), params.event_id));
     }
