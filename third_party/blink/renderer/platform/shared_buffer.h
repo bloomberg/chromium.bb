@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SHARED_BUFFER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SHARED_BUFFER_H_
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -61,7 +62,9 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
       return temp;
     }
     bool operator==(const Iterator& that) const {
-      return value_ == that.value_ && buffer_ == that.buffer_;
+      return std::equal(value_.begin(), value_.end(), that.value_.begin(),
+                        that.value_.end()) &&
+             buffer_ == that.buffer_;
     }
     bool operator!=(const Iterator& that) const { return !(*this == that); }
     const base::span<const char>& operator*() const {
