@@ -737,7 +737,7 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
     scoped_refptr<GLSurface> surface = new SurfacelessEGL(gfx::Size(1, 1));
     scoped_refptr<GLContext> context = InitializeGLContext(
         new GLContextEGL(nullptr), surface.get(), GLContextAttribs());
-    if (!context->MakeCurrent(surface.get()))
+    if (!context || !context->MakeCurrent(surface.get()))
       g_egl_surfaceless_context_supported = false;
 
     // Ensure context supports GL_OES_surfaceless_context.
