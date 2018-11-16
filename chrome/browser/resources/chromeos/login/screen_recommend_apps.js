@@ -59,6 +59,7 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
      */
     ensureInitialized_: function() {
       $('recommend-apps-screen').screen = this;
+      window.addEventListener('message', this.onMessage);
     },
 
     /**
@@ -77,7 +78,7 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
     },
 
     setWebview: function(contents) {
-      var appListView = this.getElement_('app-list-view');
+      const appListView = this.getElement_('app-list-view');
       appListView.src = 'data:text/html;charset=utf-8,' + contents;
     },
 
@@ -90,20 +91,25 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
       // Hide the loading throbber and show the recommend app list.
       this.setThrobberVisible(false);
 
-      var appListView = this.getElement_('app-list-view');
-      var subtitle = this.getElement_('subtitle');
+      const appListView = this.getElement_('app-list-view');
+      const subtitle = this.getElement_('subtitle');
       subtitle.innerText = loadTimeData.getStringF(
           'recommendAppsScreenDescription', appList.length);
       appListView.addEventListener('contentload', () => {
+        appListView.contentWindow.postMessage('initialMessage', '*');
+
         appListView.executeScript({file: 'recommend_app_list_view.js'}, () => {
           appList.forEach(function(app, index) {
-            var generateItemScript = 'generateContents("' + app.icon + '", "' +
+            let generateItemScript = 'generateContents("' + app.icon + '", "' +
                 app.name + '", "' + app.package_name + '");';
-            var generateContents = {code: generateItemScript};
+            const generateContents = {code: generateItemScript};
             appListView.executeScript(generateContents);
           });
-          var addScrollShadowEffectScript = 'addScrollShadowEffect();';
+          const addScrollShadowEffectScript = 'addScrollShadowEffect();';
           appListView.executeScript({code: addScrollShadowEffectScript});
+
+          const getNumOfSelectedAppsScript = 'sendNumberOfSelectedApps();';
+          appListView.executeScript({code: getNumOfSelectedAppsScript});
 
           this.onGenerateContents();
         });
@@ -131,12 +137,15 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
      * Handles Install button click.
      */
     onInstall: function() {
-      var appListView = this.getElement_('app-list-view');
-      appListView.executeScript(
-          {code: 'getSelectedPackages();'}, function(result) {
-            console.log(result[0]);
-            chrome.send('recommendAppsInstall', result[0]);
-          });
+      // Only start installation if the button is not disabled.
+      if (!this.getElement_('recommend-apps-install-button').disabled) {
+        const appListView = this.getElement_('app-list-view');
+        appListView.executeScript(
+            {code: 'getSelectedPackages();'}, function(result) {
+              console.log(result[0]);
+              chrome.send('recommendAppsInstall', result[0]);
+            });
+      }
     },
 
     /**
@@ -149,6 +158,18 @@ login.createScreen('RecommendAppsScreen', 'recommend-apps', function() {
       this.addClass_('recommend-apps-loading');
 
       chrome.send('recommendAppsRetry');
+    },
+
+    /**
+     * Handles the message sent from the WebView.
+     */
+    onMessage: function(event) {
+      if (event.data.type && (event.data.type === 'NUM_OF_SELECTED_APPS')) {
+        const numOfSelected = event.data.numOfSelected;
+        $('recommend-apps-screen')
+            .getElement('recommend-apps-install-button')
+            .disabled = (numOfSelected === 0);
+      }
     },
 
     /**
