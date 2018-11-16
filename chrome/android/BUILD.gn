@@ -49,14 +49,13 @@ trichrome_chrome_android_manifest =
 app_hooks_impl = "java/src/org/chromium/chrome/browser/AppHooksImpl.java"
 
 # Exclude it from JNI registration if VR is not enabled.
-jni_exception_files = []
+chrome_jni_sources_blacklist = []
 if (!enable_vr) {
-  jni_exception_files += [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java" ]
+  chrome_jni_sources_blacklist += [ "//chrome/android/java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java" ]
 }
 chrome_jni_registration_header =
     "$root_build_dir/gen/chrome/browser/android/chrome_jni_registration.h"
 chrome_jni_for_test_registration_header = "$root_build_dir/gen/chrome/browser/android/chrome_jni_for_test_registration.h"
-chrome_sync_shell_jni_registration_header = "$root_build_dir/gen/chrome/browser/android/chrome_sync_shell_jni_registration.h"
 
 jinja_template("chrome_public_android_manifest") {
   input = "java/AndroidManifest.xml"
@@ -1093,8 +1092,8 @@ chrome_shared_library("libchromefortest") {
 if (current_toolchain == default_toolchain) {
   generate_jni_registration("chrome_jni_registration") {
     target = ":chrome_public_base_module_java"
-    output = chrome_jni_registration_header
-    exception_files = jni_exception_files
+    header_output = chrome_jni_registration_header
+    sources_blacklist = chrome_jni_sources_blacklist
   }
 
   # The test apks do not use chromium linker, but using manual JNI registration
@@ -1102,8 +1101,8 @@ if (current_toolchain == default_toolchain) {
   generate_jni_registration("chrome_jni_for_test_registration") {
     testonly = true
     target = ":chrome_public_base_module_java_for_test"
-    output = chrome_jni_for_test_registration_header
-    exception_files = jni_exception_files
+    header_output = chrome_jni_for_test_registration_header
+    sources_blacklist = chrome_jni_sources_blacklist
   }
 
   # This template instantiates targets responsible for generating pak
@@ -1426,6 +1425,7 @@ template("chrome_public_apk_or_module_tmpl") {
                            [
                              "apk_name",
                              "is_base_module",
+                             "jni_registration_header",
                              "is_modern",
                              "module_name",
                              "target_type",

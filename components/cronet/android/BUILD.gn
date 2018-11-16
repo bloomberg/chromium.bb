@@ -13,6 +13,8 @@ import("//third_party/netty4/netty4.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//url/features.gni")
 
+_jni_registration_header = "$target_gen_dir/cronet_jni_registration.h"
+
 declare_args() {
   # In integrated mode, CronetEngine will use the shared network task runner by
   # other Chromium-based clients like webview without self-initialization.
@@ -38,14 +40,17 @@ generate_jni("cronet_jni_headers") {
 }
 
 generate_jni_registration("cronet_jni_registration") {
-  target = ":cronet_jni_apk"
-  output = "$root_gen_dir/components/cronet/android/${target_name}.h"
-
-  exception_files = [
+  target = ":cronet_impl_all_java"
+  header_output = _jni_registration_header
+  sources_blacklist = [
     "//base/android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
     "//base/android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
     "//base/android/java/src/org/chromium/base/SysUtils.java",
   ]
+}
+
+java_library("cronet_jni_registration_java") {
+  srcjar_deps = [ ":cronet_jni_registration" ]
 }
 
 java_cpp_enum("effective_connection_type_java") {
@@ -199,6 +204,7 @@ source_set("cronet_static") {
     "//components/cronet/android/metrics_util.h",
     "//components/cronet/android/url_request_error.cc",
     "//components/cronet/android/url_request_error.h",
+    _jni_registration_header,
   ]
 
   if (integrated_mode) {
@@ -408,17 +414,6 @@ java_group("cronet_impl_all_java") {
     ":cronet_impl_common_base_java",
     ":cronet_impl_native_base_java",
     ":cronet_impl_platform_base_java",
-  ]
-}
-
-# This target exists only to provide input to the generate_jni_registration
-# target previously declared.  It contains all Java with JNI declarations.
-android_apk("cronet_jni_apk") {
-  apk_name = "CronetJni"
-  android_manifest = "sample/AndroidManifest.xml"
-  deps = [
-    ":cronet_impl_all_java",
-    "//third_party/android_deps:android_support_v7_appcompat_java",
   ]
 }
 
@@ -686,6 +681,7 @@ action("extract_cronet_native_jars") {
 
   deps = [
     ":cronet_impl_native_base_java",
+    ":cronet_jni_registration_java",
   ]
   deps += cronet_impl_native_java_deps_to_package
 
@@ -1375,6 +1371,7 @@ if (!is_component_build) {
       "//url:url_java",
     ]
     srcjar_deps = cronet_impl_native_java_srcjar_deps + [
+                    ":cronet_jni_registration",
                     "//base:base_android_java_enums_srcjar",
                     "//net/android:net_android_java_enums_srcjar",
                     "//net/android:net_errors_java",

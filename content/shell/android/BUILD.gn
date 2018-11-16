@@ -244,6 +244,8 @@ if (current_cpu != "x64") {
   _linker_test_apk_target_name = "chromium_linker_test_apk__apk"
   _linker_test_apk_test_runner_target_name =
       "chromium_linker_test_apk__test_runner_script"
+  _linker_test_jni_registration_header =
+      "$target_gen_dir/linker_test_apk/linker_test_jni_registration.h"
 
   android_apk(_linker_test_apk_target_name) {
     testonly = true
@@ -267,6 +269,7 @@ if (current_cpu != "x64") {
     shared_libraries = [ ":linker_test" ]
     use_chromium_linker = true
     enable_chromium_linker_tests = true
+    jni_registration_header = _linker_test_jni_registration_header
   }
 
   test_runner_script(_linker_test_apk_test_runner_target_name) {
@@ -289,11 +292,12 @@ if (current_cpu != "x64") {
     sources = [
       "linker_test_apk/chromium_linker_test_android.cc",
       "linker_test_apk/chromium_linker_test_linker_tests.cc",
+      _linker_test_jni_registration_header,
     ]
 
     deps = [
+      ":${_linker_test_apk_target_name}__final_jni",
       ":linker_test_jni_headers",
-      ":linker_test_jni_registration",
       "//content/shell:content_shell_lib",
 
       # Required to include "content/public/browser/android/compositor.h"
@@ -318,13 +322,6 @@ if (current_cpu != "x64") {
     sources = [
       "linker_test_apk/src/org/chromium/chromium_linker_test_apk/LinkerTests.java",
     ]
-  }
-
-  generate_jni_registration("linker_test_jni_registration") {
-    testonly = true
-    target = ":chromium_linker_test_apk__apk"
-    output =
-        "$root_gen_dir/content/shell/android/linker_test_apk/${target_name}.h"
   }
 }
 

@@ -1437,19 +1437,10 @@ def GenerateJNIHeader(input_file, output_file, options):
     print e
     sys.exit(1)
   if output_file:
-    WriteOutput(output_file, content)
+    with build_utils.AtomicOutput(output_file) as f:
+      f.write(content)
   else:
     print content
-
-
-def WriteOutput(output_file, content):
-  if os.path.exists(output_file):
-    with open(output_file) as f:
-      existing_content = f.read()
-      if existing_content == content:
-        return
-  with open(output_file, 'w') as f:
-    f.write(content)
 
 
 def GetScriptName():
