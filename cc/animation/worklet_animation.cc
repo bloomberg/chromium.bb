@@ -108,6 +108,9 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
 
   double current_time =
       CurrentTime(monotonic_time, scroll_tree, is_active_tree);
+  // TODO(yigu): If current_time becomes newly unresolved and last_current_time_
+  // is resolved, we apply the last current time to the animation if the scroll
+  // timeline becomes newly inactive. See https://crbug.com/906050.
   last_current_time_ = current_time;
 
   switch (state_) {

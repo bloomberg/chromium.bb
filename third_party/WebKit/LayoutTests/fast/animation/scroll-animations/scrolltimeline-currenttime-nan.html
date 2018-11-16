@@ -24,8 +24,8 @@ test(function() {
   const scrollTimeline = new ScrollTimeline(
       { scrollSource: scroller, timeRange: 100, orientation: 'block' });
 
-  assert_equals(scrollTimeline.currentTime, NaN);
-}, 'currentTime returns NaN for a display: inline scrollSource');
+  assert_equals(scrollTimeline.currentTime, null);
+}, 'currentTime should be null for a display: inline scrollSource');
 </script>
 
 <div id='displayNoneScroller' class='scroller' style='display: none;'>
@@ -37,8 +37,8 @@ test(function() {
   const scrollTimeline = new ScrollTimeline(
       { scrollSource: scroller, timeRange: 100, orientation: 'block' });
 
-  assert_equals(scrollTimeline.currentTime, NaN);
-}, 'currentTime returns NaN for a display: none scrollSource');
+  assert_equals(scrollTimeline.currentTime, null);
+}, 'currentTime should be null for a display: none scrollSource');
 </script>
 
 <script>
@@ -57,8 +57,8 @@ test(function() {
   const scrollTimeline = new ScrollTimeline(
       { scrollSource: scroller, timeRange: 100, orientation: 'block' });
 
-  assert_equals(scrollTimeline.currentTime, NaN);
-}, 'currentTime returns NaN for an unattached scrollSource');
+  assert_equals(scrollTimeline.currentTime, null);
+}, 'currentTime should be null for an unattached scrollSource');
 </script>
 
 <div id='notAScroller' class='scroller' style='overflow: visible;'>
@@ -70,6 +70,6 @@ test(function() {
   const scrollTimeline = new ScrollTimeline(
       { scrollSource: scroller, timeRange: 100, orientation: 'block' });
 
-  assert_equals(scrollTimeline.currentTime, NaN);
-}, 'currentTime returns NaN when the scrollSource is not a scroller');
+  assert_equals(scrollTimeline.currentTime, null);
+}, 'currentTime should be null when the scrollSource is not a scroller');
 </script>

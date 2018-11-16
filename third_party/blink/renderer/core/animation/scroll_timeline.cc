@@ -116,11 +116,11 @@ ScrollTimeline::ScrollTimeline(Element* scroll_source,
 }
 
 double ScrollTimeline::currentTime(bool& is_null) {
+  is_null = true;
   // 1. If scrollSource does not currently have a CSS layout box, or if its
   // layout box is not a scroll container, return an unresolved time value.
   LayoutBox* layout_box = ResolvedScrollSource()->GetLayoutBox();
   if (!layout_box || !layout_box->HasOverflowClip()) {
-    is_null = false;
     return std::numeric_limits<double>::quiet_NaN();
   }
 

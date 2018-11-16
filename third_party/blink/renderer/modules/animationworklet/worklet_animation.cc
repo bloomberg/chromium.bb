@@ -404,7 +404,8 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
   if (play_state_ != Animation::kRunning)
     return;
 
-  if (!start_time_)
+  // ScrollTimeline animation doesn't require start_time_ to be set.
+  if (!start_time_ && !timeline_->IsScrollTimeline())
     return;
 
   DCHECK_EQ(effects_.size(), local_times_.size());
@@ -599,16 +600,22 @@ void WorkletAnimation::UpdateInputState(
   bool was_active = IsActive(last_play_state_);
   bool is_active = IsActive(play_state_);
 
-  DCHECK(start_time_);
+  // ScrollTimeline animation doesn't require start_time_ to be set.
+  DCHECK(start_time_ || timeline_->IsScrollTimeline());
   DCHECK(last_current_time_ || !was_active);
   bool is_null;
   double current_time = timeline_->currentTime(is_null);
 
   bool did_time_change =
       !last_current_time_ || current_time != last_current_time_->InSecondsF();
+  // TODO(yigu): If current_time becomes newly unresolved and last_current_time_
+  // is resolved, we apply the last current time to the animation if the scroll
+  // timeline becomes newly inactive. See https://crbug.com/906050.
   last_current_time_ = base::TimeDelta::FromSecondsD(current_time);
 
   if (!was_active && is_active) {
+    // TODO(yigu): current_time should be offset by start_time_ for animations
+    // with document timeline. https://crbug.com/905405.
     input_state->Add(
         {id_,
          std::string(animator_name_.Ascii().data(), animator_name_.length()),
