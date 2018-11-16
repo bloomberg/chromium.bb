@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
-#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -69,9 +68,38 @@ const CSSValue* PaintOrder::CSSValueFromComputedStyleInternal(
     const ComputedStyle&,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    Node* styled_node,
+    Node*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::PaintOrderToCSSValueList(svg_style);
+  const EPaintOrder paint_order = svg_style.PaintOrder();
+  if (paint_order == kPaintOrderNormal)
+    return CSSIdentifierValue::Create(CSSValueNormal);
+
+  // Table mapping to the shortest (canonical) form of the property.
+  //
+  // Per spec, if any keyword is omitted it will be added last using
+  // the standard ordering. So "stroke" implies an order "stroke fill
+  // markers" etc. From a serialization PoV this means we never need
+  // to emit the last keyword.
+  //
+  // https://svgwg.org/svg2-draft/painting.html#PaintOrder
+  static const uint8_t canonical_form[][2] = {
+      // kPaintOrderNormal is handled above.
+      {PT_FILL, PT_NONE},       // kPaintOrderFillStrokeMarkers
+      {PT_FILL, PT_MARKERS},    // kPaintOrderFillMarkersStroke
+      {PT_STROKE, PT_NONE},     // kPaintOrderStrokeFillMarkers
+      {PT_STROKE, PT_MARKERS},  // kPaintOrderStrokeMarkersFill
+      {PT_MARKERS, PT_NONE},    // kPaintOrderMarkersFillStroke
+      {PT_MARKERS, PT_STROKE},  // kPaintOrderMarkersStrokeFill
+  };
+  DCHECK_LT(static_cast<size_t>(paint_order) - 1, base::size(canonical_form));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  for (const auto& keyword : canonical_form[paint_order - 1]) {
+    const auto paint_order_type = static_cast<EPaintOrderType>(keyword);
+    if (paint_order_type == PT_NONE)
+      break;
+    list->Append(*CSSIdentifierValue::Create(paint_order_type));
+  }
+  return list;
 }
 
 }  // namespace CSSLonghand

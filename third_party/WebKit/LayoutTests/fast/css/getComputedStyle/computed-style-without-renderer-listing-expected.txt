@@ -223,7 +223,7 @@ padding-bottom: 0px
 padding-left: 0px
 padding-right: 0px
 padding-top: 0px
-paint-order: fill stroke markers
+paint-order: normal
 perspective: none
 perspective-origin: 50% 50%
 pointer-events: auto

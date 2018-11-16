@@ -1856,27 +1856,6 @@ CSSValue* ComputedStyleUtils::StrokeDashArrayToCSSValueList(
   return list;
 }
 
-CSSValue* ComputedStyleUtils::PaintOrderToCSSValueList(
-    const SVGComputedStyle& svg_style) {
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  for (int i = 0; i < 3; i++) {
-    EPaintOrderType paint_order_type = svg_style.PaintOrderType(i);
-    switch (paint_order_type) {
-      case PT_FILL:
-      case PT_STROKE:
-      case PT_MARKERS:
-        list->Append(*CSSIdentifierValue::Create(paint_order_type));
-        break;
-      case PT_NONE:
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-
-  return list;
-}
-
 CSSValue* ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
     const SVGPaint& paint,
     const Color& current_color) {

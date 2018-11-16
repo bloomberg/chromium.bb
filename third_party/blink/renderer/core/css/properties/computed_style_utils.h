@@ -143,7 +143,6 @@ class ComputedStyleUtils {
   static CSSValueList* ValueForBorderRadiusShorthand(const ComputedStyle&);
   static CSSValue* StrokeDashArrayToCSSValueList(const SVGDashArray&,
                                                  const ComputedStyle&);
-  static CSSValue* PaintOrderToCSSValueList(const SVGComputedStyle&);
   static CSSValue* AdjustSVGPaintForCurrentColor(const SVGPaint&, const Color&);
   static CSSValue* ValueForSVGResource(const StyleSVGResource*);
   static CSSValue* ValueForShadowData(const ShadowData&,
