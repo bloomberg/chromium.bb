@@ -355,7 +355,7 @@ public class WebappActivity extends SingleTabActivity {
     protected Tab restoreTab(Bundle savedInstanceState) {
         int tabId = getSavedInstanceState().getInt(BUNDLE_TAB_ID, Tab.INVALID_TAB_ID);
 
-        if (tabId == Tab.INVALID_TAB_ID || getActivityDirectory() == null) return null;
+        if (tabId == Tab.INVALID_TAB_ID) return null;
 
         TabState tabState = TabState.restoreTabState(getActivityDirectory(), tabId);
         if (tabState == null) return null;
