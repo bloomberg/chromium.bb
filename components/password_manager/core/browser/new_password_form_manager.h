@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
@@ -21,10 +22,6 @@
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
 #include "components/password_manager/core/browser/votes_uploader.h"
-
-namespace autofill {
-class FormStructure;
-}
 
 namespace password_manager {
 
@@ -87,7 +84,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // |observed_form_|, initiates filling and stores predictions in
   // |predictions_|.
   void ProcessServerPredictions(
-      const std::vector<autofill::FormStructure*>& predictions);
+      const std::map<autofill::FormSignature, FormPredictions>& predictions);
 
   // Sends fill data to the renderer.
   void Fill();
