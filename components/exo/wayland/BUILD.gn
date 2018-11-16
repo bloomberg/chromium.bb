@@ -47,6 +47,8 @@ source_set("wayland") {
     "wl_seat.h",
     "wl_shell.cc",
     "wl_shell.h",
+    "zcr_cursor_shapes.cc",
+    "zcr_cursor_shapes.h",
     "zcr_gaming_input.cc",
     "zcr_gaming_input.h",
     "zcr_keyboard_configuration.cc",
