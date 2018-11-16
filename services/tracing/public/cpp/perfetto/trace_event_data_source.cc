@@ -427,34 +427,43 @@ void TraceEventDataSource::StopTracing(
         RegisterTracedValueProtoWriter(false);
         TraceLog::GetInstance()->SetAddTraceEventOverride(nullptr, nullptr);
 
-        // TraceLog::CancelTracing will cause metadata events to be written;
-        // make sure we flush the TraceWriter for this thread (TraceLog will
-        // only call TraceEventDataSource::FlushCurrentThread for threads with
-        // a MessageLoop).
-        // TODO(oysteine): The perfetto service itself should be able to recover
-        // unreturned chunks so technically this can go away
-        // at some point, but seems needed for now.
-        FlushCurrentThread();
-
         if (data_source->stop_complete_callback_) {
           std::move(data_source->stop_complete_callback_).Run();
         }
       };
 
-  if (TraceLog::GetInstance()->IsEnabled()) {
-    // We call CancelTracing because we don't want/need TraceLog to do any of
-    // its own JSON serialization on its own.
+  bool was_enabled = TraceLog::GetInstance()->IsEnabled();
+  if (was_enabled) {
+    // Write metadata events etc.
+    TraceLog::GetInstance()->SetDisabled();
+  }
+
+  {
+    // Prevent recreation of ThreadLocalEventSinks after flush.
+    base::AutoLock lock(lock_);
+    DCHECK(producer_client_);
+    producer_client_ = nullptr;
+    target_buffer_ = 0;
+  }
+
+  if (was_enabled) {
+    // TraceLog::SetDisabled will cause metadata events to be written; make
+    // sure we flush the TraceWriter for this thread (TraceLog will only call
+    // TraceEventDataSource::FlushCurrentThread for threads with a MessageLoop).
+    // TODO(eseckler): Flush all worker threads.
+    // TODO(oysteine): The perfetto service itself should be able to recover
+    // unreturned chunks so technically this can go away at some point, but
+    // seems needed for now.
+    FlushCurrentThread();
+    
+    // Flush the remaining threads via TraceLog. We call CancelTracing because
+    // we don't want/need TraceLog to do any of its own JSON serialization.
     TraceLog::GetInstance()->CancelTracing(base::BindRepeating(
         on_tracing_stopped_callback, base::Unretained(this)));
   } else {
     on_tracing_stopped_callback(this, scoped_refptr<base::RefCountedString>(),
                                 false);
   }
-
-  base::AutoLock lock(lock_);
-  DCHECK(producer_client_);
-  producer_client_ = nullptr;
-  target_buffer_ = 0;
 }
 
 void TraceEventDataSource::Flush(
