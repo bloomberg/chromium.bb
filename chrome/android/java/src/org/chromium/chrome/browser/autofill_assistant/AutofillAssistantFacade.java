@@ -6,9 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.os.Bundle;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -32,8 +30,7 @@ public class AutofillAssistantFacade {
     public static boolean isConfigured(Bundle intentExtras) {
         return getBooleanParameter(intentExtras, PARAMETER_ENABLED)
                 && !AutofillAssistantStudy.getUrl().isEmpty()
-                && ContextUtils.getAppSharedPreferences().getBoolean(
-                           AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, true);
+                && AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn();
     }
 
     /** Starts Autofill Assistant on the given {@code activity}. */

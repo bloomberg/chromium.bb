@@ -707,31 +707,35 @@ class AutofillAssistantUiDelegate {
      * Starts the init screen unless it has been marked to be skipped.
      */
     public void startOrSkipInitScreen() {
-        if (InitScreenController.skip()) {
+        if (AutofillAssistantPreferencesUtil.getSkipInitScreenPreference()) {
             mClient.onInitOk();
             return;
         }
-        showInitScreen(new InitScreenController(mClient));
+        showInitScreen();
     }
 
     /**
      * Shows the init screen and launch the autofill assistant when it succeeds.
      */
-    public void showInitScreen(InitScreenController controller) {
+    public void showInitScreen() {
         View initView = LayoutInflater.from(mActivity)
                                 .inflate(R.layout.init_screen, mCoordinatorView)
                                 .findViewById(R.id.init_screen);
 
         initView.findViewById(R.id.button_init_ok)
-                .setOnClickListener(unusedView -> onInitClicked(controller, true, initView));
+                .setOnClickListener(unusedView -> onInitClicked(true, initView));
         initView.findViewById(R.id.button_init_not_ok)
-                .setOnClickListener(unusedView -> onInitClicked(controller, false, initView));
+                .setOnClickListener(unusedView -> onInitClicked(false, initView));
     }
 
-    private void onInitClicked(InitScreenController controller, Boolean initOk, View initView) {
+    private void onInitClicked(boolean accept, View initView) {
         CheckBox checkBox = initView.findViewById(R.id.checkbox_dont_show_init_again);
-        controller.onInitFinished(initOk, checkBox.isChecked());
+        AutofillAssistantPreferencesUtil.setInitialPreferences(accept, checkBox.isChecked());
         mCoordinatorView.removeView(initView);
+        if (accept)
+            mClient.onInitOk();
+        else
+            mClient.onInitRejected();
     }
 
     /**
