@@ -243,7 +243,7 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
                            MessagePumpForUI::FdWatcher* delegate);
 #endif
 
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
   // Forwards to MessageLoopForUI::Attach().
   // TODO(https://crbug.com/825327): Plumb the actual MessageLoopForUI* to
   // callers and remove ability to access this method from

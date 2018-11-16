@@ -10,8 +10,10 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_IOS)
 #include "base/message_loop/message_pump_mac.h"
+#elif defined(OS_ANDROID)
+#include "base/message_loop/message_pump_android.h"
 #endif
 
 namespace base {
@@ -44,7 +46,7 @@ ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
 }
 
 ThreadControllerWithMessagePumpImpl::~ThreadControllerWithMessagePumpImpl() {
-  // Destructors of RunLoop::Delegate and ThreadTaskRunnerHandle
+  // Destructors of MessagePump::Delegate and ThreadTaskRunnerHandle
   // will do all the clean-up.
   // ScopedSetSequenceLocalStorageMapForCurrentThread destructor will
   // de-register the current thread as a sequence.
@@ -391,6 +393,10 @@ MessagePump* ThreadControllerWithMessagePumpImpl::GetBoundMessagePump() const {
 #if defined(OS_IOS)
 void ThreadControllerWithMessagePumpImpl::AttachToMessagePump() {
   static_cast<MessagePumpUIApplication*>(pump_.get())->Attach(this);
+}
+#elif defined(OS_ANDROID)
+void ThreadControllerWithMessagePumpImpl::AttachToMessagePump() {
+  static_cast<MessagePumpForUI*>(pump_.get())->Attach(this);
 }
 #endif
 

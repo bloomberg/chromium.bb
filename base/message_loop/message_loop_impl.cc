@@ -26,6 +26,8 @@
 
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
+#elif defined(OS_ANDROID)
+#include "base/message_loop/message_pump_android.h"
 #endif
 
 namespace base {
@@ -231,21 +233,6 @@ void MessageLoopImpl::Controller::AfterOperation() {
 //------------------------------------------------------------------------------
 
 MessageLoopImpl::~MessageLoopImpl() {
-  // Clean up any unprocessed tasks, but take care: deleting a task could
-  // result in the addition of more tasks (e.g., via DeleteSoon).  We set a
-  // limit on the number of times we will allow a deleted task to generate more
-  // tasks.  Normally, we should only pass through this loop once or twice.  If
-  // we end up hitting the loop limit, then it is probably due to one task that
-  // is being stubborn.  Inspect the queues to see who is left.
-  bool tasks_remain;
-  for (int i = 0; i < 100; ++i) {
-    DeletePendingTasks();
-    // If we end up with empty queues, then break out of the loop.
-    tasks_remain = HasTasks();
-    if (!tasks_remain)
-      break;
-  }
-  DCHECK(!tasks_remain);
 
 #if defined(OS_WIN)
   if (in_high_res_mode_)
@@ -402,6 +389,12 @@ MessagePump* MessageLoopImpl::GetMessagePump() const {
 void MessageLoopImpl::AttachToMessagePump() {
   DCHECK_EQ(type_, MessageLoopBase::TYPE_UI);
   static_cast<MessagePumpUIApplication*>(pump_.get())->Attach(this);
+}
+#elif defined(OS_ANDROID)
+void MessageLoopImpl::AttachToMessagePump() {
+  DCHECK(type_ == MessageLoopBase::TYPE_UI ||
+         type_ == MessageLoopBase::TYPE_JAVA);
+  static_cast<MessagePumpForUI*>(pump_.get())->Attach(this);
 }
 #endif  // defined(OS_IOS)
 

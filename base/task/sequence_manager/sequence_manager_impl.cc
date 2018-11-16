@@ -196,6 +196,12 @@ void SequenceManagerImpl::BindToCurrentThread() {
     associated_thread_->BindToCurrentThread();
 }
 
+void SequenceManagerImpl::BindToCurrentThread(
+    std::unique_ptr<MessagePump> pump) {
+  BindToCurrentThread();
+  BindToMessagePump(std::move(pump));
+}
+
 void SequenceManagerImpl::CompleteInitializationOnBoundThread() {
   controller_->AddNestingObserver(this);
   main_thread_only().nesting_observer_registered_ = true;
@@ -851,7 +857,7 @@ bool SequenceManagerImpl::IsTaskExecutionAllowed() const {
   return controller_->IsTaskExecutionAllowed();
 }
 
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
 void SequenceManagerImpl::AttachToMessagePump() {
   return controller_->AttachToMessagePump();
 }

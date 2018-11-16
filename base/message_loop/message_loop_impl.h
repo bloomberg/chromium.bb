@@ -69,10 +69,13 @@ class BASE_EXPORT MessageLoopImpl : public MessageLoopBase,
   bool IsIdleForTesting() override;
   void SetTaskExecutionAllowed(bool allowed) override;
   bool IsTaskExecutionAllowed() const override;
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
   void AttachToMessagePump() override;
 #endif
   void SetTimerSlack(TimerSlack timer_slack) override;
+  void BindToCurrentThread(std::unique_ptr<MessagePump> pump) override;
+  void DeletePendingTasks() override;
+  bool HasTasks() override;
 
   // Gets the TaskRunner associated with this message loop.
   const scoped_refptr<SingleThreadTaskRunner>& task_runner() const {
@@ -83,16 +86,6 @@ class BASE_EXPORT MessageLoopImpl : public MessageLoopBase,
 
   // Runs the specified PendingTask.
   void RunTask(PendingTask* pending_task);
-
-  // Configure various members and bind this message loop to the current thread.
-  void BindToCurrentThread(std::unique_ptr<MessagePump> pump);
-
-  // Delete tasks that haven't run yet without running them.  Used in the
-  // destructor to make sure all the task's destructors get called.
-  void DeletePendingTasks();
-
-  // Returns whether there are any pending tasks owned by MessageLoop.
-  bool HasTasks();
 
   //----------------------------------------------------------------------------
  protected:

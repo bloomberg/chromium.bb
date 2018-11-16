@@ -223,7 +223,8 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
     // will be called later. Since we must implement ThreadController and
     // SequenceManager in conformance with MessageLoop task runners, we need
     // to disable this batching optimization while nested.
-    // Implementing RunLoop::Delegate ourselves will help to resolve this issue.
+    // Implementing MessagePump::Delegate ourselves will help to resolve this
+    // issue.
     if (main_sequence_only().nesting_depth > 0)
       break;
   }
@@ -329,7 +330,7 @@ MessagePump* ThreadControllerImpl::GetBoundMessagePump() const {
   return nullptr;
 }
 
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
 void ThreadControllerImpl::AttachToMessagePump() {
   NOTREACHED();
 }

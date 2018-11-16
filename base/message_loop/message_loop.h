@@ -30,6 +30,7 @@ namespace base {
 class MessageLoopImpl;
 
 namespace sequence_manager {
+class TaskQueue;
 class LazyThreadControllerForTest;
 namespace internal {
 class SequenceManagerImpl;
@@ -177,7 +178,19 @@ class BASE_EXPORT MessageLoopBase {
   // TODO(alexclarke): Remove this as part of https://crbug.com/825327.
   virtual scoped_refptr<SingleThreadTaskRunner> GetTaskRunner() = 0;
 
+  // Binds the MessageLoop to the current thread using |pump|.
+  virtual void BindToCurrentThread(std::unique_ptr<MessagePump> pump) = 0;
+
+  // Returns true if the MessageLoop retains any tasks inside it.
+  virtual bool HasTasks() = 0;
+
+  // Deletes all tasks associated with this MessageLoop. Note that the tasks
+  // can post other tasks when destructed.
+  virtual void DeletePendingTasks() = 0;
+
  protected:
+  friend class MessageLoop;
+  friend class MessageLoopForUI;
   friend class MessageLoopCurrent;
   friend class MessageLoopCurrentForIO;
   friend class MessageLoopCurrentForUI;
@@ -190,7 +203,7 @@ class BASE_EXPORT MessageLoopBase {
   // Whether task execution is allowed at the moment.
   virtual bool IsTaskExecutionAllowed() const = 0;
 
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
   virtual void AttachToMessagePump() = 0;
 #endif
 
@@ -252,7 +265,7 @@ class BASE_EXPORT MessageLoop {
   void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
 
   // Gets the TaskRunner associated with this message loop.
-  const scoped_refptr<SingleThreadTaskRunner>& task_runner() const;
+  scoped_refptr<SingleThreadTaskRunner> task_runner() const;
 
   // TODO(yutak): Replace all the use sites with base::TaskObserver.
   using TaskObserver = MessageLoopCurrent::TaskObserver;
@@ -274,9 +287,12 @@ class BASE_EXPORT MessageLoop {
   // TODO(alexclarke): Make this const when MessageLoopImpl goes away.
   bool IsIdleForTesting();
 
-  MessageLoopImpl* impl_for_testing() { return message_loop_impl_.get(); }
-
   MessageLoopBase* GetMessageLoopBase();
+
+  enum class BackendType {
+    MESSAGE_LOOP_IMPL,
+    SEQUENCE_MANAGER,
+  };
 
   //----------------------------------------------------------------------------
  protected:
@@ -294,22 +310,33 @@ class BASE_EXPORT MessageLoop {
   // Configure various members and bind this message loop to the current thread.
   void BindToCurrentThread();
 
-  // A raw pointer to the MessagePump handed-off to |message_loop_impl_|.
-  // Valid for the lifetime of |message_loop_impl_|.
+  // A raw pointer to the MessagePump handed-off to |backend_|.
+  // Valid for the lifetime of |backend_|.
   MessagePump* pump_;
 
-  std::unique_ptr<MessageLoopImpl> message_loop_impl_;
+  // The actual implentation of the MessageLoop — either MessageLoopImpl or
+  // SequenceManager-based.
+  const std::unique_ptr<MessageLoopBase> backend_;
+  // SequenceManager-based backend requires an explicit initialisation of the
+  // default task queue.
+  scoped_refptr<sequence_manager::TaskQueue> default_task_queue_;
 
  private:
   friend class MessageLoopTaskRunnerTest;
+  friend class MessageLoopTypedTest;
   friend class ScheduleWorkTest;
+  friend class Thread;
   friend class sequence_manager::LazyThreadControllerForTest;
   friend class sequence_manager::internal::SequenceManagerImpl;
-  friend class Thread;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
 
   friend class MessageLoopTaskRunnerTest;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
+
+  // Contstructor which allows to specify the backend explicitly.
+  MessageLoop(Type type,
+              MessagePumpFactoryCallback pump_factory,
+              BackendType backend_type);
 
   // Creates a MessageLoop without binding to a thread.
   // If |type| is TYPE_CUSTOM non-null |pump_factory| must be also given
@@ -326,8 +353,12 @@ class BASE_EXPORT MessageLoop {
       Type type,
       MessagePumpFactoryCallback pump_factory);
 
-  void DeletePendingTasks();
-  bool HasTasks() const;
+  // Initializers for |backend_| and related fields.
+  std::unique_ptr<MessageLoopBase> CreateSequenceManager(Type type);
+  std::unique_ptr<MessageLoopBase> CreateMessageLoopImpl(Type type);
+
+  scoped_refptr<sequence_manager::TaskQueue> CreateDefaultTaskQueue(
+      BackendType backend_type);
 
   // Returns |next_run_time| capped at 1 day from |recent_time_|. This is used
   // to mitigate https://crbug.com/850450 where some platforms are unhappy with

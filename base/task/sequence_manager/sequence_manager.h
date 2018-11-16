@@ -136,15 +136,6 @@ class SequenceManager {
   // Returns the metric recording configuration for the current SequenceManager.
   virtual const MetricRecordingSettings& GetMetricRecordingSettings() const = 0;
 
-  // Delete all tasks inside of all queues in this Sequence Manager.
-  // Note that at the moment SequenceManager still can have tasks inside it
-  // after this call due to tasks posting tasks from destructor.
-  virtual void DeletePendingTasks() = 0;
-
-  // Whether at least one queue associated with this SequenceManager has
-  // at least one task, either delayed or immediate.
-  virtual bool HasTasks() = 0;
-
   // Creates a task queue with the given type, |spec| and args.
   // Must be called on the main thread.
   // TODO(scheduler-dev): SequenceManager should not create TaskQueues.

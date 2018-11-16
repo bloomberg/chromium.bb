@@ -90,7 +90,7 @@ class ThreadController {
   // Returns the MessagePump we're bound to if any.
   virtual MessagePump* GetBoundMessagePump() const = 0;
 
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
   // On iOS, the main message loop cannot be Run().  Instead call
   // AttachToMessagePump(), which connects this ThreadController to the
   // UI thread's CFRunLoop and allows PostTask() to work.
