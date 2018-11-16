@@ -143,6 +143,34 @@ bool HasIncompatibleAnimations(const Element& target_element,
   return false;
 }
 
+CompositorElementIdNamespace CompositorElementNamespaceForProperty(
+    CSSPropertyID property) {
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    // Pre-BlinkGenPropertyTrees, all animations affect the primary
+    // ElementId namespace.
+    return CompositorElementIdNamespace::kPrimary;
+  }
+  switch (property) {
+    case CSSPropertyOpacity:
+      return CompositorElementIdNamespace::kPrimaryEffect;
+    case CSSPropertyRotate:
+    case CSSPropertyScale:
+    case CSSPropertyTranslate:
+    case CSSPropertyTransform:
+      return CompositorElementIdNamespace::kPrimaryTransform;
+    case CSSPropertyFilter:
+    case CSSPropertyBackdropFilter: {
+      return CompositorElementIdNamespace::kEffectFilter;
+      case CSSPropertyVariable:
+        return CompositorElementIdNamespace::kPrimary;
+      default:
+        NOTREACHED();
+    }
+      return CompositorElementIdNamespace::kPrimary;
+  }
+}
+
 }  // namespace
 
 CompositorAnimations::FailureCode
@@ -204,8 +232,6 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
             "Accelerated keyframe value could not be computed");
       }
 
-      CompositorElementIdNamespace property_namespace =
-          CompositorElementIdNamespace::kPrimary;
       // FIXME: Determine candidacy based on the CSSValue instead of a snapshot
       // AnimatableValue.
       switch (property.GetCSSProperty().PropertyID()) {
@@ -232,7 +258,6 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
             return FailureCode::Actionable(
                 "Filter-related property may affect surrounding pixels");
           }
-          property_namespace = CompositorElementIdNamespace::kEffectFilter;
           break;
         }
         case CSSPropertyVariable: {
@@ -260,7 +285,8 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
         CompositorElementId target_element_id =
             CompositorElementIdFromUniqueObjectId(
                 target_element.GetLayoutObject()->UniqueId(),
-                property_namespace);
+                CompositorElementNamespaceForProperty(
+                    property.GetCSSProperty().PropertyID()));
         DCHECK(target_element_id);
         if (!composited_element_ids->count(target_element_id)) {
           return FailureCode::NonActionable(
@@ -419,7 +445,7 @@ void CompositorAnimations::StartAnimationOnCompositor(
       ToKeyframeEffectModelBase(effect);
 
   Vector<std::unique_ptr<CompositorKeyframeModel>> keyframe_models;
-  GetAnimationOnCompositor(timing, group, start_time, time_offset,
+  GetAnimationOnCompositor(element, timing, group, start_time, time_offset,
                            keyframe_effect, keyframe_models,
                            animation_playback_rate);
   DCHECK(!keyframe_models.IsEmpty());
@@ -489,9 +515,20 @@ void CompositorAnimations::AttachCompositedLayers(
       return;
   }
 
+  CompositorElementIdNamespace element_id_namespace =
+      CompositorElementIdNamespace::kPrimary;
+  // With BlinkGenPropertyTrees we create an animation namespace element id
+  // when an element has created all property tree nodes which may be required
+  // by the keyframe effects. The animation affects multiple element ids, and
+  // one is pushed each KeyframeModel. See |GetAnimationOnCompositor|.
+  // Currently we use the kPrimaryEffect node to know if nodes have been
+  // created for animations.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+      RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    element_id_namespace = CompositorElementIdNamespace::kPrimaryEffect;
+  }
   compositor_animation->AttachElement(CompositorElementIdFromUniqueObjectId(
-      element.GetLayoutObject()->UniqueId(),
-      CompositorElementIdNamespace::kPrimary));
+      element.GetLayoutObject()->UniqueId(), element_id_namespace));
 }
 
 bool CompositorAnimations::ConvertTimingForCompositor(
@@ -590,6 +627,7 @@ void AddKeyframesToCurve(PlatformAnimationCurveType& curve,
 }  // namespace
 
 void CompositorAnimations::GetAnimationOnCompositor(
+    const Element& target_element,
     const Timing& timing,
     int group,
     base::Optional<double> start_time,
@@ -678,6 +716,10 @@ void CompositorAnimations::GetAnimationOnCompositor(
     if (start_time)
       keyframe_model->SetStartTime(start_time.value());
 
+    keyframe_model->SetElementId(CompositorElementIdFromUniqueObjectId(
+        target_element.GetLayoutObject()->UniqueId(),
+        CompositorElementNamespaceForProperty(
+            property.GetCSSProperty().PropertyID())));
     keyframe_model->SetIterations(compositor_timing.adjusted_iteration_count);
     keyframe_model->SetIterationStart(compositor_timing.iteration_start);
     keyframe_model->SetTimeOffset(compositor_timing.scaled_time_offset);

@@ -589,8 +589,14 @@ static CompositingReasons CompositingReasonsForTransform(const LayoutBox& box) {
   if (CompositingReasonFinder::RequiresCompositingForTransform(box))
     compositing_reasons |= CompositingReason::k3DTransform;
 
-  if (CompositingReasonFinder::RequiresCompositingForTransformAnimation(style))
-    compositing_reasons |= CompositingReason::kActiveTransformAnimation;
+  // Currently, we create transform nodes for an element whenever any property
+  // is being animated so that the existence of the effect node implies the
+  // existence of all nodes.
+  // TODO(flackr): Check for nodes for each KeyframeModel target
+  // property instead of creating all nodes and only create a transform node
+  // if needed, https://crbug.com/900241
+  compositing_reasons |=
+      CompositingReasonFinder::CompositingReasonsForAnimation(style);
 
   if (style.HasWillChangeCompositingHint() &&
       !style.SubtreeWillChangeContents())
@@ -682,7 +688,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
                 ? TransformPaintPropertyNode::BackfaceVisibility::kHidden
                 : TransformPaintPropertyNode::BackfaceVisibility::kVisible;
         state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-            object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
+            object_.UniqueId(),
+            CompositorElementIdNamespace::kPrimaryTransform);
       }
 
       OnUpdate(properties_->UpdateTransform(*context_.current.transform,
@@ -770,7 +777,13 @@ static bool NeedsEffect(const LayoutObject& object) {
   if (style.Opacity() != 1.0f || style.HasWillChangeOpacityHint())
     return true;
 
-  if (CompositingReasonFinder::RequiresCompositingForOpacityAnimation(style))
+  // Currently, we create effect nodes for an element whenever any property
+  // is being animated so that the existence of the effect node implies the
+  // existence of all nodes.
+  // TODO(flackr): Check for nodes for each KeyframeModel target
+  // property instead of creating all nodes and only create an effect node
+  // if needed, https://crbug.com/900241
+  if (CompositingReasonFinder::CompositingReasonsForAnimation(style))
     return true;
 
   if (object.StyleRef().HasMask())
@@ -884,13 +897,25 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         // We may begin to composite our subtree prior to an animation starts,
         // but a compositor element ID is only needed when an animation is
         // current.
-        if (CompositingReasonFinder::RequiresCompositingForOpacityAnimation(
-                style)) {
-          state.direct_compositing_reasons =
-              CompositingReason::kActiveOpacityAnimation;
+        //
+        // Currently, we use the existence of this id to check if effect nodes
+        // have been created for animations on this element.
+        // TODO(flackr): Check for nodes for each KeyframeModel target
+        // property instead of creating all nodes and create each type of
+        // node as needed, https://crbug.com/900241
+        state.direct_compositing_reasons =
+            CompositingReasonFinder::CompositingReasonsForAnimation(style);
+        if (state.direct_compositing_reasons) {
+          state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+              object_.UniqueId(), CompositorElementIdNamespace::kPrimaryEffect);
+        } else {
+          // The effect node CompositorElementId is used to uniquely identify
+          // renderpasses so even if we don't need one for animations we still
+          // need to set an id. Using kPrimary avoids confusing cc::Animation
+          // into thinking the element has been composited for animations.
+          state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+              object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
         }
-        state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
-            object_.UniqueId(), CompositorElementIdNamespace::kPrimary);
       }
       OnUpdate(properties_->UpdateEffect(*context_.current_effect,
                                          std::move(state)));
@@ -985,11 +1010,17 @@ void FragmentPaintPropertyTreeBuilder::UpdateLinkHighlightEffect() {
 }
 
 static bool NeedsFilter(const LayoutObject& object) {
+  // Currently, we create filter nodes for an element whenever any property
+  // is being animated so that the existence of the effect node implies the
+  // existence of all animation nodes.
+  // TODO(flackr): Check for nodes for each KeyframeModel target
+  // property instead of creating all nodes and only create a filter node
+  // if needed, https://crbug.com/900241
   // TODO(trchen): SVG caches filters in SVGResources. Implement it.
   return (object.IsBoxModelObject() && ToLayoutBoxModelObject(object).Layer() &&
           (object.StyleRef().HasFilter() || object.HasReflection() ||
            object.HasBackdropFilter() ||
-           CompositingReasonFinder::RequiresCompositingForFilterAnimation(
+           CompositingReasonFinder::CompositingReasonsForAnimation(
                object.StyleRef())));
 }
 
@@ -1043,11 +1074,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
         // We may begin to composite our subtree prior to an animation starts,
         // but a compositor element ID is only needed when an animation is
         // current.
+        // TODO(flackr): Only set a compositing reason for filter animation
+        // once we no longer need to create all nodes, https://crbug.com/900241
         state.direct_compositing_reasons =
-            CompositingReasonFinder::RequiresCompositingForFilterAnimation(
-                style)
-                ? CompositingReason::kActiveFilterAnimation
-                : CompositingReason::kNone;
+            CompositingReasonFinder::CompositingReasonsForAnimation(style);
         DCHECK(!style.HasCurrentFilterAnimation() ||
                state.direct_compositing_reasons != CompositingReason::kNone);
 

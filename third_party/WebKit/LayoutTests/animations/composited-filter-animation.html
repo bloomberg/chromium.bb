@@ -1,0 +1,32 @@
+<!doctype html>
+<style>
+  div {
+    width: 100px;
+    height: 100px;
+    background: green;
+    filter: saturate(0);
+  }
+
+  @keyframes filter {
+    0% { filter: saturate(0); }
+    0.001% { filter: saturate(1); }
+    100% { filter: saturate(1); }
+  }
+</style>
+<div id="test"></div>
+<p>Verify that composited filter animations are applied correctly. If the box
+is green the animation has applied correctly.</p>
+<script>
+test.addEventListener('animationstart', () => {
+  // Now the animation has started, but we must wait a frame to guarantee
+  // the time is > 0. Depending on event delivery time, this may require a
+  // double raf to be sure we get the next frame rather than the current frame.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (window.testRunner)
+        testRunner.notifyDone();
+    });
+  });
+});
+test.style.animation = 'filter 300s';
+</script>
