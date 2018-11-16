@@ -9,7 +9,7 @@
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "storage/browser/quota/quota_macros.h"
 
@@ -26,7 +26,7 @@ int64_t RandomizeByPercent(int64_t value, int percent) {
 base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
     const base::FilePath& partition_path,
     bool is_incognito) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   const int64_t kMBytes = 1024 * 1024;
   const int kRandomizedPercentage = 10;
 
