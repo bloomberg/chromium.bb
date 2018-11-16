@@ -135,6 +135,7 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
   builder->Add("arcTextPaiService", IDS_ARC_OPT_IN_PAI);
   builder->Add("arcTextGoogleServiceConfirmation",
                IDS_ARC_OPT_IN_GOOGLE_SERVICE_CONFIRMATION);
+  builder->Add("arcTextReviewSettings", IDS_ARC_REVIEW_SETTINGS);
   builder->Add("arcTextMetricsManagedEnabled",
                IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED);
   builder->Add("arcAcceptAndContinueGoogleServiceConfirmation",
@@ -391,10 +392,11 @@ void ArcTermsOfServiceScreenHandler::HandleSkip(
 void ArcTermsOfServiceScreenHandler::HandleAccept(
     bool enable_backup_restore,
     bool enable_location_services,
+    bool review_arc_settings,
     const std::string& tos_content) {
   if (arc::IsArcDemoModeSetupFlow()) {
     for (auto& observer : observer_list_)
-      observer.OnAccept();
+      observer.OnAccept(false);
     // TODO(agawronska): Record consent.
     return;
   }
@@ -412,7 +414,7 @@ void ArcTermsOfServiceScreenHandler::HandleAccept(
                  !location_services_managed_, enable_location_services);
 
   for (auto& observer : observer_list_)
-    observer.OnAccept();
+    observer.OnAccept(review_arc_settings);
 }
 
 }  // namespace chromeos

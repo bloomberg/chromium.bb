@@ -265,6 +265,7 @@ extern const char kPinUnlockWeakPinsAllowed[];
 extern const char kInstantTetheringBleAdvertisingSupported[];
 extern const char kCastReceiverEnabled[];
 extern const char kMinimumAllowedChromeVersion[];
+extern const char kShowArcSettingsOnSessionStart[];
 extern const char kShowSyncSettingsOnSessionStart[];
 extern const char kTextToSpeechLangToVoiceName[];
 extern const char kTextToSpeechRate[];
