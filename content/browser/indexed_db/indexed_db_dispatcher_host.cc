@@ -331,12 +331,10 @@ void IndexedDBDispatcherHost::IDBSequenceHelper::OpenOnIDBThread(
     int64_t transaction_id) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
 
-  base::TimeTicks begin_time = base::TimeTicks::Now();
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
-  callbacks->SetConnectionOpenStartTime(begin_time);
   std::unique_ptr<IndexedDBPendingConnection> connection =
       std::make_unique<IndexedDBPendingConnection>(
           callbacks, database_callbacks, ipc_process_id_, transaction_id,

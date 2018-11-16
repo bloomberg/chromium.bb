@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/guid.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -243,13 +242,6 @@ void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
       base::BindOnce(&IOThreadHelper::SendError,
                      base::Unretained(io_helper_.get()), error));
   complete_ = true;
-
-  if (!connection_open_start_time_.is_null()) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "WebCore.IndexedDB.OpenTime.Error",
-        base::TimeTicks::Now() - connection_open_start_time_);
-    connection_open_start_time_ = base::TimeTicks();
-  }
 }
 
 void IndexedDBCallbacks::OnSuccess(
@@ -292,13 +284,6 @@ void IndexedDBCallbacks::OnBlocked(int64_t existing_version) {
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&IOThreadHelper::SendBlocked,
                      base::Unretained(io_helper_.get()), existing_version));
-
-  if (!connection_open_start_time_.is_null()) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "WebCore.IndexedDB.OpenTime.Blocked",
-        base::TimeTicks::Now() - connection_open_start_time_);
-    connection_open_start_time_ = base::TimeTicks();
-  }
 }
 
 void IndexedDBCallbacks::OnUpgradeNeeded(
@@ -322,13 +307,6 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
                      base::Unretained(io_helper_.get()), std::move(wrapper),
                      old_version, data_loss_info.status, data_loss_info.message,
                      metadata));
-
-  if (!connection_open_start_time_.is_null()) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "WebCore.IndexedDB.OpenTime.UpgradeNeeded",
-        base::TimeTicks::Now() - connection_open_start_time_);
-    connection_open_start_time_ = base::TimeTicks();
-  }
 }
 
 void IndexedDBCallbacks::OnSuccess(
@@ -354,13 +332,6 @@ void IndexedDBCallbacks::OnSuccess(
                                           base::Unretained(io_helper_.get()),
                                           std::move(wrapper), metadata));
   complete_ = true;
-
-  if (!connection_open_start_time_.is_null()) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "WebCore.IndexedDB.OpenTime.Success",
-        base::TimeTicks::Now() - connection_open_start_time_);
-    connection_open_start_time_ = base::TimeTicks();
-  }
 }
 
 void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
@@ -517,11 +488,6 @@ void IndexedDBCallbacks::OnSuccess() {
                            base::BindOnce(&IOThreadHelper::SendSuccess,
                                           base::Unretained(io_helper_.get())));
   complete_ = true;
-}
-
-void IndexedDBCallbacks::SetConnectionOpenStartTime(
-    const base::TimeTicks& start_time) {
-  connection_open_start_time_ = start_time;
 }
 
 IndexedDBCallbacks::IOThreadHelper::IOThreadHelper(
