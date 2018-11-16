@@ -162,6 +162,9 @@
         "load:media:soundcloud": {
             "DEFAULT": "system_health_desktop_003.wprgo"
         },
+        "load:media:soundcloud:2018": {
+            "DEFAULT": "system_health_desktop_c57cd175f7.wprgo"
+        },
         "load:media:youtube": {
             "DEFAULT": "system_health_desktop_003.wprgo",
             "linux": "system_health_desktop_003.wprgo",

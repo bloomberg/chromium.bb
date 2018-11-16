@@ -381,6 +381,13 @@ class LoadSoundCloudStory(_LoadingStory):
   TAGS = [story_tags.YEAR_2016]
 
 
+class LoadSoundCloudStory2018(_LoadingStory):
+  # No way to disable autoplay on desktop. Album artwork doesn't load due to
+  NAME = 'load:media:soundcloud:2018'
+  URL = 'https://soundcloud.com/lifeofdesiigner/desiigner-panda'
+  TAGS = [story_tags.YEAR_2018]
+
+
 class Load9GagDesktopStory(_LoadingStory):
   NAME = 'load:media:9gag'
   URL = 'https://www.9gag.com/'

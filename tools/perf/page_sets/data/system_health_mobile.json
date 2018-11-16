@@ -147,6 +147,9 @@
         "load:media:soundcloud": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
+        "load:media:soundcloud:2018": {
+            "DEFAULT": "system_health_mobile_41c6b74f52.wprgo"
+        },
         "load:media:youtube": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },

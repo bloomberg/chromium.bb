@@ -89,6 +89,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_desktop/load:games:spychase',
   'system_health.memory_desktop/load:media:flickr',
   'system_health.memory_desktop/load:media:google_images',
+  'system_health.memory_desktop/load:media:soundcloud',
   'system_health.memory_desktop/load:news:cnn',
   'system_health.memory_desktop/load:news:wikipedia',
   'system_health.memory_desktop/load:search:baidu',
@@ -97,6 +98,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_desktop/load:search:yahoo',
   'system_health.memory_desktop/load:search:yandex',
   'system_health.memory_desktop/load:tools:stackoverflow',
+  'system_health.memory_mobile/load:media:soundcloud',
   # MOBILE:
   'system_health.memory_mobile/load:games:spychase',
   'system_health.memory_mobile/load:media:flickr',
