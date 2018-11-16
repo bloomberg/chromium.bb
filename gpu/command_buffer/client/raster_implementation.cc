@@ -597,14 +597,13 @@ CommandBuffer* RasterImplementation::command_buffer() const {
 GLenum RasterImplementation::GetGLError() {
   TRACE_EVENT0("gpu", "RasterImplementation::GetGLError");
   // Check the GL error first, then our wrapped error.
-  typedef cmds::GetError::Result Result;
-  Result* result = GetResultAs<Result*>();
+  auto result = GetResultAs<cmds::GetError::Result>();
   // If we couldn't allocate a result the context is lost.
   if (!result) {
     return GL_NO_ERROR;
   }
   *result = GL_NO_ERROR;
-  helper_->GetError(GetResultShmId(), GetResultShmOffset());
+  helper_->GetError(GetResultShmId(), result.offset());
   WaitForCmd();
   GLenum error = *result;
   if (error == GL_NO_ERROR) {

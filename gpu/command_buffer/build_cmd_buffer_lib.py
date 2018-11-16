@@ -3052,13 +3052,13 @@ class GETnHandler(TypeHandler):
     return;
   }
   typedef cmds::%(func_name)s::Result Result;
-  Result* result = GetResultAs<Result*>();
+  ScopedResultPtr<Result> result = GetResultAs<Result>();
   if (!result) {
     return;
   }
   result->SetNumResults(0);
   helper_->%(func_name)s(%(arg_string)s,
-      GetResultShmId(), GetResultShmOffset());
+      GetResultShmId(), result.offset());
   WaitForCmd();
   result->CopyResult(%(last_arg_name)s);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -4544,7 +4544,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       func.WriteDestinationInitalizationValidation(f)
       self.WriteClientGLCallLog(func, f)
       f.write("  typedef cmds::%s::Result Result;\n" % func.name)
-      f.write("  Result* result = GetResultAs<Result*>();\n")
+      f.write("  ScopedResultPtr<Result> result = GetResultAs<Result>();\n")
       f.write("  if (!result) {\n")
       f.write("    return %s;\n" % error_value)
       f.write("  }\n")
@@ -4556,7 +4556,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       else:
         arg_string = func.MakeOriginalArgString("")
       f.write(
-          "  helper_->%s(%s, GetResultShmId(), GetResultShmOffset());\n" %
+          "  helper_->%s(%s, GetResultShmId(), result.offset());\n" %
               (func.name, arg_string))
       f.write("  WaitForCmd();\n")
       f.write("  %s result_value = *result" % func.return_type)

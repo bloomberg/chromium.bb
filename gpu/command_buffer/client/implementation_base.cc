@@ -176,16 +176,8 @@ void ImplementationBase::WaitForCmd() {
   helper_->Finish();
 }
 
-void* ImplementationBase::GetResultBuffer() {
-  return transfer_buffer_->GetResultBuffer();
-}
-
 int32_t ImplementationBase::GetResultShmId() {
   return transfer_buffer_->GetShmId();
-}
-
-uint32_t ImplementationBase::GetResultShmOffset() {
-  return transfer_buffer_->GetResultOffset();
 }
 
 bool ImplementationBase::GetBucketContents(uint32_t bucket_id,
@@ -198,12 +190,12 @@ bool ImplementationBase::GetBucketContents(uint32_t bucket_id,
     return false;
   }
   typedef cmd::GetBucketStart::Result Result;
-  Result* result = GetResultAs<Result*>();
+  auto result = GetResultAs<Result>();
   if (!result) {
     return false;
   }
   *result = 0;
-  helper_->GetBucketStart(bucket_id, GetResultShmId(), GetResultShmOffset(),
+  helper_->GetBucketStart(bucket_id, GetResultShmId(), result.offset(),
                           buffer.size(), buffer.shm_id(), buffer.offset());
   WaitForCmd();
   uint32_t size = *result;
