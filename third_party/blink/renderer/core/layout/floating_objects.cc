@@ -47,9 +47,10 @@ struct SameSizeAsFloatingObject {
 static_assert(sizeof(FloatingObject) == sizeof(SameSizeAsFloatingObject),
               "FloatingObject should stay small");
 
-FloatingObject::FloatingObject(LayoutBox* layout_object)
+FloatingObject::FloatingObject(LayoutBox* layout_object, Type type)
     : layout_object_(layout_object),
       originating_line_(nullptr),
+      type_(type),
       should_paint_(true),
       is_descendant_(false),
       is_placed_(false),
@@ -59,12 +60,6 @@ FloatingObject::FloatingObject(LayoutBox* layout_object)
       is_in_placed_tree_(false)
 #endif
 {
-  EFloat type = layout_object->StyleRef().Floating();
-  DCHECK_NE(type, EFloat::kNone);
-  if (type == EFloat::kLeft)
-    type_ = kFloatLeft;
-  else if (type == EFloat::kRight)
-    type_ = kFloatRight;
 }
 
 FloatingObject::FloatingObject(LayoutBox* layout_object,
@@ -89,10 +84,10 @@ FloatingObject::FloatingObject(LayoutBox* layout_object,
 {
 }
 
-std::unique_ptr<FloatingObject> FloatingObject::Create(
-    LayoutBox* layout_object) {
+std::unique_ptr<FloatingObject> FloatingObject::Create(LayoutBox* layout_object,
+                                                       Type type) {
   std::unique_ptr<FloatingObject> new_obj =
-      base::WrapUnique(new FloatingObject(layout_object));
+      base::WrapUnique(new FloatingObject(layout_object, type));
 
   // If a layer exists, the float will paint itself. Otherwise someone else
   // will.

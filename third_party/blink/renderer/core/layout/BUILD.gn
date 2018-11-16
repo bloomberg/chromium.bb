@@ -281,6 +281,8 @@ blink_core_sources("layout") {
     "line/word_measurement.h",
     "list_marker_text.cc",
     "list_marker_text.h",
+    "logical_values.cc",
+    "logical_values.h",
     "map_coordinates_flags.h",
     "min_max_size.cc",
     "min_max_size.h",

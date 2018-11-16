@@ -549,6 +549,12 @@ inline CSSIdentifierValue::CSSIdentifierValue(EFloat e)
     case EFloat::kRight:
       value_id_ = CSSValueRight;
       break;
+    case EFloat::kInlineStart:
+      value_id_ = CSSValueInlineStart;
+      break;
+    case EFloat::kInlineEnd:
+      value_id_ = CSSValueInlineEnd;
+      break;
   }
 }
 
@@ -559,6 +565,10 @@ inline EFloat CSSIdentifierValue::ConvertTo() const {
       return EFloat::kLeft;
     case CSSValueRight:
       return EFloat::kRight;
+    case CSSValueInlineStart:
+      return EFloat::kInlineStart;
+    case CSSValueInlineEnd:
+      return EFloat::kInlineEnd;
     case CSSValueNone:
       return EFloat::kNone;
     default:

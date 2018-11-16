@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
 
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
+#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
@@ -855,7 +856,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
   // to the unpositioned floats list and abort.
   if (mode_ != NGLineBreakerMode::kContent) {
     AddUnpositionedFloat(unpositioned_floats_, container_builder_,
-                         std::move(unpositioned_float));
+                         std::move(unpositioned_float), constraint_space_);
     return;
   }
 
@@ -887,13 +888,15 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
   bool float_after_line =
       !can_fit_float ||
       exclusion_space_->LastFloatBlockStart() > bfc_block_offset ||
-      exclusion_space_->ClearanceOffset(float_style.Clear()) > bfc_block_offset;
+      exclusion_space_->ClearanceOffset(
+          ResolvedClear(float_style.Clear(), constraint_space_.Direction())) >
+          bfc_block_offset;
 
   // Check if we already have a pending float. That's because a float cannot be
   // higher than any block or floated box generated before.
   if (!unpositioned_floats_->IsEmpty() || float_after_line) {
     AddUnpositionedFloat(unpositioned_floats_, container_builder_,
-                         std::move(unpositioned_float));
+                         std::move(unpositioned_float), constraint_space_);
   } else {
     NGPositionedFloat positioned_float = PositionFloat(
         constraint_space_.AvailableSize(),

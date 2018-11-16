@@ -6,6 +6,7 @@
 #define NGUnpositionedFloat_h
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
@@ -36,9 +37,17 @@ struct CORE_EXPORT NGUnpositionedFloat final {
   scoped_refptr<NGLayoutResult> layout_result;
   NGBoxStrut margins;
 
-  bool IsLeft() const { return node.Style().Floating() == EFloat::kLeft; }
-  bool IsRight() const { return node.Style().Floating() == EFloat::kRight; }
-  EClear ClearType() const { return node.Style().Clear(); }
+  bool IsLineLeft(TextDirection direction) const {
+    return ResolvedFloating(node.Style().Floating(), direction) ==
+           EFloat::kLeft;
+  }
+  bool IsLineRight(TextDirection direction) const {
+    return ResolvedFloating(node.Style().Floating(), direction) ==
+           EFloat::kRight;
+  }
+  EClear ClearType(TextDirection direction) const {
+    return ResolvedClear(node.Style().Clear(), direction);
+  }
 };
 
 }  // namespace blink

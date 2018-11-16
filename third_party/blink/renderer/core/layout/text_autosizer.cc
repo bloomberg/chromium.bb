@@ -807,9 +807,9 @@ TextAutosizer::Fingerprint TextAutosizer::ComputeFingerprint(
     data.packed_style_properties_ |=
         (static_cast<unsigned>(style->Floating()) << 4);
     data.packed_style_properties_ |=
-        (static_cast<unsigned>(style->Display()) << 6);
-    data.packed_style_properties_ |= (style->Width().GetType() << 11);
-    // packedStyleProperties effectively using 15 bits now.
+        (static_cast<unsigned>(style->Display()) << 7);
+    data.packed_style_properties_ |= (style->Width().GetType() << 12);
+    // packedStyleProperties effectively using 16 bits now.
 
     // consider for adding: writing mode, padding.
 

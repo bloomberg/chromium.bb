@@ -43,11 +43,12 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
     const NGExclusionSpace& exclusion_space,
     const NGUnpositionedFloat& unpositioned_float,
     const NGBoxStrut& fragment_margins,
+    const NGConstraintSpace& parent_space,
     LayoutUnit inline_size) {
   NGBfcOffset adjusted_origin_point =
       AdjustToTopEdgeAlignmentRule(exclusion_space, origin_bfc_offset);
-  LayoutUnit clearance_offset =
-      exclusion_space.ClearanceOffset(unpositioned_float.ClearType());
+  LayoutUnit clearance_offset = exclusion_space.ClearanceOffset(
+      unpositioned_float.ClearType(parent_space.Direction()));
 
   AdjustToClearance(clearance_offset, &adjusted_origin_point);
 
@@ -270,11 +271,12 @@ NGPositionedFloat PositionFloat(
   // Find a layout opportunity that will fit our float.
   NGLayoutOpportunity opportunity = FindLayoutOpportunityForFloat(
       float_available_size, origin_bfc_offset, *exclusion_space,
-      *unpositioned_float, fragment_margins, float_fragment.InlineSize());
+      *unpositioned_float, fragment_margins, parent_space,
+      float_fragment.InlineSize());
 
   // Calculate the float's margin box BFC offset.
   NGBfcOffset float_margin_bfc_offset = opportunity.rect.start_offset;
-  if (unpositioned_float->IsRight()) {
+  if (unpositioned_float->IsLineRight(parent_space.Direction())) {
     LayoutUnit float_margin_box_inline_size =
         float_fragment.InlineSize() + fragment_margins.InlineSum();
     float_margin_bfc_offset.line_offset +=
@@ -287,7 +289,9 @@ NGPositionedFloat PositionFloat(
       float_replaced_percentage_size, float_fragment, float_margin_bfc_offset,
       fragment_margins, unpositioned_float->node.GetLayoutBox(),
       *unpositioned_float, parent_space, parent_space.Direction(),
-      unpositioned_float->IsRight() ? EFloat::kRight : EFloat::kLeft);
+      unpositioned_float->IsLineRight(parent_space.Direction())
+          ? EFloat::kRight
+          : EFloat::kLeft);
   exclusion_space->Add(std::move(exclusion));
 
   // Adjust the float's bfc_offset to its border-box (instead of margin-box).
@@ -321,14 +325,17 @@ void PositionFloats(const NGLogicalSize& float_available_size,
 
 void AddUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,
                           NGContainerFragmentBuilder* fragment_builder,
-                          NGUnpositionedFloat unpositioned_float) {
+                          NGUnpositionedFloat unpositioned_float,
+                          const NGConstraintSpace& parent_space) {
   // The same float node should not be added more than once.
   DCHECK(
       !RemoveUnpositionedFloat(unpositioned_floats, unpositioned_float.node));
 
   if (fragment_builder && !fragment_builder->BfcBlockOffset()) {
     fragment_builder->AddAdjoiningFloatTypes(
-        unpositioned_float.IsLeft() ? kFloatTypeLeft : kFloatTypeRight);
+        unpositioned_float.IsLineLeft(parent_space.Direction())
+            ? kFloatTypeLeft
+            : kFloatTypeRight);
   }
   unpositioned_floats->push_back(std::move(unpositioned_float));
 }

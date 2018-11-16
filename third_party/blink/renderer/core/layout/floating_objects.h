@@ -53,7 +53,7 @@ class FloatingObject {
   // for both left and right.
   enum Type { kFloatLeft = 1, kFloatRight = 2, kFloatLeftRight = 3 };
 
-  static std::unique_ptr<FloatingObject> Create(LayoutBox*);
+  static std::unique_ptr<FloatingObject> Create(LayoutBox*, Type);
 
   std::unique_ptr<FloatingObject> CopyToNewContainer(
       LayoutSize,
@@ -131,7 +131,7 @@ class FloatingObject {
   void SetOriginatingLine(RootInlineBox* line) { originating_line_ = line; }
 
  private:
-  explicit FloatingObject(LayoutBox*);
+  FloatingObject(LayoutBox*, Type);
   FloatingObject(LayoutBox*,
                  Type,
                  const LayoutRect&,

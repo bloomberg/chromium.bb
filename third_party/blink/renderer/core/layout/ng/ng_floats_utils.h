@@ -68,7 +68,8 @@ CORE_EXPORT void PositionFloats(
 // have resolved the BFC block offset.
 void AddUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,
                           NGContainerFragmentBuilder* fragment_builder,
-                          NGUnpositionedFloat unpositioned_float);
+                          NGUnpositionedFloat unpositioned_float,
+                          const NGConstraintSpace& parent_space);
 
 // Remove a pending float from the list.
 bool RemoveUnpositionedFloat(NGUnpositionedFloatVector* unpositioned_floats,
