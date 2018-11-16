@@ -1793,7 +1793,6 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 crbug.com/867834 virtual/outofblink-cors/http/tests/security/isolatedWorld/cross-origin-xhr.html [ Crash ]
 
 # Timeout tests in dictionary order.
-crbug.com/870173 [ Mac ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/clients-matchall-order.https.html [ Timeout Pass ]
 
 # Failing tests in dictionary order.
 crbug.com/870173 virtual/outofblink-cors/http/tests/security/img-redirect-to-crossorigin-credentials.html [ Failure ]
