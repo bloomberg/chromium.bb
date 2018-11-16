@@ -91,6 +91,8 @@ class NumberIconImageSource : public gfx::CanvasImageSource {
 
 NotificationCounterView::NotificationCounterView() : TrayItemView(nullptr) {
   CreateImageView();
+  image_view()->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NOTIFICATIONS_LABEL));
   SetVisible(false);
   Shell::Get()->session_controller()->AddObserver(this);
 }
@@ -113,8 +115,6 @@ void NotificationCounterView::Update() {
         gfx::CanvasImageSource::MakeImageSkia<NumberIconImageSource>(icon_id));
     count_for_display_ = icon_id;
   }
-  image_view()->set_tooltip_text(l10n_util::GetPluralStringFUTF16(
-      IDS_ASH_STATUS_TRAY_NOTIFICATIONS_COUNT_TOOLTIP, notification_count));
   SetVisible(true);
 }
 
@@ -125,8 +125,6 @@ void NotificationCounterView::OnSessionStateChanged(
 
 QuietModeView::QuietModeView() : TrayItemView(nullptr) {
   CreateImageView();
-  image_view()->set_tooltip_text(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_QUIET_MODE_TOOLTIP));
   SetVisible(false);
   Shell::Get()->session_controller()->AddObserver(this);
 }

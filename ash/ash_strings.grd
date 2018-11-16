@@ -280,14 +280,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_CAST_STOP" desc="The label used in the tray popup to stop casting.">
         Stop
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_QUIET_MODE_TOOLTIP" desc="The tooltip text for the status area icon to tell do-not-disturb mode is currently on.">
-        Do Not Disturb is on
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_COUNT_TOOLTIP" desc="The tooltip text for a status area icon to describe number of notifications. [ICU Syntax]">
-        {NUM_NOTIFICATIONS, plural,
-         =1 {1 notification}
-         other {# notifications}}
-      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH" desc="The label used as the header in the bluetooth popup.">
         Bluetooth
