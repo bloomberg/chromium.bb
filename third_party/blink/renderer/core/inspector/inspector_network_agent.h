@@ -122,7 +122,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                         int64_t encoded_data_length,
                         int64_t decoded_body_length,
                         bool should_report_corb_blocking);
-  void DidReceiveCORSRedirectResponse(unsigned long identifier,
+  void DidReceiveCorsRedirectResponse(unsigned long identifier,
                                       DocumentLoader*,
                                       const ResourceResponse&,
                                       Resource*);
@@ -132,7 +132,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   void DidCommitLoad(LocalFrame*, DocumentLoader*);
   void ScriptImported(unsigned long identifier, const String& source_string);
   void DidReceiveScriptResponse(unsigned long identifier);
-  void ShouldForceCORSPreflight(bool* result);
+  void ShouldForceCorsPreflight(bool* result);
   void ShouldBlockRequest(const KURL&, bool* result);
   void ShouldBypassServiceWorker(bool* result);
 

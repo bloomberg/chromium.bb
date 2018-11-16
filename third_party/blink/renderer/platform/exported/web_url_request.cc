@@ -380,9 +380,9 @@ bool WebURLRequest::IsExternalRequest() const {
   return resource_request_->IsExternalRequest();
 }
 
-network::mojom::CORSPreflightPolicy WebURLRequest::GetCORSPreflightPolicy()
+network::mojom::CorsPreflightPolicy WebURLRequest::GetCorsPreflightPolicy()
     const {
-  return resource_request_->CORSPreflightPolicy();
+  return resource_request_->CorsPreflightPolicy();
 }
 
 void WebURLRequest::SetNavigationStartTime(

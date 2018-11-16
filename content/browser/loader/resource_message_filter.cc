@@ -181,7 +181,7 @@ void ResourceMessageFilter::InitializeOnIOThread() {
   // The WeakPtr of the filter must be created on the IO thread. So sets the
   // WeakPtr of |requester_info_| now.
   requester_info_->set_filter(GetWeakPtr());
-  url_loader_factory_ = std::make_unique<network::cors::CORSURLLoaderFactory>(
+  url_loader_factory_ = std::make_unique<network::cors::CorsURLLoaderFactory>(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity),
       std::make_unique<URLLoaderFactoryImpl>(requester_info_),

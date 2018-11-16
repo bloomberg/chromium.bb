@@ -54,7 +54,7 @@ struct ReferrerPolicyTestCase {
   const char* expected_referrer;
 };
 
-struct CORSTestCase {
+struct CorsTestCase {
   const char* base_url;
   const char* input_html;
   network::mojom::FetchRequestMode request_mode;
@@ -151,7 +151,7 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
     }
   }
 
-  void CORSRequestVerification(
+  void CorsRequestVerification(
       Document* document,
       network::mojom::FetchRequestMode request_mode,
       network::mojom::FetchCredentialsMode credentials_mode) {
@@ -299,14 +299,14 @@ class HTMLPreloadScannerTest : public PageTestBase {
     }
   }
 
-  void Test(CORSTestCase test_case) {
+  void Test(CorsTestCase test_case) {
     HTMLMockHTMLResourcePreloader preloader;
     KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests =
         scanner_->Scan(base_url, nullptr, seen_csp_meta_tag_);
     preloader.TakeAndPreload(requests);
-    preloader.CORSRequestVerification(&GetDocument(), test_case.request_mode,
+    preloader.CorsRequestVerification(&GetDocument(), test_case.request_mode,
                                       test_case.credentials_mode);
   }
 
@@ -878,29 +878,29 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
     Test(test_case);
 }
 
-TEST_F(HTMLPreloadScannerTest, testCORS) {
-  CORSTestCase test_cases[] = {
+TEST_F(HTMLPreloadScannerTest, testCors) {
+  CorsTestCase test_cases[] = {
       {"http://example.test", "<script src='/script'></script>",
-       network::mojom::FetchRequestMode::kNoCORS,
+       network::mojom::FetchRequestMode::kNoCors,
        network::mojom::FetchCredentialsMode::kInclude},
       {"http://example.test", "<script crossorigin src='/script'></script>",
-       network::mojom::FetchRequestMode::kCORS,
+       network::mojom::FetchRequestMode::kCors,
        network::mojom::FetchCredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script crossorigin=use-credentials src='/script'></script>",
-       network::mojom::FetchRequestMode::kCORS,
+       network::mojom::FetchRequestMode::kCors,
        network::mojom::FetchCredentialsMode::kInclude},
       {"http://example.test", "<script type='module' src='/script'></script>",
-       network::mojom::FetchRequestMode::kCORS,
+       network::mojom::FetchRequestMode::kCors,
        network::mojom::FetchCredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script type='module' crossorigin='anonymous' src='/script'></script>",
-       network::mojom::FetchRequestMode::kCORS,
+       network::mojom::FetchRequestMode::kCors,
        network::mojom::FetchCredentialsMode::kSameOrigin},
       {"http://example.test",
        "<script type='module' crossorigin='use-credentials' "
        "src='/script'></script>",
-       network::mojom::FetchRequestMode::kCORS,
+       network::mojom::FetchRequestMode::kCors,
        network::mojom::FetchCredentialsMode::kInclude},
   };
 

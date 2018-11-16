@@ -14,24 +14,24 @@
 
 namespace network {
 
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE) CORSErrorStatus {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE) CorsErrorStatus {
   // This constructor is used by generated IPC serialization code.
   // Should not use this explicitly.
   // TODO(toyoshim, yhirano): Exploring a way to make this private, and allows
   // only serialization code for mojo can access.
-  CORSErrorStatus();
+  CorsErrorStatus();
 
-  CORSErrorStatus(const CORSErrorStatus& status);
+  CorsErrorStatus(const CorsErrorStatus& status);
 
-  explicit CORSErrorStatus(mojom::CORSError error);
-  CORSErrorStatus(mojom::CORSError error, const std::string& failed_parameter);
+  explicit CorsErrorStatus(mojom::CorsError error);
+  CorsErrorStatus(mojom::CorsError error, const std::string& failed_parameter);
 
-  ~CORSErrorStatus();
+  ~CorsErrorStatus();
 
-  bool operator==(const CORSErrorStatus& rhs) const;
-  bool operator!=(const CORSErrorStatus& rhs) const { return !(*this == rhs); }
+  bool operator==(const CorsErrorStatus& rhs) const;
+  bool operator!=(const CorsErrorStatus& rhs) const { return !(*this == rhs); }
 
-  mojom::CORSError cors_error;
+  mojom::CorsError cors_error;
 
   // Contains request method name, or header name that didn't pass a CORS check.
   std::string failed_parameter;

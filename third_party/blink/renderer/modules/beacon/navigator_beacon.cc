@@ -88,7 +88,7 @@ bool NavigatorBeacon::SendBeaconImpl(
                                      data.GetAsArrayBufferView().View());
   } else if (data.IsBlob()) {
     Blob* blob = data.GetAsBlob();
-    if (!cors::IsCORSSafelistedContentType(blob->type())) {
+    if (!cors::IsCorsSafelistedContentType(blob->type())) {
       UseCounter::Count(context,
                         WebFeature::kSendBeaconWithNonSimpleContentType);
       if (RuntimeEnabledFeatures::

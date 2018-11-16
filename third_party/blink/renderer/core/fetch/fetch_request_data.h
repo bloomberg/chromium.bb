@@ -33,7 +33,7 @@ class WebServiceWorkerRequest;
 class FetchRequestData final
     : public GarbageCollectedFinalized<FetchRequestData> {
  public:
-  enum Tainting { kBasicTainting, kCORSTainting, kOpaqueTainting };
+  enum Tainting { kBasicTainting, kCorsTainting, kOpaqueTainting };
 
   static FetchRequestData* Create();
   static FetchRequestData* Create(ScriptState*, const WebServiceWorkerRequest&);

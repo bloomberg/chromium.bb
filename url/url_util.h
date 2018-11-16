@@ -80,8 +80,8 @@ URL_EXPORT const std::vector<std::string>& GetNoAccessSchemes();
 
 // Adds an application-defined scheme to the list of schemes that can be sent
 // CORS requests.
-URL_EXPORT void AddCORSEnabledScheme(const char* new_scheme);
-URL_EXPORT const std::vector<std::string>& GetCORSEnabledSchemes();
+URL_EXPORT void AddCorsEnabledScheme(const char* new_scheme);
+URL_EXPORT const std::vector<std::string>& GetCorsEnabledSchemes();
 
 // Adds an application-defined scheme to the list of web schemes that can be
 // used by web to store data (e.g. cookies, local storage, ...). This is

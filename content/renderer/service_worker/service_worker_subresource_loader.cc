@@ -388,9 +388,9 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   // response to Blink.
   // TODO(falken): Remove this mechanism after OOB-CORS ships.
   if ((resource_request_.fetch_request_mode ==
-           network::mojom::FetchRequestMode::kCORS ||
+           network::mojom::FetchRequestMode::kCors ||
        resource_request_.fetch_request_mode ==
-           network::mojom::FetchRequestMode::kCORSWithForcedPreflight) &&
+           network::mojom::FetchRequestMode::kCorsWithForcedPreflight) &&
       (!resource_request_.request_initiator.has_value() ||
        !resource_request_.request_initiator->IsSameOriginWith(
            url::Origin::Create(resource_request_.url)))) {

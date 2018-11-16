@@ -39,7 +39,7 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
 
   LoadTiming Load(LoadType,
                   const blink::WebMediaPlayerSource&,
-                  CORSMode) override {
+                  CorsMode) override {
     return LoadTiming::kImmediate;
   }
   void Play() override {}

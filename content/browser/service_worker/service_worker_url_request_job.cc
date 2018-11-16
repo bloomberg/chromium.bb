@@ -843,9 +843,9 @@ bool ServiceWorkerURLRequestJob::IsFallbackToRendererNeeded() const {
   // It is because the CORS preflight logic is implemented in the renderer. So
   // we return a fall_back_required response to the renderer.
   return !IsMainResourceLoad() &&
-         (request_mode_ == network::mojom::FetchRequestMode::kCORS ||
+         (request_mode_ == network::mojom::FetchRequestMode::kCors ||
           request_mode_ ==
-              network::mojom::FetchRequestMode::kCORSWithForcedPreflight) &&
+              network::mojom::FetchRequestMode::kCorsWithForcedPreflight) &&
          (!request()->initiator().has_value() ||
           !request()->initiator()->IsSameOriginWith(
               url::Origin::Create(request()->url())));

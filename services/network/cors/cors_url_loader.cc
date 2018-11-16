@@ -18,33 +18,33 @@ namespace cors {
 namespace {
 
 bool NeedsPreflight(const ResourceRequest& request) {
-  if (!IsCORSEnabledRequestMode(request.fetch_request_mode))
+  if (!IsCorsEnabledRequestMode(request.fetch_request_mode))
     return false;
 
   if (request.is_external_request)
     return true;
 
   if (request.fetch_request_mode ==
-      mojom::FetchRequestMode::kCORSWithForcedPreflight) {
+      mojom::FetchRequestMode::kCorsWithForcedPreflight) {
     return true;
   }
 
   if (request.cors_preflight_policy ==
-      mojom::CORSPreflightPolicy::kPreventPreflight) {
+      mojom::CorsPreflightPolicy::kPreventPreflight) {
     return false;
   }
 
-  if (!IsCORSSafelistedMethod(request.method))
+  if (!IsCorsSafelistedMethod(request.method))
     return true;
 
-  return !CORSUnsafeNotForbiddenRequestHeaderNames(
+  return !CorsUnsafeNotForbiddenRequestHeaderNames(
               request.headers.GetHeaderVector(), request.is_revalidating)
               .empty();
 }
 
 }  // namespace
 
-CORSURLLoader::CORSURLLoader(
+CorsURLLoader::CorsURLLoader(
     mojom::URLLoaderRequest loader_request,
     int32_t routing_id,
     int32_t request_id,
@@ -72,22 +72,22 @@ CORSURLLoader::CORSURLLoader(
       preflight_controller_(preflight_controller),
       weak_factory_(this) {
   binding_.set_connection_error_handler(base::BindOnce(
-      &CORSURLLoader::OnConnectionError, base::Unretained(this)));
+      &CorsURLLoader::OnConnectionError, base::Unretained(this)));
   DCHECK(network_loader_factory_);
   DCHECK(origin_access_list_);
   DCHECK(preflight_controller_);
-  SetCORSFlagIfNeeded();
+  SetCorsFlagIfNeeded();
 }
 
-CORSURLLoader::~CORSURLLoader() {
+CorsURLLoader::~CorsURLLoader() {
   // Close pipes first to ignore possible subsequent callback invocations
   // cased by |network_loader_|
   network_client_binding_.Close();
 }
 
-void CORSURLLoader::Start() {
+void CorsURLLoader::Start() {
   if (fetch_cors_flag_ &&
-      IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
+      IsCorsEnabledRequestMode(request_.fetch_request_mode)) {
     // Username and password should be stripped in a CORS-enabled request.
     if (request_.url.has_username() || request_.url.has_password()) {
       GURL::Replacements replacements;
@@ -99,7 +99,7 @@ void CORSURLLoader::Start() {
   StartRequest();
 }
 
-void CORSURLLoader::FollowRedirect(
+void CorsURLLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
@@ -134,7 +134,7 @@ void CORSURLLoader::FollowRedirect(
     request_.request_body = nullptr;
 
   const bool original_fetch_cors_flag = fetch_cors_flag_;
-  SetCORSFlagIfNeeded();
+  SetCorsFlagIfNeeded();
 
   // We cannot use FollowRedirect for a request with preflight (i.e., when both
   // |fetch_cors_flag_| and |NeedsPreflight(request_)| are true).
@@ -155,7 +155,7 @@ void CORSURLLoader::FollowRedirect(
                                     modified_request_headers);
     return;
   }
-  DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCORS);
+  DCHECK_NE(request_.fetch_request_mode, mojom::FetchRequestMode::kNoCors);
 
   if (request_finalizer_)
     request_finalizer_.Run(request_id_);
@@ -164,27 +164,27 @@ void CORSURLLoader::FollowRedirect(
   StartRequest();
 }
 
-void CORSURLLoader::ProceedWithResponse() {
+void CorsURLLoader::ProceedWithResponse() {
   NOTREACHED();
 }
 
-void CORSURLLoader::SetPriority(net::RequestPriority priority,
+void CorsURLLoader::SetPriority(net::RequestPriority priority,
                                 int32_t intra_priority_value) {
   if (network_loader_)
     network_loader_->SetPriority(priority, intra_priority_value);
 }
 
-void CORSURLLoader::PauseReadingBodyFromNet() {
+void CorsURLLoader::PauseReadingBodyFromNet() {
   if (network_loader_)
     network_loader_->PauseReadingBodyFromNet();
 }
 
-void CORSURLLoader::ResumeReadingBodyFromNet() {
+void CorsURLLoader::ResumeReadingBodyFromNet() {
   if (network_loader_)
     network_loader_->ResumeReadingBodyFromNet();
 }
 
-void CORSURLLoader::OnReceiveResponse(
+void CorsURLLoader::OnReceiveResponse(
     const ResourceResponseHead& response_head) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
@@ -211,7 +211,7 @@ void CORSURLLoader::OnReceiveResponse(
   forwarding_client_->OnReceiveResponse(response_head_to_pass);
 }
 
-void CORSURLLoader::OnReceiveRedirect(
+void CorsURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const ResourceResponseHead& response_head) {
   DCHECK(network_loader_);
@@ -227,7 +227,7 @@ void CORSURLLoader::OnReceiveRedirect(
   // If |CORS flag| is set and a CORS check for |request| and |response| returns
   // failure, then return a network error.
   if (fetch_cors_flag_ &&
-      IsCORSEnabledRequestMode(request_.fetch_request_mode)) {
+      IsCorsEnabledRequestMode(request_.fetch_request_mode)) {
     const auto error_status = CheckAccess(
         request_.url, response_head.headers->response_code(),
         GetHeaderString(response_head, header_names::kAccessControlAllowOrigin),
@@ -301,7 +301,7 @@ void CORSURLLoader::OnReceiveRedirect(
   forwarding_client_->OnReceiveRedirect(redirect_info, response_head_to_pass);
 }
 
-void CORSURLLoader::OnUploadProgress(int64_t current_position,
+void CorsURLLoader::OnUploadProgress(int64_t current_position,
                                      int64_t total_size,
                                      OnUploadProgressCallback ack_callback) {
   DCHECK(network_loader_);
@@ -311,21 +311,21 @@ void CORSURLLoader::OnUploadProgress(int64_t current_position,
                                        std::move(ack_callback));
 }
 
-void CORSURLLoader::OnReceiveCachedMetadata(const std::vector<uint8_t>& data) {
+void CorsURLLoader::OnReceiveCachedMetadata(const std::vector<uint8_t>& data) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
   forwarding_client_->OnReceiveCachedMetadata(data);
 }
 
-void CORSURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
+void CorsURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
   forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
-void CORSURLLoader::OnStartLoadingResponseBody(
+void CorsURLLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
@@ -333,7 +333,7 @@ void CORSURLLoader::OnStartLoadingResponseBody(
   forwarding_client_->OnStartLoadingResponseBody(std::move(body));
 }
 
-void CORSURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
+void CorsURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!is_waiting_follow_redirect_call_);
@@ -344,15 +344,15 @@ void CORSURLLoader::OnComplete(const URLLoaderCompletionStatus& status) {
   HandleComplete(modified_status);
 }
 
-void CORSURLLoader::StartRequest() {
-  if (fetch_cors_flag_ && !base::ContainsValue(url::GetCORSEnabledSchemes(),
+void CorsURLLoader::StartRequest() {
+  if (fetch_cors_flag_ && !base::ContainsValue(url::GetCorsEnabledSchemes(),
                                                request_.url.scheme())) {
     HandleComplete(URLLoaderCompletionStatus(
-        CORSErrorStatus(mojom::CORSError::kCORSDisabledScheme)));
+        CorsErrorStatus(mojom::CorsError::kCorsDisabledScheme)));
     return;
   }
 
-  // If the CORS flag is set, |httpRequest|’s method is neither `GET` nor
+  // If the |CORS flag| is set, |httpRequest|’s method is neither `GET` nor
   // `HEAD`, or |httpRequest|’s mode is "websocket", then append
   // `Origin`/the result of serializing a request origin with |httpRequest|, to
   // |httpRequest|’s header list.
@@ -372,7 +372,7 @@ void CORSURLLoader::StartRequest() {
       request_.fetch_request_mode == mojom::FetchRequestMode::kSameOrigin) {
     DCHECK(request_.request_initiator);
     HandleComplete(URLLoaderCompletionStatus(
-        CORSErrorStatus(mojom::CORSError::kDisallowedByMode)));
+        CorsErrorStatus(mojom::CorsError::kDisallowedByMode)));
     return;
   }
 
@@ -400,16 +400,16 @@ void CORSURLLoader::StartRequest() {
     preflight_finalizer = base::BindOnce(request_finalizer_, request_id_);
 
   preflight_controller_->PerformPreflightCheck(
-      base::BindOnce(&CORSURLLoader::StartNetworkRequest,
+      base::BindOnce(&CorsURLLoader::StartNetworkRequest,
                      weak_factory_.GetWeakPtr()),
       request_id_, request_, tainted_,
       net::NetworkTrafficAnnotationTag(traffic_annotation_),
       network_loader_factory_, std::move(preflight_finalizer));
 }
 
-void CORSURLLoader::StartNetworkRequest(
+void CorsURLLoader::StartNetworkRequest(
     int error_code,
-    base::Optional<CORSErrorStatus> status,
+    base::Optional<CorsErrorStatus> status,
     base::Optional<PreflightTimingInfo> preflight_timing_info) {
   if (error_code != net::OK) {
     HandleComplete(status ? URLLoaderCompletionStatus(*status)
@@ -426,30 +426,30 @@ void CORSURLLoader::StartNetworkRequest(
   // Binding |this| as an unretained pointer is safe because
   // |network_client_binding_| shares this object's lifetime.
   network_client_binding_.set_connection_error_handler(base::BindOnce(
-      &CORSURLLoader::OnConnectionError, base::Unretained(this)));
+      &CorsURLLoader::OnConnectionError, base::Unretained(this)));
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,
       request_, std::move(network_client), traffic_annotation_);
 }
 
-void CORSURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
+void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
   forwarding_client_->OnComplete(status);
   std::move(delete_callback_).Run(this);
   // |this| is deleted here.
 }
 
-void CORSURLLoader::OnConnectionError() {
+void CorsURLLoader::OnConnectionError() {
   HandleComplete(URLLoaderCompletionStatus(net::ERR_ABORTED));
 }
 
-// This should be identical to CalculateCORSFlag defined in
+// This should be identical to CalculateCorsFlag defined in
 // //third_party/blink/renderer/platform/loader/cors/cors.cc.
-void CORSURLLoader::SetCORSFlagIfNeeded() {
+void CorsURLLoader::SetCorsFlagIfNeeded() {
   if (fetch_cors_flag_)
     return;
 
   if (request_.fetch_request_mode == mojom::FetchRequestMode::kNavigate ||
-      request_.fetch_request_mode == mojom::FetchRequestMode::kNoCORS) {
+      request_.fetch_request_mode == mojom::FetchRequestMode::kNoCors) {
     return;
   }
 
@@ -490,7 +490,7 @@ void CORSURLLoader::SetCORSFlagIfNeeded() {
   fetch_cors_flag_ = true;
 }
 
-base::Optional<std::string> CORSURLLoader::GetHeaderString(
+base::Optional<std::string> CorsURLLoader::GetHeaderString(
     const ResourceResponseHead& response,
     const std::string& header_name) {
   std::string header_value;

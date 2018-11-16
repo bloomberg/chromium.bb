@@ -70,7 +70,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       previews_state_(WebURLRequest::kPreviewsUnspecified),
       request_context_(mojom::RequestContextType::UNSPECIFIED),
       frame_type_(network::mojom::RequestContextFrameType::kNone),
-      fetch_request_mode_(network::mojom::FetchRequestMode::kNoCORS),
+      fetch_request_mode_(network::mojom::FetchRequestMode::kNoCors),
       fetch_importance_mode_(mojom::FetchImportanceMode::kImportanceAuto),
       fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kInclude),
       fetch_redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
@@ -80,7 +80,7 @@ ResourceRequest::ResourceRequest(const KURL& url)
       was_discarded_(false),
       is_external_request_(false),
       cors_preflight_policy_(
-          network::mojom::CORSPreflightPolicy::kConsiderPreflight),
+          network::mojom::CorsPreflightPolicy::kConsiderPreflight),
       redirect_status_(RedirectStatus::kNoRedirect) {}
 
 ResourceRequest::ResourceRequest(const ResourceRequest&) = default;
@@ -124,7 +124,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   if (request->HttpMethod() == HttpMethod())
     request->SetHTTPBody(HttpBody());
   request->SetWasDiscarded(WasDiscarded());
-  request->SetCORSPreflightPolicy(CORSPreflightPolicy());
+  request->SetCorsPreflightPolicy(CorsPreflightPolicy());
   if (IsAdResource())
     request->SetIsAdResource();
   request->SetInitiatorCSP(GetInitiatorCSP());

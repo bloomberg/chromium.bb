@@ -296,7 +296,7 @@ public class MediaUrlResolverTest {
      * @throws MalformedURLException
      */
     @Test
-    public void testMediaUrlResolver_validMpeg4CompatibleCORS() throws MalformedURLException {
+    public void testMediaUrlResolver_validMpeg4CompatibleCors() throws MalformedURLException {
         // If a compatible CORS header returned, a valid mpeg4 URI is playable and unchanged.
         Uri uri = Uri.parse("http://example.com/test.mp4");
         HashMap<String, List<String>> corsHeaders = new HashMap<String, List<String>>();
@@ -314,7 +314,7 @@ public class MediaUrlResolverTest {
      * @throws MalformedURLException
      */
     @Test
-    public void testMediaUrlResolver_validMpeg4InompatilbeCORS() throws MalformedURLException {
+    public void testMediaUrlResolver_validMpeg4InompatilbeCors() throws MalformedURLException {
         // If an incompatible CORS header returned, a valid mpeg4 URI is not playable but unchanged.
         Uri uri = Uri.parse("http://example.com/test.mp4");
         HashMap<String, List<String>> corsHeaders = new HashMap<String, List<String>>();
@@ -333,7 +333,7 @@ public class MediaUrlResolverTest {
      * @throws MalformedURLException
      */
     @Test
-    public void testMediaUrlResolver_validHLSNoCORS() throws MalformedURLException {
+    public void testMediaUrlResolver_validHLSNoCors() throws MalformedURLException {
         // A valid mpeg4 URI is playable and unchanged.
         Uri uri = Uri.parse("http://example.com/test.m3u8");
         TestDelegate delegate =  resolveUri(uri, null, 200, null, null, false);

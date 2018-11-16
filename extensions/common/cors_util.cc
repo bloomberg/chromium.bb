@@ -20,7 +20,7 @@ namespace {
 void AddURLPatternSetToList(
     const URLPatternSet& pattern_set,
     std::vector<network::mojom::CorsOriginPatternPtr>* list,
-    network::mojom::CORSOriginAccessMatchPriority priority) {
+    network::mojom::CorsOriginAccessMatchPriority priority) {
   static const char* const kSchemes[] = {
     content::kChromeUIScheme,
 #if defined(OS_CHROMEOS)
@@ -53,7 +53,7 @@ CreateCorsOriginAccessAllowList(const Extension& extension) {
       extension.permissions_data()->GetEffectiveHostPermissions();
   AddURLPatternSetToList(
       origin_permissions, &allow_list,
-      network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+      network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
   // Hosts exempted from the enterprise policy blocklist.
   // This set intersection is necessary to prevent an enterprise policy from
@@ -64,7 +64,7 @@ CreateCorsOriginAccessAllowList(const Extension& extension) {
           origin_permissions, URLPatternSet::IntersectionBehavior::kDetailed);
   AddURLPatternSetToList(
       policy_allowed_host_patterns, &allow_list,
-      network::mojom::CORSOriginAccessMatchPriority::kMediumPriority);
+      network::mojom::CorsOriginAccessMatchPriority::kMediumPriority);
 
   return allow_list;
 }
@@ -76,12 +76,12 @@ CreateCorsOriginAccessBlockList(const Extension& extension) {
   // Hosts blocked by enterprise policy.
   AddURLPatternSetToList(
       extension.permissions_data()->policy_blocked_hosts(), &block_list,
-      network::mojom::CORSOriginAccessMatchPriority::kLowPriority);
+      network::mojom::CorsOriginAccessMatchPriority::kLowPriority);
 
   GURL webstore_launch_url = extension_urls::GetWebstoreLaunchURL();
   block_list.push_back(network::mojom::CorsOriginPattern::New(
       webstore_launch_url.scheme(), webstore_launch_url.host(), true,
-      network::mojom::CORSOriginAccessMatchPriority::kHighPriority));
+      network::mojom::CorsOriginAccessMatchPriority::kHighPriority));
 
   // TODO(devlin): Should we also block the webstore update URL here? See
   // https://crbug.com/826946 for a related instance.

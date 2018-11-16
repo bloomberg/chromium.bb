@@ -324,7 +324,7 @@ BaseFetchContext::CanRequestInternal(
   }
 
   if (request_mode == network::mojom::FetchRequestMode::kSameOrigin &&
-      cors::CalculateCORSFlag(url, origin.get(), request_mode)) {
+      cors::CalculateCorsFlag(url, origin.get(), request_mode)) {
     PrintAccessDeniedMessage(url);
     return ResourceRequestBlockedReason::kOrigin;
   }

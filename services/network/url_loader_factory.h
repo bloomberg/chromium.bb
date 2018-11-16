@@ -21,7 +21,7 @@ class ResourceSchedulerClient;
 class URLLoader;
 
 namespace cors {
-class CORSURLLoaderFactory;
+class CorsURLLoaderFactory;
 }  // namespace cors
 
 // This class is an implementation of mojom::URLLoaderFactory that
@@ -33,9 +33,9 @@ class CORSURLLoaderFactory;
 // works on each frame.
 // A URLLoaderFactory can be created with null ResourceSchedulerClient, in which
 // case requests constructed by the factory will not be throttled.
-// The CORS related part is implemented in CORSURLLoader[Factory] until
-// kOutOfBlinkCORS and kNetworkService is fully enabled. Note that
-// NetworkContext::CreateURLLoaderFactory returns a CORSURLLoaderFactory,
+// The CORS related part is implemented in CorsURLLoader[Factory] until
+// kOutOfBlinkCors and kNetworkService is fully enabled. Note that
+// NetworkContext::CreateURLLoaderFactory returns a CorsURLLoaderFactory,
 // instead of a URLLoaderFactory.
 class URLLoaderFactory : public mojom::URLLoaderFactory {
  public:
@@ -44,7 +44,7 @@ class URLLoaderFactory : public mojom::URLLoaderFactory {
       NetworkContext* context,
       mojom::URLLoaderFactoryParamsPtr params,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
-      cors::CORSURLLoaderFactory* cors_url_loader_factory);
+      cors::CorsURLLoaderFactory* cors_url_loader_factory);
 
   ~URLLoaderFactory() override;
 
@@ -70,7 +70,7 @@ class URLLoaderFactory : public mojom::URLLoaderFactory {
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
   // |cors_url_loader_factory_| owns this.
-  cors::CORSURLLoaderFactory* cors_url_loader_factory_;
+  cors::CorsURLLoaderFactory* cors_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactory);
 };

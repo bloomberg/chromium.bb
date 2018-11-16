@@ -407,7 +407,7 @@ class ExpectCTReporterTest : public ::testing::Test {
     EXPECT_EQ(successful_report_uri, sender->latest_report_uri());
   }
 
-  void SetCORSHeaderWithWhitespace() {
+  void SetCorsHeaderWithWhitespace() {
     cors_headers_["Access-Control-Allow-Methods"] = "GET, POST";
   }
 
@@ -688,7 +688,7 @@ TEST_F(ExpectCTReporterTest, SendReportSuccessCallback) {
 
 // Test that report preflight responses can contain whitespace.
 TEST_F(ExpectCTReporterTest, PreflightContainsWhitespace) {
-  SetCORSHeaderWithWhitespace();
+  SetCorsHeaderWithWhitespace();
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
@@ -719,7 +719,7 @@ TEST_F(ExpectCTReporterTest, PreflightContainsWhitespace) {
 
 // Test that no report is sent when the CORS preflight returns an invalid
 // Access-Control-Allow-Origin.
-TEST_F(ExpectCTReporterTest, BadCORSPreflightResponseOrigin) {
+TEST_F(ExpectCTReporterTest, BadCorsPreflightResponseOrigin) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ExpectCTReporter reporter(&context, base::Closure(), base::Closure());
@@ -743,7 +743,7 @@ TEST_F(ExpectCTReporterTest, BadCORSPreflightResponseOrigin) {
 
 // Test that no report is sent when the CORS preflight returns an invalid
 // Access-Control-Allow-Methods.
-TEST_F(ExpectCTReporterTest, BadCORSPreflightResponseMethods) {
+TEST_F(ExpectCTReporterTest, BadCorsPreflightResponseMethods) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ExpectCTReporter reporter(&context, base::Closure(), base::Closure());
@@ -767,7 +767,7 @@ TEST_F(ExpectCTReporterTest, BadCORSPreflightResponseMethods) {
 
 // Test that no report is sent when the CORS preflight returns an invalid
 // Access-Control-Allow-Headers.
-TEST_F(ExpectCTReporterTest, BadCORSPreflightResponseHeaders) {
+TEST_F(ExpectCTReporterTest, BadCorsPreflightResponseHeaders) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ExpectCTReporter reporter(&context, base::Closure(), base::Closure());

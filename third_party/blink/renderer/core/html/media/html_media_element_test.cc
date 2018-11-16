@@ -38,7 +38,7 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
       Load,
       WebMediaPlayer::LoadTiming(LoadType load_type,
                                  const blink::WebMediaPlayerSource& source,
-                                 CORSMode cors_mode));
+                                 CorsMode cors_mode));
   MOCK_CONST_METHOD0(DidLazyLoad, bool());
 };
 

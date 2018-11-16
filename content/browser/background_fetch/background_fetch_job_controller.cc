@@ -33,7 +33,7 @@ bool IsMixedContent(const BackgroundFetchRequestInfo& request) {
 // Requests that require CORS preflights are temporarily blocked, because the
 // browser side of Background Fetch doesn't yet support performing CORS
 // checks. TODO(crbug.com/711354): Remove this temporary block.
-bool RequiresCORSPreflight(const BackgroundFetchRequestInfo& request,
+bool RequiresCorsPreflight(const BackgroundFetchRequestInfo& request,
                            const url::Origin& origin) {
   const blink::mojom::FetchAPIRequest& fetch_request = request.fetch_request();
 
@@ -47,7 +47,7 @@ bool RequiresCORSPreflight(const BackgroundFetchRequestInfo& request,
   // element require a CORS-preflight request.
   // https://fetch.spec.whatwg.org/#main-fetch
   if (!fetch_request.method.empty() &&
-      !network::cors::IsCORSSafelistedMethod(fetch_request.method)) {
+      !network::cors::IsCorsSafelistedMethod(fetch_request.method)) {
     return true;
   }
 
@@ -55,7 +55,7 @@ bool RequiresCORSPreflight(const BackgroundFetchRequestInfo& request,
   for (const auto& header : fetch_request.headers)
     headers.emplace_back(header.first, header.second);
 
-  return !network::cors::CORSUnsafeRequestHeaderNames(headers).empty();
+  return !network::cors::CorsUnsafeRequestHeaderNames(headers).empty();
 }
 
 }  // namespace
@@ -137,7 +137,7 @@ void BackgroundFetchJobController::StartRequest(
   active_request_finished_callback_ = std::move(request_finished_callback);
 
   if (IsMixedContent(*request.get()) ||
-      RequiresCORSPreflight(*request.get(), registration_id_.origin())) {
+      RequiresCorsPreflight(*request.get(), registration_id_.origin())) {
     request->SetEmptyResultWithFailureReason(
         BackgroundFetchResult::FailureReason::FETCH_ERROR);
 

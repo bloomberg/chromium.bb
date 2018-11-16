@@ -657,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, DnsPrefetch) {
 // Tests that preconnect warms up a socket connection to a test server.
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
-IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectNonCORS) {
+IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectNonCors) {
   GURL preconnect_url = embedded_test_server()->base_url();
   std::string preconnect_content =
       "<link rel=\"preconnect\" href=\"" + preconnect_url.spec() + "\">";
@@ -672,7 +672,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectNonCORS) {
 // and that that socket is later used when fetching a resource.
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
-IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchNonCORS) {
+IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchNonCors) {
   GURL preconnect_url = embedded_test_server()->base_url();
   // First navigation to content with a preconnect hint.
   std::string preconnect_content =
@@ -696,7 +696,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchNonCORS) {
 // server, and that socket is later used when fetching a CORS resource.
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
-IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchCORS) {
+IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchCors) {
   GURL preconnect_url = embedded_test_server()->base_url();
   // First navigation to content with a preconnect hint.
   std::string preconnect_content = "<link rel=\"preconnect\" href=\"" +
@@ -722,7 +722,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, PreconnectAndFetchCORS) {
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
 IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
-                       PreconnectNonCORSAndFetchCORS) {
+                       PreconnectNonCorsAndFetchCors) {
   GURL preconnect_url = embedded_test_server()->base_url();
   // First navigation to content with a preconnect hint.
   std::string preconnect_content =
@@ -748,7 +748,7 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
 // Note: This test uses a data URI to serve the preconnect hint, to make sure
 // that the network stack doesn't just re-use its connection to the test server.
 IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
-                       PreconnectCORSAndFetchNonCORS) {
+                       PreconnectCorsAndFetchNonCors) {
   GURL preconnect_url = embedded_test_server()->base_url();
   // First navigation to content with a preconnect hint.
   std::string preconnect_content = "<link rel=\"preconnect\" href=\"" +

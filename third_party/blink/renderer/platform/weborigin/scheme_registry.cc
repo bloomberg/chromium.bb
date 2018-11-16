@@ -58,7 +58,7 @@ class URLSchemesRegistry final {
       secure_schemes.insert(scheme.c_str());
     for (auto& scheme : url::GetNoAccessSchemes())
       schemes_with_unique_origins.insert(scheme.c_str());
-    for (auto& scheme : url::GetCORSEnabledSchemes())
+    for (auto& scheme : url::GetCorsEnabledSchemes())
       cors_enabled_schemes.insert(scheme.c_str());
     for (auto& scheme : url::GetCSPBypassingSchemes()) {
       content_security_policy_bypassing_schemes.insert(
@@ -224,14 +224,14 @@ bool SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
       scheme);
 }
 
-bool SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(const String& scheme) {
+bool SchemeRegistry::ShouldTreatURLSchemeAsCorsEnabled(const String& scheme) {
   DCHECK_EQ(scheme, scheme.LowerASCII());
   if (scheme.IsEmpty())
     return false;
   return GetURLSchemesRegistry().cors_enabled_schemes.Contains(scheme);
 }
 
-String SchemeRegistry::ListOfCORSEnabledURLSchemes() {
+String SchemeRegistry::ListOfCorsEnabledURLSchemes() {
   StringBuilder builder;
   bool add_separator = false;
   for (const auto& scheme : GetURLSchemesRegistry().cors_enabled_schemes) {

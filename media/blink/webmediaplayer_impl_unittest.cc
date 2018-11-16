@@ -623,7 +623,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     wmpi_->Load(blink::WebMediaPlayer::kLoadTypeURL,
                 blink::WebMediaPlayerSource(blink::WebURL(kTestURL)),
-                blink::WebMediaPlayer::kCORSModeUnspecified);
+                blink::WebMediaPlayer::kCorsModeUnspecified);
 
     base::RunLoop().RunUntilIdle();
 

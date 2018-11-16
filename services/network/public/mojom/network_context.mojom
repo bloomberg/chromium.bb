@@ -340,7 +340,7 @@ struct URLLoaderFactoryParams {
   int32 corb_detachable_resource_type = -1;
   // TODO(lukasza): https://crbug.com/846339: Remove the field below and instead
   // make plugins use a separate URLoaderFactory. Note requests of this type are
-  // only excluded if ResourceRequest::fetch_request_mode is kNoCORS. The field
+  // only excluded if ResourceRequest::fetch_request_mode is kNoCors. The field
   // below in practice is always set to RESOURCE_TYPE_PLUGIN_RESOURCE by the
   //  content layer, but in the long-term we want to avoid using resource types
   // (even as an opaque int) in //services/network.  See also the TODO comment

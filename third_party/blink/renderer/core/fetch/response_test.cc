@@ -129,7 +129,7 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneBasic) {
   CheckResponseStream(scope.GetScriptState(), response, true);
 }
 
-TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneCORS) {
+TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneCors) {
   V8TestingScope scope;
   BodyStreamBuffer* buffer = CreateHelloWorldBuffer(scope.GetScriptState());
   FetchResponseData* fetch_response_data =
@@ -137,7 +137,7 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneCORS) {
   Vector<KURL> url_list;
   url_list.push_back(KURL("http://www.response.com"));
   fetch_response_data->SetURLList(url_list);
-  fetch_response_data = fetch_response_data->CreateCORSFilteredResponse({});
+  fetch_response_data = fetch_response_data->CreateCorsFilteredResponse({});
   Response* response =
       Response::Create(scope.GetExecutionContext(), fetch_response_data);
   EXPECT_EQ(response->InternalBodyBuffer(), buffer);

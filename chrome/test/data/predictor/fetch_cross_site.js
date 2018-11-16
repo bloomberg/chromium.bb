@@ -5,7 +5,7 @@
 // This script file should be requested with the following query params:
 // subresourceHost: The base url of the embedded test server to request
 // subresources from.
-// numCORSResources: The number of resources to request (between 0 and 3).
+// numCorsResources: The number of resources to request (between 0 and 3).
 var queryString = window.location.search.substring(1);
 var vars = queryString.split("&");
 var parsedParams = {};
@@ -14,14 +14,14 @@ vars.forEach(function(v) {
   parsedParams[key_value[0]] = key_value[1];
 });
 var subresourceHost = parsedParams['subresourceHost'];
-var numCORSResources = parseInt(parsedParams['numCORSResources'], 10);
+var numCorsResources = parseInt(parsedParams['numCorsResources'], 10);
 var sendImmediately = parseInt(parsedParams['sendImmediately'], 10);
 var subresourceList = [
   'predictor/empty.js',
   'predictor/empty1.js',
   'predictor/empty2.js',
 ];
-var CORSSubresources = subresourceList.slice(0, numCORSResources);
+var CorsSubresources = subresourceList.slice(0, numCorsResources);
 
 var numOK = 0;
 function logResponse(r) {
@@ -29,7 +29,7 @@ function logResponse(r) {
   // make cross origin requests with no-cors.
   if (r.status == 200 || r.type == "opaque") {
     numOK++;
-    if (numOK == numCORSResources) {
+    if (numOK == numCorsResources) {
       window.domAutomationController.send(true);
     }
   } else {
@@ -38,7 +38,7 @@ function logResponse(r) {
 }
 
 function startFetchesAndWaitForReply() {
-  CORSSubresources.forEach(function(r) {
+  CorsSubresources.forEach(function(r) {
     fetch(subresourceHost + r, {mode: 'cors', method: 'get'}).then(logResponse);
   });
 }

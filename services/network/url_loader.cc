@@ -376,7 +376,7 @@ URLLoader::URLLoader(
 
   is_nocors_corb_excluded_request_ =
       resource_type_ == factory_params_->corb_excluded_resource_type &&
-      request.fetch_request_mode == mojom::FetchRequestMode::kNoCORS &&
+      request.fetch_request_mode == mojom::FetchRequestMode::kNoCors &&
       CrossOriginReadBlocking::ShouldAllowForPlugin(
           factory_params_->process_id);
 

@@ -1195,7 +1195,7 @@ TEST_F(CacheStorageManagerTest, QuotaCorrectAfterReopen) {
 
   // Choose a response type that will not be padded so that the expected
   // cache size can be calculated.
-  const FetchResponseType response_type = FetchResponseType::kCORS;
+  const FetchResponseType response_type = FetchResponseType::kCors;
 
   // Create a new cache.
   int64_t cache_size;

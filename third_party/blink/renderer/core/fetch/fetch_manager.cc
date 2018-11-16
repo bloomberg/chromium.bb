@@ -287,7 +287,7 @@ class FetchManager::Loader final
         SubresourceIntegrity::ReportInfo report_info;
         bool check_result = true;
         if (response_type_ != FetchResponseType::kBasic &&
-            response_type_ != FetchResponseType::kCORS &&
+            response_type_ != FetchResponseType::kCors &&
             response_type_ != FetchResponseType::kDefault) {
           report_info.AddConsoleErrorMessage(
               "Subresource Integrity: The resource '" + url_.ElidedString() +
@@ -473,12 +473,12 @@ void FetchManager::Loader::DidReceiveResponse(
       // TODO(hiroshige): currently redirects to data URLs in no-cors
       // mode is also rejected by Chromium side.
       switch (fetch_request_data_->Mode()) {
-        case FetchRequestMode::kNoCORS:
+        case FetchRequestMode::kNoCors:
           tainting = FetchRequestData::kOpaqueTainting;
           break;
         case FetchRequestMode::kSameOrigin:
-        case FetchRequestMode::kCORS:
-        case FetchRequestMode::kCORSWithForcedPreflight:
+        case FetchRequestMode::kCors:
+        case FetchRequestMode::kCorsWithForcedPreflight:
         case FetchRequestMode::kNavigate:
           PerformNetworkError("Fetch API cannot load " +
                               fetch_request_data_->Url().GetString() +
@@ -495,12 +495,12 @@ void FetchManager::Loader::DidReceiveResponse(
       case FetchRequestMode::kSameOrigin:
         NOTREACHED();
         break;
-      case FetchRequestMode::kNoCORS:
+      case FetchRequestMode::kNoCors:
         tainting = FetchRequestData::kOpaqueTainting;
         break;
-      case FetchRequestMode::kCORS:
-      case FetchRequestMode::kCORSWithForcedPreflight:
-        tainting = FetchRequestData::kCORSTainting;
+      case FetchRequestMode::kCors:
+      case FetchRequestMode::kCorsWithForcedPreflight:
+        tainting = FetchRequestData::kCorsTainting;
         break;
       case FetchRequestMode::kNavigate:
         LOG(FATAL);
@@ -513,8 +513,8 @@ void FetchManager::Loader::DidReceiveResponse(
       case FetchResponseType::kDefault:
         tainting = FetchRequestData::kBasicTainting;
         break;
-      case FetchResponseType::kCORS:
-        tainting = FetchRequestData::kCORSTainting;
+      case FetchResponseType::kCors:
+        tainting = FetchRequestData::kCorsTainting;
         break;
       case FetchResponseType::kOpaque:
         tainting = FetchRequestData::kOpaqueTainting;
@@ -580,11 +580,11 @@ void FetchManager::Loader::DidReceiveResponse(
       case FetchRequestData::kBasicTainting:
         tainted_response = response_data->CreateBasicFilteredResponse();
         break;
-      case FetchRequestData::kCORSTainting: {
+      case FetchRequestData::kCorsTainting: {
         WebHTTPHeaderSet header_names = cors::ExtractCorsExposedHeaderNamesList(
             fetch_request_data_->Credentials(), response);
         tainted_response =
-            response_data->CreateCORSFilteredResponse(header_names);
+            response_data->CreateCorsFilteredResponse(header_names);
         break;
       }
       case FetchRequestData::kOpaqueTainting:
@@ -709,7 +709,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
   }
 
   // "- |request|'s mode is |no CORS|"
-  if (fetch_request_data_->Mode() == FetchRequestMode::kNoCORS) {
+  if (fetch_request_data_->Mode() == FetchRequestMode::kNoCors) {
     // "If |request|'s redirect mode is not |follow|, then return a network
     // error.
     if (fetch_request_data_->Redirect() != FetchRedirectMode::kFollow) {
@@ -740,7 +740,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
   }
 
   // "Set |request|'s response tainting to |CORS|."
-  fetch_request_data_->SetResponseTainting(FetchRequestData::kCORSTainting);
+  fetch_request_data_->SetResponseTainting(FetchRequestData::kCorsTainting);
 
   // "The result of performing an HTTP fetch using |request| with the
   // |CORS flag| set."
@@ -815,9 +815,9 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
 
   switch (fetch_request_data_->Mode()) {
     case FetchRequestMode::kSameOrigin:
-    case FetchRequestMode::kNoCORS:
-    case FetchRequestMode::kCORS:
-    case FetchRequestMode::kCORSWithForcedPreflight:
+    case FetchRequestMode::kNoCors:
+    case FetchRequestMode::kCors:
+    case FetchRequestMode::kCorsWithForcedPreflight:
       request.SetFetchRequestMode(fetch_request_data_->Mode());
       break;
     case FetchRequestMode::kNavigate:
@@ -860,8 +860,8 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   request.SetSkipServiceWorker(is_isolated_world_);
 
   if (fetch_request_data_->Keepalive()) {
-    if (!cors::IsCORSSafelistedMethod(request.HttpMethod()) ||
-        !cors::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
+    if (!cors::IsCorsSafelistedMethod(request.HttpMethod()) ||
+        !cors::ContainsOnlyCorsSafelistedOrForbiddenHeaders(
             request.HttpHeaderFields())) {
       PerformNetworkError(
           "Preflight request for request with keepalive "

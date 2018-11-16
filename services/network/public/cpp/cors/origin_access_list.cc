@@ -49,17 +49,17 @@ bool OriginAccessList::IsAllowed(const url::Origin& source_origin,
     return false;
   std::string source = source_origin.Serialize();
   url::Origin destination_origin = url::Origin::Create(destination);
-  network::mojom::CORSOriginAccessMatchPriority allow_list_priority =
+  network::mojom::CorsOriginAccessMatchPriority allow_list_priority =
       GetHighestPriorityOfRuleForOrigin(source, destination_origin,
                                         allow_list_);
   if (allow_list_priority ==
-      network::mojom::CORSOriginAccessMatchPriority::kNoMatchingOrigin)
+      network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin)
     return false;
-  network::mojom::CORSOriginAccessMatchPriority block_list_priority =
+  network::mojom::CorsOriginAccessMatchPriority block_list_priority =
       GetHighestPriorityOfRuleForOrigin(source, destination_origin,
                                         block_list_);
   if (block_list_priority ==
-      network::mojom::CORSOriginAccessMatchPriority::kNoMatchingOrigin)
+      network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin)
     return true;
   return allow_list_priority > block_list_priority;
 }
@@ -105,13 +105,13 @@ void OriginAccessList::AddForOrigin(const url::Origin& source_origin,
 // static
 // TODO(nrpeter): Sort OriginAccessEntry entries on edit then we can return the
 // first match which will be the top priority.
-network::mojom::CORSOriginAccessMatchPriority
+network::mojom::CorsOriginAccessMatchPriority
 OriginAccessList::GetHighestPriorityOfRuleForOrigin(
     const std::string& source,
     const url::Origin& destination_origin,
     const PatternMap& map) {
-  network::mojom::CORSOriginAccessMatchPriority highest_priority =
-      network::mojom::CORSOriginAccessMatchPriority::kNoMatchingOrigin;
+  network::mojom::CorsOriginAccessMatchPriority highest_priority =
+      network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin;
   auto patterns_for_origin_it = map.find(source);
   if (patterns_for_origin_it == map.end())
     return highest_priority;

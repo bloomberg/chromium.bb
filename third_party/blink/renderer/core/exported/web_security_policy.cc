@@ -71,7 +71,7 @@ void WebSecurityPolicy::AddOriginAccessAllowListEntry(
     const WebString& destination_protocol,
     const WebString& destination_host,
     bool allow_destination_subdomains,
-    const network::mojom::CORSOriginAccessMatchPriority priority) {
+    const network::mojom::CorsOriginAccessMatchPriority priority) {
   SecurityPolicy::AddOriginAccessAllowListEntry(
       *SecurityOrigin::Create(source_origin), destination_protocol,
       destination_host, allow_destination_subdomains, priority);
@@ -82,7 +82,7 @@ void WebSecurityPolicy::AddOriginAccessBlockListEntry(
     const WebString& destination_protocol,
     const WebString& destination_host,
     bool allow_destination_subdomains,
-    const network::mojom::CORSOriginAccessMatchPriority priority) {
+    const network::mojom::CorsOriginAccessMatchPriority priority) {
   SecurityPolicy::AddOriginAccessBlockListEntry(
       *SecurityOrigin::Create(source_origin), destination_protocol,
       destination_host, allow_destination_subdomains, priority);

@@ -177,7 +177,7 @@ CachedResponseType ResponseTypeToString(
   switch (type) {
     case network::mojom::FetchResponseType::kBasic:
       return protocol::CacheStorage::CachedResponseTypeEnum::Basic;
-    case network::mojom::FetchResponseType::kCORS:
+    case network::mojom::FetchResponseType::kCors:
       return protocol::CacheStorage::CachedResponseTypeEnum::Cors;
     case network::mojom::FetchResponseType::kDefault:
       return protocol::CacheStorage::CachedResponseTypeEnum::Default;

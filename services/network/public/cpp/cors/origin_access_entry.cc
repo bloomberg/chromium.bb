@@ -34,7 +34,7 @@ OriginAccessEntry::OriginAccessEntry(
     const std::string& protocol,
     const std::string& host,
     MatchMode match_mode,
-    const network::mojom::CORSOriginAccessMatchPriority priority)
+    const network::mojom::CorsOriginAccessMatchPriority priority)
     : protocol_(protocol),
       host_(host),
       match_mode_(match_mode),

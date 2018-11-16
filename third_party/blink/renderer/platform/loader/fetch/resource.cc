@@ -809,7 +809,7 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
   if (GetResponse().WasFetchedViaServiceWorker() &&
       GetResponse().GetType() == network::mojom::FetchResponseType::kOpaque &&
       new_request.GetFetchRequestMode() !=
-          network::mojom::FetchRequestMode::kNoCORS) {
+          network::mojom::FetchRequestMode::kNoCors) {
     return MatchStatus::kUnknownFailure;
   }
 
@@ -895,13 +895,13 @@ Resource::MatchStatus Resource::CanReuse(const FetchParameters& params) const {
     return MatchStatus::kRequestModeDoesNotMatch;
 
   switch (new_mode) {
-    case network::mojom::FetchRequestMode::kNoCORS:
+    case network::mojom::FetchRequestMode::kNoCors:
     case network::mojom::FetchRequestMode::kNavigate:
       break;
 
-    case network::mojom::FetchRequestMode::kCORS:
+    case network::mojom::FetchRequestMode::kCors:
     case network::mojom::FetchRequestMode::kSameOrigin:
-    case network::mojom::FetchRequestMode::kCORSWithForcedPreflight:
+    case network::mojom::FetchRequestMode::kCorsWithForcedPreflight:
       // We have two separate CORS handling logics in ThreadableLoader
       // and ResourceLoader and sharing resources is difficult when they are
       // handled differently.

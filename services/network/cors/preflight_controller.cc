@@ -48,7 +48,7 @@ std::string CreateAccessControlRequestHeadersHeader(
   // agent. They must be checked separately and rejected for
   // JavaScript-initiated requests.
   std::vector<std::string> filtered_headers =
-      CORSUnsafeNotForbiddenRequestHeaderNames(headers.GetHeaderVector(),
+      CorsUnsafeNotForbiddenRequestHeaderNames(headers.GetHeaderVector(),
                                                is_revalidating);
   if (filtered_headers.empty())
     return std::string();
@@ -121,7 +121,7 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
     const ResourceResponseHead& head,
     const ResourceRequest& original_request,
     bool tainted,
-    base::Optional<CORSErrorStatus>* detected_error_status) {
+    base::Optional<CorsErrorStatus>* detected_error_status) {
   DCHECK(detected_error_status);
 
   *detected_error_status = CheckPreflightAccess(
@@ -134,10 +134,10 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
   if (*detected_error_status)
     return nullptr;
 
-  base::Optional<mojom::CORSError> error;
+  base::Optional<mojom::CorsError> error;
   error = CheckPreflight(head.headers->response_code());
   if (error) {
-    *detected_error_status = CORSErrorStatus(*error);
+    *detected_error_status = CorsErrorStatus(*error);
     return nullptr;
   }
 
@@ -156,14 +156,14 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
       &error);
 
   if (error)
-    *detected_error_status = CORSErrorStatus(*error);
+    *detected_error_status = CorsErrorStatus(*error);
   return result;
 }
 
-base::Optional<CORSErrorStatus> CheckPreflightResult(
+base::Optional<CorsErrorStatus> CheckPreflightResult(
     PreflightResult* result,
     const ResourceRequest& original_request) {
-  base::Optional<CORSErrorStatus> status =
+  base::Optional<CorsErrorStatus> status =
       result->EnsureAllowedCrossOriginMethod(original_request.method);
   if (status)
     return status;
@@ -272,7 +272,7 @@ class PreflightController::PreflightLoader final {
 
     std::move(completion_callback_)
         .Run(net::ERR_FAILED,
-             CORSErrorStatus(mojom::CORSError::kPreflightDisallowedRedirect),
+             CorsErrorStatus(mojom::CorsError::kPreflightDisallowedRedirect),
              base::nullopt);
 
     RemoveFromController();
@@ -291,7 +291,7 @@ class PreflightController::PreflightLoader final {
                                       &timing_info_.timing_allow_origin);
     timing_info_.transfer_size = head.encoded_data_length;
 
-    base::Optional<CORSErrorStatus> detected_error_status;
+    base::Optional<CorsErrorStatus> detected_error_status;
     std::unique_ptr<PreflightResult> result = CreatePreflightResult(
         final_url, head, original_request_, tainted_, &detected_error_status);
 

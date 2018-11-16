@@ -79,7 +79,7 @@ const String GetMessageForResponseError(ServiceWorkerResponseError error,
                       "an \"opaqueredirect\" type response was used for a "
                       "request whose redirect mode is not \"manual\".";
       break;
-    case ServiceWorkerResponseError::kResponseTypeCORSForRequestModeSameOrigin:
+    case ServiceWorkerResponseError::kResponseTypeCorsForRequestModeSameOrigin:
       error_message = error_message +
                       "a \"cors\" type response was used for a request whose "
                       "mode is \"same-origin\".";
@@ -252,14 +252,14 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     OnResponseRejected(ServiceWorkerResponseError::kResponseTypeError);
     return;
   }
-  if (response_type == network::mojom::FetchResponseType::kCORS &&
+  if (response_type == network::mojom::FetchResponseType::kCors &&
       request_mode_ == network::mojom::FetchRequestMode::kSameOrigin) {
     OnResponseRejected(
-        ServiceWorkerResponseError::kResponseTypeCORSForRequestModeSameOrigin);
+        ServiceWorkerResponseError::kResponseTypeCorsForRequestModeSameOrigin);
     return;
   }
   if (response_type == network::mojom::FetchResponseType::kOpaque) {
-    if (request_mode_ != network::mojom::FetchRequestMode::kNoCORS) {
+    if (request_mode_ != network::mojom::FetchRequestMode::kNoCors) {
       OnResponseRejected(ServiceWorkerResponseError::kResponseTypeOpaque);
       return;
     }

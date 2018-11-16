@@ -1021,7 +1021,7 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
       encoded_data_length, should_report_corb_blocking);
 }
 
-void InspectorNetworkAgent::DidReceiveCORSRedirectResponse(
+void InspectorNetworkAgent::DidReceiveCorsRedirectResponse(
     unsigned long identifier,
     DocumentLoader* loader,
     const ResourceResponse& response,
@@ -1660,7 +1660,7 @@ InspectorNetworkAgent::InspectorNetworkAgent(
          (!IsMainThread() && worker_global_scope_));
 }
 
-void InspectorNetworkAgent::ShouldForceCORSPreflight(bool* result) {
+void InspectorNetworkAgent::ShouldForceCorsPreflight(bool* result) {
   if (cache_disabled_.Get())
     *result = true;
 }

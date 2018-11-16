@@ -27,7 +27,7 @@ WebURLError::WebURLError(int reason,
   DCHECK_NE(reason_, 0);
 }
 
-WebURLError::WebURLError(const network::CORSErrorStatus& cors_error_status,
+WebURLError::WebURLError(const network::CorsErrorStatus& cors_error_status,
                          HasCopyInCache has_copy_in_cache,
                          const WebURL& url)
     : reason_(net::ERR_FAILED),

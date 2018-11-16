@@ -219,7 +219,7 @@ class ThreadableLoaderTest : public testing::Test {
 
   void StartLoader(const KURL& url,
                    network::mojom::FetchRequestMode fetch_request_mode =
-                       network::mojom::FetchRequestMode::kNoCORS) {
+                       network::mojom::FetchRequestMode::kNoCors) {
     ResourceRequest request(url);
     request.SetRequestContext(mojom::RequestContextType::OBJECT);
     request.SetFetchRequestMode(fetch_request_mode);
@@ -473,8 +473,8 @@ TEST_F(ThreadableLoaderTest, DidFailInStart) {
   EXPECT_CALL(
       *Client(),
       DidFail(ResourceError(
-          ErrorURL(), network::CORSErrorStatus(
-                          network::mojom::CORSError::kDisallowedByMode))));
+          ErrorURL(), network::CorsErrorStatus(
+                          network::mojom::CorsError::kDisallowedByMode))));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
   StartLoader(ErrorURL(), network::mojom::FetchRequestMode::kSameOrigin);
@@ -522,10 +522,10 @@ TEST_F(ThreadableLoaderTest, DidFailAccessControlCheck) {
   EXPECT_CALL(*Client(),
               DidFail(ResourceError(
                   SuccessURL(),
-                  network::CORSErrorStatus(
-                      network::mojom::CORSError::kMissingAllowOriginHeader))));
+                  network::CorsErrorStatus(
+                      network::mojom::CorsError::kMissingAllowOriginHeader))));
 
-  StartLoader(SuccessURL(), network::mojom::FetchRequestMode::kCORS);
+  StartLoader(SuccessURL(), network::mojom::FetchRequestMode::kCors);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -592,7 +592,7 @@ TEST_F(ThreadableLoaderTest, DidFailRedirectCheck) {
   EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(*Client(), DidFailRedirectCheck());
 
-  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCORS);
+  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCors);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -607,7 +607,7 @@ TEST_F(ThreadableLoaderTest, CancelInDidFailRedirectCheck) {
   EXPECT_CALL(*Client(), DidFailRedirectCheck())
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
 
-  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCORS);
+  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCors);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -622,7 +622,7 @@ TEST_F(ThreadableLoaderTest, ClearInDidFailRedirectCheck) {
   EXPECT_CALL(*Client(), DidFailRedirectCheck())
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
 
-  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCORS);
+  StartLoader(RedirectLoopURL(), network::mojom::FetchRequestMode::kCors);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -642,7 +642,7 @@ TEST_F(ThreadableLoaderTest, GetResponseSynchronously) {
   // test is not saying that didFailAccessControlCheck should be dispatched
   // synchronously, but is saying that even when a response is served
   // synchronously it should not lead to a crash.
-  StartLoader(KURL("about:blank"), network::mojom::FetchRequestMode::kCORS);
+  StartLoader(KURL("about:blank"), network::mojom::FetchRequestMode::kCors);
   CallCheckpoint(2);
 }
 

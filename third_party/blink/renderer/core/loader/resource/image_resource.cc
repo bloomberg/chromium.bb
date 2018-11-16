@@ -708,13 +708,13 @@ bool ImageResource::IsAccessAllowed(
     ImageResourceInfo::DoesCurrentFrameHaveSingleSecurityOrigin
         does_current_frame_has_single_security_origin) const {
   if (GetResponse().WasFetchedViaServiceWorker())
-    return GetResponse().IsCORSSameOrigin();
+    return GetResponse().IsCorsSameOrigin();
 
   if (does_current_frame_has_single_security_origin !=
       ImageResourceInfo::kHasSingleSecurityOrigin)
     return false;
 
-  if (GetResponse().IsCORSSameOrigin())
+  if (GetResponse().IsCorsSameOrigin())
     return true;
 
   return security_origin->CanReadContent(GetResponse().Url());

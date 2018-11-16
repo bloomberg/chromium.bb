@@ -1573,7 +1573,7 @@ TEST_P(CacheStorageCacheTestP, QuickStressBody) {
 
 TEST_P(CacheStorageCacheTestP, PutResponseType) {
   EXPECT_TRUE(TestResponseType(network::mojom::FetchResponseType::kBasic));
-  EXPECT_TRUE(TestResponseType(network::mojom::FetchResponseType::kCORS));
+  EXPECT_TRUE(TestResponseType(network::mojom::FetchResponseType::kCors));
   EXPECT_TRUE(TestResponseType(network::mojom::FetchResponseType::kDefault));
   EXPECT_TRUE(TestResponseType(network::mojom::FetchResponseType::kError));
   EXPECT_TRUE(TestResponseType(network::mojom::FetchResponseType::kOpaque));

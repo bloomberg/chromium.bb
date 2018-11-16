@@ -337,7 +337,7 @@ blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
     request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kSameOrigin);
   } else {
-    request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCORS);
+    request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
     request.SetFetchCredentialsMode(
         network::mojom::FetchCredentialsMode::kOmit);
   }

@@ -1492,7 +1492,7 @@ bool HTMLMediaElement::IsSafeToLoadURL(const KURL& url,
   return true;
 }
 
-bool HTMLMediaElement::IsMediaDataCORSSameOrigin() const {
+bool HTMLMediaElement::IsMediaDataCorsSameOrigin() const {
   if (!GetWebMediaPlayer())
     return true;
 
@@ -3939,13 +3939,13 @@ void HTMLMediaElement::SetAudioSourceNode(
   GetAudioSourceProvider().SetClient(audio_source_node_);
 }
 
-WebMediaPlayer::CORSMode HTMLMediaElement::CorsMode() const {
+WebMediaPlayer::CorsMode HTMLMediaElement::CorsMode() const {
   const AtomicString& cross_origin_mode = FastGetAttribute(kCrossoriginAttr);
   if (cross_origin_mode.IsNull())
-    return WebMediaPlayer::kCORSModeUnspecified;
+    return WebMediaPlayer::kCorsModeUnspecified;
   if (DeprecatedEqualIgnoringCase(cross_origin_mode, "use-credentials"))
-    return WebMediaPlayer::kCORSModeUseCredentials;
-  return WebMediaPlayer::kCORSModeAnonymous;
+    return WebMediaPlayer::kCorsModeUseCredentials;
+  return WebMediaPlayer::kCorsModeAnonymous;
 }
 
 void HTMLMediaElement::SetCcLayer(cc::Layer* cc_layer) {
@@ -4264,7 +4264,7 @@ void HTMLMediaElement::RequestPause() {
 }
 
 bool HTMLMediaElement::MediaShouldBeOpaque() const {
-  return !IsMediaDataCORSSameOrigin() && ready_state_ < kHaveMetadata &&
+  return !IsMediaDataCorsSameOrigin() && ready_state_ < kHaveMetadata &&
          !FastGetAttribute(kSrcAttr).IsEmpty() &&
          EffectivePreloadType() != WebMediaPlayer::kPreloadNone;
 }

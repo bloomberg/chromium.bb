@@ -71,13 +71,13 @@ class PLATFORM_EXPORT SecurityPolicy {
       const String& destination_protocol,
       const String& destination_domain,
       bool allow_destination_subdomains,
-      const network::mojom::CORSOriginAccessMatchPriority priority);
+      const network::mojom::CorsOriginAccessMatchPriority priority);
   static void AddOriginAccessBlockListEntry(
       const SecurityOrigin& source_origin,
       const String& destination_protocol,
       const String& destination_domain,
       bool allow_destination_subdomains,
-      const network::mojom::CORSOriginAccessMatchPriority priority);
+      const network::mojom::CorsOriginAccessMatchPriority priority);
   static void ClearOriginAccessListForOrigin(
       const SecurityOrigin& source_origin);
   static void ClearOriginAccessList();

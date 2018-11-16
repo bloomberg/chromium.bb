@@ -402,11 +402,11 @@ class CrossSiteDocumentBlockingTest
     switch (GetParam()) {
       case TestMode::kWithoutOutOfBlinkCors:
         scoped_feature_list_.InitAndDisableFeature(
-            network::features::kOutOfBlinkCORS);
+            network::features::kOutOfBlinkCors);
         break;
       case TestMode::kWithOutOfBlinkCors:
         scoped_feature_list_.InitAndEnableFeature(
-            network::features::kOutOfBlinkCORS);
+            network::features::kOutOfBlinkCors);
         break;
     }
   }
@@ -574,7 +574,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockHeaders) {
   // Note: we want to verify that the blocking prevents the data from being sent
   // over IPC.  Testing later (e.g. via Response/Headers Web APIs) might give a
   // false sense of security, since some sanitization happens inside the
-  // renderer (e.g. via FetchResponseData::CreateCORSFilteredResponse).
+  // renderer (e.g. via FetchResponseData::CreateCorsFilteredResponse).
   GURL bar_url("http://bar.com/cross_site_document_blocking/headers-test.json");
   RequestInterceptor interceptor(bar_url);
 

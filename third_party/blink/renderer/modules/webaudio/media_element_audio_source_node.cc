@@ -88,7 +88,7 @@ void MediaElementAudioSourceHandler::SetFormat(size_t number_of_channels,
   bool is_tainted = WouldTaintOrigin();
 
   if (is_tainted) {
-    PrintCORSMessage(MediaElement()->currentSrc().GetString());
+    PrintCorsMessage(MediaElement()->currentSrc().GetString());
   }
 
   if (number_of_channels != source_number_of_channels_ ||
@@ -139,7 +139,7 @@ bool MediaElementAudioSourceHandler::WouldTaintOrigin() {
   return MediaElement()->GetWebMediaPlayer()->WouldTaintOrigin();
 }
 
-void MediaElementAudioSourceHandler::PrintCORSMessage(const String& message) {
+void MediaElementAudioSourceHandler::PrintCorsMessage(const String& message) {
   if (Context()->GetExecutionContext()) {
     Context()->GetExecutionContext()->AddConsoleMessage(
         ConsoleMessage::Create(kSecurityMessageSource, kInfoMessageLevel,

@@ -57,9 +57,9 @@ class UrlIndex;
 // Data is cached using a MultiBuffer instance.
 class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
  public:
-  // Keep in sync with WebMediaPlayer::CORSMode.
-  enum CORSMode { CORS_UNSPECIFIED, CORS_ANONYMOUS, CORS_USE_CREDENTIALS };
-  typedef std::pair<GURL, CORSMode> KeyType;
+  // Keep in sync with WebMediaPlayer::CorsMode.
+  enum CorsMode { CORS_UNSPECIFIED, CORS_ANONYMOUS, CORS_USE_CREDENTIALS };
+  typedef std::pair<GURL, CorsMode> KeyType;
 
   // UrlData keeps track of how many clients are preloading or
   // playing from this resource. This class encapsulates the
@@ -90,7 +90,7 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   const GURL& url() const { return url_; }
 
   // Cross-origin access mode
-  CORSMode cors_mode() const { return cors_mode_; }
+  CorsMode cors_mode() const { return cors_mode_; }
 
   // Are HTTP range requests supported?
   bool range_supported() const { return range_supported_; }
@@ -188,7 +188,7 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   void WaitToLoad(base::OnceClosure cb);
 
  protected:
-  UrlData(const GURL& url, CORSMode cors_mode, UrlIndex* url_index);
+  UrlData(const GURL& url, CorsMode cors_mode, UrlIndex* url_index);
   virtual ~UrlData();
 
  private:
@@ -227,7 +227,7 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   bool have_data_origin_;
 
   // Cross-origin access mode.
-  const CORSMode cors_mode_;
+  const CorsMode cors_mode_;
 
   UrlIndex* const url_index_;
 
@@ -299,7 +299,7 @@ class MEDIA_BLINK_EXPORT UrlIndex {
   // Because the returned UrlData has a raw reference to |this|, it must be
   // released before |this| is destroyed.
   scoped_refptr<UrlData> GetByUrl(const GURL& gurl,
-                                  UrlData::CORSMode cors_mode);
+                                  UrlData::CorsMode cors_mode);
 
   // Add the given UrlData to the index if possible. If a better UrlData
   // is already present in the index, return it instead. (If not, we just
@@ -343,7 +343,7 @@ class MEDIA_BLINK_EXPORT UrlIndex {
 
   // Virtual so we can override it in tests.
   virtual scoped_refptr<UrlData> NewUrlData(const GURL& url,
-                                            UrlData::CORSMode cors_mode);
+                                            UrlData::CorsMode cors_mode);
 
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);

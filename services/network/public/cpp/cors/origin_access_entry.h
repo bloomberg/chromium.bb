@@ -53,8 +53,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
       const std::string& protocol,
       const std::string& host,
       MatchMode match_mode,
-      const network::mojom::CORSOriginAccessMatchPriority priority =
-          network::mojom::CORSOriginAccessMatchPriority::kDefaultPriority);
+      const network::mojom::CorsOriginAccessMatchPriority priority =
+          network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   OriginAccessEntry(OriginAccessEntry&& from);
 
   // 'matchesOrigin' requires a protocol match (e.g. 'http' != 'https').
@@ -63,7 +63,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
   MatchResult MatchesDomain(const url::Origin& domain) const;
 
   bool host_is_ip_address() const { return host_is_ip_address_; }
-  network::mojom::CORSOriginAccessMatchPriority priority() const {
+  network::mojom::CorsOriginAccessMatchPriority priority() const {
     return priority_;
   }
   const std::string& registerable_domain() const {
@@ -74,7 +74,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
   const std::string protocol_;
   const std::string host_;
   const MatchMode match_mode_;
-  network::mojom::CORSOriginAccessMatchPriority priority_;
+  network::mojom::CorsOriginAccessMatchPriority priority_;
   const bool host_is_ip_address_;
 
   std::string registerable_domain_;

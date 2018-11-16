@@ -84,7 +84,7 @@ ResourceError ResourceError::Failure(const KURL& url) {
 ResourceError::ResourceError(
     int error_code,
     const KURL& url,
-    base::Optional<network::CORSErrorStatus> cors_error_status)
+    base::Optional<network::CorsErrorStatus> cors_error_status)
     : error_code_(error_code),
       failing_url_(url),
       is_access_check_(cors_error_status.has_value()),
@@ -94,7 +94,7 @@ ResourceError::ResourceError(
 }
 
 ResourceError::ResourceError(const KURL& url,
-                             const network::CORSErrorStatus& cors_error_status)
+                             const network::CorsErrorStatus& cors_error_status)
     : ResourceError(net::ERR_FAILED, url, cors_error_status) {}
 
 ResourceError::ResourceError(const WebURLError& error)
@@ -151,7 +151,7 @@ bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
   if (a.HasCopyInCache() != b.HasCopyInCache())
     return false;
 
-  if (a.CORSErrorStatus() != b.CORSErrorStatus())
+  if (a.CorsErrorStatus() != b.CorsErrorStatus())
     return false;
 
   if (a.extended_error_code_ != b.extended_error_code_)

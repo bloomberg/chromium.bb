@@ -890,7 +890,7 @@
       implied_by: ["OriginTrialsSampleAPI"],
     },
     {
-      name: "OutOfBlinkCORS",
+      name: "OutOfBlinkCors",
     },
     {
       name: "OverflowIconsForMediaControls",

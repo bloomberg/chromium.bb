@@ -149,9 +149,9 @@ class BackgroundFetchDelegateProxy::Core
     // Append the Origin header for requests whose CORS flag is set, or whose
     // request method is not GET or HEAD. See section 3.1 of the standard:
     // https://fetch.spec.whatwg.org/#origin-header
-    if (fetch_request.mode == network::mojom::FetchRequestMode::kCORS ||
+    if (fetch_request.mode == network::mojom::FetchRequestMode::kCors ||
         fetch_request.mode ==
-            network::mojom::FetchRequestMode::kCORSWithForcedPreflight ||
+            network::mojom::FetchRequestMode::kCorsWithForcedPreflight ||
         (fetch_request.method != "GET" && fetch_request.method != "HEAD")) {
       headers.SetHeader("Origin", origin.Serialize());
     }

@@ -647,13 +647,13 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, CorsChecks) {
         std::string(blink::kClientHintsHeaderMapping[i]) == "ect") {
       continue;
     }
-    EXPECT_TRUE(network::cors::IsCORSSafelistedHeader(
+    EXPECT_TRUE(network::cors::IsCorsSafelistedHeader(
         blink::kClientHintsHeaderMapping[i], "42" /* value */));
   }
-  EXPECT_FALSE(network::cors::IsCORSSafelistedHeader("not-a-client-hint-header",
+  EXPECT_FALSE(network::cors::IsCorsSafelistedHeader("not-a-client-hint-header",
                                                      "" /* value */));
   EXPECT_TRUE(
-      network::cors::IsCORSSafelistedHeader("save-data", "on" /* value */));
+      network::cors::IsCorsSafelistedHeader("save-data", "on" /* value */));
 }
 
 // Loads a webpage that requests persisting of client hints. Verifies that

@@ -339,10 +339,10 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool IsExternalRequest() const { return is_external_request_; }
   void SetExternalRequestStateFromRequestorAddressSpace(mojom::IPAddressSpace);
 
-  network::mojom::CORSPreflightPolicy CORSPreflightPolicy() const {
+  network::mojom::CorsPreflightPolicy CorsPreflightPolicy() const {
     return cors_preflight_policy_;
   }
-  void SetCORSPreflightPolicy(network::mojom::CORSPreflightPolicy policy) {
+  void SetCorsPreflightPolicy(network::mojom::CorsPreflightPolicy policy) {
     cors_preflight_policy_ = policy;
   }
 
@@ -461,7 +461,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool did_set_http_referrer_;
   bool was_discarded_;
   bool is_external_request_;
-  network::mojom::CORSPreflightPolicy cors_preflight_policy_;
+  network::mojom::CorsPreflightPolicy cors_preflight_policy_;
   RedirectStatus redirect_status_;
   base::Optional<String> suggested_filename_;
 
