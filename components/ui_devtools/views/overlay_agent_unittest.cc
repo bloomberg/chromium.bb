@@ -16,6 +16,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/widget_utils.h"
 #include "ui/views/window/non_client_view.h"
 
 #if defined(USE_AURA)
@@ -239,7 +240,7 @@ TEST_F(OverlayAgentTest, HighlightRects) {
 
     overlay_agent()->setInspectMode(
         "searchForNode", protocol::Maybe<protocol::Overlay::HighlightConfig>());
-    ui::test::EventGenerator generator(widget->GetNativeWindow());
+    ui::test::EventGenerator generator(GetRootWindow(widget.get()));
 
     // Highlight child 1.
     generator.MoveMouseTo(GetOriginInScreen(child_1));
@@ -277,7 +278,7 @@ TEST_F(OverlayAgentTest, MouseEventsGenerateFEEventsInInspectMode) {
 
   // Moving the mouse cursor over the widget bounds should request a node
   // highlight.
-  ui::test::EventGenerator generator(widget->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget.get()));
   generator.MoveMouseBy(p.x(), p.y());
 
   // 2 mouse events ET_MOUSE_ENTERED and ET_MOUSE_MOVED are generated.

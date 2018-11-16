@@ -16,6 +16,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_utils.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace chromeos {
@@ -217,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, ModalWindowDoesNotBlock) {
   CountingEventHandler handler(&mouse_events);
   aura::Window* overlay_window = GetOverlayWidget()->GetNativeView();
   overlay_window->AddPreTargetHandler(&handler);
-  ui::test::EventGenerator event_generator(overlay_window);
+  ui::test::EventGenerator event_generator(GetRootWindow(GetOverlayWidget()));
   event_generator.PressLeftButton();
   EXPECT_EQ(mouse_events, 1);
 
@@ -237,8 +238,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, EscapeCancelsTutorial) {
   EXPECT_TRUE(IsTrayBubbleOpen());
 
   // Press the escape key.
-  aura::Window* overlay_window = GetOverlayWidget()->GetNativeView();
-  ui::test::EventGenerator event_generator(overlay_window);
+  ui::test::EventGenerator event_generator(GetRootWindow(GetOverlayWidget()));
   event_generator.PressKey(ui::VKEY_ESCAPE, ui::EF_NONE);
   content::RunAllPendingInMessageLoop();
 

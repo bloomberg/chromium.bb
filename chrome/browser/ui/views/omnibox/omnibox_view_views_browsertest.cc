@@ -40,6 +40,10 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
+
 namespace {
 
 void SetClipboardText(ui::ClipboardType type, const std::string& text) {
@@ -91,14 +95,14 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
   void TapBrowserWindowCenter() {
     gfx::Point center = BrowserView::GetBrowserViewForBrowser(
         browser())->GetBoundsInScreen().CenterPoint();
-    ui::test::EventGenerator generator(browser()->window()->GetNativeWindow());
+    ui::test::EventGenerator generator(GetRootWindow());
     generator.GestureTapAt(center);
   }
 
   // Touch down and release at the specified locations.
   void Tap(const gfx::Point& press_location,
            const gfx::Point& release_location) {
-    gfx::NativeWindow window = browser()->window()->GetNativeWindow();
+    gfx::NativeWindow window = GetRootWindow();
 #if defined(OS_CHROMEOS)
     if (features::IsUsingWindowService())
       window = nullptr;
@@ -120,6 +124,14 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
     chrome::FocusLocationBar(browser());
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  }
+
+  gfx::NativeWindow GetRootWindow() const {
+    gfx::NativeWindow native_window = browser()->window()->GetNativeWindow();
+#if defined(USE_AURA)
+    native_window = native_window->GetRootWindow();
+#endif
+    return native_window;
   }
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViewsTest);

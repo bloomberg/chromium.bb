@@ -32,7 +32,7 @@ TEST_F(AppListTest, PressAppListButtonToShowAndDismiss) {
 
   aura::Window* app_list_container =
       root_window->GetChildById(ash::kShellWindowId_AppListContainer);
-  ui::test::EventGenerator generator(shelf_widget->GetNativeWindow());
+  ui::test::EventGenerator generator(root_window);
 
   // Click the app list button to show the app list.
   ash::Shell* shell = ash::Shell::Get();

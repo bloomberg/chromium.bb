@@ -37,6 +37,7 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_utils.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -328,7 +329,7 @@ TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
   Widget* widget1 = CreateWidget();
   widget1->GetContentsView()->AddChildView(focusable_view1);
   widget1->Show();
-  aura::Window* root_window1 = widget1->GetNativeView()->GetRootWindow();
+  aura::Window* root_window1 = GetRootWindow(widget1);
   focusable_view1->RequestFocus();
 
   EXPECT_TRUE(root_window1 != NULL);
@@ -342,7 +343,7 @@ TEST_F(WidgetTestInteractive, DesktopNativeWidgetAuraActivationAndFocusTest) {
   Widget* widget2 = CreateWidget();
   widget1->GetContentsView()->AddChildView(focusable_view2);
   widget2->Show();
-  aura::Window* root_window2 = widget2->GetNativeView()->GetRootWindow();
+  aura::Window* root_window2 = GetRootWindow(widget2);
   focusable_view2->RequestFocus();
   ActivatePlatformWindow(widget2);
 
@@ -1175,7 +1176,7 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
 
   RunPendingMessages();
 
-  ui::test::EventGenerator generator(widget->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget));
   generator.GestureTapAt(gfx::Point(10, 10));
   ShowQuickMenuImmediately(static_cast<TouchSelectionControllerImpl*>(
       textfield_test_api.touch_selection_controller()));
@@ -1722,7 +1723,7 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseExitOnCaptureGrab) {
   widget2.Show();
   widget2.SetBounds(gfx::Rect(400, 0, 300, 300));
 
-  ui::test::EventGenerator generator(widget1.GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(&widget1));
   generator.set_current_location(gfx::Point(100, 100));
   generator.MoveMouseBy(0, 0);
 

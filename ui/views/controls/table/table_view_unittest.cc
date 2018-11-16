@@ -20,6 +20,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_utils.h"
 
 // Put the tests in the views namespace to make it easier to declare them as
 // friend classes.
@@ -271,7 +272,7 @@ class TableViewTest : public ViewsTestBase {
   }
 
   void ClickOnRow(int row, int flags) {
-    ui::test::EventGenerator generator(widget_->GetNativeWindow());
+    ui::test::EventGenerator generator(GetRootWindow(widget_.get()));
     generator.set_assume_window_at_origin(false);
     generator.set_flags(flags);
     generator.set_current_location(GetPointForRow(row));
@@ -279,7 +280,7 @@ class TableViewTest : public ViewsTestBase {
   }
 
   void TapOnRow(int row) {
-    ui::test::EventGenerator generator(widget_->GetNativeWindow());
+    ui::test::EventGenerator generator(GetRootWindow(widget_.get()));
     generator.GestureTapAt(GetPointForRow(row));
   }
 
@@ -301,7 +302,7 @@ class TableViewTest : public ViewsTestBase {
   }
 
   void PressKey(ui::KeyboardCode code) {
-    ui::test::EventGenerator generator(widget_->GetNativeWindow());
+    ui::test::EventGenerator generator(GetRootWindow(widget_.get()));
     generator.PressKey(code, ui::EF_NONE);
   }
 

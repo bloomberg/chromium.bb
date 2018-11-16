@@ -33,6 +33,7 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_deletion_observer.h"
 #include "ui/views/widget/widget_removals_observer.h"
+#include "ui/views/widget/widget_utils.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/window/native_frame_view.h"
 
@@ -1723,7 +1724,7 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
 
   gfx::Point cursor_location(5, 5);
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget.get()) : GetContext(),
       widget->GetNativeWindow());
   generator.MoveMouseTo(cursor_location);
 
@@ -1780,7 +1781,7 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
   event_count_view->AddPostTargetHandler(&consumer);
 
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget) : GetContext(),
       widget->GetNativeWindow());
   generator.PressTouch();
   generator.ClickLeftButton();
@@ -1813,7 +1814,7 @@ TEST_F(WidgetTest, MousePressCausesCapture) {
   MousePressEventConsumer consumer;
   event_count_view->AddPostTargetHandler(&consumer);
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget) : GetContext(),
       widget->GetNativeWindow());
   generator.PressLeftButton();
 
@@ -1877,7 +1878,7 @@ TEST_F(WidgetTest, CaptureDuringMousePressNotOverridden) {
   CaptureEventConsumer consumer(widget2);
   event_count_view->AddPostTargetHandler(&consumer);
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget) : GetContext(),
       widget->GetNativeWindow());
   // This event should implicitly give capture to |widget|, except that
   // |consumer| will explicitly set capture on |widget2|.
@@ -1957,7 +1958,7 @@ TEST_F(WidgetTest, DestroyedWithCaptureViaEventMonitor) {
       {ui::ET_MOUSE_PRESSED});
 
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget) : GetContext(),
       widget->GetNativeWindow());
   generator.set_target(ui::test::EventGenerator::Target::APPLICATION);
 
@@ -2067,7 +2068,7 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
   widget->Show();
 
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() ? GetRootWindow(widget) : GetContext(),
       widget->GetNativeWindow());
 
   WidgetDeletionObserver deletion_observer(widget);

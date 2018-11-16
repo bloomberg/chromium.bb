@@ -19,6 +19,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget_utils.h"
 
 namespace ash {
 
@@ -94,7 +95,7 @@ void UnifiedSystemTrayTestApi::ClickBubbleView(int32_t view_id,
     gfx::Point cursor_location(1, 1);
     views::View::ConvertPointToScreen(view, &cursor_location);
 
-    ui::test::EventGenerator generator(view->GetWidget()->GetNativeWindow());
+    ui::test::EventGenerator generator(GetRootWindow(view->GetWidget()));
     generator.MoveMouseTo(cursor_location);
     generator.ClickLeftButton();
   }

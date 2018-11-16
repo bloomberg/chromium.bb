@@ -38,6 +38,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_utils.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
@@ -174,7 +175,7 @@ class NotificationViewTest : public views::ViewsTestBase {
 
   void DispatchGesture(const ui::GestureEventDetails& details) {
     ui::test::EventGenerator generator(
-        notification_view()->GetWidget()->GetNativeWindow());
+        GetRootWindow(notification_view()->GetWidget()));
     ui::GestureEvent event(0, 0, 0, ui::EventTimeForNow(), details);
     generator.Dispatch(&event);
   }
