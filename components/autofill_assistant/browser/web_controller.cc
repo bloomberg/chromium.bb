@@ -142,6 +142,113 @@ const char* const kQuerySelectorAll =
     })";
 }  // namespace
 
+WebController::ElementPositionGetter::ElementPositionGetter()
+    : visual_state_updated_(false), weak_ptr_factory_(this) {}
+WebController::ElementPositionGetter::~ElementPositionGetter() = default;
+
+void WebController::ElementPositionGetter::Start(
+    content::RenderFrameHost* frame_host,
+    DevtoolsClient* devtools_client,
+    std::string element_object_id,
+    base::OnceCallback<void(int, int)> callback) {
+  callback_ = std::move(callback);
+
+  // Wait for a roundtrips through the renderer and compositor pipeline,
+  // otherwise touch event may be dropped because of missing handler.
+  // Note that mouse left button will always be send to the renderer, but it
+  // is slightly better to wait for the changes, like scroll, to be visualized
+  // in compositor as real interaction.
+  frame_host->InsertVisualStateCallback(base::BindOnce(
+      &WebController::ElementPositionGetter::OnVisualStateUpdatedCallback,
+      weak_ptr_factory_.GetWeakPtr()));
+
+  // Set 'point_x' and 'point_y' to -1 to force one round of stable check.
+  GetAndWaitBoxModelStable(devtools_client, element_object_id,
+                           /* point_x= */ -1,
+                           /* point_y= */ -1, kPeriodicBoxModelCheckRounds);
+}
+
+void WebController::ElementPositionGetter::OnVisualStateUpdatedCallback(
+    bool state) {
+  if (state) {
+    visual_state_updated_ = true;
+    return;
+  }
+
+  OnResult(-1, -1);
+}
+
+void WebController::ElementPositionGetter::GetAndWaitBoxModelStable(
+    DevtoolsClient* devtools_client,
+    std::string object_id,
+    int point_x,
+    int point_y,
+    int remaining_rounds) {
+  devtools_client->GetDOM()->GetBoxModel(
+      dom::GetBoxModelParams::Builder().SetObjectId(object_id).Build(),
+      base::BindOnce(
+          &WebController::ElementPositionGetter::OnGetBoxModelForStableCheck,
+          weak_ptr_factory_.GetWeakPtr(), devtools_client, object_id, point_x,
+          point_y, remaining_rounds));
+}
+
+void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
+    DevtoolsClient* devtools_client,
+    std::string object_id,
+    int point_x,
+    int point_y,
+    int remaining_rounds,
+    std::unique_ptr<dom::GetBoxModelResult> result) {
+  if (!result || !result->GetModel() || !result->GetModel()->GetContent()) {
+    DLOG(ERROR) << "Failed to get box model.";
+    OnResult(-1, -1);
+    return;
+  }
+
+  // Return the center of the element.
+  const std::vector<double>* content_box = result->GetModel()->GetContent();
+  DCHECK_EQ(content_box->size(), 8u);
+  int x = round((round((*content_box)[0]) + round((*content_box)[2])) * 0.5);
+  int y = round((round((*content_box)[3]) + round((*content_box)[5])) * 0.5);
+
+  // Wait for at least three rounds (~600ms =
+  // 3*kPeriodicBoxModelCheckInterval) for visual state update callback since
+  // it might take longer time to return or never return if no updates.
+  DCHECK(kPeriodicBoxModelCheckRounds > 2 &&
+         kPeriodicBoxModelCheckRounds >= remaining_rounds);
+  if (x == point_x && y == point_y &&
+      (visual_state_updated_ ||
+       remaining_rounds + 2 < kPeriodicBoxModelCheckRounds)) {
+    // Note that there is still a chance that the element's position has been
+    // changed after the last call of GetBoxModel, however, it might be safe
+    // to assume the element's position will not be changed before issuing
+    // click or tap event after stable for kPeriodicBoxModelCheckInterval. In
+    // addition, checking again after issuing click or tap event doesn't help
+    // since the change may be expected.
+    OnResult(x, y);
+    return;
+  }
+
+  if (remaining_rounds <= 0) {
+    OnResult(-1, -1);
+    return;
+  }
+
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(
+          &WebController::ElementPositionGetter::GetAndWaitBoxModelStable,
+          weak_ptr_factory_.GetWeakPtr(), devtools_client, object_id, x, y,
+          --remaining_rounds),
+      kPeriodicBoxModelCheckInterval);
+}
+
+void WebController::ElementPositionGetter::OnResult(int x, int y) {
+  if (callback_) {
+    std::move(callback_).Run(x, y);
+  }
+}
+
 // static
 std::unique_ptr<WebController> WebController::CreateForWebContents(
     content::WebContents* web_contents) {
@@ -246,98 +353,28 @@ void WebController::OnScrollIntoView(
     return;
   }
 
-  // Wait for a roundtrips through the renderer and compositor pipeline,
-  // otherwise touch event may be dropped because of missing handler.
-  // Note that mouse left button will always be send to the renderer, but it is
-  // slightly better to wait for the changes, like scroll, to be visualized in
-  // compositor as real interaction.
-  target_element->container_frame_host->InsertVisualStateCallback(
-      base::BindOnce(&WebController::OnVisualStateCallback,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     target_element->object_id, is_a_click));
-}
-
-void WebController::OnVisualStateCallback(
-    base::OnceCallback<void(bool)> callback,
-    std::string object_id,
-    bool is_a_click,
-    bool state) {
-  if (!state) {
-    DLOG(ERROR) << "Wait for visual state failed unexpectedly.";
-    OnResult(false, std::move(callback));
-    return;
-  }
-
-  // Set 'point_x' and 'point_y' to -1 to force one round of stable check.
-  GetAndWaitBoxModelStable(std::move(callback), object_id, is_a_click,
-                           /* point_x= */ -1, /* point_y= */ -1,
-                           kPeriodicBoxModelCheckRounds);
-}
-
-void WebController::GetAndWaitBoxModelStable(
-    base::OnceCallback<void(bool)> callback,
-    std::string object_id,
-    bool is_a_click,
-    int point_x,
-    int point_y,
-    int remaining_rounds) {
-  devtools_client_->GetDOM()->GetBoxModel(
-      dom::GetBoxModelParams::Builder().SetObjectId(object_id).Build(),
-      base::BindOnce(&WebController::OnGetBoxModelForStableCheck,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     object_id, is_a_click, point_x, point_y,
-                     remaining_rounds));
-}
-
-void WebController::OnGetBoxModelForStableCheck(
-    base::OnceCallback<void(bool)> callback,
-    std::string object_id,
-    bool is_a_click,
-    int point_x,
-    int point_y,
-    int remaining_rounds,
-    std::unique_ptr<dom::GetBoxModelResult> result) {
-  if (!result || !result->GetModel() || !result->GetModel()->GetContent()) {
-    DLOG(ERROR) << "Failed to get box model.";
-    OnResult(false, std::move(callback));
-    return;
-  }
-
-  // Click or tap at the center of the element.
-  const std::vector<double>* content_box = result->GetModel()->GetContent();
-  DCHECK_EQ(content_box->size(), 8u);
-  int x = round((round((*content_box)[0]) + round((*content_box)[2])) * 0.5);
-  int y = round((round((*content_box)[3]) + round((*content_box)[5])) * 0.5);
-
-  if (x == point_x && y == point_y) {
-    // Note that there is still a chance that the element's position has been
-    // changed after the last call of GetBoxModel, however, it might be safe to
-    // assume the element's position will not be changed before issuing click or
-    // tap event after stable for kPeriodicBoxModelCheckInterval. In addition,
-    // checking again after issuing click or tap event doesn't help since the
-    // change may be expected.
-    TapOrClickOnCoordinates(std::move(callback), is_a_click, x, y);
-    return;
-  }
-
-  if (remaining_rounds <= 0) {
-    OnResult(false, std::move(callback));
-    return;
-  }
-
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&WebController::GetAndWaitBoxModelStable,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     object_id, is_a_click, x, y, --remaining_rounds),
-      kPeriodicBoxModelCheckInterval);
+  ElementPositionGetter* element_position_checker = new ElementPositionGetter();
+  element_position_checker->Start(
+      target_element->container_frame_host, devtools_client_.get(),
+      target_element->object_id,
+      base::BindOnce(&WebController::TapOrClickOnCoordinates,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::WrapUnique(element_position_checker),
+                     std::move(callback), is_a_click));
 }
 
 void WebController::TapOrClickOnCoordinates(
+    std::unique_ptr<ElementPositionGetter> element_position_getter,
     base::OnceCallback<void(bool)> callback,
     bool is_a_click,
     int x,
     int y) {
+  if (x < 0 || y < 0) {
+    DLOG(ERROR) << "Failed to get element position.";
+    OnResult(false, std::move(callback));
+    return;
+  }
+
   if (is_a_click) {
     devtools_client_->GetInput()->DispatchMouseEvent(
         input::DispatchMouseEventParams::Builder()

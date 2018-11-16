@@ -16,7 +16,8 @@ namespace autofill_assistant {
 
 const char* kTargetWebsitePath = "/autofill_assistant_target_website.html";
 
-class WebControllerBrowserTest : public content::ContentBrowserTest {
+class WebControllerBrowserTest : public content::ContentBrowserTest,
+                                 public content::WebContentsObserver {
  public:
   WebControllerBrowserTest() {}
   ~WebControllerBrowserTest() override {}
@@ -32,6 +33,36 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
         NavigateToURL(shell(), http_server_->GetURL(kTargetWebsitePath)));
     web_controller_ =
         WebController::CreateForWebContents(shell()->web_contents());
+    Observe(shell()->web_contents());
+  }
+
+  void DidCommitAndDrawCompositorFrame() override {
+    paint_occurred_during_last_loop_ = true;
+  }
+
+  void WaitTillPageIsIdle(base::TimeDelta continuous_paint_timeout) {
+    base::TimeTicks finished_load_time = base::TimeTicks::Now();
+    bool page_is_loading = false;
+    do {
+      paint_occurred_during_last_loop_ = false;
+      base::RunLoop heart_beat;
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, heart_beat.QuitClosure(), base::TimeDelta::FromSeconds(3));
+      heart_beat.Run();
+      page_is_loading =
+          web_contents()->IsWaitingForResponse() || web_contents()->IsLoading();
+      if (page_is_loading) {
+        finished_load_time = base::TimeTicks::Now();
+      } else if ((base::TimeTicks::Now() - finished_load_time) >
+                 continuous_paint_timeout) {
+        // |continuous_paint_timeout| has expired since Chrome loaded the page.
+        // During this period of time, Chrome has been continuously painting
+        // the page. In this case, the page is probably idle, but a bug, a
+        // blinking caret or a persistent animation is making Chrome paint at
+        // regular intervals. Exit.
+        break;
+      }
+    } while (page_is_loading || paint_occurred_during_last_loop_);
   }
 
   void RunElementChecks(ElementCheckType check_type,
@@ -287,6 +318,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest {
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
+  bool paint_occurred_during_last_loop_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebControllerBrowserTest);
 };
@@ -404,7 +436,23 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElement) {
   std::vector<std::string> selectors;
-  selectors.emplace_back("#touch_area");
+  selectors.emplace_back("#touch_area_two");
+  TapElement(selectors);
+  WaitForElementRemove(selectors);
+
+  selectors.clear();
+  selectors.emplace_back("#touch_area_one");
+  TapElement(selectors);
+  WaitForElementRemove(selectors);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementAfterPageIsIdle) {
+  // Set a very long timeout to make sure either the page is idle or the test
+  // timeout.
+  WaitTillPageIsIdle(base::TimeDelta::FromHours(1));
+
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#touch_area_one");
   TapElement(selectors);
 
   WaitForElementRemove(selectors);
