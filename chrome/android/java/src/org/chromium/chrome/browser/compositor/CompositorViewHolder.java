@@ -59,7 +59,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.EventForwarder;
-import org.chromium.ui.base.SPenSupport;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -80,6 +79,7 @@ public class CompositorViewHolder extends FrameLayout
                    KeyboardExtensionSizeManager.Observer {
     private static final long SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS = 500;
 
+    private EventOffsetHandler mEventOffsetHandler;
     private boolean mIsKeyboardShowing;
 
     private final Invalidator mInvalidator = new Invalidator();
@@ -122,7 +122,6 @@ public class CompositorViewHolder extends FrameLayout
     private TabObserver mTabObserver;
 
     // Cache objects that should not be created frequently.
-    private final RectF mCacheViewport = new RectF();
     private final Rect mCacheRect = new Rect();
     private final Point mCachePoint = new Point();
 
@@ -205,6 +204,27 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     private void internalInit() {
+        mEventOffsetHandler =
+                new EventOffsetHandler(new EventOffsetHandler.EventOffsetHandlerDelegate() {
+                    // Cache objects that should not be created frequently.
+                    private final RectF mCacheViewport = new RectF();
+
+                    @Override
+                    public RectF getViewport() {
+                        if (mLayoutManager != null) mLayoutManager.getViewportPixel(mCacheViewport);
+                        return mCacheViewport;
+                    }
+
+                    @Override
+                    public void setCurrentTouchEventOffsets(float x, float y) {
+                        if (mTabVisible == null) return;
+                        WebContents webContents = mTabVisible.getWebContents();
+                        if (webContents == null) return;
+                        EventForwarder forwarder = webContents.getEventForwarder();
+                        forwarder.setCurrentTouchEventOffsets(x, y);
+                    }
+                });
+
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onContentChanged(Tab tab) {
@@ -490,7 +510,7 @@ public class CompositorViewHolder extends FrameLayout
 
         if (mLayoutManager == null) return false;
 
-        setContentViewMotionEventOffsets(e, false);
+        mEventOffsetHandler.onInterceptTouchEvent(e);
         return mLayoutManager.onInterceptTouchEvent(e, mIsKeyboardShowing);
     }
 
@@ -500,13 +520,13 @@ public class CompositorViewHolder extends FrameLayout
 
         if (mFullscreenManager != null) mFullscreenManager.onMotionEvent(e);
         boolean consumed = mLayoutManager != null && mLayoutManager.onTouchEvent(e);
-        setContentViewMotionEventOffsets(e, true);
+        mEventOffsetHandler.onTouchEvent(e);
         return consumed;
     }
 
     @Override
     public boolean onInterceptHoverEvent(MotionEvent e) {
-        setContentViewMotionEventOffsets(e, true);
+        mEventOffsetHandler.onInterceptHoverEvent(e);
         return super.onInterceptHoverEvent(e);
     }
 
@@ -522,20 +542,9 @@ public class CompositorViewHolder extends FrameLayout
 
     @Override
     public boolean dispatchDragEvent(DragEvent e) {
-        if (mTabVisible == null) return false;
-        WebContents webContents = mTabVisible.getWebContents();
-        if (webContents == null) return false;
-
-        if (mLayoutManager != null) mLayoutManager.getViewportPixel(mCacheViewport);
-        EventForwarder forwarder = webContents.getEventForwarder();
-        forwarder.setCurrentTouchEventOffsets(-mCacheViewport.left, -mCacheViewport.top);
+        mEventOffsetHandler.onPreDispatchDragEvent(e.getAction());
         boolean ret = super.dispatchDragEvent(e);
-
-        int action = e.getAction();
-        if (action == DragEvent.ACTION_DRAG_EXITED || action == DragEvent.ACTION_DRAG_ENDED
-                || action == DragEvent.ACTION_DROP) {
-            forwarder.setCurrentTouchEventOffsets(0.f, 0.f);
-        }
+        mEventOffsetHandler.onPostDispatchDragEvent(e.getAction());
         return ret;
     }
 
@@ -699,28 +708,6 @@ public class CompositorViewHolder extends FrameLayout
     public void setOverlayMode(boolean useOverlayMode) {
         if (mCompositorView != null) {
             mCompositorView.setOverlayVideoMode(useOverlayMode);
-        }
-    }
-
-    private void setContentViewMotionEventOffsets(MotionEvent e, boolean canClear) {
-        // TODO(dtrainor): Factor this out to LayoutDriver.
-        if (e == null || mTabVisible == null) return;
-
-        WebContents webContents = mTabVisible.getWebContents();
-        if (webContents == null) return;
-
-        int actionMasked = SPenSupport.convertSPenEventAction(e.getActionMasked());
-
-        if (actionMasked == MotionEvent.ACTION_DOWN
-                || actionMasked == MotionEvent.ACTION_HOVER_ENTER
-                || actionMasked == MotionEvent.ACTION_HOVER_MOVE) {
-            if (mLayoutManager != null) mLayoutManager.getViewportPixel(mCacheViewport);
-            webContents.getEventForwarder().setCurrentTouchEventOffsets(
-                    -mCacheViewport.left, -mCacheViewport.top);
-        } else if (canClear && (actionMasked == MotionEvent.ACTION_UP
-                                       || actionMasked == MotionEvent.ACTION_CANCEL
-                                       || actionMasked == MotionEvent.ACTION_HOVER_EXIT)) {
-            webContents.getEventForwarder().setCurrentTouchEventOffsets(0.f, 0.f);
         }
     }
 
