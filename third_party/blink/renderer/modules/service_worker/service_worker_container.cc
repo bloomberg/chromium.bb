@@ -243,7 +243,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           page_url.Protocol())) {
     callbacks->OnError(WebServiceWorkerError(
-        mojom::blink::ServiceWorkerErrorType::kSecurity,
+        mojom::blink::ServiceWorkerErrorType::kType,
         String("Failed to register a ServiceWorker: The URL protocol of the "
                "current origin ('" +
                document_origin->ToString() + "') is not supported.")));
@@ -252,6 +252,16 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 
   KURL script_url = execution_context->CompleteURL(url);
   script_url.RemoveFragmentIdentifier();
+
+  if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
+          script_url.Protocol())) {
+    callbacks->OnError(WebServiceWorkerError(
+        mojom::blink::ServiceWorkerErrorType::kType,
+        String("Failed to register a ServiceWorker: The URL protocol of the "
+               "script ('" +
+               script_url.GetString() + "') is not supported.")));
+    return promise;
+  }
 
   if (!document_origin->CanRequest(script_url)) {
     scoped_refptr<const SecurityOrigin> script_origin =
@@ -265,47 +275,39 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
                                      document_origin->ToString() + "').")));
     return promise;
   }
+
+  KURL scope_url;
+  if (options->scope().IsNull())
+    scope_url = KURL(script_url, "./");
+  else
+    scope_url = execution_context->CompleteURL(options->scope());
+  scope_url.RemoveFragmentIdentifier();
+
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
-          script_url.Protocol())) {
+          scope_url.Protocol())) {
     callbacks->OnError(WebServiceWorkerError(
-        mojom::blink::ServiceWorkerErrorType::kSecurity,
+        mojom::blink::ServiceWorkerErrorType::kType,
         String("Failed to register a ServiceWorker: The URL protocol of the "
-               "script ('" +
-               script_url.GetString() + "') is not supported.")));
+               "scope ('" +
+               scope_url.GetString() + "') is not supported.")));
     return promise;
   }
 
-  KURL pattern_url;
-  if (options->scope().IsNull())
-    pattern_url = KURL(script_url, "./");
-  else
-    pattern_url = execution_context->CompleteURL(options->scope());
-  pattern_url.RemoveFragmentIdentifier();
-
-  if (!document_origin->CanRequest(pattern_url)) {
-    scoped_refptr<const SecurityOrigin> pattern_origin =
-        SecurityOrigin::Create(pattern_url);
+  if (!document_origin->CanRequest(scope_url)) {
+    scoped_refptr<const SecurityOrigin> scope_origin =
+        SecurityOrigin::Create(scope_url);
     callbacks->OnError(
         WebServiceWorkerError(mojom::blink::ServiceWorkerErrorType::kSecurity,
                               String("Failed to register a ServiceWorker: The "
                                      "origin of the provided scope ('" +
-                                     pattern_origin->ToString() +
+                                     scope_origin->ToString() +
                                      "') does not match the current origin ('" +
                                      document_origin->ToString() + "').")));
     return promise;
   }
-  if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
-          pattern_url.Protocol())) {
-    callbacks->OnError(WebServiceWorkerError(
-        mojom::blink::ServiceWorkerErrorType::kSecurity,
-        String("Failed to register a ServiceWorker: The URL protocol of the "
-               "scope ('" +
-               pattern_url.GetString() + "') is not supported.")));
-    return promise;
-  }
 
   WebString web_error_message;
-  if (!provider_->ValidateScopeAndScriptURL(pattern_url, script_url,
+  if (!provider_->ValidateScopeAndScriptURL(scope_url, script_url,
                                             &web_error_message)) {
     callbacks->OnError(WebServiceWorkerError(
         mojom::blink::ServiceWorkerErrorType::kType,
@@ -335,7 +337,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
       ParseUpdateViaCache(options->updateViaCache());
   mojom::ScriptType type = ParseScriptType(options->type());
 
-  provider_->RegisterServiceWorker(pattern_url, script_url, type,
+  provider_->RegisterServiceWorker(scope_url, script_url, type,
                                    update_via_cache, std::move(callbacks));
   return promise;
 }

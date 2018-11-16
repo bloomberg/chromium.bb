@@ -10,7 +10,7 @@ async_test(function(t) {
           assert_unreached('register() should fail');
         }, function(e) {
           assert_throws(
-            'SecurityError', function() { throw e; },
+            new TypeError, function() { throw e; },
             'register() on local file should fail');
           assert_equals(
             e.message,
