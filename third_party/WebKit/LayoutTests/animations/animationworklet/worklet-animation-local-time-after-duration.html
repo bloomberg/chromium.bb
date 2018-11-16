@@ -12,8 +12,8 @@
 <script id="visual_update"  type="text/worklet">
 registerAnimator("test_animator", class {
   animate(currentTime, effect) {
-    // The local time should be trimmed by the duration, e.g. this is equivalent
-    // to effect.localTime = 1000;
+    // If an effect doesn't have fill-mode specified, setting its local time
+    // beyond its duration makes the animation inactive.
     effect.localTime = 5000;
   }
 });
@@ -32,7 +32,7 @@ runInAnimationWorklet(
   const box = document.getElementById('box');
   const effect = new KeyframeEffect(box,
     [
-     { transform: 'translateY(0px)' },
+     { transform: 'translateY(100px)' },
      { transform: 'translateY(200px)' }
     ], {
       duration: 1000,
