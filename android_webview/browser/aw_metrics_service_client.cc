@@ -240,7 +240,7 @@ bool AwMetricsServiceClient::GetBrand(std::string* brand_code) {
 }
 
 metrics::SystemProfileProto::Channel AwMetricsServiceClient::GetChannel() {
-  return metrics::AsProtobufChannel(version_info::GetChannel());
+  return metrics::AsProtobufChannel(version_info::android::GetChannel());
 }
 
 std::string AwMetricsServiceClient::GetVersionString() {
