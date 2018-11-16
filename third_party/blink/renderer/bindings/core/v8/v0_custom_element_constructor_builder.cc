@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v0_custom_element_constructor_builder.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/string_or_dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_document.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_html_element.h"
@@ -384,14 +384,13 @@ static void ConstructCustomElement(
       maybe_type->IsUndefined()) {
     return;
   }
-  TOSTRING_VOID(V8StringResource<>, type, maybe_type);
+  TOSTRING_VOID(V8StringResource<kTreatNullAsNullString>, type, maybe_type);
 
   ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
                                  "CustomElement");
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
   Element* element = document->createElementNS(
-      namespace_uri, tag_name,
-      StringOrDictionary::FromString(maybe_type->IsNull() ? g_null_atom : type),
+      namespace_uri, tag_name, StringOrElementCreationOptions::FromString(type),
       exception_state);
   if (element) {
     UseCounter::Count(document, WebFeature::kV0CustomElementsConstruct);
