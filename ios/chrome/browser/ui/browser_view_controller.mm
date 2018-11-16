@@ -5122,13 +5122,18 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   [[self.infoBarCoordinator view] setHidden:NO];
 
   if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
-    // SatTabCoordinator was stopped when SideSwipeContentView was removed.
-    SadTabTabHelper* sadTabHelper =
-        SadTabTabHelper::FromWebState(self.tabModel.currentTab.webState);
-    if (sadTabHelper && sadTabHelper->is_showing_sad_tab()) {
-      SadTabCoordinator* sadTabCoordinator =
-          base::mac::ObjCCastStrict<SadTabCoordinator>(_sadTabCoordinator);
-      [sadTabCoordinator start];
+    web::WebState* webState = self.tabModel.currentTab.webState;
+    if (webState && webState->IsVisible()) {
+      // Side swipe did not change the tab represented by |webState|.
+      SadTabTabHelper* sadTabHelper = SadTabTabHelper::FromWebState(webState);
+      if (sadTabHelper && sadTabHelper->is_showing_sad_tab()) {
+        SadTabCoordinator* sadTabCoordinator =
+            base::mac::ObjCCastStrict<SadTabCoordinator>(_sadTabCoordinator);
+        [sadTabCoordinator start];
+      }
+    } else {
+      // Side swipe did change the tab and |webState| represents previous tab
+      // which is not visible anymore.
     }
   }
 }
