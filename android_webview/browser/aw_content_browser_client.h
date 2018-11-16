@@ -200,7 +200,9 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationUIData* navigation_data,
       bool is_main_frame,
       ui::PageTransition page_transition,
-      bool has_user_gesture) override;
+      bool has_user_gesture,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
   bool ShouldIsolateErrorPage(bool in_main_frame) override;
   bool ShouldEnableStrictSiteIsolation() override;

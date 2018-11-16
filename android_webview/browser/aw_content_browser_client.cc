@@ -193,6 +193,21 @@ void DummyBindPasswordManagerDriver(
     autofill::mojom::PasswordManagerDriverRequest request,
     content::RenderFrameHost* render_frame_host) {}
 
+// TODO(timvolodine): consider refactoring this into common utility method.
+void OnReceivedErrorOnUIThread(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const AwWebResourceRequest& request) {
+  AwContentsClientBridge* client =
+      AwContentsClientBridge::FromWebContentsGetter(web_contents_getter);
+  if (!client) {
+    DLOG(WARNING) << "client is null, onReceivedError dropped for "
+                  << request.url;
+    return;
+  }
+  client->OnReceivedError(request, net::ERR_UNKNOWN_URL_SCHEME,
+                          false /*safebrowsing_hit*/);
+}
+
 }  // anonymous namespace
 
 // TODO(yirui): can use similar logic as in PrependToAcceptLanguagesIfNecessary
@@ -791,10 +806,24 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     content::NavigationUIData* navigation_data,
     bool is_main_frame,
     ui::PageTransition page_transition,
-    bool has_user_gesture) {
-  // The AwURLRequestJobFactory implementation should ensure this method never
-  // gets called.
-  NOTREACHED();
+    bool has_user_gesture,
+    const std::string& method,
+    const net::HttpRequestHeaders& headers) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    AwWebResourceRequest aw_resource_request(url.spec(), method, is_main_frame,
+                                             has_user_gesture, headers);
+    aw_resource_request.is_renderer_initiated =
+        ui::PageTransitionIsWebTriggerable(
+            static_cast<ui::PageTransition>(page_transition));
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&OnReceivedErrorOnUIThread, web_contents_getter,
+                       std::move(aw_resource_request)));
+  } else {
+    // The AwURLRequestJobFactory implementation should ensure this method never
+    // gets called when Network Service is not enabled.
+    NOTREACHED();
+  }
   return false;
 }
 

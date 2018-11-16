@@ -4807,7 +4807,9 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
     content::NavigationUIData* navigation_data,
     bool is_main_frame,
     ui::PageTransition page_transition,
-    bool has_user_gesture) {
+    bool has_user_gesture,
+    const std::string& method,
+    const net::HttpRequestHeaders& headers) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // External protocols are disabled for guests. An exception is made for the
   // "mailto" protocol, so that pages that utilize it work properly in a

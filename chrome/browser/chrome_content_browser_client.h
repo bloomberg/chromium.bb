@@ -505,7 +505,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationUIData* navigation_data,
       bool is_main_frame,
       ui::PageTransition page_transition,
-      bool has_user_gesture) override;
+      bool has_user_gesture,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers) override;
   std::unique_ptr<content::OverlayWindow> CreateWindowForPictureInPicture(
       content::PictureInPictureWindowController* controller) override;
   bool IsSafeRedirectTarget(const GURL& url,

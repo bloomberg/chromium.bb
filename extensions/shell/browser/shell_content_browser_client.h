@@ -87,7 +87,9 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       content::NavigationUIData* navigation_data,
       bool is_main_frame,
       ui::PageTransition page_transition,
-      bool has_user_gesture) override;
+      bool has_user_gesture,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers) override;
   network::mojom::URLLoaderFactoryPtrInfo
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,

@@ -537,10 +537,14 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
   if (!url.is_valid() || job_factory->IsHandledProtocol(url.scheme()))
     return false;
 
+  net::URLRequest* url_request = loader->request();
+  DCHECK(url_request);
+
   return GetContentClient()->browser()->HandleExternalProtocol(
       url, info->GetWebContentsGetterForRequest(), info->GetChildID(),
       info->GetNavigationUIData(), info->IsMainFrame(),
-      info->GetPageTransition(), info->HasUserGesture());
+      info->GetPageTransition(), info->HasUserGesture(), url_request->method(),
+      url_request->extra_request_headers());
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {

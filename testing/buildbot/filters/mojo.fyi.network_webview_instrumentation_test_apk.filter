@@ -69,8 +69,6 @@
 -org.chromium.android_webview.test.AwContentsClientShouldInterceptRequestTest.testOnReceivedErrorCallback
 
 # https://crbug.com/893567
--org.chromium.android_webview.test.AwContentsClientShouldOverrideUrlLoadingTest.testCalledForIframeUnsupportedSchemeNavigations
--org.chromium.android_webview.test.AwContentsClientShouldOverrideUrlLoadingTest.testWindowOpenCustomSchemeUrlInPopup
 -org.chromium.android_webview.test.AwContentsClientShouldOverrideUrlLoadingTest.testWindowOpenHttpUrlInPopup
 -org.chromium.android_webview.test.AwContentsClientShouldOverrideUrlLoadingTest.testWindowOpenHttpUrlInPopupAddsTrailingSlash
 
@@ -118,13 +116,11 @@
 -org.chromium.android_webview.test.ClientOnReceivedError2Test.testImageSubresource
 -org.chromium.android_webview.test.ClientOnReceivedError2Test.testMainFrame
 -org.chromium.android_webview.test.ClientOnReceivedError2Test.testOnCacheMiss
--org.chromium.android_webview.test.ClientOnReceivedError2Test.testOnInvalidScheme
 -org.chromium.android_webview.test.ClientOnReceivedError2Test.testUserGesture
 -org.chromium.android_webview.test.ClientOnReceivedError2Test.testUserGestureForIframeSubresource
 
 # https://crbug.com/893574
 -org.chromium.android_webview.test.ClientOnReceivedErrorTest.testCacheMiss
--org.chromium.android_webview.test.ClientOnReceivedErrorTest.testOnReceivedErrorOnInvalidScheme
 
 # https://crbug.com/893575
 -org.chromium.android_webview.test.CookieManagerStartupTest.testShouldInterceptRequestDeadlock

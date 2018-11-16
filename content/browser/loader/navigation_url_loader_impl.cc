@@ -926,7 +926,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
             ChildProcessHost::kInvalidUniqueID, navigation_ui_data_.get(),
             resource_request_->resource_type == RESOURCE_TYPE_MAIN_FRAME,
             static_cast<ui::PageTransition>(resource_request_->transition_type),
-            resource_request_->has_user_gesture);
+            resource_request_->has_user_gesture, resource_request_->method,
+            resource_request_->headers);
         factory = base::MakeRefCounted<SingleRequestURLLoaderFactory>(
             base::BindOnce(UnknownSchemeCallback, handled));
       } else {
