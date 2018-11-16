@@ -5244,15 +5244,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   // When traversing history restored from a previous session, WKWebView does
   // not fire 'pageshow', 'onload', 'popstate' or any of the
-  // WKNavigationDelegate callbacks for back/forward navigation from an
-  // app-specific URL to another entry. Loading state KVO is the only observable
-  // event in this scenario, so force a reload to trigger redirect from
-  // restore_session.html to the restored URL.
-  bool previousURLIsAppSpecific =
+  // WKNavigationDelegate callbacks for back/forward navigation from an about:
+  // scheme placeholder URL to another entry. Loading state KVO is the only
+  // observable event in this scenario, so force a reload to trigger redirect
+  // from restore_session.html to the restored URL.
+  bool previousURLHasAboutScheme =
+      _documentURL.SchemeIs(url::kAboutScheme) ||
       IsPlaceholderUrl(_documentURL) ||
       web::GetWebClient()->IsAppSpecificURL(_documentURL);
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      IsRestoreSessionUrl(webViewURL) && previousURLIsAppSpecific) {
+      IsRestoreSessionUrl(webViewURL) && previousURLHasAboutScheme) {
     [_webView reload];
     return;
   }
