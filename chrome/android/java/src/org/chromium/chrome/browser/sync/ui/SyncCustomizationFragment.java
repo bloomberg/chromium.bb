@@ -368,7 +368,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
         if (maybeDisableSync()) return;
 
         boolean syncEverything = mSyncEverything.isChecked();
-        mProfileSyncService.setPreferredDataTypes(syncEverything, getSelectedModelTypes());
+        mProfileSyncService.setChosenDataTypes(syncEverything, getSelectedModelTypes());
         // Update the invalidation listener with the set of types we are enabling.
         InvalidationController invController = InvalidationController.get();
         invController.ensureStartedAndUpdateRegisteredTypes();
@@ -554,7 +554,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private void updateDataTypeState() {
         boolean isSyncEnabled = mSyncSwitchPreference.isChecked();
         boolean syncEverything = mSyncEverything.isChecked();
-        Set<Integer> syncTypes = mProfileSyncService.getPreferredDataTypes();
+        Set<Integer> syncTypes = mProfileSyncService.getChosenDataTypes();
         boolean syncAutofill = syncTypes.contains(ModelType.AUTOFILL);
         for (CheckBoxPreference pref : mAllTypes) {
             boolean canSyncType = true;

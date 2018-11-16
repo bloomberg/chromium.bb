@@ -71,10 +71,13 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
   base::android::ScopedJavaLocalRef<jintArray> GetActiveDataTypes(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaLocalRef<jintArray> GetChosenDataTypes(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jintArray> GetPreferredDataTypes(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void SetPreferredDataTypes(
+  void SetChosenDataTypes(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jboolean sync_everything,
