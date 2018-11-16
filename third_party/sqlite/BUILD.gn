@@ -375,21 +375,12 @@ if (is_linux) {
   }
 }
 
-fuzzer_test("sqlite3_prepare_v2_fuzzer") {
-  sources = [
-    "fuzz/sqlite3_prepare_v2_fuzzer.cc",
-  ]
-  deps = [
-    ":sqlite",
-  ]
-  dict = "fuzz/sqlite3_prepare_v2_fuzzer.dict"
-}
-
 fuzzer_test("sqlite3_ossfuzz_fuzzer") {
-  # TODO(mmoroz, pwnall): remove fuzz/ossfuzz.c in favor of test/osfuzz.c in
-  #                       sqlite's source code
+  include_dirs = [
+    ".",
+  ]
   sources = [
-    "fuzz/ossfuzz.c",
+    "src/test/ossfuzz.c",
   ]
   deps = [
     ":sqlite",
