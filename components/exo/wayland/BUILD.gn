@@ -57,6 +57,8 @@ source_set("wayland") {
     "zwp_input_timestamps_manager.h",
     "zwp_text_input_manager.cc",
     "zwp_text_input_manager.h",
+    "zxdg_shell.cc",
+    "zxdg_shell.h",
   ]
 
   defines = [ "EXO_IMPLEMENTATION" ]
