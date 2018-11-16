@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
@@ -106,6 +107,8 @@ class FetchRequestData final
   void SetURLLoaderFactory(network::mojom::blink::URLLoaderFactoryPtr factory) {
     url_loader_factory_ = std::move(factory);
   }
+  const base::UnguessableToken& WindowId() const { return window_id_; }
+  void SetWindowId(const base::UnguessableToken& id) { window_id_ = id; }
 
   void Trace(blink::Visitor*);
 
@@ -148,6 +151,7 @@ class FetchRequestData final
   // Currently used for blob: URLs, to ensure they can still be loaded even if
   // the URL got revoked after creating the request.
   network::mojom::blink::URLLoaderFactoryPtr url_loader_factory_;
+  base::UnguessableToken window_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchRequestData);
 };

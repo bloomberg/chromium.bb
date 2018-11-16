@@ -19,6 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
@@ -178,6 +179,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   ~ServiceWorkerProviderHost() override;
 
   const std::string& client_uuid() const { return client_uuid_; }
+  const base::UnguessableToken& fetch_request_window_id() const {
+    return fetch_request_window_id_;
+  }
   base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return render_process_id_; }
   int provider_id() const { return info_->provider_id; }
@@ -594,7 +598,19 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                                     const char* error_prefix,
                                     Args... args);
 
+  // A GUID that is web-exposed as FetchEvent.clientId.
   const std::string client_uuid_;
+
+  // For window clients. A token used internally to identify this context in
+  // requests. Corresponds to the Fetch specification's concept of a request's
+  // associated window: https://fetch.spec.whatwg.org/#concept-request-window
+  // This gets reset on redirects, unlike |client_uuid_|.
+  //
+  // TODO(falken): Consider using this for |client_uuid_| as well. We can't
+  // right now because this gets reset on redirects, and potentially sites rely
+  // on the GUID format.
+  base::UnguessableToken fetch_request_window_id_;
+
   const base::TimeTicks create_time_;
   int render_process_id_;
 

@@ -146,6 +146,7 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
       resource_request_info->GetRequestID(),
       resource_request_info->GetRenderFrameID(),
       resource_request_info->IsMainFrame(),
+      resource_request_info->fetch_window_id(),
       resource_request_info->GetResourceType(),
       resource_request_info->GetPageTransition(),
       resource_request_info->IsDownload(), resource_request_info->is_stream(),

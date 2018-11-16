@@ -123,6 +123,10 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // The Client#id value of the client.
   const std::string& client_id() const;
 
+  // For service worker clients that are windows. See |fetch_request_window_id|
+  // in network::ResourceRequest.
+  const base::UnguessableToken& fetch_request_window_id() const;
+
   // For service worker clients. Sets a weak pointer back to the
   // WebServiceWorkerProviderImpl (which corresponds to ServiceWorkerContainer
   // in JavaScript) which has a strong reference to |this|. This allows us to

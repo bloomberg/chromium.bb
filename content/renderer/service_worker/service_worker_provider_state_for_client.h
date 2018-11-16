@@ -49,6 +49,8 @@ struct ServiceWorkerProviderStateForClient {
   // The Client#id value of the client.
   std::string client_id;
 
+  base::UnguessableToken fetch_request_window_id;
+
   blink::mojom::ControllerServiceWorkerMode controller_mode =
       blink::mojom::ControllerServiceWorkerMode::kNoController;
 

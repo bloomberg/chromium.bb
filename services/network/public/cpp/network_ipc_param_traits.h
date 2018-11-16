@@ -183,6 +183,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::ResourceRequest)
   IPC_STRUCT_TRAITS_MEMBER(custom_proxy_pre_cache_headers)
   IPC_STRUCT_TRAITS_MEMBER(custom_proxy_post_cache_headers)
   IPC_STRUCT_TRAITS_MEMBER(custom_proxy_use_alternate_proxy_list)
+  IPC_STRUCT_TRAITS_MEMBER(fetch_window_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(network::ResourceResponseInfo)

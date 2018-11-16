@@ -24,6 +24,9 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"  // nogncheck
 #endif
 
+namespace base {
+class UnguessableToken;
+}
 namespace blink {
 
 class BlobDataHandle;
@@ -110,6 +113,9 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
 
   void SetIsHistoryNavigation(bool);
   bool IsHistoryNavigation() const;
+
+  void SetWindowId(const base::UnguessableToken&);
+  const base::UnguessableToken& GetWindowId() const;
 
 #if INSIDE_BLINK
   const HTTPHeaderMap& Headers() const;

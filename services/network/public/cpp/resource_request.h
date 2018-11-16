@@ -240,6 +240,25 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
 
   // Whether to use the alternate proxies set in the custom proxy config.
   bool custom_proxy_use_alternate_proxy_list = false;
+
+  // See https://fetch.spec.whatwg.org/#concept-request-window
+  //
+  // This is an opaque id of the original requestor of the resource, which might
+  // be different to the current requestor which is |render_frame_id|. For
+  // example, if a navigation for window "abc" is intercepted by a service
+  // worker, which re-issues the request via fetch, the re-issued request has
+  // |render_frame_id| of MSG_ROUTING_NONE (the service worker) and |window_id|
+  // of "abc". This is used for, e.g., client certificate selection. It's
+  // important that this id be unguessable so renderers cannot impersonate
+  // other renderers.
+  //
+  // This may be empty when the original requestor is the current requestor or
+  // is not a window. When it's empty, use |render_frame_id| instead. In
+  // practical terms, it's empty for requests that didn't go through a service
+  // worker, or if the original requestor is not a window. When the request
+  // goes through a service worker, the id is
+  // ServiceWorkerProviderHost::fetch_request_window_id.
+  base::Optional<base::UnguessableToken> fetch_window_id;
 };
 
 }  // namespace network

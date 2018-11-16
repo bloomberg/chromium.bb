@@ -27,6 +27,7 @@
 #include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/browser/web_contents/web_contents_getter_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -326,6 +327,8 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
     context_->UnregisterProviderHostByClientID(client_uuid_);
   if (controller_)
     controller_->RemoveControllee(client_uuid_);
+  if (fetch_request_window_id_)
+    WebContentsGetterRegistry::GetInstance()->Remove(fetch_request_window_id_);
 
   // Remove |this| as an observer of ServiceWorkerRegistrations.
   // TODO(falken): Use ScopedObserver instead of this explicit call.
@@ -448,7 +451,20 @@ ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
 void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
   DCHECK(!url.has_ref());
   DCHECK(!controller());
+  if (document_url_ == url)
+    return;
   document_url_ = url;
+
+  // Revoke the token on URL change since any service worker holding the token
+  // may no longer be the potential controller of this frame and shouldn't have
+  // the power to display SSL dialogs for it.
+  if (info_->type == blink::mojom::ServiceWorkerProviderType::kForWindow) {
+    auto* registry = WebContentsGetterRegistry::GetInstance();
+    registry->Remove(fetch_request_window_id_);
+    fetch_request_window_id_ = base::UnguessableToken::Create();
+    registry->Add(fetch_request_window_id_, web_contents_getter());
+  }
+
   if (IsProviderForClient())
     SyncMatchingRegistrations();
 }
@@ -899,6 +915,10 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 
   auto controller_info = mojom::ControllerServiceWorkerInfo::New();
   controller_info->client_id = client_uuid();
+  if (fetch_request_window_id_) {
+    controller_info->fetch_request_window_id =
+        base::make_optional(fetch_request_window_id_);
+  }
 
   if (!controller_) {
     container_->SetController(std::move(controller_info),
