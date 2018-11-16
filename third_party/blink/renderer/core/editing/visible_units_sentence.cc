@@ -103,8 +103,13 @@ PositionInFlatTree EndOfSentenceInternal(const PositionInFlatTree& position) {
       // between sentences.
       const unsigned offset = FindNonSpaceCharacter(text, passed_offset);
       const int result = iterator->following(offset);
-      if (result == kTextBreakDone)
+      if (result == kTextBreakDone) {
+        if (text.length()) {
+          // Block boundaries are also sentence boundaries.
+          return Position::After(text.length());
+        }
         return Position();
+      }
       return result == 0 ? Position::Before(0) : Position::After(result - 1);
     }
 
