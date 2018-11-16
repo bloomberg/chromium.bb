@@ -241,6 +241,10 @@ void HoverListView::ButtonPressed(views::Button* sender,
 int HoverListView::GetPreferredViewHeight() const {
   auto dummy_hover_button = CreateHoverButtonForListItem(
       -1 /* tag */, gfx::kNoneIcon, base::string16(), nullptr /* listener */);
-  return dummy_hover_button->GetPreferredSize().height() *
-         model_->GetPreferredItemCount();
+  const auto separator_height = views::Separator().GetPreferredSize().height();
+  // |item_container_| has one separator at the top and list items which
+  // contain one separator and one hover button.
+  const auto list_item_height =
+      separator_height + dummy_hover_button->GetPreferredSize().height();
+  return separator_height + list_item_height * model_->GetPreferredItemCount();
 }
