@@ -12,6 +12,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "third_party/re2/src/re2/re2.h"
 
 using chromeos::disks::DiskMountManager;
 
@@ -82,6 +83,14 @@ void ArcVolumeMounterBridge::OnMountEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,
     const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
+  // ArcVolumeMounter is limited for local storage, as Android's StorageManager
+  // volume concept relies on assumption that it is local filesystem. Hence,
+  // special volumes like DriveFS should not come through this path.
+  if (RE2::FullMatch(mount_info.source_path, "[a-z]+://.*")) {
+    DVLOG(1) << "Ignoring mount event for source_path: "
+             << mount_info.source_path;
+    return;
+  }
   if (error_code != chromeos::MountError::MOUNT_ERROR_NONE) {
     DVLOG(1) << "Error " << error_code << "occurs during MountEvent " << event;
     return;
