@@ -25,12 +25,8 @@
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -49,11 +45,6 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -95,11 +86,8 @@ namespace policy {
 
 using PolicyEnforcement = UserCloudPolicyManagerChromeOS::PolicyEnforcement;
 
-constexpr char kAccountId[] = "user@example.com";
+constexpr char kEmail[] = "user@example.com";
 constexpr char kTestGaiaId[] = "12345";
-
-constexpr char kChildAccountId[] = "child@example.com";
-constexpr char kChildTestGaiaId[] = "54321";
 
 constexpr char kOAuth2AccessTokenData[] = R"(
     {
@@ -143,17 +131,6 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_system_url_loader_factory_)) {}
 
-  void AddAndSwitchToChildAccountWithProfile() {
-    const AccountId child_account_id =
-        AccountId::FromUserEmailGaiaId(kChildAccountId, kChildTestGaiaId);
-    TestingProfile* profile =
-        profile_manager_->CreateTestingProfile(child_account_id.GetUserEmail());
-    user_manager_->AddUserWithAffiliationAndTypeAndProfile(
-        child_account_id, false, user_manager::UserType::USER_TYPE_CHILD,
-        profile);
-    user_manager_->SwitchActiveUser(child_account_id);
-  }
-
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
 
@@ -163,16 +140,15 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
     TestingProfile::TestingFactories factories;
-    factories.emplace_back(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
-    factories.emplace_back(
-        SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeSigninManagerForTesting));
+    IdentityTestEnvironmentProfileAdaptor::
+        AppendIdentityTestEnvironmentFactories(&factories);
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile,
         std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::UTF8ToUTF16(""), 0, std::string(), std::move(factories));
+    identity_test_env_profile_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_);
+
     // Usually the signin Profile and the main Profile are separate, but since
     // the signin Profile is an OTR Profile then for this test it suffices to
     // attach it to the main Profile.
@@ -211,8 +187,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
         .Times(AnyNumber());
 
-    AccountId account_id =
-        AccountId::FromUserEmailGaiaId(kAccountId, kTestGaiaId);
+    AccountId account_id = AccountId::FromUserEmailGaiaId(kEmail, kTestGaiaId);
     user_manager_->AddUser(account_id);
     TestingProfile* profile =
         profile_manager_->CreateTestingProfile(account_id.GetUserEmail());
@@ -232,6 +207,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     }
     signin_profile_ = NULL;
     profile_ = NULL;
+    identity_test_env_profile_adaptor_.reset();
     profile_manager_->DeleteTestingProfile(chrome::kInitialProfile);
     test_system_shared_loader_factory_->Detach();
     test_signin_shared_loader_factory_->Detach();
@@ -276,19 +252,19 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
               gaia_urls->oauth2_token_url(), ok_completion_status, ok_response,
               kOAuth2AccessTokenData));
     } else {
-      // Since the refresh token is available, OAuth2TokenService was used
+      // Since the refresh token is available, IdentityManager was used
       // to request the access token and not UserCloudPolicyTokenForwarder.
       // Issue the access token with the former.
-      FakeProfileOAuth2TokenService* token_service =
-        static_cast<FakeProfileOAuth2TokenService*>(
-            ProfileOAuth2TokenServiceFactory::GetForProfile(profile_));
-      EXPECT_TRUE(token_service);
-      OAuth2TokenService::ScopeSet scopes;
+      identity::ScopeSet scopes;
       scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
       scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
-      token_service->IssueTokenForScope(
-          scopes, "5678",
-          base::Time::Now() + base::TimeDelta::FromSeconds(3600));
+
+      identity_test_env()
+          ->WaitForAccessTokenRequestIfNecessaryAndRespondWithTokenForScopes(
+              "5678" /*token*/,
+              base::Time::Now() +
+                  base::TimeDelta::FromSeconds(3600) /*expiration*/,
+              std::string() /*id_token*/, scopes);
     }
 
     EXPECT_TRUE(register_request);
@@ -363,6 +339,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
   TestingProfile* signin_profile_;
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_profile_adaptor_;
 
   chromeos::FakeChromeUserManager* user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
@@ -418,6 +396,10 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
 
   network::TestURLLoaderFactory* test_system_url_loader_factory() {
     return &test_system_url_loader_factory_;
+  }
+
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_env_profile_adaptor_->identity_test_env();
   }
 
  private:
@@ -713,22 +695,11 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
   // fetchers.
   EXPECT_FALSE(test_url_fetcher_factory_.GetFetcherByID(0));
 
-  // Set a fake refresh token at the OAuth2TokenService.
-  FakeProfileOAuth2TokenService* token_service =
-    static_cast<FakeProfileOAuth2TokenService*>(
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_));
-  ASSERT_TRUE(token_service);
-  const std::string& account_id =
-      AccountTrackerServiceFactory::GetForProfile(profile_)->SeedAccountInfo(
-          kTestGaiaId, kAccountId);
-  FakeSigninManagerForTesting* signin_manager =
-      static_cast<FakeSigninManagerForTesting*>(
-          SigninManagerFactory::GetForProfile(profile_));
-  ASSERT_TRUE(signin_manager);
-  signin_manager->SignIn(account_id);
-  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(account_id));
-  token_service->UpdateCredentials(account_id, "refresh_token");
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
+  AccountInfo account_info =
+      identity_test_env()->MakePrimaryAccountAvailable(kEmail);
+  EXPECT_TRUE(
+      identity_test_env()->identity_manager()->HasAccountWithRefreshToken(
+          account_info.account_id));
 
   // That should have notified the manager, which now issues the request for the
   // policy oauth token.

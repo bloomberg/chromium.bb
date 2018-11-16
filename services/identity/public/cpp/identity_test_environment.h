@@ -163,6 +163,15 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       const base::Time& expiration,
       const std::string& id_token = std::string());
 
+  // Similar to WaitForAccessTokenRequestIfNecessaryAndRespondWithToken above
+  // apart from the fact that it issues tokens for a given set of scopes only,
+  // instead of issueing all tokens for all requests (the method variant above).
+  void WaitForAccessTokenRequestIfNecessaryAndRespondWithTokenForScopes(
+      const std::string& token,
+      const base::Time& expiration,
+      const std::string& id_token,
+      const identity::ScopeSet& scopes);
+
   // Issues |error| in response to any access token request that either has (a)
   // already occurred and has not been matched by a previous call to this or
   // other WaitFor... method, or (b) will occur in the future. In the latter
