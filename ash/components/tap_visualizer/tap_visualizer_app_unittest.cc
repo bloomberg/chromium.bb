@@ -59,7 +59,6 @@ class TapVisualizerAppTest : public aura::test::AuraTestBase {
     // Create a MusClient using the AuraTestBase's TestWindowTreeClient,
     // which does not connect to a window service.
     views::MusClient::InitParams params;
-    params.create_cursor_factory = false;
     params.create_wm_state = false;
     params.window_tree_client = window_tree_client_impl();
     mus_client_ = std::make_unique<views::MusClient>(params);

@@ -103,12 +103,15 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
       return ui::CursorType::kGrabbing;
     case WebCursorInfo::kTypeCustom: {
       ui::Cursor cursor(ui::CursorType::kCustom);
-      cursor.SetPlatformCursor(GetPlatformCursor());
       SkBitmap bitmap;
       gfx::Point hotspot;
-      CreateScaledBitmapAndHotspotFromCustomData(&bitmap, &hotspot);
+      float scale_factor;
+      CreateScaledBitmapAndHotspotFromCustomData(&bitmap, &hotspot,
+                                                 &scale_factor);
       cursor.set_custom_bitmap(bitmap);
       cursor.set_custom_hotspot(hotspot);
+      cursor.set_device_scale_factor(scale_factor);
+      cursor.SetPlatformCursor(GetPlatformCursor(cursor));
       return cursor;
     }
     default:
@@ -117,30 +120,34 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
   }
 }
 
-float WebCursor::GetCursorScaleFactor() {
-  DCHECK(custom_scale_ != 0);
-  return device_scale_factor_ / custom_scale_;
-}
-
 void WebCursor::CreateScaledBitmapAndHotspotFromCustomData(
     SkBitmap* bitmap,
-    gfx::Point* hotspot) {
+    gfx::Point* hotspot,
+    float* scale_factor) {
   if (custom_data_.empty())
     return;
   ImageFromCustomData(bitmap);
   *hotspot = hotspot_;
-  ui::ScaleAndRotateCursorBitmapAndHotpoint(
-      GetCursorScaleFactor(), display::Display::ROTATE_0, bitmap, hotspot);
+  *scale_factor = GetCursorScaleFactor(bitmap);
+  ui::ScaleAndRotateCursorBitmapAndHotpoint(*scale_factor, rotation_, bitmap,
+                                            hotspot);
 }
 
-// ozone has its own SetDisplayInfo that takes rotation into account
 #if !defined(USE_OZONE)
+// ozone has its own SetDisplayInfo that takes rotation into account
 void WebCursor::SetDisplayInfo(const display::Display& display) {
   if (device_scale_factor_ == display.device_scale_factor())
     return;
 
   device_scale_factor_ = display.device_scale_factor();
   CleanupPlatformData();
+}
+
+// ozone also has extra calculations for scale factor (taking max cursor size
+// into account).
+float WebCursor::GetCursorScaleFactor(SkBitmap* bitmap) {
+  DCHECK(custom_scale_ != 0);
+  return device_scale_factor_ / custom_scale_;
 }
 #endif
 

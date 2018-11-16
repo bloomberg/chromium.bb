@@ -35,10 +35,6 @@
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/wm_state.h"
 
-#if defined(USE_OZONE)
-#include "ui/base/cursor/ozone/cursor_data_factory_ozone.h"
-#endif
-
 // Widget::InitParams::Type must match that of ws::mojom::WindowType.
 #define WINDOW_TYPES_MATCH(NAME)                                      \
   static_assert(                                                      \
@@ -71,17 +67,6 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
   DCHECK(!instance_);
   DCHECK(aura::Env::GetInstance());
   instance_ = this;
-
-#if defined(USE_OZONE)
-  // If we're in a mus client, we aren't going to have all of ozone initialized
-  // even though we're in an ozone build. All the hard coded USE_OZONE ifdefs
-  // that handle cursor code expect that there will be a CursorFactoryOzone
-  // instance. Partially initialize the ozone cursor internals here, like we
-  // partially initialize other ozone subsystems in
-  // ChromeBrowserMainExtraPartsViews.
-  if (params.create_cursor_factory)
-    cursor_factory_ozone_ = std::make_unique<ui::CursorDataFactoryOzone>();
-#endif
 
   property_converter_ = std::make_unique<aura::PropertyConverter>();
   property_converter_->RegisterPrimitiveProperty(

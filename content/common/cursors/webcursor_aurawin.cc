@@ -11,27 +11,22 @@
 
 namespace content {
 
-ui::PlatformCursor WebCursor::GetPlatformCursor() {
+ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
   if (!IsCustom())
     return LoadCursor(NULL, IDC_ARROW);
 
   if (custom_cursor_)
     return custom_cursor_;
 
-  SkBitmap bitmap;
-  gfx::Point hotspot;
-  CreateScaledBitmapAndHotspotFromCustomData(&bitmap, &hotspot);
-
   gfx::Size custom_size;
   std::vector<char> custom_data;
-  CreateCustomData(bitmap, &custom_data, &custom_size);
+  CreateCustomData(cursor.GetBitmap(), &custom_data, &custom_size);
 
-  custom_cursor_ = IconUtil::CreateCursorFromDIB(
-      custom_size,
-      hotspot,
-      !custom_data.empty() ? &custom_data[0] : NULL,
-      custom_data.size())
-      .release();
+  custom_cursor_ =
+      IconUtil::CreateCursorFromDIB(
+          custom_size, cursor.GetHotspot(),
+          !custom_data.empty() ? &custom_data[0] : NULL, custom_data.size())
+          .release();
   return custom_cursor_;
 }
 

@@ -72,16 +72,14 @@ class CONTENT_EXPORT WebCursor {
   gfx::NativeCursor GetNativeCursor();
 
 #if defined(USE_AURA)
-  ui::PlatformCursor GetPlatformCursor();
+  ui::PlatformCursor GetPlatformCursor(const ui::Cursor& cursor);
 
   // Updates |device_scale_factor_| and |rotation_| based on |display|.
   void SetDisplayInfo(const display::Display& display);
 
-  float GetCursorScaleFactor();
-
-  void CreateScaledBitmapAndHotspotFromCustomData(
-      SkBitmap* bitmap,
-      gfx::Point* hotspot);
+  void CreateScaledBitmapAndHotspotFromCustomData(SkBitmap* bitmap,
+                                                  gfx::Point* hotspot,
+                                                  float* scale_factor);
 
 #elif defined(OS_WIN)
   // Returns a HCURSOR representing the current WebCursor instance.
@@ -126,6 +124,8 @@ class CONTENT_EXPORT WebCursor {
   // Clamp the hotspot to the custom image's bounds, if this is a custom cursor.
   void ClampHotspot();
 
+  float GetCursorScaleFactor(SkBitmap* bitmap);
+
   // WebCore::PlatformCursor type.
   int type_;
 
@@ -149,8 +149,9 @@ class CONTENT_EXPORT WebCursor {
   float device_scale_factor_;
 #endif
 
+  display::Display::Rotation rotation_ = display::Display::ROTATE_0;
+
 #if defined(USE_OZONE)
-  display::Display::Rotation rotation_;
   gfx::Size maximum_cursor_size_;
 #endif
 };
