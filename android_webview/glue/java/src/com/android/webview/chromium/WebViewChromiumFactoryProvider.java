@@ -225,6 +225,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         }
     }
 
+    @SuppressWarnings("NoContextGetApplicationContext")
     private void initialize(WebViewDelegate webViewDelegate) {
         long startTime = SystemClock.elapsedRealtime();
         try (ScopedSysTraceEvent e1 =

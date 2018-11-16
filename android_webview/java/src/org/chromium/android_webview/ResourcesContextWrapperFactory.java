@@ -82,6 +82,7 @@ public class ResourcesContextWrapperFactory {
         }
 
         @Override
+        @SuppressWarnings("NoContextGetApplicationContext")
         public Context getApplicationContext() {
             if (mApplicationContext == null) {
                 Context appCtx = getBaseContext().getApplicationContext();

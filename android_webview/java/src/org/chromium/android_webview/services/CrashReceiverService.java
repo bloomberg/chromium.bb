@@ -35,6 +35,7 @@ public class CrashReceiverService extends Service {
     private boolean mIsCopying;
 
     @Override
+    @SuppressWarnings("NoContextGetApplicationContext")
     public void onCreate() {
         super.onCreate();
         ServiceInit.init(getApplicationContext());
