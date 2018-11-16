@@ -4,9 +4,14 @@
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 
+#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/feature_policy/layout_animations_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -237,6 +242,22 @@ void CSSParserContext::Count(CSSParserMode mode, CSSPropertyID property) const {
 
 bool CSSParserContext::IsDocumentHandleEqual(const Document* other) const {
   return document_.Get() == other;
+}
+
+bool CSSParserContext::IsLayoutAnimationsPolicyEnforced() const {
+  return document_ && !document_->IsFeatureEnabled(
+                          mojom::FeaturePolicyFeature::kLayoutAnimations);
+}
+
+void CSSParserContext::ReportLayoutAnimationsViolationIfNeeded(
+    const StyleRuleKeyframe& rule) const {
+  DCHECK(IsLayoutAnimationsPolicyEnforced());
+  for (size_t i = 0; i < rule.Properties().PropertyCount(); ++i) {
+    const CSSProperty& property = rule.Properties().PropertyAt(i).Property();
+    if (!LayoutAnimationsPolicy::AffectedCSSProperties().Contains(&property))
+      continue;
+    LayoutAnimationsPolicy::ReportViolation(property, *document_);
+  }
 }
 
 void CSSParserContext::Trace(blink::Visitor* visitor) {
