@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream.h"
 
+#include "base/containers/span.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -10,6 +11,7 @@
 namespace blink {
 
 const uint32_t RTCQuicStream::kWriteBufferSize = 4 * 1024;
+const uint32_t RTCQuicStream::kReadBufferSize = 4 * 1024;
 
 class RTCQuicStream::PendingWriteBufferedAmountPromise
     : public GarbageCollected<PendingWriteBufferedAmountPromise> {
@@ -59,7 +61,11 @@ String RTCQuicStream::state() const {
 }
 
 uint32_t RTCQuicStream::readBufferedAmount() const {
-  return read_buffered_amount_;
+  return receive_buffer_.size();
+}
+
+uint32_t RTCQuicStream::maxReadBufferedAmount() const {
+  return kReadBufferSize;
 }
 
 uint32_t RTCQuicStream::writeBufferedAmount() const {
@@ -68,6 +74,33 @@ uint32_t RTCQuicStream::writeBufferedAmount() const {
 
 uint32_t RTCQuicStream::maxWriteBufferedAmount() const {
   return kWriteBufferSize;
+}
+
+RTCQuicStreamReadResult* RTCQuicStream::readInto(
+    NotShared<DOMUint8Array> data,
+    ExceptionState& exception_state) {
+  if (RaiseIfNotReadable(exception_state)) {
+    return 0;
+  }
+  uint32_t read_amount = static_cast<uint32_t>(receive_buffer_.ReadInto(
+      base::make_span(data.View()->Data(), data.View()->length())));
+  if (!received_fin_ && read_amount > 0) {
+    proxy_->MarkReceivedDataConsumed(read_amount);
+  }
+  if (receive_buffer_.empty() && received_fin_) {
+    read_fin_ = true;
+    if (wrote_fin_) {
+      DCHECK_EQ(state_, RTCQuicStreamState::kClosing);
+      Close(CloseReason::kReadWriteFinished);
+    } else {
+      DCHECK_EQ(state_, RTCQuicStreamState::kOpen);
+      state_ = RTCQuicStreamState::kClosing;
+    }
+  }
+  auto* result = RTCQuicStreamReadResult::Create();
+  result->setAmount(read_amount);
+  result->setFinished(read_fin_);
+  return result;
 }
 
 void RTCQuicStream::write(NotShared<DOMUint8Array> data,
@@ -103,7 +136,7 @@ void RTCQuicStream::finish() {
   }
   proxy_->WriteData({}, /*fin=*/true);
   wrote_fin_ = true;
-  if (readable_) {
+  if (!read_fin_) {
     DCHECK_EQ(state_, RTCQuicStreamState::kOpen);
     state_ = RTCQuicStreamState::kClosing;
     RejectPendingWaitForWriteBufferedAmountBelowPromises();
@@ -137,6 +170,22 @@ ScriptPromise RTCQuicStream::waitForWriteBufferedAmountBelow(
         new PendingWriteBufferedAmountPromise(promise_resolver, threshold));
   }
   return promise;
+}
+
+bool RTCQuicStream::RaiseIfNotReadable(ExceptionState& exception_state) {
+  if (read_fin_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The stream is not readable: The end of the stream has been read.");
+    return true;
+  }
+  if (IsClosed()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The stream is not readable: The stream is closed.");
+    return true;
+  }
+  return false;
 }
 
 bool RTCQuicStream::RaiseIfNotWritable(ExceptionState& exception_state) {
@@ -176,20 +225,10 @@ void RTCQuicStream::OnRemoteReset() {
 }
 
 void RTCQuicStream::OnDataReceived(Vector<uint8_t> data, bool fin) {
-  if (!fin) {
-    return;
-  }
-  DCHECK_NE(state_, RTCQuicStreamState::kClosed);
-  DCHECK(readable_);
-  readable_ = false;
-  if (!wrote_fin_) {
-    DCHECK_EQ(state_, RTCQuicStreamState::kOpen);
-    state_ = RTCQuicStreamState::kClosing;
-  } else {
-    DCHECK_EQ(state_, RTCQuicStreamState::kClosing);
-    Close(CloseReason::kReadWriteFinished);
-  }
-  DispatchEvent(*Event::Create(event_type_names::kStatechange));
+  DCHECK(!received_fin_);
+  DCHECK_LE(data.size(), kReadBufferSize - receive_buffer_.size());
+  received_fin_ = fin;
+  receive_buffer_.Append(std::move(data));
 }
 
 void RTCQuicStream::OnWriteDataConsumed(uint32_t amount) {
@@ -250,7 +289,7 @@ void RTCQuicStream::Close(CloseReason reason) {
   }
 
   // Clear observable state.
-  readable_ = false;
+  receive_buffer_.Clear();
   write_buffered_amount_ = 0;
 
   // It's illegal to resolve or reject promises when the ExecutionContext is

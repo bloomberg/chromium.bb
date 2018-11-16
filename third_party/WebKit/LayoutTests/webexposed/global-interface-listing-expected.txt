@@ -5591,6 +5591,7 @@ interface RTCPeerConnectionIceEvent : Event
     method constructor
 interface RTCQuicStream : EventTarget
     attribute @@toStringTag
+    getter maxReadBufferedAmount
     getter maxWriteBufferedAmount
     getter onstatechange
     getter readBufferedAmount
@@ -5599,6 +5600,7 @@ interface RTCQuicStream : EventTarget
     getter writeBufferedAmount
     method constructor
     method finish
+    method readInto
     method reset
     method waitForWriteBufferedAmountBelow
     method write

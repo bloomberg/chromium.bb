@@ -510,4 +510,383 @@ TEST_F(
   RunUntilIdle();
 }
 
+// The following group tests readInto(), readBufferedAmount(), and
+// maxReadBufferedAmount().
+
+static base::span<const uint8_t> GetSpan(NotShared<DOMUint8Array> data) {
+  return base::make_span(data.View()->Data(), data.View()->length());
+}
+
+// Test that readInto() with an empty data buffer succeeds but does not post
+// MarkReceivedDataConsumed() to the underlying P2PQuicStream.
+TEST_F(RTCQuicStreamTest, ReadIntoEmptyDoesNotPostMarkReceivedDataConsumed) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream, MarkReceivedDataConsumed(_)).Times(0);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  EXPECT_EQ(0u, stream->readBufferedAmount());
+
+  NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(0));
+  RTCQuicStreamReadResult* result =
+      stream->readInto(read_buffer, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(0u, result->amount());
+  EXPECT_FALSE(result->finished());
+  EXPECT_EQ(0u, stream->readBufferedAmount());
+
+  RunUntilIdle();
+}
+
+// Test that data delived via OnDataReceived() increases readBufferedAmount.
+TEST_F(RTCQuicStreamTest, OnDataReceivedIncreasesReadBufferedAmount) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({1, 2, 3}, /*fin=*/false);
+
+  RunUntilIdle();
+
+  EXPECT_EQ(3u, stream->readBufferedAmount());
+}
+
+// Test that readInto() reads out data received from OnDataReceived() and
+// decreases readBufferedAmount.
+TEST_F(RTCQuicStreamTest, ReadIntoReadsDataFromOnDataReceived) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({1, 2, 3}, /*fin=*/false);
+
+  RunUntilIdle();
+
+  NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(5));
+  RTCQuicStreamReadResult* result =
+      stream->readInto(read_buffer, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(3u, result->amount());
+  EXPECT_FALSE(result->finished());
+  EXPECT_THAT(GetSpan(read_buffer), ElementsAre(1, 2, 3, 0, 0));
+  EXPECT_EQ(0u, stream->readBufferedAmount());
+
+  RunUntilIdle();
+}
+
+// Test that readInto() posts MarkReceivedDataConsumed() with the amount of
+// bytes read to the underlying P2PQuicStream.
+TEST_F(RTCQuicStreamTest, ReadIntoPostsMarkReceivedDataConsumed) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream, MarkReceivedDataConsumed(3)).Times(1);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({1, 2, 3}, /*fin=*/false);
+
+  RunUntilIdle();
+
+  NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(5));
+  RTCQuicStreamReadResult* result =
+      stream->readInto(read_buffer, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(3u, result->amount());
+  EXPECT_FALSE(result->finished());
+
+  RunUntilIdle();
+}
+
+// Test that readInto() returns {finished: true} if OnDataReceived() has
+// indicated the stream is finished without receiving any data.
+TEST_F(RTCQuicStreamTest, ReadIntoReadsBareFin) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({}, /*fin=*/true);
+
+  RunUntilIdle();
+
+  NotShared<DOMUint8Array> empty_read_buffer(DOMUint8Array::Create(0));
+  RTCQuicStreamReadResult* result =
+      stream->readInto(empty_read_buffer, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(0u, result->amount());
+  EXPECT_TRUE(result->finished());
+
+  RunUntilIdle();
+}
+
+// Test that readInto() indicates finished once all buffered received data has
+// been read.
+TEST_F(RTCQuicStreamTest, ReadIntoReadsBufferedDataAndFinish) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({1, 2, 3}, /*fin=*/true);
+
+  RunUntilIdle();
+
+  NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(3));
+  RTCQuicStreamReadResult* result =
+      stream->readInto(read_buffer, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(3u, result->amount());
+  EXPECT_TRUE(result->finished());
+  EXPECT_THAT(GetSpan(read_buffer), ElementsAre(1, 2, 3));
+
+  RunUntilIdle();
+}
+
+// Test that readInto() does not indicate finished until all buffered data has
+// been read out, even if the fin has already been received.
+TEST_F(RTCQuicStreamTest, ReadIntoReadsPartialDataBeforeFin) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({1, 2, 3}, /*fin=*/true);
+
+  RunUntilIdle();
+
+  {
+    NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(2));
+    RTCQuicStreamReadResult* result =
+        stream->readInto(read_buffer, ASSERT_NO_EXCEPTION);
+    EXPECT_EQ(2u, result->amount());
+    EXPECT_FALSE(result->finished());
+    EXPECT_THAT(GetSpan(read_buffer), ElementsAre(1, 2));
+  }
+
+  {
+    NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(2));
+    RTCQuicStreamReadResult* result =
+        stream->readInto(read_buffer, ASSERT_NO_EXCEPTION);
+    EXPECT_EQ(1u, result->amount());
+    EXPECT_TRUE(result->finished());
+    EXPECT_THAT(GetSpan(read_buffer), ElementsAre(3, 0));
+  }
+
+  RunUntilIdle();
+}
+
+// Test that readInto() does not post MarkReceivedDataConsumed() to the
+// underlying P2PQuicStream once the finish flag has been delivered in
+// OnDataReceived().
+TEST_F(RTCQuicStreamTest,
+       ReadIntoDoesNotPostMarkReceivedDataConsumedOnceFinReceived) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream, MarkReceivedDataConsumed(_)).Times(0);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({1, 2, 3}, /*fin=*/true);
+
+  RunUntilIdle();
+
+  NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(2));
+
+  RTCQuicStreamReadResult* result =
+      stream->readInto(read_buffer, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(2u, result->amount());
+  EXPECT_FALSE(result->finished());
+
+  result = stream->readInto(read_buffer, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(1u, result->amount());
+  EXPECT_TRUE(result->finished());
+
+  RunUntilIdle();
+}
+
+// Test that readInto() throws an InvalidStateError if the finish flag has
+// already been read out.
+TEST_F(RTCQuicStreamTest, ReadIntoThrowsIfFinishAlreadyRead) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({}, /*fin=*/true);
+
+  RunUntilIdle();
+
+  NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(2));
+  EXPECT_TRUE(stream->readInto(read_buffer, ASSERT_NO_EXCEPTION)->finished());
+
+  stream->readInto(read_buffer, scope.GetExceptionState());
+  EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
+}
+
+// Test that readInto() throws an InvalidStateError if the stream is closed.
+TEST_F(RTCQuicStreamTest, ReadIntoThrowsIfClosed) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+  stream->reset();
+
+  NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(2));
+  stream->readInto(read_buffer, scope.GetExceptionState());
+  EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
+
+  RunUntilIdle();
+}
+
+// The following group tests state transitions with reset(), finish(), remote
+// reset() and remote finish()
+
+// Test that a OnRemoteReset() immediately transitions the state to 'closed'
+// and clears any buffered data.
+TEST_F(RTCQuicStreamTest, OnRemoteResetTransitionsToClosedAndClearsBuffers) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  stream->write(CreateUint8Array({1, 2}), ASSERT_NO_EXCEPTION);
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({5, 6, 7, 8}, /*fin=*/false);
+
+  RunUntilIdle();
+
+  EXPECT_EQ("open", stream->state());
+  EXPECT_EQ(2u, stream->writeBufferedAmount());
+  EXPECT_EQ(4u, stream->readBufferedAmount());
+
+  stream_delegate->OnRemoteReset();
+
+  RunUntilIdle();
+
+  EXPECT_EQ("closed", stream->state());
+  EXPECT_EQ(0u, stream->writeBufferedAmount());
+  EXPECT_EQ(0u, stream->readBufferedAmount());
+
+  RunUntilIdle();
+}
+
+// Test that calling finish() after reading out a remote finish transitions
+// state to 'closed'.
+TEST_F(RTCQuicStreamTest, FinishAfterReadingRemoteFinishTransitionsToClosed) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream, WriteData(_, true)).Times(1);
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({}, /*fin=*/true);
+
+  RunUntilIdle();
+
+  NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(10));
+  EXPECT_TRUE(stream->readInto(read_buffer, ASSERT_NO_EXCEPTION)->finished());
+
+  EXPECT_EQ("closing", stream->state());
+
+  stream->finish();
+
+  EXPECT_EQ("closed", stream->state());
+
+  RunUntilIdle();
+}
+
+// Test that reading out a remote finish after calling finish() transitions
+// state to 'closed'.
+TEST_F(RTCQuicStreamTest, ReadingRemoteFinishAfterFinishTransitionsToClosed) {
+  V8TestingScope scope;
+
+  P2PQuicStream::Delegate* stream_delegate = nullptr;
+  auto p2p_quic_stream = std::make_unique<MockP2PQuicStream>(&stream_delegate);
+  EXPECT_CALL(*p2p_quic_stream, WriteData(_, true)).Times(1);
+  Persistent<RTCQuicStream> stream =
+      CreateQuicStream(scope, p2p_quic_stream.get());
+
+  stream->finish();
+
+  EXPECT_EQ("closing", stream->state());
+
+  RunUntilIdle();
+
+  ASSERT_TRUE(stream_delegate);
+  stream_delegate->OnDataReceived({}, /*fin=*/true);
+
+  RunUntilIdle();
+
+  EXPECT_EQ("closing", stream->state());
+
+  NotShared<DOMUint8Array> read_buffer(DOMUint8Array::Create(10));
+  EXPECT_TRUE(stream->readInto(read_buffer, ASSERT_NO_EXCEPTION)->finished());
+
+  EXPECT_EQ("closed", stream->state());
+}
+
 }  // namespace blink
