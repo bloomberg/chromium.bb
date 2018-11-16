@@ -25,9 +25,9 @@ bool CanAddURLToHistory(const GURL& url) {
       url.SchemeIs(kChromeUIScheme))
     return false;
 
-  // Allow all about: and chrome: URLs except about:blank, since the user may
-  // like to see "chrome://version", etc. in their history and autocomplete.
-  if (url == url::kAboutBlankURL)
+  // Allow all about: and chrome: URLs except about:blank|newtab, since the user
+  // may like to see "chrome://version", etc. in their history and autocomplete.
+  if (url == url::kAboutBlankURL || url == kChromeUIAboutNewTabURL)
     return false;
 
   return true;
