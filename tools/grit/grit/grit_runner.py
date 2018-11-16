@@ -80,6 +80,9 @@ _HIDDEN = 3  # optional key - presence indicates tool is hidden
 # Maps tool names to the tool's module.  Done as a list of (key, value) tuples
 # instead of a map to preserve ordering.
 _TOOLS = [
+  ['android2grd', {
+      _FACTORY: ToolAndroid2Grd,
+      _REQUIRES_INPUT : False }],
   ['build', { _FACTORY : ToolFactoryBuild, _REQUIRES_INPUT : True }],
   ['buildinfo', { _FACTORY : ToolFactoryBuildInfo, _REQUIRES_INPUT : True }],
   ['count', { _FACTORY : ToolFactoryCount, _REQUIRES_INPUT : True }],
@@ -99,9 +102,6 @@ _TOOLS = [
                   _REQUIRES_INPUT : False }],
   ['unit', { _FACTORY : ToolFactoryUnit, _REQUIRES_INPUT : False }],
   ['xmb', { _FACTORY : ToolFactoryXmb, _REQUIRES_INPUT : True }],
-  ['android2grd', {
-      _FACTORY: ToolAndroid2Grd,
-      _REQUIRES_INPUT : False }],
 ]
 
 
