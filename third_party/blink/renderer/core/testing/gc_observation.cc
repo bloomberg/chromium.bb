@@ -32,20 +32,10 @@
 
 namespace blink {
 
-static void SetWeakCallbackForGCObservation(
-    const v8::WeakCallbackInfo<GCObservation>& data) {
-  data.GetParameter()->SetWasCollected();
-}
-
-void GCObservation::SetWasCollected() {
-  DCHECK(!wasCollected());
-  observed_.Clear();
-  collected_ = true;
-}
-
 GCObservation::GCObservation(v8::Local<v8::Value> observed_value)
-    : observed_(v8::Isolate::GetCurrent(), observed_value), collected_(false) {
-  observed_.SetWeak(this, SetWeakCallbackForGCObservation);
+    : observed_(v8::Isolate::GetCurrent(), observed_value) {
+  CHECK(!wasCollected());
+  observed_.SetPhantom();
 }
 
 }  // namespace blink

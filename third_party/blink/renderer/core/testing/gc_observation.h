@@ -50,14 +50,12 @@ class GCObservation final : public ScriptWrappable {
   // "near death"; it may have been kept alive through a weak
   // handle. After reaching near-death, having been collected is the
   // common case.
-  bool wasCollected() const { return collected_; }
-  void SetWasCollected();
+  bool wasCollected() const { return observed_.IsEmpty(); }
 
  private:
   explicit GCObservation(v8::Local<v8::Value>);
 
   ScopedPersistent<v8::Value> observed_;
-  bool collected_;
 };
 
 }  // namespace blink
