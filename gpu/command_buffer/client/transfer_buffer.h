@@ -21,6 +21,8 @@
 namespace gpu {
 
 class CommandBufferHelper;
+template <typename>
+class ScopedResultPtr;
 
 // Interface for managing the transfer buffer.
 class GPU_EXPORT TransferBufferInterface {
@@ -39,8 +41,6 @@ class GPU_EXPORT TransferBufferInterface {
                           unsigned int alignment) = 0;
 
   virtual int GetShmId() = 0;
-  virtual void* GetResultBuffer() = 0;
-  virtual int GetResultOffset() = 0;
 
   virtual void Free() = 0;
 
@@ -66,6 +66,17 @@ class GPU_EXPORT TransferBufferInterface {
   virtual unsigned int GetFragmentedFreeSize() const = 0;
 
   virtual void ShrinkLastBlock(unsigned int new_size) = 0;
+
+ protected:
+  template <typename>
+  friend class ScopedResultPtr;
+  // Use ScopedResultPtr instead of calling these directly. The acquire/release
+  // semantics allow TransferBuffer to detect if there is an outstanding result
+  // pointer when the buffer is resized, which would otherwise cause a
+  // use-after-free bug.
+  virtual void* AcquireResultBuffer() = 0;
+  virtual void ReleaseResultBuffer() = 0;
+  virtual int GetResultOffset() = 0;
 };
 
 // Class that manages the transfer buffer.
@@ -82,7 +93,8 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
                   unsigned int max_buffer_size,
                   unsigned int alignment) override;
   int GetShmId() override;
-  void* GetResultBuffer() override;
+  void* AcquireResultBuffer() override;
+  void ReleaseResultBuffer() override;
   int GetResultOffset() override;
   void Free() override;
   bool HaveBuffer() const override;
@@ -158,6 +170,10 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
 
   // false if we failed to allocate min_buffer_size
   bool usable_;
+
+  // While a ScopedResultPtr exists, we can't resize the transfer buffer. Only
+  // one ScopedResultPtr should exist at a time. This tracks whether one exists.
+  bool outstanding_result_pointer_ = false;
 };
 
 // A class that will manage the lifetime of a transferbuffer allocation.
@@ -242,6 +258,42 @@ class ScopedTransferBufferArray : public ScopedTransferBufferPtr {
   unsigned int num_elements() const {
     return size() / sizeof(T);
   }
+};
+
+// ScopedResultPtr is a move-only smart pointer that calls AcquireResultBuffer
+// and ReleaseResultBuffer for you.
+template <typename T>
+class ScopedResultPtr {
+ public:
+  explicit ScopedResultPtr(TransferBufferInterface* tb)
+      : result_(static_cast<T*>(tb->AcquireResultBuffer())),
+        transfer_buffer_(tb) {}
+  ~ScopedResultPtr() {
+    if (transfer_buffer_)
+      transfer_buffer_->ReleaseResultBuffer();
+  }
+
+  int offset() const { return transfer_buffer_->GetResultOffset(); }
+
+  // Make this a move-only class like unique_ptr.
+  DISALLOW_COPY_AND_ASSIGN(ScopedResultPtr);
+  ScopedResultPtr(ScopedResultPtr<T>&& other) { *this = std::move(other); }
+  ScopedResultPtr& operator=(ScopedResultPtr<T>&& other) {
+    this->result_ = other.result_;
+    this->transfer_buffer_ = other.transfer_buffer_;
+    other.result_ = nullptr;
+    other.transfer_buffer_ = nullptr;
+    return *this;
+  };
+
+  // Dereferencing behaviors
+  T& operator*() const { return *result_; }
+  T* operator->() const { return result_; }
+  explicit operator bool() { return result_; }
+
+ private:
+  T* result_;
+  TransferBufferInterface* transfer_buffer_;
 };
 
 }  // namespace gpu

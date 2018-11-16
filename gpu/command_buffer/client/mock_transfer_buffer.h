@@ -36,7 +36,8 @@ class MockTransferBuffer : public TransferBufferInterface {
                   unsigned int /* max_buffer_size */,
                   unsigned int alignment) override;
   int GetShmId() override;
-  void* GetResultBuffer() override;
+  void* AcquireResultBuffer() override;
+  void ReleaseResultBuffer() override;
   int GetResultOffset() override;
   void Free() override;
   bool HaveBuffer() const override;
@@ -85,6 +86,7 @@ class MockTransferBuffer : public TransferBufferInterface {
   uint32_t expected_offset_;
   uint32_t actual_offset_;
   bool initialize_fail_;
+  bool outstanding_result_pointer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockTransferBuffer);
 };

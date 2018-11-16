@@ -55,6 +55,7 @@ bool TransferBuffer::Initialize(unsigned int default_buffer_size,
 }
 
 void TransferBuffer::Free() {
+  DCHECK(!outstanding_result_pointer_);
   if (HaveBuffer()) {
     TRACE_EVENT0("gpu", "TransferBuffer::Free");
     helper_->OrderingBarrier();
@@ -133,6 +134,9 @@ static unsigned int ComputePOTSize(unsigned int dimension) {
 }
 
 void TransferBuffer::ReallocateRingBuffer(unsigned int size, bool shrink) {
+  // We should never attempt to shrink the buffer if someone has a result
+  // pointer that hasn't been released.
+  DCHECK(!shrink || !outstanding_result_pointer_);
   // What size buffer would we ask for if we needed a new one?
   unsigned int needed_buffer_size = ComputePOTSize(size + result_size_);
   DCHECK_EQ(needed_buffer_size % alignment_, 0u)
@@ -147,6 +151,9 @@ void TransferBuffer::ReallocateRingBuffer(unsigned int size, bool shrink) {
     return;
 
   if (usable_ && (shrink || needed_buffer_size > current_size)) {
+    // We should never attempt to reallocate the buffer if someone has a result
+    // pointer that hasn't been released. This would cause a use-after-free.
+    CHECK(!outstanding_result_pointer_);
     if (HaveBuffer()) {
       Free();
     }
@@ -168,6 +175,9 @@ unsigned int TransferBuffer::GetPreviousRingBufferUsedBytes() {
 
 void TransferBuffer::ShrinkOrExpandRingBufferIfNecessary(
     unsigned int size_to_allocate) {
+  // We should never attempt to shrink the buffer if someone has a result
+  // pointer that hasn't been released.
+  CHECK(!outstanding_result_pointer_);
   // Don't resize the buffer while blocks are in use to avoid throwing away
   // live allocations.
   if (HaveBuffer() && ring_buffer_->NumUsedBlocks() > 0)
@@ -228,13 +238,23 @@ void* TransferBuffer::Alloc(unsigned int size) {
   return ring_buffer_->Alloc(size);
 }
 
-void* TransferBuffer::GetResultBuffer() {
+void* TransferBuffer::AcquireResultBuffer() {
+  // There should never be two result pointers active at the same time. The
+  // previous pointer should always be released first. ScopedResultPtr helps
+  // ensure this invariant.
+  DCHECK(!outstanding_result_pointer_);
   ReallocateRingBuffer(result_size_);
+  outstanding_result_pointer_ = true;
   return result_buffer_;
 }
 
+void TransferBuffer::ReleaseResultBuffer() {
+  DCHECK(outstanding_result_pointer_);
+  outstanding_result_pointer_ = false;
+}
+
 int TransferBuffer::GetResultOffset() {
-  ReallocateRingBuffer(result_size_);
+  DCHECK(outstanding_result_pointer_);
   return result_shm_offset_;
 }
 

@@ -46,12 +46,12 @@ void RasterImplementation::GetIntegerv(GLenum pname, GLint* params) {
     return;
   }
   typedef cmds::GetIntegerv::Result Result;
-  Result* result = GetResultAs<Result*>();
+  ScopedResultPtr<Result> result = GetResultAs<Result>();
   if (!result) {
     return;
   }
   result->SetNumResults(0);
-  helper_->GetIntegerv(pname, GetResultShmId(), GetResultShmOffset());
+  helper_->GetIntegerv(pname, GetResultShmId(), result.offset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({

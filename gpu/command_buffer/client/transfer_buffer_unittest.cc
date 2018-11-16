@@ -141,7 +141,8 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_EQ(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
   // See that it gets reallocated.
-  EXPECT_TRUE(transfer_buffer_->GetResultBuffer() != nullptr);
+  EXPECT_TRUE(transfer_buffer_->AcquireResultBuffer() != nullptr);
+  transfer_buffer_->ReleaseResultBuffer();
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
@@ -180,7 +181,7 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_LT(command_buffer_->GetState().get_offset, put_offset);
 
   // See that it gets reallocated.
-  transfer_buffer_->GetResultOffset();
+  transfer_buffer_->GetShmId();
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_NE(base::UnguessableToken(), transfer_buffer_->shared_memory_guid());
 
@@ -740,5 +741,42 @@ TEST_F(TransferBufferTest, MultipleAllocsAndFrees) {
   EXPECT_EQ(transfer_buffer_->GetFreeSize(), original_free_size);
   EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(), original_free_size);
 }
+
+#if defined(GTEST_HAS_DEATH_TEST)
+
+TEST_F(TransferBufferTest, ResizeDuringScopedResultPtr) {
+  Initialize();
+  ScopedResultPtr<int> ptr(transfer_buffer_.get());
+  // If an attempt is made to resize the transfer buffer while a result
+  // pointer exists, we should hit a CHECK. Allocate just enough to force a
+  // resize.
+  unsigned int size_allocated;
+  ASSERT_DEATH(transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize() + 1,
+                                           &size_allocated),
+               "outstanding_result_pointer_");
+}
+
+#if DCHECK_IS_ON()
+TEST_F(TransferBufferTest, AllocDuringScopedResultPtr) {
+  Initialize();
+  ScopedResultPtr<int> ptr(transfer_buffer_.get());
+  // If an attempt is made to allocate any amount in the transfer buffer while a
+  // result pointer exists, we should hit a DCHECK.
+  unsigned int size_allocated;
+  ASSERT_DEATH(transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize() + 1,
+                                           &size_allocated),
+               "outstanding_result_pointer_");
+}
+
+TEST_F(TransferBufferTest, TwoScopedResultPtrs) {
+  Initialize();
+  // Attempting to create two ScopedResultPtrs at the same time should DCHECK.
+  ScopedResultPtr<int> ptr(transfer_buffer_.get());
+  ASSERT_DEATH(ScopedResultPtr<int>(transfer_buffer_.get()),
+               "outstanding_result_pointer_");
+}
+
+#endif  // DCHECK_IS_ON()
+#endif  // defined(GTEST_HAS_DEATH_TEST)
 
 }  // namespace gpu

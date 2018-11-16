@@ -97,13 +97,11 @@ class GLES2_IMPL_EXPORT ImplementationBase
 
   // Gets the value of the result.
   template <typename T>
-  T GetResultAs() {
-    return static_cast<T>(GetResultBuffer());
+  ScopedResultPtr<T> GetResultAs() {
+    return ScopedResultPtr<T>(transfer_buffer_);
   }
 
-  void* GetResultBuffer();
   int32_t GetResultShmId();
-  uint32_t GetResultShmOffset();
 
   // TODO(gman): These bucket functions really seem like they belong in
   // CommandBufferHelper (or maybe BucketHelper?). Unfortunately they need
