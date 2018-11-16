@@ -4964,6 +4964,25 @@
             ]
         }
     ],
+    "URLLoaderThrottleSafeBrowsingChecks": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "URLLoaderThrottleSafeBrowsingChecksEnabled",
+                    "enable_features": [
+                        "S13nSafeBrowsingCheckByURLLoaderThrottle"
+                    ]
+                }
+            ]
+        }
+    ],
     "UnifiedConsent": [
         {
             "platforms": [
