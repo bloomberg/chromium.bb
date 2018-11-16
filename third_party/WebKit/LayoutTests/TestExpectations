@@ -5255,7 +5255,6 @@ crbug.com/901489 [ Mac10.13 ] virtual/outofblink-cors-ns/http/tests/security/doc
 crbug.com/901489 [ Mac10.13 ] virtual/outofblink-cors/http/tests/security/document-domain-canonicalizes.html [ Crash Pass ]
 
 #Sheriff 2018-11-06
-crbug.com/902632 [ Win Debug ] fast/xmlhttprequest/xmlhttprequest-recursive-sync-event.html [ Crash Pass ]
 crbug.com/902645 [ Retina ] transforms/3d/point-mapping/3d-point-mapping-3.html [ Failure Pass ]
 crbug.com/902645 [ Retina ] transforms/3d/point-mapping/3d-point-mapping-origins.html [ Failure Pass ]
 
