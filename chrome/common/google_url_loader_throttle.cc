@@ -69,20 +69,17 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
   if (!variations::ShouldAppendVariationHeaders(redirect_info.new_url))
     to_be_removed_headers->push_back(variations::kClientDataHeader);
 
-  if (dynamic_params_.youtube_restrict >
-          safe_search_util::YOUTUBE_RESTRICT_OFF &&
-      dynamic_params_.youtube_restrict <
-          safe_search_util::YOUTUBE_RESTRICT_COUNT) {
+  if (youtube_restrict_ > safe_search_util::YOUTUBE_RESTRICT_OFF &&
+      youtube_restrict_ < safe_search_util::YOUTUBE_RESTRICT_COUNT) {
     safe_search_util::ForceYouTubeRestrict(
         redirect_info.new_url, modified_headers,
-        static_cast<safe_search_util::YouTubeRestrictMode>(
-            dynamic_params_.youtube_restrict));
+        static_cast<safe_search_util::YouTubeRestrictMode>(youtube_restrict_));
   }
 
-  if (!dynamic_params_.allowed_domains_for_apps.empty() &&
+  if (!allowed_domains_for_apps_.empty() &&
       redirect_info.new_url.DomainIs("google.com")) {
     modified_headers->SetHeader(safe_search_util::kGoogleAppsAllowedDomains,
-                                dynamic_params_.allowed_domains_for_apps);
+                                allowed_domains_for_apps_);
   }
 }
 
