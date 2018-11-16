@@ -374,6 +374,7 @@ void ShelfView::Init() {
   // Add the background view behind the app list and back buttons first, so
   // that other views will appear above it.
   back_and_app_list_background_ = new views::View();
+  back_and_app_list_background_->set_can_process_events_within_subtree(false);
   back_and_app_list_background_->SetBackground(
       CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
           kShelfControlPermanentHighlightBackground,
