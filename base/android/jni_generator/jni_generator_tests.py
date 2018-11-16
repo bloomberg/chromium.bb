@@ -135,6 +135,8 @@ class TestGenerator(unittest.TestCase):
           'assertGoldenTextEquals can only be called from a '
           'test* method, not %s' % caller)
       golden_file = os.path.join(script_dir, '%s%s.golden' % (caller, suffix))
+      self.assertTrue(
+          os.path.exists(golden_file), '%s does not exist' % golden_file)
     golden_text = self._ReadGoldenFile(golden_file)
     if os.environ.get(REBASELINE_ENV):
       if golden_text != generated_text:
@@ -325,7 +327,6 @@ class TestGenerator(unittest.TestCase):
             proxy_name='org_chromium_example_SampleProxyJni_foobar',
             type='function'),
     ]
-
     self.assertListEquals(golden_natives, natives)
     self.assertListEquals(golden_natives, bad_spacing_natives)
 
@@ -336,6 +337,10 @@ class TestGenerator(unittest.TestCase):
     h2 = jni_registration_generator.HeaderGenerator('', qualified_clazz,
                                                     natives, jni_params, False)
     content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
+
+    self.assertGoldenTextEquals(
+        jni_registration_generator.CreateProxyJavaFromDict(content),
+        suffix='Java')
 
     self.assertGoldenTextEquals(
         jni_registration_generator.CreateFromDict(content),
@@ -1099,12 +1104,20 @@ public class java.util.HashSet {
   def testHashedProxyExample(self):
     opts = TestOptions()
     opts.use_proxy_hash = True
+    path = 'java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java'
     generated_text = self._createJniHeaderFromFile(
-        'java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java',
-        'org/chromium/example/jni_generator/SampleForAnnotationProcessor', opts)
+        path, 'org/chromium/example/jni_generator/SampleForAnnotationProcessor',
+        opts)
     self.assertGoldenTextEquals(
         generated_text,
         golden_file='HashedSampleForAnnotationProcessor_jni.golden')
+
+    reg_dict = jni_registration_generator._DictForPath(path)
+    reg_dict = self._MergeRegistrationForTests([reg_dict])
+
+    self.assertGoldenTextEquals(
+        jni_registration_generator.CreateProxyJavaFromDict(reg_dict),
+        golden_file='HashedSampleForAnnotationProcessorGenJni.golden')
 
   def testJniProxyExample(self):
     generated_text = self._createJniHeaderFromFile(

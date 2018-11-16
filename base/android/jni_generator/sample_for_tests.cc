@@ -164,6 +164,113 @@ static jboolean JNI_SampleForAnnotationProcessor_HasPhalange(
   return jboolean(true);
 }
 
+static base::android::ScopedJavaLocalRef<jintArray>
+JNI_SampleForAnnotationProcessor_TestAllPrimitives(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller,
+    jint zint,
+    const base::android::JavaParamRef<jintArray>& ints,
+    jlong zlong,
+    const base::android::JavaParamRef<jlongArray>& longs,
+    jshort zshort,
+    const base::android::JavaParamRef<jshortArray>& shorts,
+    jchar zchar,
+    const base::android::JavaParamRef<jcharArray>& chars,
+    jbyte zbyte,
+    const base::android::JavaParamRef<jbyteArray>& bytes,
+    jdouble zdouble,
+    const base::android::JavaParamRef<jdoubleArray>& doubles,
+    jfloat zfloat,
+    const base::android::JavaParamRef<jfloatArray>& floats,
+    jboolean zbool,
+    const base::android::JavaParamRef<jbooleanArray>& bools) {
+  return ScopedJavaLocalRef<jintArray>(ints);
+}
+
+static void JNI_SampleForAnnotationProcessor_TestSpecialTypes(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller,
+    const base::android::JavaParamRef<jclass>& clazz,
+    const base::android::JavaParamRef<jobjectArray>& classes,
+    const base::android::JavaParamRef<jthrowable>& throwable,
+    const base::android::JavaParamRef<jobjectArray>& throwables,
+    const base::android::JavaParamRef<jstring>& string,
+    const base::android::JavaParamRef<jobjectArray>& strings,
+    const base::android::JavaParamRef<jobject>& tStruct,
+    const base::android::JavaParamRef<jobjectArray>& structs,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobjectArray>& objects) {}
+
+static base::android::ScopedJavaLocalRef<jthrowable>
+JNI_SampleForAnnotationProcessor_ReturnThrowable(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller) {
+  return ScopedJavaLocalRef<jthrowable>();
+}
+
+static base::android::ScopedJavaLocalRef<jobjectArray>
+JNI_SampleForAnnotationProcessor_ReturnThrowables(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller) {
+  return ScopedJavaLocalRef<jobjectArray>();
+}
+
+static base::android::ScopedJavaLocalRef<jclass>
+JNI_SampleForAnnotationProcessor_ReturnClass(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller) {
+  return ScopedJavaLocalRef<jclass>();
+}
+
+static base::android::ScopedJavaLocalRef<jobjectArray>
+JNI_SampleForAnnotationProcessor_ReturnClasses(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller) {
+  return ScopedJavaLocalRef<jobjectArray>();
+}
+
+static base::android::ScopedJavaLocalRef<jstring>
+JNI_SampleForAnnotationProcessor_ReturnString(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller) {
+  return ScopedJavaLocalRef<jstring>();
+}
+
+static base::android::ScopedJavaLocalRef<jobjectArray>
+JNI_SampleForAnnotationProcessor_ReturnStrings(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller) {
+  return ScopedJavaLocalRef<jobjectArray>();
+}
+
+static base::android::ScopedJavaLocalRef<jobject>
+JNI_SampleForAnnotationProcessor_ReturnStruct(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller) {
+  return ScopedJavaLocalRef<jobject>();
+}
+
+static base::android::ScopedJavaLocalRef<jobjectArray>
+JNI_SampleForAnnotationProcessor_ReturnStructs(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller) {
+  return ScopedJavaLocalRef<jobjectArray>();
+}
+
+static base::android::ScopedJavaLocalRef<jobject>
+JNI_SampleForAnnotationProcessor_ReturnObject(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller) {
+  return ScopedJavaLocalRef<jobject>();
+}
+
+static base::android::ScopedJavaLocalRef<jobjectArray>
+JNI_SampleForAnnotationProcessor_ReturnObjects(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& jcaller) {
+  return ScopedJavaLocalRef<jobjectArray>();
+}
+
 int main() {
   // On a regular application, you'd call AttachCurrentThread(). This sample is
   // not yet linking with all the libraries.

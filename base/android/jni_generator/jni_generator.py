@@ -82,6 +82,27 @@ _WRAPPERS_BY_INDENT = [
                          break_long_words=False)
     for indent in xrange(50)]  # 50 chosen experimentally.
 
+JAVA_POD_TYPE_MAP = {
+    'int': 'jint',
+    'byte': 'jbyte',
+    'char': 'jchar',
+    'short': 'jshort',
+    'boolean': 'jboolean',
+    'long': 'jlong',
+    'double': 'jdouble',
+    'float': 'jfloat',
+}
+
+JAVA_TYPE_MAP = {
+    'void': 'void',
+    'String': 'jstring',
+    'Class': 'jclass',
+    'Throwable': 'jthrowable',
+    'java/lang/String': 'jstring',
+    'java/lang/Class': 'jclass',
+    'java/lang/Throwable': 'jthrowable',
+}
+
 
 class ParseError(Exception):
   """Exception thrown when we can't parse the input file."""
@@ -157,37 +178,32 @@ class ConstantField(object):
 
 def JavaDataTypeToC(java_type):
   """Returns a C datatype for the given java type."""
-  java_pod_type_map = {
-      'int': 'jint',
-      'byte': 'jbyte',
-      'char': 'jchar',
-      'short': 'jshort',
-      'boolean': 'jboolean',
-      'long': 'jlong',
-      'double': 'jdouble',
-      'float': 'jfloat',
-  }
-  java_type_map = {
-      'void': 'void',
-      'String': 'jstring',
-      'Class': 'jclass',
-      'Throwable': 'jthrowable',
-      'java/lang/String': 'jstring',
-      'java/lang/Class': 'jclass',
-      'java/lang/Throwable': 'jthrowable',
-  }
-
   java_type = _StripGenerics(java_type)
-  if java_type in java_pod_type_map:
-    return java_pod_type_map[java_type]
-  elif java_type in java_type_map:
-    return java_type_map[java_type]
+  if java_type in JAVA_POD_TYPE_MAP:
+    return JAVA_POD_TYPE_MAP[java_type]
+  elif java_type in JAVA_TYPE_MAP:
+    return JAVA_TYPE_MAP[java_type]
   elif java_type.endswith('[]'):
-    if java_type[:-2] in java_pod_type_map:
-      return java_pod_type_map[java_type[:-2]] + 'Array'
+    if java_type[:-2] in JAVA_POD_TYPE_MAP:
+      return JAVA_POD_TYPE_MAP[java_type[:-2]] + 'Array'
     return 'jobjectArray'
   else:
     return 'jobject'
+
+
+def JavaTypeToProxyCast(type):
+  """Maps from a java type to the type used by the native proxy GEN_JNI class"""
+  if type in JAVA_POD_TYPE_MAP or type in JAVA_TYPE_MAP:
+    return type
+  # All the array types of JAVA_TYPE_MAP become jobjectArray across jni but
+  # they still need to be passed as the original type on the java side.
+  if type[:-2] in JAVA_POD_TYPE_MAP or type[:-2] in JAVA_TYPE_MAP:
+    return type
+
+  # Otherwise we have a jobject type that should be an object.
+  if type[-2:] == '[]':
+    return 'Object[]'
+  return 'Object'
 
 
 def WrapCTypeForDeclaration(c_type):
@@ -449,7 +465,11 @@ class JniParams(object):
     return '"%s"' % signature_line[index + len(prefix):]
 
   @staticmethod
-  def Parse(params):
+  def MakeProxyParamSignature(params):
+    return ', '.join('%s %s' % (p.datatype, p.name) for p in params)
+
+  @staticmethod
+  def Parse(params, use_proxy_types=False):
     """Parses the params into a list of Param objects."""
     if not params:
       return []
@@ -469,6 +489,10 @@ class JniParams(object):
           datatype=items[0],
           name=(items[1] if len(items) > 1 else 'p%s' % len(ret)),
       )
+
+      if use_proxy_types:
+        param.datatype = JavaTypeToProxyCast(param.datatype)
+
       ret += [param]
     return ret
 
@@ -824,7 +848,7 @@ class NativeProxyHelpers(object):
     if use_hash:
       hashed_name = NativeProxyHelpers.CreateHashedMethodName(
           fully_qualified_class, old_name)
-      return EscapeClassName(hashed_name)
+      return hashed_name
 
     # The annotation processor currently uses a method name
     # org_chromium_example_foo_method_1name escaping _ to _1
@@ -844,8 +868,8 @@ class NativeProxyHelpers(object):
       interface_body = match.group('interface_body')
       for method in _EXTRACT_METHODS_REGEX.finditer(interface_body):
         name = method.group('name')
-        params = JniParams.Parse(method.group('params'))
-        return_type = method.group('return_type')
+        params = JniParams.Parse(method.group('params'), use_proxy_types=True)
+        return_type = JavaTypeToProxyCast(method.group('return_type'))
 
         unescaped_proxy_name = NativeProxyHelpers.CreateProxyMethodName(
             fully_qualified_class, name, use_hash)
