@@ -269,6 +269,19 @@ int UiElementContainerView::GetHeightForWidth(int width) const {
   return content_view()->GetHeightForWidth(width);
 }
 
+gfx::Size UiElementContainerView::GetMinimumSize() const {
+  // AssistantMainStage uses BoxLayout's flex property to grow/shrink
+  // UiElementContainerView to fill available space as needed. When height is
+  // shrunk to zero, as is temporarily the case during the initial container
+  // growth animation for the first Assistant response, UiElementContainerView
+  // will be laid out with zero width. We do not recover from this state until
+  // the next layout pass, which causes Assistant cards for the first response
+  // to be laid out with zero width. We work around this by imposing a minimum
+  // height restriction of 1 dip that is factored into BoxLayout's flex
+  // calculations to make sure that our width is never being set to zero.
+  return gfx::Size(INT_MAX, 1);
+}
+
 void UiElementContainerView::OnContentsPreferredSizeChanged(
     views::View* content_view) {
   const int preferred_height = content_view->GetHeightForWidth(width());
