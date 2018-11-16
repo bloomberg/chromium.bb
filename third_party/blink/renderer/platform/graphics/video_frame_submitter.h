@@ -129,11 +129,13 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   WebFrameSinkDestroyedCallback frame_sink_destroyed_callback_;
   bool waiting_for_compositor_ack_ = false;
 
-  bool is_rendering_;
+  bool is_rendering_ = false;
   // If we are not on screen, we should not submit.
   bool should_submit_internal_ = false;
   // Whether frames should always be submitted, even if we're not visible.
   bool force_submit_ = false;
+  // Needs to be initialized in implementation because media isn't a public_dep
+  // of blink/platform.
   media::VideoRotation rotation_;
   bool is_opaque_ = true;
 
@@ -142,7 +144,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // Size of the video frame being submitted. It is set the first time a frame
   // is submitted. Every time there is a change in the video frame size, the
   // child component of the LocalSurfaceId will be updated.
-  gfx::Rect frame_size_;
+  gfx::Size frame_size_;
 
   // Used to updated the LocalSurfaceId when detecting a change in video frame
   // size.

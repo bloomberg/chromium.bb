@@ -36,7 +36,7 @@ VideoFrameSubmitter::VideoFrameSubmitter(
     : binding_(this),
       context_provider_callback_(context_provider_callback),
       resource_provider_(std::move(resource_provider)),
-      is_rendering_(false),
+      rotation_(media::VIDEO_ROTATION_0),
       weak_ptr_factory_(this) {
   DETACH_FROM_THREAD(media_thread_checker_);
 }
@@ -242,16 +242,22 @@ bool VideoFrameSubmitter::SubmitFrame(
   if (!compositor_frame_sink_ || !ShouldSubmit())
     return false;
 
-  if (frame_size_ != gfx::Rect(video_frame->coded_size())) {
+  gfx::Size frame_size(video_frame->natural_size());
+  if (rotation_ == media::VIDEO_ROTATION_90 ||
+      rotation_ == media::VIDEO_ROTATION_270) {
+    frame_size = gfx::Size(frame_size.height(), frame_size.width());
+  }
+  if (frame_size_ != frame_size) {
     if (!frame_size_.IsEmpty())
       child_local_surface_id_allocator_.GenerateId();
-    frame_size_ = gfx::Rect(video_frame->coded_size());
+    frame_size_ = frame_size;
   }
 
   viz::CompositorFrame compositor_frame;
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
 
-  render_pass->SetNew(1, frame_size_, frame_size_, gfx::Transform());
+  render_pass->SetNew(1, gfx::Rect(frame_size_), gfx::Rect(frame_size_),
+                      gfx::Transform());
   render_pass->filters = cc::FilterOperations();
   resource_provider_->AppendQuads(render_pass.get(), video_frame, rotation_,
                                   is_opaque_);
@@ -302,7 +308,8 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
   compositor_frame.metadata.may_contain_video = true;
 
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
-  render_pass->SetNew(1, frame_size_, frame_size_, gfx::Transform());
+  render_pass->SetNew(1, gfx::Rect(frame_size_), gfx::Rect(frame_size_),
+                      gfx::Transform());
   compositor_frame.render_pass_list.push_back(std::move(render_pass));
 
   compositor_frame_sink_->SubmitCompositorFrame(
