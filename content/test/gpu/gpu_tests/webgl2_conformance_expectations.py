@@ -56,6 +56,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'conformance2/glsl3/const-struct-from-array-as-function-parameter.html',
         ['win', 'nvidia', 'opengl'], bug=874620)
 
+    # Failing test updated in https://github.com/KhronosGroup/WebGL/pull/2226
+    self.Fail('conformance2/textures/misc/copy-texture-image.html', bug=905531)
+
     # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2665
     self.Fail('conformance2/textures/misc/tex-subimage3d-canvas-bug.html',
               ['linux'], bug=859400)
@@ -788,6 +791,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/3d_combinations_08.html',
         ['mac', 'intel'], bug=606074)
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_03.html',
+        ['mac', 'intel'], bug=658724)
+    self.Fail('deqp/functional/gles3/framebufferblit/rect_04.html',
+        ['mac', 'intel'], bug=658724)
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
