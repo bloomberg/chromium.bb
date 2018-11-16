@@ -107,7 +107,6 @@
 /icu
 /icu4j/lib/
 /intellij/lib/
-/inspector_protocol
 /instrumented_libraries/scripts/*.tgz
 /instrumented_libraries/scripts/out/*
 /javax_inject/lib/
