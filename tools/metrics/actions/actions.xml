@@ -3887,6 +3887,41 @@ should be able to be added at any place in this file.
   <description>User switched to basic tab.</description>
 </action>
 
+<action name="ClearBrowsingData_Sync_NavigateToError">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    The user clicked on the &quot;visit sync settings&quot; link in the sync
+    error message in the Clear Browsing Data footer.
+  </description>
+</action>
+
+<action name="ClearBrowsingData_Sync_NavigateToPassphrase">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    The user clicked on the &quot;enter your passphrase&quot; link in the error
+    message in the Clear Browsing Data footer, which was shown due to a missing
+    sync passphrase.
+  </description>
+</action>
+
+<action name="ClearBrowsingData_Sync_Pause">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User paused sync from the Clear Browsing Data footer.
+  </description>
+</action>
+
+<action name="ClearBrowsingData_Sync_SignIn">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User started to sign in from the Clear Browsing Data footer to unpause sync.
+  </description>
+</action>
+
 <action name="ClearBrowsingData_TimePeriodChanged_Everything">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
