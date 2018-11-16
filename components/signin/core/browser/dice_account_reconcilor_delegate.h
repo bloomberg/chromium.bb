@@ -25,7 +25,7 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
   // AccountReconcilorDelegate:
   bool IsReconcileEnabled() const override;
   bool IsAccountConsistencyEnforced() const override;
-  std::string GetGaiaApiSource() const override;
+  gaia::GaiaSource GetGaiaApiSource() const override;
   std::string GetFirstGaiaAccountForReconcile(
       const std::vector<std::string>& chrome_accounts,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
@@ -43,9 +43,9 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
       const std::vector<std::string>& chrome_accounts,
       const std::string& primary_account,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
-      const signin::MultiloginMode mode) const override;
+      const gaia::MultiloginMode mode) const override;
 
-  MultiloginMode CalculateModeForReconcile(
+  gaia::MultiloginMode CalculateModeForReconcile(
       const std::vector<gaia::ListedAccount>& gaia_accounts,
       const std::string primary_account,
       bool first_execution,

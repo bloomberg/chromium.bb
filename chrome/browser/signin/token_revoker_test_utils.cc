@@ -7,13 +7,12 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/gaia_constants.h"
 
 namespace token_revoker_test_utils {
 
 RefreshTokenRevoker::RefreshTokenRevoker()
     : gaia_fetcher_(this,
-                    GaiaConstants::kChromeSource,
+                    gaia::GaiaSource::kChrome,
                     g_browser_process->system_network_context_manager()
                         ->GetSharedURLLoaderFactory()) {}
 

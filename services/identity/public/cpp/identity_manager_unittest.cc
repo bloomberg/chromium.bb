@@ -1839,8 +1839,7 @@ TEST_F(IdentityManagerTest,
       run_loop.QuitClosure());
 
   gaia_cookie_manager_service()->SetListAccountsResponseNoAccounts();
-  gaia_cookie_manager_service()->TriggerListAccounts(
-      "identity_manager_unittest");
+  gaia_cookie_manager_service()->TriggerListAccounts();
 
   run_loop.Run();
 
@@ -1857,8 +1856,7 @@ TEST_F(IdentityManagerTest,
 
   gaia_cookie_manager_service()->SetListAccountsResponseOneAccount(kTestEmail,
                                                                    kTestGaiaId);
-  gaia_cookie_manager_service()->TriggerListAccounts(
-      "identity_manager_unittest");
+  gaia_cookie_manager_service()->TriggerListAccounts();
   run_loop.Run();
 
   EXPECT_EQ(1u, identity_manager_observer()
@@ -1881,8 +1879,7 @@ TEST_F(IdentityManagerTest,
 
   gaia_cookie_manager_service()->SetListAccountsResponseTwoAccounts(
       kTestEmail, kTestGaiaId, kTestEmail2, kTestGaiaId2);
-  gaia_cookie_manager_service()->TriggerListAccounts(
-      "identity_manager_unittest");
+  gaia_cookie_manager_service()->TriggerListAccounts();
 
   run_loop.Run();
 
@@ -1919,15 +1916,14 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithNoAccounts) {
   // accounts but should also trigger an internal update and eventual
   // notification that the accounts in the cookie jar have been updated.
   std::vector<AccountInfo> accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+      identity_manager()->GetAccountsInCookieJar();
   EXPECT_TRUE(accounts_in_cookie_jar.empty());
 
   run_loop.Run();
 
   // The state of the accounts in IdentityManager should now reflect the
   // internal update.
-  accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+  accounts_in_cookie_jar = identity_manager()->GetAccountsInCookieJar();
 
   EXPECT_TRUE(accounts_in_cookie_jar.empty());
 }
@@ -1944,15 +1940,14 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithOneAccount) {
   // accounts but should also trigger an internal update and eventual
   // notification that the accounts in the cookie jar have been updated.
   std::vector<AccountInfo> accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+      identity_manager()->GetAccountsInCookieJar();
   EXPECT_TRUE(accounts_in_cookie_jar.empty());
 
   run_loop.Run();
 
   // The state of the accounts in IdentityManager should now reflect the
   // internal update.
-  accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+  accounts_in_cookie_jar = identity_manager()->GetAccountsInCookieJar();
 
   EXPECT_EQ(1u, accounts_in_cookie_jar.size());
 
@@ -1975,15 +1970,14 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
   // accounts but should also trigger an internal update and eventual
   // notification that the accounts in the cookie jar have been updated.
   std::vector<AccountInfo> accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+      identity_manager()->GetAccountsInCookieJar();
   EXPECT_TRUE(accounts_in_cookie_jar.empty());
 
   run_loop.Run();
 
   // The state of the accounts in IdentityManager should now reflect the
   // internal update.
-  accounts_in_cookie_jar =
-      identity_manager()->GetAccountsInCookieJar("identity_manager_unittest");
+  accounts_in_cookie_jar = identity_manager()->GetAccountsInCookieJar();
 
   EXPECT_EQ(2u, accounts_in_cookie_jar.size());
 

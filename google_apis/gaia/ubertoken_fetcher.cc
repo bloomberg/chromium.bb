@@ -18,7 +18,7 @@
 
 namespace {
 std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
-    const std::string& source,
+    gaia::GaiaSource source,
     GaiaAuthConsumer* consumer,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return std::make_unique<GaiaAuthFetcher>(consumer, source,
@@ -31,7 +31,7 @@ const int UbertokenFetcher::kMaxRetries = 3;
 UbertokenFetcher::UbertokenFetcher(
     OAuth2TokenService* token_service,
     UbertokenConsumer* consumer,
-    const std::string& source,
+    gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : UbertokenFetcher(token_service,
                        consumer,

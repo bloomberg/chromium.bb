@@ -19,7 +19,6 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
-#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -34,7 +33,7 @@
 
 namespace signin {
 MultiloginParameters::MultiloginParameters(
-    const MultiloginMode mode,
+    const gaia::MultiloginMode mode,
     const std::vector<std::string>& accounts_to_send)
     : mode(mode), accounts_to_send(accounts_to_send) {}
 
@@ -122,7 +121,7 @@ void RecordMultiloginFinished(GoogleServiceAuthError error) {
 GaiaCookieManagerService::GaiaCookieRequest::GaiaCookieRequest(
     GaiaCookieRequestType request_type,
     const std::vector<std::string>& account_ids,
-    const std::string& source)
+    gaia::GaiaSource source)
     : request_type_(request_type), account_ids_(account_ids), source_(source) {}
 
 GaiaCookieManagerService::GaiaCookieRequest::GaiaCookieRequest(
@@ -144,7 +143,7 @@ const std::string GaiaCookieManagerService::GaiaCookieRequest::GetAccountID() {
 GaiaCookieManagerService::GaiaCookieRequest
 GaiaCookieManagerService::GaiaCookieRequest::CreateAddAccountRequest(
     const std::string& account_id,
-    const std::string& source) {
+    gaia::GaiaSource source) {
   return GaiaCookieManagerService::GaiaCookieRequest(
       GaiaCookieRequestType::ADD_ACCOUNT, {account_id}, source);
 }
@@ -153,7 +152,7 @@ GaiaCookieManagerService::GaiaCookieRequest::CreateAddAccountRequest(
 GaiaCookieManagerService::GaiaCookieRequest
 GaiaCookieManagerService::GaiaCookieRequest::CreateSetAccountsRequest(
     const std::vector<std::string>& account_ids,
-    const std::string& source) {
+    gaia::GaiaSource source) {
   return GaiaCookieManagerService::GaiaCookieRequest(
       GaiaCookieRequestType::SET_ACCOUNTS, account_ids, source);
 }
@@ -161,17 +160,16 @@ GaiaCookieManagerService::GaiaCookieRequest::CreateSetAccountsRequest(
 // static
 GaiaCookieManagerService::GaiaCookieRequest
 GaiaCookieManagerService::GaiaCookieRequest::CreateLogOutRequest(
-    const std::string& source) {
+    gaia::GaiaSource source) {
   return GaiaCookieManagerService::GaiaCookieRequest(
       GaiaCookieRequestType::LOG_OUT, {}, source);
 }
 
 // static
 GaiaCookieManagerService::GaiaCookieRequest
-GaiaCookieManagerService::GaiaCookieRequest::CreateListAccountsRequest(
-    const std::string& source) {
+GaiaCookieManagerService::GaiaCookieRequest::CreateListAccountsRequest() {
   return GaiaCookieManagerService::GaiaCookieRequest(
-      GaiaCookieRequestType::LIST_ACCOUNTS, {}, source);
+      GaiaCookieRequestType::LIST_ACCOUNTS, {}, gaia::GaiaSource::kChrome);
 }
 
 GaiaCookieManagerService::ExternalCcResultFetcher::ExternalCcResultFetcher(
@@ -201,7 +199,7 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
   CleanupTransientState();
   results_.clear();
   helper_->gaia_auth_fetcher_ = helper_->signin_client_->CreateGaiaAuthFetcher(
-      this, GaiaConstants::kChromeSource, helper_->GetURLLoaderFactory());
+      this, gaia::GaiaSource::kChrome, helper_->GetURLLoaderFactory());
   helper_->gaia_auth_fetcher_->StartGetCheckConnectionInfo();
 
   // Some fetches may timeout.  Start a timer to decide when the result fetcher
@@ -439,7 +437,7 @@ void GaiaCookieManagerService::Shutdown() {
 
 void GaiaCookieManagerService::SetAccountsInCookie(
     const std::vector<std::string>& account_ids,
-    const std::string& source) {
+    gaia::GaiaSource source) {
   VLOG(1) << "GaiaCookieManagerService::SetAccountsInCookie: "
           << base::JoinString(account_ids, " ");
   if (!signin_client_->AreSigninCookiesAllowed()) {
@@ -480,7 +478,7 @@ void GaiaCookieManagerService::SetAccountsInCookieWithTokens() {
 
 void GaiaCookieManagerService::AddAccountToCookieInternal(
     const std::string& account_id,
-    const std::string& source) {
+    gaia::GaiaSource source) {
   DCHECK(!account_id.empty());
   if (!signin_client_->AreSigninCookiesAllowed()) {
     SignalComplete(account_id,
@@ -497,9 +495,8 @@ void GaiaCookieManagerService::AddAccountToCookieInternal(
   }
 }
 
-void GaiaCookieManagerService::AddAccountToCookie(
-    const std::string& account_id,
-    const std::string& source) {
+void GaiaCookieManagerService::AddAccountToCookie(const std::string& account_id,
+                                                  gaia::GaiaSource source) {
   VLOG(1) << "GaiaCookieManagerService::AddAccountToCookie: " << account_id;
   access_token_ = std::string();
   AddAccountToCookieInternal(account_id, source);
@@ -508,7 +505,7 @@ void GaiaCookieManagerService::AddAccountToCookie(
 void GaiaCookieManagerService::AddAccountToCookieWithToken(
     const std::string& account_id,
     const std::string& access_token,
-    const std::string& source) {
+    gaia::GaiaSource source) {
   VLOG(1) << "GaiaCookieManagerService::AddAccountToCookieWithToken: "
           << account_id;
   DCHECK(!access_token.empty());
@@ -518,8 +515,7 @@ void GaiaCookieManagerService::AddAccountToCookieWithToken(
 
 bool GaiaCookieManagerService::ListAccounts(
     std::vector<gaia::ListedAccount>* accounts,
-    std::vector<gaia::ListedAccount>* signed_out_accounts,
-    const std::string& source) {
+    std::vector<gaia::ListedAccount>* signed_out_accounts) {
   if (accounts)
     accounts->assign(listed_accounts_.begin(), listed_accounts_.end());
 
@@ -529,17 +525,17 @@ bool GaiaCookieManagerService::ListAccounts(
   }
 
   if (list_accounts_stale_) {
-    TriggerListAccounts(source);
+    TriggerListAccounts();
     return false;
   }
 
   return true;
 }
 
-void GaiaCookieManagerService::TriggerListAccounts(const std::string& source) {
+void GaiaCookieManagerService::TriggerListAccounts() {
   if (requests_.empty()) {
     fetcher_retries_ = 0;
-    requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest(source));
+    requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
     signin_client_->DelayNetworkCall(
         base::Bind(&GaiaCookieManagerService::StartFetchingListAccounts,
                    base::Unretained(this)));
@@ -547,7 +543,7 @@ void GaiaCookieManagerService::TriggerListAccounts(const std::string& source) {
                           [](const GaiaCookieRequest& request) {
                             return request.request_type() == LIST_ACCOUNTS;
                           }) == requests_.end()) {
-    requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest(source));
+    requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
   }
 }
 
@@ -561,7 +557,7 @@ void GaiaCookieManagerService::ForceOnCookieChangeProcessing() {
   OnCookieChange(*cookie, network::mojom::CookieChangeCause::UNKNOWN_DELETION);
 }
 
-void GaiaCookieManagerService::LogOutAllAccounts(const std::string& source) {
+void GaiaCookieManagerService::LogOutAllAccounts(gaia::GaiaSource source) {
   VLOG(1) << "GaiaCookieManagerService::LogOutAllAccounts";
 
   bool log_out_queued = false;
@@ -630,12 +626,6 @@ GaiaCookieManagerService::GetURLLoaderFactory() {
   return signin_client_->GetURLLoaderFactory();
 }
 
-std::string GaiaCookieManagerService::GetSourceForRequest(
-    const GaiaCookieManagerService::GaiaCookieRequest& request) {
-  return request.source().empty() ? GaiaConstants::kChromeSource
-                                  : request.source();
-}
-
 void GaiaCookieManagerService::OnCookieChange(
     const net::CanonicalCookie& cookie,
     network::mojom::CookieChangeCause cause) {
@@ -656,33 +646,7 @@ void GaiaCookieManagerService::OnCookieChange(
   // are pending, will be lost.  However, trying to process these changes could
   // cause an endless loop (see crbug.com/516070).
   if (requests_.empty()) {
-    // Build gaia "source" based on cause to help track down channel id issues.
-    std::string source(GaiaConstants::kChromeSource);
-    switch (cause) {
-      case network::mojom::CookieChangeCause::INSERTED:
-        source += "INSERTED";
-        break;
-      case network::mojom::CookieChangeCause::EXPLICIT:
-        source += "EXPLICIT";
-        break;
-      case network::mojom::CookieChangeCause::UNKNOWN_DELETION:
-        source += "UNKNOWN_DELETION";
-        break;
-      case network::mojom::CookieChangeCause::OVERWRITE:
-        source += "OVERWRITE";
-        break;
-      case network::mojom::CookieChangeCause::EXPIRED:
-        source += "EXPIRED";
-        break;
-      case network::mojom::CookieChangeCause::EVICTED:
-        source += "EVICTED";
-        break;
-      case network::mojom::CookieChangeCause::EXPIRED_OVERWRITE:
-        source += "EXPIRED_OVERWRITE";
-        break;
-    }
-
-    requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest(source));
+    requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
     fetcher_retries_ = 0;
     signin_client_->DelayNetworkCall(
         base::Bind(&GaiaCookieManagerService::StartFetchingListAccounts,
@@ -1007,7 +971,7 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
              scoped_refptr<network::SharedURLLoaderFactory> url_loader)
               -> std::unique_ptr<GaiaAuthFetcher> {
             return client->CreateGaiaAuthFetcher(
-                consumer, GaiaConstants::kChromeSource, url_loader);
+                consumer, gaia::GaiaSource::kChrome, url_loader);
           },
           base::Unretained(signin_client_)));
   if (access_token_.empty()) {
@@ -1021,7 +985,7 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
 void GaiaCookieManagerService::StartFetchingMultiLogin(
     const std::vector<GaiaAuthFetcher::MultiloginTokenIDPair>& accounts) {
   gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
-      this, GetSourceForRequest(requests_.front()), GetURLLoaderFactory());
+      this, requests_.front().source(), GetURLLoaderFactory());
 
   gaia_auth_fetcher_->StartOAuthMultilogin(accounts);
 }
@@ -1029,7 +993,7 @@ void GaiaCookieManagerService::StartFetchingMultiLogin(
 void GaiaCookieManagerService::StartFetchingMergeSession() {
   DCHECK(!uber_token_.empty());
   gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
-      this, GetSourceForRequest(requests_.front()), GetURLLoaderFactory());
+      this, requests_.front().source(), GetURLLoaderFactory());
 
   gaia_auth_fetcher_->StartMergeSession(uber_token_,
       external_cc_result_fetcher_.GetExternalCcResult());
@@ -1046,14 +1010,14 @@ void GaiaCookieManagerService::StartGaiaLogOut() {
 void GaiaCookieManagerService::StartFetchingLogOut() {
   RecordLogoutRequestState(LogoutRequestState::kStarted);
   gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
-      this, GetSourceForRequest(requests_.front()), GetURLLoaderFactory());
+      this, requests_.front().source(), GetURLLoaderFactory());
   gaia_auth_fetcher_->StartLogOut();
 }
 
 void GaiaCookieManagerService::StartFetchingListAccounts() {
   VLOG(1) << "GaiaCookieManagerService::ListAccounts";
   gaia_auth_fetcher_ = signin_client_->CreateGaiaAuthFetcher(
-      this, GetSourceForRequest(requests_.front()), GetURLLoaderFactory());
+      this, requests_.front().source(), GetURLLoaderFactory());
   gaia_auth_fetcher_->StartListAccounts();
 }
 

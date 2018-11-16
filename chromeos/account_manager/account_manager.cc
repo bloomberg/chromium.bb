@@ -18,7 +18,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
@@ -106,7 +105,7 @@ class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
         weak_factory_(this) {
     DCHECK(!refresh_token_.empty());
     gaia_auth_fetcher_ = std::make_unique<GaiaAuthFetcher>(
-        this, GaiaConstants::kChromeOSSource, url_loader_factory);
+        this, gaia::GaiaSource::kChromeOS, url_loader_factory);
     base::RepeatingClosure start_revoke_token = base::BindRepeating(
         &GaiaTokenRevocationRequest::Start, weak_factory_.GetWeakPtr());
     delay_network_call_runner.Run(start_revoke_token);

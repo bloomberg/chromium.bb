@@ -116,6 +116,36 @@ GetTokenRevocationStatusFromResponseData(const std::string& data,
   return GaiaAuthConsumer::TokenRevocationStatus::kUnknownError;
 }
 
+std::string GaiaSourceToString(gaia::GaiaSource source) {
+  std::string source_string;
+  switch (source) {
+    case gaia::GaiaSource::kChrome:
+      source_string = GaiaConstants::kChromeSource;
+      break;
+    case gaia::GaiaSource::kChromeOS:
+      source_string = GaiaConstants::kChromeOSSource;
+      break;
+    case gaia::GaiaSource::kAccountReconcilorDice:
+      source_string = "ChromiumAccountReconcilorDice";
+      break;
+    case gaia::GaiaSource::kAccountReconcilorMirror:
+      source_string = "ChromiumAccountReconcilor";
+      break;
+    case gaia::GaiaSource::kOAuth2LoginVerifier:
+      source_string = "ChromiumOAuth2LoginVerifier";
+      break;
+    case gaia::GaiaSource::kSigninManager:
+      source_string = "ChromiumSigninManager";
+      break;
+  }
+
+  // All sources should start with Chromium or chromeos for better server logs.
+  DCHECK(source_string == "chromeos" ||
+         base::StartsWith(source_string, "Chromium",
+                          base::CompareCase::SENSITIVE));
+  return source_string;
+}
+
 }  // namespace
 
 // static
@@ -191,25 +221,25 @@ const char GaiaAuthFetcher::kOAuth2BearerHeaderFormat[] =
 
 GaiaAuthFetcher::GaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
-    const std::string& source,
+    gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(url_loader_factory),
       consumer_(consumer),
-      source_(source),
+      source_(GaiaSourceToString(source)),
       oauth2_token_gurl_(GaiaUrls::GetInstance()->oauth2_token_url()),
       oauth2_revoke_gurl_(GaiaUrls::GetInstance()->oauth2_revoke_url()),
       get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),
       merge_session_gurl_(GaiaUrls::GetInstance()->merge_session_url()),
       uberauth_token_gurl_(GaiaUrls::GetInstance()->oauth1_login_url().Resolve(
-          base::StringPrintf(kUberAuthTokenURLFormat, source.c_str()))),
+          base::StringPrintf(kUberAuthTokenURLFormat, source_.c_str()))),
       oauth_login_gurl_(GaiaUrls::GetInstance()->oauth1_login_url()),
       oauth_multilogin_gurl_(GaiaUrls::GetInstance()->oauth_multilogin_url()),
       list_accounts_gurl_(
-          GaiaUrls::GetInstance()->ListAccountsURLWithSource(source)),
-      logout_gurl_(GaiaUrls::GetInstance()->LogOutURLWithSource(source)),
+          GaiaUrls::GetInstance()->ListAccountsURLWithSource(source_)),
+      logout_gurl_(GaiaUrls::GetInstance()->LogOutURLWithSource(source_)),
       get_check_connection_info_url_(
           GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
-              source)) {}
+              source_)) {}
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
 

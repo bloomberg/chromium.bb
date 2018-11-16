@@ -61,7 +61,7 @@ class DiceTestSigninClient : public TestSigninClient, public GaiaAuthConsumer {
 
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
-      const std::string& source,
+      gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       override {
     DCHECK(!consumer_ || (consumer_ == consumer));

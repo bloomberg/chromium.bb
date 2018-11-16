@@ -69,7 +69,7 @@ TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
        /* valid = */ true,
        /* is_signed_out = */ false,
        /* verified = */ true});
-  gaia_cookie_manager_service_->TriggerListAccounts("ChildAccountServiceTest");
+  gaia_cookie_manager_service_->TriggerListAccounts();
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::AUTHENTICATED,
             child_account_service->GetGoogleAuthState());
@@ -80,7 +80,7 @@ TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
        /* valid = */ false,
        /* is_signed_out = */ false,
        /* verified = */ true});
-  gaia_cookie_manager_service_->TriggerListAccounts("ChildAccountServiceTest");
+  gaia_cookie_manager_service_->TriggerListAccounts();
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::NOT_AUTHENTICATED,
             child_account_service->GetGoogleAuthState());
@@ -91,7 +91,7 @@ TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
        /* valid = */ true,
        /* is_signed_out = */ true,
        /* verified = */ true});
-  gaia_cookie_manager_service_->TriggerListAccounts("ChildAccountServiceTest");
+  gaia_cookie_manager_service_->TriggerListAccounts();
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::NOT_AUTHENTICATED,
             child_account_service->GetGoogleAuthState());

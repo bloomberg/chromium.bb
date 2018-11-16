@@ -253,7 +253,7 @@ MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
         int attempt)
     : token_service_delegate_(token_service_delegate),
       fetcher_(this,
-               GaiaConstants::kChromeSource,
+               gaia::GaiaSource::kChrome,
                token_service_delegate_->GetURLLoaderFactory()),
       refresh_token_(refresh_token),
       attempt_(attempt),

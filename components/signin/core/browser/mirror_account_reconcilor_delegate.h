@@ -23,7 +23,7 @@ class MirrorAccountReconcilorDelegate
   // AccountReconcilorDelegate:
   bool IsReconcileEnabled() const override;
   bool IsAccountConsistencyEnforced() const override;
-  std::string GetGaiaApiSource() const override;
+  gaia::GaiaSource GetGaiaApiSource() const override;
   bool ShouldAbortReconcileIfPrimaryHasError() const override;
   std::string GetFirstGaiaAccountForReconcile(
       const std::vector<std::string>& chrome_accounts,
@@ -35,7 +35,7 @@ class MirrorAccountReconcilorDelegate
       const std::vector<std::string>& chrome_accounts,
       const std::string& primary_account,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
-      const signin::MultiloginMode mode) const override;
+      const gaia::MultiloginMode mode) const override;
 
   // IdentityManager::Observer:
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;

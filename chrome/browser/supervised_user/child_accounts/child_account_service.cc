@@ -43,8 +43,6 @@
 #include "chrome/browser/signin/signin_util.h"
 #endif
 
-const char kGaiaCookieManagerSource[] = "child_account_service";
-
 // Normally, re-check the family info once per day.
 const int kUpdateIntervalSeconds = 60 * 60 * 24;
 
@@ -144,10 +142,8 @@ void ChildAccountService::AddChildStatusReceivedCallback(
 ChildAccountService::AuthState ChildAccountService::GetGoogleAuthState() {
   std::vector<gaia::ListedAccount> accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;
-  if (!gaia_cookie_manager_->ListAccounts(&accounts, &signed_out_accounts,
-                                          kGaiaCookieManagerSource)) {
+  if (!gaia_cookie_manager_->ListAccounts(&accounts, &signed_out_accounts))
     return AuthState::PENDING;
-  }
   return (accounts.empty() || !accounts[0].valid) ? AuthState::NOT_AUTHENTICATED
                                                   : AuthState::AUTHENTICATED;
 }

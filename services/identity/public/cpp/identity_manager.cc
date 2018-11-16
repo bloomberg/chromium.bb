@@ -120,13 +120,12 @@ std::vector<AccountInfo> IdentityManager::GetAccountsWithRefreshTokens() const {
   return accounts;
 }
 
-std::vector<AccountInfo> IdentityManager::GetAccountsInCookieJar(
-    const std::string& source) const {
+std::vector<AccountInfo> IdentityManager::GetAccountsInCookieJar() const {
   // TODO(859882): Change this implementation to interact asynchronously with
   // GaiaCookieManagerService as detailed in
   // https://docs.google.com/document/d/1hcrJ44facCSHtMGBmPusvcoP-fAR300Hi-UFez8ffYQ/edit?pli=1#heading=h.w97eil1cygs2.
   std::vector<gaia::ListedAccount> listed_accounts;
-  gaia_cookie_manager_service_->ListAccounts(&listed_accounts, nullptr, source);
+  gaia_cookie_manager_service_->ListAccounts(&listed_accounts, nullptr);
 
   return ListedAccountsToAccountInfos(listed_accounts);
 }

@@ -328,7 +328,7 @@ void GaiaAuthFetcherIOSBridge::OnInactive() {
 
 GaiaAuthFetcherIOS::GaiaAuthFetcherIOS(
     GaiaAuthConsumer* consumer,
-    const std::string& source,
+    gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     web::BrowserState* browser_state)
     : GaiaAuthFetcher(consumer, source, url_loader_factory),

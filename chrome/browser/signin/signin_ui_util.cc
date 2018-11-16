@@ -226,8 +226,8 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
     GaiaCookieManagerService* cookie_manager_service =
         GaiaCookieManagerServiceFactory::GetForProfile(profile);
     std::vector<gaia::ListedAccount> cookie_accounts;
-    bool cookie_accounts_valid = cookie_manager_service->ListAccounts(
-        &cookie_accounts, nullptr, "ProfileChooserView");
+    bool cookie_accounts_valid =
+        cookie_manager_service->ListAccounts(&cookie_accounts, nullptr);
     UMA_HISTOGRAM_BOOLEAN("Profile.DiceUI.GaiaAccountsStale",
                           !cookie_accounts_valid);
     if (cookie_accounts_valid && !cookie_accounts.empty())

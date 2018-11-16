@@ -44,7 +44,7 @@ class AccountReconcilorDelegate {
   virtual bool IsAccountConsistencyEnforced() const;
 
   // Returns the value to set in the "source" parameter for Gaia API calls.
-  virtual std::string GetGaiaApiSource() const;
+  virtual gaia::GaiaSource GetGaiaApiSource() const;
 
   // Returns true if Reconcile should be aborted when the primary account is in
   // error state. Defaults to false.
@@ -131,11 +131,11 @@ class AccountReconcilorDelegate {
       const std::vector<std::string>& chrome_accounts,
       const std::string& primary_account,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
-      const signin::MultiloginMode mode) const;
+      const gaia::MultiloginMode mode) const;
 
   // Returns Mode which shows if it is allowed to change the order of the gaia
   // accounts (e.g. on mobile or on stratup). Default is UPDATE.
-  virtual MultiloginMode CalculateModeForReconcile(
+  virtual gaia::MultiloginMode CalculateModeForReconcile(
       const std::vector<gaia::ListedAccount>& gaia_accounts,
       const std::string primary_account,
       bool first_execution,

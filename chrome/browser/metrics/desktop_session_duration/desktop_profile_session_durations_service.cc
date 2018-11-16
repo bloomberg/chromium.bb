@@ -45,8 +45,7 @@ DesktopProfileSessionDurationsService::DesktopProfileSessionDurationsService(
   // if we don't have them yet.
   std::vector<gaia::ListedAccount> signed_in;
   std::vector<gaia::ListedAccount> signed_out;
-  if (cookie_manager->ListAccounts(&signed_in, &signed_out,
-                                   "durations_metrics")) {
+  if (cookie_manager->ListAccounts(&signed_in, &signed_out)) {
     OnGaiaAccountsInCookieUpdated(signed_in, signed_out,
                                   GoogleServiceAuthError());
   }

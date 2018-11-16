@@ -18,9 +18,9 @@ bool AccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
   return false;
 }
 
-std::string AccountReconcilorDelegate::GetGaiaApiSource() const {
+gaia::GaiaSource AccountReconcilorDelegate::GetGaiaApiSource() const {
   NOTREACHED() << "Reconcile is not enabled, no Gaia API calls should be made.";
-  return "ChromiumAccountReconcilorInvalidSource";
+  return gaia::GaiaSource::kChrome;
 }
 
 bool AccountReconcilorDelegate::ShouldAbortReconcileIfPrimaryHasError() const {
@@ -43,7 +43,7 @@ AccountReconcilorDelegate::CalculateParametersForMultilogin(
     const std::vector<gaia::ListedAccount>& gaia_accounts,
     bool first_execution,
     bool primary_has_error) const {
-  const MultiloginMode mode = CalculateModeForReconcile(
+  const gaia::MultiloginMode mode = CalculateModeForReconcile(
       gaia_accounts, primary_account, first_execution, primary_has_error);
   const std::vector<std::string> accounts_to_send =
       GetChromeAccountsForReconcile(chrome_accounts, primary_account,
@@ -51,12 +51,12 @@ AccountReconcilorDelegate::CalculateParametersForMultilogin(
   return {mode, accounts_to_send};
 }
 
-MultiloginMode AccountReconcilorDelegate::CalculateModeForReconcile(
+gaia::MultiloginMode AccountReconcilorDelegate::CalculateModeForReconcile(
     const std::vector<gaia::ListedAccount>& gaia_accounts,
     const std::string primary_account,
     bool first_execution,
     bool primary_has_error) const {
-  return MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER;
+  return gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER;
 }
 
 std::vector<std::string>
@@ -156,7 +156,7 @@ AccountReconcilorDelegate::GetChromeAccountsForReconcile(
     const std::vector<std::string>& chrome_accounts,
     const std::string& primary_account,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
-    const signin::MultiloginMode mode) const {
+    const gaia::MultiloginMode mode) const {
   return std::vector<std::string>();
 }
 

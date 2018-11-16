@@ -54,7 +54,7 @@ class IOSWebViewSigninClient : public SigninClient,
   void DelayNetworkCall(const base::Closure& callback) override;
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
-      const std::string& source,
+      gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       override;
   void OnSignedOut() override;

@@ -70,7 +70,6 @@
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -178,9 +177,7 @@ InlineSigninHelper::InlineSigninHelper(
     bool choose_what_to_sync,
     bool confirm_untrusted_signin,
     bool is_force_sign_in_with_usermanager)
-    : gaia_auth_fetcher_(this,
-                         GaiaConstants::kChromeSource,
-                         url_loader_factory),
+    : gaia_auth_fetcher_(this, gaia::GaiaSource::kChrome, url_loader_factory),
       handler_(handler),
       profile_(profile),
       create_status_(create_status),

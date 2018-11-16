@@ -27,7 +27,6 @@
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
@@ -52,7 +51,7 @@ class TokenRevoker : public GaiaAuthConsumer {
 
 TokenRevoker::TokenRevoker()
     : gaia_fetcher_(this,
-                    GaiaConstants::kChromeOSSource,
+                    gaia::GaiaSource::kChromeOS,
                     g_browser_process->system_network_context_manager()
                         ->GetSharedURLLoaderFactory()) {}
 

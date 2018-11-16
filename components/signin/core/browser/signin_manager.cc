@@ -407,7 +407,7 @@ void SigninManager::MergeSigninCredentialIntoCookieJar() {
     return;
 
   cookie_manager_service_->AddAccountToCookie(GetAuthenticatedAccountId(),
-                                              "ChromiumSigninManager");
+                                              gaia::GaiaSource::kSigninManager);
 }
 
 void SigninManager::CompletePendingSignin() {
