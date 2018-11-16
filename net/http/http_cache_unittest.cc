@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -30,6 +31,7 @@
 #include "base/trace_event/traced_value.h"
 #include "net/base/cache_type.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
@@ -9405,6 +9407,9 @@ TEST_F(HttpCacheTest, UpdatesRequestResponseTimeOn304) {
 
 // Tests that we can write metadata to an entry.
 TEST_F(HttpCacheTest, WriteMetadata_OK) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(net::features::kIsolatedCodeCache);
+  ASSERT_FALSE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
   MockHttpCache cache;
 
   // Write to the cache
@@ -9443,8 +9448,52 @@ TEST_F(HttpCacheTest, WriteMetadata_OK) {
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
+// Tests that we don't read metadata when IsolatedCodeCache is enabled.
+TEST_F(HttpCacheTest, ReadMetadata_IsolatedCache) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(net::features::kIsolatedCodeCache);
+  ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
+  MockHttpCache cache;
+
+  // Write to the cache
+  HttpResponseInfo response;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
+                                     &response);
+  EXPECT_TRUE(response.metadata.get() == NULL);
+
+  // Trivial call.
+  cache.http_cache()->WriteMetadata(GURL("foo"), DEFAULT_PRIORITY, Time::Now(),
+                                    NULL, 0);
+
+  // Write meta data to the same entry.
+  scoped_refptr<IOBufferWithSize> buf =
+      base::MakeRefCounted<IOBufferWithSize>(50);
+  memset(buf->data(), 0, buf->size());
+  base::strlcpy(buf->data(), "Hi there", buf->size());
+  cache.http_cache()->WriteMetadata(GURL(kSimpleGET_Transaction.url),
+                                    DEFAULT_PRIORITY, response.response_time,
+                                    buf.get(), buf->size());
+
+  // Release the buffer before the operation takes place.
+  buf = NULL;
+
+  // Makes sure we finish pending operations.
+  base::RunLoop().RunUntilIdle();
+
+  RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
+                                     &response);
+  ASSERT_TRUE(response.metadata.get() == NULL);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(2, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
 // Tests that we only write metadata to an entry if the time stamp matches.
 TEST_F(HttpCacheTest, WriteMetadata_Fail) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(net::features::kIsolatedCodeCache);
+  ASSERT_FALSE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
   MockHttpCache cache;
 
   // Write to the cache
@@ -9479,6 +9528,9 @@ TEST_F(HttpCacheTest, WriteMetadata_Fail) {
 // Tests that we ignore VARY checks when writing metadata since the request
 // headers for the WriteMetadata transaction are made up.
 TEST_F(HttpCacheTest, WriteMetadata_IgnoreVary) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(net::features::kIsolatedCodeCache);
+  ASSERT_FALSE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
   MockHttpCache cache;
 
   // Write to the cache
