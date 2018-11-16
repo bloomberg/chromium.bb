@@ -355,6 +355,8 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   for (const auto& worker : workers_copy)
     worker->JoinForTesting();
 
+  shared_priority_queue_.EnableFlushSequencesOnDestroyForTesting();
+
   AutoSchedulerLock auto_lock(lock_);
   DCHECK(workers_ == workers_copy);
   // Release |workers_| to clear their TrackedRef against |this|.

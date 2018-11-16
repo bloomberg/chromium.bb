@@ -147,10 +147,29 @@ size_t PriorityQueue::Transaction::Size() const {
 
 PriorityQueue::PriorityQueue() = default;
 
-PriorityQueue::~PriorityQueue() = default;
+PriorityQueue::~PriorityQueue() {
+  if (is_flush_sequences_on_destroy_enabled_) {
+    while (!container_.empty()) {
+      scoped_refptr<Sequence> sequence = BeginTransaction()->PopSequence();
+      {
+        std::unique_ptr<Sequence::Transaction> sequence_transaction =
+            sequence->BeginTransaction();
+        while (!sequence_transaction->IsEmpty()) {
+          sequence_transaction->TakeTask();
+          sequence_transaction->Pop();
+        }
+      }
+    }
+  }
+}
 
 std::unique_ptr<PriorityQueue::Transaction> PriorityQueue::BeginTransaction() {
   return WrapUnique(new Transaction(this));
+}
+
+void PriorityQueue::EnableFlushSequencesOnDestroyForTesting() {
+  DCHECK(!is_flush_sequences_on_destroy_enabled_);
+  is_flush_sequences_on_destroy_enabled_ = true;
 }
 
 }  // namespace internal

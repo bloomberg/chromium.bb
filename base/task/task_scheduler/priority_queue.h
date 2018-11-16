@@ -90,6 +90,11 @@ class BASE_EXPORT PriorityQueue {
   // PriorityQueue.
   std::unique_ptr<Transaction> BeginTransaction();
 
+  // Set the PriorityQueue to empty all its Sequences of Tasks when it is
+  // destroyed; needed to prevent memory leaks caused by a reference cycle
+  // (Sequence -> Task -> TaskRunner -> Sequence...) during test teardown.
+  void EnableFlushSequencesOnDestroyForTesting();
+
   const SchedulerLock* container_lock() const { return &container_lock_; }
 
  private:
@@ -103,6 +108,9 @@ class BASE_EXPORT PriorityQueue {
   SchedulerLock container_lock_;
 
   ContainerType container_;
+
+  // Should only be enabled by EnableFlushSequencesOnDestroyForTesting().
+  bool is_flush_sequences_on_destroy_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PriorityQueue);
 };

@@ -76,6 +76,8 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
     // Cannot be called on an empty Sequence.
     SequenceSortKey GetSortKey() const;
 
+    bool IsEmpty() const;
+
     scoped_refptr<Sequence> sequence() { return sequence_; }
 
    private:

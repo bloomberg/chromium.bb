@@ -43,21 +43,21 @@ bool Sequence::Transaction::PushTask(Task task) {
 }
 
 Optional<Task> Sequence::Transaction::TakeTask() {
-  DCHECK(!sequence_->queue_.empty());
+  DCHECK(!IsEmpty());
   DCHECK(sequence_->queue_.front().task);
 
   return std::move(sequence_->queue_.front());
 }
 
 bool Sequence::Transaction::Pop() {
-  DCHECK(!sequence_->queue_.empty());
+  DCHECK(!IsEmpty());
   DCHECK(!sequence_->queue_.front().task);
   sequence_->queue_.pop();
-  return sequence_->queue_.empty();
+  return IsEmpty();
 }
 
 SequenceSortKey Sequence::Transaction::GetSortKey() const {
-  DCHECK(!sequence_->queue_.empty());
+  DCHECK(!IsEmpty());
 
   // Save the sequenced time of the next task in the sequence.
   base::TimeTicks next_task_sequenced_time =
@@ -65,6 +65,10 @@ SequenceSortKey Sequence::Transaction::GetSortKey() const {
 
   return SequenceSortKey(sequence_->traits_.priority(),
                          next_task_sequenced_time);
+}
+
+bool Sequence::Transaction::IsEmpty() const {
+  return sequence_->queue_.empty();
 }
 
 void Sequence::SetHeapHandle(const HeapHandle& handle) {
