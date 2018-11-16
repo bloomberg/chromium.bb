@@ -260,6 +260,10 @@ class APP_LIST_EXPORT AppListItemView
   bool is_installing_ = false;
   bool is_highlighted_ = false;
 
+  // Whether |context_menu_| was cancelled as the result of a continuous drag
+  // gesture.
+  bool menu_close_initiated_from_drag_ = false;
+
   base::string16 tooltip_text_;
 
   // A timer to defer showing drag UI when mouse is pressed.
