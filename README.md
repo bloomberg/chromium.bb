@@ -20,21 +20,17 @@ checks formatting).
 
 ## Build dependencies
 
-Although we plan to address this in the future, there are currently some build
-dependencies that you will need to provide yourself.
+Run `./tools/install-build-tools.sh` from the root source directory to obtain a
+copy of the following build tools:
 
- - `gcc`
- - `gn`
+ - Build file generator: `gn`
+ - Code formatter: `clang-format`
 
-   If you have a Chromium checkout, you can use `//buildtools/<system>/gn`.
-   Otherwise, on 64-bit Linux you may use `//tools/install-build-tools.sh` to
-   obtain a copy of `gn`.
- - `clang-format`
+You will have to obtain and install these yourself:
 
-   `clang-format` may be provided by your OS, found under a Chromium checkout at
-   `//buildtools/<system>/clang-format`, or downloaded in a similar manner to
-   `gn` via `//tools/install-build-tools.sh`.
- - `ninja`
+ - Compiler toolchain: Currently, this is `gcc` on Linux, and `clang` on Mac
+   (from Xcode).
+ - Builder: `ninja`
 
    [GitHub releases](https://github.com/ninja-build/ninja/releases)
 
@@ -52,16 +48,16 @@ necessary submodules:
 The following commands will build the current example executable and run it.
 
 ``` bash
-  gn gen out/Default    # Creates the build directory and necessary ninja files
+  ./gn gen out/Default    # Creates the build directory and necessary ninja files
   ninja -C out/Default  # Builds the executable with ninja
-  out/Default/hello     # Runs the executable
+  ./out/Default/hello     # Runs the executable
 ```
 
 The `-C` argument to `ninja` works just like it does for GNU Make: it specifies
 the working directory for the build.  So the same could be done as follows:
 
 ``` bash
-  gn gen out/Default
+  ./gn gen out/Default
   cd out/Default
   ninja
   ./hello
