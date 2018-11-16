@@ -10,8 +10,10 @@ import com.google.errorprone.VisitorState;
 import com.google.errorprone.bugpatterns.BugChecker;
 import com.google.errorprone.fixes.SuggestedFix;
 import com.google.errorprone.matchers.Description;
+import com.google.errorprone.matchers.Matcher;
 import com.google.errorprone.matchers.Matchers;
 import com.google.errorprone.util.ASTHelpers;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.ModifiersTree;
@@ -31,6 +33,9 @@ import javax.lang.model.element.Modifier;
         link = "https://issuetracker.google.com/issues/37124982")
 public class NoRedundantFieldInitCheck
         extends BugChecker implements BugChecker.VariableTreeMatcher {
+    private static final Matcher<ClassTree> SUBTYPE_OF_IINTERFACE =
+            Matchers.isSubtypeOf("android.os.IInterface");
+
     @Override
     public Description matchVariable(VariableTree variableTree, VisitorState visitorState) {
         // Only match on fields.
@@ -40,6 +45,12 @@ public class NoRedundantFieldInitCheck
 
         Symbol.VarSymbol variableSymbol = ASTHelpers.getSymbol(variableTree);
         Symbol.ClassSymbol enclosingClass = ASTHelpers.enclosingClass(variableSymbol);
+
+        // Temporarily turn off checks if the enclosing class is a subclass of IInterface.
+        if (SUBTYPE_OF_IINTERFACE.matches(
+                    ASTHelpers.findClass(enclosingClass, visitorState), visitorState)) {
+            return Description.NO_MATCH;
+        }
 
         // Skip fields that are final.
         ModifiersTree modifiers = variableTree.getModifiers();
