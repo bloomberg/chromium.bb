@@ -198,6 +198,10 @@ MediaStream::MediaStream(ExecutionContext* context,
 
 MediaStream::~MediaStream() = default;
 
+bool MediaStream::HasPendingActivity() const {
+  return !scheduled_events_.IsEmpty();
+}
+
 bool MediaStream::EmptyOrOnlyEndedTracks() {
   if (!audio_tracks_.size() && !video_tracks_.size()) {
     return true;
