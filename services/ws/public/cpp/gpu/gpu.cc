@@ -345,7 +345,7 @@ void Gpu::EstablishGpuChannel(gpu::GpuChannelEstablishedCallback callback) {
 }
 
 scoped_refptr<gpu::GpuChannelHost> Gpu::EstablishGpuChannelSync() {
-  TRACE_EVENT0("mus", "Gpu::EstablishGpuChannelSync");
+  TRACE_EVENT0("gpu", "Gpu::EstablishGpuChannelSync");
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   scoped_refptr<gpu::GpuChannelHost> channel = GetGpuChannel();
