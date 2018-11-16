@@ -1776,7 +1776,7 @@ enum WebFeature {
   kCSSSelectorWebkitUnknownPseudo = 2319,
   kFilterAsContainingBlockMayChangeOutput = 2320,
   kDispatchMouseUpDownEventOnDisabledFormControl = 2321,
-  kCSSSelectorPseudoMatches = 2322,
+  kCSSSelectorPseudoIs = 2322,
   kV8RTCRtpSender_ReplaceTrack_Method = 2323,
   kInputTypeFileSecureOriginOpenChooser = 2324,
   kInputTypeFileInsecureOriginOpenChooser = 2325,

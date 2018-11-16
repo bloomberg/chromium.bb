@@ -163,6 +163,8 @@ TEST_F(UseCounterTest, CSSSelectorPseudoWhere) {
   document.documentElement()->SetInnerHTMLFromString(
       "<style>.a+:where(.b, .c+.d) { color: red; }</style>");
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+  EXPECT_FALSE(
+      UseCounter::IsCounted(document, WebFeature::kCSSSelectorPseudoIs));
 }
 
 /*
@@ -208,16 +210,18 @@ TEST_F(UseCounterTest, CSSTypedOMStylePropertyMap) {
   EXPECT_TRUE(use_counter.IsCounted(GetDocument(), feature));
 }
 
-TEST_F(UseCounterTest, CSSSelectorPseudoMatches) {
+TEST_F(UseCounterTest, CSSSelectorPseudoIs) {
   std::unique_ptr<DummyPageHolder> dummy_page_holder =
       DummyPageHolder::Create(IntSize(800, 600));
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   Document& document = dummy_page_holder->GetDocument();
-  WebFeature feature = WebFeature::kCSSSelectorPseudoMatches;
+  WebFeature feature = WebFeature::kCSSSelectorPseudoIs;
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
   document.documentElement()->SetInnerHTMLFromString(
-      "<style>.a+:matches(.b, .c+.d) { color: red; }</style>");
+      "<style>.a+:is(.b, .c+.d) { color: red; }</style>");
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
+  EXPECT_FALSE(
+      UseCounter::IsCounted(document, WebFeature::kCSSSelectorPseudoWhere));
 }
 
 TEST_F(UseCounterTest, CSSContainLayoutNonPositionedDescendants) {

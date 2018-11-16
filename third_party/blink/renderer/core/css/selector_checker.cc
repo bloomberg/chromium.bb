@@ -1107,7 +1107,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoCornerPresent:
       return false;
     case CSSSelector::kPseudoUnknown:
-    case CSSSelector::kPseudoMatches:
+    case CSSSelector::kPseudoIs:
     case CSSSelector::kPseudoWhere:
     default:
       NOTREACHED();
