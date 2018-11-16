@@ -168,8 +168,40 @@ TEST_F(SOCKSClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
                         ClientSocketPool::RespectLimits::ENABLED,
                         CompletionOnceCallback(), &pool_, NetLogWithSource()));
     EXPECT_EQ(priority, transport_socket_pool_.last_request_priority());
+    EXPECT_EQ(priority, transport_socket_pool_.requests()[i]->priority());
     handle.socket()->Disconnect();
   }
+}
+
+TEST_F(SOCKSClientSocketPoolTest, SetSocketRequestPriority) {
+  SOCKS5MockData data1(ASYNC);
+  transport_client_socket_factory_.AddSocketDataProvider(data1.data_provider());
+  SOCKS5MockData data2(ASYNC);
+  transport_client_socket_factory_.AddSocketDataProvider(data2.data_provider());
+
+  TestCompletionCallback callback1;
+  ClientSocketHandle handle1;
+  int rv1 = handle1.Init("a", CreateSOCKSv5Params(), LOW, SocketTag(),
+                         ClientSocketPool::RespectLimits::ENABLED,
+                         callback1.callback(), &pool_, NetLogWithSource());
+  EXPECT_THAT(rv1, IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(handle1.is_initialized());
+  EXPECT_FALSE(handle1.socket());
+  EXPECT_EQ(LOW, transport_socket_pool_.requests()[0]->priority());
+
+  TestCompletionCallback callback2;
+  ClientSocketHandle handle2;
+  int rv2 = handle2.Init("a", CreateSOCKSv5Params(), MEDIUM, SocketTag(),
+                         ClientSocketPool::RespectLimits::ENABLED,
+                         callback2.callback(), &pool_, NetLogWithSource());
+  EXPECT_THAT(rv2, IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(handle2.is_initialized());
+  EXPECT_FALSE(handle2.socket());
+  EXPECT_EQ(MEDIUM, transport_socket_pool_.requests()[1]->priority());
+
+  pool_.SetPriority("a", &handle1, HIGHEST);
+  EXPECT_EQ(HIGHEST, transport_socket_pool_.requests()[0]->priority());
+  EXPECT_EQ(MEDIUM, transport_socket_pool_.requests()[1]->priority());
 }
 
 // Make sure that SOCKSConnectJob passes on its priority to its
@@ -190,6 +222,8 @@ TEST_F(SOCKSClientSocketPoolTest, SetResolvePriorityOnInit) {
                     CompletionOnceCallback(), &pool_, NetLogWithSource()));
     EXPECT_EQ(priority, transport_socket_pool_.last_request_priority());
     EXPECT_EQ(priority, host_resolver_.last_request_priority());
+    EXPECT_EQ(priority,
+              host_resolver_.request_priority(static_cast<size_t>(i) + 1));
     EXPECT_TRUE(handle.socket() == NULL);
   }
 }

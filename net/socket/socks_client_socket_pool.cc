@@ -176,6 +176,12 @@ int SOCKSConnectJob::ConnectInternal() {
   return DoLoop(OK);
 }
 
+void SOCKSConnectJob::ChangePriorityInternal(RequestPriority priority) {
+  // Currently doesn't change host resolution request priority for SOCKS4 case.
+  if (transport_socket_handle_)
+    transport_socket_handle_->SetPriority(priority);
+}
+
 std::unique_ptr<ConnectJob>
 SOCKSClientSocketPool::SOCKSConnectJobFactory::NewConnectJob(
     const std::string& group_name,

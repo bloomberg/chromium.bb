@@ -103,6 +103,8 @@ class SOCKSConnectJob : public ConnectJob {
   // Otherwise, it returns a net error code.
   int ConnectInternal() override;
 
+  void ChangePriorityInternal(RequestPriority priority) override;
+
   scoped_refptr<SOCKSSocketParams> socks_params_;
   TransportClientSocketPool* const transport_pool_;
   HostResolver* const resolver_;
