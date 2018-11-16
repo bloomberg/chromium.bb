@@ -9,6 +9,14 @@ group("web_app_group") {
 source_set("web_applications") {
   sources = [
     "abstract_web_app_database.h",
+    "external_web_apps.cc",
+    "external_web_apps.h",
+    "policy/web_app_policy_constants.cc",
+    "policy/web_app_policy_constants.h",
+    "policy/web_app_policy_manager.cc",
+    "policy/web_app_policy_manager.h",
+    "system_web_app_manager.cc",
+    "system_web_app_manager.h",
     "web_app.cc",
     "web_app.h",
     "web_app_database.cc",
@@ -27,6 +35,7 @@ source_set("web_applications") {
     ":web_app_group",
     "//chrome/browser/web_applications/components",
     "//chrome/common",
+    "//components/pref_registry",
     "//components/sync",
     "//content/public/browser",
     "//skia",
@@ -43,6 +52,8 @@ source_set("web_applications_test_support") {
   sources = [
     "test/test_data_retriever.cc",
     "test/test_data_retriever.h",
+    "test/test_system_web_app_manager.cc",
+    "test/test_system_web_app_manager.h",
     "test/test_web_app_database.cc",
     "test/test_web_app_database.h",
     "test/test_web_app_database_factory.cc",

@@ -1263,10 +1263,6 @@ jumbo_split_static_library("ui") {
       deps += [
         "//chrome/browser/web_applications",
 
-        # TODO(calamity): Remove once SystemWebAppManager is moved into
-        # web_applications/.
-        "//chrome/browser/web_applications/bookmark_apps",
-
         # TODO(loyso): Erase these. crbug.com/877898.
         "//chrome/browser/web_applications:web_applications_on_extensions",
         "//chrome/browser/web_applications/components",

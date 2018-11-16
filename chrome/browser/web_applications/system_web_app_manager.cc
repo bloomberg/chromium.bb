@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 
 #include <utility>
 #include <vector>
@@ -12,8 +12,6 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/browser_task_traits.h"
