@@ -390,10 +390,19 @@ Polymer({
     if (e.target.tagName === 'A') {
       e.preventDefault();
       if (!this.syncStatus.hasError) {
+        chrome.metricsPrivate.recordUserAction('ClearBrowsingData_Sync_Pause');
         this.syncBrowserProxy_.pauseSync();
       } else if (this.isSyncPaused_) {
+        chrome.metricsPrivate.recordUserAction('ClearBrowsingData_Sync_SignIn');
         this.syncBrowserProxy_.startSignIn();
       } else {
+        if (this.hasPassphraseError_) {
+          chrome.metricsPrivate.recordUserAction(
+              'ClearBrowsingData_Sync_NavigateToPassphrase');
+        } else {
+          chrome.metricsPrivate.recordUserAction(
+              'ClearBrowsingData_Sync_NavigateToError');
+        }
         // In any other error case, navigate to the sync page.
         settings.navigateTo(settings.routes.SYNC);
       }
