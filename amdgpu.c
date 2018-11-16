@@ -240,6 +240,32 @@ static int amdgpu_unmap_bo(struct bo *bo, struct vma *vma)
 		return munmap(vma->addr, vma->length);
 }
 
+static int amdgpu_bo_invalidate(struct bo *bo, struct mapping *mapping)
+{
+	int ret;
+	union drm_amdgpu_gem_wait_idle wait_idle;
+
+	if (bo->priv)
+		return 0;
+
+	memset(&wait_idle, 0, sizeof(wait_idle));
+	wait_idle.in.handle = bo->handles[0].u32;
+	wait_idle.in.timeout = AMDGPU_TIMEOUT_INFINITE;
+
+	ret = drmCommandWriteRead(bo->drv->fd, DRM_AMDGPU_GEM_WAIT_IDLE, &wait_idle,
+				  sizeof(wait_idle));
+
+	if (ret < 0) {
+		drv_log("DRM_AMDGPU_GEM_WAIT_IDLE failed with %d\n", ret);
+		return ret;
+	}
+
+	if (ret == 0 && wait_idle.out.status)
+		drv_log("DRM_AMDGPU_GEM_WAIT_IDLE BO is busy\n");
+
+	return 0;
+}
+
 static uint32_t amdgpu_resolve_format(uint32_t format, uint64_t use_flags)
 {
 	switch (format) {
@@ -265,6 +291,7 @@ const struct backend backend_amdgpu = {
 	.bo_import = amdgpu_import_bo,
 	.bo_map = amdgpu_map_bo,
 	.bo_unmap = amdgpu_unmap_bo,
+	.bo_invalidate = amdgpu_bo_invalidate,
 	.resolve_format = amdgpu_resolve_format,
 };
 
