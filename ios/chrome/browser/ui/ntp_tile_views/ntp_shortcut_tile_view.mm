@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_shortcut_tile_view.h"
 
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -75,9 +76,9 @@ const CGFloat kIconSize = 56;
       [_countLabel.heightAnchor
           constraintEqualToAnchor:_countLabel.widthAnchor],
     ]];
+    _countLabel.font = [MDCTypography captionFont];
     AddSameCenterConstraints(_countLabel, _countContainer);
   }
-  _countContainer.hidden = NO;
   return _countLabel;
 }
 

@@ -26,7 +26,6 @@ const CGFloat kTopInset = 10;
 
 const NSInteger kMostVisitedSection = 0;
 const NSInteger kCollectionShortcutSection = 1;
-
 }  // namespace
 
 @interface ShortcutsViewController ()<UICollectionViewDelegate,
@@ -42,6 +41,7 @@ const NSInteger kCollectionShortcutSection = 1;
 // prevents the updates when the user sees the tiles.
 @property(nonatomic, strong)
     NSArray<ShortcutsMostVisitedItem*>* displayedMostVisitedItems;
+@property(nonatomic, assign) NSInteger readingListBadgeValue;
 
 @end
 
@@ -134,6 +134,16 @@ const NSInteger kCollectionShortcutSection = 1;
 }
 
 - (void)readingListBadgeUpdatedWithCount:(NSInteger)count {
+  self.readingListBadgeValue = count;
+  if (!self.viewLoaded) {
+    return;
+  }
+
+  NSIndexPath* readingListShortcutIndexPath =
+      [NSIndexPath indexPathForItem:NTPCollectionShortcutTypeReadingList
+                          inSection:kCollectionShortcutSection];
+  [self.collectionView
+      reloadItemsAtIndexPaths:@[ readingListShortcutIndexPath ]];
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -191,6 +201,14 @@ const NSInteger kCollectionShortcutSection = 1;
                          withCollection:(NTPCollectionShortcutType)type {
   cell.tile.titleLabel.text = TitleForCollectionShortcutType(type);
   cell.tile.iconView.image = ImageForCollectionShortcutType(type);
+  if (type == NTPCollectionShortcutTypeReadingList) {
+    if (self.readingListBadgeValue > 0) {
+      cell.tile.countLabel.text = [@(self.readingListBadgeValue) stringValue];
+      cell.tile.countContainer.hidden = NO;
+    } else {
+      cell.tile.countLabel.text = nil;
+    }
+  }
 }
 
 #pragma mark - UICollectionViewDelegate

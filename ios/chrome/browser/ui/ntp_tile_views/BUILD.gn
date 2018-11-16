@@ -21,6 +21,7 @@ source_set("ntp_tile_views") {
     "resources:ntp_recent_icon",
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
+    "//ios/third_party/material_components_ios",
   ]
 }
 
@@ -33,6 +34,7 @@ source_set("constants") {
 
   deps = [
     "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/third_party/material_components_ios",
     "//ui/base:base",
   ]
 }

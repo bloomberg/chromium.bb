@@ -7,6 +7,7 @@
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
 #include "components/reading_list/core/reading_list_model.h"
+#import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -31,7 +32,8 @@ const CGFloat kFaviconMinimalSize = 32;
 
 }  // namespace
 
-@interface ShortcutsMediator ()<MostVisitedSitesObserving>
+@interface ShortcutsMediator ()<MostVisitedSitesObserving,
+                                ReadingListModelBridgeObserver>
 
 // Most visited items from the MostVisitedSites service currently displayed.
 @property(nonatomic, strong)
@@ -45,6 +47,9 @@ const CGFloat kFaviconMinimalSize = 32;
 @implementation ShortcutsMediator {
   std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
   std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
+  // ShortcutsMediator observes the reading list model to get the reading list
+  // badge.
+  std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
 }
 
 - (instancetype)
@@ -66,6 +71,9 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
              minFaviconSize:kFaviconMinimalSize
            largeIconService:largeIconService];
     _faviconAttributesProvider.cache = largeIconCache;
+
+    _readingListModelBridge =
+        std::make_unique<ReadingListModelBridge>(self, readingListModel);
   }
   return self;
 }
@@ -141,6 +149,16 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
       return;
     }
   }
+}
+
+#pragma mark - ReadingListModelBridgeObserver
+
+- (void)readingListModelLoaded:(const ReadingListModel*)model {
+  [self.consumer readingListBadgeUpdatedWithCount:model->unread_size()];
+}
+
+- (void)readingListModelDidApplyChanges:(const ReadingListModel*)model {
+  [self.consumer readingListBadgeUpdatedWithCount:model->unread_size()];
 }
 
 @end
