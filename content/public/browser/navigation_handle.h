@@ -173,9 +173,11 @@ class CONTENT_EXPORT NavigationHandle {
   virtual net::Error GetNetErrorCode() = 0;
 
   // Returns the RenderFrameHost this navigation is committing in.  The
-  // RenderFrameHost returned will be the final host for the navigation.  This
-  // can only be accessed after a response has been delivered for processing,
-  // or after the navigation fails with an error page.
+  // RenderFrameHost returned will be the final host for the navigation. (Use
+  // WebContentsObserver::RenderFrameHostChanged() to observe RenderFrameHost
+  // changes that occur during navigation.) This can only be accessed after a
+  // response has been delivered for processing, or after the navigation fails
+  // with an error page.
   virtual RenderFrameHost* GetRenderFrameHost() = 0;
 
   // Whether the navigation happened without changing document. Examples of
