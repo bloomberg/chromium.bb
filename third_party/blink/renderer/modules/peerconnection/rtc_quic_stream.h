@@ -72,6 +72,9 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
       ScriptState* script_state,
       uint32_t threshold,
       ExceptionState& exception_state);
+  ScriptPromise waitForReadable(ScriptState* script_state,
+                                uint32_t amount,
+                                ExceptionState& exception_state);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange);
 
   // EventTarget overrides.
@@ -82,6 +85,7 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   void Trace(Visitor* visitor) override;
 
  private:
+  class PendingReadBufferedAmountPromise;
   class PendingWriteBufferedAmountPromise;
 
   // QuicStreamProxy::Delegate overrides.
@@ -99,6 +103,7 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
 
   bool IsClosed() const { return state_ == RTCQuicStreamState::kClosed; }
 
+  void RejectPendingWaitForReadablePromises();
   void RejectPendingWaitForWriteBufferedAmountBelowPromises();
 
   Member<RTCQuicTransport> transport_;
@@ -113,6 +118,9 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   // True if the fin has been read out via readInto(). This signifies that the
   // RTCQuicStream is closed for reading.
   bool read_fin_ = false;
+  // Pending waitForReadable promises.
+  HeapVector<Member<PendingReadBufferedAmountPromise>>
+      pending_read_buffered_amount_promises_;
 
   // Amount of bytes written but may not yet have been sent by the underlying
   // P2PQuicStream.

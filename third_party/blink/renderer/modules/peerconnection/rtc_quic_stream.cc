@@ -13,6 +13,24 @@ namespace blink {
 const uint32_t RTCQuicStream::kWriteBufferSize = 4 * 1024;
 const uint32_t RTCQuicStream::kReadBufferSize = 4 * 1024;
 
+class RTCQuicStream::PendingReadBufferedAmountPromise
+    : public GarbageCollected<PendingReadBufferedAmountPromise> {
+ public:
+  PendingReadBufferedAmountPromise(ScriptPromiseResolver* promise_resolver,
+                                   uint32_t readable_amount)
+      : promise_resolver_(promise_resolver),
+        readable_amount_(readable_amount) {}
+
+  ScriptPromiseResolver* promise_resolver() const { return promise_resolver_; }
+  uint32_t readable_amount() const { return readable_amount_; }
+
+  void Trace(Visitor* visitor) { visitor->Trace(promise_resolver_); }
+
+ private:
+  Member<ScriptPromiseResolver> promise_resolver_;
+  uint32_t readable_amount_;
+};
+
 class RTCQuicStream::PendingWriteBufferedAmountPromise
     : public GarbageCollected<PendingWriteBufferedAmountPromise> {
  public:
@@ -153,6 +171,31 @@ void RTCQuicStream::reset() {
   Close(CloseReason::kLocalReset);
 }
 
+ScriptPromise RTCQuicStream::waitForReadable(ScriptState* script_state,
+                                             uint32_t amount,
+                                             ExceptionState& exception_state) {
+  if (RaiseIfNotReadable(exception_state)) {
+    return ScriptPromise();
+  }
+  if (amount > kReadBufferSize) {
+    exception_state.ThrowTypeError(
+        "The amount " + String::Number(amount) +
+        " is greater than the maximum read buffer size of " +
+        String::Number(kReadBufferSize) + ".");
+    return ScriptPromise();
+  }
+  ScriptPromiseResolver* promise_resolver =
+      ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = promise_resolver->Promise();
+  if (received_fin_ || receive_buffer_.size() >= amount) {
+    promise_resolver->Resolve();
+  } else {
+    pending_read_buffered_amount_promises_.push_back(
+        new PendingReadBufferedAmountPromise(promise_resolver, amount));
+  }
+  return promise;
+}
+
 ScriptPromise RTCQuicStream::waitForWriteBufferedAmountBelow(
     ScriptState* script_state,
     uint32_t threshold,
@@ -204,11 +247,30 @@ bool RTCQuicStream::RaiseIfNotWritable(ExceptionState& exception_state) {
   return false;
 }
 
+void RTCQuicStream::RejectPendingWaitForReadablePromises() {
+  // TODO(https://github.com/w3c/webrtc-quic/issues/81): The promise resolve
+  // order is under specified.
+  for (PendingReadBufferedAmountPromise* pending_promise :
+       pending_read_buffered_amount_promises_) {
+    ScriptState::Scope scope(
+        pending_promise->promise_resolver()->GetScriptState());
+    ExceptionState exception_state(
+        pending_promise->promise_resolver()->GetScriptState()->GetIsolate(),
+        ExceptionState::kExecutionContext, "RTCQuicStream", "waitForReadable");
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The RTCQuicStream is not readable.");
+    pending_promise->promise_resolver()->Reject(exception_state);
+  }
+  pending_read_buffered_amount_promises_.clear();
+}
+
 void RTCQuicStream::RejectPendingWaitForWriteBufferedAmountBelowPromises() {
   // TODO(https://github.com/w3c/webrtc-quic/issues/81): The promise resolve
   // order is under specified.
   for (PendingWriteBufferedAmountPromise* pending_promise :
        pending_write_buffered_amount_promises_) {
+    ScriptState::Scope scope(
+        pending_promise->promise_resolver()->GetScriptState());
     ExceptionState exception_state(
         pending_promise->promise_resolver()->GetScriptState()->GetIsolate(),
         ExceptionState::kExecutionContext, "RTCQuicStream",
@@ -229,6 +291,20 @@ void RTCQuicStream::OnDataReceived(Vector<uint8_t> data, bool fin) {
   DCHECK_LE(data.size(), kReadBufferSize - receive_buffer_.size());
   received_fin_ = fin;
   receive_buffer_.Append(std::move(data));
+  // TODO(https://github.com/w3c/webrtc-quic/issues/81): The promise resolve
+  // order is under specified.
+  for (auto* it = pending_read_buffered_amount_promises_.begin();
+       it != pending_read_buffered_amount_promises_.end();
+       /* incremented manually */) {
+    PendingReadBufferedAmountPromise* pending_promise = *it;
+    if (received_fin_ ||
+        receive_buffer_.size() >= pending_promise->readable_amount()) {
+      pending_promise->promise_resolver()->Resolve();
+      it = pending_read_buffered_amount_promises_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 void RTCQuicStream::OnWriteDataConsumed(uint32_t amount) {
@@ -237,7 +313,8 @@ void RTCQuicStream::OnWriteDataConsumed(uint32_t amount) {
   // TODO(https://github.com/w3c/webrtc-quic/issues/81): The promise resolve
   // order is under specified.
   for (auto* it = pending_write_buffered_amount_promises_.begin();
-       it != pending_write_buffered_amount_promises_.end();) {
+       it != pending_write_buffered_amount_promises_.end();
+       /* incremented manually */) {
     PendingWriteBufferedAmountPromise* pending_promise = *it;
     if (write_buffered_amount_ <= pending_promise->threshold()) {
       pending_promise->promise_resolver()->Resolve();
@@ -295,6 +372,7 @@ void RTCQuicStream::Close(CloseReason reason) {
   // It's illegal to resolve or reject promises when the ExecutionContext is
   // being destroyed.
   if (reason != CloseReason::kContextDestroyed) {
+    RejectPendingWaitForReadablePromises();
     RejectPendingWaitForWriteBufferedAmountBelowPromises();
   }
 
@@ -316,6 +394,7 @@ ExecutionContext* RTCQuicStream::GetExecutionContext() const {
 
 void RTCQuicStream::Trace(blink::Visitor* visitor) {
   visitor->Trace(transport_);
+  visitor->Trace(pending_read_buffered_amount_promises_);
   visitor->Trace(pending_write_buffered_amount_promises_);
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);
