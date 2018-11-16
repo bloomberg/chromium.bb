@@ -345,7 +345,11 @@ void WebViewPlugin::WebViewHelper::ScheduleAnimation() {
 
 std::unique_ptr<blink::WebURLLoaderFactory>
 WebViewPlugin::WebViewHelper::CreateURLLoaderFactory() {
-  return blink::Platform::Current()->CreateDefaultURLLoaderFactory();
+  return plugin_->Container()
+      ->GetDocument()
+      .GetFrame()
+      ->Client()
+      ->CreateURLLoaderFactory();
 }
 
 void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
