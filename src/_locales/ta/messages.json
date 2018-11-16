@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "உங்கள் கேமராவைப் பயன்படுத்தி, படங்களை எடுக்கலாம், வீடியோக்களைப் பதிவுசெய்யலாம்.",
+    "message": "உங்கள் கேமராவைப் பயன்படுத்தி, படங்களை எடுக்கலாம், வீடியோக்களை ரெக்கார்டு செய்யலாம்.",
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
@@ -34,15 +34,15 @@
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "பதிவுசெய்ய முடியவில்லை",
+    "message": "ரெக்கார்டு செய்ய முடியவில்லை",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "எதுவும் பதிவு செய்யப்படவில்லை",
+    "message": "எதுவும் ரெக்கார்டு செய்யப்படவில்லை",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "statusMsgRecordingStopped": {
-    "message": "பதிவுசெய்தல் நிறுத்தப்பட்டது",
+    "message": "ரெக்கார்டு செய்வது நிறுத்தப்பட்டது",
     "description": "Status message for spoken feedback when video recording has been stopped."
   },
   "statusMsgCameraSwitched": {
@@ -88,11 +88,11 @@
     "description": "Label for the shutter button to cancel countdown timer and stop taking photo."
   },
   "recordVideoStartButton": {
-    "message": "பதிவுசெய்யத் தொடங்கு",
+    "message": "ரெக்கார்டு செய்யத் தொடங்கு",
     "description": "Label for the shutter button to start recording."
   },
   "recordVideoStopButton": {
-    "message": "பதிவுசெய்வதை நிறுத்து",
+    "message": "ரெக்கார்டு செய்வதை நிறுத்து",
     "description": "Label for the shutter button to stop recording."
   },
   "switchCameraButton": {
@@ -100,7 +100,7 @@
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "வீடியோவைப் பதிவுசெய்யும் பயன்முறைக்கு மாறு",
+    "message": "வீடியோவை ரெக்கார்டு செய்யும் பயன்முறைக்கு மாறு",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {

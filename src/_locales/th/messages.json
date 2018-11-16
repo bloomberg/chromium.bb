@@ -12,11 +12,11 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "ขณะนี้กล้องไม่พร้อมใช้งาน\nโปรดตรวจสอบว่ากล้องเชื่อมต่ออย่างถูกต้องแล้ว",
+    "message": "ขณะนี้กล้องไม่พร้อมใช้งาน\nโปรดตรวจสอบว่ากล้องเชื่อมต่ออย่างถูกต้อง",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "ส่งออก $file$ ไม่สำเร็จ",
+    "message": "ส่งออก $file$ ไม่ได้",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -26,23 +26,23 @@
     }
   },
   "errorMsgSaveFileFailed": {
-    "message": "บันทึกไฟล์ไม่สำเร็จ",
+    "message": "บันทึกไฟล์ไม่ได้",
     "description": "Error message shown when saving/adding a image or video to the file system failed."
   },
   "errorMsgTakePhotoFailed": {
-    "message": "ถ่ายภาพไม่สำเร็จ",
+    "message": "ถ่ายภาพไม่ได้",
     "description": "Error message shown when failing to take photo."
   },
   "errorMsgRecordStartFailed": {
-    "message": "เริ่มบันทึกไม่สำเร็จ",
+    "message": "เริ่มบันทึกวิดีโอไม่ได้",
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "ไม่ได้บันทึกรายการใดๆ",
+    "message": "ไม่ได้บันทึกข้อมูลใด",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "statusMsgRecordingStopped": {
-    "message": "หยุดการบันทึกแล้ว",
+    "message": "หยุดบันทึกวิดีโอแล้ว",
     "description": "Status message for spoken feedback when video recording has been stopped."
   },
   "statusMsgCameraSwitched": {
@@ -96,11 +96,11 @@
     "description": "Label for the shutter button to stop recording."
   },
   "switchCameraButton": {
-    "message": "เปลี่ยนเป็นกล้องถัดไป",
+    "message": "เปลี่ยนไปใช้กล้องถัดไป",
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "เปลี่ยนเป็นบันทึกวิดีโอ",
+    "message": "เปลี่ยนเป็นโหมดบันทึกวิดีโอ",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
@@ -112,11 +112,11 @@
     "description": "Label for the checkbox to toggle the countdown timer."
   },
   "toggleMirrorButton": {
-    "message": "การจำลอง",
+    "message": "การมิเรอร์",
     "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
-    "message": "ตาราง",
+    "message": "ตารางกริด",
     "description": "Label for the checkbox to toggle the grid shown on preview."
   },
   "toggleMicButton": {

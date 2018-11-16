@@ -100,11 +100,11 @@
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "Bytt til å ta opp video",
+    "message": "Bytt til video",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "Bytt til å ta bilde",
+    "message": "Bytt til foto",
     "description": "Label for the button to switch to take photo mode."
   },
   "toggleTimerButton": {

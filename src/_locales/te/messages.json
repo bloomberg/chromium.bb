@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "మీ కెమెరాతో చిత్రాలను తీయండి మరియు వీడియోలను రికార్డ్ చేయండి.",
+    "message": "మీ కెమెరాతో ఫోటోలను తీయండి, వీడియోలను రికార్డ్ చేయండి.",
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
@@ -100,11 +100,11 @@
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "వీడియో రికార్డ్ చేయడానికి మారండి",
+    "message": "వీడియో రికార్డింగ్ మోడ్‌కు మారండి",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "ఫోటోను తీయడానికి మారండి",
+    "message": "ఫోటో మోడ్‌కు మారండి",
     "description": "Label for the button to switch to take photo mode."
   },
   "toggleTimerButton": {
@@ -152,7 +152,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "కెమెరాతో తీసిన ఫోటోలు మరియు వీడియోలు డౌన్‌లోడ్‌లు ఫోల్డర్‌కు తరలించబడతాయి. మీరు వాటిని ఫైల్స్‌లో యాక్సెస్ చేయవచ్చు. నిల్వ అనుమతులు కలిగిన యాప్‌లు మీ ఫోటోలు మరియు వీడియోలను యాక్సెస్ చేయగలుగుతాయి.",
+    "message": "కెమెరాతో తీసిన ఫోటోలు మరియు వీడియోలు, డౌన్‌లోడ్‌లు ఫోల్డర్‌కు తరలించబడతాయి. మీరు వాటిని ఫైల్స్‌లో యాక్సెస్ చేయవచ్చు. నిల్వ అనుమతులు కలిగిన యాప్‌లు మీ ఫోటోలు మరియు వీడియోలను యాక్సెస్ చేయగలుగుతాయి.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }

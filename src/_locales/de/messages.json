@@ -100,11 +100,11 @@
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "Modus wechseln, um Video aufzunehmen",
+    "message": "Zu Videomodus wechseln",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "Modus wechseln, um Foto aufzunehmen",
+    "message": "Zu Fotomodus wechseln",
     "description": "Label for the button to switch to take photo mode."
   },
   "toggleTimerButton": {
@@ -112,7 +112,7 @@
     "description": "Label for the checkbox to toggle the countdown timer."
   },
   "toggleMirrorButton": {
-    "message": "Spiegelung",
+    "message": "Spiegeln",
     "description": "Label for the checkbox to toggle the preview mirroring. Eg. if mirroring is toggled on, preview will be flipped horizontally."
   },
   "toggleGridButton": {
@@ -132,7 +132,7 @@
     "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Möchten Sie $file$ wirklich entfernen?",
+    "message": "Möchten Sie \"$file$\" wirklich entfernen?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {

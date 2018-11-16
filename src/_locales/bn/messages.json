@@ -4,7 +4,7 @@
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "আপানর ক্যামেরা ব্যবহার করে ছবি তুলুন এবং ভিডিও রেকর্ড করুন।",
+    "message": "আপনার ক্যামেরা ব্যবহার করে ছবি তুলুন এবং ভিডিও রেকর্ড করুন।",
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
@@ -12,7 +12,7 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "আপনার ক্যামেরাটি বর্তমানে কানেক্ট করা নেই।\nক্যামেরাটি সঠিকভাবে কানেক্ট করা আছে কিনা দেখে নিন।",
+    "message": "আপনার ক্যামেরাটি বর্তমানে উপলভ্য নয়।\nক্যামেরাটি সঠিকভাবে কানেক্ট করা আছে কিনা দেখে নিন।",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgGalleryExportFailed": {

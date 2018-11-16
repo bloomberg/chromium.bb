@@ -1,10 +1,10 @@
 {
   "name": {
-    "message": "Kamera",
+    "message": "Aparat",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "Kamerą możesz robić zdjęcia i nagrywać filmy.",
+    "message": "Aparatem możesz robić zdjęcia i nagrywać filmy.",
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
@@ -152,7 +152,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "Zdjęcia i filmy pochodzące z kamery zostaną przeniesione do folderu Pobrane pliki. Będziesz mieć do nich dostęp w aplikacji Pliki.\n\nZ Twoich zdjęć i filmów będą mogły korzystać aplikacje z uprawnieniami dostępu do pamięci.",
+    "message": "Zdjęcia i filmy pochodzące z aparatu zostaną przeniesione do folderu Pobrane pliki. Będziesz mieć do nich dostęp w aplikacji Pliki.\n\nZ Twoich zdjęć i filmów będą mogły korzystać aplikacje z uprawnieniami dostępu do pamięci.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }

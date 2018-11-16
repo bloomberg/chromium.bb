@@ -38,7 +38,7 @@
     "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
-    "message": "Tiada apa-apa yang direkodkan",
+    "message": "Tiada apa-apa yang dirakamkan",
     "description": "Error message shown when no data is recorded for a recording and it won't be added to the gallery."
   },
   "statusMsgRecordingStopped": {
