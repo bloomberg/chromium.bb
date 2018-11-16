@@ -5,7 +5,7 @@
 #include "services/device/generic_sensor/linux/sensor_device_manager.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
@@ -33,7 +33,7 @@ SensorDeviceManager::~SensorDeviceManager() {
 
 void SensorDeviceManager::Start(Delegate* delegate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(!delegate_);
 
   delegate_ = delegate;
