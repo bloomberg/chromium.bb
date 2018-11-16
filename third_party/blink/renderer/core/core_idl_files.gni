@@ -553,7 +553,6 @@ core_dependency_idl_files =
                     "svg/svg_zoom_and_pan.idl",
                     "timing/window_performance.idl",
                     "timing/worker_global_scope_performance.idl",
-                    "url/url_utils_read_only.idl",
                     "workers/abstract_worker.idl",
                     "workers/experimental/window_task_worklet.idl",
                     "xml/document_xpath_evaluator.idl",
