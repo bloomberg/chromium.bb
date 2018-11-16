@@ -11,7 +11,13 @@ namespace chromeos {
 namespace assistant {
 namespace features {
 
+// Enables Assistant voice match enrollment.
 extern const base::Feature kAssistantVoiceMatch;
+
+// Enables DSP for hotword detection.
+extern const base::Feature kEnableDspHotword;
+
+bool IsDspHotwordEnabled();
 
 }  // namespace features
 }  // namespace assistant

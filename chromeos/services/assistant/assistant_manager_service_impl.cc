@@ -411,12 +411,6 @@ void AssistantManagerServiceImpl::OnConversationTurnStarted(bool is_mic_open) {
 
 void AssistantManagerServiceImpl::OnConversationTurnFinished(
     Resolution resolution) {
-  // TODO(updowndota): Find a better way to handle the edge cases.
-  if (resolution != Resolution::NORMAL_WITH_FOLLOW_ON &&
-      resolution != Resolution::CANCELLED &&
-      resolution != Resolution::BARGE_IN) {
-    platform_api_->SetMicState(false);
-  }
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -938,13 +932,28 @@ void AssistantManagerServiceImpl::OnTimerSoundingFinished() {
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread(
     bool is_mic_open) {
+  platform_api_->GetAudioInputProvider()
+      .GetAudioInput()
+      .OnConversationTurnStarted();
+
   interaction_subscribers_.ForAllPtrs([is_mic_open](auto* ptr) {
     ptr->OnInteractionStarted(/*is_voice_interaction=*/is_mic_open);
   });
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
-    Resolution resolution) {
+    assistant_client::ConversationStateListener::Resolution resolution) {
+  // TODO(updowndota): Find a better way to handle the edge cases.
+  if (resolution != Resolution::NORMAL_WITH_FOLLOW_ON &&
+      resolution != Resolution::CANCELLED &&
+      resolution != Resolution::BARGE_IN) {
+    platform_api_->SetMicState(false);
+  }
+
+  platform_api_->GetAudioInputProvider()
+      .GetAudioInput()
+      .OnConversationTurnFinished();
+
   switch (resolution) {
     // Interaction ended normally.
     case Resolution::NORMAL:

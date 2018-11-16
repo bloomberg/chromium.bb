@@ -38,7 +38,7 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   ~PlatformApiImpl() override;
 
   // assistant_client::PlatformApi overrides
-  assistant_client::AudioInputProvider& GetAudioInputProvider() override;
+  AudioInputProviderImpl& GetAudioInputProvider() override;
   assistant_client::AudioOutputProvider& GetAudioOutputProvider() override;
   assistant_client::AuthProvider& GetAuthProvider() override;
   assistant_client::FileProvider& GetFileProvider() override;
