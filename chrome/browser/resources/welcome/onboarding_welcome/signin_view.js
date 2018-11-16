@@ -11,6 +11,28 @@ Polymer({
   shouldShowEmailInterstitial_:
       loadTimeData.getBoolean('showEmailInterstitial'),
 
+  /** @private {?welcome.WelcomeBrowserProxy} */
+  welcomeBrowserProxy_: null,
+
+  /** @override */
+  ready: function() {
+    this.welcomeBrowserProxy_ = welcome.WelcomeBrowserProxyImpl.getInstance();
+  },
+
+  /**
+   * @return {?string}
+   * @private
+   */
+  getTargetUrl_: function() {
+    const savedProvider =
+        nux.NuxEmailProxyImpl.getInstance().getSavedProvider();
+    if (savedProvider != undefined && this.shouldShowEmailInterstitial_) {
+      return `chrome://welcome/email-interstitial?provider=${savedProvider}`;
+    } else {
+      return null;
+    }
+  },
+
   /**
    * When the user clicks sign-in, check whether or not they previously
    * selected an email provider they prefer to use. If so, direct them back to
@@ -18,21 +40,18 @@ Polymer({
    * @private
    */
   onSignInClick_: function() {
-    let redirectUrl = null;
-
-    const savedProvider =
-        nux.NuxEmailProxyImpl.getInstance().getSavedProvider();
-    if (savedProvider != undefined && this.shouldShowEmailInterstitial_) {
-      redirectUrl =
-          `chrome://welcome/email-interstitial?provider=${savedProvider}`;
-    }
-
-    welcome.WelcomeBrowserProxyImpl.getInstance().handleActivateSignIn(
-        redirectUrl);
+    this.welcomeBrowserProxy_.handleActivateSignIn(this.getTargetUrl_());
   },
 
   /** @private */
   onNoThanksClick_: function() {
-    welcome.navigateToNextStep();
+    // It's safe to assume sign-view is always going to be the last step, so
+    // either go to the target url directly, or go to NTP directly.
+    const targetUrl = this.getTargetUrl_();
+    if (targetUrl) {
+      this.welcomeBrowserProxy_.goToURL(targetUrl);
+    } else {
+      this.welcomeBrowserProxy_.goToNewTabPage();
+    }
   }
 });
