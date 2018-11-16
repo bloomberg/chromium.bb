@@ -17,6 +17,7 @@
 #include "base/containers/flat_set.h"
 #include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -342,7 +343,7 @@ namespace {
 std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
     const AwWebResourceRequest& request,
     JavaObjectWeakGlobalRef ref) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> obj = ref.get(env);

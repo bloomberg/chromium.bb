@@ -6,7 +6,7 @@
 
 #include "android_webview/common/aw_channel.h"
 #include "base/bind.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -18,7 +18,7 @@ namespace {
 // Gets the version number to use for variations seed simulation. Must be called
 // on a thread where IO is allowed.
 base::Version GetVersionForSimulation() {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   return version_info::GetVersion();
 }
 
