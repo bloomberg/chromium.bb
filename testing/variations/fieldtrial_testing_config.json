@@ -1922,6 +1922,21 @@
             ]
         }
     ],
+    "ExploreSites InitialCountries": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ExploreSites"
+                    ]
+                }
+            ]
+        }
+    ],
     "ExtendedShellExtensionsEnumeration": [
         {
             "platforms": [

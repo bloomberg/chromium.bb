@@ -35,6 +35,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -49,6 +50,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -101,6 +103,8 @@ public class TileGridLayoutTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
+    // TODO(https://crbug.com/906151): Add new goldens and enable ExploreSites.
+    @DisableFeatures(ChromeFeatureList.EXPLORE_SITES)
     public void testTileGridAppearance() throws Exception {
         NewTabPage ntp = setUpFakeDataToShowOnNtp(FAKE_MOST_VISITED_URLS.length);
         mRenderTestRule.render(getTileGridLayout(ntp), "ntp_tile_grid_layout");
@@ -145,6 +149,8 @@ public class TileGridLayoutTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
+    // TODO(https://crbug.com/906151): Add new goldens and enable ExploreSites.
+    @DisableFeatures(ChromeFeatureList.EXPLORE_SITES)
     public void testTileAppearanceModern()
             throws IOException, InterruptedException, TimeoutException {
         List<SiteSuggestion> suggestions = makeSuggestions(2);
