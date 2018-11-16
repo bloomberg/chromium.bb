@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 
+#include "base/memory/weak_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 namespace {
@@ -54,7 +56,7 @@ TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
   count = 0;
   handle = PostDelayedCancellableTask(
       *task_runner, FROM_HERE, WTF::Bind(&Increment, WTF::Unretained(&count)),
-      TimeDelta::FromMilliseconds(1));
+      base::TimeDelta::FromMilliseconds(1));
   EXPECT_EQ(0, count);
   EXPECT_TRUE(handle.IsActive());
   task_runner->RunUntilIdle();

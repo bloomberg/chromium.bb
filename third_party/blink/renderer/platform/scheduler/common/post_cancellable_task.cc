@@ -1,21 +1,14 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 
-#include "base/bind_helpers.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/weak_ptr.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
-
-namespace {
-
-void RunCrossThreadClosure(CrossThreadClosure task) {
-  std::move(task).Run();
-}
-
-}  // namespace
 
 class TaskHandle::Runner : public WTF::ThreadSafeRefCounted<Runner> {
  public:
@@ -124,26 +117,6 @@ TaskHandle::TaskHandle(scoped_refptr<Runner> runner)
   DCHECK(runner_);
 }
 
-// Use a custom function for base::Bind instead of WTF::Bind to
-// avoid copying the closure later in the call chain. Copying the bound state
-// can lead to data races with ref counted objects like StringImpl. See
-// crbug.com/679915 for more details.
-void PostCrossThreadTask(base::SequencedTaskRunner& task_runner,
-                         const base::Location& location,
-                         CrossThreadClosure task) {
-  task_runner.PostDelayedTask(
-      location, base::BindOnce(&RunCrossThreadClosure, std::move(task)),
-      base::TimeDelta());
-}
-
-void PostDelayedCrossThreadTask(base::SequencedTaskRunner& task_runner,
-                                const base::Location& location,
-                                CrossThreadClosure task,
-                                TimeDelta delay) {
-  task_runner.PostDelayedTask(
-      location, base::BindOnce(&RunCrossThreadClosure, std::move(task)), delay);
-}
-
 TaskHandle PostCancellableTask(base::SequencedTaskRunner& task_runner,
                                const base::Location& location,
                                base::OnceClosure task) {
@@ -159,7 +132,7 @@ TaskHandle PostCancellableTask(base::SequencedTaskRunner& task_runner,
 TaskHandle PostDelayedCancellableTask(base::SequencedTaskRunner& task_runner,
                                       const base::Location& location,
                                       base::OnceClosure task,
-                                      TimeDelta delay) {
+                                      base::TimeDelta delay) {
   DCHECK(task_runner.RunsTasksInCurrentSequence());
   scoped_refptr<TaskHandle::Runner> runner =
       base::AdoptRef(new TaskHandle::Runner(std::move(task)));
