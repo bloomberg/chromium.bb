@@ -29,11 +29,11 @@ void SessionActionExecutor::ExecuteAction(const ActionRequest& request) {
   DCHECK(request.has_action());
 
   switch (request.action()) {
-    case protocol::ActionRequest::SEND_ATTENTION_SEQUENCE:
+    case ActionRequest::SEND_ATTENTION_SEQUENCE:
       execute_action_task_runner_->PostTask(FROM_HERE, inject_sas_);
       break;
 
-    case protocol::ActionRequest::LOCK_WORKSTATION:
+    case ActionRequest::LOCK_WORKSTATION:
       execute_action_task_runner_->PostTask(FROM_HERE, lock_workstation_);
       break;
 
