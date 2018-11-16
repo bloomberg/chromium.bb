@@ -59,7 +59,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
     virtual ~Observer() {}
   };
 
-  VideoDetector(viz::mojom::VideoDetectorObserverRequest request);
+  VideoDetector();
   ~VideoDetector() override;
 
   State state() const { return state_; }
@@ -89,6 +89,13 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   // Updates |state_| and notifies |observers_| if it changed.
   void UpdateState();
 
+  // Connects to Viz and starts observing video activities.
+  void EstablishConnectionToViz();
+
+  // Called when connection to Viz is lost. The connection will be
+  // re-established after a short delay.
+  void OnConnectionError();
+
   // Current playback state.
   State state_;
 
@@ -106,6 +113,8 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   bool is_shutting_down_;
 
   mojo::Binding<viz::mojom::VideoDetectorObserver> binding_;
+
+  base::WeakPtrFactory<VideoDetector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDetector);
 };
