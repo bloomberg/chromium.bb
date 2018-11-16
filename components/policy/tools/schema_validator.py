@@ -14,39 +14,39 @@ import re
 #     default. The value of "additionalProperties" has to be a schema.
 ALLOWED_ATTRIBUTES_AND_TYPES = {
     'boolean': {
-        'type': str,        # required
-        'id': str,          # optional
+        'type': str,  # required
+        'id': str,  # optional
         'description': str  # optional
     },
     'string': {
-        'type': str,        # required
-        'id': str,          # optional
-        'description': str, # optional
-        'enum': list,       # optional
-        'pattern': str      # optional
+        'type': str,  # required
+        'id': str,  # optional
+        'description': str,  # optional
+        'enum': list,  # optional
+        'pattern': str  # optional
     },
     'integer': {
-        'type': str,        # required
-        'id': str,          # optional
-        'description': str, # optional
-        'enum': list,       # optional
-        'minimum': int,     # optional
-        'maximum': int      # optional
+        'type': str,  # required
+        'id': str,  # optional
+        'description': str,  # optional
+        'enum': list,  # optional
+        'minimum': int,  # optional
+        'maximum': int  # optional
     },
     'array': {
-        'type': str,        # required
-        'id': str,          # optional
-        'description': str, # optional
-        'items': dict       # required
+        'type': str,  # required
+        'id': str,  # optional
+        'description': str,  # optional
+        'items': dict  # required
     },
     'object': {
-        'type': str,                  # required
-        'id': str,                    # optional
-        'description': str,           # optional
-        'properties': dict,           # only one of these
-        'patternProperties': dict,    #   three properties
-        'additionalProperties': dict, #   is required
-        'required': list              # optional
+        'type': str,  # required
+        'id': str,  # optional
+        'description': str,  # optional
+        'properties': dict,  #           one of these 3 properties is required
+        'patternProperties': dict,  #    one of these 3 properties is required
+        'additionalProperties': dict,  # one of these 3 properties is required
+        'required': list  # optional
     }
 }
 
@@ -349,14 +349,14 @@ class SchemaValidator(object):
     if self.enforce_use_entire_schema:
       if self.expected_properties != self.used_properties:
         for schema_id, expected_properties \
-        in self.expected_properties.iteritems():
+            in self.expected_properties.iteritems():
           used_properties = self.used_properties.get(schema_id, set())
           unused_properties = expected_properties.difference(used_properties)
           if unused_properties:
             self._Error("Unused properties: %s" % unused_properties)
       if self.expected_pattern_properties != self.used_pattern_properties:
         for schema_id, expected_properties \
-        in self.expected_pattern_properties.iteritems():
+            in self.expected_pattern_properties.iteritems():
           used_properties = self.used_pattern_properties.get(schema_id, set())
           unused_properties = expected_properties.difference(used_properties)
           if unused_properties:

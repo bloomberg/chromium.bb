@@ -2,9 +2,7 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 '''Unit tests for writers.adm_writer'''
-
 
 import os
 import sys
@@ -28,6 +26,7 @@ MESSAGES = '''
     },
   }'''
 
+
 class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
   '''Unit tests for AdmWriter.'''
 
@@ -49,9 +48,8 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     Raises:
       AssertionError: if the two strings are not equivalent.
     '''
-    self.assertEquals(
-        output.strip(),
-        expected_output.strip().replace('\n', '\r\n'))
+    self.assertEquals(output.strip(),
+                      expected_output.strip().replace('\n', '\r\n'))
 
   def testEmpty(self):
     # Test PListWriter in case of empty polices.
@@ -61,9 +59,10 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_chromium': '1',}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {
+        '_chromium': '1',
+    }, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -89,8 +88,10 @@ chromium_recommended="Chromium - Recommended"''')
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(
-        policy_json, {'_chromium': '1', 'version':'39.0.0.0'}, 'adm')
+    output = self.GetOutput(policy_json, {
+        '_chromium': '1',
+        'version': '39.0.0.0'
+    }, 'adm')
     expected_output = '; chromium version: 39.0.0.0\n' + \
         self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!chromium
@@ -127,9 +128,8 @@ chromium_recommended="Chromium - Recommended"''')
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_google_chrome' : '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
     CATEGORY !!googlechrome
       KEYNAME "Software\\Policies\\Google\\Chrome"
@@ -195,9 +195,8 @@ Reference: https://www.chromium.org/administrators/policy-list-3#MainPolicy"''')
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_google_chrome' : '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
     CATEGORY !!googlechrome
       KEYNAME "Software\\Policies\\Google\\Chrome"
@@ -251,9 +250,8 @@ With a newline.""",
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -317,9 +315,8 @@ StringPolicy_Part="Caption of policy."
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -396,8 +393,7 @@ IntPolicy_Part="Caption of policy."
         'messages': %s
       }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
     CATEGORY !!googlechrome
       KEYNAME "Software\\Policies\\Google\\Chrome"
@@ -481,8 +477,7 @@ ProxyServerAutoDetect_DropDown="Option2"
         'messages': %s
       }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
     CATEGORY !!googlechrome
       KEYNAME "Software\\Policies\\Google\\Chrome"
@@ -561,9 +556,8 @@ With a newline.""",
         'placeholders': [],
         'messages': %s,
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -635,9 +629,8 @@ With a newline.""",
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -701,9 +694,8 @@ ListPolicy_Part="Label of list policy."
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -768,9 +760,8 @@ DictionaryPolicy_Part="Caption of policy."
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -841,9 +832,8 @@ ExternalPolicy_Part="Caption of policy."
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -878,9 +868,8 @@ chromium_recommended="Chromium - Recommended"
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_google_chrome' : '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
     CATEGORY !!googlechrome
       KEYNAME "Software\\Policies\\Google\\Chrome"
@@ -949,9 +938,8 @@ With a newline."""
         'placeholders': [],
         'messages': %s
       }''' % MESSAGES
-    output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    output = self.GetOutput(policy_json, {'_chromium': '1'}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
 
@@ -1052,8 +1040,7 @@ Policy2_Part="Caption of policy2."
         'messages': %s
       }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
-    expected_output = self.ConstructOutput(
-        ['MACHINE', 'USER'], '''
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
   CATEGORY !!Google:Cat_Google
     CATEGORY !!googlechrome
       KEYNAME "Software\\Policies\\Google\\Chrome"
@@ -1113,6 +1100,7 @@ Reference: https://www.chromium.org/administrators/policy-list-3#EnumPolicy.B"
 EnumPolicy_B_Part="Caption of policy B."
 ''')
     self.CompareOutputs(output, expected_output)
+
 
 if __name__ == '__main__':
   unittest.main()

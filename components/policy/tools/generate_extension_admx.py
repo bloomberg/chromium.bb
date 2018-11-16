@@ -69,7 +69,7 @@ class AdmxGenerator(object):
     root_category_full_name = ('extension_' + self._extension_id)
 
     # Add a category element for the root
-    self._AddCategory(self._extension_name, root_category_full_name ,
+    self._AddCategory(self._extension_name, root_category_full_name,
                       'Google:Cat_Google')
 
     properties = self._schema['properties']
@@ -77,8 +77,8 @@ class AdmxGenerator(object):
       self._AddPolicy(policy_name, policy_schema, root_category_full_name,
                       self._REGISTRY_KEY)
 
-    return self._ToPrettyXml(self._admx_doc.toxml()), \
-           self._ToPrettyXml(self._adml_doc.toxml())
+    return self._ToPrettyXml(self._admx_doc.toxml()), self._ToPrettyXml(
+        self._adml_doc.toxml())
 
   def _AddElement(self, parent, name):
     '''
@@ -390,8 +390,9 @@ def main():
       '--adml', dest='adml_file', help='Output ADML file', metavar='FILE')
   (options, args) = parser.parse_args()
 
-  if not options.extension_name or not options.extension_id or \
-     not options.schema_file or not options.admx_file or not options.adml_file:
+  if (not options.extension_name or not options.extension_id or
+      not options.schema_file or not options.admx_file or
+      not options.adml_file):
     parser.print_help()
     return 1
 

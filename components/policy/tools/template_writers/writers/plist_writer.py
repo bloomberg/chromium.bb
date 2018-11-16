@@ -3,11 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 from xml.dom import minidom
 from writers import plist_helper
 from writers import xml_formatted_writer
-
 
 # This writer outputs a Preferences Manifest file as documented at
 # https://developer.apple.com/library/mac/documentation/MacOSXServer/Conceptual/Preference_Manifest_Files
@@ -28,15 +26,15 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
 
   STRING_TABLE = 'Localizable.strings'
   TYPE_TO_INPUT = {
-    'string': 'string',
-    'int': 'integer',
-    'int-enum': 'integer',
-    'string-enum': 'string',
-    'string-enum-list': 'array',
-    'main': 'boolean',
-    'list': 'array',
-    'dict': 'dictionary',
-    'external': 'dictionary',
+      'string': 'string',
+      'int': 'integer',
+      'int-enum': 'integer',
+      'string-enum': 'string',
+      'string-enum-list': 'array',
+      'main': 'boolean',
+      'list': 'array',
+      'dict': 'dictionary',
+      'external': 'dictionary',
   }
 
   def _AddKeyValuePair(self, parent, key_string, value_tag):
@@ -146,8 +144,7 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
   def CreatePlistDocument(self):
     dom_impl = minidom.getDOMImplementation('')
     doctype = dom_impl.createDocumentType(
-        'plist',
-        '-//Apple//DTD PLIST 1.0//EN',
+        'plist', '-//Apple//DTD PLIST 1.0//EN',
         'http://www.apple.com/DTDs/PropertyList-1.0.dtd')
     return dom_impl.createDocument(None, 'plist', doctype)
 

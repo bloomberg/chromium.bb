@@ -2,7 +2,6 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 '''
 Checks a policy_templates.json file for conformity to its syntax specification.
 '''
@@ -14,7 +13,6 @@ import re
 import sys
 from schema_validator import SchemaValidator
 
-
 LEADING_WHITESPACE = re.compile('^([ \t]*)')
 TRAILING_WHITESPACE = re.compile('.*?([ \t]+)$')
 # Matches all non-empty strings that contain no whitespaces.
@@ -24,15 +22,15 @@ NO_WHITESPACE = re.compile('[^\s]+$')
 # The 'dict' type represents structured JSON data, and can be converted
 # to an 'object' or an 'array'.
 TYPE_TO_SCHEMA = {
-  'int': [ 'integer' ],
-  'list': [ 'array' ],
-  'dict': [ 'object', 'array' ],
-  'main': [ 'boolean' ],
-  'string': [ 'string' ],
-  'int-enum': [ 'integer' ],
-  'string-enum': [ 'string' ],
-  'string-enum-list': [ 'array' ],
-  'external': [ 'object' ],
+    'int': ['integer'],
+    'list': ['array'],
+    'dict': ['object', 'array'],
+    'main': ['boolean'],
+    'string': ['string'],
+    'int-enum': ['integer'],
+    'string-enum': ['string'],
+    'string-enum-list': ['array'],
+    'external': ['object'],
 }
 
 # List of boolean policies that have been introduced with negative polarity in
@@ -58,18 +56,19 @@ LEGACY_INVERTED_POLARITY_WHITELIST = [
 # List of policies where the 'string' part of the schema is actually a JSON
 # string which has its own schema.
 LEGACY_EMBEDDED_JSON_WHITELIST = [
-  'ArcPolicy',
-  'AutoSelectCertificateForUrls',
-  'DefaultPrinterSelection',
-  'DeviceAppPack',
-  'DeviceLoginScreenAutoSelectCertificateForUrls',
-  'DeviceOpenNetworkConfiguration',
-  'NativePrinters',
-  'OpenNetworkConfiguration',
-  'RemoteAccessHostDebugOverridePolicies',
-  # NOTE: Do not add any new policies to this list! Do not store policies with
-  # complex schemas using stringified JSON - instead, store them as dicts.
+    'ArcPolicy',
+    'AutoSelectCertificateForUrls',
+    'DefaultPrinterSelection',
+    'DeviceAppPack',
+    'DeviceLoginScreenAutoSelectCertificateForUrls',
+    'DeviceOpenNetworkConfiguration',
+    'NativePrinters',
+    'OpenNetworkConfiguration',
+    'RemoteAccessHostDebugOverridePolicies',
+    # NOTE: Do not add any new policies to this list! Do not store policies with
+    # complex schemas using stringified JSON - instead, store them as dicts.
 ]
+
 
 class PolicyTemplateChecker(object):
 
@@ -84,7 +83,10 @@ class PolicyTemplateChecker(object):
     self.schema_validator = SchemaValidator()
     self.has_schema_error = False
 
-  def _Error(self, message, parent_element=None, identifier=None,
+  def _Error(self,
+             message,
+             parent_element=None,
+             identifier=None,
              offending_snippet=None):
     self.error_count += 1
     error = ''
@@ -94,7 +96,10 @@ class PolicyTemplateChecker(object):
     if offending_snippet is not None:
       print '  Offending:', json.dumps(offending_snippet, indent=2)
 
-  def _CheckContains(self, container, key, value_type,
+  def _CheckContains(self,
+                     container,
+                     key,
+                     value_type,
                      optional=False,
                      parent_element='policy',
                      container_name=None,
@@ -135,20 +140,22 @@ class PolicyTemplateChecker(object):
       if optional:
         return
       else:
-        self._Error('%s must have a %s "%s".' %
-                    (container_name.title(), value_type.__name__, key),
-                    container_name, identifier, offending)
+        self._Error(
+            '%s must have a %s "%s".' % (container_name.title(),
+                                         value_type.__name__, key),
+            container_name, identifier, offending)
       return None
     value = container[key]
-    value_types = value_type if isinstance(value_type, list) else [ value_type ]
+    value_types = value_type if isinstance(value_type, list) else [value_type]
     if not any(isinstance(value, type) for type in value_types):
-      self._Error('Value of "%s" must be one of [ %s ].' %
-                  (key, ', '.join([type.__name__ for type in value_types])),
-                  container_name, identifier, value)
+      self._Error(
+          'Value of "%s" must be one of [ %s ].' % (key, ', '.join(
+              [type.__name__ for type in value_types])), container_name,
+          identifier, value)
     if str in value_types and regexp_check and not regexp_check.match(value):
-      self._Error('Value of "%s" must match "%s".' %
-                  (key, regexp_check.pattern),
-                  container_name, identifier, value)
+      self._Error(
+          'Value of "%s" must match "%s".' % (key, regexp_check.pattern),
+          container_name, identifier, value)
     return value
 
   def _AddPolicyID(self, id, policy_ids, policy, deleted_policy_ids):
@@ -157,11 +164,9 @@ class PolicyTemplateChecker(object):
     |id| exists already; |policy| is needed for this message.
     '''
     if id in policy_ids:
-      self._Error('Duplicate id', 'policy', policy.get('name'),
-                  id)
+      self._Error('Duplicate id', 'policy', policy.get('name'), id)
     elif id in deleted_policy_ids:
-      self._Error('Deleted id', 'policy', policy.get('name'),
-                  id)
+      self._Error('Deleted id', 'policy', policy.get('name'), id)
     else:
       policy_ids.add(id)
 
@@ -204,35 +209,34 @@ class PolicyTemplateChecker(object):
     if policy.has_key('validation_schema'):
       validation_schema = policy.get('validation_schema')
       if not self.schema_validator.ValidateSchema(validation_schema):
-        self._Error('Validation schema is invalid for policy %s' %
-                    policy.get('name'))
+        self._Error(
+            'Validation schema is invalid for policy %s' % policy.get('name'))
         self.has_schema_error = True
 
     # Checks that boolean policies are not negated (which makes them harder to
     # reason about).
-    if (policy_type == 'main' and
-        'disable' in policy.get('name').lower() and
+    if (policy_type == 'main' and 'disable' in policy.get('name').lower() and
         policy.get('name') not in LEGACY_INVERTED_POLARITY_WHITELIST):
       self._Error(('Boolean policy %s uses negative polarity, please make ' +
-                    'new boolean policies follow the XYZEnabled pattern. ' +
-                    'See also http://crbug.com/85687') % policy.get('name'))
+                   'new boolean policies follow the XYZEnabled pattern. ' +
+                   'See also http://crbug.com/85687') % policy.get('name'))
 
     # Checks that the policy doesn't have a validation_schema - the whole
     # schema should be defined in 'schema'- unless whitelisted as legacy.
     if (policy.has_key('validation_schema') and
         policy.get('name') not in LEGACY_EMBEDDED_JSON_WHITELIST):
       self._Error(('"validation_schema" is defined for new policy %s - ' +
-                    'entire schema data should be contained in "schema"') %
-                    policy.get('name'))
+                   'entire schema data should be contained in "schema"') %
+                  policy.get('name'))
 
     # Try to make sure that any policy with a complex schema is storing it as
     # a 'dict', not embedding it inside JSON strings - unless whitelisted.
     if (self._AppearsToContainEmbeddedJson(policy.get('example_value')) and
         policy.get('name') not in LEGACY_EMBEDDED_JSON_WHITELIST):
       self._Error(('Example value for new policy %s looks like JSON. Do ' +
-                    'not store complex data as stringified JSON - instead, ' +
-                    'store it in a dict and define it in "schema".') %
-                    policy.get('name'))
+                   'not store complex data as stringified JSON - instead, ' +
+                   'store it in a dict and define it in "schema".') %
+                  policy.get('name'))
 
   # Returns True if the example value for a policy seems to contain JSON
   # embedded inside a string. Simply checks if strings start with '{', so it
@@ -244,7 +248,8 @@ class PolicyTemplateChecker(object):
     elif isinstance(example_value, list):
       return any(self._AppearsToContainEmbeddedJson(v) for v in example_value)
     elif isinstance(example_value, dict):
-      return any(self._AppearsToContainEmbeddedJson(v)
+      return any(
+          self._AppearsToContainEmbeddedJson(v)
           for v in example_value.itervalues())
 
   def _CheckPolicy(self, policy, is_in_group, policy_ids, deleted_policy_ids):
@@ -256,14 +261,14 @@ class PolicyTemplateChecker(object):
     for key in policy:
       if key not in ('name', 'type', 'caption', 'desc', 'device_only',
                      'supported_on', 'label', 'policies', 'items',
-                     'example_value', 'features', 'deprecated', 'future',
-                     'id', 'schema', 'validation_schema', 'max_size', 'tags',
+                     'example_value', 'features', 'deprecated', 'future', 'id',
+                     'schema', 'validation_schema', 'max_size', 'tags',
                      'default_for_enterprise_users',
-                     'default_for_managed_devices_doc_only',
-                     'arc_support', 'supported_chrome_os_management'):
+                     'default_for_managed_devices_doc_only', 'arc_support',
+                     'supported_chrome_os_management'):
         self.warning_count += 1
-        print ('In policy %s: Warning: Unknown key: %s' %
-               (policy.get('name'), key))
+        print('In policy %s: Warning: Unknown key: %s' % (policy.get('name'),
+                                                          key))
 
     # Each policy must have a name.
     self._CheckContains(policy, 'name', str, regexp_check=NO_WHITESPACE)
@@ -344,17 +349,21 @@ class PolicyTemplateChecker(object):
       if features:
         for feature in features:
           if not feature in self.features:
-            self._Error('Unknown feature "%s". Known features must have a '
-                        'documentation string in the messages dictionary.' %
-                        feature, 'policy', policy.get('name', policy))
+            self._Error(
+                'Unknown feature "%s". Known features must have a '
+                'documentation string in the messages dictionary.' % feature,
+                'policy', policy.get('name', policy))
 
       # All user policies must have a per_profile feature flag.
       if (not policy.get('device_only', False) and
           not policy.get('deprecated', False) and
           not filter(re.compile('^chrome_frame:.*').match, supported_on)):
-        self._CheckContains(features, 'per_profile', bool,
-                            container_name='features',
-                            identifier=policy.get('name'))
+        self._CheckContains(
+            features,
+            'per_profile',
+            bool,
+            container_name='features',
+            identifier=policy.get('name'))
 
       # If 'device only' policy is on, feature 'per_profile' shouldn't exist.
       if (policy.get('device_only', False) and
@@ -385,9 +394,12 @@ class PolicyTemplateChecker(object):
                     'with policies that have device_only=True.')
 
       # All policies must declare whether they allow changes at runtime.
-      self._CheckContains(features, 'dynamic_refresh', bool,
-                          container_name='features',
-                          identifier=policy.get('name'))
+      self._CheckContains(
+          features,
+          'dynamic_refresh',
+          bool,
+          container_name='features',
+          identifier=policy.get('name'))
 
       # Chrome OS policies may have a non-empty supported_chrome_os_management
       # list with either 'active_directory' or 'google_cloud' or both.
@@ -397,8 +409,9 @@ class PolicyTemplateChecker(object):
         # Must be on Chrome OS.
         if (supported_on is not None and
             not any('chrome_os:' in str for str in supported_on)):
-          self._Error('"supported_chrome_os_management" is only supported on '
-                      'Chrome OS', 'policy', policy, supported_on)
+          self._Error(
+              '"supported_chrome_os_management" is only supported on '
+              'Chrome OS', 'policy', policy, supported_on)
         # Must be non-empty.
         if len(supported_chrome_os_management) == 0:
           self._Error('"supported_chrome_os_management" must be non-empty',
@@ -406,9 +419,10 @@ class PolicyTemplateChecker(object):
         # Must be either 'active_directory' or 'google_cloud'.
         if (any(str != 'google_cloud' and str != 'active_directory'
                 for str in supported_chrome_os_management)):
-          self._Error('Values in "supported_chrome_os_management" must be '
-                      'either "active_directory" or "google_cloud"', 'policy',
-                      policy, supported_chrome_os_management)
+          self._Error(
+              'Values in "supported_chrome_os_management" must be '
+              'either "active_directory" or "google_cloud"', 'policy', policy,
+              supported_chrome_os_management)
 
       # Each policy must have an 'example_value' of appropriate type.
       if policy_type == 'main':
@@ -423,7 +437,7 @@ class PolicyTemplateChecker(object):
       elif policy_type == 'external':
         value_type = item_type = dict
       elif policy_type == 'dict':
-        value_type = item_type = [ dict, list ]
+        value_type = item_type = [dict, list]
       else:
         raise NotImplementedError('Unimplemented policy type: %s' % policy_type)
       self._CheckContains(policy, 'example_value', value_type)
@@ -469,17 +483,29 @@ class PolicyTemplateChecker(object):
           # Note: |policy.get('name')| is used instead of |policy['name']|
           # because it returns None rather than failing when no key called
           # 'name' exists.
-          self._CheckContains(item, 'name', str, container_name='item',
-                              identifier=policy.get('name'),
-                              regexp_check=NO_WHITESPACE)
+          self._CheckContains(
+              item,
+              'name',
+              str,
+              container_name='item',
+              identifier=policy.get('name'),
+              regexp_check=NO_WHITESPACE)
 
           # Each item must have a value of the correct type.
-          self._CheckContains(item, 'value', item_type, container_name='item',
-                              identifier=policy.get('name'))
+          self._CheckContains(
+              item,
+              'value',
+              item_type,
+              container_name='item',
+              identifier=policy.get('name'))
 
           # Each item must have a caption.
-          self._CheckContains(item, 'caption', str, container_name='item',
-                              identifier=policy.get('name'))
+          self._CheckContains(
+              item,
+              'caption',
+              str,
+              container_name='item',
+              identifier=policy.get('name'))
 
     if policy_type == 'external':
       # Each policy referencing external data must specify a maximum data size.
@@ -496,12 +522,12 @@ class PolicyTemplateChecker(object):
       return
 
     # Each message must have a desc.
-    self._CheckContains(value, 'desc', str, parent_element='message',
-                        identifier=key)
+    self._CheckContains(
+        value, 'desc', str, parent_element='message', identifier=key)
 
     # Each message must have a text.
-    self._CheckContains(value, 'text', str, parent_element='message',
-                        identifier=key)
+    self._CheckContains(
+        value, 'text', str, parent_element='message', identifier=key)
 
     # There should not be any unknown keys in |value|.
     for vkey in value:
@@ -527,8 +553,8 @@ class PolicyTemplateChecker(object):
 
   def _LineWarning(self, message, line_number):
     self.warning_count += 1
-    print ('In line %d: Warning: Automatically fixing formatting: %s'
-           % (line_number, message))
+    print('In line %d: Warning: Automatically fixing formatting: %s' %
+          (line_number, message))
 
   def _CheckFormat(self, filename):
     if self.options.fix:
@@ -576,11 +602,13 @@ class PolicyTemplateChecker(object):
           if len(leading_whitespace) != indent:
             if self.options.fix:
               line = ' ' * indent + line.lstrip()
-              self._LineWarning('Indentation should be ' + str(indent) +
-                                ' spaces.', line_number)
+              self._LineWarning(
+                  'Indentation should be ' + str(indent) + ' spaces.',
+                  line_number)
             else:
-              self._LineError('Bad indentation. Should be ' + str(indent) +
-                              ' spaces.', line_number)
+              self._LineError(
+                  'Bad indentation. Should be ' + str(indent) + ' spaces.',
+                  line_number)
         three_quotes_cnt += line.count("'''")
         if line[-1] in ('[', '{'):
           indent += 2
@@ -616,10 +644,13 @@ class PolicyTemplateChecker(object):
     # First part: check JSON structure.
 
     # Check (non-policy-specific) message definitions.
-    messages = self._CheckContains(data, 'messages', dict,
-                                   parent_element=None,
-                                   container_name='The root element',
-                                   offending=None)
+    messages = self._CheckContains(
+        data,
+        'messages',
+        dict,
+        parent_element=None,
+        container_name='The root element',
+        offending=None)
     if messages is not None:
       for message in messages:
         self._CheckMessage(message, messages[message])
@@ -627,18 +658,27 @@ class PolicyTemplateChecker(object):
           self.features.append(message[12:])
 
     # Check policy definitions.
-    policy_definitions = self._CheckContains(data, 'policy_definitions', list,
-                                             parent_element=None,
-                                             container_name='The root element',
-                                             offending=None)
-    deleted_policy_ids = self._CheckContains(data, 'deleted_policy_ids', list,
-                                           parent_element=None,
-                                           container_name='The root element',
-                                           offending=None)
-    highest_id = self._CheckContains(data, 'highest_id_currently_used', int,
-                                     parent_element=None,
-                                     container_name='The root element',
-                                     offending=None)
+    policy_definitions = self._CheckContains(
+        data,
+        'policy_definitions',
+        list,
+        parent_element=None,
+        container_name='The root element',
+        offending=None)
+    deleted_policy_ids = self._CheckContains(
+        data,
+        'deleted_policy_ids',
+        list,
+        parent_element=None,
+        container_name='The root element',
+        offending=None)
+    highest_id = self._CheckContains(
+        data,
+        'highest_id_currently_used',
+        int,
+        parent_element=None,
+        container_name='The root element',
+        offending=None)
     if policy_definitions is not None:
       policy_ids = set()
       for policy in policy_definitions:
@@ -647,16 +687,22 @@ class PolicyTemplateChecker(object):
       if highest_id is not None:
         self._CheckHighestId(policy_ids, highest_id)
 
-
     # Made it as a dict (policy_name -> True) to reuse _CheckContains.
-    policy_names = {policy['name']: True for policy in policy_definitions
-                    if policy['type'] != 'group'}
+    policy_names = {
+        policy['name']: True
+        for policy in policy_definitions
+        if policy['type'] != 'group'
+    }
     policy_in_groups = set()
-    for group in [policy for policy in policy_definitions
-                  if policy['type'] == 'group']:
+    for group in [
+        policy for policy in policy_definitions if policy['type'] == 'group'
+    ]:
       for policy_name in group['policies']:
-        self._CheckContains(policy_names, policy_name, bool,
-                            parent_element='policy_definitions')
+        self._CheckContains(
+            policy_names,
+            policy_name,
+            bool,
+            parent_element='policy_definitions')
         if policy_name in policy_in_groups:
           self._Error('Policy %s defined in several groups.' % (policy_name))
         else:
@@ -666,14 +712,14 @@ class PolicyTemplateChecker(object):
     self._CheckFormat(filename)
 
     # Third part: summary and exit.
-    print ('Finished checking %s. %d errors, %d warnings.' %
-        (filename, self.error_count, self.warning_count))
+    print('Finished checking %s. %d errors, %d warnings.' %
+          (filename, self.error_count, self.warning_count))
     if self.options.stats:
       if self.num_groups > 0:
-        print ('%d policies, %d of those in %d groups (containing on '
-               'average %.1f policies).' %
-               (self.num_policies, self.num_policies_in_groups, self.num_groups,
-                 (1.0 * self.num_policies_in_groups / self.num_groups)))
+        print('%d policies, %d of those in %d groups (containing on '
+              'average %.1f policies).' %
+              (self.num_policies, self.num_policies_in_groups, self.num_groups,
+               (1.0 * self.num_policies_in_groups / self.num_groups)))
       else:
         print self.num_policies, 'policies, 0 policy groups.'
     if self.error_count > 0:
@@ -684,12 +730,14 @@ class PolicyTemplateChecker(object):
     parser = optparse.OptionParser(
         usage='usage: %prog [options] filename',
         description='Syntax check a policy_templates.json file.')
-    parser.add_option('--fix', action='store_true',
-                      help='Automatically fix formatting.')
-    parser.add_option('--backup', action='store_true',
-                      help='Create backup of original file (before fixing).')
-    parser.add_option('--stats', action='store_true',
-                      help='Generate statistics.')
+    parser.add_option(
+        '--fix', action='store_true', help='Automatically fix formatting.')
+    parser.add_option(
+        '--backup',
+        action='store_true',
+        help='Create backup of original file (before fixing).')
+    parser.add_option(
+        '--stats', action='store_true', help='Generate statistics.')
     (options, args) = parser.parse_args(argv)
     if filename is None:
       if len(args) != 2:

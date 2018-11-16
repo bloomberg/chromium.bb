@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 from writers import template_writer
 import re
 
@@ -67,14 +66,14 @@ class AdmWriter(template_writer.TemplateWriter):
   '''
 
   TYPE_TO_INPUT = {
-    'string': 'EDITTEXT',
-    'int': 'NUMERIC',
-    'string-enum': 'DROPDOWNLIST',
-    'int-enum': 'DROPDOWNLIST',
-    'list': 'LISTBOX',
-    'string-enum-list': 'LISTBOX',
-    'dict': 'EDITTEXT',
-    'external': 'EDITTEXT'
+      'string': 'EDITTEXT',
+      'int': 'NUMERIC',
+      'string-enum': 'DROPDOWNLIST',
+      'int-enum': 'DROPDOWNLIST',
+      'list': 'LISTBOX',
+      'string-enum-list': 'LISTBOX',
+      'dict': 'EDITTEXT',
+      'external': 'EDITTEXT'
   }
 
   def _Escape(self, string):
@@ -184,13 +183,11 @@ class AdmWriter(template_writer.TemplateWriter):
 
   def WritePolicy(self, policy):
     if self.CanBeMandatory(policy):
-      self._WritePolicy(policy,
-                        self.winconfig['reg_mandatory_key_name'],
+      self._WritePolicy(policy, self.winconfig['reg_mandatory_key_name'],
                         self.policies)
 
   def WriteRecommendedPolicy(self, policy):
-    self._WritePolicy(policy,
-                      self.winconfig['reg_recommended_key_name'],
+    self._WritePolicy(policy, self.winconfig['reg_recommended_key_name'],
                       self.recommended_policies)
 
   def BeginPolicyGroup(self, group):
@@ -258,19 +255,19 @@ class AdmWriter(template_writer.TemplateWriter):
 
   def EndTemplate(self):
     # Copy policies into self.lines.
-    policy_class = self.GetClass().upper();
+    policy_class = self.GetClass().upper()
     for class_name in ['MACHINE', 'USER']:
       if policy_class != 'BOTH' and policy_class != class_name:
         continue
       self.lines.AddLine('CLASS ' + class_name, 1)
-      self.lines.AddLines(self._CreateTemplate(
-          self.winconfig['mandatory_category_path'],
-          self.winconfig['reg_mandatory_key_name'],
-          self.policies))
-      self.lines.AddLines(self._CreateTemplate(
-          self.winconfig['recommended_category_path'],
-          self.winconfig['reg_recommended_key_name'],
-          self.recommended_policies))
+      self.lines.AddLines(
+          self._CreateTemplate(self.winconfig['mandatory_category_path'],
+                               self.winconfig['reg_mandatory_key_name'],
+                               self.policies))
+      self.lines.AddLines(
+          self._CreateTemplate(self.winconfig['recommended_category_path'],
+                               self.winconfig['reg_recommended_key_name'],
+                               self.recommended_policies))
       self.lines.AddLine('', -1)
     # Copy user strings into self.lines.
     self.lines.AddLine('[Strings]')
@@ -295,4 +292,4 @@ class AdmWriter(template_writer.TemplateWriter):
     return self.lines.ToString()
 
   def GetClass(self):
-    return 'Both';
+    return 'Both'
