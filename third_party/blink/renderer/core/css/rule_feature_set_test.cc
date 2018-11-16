@@ -987,9 +987,9 @@ TEST_F(RuleFeatureSetTest, ReplaceSelfInvalidationSet) {
   ExpectNotSelfInvalidationSet(invalidation_lists.descendants);
 }
 
-TEST_F(RuleFeatureSetTest, pseudoMatchesSibling) {
+TEST_F(RuleFeatureSetTest, pseudoIsSibling) {
   EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(":matches(.q, .r) ~ .s .t"));
+            CollectFeatures(":is(.q, .r) ~ .s .t"));
   {
     InvalidationLists invalidation_lists;
     CollectInvalidationSetsForClass(invalidation_lists, "q");
@@ -1006,9 +1006,8 @@ TEST_F(RuleFeatureSetTest, pseudoMatchesSibling) {
   }
 }
 
-TEST_F(RuleFeatureSetTest, pseudoMatches) {
-  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(":matches(.w, .x)"));
+TEST_F(RuleFeatureSetTest, pseudoIs) {
+  EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch, CollectFeatures(":is(.w, .x)"));
 
   {
     InvalidationLists invalidation_lists;
@@ -1024,27 +1023,27 @@ TEST_F(RuleFeatureSetTest, pseudoMatches) {
   }
 }
 
-TEST_F(RuleFeatureSetTest, pseudoMatchesIdDescendant) {
+TEST_F(RuleFeatureSetTest, pseudoIsIdDescendant) {
   EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(".a :matches(#b, #c)"));
+            CollectFeatures(".a :is(#b, #c)"));
 
   InvalidationLists invalidation_lists;
   CollectInvalidationSetsForClass(invalidation_lists, "a");
   ExpectIdInvalidation("b", "c", invalidation_lists.descendants);
 }
 
-TEST_F(RuleFeatureSetTest, pseudoMatchesTagDescendant) {
+TEST_F(RuleFeatureSetTest, pseudoIsTagDescendant) {
   EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(".a :matches(span, div)"));
+            CollectFeatures(".a :is(span, div)"));
 
   InvalidationLists invalidation_lists;
   CollectInvalidationSetsForClass(invalidation_lists, "a");
   ExpectTagNameInvalidation("span", "div", invalidation_lists.descendants);
 }
 
-TEST_F(RuleFeatureSetTest, pseudoMatchesAnySibling) {
+TEST_F(RuleFeatureSetTest, pseudoIsAnySibling) {
   EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(".v ~ :matches(.w, .x)"));
+            CollectFeatures(".v ~ :is(.w, .x)"));
 
   InvalidationLists invalidation_lists;
   CollectInvalidationSetsForClass(invalidation_lists, "v");
@@ -1052,9 +1051,9 @@ TEST_F(RuleFeatureSetTest, pseudoMatchesAnySibling) {
   ExpectClassInvalidation("w", "x", invalidation_lists.siblings);
 }
 
-TEST_F(RuleFeatureSetTest, pseudoMatchesDescendantSibling) {
+TEST_F(RuleFeatureSetTest, pseudoIsDescendantSibling) {
   EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(".u .v ~ :matches(.w, .x)"));
+            CollectFeatures(".u .v ~ :is(.w, .x)"));
 
   InvalidationLists invalidation_lists;
   CollectInvalidationSetsForClass(invalidation_lists, "u");
@@ -1062,9 +1061,9 @@ TEST_F(RuleFeatureSetTest, pseudoMatchesDescendantSibling) {
   ExpectNoInvalidation(invalidation_lists.siblings);
 }
 
-TEST_F(RuleFeatureSetTest, pseudoMatchesWithComplexSelectors) {
+TEST_F(RuleFeatureSetTest, pseudoIsWithComplexSelectors) {
   EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(".a :matches(.w+.b, .x>#c)"));
+            CollectFeatures(".a :is(.w+.b, .x>#c)"));
 
   InvalidationLists invalidation_lists;
   CollectInvalidationSetsForClass(invalidation_lists, "a");
@@ -1073,9 +1072,9 @@ TEST_F(RuleFeatureSetTest, pseudoMatchesWithComplexSelectors) {
   ExpectNoInvalidation(invalidation_lists.siblings);
 }
 
-TEST_F(RuleFeatureSetTest, pseudoMatchesNested) {
+TEST_F(RuleFeatureSetTest, pseudoIsNested) {
   EXPECT_EQ(RuleFeatureSet::kSelectorMayMatch,
-            CollectFeatures(".a :matches(.w+.b, .e+:matches(.c, #d))"));
+            CollectFeatures(".a :is(.w+.b, .e+:is(.c, #d))"));
 
   InvalidationLists invalidation_lists;
   CollectInvalidationSetsForClass(invalidation_lists, "a");
@@ -1084,16 +1083,16 @@ TEST_F(RuleFeatureSetTest, pseudoMatchesNested) {
   ExpectNoInvalidation(invalidation_lists.siblings);
 }
 
-TEST_F(RuleFeatureSetTest, pseudoMatchesTooLarge) {
+TEST_F(RuleFeatureSetTest, pseudoIsTooLarge) {
   // RuleData cannot support selectors at index 8192 or beyond so the expansion
   // is limited to this size
   EXPECT_EQ(RuleFeatureSet::kSelectorNeverMatches,
-            CollectFeatures(":matches(.a#a, .b#b, .c#c, .d#d) + "
-                            ":matches(.e#e, .f#f, .g#g, .h#h) + "
-                            ":matches(.i#i, .j#j, .k#k, .l#l) + "
-                            ":matches(.m#m, .n#n, .o#o, .p#p) + "
-                            ":matches(.q#q, .r#r, .s#s, .t#t) + "
-                            ":matches(.u#u, .v#v, .w#w, .x#x)"));
+            CollectFeatures(":is(.a#a, .b#b, .c#c, .d#d) + "
+                            ":is(.e#e, .f#f, .g#g, .h#h) + "
+                            ":is(.i#i, .j#j, .k#k, .l#l) + "
+                            ":is(.m#m, .n#n, .o#o, .p#p) + "
+                            ":is(.q#q, .r#r, .s#s, .t#t) + "
+                            ":is(.u#u, .v#v, .w#w, .x#x)"));
 
   InvalidationLists invalidation_lists;
   CollectInvalidationSetsForClass(invalidation_lists, "a");

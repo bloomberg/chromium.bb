@@ -139,7 +139,7 @@ CSSSelectorList CSSSelectorList::ExpandedFirstPseudoClass() const {
 
   size_t i = 0;
   CSSSelectorList transformed = this->Copy();
-  while (!selector_boundaries[i]->HasPseudoMatches() &&
+  while (!selector_boundaries[i]->HasPseudoIs() &&
          !selector_boundaries[i]->HasPseudoWhere())
     ++i;
 
@@ -149,7 +149,7 @@ CSSSelectorList CSSSelectorList::ExpandedFirstPseudoClass() const {
       static_cast<unsigned>(selector_to_expand_end - selector_to_expand_begin);
 
   const CSSSelector* simple_selector = selector_to_expand_begin;
-  while (simple_selector->GetPseudoType() != CSSSelector::kPseudoMatches &&
+  while (simple_selector->GetPseudoType() != CSSSelector::kPseudoIs &&
          simple_selector->GetPseudoType() != CSSSelector::kPseudoWhere) {
     simple_selector = simple_selector->TagHistory();
   }
@@ -217,9 +217,9 @@ CSSSelectorList CSSSelectorList::TransformForListExpansion() {
   return CSSSelectorList::ConcatenateListExpansion(transformed, *this);
 }
 
-bool CSSSelectorList::HasPseudoMatches() const {
+bool CSSSelectorList::HasPseudoIs() const {
   for (const CSSSelector* s = FirstForCSSOM(); s; s = Next(*s)) {
-    if (s->HasPseudoMatches())
+    if (s->HasPseudoIs())
       return true;
   }
   return false;
@@ -235,7 +235,7 @@ bool CSSSelectorList::HasPseudoWhere() const {
 
 bool CSSSelectorList::RequiresExpansion() const {
   for (const CSSSelector* s = FirstForCSSOM(); s; s = Next(*s)) {
-    if (s->HasPseudoMatches() || s->HasPseudoWhere())
+    if (s->HasPseudoIs() || s->HasPseudoWhere())
       return true;
   }
   return false;

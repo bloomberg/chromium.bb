@@ -259,10 +259,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PlaceholderPseudo) {
   ASSERT_EQ(2u, rules->size());
 }
 
-TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoMatches) {
+TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoIs) {
   TestStyleSheet sheet;
 
-  sheet.AddCSSRules(".a :matches(.b+.c, .d>:matches(.e, .f)) { }");
+  sheet.AddCSSRules(".a :is(.b+.c, .d>:is(.e, .f)) { }");
   RuleSet& rule_set = sheet.GetRuleSet();
   {
     AtomicString str("c");
@@ -309,18 +309,18 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoWhere) {
   }
 }
 
-TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoMatchesTooLarge) {
+TEST(RuleSetTest, findBestRuleSetAndAdd_PseudoIsTooLarge) {
   // RuleData cannot support selectors at index 8192 or beyond so the expansion
   // is limited to this size
   TestStyleSheet sheet;
 
   sheet.AddCSSRules(
-      ":matches(.a#a, .b#b, .c#c, .d#d) + "
-      ":matches(.e#e, .f#f, .g#g, .h#h) + "
-      ":matches(.i#i, .j#j, .k#k, .l#l) + "
-      ":matches(.m#m, .n#n, .o#o, .p#p) + "
-      ":matches(.q#q, .r#r, .s#s, .t#t) + "
-      ":matches(.u#u, .v#v, .w#w, .x#x) { }",
+      ":is(.a#a, .b#b, .c#c, .d#d) + "
+      ":is(.e#e, .f#f, .g#g, .h#h) + "
+      ":is(.i#i, .j#j, .k#k, .l#l) + "
+      ":is(.m#m, .n#n, .o#o, .p#p) + "
+      ":is(.q#q, .r#r, .s#s, .t#t) + "
+      ":is(.u#u, .v#v, .w#w, .x#x) { }",
       true);
 
   RuleSet& rule_set = sheet.GetRuleSet();

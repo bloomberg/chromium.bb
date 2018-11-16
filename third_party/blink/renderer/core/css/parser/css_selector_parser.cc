@@ -533,8 +533,8 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
     return nullptr;
 
   switch (selector->GetPseudoType()) {
-    case CSSSelector::kPseudoMatches: {
-      if (!RuntimeEnabledFeatures::CSSMatchesEnabled())
+    case CSSSelector::kPseudoIs: {
+      if (!RuntimeEnabledFeatures::CSSPseudoIsEnabled())
         break;
 
       DisallowPseudoElementsScope scope(this);
@@ -571,7 +571,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
           std::make_unique<CSSSelectorList>();
       *selector_list = ConsumeCompoundSelectorList(block);
       if (!selector_list->IsValid() || !block.AtEnd() ||
-          selector_list->HasPseudoMatches() || selector_list->HasPseudoWhere())
+          selector_list->HasPseudoIs() || selector_list->HasPseudoWhere())
         return nullptr;
       selector->SetSelectorList(std::move(selector_list));
       return selector;
@@ -603,7 +603,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
           ConsumeCompoundSelector(block);
       block.ConsumeWhitespace();
       if (!inner_selector || !block.AtEnd() ||
-          inner_selector->GetPseudoType() == CSSSelector::kPseudoMatches ||
+          inner_selector->GetPseudoType() == CSSSelector::kPseudoIs ||
           inner_selector->GetPseudoType() == CSSSelector::kPseudoWhere)
         return nullptr;
       Vector<std::unique_ptr<CSSParserSelector>> selector_vector;
@@ -1072,9 +1072,9 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
         case CSSSelector::kPseudoAny:
           feature = WebFeature::kCSSSelectorPseudoAny;
           break;
-        case CSSSelector::kPseudoMatches:
-          DCHECK(RuntimeEnabledFeatures::CSSMatchesEnabled());
-          feature = WebFeature::kCSSSelectorPseudoMatches;
+        case CSSSelector::kPseudoIs:
+          DCHECK(RuntimeEnabledFeatures::CSSPseudoIsEnabled());
+          feature = WebFeature::kCSSSelectorPseudoIs;
           break;
         case CSSSelector::kPseudoFocusVisible:
           DCHECK(RuntimeEnabledFeatures::CSSFocusVisibleEnabled());

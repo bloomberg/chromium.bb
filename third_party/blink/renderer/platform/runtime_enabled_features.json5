@@ -293,10 +293,6 @@
       status: "experimental",
     },
     {
-      name: "CSSMatches",
-      status: "experimental",
-    },
-    {
       name: "CSSOffsetPathRay",
       status: "experimental",
     },
@@ -315,6 +311,10 @@
     },
     {
       name: "CSSPartPseudoElement",
+      status: "experimental",
+    },
+    {
+      name: "CSSPseudoIs",
       status: "experimental",
     },
     {
