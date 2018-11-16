@@ -548,6 +548,7 @@ def main():
       'runtime_dirs': [
         os.path.join(abs_toolchain_target_dir, 'sys64'),
         os.path.join(abs_toolchain_target_dir, 'sys32'),
+        os.path.join(abs_toolchain_target_dir, 'sysarm64'),
       ],
   }
   with open(os.path.join(target_dir, '..', 'data.json'), 'w') as f:
