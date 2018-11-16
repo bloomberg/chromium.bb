@@ -142,6 +142,7 @@ ContentSuggestionsMostVisitedItem* ConvertNTPTile(
   suggestion.URL = tile.url;
   suggestion.source = tile.source;
   suggestion.titleSource = tile.title_source;
+  suggestion.accessibilityTraits = UIAccessibilityTraitButton;
 
   suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];
   suggestion.suggestionIdentifier.IDInSection = tile.url.spec();

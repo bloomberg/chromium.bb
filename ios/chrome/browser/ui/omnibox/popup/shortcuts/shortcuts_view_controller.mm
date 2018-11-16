@@ -173,6 +173,7 @@ const NSInteger kCollectionShortcutSection = 1;
     ShortcutsMostVisitedItem* item =
         self.displayedMostVisitedItems[indexPath.item];
     [self configureMostVisitedCell:cell withItem:item];
+    cell.accessibilityTraits = UIAccessibilityTraitButton;
     return cell;
   }
 
@@ -185,6 +186,7 @@ const NSInteger kCollectionShortcutSection = 1;
                                   "NTPCollectionShortcutType are supported";
     NTPCollectionShortcutType type = (NTPCollectionShortcutType)indexPath.item;
     [self configureCollectionShortcutCell:cell withCollection:type];
+    cell.accessibilityTraits = UIAccessibilityTraitButton;
     return cell;
   }
 
@@ -195,16 +197,21 @@ const NSInteger kCollectionShortcutSection = 1;
                         withItem:(ShortcutsMostVisitedItem*)item {
   [cell.tile.faviconView configureWithAttributes:item.attributes];
   cell.tile.titleLabel.text = item.title;
+  cell.accessibilityLabel = cell.tile.titleLabel.text;
 }
 
 - (void)configureCollectionShortcutCell:(CollectionShortcutCell*)cell
                          withCollection:(NTPCollectionShortcutType)type {
   cell.tile.titleLabel.text = TitleForCollectionShortcutType(type);
   cell.tile.iconView.image = ImageForCollectionShortcutType(type);
+  cell.accessibilityLabel = cell.tile.titleLabel.text;
+
   if (type == NTPCollectionShortcutTypeReadingList) {
     if (self.readingListBadgeValue > 0) {
       cell.tile.countLabel.text = [@(self.readingListBadgeValue) stringValue];
       cell.tile.countContainer.hidden = NO;
+      cell.accessibilityLabel = AccessibilityLabelForReadingListCellWithCount(
+          self.readingListBadgeValue);
     } else {
       cell.tile.countLabel.text = nil;
     }
