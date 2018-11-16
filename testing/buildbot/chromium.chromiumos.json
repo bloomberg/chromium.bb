@@ -51,7 +51,7 @@
       {
         "args": [
           "--test-launcher-jobs=1",
-          "--gtest_filter=-*UsingRealWebcam*"
+          "--gtest_filter=-*UsingRealWebcam_CaptureMjpeg*"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,

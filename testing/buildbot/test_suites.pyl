@@ -371,9 +371,9 @@
       'capture_unittests': {
         'args': [
           '--test-launcher-jobs=1',
-          # TODO(crbug.com/881300): After capture_unittests passes with vivid on VM,
-          # we can run UsingRealWebcam tests except CaptureMjpeg.
-          '--gtest_filter=-*UsingRealWebcam*',
+          # Don't run CaptureMJpeg tests on ChromeOS VM because vivid,
+          # which is the virtual video capture device, doesn't support MJPEG.
+          '--gtest_filter=-*UsingRealWebcam_CaptureMjpeg*',
         ],
       },
       'cc_unittests': {},
