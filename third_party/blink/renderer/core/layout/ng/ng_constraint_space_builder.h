@@ -32,7 +32,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
                                  is_new_fc) {
     // Propagate the intermediate layout bit to the child constraint space.
     if (parent_space.IsIntermediateLayout())
-      space_.flags_ |= NGConstraintSpace::kIntermediateLayout;
+      space_.bitfields_.flags |= NGConstraintSpace::kIntermediateLayout;
   }
 
   // The setters on this builder are in the writing mode of parent_writing_mode.
@@ -54,10 +54,10 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
         force_orthogonal_writing_mode_root_(
             force_orthogonal_writing_mode_root) {
     if (is_new_fc_)
-      space_.flags_ |= NGConstraintSpace::kNewFormattingContext;
+      space_.bitfields_.flags |= NGConstraintSpace::kNewFormattingContext;
 
     if (!is_in_parallel_flow_ || force_orthogonal_writing_mode_root_)
-      space_.flags_ |= NGConstraintSpace::kOrthogonalWritingModeRoot;
+      space_.bitfields_.flags |= NGConstraintSpace::kOrthogonalWritingModeRoot;
   }
 
   // If inline size is indefinite, use size of initial containing block.
@@ -68,7 +68,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     if (*inline_size != NGSizeIndefinite)
       return;
 
-    if (static_cast<WritingMode>(space_.writing_mode_) ==
+    if (static_cast<WritingMode>(space_.bitfields_.writing_mode) ==
         WritingMode::kHorizontalTb)
       *inline_size = space_.initial_containing_block_size_.width;
     else
@@ -76,6 +76,9 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size) {
+#if DCHECK_IS_ON()
+    is_available_size_set_ = true;
+#endif
     space_.available_size_ = available_size;
 
     if (UNLIKELY(!is_in_parallel_flow_)) {
@@ -87,43 +90,33 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpaceBuilder& SetPercentageResolutionSize(
-      NGLogicalSize percentage_resolution_size) {
-    space_.percentage_resolution_size_ = percentage_resolution_size;
-
-    if (UNLIKELY(!is_in_parallel_flow_)) {
-      space_.percentage_resolution_size_.Flip();
-      AdjustInlineSizeIfNeeded(&space_.percentage_resolution_size_.inline_size);
-    }
-
-    return *this;
-  }
+      NGLogicalSize percentage_resolution_size);
 
   NGConstraintSpaceBuilder& SetReplacedPercentageResolutionSize(
-      NGLogicalSize replaced_percentage_resolution_size) {
-    space_.replaced_percentage_resolution_size_ =
-        replaced_percentage_resolution_size;
-
-    if (UNLIKELY(!is_in_parallel_flow_)) {
-      space_.replaced_percentage_resolution_size_.Flip();
-      AdjustInlineSizeIfNeeded(
-          &space_.replaced_percentage_resolution_size_.inline_size);
-    }
-
-    return *this;
-  }
+      NGLogicalSize replaced_percentage_resolution_size);
 
   NGConstraintSpaceBuilder& SetFragmentainerBlockSize(LayoutUnit size) {
-    space_.fragmentainer_block_size_ = size;
+#if DCHECK_IS_ON()
+    DCHECK(!is_fragmentainer_block_size_set_);
+    is_fragmentainer_block_size_set_ = true;
+#endif
+    if (size != NGSizeIndefinite)
+      space_.EnsureRareData()->fragmentainer_block_size = size;
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetFragmentainerSpaceAtBfcStart(LayoutUnit space) {
-    space_.fragmentainer_space_at_bfc_start_ = space;
+#if DCHECK_IS_ON()
+    DCHECK(!is_fragmentainer_space_at_bfc_start_set_);
+    is_fragmentainer_space_at_bfc_start_set_ = true;
+#endif
+    if (space != NGSizeIndefinite)
+      space_.EnsureRareData()->fragmentainer_space_at_bfc_start = space;
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetTextDirection(TextDirection direction) {
-    space_.direction_ = static_cast<unsigned>(direction);
+    space_.bitfields_.direction = static_cast<unsigned>(direction);
     return *this;
   }
 
@@ -164,7 +157,14 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetFragmentationType(
       NGFragmentationType fragmentation_type) {
-    space_.block_direction_fragmentation_type_ = fragmentation_type;
+#if DCHECK_IS_ON()
+    DCHECK(!is_block_direction_fragmentation_type_set_);
+    is_block_direction_fragmentation_type_set_ = true;
+#endif
+    if (fragmentation_type != NGFragmentationType::kFragmentNone) {
+      space_.EnsureRareData()->block_direction_fragmentation_type =
+          fragmentation_type;
+    }
     return *this;
   }
 
@@ -185,35 +185,53 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetAdjoiningFloatTypes(NGFloatTypes floats) {
     if (!is_new_fc_)
-      space_.adjoining_floats_ = static_cast<unsigned>(floats);
+      space_.bitfields_.adjoining_floats = static_cast<unsigned>(floats);
 
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetMarginStrut(const NGMarginStrut& margin_strut) {
-    if (!is_new_fc_)
-      space_.margin_strut_ = margin_strut;
+#if DCHECK_IS_ON()
+    DCHECK(!is_margin_strut_set_);
+    is_margin_strut_set_ = true;
+#endif
+    if (!is_new_fc_ && margin_strut != NGMarginStrut())
+      space_.EnsureRareData()->margin_strut = margin_strut;
 
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetBfcOffset(const NGBfcOffset& bfc_offset) {
-    if (!is_new_fc_)
-      space_.bfc_offset_ = bfc_offset;
+    if (!is_new_fc_) {
+      if (space_.HasRareData())
+        space_.rare_data_->bfc_offset = bfc_offset;
+      else
+        space_.bfc_offset_ = bfc_offset;
+    }
 
     return *this;
   }
   NGConstraintSpaceBuilder& SetFloatsBfcBlockOffset(
       const base::Optional<LayoutUnit>& floats_bfc_block_offset) {
-    if (!is_new_fc_)
-      space_.floats_bfc_block_offset_ = floats_bfc_block_offset;
+#if DCHECK_IS_ON()
+    DCHECK(!is_floats_bfc_block_offset_set_);
+    is_floats_bfc_block_offset_set_ = true;
+#endif
+    if (LIKELY(!is_new_fc_ && floats_bfc_block_offset != base::nullopt)) {
+      space_.EnsureRareData()->floats_bfc_block_offset =
+          floats_bfc_block_offset;
+    }
 
     return *this;
   }
 
   NGConstraintSpaceBuilder& SetClearanceOffset(LayoutUnit clearance_offset) {
-    if (!is_new_fc_)
-      space_.clearance_offset_ = clearance_offset;
+#if DCHECK_IS_ON()
+    DCHECK(!is_clearance_offset_set_);
+    is_clearance_offset_set_ = true;
+#endif
+    if (!is_new_fc_ && clearance_offset != LayoutUnit::Min())
+      space_.EnsureRareData()->clearance_offset = clearance_offset;
 
     return *this;
   }
@@ -225,7 +243,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetTableCellChildLayoutPhase(
       NGTableCellChildLayoutPhase table_cell_child_layout_phase) {
-    space_.table_cell_child_layout_phase_ = table_cell_child_layout_phase;
+    space_.bitfields_.table_cell_child_layout_phase =
+        table_cell_child_layout_phase;
     return *this;
   }
 
@@ -255,7 +274,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     to_constraint_space_called_ = true;
 #endif
 
-    DCHECK(!is_new_fc_ || !space_.adjoining_floats_);
+    DCHECK(!is_new_fc_ || !space_.bitfields_.adjoining_floats);
     DCHECK_EQ(space_.HasFlag(NGConstraintSpace::kOrthogonalWritingModeRoot),
               !is_in_parallel_flow_ || force_orthogonal_writing_mode_root_);
 
@@ -264,14 +283,15 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
            "simultaneously. Inferred means the constraints are in parent "
            "writing mode, forced means they are in child writing mode.";
 
-    space_.baseline_requests_ = baseline_requests_.Serialize();
+    space_.bitfields_.baseline_requests = baseline_requests_.Serialize();
     return std::move(space_);
   }
 
  private:
   void SetFlag(NGConstraintSpace::ConstraintSpaceFlags mask, bool value) {
-    space_.flags_ = (space_.flags_ & ~static_cast<unsigned>(mask)) |
-                    (-(int32_t)value & static_cast<unsigned>(mask));
+    space_.bitfields_.flags =
+        (space_.bitfields_.flags & ~static_cast<unsigned>(mask)) |
+        (-(int32_t)value & static_cast<unsigned>(mask));
   }
 
   NGConstraintSpace space_;
@@ -280,6 +300,14 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool force_orthogonal_writing_mode_root_;
 
 #if DCHECK_IS_ON()
+  bool is_available_size_set_ = false;
+  bool is_fragmentainer_block_size_set_ = false;
+  bool is_fragmentainer_space_at_bfc_start_set_ = false;
+  bool is_block_direction_fragmentation_type_set_ = false;
+  bool is_margin_strut_set_ = false;
+  bool is_floats_bfc_block_offset_set_ = false;
+  bool is_clearance_offset_set_ = false;
+
   bool to_constraint_space_called_ = false;
 #endif
 

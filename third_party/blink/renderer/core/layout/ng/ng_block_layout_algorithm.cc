@@ -2091,12 +2091,12 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // to bother to check whether we're actually at the start).
     space_builder.SetSeparateLeadingFragmentainerMargins(
         ConstraintSpace().HasSeparateLeadingFragmentainerMargins());
+    space_builder.SetFragmentainerBlockSize(
+        ConstraintSpace().FragmentainerBlockSize());
+    space_builder.SetFragmentainerSpaceAtBfcStart(space_available);
+    space_builder.SetFragmentationType(
+        ConstraintSpace().BlockFragmentationType());
   }
-  space_builder.SetFragmentainerBlockSize(
-      ConstraintSpace().FragmentainerBlockSize());
-  space_builder.SetFragmentainerSpaceAtBfcStart(space_available);
-  space_builder.SetFragmentationType(
-      ConstraintSpace().BlockFragmentationType());
   return space_builder.ToConstraintSpace();
 }
 

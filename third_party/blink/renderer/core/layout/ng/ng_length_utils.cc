@@ -65,8 +65,8 @@ inline bool InlineLengthMayChange(Length length,
       return true;
   }
   if (is_unspecified || length.IsPercentOrCalc()) {
-    if (new_space.PercentageResolutionSize().inline_size !=
-        old_space.PercentageResolutionSize().inline_size)
+    if (new_space.PercentageResolutionInlineSize() !=
+        old_space.PercentageResolutionInlineSize())
       return true;
   }
   return false;
@@ -84,11 +84,11 @@ inline bool BlockLengthMayChange(Length length,
     // (in addition to percent values). The reason is that percentage resolution
     // block sizes may be passed through auto-sized blocks, in some cases,
     // e.g. for anonymous blocks, and also in quirks mode.
-    if (new_space.PercentageResolutionSize().block_size !=
-        old_space.PercentageResolutionSize().block_size)
+    if (new_space.PercentageResolutionBlockSize() !=
+        old_space.PercentageResolutionBlockSize())
       return true;
-    if (new_space.ReplacedPercentageResolutionSize().block_size !=
-        old_space.ReplacedPercentageResolutionSize().block_size)
+    if (new_space.ReplacedPercentageResolutionBlockSize() !=
+        old_space.ReplacedPercentageResolutionBlockSize())
       return true;
   }
   return false;
@@ -123,8 +123,7 @@ LayoutUnit ResolveInlineLength(
     LengthResolvePhase phase,
     const base::Optional<NGBoxStrut>& opt_border_padding) {
   DCHECK_GE(constraint_space.AvailableSize().inline_size, LayoutUnit());
-  DCHECK_GE(constraint_space.PercentageResolutionSize().inline_size,
-            LayoutUnit());
+  DCHECK_GE(constraint_space.PercentageResolutionInlineSize(), LayoutUnit());
   DCHECK_EQ(constraint_space.GetWritingMode(), style.GetWritingMode());
 
   if (constraint_space.IsAnonymous())
@@ -168,7 +167,7 @@ LayoutUnit ResolveInlineLength(
     case kFixed:
     case kCalculated: {
       LayoutUnit percentage_resolution_size =
-          constraint_space.PercentageResolutionSize().inline_size;
+          constraint_space.PercentageResolutionInlineSize();
       LayoutUnit value = ValueForLength(length, percentage_resolution_size);
       if (style.BoxSizing() == EBoxSizing::kContentBox) {
         value += border_and_padding.InlineSum();
@@ -251,8 +250,7 @@ LayoutUnit ResolveBlockLength(
   if (length.IsPercentOrCalc()) {
     size_is_unresolvable =
         phase == LengthResolvePhase::kIntrinsic ||
-        constraint_space.PercentageResolutionSize().block_size ==
-            NGSizeIndefinite;
+        constraint_space.PercentageResolutionBlockSize() == NGSizeIndefinite;
   } else if (length.GetType() == kFillAvailable) {
     size_is_unresolvable =
         phase == LengthResolvePhase::kIntrinsic ||
@@ -283,7 +281,7 @@ LayoutUnit ResolveBlockLength(
     case kFixed:
     case kCalculated: {
       LayoutUnit percentage_resolution_size =
-          constraint_space.PercentageResolutionSize().block_size;
+          constraint_space.PercentageResolutionBlockSize();
       LayoutUnit value = ValueForLength(length, percentage_resolution_size);
 
       // Percentage-sized children of table cells, in the table "layout" phase,
@@ -699,8 +697,8 @@ bool SizeMayChange(const ComputedStyle& style,
       return true;
   }
 
-  if (new_space.PercentageResolutionSize().inline_size !=
-      old_space.PercentageResolutionSize().inline_size) {
+  if (new_space.PercentageResolutionInlineSize() !=
+      old_space.PercentageResolutionInlineSize()) {
     // Percentage-based padding is resolved against the inline content box size
     // of the containing block.
     if (style.PaddingTop().IsPercentOrCalc() ||
@@ -1104,7 +1102,7 @@ NGLogicalSize CalculateChildPercentageSize(
 
   return AdjustChildPercentageSizeForQuirksAndFlex(
       space, node, child_percentage_size,
-      space.PercentageResolutionSize().block_size);
+      space.PercentageResolutionBlockSize());
 }
 
 NGLogicalSize CalculateReplacedChildPercentageSize(
@@ -1139,7 +1137,7 @@ NGLogicalSize CalculateReplacedChildPercentageSize(
 
   return AdjustChildPercentageSizeForQuirksAndFlex(
       space, node, child_percentage_size,
-      space.ReplacedPercentageResolutionSize().block_size);
+      space.ReplacedPercentageResolutionBlockSize());
 }
 
 }  // namespace blink

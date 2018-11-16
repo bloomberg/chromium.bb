@@ -85,8 +85,8 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
     builder.SetFragmentationType(NGFragmentationType::kFragmentNone);
   }
 
-  return builder.SetPercentageResolutionSize(float_percentage_size)
-      .SetAvailableSize(float_available_size)
+  return builder.SetAvailableSize(float_available_size)
+      .SetPercentageResolutionSize(float_percentage_size)
       .SetReplacedPercentageResolutionSize(float_replaced_percentage_size)
       .SetIsShrinkToFit(style.LogicalWidth().IsAuto())
       .SetTextDirection(style.Direction())
