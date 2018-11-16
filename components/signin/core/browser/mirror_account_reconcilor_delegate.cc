@@ -50,27 +50,16 @@ std::string MirrorAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
 }
 
 std::vector<std::string>
-MirrorAccountReconcilorDelegate::ReorderChromeAccountsForReconcile(
+MirrorAccountReconcilorDelegate::GetChromeAccountsForReconcile(
     const std::vector<std::string>& chrome_accounts,
     const std::string& primary_account,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
     const signin::MultiloginMode mode) const {
   DCHECK(mode ==
          signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER);
-  std::vector<std::string> accounts_to_send;
-  accounts_to_send.reserve(chrome_accounts.size());
-
-  DCHECK(!primary_account.empty());
-  accounts_to_send.push_back(primary_account);
-
-  for (const std::string& chrome_account : chrome_accounts) {
-    if (chrome_account == primary_account)
-      continue;
-    accounts_to_send.push_back(chrome_account);
+  return ReorderChromeAccountsForReconcile(chrome_accounts, primary_account,
+                                           gaia_accounts);
   }
-  DCHECK(!accounts_to_send.empty());
-  return accounts_to_send;
-}
 
 void MirrorAccountReconcilorDelegate::OnPrimaryAccountSet(
     const AccountInfo& primary_account_info) {

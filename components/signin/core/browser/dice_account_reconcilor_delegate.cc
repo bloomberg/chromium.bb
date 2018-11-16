@@ -13,42 +13,6 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 
-namespace {
-// Outputs accounts in the following order: first account, gaia accounts that
-// are present in chrome_accounts, rest of chrome_accounts.
-std::vector<std::string> ReorderChromeAccountsInternal(
-    const std::vector<std::string>& chrome_accounts,
-    const std::string& first_account,
-    const std::vector<gaia::ListedAccount>& gaia_accounts) {
-  // Reordering should only happen if there is first account with a valid token.
-  DCHECK(!first_account.empty());
-
-  std::set<std::string> chrome_accounts_set(chrome_accounts.begin(),
-                                            chrome_accounts.end());
-  DCHECK(base::ContainsKey(chrome_accounts_set, first_account));
-
-  std::vector<std::string> accounts_to_send;
-  accounts_to_send.reserve(chrome_accounts.size());
-
-  accounts_to_send.push_back(first_account);
-
-  chrome_accounts_set.erase(first_account);
-  for (const gaia::ListedAccount& gaia_account : gaia_accounts) {
-    if (gaia_account.id == first_account ||
-        chrome_accounts_set.find(gaia_account.id) == chrome_accounts_set.end())
-      continue;
-    accounts_to_send.push_back(gaia_account.id);
-    chrome_accounts_set.erase(gaia_account.id);
-  }
-
-  for (const std::string& chrome_account : chrome_accounts_set) {
-    accounts_to_send.push_back(chrome_account);
-  }
-  DCHECK(!accounts_to_send.empty());
-  return accounts_to_send;
-}
-}  // namespace
-
 namespace signin {
 
 DiceAccountReconcilorDelegate::DiceAccountReconcilorDelegate(
@@ -172,21 +136,21 @@ MultiloginMode DiceAccountReconcilorDelegate::CalculateModeForReconcile(
 }
 
 std::vector<std::string>
-DiceAccountReconcilorDelegate::ReorderChromeAccountsForReconcile(
+DiceAccountReconcilorDelegate::GetChromeAccountsForReconcile(
     const std::vector<std::string>& chrome_accounts,
     const std::string& primary_account,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
     const signin::MultiloginMode mode) const {
   if (mode == signin::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER) {
-    return ReorderChromeAccountsInternal(chrome_accounts, primary_account,
-                                         gaia_accounts);
+    return ReorderChromeAccountsForReconcile(chrome_accounts, primary_account,
+                                             gaia_accounts);
   }
   if (gaia_accounts.empty() &&
       base::ContainsValue(chrome_accounts, last_known_first_account_)) {
     // In PRESERVE mode in case accounts in cookies are accidentally lost we
     // should put cached first account first since Gaia has no information about
     // it.
-    return ReorderChromeAccountsInternal(
+    return ReorderChromeAccountsForReconcile(
         chrome_accounts, last_known_first_account_, gaia_accounts);
   }
   return chrome_accounts;

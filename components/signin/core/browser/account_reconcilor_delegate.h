@@ -108,10 +108,26 @@ class AccountReconcilorDelegate {
   }
   AccountReconcilor* reconcilor() { return reconcilor_; }
 
+ protected:
+  // Computes a new ordering for chrome_accounts. |first_account| must be in
+  // |chrome_accounts|. The returned order has the following properties:
+  // - first_account will be first.
+  // - if a chrome account is also in gaia_accounts, the function tries to keep
+  //   it at the same index. The function mimimizes account re-numbering.
+  // - if there are too many accounts, some accounts will be discarded.
+  //   |first_account| and accounts already in cookies will be kept in priority.
+  //   Aplhabetical order is used to break ties.
+  // Note: the input order of the accounts in |chrome_accounts| does not matter
+  // (different orders yield to the same result).
+  std::vector<std::string> ReorderChromeAccountsForReconcile(
+      const std::vector<std::string>& chrome_accounts,
+      const std::string& first_account,
+      const std::vector<gaia::ListedAccount>& gaia_accounts) const;
+
  private:
   // Reorders chrome accounts in the order they should appear in cookies with
   // respect to existing cookies.
-  virtual std::vector<std::string> ReorderChromeAccountsForReconcile(
+  virtual std::vector<std::string> GetChromeAccountsForReconcile(
       const std::vector<std::string>& chrome_accounts,
       const std::string& primary_account,
       const std::vector<gaia::ListedAccount>& gaia_accounts,

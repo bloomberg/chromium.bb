@@ -31,8 +31,7 @@ class MirrorAccountReconcilorDelegate
       const std::string& primary_account,
       bool first_execution,
       bool will_logout) const override;
-
-  std::vector<std::string> ReorderChromeAccountsForReconcile(
+  std::vector<std::string> GetChromeAccountsForReconcile(
       const std::vector<std::string>& chrome_accounts,
       const std::string& primary_account,
       const std::vector<gaia::ListedAccount>& gaia_accounts,

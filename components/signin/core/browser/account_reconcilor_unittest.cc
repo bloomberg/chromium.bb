@@ -853,8 +853,8 @@ const std::vector<AccountReconcilorTestTableParam> kDiceParams = {
     {  "*A",   "AB",   IsFirstReconcile::kBoth,       "XA", "*A",     "A",    "PA", "*A",   "AxB"},
     // Check that Gaia default account is kept in first position.
     {  "AB",   "BC",   IsFirstReconcile::kBoth,       "XBA","AB",     "BA",   "PAB","AB",   "BxCA"},
-    // Check that Gaia cookie order preserved except for the first one.
-    {  "*ABC", "CB",   IsFirstReconcile::kFirst,      "XABC","*ABC",  "ABC",  "UACB","*ABC","ACB"},
+    // Check that Gaia cookie order is preserved for B.
+    {  "*ABC", "CB",   IsFirstReconcile::kFirst,      "XABC","*ABC",  "ABC",  "UABC","*ABC","ABC"},
     // Required for idempotency check.
     {  "",     "",     IsFirstReconcile::kNotFirst,   "",   "",       "",     "",   "",     ""},
     {  "",     "xA",   IsFirstReconcile::kNotFirst,   "",   "",       "xA",   "",   "",     "xA"},
