@@ -963,8 +963,6 @@ component("ash") {
     "system/tray/tri_view.cc",
     "system/tray/tri_view.h",
     "system/tray/view_click_listener.h",
-    "system/tray_drag_controller.cc",
-    "system/tray_drag_controller.h",
     "system/unified/collapse_button.cc",
     "system/unified/collapse_button.h",
     "system/unified/detailed_view_controller.h",

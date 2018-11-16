@@ -12,7 +12,6 @@
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
-#include "ash/system/tray_drag_controller.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -47,7 +46,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // views::View:
   void SetVisible(bool visible) override;
   const char* GetClassName() const override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void Layout() override;
@@ -57,9 +55,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-
-  // TrayBubbleView::Delegate:
-  void ProcessGestureEventForBubble(ui::GestureEvent* event) override;
 
   // VirtualKeyboardModel::Observer:
   void OnVirtualKeyboardVisibilityChanged() override;
@@ -84,7 +79,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
                                                  const gfx::Rect& new_bounds);
 
   // Called when the anchor (tray or bubble) may have moved or changed.
-  virtual void AnchorUpdated();
+  virtual void AnchorUpdated() {}
 
   // Called from GetAccessibleNodeData, must return a valid accessible name.
   virtual base::string16 GetAccessibleNameForTray() = 0;
@@ -126,25 +121,12 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // tray_container().
   gfx::Insets GetBubbleAnchorInsets() const;
 
-  // Updates the |clipping_window_| bounds if the anchor moved or changed.
-  void UpdateClippingWindowBounds();
-
   // Returns the container window for the bubble (on the proper display).
   aura::Window* GetBubbleWindowContainer();
-
-  // Update the bounds of the associated tray bubble. Close the bubble if
-  // |close_bubble| is set.
-  void AnimateToTargetBounds(const gfx::Rect& target_bounds, bool close_bubble);
 
   // Helper function that calculates background bounds relative to local bounds
   // based on background insets returned from GetBackgroundInsets().
   gfx::Rect GetBackgroundBounds() const;
-
-  aura::Window* clipping_window_for_test() const {
-    return clipping_window_.get();
-  }
-
-  TrayDragController* drag_controller() { return drag_controller_.get(); }
 
  protected:
   // ActionableView:
@@ -154,11 +136,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   void HandlePerformActionResult(bool action_performed,
                                  const ui::Event& event) override;
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
-
-  void set_drag_controller(
-      std::unique_ptr<TrayDragController> drag_controller) {
-    drag_controller_ = std::move(drag_controller);
-  }
 
   void set_show_with_virtual_keyboard(bool show_with_virtual_keyboard) {
     show_with_virtual_keyboard_ = show_with_virtual_keyboard;
@@ -203,13 +180,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // If true, the view always shows up when virtual keyboard is visible.
   bool show_with_virtual_keyboard_;
-
-  // Handles touch drag gestures on the tray area and its associated bubble.
-  std::unique_ptr<TrayDragController> drag_controller_;
-
-  // Used in maximize mode to make sure the system tray bubble only be shown in
-  // work area.
-  std::unique_ptr<aura::Window> clipping_window_;
 
   std::unique_ptr<TrayWidgetObserver> widget_observer_;
   std::unique_ptr<TrayEventFilter> tray_event_filter_;

@@ -146,26 +146,6 @@ class TrayBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(TrayBackground);
 };
 
-// CloseBubbleObserver is used to delay closing the tray bubbles until the
-// animation completes.
-class CloseBubbleObserver : public ui::ImplicitAnimationObserver {
- public:
-  explicit CloseBubbleObserver(TrayBackgroundView* tray_background_view)
-      : tray_background_view_(tray_background_view) {}
-
-  ~CloseBubbleObserver() override = default;
-
-  void OnImplicitAnimationsCompleted() override {
-    tray_background_view_->CloseBubble();
-    delete this;
-  }
-
- private:
-  TrayBackgroundView* tray_background_view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(CloseBubbleObserver);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // TrayBackgroundView
 
@@ -298,14 +278,6 @@ const char* TrayBackgroundView::GetClassName() const {
   return kViewClassName;
 }
 
-void TrayBackgroundView::OnGestureEvent(ui::GestureEvent* event) {
-  if (drag_controller())
-    drag_controller_->ProcessGestureEvent(event, this);
-
-  if (!event->handled())
-    ActionableView::OnGestureEvent(event);
-}
-
 void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   Shelf* shelf = Shelf::ForWindow(GetWidget()->GetNativeWindow());
   StatusAreaWidgetDelegate* delegate =
@@ -373,11 +345,6 @@ TrayBackgroundView::CreateInkDropHighlight() const {
   return highlight;
 }
 
-void TrayBackgroundView::ProcessGestureEventForBubble(ui::GestureEvent* event) {
-  if (drag_controller())
-    drag_controller_->ProcessGestureEvent(event, this);
-}
-
 void TrayBackgroundView::OnVirtualKeyboardVisibilityChanged() {
   if (show_with_virtual_keyboard_) {
     // The view always shows up when virtual keyboard is visible if
@@ -412,11 +379,6 @@ void TrayBackgroundView::UpdateAfterRootWindowBoundsChange(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
   // Do nothing by default. Child class may do something.
-}
-
-void TrayBackgroundView::AnchorUpdated() {
-  if (GetBubbleView())
-    UpdateClippingWindowBounds();
 }
 
 void TrayBackgroundView::BubbleResized(const TrayBubbleView* bubble_view) {}
@@ -493,50 +455,10 @@ gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
   }
 }
 
-void TrayBackgroundView::UpdateClippingWindowBounds() {
-  if (clipping_window_.get())
-    clipping_window_->SetBounds(shelf_->GetUserWorkAreaBounds());
-}
-
 aura::Window* TrayBackgroundView::GetBubbleWindowContainer() {
-  aura::Window* container = Shell::GetContainer(
+  return Shell::GetContainer(
       tray_container()->GetWidget()->GetNativeWindow()->GetRootWindow(),
       kShellWindowId_SettingBubbleContainer);
-
-  // Place the bubble in |container|, or in a window clipped to the work area
-  // in maximize mode, to avoid tray bubble and shelf overlap when dragging the
-  // bubble from the tray.
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled() &&
-      drag_controller()) {
-    if (!clipping_window_.get()) {
-      clipping_window_ = window_factory::NewWindow();
-      clipping_window_->Init(ui::LAYER_NOT_DRAWN);
-      clipping_window_->layer()->SetMasksToBounds(true);
-      container->AddChild(clipping_window_.get());
-      clipping_window_->Show();
-    }
-    clipping_window_->SetBounds(shelf_->GetUserWorkAreaBounds());
-    return clipping_window_.get();
-  }
-  return container;
-}
-
-void TrayBackgroundView::AnimateToTargetBounds(const gfx::Rect& target_bounds,
-                                               bool close_bubble) {
-  const int kAnimationDurationMS = 200;
-
-  ui::ScopedLayerAnimationSettings settings(
-      GetBubbleView()->GetWidget()->GetNativeView()->layer()->GetAnimator());
-  settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kAnimationDurationMS));
-  settings.SetTweenType(gfx::Tween::EASE_OUT);
-  settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  if (close_bubble)
-    settings.AddObserver(new CloseBubbleObserver(this));
-  GetBubbleView()->GetWidget()->SetBounds(target_bounds);
 }
 
 gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
