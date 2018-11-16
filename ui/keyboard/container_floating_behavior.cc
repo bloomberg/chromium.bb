@@ -309,9 +309,8 @@ bool ContainerFloatingBehavior::OccludedBoundsAffectWorkspaceLayout() const {
   return false;
 }
 
-bool ContainerFloatingBehavior::SetDraggableArea(const gfx::Rect& rect) {
+void ContainerFloatingBehavior::SetDraggableArea(const gfx::Rect& rect) {
   draggable_area_ = rect;
-  return true;
 }
 
 }  //  namespace keyboard

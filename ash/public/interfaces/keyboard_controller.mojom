@@ -18,6 +18,9 @@ enum HideReason {
 };
 
 interface KeyboardControllerObserver {
+  // Called when a keyboard enable flag changes.
+  OnKeyboardEnableFlagsChanged(array<keyboard.mojom.KeyboardEnableFlag> flags);
+
   // Called when the keyboard is enabled or disabled. If ReloadKeyboard() is
   // called or other code enables the keyboard while already enabled, this will
   // be called twice, once when the keyboard is disabled and again when it is
@@ -53,7 +56,7 @@ interface KeyboardController {
   // changes, enables or disables the keyboard to match the new state.
   ClearEnableFlag(keyboard.mojom.KeyboardEnableFlag flag);
 
-  // Gets the current set of keyboard enabled flags.
+  // Gets the current set of keyboard enable flags.
   GetEnableFlags() => (array<keyboard.mojom.KeyboardEnableFlag> flags);
 
   // Reloads the virtual keyboard if it is enabled and the URL has changed, e.g.
@@ -79,6 +82,19 @@ interface KeyboardController {
   // container type changes (or fails to change).
   SetContainerType(keyboard.mojom.ContainerType container_type,
                    gfx.mojom.Rect? target_bounds) => (bool result);
+
+  // If |locked| is true, the keyboard remains visible even when no window has
+  // input focus.
+  SetKeyboardLocked(bool locked);
+
+  // Sets the regions of the keyboard window that occlude whatever is behind it.
+  SetOccludedBounds(array<gfx.mojom.Rect> bounds);
+
+  // Sets the regions of the keyboard window where events should be handled.
+  SetHitTestBounds(array<gfx.mojom.Rect> bounds);
+
+  // Sets the region of the keyboard window that can be used as a drag handle.
+  SetDraggableArea(gfx.mojom.Rect bounds);
 
   // Adds a KeyboardControllerObserver.
   AddObserver(associated KeyboardControllerObserver observer);

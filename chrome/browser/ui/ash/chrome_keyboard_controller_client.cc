@@ -72,9 +72,9 @@ ChromeKeyboardControllerClient::ChromeKeyboardControllerClient(
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Request the initial set of enable flags.
-  keyboard_controller_ptr_->GetEnableFlags(
-      base::BindOnce(&ChromeKeyboardControllerClient::OnGetEnableFlags,
-                     weak_ptr_factory_.GetWeakPtr()));
+  keyboard_controller_ptr_->GetEnableFlags(base::BindOnce(
+      &ChromeKeyboardControllerClient::OnKeyboardEnableFlagsChanged,
+      weak_ptr_factory_.GetWeakPtr()));
 
   // Request the initial visible state.
   keyboard_controller_ptr_->IsKeyboardVisible(base::BindOnce(
@@ -125,17 +125,11 @@ void ChromeKeyboardControllerClient::GetKeyboardEnabled(
 void ChromeKeyboardControllerClient::SetEnableFlag(
     const keyboard::mojom::KeyboardEnableFlag& flag) {
   keyboard_controller_ptr_->SetEnableFlag(flag);
-  keyboard_controller_ptr_->GetEnableFlags(
-      base::BindOnce(&ChromeKeyboardControllerClient::OnGetEnableFlags,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeKeyboardControllerClient::ClearEnableFlag(
     const keyboard::mojom::KeyboardEnableFlag& flag) {
   keyboard_controller_ptr_->ClearEnableFlag(flag);
-  keyboard_controller_ptr_->GetEnableFlags(
-      base::BindOnce(&ChromeKeyboardControllerClient::OnGetEnableFlags,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool ChromeKeyboardControllerClient::IsEnableFlagSet(
@@ -166,6 +160,24 @@ void ChromeKeyboardControllerClient::SetContainerType(
     base::OnceCallback<void(bool)> callback) {
   keyboard_controller_ptr_->SetContainerType(container_type, target_bounds,
                                              std::move(callback));
+}
+
+void ChromeKeyboardControllerClient::SetKeyboardLocked(bool locked) {
+  keyboard_controller_ptr_->SetKeyboardLocked(locked);
+}
+
+void ChromeKeyboardControllerClient::SetOccludedBounds(
+    const std::vector<gfx::Rect>& bounds) {
+  keyboard_controller_ptr_->SetOccludedBounds(bounds);
+}
+
+void ChromeKeyboardControllerClient::SetHitTestBounds(
+    const std::vector<gfx::Rect>& bounds) {
+  keyboard_controller_ptr_->SetHitTestBounds(bounds);
+}
+
+void ChromeKeyboardControllerClient::SetDraggableArea(const gfx::Rect& bounds) {
+  keyboard_controller_ptr_->SetDraggableArea(bounds);
 }
 
 bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {
@@ -212,6 +224,12 @@ aura::Window* ChromeKeyboardControllerClient::GetKeyboardWindow() const {
 
 void ChromeKeyboardControllerClient::FlushForTesting() {
   keyboard_controller_ptr_.FlushForTesting();
+}
+
+void ChromeKeyboardControllerClient::OnKeyboardEnableFlagsChanged(
+    const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags) {
+  keyboard_enable_flags_ =
+      std::set<keyboard::mojom::KeyboardEnableFlag>(flags.begin(), flags.end());
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardEnabledChanged(bool enabled) {
@@ -279,12 +297,6 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
       virtual_keyboard_private::OnBoundsChanged::kEventName,
       std::move(event_args), profile);
   router->BroadcastEvent(std::move(event));
-}
-
-void ChromeKeyboardControllerClient::OnGetEnableFlags(
-    const std::vector<keyboard::mojom::KeyboardEnableFlag>& flags) {
-  keyboard_enable_flags_ =
-      std::set<keyboard::mojom::KeyboardEnableFlag>(flags.begin(), flags.end());
 }
 
 Profile* ChromeKeyboardControllerClient::GetProfile() {

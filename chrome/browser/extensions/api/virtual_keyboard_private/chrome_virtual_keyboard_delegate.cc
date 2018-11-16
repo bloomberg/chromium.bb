@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -43,8 +42,6 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/public/keyboard_controller_types.mojom.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 
@@ -187,13 +184,13 @@ void ChromeVirtualKeyboardDelegate::OnKeyboardConfigChanged() {
 
 bool ChromeVirtualKeyboardDelegate::HideKeyboard() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* controller = keyboard::KeyboardController::Get();
-  if (!controller->IsEnabled())
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (!keyboard_client->is_keyboard_enabled())
     return false;
 
   // Pass HIDE_REASON_MANUAL since calls to HideKeyboard as part of this API
   // would be user generated.
-  controller->HideKeyboardByUser();
+  keyboard_client->HideKeyboard(ash::mojom::HideReason::kUser);
   return true;
 }
 
@@ -232,11 +229,11 @@ void ChromeVirtualKeyboardDelegate::SetHotrodKeyboard(bool enable) {
 
 bool ChromeVirtualKeyboardDelegate::LockKeyboard(bool state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* controller = keyboard::KeyboardController::Get();
-  if (!controller->IsEnabled())
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (!keyboard_client->is_keyboard_enabled())
     return false;
 
-  controller->set_keyboard_locked(state);
+  keyboard_client->SetKeyboardLocked(state);
   return true;
 }
 
@@ -254,9 +251,9 @@ bool ChromeVirtualKeyboardDelegate::SendKeyEvent(const std::string& type,
 
 bool ChromeVirtualKeyboardDelegate::ShowLanguageSettings() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* controller = keyboard::KeyboardController::Get();
-  if (controller->IsEnabled())
-    controller->DismissVirtualKeyboard();
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (keyboard_client->is_keyboard_enabled())
+    keyboard_client->HideKeyboard(ash::mojom::HideReason::kUser);
 
   base::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
@@ -280,37 +277,35 @@ bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(
 
 bool ChromeVirtualKeyboardDelegate::SetOccludedBounds(
     const std::vector<gfx::Rect>& bounds) {
-  keyboard::KeyboardController* controller =
-      keyboard::KeyboardController::Get();
-  if (!controller->IsEnabled())
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (!keyboard_client->is_keyboard_enabled())
     return false;
 
-  // TODO(https://crbug.com/826617): Support occluded bounds with multiple
-  // rectangles.
-  controller->SetOccludedBounds(bounds.empty() ? gfx::Rect() : bounds[0]);
+  keyboard_client->SetOccludedBounds(bounds);
   return true;
 }
 
 bool ChromeVirtualKeyboardDelegate::SetHitTestBounds(
     const std::vector<gfx::Rect>& bounds) {
-  keyboard::KeyboardController* controller =
-      keyboard::KeyboardController::Get();
-  if (!controller->IsEnabled())
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (!keyboard_client->is_keyboard_enabled())
     return false;
 
-  controller->SetHitTestBounds(bounds);
+  keyboard_client->SetHitTestBounds(bounds);
   return true;
 }
 
 bool ChromeVirtualKeyboardDelegate::SetDraggableArea(
     const api::virtual_keyboard_private::Bounds& rect) {
-  auto* controller = keyboard::KeyboardController::Get();
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   // Since controller will be destroyed when system switch from VK to
   // physical keyboard, return true to avoid unneccessary exception.
-  if (!controller->IsEnabled())
+  if (!keyboard_client->is_keyboard_enabled())
     return true;
-  return controller->SetDraggableArea(
+
+  keyboard_client->SetDraggableArea(
       gfx::Rect(rect.left, rect.top, rect.width, rect.height));
+  return true;
 }
 
 bool ChromeVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
@@ -345,12 +340,17 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
     OnKeyboardSettingsCallback on_settings_callback,
     bool has_audio_input_devices) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+
   std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
   results->SetString("layout", GetKeyboardLayout());
 
   // TODO(bshe): Consolidate a11y, hotrod and normal mode into a mode enum. See
   // crbug.com/529474.
-  results->SetBoolean("a11ymode", keyboard::GetAccessibilityKeyboardEnabled());
+  results->SetBoolean(
+      "a11ymode",
+      keyboard_client->IsEnableFlagSet(
+          keyboard::mojom::KeyboardEnableFlag::kAccessibilityEnabled));
   results->SetBoolean("hotrodmode", g_hotrod_keyboard_enabled);
   std::unique_ptr<base::ListValue> features(new base::ListValue());
 
@@ -388,7 +388,7 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "imeservice", base::FeatureList::IsEnabled(
                         chromeos::features::kImeServiceConnectable)));
 
-  auto config = ChromeKeyboardControllerClient::Get()->GetKeyboardConfig();
+  keyboard::mojom::KeyboardConfig config = keyboard_client->GetKeyboardConfig();
   // TODO(oka): Change this to use config.voice_input.
   features->AppendString(GenerateFeatureFlag(
       "voiceinput", has_audio_input_devices && config.voice_input &&

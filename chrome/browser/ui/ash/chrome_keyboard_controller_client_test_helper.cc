@@ -59,6 +59,10 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
                         SetContainerTypeCallback callback) override {
     std::move(callback).Run(true);
   }
+  void SetKeyboardLocked(bool locked) override {}
+  void SetOccludedBounds(const std::vector<gfx::Rect>& bounds) override {}
+  void SetHitTestBounds(const std::vector<gfx::Rect>& bounds) override {}
+  void SetDraggableArea(const gfx::Rect& bounds) override {}
   void AddObserver(ash::mojom::KeyboardControllerObserverAssociatedPtrInfo
                        observer) override {}
 

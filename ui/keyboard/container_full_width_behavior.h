@@ -45,7 +45,7 @@ class KEYBOARD_EXPORT ContainerFullWidthBehavior : public ContainerBehavior {
   gfx::Rect GetOccludedBounds(
       const gfx::Rect& visual_bounds_in_screen) const override;
   bool OccludedBoundsAffectWorkspaceLayout() const override;
-  bool SetDraggableArea(const gfx::Rect& rect) override;
+  void SetDraggableArea(const gfx::Rect& rect) override;
 
  private:
   gfx::Rect occluded_bounds_in_window_;

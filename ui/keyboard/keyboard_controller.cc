@@ -398,10 +398,14 @@ void KeyboardController::SetEnableFlag(mojom::KeyboardEnableFlag flag) {
     default:
       break;
   }
+  for (KeyboardControllerObserver& observer : observer_list_)
+    observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
 }
 
 void KeyboardController::ClearEnableFlag(mojom::KeyboardEnableFlag flag) {
   keyboard_enable_flags_.erase(flag);
+  for (KeyboardControllerObserver& observer : observer_list_)
+    observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
 }
 
 bool KeyboardController::IsEnableFlagSet(mojom::KeyboardEnableFlag flag) const {
@@ -1033,8 +1037,8 @@ void KeyboardController::RecordUkmKeyboardShown() {
       text_input_client->GetTextInputType());
 }
 
-bool KeyboardController::SetDraggableArea(const gfx::Rect& rect) {
-  return container_behavior_->SetDraggableArea(rect);
+void KeyboardController::SetDraggableArea(const gfx::Rect& rect) {
+  container_behavior_->SetDraggableArea(rect);
 }
 
 // InputMethodKeyboardController overrides:

@@ -126,11 +126,8 @@ bool ContainerFullWidthBehavior::OccludedBoundsAffectWorkspaceLayout() const {
   return delegate_->IsKeyboardLocked();
 }
 
-bool ContainerFullWidthBehavior::SetDraggableArea(const gfx::Rect& rect) {
+void ContainerFullWidthBehavior::SetDraggableArea(const gfx::Rect& rect) {
   // Allow extension to call this function but does nothing here.
-  // To avoid unnecessary exception when VK calls this function to
-  // clear draggable area in full width mode.
-  return true;
 }
 
 }  //  namespace keyboard
