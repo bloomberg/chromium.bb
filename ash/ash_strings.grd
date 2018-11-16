@@ -549,6 +549,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_LOCALE_TITLE" desc="The title shown in the locale detailed view.">
         Languages
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOCALE_TOOLTIP" desc="The tooltip text in the tray to show the locale menu.">
+        Show language settings
+      </message>
 
       <!-- Status tray supervised users. -->
       <message name="IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL" desc="Label shown instead of email for supervised users">

@@ -27,9 +27,9 @@ FeaturePodButton* LocaleFeaturePodController::CreateButton() {
       !Shell::Get()->system_tray_model()->locale_list().empty();
   button->SetVisible(visible);
   if (visible) {
-    // TODO(wzang): Add a tooltip.
-    // TODO(wzang): |kUnifiedMenuKeyboardIcon| is a placeholder. Change it.
-    button->SetVectorIcon(kUnifiedMenuKeyboardIcon);
+    button->SetVectorIcon(kUnifiedMenuLocaleIcon);
+    button->SetIconAndLabelTooltips(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCALE_TOOLTIP));
     button->SetLabel(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCALE));
     button->ShowDetailedViewArrow();
     button->DisableLabelButtonFocus();
