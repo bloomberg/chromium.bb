@@ -804,6 +804,11 @@ const char kCastReceiverEnabled[] = "cast_receiver.enabled";
 // be applied. See base::Version for exact string format.
 const char kMinimumAllowedChromeVersion[] = "minimum_req.version";
 
+// Boolean preference that triggers chrome://settings/androidApps/details to be
+// opened on user session start.
+const char kShowArcSettingsOnSessionStart[] =
+    "start_arc_settings_on_session_start";
+
 // Boolean preference that triggers chrome://settings/syncSetup to be opened
 // on user session start.
 const char kShowSyncSettingsOnSessionStart[] =

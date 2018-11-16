@@ -11,6 +11,8 @@
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 
+class Profile;
+
 namespace chromeos {
 
 class ArcTermsOfServiceScreenView;
@@ -19,6 +21,10 @@ class BaseScreenDelegate;
 class ArcTermsOfServiceScreen : public BaseScreen,
                                 public ArcTermsOfServiceScreenViewObserver {
  public:
+  // Launches the ARC settings page if the user requested to review them after
+  // completing OOBE.
+  static void MaybeLaunchArcSettings(Profile* profile);
+
   ArcTermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
                           ArcTermsOfServiceScreenView* view);
   ~ArcTermsOfServiceScreen() override;
@@ -30,7 +36,7 @@ class ArcTermsOfServiceScreen : public BaseScreen,
 
   // ArcTermsOfServiceScreenViewObserver:
   void OnSkip() override;
-  void OnAccept() override;
+  void OnAccept(bool review_arc_settings) override;
   void OnViewDestroyed(ArcTermsOfServiceScreenView* view) override;
 
  private:

@@ -3004,6 +3004,9 @@
   <message name="IDS_ARC_OPT_IN_ACCEPT_AND_CONTINUE_GOOGLE_SERVICE_CONFIRMATION" desc="Message in the opt-in dialog for accepting Google services and continuing the setup.">
     By clicking the "Accept and continue" button, you agree to the processing described above for these Google services.
   </message>
+  <message name="IDS_ARC_REVIEW_SETTINGS" desc="The label to the checkbox in the opt-in dialog explaining that when checked, it will trigger user settings screen opened after session start">
+    Review Google Play options following setup
+  </message>
   <message name="IDS_ARC_OPT_IN_LEARN_MORE_CLOSE" desc="Text for close button in learn more dialog">
     Close
   </message>

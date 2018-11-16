@@ -502,6 +502,7 @@ void Preferences::RegisterProfilePrefs(
                                 update_engine::EndOfLifeStatus::kSupported);
 
   registry->RegisterBooleanPref(prefs::kCastReceiverEnabled, false);
+  registry->RegisterBooleanPref(prefs::kShowArcSettingsOnSessionStart, false);
   registry->RegisterBooleanPref(prefs::kShowSyncSettingsOnSessionStart, false);
 
   // Text-to-speech prefs.

@@ -19,7 +19,7 @@ class ArcTermsOfServiceScreenViewObserver {
   virtual void OnSkip() = 0;
 
   // Called when the user accepts the PlayStore Terms of Service.
-  virtual void OnAccept() = 0;
+  virtual void OnAccept(bool review_arc_settings) = 0;
 
   // Called when the view is destroyed so there is no dead reference to it.
   virtual void OnViewDestroyed(ArcTermsOfServiceScreenView* view) = 0;
