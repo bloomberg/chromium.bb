@@ -80,10 +80,13 @@ void FontPlatformData::SetupSkFont(SkFont* font, float, const Font*) const {
   font->setSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
   uint32_t text_flags = PaintTextFlags();
-  font->DEPRECATED_setAntiAlias(
-      SkToBool(text_flags & SkPaint::kAntiAlias_Flag));
-  font->DEPRECATED_setLCDRender(
-      SkToBool(text_flags & SkPaint::kLCDRenderText_Flag));
+  if (text_flags & SkPaint::kLCDRenderText_Flag) {
+    font->setEdging(SkFont::Edging::kSubpixelAntiAlias);
+  } else if (text_flags & SkPaint::kAntiAlias_Flag) {
+    font->setEdging(SkFont::Edging::kAntiAlias);
+  } else {
+    font->setEdging(SkFont::Edging::kAlias);
+  }
   font->setSubpixel(SkToBool(text_flags & SkPaint::kSubpixelText_Flag));
 
   // Only use sub-pixel positioning if anti aliasing is enabled. Otherwise,

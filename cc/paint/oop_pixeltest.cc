@@ -1408,9 +1408,8 @@ sk_sp<SkTextBlob> BuildTextBlob(
   font.setHinting(SkFontHinting::kNormal);
   font.setSize(1u);
   if (use_lcd_text) {
-    font.DEPRECATED_setAntiAlias(true);
     font.setSubpixel(true);
-    font.DEPRECATED_setLCDRender(true);
+    font.setEdging(SkFont::Edging::kSubpixelAntiAlias);
   }
 
   SkTextBlobBuilder builder;

@@ -197,14 +197,19 @@ void FontPlatformData::SetupSkFont(SkFont* skfont,
         LayoutTestSupport::IsTextSubpixelPositioningAllowedForTest();
   }
 
-  skfont->DEPRECATED_setAntiAlias(should_antialias);
+  if (should_antialias && should_smooth_fonts) {
+    skfont->setEdging(SkFont::Edging::kSubpixelAntiAlias);
+  } else if (should_antialias) {
+    skfont->setEdging(SkFont::Edging::kAntiAlias);
+  } else {
+    skfont->setEdging(SkFont::Edging::kAlias);
+  }
   skfont->setEmbeddedBitmaps(false);
   const float ts = text_size_ >= 0 ? text_size_ : 12;
   skfont->setSize(SkFloatToScalar(ts));
   skfont->setTypeface(typeface_);
   skfont->setEmbolden(synthetic_bold_);
   skfont->setSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
-  skfont->DEPRECATED_setLCDRender(should_smooth_fonts);
   skfont->setSubpixel(should_subpixel_position);
 
   // When rendering using CoreGraphics, disable hinting when

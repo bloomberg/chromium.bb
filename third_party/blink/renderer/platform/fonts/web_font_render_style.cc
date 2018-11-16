@@ -119,12 +119,16 @@ void WebFontRenderStyle::ApplyToSkPaint(SkPaint& font,
 void WebFontRenderStyle::ApplyToSkFont(SkFont* font,
                                        float device_scale_factor) const {
   auto sk_hint_style = static_cast<SkFontHinting>(hint_style);
-  font->DEPRECATED_setAntiAlias(use_anti_alias);
   font->setHinting(sk_hint_style);
   font->setEmbeddedBitmaps(use_bitmaps);
   font->setForceAutoHinting(use_auto_hint);
-  if (use_anti_alias)
-    font->DEPRECATED_setLCDRender(use_subpixel_rendering);
+  if (use_anti_alias && use_subpixel_rendering) {
+    font->setEdging(SkFont::Edging::kSubpixelAntiAlias);
+  } else if (use_anti_alias) {
+    font->setEdging(SkFont::Edging::kAntiAlias);
+  } else {
+    font->setEdging(SkFont::Edging::kAlias);
+  }
 
   // Force-enable subpixel positioning, except when full hinting is requested on
   // low-dpi screen or when running layout tests.
