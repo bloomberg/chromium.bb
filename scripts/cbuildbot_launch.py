@@ -310,6 +310,7 @@ def InitialCheckout(repo):
   logging.PrintBuildbotStepText('Branch: %s' % repo.branch)
   logging.info('Bootstrap script starting initial sync on branch: %s',
                repo.branch)
+  repo.PreLoad('/preload/chromeos')
   repo.Sync(detach=True)
 
 
