@@ -54,7 +54,8 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
                                           const LayoutRect& paint_rect,
                                           const ComputedStyle& style,
                                           bool include_logical_left_edge,
-                                          bool include_logical_right_edge) {
+                                          bool include_logical_right_edge,
+                                          bool background_is_skipped) {
   if (!style.BoxShadow())
     return;
   GraphicsContext& context = info.context;
@@ -64,8 +65,9 @@ void BoxPainterBase::PaintNormalBoxShadow(const PaintInfo& info,
 
   bool has_border_radius = style.HasBorderRadius();
   bool has_opaque_background =
+      !background_is_skipped &&
       style.VisitedDependentColor(GetCSSPropertyBackgroundColor()).Alpha() ==
-      255;
+          255;
 
   GraphicsContextStateSaver state_saver(context, false);
 
