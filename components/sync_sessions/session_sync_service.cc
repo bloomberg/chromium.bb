@@ -93,6 +93,11 @@ void SessionSyncService::SetSyncSessionsGUID(const std::string& guid) {
   sessions_client_->GetSessionSyncPrefs()->SetSyncSessionsGUID(guid);
 }
 
+OpenTabsUIDelegate*
+SessionSyncService::GetUnderlyingOpenTabsUIDelegateForTest() {
+  return sessions_sync_manager_->GetOpenTabsUIDelegate();
+}
+
 void SessionSyncService::NotifyForeignSessionUpdated() {
   foreign_sessions_changed_callback_list_.Notify();
 }

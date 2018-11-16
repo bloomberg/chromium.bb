@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -14,7 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sessions/chrome_tab_restore_service_client.h"
@@ -36,20 +37,14 @@
 #include "components/sessions/core/session_types.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/data_type_controller.h"
-#include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/model/fake_sync_change_processor.h"
-#include "components/sync/model/sync_error_factory_mock.h"
+#include "components/sync/engine/data_type_activation_response.h"
+#include "components/sync/model/data_type_activation_request.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/synced_session.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using testing::_;
-using testing::Invoke;
-using testing::Return;
 
 namespace {
 
@@ -118,9 +113,7 @@ class TestRecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
 class RecentTabsSubMenuModelTest
     : public BrowserWithTestWindowTest {
  public:
-  RecentTabsSubMenuModelTest() {
-    override_features_.InitAndDisableFeature(switches::kSyncUSSSessions);
-  }
+  RecentTabsSubMenuModelTest() {}
 
   void WaitForLoadFromLastSession() { content::RunAllTasksUntilIdle(); }
 
@@ -128,14 +121,28 @@ class RecentTabsSubMenuModelTest
     BrowserWithTestWindowTest::SetUp();
     session_sync_service_ = SessionSyncServiceFactory::GetForProfile(profile());
 
+    syncer::DataTypeActivationRequest activation_request;
+    activation_request.cache_guid = "test_cache_guid";
+    activation_request.error_handler = base::DoNothing();
+
     ProfileSyncServiceFactory::GetForProfile(profile())
         ->GetLocalDeviceInfoProviderForTest()
-        ->Initialize("RecentTabsSubMenuModelTest", "Test Machine", "device_id");
+        ->Initialize(activation_request.cache_guid, "Test Machine",
+                     "device_id");
 
-    session_sync_service_->GetSyncableService()->MergeDataAndStartSyncing(
-        syncer::SESSIONS, syncer::SyncDataList(),
-        std::make_unique<syncer::FakeSyncChangeProcessor>(),
-        std::make_unique<syncer::SyncErrorFactoryMock>());
+    std::unique_ptr<syncer::DataTypeActivationResponse> activation_response;
+    base::RunLoop loop;
+    session_sync_service_->GetControllerDelegate()->OnSyncStarting(
+        activation_request,
+        base::BindLambdaForTesting(
+            [&](std::unique_ptr<syncer::DataTypeActivationResponse> response) {
+              activation_response = std::move(response);
+              loop.Quit();
+            }));
+    loop.Run();
+    ASSERT_NE(nullptr, activation_response);
+    ASSERT_NE(nullptr, activation_response->type_processor);
+    sync_processor_ = std::move(activation_response->type_processor);
 
     EnableSync();
   }
@@ -159,17 +166,14 @@ class RecentTabsSubMenuModelTest
   }
 
   void RegisterRecentTabs(RecentTabsBuilderTestHelper* helper) {
-    // The static_cast below is safe due to the feature override for
-    // switches::kSyncUSSSessions.
-    helper->ExportToSessionsSyncManager(
-        static_cast<sync_sessions::SessionsSyncManager*>(
-            SessionSyncServiceFactory::GetForProfile(profile())
-                ->GetSyncableService()));
+    helper->ExportToSessionSync(
+        sync_processor_.get(),
+        session_sync_service_->GetUnderlyingOpenTabsUIDelegateForTest());
   }
 
  private:
-  base::test::ScopedFeatureList override_features_;
   sync_sessions::SessionSyncService* session_sync_service_;
+  std::unique_ptr<syncer::ModelTypeProcessor> sync_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(RecentTabsSubMenuModelTest);
 };

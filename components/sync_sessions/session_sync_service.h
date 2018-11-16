@@ -69,6 +69,10 @@ class SessionSyncService : public KeyedService {
   // Used on Android only, to override the machine tag.
   void SetSyncSessionsGUID(const std::string& guid);
 
+  // Returns OpenTabsUIDelegate regardless of sync being enabled or disabled,
+  // useful for tests.
+  OpenTabsUIDelegate* GetUnderlyingOpenTabsUIDelegateForTest();
+
  private:
   void NotifyForeignSessionUpdated();
 
