@@ -7,6 +7,7 @@ package org.chromium.components.module_installer;
 import android.content.Context;
 
 import com.google.android.play.core.splitcompat.SplitCompat;
+import com.google.android.play.core.splitcompat.ingestion.Verifier;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
@@ -69,10 +70,17 @@ class FakeModuleInstallerBackend extends ModuleInstallerBackend {
         // Path where SplitCompat looks for downloaded modules. May change in future releases of
         // the Play Core SDK.
         File dstModuleFile = joinPaths(context.getFilesDir().getPath(), "splitcompat",
-                Integer.toString(versionCode), "verified-splits", moduleName + ".apk");
+                Integer.toString(versionCode), "unverified-splits", moduleName + ".apk");
         File srcModuleFile = joinPaths(MODULES_SRC_DIRECTORY_PATH, moduleName + ".apk");
 
         // NOTE: Need to give Chrome storage permission for this to work.
+        try {
+            dstModuleFile.getParentFile().mkdirs();
+        } catch (SecurityException e) {
+            Log.e(TAG, "Failed to create module dir", e);
+            return false;
+        }
+
         try (FileInputStream istream = new FileInputStream(srcModuleFile);
                 FileOutputStream ostream = new FileOutputStream(dstModuleFile)) {
             ostream.getChannel().transferFrom(istream.getChannel(), 0, istream.getChannel().size());
@@ -81,10 +89,14 @@ class FakeModuleInstallerBackend extends ModuleInstallerBackend {
             return false;
         }
 
-        // Tell SplitCompat to do a full emulation of the module. The method name is obfuscated
-        // since it is not part of the public API. We are using it here since this backend is for
-        // testing purposes only.
-        return SplitCompat.a(context);
+        // Check that the module's signature matches Chrome's.
+        Verifier verifier = new Verifier(context);
+        if (!verifier.verifySplits()) {
+            return false;
+        }
+
+        // Tell SplitCompat to do a full emulation of the module.
+        return SplitCompat.fullInstall(context);
     }
 
     private File joinPaths(String... paths) {

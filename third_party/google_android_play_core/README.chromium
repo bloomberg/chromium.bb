@@ -1,7 +1,7 @@
-Name: 
-Short Name: core
+Name: Goole Android Play Core
+Short Name: Play Core
 URL: https://developers.google.com/android/guides/setup
-Version: 1.3.5
+Version: 1.3.6
 License: Android Software Development Kit License
 License File: LICENSE
 Security Critical: yes
@@ -10,4 +10,4 @@ Description:
 
 
 Local Modifications:
-No modifications.
+Unproguarded verification API.

@@ -39,8 +39,6 @@ dependencies {
     compile "com.google.android.gms:play-services-vision:${gmsVersion}"
     compile "com.google.android.gms:play-services-fido:${gmsVersion}"
 
-    compile "com.google.android.play:core:1.3.5"
-
     // Support v4 libraries
     def supportLibVersion = '27.0.0'
     compile "com.android.support:support-v4:${supportLibVersion}"
