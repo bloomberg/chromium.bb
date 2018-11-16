@@ -942,6 +942,7 @@ void GpuProcessHost::DidInitialize(
 }
 
 void GpuProcessHost::DidFailInitialize() {
+  did_fail_initialize_ = true;
   if (kind_ == GPU_PROCESS_KIND_SANDBOXED)
     GpuDataManagerImpl::GetInstance()->FallBackToNextGpuMode();
 }
@@ -1166,7 +1167,7 @@ void GpuProcessHost::RecordProcessCrash() {
   }
 
   // GPU process initialization failed and fallback already happened.
-  if (!gpu_host_ || !gpu_host_->initialized())
+  if (did_fail_initialize_)
     return;
 
   bool disable_crash_limit = base::CommandLine::ForCurrentProcess()->HasSwitch(
