@@ -2090,7 +2090,8 @@
               "os": "Android"
             }
           ],
-          "hard_timeout": 960
+          "hard_timeout": 960,
+          "shards": 5
         },
         "test": "components_unittests"
       },
@@ -2109,7 +2110,7 @@
             }
           ],
           "hard_timeout": 960,
-          "shards": 6
+          "shards": 10
         },
         "test": "content_browsertests"
       },

@@ -2218,6 +2218,9 @@
         'args': [
           '--site-per-process',
         ],
+        'swarming': {
+          'shards': 5,
+        },
         'test': 'components_unittests',
       },
       'site_per_process_content_browsertests': {
@@ -2225,7 +2228,7 @@
           '--site-per-process'
         ],
         'swarming': {
-          'shards': 6,
+          'shards': 10,
         },
         'test': 'content_browsertests',
       },
