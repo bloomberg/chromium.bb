@@ -611,7 +611,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', ('intel', 0x0a2e)], bug=886970)
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['mac', 'intel'], bug=782317)
-
+    self.Flaky('conformance/textures/misc/' +
+        'canvas-teximage-after-multiple-drawimages.html',
+        ['mac', 'intel'], bug=905682)
 
     # Mac Retina NVidia failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
@@ -704,6 +706,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/textures/misc/texture-npot-video.html',
         ['android', 'android-webview-instrumentation', 'no_passthrough'],
               bug=352645)
+    self.Flaky('conformance/textures/misc/' +
+        'canvas-teximage-after-multiple-drawimages.html',
+        ['android', 'qualcomm'], bug=905682)
 
     # These video tests appear to be flaky.
     self.Flaky('conformance/textures/video/' +
