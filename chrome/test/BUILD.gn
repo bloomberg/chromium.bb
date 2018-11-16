@@ -1869,6 +1869,7 @@ test("browser_tests") {
         "//components/user_manager:test_support",
         "//content/public/common:feature_h264_with_openh264_ffmpeg",
         "//services/audio/public/cpp:test_support",
+        "//services/identity/public/cpp",
         "//services/network/public/mojom",
         "//services/preferences/public/cpp",
         "//services/preferences/public/mojom",
