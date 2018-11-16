@@ -1750,6 +1750,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      *         WebContents.
      */
     public WebContents getCurrentWebContents() {
+        if (!mTabModelsInitialized) {
+            return null;
+        }
         return TabModelUtils.getCurrentWebContents(getCurrentTabModel());
     }
 
