@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -253,6 +254,7 @@ class NetExportFileWriterTest : public ::testing::Test {
   NetExportFileWriterTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         network_service_(network::NetworkService::CreateForTesting()) {}
 
   // ::testing::Test implementation
@@ -437,6 +439,8 @@ class NetExportFileWriterTest : public ::testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  // Use a mock NetworkChangeNotifier so the real one can't add any logging.
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<network::NetworkService> network_service_;
 
   network::mojom::NetworkContextPtr network_context_ptr_;
