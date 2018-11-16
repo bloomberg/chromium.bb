@@ -145,6 +145,7 @@
 <translation id="1839551713262164453">S'han produït errors a la validació dels valors de la política</translation>
 <translation id="1840414022444569775">Aquest número de targeta ja s'utilitza</translation>
 <translation id="1842969606798536927">Pagament</translation>
+<translation id="1866450167992311397">Utilitza les targetes en més llocs</translation>
 <translation id="1871208020102129563">El servidor intermediari està configurat perquè utilitzi servidors intermediaris fixos, en lloc d'un URL d'script .pac.</translation>
 <translation id="1871284979644508959">Camp obligatori</translation>
 <translation id="1874765382782611674">Targetes de dèbit acceptades</translation>
@@ -715,6 +716,7 @@
 <translation id="5720705177508910913">Usuari actual</translation>
 <translation id="5730040223043577876">Chrome et recomana que restableixis la contrasenya si l'has fet servir en altres llocs web.</translation>
 <translation id="5732392974455271431">Els teus pares te'l poden desbloquejar</translation>
+<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Aquesta targeta i l'adreça de facturació associada es desaran al Compte de Google perquè puguis pagar més ràpidament allà on hagis iniciat la sessió}other{Aquestes targetes i les adreces de facturació associades es desaran al Compte de Google perquè puguis pagar més ràpidament allà on hagis iniciat la sessió}}</translation>
 <translation id="5763042198335101085">Introdueix una adreça electrònica vàlida</translation>
 <translation id="5765072501007116331">Per veure els mètodes i els requisits d'entrega, selecciona una adreça</translation>
 <translation id="5770114862687765385">Sembla que el fitxer està malmès. Fes clic al botó Restableix per restablir la sessió.</translation>
@@ -794,6 +796,7 @@
 <translation id="6337133576188860026">Allibera menys de <ph name="SIZE" />. És possible que alguns llocs web es carreguin més a poc a poc la propera vegada que els visitis.</translation>
 <translation id="6337534724793800597">Filtra les polítiques pel nom</translation>
 <translation id="6358450015545214790">Què vol dir tot això?</translation>
+<translation id="635989537247018238">Al pas següent pots triar quines targetes vols desar</translation>
 <translation id="6383221683286411806">Aquest lloc web et pot fer càrrecs.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 suggeriment més}other{# suggeriments més}}</translation>
 <translation id="6387754724289022810">Perquè la propera vegada puguis pagar més ràpidament, desa la targeta i l'adreça de facturació al compte de Google i en aquest dispositiu.</translation>

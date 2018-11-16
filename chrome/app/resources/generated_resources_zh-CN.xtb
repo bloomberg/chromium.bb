@@ -724,7 +724,7 @@
 <translation id="204914487372604757">创建快捷方式</translation>
 <translation id="2050339315714019657">纵向</translation>
 <translation id="2053312383184521053">闲置状态数据</translation>
-<translation id="205560151218727633">Google 智能助理徽标</translation>
+<translation id="205560151218727633">Google 助理徽标</translation>
 <translation id="2058456167109518507">检测到的设备</translation>
 <translation id="2059913712424898428">时区</translation>
 <translation id="2065405795449409761">Chrome 正受到自动测试软件的控制。</translation>
@@ -963,7 +963,7 @@
 <translation id="2423578206845792524">图片另存为(&amp;V)...</translation>
 <translation id="2425665904502185219">文件总大小</translation>
 <translation id="2428510569851653187">请说明此标签页崩溃时您在做什么</translation>
-<translation id="2431027948063157455">无法加载 Google 智能助理。请检查您的网络连接，然后重试。</translation>
+<translation id="2431027948063157455">无法加载 Google 助理。请检查您的网络连接，然后重试。</translation>
 <translation id="2432753757290432042">需要更新 Linux（测试版）</translation>
 <translation id="2433452467737464329">在网址中添加查询参数以便自动刷新网页：chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">外观</translation>
@@ -1549,7 +1549,7 @@
 <translation id="3308006649705061278">组织单位 (OU)</translation>
 <translation id="3308116878371095290">系统已禁止设置此网页的 Cookie。</translation>
 <translation id="3308134619352333507">隐藏按钮</translation>
-<translation id="3308852433423051161">正在加载 Google 智能助理…</translation>
+<translation id="3308852433423051161">正在加载 Google 助理…</translation>
 <translation id="3312424061798279731">已启用的语言</translation>
 <translation id="3313590242757056087">要设置受监管用户可以浏览哪些网站，您可以转到 <ph name="MANAGEMENT_URL" /> 配置限制和设置。
 如果您不更改默认设置，<ph name="USER_DISPLAY_NAME" />将可以浏览网络上的所有网站。</translation>
@@ -1674,7 +1674,7 @@
 <translation id="3493881266323043047">有效期</translation>
 <translation id="3494769164076977169">当网站下载第一个文件后要自动下载更多文件时询问您（推荐）</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />个错误。</translation>
-<translation id="3495660573538963482">Google 智能助理设置</translation>
+<translation id="3495660573538963482">Google 助理设置</translation>
 <translation id="3496213124478423963">缩小</translation>
 <translation id="3505030558724226696">撤消对设备的访问权限</translation>
 <translation id="3506093155988721483">使用语音（而非键盘）启动 Google 助理</translation>
@@ -2145,7 +2145,7 @@
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4195814663415092787">从上次停下的地方继续</translation>
 <translation id="4197674956721858839">压缩选择</translation>
-<translation id="4198146608511578238">只需按住“启动器”图标即可与 Google 智能助理对话。</translation>
+<translation id="4198146608511578238">只需按住“启动器”图标即可与 Google 助理对话。</translation>
 <translation id="4200689466366162458">自定义字词</translation>
 <translation id="4200983522494130825">打开新的标签页(&amp;T)</translation>
 <translation id="4206144641569145248">外星人</translation>
@@ -3616,7 +3616,7 @@
 <translation id="641105183165925463">$1 MB</translation>
 <translation id="6412931879992742813">打开新的无痕式窗口</translation>
 <translation id="6415900369006735853">通过手机连接到互联网</translation>
-<translation id="6417265370957905582">Google 智能助理</translation>
+<translation id="6417265370957905582">Google 助理</translation>
 <translation id="6418160186546245112">正在还原到之前安装的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 版本</translation>
 <translation id="6418481728190846787">永久删除对所有应用的访问权限</translation>
 <translation id="6418511932144861495">安装重要更新</translation>

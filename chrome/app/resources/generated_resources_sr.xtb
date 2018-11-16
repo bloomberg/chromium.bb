@@ -38,7 +38,7 @@
 <translation id="1049743911850919806">Без архивирања</translation>
 <translation id="1049795001945932310">&amp;Подешавања језика</translation>
 <translation id="1049926623896334335">Word документ</translation>
-<translation id="1054153489933238809">Отвори оригиналну сл&amp;ику у новој картици</translation>
+<translation id="1054153489933238809">Отвори оригиналну сл&amp;ику на новој картици</translation>
 <translation id="1055806300943943258">Тражимо Bluetooth и USB уређаје...</translation>
 <translation id="1056775291175587022">Нема мрежа</translation>
 <translation id="1056898198331236512">Упозорење</translation>
@@ -705,7 +705,7 @@
 <translation id="2017334798163366053">Онемогући прикупљање података о учинку</translation>
 <translation id="2017836877785168846">Брише историју и аутоматска довршавања у траци за адресу.</translation>
 <translation id="2018352199541442911">Жао нам је, спољни меморијски уређај тренутно није подржан.</translation>
-<translation id="2019718679933488176">&amp;Отвори аудио снимак у новој картици</translation>
+<translation id="2019718679933488176">&amp;Отвори аудио снимак на новој картици</translation>
 <translation id="2020183425253392403">Прикажи подешавања мрежне адресе</translation>
 <translation id="2023167225947895179">Овај PIN може лако да се погоди</translation>
 <translation id="202352106777823113">Преузимање је трајало предуго па га је мрежа зауставила.</translation>
@@ -1642,7 +1642,7 @@
 <translation id="3450157232394774192">Проценат заузетости стања мировања</translation>
 <translation id="3453612417627951340">Потребно је овлашћење</translation>
 <translation id="3454157711543303649">Активација је довршена</translation>
-<translation id="345693547134384690">Отвори &amp;слику у новој картици</translation>
+<translation id="345693547134384690">Отвори &amp;слику на новој картици</translation>
 <translation id="3459509316159669723">Штампање</translation>
 <translation id="3459697287128633276">Да бисте омогућили налогу да приступа Google Play продавници, потврдите идентитет помоћу добављача идентитета.</translation>
 <translation id="3459774175445953971">Последњи пут измењено:</translation>
@@ -1987,7 +1987,7 @@
 <translation id="3930521966936686665">Пусти на</translation>
 <translation id="3930737994424905957">Траже се уређаји</translation>
 <translation id="3933283459331715412">Вратите избрисану лозинку за <ph name="USERNAME" /></translation>
-<translation id="3936390757709632190">&amp;Отвори аудио снимак у новој картици</translation>
+<translation id="3936390757709632190">&amp;Отвори аудио снимак на новој картици</translation>
 <translation id="3936925983113350642">Лозинка коју одаберете биће касније потребна за враћање овога. Забележите је на безбедној локацији.</translation>
 <translation id="3937640725563832867">Алтернативно име издаваоца сертификата</translation>
 <translation id="3937734102568271121">Увек преводи <ph name="LANGUAGE" /></translation>
@@ -2146,7 +2146,7 @@
 <translation id="4193154014135846272">Google документ</translation>
 <translation id="4194570336751258953">Омогући функцију „додирни-за-клик“</translation>
 <translation id="4195249722193633765">Инсталирајте Linux апликацију (бета)</translation>
-<translation id="4195643157523330669">Отвори у новој картици</translation>
+<translation id="4195643157523330669">Отвори на новој картици</translation>
 <translation id="4195814663415092787">Настави претходну сесију</translation>
 <translation id="4197674956721858839">Избор за додавање у zip датотеку</translation>
 <translation id="4198146608511578238">Само држите икону Покретача да бисте причали са Google помоћником.</translation>
@@ -2409,7 +2409,7 @@
 <translation id="4634771451598206121">Пријави ме поново...</translation>
 <translation id="4635398712689569051">Страница <ph name="PAGE_NAME" /> није доступна корисницима у режиму госта.</translation>
 <translation id="4641539339823703554">Chrome није могао да подеси системско време. Проверите време у наставку и исправите га ако је потребно.</translation>
-<translation id="4643612240819915418">&amp;Отвори видео снимак у новој картици</translation>
+<translation id="4643612240819915418">&amp;Отвори видео снимак на новој картици</translation>
 <translation id="4644818355646995778">Преузима се, <ph name="PERCENT_REMAINING" /></translation>
 <translation id="4645676300727003670">&amp;Задржи</translation>
 <translation id="4647090755847581616">&amp;Close Tab (Затвори картицу)</translation>
@@ -2431,7 +2431,7 @@
 <translation id="4677692029604506169">На телефону помоћу ког сте откључали <ph name="DEVICE_TYPE" /> треба да имате закључавање екрана ради безбедности. То је обично PIN, шаблон или лозинка. Већ имате закључавање екрана? Изаберите Провери поново да бисте потврдили и наставили подешавање.</translation>
 <translation id="4677772697204437347">GPU меморија</translation>
 <translation id="4680105648806843642">Звук је искључен на овој страници</translation>
-<translation id="4681930562518940301">Отвори оригиналну сл&amp;ику у новој картици</translation>
+<translation id="4681930562518940301">Отвори оригиналну сл&amp;ику на новој картици</translation>
 <translation id="4682551433947286597">Позадине се приказују на екрану за пријављивање.</translation>
 <translation id="4684427112815847243">Синхронизуј све</translation>
 <translation id="4688036121858134881">ИД локалне евиденције: <ph name="WEBRTC_EVENT_LOG_LOCAL_ID" />.</translation>
@@ -4580,7 +4580,7 @@
 <translation id="7846634333498149051">Тастатура</translation>
 <translation id="7847212883280406910">Притисните Ctrl + Alt + S да бисте пребацили на <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="7847644661628718598">Користите апликацију за процес подешавања да бисте се брзо пријавили</translation>
-<translation id="7849264908733290972">Отвори &amp;слику у новој картици</translation>
+<translation id="7849264908733290972">Отвори &amp;слику на новој картици</translation>
 <translation id="784934925303690534">Временски опсег</translation>
 <translation id="7850851215703745691">Ове датотеке на Диску се још увек не деле</translation>
 <translation id="7851457902707056880">Пријављивање је ограничено на власника налога. Покрените поново рачунар и пријавите се помоћу налога власника. Рачунар ће се аутоматски поново покренути за 30 секунди.</translation>
@@ -5051,7 +5051,7 @@
 <translation id="8579285237314169903">Синхронизују се ставке (<ph name="NUMBER_OF_FILES" />)...</translation>
 <translation id="857943718398505171">Дозвољено (препоручено)</translation>
 <translation id="8581809080475256101">Притисните да бисте ишли унапред или отворите контекстуални мени да бисте видели историју</translation>
-<translation id="8584280235376696778">&amp;Отвори видео снимак у новој картици</translation>
+<translation id="8584280235376696778">&amp;Отвори видео снимак на новој картици</translation>
 <translation id="8588866096426746242">Прикажи статистику профила</translation>
 <translation id="8590375307970699841">Подеси аутоматска ажурирања</translation>
 <translation id="8592141010104017453">Не приказуј никаква обавештења</translation>

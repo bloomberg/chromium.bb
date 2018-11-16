@@ -203,7 +203,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2436117022029368436">Wysyła do Google dane, które pomagają ulepszać Chrome i funkcje przeglądania</translation>
 <translation id="2440823041667407902">Dostęp do lokalizacji</translation>
 <translation id="2450083983707403292">Czy chcesz jeszcze raz rozpocząć pobieranie pliku <ph name="FILE_NAME" />?</translation>
-<translation id="2476578072172137802">Ustawienia witryny</translation>
+<translation id="2476578072172137802">Ustawienia witryn</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
 <translation id="2496180316473517155">Historia przeglądania</translation>
 <translation id="2498359688066513246">Pomoc i opinie</translation>
@@ -399,7 +399,7 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d zakładka}few{%1$d zakładki}many{%1$d zakładek}other{%1$d zakładki}}</translation>
 <translation id="4149994727733219643">Uproszczony widok stron internetowych</translation>
 <translation id="4159800535322890630">Blokuj witrynom dostęp do czujników</translation>
-<translation id="4165986682804962316">Ustawienia witryn</translation>
+<translation id="4165986682804962316">Ustawienia witryny</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="4179980317383591987">Wykorzystano <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Języki</translation>

@@ -145,6 +145,7 @@
 <translation id="1839551713262164453">由于出现错误，未能成功验证政策值</translation>
 <translation id="1840414022444569775">此卡号已存在</translation>
 <translation id="1842969606798536927">付款</translation>
+<translation id="1866450167992311397">在更多地方使用您的卡</translation>
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
 <translation id="1871284979644508959">必填字段</translation>
 <translation id="1874765382782611674">接受的借记卡</translation>
@@ -712,6 +713,7 @@
 <translation id="5720705177508910913">当前用户</translation>
 <translation id="5730040223043577876">如果您在其他网站上重复使用了您的密码，Chrome 建议您重置该密码。</translation>
 <translation id="5732392974455271431">您的父母可为您取消屏蔽此网站</translation>
+<translation id="5746168374457656589">{NUM_CARDS,plural, =1{此卡及其帐单邮寄地址将会保存到您的 Google 帐号中，无论您从何处登录，都可以享受更快捷的结帐体验}other{这些卡及其帐单邮寄地址将会保存到您的 Google 帐号中，无论您从何处登录，都可以享受更快捷的结帐体验}}</translation>
 <translation id="5763042198335101085">请输入有效的电子邮件地址</translation>
 <translation id="5765072501007116331">要查看递送方式和要求，请选择相应地址</translation>
 <translation id="5770114862687765385">该文件似乎已受损。请点击“重置”按钮以重置此会话。</translation>
@@ -790,6 +792,7 @@
 <translation id="6337133576188860026">释放了不到 <ph name="SIZE" />。当您下次访问时，某些网站的加载速度可能会更慢。</translation>
 <translation id="6337534724793800597">按名称过滤政策</translation>
 <translation id="6358450015545214790">这分别意味着什么？</translation>
+<translation id="635989537247018238">您可以在下一步中选择要保存哪些卡</translation>
 <translation id="6383221683286411806">可能产生费用。</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 条其他建议}other{# 条其他建议}}</translation>
 <translation id="6387754724289022810">只要将您的付款卡信息和帐单邮寄地址保存到您的 Google 帐号和此设备，下次即可更便捷地完成付款。</translation>

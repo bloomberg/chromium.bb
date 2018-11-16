@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">Bluetooth е деактивиран</translation>
 <translation id="2268813581635650749">Изход за всички</translation>
 <translation id="2292698582925480719">Мащаб на показване</translation>
+<translation id="2302092602801625023">Този профил се управлява от Family Link</translation>
 <translation id="2303600792989757991">Превключване на общия преглед на прозорците</translation>
 <translation id="2339073806695260576">Докоснете бутона с икона на писалка в лавицата, за да създадете бележка, да направите екранна снимка или да използвате лазерната показалка или лупата.</translation>
 <translation id="2341729377289034582">Заключено във вертикална ориентация</translation>
@@ -141,6 +142,7 @@
 <translation id="3153444934357957346">Можете да използвате най-много <ph name="MULTI_PROFILE_USER_LIMIT" /> профила с функцията за централизиран вход.</translation>
 <translation id="3154351730702813399">Администраторът на устройството може да наблюдава активността ви при сърфиране.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Установена е връзка с едно устройство}other{Установена е връзка с # устройства}}</translation>
+<translation id="32244657276328332">Не е установена връзка с мрежа</translation>
 <translation id="3236488194889173876">Няма мобилни мрежи</translation>
 <translation id="3255483164551725916">„What can you do?“ („Какво можеш да правиш?“)</translation>
 <translation id="3294437725009624529">Гост</translation>
@@ -258,6 +260,7 @@
 <translation id="5648021990716966815">Жак за микрофон</translation>
 <translation id="5669267381087807207">Активира се</translation>
 <translation id="5673434351075758678">От <ph name="FROM_LOCALE" /> към <ph name="TO_LOCALE" /> след синхронизиране на настройките ви.</translation>
+<translation id="5710450975648804523">Режимът „Не безпокойте“ е включен</translation>
 <translation id="574392208103952083">Среден</translation>
 <translation id="5744083938413354016">Преместване чрез докосване</translation>
 <translation id="5750765938512549687">Функцията за Bluetooth е изключена</translation>
@@ -377,6 +380,7 @@
 <translation id="7654687942625752712">Натиснете и двата бутона за силата на звука и ги задръжте за пет секунди, за да деактивирате обратната връзка с говор.</translation>
 <translation id="7692480393933218409">Свързаните устройства с USB-C се зареждат</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 известие}other{# известия}}</translation>
 <translation id="776344839111254542">Кликнете, за да видите подробности за актуализацията</translation>
 <translation id="7796353162336583443">Докоснете бутона с икона на писалка в лавицата, за да създадете бележка, да направите екранна снимка или да използвате Google Асистент, лазерната показалка или лупата.</translation>
 <translation id="7798302898096527229">Натиснете клавиша „търсене“ или Shift, за да анулирате.</translation>
@@ -453,6 +457,7 @@
 <translation id="8921624153894383499">Google Асистент не поддържа този език.</translation>
 <translation id="8938800817013097409">Устройство с USB-C (десният порт на гърба)</translation>
 <translation id="8940956008527784070">Батерията е изтощена (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8990809378771970590">Използвате <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Отключете устройството като <ph name="LOGIN_ID" />, за да се изпълни действието от известието</translation>
 <translation id="8995603266996330174">Управлявано от <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Налице е актуализация на Adobe Flash Player</translation>

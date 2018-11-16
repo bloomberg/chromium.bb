@@ -145,6 +145,7 @@
 <translation id="1839551713262164453">A validação dos valores da política falhou devido a erros.</translation>
 <translation id="1840414022444569775">Este número do cartão já está a ser utilizado.</translation>
 <translation id="1842969606798536927">Pagar</translation>
+<translation id="1866450167992311397">Utilizar os seus cartões em mais locais</translation>
 <translation id="1871208020102129563">O proxy está definido para utilizar servidores proxy fixos e não um URL de script .pac.</translation>
 <translation id="1871284979644508959">Campo obrigatório</translation>
 <translation id="1874765382782611674">Cartões de débito aceites</translation>
@@ -715,6 +716,7 @@
 <translation id="5720705177508910913">Utilizador atual</translation>
 <translation id="5730040223043577876">O Chrome recomenda a reposição da palavra-passe se a tiver reutilizado noutros sites.</translation>
 <translation id="5732392974455271431">Os teus pais podem desbloquear-te</translation>
+<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Este cartão e o respetivo endereço de faturação serão guardados na sua Conta Google para que possa pagar mais rapidamente onde quer que tenha sessão iniciada.}other{Estes cartões e os respetivos endereços de faturação serão guardados na sua Conta Google para que possa pagar mais rapidamente onde quer que tenha sessão iniciada.}}</translation>
 <translation id="5763042198335101085">Introduza um endereço de email válido</translation>
 <translation id="5765072501007116331">Para ver os métodos de fornecimento e os requisitos, selecione um endereço</translation>
 <translation id="5770114862687765385">O ficheiro parece estar danificado. Clique no botão "Repor" para repor a sessão.</translation>
@@ -794,6 +796,7 @@
 <translation id="6337133576188860026">Liberta menos de <ph name="SIZE" />. É possível que alguns sites sejam carregados mais lentamente na sua próxima visita.</translation>
 <translation id="6337534724793800597">Filtrar políticas pelo nome</translation>
 <translation id="6358450015545214790">O que significam?</translation>
+<translation id="635989537247018238">No passo seguinte, pode escolher os cartões a guardar.</translation>
 <translation id="6383221683286411806">Possíveis cobranças se prosseguir.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 outra sugestão}other{# outras sugestões}}</translation>
 <translation id="6387754724289022810">Para pagar mais rapidamente da próxima vez, guarde o cartão e o endereço de faturação na sua Conta Google e neste dispositivo.</translation>

@@ -145,6 +145,7 @@
 <translation id="1839551713262164453">Valideringen av principvärdena har misslyckats med fel</translation>
 <translation id="1840414022444569775">Detta kortnummer används redan</translation>
 <translation id="1842969606798536927">Betala</translation>
+<translation id="1866450167992311397">Använd dina kort på flera ställen</translation>
 <translation id="1871208020102129563">Proxyn är inställd på att använda fasta proxyservrar, inte en webbadress med PAC-skript.</translation>
 <translation id="1871284979644508959">Obligatoriskt fält</translation>
 <translation id="1874765382782611674">Godkända bankkort</translation>
@@ -715,6 +716,7 @@
 <translation id="5720705177508910913">Aktuell användare</translation>
 <translation id="5730040223043577876">Du rekommenderas att återställa lösenordet om du har återanvänt det på andra webbplatser.</translation>
 <translation id="5732392974455271431">Dina föräldrar kan ta bort blockeringen</translation>
+<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Det här kortet och dess faktureringsadress sparas i ditt Google-konto så att du kan betala snabbare där du är inloggad.}other{De här korten och deras faktureringsadresser sparas i ditt Google-konto så att du kan betala snabbare där du är inloggad}}</translation>
 <translation id="5763042198335101085">Ange en giltig e-postadress</translation>
 <translation id="5765072501007116331">Välj en adress för att visa leveranssätt och krav</translation>
 <translation id="5770114862687765385">Den här filen verkar vara skadad. Återställ sessionen genom att klicka på återställningsknappen.</translation>
@@ -794,6 +796,7 @@
 <translation id="6337133576188860026">Frigör mindre än <ph name="SIZE" />. Vissa webbplatser kan läsas in långsammare nästa gång du besöker dem.</translation>
 <translation id="6337534724793800597">Filtrera princip efter namn</translation>
 <translation id="6358450015545214790">Vad innebär dessa?</translation>
+<translation id="635989537247018238">Välj vilka kort du vill spara i nästa steg</translation>
 <translation id="6383221683286411806">Du kan komma att debiteras.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annat förslag}other{# andra förslag}}</translation>
 <translation id="6387754724289022810">Spara kortet och faktureringsadressen i Google-kontot och på enheten så går det snabbare att betala nästa gång.</translation>

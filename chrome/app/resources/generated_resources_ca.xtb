@@ -306,7 +306,7 @@
 <translation id="142758023928848008">Activa les tecles permanents (per fer tecles de drecera en escriure-les en ordre)</translation>
 <translation id="143027896309062157">Llegeix i modifica totes les dades de l'ordinador i els llocs web que es visitin</translation>
 <translation id="1430915738399379752">Imprimeix</translation>
-<translation id="1432581352905426595">Gestiona motors de cerca</translation>
+<translation id="1432581352905426595">Gestiona els motors de cerca</translation>
 <translation id="1433811987160647649">Demana permís abans d'accedir</translation>
 <translation id="1434696352799406980">Aquesta funció restablirà la pàgina d'inici, la pàgina Pestanya nova, el motor de cerca i les pestanyes fixades que tingueu configurades. També desactivarà totes les extensions i esborrarà les dades temporals, com ara les galetes. Les adreces d'interès, l'historial i les contrasenyes desades no s'esborraran.</translation>
 <translation id="1434886155212424586">La pàgina d'inici és la pàgina Pestanya nova</translation>
@@ -2507,7 +2507,7 @@
 <translation id="4798236378408895261">Adjunta <ph name="BEGIN_LINK" />registres de Bluetooth<ph name="END_LINK" /> (ús intern de Google)</translation>
 <translation id="479989351350248267">cerca</translation>
 <translation id="4801448226354548035">Amaga els comptes</translation>
-<translation id="4801512016965057443">Permet la itinerància de dades de telefonia mòbil</translation>
+<translation id="4801512016965057443">Permet la itinerància de dades mòbils</translation>
 <translation id="4801956050125744859">Mantén-les totes dues</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
 <translation id="4807098396393229769">Titular de la targeta</translation>

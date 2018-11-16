@@ -825,7 +825,7 @@
 <translation id="2200356397587687044">続行するには Chrome に権限が必要です</translation>
 <translation id="220138918934036434">ボタンを非表示にする</translation>
 <translation id="2202898655984161076">プリンタのリスト作成中に問題が発生しました。一部のプリンタが <ph name="CLOUD_PRINT_NAME" /> に正常に登録されていない可能性があります。</translation>
-<translation id="2203682048752833055"><ph name="BEGIN_LINK" />アドレスバー<ph name="END_LINK" />で使用される検索エンジンです</translation>
+<translation id="2203682048752833055"><ph name="BEGIN_LINK" />アドレスバー<ph name="END_LINK" />で使用される検索エンジン</translation>
 <translation id="2204034823255629767">すべての入力内容の読み取りと変更</translation>
 <translation id="2208158072373999562">Zip アーカイブ</translation>
 <translation id="220858061631308971">「<ph name="DEVICE_NAME" />」の PIN コードを入力してください:</translation>

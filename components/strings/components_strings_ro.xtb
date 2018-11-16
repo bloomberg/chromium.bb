@@ -145,6 +145,7 @@
 <translation id="1839551713262164453">Validarea valorilor de politică a returnat erori</translation>
 <translation id="1840414022444569775">Numărul cardului este folosit deja</translation>
 <translation id="1842969606798536927">Plătiți</translation>
+<translation id="1866450167992311397">Folosește cardurile în mai multe locuri</translation>
 <translation id="1871208020102129563">Configurația proxy este setată să utilizeze servere proxy fixe, și nu o adresă URL pentru scripturi .pac.</translation>
 <translation id="1871284979644508959">Câmp obligatoriu</translation>
 <translation id="1874765382782611674">Carduri de debit acceptate</translation>
@@ -715,6 +716,7 @@
 <translation id="5720705177508910913">Utilizator curent</translation>
 <translation id="5730040223043577876">Chrome îți recomandă să resetezi parola dacă ai folosit-o și pe alte site-uri.</translation>
 <translation id="5732392974455271431">Părinții tăi îl pot debloca pentru tine</translation>
+<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Acest card și adresa lui de facturare va fi salvat în Contul Google, astfel încât să poți finaliza plățile mai rapid oriunde te conectezi}few{Aceste carduri și adresele lor de facturare vor fi salvate în Contul Google, astfel încât să poți finaliza plățile mai rapid oriunde te conectezi}other{Aceste carduri și adresele lor de facturare vor fi salvate în Contul Google, astfel încât să poți finaliza plățile mai rapid oriunde te conectezi}}</translation>
 <translation id="5763042198335101085">Introdu o adresă de e-mail validă</translation>
 <translation id="5765072501007116331">Pentru a vedea metodele de livrare și cerințele, selectează o adresă</translation>
 <translation id="5770114862687765385">Fișierul pare deteriorat. Pentru a reseta sesiunea, dă clic pe butonul „Resetează”.</translation>
@@ -794,6 +796,7 @@
 <translation id="6337133576188860026">Eliberează mai puțin de <ph name="SIZE" />. Este posibil ca unele site-uri să se încarce mai lent la următoarea accesare.</translation>
 <translation id="6337534724793800597">Filtrați politicile după nume</translation>
 <translation id="6358450015545214790">Ce înseamnă acestea?</translation>
+<translation id="635989537247018238">La pasul următor, poți să alegi ce carduri să salvezi</translation>
 <translation id="6383221683286411806">Urmează costuri potențiale.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{o altă sugestie}few{alte # sugestii}other{alte # de sugestii}}</translation>
 <translation id="6387754724289022810">Pentru a plăti mai rapid data viitoare, salvează cardul și adresa de facturare în Contul Google și pe acest dispozitiv.</translation>

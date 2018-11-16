@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">Bluetooth dinonaktifkan</translation>
 <translation id="2268813581635650749">Keluarkan semua pengguna</translation>
 <translation id="2292698582925480719">Skala layar</translation>
+<translation id="2302092602801625023">Akun ini dikelola oleh Family Link</translation>
 <translation id="2303600792989757991">Beralih ikhtisar jendela</translation>
 <translation id="2339073806695260576">Tap tombol stilus di rak untuk mencatat, mengambil screenshot, serta menggunakan penunjuk laser, atau kaca pembesar.</translation>
 <translation id="2341729377289034582">Terkunci ke vertikal</translation>
@@ -141,6 +142,7 @@
 <translation id="3153444934357957346">Anda hanya dapat memiliki maksimum <ph name="MULTI_PROFILE_USER_LIMIT" /> akun dalam fitur login multipel.</translation>
 <translation id="3154351730702813399">Admin perangkat dapat memantau aktivitas akses internet Anda.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Tersambung ke satu perangkat}other{Tersambung ke # perangkat}}</translation>
+<translation id="32244657276328332">Tidak tersambung ke jaringan</translation>
 <translation id="3236488194889173876">Jaringan seluler tidak tersedia</translation>
 <translation id="3255483164551725916">Apa yang bisa kamu lakukan?</translation>
 <translation id="3294437725009624529">Tamu</translation>
@@ -258,6 +260,7 @@
 <translation id="5648021990716966815">Colokan mikrofon</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5673434351075758678">Dari "<ph name="FROM_LOCALE" />" ke "<ph name="TO_LOCALE" />" setelah menyinkronkan setelan Anda.</translation>
+<translation id="5710450975648804523">Mode Jangan Ganggu aktif</translation>
 <translation id="574392208103952083">Sedang</translation>
 <translation id="5744083938413354016">Tap tarik</translation>
 <translation id="5750765938512549687">Bluetooth nonaktif</translation>
@@ -377,6 +380,7 @@
 <translation id="7654687942625752712">Tekan dan tahan kedua tombol volume selama 5 detik untuk menonaktifkan masukan lisan.</translation>
 <translation id="7692480393933218409">Mengisi daya perangkat USB-C yang tersambung</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifikasi}other{# notifikasi}}</translation>
 <translation id="776344839111254542">Klik untuk melihat detail update</translation>
 <translation id="7796353162336583443">Tap tombol stilus di rak untuk mencatat, mengambil screenshot, menggunakan asisten, penunjuk laser, atau kaca pembesar.</translation>
 <translation id="7798302898096527229">Tekan Search atau Shift untuk membatalkan.</translation>
@@ -453,6 +457,7 @@
 <translation id="8921624153894383499">Asisten Google tidak berbicara dalam bahasa ini.</translation>
 <translation id="8938800817013097409">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="8940956008527784070">Baterai lemah (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8990809378771970590">Menggunakan <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Buka kunci perangkat sebagai <ph name="LOGIN_ID" /> untuk melakukan tindakan notifikasi</translation>
 <translation id="8995603266996330174">Dikelola menurut <ph name="DOMAIN" /></translation>
 <translation id="9029474291399787231">Update Adobe Flash Player tersedia</translation>

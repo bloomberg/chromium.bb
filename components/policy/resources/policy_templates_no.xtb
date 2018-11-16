@@ -111,7 +111,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="1291880496936992484">Advarsel: RC4 fjernes helt fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
 
       Hvis regelen ikke er angitt eller er satt til false (usann), er ikke RC4-chifferserier i TLS slått på. Ellers kan den settes til true (sann) for å sikre kompatibilitet med en utdatert tjener. Dette er en midlertidig løsning, og tjeneren bør konfigureres på nytt.</translation>
-<translation id="1297182715641689552">Bruk et .pac-skript for mellomtjener</translation>
+<translation id="1297182715641689552">Bruk et PAC-skript for proxy-tjenere</translation>
 <translation id="1304973015437969093">ID-er for utvidelser/apper og oppdateringsnettadresser som skal installeres stille</translation>
 <translation id="1307454923744766368">Opprinnelser eller mønstre for vertsnavn der begrensninger for usikre opprinnelser ikke skal gjelde</translation>
 <translation id="1313457536529613143">Angir hvordan prosentandelen for forsinkelse av skjermdemping skaleres når brukeraktiviteten observeres mens skjermen er dempet, eller kort tid etter skjermen er slått av.
@@ -2598,7 +2598,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Identifikatorene som gjenkjennes for tilkoblingstyper er "ethernet", "wifi", "wimax", "bluetooth" og "cellular".</translation>
 <translation id="7763614521440615342">Vis innholdsforslag på nye faner</translation>
 <translation id="7765879851993224640">Tillat bruk av Smart Lock-pålogging.</translation>
-<translation id="7774768074957326919">Bruk systeminnstillingene for mellomtjener</translation>
+<translation id="7774768074957326919">Bruk proxyinnstillingene for systemet</translation>
 <translation id="7775831859772431793">Du kan spesifisere nettadressen til proxy-tjeneren her.
 
           Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
