@@ -25,20 +25,25 @@ const CSSValue* Translate::ParseSingleValue(
   if (id == CSSValueNone)
     return css_property_parser_helpers::ConsumeIdent(range);
 
-  CSSValue* translate = css_property_parser_helpers::ConsumeLengthOrPercent(
+  CSSValue* translate_x = css_property_parser_helpers::ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeAll);
-  if (!translate)
+  if (!translate_x)
     return nullptr;
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*translate);
-  translate = css_property_parser_helpers::ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeAll);
-  if (translate) {
-    list->Append(*translate);
-    translate = css_property_parser_helpers::ConsumeLength(
+  list->Append(*translate_x);
+  CSSPrimitiveValue* translate_y =
+      css_property_parser_helpers::ConsumeLengthOrPercent(range, context.Mode(),
+                                                          kValueRangeAll);
+  if (translate_y) {
+    CSSValue* translate_z = css_property_parser_helpers::ConsumeLength(
         range, context.Mode(), kValueRangeAll);
-    if (translate)
-      list->Append(*translate);
+    if (translate_y->GetIntValue() == 0 && !translate_z)
+      return list;
+
+    list->Append(*translate_y);
+    if (translate_z) {
+      list->Append(*translate_z);
+    }
   }
 
   return list;
