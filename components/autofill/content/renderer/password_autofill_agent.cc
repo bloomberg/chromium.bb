@@ -1298,6 +1298,18 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
   std::unique_ptr<PasswordForm> submitted_form =
       GetPasswordFormFromWebForm(form);
 
+  // As a site may clear field values, use a provisionally saved form as
+  // the submitted form.
+  if (provisionally_saved_form_.IsSet() &&
+      (!submitted_form ||
+       submitted_form->action ==
+           provisionally_saved_form_.password_form().action)) {
+    submitted_form.reset(
+        new PasswordForm(provisionally_saved_form_.password_form()));
+    if (logger)
+      logger->LogMessage(Logger::STRING_SUBMITTED_PASSWORD_REPLACED);
+  }
+
   // If there is a provisionally saved password, copy over the previous
   // password value so we get the user's typed password, not the value that
   // may have been transformed for submit.
@@ -1308,18 +1320,8 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
       logger->LogPasswordForm(Logger::STRING_CREATED_PASSWORD_FORM,
                               *submitted_form);
     }
-    if (provisionally_saved_form_.IsSet() &&
-        submitted_form->action ==
-            provisionally_saved_form_.password_form().action) {
-      if (logger)
-        logger->LogMessage(Logger::STRING_SUBMITTED_PASSWORD_REPLACED);
-      const auto& saved_form = provisionally_saved_form_.password_form();
-      submitted_form->password_value = saved_form.password_value;
-      submitted_form->new_password_value = saved_form.new_password_value;
-      submitted_form->username_value = saved_form.username_value;
-      submitted_form->submission_event =
-          PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
-    }
+    submitted_form->submission_event =
+        PasswordForm::SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
     if (FrameCanAccessPasswordManager()) {
       // Some observers depend on sending this information now instead of when

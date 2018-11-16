@@ -1932,19 +1932,43 @@ TEST_F(PasswordAutofillAgentTest, NoCredentialsOnPasswordClick) {
 // typed by the user.
 TEST_F(PasswordAutofillAgentTest,
        RememberLastNonEmptyUsernameAndPasswordOnSubmit_ScriptCleared) {
-  SimulateUsernameTyping("temp");
-  SimulatePasswordTyping("random");
+  LoadHTML(kSignupFormHTML);
+  WebInputElement username_element = GetInputElementByID("random_info");
+  ASSERT_FALSE(username_element.IsNull());
+  SimulateUserInputChangeForElement(&username_element, "username");
 
-  // Simulate that the username and the password value was cleared by the
+  WebInputElement new_password_element = GetInputElementByID("new_password");
+  ASSERT_FALSE(new_password_element.IsNull());
+  SimulateUserInputChangeForElement(&new_password_element, "random");
+
+  WebInputElement confirmation_password_element =
+      GetInputElementByID("confirm_password");
+  ASSERT_FALSE(confirmation_password_element.IsNull());
+  SimulateUserInputChangeForElement(&confirmation_password_element, "random");
+
+  // Simulate that the username and the password values were cleared by the
   // site's JavaScript before submit.
-  username_element_.SetValue(WebString());
-  password_element_.SetValue(WebString());
+  username_element.SetValue(WebString());
+  new_password_element.SetValue(WebString());
+  confirmation_password_element.SetValue(WebString());
 
-  SubmitForm();
+  // Submit form.
+  FormTracker* tracker = autofill_agent_->form_tracker_for_testing();
+  static_cast<content::RenderFrameObserver*>(tracker)->WillSubmitForm(
+      username_element.Form());
 
   // Observe that the PasswordAutofillAgent still remembered the last non-empty
   // username and password and sent that to the browser.
-  ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
+  ExpectFormSubmittedWithUsernameAndPasswords("username", "", "random");
+
+  // Also check that |*_element| fields are correct.
+  const autofill::PasswordForm& form =
+      *(fake_driver_.password_form_submitted());
+  EXPECT_EQ(ASCIIToUTF16("random_info"), form.username_element);
+  EXPECT_TRUE(form.password_element.empty());
+  EXPECT_EQ(ASCIIToUTF16("new_password"), form.new_password_element);
+  EXPECT_EQ(ASCIIToUTF16("confirm_password"),
+            form.confirmation_password_element);
 }
 
 // Similar to RememberLastNonEmptyPasswordOnSubmit_ScriptCleared, but this time
