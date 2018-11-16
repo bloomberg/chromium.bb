@@ -32,6 +32,7 @@ enum BackgroundSyncEventLastChance {
 interface BackgroundSyncService {
   Register(SyncRegistration options, int64 service_worker_registration_id)
       => (BackgroundSyncError err, SyncRegistration options);
+  DidResolveRegistration(int64 service_worker_registration_id, string tag);
   GetRegistrations(int64 service_worker_registration_id)
       => (BackgroundSyncError err, array<SyncRegistration> registrations);
 };

@@ -257,6 +257,15 @@ class BackgroundSyncManagerTest : public testing::Test {
             base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
+
+    // Mock the client receiving the response and calling
+    // DidResolveRegistration.
+    if (callback_status_ == BACKGROUND_SYNC_STATUS_OK) {
+      background_sync_manager_->DidResolveRegistration(sw_registration_id,
+                                                       options.tag);
+      base::RunLoop().RunUntilIdle();
+    }
+
     return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
   }
 
@@ -434,6 +443,47 @@ class BackgroundSyncManagerTest : public testing::Test {
 
 TEST_F(BackgroundSyncManagerTest, Register) {
   EXPECT_TRUE(Register(sync_options_1_));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegisterAndWaitToFireUntilResolved) {
+  InitSyncEventTest();
+  bool was_called = false;
+  background_sync_manager_->Register(
+      sw_registration_id_1_, sync_options_1_,
+      base::BindOnce(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+                     base::Unretained(this), &was_called));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(was_called);
+
+  // Verify that the sync event hasn't fired yet, as it should wait for the
+  // client to acknowledge with DidResolveRegistration.
+  EXPECT_EQ(0, sync_events_called_);
+
+  background_sync_manager_->DidResolveRegistration(sw_registration_id_1_,
+                                                   sync_options_1_.tag);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, sync_events_called_);
+}
+
+TEST_F(BackgroundSyncManagerTest, ResolveInvalidRegistration) {
+  InitSyncEventTest();
+  bool was_called = false;
+  background_sync_manager_->Register(
+      sw_registration_id_1_, sync_options_1_,
+      base::BindOnce(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+                     base::Unretained(this), &was_called));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(was_called);
+
+  // Verify that the sync event hasn't fired yet, as it should wait for the
+  // client to acknowledge with DidResolveRegistration.
+  EXPECT_EQ(0, sync_events_called_);
+
+  // Resolve a non-existing registration.
+  background_sync_manager_->DidResolveRegistration(sw_registration_id_1_,
+                                                   "unknown_tag");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, sync_events_called_);
 }
 
 TEST_F(BackgroundSyncManagerTest, RegistrationIntact) {

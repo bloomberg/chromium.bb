@@ -98,6 +98,17 @@ void BackgroundSyncServiceImpl::Register(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void BackgroundSyncServiceImpl::DidResolveRegistration(
+    int64_t sw_registration_id,
+    const std::string& tag) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  BackgroundSyncManager* background_sync_manager =
+      background_sync_context_->background_sync_manager();
+  DCHECK(background_sync_manager);
+  background_sync_manager->DidResolveRegistration(sw_registration_id, tag);
+}
+
 void BackgroundSyncServiceImpl::GetRegistrations(
     int64_t sw_registration_id,
     GetRegistrationsCallback callback) {

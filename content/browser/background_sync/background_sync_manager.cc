@@ -217,6 +217,17 @@ void BackgroundSyncManager::Register(
       op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
 }
 
+void BackgroundSyncManager::DidResolveRegistration(int64_t sw_registration_id,
+                                                   const std::string& tag) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (disabled_)
+    return;
+  op_scheduler_.ScheduleOperation(
+      base::BindOnce(&BackgroundSyncManager::DidResolveRegistrationImpl,
+                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id, tag));
+}
+
 void BackgroundSyncManager::GetRegistrations(
     int64_t sw_registration_id,
     StatusAndRegistrationsCallback callback) {
@@ -402,6 +413,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
         registration->set_num_attempts(registration_proto.num_attempts());
         registration->set_delay_until(
             base::Time::FromInternalValue(registration_proto.delay_until()));
+        registration->set_resolved();
       }
     }
   }
@@ -688,12 +700,31 @@ void BackgroundSyncManager::RegisterDidStore(
       registration_could_fire,
       BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE);
 
-  FireReadyEvents();
-
+  // Tell the client that the registration is ready. We won't fire it until the
+  // client has resolved the registration event.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK,
                                 std::make_unique<BackgroundSyncRegistration>(
                                     new_registration)));
+}
+
+void BackgroundSyncManager::DidResolveRegistrationImpl(
+    int64_t sw_registration_id,
+    const std::string& tag) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BackgroundSyncRegistration* registration =
+      LookupActiveRegistration(sw_registration_id, tag);
+  if (!registration) {
+    // There might not be a registration if the client ack's a registration that
+    // was a duplicate in the first place and was already firing and finished by
+    // the time the client acknowledged the second registration.
+    op_scheduler_.CompleteOperationAndRunNext();
+    return;
+  }
+
+  registration->set_resolved();
+  FireReadyEvents();
+  op_scheduler_.CompleteOperationAndRunNext();
 }
 
 void BackgroundSyncManager::RemoveActiveRegistration(int64_t sw_registration_id,
@@ -829,6 +860,11 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
     const BackgroundSyncRegistration& registration,
     int64_t service_worker_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Don't fire the registration if the client hasn't yet resolved its
+  // registration promise.
+  if (!registration.resolved())
+    return false;
 
   if (registration.sync_state() != blink::mojom::BackgroundSyncState::PENDING)
     return false;
