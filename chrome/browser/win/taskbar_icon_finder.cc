@@ -19,8 +19,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread.h"
+#include "base/win/com_init_util.h"
 #include "base/win/scoped_variant.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
@@ -37,30 +38,30 @@ namespace {
 class TaskbarIconFinder {
  public:
   // Constructs a new finder and immediately starts running it on a dedicated
-  // automation thread in a multi-threaded COM apartment.
+  // automation task in a multi-threaded COM apartment.
   explicit TaskbarIconFinder(TaskbarIconFinderResultCallback result_callback);
 
  private:
-  // Receives the result computed on the automation thread, stops the automation
-  // thread, passes the results to the caller, then self-destructs.
+  // Receives the result computed on the automation task, passes the results to
+  // the caller, then self-destructs.
   void OnComplete(const gfx::Rect& rect);
 
-  // Main function for the finder's automation thread. Bounces the results of
+  // Main function for the finder's automation task. Bounces the results of
   // the operation back to OnComplete on the caller's sequenced task runner
   // (|finder_runner|).
-  static void RunOnComThread(
+  static void RunOnComTask(
       scoped_refptr<base::SequencedTaskRunner> finder_runner,
       TaskbarIconFinder* finder);
 
   // Returns the values of the |property_id| property (of type VT_R8 | VT_ARRAY)
-  // cached in |element|. May only be used on the automation thread.
+  // cached in |element|. May only be used on the automation task.
   static std::vector<double> GetCachedDoubleArrayValue(
       IUIAutomationElement* element,
       PROPERTYID property_id);
 
   // Populates |rect| with the bounding rectangle of any item in |icons| that is
   // on the primary monitor. |rect| is unmodified if no such item/rect is found.
-  // May only be used on the automation thread.
+  // May only be used on the automation task.
   static void FindRectOnPrimaryMonitor(IUIAutomation* automation,
                                        IUIAutomationElementArray* icons,
                                        gfx::Rect* rect);
@@ -69,10 +70,7 @@ class TaskbarIconFinder {
   // Returns the first failure HRESULT, or the final success HRESULT. On
   // success, |rect| is populated with the bouning rectangle of the icon if
   // found.
-  static HRESULT DoOnComThread(gfx::Rect* rect);
-
-  // A thread in the COM MTA in which automation calls are made.
-  base::Thread automation_thread_;
+  static HRESULT DoOnComTask(gfx::Rect* rect);
 
   // The caller's callback.
   TaskbarIconFinderResultCallback result_callback_;
@@ -82,33 +80,34 @@ class TaskbarIconFinder {
 
 TaskbarIconFinder::TaskbarIconFinder(
     TaskbarIconFinderResultCallback result_callback)
-    : automation_thread_("TaskbarIconFinder"),
-      result_callback_(std::move(result_callback)) {
+    : result_callback_(std::move(result_callback)) {
   DCHECK(result_callback_);
-  // Start the automation thread and run the finder on it.
-  automation_thread_.init_com_with_mta(true);
-  automation_thread_.Start();
-  automation_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&TaskbarIconFinder::RunOnComThread,
-                            base::SequencedTaskRunnerHandle::Get(),
-                            base::Unretained(this)));
+
+  // Since all threads servicing the worker pool backing post_task.h initialize
+  // COM into the MTA and only one task is needed for this job, it is sufficient
+  // to post a simple task here. Should automation event handlers be needed or
+  // more than one task, care must be taken to follow proper threading rules as
+  // required for automation clients.
+  base::PostTask(FROM_HERE,
+                 base::BindOnce(&TaskbarIconFinder::RunOnComTask,
+                                base::SequencedTaskRunnerHandle::Get(),
+                                base::Unretained(this)));
 }
 
 void TaskbarIconFinder::OnComplete(const gfx::Rect& rect) {
-  automation_thread_.Stop();
   std::move(result_callback_).Run(rect);
   delete this;
 }
 
 // static
-void TaskbarIconFinder::RunOnComThread(
+void TaskbarIconFinder::RunOnComTask(
     scoped_refptr<base::SequencedTaskRunner> finder_runner,
     TaskbarIconFinder* finder) {
-  // This and all methods below must be called on the automation thread.
+  // This and all methods below must be called on the automation task.
   DCHECK(!finder_runner->RunsTasksInCurrentSequence());
 
   gfx::Rect rect;
-  DoOnComThread(&rect);
+  DoOnComTask(&rect);
   finder_runner->PostTask(FROM_HERE,
                           base::Bind(&TaskbarIconFinder::OnComplete,
                                      base::Unretained(finder), rect));
@@ -118,6 +117,8 @@ void TaskbarIconFinder::RunOnComThread(
 std::vector<double> TaskbarIconFinder::GetCachedDoubleArrayValue(
     IUIAutomationElement* element,
     PROPERTYID property_id) {
+  base::win::AssertComApartmentType(base::win::ComApartmentType::MTA);
+
   std::vector<double> values;
   base::win::ScopedVariant var;
 
@@ -154,6 +155,8 @@ void TaskbarIconFinder::FindRectOnPrimaryMonitor(
     IUIAutomation* automation,
     IUIAutomationElementArray* icons,
     gfx::Rect* rect) {
+  base::win::AssertComApartmentType(base::win::ComApartmentType::MTA);
+
   int length = 0;
   icons->get_Length(&length);
 
@@ -221,7 +224,9 @@ void TaskbarIconFinder::FindRectOnPrimaryMonitor(
 }
 
 // static
-HRESULT TaskbarIconFinder::DoOnComThread(gfx::Rect* rect) {
+HRESULT TaskbarIconFinder::DoOnComTask(gfx::Rect* rect) {
+  base::win::AssertComApartmentType(base::win::ComApartmentType::MTA);
+
   Microsoft::WRL::ComPtr<IUIAutomation> automation;
   HRESULT result =
       ::CoCreateInstance(CLSID_CUIAutomation, nullptr, CLSCTX_INPROC_SERVER,
