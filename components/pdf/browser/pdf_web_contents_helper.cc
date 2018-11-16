@@ -34,13 +34,7 @@ PDFWebContentsHelper::PDFWebContentsHelper(
     std::unique_ptr<PDFWebContentsHelperClient> client)
     : content::WebContentsObserver(web_contents),
       pdf_service_bindings_(web_contents, this),
-      client_(std::move(client)),
-      touch_selection_controller_client_manager_(nullptr),
-      selection_left_height_(0),
-      selection_right_height_(0),
-      has_selection_(false),
-      remote_pdf_client_(nullptr),
-      web_contents_(web_contents) {}
+      client_(std::move(client)) {}
 
 PDFWebContentsHelper::~PDFWebContentsHelper() {
   if (!touch_selection_controller_client_manager_)
@@ -58,7 +52,7 @@ gfx::PointF PDFWebContentsHelper::ConvertHelper(const gfx::PointF& point_f,
                                                 float scale) const {
   gfx::PointF origin_f;
   content::RenderWidgetHostView* view =
-      web_contents_->GetRenderWidgetHostView();
+      web_contents()->GetRenderWidgetHostView();
   if (view) {
     origin_f = view->TransformPointToRootCoordSpaceF(gfx::PointF());
     origin_f.Scale(scale);
