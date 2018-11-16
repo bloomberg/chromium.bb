@@ -32,6 +32,15 @@ uint32_t ToWinUserVerificationRequirement(
     UserVerificationRequirement user_verification_requirement);
 
 COMPONENT_EXPORT(DEVICE_FIDO)
+uint32_t ToWinAuthenticatorAttachment(
+    AuthenticatorAttachment authenticator_attachment);
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+std::vector<_WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
+    const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
+        credentials);
+
+COMPONENT_EXPORT(DEVICE_FIDO)
 CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
     const base::string16& error_name);
 

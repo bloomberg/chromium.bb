@@ -255,6 +255,16 @@ enum class U2fApduInstruction : uint8_t {
 
 enum class CredentialType { kPublicKey };
 
+// Authenticator attachment constraint passed on from the relying party as a
+// parameter for AuthenticatorSelectionCriteria. |kAny| is equivalent to the
+// (optional) attachment field not being present.
+// https://w3c.github.io/webauthn/#attachment
+enum class AuthenticatorAttachment {
+  kAny,
+  kPlatform,
+  kCrossPlatform,
+};
+
 // User verification constraint passed on from the relying party as a parameter
 // for AuthenticatorSelectionCriteria and for CtapGetAssertion request.
 // https://w3c.github.io/webauthn/#enumdef-userverificationrequirement

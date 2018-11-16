@@ -94,6 +94,66 @@ uint32_t ToWinUserVerificationRequirement(
   return WEBAUTHN_USER_VERIFICATION_REQUIREMENT_REQUIRED;
 }
 
+uint32_t ToWinAuthenticatorAttachment(
+    AuthenticatorAttachment authenticator_attachment) {
+  switch (authenticator_attachment) {
+    case AuthenticatorAttachment::kAny:
+      return WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY;
+    case AuthenticatorAttachment::kPlatform:
+      return WEBAUTHN_AUTHENTICATOR_ATTACHMENT_PLATFORM;
+    case AuthenticatorAttachment::kCrossPlatform:
+      return WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM;
+  }
+  NOTREACHED();
+  return WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY;
+}
+
+static uint32_t ToWinTransportsMask(
+    const base::flat_set<FidoTransportProtocol>& transports) {
+  uint32_t result = 0;
+  for (const FidoTransportProtocol transport : transports) {
+    switch (transport) {
+      case FidoTransportProtocol::kUsbHumanInterfaceDevice:
+        result |= WEBAUTHN_CTAP_TRANSPORT_USB;
+        break;
+      case FidoTransportProtocol::kNearFieldCommunication:
+        result |= WEBAUTHN_CTAP_TRANSPORT_NFC;
+        break;
+      case FidoTransportProtocol::kBluetoothLowEnergy:
+        result |= WEBAUTHN_CTAP_TRANSPORT_BLE;
+        break;
+      case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
+        // caBLE is unsupported by the Windows API.
+        break;
+      case FidoTransportProtocol::kInternal:
+        result |= WEBAUTHN_CTAP_TRANSPORT_INTERNAL;
+        break;
+    }
+  }
+  return result;
+}
+
+std::vector<_WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
+    const base::Optional<std::vector<PublicKeyCredentialDescriptor>>&
+        credentials) {
+  std::vector<_WEBAUTHN_CREDENTIAL_EX> result;
+  if (!credentials) {
+    return {};
+  }
+  for (const auto& credential : *credentials) {
+    if (credential.credential_type() != CredentialType::kPublicKey) {
+      continue;
+    }
+
+    result.push_back(_WEBAUTHN_CREDENTIAL_EX{
+        WEBAUTHN_CREDENTIAL_EX_CURRENT_VERSION, credential.id().size(),
+        const_cast<unsigned char*>(credential.id().data()),
+        WEBAUTHN_CREDENTIAL_TYPE_PUBLIC_KEY,
+        ToWinTransportsMask(credential.transports())});
+  }
+  return result;
+}
+
 CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
     const base::string16& error_name) {
   // TODO(crbug/896522): Another mismatch of our authenticator models. Windows

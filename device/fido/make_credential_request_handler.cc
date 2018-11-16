@@ -23,8 +23,6 @@ namespace {
 bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
     FidoAuthenticator* authenticator,
     const AuthenticatorSelectionCriteria& authenticator_selection_criteria) {
-  using AuthenticatorAttachment =
-      AuthenticatorSelectionCriteria::AuthenticatorAttachment;
   using UvAvailability =
       AuthenticatorSupportedOptions::UserVerificationAvailability;
 
@@ -36,10 +34,10 @@ bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
     return true;
   }
 
-  if ((authenticator_selection_criteria.authenticator_attachement() ==
+  if ((authenticator_selection_criteria.authenticator_attachment() ==
            AuthenticatorAttachment::kPlatform &&
        !opt_options->is_platform_device()) ||
-      (authenticator_selection_criteria.authenticator_attachement() ==
+      (authenticator_selection_criteria.authenticator_attachment() ==
            AuthenticatorAttachment::kCrossPlatform &&
        opt_options->is_platform_device()))
     return false;
@@ -56,19 +54,17 @@ bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
 
 base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
     const AuthenticatorSelectionCriteria& authenticator_selection_criteria) {
-  using AttachmentType =
-      AuthenticatorSelectionCriteria::AuthenticatorAttachment;
   const auto attachment_type =
-      authenticator_selection_criteria.authenticator_attachement();
+      authenticator_selection_criteria.authenticator_attachment();
   switch (attachment_type) {
-    case AttachmentType::kPlatform:
+    case AuthenticatorAttachment::kPlatform:
       return {FidoTransportProtocol::kInternal};
-    case AttachmentType::kCrossPlatform:
+    case AuthenticatorAttachment::kCrossPlatform:
       // Cloud-assisted BLE is not yet supported for MakeCredential requests.
       return {FidoTransportProtocol::kUsbHumanInterfaceDevice,
               FidoTransportProtocol::kBluetoothLowEnergy,
               FidoTransportProtocol::kNearFieldCommunication};
-    case AttachmentType::kAny:
+    case AuthenticatorAttachment::kAny:
       // Cloud-assisted BLE is not yet supported for MakeCredential requests.
       return {FidoTransportProtocol::kInternal,
               FidoTransportProtocol::kNearFieldCommunication,
@@ -112,12 +108,16 @@ void MakeCredentialRequestHandler::DispatchRequest(
           authenticator, authenticator_selection_criteria_))
     return;
 
-  // Set the rk and uv fields, which were only initialized to default values
-  // up to here.
+  // Set the rk, uv and attachment fields, which were only initialized to
+  // default values up to here.  TODO(martinkr): Initialize these fields earlier
+  // (in AuthenticatorImpl) and get rid of the separate
+  // AuthenticatorSelectionCriteriaParameter.
   request_parameter_.SetResidentKeyRequired(
       authenticator_selection_criteria_.require_resident_key());
   request_parameter_.SetUserVerification(
       authenticator_selection_criteria_.user_verification_requirement());
+  request_parameter_.SetAuthenticatorAttachment(
+      authenticator_selection_criteria_.authenticator_attachment());
 
   authenticator->MakeCredential(
       request_parameter_,
@@ -156,8 +156,8 @@ void MakeCredentialRequestHandler::SetPlatformAuthenticatorOrMarkUnavailable(
     const bool has_transport_selection_ui =
         observer() && observer()->EmbedderControlsAuthenticatorDispatch(
                           *platform_authenticator_info->authenticator);
-    if (authenticator_selection_criteria_.authenticator_attachement() ==
-            AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny &&
+    if (authenticator_selection_criteria_.authenticator_attachment() ==
+            AuthenticatorAttachment::kAny &&
         !has_transport_selection_ui) {
       platform_authenticator_info = base::nullopt;
     }

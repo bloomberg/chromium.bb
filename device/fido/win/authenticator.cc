@@ -171,15 +171,6 @@ void WinWebAuthnApiAuthenticator::MakeCredentialBlocking(
           request.client_data_json().data())),
       WEBAUTHN_HASH_ALGORITHM_SHA_256};
 
-  std::vector<WEBAUTHN_CREDENTIAL> exclude_list;
-  if (request.exclude_list()) {
-    for (const PublicKeyCredentialDescriptor& desc : *request.exclude_list()) {
-      exclude_list.push_back(WEBAUTHN_CREDENTIAL{
-          WEBAUTHN_CREDENTIAL_CURRENT_VERSION, desc.id().size(),
-          const_cast<unsigned char*>(desc.id().data())});
-    }
-  }
-
   std::vector<WEBAUTHN_EXTENSION> extensions;
   if (request.hmac_secret()) {
     static BOOL kHMACSecretTrue = TRUE;
@@ -188,19 +179,28 @@ void WinWebAuthnApiAuthenticator::MakeCredentialBlocking(
                            sizeof(BOOL), static_cast<void*>(&kHMACSecretTrue)});
   }
 
+  std::vector<_WEBAUTHN_CREDENTIAL_EX> exclude_list =
+      ToWinCredentialExVector(request.exclude_list());
+  auto* exclude_list_ptr = exclude_list.data();
+  _WEBAUTHN_CREDENTIAL_LIST exclude_credential_list{exclude_list.size(),
+                                                    &exclude_list_ptr};
+
   WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS make_credential_options{
-      WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_CURRENT_VERSION,
+      WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS_VERSION_3,
       kWinWebAuthnTimeoutMilliseconds,
-      WEBAUTHN_CREDENTIALS{exclude_list.size(), exclude_list.data()},
+      WEBAUTHN_CREDENTIALS{
+          0, nullptr},  // Ignored because pExcludeCredentialList is set.
       WEBAUTHN_EXTENSIONS{extensions.size(), extensions.data()},
-      // TODO(martinkr): Plumb authenticator attachment into
-      // CtapMakeCredentialRequest and set here.
-      use_u2f_only_ ? WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2
-                    : WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY,
+      use_u2f_only_
+          ? WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2
+          : ToWinAuthenticatorAttachment(request.authenticator_attachment()),
       request.resident_key_required(),
       ToWinUserVerificationRequirement(request.user_verification()),
-      WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT, 0 /* flags */,
-      &cancellation_id_};
+      WEBAUTHN_ATTESTATION_CONVEYANCE_PREFERENCE_DIRECT,
+      0 /* flags */,
+      &cancellation_id_,
+      &exclude_credential_list,
+  };
 
   // |credential_attestation| must not not outlive |win_api_|.
   WinWebAuthnApi::ScopedCredentialAttestation credential_attestation;
@@ -276,15 +276,7 @@ void WinWebAuthnApiAuthenticator::GetAssertionBlocking(
     CtapGetAssertionRequest request,
     GetAssertionCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_runner) {
-  std::vector<WEBAUTHN_CREDENTIAL> allow_list;
-  if (request.allow_list()) {
-    for (const PublicKeyCredentialDescriptor& desc : *request.allow_list()) {
-      allow_list.push_back(WEBAUTHN_CREDENTIAL{
-          WEBAUTHN_CREDENTIAL_CURRENT_VERSION, desc.id().size(),
-          const_cast<unsigned char*>(desc.id().data()),
-          WEBAUTHN_CREDENTIAL_TYPE_PUBLIC_KEY});
-    }
-  }
+  static BOOL kUseAppIdTrue = TRUE;  // const
 
   base::string16 rp_id16 = base::UTF8ToUTF16(request.rp_id());
 
@@ -294,21 +286,26 @@ void WinWebAuthnApiAuthenticator::GetAssertionBlocking(
           request.client_data_json().data())),
       WEBAUTHN_HASH_ALGORITHM_SHA_256};
 
-  static BOOL kUseAppIdTrue = TRUE;
+  std::vector<_WEBAUTHN_CREDENTIAL_EX> allow_list =
+      ToWinCredentialExVector(request.allow_list());
+  auto* allow_list_ptr = allow_list.data();
+  _WEBAUTHN_CREDENTIAL_LIST allow_credential_list{allow_list.size(),
+                                                  &allow_list_ptr};
+
   WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS get_assertion_options{
-      WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_CURRENT_VERSION,
+      WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS_VERSION_4,
       kWinWebAuthnTimeoutMilliseconds,
-      WEBAUTHN_CREDENTIALS{allow_list.size(), allow_list.data()},
+      WEBAUTHN_CREDENTIALS{
+          0, nullptr},  // Ignored because pAllowCredentialList is set.
       WEBAUTHN_EXTENSIONS{0, nullptr},
-      // TODO(martinkr): Plumb authenticator attachment into
-      // CtapMakeCredentialRequest and set here.
+      // Note that attachment is effectively restricted via |allow_list|.
       use_u2f_only_ ? WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2
                     : WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY,
       ToWinUserVerificationRequirement(request.user_verification()),
       0,                                          // flags
       use_u2f_only_ ? rp_id16.c_str() : nullptr,  // pwszU2fAppId
       use_u2f_only_ ? &kUseAppIdTrue : nullptr,   // pbU2fAppId
-      &cancellation_id_,
+      &cancellation_id_, &allow_credential_list,
   };
 
   // |assertion| must not not outlive |win_api_|.
