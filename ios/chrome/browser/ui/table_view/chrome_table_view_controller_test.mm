@@ -86,6 +86,20 @@ void ChromeTableViewControllerTest::CheckTitleWithId(int expected_title_id) {
   CheckTitle(l10n_util::GetNSString(expected_title_id));
 }
 
+void ChromeTableViewControllerTest::CheckSectionHeader(NSString* expected_title,
+                                                       int section) {
+  TableViewHeaderFooterItem* header =
+      [[controller_ tableViewModel] headerForSection:section];
+  ASSERT_TRUE([header respondsToSelector:@selector(text)]);
+  EXPECT_NSEQ(expected_title, [(id)header text]);
+}
+
+void ChromeTableViewControllerTest::CheckSectionHeaderWithId(
+    int expected_title_id,
+    int section) {
+  CheckSectionHeader(l10n_util::GetNSString(expected_title_id), section);
+}
+
 void ChromeTableViewControllerTest::CheckSectionFooter(NSString* expected_text,
                                                        int section) {
   // TODO(crbug.com/894791): Implement this.
