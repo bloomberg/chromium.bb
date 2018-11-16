@@ -43,18 +43,15 @@ std::string GetChannelName() {
 
 version_info::Channel GetChannelByName(const std::string& channel) {
 #if defined(GOOGLE_CHROME_BUILD)
-
-  if (channel.empty()) {
+  if (channel.empty())
     return version_info::Channel::STABLE;
-  } else if (channel == "beta") {
+  if (channel == "beta")
     return version_info::Channel::BETA;
-  } else if (channel == "dev") {
+  if (channel == "dev")
     return version_info::Channel::DEV;
-  } else if (channel == "canary") {
+  if (channel == "canary")
     return version_info::Channel::CANARY;
-  }
 #endif
-
   return version_info::Channel::UNKNOWN;
 }
 

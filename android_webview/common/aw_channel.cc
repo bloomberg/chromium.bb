@@ -11,7 +11,7 @@ namespace android_webview {
 using version_info::Channel;
 
 Channel GetChannelOrStable() {
-  Channel channel = version_info::GetChannel();
+  Channel channel = version_info::android::GetChannel();
   return channel == Channel::UNKNOWN ? Channel::STABLE : channel;
 }
 
