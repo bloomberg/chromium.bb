@@ -25,8 +25,9 @@ PaintController::PaintController(Usage usage)
 }
 
 PaintController::~PaintController() {
-  // New display items should be committed before PaintController is destroyed.
-  DCHECK(new_display_item_list_.IsEmpty());
+  // New display items should be committed before PaintController is destroyed,
+  // except for transient paint controllers.
+  DCHECK(usage_ == kTransient || new_display_item_list_.IsEmpty());
 }
 
 bool PaintController::UseCachedItemIfPossible(const DisplayItemClient& client,
