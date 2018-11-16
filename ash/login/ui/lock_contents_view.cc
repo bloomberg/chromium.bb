@@ -115,6 +115,8 @@ class AuthErrorLearnMoreButton : public views::Button,
     label->SetFontList(base_font_list.Derive(0, gfx::Font::FontStyle::NORMAL,
                                              gfx::Font::Weight::NORMAL));
     AddChildView(label);
+
+    SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE));
   }
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {

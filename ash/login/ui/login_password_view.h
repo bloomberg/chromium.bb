@@ -48,6 +48,8 @@ class ASH_EXPORT LoginPasswordView : public views::View,
     explicit TestApi(LoginPasswordView* view);
     ~TestApi();
 
+    void SubmitPassword(const std::string& password);
+
     views::Textfield* textfield() const;
     views::View* submit_button() const;
     views::View* easy_unlock_icon() const;

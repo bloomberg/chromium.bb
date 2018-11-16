@@ -6,6 +6,10 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/login_screen_test_api.mojom.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -18,11 +22,18 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 namespace {
+
+bool IsScreenLockerLocked() {
+  return ScreenLocker::default_screen_locker() &&
+         ScreenLocker::default_screen_locker()->locked();
+}
 
 // This class is used to observe state of the global ScreenLocker instance,
 // which can go away as a result of a successful authentication. As such,
@@ -71,7 +82,9 @@ class WebUIScreenLockerTester : public ScreenLockerTester {
   ~WebUIScreenLockerTester() override = default;
 
   // ScreenLockerTester:
-  void EnterPassword(const std::string& password) override {
+  bool IsLocked() override { return IsScreenLockerLocked(); }
+  void EnterPassword(const AccountId& account_id,
+                     const std::string& password) override {
     bool result;
 
     SetPassword(password);
@@ -135,16 +148,49 @@ class WebUIScreenLockerTester : public ScreenLockerTester {
   DISALLOW_COPY_AND_ASSIGN(WebUIScreenLockerTester);
 };
 
+class MojoScreenLockerTester : public ScreenLockerTester {
+ public:
+  MojoScreenLockerTester() {
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(ash::mojom::kServiceName, &test_api_);
+  }
+  ~MojoScreenLockerTester() override = default;
+
+  // ScreenLockerTester:
+  bool IsLocked() override {
+    // Check from ash's perspective.
+    ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
+    bool is_ui_shown;
+    login_screen.IsLockShown(&is_ui_shown);
+    return IsScreenLockerLocked() && is_ui_shown;
+  }
+  void EnterPassword(const AccountId& account_id,
+                     const std::string& password) override {
+    ash::mojom::LoginScreenTestApiAsyncWaiter login_screen(test_api_.get());
+    login_screen.SubmitPassword(account_id, password);
+  }
+
+ private:
+  ash::mojom::LoginScreenTestApiPtr test_api_;
+
+  DISALLOW_COPY_AND_ASSIGN(MojoScreenLockerTester);
+};
+
 }  // namespace
 
 // static
 std::unique_ptr<ScreenLockerTester> ScreenLockerTester::Create() {
-  return std::make_unique<WebUIScreenLockerTester>();
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kShowWebUiLock)) {
+    return std::make_unique<WebUIScreenLockerTester>();
+  }
+  return std::make_unique<MojoScreenLockerTester>();
 }
 
-ScreenLockerTester::ScreenLockerTester() {}
+ScreenLockerTester::ScreenLockerTester() = default;
 
-ScreenLockerTester::~ScreenLockerTester() {}
+ScreenLockerTester::~ScreenLockerTester() = default;
 
 void ScreenLockerTester::InjectStubUserContext(
     const UserContext& user_context) {
@@ -152,11 +198,6 @@ void ScreenLockerTester::InjectStubUserContext(
   locker->SetAuthenticatorsForTesting(
       base::MakeRefCounted<StubAuthenticator>(locker, user_context),
       base::MakeRefCounted<FakeExtendedAuthenticator>(locker, user_context));
-}
-
-bool ScreenLockerTester::IsLocked() {
-  return ScreenLocker::default_screen_locker() &&
-         ScreenLocker::default_screen_locker()->locked();
 }
 
 }  // namespace chromeos

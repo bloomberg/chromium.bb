@@ -98,6 +98,7 @@ mojom("test_interfaces") {
   testonly = true
   disable_variants = true
   sources = [
+    "login_screen_test_api.mojom",
     "shelf_test_api.mojom",
     "shell_test_api.mojom",
     "status_area_widget_test_api.mojom",
@@ -105,6 +106,7 @@ mojom("test_interfaces") {
     "time_to_first_present_recorder_test_api.mojom",
   ]
   deps = [
+    "//components/account_id/interfaces",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",
   ]
