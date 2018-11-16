@@ -24,7 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/shortcut_helper.h"
@@ -276,7 +276,7 @@ bool StoreUpdateRequestToFileInBackground(
     const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
     bool is_manifest_stale,
     WebApkUpdateReason update_reason) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   std::unique_ptr<std::string> proto = BuildProtoInBackground(
       shortcut_info, primary_icon, badge_icon, package_name, version,
@@ -293,7 +293,7 @@ bool StoreUpdateRequestToFileInBackground(
 
 // Reads |file| and returns contents. Must be called on a background thread.
 std::unique_ptr<std::string> ReadFileInBackground(const base::FilePath& file) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   std::unique_ptr<std::string> update_request = std::make_unique<std::string>();
   base::ReadFileToString(file, update_request.get());
   return update_request;
