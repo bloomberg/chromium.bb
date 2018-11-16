@@ -142,7 +142,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // Size of the video frame being submitted. It is set the first time a frame
   // is submitted. Every time there is a change in the video frame size, the
   // child component of the LocalSurfaceId will be updated.
-  gfx::Size frame_size_;
+  gfx::Rect frame_size_;
 
   // Used to updated the LocalSurfaceId when detecting a change in video frame
   // size.
