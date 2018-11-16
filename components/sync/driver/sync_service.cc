@@ -17,12 +17,12 @@ bool SyncService::IsSyncFeatureEnabled() const {
   // Note: IsFirstSetupComplete() shouldn't usually be true if we don't have a
   // primary account, but it could happen if the account changes from primary to
   // secondary.
-  return GetDisableReasons() == DISABLE_REASON_NONE && IsFirstSetupComplete() &&
-         IsAuthenticatedAccountPrimary();
+  return CanSyncFeatureStart() && IsFirstSetupComplete();
 }
 
 bool SyncService::CanSyncFeatureStart() const {
-  return GetDisableReasons() == DISABLE_REASON_NONE;
+  return GetDisableReasons() == DISABLE_REASON_NONE &&
+         IsAuthenticatedAccountPrimary();
 }
 
 bool SyncService::IsEngineInitialized() const {

@@ -188,8 +188,10 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Sync-the-feature is disabled by the user, by enterprise policy, etc.
   bool IsEngineInitialized() const;
 
-  // Equivalent to having no disable reasons, i.e.
-  // "GetDisableReasons() == DISABLE_REASON_NONE".
+  // Returns whether Sync-the-feature can (attempt to) start. This means that
+  // there is a primary account and no disable reasons. It does *not* require
+  // first-time Sync setup to be complete, because that can only happen after
+  // the engine has started.
   // Note: This refers to Sync-the-feature. Sync-the-transport may be running
   // even if this is false.
   bool CanSyncFeatureStart() const;
