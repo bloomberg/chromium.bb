@@ -3,14 +3,14 @@
 
 # Virtual keyboard not supported. https://crbug.com/646565
 -DefaultKeyboardExtensionBrowserTest.*
+-KeyboardControllerAppWindowTest.*
+-KeyboardControllerStateTest.*
+-KeyboardControllerWebContentTest.*
 -KeyboardEndToEndFocusTest.*
 -KeyboardEndToEndFormTest.*
 -KeyboardEndToEndOverscrollTest.*
 -KioskVirtualKeyboardTest.*
 -PolicyTest.VirtualKeyboardEnabled
--VirtualKeyboardAppWindowTest.*
--VirtualKeyboardStateTest.*
--VirtualKeyboardWebContentTest.*
 
 # Also depends on keyboard. Test hangs in single process mash crbug.com/897012
 -SelectFileDialogExtensionBrowserTest.SelectFileVirtualKeyboard_TabletMode

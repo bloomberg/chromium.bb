@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/dummy_input_method.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"

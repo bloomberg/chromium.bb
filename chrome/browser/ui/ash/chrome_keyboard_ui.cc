@@ -46,7 +46,12 @@ aura::Window* ChromeKeyboardUI::LoadKeyboardWindow(LoadCallback callback) {
   keyboard_contents_ = std::make_unique<ChromeKeyboardWebContents>(
       browser_context_,
       ChromeKeyboardControllerClient::Get()->GetVirtualKeyboardUrl(),
-      std::move(callback));
+      base::BindOnce(
+          [](LoadCallback callback) {
+            ChromeKeyboardControllerClient::Get()->NotifyKeyboardLoaded();
+            std::move(callback).Run();
+          },
+          std::move(callback)));
 
   aura::Window* keyboard_window =
       keyboard_contents_->web_contents()->GetNativeView();

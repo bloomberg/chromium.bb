@@ -7,8 +7,6 @@
 #include "base/run_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/display/screen.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -52,20 +50,6 @@ bool WaitVisibilityChangesTo(bool wait_until) {
 }
 
 }  // namespace
-
-bool WaitUntilLoaded() {
-  auto* controller = KeyboardController::Get();
-  while (controller->GetStateForTest() == KeyboardControllerState::INITIAL ||
-         controller->GetStateForTest() ==
-             KeyboardControllerState::LOADING_EXTENSION) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(100));
-    run_loop.Run();
-  }
-  return true;
-}
 
 bool WaitUntilShown() {
   // KeyboardController send a visibility update once the show animation

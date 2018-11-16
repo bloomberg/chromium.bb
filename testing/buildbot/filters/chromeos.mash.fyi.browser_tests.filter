@@ -193,13 +193,13 @@
 # Virtual keyboard not supported.
 -AccessibilityManagerLoginTest.ResumeSavedPref
 -DefaultKeyboardExtensionBrowserTest.*
+-KeyboardControllerAppWindowTest.*
+-KeyboardControllerStateTest.*
+-KeyboardControllerWebContentTest.*
 -KeyboardEndToEndFocusTest.*
 -KeyboardEndToEndFormTest.*
 -KeyboardEndToEndOverscrollTest.*
 -KioskVirtualKeyboardTest.*
--VirtualKeyboardAppWindowTest.*
--VirtualKeyboardStateTest.*
--VirtualKeyboardWebContentTest.*
 -PolicyTest.VirtualKeyboardEnabled
 
 # Also depends on keyboard. Test crashes in Mash. https://crbug.com/897012
