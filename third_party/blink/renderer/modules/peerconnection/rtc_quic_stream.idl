@@ -19,8 +19,10 @@ enum RTCQuicStreamState {
     readonly attribute RTCQuicTransport transport;
     readonly attribute RTCQuicStreamState state;
     readonly attribute unsigned long readBufferedAmount;
+    readonly attribute unsigned long maxReadBufferedAmount;
     readonly attribute unsigned long writeBufferedAmount;
     readonly attribute unsigned long maxWriteBufferedAmount;
+    [RaisesException] RTCQuicStreamReadResult readInto(Uint8Array data);
     [RaisesException] void write(Uint8Array data);
     void finish();
     void reset();

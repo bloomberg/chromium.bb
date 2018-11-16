@@ -11,6 +11,8 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_stream_proxy.h"
+#include "third_party/blink/renderer/modules/peerconnection/byte_buffer_queue.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_quic_stream_read_result.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 
 namespace blink {
@@ -30,6 +32,7 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
  public:
   // TODO(steveanton): These maybe should be adjustable.
   static const uint32_t kWriteBufferSize;
+  static const uint32_t kReadBufferSize;
 
   enum class CloseReason {
     // Both read and write sides have been finished.
@@ -56,8 +59,11 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   RTCQuicTransport* transport() const;
   String state() const;
   uint32_t readBufferedAmount() const;
+  uint32_t maxReadBufferedAmount() const;
   uint32_t writeBufferedAmount() const;
   uint32_t maxWriteBufferedAmount() const;
+  RTCQuicStreamReadResult* readInto(NotShared<DOMUint8Array> data,
+                                    ExceptionState& exception_state);
   void write(NotShared<DOMUint8Array> data, ExceptionState& exception_state);
   void finish();
   void reset();
@@ -82,6 +88,7 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
   void OnDataReceived(Vector<uint8_t> data, bool fin) override;
   void OnWriteDataConsumed(uint32_t amount) override;
 
+  bool RaiseIfNotReadable(ExceptionState&);
   bool RaiseIfNotWritable(ExceptionState&);
 
   // Permenantly closes the RTCQuicStream with the given reason.
@@ -95,8 +102,16 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
 
   Member<RTCQuicTransport> transport_;
   RTCQuicStreamState state_ = RTCQuicStreamState::kOpen;
-  bool readable_ = true;
-  uint32_t read_buffered_amount_ = 0;
+
+  // Data that has been received but not read.
+  // OnDataReceived() appends to the read buffer.
+  // readInto() will read out from the front of the buffer.
+  ByteBufferQueue receive_buffer_;
+  // True if the fin has been received from the network.
+  bool received_fin_ = false;
+  // True if the fin has been read out via readInto(). This signifies that the
+  // RTCQuicStream is closed for reading.
+  bool read_fin_ = false;
 
   // Amount of bytes written but may not yet have been sent by the underlying
   // P2PQuicStream.
