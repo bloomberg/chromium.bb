@@ -12,7 +12,9 @@ function reportResult(msg) {
         var ws = new WebSocket("ws://example.test:8880/echo");
     } catch (e) {
         reportResult("DONE");
+        self.close();
         return;
     }
     reportResult("FAIL: No exception was thrown")
+    self.close();
 })();

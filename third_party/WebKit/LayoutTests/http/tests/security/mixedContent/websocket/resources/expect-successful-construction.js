@@ -22,8 +22,10 @@ new Promise(function (resolve, reject) {
 }).then(
     function () {
         reportResult("DONE");
+        self.close();
     },
     function (reason) {
         reportResult("FAIL: " + reason);
+        self.close();
     }
 );

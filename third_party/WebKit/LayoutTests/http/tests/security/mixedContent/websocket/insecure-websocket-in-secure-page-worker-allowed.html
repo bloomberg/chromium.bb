@@ -20,7 +20,8 @@ test.step(function ()
         test.done();
     }), false);
 
-    window.open("https://127.0.0.1:8443/security/mixedContent/websocket/resources/expect-successful-construction-worker.html");
+    const w = window.open("https://127.0.0.1:8443/security/mixedContent/websocket/resources/expect-successful-construction-worker.html");
+    test.add_cleanup(() => w.close());
 });
 
 </script>
