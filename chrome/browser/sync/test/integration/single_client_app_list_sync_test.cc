@@ -171,7 +171,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   // Disable app sync.
-  sync_service->OnUserChoseDatatypes(false, syncer::ModelTypeSet());
+  sync_service->GetUserSettings()->SetChosenDataTypes(false,
+                                                      syncer::ModelTypeSet());
 
   // Change data when sync is off.
   for (const auto& app_id : app_ids) {
@@ -186,7 +187,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, LocalStorage) {
   EXPECT_FALSE(SyncItemsMatch(service, &compare_service));
 
   // Restore sync and sync data should override local changes.
-  sync_service->OnUserChoseDatatypes(true, syncer::ModelTypeSet());
+  sync_service->GetUserSettings()->SetChosenDataTypes(true,
+                                                      syncer::ModelTypeSet());
   EXPECT_TRUE(AppListSyncUpdateWaiter(service).Wait());
   EXPECT_TRUE(SyncItemsMatch(service, &compare_service));
 }

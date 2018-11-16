@@ -1178,14 +1178,15 @@ bool SyncTest::EnableEncryption(int index) {
   if (::IsEncryptionComplete(service))
     return true;
 
-  service->EnableEncryptEverything();
+  service->GetUserSettings()->EnableEncryptEverything();
 
   // In order to kick off the encryption we have to reconfigure. Just grab the
   // currently synced types and use them.
-  syncer::ModelTypeSet synced_datatypes = service->GetPreferredDataTypes();
-  bool sync_everything = (synced_datatypes == syncer::ModelTypeSet::All());
-  synced_datatypes.RetainAll(syncer::UserSelectableTypes());
-  service->OnUserChoseDatatypes(sync_everything, synced_datatypes);
+  syncer::ModelTypeSet synced_datatypes =
+      service->GetUserSettings()->GetChosenDataTypes();
+  bool sync_everything = (synced_datatypes == syncer::UserSelectableTypes());
+  service->GetUserSettings()->SetChosenDataTypes(sync_everything,
+                                                 synced_datatypes);
 
   return AwaitEncryptionComplete(index);
 }

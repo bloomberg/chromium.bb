@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   // Disable PREFERENCES.
   syncer::ModelTypeSet types = syncer::UserSelectableTypes();
   types.Remove(syncer::PREFERENCES);
-  GetSyncService(0)->OnUserChoseDatatypes(false, types);
+  GetSyncService(0)->GetUserSettings()->SetChosenDataTypes(false, types);
 
   // Wait for it to take effect and remove the metadata.
   ASSERT_TRUE(MetadataAbsentChecker(model0, kKey1).Wait());
@@ -321,7 +321,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, DisableEnable) {
   ASSERT_EQ(1U, model1->db().metadata_count());
 
   // Re-enable PREFERENCES.
-  GetSyncService(0)->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  GetSyncService(0)->GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
 
   // Wait for metadata to be re-added.
   ASSERT_TRUE(MetadataPresentChecker(model0, kKey1).Wait());
@@ -398,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Encryption) {
   model0->WriteItem(kKey1, kValue1);
   ASSERT_TRUE(DataChecker(model1, kKey1, kValue1).Wait());
 
-  GetSyncService(0)->SetEncryptionPassphrase(kPassphrase);
+  GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase(kPassphrase);
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(0)).Wait());
   // Wait for client 1 to know that a passphrase is happening to avoid potential
   // race conditions and make the functionality this case tests more consistent.
@@ -408,7 +409,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, Encryption) {
   model0->WriteItem(kKey2, kValue1);
   model1->WriteItem(kKey3, kValue1);
 
-  ASSERT_TRUE(GetSyncService(1)->SetDecryptionPassphrase(kPassphrase));
+  ASSERT_TRUE(GetSyncService(1)->GetUserSettings()->SetDecryptionPassphrase(
+      kPassphrase));
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(1)).Wait());
 
   model0->WriteItem(kKey4, kValue1);
