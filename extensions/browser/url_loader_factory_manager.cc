@@ -231,7 +231,7 @@ void URLLoaderFactoryManager::ReadyToCommitNavigation(
   if (!initiators_requiring_separate_factory.empty()) {
     // At ReadyToCommitNavigation time there is no need to trigger an explicit
     // push of URLLoaderFactoryBundle to the renderer - it is sufficient if the
-    // factories are pushed during the commit.
+    // factories are pushed slightly later - during the commit.
     constexpr bool kPushToRendererNow = false;
 
     MarkInitiatorsAsRequiringSeparateURLLoaderFactory(

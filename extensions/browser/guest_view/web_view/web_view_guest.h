@@ -270,6 +270,8 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void DidStartNavigation(content::NavigationHandle* navigation_handle) final;
   void DidRedirectNavigation(
       content::NavigationHandle* navigation_handle) final;
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) final;
   void DidFinishNavigation(content::NavigationHandle* navigation_handle) final;
   void DocumentOnLoadCompletedInMainFrame() final;
   void RenderProcessGone(base::TerminationStatus status) final;

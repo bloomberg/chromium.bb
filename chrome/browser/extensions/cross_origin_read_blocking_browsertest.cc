@@ -19,6 +19,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
@@ -70,7 +72,7 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
 
     const char kManifestTemplate[] = R"(
         {
-          "name": "CrossOriginReadBlockingTest",
+          "name": "CrossOriginReadBlockingTest - Extension",
           "version": "1.0",
           "manifest_version": 2,
           "permissions": ["tabs", "*://*/*"],
@@ -89,6 +91,38 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
           FILE_PATH_LITERAL("content_script.js"),
           CreateFetchScript(resource_to_fetch_from_declarative_content_script));
     }
+    extension_ = LoadExtension(dir_.UnpackedPath());
+    return extension_;
+  }
+
+  const Extension* InstallApp() {
+    const char kManifest[] = R"(
+        {
+          "name": "CrossOriginReadBlockingTest - App",
+          "version": "1.0",
+          "manifest_version": 2,
+          "permissions": ["*://*/*", "webview"],
+          "app": {
+            "background": {
+              "scripts": ["background_script.js"]
+            }
+          }
+        } )";
+    dir_.WriteManifest(kManifest);
+
+    const char kBackgroungScript[] = R"(
+        chrome.app.runtime.onLaunched.addListener(function() {
+          chrome.app.window.create('page.html', {}, function () {});
+        });
+    )";
+    dir_.WriteFile(FILE_PATH_LITERAL("background_script.js"),
+                   kBackgroungScript);
+
+    const char kPage[] = R"(
+        <div id="webview-tag-container"></div>
+    )";
+    dir_.WriteFile(FILE_PATH_LITERAL("page.html"), kPage);
+
     extension_ = LoadExtension(dir_.UnpackedPath());
     return extension_;
   }
@@ -196,6 +230,16 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
 
   const Extension* extension() { return extension_; }
 
+  std::string CreateFetchScript(const GURL& resource) {
+    const char kXhrScriptTemplate[] = R"(
+      fetch($1)
+        .then(response => response.text())
+        .then(text => domAutomationController.send(text))
+        .catch(err => domAutomationController.send('error: ' + err));
+    )";
+    return content::JsReplace(kXhrScriptTemplate, resource);
+  }
+
  private:
   // Asks the test |extension_| to inject |content_script| into |web_contents|.
   //
@@ -252,16 +296,6 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
 
     // Report artificial success to meet FetchCallback's requirements.
     return true;
-  }
-
-  std::string CreateFetchScript(const GURL& resource) {
-    const char kXhrScriptTemplate[] = R"(
-      fetch($1)
-        .then(response => response.text())
-        .then(text => domAutomationController.send(text))
-        .catch(err => domAutomationController.send('error: ' + err));
-    )";
-    return content::JsReplace(kXhrScriptTemplate, resource);
   }
 
   // FetchCallback represents a function that executes |fetch_script|.
@@ -867,6 +901,62 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   EXPECT_EQ("IMG LOADED",
             content::EvalJs(active_web_contents(),
                             content::JsReplace(kScriptTemplate, "logo3.png")));
+}
+
+IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
+                       WebViewContentScript) {
+  // Load the test app.
+  const Extension* app = InstallApp();
+  ASSERT_TRUE(app);
+
+  // Launch the test app and grab its WebContents.
+  content::WebContents* app_contents = nullptr;
+  {
+    content::WebContentsAddedObserver new_contents_observer;
+    OpenApplication(AppLaunchParams(
+        browser()->profile(), app, LAUNCH_CONTAINER_NONE,
+        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+    app_contents = new_contents_observer.GetWebContents();
+  }
+  ASSERT_TRUE(content::WaitForLoadStop(app_contents));
+
+  // Inject a <webview> script and declare desire to inject
+  // cross-origin-fetching content scripts into the guest.
+  const char kWebViewInjectionScriptTemplate[] = R"(
+      document.querySelector('#webview-tag-container').innerHTML =
+          '<webview style="width: 100px; height: 100px;"></webview>';
+      var webview = document.querySelector('webview');
+      webview.addContentScripts([{
+          name: 'rule',
+          matches: ['*://*/*'],
+          js: { code: $1 },
+          run_at: 'document_start'}]);
+  )";
+  GURL cross_site_resource(
+      embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+  std::string web_view_injection_script = content::JsReplace(
+      kWebViewInjectionScriptTemplate, CreateFetchScript(cross_site_resource));
+  ASSERT_TRUE(ExecuteScript(app_contents, web_view_injection_script));
+
+  // Navigate <webview>, which should trigger content script execution.
+  GURL guest_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  const char kWebViewNavigationScriptTemplate[] = R"(
+      var webview = document.querySelector('webview');
+      webview.src = $1;
+  )";
+  std::string web_view_navigation_script =
+      content::JsReplace(kWebViewNavigationScriptTemplate, guest_url);
+  {
+    content::DOMMessageQueue queue;
+    base::HistogramTester histograms;
+    content::ExecuteScriptAsync(app_contents, web_view_navigation_script);
+    std::string fetch_result = PopString(&queue);
+
+    // Verify that no CORB blocking occurred.
+    EXPECT_EQ("nosniff.xml - body\n", fetch_result);
+    EXPECT_THAT(histograms.GetAllSamples("SiteIsolation.XSD.Browser.Blocked"),
+                testing::IsEmpty());
+  }
 }
 
 }  // namespace extensions
