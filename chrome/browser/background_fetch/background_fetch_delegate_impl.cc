@@ -132,7 +132,8 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
     // response was an HTTP error, e.g. 404.
     offline_item.state = OfflineItemState::COMPLETE;
     offline_item.is_openable = true;
-  } else if (job_state == State::kStartedButPaused) {
+  } else if (job_state == State::kPendingWillStartPaused ||
+             job_state == State::kStartedButPaused) {
     offline_item.state = OfflineItemState::PAUSED;
   } else {
     offline_item.state = OfflineItemState::IN_PROGRESS;
@@ -555,6 +556,7 @@ void BackgroundFetchDelegateImpl::PauseDownload(
 
   JobDetails& job_details = job_details_iter->second;
   job_details.job_state = JobDetails::State::kStartedButPaused;
+  job_details.UpdateOfflineItem();
   for (auto& download_guid : job_details.current_download_guids)
     GetDownloadService()->PauseDownload(download_guid);
 }
@@ -568,6 +570,7 @@ void BackgroundFetchDelegateImpl::ResumeDownload(
 
   JobDetails& job_details = job_details_iter->second;
   job_details.job_state = JobDetails::State::kStartedAndDownloading;
+  job_details.UpdateOfflineItem();
   for (auto& download_guid : job_details.current_download_guids)
     GetDownloadService()->ResumeDownload(download_guid);
 

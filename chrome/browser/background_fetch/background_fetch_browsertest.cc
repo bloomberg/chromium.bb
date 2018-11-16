@@ -140,10 +140,6 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
     items_added_callback_ = std::move(callback);
   }
 
-  void set_item_updated_callback(ItemUpdatedCallback callback) {
-    items_updated_callback_ = std::move(callback);
-  }
-
   void set_finished_processing_item_callback(
       FinishedProcessingItemCallback callback) {
     finished_processing_item_callback_ = std::move(callback);
@@ -172,10 +168,6 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
 
   void OnItemRemoved(const ContentId& id) override {}
   void OnItemUpdated(const OfflineItem& item) override {
-    if (items_updated_callback_) {
-      std::move(items_updated_callback_).Run(item);
-    }
-
     if (item.state != offline_items_collection::OfflineItemState::IN_PROGRESS &&
         item.state != offline_items_collection::OfflineItemState::PENDING &&
         item.state != offline_items_collection::OfflineItemState::PAUSED &&
@@ -209,7 +201,6 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
   }
 
   ItemsAddedCallback items_added_callback_;
-  ItemUpdatedCallback items_updated_callback_;
   FinishedProcessingItemCallback finished_processing_item_callback_;
   BackgroundFetchDelegateImpl* delegate_ = nullptr;
   bool pause_ = false;
@@ -742,23 +733,12 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 
   SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, CONTENT_SETTING_ASK);
 
-  // The fetch doesn't start in a paused state, but is paused after the first
-  // update.
+  // The fetch starts in a paused state.
   std::vector<OfflineItem> items;
-  OfflineItem updated_item;
-  base::RunLoop run_loop;
-  offline_content_provider_observer_->set_item_updated_callback(base::BindOnce(
-      &BackgroundFetchBrowserTest::DidUpdateItem, base::Unretained(this),
-      run_loop.QuitClosure(), &updated_item));
-
   ASSERT_NO_FATAL_FAILURE(RunScriptAndWaitForOfflineItems(
       "StartFetchFromServiceWorkerNoWait()", &items));
   ASSERT_EQ(items.size(), 1u);
   EXPECT_EQ(items[0].state,
-            offline_items_collection::OfflineItemState::IN_PROGRESS);
-
-  run_loop.Run();
-  EXPECT_EQ(updated_item.state,
             offline_items_collection::OfflineItemState::PAUSED);
 }
 
@@ -769,44 +749,24 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
                 CONTENT_SETTING_ALLOW);
 
-  // The fetch doesn't start in a paused state, but is paused after the first
-  // update.
+  // The fetch starts in a paused state.
   std::vector<OfflineItem> items;
-  OfflineItem updated_item;
-  base::RunLoop run_loop;
-  offline_content_provider_observer_->set_item_updated_callback(base::BindOnce(
-      &BackgroundFetchBrowserTest::DidUpdateItem, base::Unretained(this),
-      run_loop.QuitClosure(), &updated_item));
   ASSERT_NO_FATAL_FAILURE(
       RunScriptAndWaitForOfflineItems("StartFetchFromIframeNoWait()", &items));
   ASSERT_EQ(items.size(), 1u);
   EXPECT_EQ(items[0].state,
-            offline_items_collection::OfflineItemState::IN_PROGRESS);
-
-  run_loop.Run();
-  EXPECT_EQ(updated_item.state,
             offline_items_collection::OfflineItemState::PAUSED);
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromChildFrameWithAsk) {
   SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, CONTENT_SETTING_ASK);
 
-  // The fetch doesn't start in a paused state, but is paused after the first
-  // update.
+  // The fetch starts in a paused state.
   std::vector<OfflineItem> items;
-  OfflineItem updated_item;
-  base::RunLoop run_loop;
-  offline_content_provider_observer_->set_item_updated_callback(base::BindOnce(
-      &BackgroundFetchBrowserTest::DidUpdateItem, base::Unretained(this),
-      run_loop.QuitClosure(), &updated_item));
   ASSERT_NO_FATAL_FAILURE(
       RunScriptAndWaitForOfflineItems("StartFetchFromIframeNoWait()", &items));
   ASSERT_EQ(items.size(), 1u);
   EXPECT_EQ(items[0].state,
-            offline_items_collection::OfflineItemState::IN_PROGRESS);
-
-  run_loop.Run();
-  EXPECT_EQ(updated_item.state,
             offline_items_collection::OfflineItemState::PAUSED);
 }
 
