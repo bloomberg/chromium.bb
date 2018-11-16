@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "third_party/blink/renderer/modules/service_worker/fetch_event.h"
 
 #include "base/memory/scoped_refptr.h"
@@ -46,6 +48,10 @@ Request* FetchEvent::request() const {
 
 String FetchEvent::clientId() const {
   return client_id_;
+}
+
+String FetchEvent::resultingClientId() const {
+  return resulting_client_id_;
 }
 
 bool FetchEvent::isReload() const {
@@ -97,6 +103,7 @@ FetchEvent::FetchEvent(ScriptState* script_state,
     preload_response_property_->ResolveWithUndefined();
 
   client_id_ = initializer->clientId();
+  resulting_client_id_ = initializer->resultingClientId();
   is_reload_ = initializer->isReload();
   request_ = initializer->request();
 }

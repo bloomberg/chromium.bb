@@ -7,5 +7,6 @@
 dictionary FetchEventInit : ExtendableEventInit {
   required Request request;
   DOMString clientId = "";
+  DOMString resultingClientId = "";
   boolean isReload = false;
 };

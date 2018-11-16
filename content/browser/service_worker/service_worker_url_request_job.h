@@ -57,6 +57,7 @@ namespace content {
 class ResourceContext;
 class ServiceWorkerBlobReader;
 class ServiceWorkerDataPipeReader;
+class ServiceWorkerProviderHost;
 class ServiceWorkerVersion;
 
 namespace service_worker_controllee_request_handler_unittest {
@@ -308,7 +309,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   // Used when response type is FORWARD_TO_SERVICE_WORKER.
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-  std::string client_id_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   const ResourceContext* resource_context_;
   // Only one of |blob_reader_| and |data_pipe_reader_| can be non-null.

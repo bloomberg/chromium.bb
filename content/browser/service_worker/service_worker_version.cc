@@ -1130,6 +1130,23 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
     std::move(callback).Run(nullptr);
     return;
   }
+  if (!provider_host->is_execution_ready()) {
+    provider_host->AddExecutionReadyCallback(
+        base::BindOnce(&ServiceWorkerVersion::GetClientInternal, this,
+                       client_uuid, std::move(callback)));
+    return;
+  }
+  service_worker_client_utils::GetClient(provider_host, std::move(callback));
+}
+
+void ServiceWorkerVersion::GetClientInternal(const std::string& client_uuid,
+                                             GetClientCallback callback) {
+  ServiceWorkerProviderHost* provider_host =
+      context_->GetProviderHostByClientID(client_uuid);
+  if (!provider_host || !provider_host->is_execution_ready()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
   service_worker_client_utils::GetClient(provider_host, std::move(callback));
 }
 

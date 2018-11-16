@@ -154,6 +154,13 @@ ServiceWorkerMetrics::EventType PurposeToEventType(
   return ServiceWorkerMetrics::EventType::UNKNOWN;
 }
 
+void RunCallbacks(
+    std::vector<ServiceWorkerProviderHost::ExecutionReadyCallback> callbacks) {
+  for (auto& callback : callbacks) {
+    std::move(callback).Run();
+  }
+}
+
 }  // anonymous namespace
 
 // RAII helper class for keeping track of versions waiting for an update hint
@@ -352,6 +359,9 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   // PendingVersionUpdate objects decrement the hint count upon destruction.
   DCHECK(versions_to_update_.empty() ||
          blink::ServiceWorkerUtils::IsServicificationEnabled());
+
+  // Ensure callbacks awaiting execution ready are notified.
+  RunExecutionReadyCallbacks();
 }
 
 int ServiceWorkerProviderHost::frame_id() const {
@@ -446,6 +456,34 @@ ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
   mojom::ControllerServiceWorkerPtr controller_ptr;
   controller_->controller()->Clone(mojo::MakeRequest(&controller_ptr));
   return controller_ptr;
+}
+
+void ServiceWorkerProviderHost::UpdateURLs(const GURL& document_url,
+                                           const GURL& topmost_frame_url) {
+  GURL previous_url = document_url_;
+  SetDocumentUrl(document_url);
+  SetTopmostFrameUrl(topmost_frame_url);
+  auto current_origin = url::Origin::Create(previous_url);
+  auto new_origin = url::Origin::Create(document_url_);
+  // Update client id on cross origin redirects. This corresponds to the HTML
+  // standard's "process a navigation fetch" algorithm's step for discarding
+  // |reservedEnvironment|.
+  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#process-a-navigate-fetch
+  // "If |reservedEnvironment| is not null and |currentURL|'s origin is not the
+  // same as |reservedEnvironment|'s creation URL's origin, then:
+  //    1. Run the environment discarding steps for |reservedEnvironment|.
+  //    2. Set |reservedEnvironment| to null."
+  if (previous_url.is_valid() && !new_origin.IsSameOriginWith(current_origin)) {
+    // Remove old controller since we know the controller is definitely
+    // changed. We need to remove |this| from |controller_|'s controllee before
+    // updating UUID since ServiceWorkerVersion has a map from uuid to provider
+    // hosts.
+    SetControllerRegistration(nullptr, false /* notify_controllerchange */);
+    // Set UUID to the new one.
+    context_->UnregisterProviderHostByClientID(client_uuid_);
+    client_uuid_ = base::GenerateGUID();
+    context_->RegisterProviderHostByClientID(client_uuid_, this);
+  }
 }
 
 void ServiceWorkerProviderHost::SetDocumentUrl(const GURL& url) {
@@ -784,7 +822,7 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
   DCHECK_EQ(info_->provider_id, info->provider_id);
   DCHECK_NE(MSG_ROUTING_NONE, info->route_id);
 
-  is_execution_ready_ = true;
+  SetExecutionReady();
 
   // Connect with the mojom::ServiceWorkerContainer on the renderer.
   DCHECK(!container_.is_bound());
@@ -844,7 +882,7 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
 void ServiceWorkerProviderHost::CompleteSharedWorkerPreparation() {
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
             provider_type());
-  is_execution_ready_ = true;
+  SetExecutionReady();
 }
 
 void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
@@ -1370,6 +1408,25 @@ bool ServiceWorkerProviderHost::CanServeContainerHostMethods(
   }
 
   return true;
+}
+
+void ServiceWorkerProviderHost::AddExecutionReadyCallback(
+    ExecutionReadyCallback callback) {
+  DCHECK(!is_execution_ready_);
+  execution_ready_callbacks_.push_back(std::move(callback));
+}
+
+void ServiceWorkerProviderHost::SetExecutionReady() {
+  DCHECK(!is_execution_ready_);
+  is_execution_ready_ = true;
+  RunExecutionReadyCallbacks();
+}
+
+void ServiceWorkerProviderHost::RunExecutionReadyCallbacks() {
+  std::vector<ExecutionReadyCallback> callbacks;
+  execution_ready_callbacks_.swap(callbacks);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&RunCallbacks, std::move(callbacks)));
 }
 
 }  // namespace content

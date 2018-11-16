@@ -376,6 +376,41 @@ TEST_P(ServiceWorkerProviderHostTest, ContextSecurity) {
       provider_host_insecure_parent->IsContextSecureForServiceWorker());
 }
 
+TEST_P(ServiceWorkerProviderHostTest, UpdateURLs_SameOriginRedirect) {
+  const GURL url1("https://origin1.example.com/page1.html");
+  const GURL url2("https://origin1.example.com/page2.html");
+
+  ServiceWorkerProviderHost* host = CreateProviderHost(url1);
+  const std::string uuid1 = host->client_uuid();
+  EXPECT_EQ(url1, host->document_url());
+  EXPECT_EQ(url1, host->topmost_frame_url());
+
+  host->UpdateURLs(url2, url2);
+  EXPECT_EQ(url2, host->document_url());
+  EXPECT_EQ(url2, host->topmost_frame_url());
+  EXPECT_EQ(uuid1, host->client_uuid());
+
+  EXPECT_EQ(host, context_->GetProviderHostByClientID(host->client_uuid()));
+}
+
+TEST_P(ServiceWorkerProviderHostTest, UpdateURLs_CrossOriginRedirect) {
+  const GURL url1("https://origin1.example.com/page1.html");
+  const GURL url2("https://origin2.example.com/page2.html");
+
+  ServiceWorkerProviderHost* host = CreateProviderHost(url1);
+  const std::string uuid1 = host->client_uuid();
+  EXPECT_EQ(url1, host->document_url());
+  EXPECT_EQ(url1, host->topmost_frame_url());
+
+  host->UpdateURLs(url2, url2);
+  EXPECT_EQ(url2, host->document_url());
+  EXPECT_EQ(url2, host->topmost_frame_url());
+  EXPECT_NE(uuid1, host->client_uuid());
+
+  EXPECT_FALSE(context_->GetProviderHostByClientID(uuid1));
+  EXPECT_EQ(host, context_->GetProviderHostByClientID(host->client_uuid()));
+}
+
 class MockServiceWorkerRegistration : public ServiceWorkerRegistration {
  public:
   MockServiceWorkerRegistration(
