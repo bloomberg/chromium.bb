@@ -1556,6 +1556,17 @@ TEST_P(PaintControllerTest, InsertValidItemInFront) {
   EXPECT_TRUE(fourth.IsValid());
 }
 
+TEST_P(PaintControllerTest, TransientPaintControllerIncompleteCycle) {
+  auto paint_controller = PaintController::Create(PaintController::kTransient);
+  GraphicsContext context(*paint_controller);
+  FakeDisplayItemClient client("client", LayoutRect(100, 100, 50, 50));
+  InitRootChunk(*paint_controller);
+  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 50, 50));
+  // The client of a transient paint controller can abort without
+  // CommintNewDisplayItems() and FinishCycle(). This should not crash.
+  paint_controller = nullptr;
+}
+
 // Death tests don't work properly on Android.
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
