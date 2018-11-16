@@ -120,7 +120,6 @@ template("internal_jumbo_target") {
     }
     has_c_file = false
     has_objective_c_file = false
-    has_S_file = false
     sources_in_jumbo_files = []
     assert(merge_limit > 0)
     foreach(source_file, invoker_sources) {
@@ -130,8 +129,6 @@ template("internal_jumbo_target") {
         has_c_file = true
       } else if (source_ext == "mm") {
         has_objective_c_file = true
-      } else if (source_ext == "S") {
-        has_S_file = true
       } else if (source_ext == "cc" || source_ext == "cpp") {
         if (current_file_index == next_chunk_start) {
           jumbo_files += [ "$gen_target_dir/" + target_name + "_jumbo_" +
@@ -165,9 +162,6 @@ template("internal_jumbo_target") {
     }
     if (has_objective_c_file) {
       jumbo_files += [ "$gen_target_dir/" + target_name + "_jumbo_mm.mm" ]
-    }
-    if (has_S_file) {
-      jumbo_files += [ "$gen_target_dir/" + target_name + "_jumbo_S.S" ]
     }
   }
 
