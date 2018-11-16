@@ -1033,8 +1033,7 @@ def DefaultSettings():
       # ==================================================================
       # Workspace related options.
 
-      # Which branch should WorkspaceSyncStage checkout, if run. Only needed
-      # to let us display workspace builders with TOT in the UI.
+      # Which branch should WorkspaceSyncStage checkout, if run.
       workspace_branch=None,
 
       # ==================================================================

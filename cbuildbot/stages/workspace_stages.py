@@ -28,7 +28,6 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 from chromite.lib import failures_lib
@@ -81,93 +80,21 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
     version_info = self.GetWorkspaceVersionInfo()
     return version_info > manifest_version.VersionInfo(limit)
 
-  # Standardize manifest_versions paths for workspaces.
-
-  @property
-  def int_manifest_versions_path(self):
-    """Path to use for internal manifest_versions."""
-    return os.path.join(
-        self._orig_root,
-        config_lib.GetSiteParams().INTERNAL_MANIFEST_VERSIONS_PATH)
-
-  @property
-  def ext_manifest_versions_path(self):
-    """Path to use for external manifest_versions."""
-    return os.path.join(
-        self._orig_root,
-        config_lib.GetSiteParams().EXTERNAL_MANIFEST_VERSIONS_PATH)
-
-
-class HelperSyncStage(WorkspaceStageBase):
-  """Perform a repo sync."""
-
-  category = constants.CI_INFRA_STAGE
-
-  def __init__(self, builder_run, build_root,
-               external=False,
-               branch=None,
-               version=None,
-               **kwargs):
-    """Initializer.
-
-    Args:
-      builder_run: BuilderRun object.
-      build_root: Path to sync into.
-      external: Boolean telling if this an internal or external checkout.
-      branch: Branch to sync, with default to master.
-      version: Version number to sync too.
-    """
-    super(HelperSyncStage, self).__init__(
-        builder_run, build_root=build_root, **kwargs)
-
-    self.external = external
-    self.branch = branch
-    self.version = version
-
-  def PerformStage(self):
-    """Sync stuff!"""
-    logging.info('SubWorkspaceSync')
-    cmd = [
-        os.path.join(constants.CHROMITE_DIR, 'scripts', 'repo_sync_manifest'),
-        '--repo-root', self._build_root,
-        '--manifest-versions-int', self.int_manifest_versions_path,
-        '--manifest-versions-ext', self.ext_manifest_versions_path,
-    ]
-
-    if self.external:
-      cmd += ['--external']
-
-    if self.branch and not self.version:
-      cmd += ['--branch', self.branch]
-
-    if self.version:
-      cmd += ['--version', self.version]
-
-    cros_build_lib.RunCommand(cmd)
-
 
 class WorkspaceSyncStage(WorkspaceStageBase):
-  """Checkout both infra and workspace repos."""
+  """Clean a working directory checkout."""
 
   category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
-    """Sync all the stuff!"""
+    """Sync stuff!."""
+    logging.info('Syncing %s branch into %s',
+                 self._run.config.workspace_branch, self._build_root)
 
-    HelperSyncStage(
-        self._run,
-        build_root=self._orig_root,
-        external=True,
-        branch='master',
-        suffix=' [Infra]').Run()
-
-    HelperSyncStage(
-        self._run,
-        build_root=self._build_root,
-        external=not self._run.config.internal,
-        branch=self._run.config.workspace_branch,
-        version=self._run.options.force_version,
-        suffix=' [Branch]').Run()
+    repo = self.GetRepoRepository()
+    repo.PreLoad()
+    repo.BuildRootGitCleanup(prune_all=True)
+    repo.Sync(detach=True)
 
 
 class WorkspaceUprevAndPublishStage(WorkspaceStageBase):
@@ -201,6 +128,15 @@ class WorkspacePublishBuildspecStage(WorkspaceStageBase):
 
   def PerformStage(self):
     """Increment ChromeOS version, and publish buildpec."""
+    site_params = config_lib.GetSiteParams()
+
+    # Use the manifest-versions directories that exist in the original
+    # checkout. They may already be populated.
+    manifest_versions_int = os.path.join(
+        self._orig_root, site_params.INTERNAL_MANIFEST_VERSIONS_PATH)
+    manifest_versions_ext = os.path.join(
+        self._orig_root, site_params.EXTERNAL_MANIFEST_VERSIONS_PATH)
+
     repo = self.GetRepoRepository()
 
     # TODO: Add 'patch' support somehow,
@@ -212,8 +148,8 @@ class WorkspacePublishBuildspecStage(WorkspaceStageBase):
     build_spec_path = manifest_version.GenerateAndPublishOfficialBuildSpec(
         repo,
         incr_type,
-        manifest_versions_int=self.int_manifest_versions_path,
-        manifest_versions_ext=self.ext_manifest_versions_path,
+        manifest_versions_int=manifest_versions_int,
+        manifest_versions_ext=manifest_versions_ext,
         dryrun=self._run.options.debug)
 
     if self._run.options.debug:
