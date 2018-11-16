@@ -50643,6 +50643,7 @@ Full version information for the fingerprint enum values:
   <int value="5" label="Cellular"/>
   <int value="6" label="Tethered (Ethernet)"/>
   <int value="7" label="Tethered (Wifi)"/>
+  <int value="8" label="Disconnected"/>
 </enum>
 
 <enum name="UpdateEngineDownloadErrorCode">
