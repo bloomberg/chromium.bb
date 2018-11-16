@@ -11,10 +11,10 @@ import android.os.Bundle;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SnackbarActivity;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactory;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
-import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -65,14 +65,12 @@ public class DownloadActivity extends SnackbarActivity {
         mIsOffTheRecord = isOffTheRecord;
         mDownloadCoordinator.addObserver(mUiObserver);
 
-        if (savedInstanceState != null) {
-            mCurrentUrl = savedInstanceState.getString(BUNDLE_KEY_CURRENT_URL);
-        } else {
-            mCurrentUrl = Filters.toUrl(
-                    showPrefetchContent ? Filters.FilterType.PREFETCHED : Filters.FilterType.NONE);
-        }
-
+        // TODO(crbug/905893) : Use {@link Filters.toUrl) once old download home is removed.
+        mCurrentUrl = savedInstanceState == null
+                ? UrlConstants.DOWNLOADS_URL
+                : savedInstanceState.getString(BUNDLE_KEY_CURRENT_URL);
         mDownloadCoordinator.updateForUrl(mCurrentUrl);
+        if (showPrefetchContent) mDownloadCoordinator.showPrefetchSection();
     }
 
     @Override
