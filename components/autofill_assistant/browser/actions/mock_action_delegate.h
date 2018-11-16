@@ -122,16 +122,13 @@ class MockActionDelegate : public ActionDelegate {
            base::OnceCallback<void(bool, const std::string&)> callback));
   MOCK_METHOD1(LoadURL, void(const GURL& url));
   MOCK_METHOD0(Shutdown, void());
-  MOCK_METHOD0(CloseCustomTab, void());
   MOCK_METHOD0(Restart, void());
   MOCK_METHOD0(GetClientMemory, ClientMemory*());
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD1(StopCurrentScriptAndShutdown, void(const std::string& message));
   MOCK_METHOD0(HideDetails, void());
-  MOCK_METHOD2(ShowDetails,
-               void(const DetailsProto& details,
-                    base::OnceCallback<void(bool)> callback));
+  MOCK_METHOD1(ShowDetails, bool(const DetailsProto& details));
   MOCK_METHOD2(ShowProgressBar, void(int progress, const std::string& message));
   MOCK_METHOD0(HideProgressBar, void());
   MOCK_METHOD0(ShowOverlay, void());
