@@ -1388,8 +1388,9 @@ scoped_refptr<Database::StatementRef> Database::GetCachedStatement(
     // one invalidating cached statements, and we remove them from the cache
     // when we do that.
     DCHECK(it->second->is_valid());
-
-    DCHECK_EQ(std::string(sql), std::string(sqlite3_sql(it->second->stmt())))
+    DCHECK_EQ(base::TrimWhitespaceASCII(sql, base::TRIM_ALL),
+              base::TrimWhitespaceASCII(sqlite3_sql(it->second->stmt()),
+                                        base::TRIM_ALL))
         << "GetCachedStatement used with same ID but different SQL";
 
     // Reset the statement so it can be reused.

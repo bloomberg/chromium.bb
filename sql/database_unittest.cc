@@ -230,7 +230,8 @@ TEST_F(SQLDatabaseTest, ExecuteWithErrorCode) {
 TEST_F(SQLDatabaseTest, CachedStatement) {
   sql::StatementID id1 = SQL_FROM_HERE;
   sql::StatementID id2 = SQL_FROM_HERE;
-  static const char kId1Sql[] = "SELECT a FROM foo";
+  // Ensure leading and trailing whitespace doesn't break anything.
+  static const char kId1Sql[] = "\n  SELECT a FROM foo  \n";
   static const char kId2Sql[] = "SELECT b FROM foo";
 
   ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
