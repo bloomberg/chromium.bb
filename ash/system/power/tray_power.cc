@@ -57,7 +57,7 @@ void PowerTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 views::View* PowerTrayView::GetTooltipHandlerForPoint(const gfx::Point& point) {
-  return this;
+  return GetLocalBounds().Contains(point) ? this : nullptr;
 }
 
 bool PowerTrayView::GetTooltipText(const gfx::Point& p,
