@@ -2898,4 +2898,37 @@ TEST_F(PasswordManagerTest, NoSavePromptWhenPasswordManagerDisabled) {
   manager()->OnPasswordFormSubmittedNoChecks(&driver_, submitted_form);
 }
 
+// Check that when autofill predictions are received before a form is found then
+// server predictions are not ignored and used for filling.
+TEST_F(PasswordManagerTest, AutofillPredictionBeforeFormParsed) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kNewPasswordFormParsing);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  PasswordForm form(MakeSimpleForm());
+  // Simulate that the form is incorrectly marked as sign-up, which means it can
+  // not be filled without server predictions.
+  form.form_data.fields[1].autocomplete_attribute = "new-password";
+
+  // Server predictions says that this is a sign-in form. Since they have higher
+  // priority than autocomplete attributes then the form should be filled.
+  FormStructure form_structure(form.form_data);
+  form_structure.field(1)->set_server_type(autofill::PASSWORD);
+  manager()->ProcessAutofillPredictions(&driver_, {&form_structure});
+
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeConsumer(form)));
+  // There are 2 fills, the first when the server predictions are received, the
+  // second when the filling delayed task is executed. In production code a
+  // delayed task is not posted since receiving results from the store is
+  // asynchronous in contrast to test code.
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+
+  manager()->OnPasswordFormsParsed(&driver_, {form});
+  task_runner_->FastForwardUntilNoTasksRemain();
+}
+
 }  // namespace password_manager
