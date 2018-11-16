@@ -43,6 +43,7 @@ base::Optional<SkColor> GetDarkModeColor(int id) {
     case ThemeProperties::COLOR_NTP_TEXT:
       return SK_ColorWHITE;
     case ThemeProperties::COLOR_TOOLBAR:
+    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
       return SkColorSetRGB(0x41, 0x41, 0x41);
     case ThemeProperties::COLOR_FRAME:
     case ThemeProperties::COLOR_BACKGROUND_TAB:
@@ -53,6 +54,9 @@ base::Optional<SkColor> GetDarkModeColor(int id) {
       return SK_ColorBLACK;
     case ThemeProperties::COLOR_BUTTON_BACKGROUND:
       return SkColorSetARGB(0xE5, 0x41, 0x41, 0x41);
+    case ThemeProperties::COLOR_FRAME_INACTIVE:
+    case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
+      return gfx::kGoogleGrey800;
     default:
       return base::nullopt;
   }
@@ -169,7 +173,11 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
   DCHECK(id != TINT_FRAME_INCOGNITO && id != TINT_FRAME_INCOGNITO_INACTIVE)
       << "These values should be queried via their respective non-incognito "
          "equivalents and an appropriate |incognito| value.";
-
+  if (!incognito &&
+      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled() &&
+      id == TINT_BUTTONS) {
+    return {0, 0, 1};
+  }
   // If you change these defaults, you must increment the version number in
   // browser_theme_pack.cc.
   if (incognito) {

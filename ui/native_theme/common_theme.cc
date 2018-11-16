@@ -18,6 +18,22 @@ namespace ui {
 
 SkColor GetAuraColor(NativeTheme::ColorId color_id,
                      const NativeTheme* base_theme) {
+  // TODO(lgrey): High contrast dark mode.
+  if (base_theme->SystemDarkModeEnabled()) {
+    switch (color_id) {
+      case NativeTheme::kColorId_LabelEnabledColor:
+      case NativeTheme::kColorId_TextfieldDefaultColor:
+        return SK_ColorWHITE;
+      case NativeTheme::kColorId_UnfocusedBorderColor:
+        return gfx::kGoogleGrey900;
+      case NativeTheme::kColorId_ButtonEnabledColor:
+      case NativeTheme::kColorId_ButtonHoverColor:
+        return gfx::kGoogleGrey200;
+      default:
+        break;
+    }
+  }
+
   // High contrast overrides the normal colors for certain ColorIds to be much
   // darker or lighter.
   if (base_theme->UsesHighContrastColors()) {
