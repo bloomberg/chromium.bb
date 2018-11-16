@@ -269,6 +269,10 @@ bool ContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
   return false;
 }
 
+bool ContentRendererClient::SuppressLegacyTLSVersionConsoleMessage() {
+  return false;
+}
+
 std::unique_ptr<URLLoaderThrottleProvider>
 ContentRendererClient::CreateURLLoaderThrottleProvider(
     URLLoaderThrottleProviderType provider_type) {

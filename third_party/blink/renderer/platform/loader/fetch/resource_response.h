@@ -248,6 +248,9 @@ class PLATFORM_EXPORT ResourceResponse final {
     is_legacy_symantec_cert_ = is_legacy_symantec_cert;
   }
 
+  bool IsLegacyTLSVersion() const { return is_legacy_tls_version_; }
+  void SetIsLegacyTLSVersion(bool value) { is_legacy_tls_version_ = value; }
+
   SecurityStyle GetSecurityStyle() const { return security_style_; }
   void SetSecurityStyle(SecurityStyle security_style) {
     security_style_ = security_style;
@@ -468,6 +471,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   // True if the resource was retrieved with a legacy Symantec certificate which
   // is slated for distrust in future.
   bool is_legacy_symantec_cert_ = false;
+
+  // True if the response was sent over TLS 1.0 or 1.1, which are deprecated and
+  // will be removed in the future.
+  bool is_legacy_tls_version_ = false;
 
   // The time at which the resource's certificate expires. Null if there was no
   // certificate.

@@ -711,6 +711,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidRunContentWithCertificateErrors() override;
   void ReportLegacySymantecCert(const blink::WebURL& url,
                                 bool did_fail) override;
+  void ReportLegacyTLSVersion(const blink::WebURL& url) override;
   void DidChangePerformanceTiming() override;
   void DidObserveLoadingBehavior(
       blink::WebLoadingBehaviorFlag behavior) override;
@@ -1581,12 +1582,13 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::mojom::ClipboardHostPtr clipboard_host_;
 #endif
 
-  // Used to cap the number of console messages that are printed to warn about
-  // legacy certificates that will be distrusted in future or have already been
-  // distrusted.
-  uint32_t num_certificate_warning_messages_ = 0;
-  // The origins for which a legacy certificate warning has been printed.
+  // The origins for which a legacy certificate warning has been printed. The
+  // size of this set is capped, after which no more warnings are printed.
   std::set<url::Origin> certificate_warning_origins_;
+
+  // The origins for which a legacy TLS version warning has been printed. The
+  // size of this set is capped, after which no more warnings are printed.
+  std::set<url::Origin> tls_version_warning_origins_;
 
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;
