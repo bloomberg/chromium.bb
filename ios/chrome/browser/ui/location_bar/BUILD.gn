@@ -50,7 +50,6 @@ source_set("location_bar") {
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/omnibox/popup",
     "//ios/chrome/browser/ui/orchestrator:orchestrator",
-    "//ios/chrome/browser/ui/qr_scanner/requirements",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/keyboard_assist:keyboard_assist",
     "//ios/chrome/browser/ui/toolbar/public",
