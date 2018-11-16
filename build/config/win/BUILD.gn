@@ -150,13 +150,8 @@ config("compiler") {
     # release builds. These are implied by /PROFILE below, but /PROFILE is
     # incompatible with /debug:fastlink.
     # Release builds always want these optimizations, so enable them explicitly.
-    # TODO(crbug.com/884545): Remove the checks for use_libfuzzer when
-    # libFuzzer's issues with /OPT:REF are resolved upstream.
-    if (!use_libfuzzer) {
-      ldflags += [ "/OPT:REF" ]
-    }
-
     ldflags += [
+      "/OPT:REF",
       "/OPT:ICF",
       "/INCREMENTAL:NO",
       "/FIXED:NO",
@@ -173,9 +168,7 @@ config("compiler") {
     # PDB file by about 5%) but does not otherwise alter the output binary. It
     # is enabled opportunistically for builds where it is not prohibited (not
     # supported when incrementally linking, or using /debug:fastlink).
-    # /PROFILE implies /OPT:REF. Don't use it with libFuzzer while /OPT:REF
-    # can't be used with libFuzzer. See crbug.com/884545 for more details.
-    if (!is_win_fastlink && !use_libfuzzer) {
+    if (!is_win_fastlink) {
       ldflags += [ "/PROFILE" ]
     }
   }
