@@ -104,7 +104,10 @@ public class NoTouchActivity extends SingleTabActivity {
     @Override
     public void initializeState() {
         super.initializeState();
-        if (getSavedInstanceState() == null) {
+
+        // By this point if we were going to restore a URL from savedInstanceState we would already
+        // have done so.
+        if (getActivityTab().getUrl().isEmpty()) {
             boolean intentWithEffect = false;
             Intent intent = getIntent();
             mIntentHandlingTimeMs = SystemClock.uptimeMillis();
