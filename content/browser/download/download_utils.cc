@@ -100,15 +100,4 @@ std::unique_ptr<net::URLRequest> CreateURLRequestOnIOThread(
   return request;
 }
 
-bool CanRequestURL(int render_process_id, const GURL& url) {
-  // Check if the renderer is permitted to request the requested URL.
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
-          render_process_id, url)) {
-    DVLOG(1) << "Denied unauthorized download request for "
-             << url.possibly_invalid_spec();
-    return false;
-  }
-  return true;
-}
-
 }  // namespace content

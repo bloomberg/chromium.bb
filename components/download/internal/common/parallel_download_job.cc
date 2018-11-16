@@ -291,6 +291,9 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   // download request.
   download_params->set_referrer(download_item_->GetReferrerUrl());
   download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
+
+  // TODO(xingliu): We should not support redirect at all for parallel requests.
+  // Currently the network service code path still can redirect.
   download_params->set_follow_cross_origin_redirects(false);
 
   // Send the request.

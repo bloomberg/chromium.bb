@@ -60,6 +60,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager_delegate.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -317,7 +318,8 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
         std::make_unique<download::InProgressDownloadManager>(
             this,
             IsOffTheRecord() ? base::FilePath() : browser_context_->GetPath(),
-            base::BindRepeating(&IsOriginSecure));
+            base::BindRepeating(&IsOriginSecure),
+            base::BindRepeating(&DownloadRequestUtils::IsURLSafe));
   } else {
     in_progress_manager_->set_delegate(this);
     in_progress_manager_->set_download_start_observer(nullptr);
@@ -1287,7 +1289,8 @@ void DownloadManagerImpl::BeginDownloadInternal(
     const GURL& site_url) {
   // Check if the renderer is permitted to request the requested URL.
   if (params->render_process_host_id() >= 0 &&
-      !CanRequestURL(params->render_process_host_id(), params->url())) {
+      !DownloadRequestUtils::IsURLSafe(params->render_process_host_id(),
+                                       params->url())) {
     CreateInterruptedDownload(
         std::move(params),
         download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,

@@ -69,6 +69,10 @@ class ByteStreamReader;
 
 namespace {
 
+bool URLAlwaysSafe(int render_process_id, const GURL& url) {
+  return true;
+}
+
 class MockDownloadManagerDelegate : public DownloadManagerDelegate {
  public:
   MockDownloadManagerDelegate();
@@ -375,7 +379,8 @@ TestInProgressManager::TestInProgressManager()
     : download::InProgressDownloadManager(
           nullptr,
           base::FilePath(),
-          download::InProgressDownloadManager::IsOriginSecureCallback()) {}
+          download::InProgressDownloadManager::IsOriginSecureCallback(),
+          base::BindRepeating(&URLAlwaysSafe)) {}
 
 void TestInProgressManager::AddDownloadItem(
     std::unique_ptr<download::DownloadItemImpl> item) {

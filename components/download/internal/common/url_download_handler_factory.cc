@@ -29,6 +29,7 @@ class DefaultUrlDownloadHandlerFactory : public UrlDownloadHandlerFactory {
       base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter,
+      const URLSecurityPolicy& url_security_policy,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) override {
     std::unique_ptr<network::ResourceRequest> request =
@@ -36,8 +37,8 @@ class DefaultUrlDownloadHandlerFactory : public UrlDownloadHandlerFactory {
     return UrlDownloadHandler::UniqueUrlDownloadHandlerPtr(
         download::ResourceDownloader::BeginDownload(
             delegate, std::move(params), std::move(request),
-            std::move(url_loader_factory_getter), GURL(), GURL(), GURL(), true,
-            true, task_runner)
+            std::move(url_loader_factory_getter), url_security_policy, GURL(),
+            GURL(), GURL(), true, true, task_runner)
             .release(),
         base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
   }
@@ -63,6 +64,7 @@ UrlDownloadHandlerFactory::Create(
     base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
+    const URLSecurityPolicy& url_security_policy,
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   base::AutoLock auto_lock(GetURLDownloadHandlerFactoryLock());
@@ -70,7 +72,8 @@ UrlDownloadHandlerFactory::Create(
     g_url_download_handler_factory = new DefaultUrlDownloadHandlerFactory();
   return g_url_download_handler_factory->CreateUrlDownloadHandler(
       std::move(params), delegate, std::move(url_loader_factory_getter),
-      std::move(url_request_context_getter), task_runner);
+      std::move(url_security_policy), std::move(url_request_context_getter),
+      task_runner);
 }
 
 // static

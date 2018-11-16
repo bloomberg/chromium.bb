@@ -60,6 +60,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
+    const URLSecurityPolicy& url_security_policy,
     const GURL& site_url,
     const GURL& tab_url,
     const GURL& tab_referrer_url,
@@ -70,7 +71,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
       delegate, std::move(request), params->render_process_host_id(),
       params->render_frame_host_routing_id(), site_url, tab_url,
       tab_referrer_url, is_new_download, task_runner,
-      std::move(url_loader_factory_getter));
+      std::move(url_loader_factory_getter), url_security_policy);
 
   downloader->Start(std::move(params), is_parallel_request);
   return downloader;
@@ -92,11 +93,12 @@ ResourceDownloader::InterceptNavigationResponse(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
+    const URLSecurityPolicy& url_security_policy,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(resource_request), render_process_id, render_frame_id,
       site_url, tab_url, tab_referrer_url, true, task_runner,
-      std::move(url_loader_factory_getter));
+      std::move(url_loader_factory_getter), url_security_policy);
   downloader->InterceptResponse(std::move(response), std::move(url_chain),
                                 cert_status,
                                 std::move(url_loader_client_endpoints));
@@ -114,7 +116,8 @@ ResourceDownloader::ResourceDownloader(
     bool is_new_download,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-        url_loader_factory_getter)
+        url_loader_factory_getter,
+    const URLSecurityPolicy& url_security_policy)
     : delegate_(delegate),
       resource_request_(std::move(resource_request)),
       is_new_download_(is_new_download),
@@ -125,6 +128,7 @@ ResourceDownloader::ResourceDownloader(
       tab_referrer_url_(tab_referrer_url),
       delegate_task_runner_(task_runner),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
+      url_security_policy_(url_security_policy),
       weak_ptr_factory_(this) {}
 
 ResourceDownloader::~ResourceDownloader() = default;
@@ -225,6 +229,12 @@ void ResourceDownloader::OnReceiveRedirect() {
 
 void ResourceDownloader::OnResponseCompleted() {
   Destroy();
+}
+
+bool ResourceDownloader::CanRequestURL(const GURL& url) {
+  return url_security_policy_
+             ? url_security_policy_.Run(render_process_id_, url)
+             : true;
 }
 
 void ResourceDownloader::CancelRequest() {

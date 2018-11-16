@@ -36,6 +36,11 @@ class CONTENT_EXPORT DownloadRequestUtils {
       WebContents* web_contents,
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
+
+  // Returns if the URL passes the security check and can be requested.
+  // |render_process_id| can be -1 when no renderer process is associated with
+  // this request.
+  static bool IsURLSafe(int render_process_id, const GURL& url);
 };
 
 }  // namespace content

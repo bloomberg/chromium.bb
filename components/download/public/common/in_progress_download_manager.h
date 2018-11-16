@@ -15,6 +15,7 @@
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
+#include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/url_download_handler.h"
 #include "url/gurl.h"
 
@@ -72,7 +73,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL&)>;
   InProgressDownloadManager(Delegate* delegate,
                             const base::FilePath& in_progress_db_dir,
-                            const IsOriginSecureCallback& is_origin_secure_cb);
+                            const IsOriginSecureCallback& is_origin_secure_cb,
+                            const URLSecurityPolicy& url_security_policy);
   ~InProgressDownloadManager() override;
   // Called to start a download.
   void BeginDownload(
@@ -216,6 +218,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // URLLoaderFactoryGetter for issuing network request when DownloadMangerImpl
   // is not available.
   scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter_;
+
+  // Used to check if the URL is safe.
+  URLSecurityPolicy url_security_policy_;
 
   base::WeakPtrFactory<InProgressDownloadManager> weak_factory_;
 

@@ -28,6 +28,7 @@
 #include "components/download/public/common/download_url_loader_factory_getter_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "jni/DownloadInfo_jni.h"
@@ -550,7 +551,8 @@ void DownloadManagerService::CreateInProgressDownloadManager() {
   base::android::GetDataDirectory(&data_dir);
   in_progress_manager_ = std::make_unique<download::InProgressDownloadManager>(
       nullptr, data_dir.Append(chrome::kInitialProfile),
-      download::InProgressDownloadManager::IsOriginSecureCallback());
+      download::InProgressDownloadManager::IsOriginSecureCallback(),
+      base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe));
   content::GetNetworkServiceFromConnector(connector_.get());
   scoped_refptr<network::SharedURLLoaderFactory> factory =
       SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
