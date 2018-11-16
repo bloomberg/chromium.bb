@@ -1633,17 +1633,9 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(FlexItem& flex_item) {
     if (child_needs_relayout || !child.HasOverrideLogicalHeight())
       child.SetOverrideLogicalHeight(flex_item.cross_axis_size);
     if (child_needs_relayout) {
+      // TODO(cbiesinger): Why is this necessary?
       child.SetLogicalHeight(LayoutUnit());
-      // We cache the child's intrinsic content logical height to avoid it being
-      // reset to the stretched height.
-      // FIXME: This is fragile. LayoutBoxes should be smart enough to
-      // determine their intrinsic content logical height correctly even when
-      // there's an overrideHeight.
-      LayoutUnit child_intrinsic_content_logical_height =
-          child.IntrinsicContentLogicalHeight();
       child.ForceChildLayout();
-      child.SetIntrinsicContentLogicalHeight(
-          child_intrinsic_content_logical_height);
     }
   } else if (!flex_item.MainAxisIsInlineAxis() &&
              child.StyleRef().LogicalWidth().IsAuto()) {
