@@ -17276,6 +17276,7 @@ Called by update_net_error_codes.py.-->
   <int value="1291"
       label="BRAILLEDISPLAYPRIVATE_UPDATEBLUETOOTHBRAILLEDISPLAYADDRESS"/>
   <int value="1292" label="AUTOTESTPRIVATE_SETASSISTANTENABLED"/>
+  <int value="1293" label="AUTOTESTPRIVATE_ISARCPROVISIONED"/>
 </enum>
 
 <enum name="ExtensionIconState">

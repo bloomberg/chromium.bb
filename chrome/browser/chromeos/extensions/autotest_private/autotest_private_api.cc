@@ -684,6 +684,20 @@ ExtensionFunction::ResponseAction AutotestPrivateIsAppShownFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateIsAppShownFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateIsArcProvisionedFunction::
+    ~AutotestPrivateIsArcProvisionedFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateIsArcProvisionedFunction::Run() {
+  DVLOG(1) << "AutotestPrivateIsArcProvisionedFunction";
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
+      arc::IsArcProvisioned(Profile::FromBrowserContext(browser_context())))));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateLaunchAppFunction
 ///////////////////////////////////////////////////////////////////////////////
 

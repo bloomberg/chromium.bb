@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 
 namespace extensions {
@@ -37,7 +38,20 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivate) {
   AutotestPrivateAPI::GetFactoryInstance()
       ->Get(browser()->profile())
       ->set_test_mode(true);
-  ASSERT_TRUE(RunComponentExtensionTest("autotest_private")) << message_;
+  ASSERT_TRUE(RunComponentExtensionTestWithArg("autotest_private", "default"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcProvisioned) {
+  // Turn on testing mode so we don't kill the browser.
+  AutotestPrivateAPI::GetFactoryInstance()
+      ->Get(browser()->profile())
+      ->set_test_mode(true);
+  // Provisioning is completed.
+  browser()->profile()->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn, true);
+  ASSERT_TRUE(
+      RunComponentExtensionTestWithArg("autotest_private", "arcProvisioned"))
+      << message_;
 }
 
 }  // namespace extensions
