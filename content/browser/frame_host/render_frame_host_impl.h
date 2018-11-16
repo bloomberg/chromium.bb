@@ -59,6 +59,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/http/http_response_headers.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
+#include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
@@ -1556,8 +1557,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   blink::mojom::FindInPageAssociatedPtr find_in_page_;
 
   // Holds the interface wrapper to the Global Resource Coordinator service.
-  std::unique_ptr<resource_coordinator::FrameResourceCoordinator>
-      frame_resource_coordinator_;
+  resource_coordinator::FrameResourceCoordinator frame_resource_coordinator_;
 
   // Holds a NavigationRequest when it's about to commit, ie. after
   // OnCrossDocumentCommitProcessed has returned a positive answer for this

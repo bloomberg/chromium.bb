@@ -165,7 +165,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -442,6 +441,14 @@ url::Origin GetOriginForURLLoaderFactory(GURL target_url,
           : url::Origin();
 
   return url::Origin::Resolve(target_url, fallback_origin);
+}
+
+service_manager::Connector* MaybeGetConnectorForProcess() {
+  auto* connection = ServiceManagerConnection::GetForProcess();
+  if (!connection)
+    return nullptr;
+
+  return connection->GetConnector();
 }
 
 }  // namespace
@@ -762,6 +769,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       accessibility_reset_count_(0),
       browser_plugin_embedder_ax_tree_id_(ui::AXTreeIDUnknown()),
       no_create_browser_accessibility_manager_for_testing_(false),
+      frame_resource_coordinator_(MaybeGetConnectorForProcess()),
       web_ui_type_(WebUI::kNoWebUI),
       pending_web_ui_type_(WebUI::kNoWebUI),
       should_reuse_web_ui_(false),
@@ -860,6 +868,15 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
                                    : frame_tree_node_->opener();
   if (frame_owner)
     CSPContext::SetSelf(frame_owner->current_origin());
+
+  // Hook up the Resource Coordinator edges to the associated process and
+  // parent frame, if any.
+  frame_resource_coordinator_.SetProcess(
+      *GetProcess()->GetProcessResourceCoordinator());
+  if (parent_) {
+    parent_->GetFrameResourceCoordinator()->AddChildFrame(
+        frame_resource_coordinator_);
+  }
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
@@ -4762,6 +4779,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   // Disconnect with ImageDownloader Mojo service in RenderFrame.
   mojo_image_downloader_.reset();
 
+  // Make sure the renderer cannot add new bindings.
   frame_resource_coordinator_.reset();
 
   // The geolocation service and sensor provider proxy may attempt to cancel
@@ -4893,17 +4911,7 @@ RenderFrameHostImpl::GetFindInPage() {
 
 resource_coordinator::FrameResourceCoordinator*
 RenderFrameHostImpl::GetFrameResourceCoordinator() {
-  if (!frame_resource_coordinator_) {
-    auto* connection = ServiceManagerConnection::GetForProcess();
-    frame_resource_coordinator_ =
-        std::make_unique<resource_coordinator::FrameResourceCoordinator>(
-            connection ? connection->GetConnector() : nullptr);
-    if (parent_) {
-      parent_->GetFrameResourceCoordinator()->AddChildFrame(
-          *frame_resource_coordinator_);
-    }
-  }
-  return frame_resource_coordinator_.get();
+  return &frame_resource_coordinator_;
 }
 
 void RenderFrameHostImpl::ResetLoadingState() {
