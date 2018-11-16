@@ -202,7 +202,7 @@ void ThreadManager::PostDelayedTask(
   // TODO(farahcharab) After adding non-nestable/nestable tasks, fix this to
   // PostNonNestableDelayedTask for the former and PostDelayedTask for the
   // latter.
-  chosen_task_queue->PostDelayedTask(
+  chosen_task_queue->task_runner()->PostDelayedTask(
       FROM_HERE,
       BindOnce(&Task::Execute, pending_task->weak_ptr_factory_.GetWeakPtr(),
                task),
