@@ -176,7 +176,7 @@ bool MessageLoopCurrentForUI::WatchFileDescriptor(
 }
 #endif
 
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
 void MessageLoopCurrentForUI::Attach() {
   current_->AttachToMessagePump();
 }

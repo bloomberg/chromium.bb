@@ -124,7 +124,7 @@ class DataReductionProxyConfigTest : public testing::Test {
       test_config()->ResetParamFlagsForTest();
   }
 
-  const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
     return message_loop_.task_runner();
   }
 

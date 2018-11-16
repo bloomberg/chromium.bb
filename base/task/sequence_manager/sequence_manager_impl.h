@@ -123,8 +123,6 @@ class BASE_EXPORT SequenceManagerImpl
   void EnableCrashKeys(const char* file_name_crash_key,
                        const char* function_name_crash_key) override;
   const MetricRecordingSettings& GetMetricRecordingSettings() const override;
-  void DeletePendingTasks() override;
-  bool HasTasks() override;
   size_t GetPendingTaskCountForTesting() const override;
 
   // SequencedTaskSource implementation:
@@ -153,10 +151,13 @@ class BASE_EXPORT SequenceManagerImpl
   void SetAddQueueTimeToTasks(bool enable) override;
   void SetTaskExecutionAllowed(bool allowed) override;
   bool IsTaskExecutionAllowed() const override;
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
   void AttachToMessagePump() override;
 #endif
   bool IsIdleForTesting() override;
+  void BindToCurrentThread(std::unique_ptr<MessagePump> pump) override;
+  void DeletePendingTasks() override;
+  bool HasTasks() override;
 
   // Requests that a task to process work is posted on the main task runner.
   // These tasks are de-duplicated in two buckets: main-thread and all other

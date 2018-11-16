@@ -131,6 +131,10 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
     bool delayed_fence_allowed = false;
   };
 
+  // TODO(altimin): Make this private after TaskQueue/TaskQueueImpl refactoring.
+  TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
+            const TaskQueue::Spec& spec);
+
   // Information about task execution.
   //
   // Wall-time related methods (start_time, end_time, wall_duration) can be
@@ -313,9 +317,6 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   }
 
  protected:
-  TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
-            const TaskQueue::Spec& spec);
-
   virtual ~TaskQueue();
 
   internal::TaskQueueImpl* GetTaskQueueImpl() const { return impl_.get(); }
