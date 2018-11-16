@@ -7,10 +7,12 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
 
 namespace ash {
@@ -71,6 +73,12 @@ void ImeModeView::Update() {
   label()->SetText(ime_controller->current_ime().short_name);
   label()->SetEnabledColor(
       TrayIconColor(Shell::Get()->session_controller()->GetSessionState()));
+  base::string16 description =
+      l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_INDICATOR_IME_TOOLTIP,
+                                 ime_controller->current_ime().name);
+  label()->SetTooltipText(description);
+  label()->SetCustomAccessibleName(description);
+
   Layout();
 }
 

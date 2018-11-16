@@ -283,6 +283,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_QUIET_MODE_TOOLTIP" desc="The tooltip text for the status area icon to tell do-not-disturb mode is currently on.">
         Do Not Disturb is on
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_INDICATOR_IME_TOOLTIP" desc="The tooltip text for the status area icon to tell the type of keyboard or input method engine.">
+        Using <ph name="IME_NAME">$1<ex>US keyboard</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_COUNT_TOOLTIP" desc="The tooltip text for a status area icon to describe number of notifications. [ICU Syntax]">
         {NUM_NOTIFICATIONS, plural,
          =1 {1 notification}
