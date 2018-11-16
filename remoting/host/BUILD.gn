@@ -56,6 +56,8 @@ static_library("host") {
   sources = [
     "action_executor.cc",
     "action_executor.h",
+    "action_message_handler.cc",
+    "action_message_handler.h",
     "audio_capturer.cc",
     "audio_capturer.h",
     "audio_capturer_chromeos.cc",

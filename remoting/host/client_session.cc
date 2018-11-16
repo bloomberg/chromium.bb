@@ -14,8 +14,10 @@
 #include "build/build_config.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/base/constants.h"
-#include "remoting/base/session_options.h"
 #include "remoting/base/logging.h"
+#include "remoting/base/session_options.h"
+#include "remoting/host/action_executor.h"
+#include "remoting/host/action_message_handler.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/file_transfer_message_handler.h"
@@ -37,6 +39,8 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
+
+using protocol::ActionRequest;
 
 namespace {
 
@@ -188,6 +192,21 @@ void ClientSession::SetCapabilities(
         kFileTransferDataChannelPrefix,
         base::Bind(&ClientSession::CreateFileTransferMessageHandler,
                    base::Unretained(this)));
+  }
+
+  std::vector<ActionRequest::Action> supported_actions;
+  if (HasCapability(capabilities_, protocol::kSendAttentionSequenceAction))
+    supported_actions.push_back(ActionRequest::SEND_ATTENTION_SEQUENCE);
+  if (HasCapability(capabilities_, protocol::kLockWorkstationAction))
+    supported_actions.push_back(ActionRequest::LOCK_WORKSTATION);
+
+  if (supported_actions.size() > 0) {
+    // Register the action message handler.
+    data_channel_manager_.RegisterCreateHandlerCallback(
+        kActionDataChannelPrefix,
+        base::BindRepeating(&ClientSession::CreateActionMessageHandler,
+                            base::Unretained(this),
+                            std::move(supported_actions)));
   }
 
   VLOG(1) << "Client capabilities: " << *client_capabilities_;
@@ -497,6 +516,21 @@ void ClientSession::CreateFileTransferMessageHandler(
   new FileTransferMessageHandler(
       channel_name, std::move(pipe),
       desktop_environment_->CreateFileProxyWrapper());
+}
+
+void ClientSession::CreateActionMessageHandler(
+    std::vector<ActionRequest::Action> capabilities,
+    const std::string& channel_name,
+    std::unique_ptr<protocol::MessagePipe> pipe) {
+  std::unique_ptr<ActionExecutor> action_executor =
+      desktop_environment_->CreateActionExecutor();
+  if (!action_executor)
+    return;
+
+  // ActionMessageHandler manages its own lifetime and is tied to the lifetime
+  // of |pipe|. Once |pipe| is closed, this instance will be cleaned up.
+  new ActionMessageHandler(channel_name, capabilities, std::move(pipe),
+                           std::move(action_executor));
 }
 
 }  // namespace remoting

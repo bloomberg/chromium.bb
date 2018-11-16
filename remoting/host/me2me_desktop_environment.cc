@@ -30,6 +30,10 @@
 #include <unistd.h>
 #endif  // defined(OS_POSIX)
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif  // defined(OS_WIN)
+
 namespace remoting {
 
 Me2MeDesktopEnvironment::~Me2MeDesktopEnvironment() {
@@ -68,6 +72,17 @@ std::string Me2MeDesktopEnvironment::GetCapabilities() const {
     capabilities += " ";
     capabilities += protocol::kFileTransferCapability;
   }
+
+#if defined(OS_WIN)
+  capabilities += " ";
+  capabilities += protocol::kSendAttentionSequenceAction;
+
+  if (base::win::OSInfo::GetInstance()->version_type() !=
+      base::win::VersionType::SUITE_HOME) {
+    capabilities += " ";
+    capabilities += protocol::kLockWorkstationAction;
+  }
+#endif  // defined(OS_WIN)
 
   return capabilities;
 }
