@@ -102,10 +102,13 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Tests for the native android New Tab Page.
+ *
+ * TODO(https://crbug.com/906151): Add new goldens and enable ExploreSites.
  */
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+@Features.DisableFeatures(ChromeFeatureList.EXPLORE_SITES)
 @RetryOnFailure
 public class NewTabPageTest {
     @Rule
