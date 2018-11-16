@@ -13,7 +13,6 @@
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/hit_test_data_provider_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_occlusion_tracker.h"
@@ -169,19 +168,14 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
   params.pipes.client_request = std::move(client_request);
   params.enable_surface_synchronization = true;
   params.client_name = kExo;
-  if (features::IsVizHitTestingDrawQuadEnabled()) {
-    bool root_accepts_events =
-        (window_->event_targeting_policy() ==
-         ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
-        (window_->event_targeting_policy() ==
-         ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
-    params.hit_test_data_provider =
-        std::make_unique<viz::HitTestDataProviderDrawQuad>(
-            true /* should_ask_for_child_region */, root_accepts_events);
-  } else {
-    params.hit_test_data_provider =
-        std::make_unique<HitTestDataProviderAura>(window_);
-  }
+  bool root_accepts_events =
+      (window_->event_targeting_policy() ==
+       ws::mojom::EventTargetingPolicy::TARGET_ONLY) ||
+      (window_->event_targeting_policy() ==
+       ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+  params.hit_test_data_provider =
+      std::make_unique<viz::HitTestDataProviderDrawQuad>(
+          true /* should_ask_for_child_region */, root_accepts_events);
   auto frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           nullptr /* context_provider */, nullptr /* worker_context_provider */,
