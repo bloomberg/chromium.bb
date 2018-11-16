@@ -6079,6 +6079,17 @@ fuzzer_test("net_quic_crypto_framer_parse_message_fuzzer") {
   ]
 }
 
+fuzzer_test("net_quic_transport_parameters_fuzzer") {
+  sources = [
+    "quic/quic_transport_parameters_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
+}
+
 fuzzer_test("net_socks_client_socket_fuzzer") {
   sources = [
     "socket/socks_client_socket_fuzzer.cc",
