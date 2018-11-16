@@ -32,6 +32,9 @@ struct CORE_EXPORT NGLogicalSize {
     return std::tie(other.inline_size, other.block_size) ==
            std::tie(inline_size, block_size);
   }
+  bool operator!=(const NGLogicalSize& other) const {
+    return !(*this == other);
+  }
 
   bool IsEmpty() const {
     return inline_size == LayoutUnit() || block_size == LayoutUnit();

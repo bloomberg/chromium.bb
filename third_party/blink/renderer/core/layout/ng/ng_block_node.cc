@@ -148,9 +148,9 @@ LayoutUnit CalculateAvailableInlineSizeForLegacy(
     const NGConstraintSpace& space) {
   if (box.StyleRef().LogicalWidth().IsPercent()) {
     if (box.ShouldComputeSizeAsReplaced())
-      return space.ReplacedPercentageResolutionSize().inline_size;
+      return space.ReplacedPercentageResolutionInlineSize();
 
-    return space.PercentageResolutionSize().inline_size;
+    return space.PercentageResolutionInlineSize();
   }
 
   return space.AvailableSize().inline_size;
@@ -161,9 +161,9 @@ LayoutUnit CalculateAvailableBlockSizeForLegacy(
     const NGConstraintSpace& space) {
   if (box.StyleRef().LogicalHeight().IsPercent()) {
     if (box.ShouldComputeSizeAsReplaced())
-      return space.ReplacedPercentageResolutionSize().block_size;
+      return space.ReplacedPercentageResolutionBlockSize();
 
-    return space.PercentageResolutionSize().block_size;
+    return space.PercentageResolutionBlockSize();
   }
 
   return space.AvailableSize().block_size;
@@ -193,8 +193,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       // TODO(layoutng): Figure out why these two call can't be inside the
       // !constraint_space.IsIntermediateLayout() block below.
       UpdateShapeOutsideInfoIfNeeded(
-          *layout_result,
-          constraint_space.PercentageResolutionSize().inline_size);
+          *layout_result, constraint_space.PercentageResolutionInlineSize());
       // We may need paint invalidation even if we can reuse layout, as our
       // paint offset/visual rect may have changed due to relative
       // positioning changes. Otherwise we fail fast/css/
@@ -278,7 +277,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   // TODO(ikilpatrick): This should be fixed by moving the shape-outside data
   // to the NGLayoutResult, removing this "side" data-structure.
   UpdateShapeOutsideInfoIfNeeded(
-      *layout_result, constraint_space.PercentageResolutionSize().inline_size);
+      *layout_result, constraint_space.PercentageResolutionInlineSize());
 
   return layout_result;
 }
@@ -893,7 +892,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
 
   scoped_refptr<NGLayoutResult> layout_result = builder.ToBoxFragment();
   UpdateShapeOutsideInfoIfNeeded(
-      *layout_result, constraint_space.PercentageResolutionSize().inline_size);
+      *layout_result, constraint_space.PercentageResolutionInlineSize());
 
   return layout_result;
 }

@@ -18,30 +18,20 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGConstraintSpace {
-  NGLogicalSize logical_sizes[3];
-  NGPhysicalSize physical_sizes[1];
-  NGMarginStrut margin_strut;
-  NGBfcOffset bfc_offset;
+  NGLogicalSize available_size;
+  NGPhysicalSize initial_containing_block_size;
+  union {
+    NGBfcOffset bfc_offset;
+    void* rare_data;
+  };
   NGExclusionSpace exclusion_space;
-  base::Optional<LayoutUnit> optional_layout_unit;
-  LayoutUnit layout_units[3];
-  unsigned flags[1];
+  unsigned bitfields[1];
 };
 
 static_assert(sizeof(NGConstraintSpace) == sizeof(SameSizeAsNGConstraintSpace),
               "NGConstraintSpace should stay small.");
 
 }  // namespace
-
-NGConstraintSpace::NGConstraintSpace(WritingMode out_writing_mode,
-                                     NGPhysicalSize icb_size)
-    : initial_containing_block_size_(icb_size),
-      block_direction_fragmentation_type_(static_cast<unsigned>(kFragmentNone)),
-      table_cell_child_layout_phase_(static_cast<unsigned>(kNotTableCellChild)),
-      adjoining_floats_(static_cast<unsigned>(kFloatTypeNone)),
-      writing_mode_(static_cast<unsigned>(out_writing_mode)),
-      direction_(static_cast<unsigned>(TextDirection::kLtr)),
-      flags_(kFixedSizeBlockIsDefinite) {}
 
 NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
@@ -155,11 +145,20 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
 }
 
 bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
-  return AreSizesEqual(other) &&
-         bfc_offset_.block_offset == other.bfc_offset_.block_offset &&
-         initial_containing_block_size_ ==
-             other.initial_containing_block_size_ &&
-         MaySkipLayout(other);
+  if (!AreSizesEqual(other))
+    return false;
+
+  if (!MaySkipLayout(other))
+    return false;
+
+  if (initial_containing_block_size_ != other.initial_containing_block_size_)
+    return false;
+
+  if (!HasRareData() && !other.HasRareData() &&
+      bfc_offset_.block_offset != other.bfc_offset_.block_offset)
+    return false;
+
+  return true;
 }
 
 String NGConstraintSpace::ToString() const {

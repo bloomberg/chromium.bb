@@ -36,6 +36,7 @@ bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
   return positive_margin == other.positive_margin &&
          negative_margin == other.negative_margin &&
          quirky_positive_margin == other.quirky_positive_margin &&
+         discard_margins == other.discard_margins &&
          is_quirky_container_start == other.is_quirky_container_start;
 }
 

@@ -424,6 +424,7 @@ blink_core_sources("layout") {
     "ng/ng_column_layout_algorithm.h",
     "ng/ng_constraint_space.cc",
     "ng/ng_constraint_space.h",
+    "ng/ng_constraint_space_builder.cc",
     "ng/ng_constraint_space_builder.h",
     "ng/ng_container_fragment_builder.cc",
     "ng/ng_container_fragment_builder.h",

@@ -35,7 +35,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromHorizontalICB) {
   NGConstraintSpace space = vertical_builder.ToConstraintSpace();
 
   EXPECT_EQ(space.AvailableSize().inline_size, icb_size.height);
-  EXPECT_EQ(space.PercentageResolutionSize().inline_size, icb_size.height);
+  EXPECT_EQ(space.PercentageResolutionInlineSize(), icb_size.height);
 };
 
 // Asserts that indefinite inline length becomes initial containing
@@ -62,7 +62,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromVerticalICB) {
   NGConstraintSpace space = vertical_builder.ToConstraintSpace();
 
   EXPECT_EQ(space.AvailableSize().inline_size, icb_size.width);
-  EXPECT_EQ(space.PercentageResolutionSize().inline_size, icb_size.width);
+  EXPECT_EQ(space.PercentageResolutionInlineSize(), icb_size.width);
 };
 
 }  // namespace
