@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
 
 namespace {
 
@@ -189,9 +190,20 @@ void AuthenticatorRequestDialogModel::StartBleDiscovery() {
 void AuthenticatorRequestDialogModel::InitiatePairingDevice(
     base::StringPiece authenticator_id) {
   DCHECK_EQ(current_step(), Step::kBleDeviceSelection);
-  DCHECK(saved_authenticators_.GetAuthenticator(authenticator_id));
+  auto* selected_authenticator =
+      saved_authenticators_.GetAuthenticator(authenticator_id);
+  DCHECK(selected_authenticator);
   selected_authenticator_id_ = authenticator_id.as_string();
+
+// For MacOS, Bluetooth pin pairing is done via system native UI, which is
+// triggered by a write attempt to GATT characteristic. Thus, simply resume
+// with WebAuthn request for MacOS.
+#if defined(OS_MACOSX)
+  SetCurrentStep(Step::kBleVerifying);
+  DispatchRequestAsync(selected_authenticator, base::TimeDelta());
+#else
   SetCurrentStep(Step::kBlePinEntry);
+#endif
 }
 
 void AuthenticatorRequestDialogModel::FinishPairingWithPin(
