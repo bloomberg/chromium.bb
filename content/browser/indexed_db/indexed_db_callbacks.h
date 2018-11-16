@@ -106,8 +106,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
   // IndexedDBCursor::Continue / Advance (when complete)
   virtual void OnSuccess();
 
-  void SetConnectionOpenStartTime(const base::TimeTicks& start_time);
-
  protected:
   virtual ~IndexedDBCallbacks();
 
@@ -129,7 +127,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   // The "blocked" event should be sent at most once per request.
   bool sent_blocked_ = false;
-  base::TimeTicks connection_open_start_time_;
 
   std::unique_ptr<IOThreadHelper, BrowserThread::DeleteOnIOThread> io_helper_;
   SEQUENCE_CHECKER(sequence_checker_);
