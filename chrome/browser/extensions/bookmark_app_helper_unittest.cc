@@ -145,6 +145,7 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
         &manifest,
         GURL(kAppIconURL1),
         &bitmap_,
+        false,
         GURL(),
         nullptr,
         installable,

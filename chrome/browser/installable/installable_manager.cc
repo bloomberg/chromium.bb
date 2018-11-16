@@ -63,6 +63,8 @@ int GetIdealBadgeIconSizeInPx() {
 #endif
 }
 
+using IconPurpose = blink::Manifest::ImageResource::Purpose;
+
 // Returns true if the overall security state of |web_contents| is sufficient to
 // be considered installable.
 bool IsContentSecure(content::WebContents* web_contents) {
@@ -221,8 +223,31 @@ bool InstallableManager::IsIconFetched(const IconPurpose purpose) const {
   return it != icons_.end() && it->second.fetched;
 }
 
+bool InstallableManager::IsPrimaryIconFetched(
+    const InstallableParams& params) const {
+  return IsIconFetched(GetPrimaryIconPurpose(params));
+}
+
 void InstallableManager::SetIconFetched(const IconPurpose purpose) {
   icons_[purpose].fetched = true;
+}
+
+IconPurpose InstallableManager::GetPrimaryIconPurpose(
+    const InstallableParams& params) const {
+  if (params.prefer_maskable_icon) {
+    const auto it = icons_.find(IconPurpose::MASKABLE);
+
+    // If we haven't attempted fetching the maskable icon yet, we still plan
+    // to use that one for primary.
+    if (it == icons_.end() || !it->second.fetched)
+      return IconPurpose::MASKABLE;
+
+    // If fetching was successful, use MASKABLE.
+    if (it->second.error == NO_ERROR_DETECTED)
+      return IconPurpose::MASKABLE;
+  }
+  // Otherwise fall back to ANY.
+  return IconPurpose::ANY;
 }
 
 InstallableStatusCode InstallableManager::GetErrorCode(
@@ -240,7 +265,7 @@ InstallableStatusCode InstallableManager::GetErrorCode(
     return worker_->error;
 
   if (params.valid_primary_icon) {
-    IconProperty& icon = icons_[IconPurpose::ANY];
+    IconProperty& icon = icons_[GetPrimaryIconPurpose(params)];
     if (icon.error != NO_ERROR_DETECTED)
       return icon.error;
   }
@@ -307,7 +332,7 @@ bool InstallableManager::IsComplete(const InstallableParams& params) const {
          manifest_->fetched &&
          (!params.valid_manifest || valid_manifest_->fetched) &&
          (!params.has_worker || worker_->fetched) &&
-         (!params.valid_primary_icon || IsIconFetched(IconPurpose::ANY)) &&
+         (!params.valid_primary_icon || IsPrimaryIconFetched(params)) &&
          (!params.valid_badge_icon || IsIconFetched(IconPurpose::BADGE));
 }
 
@@ -347,6 +372,7 @@ void InstallableManager::SetManifestDependentTasksComplete() {
   worker_->fetched = true;
   SetIconFetched(IconPurpose::ANY);
   SetIconFetched(IconPurpose::BADGE);
+  SetIconFetched(IconPurpose::MASKABLE);
 }
 
 void InstallableManager::RunCallback(const InstallableTask& task,
@@ -354,11 +380,15 @@ void InstallableManager::RunCallback(const InstallableTask& task,
   const InstallableParams& params = task.params;
   IconProperty null_icon;
   IconProperty* primary_icon = &null_icon;
+  bool has_maskable_primary_icon = false;
   IconProperty* badge_icon = &null_icon;
 
-  if (params.valid_primary_icon && base::ContainsKey(icons_, IconPurpose::ANY))
-    primary_icon = &icons_[IconPurpose::ANY];
-  if (params.valid_badge_icon && base::ContainsKey(icons_, IconPurpose::BADGE))
+  IconPurpose purpose = GetPrimaryIconPurpose(params);
+  if (params.valid_primary_icon && IsIconFetched(purpose)) {
+    primary_icon = &icons_[purpose];
+    has_maskable_primary_icon = (purpose == IconPurpose::MASKABLE);
+  }
+  if (params.valid_badge_icon && IsIconFetched(IconPurpose::BADGE))
     badge_icon = &icons_[IconPurpose::BADGE];
 
   InstallableData data = {
@@ -367,6 +397,7 @@ void InstallableManager::RunCallback(const InstallableTask& task,
       &manifest(),
       primary_icon->url,
       primary_icon->icon.get(),
+      has_maskable_primary_icon,
       badge_icon->url,
       badge_icon->icon.get(),
       valid_manifest_->is_valid,
@@ -404,6 +435,11 @@ void InstallableManager::WorkOnTask() {
     CheckEligiblity();
   } else if (!manifest_->fetched) {
     FetchManifest();
+  } else if (params.valid_primary_icon && params.prefer_maskable_icon &&
+             !IsIconFetched(IconPurpose::MASKABLE)) {
+    CheckAndFetchBestIcon(GetIdealPrimaryIconSizeInPx(),
+                          GetMinimumPrimaryIconSizeInPx(),
+                          IconPurpose::MASKABLE);
   } else if (params.valid_primary_icon && !IsIconFetched(IconPurpose::ANY)) {
     CheckAndFetchBestIcon(GetIdealPrimaryIconSizeInPx(),
                           GetMinimumPrimaryIconSizeInPx(), IconPurpose::ANY);

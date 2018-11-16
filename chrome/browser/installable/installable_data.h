@@ -20,6 +20,7 @@ struct InstallableData {
                   const blink::Manifest* manifest,
                   GURL primary_icon_url,
                   const SkBitmap* primary_icon,
+                  bool has_maskable_primary_icon,
                   GURL badge_icon_url,
                   const SkBitmap* badge_icon,
                   bool valid_manifest,
@@ -45,6 +46,10 @@ struct InstallableData {
   // valid_primary_icon was true and a primary icon could not be retrieved, the
   // reason will be in error_code.
   const SkBitmap* primary_icon;
+
+  // Whether the primary icon had the 'maskable' purpose, meaningless if no
+  // primary_icon was requested.
+  const bool has_maskable_primary_icon;
 
   // Empty if no badge_icon was requested.
   const GURL badge_icon_url;

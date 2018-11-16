@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -44,9 +45,17 @@ GURL GetShortcutUrl(const content::WebContents* web_contents) {
       web_contents->GetVisibleURL());
 }
 
+bool DoesAndroidSupportMaskableIcons() {
+  // TODO(peconn): Enable once Chrome on Android correctly handles maskable
+  // icons (https://crbug.com/904354).
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_OREO && false;
+}
+
 InstallableParams ParamsToPerformManifestAndIconFetch() {
   InstallableParams params;
   params.valid_primary_icon = true;
+  params.prefer_maskable_icon = DoesAndroidSupportMaskableIcons();
   params.valid_badge_icon = true;
   params.wait_for_worker = true;
   return params;
@@ -58,6 +67,7 @@ InstallableParams ParamsToPerformInstallableCheck() {
   params.valid_manifest = true;
   params.has_worker = true;
   params.valid_primary_icon = true;
+  params.prefer_maskable_icon = DoesAndroidSupportMaskableIcons();
   params.wait_for_worker = true;
   return params;
 }

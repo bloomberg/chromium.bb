@@ -170,6 +170,7 @@ class TestInstallableManager : public InstallableManager {
     callback.Run({code, GURL(kDefaultManifestUrl), &manifest_,
                   params.valid_primary_icon ? primary_icon_url_ : GURL(),
                   params.valid_primary_icon ? primary_icon_.get() : nullptr,
+                  params.prefer_maskable_icon,
                   params.valid_badge_icon ? badge_icon_url_ : GURL(),
                   params.valid_badge_icon ? badge_icon_.get() : nullptr,
                   params.valid_manifest ? is_installable : false,
