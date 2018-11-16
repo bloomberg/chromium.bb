@@ -85,20 +85,18 @@ class PDFWebContentsHelper
                         int32_t right_height) override;
 
   content::WebContentsFrameBindingSet<mojom::PdfService> pdf_service_bindings_;
-  std::unique_ptr<PDFWebContentsHelperClient> client_;
+  std::unique_ptr<PDFWebContentsHelperClient> const client_;
   content::TouchSelectionControllerClientManager*
-      touch_selection_controller_client_manager_;
+      touch_selection_controller_client_manager_ = nullptr;
 
   // Latest selection bounds received from PDFium.
   gfx::PointF selection_left_;
-  int32_t selection_left_height_;
+  int32_t selection_left_height_ = 0;
   gfx::PointF selection_right_;
-  int32_t selection_right_height_;
-  bool has_selection_;
+  int32_t selection_right_height_ = 0;
+  bool has_selection_ = false;
 
   mojom::PdfListenerPtr remote_pdf_client_;
-  // Not owned.
-  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFWebContentsHelper);
 };
