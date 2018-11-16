@@ -1472,8 +1472,41 @@ TEST(AXTreeTest, ChildTreeIds) {
   EXPECT_EQ(0U, child_tree_93_nodes.size());
 }
 
-// Simple test for PosInSet and SetSize.
-TEST(AXTreeTest, GetPosInSetSetSize) {
+// Tests PosInSet and SetSize int attributes work if assigned
+TEST(AXTreeTest, TestSetSizePosInSetAssigned) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(4);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kList;
+  tree_update.nodes[0].child_ids = {2, 3, 4};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[1].AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 2);
+  tree_update.nodes[1].AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 12);
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[2].AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 5);
+  tree_update.nodes[2].AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 12);
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[3].AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 9);
+  tree_update.nodes[3].AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 12);
+  AXTree tree(tree_update);
+
+  AXNode* item1 = tree.GetFromId(2);
+  EXPECT_EQ(item1->PosInSet(), 2);
+  EXPECT_EQ(item1->SetSize(), 12);
+  AXNode* item2 = tree.GetFromId(3);
+  EXPECT_EQ(item2->PosInSet(), 5);
+  EXPECT_EQ(item2->SetSize(), 12);
+  AXNode* item3 = tree.GetFromId(4);
+  EXPECT_EQ(item3->PosInSet(), 9);
+  EXPECT_EQ(item3->SetSize(), 12);
+}
+
+// Tests that PosInSet and SetSize can be calculated if not assigned.
+TEST(AXTreeTest, TestSetSizePosInSetUnassigned) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(4);
@@ -1499,8 +1532,34 @@ TEST(AXTreeTest, GetPosInSetSetSize) {
   EXPECT_EQ(item3->SetSize(), 3);
 }
 
-// A test for PosInSet and SetSize on a list containing various roles.
-TEST(AXTreeTest, GetPosInSetSetSizeDiverseList) {
+// Tests PosInSet unassigned, while SetSize assigned in container
+TEST(AXTreeTest, TestSetSizeAssignedInContainer) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(4);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kList;
+  tree_update.nodes[0].child_ids = {2, 3, 4};
+  tree_update.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 7);
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kListItem;
+  AXTree tree(tree_update);
+
+  // Items should inherit SetSize from container if not specified
+  AXNode* item1 = tree.GetFromId(2);
+  EXPECT_EQ(item1->SetSize(), 7);
+  AXNode* item2 = tree.GetFromId(3);
+  EXPECT_EQ(item2->SetSize(), 7);
+  AXNode* item3 = tree.GetFromId(4);
+  EXPECT_EQ(item3->SetSize(), 7);
+}
+
+// Tests PosInSet and SetSize on a list containing various roles.
+TEST(AXTreeTest, TestSetSizePosInSetDiverseList) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
   tree_update.nodes.resize(9);
@@ -1508,32 +1567,32 @@ TEST(AXTreeTest, GetPosInSetSetSizeDiverseList) {
   tree_update.nodes[0].role = ax::mojom::Role::kList;
   tree_update.nodes[0].child_ids = {2, 3, 4, 5, 6, 7, 8, 9};
   tree_update.nodes[1].id = 2;
-  tree_update.nodes[1].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[1].role = ax::mojom::Role::kListItem;  // 1 of 3
   tree_update.nodes[2].id = 3;
-  tree_update.nodes[2].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[2].role = ax::mojom::Role::kMenuItem;  // 1 of 2
   tree_update.nodes[3].id = 4;
-  tree_update.nodes[3].role = ax::mojom::Role::kMenuItem;
+  tree_update.nodes[3].role = ax::mojom::Role::kListItem;  // 2 of 3
   tree_update.nodes[4].id = 5;
-  tree_update.nodes[4].role = ax::mojom::Role::kMenuItem;
+  tree_update.nodes[4].role = ax::mojom::Role::kMenuItem;  // 2 of 2
   tree_update.nodes[5].id = 6;
-  tree_update.nodes[5].role = ax::mojom::Role::kArticle;
+  tree_update.nodes[5].role = ax::mojom::Role::kArticle;  // 1 of 2
   tree_update.nodes[6].id = 7;
-  tree_update.nodes[6].role = ax::mojom::Role::kArticle;
+  tree_update.nodes[6].role = ax::mojom::Role::kArticle;  // 2 of 2
   tree_update.nodes[7].id = 8;
-  tree_update.nodes[7].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[7].role = ax::mojom::Role::kListItem;  // 3 of 3
   tree_update.nodes[8].id = 9;
-  tree_update.nodes[8].role = ax::mojom::Role::kImage;
+  tree_update.nodes[8].role = ax::mojom::Role::kImage;  // 0 of 0
   AXTree tree(tree_update);
 
   AXNode* listitem1 = tree.GetFromId(2);
   EXPECT_EQ(listitem1->PosInSet(), 1);
   EXPECT_EQ(listitem1->SetSize(), 3);
   AXNode* listitem2 = tree.GetFromId(3);
-  EXPECT_EQ(listitem2->PosInSet(), 2);
-  EXPECT_EQ(listitem2->SetSize(), 3);
+  EXPECT_EQ(listitem2->PosInSet(), 1);
+  EXPECT_EQ(listitem2->SetSize(), 2);
   AXNode* menuitem1 = tree.GetFromId(4);
-  EXPECT_EQ(menuitem1->PosInSet(), 1);
-  EXPECT_EQ(menuitem1->SetSize(), 2);
+  EXPECT_EQ(menuitem1->PosInSet(), 2);
+  EXPECT_EQ(menuitem1->SetSize(), 3);
   AXNode* menuitem2 = tree.GetFromId(5);
   EXPECT_EQ(menuitem2->PosInSet(), 2);
   EXPECT_EQ(menuitem2->SetSize(), 2);
@@ -1547,8 +1606,89 @@ TEST(AXTreeTest, GetPosInSetSetSizeDiverseList) {
   EXPECT_EQ(listitem3->PosInSet(), 3);
   EXPECT_EQ(listitem3->SetSize(), 3);
   AXNode* image1 = tree.GetFromId(9);
+  // Roles that do not use PosInSet or SetSize should return 0
   EXPECT_EQ(image1->PosInSet(), 0);
   EXPECT_EQ(image1->SetSize(), 0);
+}
+
+// Tests PosInSet and SetSize on a nested list
+TEST(AXTreeTest, TestSetSizePosInSetNestedList) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(7);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kList;
+  tree_update.nodes[0].child_ids = {2, 3, 4, 7};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kList;
+  tree_update.nodes[3].child_ids = {5, 6};
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[6].id = 7;
+  tree_update.nodes[6].role = ax::mojom::Role::kListItem;
+  AXTree tree(tree_update);
+
+  AXNode* outer_item1 = tree.GetFromId(2);
+  EXPECT_EQ(outer_item1->PosInSet(), 1);
+  EXPECT_EQ(outer_item1->SetSize(), 3);
+  AXNode* outer_item2 = tree.GetFromId(3);
+  EXPECT_EQ(outer_item2->PosInSet(), 2);
+  EXPECT_EQ(outer_item2->SetSize(), 3);
+
+  // List object itself should not report posinset or setsize
+  // TODO (akihiroota): Lists should report setsize in the future
+  AXNode* inner_list = tree.GetFromId(4);
+  EXPECT_EQ(inner_list->PosInSet(), 0);
+  EXPECT_EQ(inner_list->SetSize(), 0);
+
+  AXNode* inner_item1 = tree.GetFromId(5);
+  EXPECT_EQ(inner_item1->PosInSet(), 1);
+  EXPECT_EQ(inner_item1->SetSize(), 2);
+  AXNode* inner_item2 = tree.GetFromId(6);
+  EXPECT_EQ(inner_item2->PosInSet(), 2);
+  EXPECT_EQ(inner_item2->SetSize(), 2);
+
+  AXNode* outer_item3 = tree.GetFromId(7);
+  EXPECT_EQ(outer_item3->PosInSet(), 3);
+  EXPECT_EQ(outer_item3->SetSize(), 3);
+}
+
+// Tests PosInSet can be calculated if one item specifies PosInSet, but others
+// are missing.
+TEST(AXTreeTest, TestPosInSetMissing) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(4);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kList;
+  tree_update.nodes[0].child_ids = {2, 3, 4};
+  tree_update.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 20);
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[2].AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, 13);
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kListItem;
+  AXTree tree(tree_update);
+
+  // Item1 should have pos of 12, since item2 is assigned a pos of 13
+  AXNode* item1 = tree.GetFromId(2);
+  EXPECT_EQ(item1->PosInSet(), 12);
+  EXPECT_EQ(item1->SetSize(), 20);
+  AXNode* item2 = tree.GetFromId(3);
+  EXPECT_EQ(item2->PosInSet(), 13);
+  EXPECT_EQ(item2->SetSize(), 20);
+  // Item2 should have pos of 14, since item2 is assigned a pos of 13
+  AXNode* item3 = tree.GetFromId(4);
+  EXPECT_EQ(item3->PosInSet(), 14);
+  EXPECT_EQ(item3->SetSize(), 20);
 }
 
 }  // namespace ui
