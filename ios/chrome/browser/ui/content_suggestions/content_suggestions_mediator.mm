@@ -653,6 +653,9 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       BookmarkActionItem(), self.readingListItem, RecentTabsActionItem(),
       HistoryActionItem()
     ];
+    for (ContentSuggestionsMostVisitedActionItem* item in _actionButtonItems) {
+      item.accessibilityTraits = UIAccessibilityTraitButton;
+    }
   }
   return _actionButtonItems;
 }

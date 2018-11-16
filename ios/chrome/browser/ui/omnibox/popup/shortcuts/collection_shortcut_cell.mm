@@ -20,6 +20,7 @@
     _tile.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:_tile];
     AddSameConstraints(self.contentView, _tile);
+    self.isAccessibilityElement = YES;
   }
   return self;
 }
