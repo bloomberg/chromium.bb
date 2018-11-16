@@ -2590,6 +2590,8 @@ void Element::ClearAnimationStyleChange() {
 }
 
 void Element::SetNeedsAnimationStyleRecalc() {
+  if (GetDocument().InStyleRecalc())
+    return;
   if (GetStyleChangeType() != kNoStyleChange)
     return;
 
