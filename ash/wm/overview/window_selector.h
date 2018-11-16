@@ -220,6 +220,10 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Called when the overview mode starting animation completes.
   void OnStartingAnimationComplete(bool canceled);
 
+  // Returns true if any of the grids in |grid_list_| shield widgets are still
+  // animating.
+  bool IsWindowGridAnimating();
+
   WindowSelectorDelegate* delegate() { return delegate_; }
 
   SplitViewDragIndicators* split_view_drag_indicators() {

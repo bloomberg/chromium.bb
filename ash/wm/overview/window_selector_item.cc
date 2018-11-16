@@ -610,7 +610,6 @@ void WindowSelectorItem::UpdateYPositionAndOpacity(
 
   for (auto& layer_and_offset : animation_layers_and_offsets) {
     ui::Layer* layer = layer_and_offset.first;
-    layer->GetAnimator()->StopAnimating();
     std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
     if (!callback.is_null()) {
       settings = std::make_unique<ui::ScopedLayerAnimationSettings>(

@@ -567,6 +567,14 @@ bool HomeLauncherGestureHandler::IsAnimating() {
       return true;
   }
 
+  if (Shell::Get()->window_selector_controller()->IsSelecting() &&
+      Shell::Get()
+          ->window_selector_controller()
+          ->window_selector()
+          ->IsWindowGridAnimating()) {
+    return true;
+  }
+
   return false;
 }
 

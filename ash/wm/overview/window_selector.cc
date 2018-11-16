@@ -756,6 +756,19 @@ void WindowSelector::OnStartingAnimationComplete(bool canceled) {
   }
 }
 
+bool WindowSelector::IsWindowGridAnimating() {
+  for (auto& grid : grid_list_) {
+    if (grid->shield_widget()
+            ->GetNativeWindow()
+            ->layer()
+            ->GetAnimator()
+            ->is_animating()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void WindowSelector::OnDisplayRemoved(const display::Display& display) {
   // TODO(flackr): Keep window selection active on remaining displays.
   CancelSelection();
