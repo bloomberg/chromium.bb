@@ -33,37 +33,18 @@ rm -rf ../../web-animations-js/sources
 
 bower install --no-color --production
 
-rm components/*/.travis.yml
-
-mv components/web-animations-js ../../web-animations-js/sources
+# Update third_party/web-animations-js/ folder.
+mkdir -p ../../web-animations-js/sources/
+mv components/web-animations-js/web-animations-next-lite.min.js \
+  ../../web-animations-js/sources/
+mv components/web-animations-js/COPYING \
+  ../../web-animations-js/sources/
 cp ../../web-animations-js/sources/COPYING ../../web-animations-js/LICENSE
+rm -rf components/web-animations-js/
 
 # Remove source mapping directives since we don't compile the maps.
 sed -i 's/^\s*\/\/#\s*sourceMappingURL.*//' \
   ../../web-animations-js/sources/*.min.js
-
-# Test and demo directories aren't needed.
-rm -rf components/*/{test,demo}
-rm -rf components/polymer/explainer
-
-# Remove promise-polyfill and components which depend on it.
-rm -rf components/promise-polyfill
-rm -rf components/iron-ajax
-rm -rf components/iron-form
-
-# Make checkperms.py happy.
-find components/*/hero.svg -type f -exec chmod -x {} \;
-find components/iron-selector -type f -exec chmod -x {} \;
-
-# Remove carriage returns to make CQ happy.
-find components -type f \( -name \*.html -o -name \*.css -o -name \*.js\
-  -o -name \*.md -o -name \*.sh -o -name \*.json -o -name \*.gitignore\
-  -o -name \*.bat -o -name \*.svg \) -print0 | xargs -0 sed -i -e $'s/\r$//g'
-
-# Resolve a unicode encoding issue in dom-innerHTML.html.
-# TODO(dpapad): Examine if this is necessary for polymer2/ as well.
-NBSP=$(python -c 'print u"\u00A0".encode("utf-8")')
-sed -i 's/['"$NBSP"']/\\u00A0/g' components/polymer/polymer-mini.html
 
 rsync -c --delete -r -v --exclude-from="rsync_exclude.txt" \
     --prune-empty-dirs "components/" "components-chromium/"
