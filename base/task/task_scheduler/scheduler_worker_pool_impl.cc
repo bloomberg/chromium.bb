@@ -337,6 +337,8 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   join_for_testing_started_.Set();
 #endif
 
+  shared_priority_queue_.EnableFlushSequencesOnDestroyForTesting();
+
   decltype(workers_) workers_copy;
   {
     AutoSchedulerLock auto_lock(lock_);
@@ -354,8 +356,6 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   }
   for (const auto& worker : workers_copy)
     worker->JoinForTesting();
-
-  shared_priority_queue_.EnableFlushSequencesOnDestroyForTesting();
 
   AutoSchedulerLock auto_lock(lock_);
   DCHECK(workers_ == workers_copy);
