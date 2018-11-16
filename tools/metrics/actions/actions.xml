@@ -19732,11 +19732,17 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TodayExtension.ExtensionDismissed">
+  <obsolete>
+    Deprecated. Replaced by IOS.SearchExtension.Action histogram.
+  </obsolete>
   <owner>olivierrobin@chromium.org</owner>
   <description>Dismissed the Chrome Today extension.</description>
 </action>
 
 <action name="TodayExtension.ExtensionDisplayed">
+  <obsolete>
+    Deprecated. Replaced by IOS.SearchExtension.Action histogram.
+  </obsolete>
   <owner>olivierrobin@chromium.org</owner>
   <description>
     Displayed the notification center and display the Chrome Today extension.
@@ -19744,6 +19750,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TodayExtension.ExtensionInitialized">
+  <obsolete>
+    Deprecated. Replaced by IOS.SearchExtension.Action histogram.
+  </obsolete>
   <owner>olivierrobin@chromium.org</owner>
   <description>
     Displayed the notification center and initialize the Chrome Today extension.
@@ -19751,6 +19760,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TodayExtension.NewTabPressed">
+  <obsolete>
+    Deprecated. Replaced by IOS.SearchExtension.Action histogram.
+  </obsolete>
   <owner>olivierrobin@chromium.org</owner>
   <description>
     Tapped on the &quot;New Tab&quot; button in the Chrome Today extension.
@@ -19758,6 +19770,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TodayExtension.OpenClipboardPressed">
+  <obsolete>
+    Deprecated. Replaced by IOS.SearchExtension.Action histogram.
+  </obsolete>
   <owner>olivierrobin@chromium.org</owner>
   <description>
     Tapped on the &quot;Open Copied Link&quot; button in the Chrome Today
@@ -19776,6 +19791,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TodayExtension.VoiceSearchPressed">
+  <obsolete>
+    Deprecated. Replaced by IOS.SearchExtension.Action histogram.
+  </obsolete>
   <owner>olivierrobin@chromium.org</owner>
   <description>
     Tapped on the &quot;Voice Search&quot; button in the Chrome Today extension.
