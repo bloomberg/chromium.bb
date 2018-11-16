@@ -909,12 +909,12 @@ void CacheStorage::CreateCacheDidCreateCache(
       cache_name, cache_ptr->cache_size(), cache_ptr->cache_padding(),
       cache_ptr->cache_padding_key()->key()));
 
-  CacheStorageCacheHandle handle = CreateCacheHandle(cache_ptr);
+  CacheStorageCacheHandle handle = cache_ptr->CreateHandle();
   cache_loader_->WriteIndex(
       *cache_index_,
       base::BindOnce(&CacheStorage::CreateCacheDidWriteIndex,
                      weak_factory_.GetWeakPtr(), std::move(callback),
-                     CreateCacheHandle(cache_ptr)));
+                     cache_ptr->CreateHandle()));
 
   cache_loader_->NotifyCacheCreated(cache_name, std::move(handle));
   if (cache_storage_manager_)
@@ -1115,47 +1115,6 @@ void CacheStorage::WriteToCacheImpl(
   cache_ptr->Put(std::move(request), std::move(response), std::move(callback));
 }
 
-void CacheStorage::AddCacheHandleRef(CacheStorageCache* cache) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto iter = cache_handle_counts_.find(cache);
-  if (iter == cache_handle_counts_.end()) {
-    cache_handle_counts_[cache] = 1;
-    return;
-  }
-
-  iter->second += 1;
-}
-
-void CacheStorage::DropCacheHandleRef(CacheStorageCache* cache) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto iter = cache_handle_counts_.find(cache);
-  DCHECK(iter != cache_handle_counts_.end());
-  DCHECK_GE(iter->second, 1U);
-
-  iter->second -= 1;
-  if (iter->second == 0) {
-    cache_handle_counts_.erase(iter);
-    auto doomed_caches_iter = doomed_caches_.find(cache);
-    if (doomed_caches_iter != doomed_caches_.end()) {
-      // The last reference to a doomed cache is gone, perform clean up.
-      DeleteCacheFinalize(cache);
-      return;
-    }
-
-    auto cache_map_iter = cache_map_.find(cache->cache_name());
-    DCHECK(cache_map_iter != cache_map_.end());
-
-    cache_map_iter->second.reset();
-  }
-}
-
-CacheStorageCacheHandle CacheStorage::CreateCacheHandle(
-    CacheStorageCache* cache) {
-  DCHECK(cache);
-  return CacheStorageCacheHandle(cache->AsWeakPtr(),
-                                 weak_factory_.GetWeakPtr());
-}
-
 CacheStorageCacheHandle CacheStorage::GetLoadedCache(
     const std::string& cache_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1177,10 +1136,10 @@ CacheStorageCacheHandle CacheStorage::GetLoadedCache(
     CacheStorageCache* cache_ptr = new_cache.get();
     map_iter->second = std::move(new_cache);
 
-    return CreateCacheHandle(cache_ptr);
+    return cache_ptr->CreateHandle();
   }
 
-  return CreateCacheHandle(cache);
+  return cache->CreateHandle();
 }
 
 void CacheStorage::SizeRetrievedFromCache(CacheStorageCacheHandle cache_handle,
@@ -1217,8 +1176,7 @@ void CacheStorage::GetSizeThenCloseAllCachesImpl(SizeCallback callback) {
     CacheStorageCache* cache = cache_it.first;
     cache->GetSizeThenClose(base::BindOnce(
         &CacheStorage::SizeRetrievedFromCache, weak_factory_.GetWeakPtr(),
-        CacheStorageCacheHandle(cache->AsWeakPtr(), weak_factory_.GetWeakPtr()),
-        barrier_closure, accumulator_ptr));
+        cache->CreateHandle(), barrier_closure, accumulator_ptr));
   }
 }
 
@@ -1253,6 +1211,22 @@ void CacheStorage::SizeImpl(SizeCallback callback) {
         &CacheStorage::SizeRetrievedFromCache, weak_factory_.GetWeakPtr(),
         std::move(cache_handle), barrier_closure, accumulator_ptr));
   }
+}
+
+void CacheStorage::CacheUnreferenced(CacheStorageCache* cache) {
+  DCHECK(cache);
+  cache->AssertUnreferenced();
+  auto doomed_caches_it = doomed_caches_.find(cache);
+  if (doomed_caches_it != doomed_caches_.end()) {
+    // The last reference to a doomed cache is gone, perform clean up.
+    DeleteCacheFinalize(cache);
+    return;
+  }
+
+  auto cache_map_it = cache_map_.find(cache->cache_name());
+  DCHECK(cache_map_it != cache_map_.end());
+
+  cache_map_it->second.reset();
 }
 
 }  // namespace content

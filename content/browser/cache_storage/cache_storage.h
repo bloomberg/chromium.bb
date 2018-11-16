@@ -36,7 +36,6 @@ class BlobStorageContext;
 }
 
 namespace content {
-class CacheStorageCacheHandle;
 class CacheStorageIndex;
 class CacheStorageManager;
 class CacheStorageScheduler;
@@ -146,7 +145,6 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void CacheSizeUpdated(const CacheStorageCache* cache) override;
 
  private:
-  friend class CacheStorageCacheHandle;
   friend class CacheStorageCache;
   friend class cache_storage_manager_unittest::CacheStorageManagerTest;
   FRIEND_TEST_ALL_PREFIXES(
@@ -164,11 +162,6 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // Generate a new padding key. For testing only and *not thread safe*.
   static void GenerateNewKeyForTesting();
-
-  // Functions for exposing handles to CacheStorageCache to clients.
-  CacheStorageCacheHandle CreateCacheHandle(CacheStorageCache* cache);
-  void AddCacheHandleRef(CacheStorageCache* cache);
-  void DropCacheHandleRef(CacheStorageCache* cache);
 
   // Returns a CacheStorageCacheHandle for the given name if the name is known.
   // If the CacheStorageCache has been deleted, creates a new one.
@@ -254,6 +247,8 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   bool InitiateScheduledIndexWriteForTest(
       base::OnceCallback<void(bool)> callback);
 
+  void CacheUnreferenced(CacheStorageCache* cache);
+
   // Whether or not we've loaded the list of cache names into memory.
   bool initialized_;
   bool initializing_;
@@ -271,9 +266,6 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // have been released.
   std::map<CacheStorageCache*, std::unique_ptr<CacheStorageCache>>
       doomed_caches_;
-
-  // CacheStorageCacheHandle reference counts
-  std::map<CacheStorageCache*, size_t> cache_handle_counts_;
 
   // The cache index data.
   std::unique_ptr<CacheStorageIndex> cache_index_;
