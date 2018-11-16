@@ -28,7 +28,7 @@ suite('SiteDetailsPermission', function() {
             settings.ContentSettingsTypes.CAMERA,
             [test_util.createRawSiteException('https://www.example.com')])]);
 
-    loadTimeData.overrideValues({enableBlockAutoplayContentSetting: true});
+    loadTimeData.overrideValues({enableAutoplayWhitelistContentSetting: true});
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;

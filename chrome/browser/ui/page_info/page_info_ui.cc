@@ -336,7 +336,7 @@ base::string16 PageInfoUI::PermissionActionToUIString(
       if (setting == CONTENT_SETTING_DEFAULT) {
 #if !defined(OS_ANDROID)
         if (type == CONTENT_SETTINGS_TYPE_SOUND &&
-            base::FeatureList::IsEnabled(media::kAutoplayDisableSettings)) {
+            base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings)) {
           // If the block autoplay enabled preference is enabled and the
           // sound default setting is ALLOW, we will return a custom string
           // indicating that Chrome is controlling autoplay and sound
@@ -360,7 +360,7 @@ base::string16 PageInfoUI::PermissionActionToUIString(
     case content_settings::SETTING_SOURCE_EXTENSION:
 #if !defined(OS_ANDROID)
       if (type == CONTENT_SETTINGS_TYPE_SOUND &&
-          base::FeatureList::IsEnabled(media::kAutoplayDisableSettings)) {
+          base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings)) {
         button_text_ids = kSoundPermissionButtonTextIDUserManaged;
         break;
       }

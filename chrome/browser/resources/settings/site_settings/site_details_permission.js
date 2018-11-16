@@ -113,7 +113,7 @@ Polymer({
    */
   useCustomSoundLabels_: function(category) {
     return category == settings.ContentSettingsTypes.SOUND &&
-        loadTimeData.getBoolean('enableBlockAutoplayContentSetting');
+        loadTimeData.getBoolean('enableAutoplayWhitelistContentSetting');
   },
 
   /**
