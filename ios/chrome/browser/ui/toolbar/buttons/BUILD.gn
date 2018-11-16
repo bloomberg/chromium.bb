@@ -13,8 +13,6 @@ source_set("buttons") {
     "toolbar_component_options.h",
     "toolbar_configuration.h",
     "toolbar_configuration.mm",
-    "toolbar_constants.h",
-    "toolbar_constants.mm",
     "toolbar_search_button.h",
     "toolbar_search_button.mm",
     "toolbar_style.h",

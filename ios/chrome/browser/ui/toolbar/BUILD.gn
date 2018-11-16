@@ -81,8 +81,6 @@ source_set("toolbar_ui") {
     "toolbar_consumer.h",
     "toolbar_progress_bar.h",
     "toolbar_progress_bar.mm",
-    "toolbar_utils.h",
-    "toolbar_utils.mm",
   ]
   deps = [
     "//base",
@@ -130,6 +128,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/popup_menu/public",
     "//ios/chrome/browser/ui/toolbar/buttons",
+    "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/test",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web_state_list",
@@ -174,6 +173,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/tab_grid:egtest_support",
     "//ios/chrome/browser/ui/toolbar/buttons",
+    "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
