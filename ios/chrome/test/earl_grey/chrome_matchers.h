@@ -134,6 +134,13 @@ id<GREYMatcher> AddAccountButton();
 // Returns matcher for the sign out accounts button.
 id<GREYMatcher> SignOutAccountsButton();
 
+// Returns matcher for the Clear Browsing Data cell on the Privacy screen.
+id<GREYMatcher> ClearBrowsingDataCell();
+
+// Returns matcher for the clear browsing data button on the clear browsing data
+// panel.
+id<GREYMatcher> ClearBrowsingDataButton();
+
 // Returns matcher for the clear browsing data collection view.
 id<GREYMatcher> ClearBrowsingDataCollectionView();
 
