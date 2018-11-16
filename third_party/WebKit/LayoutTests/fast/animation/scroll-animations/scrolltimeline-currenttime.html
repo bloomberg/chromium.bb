@@ -266,13 +266,13 @@ test(function() {
 
   // Unscrolled, all timelines should read a current time of unresolved, since
   // the current offset (0) will be less than the startScrollOffset.
-  assert_equals(lengthScrollTimeline.currentTime, NaN);
-  assert_equals(percentageScrollTimeline.currentTime, NaN);
-  assert_equals(calcScrollTimeline.currentTime, NaN);
+  assert_equals(lengthScrollTimeline.currentTime, null);
+  assert_equals(percentageScrollTimeline.currentTime, null);
+  assert_equals(calcScrollTimeline.currentTime, null);
 
   // Check the length-based ScrollTimeline.
   scroller.scrollTop = 19;
-  assert_equals(lengthScrollTimeline.currentTime, NaN);
+  assert_equals(lengthScrollTimeline.currentTime, null);
   scroller.scrollTop = 20;
   assert_equals(lengthScrollTimeline.currentTime, 0);
   scroller.scrollTop = 50;
@@ -286,7 +286,7 @@ test(function() {
 
   // Check the percentage-based ScrollTimeline.
   scroller.scrollTop = 0.19 * scrollerSize;
-  assert_equals(percentageScrollTimeline.currentTime, NaN);
+  assert_equals(percentageScrollTimeline.currentTime, null);
   scroller.scrollTop = 0.20 * scrollerSize;
   assert_equals(percentageScrollTimeline.currentTime, 0);
   scroller.scrollTop = 0.50 * scrollerSize;
@@ -297,7 +297,7 @@ test(function() {
 
   // Check the calc-based ScrollTimeline.
   scroller.scrollTop = 0.2 * scrollerSize - 10;
-  assert_equals(calcScrollTimeline.currentTime, NaN);
+  assert_equals(calcScrollTimeline.currentTime, null);
   scroller.scrollTop = 0.2 * scrollerSize - 5;
   assert_equals(calcScrollTimeline.currentTime, 0);
   scroller.scrollTop = 0.2 * scrollerSize;
@@ -343,9 +343,9 @@ test(function() {
 
   // Unscrolled, all timelines should read a current time of unresolved, since
   // the current offset (0) will be less than the startScrollOffset.
-  assert_equals(lengthScrollTimeline.currentTime, NaN);
-  assert_equals(percentageScrollTimeline.currentTime, NaN);
-  assert_equals(calcScrollTimeline.currentTime, NaN);
+  assert_equals(lengthScrollTimeline.currentTime, null);
+  assert_equals(percentageScrollTimeline.currentTime, null);
+  assert_equals(calcScrollTimeline.currentTime, null);
 
   // With direction rtl offsets are inverted, such that scrollLeft ==
   // scrollerSize is the 'zero' point for currentTime. However the
@@ -354,7 +354,7 @@ test(function() {
 
   // Check the length-based ScrollTimeline.
   scroller.scrollLeft = scrollerSize;
-  assert_equals(lengthScrollTimeline.currentTime, NaN);
+  assert_equals(lengthScrollTimeline.currentTime, null);
   scroller.scrollLeft = scrollerSize - 20;
   assert_equals(lengthScrollTimeline.currentTime, 0);
   scroller.scrollLeft = scrollerSize - 50;
@@ -368,7 +368,7 @@ test(function() {
 
   // Check the percentage-based ScrollTimeline.
   scroller.scrollLeft = scrollerSize - (0.19 * scrollerSize);
-  assert_equals(percentageScrollTimeline.currentTime, NaN);
+  assert_equals(percentageScrollTimeline.currentTime, null);
   scroller.scrollLeft = scrollerSize - (0.20 * scrollerSize);
   assert_equals(percentageScrollTimeline.currentTime, 0);
   scroller.scrollLeft = scrollerSize - (0.4 * scrollerSize);
@@ -379,7 +379,7 @@ test(function() {
 
   // Check the calc-based ScrollTimeline.
   scroller.scrollLeft = scrollerSize - (0.2 * scrollerSize - 10);
-  assert_equals(calcScrollTimeline.currentTime, NaN);
+  assert_equals(calcScrollTimeline.currentTime, null);
   scroller.scrollLeft = scrollerSize - (0.2 * scrollerSize - 5);
   assert_equals(calcScrollTimeline.currentTime, 0);
   scroller.scrollLeft = scrollerSize - (0.2 * scrollerSize);
@@ -424,7 +424,7 @@ test(function() {
 
   // Check the length-based ScrollTimeline.
   scroller.scrollTop = scrollerSize;
-  assert_equals(lengthScrollTimeline.currentTime, NaN);
+  assert_equals(lengthScrollTimeline.currentTime, null);
   scroller.scrollTop = scrollerSize - 20;
   assert_equals(
       lengthScrollTimeline.currentTime,
@@ -443,7 +443,7 @@ test(function() {
 
   // Check the percentage-based ScrollTimeline.
   scroller.scrollTop = 0.81 * scrollerSize;
-  assert_equals(percentageScrollTimeline.currentTime, NaN);
+  assert_equals(percentageScrollTimeline.currentTime, null);
   scroller.scrollTop = 0.80 * scrollerSize;
   assert_equals(
       percentageScrollTimeline.currentTime,
@@ -457,7 +457,7 @@ test(function() {
 
   // Check the calc-based ScrollTimeline.
   scroller.scrollTop = 0.8 * scrollerSize + 6;
-  assert_equals(calcScrollTimeline.currentTime, NaN);
+  assert_equals(calcScrollTimeline.currentTime, null);
   scroller.scrollTop = 0.8 * scrollerSize + 5;
   assert_equals(
       calcScrollTimeline.currentTime,
@@ -504,7 +504,7 @@ test(function() {
 
   // Check the length-based ScrollTimeline.
   scroller.scrollLeft = 0;
-  assert_equals(lengthScrollTimeline.currentTime, NaN);
+  assert_equals(lengthScrollTimeline.currentTime, null);
   scroller.scrollLeft = 20;
   assert_equals(
        lengthScrollTimeline.currentTime,
@@ -523,7 +523,7 @@ test(function() {
 
   // Check the percentage-based ScrollTimeline.
   scroller.scrollLeft = 0.19 * scrollerSize;
-  assert_equals(percentageScrollTimeline.currentTime, NaN);
+  assert_equals(percentageScrollTimeline.currentTime, null);
   scroller.scrollLeft = 0.20 * scrollerSize;
   assert_equals(
       percentageScrollTimeline.currentTime,
@@ -537,7 +537,7 @@ test(function() {
 
   // Check the calc-based ScrollTimeline. 80% + 5px
   scroller.scrollLeft = 0.2 * scrollerSize - 10;
-  assert_equals(calcScrollTimeline.currentTime, NaN);
+  assert_equals(calcScrollTimeline.currentTime, null);
   scroller.scrollLeft = 0.2 * scrollerSize - 5;
   assert_equals(
       calcScrollTimeline.currentTime,
@@ -592,7 +592,7 @@ test(function() {
   });
 
   scroller.scrollTop = 150;
-  assert_equals(scrollTimeline.currentTime, NaN);
+  assert_equals(scrollTimeline.currentTime, null);
 }, 'currentTime handles startScrollOffset == endScrollOffset correctly');
 
 test(function() {
@@ -611,6 +611,6 @@ test(function() {
   });
 
   scroller.scrollTop = 150;
-  assert_equals(scrollTimeline.currentTime, NaN);
+  assert_equals(scrollTimeline.currentTime, null);
 }, 'currentTime handles startScrollOffset > endScrollOffset correctly');
 </script>
