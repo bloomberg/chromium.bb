@@ -94,7 +94,7 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   default_favicon_.reset(
-      rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
+      [rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).ToNSImage() retain]);
 
   // Set the static icons in the menu.
   NSMenuItem* item = [HistoryMenu() itemWithTag:IDC_SHOW_HISTORY];

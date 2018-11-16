@@ -174,7 +174,7 @@ NSString* const kRemindersSharingServiceName =
       browserView->ConvertRectToWidget(contentsView->bounds());
   gfx::Image image;
   if (ui::GrabWindowSnapshot(windowForShare_, rectInWidget, &image)) {
-    snapshotForShare_.reset(image.CopyNSImage());
+    snapshotForShare_.reset([image.ToNSImage() retain]);
   }
 }
 

@@ -38,7 +38,8 @@ const gfx::ImageSkia CreateSolidColorImage(int width,
 gfx::Image DeepCopyImage(const gfx::Image& image) {
   if (image.IsEmpty())
     return gfx::Image();
-  std::unique_ptr<gfx::ImageSkia> image_skia(image.CopyImageSkia());
+  std::unique_ptr<gfx::ImageSkia> image_skia(
+      new gfx::ImageSkia(*image.ToImageSkia()));
   return gfx::Image(*image_skia);
 }
 

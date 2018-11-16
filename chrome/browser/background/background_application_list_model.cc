@@ -127,7 +127,7 @@ void BackgroundApplicationListModel::Application::OnImageLoaded(
     const gfx::Image& image) {
   if (image.IsEmpty())
     return;
-  icon_.reset(image.CopyImageSkia());
+  icon_.reset(new gfx::ImageSkia(*image.ToImageSkia()));
   model_->SendApplicationDataChangedNotifications();
 }
 
