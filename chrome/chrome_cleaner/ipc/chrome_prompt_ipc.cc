@@ -53,13 +53,14 @@ ChromePromptIPC::~ChromePromptIPC() {
 void ChromePromptIPC::PostPromptUserTask(
     const std::vector<base::FilePath>& files_to_delete,
     const std::vector<base::string16>& registry_keys,
+    const std::vector<base::string16>& extension_ids,
     mojom::ChromePrompt::PromptUserCallback callback) {
   DCHECK(task_runner_);
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &ChromePromptIPC::RunPromptUserTask, base::Unretained(this),
-          files_to_delete, registry_keys,
+          files_to_delete, registry_keys, extension_ids,
           base::BindOnce(&ChromePromptIPC::OnChromeResponseReceived,
                          base::Unretained(this), std::move(callback))));
 }
@@ -134,9 +135,30 @@ void ChromePromptIPC::InitializeChromePromptPtr() {
   state_ = State::kWaitingForScanResults;
 }
 
+void ChromePromptIPC::PromptUserCheckVersion(
+    const std::vector<base::FilePath>& files_to_delete,
+    const std::vector<base::string16>& registry_keys,
+    const std::vector<base::string16>& extension_ids,
+    mojom::ChromePrompt::PromptUserCallback callback,
+    uint32_t version) {
+  if (version >= 3) {
+    (*chrome_prompt_service_)
+        ->PromptUser(std::move(files_to_delete), std::move(registry_keys),
+                     std::move(extension_ids), std::move(callback));
+  } else {
+    // Before version 3 the delete extensions interface wasn't implemented.
+    // So we need to not notify the user that there are extensions to be
+    // deleted.
+    (*chrome_prompt_service_)
+        ->PromptUser(std::move(files_to_delete), std::move(registry_keys),
+                     base::nullopt, std::move(callback));
+  }
+}
+
 void ChromePromptIPC::RunPromptUserTask(
     const std::vector<base::FilePath>& files_to_delete,
     const std::vector<base::string16>& registry_keys,
+    const std::vector<base::string16>& extension_ids,
     mojom::ChromePrompt::PromptUserCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(chrome_prompt_service_);
@@ -151,9 +173,13 @@ void ChromePromptIPC::RunPromptUserTask(
 
   state_ = State::kWaitingForResponseFromChrome;
 
-  (*chrome_prompt_service_)
-      ->PromptUser(std::move(files_to_delete), std::move(registry_keys),
-                   base::nullopt, std::move(callback));
+  const auto& version_callback = base::BindRepeating(
+      &ChromePromptIPC::PromptUserCheckVersion, base::Unretained(this),
+      std::move(files_to_delete), std::move(registry_keys),
+      // Uses the AdaptCallbackForRepeating because we are bound by the mojo API
+      // to use a RepeatingCallback even though this only should be called once.
+      std::move(extension_ids), AdaptCallbackForRepeating(std::move(callback)));
+  (*chrome_prompt_service_).QueryVersion(version_callback);
 }
 
 void ChromePromptIPC::RunDisableExtensionsTask(

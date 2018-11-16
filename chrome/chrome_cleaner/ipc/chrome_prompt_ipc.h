@@ -77,6 +77,7 @@ class ChromePromptIPC {
   virtual void PostPromptUserTask(
       const std::vector<base::FilePath>& files_to_delete,
       const std::vector<base::string16>& registry_keys,
+      const std::vector<base::string16>& extension_ids,
       mojom::ChromePrompt::PromptUserCallback callback);
 
   // Posts a PromptDisableExtensions() task to the IPC controller's thread.
@@ -113,6 +114,7 @@ class ChromePromptIPC {
   virtual void RunPromptUserTask(
       const std::vector<base::FilePath>& files_to_delete,
       const std::vector<base::string16>& registry_keys,
+      const std::vector<base::string16>& extension_ids,
       mojom::ChromePrompt::PromptUserCallback callback);
 
   virtual void RunDisableExtensionsTask(
@@ -137,6 +139,13 @@ class ChromePromptIPC {
   // error_handler_->OnConnectionClosedAfterDone(), depending on the internal
   // state.
   void OnConnectionError();
+
+  void PromptUserCheckVersion(
+      const std::vector<base::FilePath>& files_to_delete,
+      const std::vector<base::string16>& registry_keys,
+      const std::vector<base::string16>& extension_ids,
+      mojom::ChromePrompt::PromptUserCallback callback,
+      uint32_t version);
 
   State state_ = State::kUninitialized;
   scoped_refptr<MojoTaskRunner> task_runner_;
