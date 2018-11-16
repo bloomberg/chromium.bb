@@ -18,6 +18,7 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
+#include "base/win/com_init_util.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -304,6 +305,18 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTickClock) {
   scoped_task_environment.FastForwardBy(kLongTaskDelay);
   EXPECT_EQ(kLongTaskDelay * 2, tick_clock->NowTicks() - tick_clock_ref);
 }
+
+#if defined(OS_WIN)
+// Regression test to ensure that ScopedTaskEnvironment enables the MTA in the
+// thread pool (so that the test environment matches that of the browser process
+// and com_init_util.h's assertions are happy in unit tests).
+TEST_F(ScopedTaskEnvironmentTest, TaskSchedulerPoolAllowsMTA) {
+  ScopedTaskEnvironment scoped_task_environment;
+  PostTask(FROM_HERE,
+           BindOnce(&win::AssertComApartmentType, win::ComApartmentType::MTA));
+  scoped_task_environment.RunUntilIdle();
+}
+#endif  // defined(OS_WIN)
 
 namespace {
 

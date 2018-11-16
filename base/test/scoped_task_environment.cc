@@ -145,8 +145,25 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
   TaskScheduler::SetInstance(std::make_unique<internal::TaskSchedulerImpl>(
       "ScopedTaskEnvironment", WrapUnique(task_tracker_)));
   task_scheduler_ = TaskScheduler::GetInstance();
-  TaskScheduler::GetInstance()->Start({worker_pool_params, worker_pool_params,
-                                       worker_pool_params, worker_pool_params});
+  TaskScheduler::GetInstance()->Start({
+    worker_pool_params, worker_pool_params, worker_pool_params,
+        worker_pool_params
+#if defined(OS_WIN)
+        ,
+        // Enable the MTA in unit tests to match the browser process'
+        // TaskScheduler configuration.
+        //
+        // This has the adverse side-effect of enabling the MTA in non-browser
+        // unit tests as well but the downside there is not as bad as not having
+        // it in browser unit tests. It just means some COM asserts may pass in
+        // unit tests where they wouldn't in integration tests or prod. That's
+        // okay because unit tests are already generally very loose on allowing
+        // I/O, waits, etc. Such misuse will still be caught in later phases
+        // (and COM usage should already be pretty much inexistent in sandboxed
+        // processes).
+        TaskScheduler::InitParams::SharedWorkerPoolEnvironment::COM_MTA
+#endif
+  });
 
   if (execution_control_mode_ == ExecutionMode::QUEUED)
     CHECK(task_tracker_->DisallowRunTasks());
