@@ -114,6 +114,12 @@ class AutofillAssistantUiDelegate {
         void onDismiss();
 
         /**
+         * Called when the user chose not to use the assistant from the
+         * onboarding screen.
+         */
+        void onInitRejected();
+
+        /**
          * Called when a script has been selected.
          *
          * @param scriptPath The path for the selected script.

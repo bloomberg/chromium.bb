@@ -49,6 +49,8 @@ public class InitScreenController {
             }
             mClient.onInitOk();
             return;
+        } else {
+            mClient.onInitRejected();
         }
         if (dontShowAgain) {
             ContextUtils.getAppSharedPreferences()
