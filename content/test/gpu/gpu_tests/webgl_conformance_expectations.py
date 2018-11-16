@@ -703,7 +703,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'android-webview-instrumentation'], bug=352645)
     self.Skip('conformance/textures/video/' +
         'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['android', 'android-webview-instrumentation'], bug=352645)
+        ['android-webview-instrumentation'], bug=352645)
     self.Skip('conformance/textures/misc/texture-npot-video.html',
         ['android', 'android-webview-instrumentation', 'no_passthrough'],
               bug=352645)
@@ -896,6 +896,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgb-rgb-unsigned_short_5_6_5.html', ['android', 'nvidia'],
         bug=891456)
+    self.Flaky('conformance/textures/video/' +
+        'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+        ['android', 'release', 'nvidia'], bug=906158)
 
     # Flaky timeout on android_n5x_swarming_rel and
     # android-marshmallow-arm64-rel.
