@@ -6,9 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
-
-#include <vector>
 
 #include "base/bit_cast.h"
 #include "base/logging.h"
@@ -124,21 +123,35 @@ int GzipUncompressHelper(Bytef* dest,
 namespace compression {
 
 bool GzipCompress(base::StringPiece input, std::string* output) {
+  // Not using std::vector<> because allocation failures are recoverable,
+  // which is hidden by std::vector<>.
+  static_assert(sizeof(Bytef) == 1, "");
   const uLongf input_size = static_cast<uLongf>(input.size());
-  std::vector<Bytef> compressed_data(kGzipZlibHeaderDifferenceBytes +
-                                     compressBound(input_size));
 
-  uLongf compressed_size = static_cast<uLongf>(compressed_data.size());
-  if (GzipCompressHelper(&compressed_data.front(),
-                         &compressed_size,
+  uLongf compressed_data_size =
+      kGzipZlibHeaderDifferenceBytes + compressBound(input_size);
+  Bytef* compressed_data =
+      reinterpret_cast<Bytef*>(malloc(compressed_data_size));
+  if (!compressed_data)
+    return false;
+
+  if (GzipCompressHelper(compressed_data, &compressed_data_size,
                          bit_cast<const Bytef*>(input.data()),
                          input_size) != Z_OK) {
+    free(compressed_data);
     return false;
   }
 
-  compressed_data.resize(compressed_size);
-  output->assign(compressed_data.begin(), compressed_data.end());
+  Bytef* resized_data =
+      reinterpret_cast<Bytef*>(realloc(compressed_data, compressed_data_size));
+  if (!resized_data) {
+    free(compressed_data);
+    return false;
+  }
+  output->assign(resized_data, resized_data + compressed_data_size);
   DCHECK_EQ(input_size, GetUncompressedSize(*output));
+
+  free(resized_data);
   return true;
 }
 
