@@ -95,7 +95,9 @@ class Device(object):
     Returns:
       cros_build_lib.CommandResult object.
     """
-    if not self.dry_run:
+    if self.dry_run:
+      return self._DryRunCommand(cmd)
+    else:
       kwargs.setdefault('error_code_ok', True)
       if stream_output:
         kwargs.setdefault('capture_output', False)
@@ -103,6 +105,19 @@ class Device(object):
         kwargs.setdefault('combine_stdout_stderr', True)
         kwargs.setdefault('log_output', True)
       return self.remote.RunCommand(cmd, debug_level=logging.INFO, **kwargs)
+
+  def _DryRunCommand(self, cmd):
+    """Print a command for dry_run.
+
+    Args:
+      cmd: command to print.
+
+    Returns:
+      cros_build_lib.CommandResult object.
+    """
+    assert self.dry_run, 'Use with --dry-run only'
+    logging.info('[DRY RUN] %s', cros_build_lib.CmdToStr(cmd))
+    return cros_build_lib.CommandResult(cmd, output='', returncode=0)
 
   @property
   def is_vm(self):
@@ -203,7 +218,7 @@ class VM(Device):
 
     self.InitRemote()
 
-  def _RunCommand(self, *args, **kwargs):
+  def RunCommand(self, *args, **kwargs):
     """Use SudoRunCommand or RunCommand as necessary.
 
     Args:
@@ -212,7 +227,9 @@ class VM(Device):
     Returns:
       cros_build_lib.CommandResult object.
     """
-    if self.use_sudo:
+    if self.dry_run:
+      return self._DryRunCommand(*args)
+    elif self.use_sudo:
       return cros_build_lib.SudoRunCommand(*args, **kwargs)
     else:
       return cros_build_lib.RunCommand(*args, **kwargs)
@@ -239,11 +256,8 @@ class VM(Device):
         '-o', 'backing_file=%s' % self.image_path,
         cow_image_path,
     ]
-    if not self.dry_run:
-      self._RunCommand(qemu_img_args)
-      logging.info('qcow2 image created at %s.', cow_image_path)
-    else:
-      logging.info(cros_build_lib.CmdToStr(qemu_img_args))
+    self.RunCommand(qemu_img_args)
+    logging.info('qcow2 image created at %s.', cow_image_path)
     self.image_path = cow_image_path
     self.image_format = 'qcow2'
 
@@ -305,8 +319,8 @@ class VM(Device):
     Returns:
       QEMU version.
     """
-    version_str = self._RunCommand([self.qemu_path, '--version'],
-                                   capture_output=True).output
+    version_str = self.RunCommand([self.qemu_path, '--version'],
+                                  capture_output=True).output
     # version string looks like one of these:
     # QEMU emulator version 2.0.0 (Debian 2.0.0+dfsg-2ubuntu1.36), Copyright (c)
     # 2003-2008 Fabrice Bellard
@@ -322,6 +336,8 @@ class VM(Device):
 
   def _CheckQemuMinVersion(self):
     """Ensure minimum QEMU version."""
+    if self.dry_run:
+      return
     min_qemu_version = '2.6.0'
     logging.info('QEMU version %s', self.QemuVersion())
     LooseVersion = distutils.version.LooseVersion
@@ -479,10 +495,7 @@ class VM(Device):
     if not self.display:
       qemu_args.extend(['-display', 'none'])
     logging.info('Pid file: %s', self.pidfile)
-    if not self.dry_run:
-      self._RunCommand(qemu_args)
-    else:
-      logging.info(cros_build_lib.CmdToStr(qemu_args))
+    self.RunCommand(qemu_args)
 
   def _GetVMPid(self):
     """Get the pid of the VM.
@@ -526,9 +539,7 @@ class VM(Device):
 
     pid = self._GetVMPid()
     if pid:
-      logging.info('Killing %d.', pid)
-      if not self.dry_run:
-        self._RunCommand(['kill', '-9', str(pid)], error_code_ok=True)
+      self.RunCommand(['kill', '-9', str(pid)], error_code_ok=True)
     self._RmVMDir()
 
   def _WaitForProcs(self):

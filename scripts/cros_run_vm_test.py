@@ -12,7 +12,6 @@ import os
 import re
 
 from chromite.lib import commandline
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.scripts import cros_vm
@@ -105,8 +104,8 @@ class CrOSTest(object):
     if not self.build:
       return
 
-    cros_build_lib.RunCommand(['autoninja', '-C', self.build_dir,
-                               'chromiumos_preflight'])
+    self._device.RunCommand(['autoninja', '-C', self.build_dir,
+                             'chromiumos_preflight'])
 
   def _Deploy(self):
     """Deploy chrome."""
@@ -133,7 +132,7 @@ class CrOSTest(object):
           # at the default deploy dir.
           '--mount',
       ]
-    cros_build_lib.RunCommand(deploy_cmd)
+    self._device.RunCommand(deploy_cmd)
     self._device.WaitForBoot()
 
   def _RunCatapultTests(self):
@@ -176,7 +175,7 @@ class CrOSTest(object):
     else:
       cmd += [self._device.device]
     cmd += self.autotest
-    return cros_build_lib.RunCommand(cmd)
+    return self._device.RunCommand(cmd)
 
   def _RunTests(self):
     """Run tests.
@@ -191,7 +190,7 @@ class CrOSTest(object):
       result = self._RunDeviceCmd()
     elif self.host_cmd:
       # Don't raise an exception if the command fails.
-      result = cros_build_lib.RunCommand(self.args, error_code_ok=True)
+      result = self._device.RunCommand(self.args, error_code_ok=True)
     elif self.catapult_tests:
       result = self._RunCatapultTests()
     elif self.autotest:
