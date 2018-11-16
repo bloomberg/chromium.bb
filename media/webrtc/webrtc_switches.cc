@@ -46,4 +46,9 @@ const base::Feature kWebRtcAecNoiseTransparency{
 const base::Feature kWebRtcApmInAudioService{"WebRtcApmInAudioService",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the WebRTC Agc2 digital adaptation with WebRTC Agc1 analog
+// adaptation. Feature for http://crbug.com/873650. Is sent to WebRTC.
+const base::Feature kWebRtcHybridAgc{"WebRtcHybridAgc",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

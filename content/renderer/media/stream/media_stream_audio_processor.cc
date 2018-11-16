@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
@@ -672,6 +673,20 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     apm_config.gain_controller2.enabled =
         base::FeatureList::IsEnabled(features::kWebRtcHybridAgc);
     apm_config.gain_controller2.fixed_digital.gain_db = 0.f;
+
+    const bool use_peaks_not_rms = base::GetFieldTrialParamByFeatureAsBool(
+        features::kWebRtcHybridAgc, "use_peaks_not_rms", false);
+    using Shortcut =
+        webrtc::AudioProcessing::Config::GainController2::LevelEstimator;
+    apm_config.gain_controller2.adaptive_digital.level_estimator =
+        use_peaks_not_rms ? Shortcut::kPeak : Shortcut::kRms;
+
+    const int saturation_margin = base::GetFieldTrialParamByFeatureAsInt(
+        features::kWebRtcHybridAgc, "saturation_margin", -1);
+    if (saturation_margin != -1) {
+      apm_config.gain_controller2.adaptive_digital.extra_saturation_margin_db =
+          saturation_margin;
+    }
   }
   ConfigPreAmplifier(&apm_config, pre_amplifier_fixed_gain_factor);
   audio_processing_->ApplyConfig(apm_config);
