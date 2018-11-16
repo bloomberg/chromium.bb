@@ -181,14 +181,13 @@ class AX_EXPORT AXNode final {
     return data().GetHtmlAttribute(attribute, value);
   }
 
-  // Returns the position of node within a list. Returns 1-based index if
-  // contained within a list, and 0 if not.
+  // Finds the position of this node within its container, relative to others
+  // with the same role.
+  // Returns 1-based index if present in container, and 0 if not.
   int32_t PosInSet() const;
-  // Returns the total number of nodes in the same list as node. Returns 0
-  // if the node is not contained wihtin a list.
+  // Calculates the number of elements within node's container that have the
+  // same role as node. Returns 0 if the node is not present wihtin a container.
   int32_t SetSize() const;
-  // Returns true if the aria-posinset attribute is used in node's role
-  bool IsPosInSetUsedInRole() const;
 
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
@@ -255,6 +254,17 @@ class AX_EXPORT AXNode final {
   AXTableInfo* GetAncestorTableInfo() const;
   void IdVectorToNodeVector(std::vector<int32_t>& ids,
                             std::vector<AXNode*>* nodes) const;
+
+  // Helpers for PosInset and SetSize
+  // Returns true if the PosInSet or SetSize attributes are used in node's role
+  bool IsSetSizePosInSetUsedInRole() const;
+  // Calculates 0-based index of first element with PosInSet assigned.
+  // Returns -1 if no elements assign PosInSet
+  int32_t FirstAssignedPosInSet() const;
+  // Calculates node's position relative to first PosInSet-assigned element.
+  // Returns node's 0-based index within container (relative to nodes with the
+  // same role) if no element assigned PosInSet
+  int32_t RelativePosFromFirstAssigned(int32_t earliest_index) const;
 
   OwnerTree* tree_;  // Owns this.
   int index_in_parent_;

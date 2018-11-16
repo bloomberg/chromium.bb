@@ -473,7 +473,8 @@ void AXNode::IdVectorToNodeVector(std::vector<int32_t>& ids,
   }
 }
 
-bool AXNode::IsPosInSetUsedInRole() const {
+// Determines the roles in which PosInSet and SetSize are used
+bool AXNode::IsSetSizePosInSetUsedInRole() const {
   switch (data().role) {
     case ax::mojom::Role::kArticle:
     case ax::mojom::Role::kListItem:
@@ -491,43 +492,104 @@ bool AXNode::IsPosInSetUsedInRole() const {
   }
 }
 
-// Finds the position of this node within a list.
-// Only takes into account elements that have same role as node.
-int32_t AXNode::PosInSet() const {
+// Finds the 0-based index of first element in the container (with same role as
+// node) where kPosInSet is assigned. Returns -1 if there are no elements with
+// kPosInSet assigned
+int32_t AXNode::FirstAssignedPosInSet() const {
   AXNode* parent = GetUnignoredParent();
-
-  // Error checks
-  if (!parent)
-    return 0;
-  if (parent->data().role != ax::mojom::Role::kList)
-    return 0;
-  if (!IsPosInSetUsedInRole())
-    return 0;
-
-  int position = 0;
   for (int i = 0; i < parent->GetUnignoredChildCount(); ++i) {
     AXNode* candidate = parent->GetUnignoredChildAtIndex(i);
-    if (candidate->data().role == data().role)
-      ++position;
-    if (candidate == this)
-      return position;
+    if (!(candidate->data().role == data().role))
+      continue;
+    if (candidate->HasIntAttribute(ax::mojom::IntAttribute::kPosInSet))
+      return i;
   }
-  return 0;
+  return -1;
 }
 
-// Finds the total number of elements of the list this node is contained within.
-// Only counts the elements that have the same role as node.
-int32_t AXNode::SetSize() const {
+// Calculates node's position relative to first PosInSet-assigned element.
+// Returns node's 0-based index within container (relative to nodes with the
+// same role) if no element assigned PosInSet
+int32_t AXNode::RelativePosFromFirstAssigned(
+    int32_t first_assigned_index) const {
   AXNode* parent = GetUnignoredParent();
+  // Find nodes index in container
+  int nodes_index = 0;
+  for (int i = 0; i < parent->GetUnignoredChildCount(); ++i) {
+    AXNode* candidate = parent->GetUnignoredChildAtIndex(i);
+    if (candidate == this)
+      break;
+    if (candidate->data().role == data().role)
+      ++nodes_index;
+  }
 
+  if (first_assigned_index == -1)
+    return nodes_index;
+
+  // Calculate relative position
+  return nodes_index - first_assigned_index;
+}
+
+// Finds the position of this node within its container, relative to other
+// nodes with the same role.
+// Returns 1-based position if present in container, and 0 if not.
+int32_t AXNode::PosInSet() const {
   // Error checks
+  if (!IsSetSizePosInSetUsedInRole())
+    return 0;
+  AXNode* parent = GetUnignoredParent();
   if (!parent)
     return 0;
   if (parent->data().role != ax::mojom::Role::kList)
     return 0;
-  if (!IsPosInSetUsedInRole())
+
+  // Check if kPosInSet assigned and return if provided
+  if (HasIntAttribute(ax::mojom::IntAttribute::kPosInSet)) {
+    return GetIntAttribute(ax::mojom::IntAttribute::kPosInSet);
+  }
+
+  // Caluclate PosInSet
+  // 1. Find index of first element (with same role) that has kPosInSet Assigned
+  // 2. Find relative position of this node compared to first assigned
+  // 3. The PosInSet of this node = PosInSet(first assigned) + relative position
+
+  int32_t first_assigned_index = FirstAssignedPosInSet();
+  int32_t relative_position =
+      RelativePosFromFirstAssigned(first_assigned_index);
+
+  // If no element assigned PosInSet, return this node's 1-based position in the
+  // container
+  if (first_assigned_index == -1)
+    return relative_position + 1;
+
+  return parent->GetUnignoredChildAtIndex(first_assigned_index)
+             ->GetIntAttribute(ax::mojom::IntAttribute::kPosInSet) +
+         relative_position;
+}
+
+// Calculates the number of elements within node's container that have the
+// same role as node.
+int32_t AXNode::SetSize() const {
+  // Error checks
+  if (!IsSetSizePosInSetUsedInRole())
+    return 0;
+  AXNode* parent = GetUnignoredParent();
+  if (!parent)
+    return 0;
+  if (parent->data().role != ax::mojom::Role::kList)
     return 0;
 
+  // TODO (akihiroota): List objects should report SetSize
+
+  // Check if kSetSize assigned and return if provided
+  if (HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
+    return GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
+
+  // Check if kSetSize assigned in container and return if provided
+  if (parent->HasIntAttribute(ax::mojom::IntAttribute::kSetSize))
+    return parent->GetIntAttribute(ax::mojom::IntAttribute::kSetSize);
+
+  // Calculate SetSize
   int count = 0;
   for (int i = 0; i < parent->GetUnignoredChildCount(); ++i) {
     AXNode* child = parent->GetUnignoredChildAtIndex(i);
