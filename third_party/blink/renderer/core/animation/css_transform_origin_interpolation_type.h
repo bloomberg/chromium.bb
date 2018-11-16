@@ -24,9 +24,14 @@ class CSSTransformOriginInterpolationType
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final {
     const CSSValueList& list = ToCSSValueList(value);
-    DCHECK_EQ(list.length(), 3U);
+    DCHECK_GE(list.length(), 2u);
     return ListInterpolationFunctions::CreateList(
-        list.length(), [&list](wtf_size_t index) {
+        3, [&list](wtf_size_t index) {
+          if (index == list.length()) {
+            return LengthInterpolationFunctions::MaybeConvertCSSValue(
+                *CSSPrimitiveValue::Create(
+                    0, CSSPrimitiveValue::UnitType::kPixels));
+          }
           const CSSValue& item = list.Item(index);
           if (index < 2)
             return CSSPositionAxisListInterpolationType::
