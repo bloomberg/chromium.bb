@@ -264,6 +264,8 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   // Joining another thread may block the current thread for a long time, since
   // the thread referred to by |thread_handle| may still be running long-lived /
   // blocking tasks.
+  // TODO(https://crbug.com/707362): Make this a
+  // ScopedBlockingCallWithBaseSyncPrimitives.
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   CHECK_EQ(0, pthread_join(thread_handle.platform_handle(), nullptr));
 }

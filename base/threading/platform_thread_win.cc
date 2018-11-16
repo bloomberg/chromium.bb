@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_handle.h"
@@ -259,12 +260,6 @@ bool PlatformThread::CreateNonJoinableWithPriority(size_t stack_size,
 // static
 void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   DCHECK(thread_handle.platform_handle());
-  // TODO(willchan): Enable this check once I can get it to work for Windows
-  // shutdown.
-  // Joining another thread may block the current thread for a long time, since
-  // the thread referred to by |thread_handle| may still be running long-lived /
-  // blocking tasks.
-  // AssertBlockingAllowedDeprecated();
 
   DWORD thread_id = 0;
   thread_id = ::GetThreadId(thread_handle.platform_handle());
@@ -278,6 +273,10 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
 
   // Record the event that this thread is blocking upon (for hang diagnosis).
   base::debug::ScopedThreadJoinActivity thread_activity(&thread_handle);
+
+  // TODO(https://crbug.com/707362): Make this a
+  // ScopedBlockingCallWithBaseSyncPrimitives.
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // Wait for the thread to exit.  It should already have terminated but make
   // sure this assumption is valid.
