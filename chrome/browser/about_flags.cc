@@ -988,15 +988,6 @@ const FeatureEntry::FeatureVariation
          nullptr}};
 #endif  // OS_ANDROID
 
-#if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kPersistentMenuItemEnabled[] = {
-    {"persistent_menu_item_enabled", "true"}};
-
-const FeatureEntry::FeatureVariation kDataReductionMainMenuFeatureVariations[] =
-    {{"(persistent)", kPersistentMenuItemEnabled,
-      base::size(kPersistentMenuItemEnabled), nullptr}};
-#endif  // OS_ANDROID
-
 const FeatureEntry::FeatureParam kDetectingHeavyPagesLowThresholdEnabled[] = {
     {"PageCapMiB", "1"},
     {"MediaPageCapMiB", "1"}};
@@ -2229,14 +2220,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
                            kEnableDataReductionProxySavingsPromo)},
-    {"enable-data-reduction-proxy-main-menu",
-     flag_descriptions::kEnableDataReductionProxyMainMenuName,
-     flag_descriptions::kEnableDataReductionProxyMainMenuDescription,
-     kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         data_reduction_proxy::features::kDataReductionMainMenu,
-         kDataReductionMainMenuFeatureVariations,
-         "DataReductionProxyMainMenu")},
     {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
      flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(previews::features::kOfflinePreviews)},

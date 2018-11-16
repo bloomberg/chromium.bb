@@ -108,7 +108,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadProgressInfoBar,
     &kDownloadHomeV2,
     &kDownloadHomeShowStorageInfo,
-    &data_reduction_proxy::features::kDataReductionMainMenu,
     &kEphemeralTab,
     &kExploreSites,
     &kFullscreenActivity,

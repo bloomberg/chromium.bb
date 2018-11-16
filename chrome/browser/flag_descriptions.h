@@ -1461,9 +1461,6 @@ extern const char kEnableCustomContextMenuDescription[];
 extern const char kEnableCustomFeedbackUiName[];
 extern const char kEnableCustomFeedbackUiDescription[];
 
-extern const char kEnableDataReductionProxyMainMenuName[];
-extern const char kEnableDataReductionProxyMainMenuDescription[];
-
 extern const char kEnableMediaControlsExpandGestureName[];
 extern const char kEnableMediaControlsExpandGestureDescription[];
 

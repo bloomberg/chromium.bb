@@ -9,10 +9,6 @@
 namespace data_reduction_proxy {
 namespace features {
 
-// Enables the Data Reduction Proxy menu item in the main menu on Android.
-const base::Feature kDataReductionMainMenu{"DataReductionProxyMainMenu",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables a new version of the data reduction proxy protocol where the server
 // decides if a server-generated preview should be served. The previous
 // version required the client to make this decision. The new protocol relies
