@@ -96,13 +96,13 @@ class GuardedPageAllocator {
       friend struct SlotMetadata;
     };
 
-    SlotMetadata();
-    ~SlotMetadata();
-
     // Allocate internal data (StackTraces) for this slot. StackTrace objects
     // are large so we only allocate them if they're required (instead of
     // having them be statically allocated in the SlotMetadata itself.)
     void Init();
+
+    // Frees internal data. May only be called after Init().
+    void Destroy();
 
     // Update slot metadata on an allocation with the given size and pointer.
     void RecordAllocation(size_t size, void* ptr);
@@ -113,7 +113,7 @@ class GuardedPageAllocator {
     // Size of the allocation
     size_t alloc_size = 0;
     // The allocation address.
-    void* alloc_ptr = nullptr;
+    uintptr_t alloc_ptr = 0;
 
     AllocationInfo alloc;
     AllocationInfo dealloc;
