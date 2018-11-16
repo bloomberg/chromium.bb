@@ -156,5 +156,25 @@ TEST_F(FullscreenShellSurfaceTest, Minimize) {
   EXPECT_TRUE(fullscreen_surface->GetWidget()->IsMinimized());
 }
 
+TEST_F(FullscreenShellSurfaceTest, Bounds) {
+  aura::Window* root_window =
+      WMHelper::GetInstance()->GetRootWindowForNewWindows();
+  gfx::Rect new_root_bounds(10, 10, 100, 100);
+  root_window->SetBounds(new_root_bounds);
+
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(new Buffer(
+      CreateGpuMemoryBuffer(buffer_size, gfx::BufferFormat::RGBA_8888)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
+      new FullscreenShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  gfx::Rect fullscreen_bounds =
+      fullscreen_surface->GetWidget()->GetWindowBoundsInScreen();
+  EXPECT_EQ(fullscreen_bounds.size(), new_root_bounds.size());
+}
+
 }  // namespace
 }  // namespace exo
