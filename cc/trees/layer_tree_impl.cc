@@ -614,7 +614,7 @@ LayerImplList::reverse_iterator LayerTreeImpl::rend() {
 }
 
 bool LayerTreeImpl::IsElementInLayerList(ElementId element_id) const {
-  return elements_in_property_trees_.count(element_id);
+  return elements_in_layer_list_.count(element_id);
 }
 
 ElementListType LayerTreeImpl::GetElementTypeForAnimation() const {
@@ -623,6 +623,9 @@ ElementListType LayerTreeImpl::GetElementTypeForAnimation() const {
 
 void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
                                           LayerImpl* layer) {
+  DCHECK(layer);
+  DCHECK(layer->element_id() == element_id);
+
   if (!element_id)
     return;
 
@@ -632,17 +635,17 @@ void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
 
 #if DCHECK_IS_ON()
   bool element_id_collision_detected =
-      elements_in_property_trees_.count(element_id);
+      elements_in_layer_list_.count(element_id);
 
   DCHECK(!element_id_collision_detected);
 #endif
 
-  elements_in_property_trees_.insert(element_id);
+  elements_in_layer_list_.insert(element_id);
 
   host_impl_->mutator_host()->RegisterElement(element_id,
                                               GetElementTypeForAnimation());
 
-  if (layer && layer->scrollable())
+  if (layer->scrollable())
     AddScrollableLayer(layer);
 }
 
@@ -657,7 +660,7 @@ void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
   host_impl_->mutator_host()->UnregisterElement(element_id,
                                                 GetElementTypeForAnimation());
 
-  elements_in_property_trees_.erase(element_id);
+  elements_in_layer_list_.erase(element_id);
   element_id_to_scrollable_layer_.erase(element_id);
 }
 

@@ -171,17 +171,12 @@ class CC_ANIMATION_EXPORT ElementAnimations
   ~ElementAnimations() override;
 
   void OnFilterAnimated(ElementListType list_type,
-                        const FilterOperations& filters,
-                        KeyframeModel* keyframe_model);
-  void OnOpacityAnimated(ElementListType list_type,
-                         float opacity,
-                         KeyframeModel* keyframe_model);
+                        const FilterOperations& filters);
+  void OnOpacityAnimated(ElementListType list_type, float opacity);
   void OnTransformAnimated(ElementListType list_type,
-                           const gfx::Transform& transform,
-                           KeyframeModel* keyframe_model);
+                           const gfx::Transform& transform);
   void OnScrollOffsetAnimated(ElementListType list_type,
-                              const gfx::ScrollOffset& scroll_offset,
-                              KeyframeModel* keyframe_model);
+                              const gfx::ScrollOffset& scroll_offset);
 
   static TargetProperties GetPropertiesMaskForAnimationState();
 

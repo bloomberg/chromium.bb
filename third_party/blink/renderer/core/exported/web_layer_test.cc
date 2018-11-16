@@ -493,7 +493,7 @@ TEST_P(WebLayerListSimTest, LayerSubtreeEffectPropertyChanged) {
   DCHECK_EQ(outer_element_layer->element_id(),
             CompositorElementIdFromUniqueObjectId(
                 outer_element->GetLayoutObject()->UniqueId(),
-                CompositorElementIdNamespace::kPrimary));
+                CompositorElementIdNamespace::kEffectFilter));
   auto* inner_element = GetElementById("inner");
   auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
   DCHECK_EQ(inner_element_layer->element_id(),

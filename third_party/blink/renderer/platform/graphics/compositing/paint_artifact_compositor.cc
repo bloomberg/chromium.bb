@@ -31,31 +31,6 @@
 
 namespace blink {
 
-namespace {
-
-// Inserts the element ids of the given node and all of its ancestors into the
-// given |composited_element_ids| set. Returns once it finds an id which already
-// exists as this implies that all of those ancestor nodes have already been
-// inserted.
-template <typename NodeType>
-void InsertAncestorElementIds(const NodeType* node,
-                              CompositorElementIdSet& composited_element_ids) {
-  while (node) {
-    const CompositorElementId& element_id = node->GetCompositorElementId();
-    if (element_id) {
-      if (composited_element_ids.count(element_id)) {
-        // Once we reach a node already counted we can stop traversing the
-        // parent chain.
-        return;
-      }
-      composited_element_ids.insert(element_id);
-    }
-    node = node->Parent() ? node->Parent()->Unalias() : nullptr;
-  }
-}
-
-}  // namespace
-
 // cc property trees make use of a sequence number to identify when tree
 // topology changes. For now we naively increment the sequence number each time
 // we update the property trees. We should explore optimizing our management of
@@ -790,7 +765,20 @@ void PaintArtifactCompositor::Update(
     scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
         paint_artifact, pending_layer, layer_offset, new_content_layer_clients,
         new_scroll_hit_test_layers);
-
+    // Get the compositor element id for the layer. Scrollable layers are only
+    // associated with scroll element ids which are set in
+    // ScrollHitTestLayerForPendingLayer.
+    CompositorElementId element_id =
+        layer->scrollable()
+            ? layer->element_id()
+            : property_state.GetCompositorElementId(composited_element_ids);
+    // TODO(wkorman): Cease setting element id on layer once
+    // animation subsystem no longer requires element id to layer
+    // map. http://crbug.com/709137
+    // TODO(pdr): Element ids will still need to be set on scroll layers.
+    layer->SetElementId(element_id);
+    if (element_id)
+      composited_element_ids.insert(element_id);
     layer->SetLayerTreeHost(root_layer_->layer_tree_host());
 
     int transform_id =
@@ -821,11 +809,6 @@ void PaintArtifactCompositor::Update(
     // condition for this. Do we need to do the same here?
     layer->SetShouldCheckBackfaceVisibility(backface_hidden);
 
-    InsertAncestorElementIds(property_state.Effect(), composited_element_ids);
-    InsertAncestorElementIds(transform, composited_element_ids);
-    if (layer->scrollable())
-      composited_element_ids.insert(layer->element_id());
-
     // If the property tree state has changed between the layer and the root, we
     // need to inform the compositor so damage can be calculated.
     // Calling |PropertyTreeStateChanged| for every pending layer is
@@ -851,9 +834,6 @@ void PaintArtifactCompositor::Update(
   }
 
   root_layer_->SetChildLayerList(layer_list_builder.Finalize());
-
-  // Update the host's active registered element ids.
-  host->SetActiveRegisteredElementIds(composited_element_ids);
 
   // Mark the property trees as having been rebuilt.
   host->property_trees()->sequence_number = g_s_property_tree_sequence_number;
