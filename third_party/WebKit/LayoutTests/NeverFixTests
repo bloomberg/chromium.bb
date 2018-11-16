@@ -2074,3 +2074,4 @@ virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-o
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onresult-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-stop-manual.https.html [ WontFix ]
 external/wpt/pointerevents/pointerevent_pointermove-manual.html [ WontFix ]
+[ Retina ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ WontFix ]
