@@ -740,8 +740,6 @@ class AutofillAssistantUiDelegate {
                                 .inflate(R.layout.init_screen, mCoordinatorView)
                                 .findViewById(R.id.init_screen);
 
-        initView.findViewById(R.id.close_button)
-                .setOnClickListener(unusedView -> onInitClicked(controller, false, initView));
         initView.findViewById(R.id.button_init_ok)
                 .setOnClickListener(unusedView -> onInitClicked(controller, true, initView));
         initView.findViewById(R.id.button_init_not_ok)
