@@ -44,13 +44,6 @@ class EventGeneratorDelegate {
           gfx::NativeWindow window)>;
   static void SetFactoryFunction(FactoryFunction factory);
 
-  // Creates an EventGeneratorDelegate using the factory set by way of
-  // SetFactoryFunction().
-  static std::unique_ptr<EventGeneratorDelegate> Create(
-      EventGenerator* owner,
-      gfx::NativeWindow root_window,
-      gfx::NativeWindow window);
-
   // The ui::EventTarget at the given |location|.
   virtual EventTarget* GetTargetAt(const gfx::Point& location) = 0;
 
