@@ -257,10 +257,6 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       GetUiController()->ShutdownGracefully();
       return;
 
-    case ScriptExecutor::CLOSE_CUSTOM_TAB:
-      GetUiController()->CloseCustomTab();
-      return;
-
     case ScriptExecutor::RESTART:
       script_tracker_ = std::make_unique<ScriptTracker>(/* delegate= */ this,
                                                         /* listener= */ this);

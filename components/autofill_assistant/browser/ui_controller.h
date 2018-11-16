@@ -46,9 +46,6 @@ class UiController {
   // Warning: this indirectly deletes the caller.
   virtual void ShutdownGracefully() = 0;
 
-  // Shuts down Autofill Assistant and closes CCT.
-  virtual void CloseCustomTab();
-
   // Update the list of scripts in the UI.
   virtual void UpdateScripts(const std::vector<ScriptHandle>& scripts) = 0;
 
@@ -83,8 +80,7 @@ class UiController {
   // not similar to the current one.
   // TODO(806868): Pass details to the native side instead of comparing on the
   // Java side.
-  virtual void ShowDetails(const DetailsProto& details,
-                           base::OnceCallback<void(bool)> callback) = 0;
+  virtual bool ShowDetails(const DetailsProto& details) = 0;
 
   // Show the progress bar with |message| and set it at |progress|%.
   virtual void ShowProgressBar(int progress, const std::string& message) = 0;
