@@ -12,7 +12,7 @@ namespace features {
 // to site-isolated code cache are handled by the content/GeneratedCodeCache
 // When this flag is enabled, the metadata field of the HttpCache is unused.
 const base::Feature kIsolatedCodeCache = {"IsolatedCodeCache",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the additional TLS 1.3 server-random-based downgrade protection
 // described in https://tools.ietf.org/html/rfc8446#section-4.1.3
