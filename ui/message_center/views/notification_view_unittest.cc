@@ -165,7 +165,8 @@ class NotificationViewTest : public views::ViewsTestBase {
         .x();
   }
 
-  bool IsRemoved(const std::string& notification_id) const {
+  bool IsRemovedAfterIdle(const std::string& notification_id) const {
+    base::RunLoop().RunUntilIdle();
     return !MessageCenter::Get()->FindVisibleNotificationById(notification_id);
   }
 
@@ -625,18 +626,18 @@ TEST_F(NotificationViewTest, SlideOut) {
 
   BeginScroll();
   ScrollBy(-10);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(-10.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
   BeginScroll();
   ScrollBy(-200);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_TRUE(IsRemoved(notification_id));
+  EXPECT_TRUE(IsRemovedAfterIdle(notification_id));
 }
 
 TEST_F(NotificationViewTest, SlideOutNested) {
@@ -648,18 +649,18 @@ TEST_F(NotificationViewTest, SlideOutNested) {
 
   BeginScroll();
   ScrollBy(-10);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(-10.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
   BeginScroll();
   ScrollBy(-200);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_TRUE(IsRemoved(notification_id));
+  EXPECT_TRUE(IsRemovedAfterIdle(notification_id));
 }
 
 // Pinning notification is ChromeOS only feature.
@@ -676,10 +677,10 @@ TEST_F(NotificationViewTest, SlideOutPinned) {
 
   BeginScroll();
   ScrollBy(-200);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_LT(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
 }
 
 TEST_F(NotificationViewTest, PopupsCantPin) {
@@ -701,11 +702,11 @@ TEST_F(NotificationViewTest, PopupsCantPin) {
 
   BeginScroll();
   ScrollBy(-200);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_TRUE(shown_as_popup(notification_id));
   EXPECT_EQ(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_FALSE(shown_as_popup(notification_id));
 }
 

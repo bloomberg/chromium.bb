@@ -145,7 +145,8 @@ class ArcNotificationViewTest : public AshTestBase {
         .x();
   }
 
-  bool IsRemoved(const std::string& notification_id) const {
+  bool IsRemovedAfterIdle(const std::string& notification_id) const {
+    base::RunLoop().RunUntilIdle();
     return !MessageCenter::Get()->FindVisibleNotificationById(notification_id);
   }
 
@@ -222,19 +223,19 @@ TEST_F(ArcNotificationViewTest, SlideOut) {
   BeginScroll();
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
   ScrollBy(-10);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(-10.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
   BeginScroll();
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
   ScrollBy(-200);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_TRUE(IsRemoved(notification_id));
+  EXPECT_TRUE(IsRemovedAfterIdle(notification_id));
 }
 
 TEST_F(ArcNotificationViewTest, SlideOutNested) {
@@ -247,19 +248,19 @@ TEST_F(ArcNotificationViewTest, SlideOutNested) {
   BeginScroll();
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
   ScrollBy(-10);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(-10.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
   BeginScroll();
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
   ScrollBy(-200);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_EQ(-200.f, GetNotificationSlideAmount());
   EndScroll();
-  EXPECT_TRUE(IsRemoved(notification_id));
+  EXPECT_TRUE(IsRemovedAfterIdle(notification_id));
 }
 
 // Pinning notification is ChromeOS only feature.
@@ -278,11 +279,11 @@ TEST_F(ArcNotificationViewTest, SlideOutPinned) {
   BeginScroll();
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
   ScrollBy(-200);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   EXPECT_LT(-200.f, GetNotificationSlideAmount());
   EndScroll();
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
 }
 
 TEST_F(ArcNotificationViewTest, SnoozeButton) {
@@ -319,9 +320,9 @@ TEST_F(ArcNotificationViewTest, PressBackspaceKey) {
   input_method->SetFocusedTextInputClient(&text_input_client);
   ASSERT_EQ(&text_input_client, input_method->GetTextInputClient());
 
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   PerformKeyEvents(ui::VKEY_BACK);
-  EXPECT_TRUE(IsRemoved(notification_id));
+  EXPECT_TRUE(IsRemovedAfterIdle(notification_id));
 
   input_method->SetFocusedTextInputClient(nullptr);
 }
@@ -338,9 +339,9 @@ TEST_F(ArcNotificationViewTest, PressBackspaceKeyOnEditBox) {
 
   text_input_client.set_text_input_type(ui::TEXT_INPUT_TYPE_TEXT);
 
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
   PerformKeyEvents(ui::VKEY_BACK);
-  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_FALSE(IsRemovedAfterIdle(notification_id));
 
   input_method->SetFocusedTextInputClient(nullptr);
 }

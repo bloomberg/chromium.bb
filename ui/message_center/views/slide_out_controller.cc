@@ -160,7 +160,13 @@ void SlideOutController::SlideOutAndClose(int direction) {
 
 void SlideOutController::OnImplicitAnimationsCompleted() {
   delegate_->OnSlideChanged();
-  delegate_->OnSlideOut();
+
+  // OnImplicitAnimationsCompleted is called from BeginMainFrame, so we should
+  // delay operation that might result in deletion of LayerTreeHost.
+  // https://crbug.com/895883
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Delegate::OnSlideOut, base::Unretained(delegate_)));
 }
 
 void SlideOutController::EnableSwipeControl(int button_count) {

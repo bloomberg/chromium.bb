@@ -6,6 +6,7 @@
 
 #include "ash/app_menu/notification_item_view.h"
 #include "ash/app_menu/notification_menu_view_test_api.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -346,6 +347,7 @@ TEST_F(NotificationMenuViewTest, SlideOut) {
   EXPECT_EQ(-200.f, GetSlideAmount());
   // Release the gesture, the notification should slide out.
   EndScroll();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, mock_notification_menu_controller()->slide_out_count_);
   EXPECT_EQ(0, mock_notification_menu_controller()->activation_count_);
 }
