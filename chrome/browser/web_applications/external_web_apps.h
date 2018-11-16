@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_BOOKMARK_APPS_EXTERNAL_WEB_APPS_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_BOOKMARK_APPS_EXTERNAL_WEB_APPS_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTERNAL_WEB_APPS_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_EXTERNAL_WEB_APPS_H_
 
 #include <vector>
 
@@ -31,4 +31,4 @@ ScanDirForExternalWebAppsForTesting(base::FilePath dir);
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_BOOKMARK_APPS_EXTERNAL_WEB_APPS_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_EXTERNAL_WEB_APPS_H_

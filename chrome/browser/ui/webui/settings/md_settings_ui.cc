@@ -97,7 +97,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
-#include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/account_manager/account_manager.h"

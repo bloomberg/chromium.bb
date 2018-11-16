@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 
 #include <utility>
 #include <vector>
@@ -12,10 +12,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"

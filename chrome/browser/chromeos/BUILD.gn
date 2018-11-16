@@ -67,8 +67,8 @@ source_set("chromeos") {
     "//chrome/browser/extensions",
     "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
     "//chrome/browser/ssl:proto",
+    "//chrome/browser/web_applications",
     "//chrome/browser/web_applications:web_applications_on_extensions",
-    "//chrome/browser/web_applications/bookmark_apps",
     "//chrome/browser/web_applications/components",
     "//chrome/common",
     "//chrome/common/extensions/api",
@@ -260,7 +260,7 @@ source_set("chromeos") {
   allow_circular_includes_from = [
     "//chrome/browser/extensions",
     "//chrome/browser/apps/platform_apps/api",
-    "//chrome/browser/web_applications/bookmark_apps",
+    "//chrome/browser/web_applications",
   ]
 
   sources = [
