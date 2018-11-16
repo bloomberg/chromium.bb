@@ -43,6 +43,8 @@ source_set("wayland") {
     "wayland_pointer_delegate.h",
     "wayland_touch_delegate.cc",
     "wayland_touch_delegate.h",
+    "wl_seat.cc",
+    "wl_seat.h",
     "wl_shell.cc",
     "wl_shell.h",
     "zcr_gaming_input.cc",
