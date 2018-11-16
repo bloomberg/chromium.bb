@@ -21,9 +21,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service.h"
 #include "chrome/browser/supervised_user/legacy/custodian_profile_downloader_service_factory.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
@@ -36,12 +34,11 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/buildflags/buildflags.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -187,16 +184,18 @@ class SupervisedUserServiceTest : public ::testing::Test {
   SupervisedUserServiceTest() {}
 
   void SetUp() override {
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
-    profile_ = builder.Build();
+    profile_ = IdentityTestEnvironmentProfileAdaptor::
+        CreateProfileForIdentityTestEnvironment({});
+    identity_test_environment_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
     supervised_user_service_ =
         SupervisedUserServiceFactory::GetForProfile(profile_.get());
   }
 
-  void TearDown() override { profile_.reset(); }
+  void TearDown() override {
+    identity_test_environment_adaptor_.reset();
+    profile_.reset();
+  }
 
   ~SupervisedUserServiceTest() override {}
 
@@ -207,6 +206,12 @@ class SupervisedUserServiceTest : public ::testing::Test {
                         base::Unretained(result_holder)));
   }
 
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_environment_adaptor_->identity_test_env();
+  }
+
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_environment_adaptor_;
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   SupervisedUserService* supervised_user_service_;
@@ -223,8 +228,8 @@ TEST_F(SupervisedUserServiceTest, ShutDownCustodianProfileDownloader) {
 
   // Emulate being logged in, then start to download a profile so a
   // ProfileDownloader gets created.
-  SigninManagerFactory::GetForProfile(profile_.get())->
-      SetAuthenticatedAccountInfo("12345", "Logged In");
+  identity_test_env()->MakePrimaryAccountAvailable("Logged In");
+
   downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
 }
 #endif
