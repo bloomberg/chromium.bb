@@ -144,11 +144,7 @@ window.addEventListener('scroll', (event) => {
 **Documentation:** [link](https://tc39.github.io/ecma262/#sec-arrow-function-definitions)
 
 **Discussion Notes / Link to Thread:**
-
-**Note**: => does not work in iOS9.  Don't use it in code that runs on Chrome for
-iOS.  There's a presubmit check that should warn you about this.
-
-[Discussion thread](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/iJrC4PVSfoU)
+[link](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/iJrC4PVSfoU)
 
 ---
 
@@ -219,10 +215,6 @@ class Rectangle extends Shape {
 
 **Discussion Notes / Link to Thread:**
 https://groups.google.com/a/chromium.org/d/msg/chromium-dev/S1h-0m2ohOw/jyaiMGDlCwAJ
-
-**Note**: Not fully supported in iOS9.  Don't use it in code that runs on Chrome
-for iOS, unless you can verify it works. TODO: Remove this note once support for
-iOS9 is dropped.
 
 ---
 
@@ -309,10 +301,6 @@ frobber.isFrobbing = false;  // Works.
 
 **Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/MJhTok8Usr8/XCrkisaBBQAJ)
 
-**Note**: `const` [not fully supported](https://caniuse.com/#feat=let) in iOS9.
-Don't use it in code that runs on Chrome for iOS, until support for iOS9 is
-dropped.
-
 ---
 
 ## let (Block-Scoped Variables)
@@ -354,10 +342,6 @@ function f() {
 **Documentation:** [link](https://tc39.github.io/ecma262/#sec-let-and-const-declarations)
 
 **Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/MJhTok8Usr8/XCrkisaBBQAJ)
-
-**Note**: `let` is [not fully supported](https://caniuse.com/#feat=let) in iOS9.
-Don't use it in code that runs on Chrome for iOS, until support for iOS9 is
-dropped.
 
 ---
 
