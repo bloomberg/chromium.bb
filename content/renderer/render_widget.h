@@ -157,7 +157,7 @@ class CONTENT_EXPORT RenderWidget
                WidgetType widget_type,
                const ScreenInfo& screen_info,
                blink::WebDisplayMode display_mode,
-               bool swapped_out,
+               bool is_frozen,
                bool hidden,
                bool never_visible,
                mojom::WidgetRequest widget_request = nullptr);
@@ -221,13 +221,15 @@ class CONTENT_EXPORT RenderWidget
   ScreenInfo screen_info() const { return screen_info_; }
   void set_screen_info(const ScreenInfo& info) { screen_info_ = info; }
 
-  // Sets whether this RenderWidget has been swapped out to be displayed by
-  // a RenderWidget in a different process.  If so, no new IPC messages will be
-  // sent (only ACKs) and the process is free to exit when there are no other
-  // active RenderWidgets. The RenderWidget is not used for compositing as there
-  // is no WebWidget that should display content when swapped out.
-  void SetSwappedOut(bool is_swapped_out);
-  bool is_swapped_out() const { return is_swapped_out_; }
+  // Sets whether this RenderWidget should be moved into or out of a frozen
+  // state. This state is used for the RenderWidget attached to a RenderViewImpl
+  // for its main frame, when there is no local main frame present.
+  // In this case, the RenderWidget can't be deleted currently but should
+  // otherwise act as if it is dead. Only whitelisted new IPC messages will be
+  // sent, and it does no compositing. The process is free to exit when there
+  // are no other unfrozen (thawed) RenderWidgets.
+  void SetIsFrozen(bool is_frozen);
+  bool is_frozen() const { return is_frozen_; }
 
   // This is true once a Close IPC has been received. The actual action of
   // closing must be done on another stack frame, in case the IPC receipt
@@ -815,10 +817,14 @@ class CONTENT_EXPORT RenderWidget
   // True if it is known that the host is in the process of being shut down.
   bool host_will_close_this_;
 
-  // Whether this RenderWidget is currently swapped out, such that the view is
-  // being rendered by another process.  If all RenderWidgets in a process are
-  // swapped out, the process can exit.
-  bool is_swapped_out_;
+  // A RenderWidget is frozen if it is the RenderWidget attached to the
+  // RenderViewImpl for its main frame, but there is a proxy main frame in
+  // RenderViewImpl's frame tree. Since proxy frames do not have content they
+  // do not need a RenderWidget.
+  // TODO(419087): In this case the RenderWidget should not exist at all as
+  // it has nothing to display, but since we can't destroy it without destroying
+  // the RenderViewImpl, we freeze it instead.
+  bool is_frozen_;
 
   // Stores information about the current text input.
   blink::WebTextInputInfo text_input_info_;
@@ -913,8 +919,10 @@ class CONTENT_EXPORT RenderWidget
   // Indicates whether this widget has focus.
   bool has_focus_;
 
-  // Whether this RenderWidget is for an out-of-process iframe or not.
-  bool for_oopif_;
+  // Whether this widget is for a child local root frame. This excludes widgets
+  // that are not for a frame (eg popups) and excludes the widget for the main
+  // frame (which is attached to the RenderViewImpl).
+  bool for_child_local_root_frame_;
 
   // A callback into the creator/opener of this widget, to be executed when
   // WebWidgetClient::Show() occurs.
