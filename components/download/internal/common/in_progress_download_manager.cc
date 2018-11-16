@@ -72,6 +72,7 @@ void BeginResourceDownload(
     std::unique_ptr<DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
+    const URLSecurityPolicy& url_security_policy,
     bool is_new_download,
     base::WeakPtr<InProgressDownloadManager> download_manager,
     const GURL& site_url,
@@ -82,8 +83,8 @@ void BeginResourceDownload(
   UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader(
       ResourceDownloader::BeginDownload(
           download_manager, std::move(params), std::move(request),
-          std::move(url_loader_factory_getter), site_url, tab_url,
-          tab_referrer_url, is_new_download, false, main_task_runner)
+          std::move(url_loader_factory_getter), url_security_policy, site_url,
+          tab_url, tab_referrer_url, is_new_download, false, main_task_runner)
           .release(),
       base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
 
@@ -104,6 +105,7 @@ void CreateDownloadHandlerForNavigation(
     net::CertStatus cert_status,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
+    const URLSecurityPolicy& url_security_policy,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner) {
   DCHECK(GetIOTaskRunner()->BelongsToCurrentThread());
   UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader(
@@ -112,7 +114,8 @@ void CreateDownloadHandlerForNavigation(
           render_frame_id, site_url, tab_url, tab_referrer_url,
           std::move(url_chain), std::move(response), std::move(cert_status),
           std::move(url_loader_client_endpoints),
-          std::move(url_loader_factory_getter), main_task_runner)
+          std::move(url_loader_factory_getter), url_security_policy,
+          main_task_runner)
           .release(),
       base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
 
@@ -125,12 +128,14 @@ void CreateDownloadHandlerForNavigation(
 InProgressDownloadManager::InProgressDownloadManager(
     Delegate* delegate,
     const base::FilePath& in_progress_db_dir,
-    const IsOriginSecureCallback& is_origin_secure_cb)
+    const IsOriginSecureCallback& is_origin_secure_cb,
+    const URLSecurityPolicy& url_security_policy)
     : is_initialized_(false),
       delegate_(delegate),
       file_factory_(new DownloadFileFactory()),
       download_start_observer_(nullptr),
       is_origin_secure_cb_(is_origin_secure_cb),
+      url_security_policy_(url_security_policy),
       weak_factory_(this) {
   Initialize(in_progress_db_dir);
 }
@@ -176,9 +181,9 @@ void InProgressDownloadManager::BeginDownload(
       FROM_HERE,
       base::BindOnce(&BeginResourceDownload, std::move(params),
                      std::move(request), std::move(url_loader_factory_getter),
-                     is_new_download, weak_factory_.GetWeakPtr(), site_url,
-                     tab_url, tab_referrer_url,
-                     base::ThreadTaskRunnerHandle::Get()));
+                     url_security_policy_, is_new_download,
+                     weak_factory_.GetWeakPtr(), site_url, tab_url,
+                     tab_referrer_url, base::ThreadTaskRunnerHandle::Get()));
 }
 
 void InProgressDownloadManager::InterceptDownloadFromNavigation(
@@ -201,7 +206,7 @@ void InProgressDownloadManager::InterceptDownloadFromNavigation(
                      tab_referrer_url, std::move(url_chain),
                      std::move(response), std::move(cert_status),
                      std::move(url_loader_client_endpoints),
-                     std::move(url_loader_factory_getter),
+                     std::move(url_loader_factory_getter), url_security_policy_,
                      base::ThreadTaskRunnerHandle::Get()));
 }
 

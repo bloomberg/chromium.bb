@@ -29,6 +29,11 @@ struct DownloadCreateInfo;
 struct DownloadSaveInfo;
 class DownloadUrlParameters;
 
+// Used to check if the URL is safe. For most cases, this is
+// ChildProcessSecurityPolicy::CanRequestURL.
+using URLSecurityPolicy =
+    base::RepeatingCallback<bool(int /* render_process_id */, const GURL& url)>;
+
 // Handle the url request completion status and return the interrupt reasons.
 // |cert_status| is ignored if error_code is not net::ERR_ABORTED.
 COMPONENTS_DOWNLOAD_EXPORT DownloadInterruptReason
