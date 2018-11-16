@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.internal.runner.RunnerArgs;
@@ -191,7 +192,8 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                     (DexFile[]) bootstrapClass.getDeclaredField("sIncrementalDexFiles").get(null));
         } catch (Exception e) {
             // Not an incremental apk.
-            if (BuildConfig.IS_MULTIDEX_ENABLED) {
+            if (BuildConfig.IS_MULTIDEX_ENABLED
+                    && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
                 // Test listing fails for test classes that aren't in the main dex
                 // (crbug.com/903820).
                 addClassloaderDexFiles(dexFiles, getClass().getClassLoader());
