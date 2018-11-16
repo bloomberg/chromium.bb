@@ -114,9 +114,9 @@ enum ResultCodeValues : ResultCode {
   // longer used.
   // 27
 
-  // This code is used when the reporter didn't find any UwS but the signature
-  // matcher was invalid.
-  RESULT_CODE_NO_PUPS_FOUND_NO_SIGNATURE_MATCHER = 28,
+  // DEPRECATED. This code was used when the reporter didn't find any UwS but
+  // the signature matcher was invalid.
+  // 28
 
   // This code is used when the validation step detects that one or more PUP
   // files are remaining after a cleanup and fails to remove them.
