@@ -12,7 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "components/download/quarantine/common_linux.h"
 #include "url/gurl.h"
 
@@ -21,7 +21,7 @@ namespace download {
 namespace {
 
 std::string GetExtendedFileAttribute(const char* path, const char* name) {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   ssize_t len = getxattr(path, name, nullptr, 0);
   if (len <= 0)
     return std::string();
