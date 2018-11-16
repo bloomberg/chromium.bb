@@ -376,15 +376,15 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateAPIUserTest,
   LockScreen(tester.get());
   signin_api.OnBrailleKeyEvent(key_event);
   user_api.OnBrailleKeyEvent(key_event);
-  EXPECT_EQ(1, signin_delegate->GetEventCount());
-  EXPECT_EQ(1, user_delegate->GetEventCount());
+  EXPECT_EQ(0, signin_delegate->GetEventCount());
+  EXPECT_EQ(2, user_delegate->GetEventCount());
 
   // Unlock screen, making sur ekey events go to the user profile again.
   DismissLockScreen(tester.get());
   signin_api.OnBrailleKeyEvent(key_event);
   user_api.OnBrailleKeyEvent(key_event);
-  EXPECT_EQ(1, signin_delegate->GetEventCount());
-  EXPECT_EQ(2, user_delegate->GetEventCount());
+  EXPECT_EQ(0, signin_delegate->GetEventCount());
+  EXPECT_EQ(3, user_delegate->GetEventCount());
 }
 
 }  // namespace braille_display_private
