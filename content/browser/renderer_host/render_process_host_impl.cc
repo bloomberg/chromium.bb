@@ -205,7 +205,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -1306,6 +1305,14 @@ void AddCorbExceptionForPluginOnIOThread(int process_id) {
       base::BindOnce(&AddCorbExceptionForPluginOnUIThread, process_id));
 }
 
+service_manager::Connector* MaybeGetConnectorForProcess() {
+  auto* connection = ServiceManagerConnection::GetForProcess();
+  if (!connection)
+    return nullptr;
+
+  return connection->GetConnector();
+}
+
 }  // namespace
 
 // Held by the RPH and used to control an (unowned) ConnectionFilterImpl from
@@ -1586,6 +1593,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       channel_connected_(false),
       sent_render_process_ready_(false),
       renderer_host_binding_(this),
+      process_resource_coordinator_(MaybeGetConnectorForProcess()),
       instance_weak_factory_(
           new base::WeakPtrFactory<RenderProcessHostImpl>(this)),
       frame_sink_provider_(id_),
@@ -2512,13 +2520,7 @@ mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
 
 resource_coordinator::ProcessResourceCoordinator*
 RenderProcessHostImpl::GetProcessResourceCoordinator() {
-  if (!process_resource_coordinator_) {
-    auto* connection = ServiceManagerConnection::GetForProcess();
-    process_resource_coordinator_ =
-        std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
-            connection ? connection->GetConnector() : nullptr);
-  }
-  return process_resource_coordinator_.get();
+  return &process_resource_coordinator_;
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
@@ -4144,7 +4146,8 @@ void RenderProcessHostImpl::ProcessDied(
   // Make sure no IPCs or mojo calls from the old process get dispatched after
   // it has died.
   ResetIPC();
-  process_resource_coordinator_.reset();
+
+  process_resource_coordinator_.SetProcessExitStatus(info.exit_code);
 
   UpdateProcessPriority();
 

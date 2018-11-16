@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -130,14 +131,17 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
 
   mojo::Binding<MojoInterfaceClass>& binding() { return binding_; }
 
- protected:
   static CoordinationUnitClass* GetCoordinationUnitByID(
       CoordinationUnitGraph* graph,
       const CoordinationUnitID cu_id) {
     DCHECK(cu_id.type == CoordinationUnitClass::Type());
     auto* cu = graph->GetCoordinationUnitByID(cu_id);
-    DCHECK(cu->id().type == CoordinationUnitClass::Type());
-    return static_cast<CoordinationUnitClass*>(cu);
+    if (cu->id().type == CoordinationUnitClass::Type()) {
+      return static_cast<CoordinationUnitClass*>(cu);
+    } else {
+      NOTREACHED();
+    }
+    return nullptr;
   }
 
  private:

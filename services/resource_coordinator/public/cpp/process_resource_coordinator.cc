@@ -15,13 +15,15 @@ ProcessResourceCoordinator::ProcessResourceCoordinator(
   CoordinationUnitID new_cu_id(CoordinationUnitType::kProcess,
                                CoordinationUnitID::RANDOM_ID);
   ResourceCoordinatorInterface::ConnectToService(connector, new_cu_id);
-  DCHECK(service_);
 }
 
 ProcessResourceCoordinator::~ProcessResourceCoordinator() = default;
 
 void ProcessResourceCoordinator::OnProcessLaunched(
     const base::Process& process) {
+  if (!service_)
+    return;
+
   // TODO(fdoray): Merge ProcessCoordinationUnit::SetPID/SetLaunchTime().
   service_->SetPID(process.Pid());
   service_->SetLaunchTime(
@@ -37,28 +39,23 @@ void ProcessResourceCoordinator::OnProcessLaunched(
 }
 
 void ProcessResourceCoordinator::SetCPUUsage(double cpu_usage) {
+  if (!service_)
+    return;
+
   service_->SetCPUUsage(cpu_usage);
 }
 
-void ProcessResourceCoordinator::AddFrame(
-    const FrameResourceCoordinator& frame) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // We could keep the ID around ourselves, but this hop ensures that the child
-  // has been created on the service-side.
-  frame.service()->GetID(
-      base::BindOnce(&ProcessResourceCoordinator::AddFrameByID,
-                     weak_ptr_factory_.GetWeakPtr()));
+void ProcessResourceCoordinator::SetProcessExitStatus(int32_t exit_status) {
+  if (!service_)
+    return;
+
+  service_->SetProcessExitStatus(exit_status);
 }
 
 void ProcessResourceCoordinator::ConnectToService(
     mojom::CoordinationUnitProviderPtr& provider,
     const CoordinationUnitID& cu_id) {
   provider->CreateProcessCoordinationUnit(mojo::MakeRequest(&service_), cu_id);
-}
-
-void ProcessResourceCoordinator::AddFrameByID(const CoordinationUnitID& cu_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  service_->AddFrame(cu_id);
 }
 
 }  // namespace resource_coordinator

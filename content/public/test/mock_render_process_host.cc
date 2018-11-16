@@ -400,8 +400,11 @@ mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
 resource_coordinator::ProcessResourceCoordinator*
 MockRenderProcessHost::GetProcessResourceCoordinator() {
   if (!process_resource_coordinator_) {
+    content::ServiceManagerConnection* connection =
+        content::ServiceManagerConnection::GetForProcess();
+    // Tests may not set up a connection.
     service_manager::Connector* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
+        connection ? connection->GetConnector() : nullptr;
     process_resource_coordinator_ =
         std::make_unique<resource_coordinator::ProcessResourceCoordinator>(
             connector);

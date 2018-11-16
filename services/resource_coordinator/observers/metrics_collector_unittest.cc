@@ -351,7 +351,7 @@ TEST_F(MAYBE_MetricsCollectorTest, ResponsivenessMetric) {
 
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   page_cu->AddFrame(frame_cu->id());
-  process_cu->AddFrame(frame_cu->id());
+  frame_cu->SetProcess(process_cu->id());
 
   ukm::TestUkmRecorder ukm_recorder;
   coordination_unit_graph()->set_ukm_recorder(&ukm_recorder);
