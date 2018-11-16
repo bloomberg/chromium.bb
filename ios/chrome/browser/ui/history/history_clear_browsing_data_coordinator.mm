@@ -23,7 +23,8 @@
 #endif
 
 @interface HistoryClearBrowsingDataCoordinator ()<
-    UIViewControllerTransitioningDelegate>
+    UIViewControllerTransitioningDelegate,
+    TableViewPresentationControllerDelegate>
 
 // ViewControllers being managed by this Coordinator.
 @property(strong, nonatomic)
@@ -127,8 +128,20 @@ presentationControllerForPresentedViewController:(UIViewController*)presented
       [[TableViewPresentationController alloc]
           initWithPresentedViewController:presented
                  presentingViewController:presenting];
-
+  controller.modalDelegate = self;
   return controller;
+}
+
+#pragma mark - TableViewPresentationControllerDelegate
+
+- (BOOL)presentationControllerShouldDismissOnTouchOutside:
+    (TableViewPresentationController*)controller {
+  return YES;
+}
+
+- (void)presentationControllerWillDismiss:
+    (TableViewPresentationController*)controller {
+  [self stopWithCompletion:nil];
 }
 
 @end
