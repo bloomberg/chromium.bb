@@ -413,6 +413,12 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
 
   web_configuration.ice_candidate_pool_size =
       configuration->iceCandidatePoolSize();
+
+  if (configuration->hasRtcAudioJitterBufferMaxPackets()) {
+    web_configuration.audio_jitter_buffer_max_packets =
+        static_cast<int>(configuration->rtcAudioJitterBufferMaxPackets());
+  }
+
   return web_configuration;
 }
 
@@ -1155,7 +1161,8 @@ RTCSessionDescription* RTCPeerConnection::pendingRemoteDescription() {
   return RTCSessionDescription::Create(web_session_description);
 }
 
-RTCConfiguration* RTCPeerConnection::getConfiguration() const {
+RTCConfiguration* RTCPeerConnection::getConfiguration(
+    ScriptState* script_state) const {
   RTCConfiguration* result = RTCConfiguration::Create();
   const auto& webrtc_configuration = peer_handler_->GetConfiguration();
 
@@ -1238,6 +1245,14 @@ RTCConfiguration* RTCPeerConnection::getConfiguration() const {
   }
 
   result->setIceCandidatePoolSize(webrtc_configuration.ice_candidate_pool_size);
+
+  const auto* context = ExecutionContext::From(script_state);
+  if (origin_trials::RtcAudioJitterBufferMaxPacketsEnabled(context)) {
+    int audio_jitter_buffer_max_packets =
+        webrtc_configuration.audio_jitter_buffer_max_packets;
+    result->setRtcAudioJitterBufferMaxPackets(
+        static_cast<int32_t>(audio_jitter_buffer_max_packets));
+  }
 
   return result;
 }

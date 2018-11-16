@@ -20783,6 +20783,7 @@ Called by update_net_error_codes.py.-->
   <int value="2634" label="LegacyTLSVersionInMainFrameResource"/>
   <int value="2635" label="LegacyTLSVersionInSubresource"/>
   <int value="2636" label="LegacyTLSVersionInSubframeMainResource"/>
+  <int value="2637" label="RTCMaxAudioBufferSize"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

@@ -76,7 +76,7 @@ enum RTCIceConnectionState {
     readonly attribute RTCIceGatheringState iceGatheringState;
     readonly attribute RTCIceConnectionState iceConnectionState;
     // readonly attribute boolean? canTrickleIceCandidates;
-    RTCConfiguration getConfiguration();
+    [CallWith=ScriptState] RTCConfiguration getConfiguration();
     [CallWith=ScriptState, RaisesException] void setConfiguration(RTCConfiguration configuration);
     void close();
     attribute EventHandler onnegotiationneeded;
