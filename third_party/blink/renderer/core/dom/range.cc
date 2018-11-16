@@ -1618,12 +1618,11 @@ void Range::expand(const String& unit, ExceptionState& exception_state) {
   VisiblePosition start = CreateVisiblePosition(StartPosition());
   VisiblePosition end = CreateVisiblePosition(EndPosition());
   if (unit == "word") {
-    start = CreateVisiblePosition(StartOfWordPosition(start.DeepEquivalent()));
-    end = CreateVisiblePosition(EndOfWordPosition(end.DeepEquivalent()));
+    start = StartOfWord(start);
+    end = EndOfWord(end);
   } else if (unit == "sentence") {
-    start =
-        CreateVisiblePosition(StartOfSentencePosition(start.DeepEquivalent()));
-    end = CreateVisiblePosition(EndOfSentence(end.DeepEquivalent()));
+    start = StartOfSentence(start);
+    end = EndOfSentence(end);
   } else if (unit == "block") {
     start = StartOfParagraph(start);
     end = EndOfParagraph(end);
