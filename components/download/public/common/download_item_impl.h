@@ -329,8 +329,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // should be considered complete.
   virtual void MarkAsComplete();
 
-  DownloadSource download_source() const { return download_source_; }
-
   // DownloadDestinationObserver
   void DestinationUpdate(
       int64_t bytes_so_far,
@@ -345,6 +343,16 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
       std::unique_ptr<crypto::SecureHash> hash_state) override;
 
   void SetDelegate(DownloadItemImplDelegate* delegate);
+
+  const DownloadUrlParameters::RequestHeadersType& request_headers() const {
+    return request_headers_;
+  }
+
+  bool fetch_error_body() const { return fetch_error_body_; }
+
+  DownloadSource download_source() const { return download_source_; }
+
+  uint64_t ukm_download_id() const { return ukm_download_id_; }
 
  private:
   // Fine grained states of a download.
@@ -773,6 +781,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   DownloadCreationType download_type_ =
       DownloadCreationType::TYPE_ACTIVE_DOWNLOAD;
+
+  // UKM ID for reporting, default to 0 if uninitialized.
+  uint64_t ukm_download_id_ = 0;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -1304,17 +1304,24 @@ void DownloadItemImpl::Init(bool active,
   if (active) {
     TRACE_EVENT_ASYNC_BEGIN1("download", "DownloadItemActive", download_id_,
                              "download_item", std::move(active_data));
+    ukm_download_id_ = GetUniqueDownloadId();
   } else {
     TRACE_EVENT_INSTANT1("download", "DownloadItemActive",
                          TRACE_EVENT_SCOPE_THREAD, "download_item",
                          std::move(active_data));
 
     // Read data from in-progress cache.
+    // TODO(qinmin): Remove this once we initialize the data in DownloadItemImpl
+    // ctor.
     auto in_progress_entry = delegate_->GetInProgressEntry(this);
     if (in_progress_entry) {
       download_source_ = in_progress_entry->download_source;
       fetch_error_body_ = in_progress_entry->fetch_error_body;
       request_headers_ = in_progress_entry->request_headers;
+      ukm_download_id_ = in_progress_entry->ukm_download_id;
+      bytes_wasted_ = in_progress_entry->bytes_wasted;
+    } else {
+      ukm_download_id_ = GetUniqueDownloadId();
     }
   }
 
@@ -1393,17 +1400,14 @@ void DownloadItemImpl::Start(
     }
     RecordDownloadMimeType(mime_type_);
     DownloadContent file_type = DownloadContentFromMimeType(mime_type_, false);
-    auto in_progress_entry = delegate_->GetInProgressEntry(this);
-    if (in_progress_entry) {
-      bool is_same_host_download =
-          base::StringPiece(new_create_info.url().host())
-              .ends_with(new_create_info.site_url.host());
-      DownloadConnectionSecurity state = CheckDownloadConnectionSecurity(
-          new_create_info.url(), new_create_info.url_chain);
-      DownloadUkmHelper::RecordDownloadStarted(
-          in_progress_entry->ukm_download_id, new_create_info.ukm_source_id,
-          file_type, download_source_, state, is_same_host_download);
-    }
+    bool is_same_host_download =
+        base::StringPiece(new_create_info.url().host())
+            .ends_with(new_create_info.site_url.host());
+    DownloadConnectionSecurity state = CheckDownloadConnectionSecurity(
+        new_create_info.url(), new_create_info.url_chain);
+    DownloadUkmHelper::RecordDownloadStarted(
+        ukm_download_id_, new_create_info.ukm_source_id, file_type,
+        download_source_, state, is_same_host_download);
 
     if (!delegate_->IsOffTheRecord()) {
       RecordDownloadCountWithSource(NEW_DOWNLOAD_COUNT_NORMAL_PROFILE,
@@ -1445,13 +1449,8 @@ void DownloadItemImpl::OnDownloadFileInitialized(DownloadInterruptReason result,
             << "() result:" << DownloadInterruptReasonToString(result);
 
   if (bytes_wasted > 0) {
-    bytes_wasted_ = bytes_wasted;
-    auto in_progress_entry = delegate_->GetInProgressEntry(this);
-    if (in_progress_entry.has_value()) {
-      DownloadEntry entry = in_progress_entry.value();
-      bytes_wasted_ = entry.bytes_wasted + bytes_wasted;
-      delegate_->ReportBytesWasted(this);
-    }
+    bytes_wasted_ += bytes_wasted;
+    delegate_->ReportBytesWasted(this);
   }
 
   // Handle download interrupt reason.
@@ -1786,12 +1785,8 @@ void DownloadItemImpl::Completed() {
   // If all data is saved, the number of received bytes is resulting file size.
   int resulting_file_size = GetReceivedBytes();
 
-  auto in_progress_entry = delegate_->GetInProgressEntry(this);
-  if (in_progress_entry) {
-    DownloadUkmHelper::RecordDownloadCompleted(
-        in_progress_entry->ukm_download_id, resulting_file_size,
-        time_since_start, in_progress_entry->bytes_wasted);
-  }
+  DownloadUkmHelper::RecordDownloadCompleted(
+      ukm_download_id_, resulting_file_size, time_since_start, bytes_wasted_);
 
   // After all of the records are done, then update the observers.
   UpdateObservers();
@@ -1942,17 +1937,14 @@ void DownloadItemImpl::InterruptWithPartialState(
 
   base::TimeDelta time_since_start = base::Time::Now() - GetStartTime();
   int resulting_file_size = GetReceivedBytes();
-  auto in_progress_entry = delegate_->GetInProgressEntry(this);
   base::Optional<int> change_in_file_size;
-  if (in_progress_entry) {
-    if (total_bytes_ >= 0) {
-      change_in_file_size = total_bytes_ - resulting_file_size;
-    }
-
-    DownloadUkmHelper::RecordDownloadInterrupted(
-        in_progress_entry->ukm_download_id, change_in_file_size, reason,
-        resulting_file_size, time_since_start, in_progress_entry->bytes_wasted);
+  if (total_bytes_ >= 0) {
+    change_in_file_size = total_bytes_ - resulting_file_size;
   }
+
+  DownloadUkmHelper::RecordDownloadInterrupted(
+      ukm_download_id_, change_in_file_size, reason, resulting_file_size,
+      time_since_start, bytes_wasted_);
   if (reason == DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH) {
     received_bytes_at_length_mismatch_ = GetReceivedBytes();
   }
@@ -2295,10 +2287,6 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   // involve any compression,
   download_params->add_request_header("Accept-Encoding", "identity");
 
-  auto entry = delegate_->GetInProgressEntry(this);
-  if (entry)
-    download_params->set_request_origin(entry.value().request_origin);
-
   // Note that resumed downloads disallow redirects. Hence the referrer URL
   // (which is the contents of the Referer header for the last download request)
   // will only be sent to the URL returned by GetURL().
@@ -2313,11 +2301,9 @@ void DownloadItemImpl::ResumeInterruptedDownload(
                                 download_source_);
 
   base::TimeDelta time_since_start = base::Time::Now() - GetStartTime();
-  auto in_progress_entry = delegate_->GetInProgressEntry(this);
-  if (in_progress_entry) {
-    DownloadUkmHelper::RecordDownloadResumed(in_progress_entry->ukm_download_id,
-                                             GetResumeMode(), time_since_start);
-  }
+
+  DownloadUkmHelper::RecordDownloadResumed(ukm_download_id_, GetResumeMode(),
+                                           time_since_start);
 
   delegate_->ResumeInterruptedDownload(std::move(download_params),
                                        request_info_.site_url);

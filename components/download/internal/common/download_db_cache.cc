@@ -56,45 +56,6 @@ ShouldUpdateDownloadDBResult ShouldUpdateDownloadDB(
   return ShouldUpdateDownloadDBResult::UPDATE;
 }
 
-bool GetFetchErrorBody(base::Optional<DownloadDBEntry> entry) {
-  if (!entry)
-    return false;
-
-  if (!entry->download_info)
-    return false;
-
-  base::Optional<InProgressInfo>& in_progress_info =
-      entry->download_info->in_progress_info;
-  if (!in_progress_info)
-    return false;
-
-  return in_progress_info->fetch_error_body;
-}
-
-DownloadUrlParameters::RequestHeadersType GetRequestHeadersType(
-    base::Optional<DownloadDBEntry> entry) {
-  DownloadUrlParameters::RequestHeadersType ret;
-  if (!entry)
-    return ret;
-
-  if (!entry->download_info)
-    return ret;
-
-  base::Optional<InProgressInfo>& in_progress_info =
-      entry->download_info->in_progress_info;
-  if (!in_progress_info)
-    return ret;
-
-  return in_progress_info->request_headers;
-}
-
-UkmInfo GetUkmInfo(base::Optional<DownloadDBEntry> entry) {
-  if (entry && entry->download_info && entry->download_info->ukm_info)
-    return entry->download_info->ukm_info.value();
-
-  return UkmInfo(DownloadSource::UNKNOWN, GetUniqueDownloadId());
-}
-
 void CleanUpInProgressEntry(DownloadDBEntry* entry) {
   if (!entry->download_info)
     return;
@@ -213,13 +174,8 @@ void DownloadDBCache::OnDownloadUpdated(DownloadItem* download) {
       return;
     }
   }
-  base::Optional<DownloadDBEntry> current = RetrieveEntry(download->GetGuid());
-  bool fetch_error_body = GetFetchErrorBody(current);
-  DownloadUrlParameters::RequestHeadersType request_header_type =
-      GetRequestHeadersType(current);
-  UkmInfo ukm_info = GetUkmInfo(current);
   DownloadDBEntry entry = CreateDownloadDBEntryFromItem(
-      *download, ukm_info, fetch_error_body, request_header_type);
+      *(static_cast<DownloadItemImpl*>(download)));
   AddOrReplaceEntry(entry);
 }
 
