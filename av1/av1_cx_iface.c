@@ -1420,8 +1420,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 
         is_frame_visible = cpi->common.show_frame;
 
-        has_fwd_keyframe |=
-            (!is_frame_visible && cpi->common.frame_type == KEY_FRAME);
+        has_fwd_keyframe |= (!is_frame_visible &&
+                             cpi->common.current_frame.frame_type == KEY_FRAME);
       }
     }
     if (is_frame_visible) {

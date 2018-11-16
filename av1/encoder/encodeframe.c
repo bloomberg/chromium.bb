@@ -660,8 +660,8 @@ static void rd_pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
   // Examine the resulting rate and for AQ mode 2 make a segment choice.
   if ((rd_cost->rate != INT_MAX) && (aq_mode == COMPLEXITY_AQ) &&
       (bsize >= BLOCK_16X16) &&
-      (cm->frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame ||
-       cpi->refresh_alt2_ref_frame ||
+      (cm->current_frame.frame_type == KEY_FRAME ||
+       cpi->refresh_alt_ref_frame || cpi->refresh_alt2_ref_frame ||
        (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref))) {
     av1_caq_select_segment(cpi, x, bsize, mi_row, mi_col, rd_cost->rate);
   }
@@ -894,6 +894,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  const CurrentFrame *const current_frame = &cm->current_frame;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   FRAME_CONTEXT *fc = xd->tile_ctx;
   const uint8_t allow_update_cdf = tile_data->allow_update_cdf;
@@ -906,7 +907,8 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   const int seg_ref_active =
       segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_REF_FRAME);
 
-  if (cm->skip_mode_flag && !seg_ref_active && is_comp_ref_allowed(bsize)) {
+  if (current_frame->skip_mode_info.skip_mode_flag && !seg_ref_active &&
+      is_comp_ref_allowed(bsize)) {
     const int skip_mode_ctx = av1_get_skip_mode_context(xd);
 #if CONFIG_ENTROPY_STATS
     td->counts->skip_mode[skip_mode_ctx][mbmi->skip_mode]++;
@@ -994,7 +996,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
     if (mbmi->skip_mode) {
       rdc->skip_mode_used_flag = 1;
-      if (cm->reference_mode == REFERENCE_MODE_SELECT) {
+      if (current_frame->reference_mode == REFERENCE_MODE_SELECT) {
         assert(has_second_ref(mbmi));
         rdc->compound_ref_used_flag = 1;
       }
@@ -1021,7 +1023,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
         av1_collect_neighbors_ref_counts(xd);
 
-        if (cm->reference_mode == REFERENCE_MODE_SELECT) {
+        if (current_frame->reference_mode == REFERENCE_MODE_SELECT) {
           if (has_second_ref(mbmi))
             // This flag is also updated for 4x4 blocks
             rdc->compound_ref_used_flag = 1;
@@ -1249,7 +1251,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         }
 
         if (has_second_ref(mbmi)) {
-          assert(cm->reference_mode != SINGLE_REFERENCE &&
+          assert(current_frame->reference_mode != SINGLE_REFERENCE &&
                  is_inter_compound_mode(mbmi->mode) &&
                  mbmi->motion_mode == SIMPLE_TRANSLATION);
 
@@ -2108,7 +2110,8 @@ static void rd_auto_partition_range(AV1_COMP *cpi, const TileInfo *const tile,
   BLOCK_SIZE max_size = BLOCK_LARGEST;
 
   // Trap case where we do not have a prediction.
-  if (left_in_image || above_in_image || cm->frame_type != KEY_FRAME) {
+  if (left_in_image || above_in_image ||
+      cm->current_frame.frame_type != KEY_FRAME) {
     // Default "min to max" and "max to min"
     min_size = BLOCK_LARGEST;
     max_size = BLOCK_4X4;
@@ -2116,7 +2119,7 @@ static void rd_auto_partition_range(AV1_COMP *cpi, const TileInfo *const tile,
     // NOTE: each call to get_sb_partition_size_range() uses the previous
     // passed in values for min and max as a starting point.
     // Find the min and max partition used in previous frame at this location
-    if (cm->frame_type != KEY_FRAME) {
+    if (cm->current_frame.frame_type != KEY_FRAME) {
       MB_MODE_INFO **prev_mi =
           &cm->prev_mi_grid_visible[mi_row * xd->mi_stride + mi_col];
       get_sb_partition_size_range(cm, xd, prev_mi, &min_size, &max_size);
@@ -3601,7 +3604,7 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   if (cpi->sf.cb_partition_search && bsize == BLOCK_16X16) {
     const int cb_partition_search_ctrl =
         ((pc_tree->index == 0 || pc_tree->index == 3) +
-         get_chessboard_index(cm->current_video_frame)) &
+         get_chessboard_index(cm->current_frame.frame_number)) &
         0x1;
 
     if (cb_partition_search_ctrl && bsize > min_size && bsize < max_size)
@@ -5090,7 +5093,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
           cpi->sf.use_square_partition_only_threshold > BLOCK_4X4 &&
           mi_row + mi_size_high[sb_size] < cm->mi_rows &&
           mi_col + mi_size_wide[sb_size] < cm->mi_cols &&
-          cm->frame_type != KEY_FRAME) {
+          cm->current_frame.frame_type != KEY_FRAME) {
         first_partition_search_pass(cpi, td, tile_data, mi_row, mi_col, tp);
       }
 
@@ -5324,8 +5327,9 @@ static void encode_tiles(AV1_COMP *cpi) {
 #if CONFIG_FP_MB_STATS
 static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
                             AV1_COMMON *cm, uint8_t **this_frame_mb_stats) {
-  uint8_t *mb_stats_in = firstpass_mb_stats->mb_stats_start +
-                         cm->current_video_frame * cm->MBs * sizeof(uint8_t);
+  uint8_t *mb_stats_in =
+      firstpass_mb_stats->mb_stats_start +
+      cm->current_frame.frame_number * cm->MBs * sizeof(uint8_t);
 
   if (mb_stats_in > firstpass_mb_stats->mb_stats_end) return EOF;
 
@@ -5512,7 +5516,7 @@ static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
     const int ref_offset =
         cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
     if (get_relative_dist(&cm->seq_params.order_hint_info, ref_offset,
-                          (int)cm->frame_offset) > 0) {
+                          (int)cm->current_frame.order_hint) > 0) {
       one_sided_refs = 0;  // bwd reference
       break;
     }
@@ -5522,11 +5526,12 @@ static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
 
 static INLINE void get_skip_mode_ref_offsets(const AV1_COMMON *cm,
                                              int ref_offset[2]) {
+  const SkipModeInfo *const skip_mode_info = &cm->current_frame.skip_mode_info;
   ref_offset[0] = ref_offset[1] = 0;
-  if (!cm->is_skip_mode_allowed) return;
+  if (!skip_mode_info->skip_mode_allowed) return;
 
-  const int buf_idx_0 = cm->frame_refs[cm->ref_frame_idx_0].idx;
-  const int buf_idx_1 = cm->frame_refs[cm->ref_frame_idx_1].idx;
+  const int buf_idx_0 = cm->frame_refs[skip_mode_info->ref_frame_idx_0].idx;
+  const int buf_idx_1 = cm->frame_refs[skip_mode_info->ref_frame_idx_1].idx;
   assert(buf_idx_0 != INVALID_IDX && buf_idx_1 != INVALID_IDX);
 
   ref_offset[0] = cm->buffer_pool->frame_bufs[buf_idx_0].cur_frame_offset;
@@ -5537,11 +5542,11 @@ static int check_skip_mode_enabled(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
 
   av1_setup_skip_mode_allowed(cm);
-  if (!cm->is_skip_mode_allowed) return 0;
+  if (!cm->current_frame.skip_mode_info.skip_mode_allowed) return 0;
 
   // Turn off skip mode if the temporal distances of the reference pair to the
   // current frame are different by more than 1 frame.
-  const int cur_offset = (int)cm->frame_offset;
+  const int cur_offset = (int)cm->current_frame.order_hint;
   int ref_offset[2];
   get_skip_mode_ref_offsets(cm, ref_offset);
   const int cur_to_ref0 = get_relative_dist(&cm->seq_params.order_hint_info,
@@ -5561,8 +5566,10 @@ static int check_skip_mode_enabled(AV1_COMP *const cpi) {
                                              AOM_BWD_FLAG,
                                              AOM_ALT2_FLAG,
                                              AOM_ALT_FLAG };
-  const int ref_frame[2] = { cm->ref_frame_idx_0 + LAST_FRAME,
-                             cm->ref_frame_idx_1 + LAST_FRAME };
+  const int ref_frame[2] = {
+    cm->current_frame.skip_mode_info.ref_frame_idx_0 + LAST_FRAME,
+    cm->current_frame.skip_mode_info.ref_frame_idx_1 + LAST_FRAME
+  };
   if (!(cpi->ref_frame_flags & flag_list[ref_frame[0]]) ||
       !(cpi->ref_frame_flags & flag_list[ref_frame[1]]))
     return 0;
@@ -5782,7 +5789,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #if !CONFIG_GLOBAL_MOTION_SEARCH
   cpi->global_motion_search_done = 1;
 #endif  // !CONFIG_GLOBAL_MOTION_SEARCH
-  if (cpi->common.frame_type == INTER_FRAME && cpi->source &&
+  if (cpi->common.current_frame.frame_type == INTER_FRAME && cpi->source &&
       !cpi->global_motion_search_done) {
     YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES];
     int frame;
@@ -5917,7 +5924,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cpi->all_one_sided_refs =
       frame_is_intra_only(cm) ? 0 : av1_refs_are_one_sided(cm);
 
-  cm->skip_mode_flag = check_skip_mode_enabled(cpi);
+  cm->current_frame.skip_mode_info.skip_mode_flag =
+      check_skip_mode_enabled(cpi);
 
   {
     struct aom_usec_timer emr_timer;
@@ -5956,6 +5964,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
 void av1_encode_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+  CurrentFrame *const current_frame = &cm->current_frame;
   const int num_planes = av1_num_planes(cm);
   // Indicates whether or not to use a default reduced set for ext-tx
   // rather than the potential full set of 16 transforms
@@ -5968,11 +5977,11 @@ void av1_encode_frame(AV1_COMP *cpi) {
     int brf_offset =
         cpi->twopass.gf_group.brf_src_offset[cpi->twopass.gf_group.index];
     arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
-    cm->frame_offset = cm->current_video_frame + arf_offset;
+    current_frame->order_hint = current_frame->frame_number + arf_offset;
   } else {
-    cm->frame_offset = cm->current_video_frame;
+    current_frame->order_hint = current_frame->frame_number;
   }
-  cm->frame_offset %=
+  current_frame->order_hint %=
       (1 << (cm->seq_params.order_hint_info.order_hint_bits_minus_1 + 1));
 
   // Make sure segment_id is no larger than last_active_segid.
@@ -6023,9 +6032,9 @@ void av1_encode_frame(AV1_COMP *cpi) {
     /* prediction (compound, single or hybrid) mode selection */
     // NOTE: "is_alt_ref" is true only for OVERLAY/INTNL_OVERLAY frames
     if (is_alt_ref || !cpi->allow_comp_inter_inter)
-      cm->reference_mode = SINGLE_REFERENCE;
+      current_frame->reference_mode = SINGLE_REFERENCE;
     else
-      cm->reference_mode = REFERENCE_MODE_SELECT;
+      current_frame->reference_mode = REFERENCE_MODE_SELECT;
 
     cm->interp_filter = SWITCHABLE;
     if (cm->large_scale_tile) cm->interp_filter = EIGHTTAP_REGULAR;
@@ -6040,22 +6049,24 @@ void av1_encode_frame(AV1_COMP *cpi) {
     for (i = 0; i < REFERENCE_MODES; ++i)
       mode_thrs[i] = (mode_thrs[i] + rdc->comp_pred_diff[i] / cm->MBs) / 2;
 
-    if (cm->reference_mode == REFERENCE_MODE_SELECT) {
+    if (current_frame->reference_mode == REFERENCE_MODE_SELECT) {
       // Use a flag that includes 4x4 blocks
       if (rdc->compound_ref_used_flag == 0) {
-        cm->reference_mode = SINGLE_REFERENCE;
+        current_frame->reference_mode = SINGLE_REFERENCE;
 #if CONFIG_ENTROPY_STATS
         av1_zero(cpi->td.counts->comp_inter);
 #endif  // CONFIG_ENTROPY_STATS
       }
     }
     // Re-check on the skip mode status as reference mode may have been changed.
-    if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE) {
-      cm->is_skip_mode_allowed = 0;
-      cm->skip_mode_flag = 0;
+    SkipModeInfo *const skip_mode_info = &current_frame->skip_mode_info;
+    if (frame_is_intra_only(cm) ||
+        current_frame->reference_mode == SINGLE_REFERENCE) {
+      skip_mode_info->skip_mode_allowed = 0;
+      skip_mode_info->skip_mode_flag = 0;
     }
-    if (cm->skip_mode_flag && rdc->skip_mode_used_flag == 0)
-      cm->skip_mode_flag = 0;
+    if (skip_mode_info->skip_mode_flag && rdc->skip_mode_used_flag == 0)
+      skip_mode_info->skip_mode_flag = 0;
 
     if (!cm->large_scale_tile) {
       if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0)
@@ -6312,9 +6323,9 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
                                  pd->subsampling_y))
           continue;
-        mismatch_record_block_pre(pd->dst.buf, pd->dst.stride, cm->frame_offset,
-                                  plane, pixel_c, pixel_r, pd->width,
-                                  pd->height,
+        mismatch_record_block_pre(pd->dst.buf, pd->dst.stride,
+                                  cm->current_frame.order_hint, plane, pixel_c,
+                                  pixel_r, pd->width, pd->height,
                                   xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH);
       }
     }

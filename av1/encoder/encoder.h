@@ -1059,8 +1059,8 @@ static INLINE int av1_frame_scaled(const AV1_COMMON *cm) {
 // frame. An exception can be made for a forward keyframe since it has no
 // previous dependencies.
 static INLINE int encode_show_existing_frame(const AV1_COMMON *cm) {
-  return cm->show_existing_frame &&
-         (!cm->error_resilient_mode || cm->frame_type == KEY_FRAME);
+  return cm->show_existing_frame && (!cm->error_resilient_mode ||
+                                     cm->current_frame.frame_type == KEY_FRAME);
 }
 
 // Returns a Sequence Header OBU stored in an aom_fixed_buf_t, or NULL upon

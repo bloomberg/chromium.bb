@@ -103,7 +103,7 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
   memset(&cm->next_ref_frame_map, -1, sizeof(cm->next_ref_frame_map));
 
-  cm->current_video_frame = 0;
+  cm->current_frame.frame_number = 0;
   pbi->decoding_first_frame = 1;
   pbi->common.buffer_pool = pool;
 

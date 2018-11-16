@@ -291,7 +291,26 @@ typedef struct SequenceHeader {
   int film_grain_params_present;
 } SequenceHeader;
 
+typedef struct {
+    int skip_mode_allowed;
+    int skip_mode_flag;
+    int ref_frame_idx_0;
+    int ref_frame_idx_1;
+} SkipModeInfo;
+
+typedef struct {
+  FRAME_TYPE frame_type;
+  // Flag signaling that the frame is encoded using only INTRA modes.
+  uint8_t intra_only;
+  REFERENCE_MODE reference_mode;
+
+  unsigned int order_hint;
+  unsigned int frame_number;
+  SkipModeInfo skip_mode_info;
+} CurrentFrame;
+
 typedef struct AV1Common {
+  CurrentFrame current_frame;
   struct aom_internal_error_info error;
   int width;
   int height;
@@ -335,17 +354,11 @@ typedef struct AV1Common {
   // (inter) reference frame type to the corresponding reference buffer.
   RefBuffer frame_refs[INTER_REFS_PER_FRAME];
 
-  int is_skip_mode_allowed;
-  int skip_mode_flag;
-  int ref_frame_idx_0;
-  int ref_frame_idx_1;
-
   // Index to the 'new' frame (i.e. the frame currently being encoded or
   // decoded) in the buffer pool 'cm->buffer_pool'.
   int new_fb_idx;
 
   FRAME_TYPE last_frame_type; /* last frame's frame type for motion search.*/
-  FRAME_TYPE frame_type;
 
   int show_frame;
   int showable_frame;  // frame can be used as show existing frame in future
@@ -355,8 +368,6 @@ typedef struct AV1Common {
   int is_reference_frame;
   int reset_decoder_state;
 
-  // Flag signaling that the frame is encoded using only INTRA modes.
-  uint8_t intra_only;
   uint8_t last_intra_only;
   uint8_t disable_cdf_update;
   int allow_high_precision_mv;
@@ -475,17 +486,12 @@ typedef struct AV1Common {
   // Context probabilities for reference frame prediction
   MV_REFERENCE_FRAME comp_fwd_ref[FWD_REFS];
   MV_REFERENCE_FRAME comp_bwd_ref[BWD_REFS];
-  REFERENCE_MODE reference_mode;
 
   FRAME_CONTEXT *fc;              /* this frame entropy */
   FRAME_CONTEXT *frame_contexts;  // FRAME_CONTEXTS
   unsigned int frame_context_idx; /* Context to use/update */
   int fb_of_context_type[REF_FRAMES];
   int primary_ref_frame;
-
-  unsigned int frame_offset;
-
-  unsigned int current_video_frame;
 
   aom_bit_depth_t dequant_bit_depth;  // bit_depth of current dequantizer
 
@@ -646,11 +652,12 @@ static INLINE void assign_frame_buffer(RefCntBuffer *bufs, int *idx_ptr,
 }
 
 static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
-  return cm->frame_type == KEY_FRAME || cm->intra_only;
+  return cm->current_frame.frame_type == KEY_FRAME ||
+      cm->current_frame.intra_only;
 }
 
 static INLINE int frame_is_sframe(const AV1_COMMON *cm) {
-  return cm->frame_type == S_FRAME;
+  return cm->current_frame.frame_type == S_FRAME;
 }
 
 static INLINE RefCntBuffer *get_prev_frame(const AV1_COMMON *const cm) {

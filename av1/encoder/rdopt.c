@@ -6896,7 +6896,7 @@ static void estimate_ref_frame_costs(
     ref_costs_single[BWDREF_FRAME] += x->single_ref_cost[ctx_p6][5][0];
     ref_costs_single[ALTREF2_FRAME] += x->single_ref_cost[ctx_p6][5][1];
 
-    if (cm->reference_mode != SINGLE_REFERENCE) {
+    if (cm->current_frame.reference_mode != SINGLE_REFERENCE) {
       // Similar to single ref, determine cost of compound ref frames.
       // cost_compound_refs = cost_first_ref + cost_second_ref
       const int bwdref_comp_ctx_p = av1_get_pred_context_comp_bwdref_p(xd);
@@ -9139,7 +9139,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       rd_stats->rate += est_residue_cost;
       rd_stats->dist = est_dist;
       rd_stats->rdcost = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-      if (cm->reference_mode == SINGLE_REFERENCE) {
+      if (cm->current_frame.reference_mode == SINGLE_REFERENCE) {
         if (!is_comp_pred) {
           inter_modes_info_push(inter_modes_info, mode_rate, curr_sse,
                                 rd_stats->rdcost, mbmi);
@@ -10311,6 +10311,7 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
                               BLOCK_SIZE bsize, int mi_row, int mi_col,
                               struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *const cm = &cpi->common;
+  const SkipModeInfo *const skip_mode_info = &cm->current_frame.skip_mode_info;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
@@ -10319,13 +10320,15 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
   RD_STATS skip_mode_rd_stats;
   av1_invalid_rd_stats(&skip_mode_rd_stats);
 
-  if (cm->ref_frame_idx_0 == INVALID_IDX ||
-      cm->ref_frame_idx_1 == INVALID_IDX) {
+  if (skip_mode_info->ref_frame_idx_0 == INVALID_IDX ||
+      skip_mode_info->ref_frame_idx_1 == INVALID_IDX) {
     return;
   }
 
-  const MV_REFERENCE_FRAME ref_frame = LAST_FRAME + cm->ref_frame_idx_0;
-  const MV_REFERENCE_FRAME second_ref_frame = LAST_FRAME + cm->ref_frame_idx_1;
+  const MV_REFERENCE_FRAME ref_frame =
+      LAST_FRAME + skip_mode_info->ref_frame_idx_0;
+  const MV_REFERENCE_FRAME second_ref_frame =
+      LAST_FRAME + skip_mode_info->ref_frame_idx_1;
   const PREDICTION_MODE this_mode = NEAREST_NEARESTMV;
   const int mode_index =
       get_prediction_mode_idx(this_mode, ref_frame, second_ref_frame);
@@ -10978,6 +10981,7 @@ static int inter_mode_search_order_independent_skip(
   const AV1_COMMON *const cm = &cpi->common;
   const struct segmentation *const seg = &cm->seg;
   const OrderHintInfo *const order_hint_info = &cm->seq_params.order_hint_info;
+  const CurrentFrame *const current_frame = &cm->current_frame;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   const unsigned char segment_id = mbmi->segment_id;
@@ -11067,7 +11071,7 @@ static int inter_mode_search_order_independent_skip(
   if (comp_pred) {
     if (!cpi->allow_comp_inter_inter) return 1;
 
-    if (cm->reference_mode == SINGLE_REFERENCE) return 1;
+    if (current_frame->reference_mode == SINGLE_REFERENCE) return 1;
 
     // Skip compound inter modes if ARF is not available.
     if (!(cpi->ref_frame_flags & ref_frame_flag_list[ref_frame[1]])) return 1;
@@ -11083,13 +11087,13 @@ static int inter_mode_search_order_independent_skip(
         if (get_relative_dist(
                 order_hint_info,
                 cm->cur_frame->ref_frame_offset[ALTREF2_FRAME - LAST_FRAME],
-                cm->frame_offset) < 0)
+                current_frame->order_hint) < 0)
           return 1;
       if (ref_frame[0] == BWDREF_FRAME || ref_frame[1] == BWDREF_FRAME)
         if (get_relative_dist(
                 order_hint_info,
                 cm->cur_frame->ref_frame_offset[BWDREF_FRAME - LAST_FRAME],
-                cm->frame_offset) < 0)
+                current_frame->order_hint) < 0)
           return 1;
     }
 
@@ -11120,14 +11124,14 @@ static int inter_mode_search_order_independent_skip(
       assert(buf_idx >= 0);
       ref_offsets[i] = cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
     }
-    if ((get_relative_dist(order_hint_info, ref_offsets[0], cm->frame_offset) <=
-             0 &&
-         get_relative_dist(order_hint_info, ref_offsets[1], cm->frame_offset) <=
-             0) ||
-        (get_relative_dist(order_hint_info, ref_offsets[0], cm->frame_offset) >
-             0 &&
-         get_relative_dist(order_hint_info, ref_offsets[1], cm->frame_offset) >
-             0))
+    if ((get_relative_dist(order_hint_info, ref_offsets[0],
+                           current_frame->order_hint) <= 0 &&
+         get_relative_dist(order_hint_info, ref_offsets[1],
+                           current_frame->order_hint) <= 0) ||
+        (get_relative_dist(order_hint_info, ref_offsets[0],
+                           current_frame->order_hint) > 0 &&
+         get_relative_dist(order_hint_info, ref_offsets[1],
+                           current_frame->order_hint) > 0))
       return 1;
   }
 
@@ -11903,7 +11907,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     const int compmode_cost =
         is_comp_ref_allowed(mbmi->sb_type) ? comp_inter_cost[comp_pred] : 0;
     const int real_compmode_cost =
-        cm->reference_mode == REFERENCE_MODE_SELECT ? compmode_cost : 0;
+        cm->current_frame.reference_mode == REFERENCE_MODE_SELECT
+            ? compmode_cost
+            : 0;
 
     if (comp_pred) {
       if ((sf->mode_search_skip_flags & FLAG_SKIP_COMP_BESTINTRA) &&
@@ -12005,7 +12011,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (this_rd < search_state.best_rd || x->skip) {
       int mode_excluded = 0;
       if (comp_pred) {
-        mode_excluded = cm->reference_mode == SINGLE_REFERENCE;
+        mode_excluded = cm->current_frame.reference_mode == SINGLE_REFERENCE;
       }
       if (!mode_excluded) {
         // Note index of best mode so far
@@ -12063,7 +12069,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (!disable_skip && ref_frame != INTRA_FRAME) {
       int64_t single_rd, hybrid_rd, single_rate, hybrid_rate;
 
-      if (cm->reference_mode == REFERENCE_MODE_SELECT) {
+      if (cm->current_frame.reference_mode == REFERENCE_MODE_SELECT) {
         single_rate = rate2 - compmode_cost;
         hybrid_rate = rate2;
       } else {
@@ -12221,7 +12227,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   }
 
   search_state.best_mbmode.skip_mode = 0;
-  if (cm->skip_mode_flag &&
+  if (cm->current_frame.skip_mode_info.skip_mode_flag &&
       !segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME) &&
       is_comp_ref_allowed(bsize)) {
     rd_pick_skip_mode(rd_cost, &search_state, cpi, x, bsize, mi_row, mi_col,
@@ -12388,7 +12394,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   mbmi->interp_filters = av1_broadcast_interp_filter(best_filter);
   rate2 += av1_get_switchable_rate(cm, x, xd);
 
-  if (cm->reference_mode == REFERENCE_MODE_SELECT)
+  if (cm->current_frame.reference_mode == REFERENCE_MODE_SELECT)
     rate2 += comp_inter_cost[comp_pred];
 
   // Estimate the reference frame signaling cost and add it

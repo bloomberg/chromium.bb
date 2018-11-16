@@ -864,7 +864,7 @@ void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
 }
 
 void av1_setup_frame_buf_refs(AV1_COMMON *cm) {
-  cm->cur_frame->cur_frame_offset = cm->frame_offset;
+  cm->cur_frame->cur_frame_offset = cm->current_frame.order_hint;
 
   MV_REFERENCE_FRAME ref_frame;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
@@ -885,7 +885,7 @@ void av1_setup_frame_sign_bias(AV1_COMMON *cm) {
           cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
       cm->ref_frame_sign_bias[ref_frame] =
           (get_relative_dist(&cm->seq_params.order_hint_info, ref_frame_offset,
-                             (int)cm->frame_offset) <= 0)
+                             (int)cm->current_frame.order_hint) <= 0)
               ? 0
               : 1;
     } else {
@@ -1276,16 +1276,18 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
 
 void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
   const OrderHintInfo *const order_hint_info = &cm->seq_params.order_hint_info;
+  SkipModeInfo *const skip_mode_info = &cm->current_frame.skip_mode_info;
 
-  cm->is_skip_mode_allowed = 0;
-  cm->ref_frame_idx_0 = cm->ref_frame_idx_1 = INVALID_IDX;
+  skip_mode_info->skip_mode_allowed = 0;
+  skip_mode_info->ref_frame_idx_0 = INVALID_IDX;
+  skip_mode_info->ref_frame_idx_1 = INVALID_IDX;
 
   if (!order_hint_info->enable_order_hint || frame_is_intra_only(cm) ||
-      cm->reference_mode == SINGLE_REFERENCE)
+      cm->current_frame.reference_mode == SINGLE_REFERENCE)
     return;
 
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
-  const int cur_frame_offset = cm->frame_offset;
+  const int cur_frame_offset = cm->current_frame.order_hint;
   int ref_frame_offset[2] = { -1, INT_MAX };
   int ref_idx[2] = { INVALID_IDX, INVALID_IDX };
 
@@ -1317,9 +1319,9 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
 
   if (ref_idx[0] != INVALID_IDX && ref_idx[1] != INVALID_IDX) {
     // == Bi-directional prediction ==
-    cm->is_skip_mode_allowed = 1;
-    cm->ref_frame_idx_0 = AOMMIN(ref_idx[0], ref_idx[1]);
-    cm->ref_frame_idx_1 = AOMMAX(ref_idx[0], ref_idx[1]);
+    skip_mode_info->skip_mode_allowed = 1;
+    skip_mode_info->ref_frame_idx_0 = AOMMIN(ref_idx[0], ref_idx[1]);
+    skip_mode_info->ref_frame_idx_1 = AOMMAX(ref_idx[0], ref_idx[1]);
   } else if (ref_idx[0] != INVALID_IDX && ref_idx[1] == INVALID_IDX) {
     // == Forward prediction only ==
     // Identify the second nearest forward reference.
@@ -1341,9 +1343,9 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
       }
     }
     if (ref_frame_offset[1] != -1) {
-      cm->is_skip_mode_allowed = 1;
-      cm->ref_frame_idx_0 = AOMMIN(ref_idx[0], ref_idx[1]);
-      cm->ref_frame_idx_1 = AOMMAX(ref_idx[0], ref_idx[1]);
+      skip_mode_info->skip_mode_allowed = 1;
+      skip_mode_info->ref_frame_idx_0 = AOMMIN(ref_idx[0], ref_idx[1]);
+      skip_mode_info->ref_frame_idx_1 = AOMMAX(ref_idx[0], ref_idx[1]);
     }
   }
 }
@@ -1386,7 +1388,7 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
 
   assert(cm->seq_params.order_hint_info.enable_order_hint);
   assert(cm->seq_params.order_hint_info.order_hint_bits_minus_1 >= 0);
-  const int cur_frame_offset = (int)cm->frame_offset;
+  const int cur_frame_offset = (int)cm->current_frame.order_hint;
   const int cur_frame_sort_idx =
       1 << cm->seq_params.order_hint_info.order_hint_bits_minus_1;
 

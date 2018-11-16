@@ -268,8 +268,8 @@ static void inverse_transform_inter_block(const AV1_COMMON *const cm,
   int blk_h = block_size_high[bsize];
   mi_to_pixel_loc(&pixel_c, &pixel_r, mi_col, mi_row, blk_col, blk_row,
                   pd->subsampling_x, pd->subsampling_y);
-  mismatch_check_block_tx(dst, pd->dst.stride, cm->frame_offset, plane, pixel_c,
-                          pixel_r, blk_w, blk_h,
+  mismatch_check_block_tx(dst, pd->dst.stride, cm->current_frame.order_hint,
+                          plane, pixel_c, pixel_r, blk_w, blk_h,
                           xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH);
 #endif
 }
@@ -1083,8 +1083,9 @@ static void predict_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
                              pd->subsampling_y))
       continue;
-    mismatch_check_block_pre(pd->dst.buf, pd->dst.stride, cm->frame_offset,
-                             plane, pixel_c, pixel_r, pd->width, pd->height,
+    mismatch_check_block_pre(pd->dst.buf, pd->dst.stride,
+                             cm->current_frame.order_hint, plane, pixel_c,
+                             pixel_r, pd->width, pd->height,
                              xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH);
   }
 #endif
@@ -4184,7 +4185,7 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
   }
 
   pars->random_seed = aom_rb_read_literal(rb, 16);
-  if (cm->frame_type == INTER_FRAME)
+  if (cm->current_frame.frame_type == INTER_FRAME)
     pars->update_parameters = aom_rb_read_bit(rb);
   else
     pars->update_parameters = 1;
@@ -4654,7 +4655,7 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     */
     /*
     printf("Dec Ref %d [%d/%d]: %d %d %d %d\n",
-           frame, cm->current_video_frame, cm->show_frame,
+           frame, cm->current_frame.frame_number, cm->show_frame,
            cm->global_motion[frame].wmmat[0],
            cm->global_motion[frame].wmmat[1],
            cm->global_motion[frame].wmmat[2],
@@ -4715,7 +4716,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
 
   assert(cm->show_existing_frame);
 
-  cm->frame_type = KEY_FRAME;
+  cm->current_frame.frame_type = KEY_FRAME;
 
   pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
@@ -4785,6 +4786,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                                     struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
+  CurrentFrame *const current_frame = &cm->current_frame;
   MACROBLOCKD *const xd = &pbi->mb;
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = pool->frame_bufs;
@@ -4794,8 +4796,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                        "No sequence header");
   }
 
-  cm->last_frame_type = cm->frame_type;
-  cm->last_intra_only = cm->intra_only;
+  cm->last_frame_type = current_frame->frame_type;
+  cm->last_intra_only = current_frame->intra_only;
 
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;
@@ -4803,7 +4805,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (seq_params->reduced_still_picture_hdr) {
     cm->show_existing_frame = 0;
     cm->show_frame = 1;
-    cm->frame_type = KEY_FRAME;
+    current_frame->frame_type = KEY_FRAME;
     if (pbi->sequence_header_changed) {
       // This is the start of a new coded video sequence.
       pbi->sequence_header_changed = 0;
@@ -4878,9 +4880,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       return 0;
     }
 
-    cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
+    current_frame->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);
     if (pbi->sequence_header_changed) {
-      if (cm->frame_type == KEY_FRAME) {
+      if (current_frame->frame_type == KEY_FRAME) {
         // This is the start of a new coded video sequence.
         pbi->sequence_header_changed = 0;
         pbi->decoding_first_frame = 1;
@@ -4893,11 +4895,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
     cm->show_frame = aom_rb_read_bit(rb);
     if (seq_params->still_picture &&
-        (cm->frame_type != KEY_FRAME || !cm->show_frame)) {
+        (current_frame->frame_type != KEY_FRAME || !cm->show_frame)) {
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Still pictures must be coded as shown keyframes");
     }
-    cm->showable_frame = cm->frame_type != KEY_FRAME;
+    cm->showable_frame = current_frame->frame_type != KEY_FRAME;
     if (cm->show_frame) {
       if (seq_params->decoder_model_info_present_flag &&
           cm->timing_info.equal_picture_interval == 0)
@@ -4907,9 +4909,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->showable_frame = aom_rb_read_bit(rb);
     }
     cm->cur_frame->showable_frame = cm->showable_frame;
-    cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
+    current_frame->intra_only = current_frame->frame_type == INTRA_ONLY_FRAME;
     cm->error_resilient_mode =
-        frame_is_sframe(cm) || (cm->frame_type == KEY_FRAME && cm->show_frame)
+        frame_is_sframe(cm) ||
+                (current_frame->frame_type == KEY_FRAME && cm->show_frame)
             ? 1
             : aom_rb_read_bit(rb);
   }
@@ -4941,8 +4944,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       int frame_id_length = seq_params->frame_id_length;
       int diff_len = seq_params->delta_frame_id_length;
       int prev_frame_id = 0;
-      int have_prev_frame_id = !pbi->decoding_first_frame &&
-                               !(cm->frame_type == KEY_FRAME && cm->show_frame);
+      int have_prev_frame_id =
+          !pbi->decoding_first_frame &&
+          !(current_frame->frame_type == KEY_FRAME && cm->show_frame);
       if (have_prev_frame_id) {
         prev_frame_id = cm->current_frame_id;
       }
@@ -4965,7 +4969,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       }
       /* Check if some frames need to be marked as not valid for referencing */
       for (int i = 0; i < REF_FRAMES; i++) {
-        if (cm->frame_type == KEY_FRAME && cm->show_frame) {
+        if (current_frame->frame_type == KEY_FRAME && cm->show_frame) {
           cm->valid_for_referencing[i] = 0;
         } else if (cm->current_frame_id - (1 << diff_len) > 0) {
           if (cm->ref_frame_id[i] > cm->current_frame_id ||
@@ -4982,9 +4986,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
     frame_size_override_flag = frame_is_sframe(cm) ? 1 : aom_rb_read_bit(rb);
 
-    cm->frame_offset = aom_rb_read_literal(
+    current_frame->order_hint = aom_rb_read_literal(
         rb, seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
-    cm->current_video_frame = cm->frame_offset;
+    current_frame->frame_number = current_frame->order_hint;
 
     if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
       cm->primary_ref_frame = aom_rb_read_literal(rb, PRIMARY_REF_BITS);
@@ -5016,7 +5020,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       }
     }
   }
-  if (cm->frame_type == KEY_FRAME) {
+  if (current_frame->frame_type == KEY_FRAME) {
     if (!cm->show_frame)  // unshown keyframe (forward keyframe)
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
     else  // shown keyframe
@@ -5031,7 +5035,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       pbi->need_resync = 0;
     }
   } else {
-    if (cm->intra_only) {
+    if (current_frame->intra_only) {
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
       if (pbi->refresh_frame_flags == 0xFF) {
         aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
@@ -5100,7 +5104,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
   }
 
-  if (cm->frame_type == KEY_FRAME) {
+  if (current_frame->frame_type == KEY_FRAME) {
     setup_frame_size(cm, frame_size_override_flag, rb);
 
     if (cm->allow_screen_content_tools && !av1_superres_scaled(cm))
@@ -5110,7 +5114,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   } else {
     cm->allow_ref_frame_mvs = 0;
 
-    if (cm->intra_only) {
+    if (current_frame->intra_only) {
       cm->cur_frame->film_grain_params_present =
           seq_params->film_grain_params_present;
       setup_frame_size(cm, frame_size_override_flag, rb);
@@ -5214,7 +5218,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                          "frame context is unavailable.");
     }
 
-    if (!cm->intra_only && pbi->need_resync != 1) {
+    if (!current_frame->intra_only && pbi->need_resync != 1) {
       if (frame_might_allow_ref_frame_mvs(cm))
         cm->allow_ref_frame_mvs = aom_rb_read_bit(rb);
       else
@@ -5236,8 +5240,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   av1_setup_frame_sign_bias(cm);
 
-  cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
-  cm->cur_frame->frame_type = cm->frame_type;
+  cm->cur_frame->intra_only =
+      current_frame->frame_type == KEY_FRAME || current_frame->intra_only;
+  cm->cur_frame->frame_type = current_frame->frame_type;
 
   if (seq_params->frame_id_numbers_present_flag) {
     /* If bitmask is set, update reference frame id values and
@@ -5369,11 +5374,13 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   }
 
   cm->tx_mode = read_tx_mode(cm, rb);
-  cm->reference_mode = read_frame_reference_mode(cm, rb);
-  if (cm->reference_mode != SINGLE_REFERENCE) setup_compound_reference_mode(cm);
+  current_frame->reference_mode = read_frame_reference_mode(cm, rb);
+  if (current_frame->reference_mode != SINGLE_REFERENCE)
+    setup_compound_reference_mode(cm);
 
   av1_setup_skip_mode_allowed(cm);
-  cm->skip_mode_flag = cm->is_skip_mode_allowed ? aom_rb_read_bit(rb) : 0;
+  current_frame->skip_mode_info.skip_mode_flag =
+      current_frame->skip_mode_info.skip_mode_allowed ? aom_rb_read_bit(rb) : 0;
 
   if (frame_might_allow_warped_motion(cm))
     cm->allow_warped_motion = aom_rb_read_bit(rb);
@@ -5446,7 +5453,8 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
   MACROBLOCKD *const xd = &pbi->mb;
 
 #if CONFIG_BITSTREAM_DEBUG
-  bitstream_queue_set_frame_read(cm->current_video_frame * 2 + cm->show_frame);
+  bitstream_queue_set_frame_read(cm->current_frame.frame_number * 2 +
+                                 cm->show_frame);
 #endif
 #if CONFIG_MISMATCH_DEBUG
   mismatch_move_frame_idx_r();

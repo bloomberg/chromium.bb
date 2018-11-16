@@ -229,7 +229,7 @@ static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 static int write_skip_mode(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            int segment_id, const MB_MODE_INFO *mi,
                            aom_writer *w) {
-  if (!cm->skip_mode_flag) return 0;
+  if (!cm->current_frame.skip_mode_info.skip_mode_flag) return 0;
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP)) {
     return 0;
   }
@@ -500,11 +500,12 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   } else {
     // does the feature use compound prediction or not
     // (if not specified at the frame/segment level)
-    if (cm->reference_mode == REFERENCE_MODE_SELECT) {
+    if (cm->current_frame.reference_mode == REFERENCE_MODE_SELECT) {
       if (is_comp_ref_allowed(mbmi->sb_type))
         aom_write_symbol(w, is_compound, av1_get_reference_mode_cdf(xd), 2);
     } else {
-      assert((!is_compound) == (cm->reference_mode == SINGLE_REFERENCE));
+      assert((!is_compound) ==
+             (cm->current_frame.reference_mode == SINGLE_REFERENCE));
     }
 
     if (is_compound) {
@@ -1108,7 +1109,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
       av1_encode_mv(cpi, w, &mbmi->mv[0].as_mv, &ref_mv.as_mv, nmvc, allow_hp);
     }
 
-    if (cpi->common.reference_mode != COMPOUND_REFERENCE &&
+    if (cpi->common.current_frame.reference_mode != COMPOUND_REFERENCE &&
         cpi->common.seq_params.enable_interintra_compound &&
         is_interintra_allowed(mbmi)) {
       const int interintra = mbmi->ref_frame[1] == INTRA_FRAME;
@@ -1159,7 +1160,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
           assert(mbmi->compound_idx == 1);
         }
       } else {
-        assert(cpi->common.reference_mode != SINGLE_REFERENCE &&
+        assert(cpi->common.current_frame.reference_mode != SINGLE_REFERENCE &&
                is_inter_compound_mode(mbmi->mode) &&
                mbmi->motion_mode == SIMPLE_TRANSLATION);
         assert(masked_compound_used);
@@ -1278,7 +1279,8 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
   const MB_MODE_INFO *const *mbmi = xd->mi[0];
   if (is_inter_block(mbmi)) {
 #define FRAME_TO_CHECK 11
-    if (cm->current_video_frame == FRAME_TO_CHECK && cm->show_frame == 1) {
+    if (cm->current_frame.frame_number == FRAME_TO_CHECK &&
+        cm->show_frame == 1) {
       const BLOCK_SIZE bsize = mbmi->sb_type;
 
       int_mv mv[2];
@@ -1315,8 +1317,8 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
           "show_frame=%d, mv[0]=(%d,%d), mv[1]=(%d,%d), ref[0]=%d, "
           "ref[1]=%d, motion_mode=%d, mode_ctx=%d, "
           "newmv_ctx=%d, zeromv_ctx=%d, refmv_ctx=%d, tx_size=%d\n",
-          cm->current_video_frame, mi_row, mi_col, mbmi->skip_mode, mbmi->mode,
-          bsize, cm->show_frame, mv[0].as_mv.row, mv[0].as_mv.col,
+          cm->current_frame.frame_number, mi_row, mi_col, mbmi->skip_mode,
+          mbmi->mode, bsize, cm->show_frame, mv[0].as_mv.row, mv[0].as_mv.col,
           mv[1].as_mv.row, mv[1].as_mv.col, mbmi->ref_frame[0],
           mbmi->ref_frame[1], mbmi->motion_mode, mode_ctx, newmv_ctx,
           zeromv_ctx, refmv_ctx, mbmi->tx_size);
@@ -2212,7 +2214,8 @@ static void write_ext_tile_info(const AV1_COMMON *const cm,
 }
 
 static int get_refresh_mask(AV1_COMP *cpi) {
-  if ((cpi->common.frame_type == KEY_FRAME && cpi->common.show_frame) ||
+  if ((cpi->common.current_frame.frame_type == KEY_FRAME &&
+       cpi->common.show_frame) ||
       frame_is_sframe(&cpi->common))
     return 0xFF;
 
@@ -2552,7 +2555,7 @@ static void write_film_grain_params(AV1_COMP *cpi,
   pars->random_seed += 3381;  // Changing random seed for film grain
   if (!pars->random_seed)     // Random seed should not be zero
     pars->random_seed += 7391;
-  if (cm->frame_type == INTER_FRAME)
+  if (cm->current_frame.frame_type == INTER_FRAME)
     aom_wb_write_bit(wb, pars->update_parameters);
   else
     pars->update_parameters = 1;
@@ -2834,7 +2837,7 @@ static void write_global_motion(AV1_COMP *cpi,
     */
     /*
     printf("Frame %d/%d: Enc Ref %d: %d %d %d %d\n",
-           cm->current_video_frame, cm->show_frame, frame,
+           cm->current_frame.frame_number, cm->show_frame, frame,
            cm->global_motion[frame].wmmat[0],
            cm->global_motion[frame].wmmat[1], cm->global_motion[frame].wmmat[2],
            cm->global_motion[frame].wmmat[3]);
@@ -2897,7 +2900,7 @@ static void check_frame_refs_short_signaling(AV1_COMP *const cpi) {
   }
 
 #if 0   // For debug
-  printf("\nFrame=%d: \n", cm->current_video_frame);
+  printf("\nFrame=%d: \n", cm->current_frame.frame_number);
   printf("***frame_refs_short_signaling=%d\n", cm->frame_refs_short_signaling);
   for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     printf("enc_ref(map_idx=%d, buf_idx=%d)=%d, vs. "
@@ -2922,15 +2925,17 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
+  CurrentFrame *const current_frame = &cm->current_frame;
 
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;
-  cm->frame_type = cm->intra_only ? INTRA_ONLY_FRAME : cm->frame_type;
+  current_frame->frame_type =
+      current_frame->intra_only ? INTRA_ONLY_FRAME : current_frame->frame_type;
 
   if (seq_params->still_picture) {
     assert(cm->show_existing_frame == 0);
     assert(cm->show_frame == 1);
-    assert(cm->frame_type == KEY_FRAME);
+    assert(current_frame->frame_type == KEY_FRAME);
   }
   if (!seq_params->reduced_still_picture_hdr) {
     if (encode_show_existing_frame(cm)) {
@@ -2969,7 +2974,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       aom_wb_write_bit(wb, 0);  // show_existing_frame
     }
 
-    aom_wb_write_literal(wb, cm->frame_type, 2);
+    aom_wb_write_literal(wb, current_frame->frame_type, 2);
 
     aom_wb_write_bit(wb, cm->show_frame);
     if (cm->show_frame) {
@@ -2981,7 +2986,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
     if (frame_is_sframe(cm)) {
       assert(cm->error_resilient_mode);
-    } else if (!(cm->frame_type == KEY_FRAME && cm->show_frame)) {
+    } else if (!(current_frame->frame_type == KEY_FRAME && cm->show_frame)) {
       aom_wb_write_bit(wb, cm->error_resilient_mode);
     }
   }
@@ -3031,7 +3036,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
     if (seq_params->order_hint_info.enable_order_hint)
       aom_wb_write_literal(
-          wb, cm->frame_offset,
+          wb, current_frame->order_hint,
           seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
 
     if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
@@ -3066,14 +3071,14 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
   }
   cpi->refresh_frame_mask = get_refresh_mask(cpi);
-  if (cm->frame_type == KEY_FRAME) {
+  if (current_frame->frame_type == KEY_FRAME) {
     if (!cm->show_frame) {  // unshown keyframe (forward keyframe)
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
     } else {
       assert(cpi->refresh_frame_mask == 0xFF);
     }
   } else {
-    if (cm->frame_type == INTRA_ONLY_FRAME) {
+    if (current_frame->frame_type == INTRA_ONLY_FRAME) {
       assert(cpi->refresh_frame_mask != 0xFF);
       int updated_fb = -1;
       for (int i = 0; i < REF_FRAMES; i++) {
@@ -3087,8 +3092,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       assert(updated_fb >= 0);
       cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
-    } else if (cm->frame_type == INTER_FRAME || frame_is_sframe(cm)) {
-      if (cm->frame_type == INTER_FRAME) {
+    } else if (current_frame->frame_type == INTER_FRAME ||
+               frame_is_sframe(cm)) {
+      if (current_frame->frame_type == INTER_FRAME) {
         aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
       } else {
         assert(frame_is_sframe(cm) && cpi->refresh_frame_mask == 0xFF);
@@ -3133,7 +3139,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
   }
 
-  if (cm->frame_type == KEY_FRAME) {
+  if (current_frame->frame_type == KEY_FRAME) {
     write_frame_size(cm, frame_size_override_flag, wb);
     assert(!av1_superres_scaled(cm) || !cm->allow_intrabc);
     if (cm->allow_screen_content_tools && !av1_superres_scaled(cm))
@@ -3141,12 +3147,13 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     // all eight fbs are refreshed, pick one that will live long enough
     cm->fb_of_context_type[REGULAR_FRAME] = 0;
   } else {
-    if (cm->frame_type == INTRA_ONLY_FRAME) {
+    if (current_frame->frame_type == INTRA_ONLY_FRAME) {
       write_frame_size(cm, frame_size_override_flag, wb);
       assert(!av1_superres_scaled(cm) || !cm->allow_intrabc);
       if (cm->allow_screen_content_tools && !av1_superres_scaled(cm))
         aom_wb_write_bit(wb, cm->allow_intrabc);
-    } else if (cm->frame_type == INTER_FRAME || frame_is_sframe(cm)) {
+    } else if (current_frame->frame_type == INTER_FRAME ||
+               frame_is_sframe(cm)) {
       MV_REFERENCE_FRAME ref_frame;
 
       // NOTE: Error resilient mode turns off frame_refs_short_signaling
@@ -3265,12 +3272,14 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   write_tx_mode(cm, &cm->tx_mode, wb);
 
   if (cpi->allow_comp_inter_inter) {
-    const int use_hybrid_pred = cm->reference_mode == REFERENCE_MODE_SELECT;
+    const int use_hybrid_pred =
+        current_frame->reference_mode == REFERENCE_MODE_SELECT;
 
     aom_wb_write_bit(wb, use_hybrid_pred);
   }
 
-  if (cm->is_skip_mode_allowed) aom_wb_write_bit(wb, cm->skip_mode_flag);
+  if (current_frame->skip_mode_info.skip_mode_allowed)
+    aom_wb_write_bit(wb, current_frame->skip_mode_info.skip_mode_flag);
 
   if (frame_might_allow_warped_motion(cm))
     aom_wb_write_bit(wb, cm->allow_warped_motion);
@@ -3284,7 +3293,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   if (seq_params->film_grain_params_present &&
       (cm->show_frame || cm->showable_frame)) {
     int flip_back_update_parameters_flag = 0;
-    if (cm->frame_type != INTER_FRAME &&
+    if (current_frame->frame_type != INTER_FRAME &&
         cm->film_grain_params.update_parameters == 0) {
       cm->film_grain_params.update_parameters = 1;
       flip_back_update_parameters_flag = 1;
@@ -3642,9 +3651,9 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 #if EXT_TILE_DEBUG
     {
       char fn[20] = "./fh";
-      fn[4] = cm->current_video_frame / 100 + '0';
-      fn[5] = (cm->current_video_frame % 100) / 10 + '0';
-      fn[6] = (cm->current_video_frame % 10) + '0';
+      fn[4] = cm->current_frame.frame_number / 100 + '0';
+      fn[5] = (cm->current_frame.frame_number % 100) / 10 + '0';
+      fn[6] = (cm->current_frame.frame_number % 10) + '0';
       fn[7] = '\0';
       av1_print_uncompressed_frame_header(data - frame_header_size,
                                           frame_header_size, fn);
@@ -3706,7 +3715,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
           // If tile_copy_mode = 1, check if this tile is a copy tile.
           // Very low chances to have copy tiles on the key frames, so don't
           // search on key frames to reduce unnecessary search.
-          if (cm->frame_type != KEY_FRAME && tile_copy_mode) {
+          if (cm->current_frame.frame_type != KEY_FRAME && tile_copy_mode) {
             const int identical_tile_offset =
                 find_identical_tile(tile_row, tile_col, tile_buffers);
 
@@ -3954,7 +3963,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   // The TD is now written outside the frame encode loop
 
   // write sequence header obu if KEY_FRAME, preceded by 4-byte size
-  if (cm->frame_type == KEY_FRAME && cm->show_frame) {
+  if (cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) {
     obu_header_size = write_obu_header(OBU_SEQUENCE_HEADER, 0, data);
 
     obu_payload_size = write_sequence_header_obu(cpi, data + obu_header_size);

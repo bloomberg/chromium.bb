@@ -42,9 +42,9 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
     ifd_init_mi_rc(fd, cm->mi_rows, cm->mi_cols);
   }
   fd->show_existing_frame = cm->show_existing_frame;
-  fd->frame_number = cm->current_video_frame;
+  fd->frame_number = cm->current_frame.frame_number;
   fd->show_frame = cm->show_frame;
-  fd->frame_type = cm->frame_type;
+  fd->frame_type = cm->current_frame.frame_type;
   fd->base_qindex = cm->base_qindex;
   // Set width and height of the first tile until generic support can be added
   TileInfo tile_info;

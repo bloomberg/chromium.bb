@@ -213,7 +213,7 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     int filt_guess;
     switch (cm->seq_params.bit_depth) {
       case AOM_BITS_8:
-        filt_guess = (cm->frame_type == KEY_FRAME)
+        filt_guess = (cm->current_frame.frame_type == KEY_FRAME)
                          ? ROUND_POWER_OF_TWO(q * 17563 - 421574, 18)
                          : ROUND_POWER_OF_TWO(q * 6017 + 650707, 18);
         break;
@@ -229,7 +229,8 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
                "or AOM_BITS_12");
         return;
     }
-    if (cm->seq_params.bit_depth != AOM_BITS_8 && cm->frame_type == KEY_FRAME)
+    if (cm->seq_params.bit_depth != AOM_BITS_8 &&
+        cm->current_frame.frame_type == KEY_FRAME)
       filt_guess -= 4;
     // TODO(chengchen): retrain the model for Y, U, V filter levels
     lf->filter_level[0] = clamp(filt_guess, min_filter_level, max_filter_level);

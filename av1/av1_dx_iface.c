@@ -448,7 +448,8 @@ static INLINE void check_resync(aom_codec_alg_priv_t *const ctx,
                                 const AV1Decoder *const pbi) {
   // Clear resync flag if worker got a key frame or intra only frame.
   if (ctx->need_resync == 1 && pbi->need_resync == 0 &&
-      (pbi->common.intra_only || pbi->common.frame_type == KEY_FRAME))
+      (pbi->common.current_frame.intra_only ||
+       pbi->common.current_frame.frame_type == KEY_FRAME))
     ctx->need_resync = 0;
 }
 

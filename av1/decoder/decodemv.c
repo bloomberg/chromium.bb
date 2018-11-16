@@ -395,7 +395,7 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
 static int read_skip_mode(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
                           aom_reader *r) {
-  if (!cm->skip_mode_flag) return 0;
+  if (!cm->current_frame.skip_mode_info.skip_mode_flag) return 0;
 
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP)) {
     return 0;
@@ -883,14 +883,14 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
                                                 const MACROBLOCKD *xd,
                                                 aom_reader *r) {
   if (!is_comp_ref_allowed(xd->mi[0]->sb_type)) return SINGLE_REFERENCE;
-  if (cm->reference_mode == REFERENCE_MODE_SELECT) {
+  if (cm->current_frame.reference_mode == REFERENCE_MODE_SELECT) {
     const int ctx = av1_get_reference_mode_context(xd);
     const REFERENCE_MODE mode = (REFERENCE_MODE)aom_read_symbol(
         r, xd->tile_ctx->comp_inter_cdf[ctx], 2, ACCT_STR);
     return mode;  // SINGLE_REFERENCE or COMPOUND_REFERENCE
   } else {
-    assert(cm->reference_mode == SINGLE_REFERENCE);
-    return cm->reference_mode;
+    assert(cm->current_frame.reference_mode == SINGLE_REFERENCE);
+    return cm->current_frame.reference_mode;
   }
 }
 
@@ -908,8 +908,8 @@ static COMP_REFERENCE_TYPE read_comp_reference_type(const MACROBLOCKD *xd,
 
 static void set_ref_frames_for_skip_mode(AV1_COMMON *const cm,
                                          MV_REFERENCE_FRAME ref_frame[2]) {
-  ref_frame[0] = LAST_FRAME + cm->ref_frame_idx_0;
-  ref_frame[1] = LAST_FRAME + cm->ref_frame_idx_1;
+  ref_frame[0] = LAST_FRAME + cm->current_frame.skip_mode_info.ref_frame_idx_0;
+  ref_frame[1] = LAST_FRAME + cm->current_frame.skip_mode_info.ref_frame_idx_1;
 }
 
 // Read the referncence frame
@@ -1232,16 +1232,16 @@ static void dec_dump_logs(AV1_COMMON *cm, MB_MODE_INFO *const mbmi, int mi_row,
   }
 
 #define FRAME_TO_CHECK 11
-  if (cm->current_video_frame == FRAME_TO_CHECK && cm->show_frame == 1) {
+  if (cm->current_frame.frame_number == FRAME_TO_CHECK && cm->show_frame == 1) {
     printf(
         "=== DECODER ===: "
         "Frame=%d, (mi_row,mi_col)=(%d,%d), skip_mode=%d, mode=%d, bsize=%d, "
         "show_frame=%d, mv[0]=(%d,%d), mv[1]=(%d,%d), ref[0]=%d, "
         "ref[1]=%d, motion_mode=%d, mode_ctx=%d, "
         "newmv_ctx=%d, zeromv_ctx=%d, refmv_ctx=%d, tx_size=%d\n",
-        cm->current_video_frame, mi_row, mi_col, mbmi->skip_mode, mbmi->mode,
-        mbmi->sb_type, cm->show_frame, mv[0].as_mv.row, mv[0].as_mv.col,
-        mv[1].as_mv.row, mv[1].as_mv.col, mbmi->ref_frame[0],
+        cm->current_frame.frame_number, mi_row, mi_col, mbmi->skip_mode,
+        mbmi->mode, mbmi->sb_type, cm->show_frame, mv[0].as_mv.row,
+        mv[0].as_mv.col, mv[1].as_mv.row, mv[1].as_mv.col, mbmi->ref_frame[0],
         mbmi->ref_frame[1], mbmi->motion_mode, mode_ctx, newmv_ctx, zeromv_ctx,
         refmv_ctx, mbmi->tx_size);
   }
@@ -1430,7 +1430,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         mbmi->compound_idx = 1;
       }
     } else {
-      assert(cm->reference_mode != SINGLE_REFERENCE &&
+      assert(cm->current_frame.reference_mode != SINGLE_REFERENCE &&
              is_inter_compound_mode(mbmi->mode) &&
              mbmi->motion_mode == SIMPLE_TRANSLATION);
       assert(masked_compound_used);
