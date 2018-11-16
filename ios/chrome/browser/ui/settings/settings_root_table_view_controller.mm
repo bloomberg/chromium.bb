@@ -36,7 +36,11 @@
 - (void)updateEditButton {
   if (self.tableView.editing) {
     self.navigationItem.rightBarButtonItem = [self createEditModeDoneButton];
-  } else if (self.shouldShowEditButton) {
+    return;
+  }
+
+  [self.navigationController setToolbarHidden:YES animated:YES];
+  if (self.shouldShowEditButton) {
     self.navigationItem.rightBarButtonItem = [self createEditButton];
   } else {
     self.navigationItem.rightBarButtonItem = [self doneButtonIfNeeded];
@@ -90,6 +94,12 @@
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
   [self.navigationController setToolbarHidden:YES animated:YES];
+}
+
+- (void)setEditing:(BOOL)editing animated:(BOOL)animated {
+  [super setEditing:editing animated:animated];
+  if (!editing)
+    [self.navigationController setToolbarHidden:YES animated:YES];
 }
 
 #pragma mark - UITableViewDelegate
@@ -170,7 +180,7 @@
 }
 
 - (void)editButtonPressed {
-  self.tableView.editing = !self.tableView.editing;
+  [self setEditing:!self.tableView.editing animated:YES];
   [self updateEditButton];
 }
 

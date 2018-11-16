@@ -11,8 +11,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
-#import "ios/chrome/browser/ui/settings/block_popups_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/block_popups_table_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +22,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SettingsRootCollectionViewController (ExposedForTesting)
+@interface SettingsRootTableViewController (ExposedForTesting)
 - (void)editButtonPressed;
 @end
 
@@ -31,17 +31,17 @@ namespace {
 const char* kAllowedPattern = "[*.]example.com";
 const char* kAllowedURL = "http://example.com";
 
-class BlockPopupsCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class BlockPopupsTableViewControllerTest
+    : public ChromeTableViewControllerTest {
  protected:
   void SetUp() override {
-    CollectionViewControllerTest::SetUp();
+    ChromeTableViewControllerTest::SetUp();
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
   }
 
-  CollectionViewController* InstantiateController() override {
-    return [[BlockPopupsCollectionViewController alloc]
+  ChromeTableViewController* InstantiateController() override {
+    return [[BlockPopupsTableViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
@@ -77,16 +77,17 @@ class BlockPopupsCollectionViewControllerTest
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  UINavigationController* navigation_controller_;
 };
 
-TEST_F(BlockPopupsCollectionViewControllerTest, TestPopupsNotAllowed) {
+TEST_F(BlockPopupsTableViewControllerTest, TestPopupsNotAllowed) {
   SetDisallowPopups();
   CreateController();
   CheckController();
   EXPECT_EQ(1, NumberOfSections());
 }
 
-TEST_F(BlockPopupsCollectionViewControllerTest, TestPopupsAllowed) {
+TEST_F(BlockPopupsTableViewControllerTest, TestPopupsAllowed) {
   SetAllowPopups();
   CreateController();
   CheckController();
@@ -94,7 +95,7 @@ TEST_F(BlockPopupsCollectionViewControllerTest, TestPopupsAllowed) {
   EXPECT_FALSE([controller() navigationItem].rightBarButtonItem);
 }
 
-TEST_F(BlockPopupsCollectionViewControllerTest, TestPopupsAllowedWithOneItem) {
+TEST_F(BlockPopupsTableViewControllerTest, TestPopupsAllowedWithOneItem) {
   // Ensure that even if there are 'allowed' patterns, if block popups is
   // turned off (popups are allowed), there is no list of patterns.
   AddAllowedPattern(kAllowedPattern, GURL(kAllowedURL));
@@ -106,7 +107,7 @@ TEST_F(BlockPopupsCollectionViewControllerTest, TestPopupsAllowedWithOneItem) {
   EXPECT_FALSE([controller() navigationItem].rightBarButtonItem);
 }
 
-TEST_F(BlockPopupsCollectionViewControllerTest, TestOneAllowedItem) {
+TEST_F(BlockPopupsTableViewControllerTest, TestOneAllowedItem) {
   AddAllowedPattern(kAllowedPattern, GURL(kAllowedURL));
 
   CreateController();
@@ -114,11 +115,11 @@ TEST_F(BlockPopupsCollectionViewControllerTest, TestOneAllowedItem) {
   EXPECT_EQ(2, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(1));
   CheckSectionHeaderWithId(IDS_IOS_POPUPS_ALLOWED, 1);
-  CheckTextCellTitle(base::SysUTF8ToNSString(kAllowedPattern), 1, 0);
+  CheckTextCellText(base::SysUTF8ToNSString(kAllowedPattern), 1, 0);
   EXPECT_TRUE([controller() navigationItem].rightBarButtonItem);
 }
 
-TEST_F(BlockPopupsCollectionViewControllerTest, TestOneAllowedItemDeleted) {
+TEST_F(BlockPopupsTableViewControllerTest, TestOneAllowedItemDeleted) {
   // Get the number of entries before testing, to ensure after adding and
   // deleting, the entries are the same.
   ContentSettingsForOneType initial_entries;
@@ -140,30 +141,18 @@ TEST_F(BlockPopupsCollectionViewControllerTest, TestOneAllowedItemDeleted) {
 
   CreateController();
 
-  BlockPopupsCollectionViewController* popups_controller =
-      static_cast<BlockPopupsCollectionViewController*>(controller());
+  BlockPopupsTableViewController* popups_controller =
+      static_cast<BlockPopupsTableViewController*>(controller());
   // Put the collectionView in 'edit' mode.
   [popups_controller editButtonPressed];
-  // This is a bit of a shortcut, since actually clicking on the 'delete'
-  // button would be tough.
-  void (^delete_item_with_wait)(int, int) = ^(int i, int j) {
-    __block BOOL completion_called = NO;
-    this->DeleteItem(i, j, ^{
-      completion_called = YES;
-    });
-    EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-        base::test::ios::kWaitForUIElementTimeout, ^bool() {
-          return completion_called;
-        }));
-  };
-
-  delete_item_with_wait(1, 0);
-  // Exit 'edit' mode.
-  [popups_controller editButtonPressed];
+  [popups_controller
+      deleteItems:@[ [NSIndexPath indexPathForRow:0 inSection:1] ]];
 
   // Verify the resulting UI.
-  EXPECT_EQ(1, NumberOfSections());
-  EXPECT_EQ(1, NumberOfItemsInSection(0));
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool() {
+        return NumberOfSections() == 1 && NumberOfItemsInSection(0) == 1;
+      }));
 
   // Verify that there are no longer any allowed patterns in |profile_|.
   ContentSettingsForOneType final_entries;

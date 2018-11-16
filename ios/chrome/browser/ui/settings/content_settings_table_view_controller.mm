@@ -17,7 +17,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/mailto/features.h"
-#import "ios/chrome/browser/ui/settings/block_popups_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/block_popups_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/compose_email_handler_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -223,9 +223,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
     case ItemTypeSettingsBlockPopups: {
-      UIViewController* controller =
-          [[BlockPopupsCollectionViewController alloc]
-              initWithBrowserState:browserState_];
+      UIViewController* controller = [[BlockPopupsTableViewController alloc]
+          initWithBrowserState:browserState_];
       [self.navigationController pushViewController:controller animated:YES];
       break;
     }
