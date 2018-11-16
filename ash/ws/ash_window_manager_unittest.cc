@@ -63,7 +63,6 @@ TEST_F(AshWindowManagerTest, AddWindowToTabletMode) {
   mus_client_init_params.connector =
       ash_test_helper()->GetWindowServiceConnector();
   mus_client_init_params.create_wm_state = false;
-  mus_client_init_params.create_cursor_factory = false;
   mus_client_init_params.running_in_ws_process = true;
   views::MusClient mus_client(mus_client_init_params);
 

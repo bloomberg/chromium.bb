@@ -165,7 +165,6 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     // WMState has already been created, so don't have MusClient create it.
     params.create_wm_state = false;
     params.running_in_ws_process = features::IsSingleProcessMash();
-    params.create_cursor_factory = !features::IsSingleProcessMash();
     mus_client_ = std::make_unique<views::MusClient>(params);
     // Register ash-specific window properties with Chrome's property converter.
     // Values of registered properties will be transported between the services.

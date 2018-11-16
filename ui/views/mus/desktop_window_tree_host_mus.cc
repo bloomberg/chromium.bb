@@ -39,10 +39,6 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
-#if defined(USE_OZONE)
-#include "ui/base/cursor/ozone/cursor_data_factory_ozone.h"
-#endif
-
 namespace views {
 
 namespace {
@@ -174,15 +170,10 @@ class NativeCursorManagerMus : public wm::NativeCursorManager {
   void SetCursor(gfx::NativeCursor cursor,
                  wm::NativeCursorManagerDelegate* delegate) override {
     ui::CursorData mojo_cursor;
-    if (cursor.platform()) {
-#if defined(USE_OZONE)
+    if (cursor.native_type() == ui::CursorType::kCustom) {
       mojo_cursor =
-          ui::CursorDataFactoryOzone::GetCursorData(cursor.platform());
-#else
-      NOTIMPLEMENTED()
-          << "Can't pass native platform cursors on non-ozone platforms";
-      mojo_cursor = ui::CursorData(ui::CursorType::kPointer);
-#endif
+          ui::CursorData(cursor.GetHotspot(), {cursor.GetBitmap()},
+                         cursor.device_scale_factor(), base::TimeDelta());
     } else {
       mojo_cursor = ui::CursorData(cursor.native_type());
     }
