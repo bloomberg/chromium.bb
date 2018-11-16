@@ -131,17 +131,30 @@ class MockHostResolverBase
                  HostCache::EntryStaleness* stale_out) const override;
   void SetDnsConfigOverrides(const DnsConfigOverrides& overrides) override {}
 
-  // Detach cancelled request.
-  void DetachRequest(size_t id);
+  // Returns true if there are pending requests that can be resolved by invoking
+  // ResolveAllPending().
+  bool has_pending_requests() const { return !requests_.empty(); }
 
   // Resolves all pending requests. It is only valid to invoke this if
   // set_ondemand_mode was set before. The requests are resolved asynchronously,
   // after this call returns.
   void ResolveAllPending();
 
-  // Returns true if there are pending requests that can be resolved by invoking
-  // ResolveAllPending().
-  bool has_pending_requests() const { return !requests_.empty(); }
+  // Each request is assigned an ID when started and stored with the resolver
+  // for async resolution, starting with 1. IDs are not reused. Once a request
+  // completes, it is destroyed, and can no longer be accessed.
+
+  // Resolve request stored in |requests_|. Pass rv to callback.
+  void ResolveNow(size_t id);
+
+  // Detach cancelled request.
+  void DetachRequest(size_t id);
+
+  // Returns the request with the given id.
+  RequestImpl* request(size_t id);
+
+  // Returns the priority of the request with the given id.
+  RequestPriority request_priority(size_t id);
 
   // The number of times that Resolve() has been called.
   size_t num_resolve() const {
@@ -189,8 +202,6 @@ class MockHostResolverBase
                   HostResolverFlags flags,
                   HostResolverSource source,
                   AddressList* addresses);
-  // Resolve request stored in |requests_|. Pass rv to callback.
-  void ResolveNow(size_t id);
 
   RequestPriority last_request_priority_;
   bool synchronous_mode_;
