@@ -1623,10 +1623,10 @@ TEST(FormParserTest, MultipleUsernames) {
 // new-password. That way the generation can be offered before the user has
 // thought of and typed their new password elsewhere. See
 // https://crbug.com/902700 for more details.
-TEST(FormParserTest, NewPasswordFirst) {
+TEST(FormParserTest, MultipleNewPasswords) {
   CheckTestData({
       {
-          "More than two usernames are ignored.",
+          "Only one new-password recognised.",
           {
               {.role = ElementRole::USERNAME,
                .form_control_type = "text",
@@ -1636,6 +1636,22 @@ TEST(FormParserTest, NewPasswordFirst) {
                .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
               {.form_control_type = "password",
                .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+          },
+      },
+      {
+          "Only one new-password recognised, confirmation unaffected.",
+          {
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME}},
+              {.role = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+              {.form_control_type = "password",
+               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD}},
+              {.role = ElementRole::CONFIRMATION_PASSWORD,
+               .form_control_type = "password",
+               .prediction = {.type = autofill::CONFIRMATION_PASSWORD}},
           },
       },
   });
