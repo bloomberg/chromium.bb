@@ -76,6 +76,11 @@ class CONTENT_EXPORT BackgroundSyncManager
                 const BackgroundSyncRegistrationOptions& options,
                 StatusAndRegistrationCallback callback);
 
+  // Called after the client has resolved its registration promise. At this
+  // point it's safe to fire any pending registrations.
+  void DidResolveRegistration(int64_t sw_registration_id,
+                              const std::string& tag);
+
   // Finds the background sync registrations associated with
   // |sw_registration_id|. Calls |callback| with BACKGROUND_SYNC_STATUS_OK on
   // success.
@@ -219,6 +224,10 @@ class CONTENT_EXPORT BackgroundSyncManager
                         const BackgroundSyncRegistration& new_registration,
                         StatusAndRegistrationCallback callback,
                         blink::ServiceWorkerStatusCode status);
+
+  // DidResolveRegistration callbacks
+  void DidResolveRegistrationImpl(int64_t sw_registration_id,
+                                  const std::string& tag);
 
   // GetRegistrations callbacks
   void GetRegistrationsImpl(int64_t sw_registration_id,

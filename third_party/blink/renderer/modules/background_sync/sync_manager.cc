@@ -41,7 +41,8 @@ ScriptPromise SyncManager::registerFunction(ScriptState* script_state,
 
   GetBackgroundSyncServicePtr()->Register(
       std::move(sync_registration), registration_->RegistrationId(),
-      WTF::Bind(SyncManager::RegisterCallback, WrapPersistent(resolver)));
+      WTF::Bind(&SyncManager::RegisterCallback, WrapPersistent(this),
+                WrapPersistent(resolver)));
 
   return promise;
 }
@@ -67,7 +68,6 @@ SyncManager::GetBackgroundSyncServicePtr() {
   return background_sync_service_;
 }
 
-// static
 void SyncManager::RegisterCallback(ScriptPromiseResolver* resolver,
                                    mojom::blink::BackgroundSyncError error,
                                    mojom::blink::SyncRegistrationPtr options) {
@@ -79,6 +79,10 @@ void SyncManager::RegisterCallback(ScriptPromiseResolver* resolver,
         return;
       }
       resolver->Resolve();
+      // Let the service know that the registration promise is resolved so that
+      // it can fire the event.
+      GetBackgroundSyncServicePtr()->DidResolveRegistration(
+          registration_->RegistrationId(), options->tag);
       break;
     case mojom::blink::BackgroundSyncError::NOT_FOUND:
       NOTREACHED();

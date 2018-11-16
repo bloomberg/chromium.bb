@@ -44,12 +44,21 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   base::Time delay_until() const { return delay_until_; }
   void set_delay_until(base::Time delay_until) { delay_until_ = delay_until; }
 
+  // By default, new registrations will not fire until set_resolved is called
+  // after the registration resolves.
+  bool resolved() const { return resolved_; }
+  void set_resolved() { resolved_ = true; }
+
  private:
   BackgroundSyncRegistrationOptions options_;
   blink::mojom::BackgroundSyncState sync_state_ =
       blink::mojom::BackgroundSyncState::PENDING;
   int num_attempts_ = 0;
   base::Time delay_until_;
+
+  // This member is not persisted to disk. It should be false until the client
+  // has acknowledged tha it has resolved its registration promise.
+  bool resolved_ = false;
 };
 
 }  // namespace content

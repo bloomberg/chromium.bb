@@ -41,9 +41,9 @@ class SyncManager final : public ScriptWrappable {
   const mojom::blink::BackgroundSyncServicePtr& GetBackgroundSyncServicePtr();
 
   // Callbacks
-  static void RegisterCallback(ScriptPromiseResolver*,
-                               mojom::blink::BackgroundSyncError,
-                               mojom::blink::SyncRegistrationPtr options);
+  void RegisterCallback(ScriptPromiseResolver*,
+                        mojom::blink::BackgroundSyncError,
+                        mojom::blink::SyncRegistrationPtr options);
   static void GetRegistrationsCallback(
       ScriptPromiseResolver*,
       mojom::blink::BackgroundSyncError,
