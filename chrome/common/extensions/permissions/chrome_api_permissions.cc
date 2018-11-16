@@ -94,8 +94,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kWebNavigation, "webNavigation"},
 
     // Register private permissions.
-    {APIPermission::kScreenlockPrivate, "screenlockPrivate",
-     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kActivityLogPrivate, "activityLogPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kAutoTestPrivate, "autotestPrivate",

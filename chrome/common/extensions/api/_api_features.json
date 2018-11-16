@@ -463,11 +463,6 @@
     "dependencies": ["permission:fileBrowserHandler"],
     "contexts": ["blessed_extension"]
   },
-  "screenlockPrivate": {
-    "dependencies": ["permission:screenlockPrivate"],
-    "extension_types": ["platform_app"],
-    "contexts": ["blessed_extension"]
-  },
   "fileManagerPrivate": {
     "dependencies": ["permission:fileManagerPrivate"],
     "contexts": ["blessed_extension"]

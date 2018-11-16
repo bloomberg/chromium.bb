@@ -208,7 +208,7 @@ class APIPermission {
     kWebstoreWidgetPrivate = 164,
     kWebView = 165,
     kWindowShape = 166,
-    kScreenlockPrivate = 167,
+    kDeleted_ScreenlockPrivate = 167,
     kSystemCpu = 168,
     kSystemMemory = 169,
     kSystemNetwork = 170,

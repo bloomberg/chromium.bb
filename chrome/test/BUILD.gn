@@ -1784,7 +1784,6 @@ test("browser_tests") {
         "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
-        "../browser/extensions/api/screenlock_private/screenlock_private_apitest.cc",
         "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
         "../browser/extensions/chromeos_component_extensions_browsertest.cc",
         "../browser/notifications/chrome_ash_message_center_client_browsertest.cc",

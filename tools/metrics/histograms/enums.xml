@@ -15825,7 +15825,7 @@ Called by update_net_error_codes.py.-->
   <int value="337" label="DIAL_ON_ERROR"/>
   <int value="338" label="CAST_CHANNEL_ON_MESSAGE"/>
   <int value="339" label="CAST_CHANNEL_ON_ERROR"/>
-  <int value="340" label="SCREENLOCK_PRIVATE_ON_CHANGED"/>
+  <int value="340" label="DELETED_SCREENLOCK_PRIVATE_ON_CHANGED"/>
   <int value="341" label="DELETED_SCREENLOCK_PRIVATE_ON_AUTH_ATTEMPTED"/>
   <int value="342" label="TYPES_CHROME_SETTING_ON_CHANGE"/>
   <int value="343"
@@ -16576,9 +16576,9 @@ Called by update_net_error_codes.py.-->
   <int value="626" label="BOOKMARKMANAGERPRIVATE_SETMETAINFO"/>
   <int value="627" label="FILESYSTEMPROVIDER_MOUNT"/>
   <int value="628" label="AUTOTESTPRIVATE_GETEXTENSIONSINFO"/>
-  <int value="629" label="SCREENLOCKPRIVATE_GETLOCKED"/>
-  <int value="630" label="SCREENLOCKPRIVATE_SETLOCKED"/>
-  <int value="631" label="SCREENLOCKPRIVATE_SHOWMESSAGE"/>
+  <int value="629" label="DELETED_SCREENLOCKPRIVATE_GETLOCKED"/>
+  <int value="630" label="DELETED_SCREENLOCKPRIVATE_SETLOCKED"/>
+  <int value="631" label="DELETED_SCREENLOCKPRIVATE_SHOWMESSAGE"/>
   <int value="632" label="FEEDBACKPRIVATE_GETHISTOGRAMS"/>
   <int value="633" label="SYSTEM_NETWORK_GETNETWORKINTERFACES"/>
   <int value="634" label="SERIAL_GETDEVICES"/>
@@ -16600,7 +16600,7 @@ Called by update_net_error_codes.py.-->
   <int value="649" label="MEDIAGALLERIES_GETMETADATA"/>
   <int value="650" label="INPUT_IME_SENDKEYEVENTS"/>
   <int value="651" label="VIRTUALKEYBOARDPRIVATE_LOCKKEYBOARD"/>
-  <int value="652" label="SCREENLOCKPRIVATE_SHOWCUSTOMICON"/>
+  <int value="652" label="DELETED_SCREENLOCKPRIVATE_SHOWCUSTOMICON"/>
   <int value="653" label="INPUT_IME_HIDEINPUTVIEW"/>
   <int value="654" label="BOOKMARKMANAGERPRIVATE_UNDO"/>
   <int value="655" label="BOOKMARKMANAGERPRIVATE_REDO"/>
@@ -16638,10 +16638,10 @@ Called by update_net_error_codes.py.-->
   <int value="686" label="ACTIVITYLOGPRIVATE_DELETEACTIVITIES"/>
   <int value="687" label="NETWORKINGPRIVATE_SETWIFITDLSENABLEDSTATE"/>
   <int value="688" label="NETWORKINGPRIVATE_GETWIFITDLSSTATUS"/>
-  <int value="689" label="SCREENLOCKPRIVATE_HIDECUSTOMICON"/>
-  <int value="690" label="SCREENLOCKPRIVATE_SETAUTHTYPE"/>
-  <int value="691" label="SCREENLOCKPRIVATE_GETAUTHTYPE"/>
-  <int value="692" label="SCREENLOCKPRIVATE_ACCEPTAUTHATTEMPT"/>
+  <int value="689" label="DELETED_SCREENLOCKPRIVATE_HIDECUSTOMICON"/>
+  <int value="690" label="DELETED_SCREENLOCKPRIVATE_SETAUTHTYPE"/>
+  <int value="691" label="DELETED_SCREENLOCKPRIVATE_GETAUTHTYPE"/>
+  <int value="692" label="DELETED_SCREENLOCKPRIVATE_ACCEPTAUTHATTEMPT"/>
   <int value="693" label="DELETED_WEBVIEW_FIND"/>
   <int value="694" label="DELETED_WEBVIEW_STOPFINDING"/>
   <int value="695" label="DELETED_WEBVIEW_CONTEXTMENUSCREATE"/>
@@ -17524,7 +17524,7 @@ Called by update_net_error_codes.py.-->
   <int value="54" label="kSearchProvider"/>
   <int value="55" label="kStartupPages"/>
   <int value="56" label="kMediaGalleriesAllGalleriesDelete"/>
-  <int value="57" label="kScreenlockPrivate"/>
+  <int value="57" label="kDeleted_ScreenlockPrivate"/>
   <int value="58" label="kOverrideBookmarksUI"/>
   <int value="59" label="kAutomation"/>
   <int value="60" label="kAccessibilityFeaturesModify"/>
@@ -17724,7 +17724,7 @@ Called by update_net_error_codes.py.-->
   <int value="164" label="kWebstoreWidgetPrivate"/>
   <int value="165" label="kWebView"/>
   <int value="166" label="kWindowShape"/>
-  <int value="167" label="kScreenlockPrivate"/>
+  <int value="167" label="kDeleted_ScreenlockPrivate"/>
   <int value="168" label="kSystemCpu"/>
   <int value="169" label="kSystemMemory"/>
   <int value="170" label="kSystemNetwork"/>

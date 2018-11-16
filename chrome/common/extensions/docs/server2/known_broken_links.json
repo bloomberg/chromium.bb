@@ -1050,7 +1050,6 @@
   [
     404,
     "apps/private_apis.html",
-    "apps/screenlockPrivate.html",
     "target page not found"
   ],
   [
@@ -1823,7 +1822,6 @@
   [
     404,
     "extensions/private_apis.html",
-    "extensions/screenlockPrivate.html",
     "target page not found"
   ],
   [

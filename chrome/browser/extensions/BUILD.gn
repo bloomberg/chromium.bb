@@ -925,8 +925,6 @@ jumbo_static_library("extensions") {
       "api/platform_keys/platform_keys_api.h",
       "api/platform_keys/verify_trust_api.cc",
       "api/platform_keys/verify_trust_api.h",
-      "api/screenlock_private/screenlock_private_api.cc",
-      "api/screenlock_private/screenlock_private_api.h",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.cc",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h",
       "api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.cc",
