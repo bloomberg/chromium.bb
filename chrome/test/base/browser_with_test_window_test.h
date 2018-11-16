@@ -5,7 +5,6 @@
 #ifndef CHROME_TEST_BASE_BROWSER_WITH_TEST_WINDOW_TEST_H_
 #define CHROME_TEST_BASE_BROWSER_WITH_TEST_WINDOW_TEST_H_
 
-#include "base/at_exit.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -186,7 +185,6 @@ class BrowserWithTestWindowTest : public testing::Test {
  private:
   // We need to create a MessageLoop, otherwise a bunch of things fails.
   content::TestBrowserThreadBundle thread_bundle_;
-  base::ShadowingAtExitManager at_exit_manager_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
