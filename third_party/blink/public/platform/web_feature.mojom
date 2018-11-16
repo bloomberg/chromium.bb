@@ -2083,6 +2083,9 @@ enum WebFeature {
   kPlainTextEditingEffective = 2631,
   kNavigationDownloadInSandboxWithUserGesture = 2632,
   kNavigationDownloadInSandboxWithoutUserGesture = 2633,
+  kLegacyTLSVersionInMainFrameResource = 2634,
+  kLegacyTLSVersionInSubresource = 2635,
+  kLegacyTLSVersionInSubframeMainResource = 2636,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

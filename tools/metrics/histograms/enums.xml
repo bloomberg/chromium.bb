@@ -20769,6 +20769,9 @@ Called by update_net_error_codes.py.-->
   <int value="2631" label="PlainTextEditingEffective"/>
   <int value="2632" label="NavigationDownloadInSandboxWithUserGesture"/>
   <int value="2633" label="NavigationDownloadInSandboxWithoutUserGesture"/>
+  <int value="2634" label="LegacyTLSVersionInMainFrameResource"/>
+  <int value="2635" label="LegacyTLSVersionInSubresource"/>
+  <int value="2636" label="LegacyTLSVersionInSubframeMainResource"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
