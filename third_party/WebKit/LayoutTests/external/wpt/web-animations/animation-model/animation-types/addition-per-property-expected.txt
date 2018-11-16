@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 562 tests; 528 PASS, 34 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 562 tests; 530 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAddition function
 PASS align-content: "flex-end" onto "flex-start"
@@ -408,8 +408,8 @@ PASS page-break-inside (type: discrete) has testAddition function
 PASS page-break-inside: "avoid" onto "auto"
 PASS page-break-inside: "auto" onto "avoid"
 PASS paint-order (type: discrete) has testAddition function
-FAIL paint-order: "stroke" onto "fill" assert_equals: The value should be stroke at 0ms expected "stroke" but got "stroke fill markers"
-FAIL paint-order: "fill" onto "stroke" assert_equals: The value should be fill at 0ms expected "fill" but got "fill stroke markers"
+PASS paint-order: "stroke" onto "fill"
+PASS paint-order: "fill" onto "stroke"
 PASS perspective (type: length) has testAddition function
 PASS perspective: length
 PASS perspective: length of rem

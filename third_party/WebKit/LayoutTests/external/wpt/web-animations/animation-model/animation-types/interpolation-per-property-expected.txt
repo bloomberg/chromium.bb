@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 701 tests; 640 PASS, 61 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 701 tests; 643 PASS, 58 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
@@ -507,9 +507,9 @@ PASS page-break-inside uses discrete animation when animating between "auto" and
 PASS page-break-inside uses discrete animation when animating between "auto" and "avoid" with effect easing
 PASS page-break-inside uses discrete animation when animating between "auto" and "avoid" with keyframe easing
 PASS paint-order (type: discrete) has testInterpolation function
-FAIL paint-order uses discrete animation when animating between "fill" and "stroke" with linear easing assert_equals: The value should be fill at 0ms expected "fill" but got "fill stroke markers"
-FAIL paint-order uses discrete animation when animating between "fill" and "stroke" with effect easing assert_equals: The value should be fill at 0ms expected "fill" but got "fill stroke markers"
-FAIL paint-order uses discrete animation when animating between "fill" and "stroke" with keyframe easing assert_equals: The value should be fill at 0ms expected "fill" but got "fill stroke markers"
+PASS paint-order uses discrete animation when animating between "fill" and "stroke" with linear easing
+PASS paint-order uses discrete animation when animating between "fill" and "stroke" with effect easing
+PASS paint-order uses discrete animation when animating between "fill" and "stroke" with keyframe easing
 PASS perspective (type: length) has testInterpolation function
 PASS perspective supports animating as a length
 PASS perspective supports animating as a length of rem
