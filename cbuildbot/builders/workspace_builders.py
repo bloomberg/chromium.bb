@@ -38,7 +38,7 @@ class BuildSpecBuilder(generic_builders.ManifestVersionedBuilder):
     # TODO(dgarrett): Schedule slaves based on version defined.
 
 
-class FirmwareBranchBuilder(BuildSpecBuilder):
+class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
   """Builder that builds firmware branches.
 
   This builder checks out a second copy of ChromeOS into the workspace
@@ -51,9 +51,16 @@ class FirmwareBranchBuilder(BuildSpecBuilder):
 
   def RunStages(self):
     """Run the stages."""
-    super(FirmwareBranchBuilder, self).RunStages()
-
     workspace_dir = self._run.options.workspace
+
+    self._RunStage(workspace_stages.WorkspaceSyncStage,
+                   build_root=workspace_dir)
+
+    self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
+                   build_root=workspace_dir)
+
+    self._RunStage(workspace_stages.WorkspacePublishBuildspecStage,
+                   build_root=workspace_dir)
 
     self._RunStage(workspace_stages.WorkspaceInitSDKStage,
                    build_root=workspace_dir)
@@ -72,7 +79,7 @@ class FirmwareBranchBuilder(BuildSpecBuilder):
                      board=board)
 
 
-class FactoryBranchBuilder(BuildSpecBuilder):
+class FactoryBranchBuilder(generic_builders.ManifestVersionedBuilder):
   """Builder that builds factory branches.
 
   This builder checks out a second copy of ChromeOS into the workspace
@@ -82,9 +89,19 @@ class FactoryBranchBuilder(BuildSpecBuilder):
 
   def RunStages(self):
     """Run the stages."""
-    super(FactoryBranchBuilder, self).RunStages()
-
     workspace_dir = self._run.options.workspace
+
+    self._RunStage(workspace_stages.WorkspaceCleanStage,
+                   build_root=workspace_dir)
+
+    self._RunStage(workspace_stages.WorkspaceSyncStage,
+                   build_root=workspace_dir)
+
+    self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
+                   build_root=workspace_dir)
+
+    self._RunStage(workspace_stages.WorkspacePublishBuildspecStage,
+                   build_root=workspace_dir)
 
     self._RunStage(workspace_stages.WorkspaceInitSDKStage,
                    build_root=workspace_dir)
