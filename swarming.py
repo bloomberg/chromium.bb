@@ -1193,12 +1193,29 @@ def process_trigger_options(parser, options, args):
       wait_for_capacity=options.wait_for_capacity)
   slices.append(base_task_slice)
 
-  # Add optional dimensions to the fallback slices.
+  # Add optional dimensions to the task slices, replacing a dimension that
+  # has the same key if it is a dimension where repeating isn't valid (otherwise
+  # we append it).  Currently the only dimension we can repeat is "caches"; the
+  # rest (os, cpu, etc) shouldn't be repeated.
   extra_dims = []
-  for i, (_, kv) in enumerate(sorted(dims_by_exp.iteritems(), reverse=True)):
-    extra_dims.extend(kv)
+  for i, (_, kvs) in enumerate(sorted(dims_by_exp.iteritems(), reverse=True)):
     dims = list(orig_dims)
-    dims.extend(extra_dims)
+    # Replace or append the key/value pairs for this expiration in extra_dims;
+    # we keep extra_dims around because we are iterating backwards and filling
+    # in slices with shorter expirations.  Dimensions expire as time goes on so
+    # the slices that expire earlier will generally have more dimensions.
+    for kv in kvs:
+      if kv['key'] == 'caches':
+        extra_dims.append(kv)
+      else:
+        extra_dims = [x for x in extra_dims if x['key'] != kv['key']] + [kv]
+    # Then, add all the optional dimensions to the original dimension set, again
+    # replacing if needed.
+    for kv in extra_dims:
+      if kv['key'] == 'caches':
+        dims.append(kv)
+      else:
+        dims = [x for x in dims if x['key'] != kv['key']] + [kv]
     dims.sort(key=lambda x: (x['key'], x['value']))
     slice_properties = properties._replace(dimensions=dims)
     slices[-2 - i] = slices[-2 - i]._replace(properties=slice_properties)

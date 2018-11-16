@@ -982,7 +982,7 @@ class TestMain(NetTestCase):
 
   def test_trigger_raw_cmd_with_optional(self):
     request = {
-      'name': u'None/foo=bar_foo1=bar1',
+      'name': u'None/caches=c1_foo=bar_foo1=bar1',
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
       'priority': 200,
@@ -992,9 +992,9 @@ class TestMain(NetTestCase):
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
               dimensions=[
-                  {'key': 'foo', 'value': 'bar'},
+                  {'key': 'caches', 'value': 'c1'},
+                  {'key': 'caches', 'value': 'c2'},
                   {'key': 'foo', 'value': 'baz'},
-                  {'key': 'foo1', 'value': 'bar1'},
                   {'key': 'foo1', 'value': 'baz1'},
                   {'key': 'opt', 'value': 'tional'},
               ],
@@ -1010,8 +1010,9 @@ class TestMain(NetTestCase):
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
               dimensions=[
+                  {'key': 'caches', 'value': 'c1'},
+                  {'key': 'caches', 'value': 'c2'},
                   {'key': 'foo', 'value': 'bar'},
-                  {'key': 'foo1', 'value': 'bar1'},
                   {'key': 'foo1', 'value': 'baz1'},
               ],
               execution_timeout_secs=3600,
@@ -1026,6 +1027,7 @@ class TestMain(NetTestCase):
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
               dimensions=[
+                  {'key': 'caches', 'value': 'c1'},
                   {'key': 'foo', 'value': 'bar'},
                   {'key': 'foo1', 'value': 'bar1'},
               ],
@@ -1054,9 +1056,11 @@ class TestMain(NetTestCase):
         '--swarming', 'https://localhost:1',
         '--dimension', 'foo', 'bar',
         '--dimension', 'foo1', 'bar1',
+        '--dimension', 'caches', 'c1',
         '--optional-dimension', 'foo', 'baz', 60,
         '--optional-dimension', 'opt', 'tional', 60,
         '--optional-dimension', 'foo1', 'baz1', 180,
+        '--optional-dimension', 'caches', 'c2', 180,
         '--raw-cmd',
         '--relative-cwd', 'deeep',
         '--',
@@ -1067,7 +1071,7 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        'Triggered task: None/foo=bar_foo1=bar1\n'
+        'Triggered task: None/caches=c1_foo=bar_foo1=bar1\n'
         'To collect results, use:\n'
         '  tools/swarming_client/swarming.py collect '
         '-S https://localhost:1 12300\n'
@@ -1077,7 +1081,7 @@ class TestMain(NetTestCase):
 
   def test_trigger_raw_cmd_with_optional_unsorted(self):
     request = {
-      'name': u'None/foo=bar_foo1=bar1',
+      'name': u'None/foo1=bar1_os=Mac-10.12.6',
       'parent_task_id': '',
       'pool_task_template': 'AUTO',
       'priority': 200,
@@ -1087,10 +1091,8 @@ class TestMain(NetTestCase):
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
               dimensions=[
-                  {'key': 'foo', 'value': 'baq'},
-                  {'key': 'foo', 'value': 'bar'},
-                  {'key': 'foo1', 'value': 'bar1'},
                   {'key': 'foo1', 'value': 'baz1'},
+                  {'key': 'os', 'value': 'Mac-10.13'},
               ],
               execution_timeout_secs=3600,
               extra_args=None,
@@ -1104,9 +1106,8 @@ class TestMain(NetTestCase):
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
               dimensions=[
-                  {'key': 'foo', 'value': 'bar'},
-                  {'key': 'foo1', 'value': 'bar1'},
                   {'key': 'foo1', 'value': 'baz1'},
+                  {'key': 'os', 'value': 'Mac-10.12.6'},
               ],
               execution_timeout_secs=3600,
               extra_args=None,
@@ -1120,8 +1121,8 @@ class TestMain(NetTestCase):
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
               dimensions=[
-                  {'key': 'foo', 'value': 'bar'},
                   {'key': 'foo1', 'value': 'bar1'},
+                  {'key': 'os', 'value': 'Mac-10.12.6'},
               ],
               execution_timeout_secs=3600,
               extra_args=None,
@@ -1146,10 +1147,10 @@ class TestMain(NetTestCase):
     ret = self.main_safe([
         'trigger',
         '--swarming', 'https://localhost:1',
-        '--dimension', 'foo', 'bar',
+        '--dimension', 'os', 'Mac-10.12.6',
         '--dimension', 'foo1', 'bar1',
         '--optional-dimension', 'foo1', 'baz1', 120,
-        '--optional-dimension', 'foo', 'baq', 60,
+        '--optional-dimension', 'os', 'Mac-10.13', 60,
         '--raw-cmd',
         '--relative-cwd', 'deeep',
         '--',
@@ -1160,7 +1161,7 @@ class TestMain(NetTestCase):
     actual = sys.stdout.getvalue()
     self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
     self._check_output(
-        'Triggered task: None/foo=bar_foo1=bar1\n'
+        'Triggered task: None/foo1=bar1_os=Mac-10.12.6\n'
         'To collect results, use:\n'
         '  tools/swarming_client/swarming.py collect '
         '-S https://localhost:1 12300\n'
@@ -1180,7 +1181,6 @@ class TestMain(NetTestCase):
           'properties': gen_properties(
               command=['python', '-c', 'print(\'hi\')'],
               dimensions=[
-                  {'key': 'foo', 'value': 'bar'},
                   {'key': 'foo', 'value': 'baz'},
                   {'key': 'foo1', 'value': 'bar1'},
                   {'key': 'foo2', 'value': 'baz2'},
