@@ -166,7 +166,6 @@
     Na następnym ekranie wyślij opinię, by pomóc nam naprawić ten problem.</translation>
 <translation id="1217668622537098248">Przywróć działanie po kliknięciu lewego przycisku myszy</translation>
 <translation id="121783623783282548">Hasła nie są zgodne.</translation>
-<translation id="1219533395013150448">Asystent używa tych nagrań do utworzenia modelu Twojego głosu. Model możesz usunąć lub utworzyć ponownie w ustawieniach Asystenta. Polecenia głosowe możesz przejrzeć i usunąć w ustawieniach zarządzania aktywnością w Google.</translation>
 <translation id="122082903575839559">Algorytm podpisu certyfikatu</translation>
 <translation id="1221024147024329929">PKCS #1, MD2 z szyfrowaniem RSA</translation>
 <translation id="1221825588892235038">Tylko zaznaczenie</translation>
@@ -617,7 +616,7 @@
 <translation id="1880905663253319515">Czy usunąć certyfikat „<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="1886996562706621347">Zezwól, by strony prosiły użytkownika o ustawienie ich jako domyślnego modułu obsługi protokołu (zalecane)</translation>
 <translation id="1887442540531652736">Błąd logowania</translation>
-<translation id="1887597546629269384">Jeszcze raz powiedz „Hej, Google”</translation>
+<translation id="1887597546629269384">Jeszcze raz powiedz „Hej Google”</translation>
 <translation id="1887850431809612466">Wersja sprzętu</translation>
 <translation id="1889984860246851556">Otwórz ustawienia serwera proxy</translation>
 <translation id="1890674179660343635">&lt;span&gt;Identyfikator: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -986,7 +985,7 @@
 <translation id="2470702053775288986">Wyłączono nieobsługiwane rozszerzenia</translation>
 <translation id="2473195200299095979">Przetłumacz tę stronę</translation>
 <translation id="2475982808118771221">Wystąpił błąd</translation>
-<translation id="2476578072172137802">Ustawienia witryny</translation>
+<translation id="2476578072172137802">Ustawienia witryn</translation>
 <translation id="2478176599153288112">Uprawnienia pliku multimedialnego dla rozszerzenia „<ph name="EXTENSION" />”</translation>
 <translation id="247949520305900375">Udostępnij dźwięk</translation>
 <translation id="2480868415629598489">Modyfikowanie danych, które kopiujesz i wklejasz</translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> chce się połączyć</translation>
 <translation id="3274763671541996799">Pracujesz w trybie pełnoekranowym.</translation>
 <translation id="3275778913554317645">Otwórz jako okno</translation>
-<translation id="3278877214895457897">Gdy skonfigurujesz Chromebooka, możesz korzystać z Asystenta. W dowolnym momencie naciśnij jego przycisk lub powiedz „OK Google”.</translation>
 <translation id="3279230909244266691">Może to potrwać kilka minut. Uruchamiam maszynę wirtualną.</translation>
 <translation id="3279741024917655738">Wyświetlaj filmy pełnoekranowe na:</translation>
 <translation id="3280237271814976245">Zapisz &amp;jako...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Chrome aktualizuje się automatycznie, więc zawsze masz najnowszą wersję</translation>
 <translation id="3551320343578183772">Zamknij kartę</translation>
 <translation id="3552780134252864554">Usuń po zamknięciu</translation>
-<translation id="3553146918065661815">Wyświetl ostrzeżenie przed zamknięciem za pomocą ⌘Q</translation>
 <translation id="3555812735919707620">Usuń rozszerzenie</translation>
 <translation id="3556000484321257665">Wyszukiwarka została zmieniona na <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Nie udało się zainstalować zasad na urządzeniu.</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">Odczyt ustawień ułatwień dostępu</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ma stały dostęp do jednego pliku.}few{Ma stały dostęp do # plików.}many{Ma stały dostęp do # plików.}other{Ma stały dostęp do # pliku.}}</translation>
 <translation id="3660234220361471169">Niezaufany</translation>
-<translation id="3661054927247347545">Certyfikat logowania jest nieprawidłowy, okno zamknie się za <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Ikona rozszerzenia</translation>
 <translation id="3665589677786828986">Przeglądarka Chrome wykryła, że niektóre z jej ustawień zostały zmodyfikowane przez inny program, i przywróciła im pierwotne wartości domyślne.</translation>
 <translation id="3668570675727296296">Ustawienia języka</translation>
@@ -2293,7 +2289,7 @@
 <translation id="4524832533047962394">Ta wersja systemu operacyjnego nie obsługuje użytego trybu rejestrowania. Upewnij się, że używasz najnowszej wersji systemu.</translation>
 <translation id="4525382759303819021">Chcę otrzymywać najnowsze wiadomości i rekomendacje aplikacji ze Sklepu Play</translation>
 <translation id="4530494379350999373">Pochodzenie</translation>
-<translation id="4533846798469727141">Teraz powiedz „Hej, Google”</translation>
+<translation id="4533846798469727141">Teraz powiedz „Hej Google”</translation>
 <translation id="4533985347672295764">Czas pracy procesora</translation>
 <translation id="4534661889221639075">Spróbuj ponownie.</translation>
 <translation id="4535127706710932914">Profil domyślny</translation>
@@ -2889,7 +2885,6 @@
 <translation id="5434065355175441495">PKCS #1, szyfrowanie RSA</translation>
 <translation id="5436492226391861498">Czekam na tunel serwera proxy...</translation>
 <translation id="5436510242972373446">Wyszukiwanie w <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Wszystkie okna przeglądarki wkrótce zamkną się automatycznie bez logowania.</translation>
 <translation id="5438224778284622050">Usunąć pliki offline?</translation>
 <translation id="544083962418256601">Utwórz skróty...</translation>
 <translation id="5442228125690314719">Błąd podczas tworzenia obrazu dysku. Spróbuj ponownie.</translation>
@@ -3269,7 +3264,7 @@
 <translation id="5990386583461751448">Przetłumaczona</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tej aplikacji.}few{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tych aplikacji.}many{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tych aplikacji.}other{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tych aplikacji.}}</translation>
 <translation id="5997337190805127100">Więcej informacji o uprawnieniach dostępu do stron</translation>
-<translation id="6000758707621254961">Liczba wyników wyszukiwania dla zapytania „<ph name="SEARCH_TEXT" />”: <ph name="RESULT_COUNT" /></translation>
+<translation id="6000758707621254961">Wyniki wyszukiwania dla zapytania „<ph name="SEARCH_TEXT" />”: <ph name="RESULT_COUNT" /></translation>
 <translation id="6002458620803359783">Preferowane głosy</translation>
 <translation id="6005695835120147974">Router multimediów</translation>
 <translation id="6006484371116297560">Klasyczny</translation>
@@ -3621,7 +3616,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Zaloguj się teraz</translation>
 <translation id="6527303717912515753">Udostępnij</translation>
 <translation id="6528513914570774834">Zezwól innym użytkownikom tego urządzenia na używanie tej sieci</translation>
 <translation id="652948702951888897">Historia Chrome</translation>
@@ -4090,7 +4084,6 @@
 <translation id="7256710573727326513">Otwórz na karcie</translation>
 <translation id="725758059478686223">Usługa drukowania</translation>
 <translation id="7257666756905341374">Odczyt danych, które kopiujesz i wklejasz</translation>
-<translation id="7258619945375359543">Pozwól Asystentowi podawać sugestie na podstawie zawartości ekranu</translation>
 <translation id="7258697411818564379">Kod PIN został dodany</translation>
 <translation id="7262004276116528033">Ta usługa logowania pochodzi z domeny <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Zamknij karty</translation>
@@ -4352,7 +4345,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{1 element na liście zakładek}few{# elementy na liście zakładek}many{# elementów na liście zakładek}other{# elementu na liście zakładek}}</translation>
 <translation id="7701040980221191251">Brak</translation>
 <translation id="7701869757853594372">Uchwyty USER</translation>
-<translation id="7702574632857388784">Usuń <ph name="FILE_NAME" /> z listy</translation>
+<translation id="7702574632857388784">Usuń plik <ph name="FILE_NAME" /> z listy</translation>
 <translation id="7702907602086592255">Domena</translation>
 <translation id="7704305437604973648">Zadanie</translation>
 <translation id="7704317875155739195">Autouzupełniaj wyszukiwania i adresy URL</translation>
@@ -4854,7 +4847,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8438566539970814960">Ulepsz wyszukiwanie i przeglądanie</translation>
 <translation id="8439506636278576865">Proponuj tłumaczenie stron w tym języku</translation>
 <translation id="8440630305826533614">Aplikacje na Linuksa</translation>
-<translation id="8446474770554547328">Gdy powiesz „OK Google” trzy razy, zostanie utworzony model Twojego głosu, który będzie przechowywany na Twoim urządzeniu. Model możesz usunąć lub utworzyć ponownie w ustawieniach Asystenta. Polecenia głosowe możesz przejrzeć i usunąć w ustawieniach zarządzania aktywnością w Google.</translation>
 <translation id="8446884382197647889">Więcej informacji</translation>
 <translation id="8447409163267621480">Uwzględnij Ctrl lub Alt</translation>
 <translation id="8448729345478502352">Powiększ lub pomniejsz elementy na ekranie</translation>

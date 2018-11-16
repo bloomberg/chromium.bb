@@ -144,7 +144,6 @@
 <translation id="5862307444128926510">Chromium માં સ્વાગત છે</translation>
 <translation id="5877064549588274448">ચેનલ બદલી. ફેરફારો લાગુ કરવા માટે તમારા ઉપકરણને પુનઃપ્રારંભ કરો.</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
-<translation id="5902536751647951209">પ્રમાણીકરણ પ્રમાણપત્ર નિષ્ફળ થયું. કૃપા કરીને ફરીથી Chromiumમાં સાઇન ઇન કરો અથવા વધુ માહિતી માટે તમારા વ્યવસ્થાપકનો સંપર્ક કરો. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">અપ ટૂ ડેટ થવામાં છે! અપડેટ કરવાનું સમાપ્ત કરવા માટે તમારા ઉપકરણને પુનઃપ્રારંભ કરો.</translation>
 <translation id="5987687638152509985">સમન્વયનને પ્રારંભ કરવા માટે Chromium ને અપડેટ કરો</translation>
 <translation id="6013050204643758987"><ph name="BEGIN_LINK_LINUX_OSS" />Linux (બીટા)<ph name="END_LINK_LINUX_OSS" />ની જેમ, Chromium OS વધારાના <ph name="BEGIN_LINK_CROS_OSS" />ઓપન સૉર્સ સૉફ્ટવેર<ph name="END_LINK_CROS_OSS" /> દ્વારા શક્ય બન્યું છે.</translation>
@@ -224,7 +223,6 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="7745317241717453663">આ તમારા બ્રાઉઝિંગ ડેટાને આ ડિવાઇસમાંથી ડિલીટ કરશે. પછીથી તમારો ડેટા ફરીથી મેળવવા માટે, Chromium માં <ph name="USER_EMAIL" /> તરીકે સાઇન ઇન કરો.</translation>
 <translation id="7747138024166251722">ઇન્સ્ટૉલર અસ્થાયી ડિરેક્ટરી બનાવી શક્યું નથી. કૃપા કરીને ખાલી ડિસ્ક સ્પેસ માટે અને સૉફ્ટવેર ઇન્સ્ટૉલ કરવાની પરવાનગી માટે તપાસો.</translation>
 <translation id="7773960292263897147">ચેતવણી: એક્સ્ટેંશનને તમારો બ્રાઉઝિંગ ઇતિહાસ રેકોર્ડ કરવાથી Chromium અટકાવી શકતું નથી. છૂપા મોડમાં આ એક્સ્ટેંશનને બંધ કરવા માટે, આ વિકલ્પની પસંદગી નાપસંદ કરો.</translation>
-<translation id="7774736947049807614">પ્રમાણીકરણ પ્રમાણપત્ર નિષ્ફળ થયું. કૃપા કરીને Chromiumમાં ફરીથી <ph name="USER_NAME" /> તરીકે સાઇન ઇન કરો અથવા વધુ માહિતી માટે તમારા વ્યવસ્થાપકનો સંપર્ક કરો. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium નવીનતમ વર્ઝન પર અપડેટ ન થઈ શક્યું, તેથી તમે નવી સુવિધાઓ અને સુરક્ષાના સુધારા ચૂકી રહ્યા છો.</translation>
 <translation id="7901117350626490574">Chromium માટે નવી અપડેટ ઉપલબ્ધ છે અને તે તમે જેવું જ ફરીથી લોંચ કરશો, લાગુ થઈ જશે.</translation>

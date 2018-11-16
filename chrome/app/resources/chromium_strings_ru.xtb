@@ -140,7 +140,6 @@
 <translation id="5862307444128926510">Добро пожаловать в Chromium</translation>
 <translation id="5877064549588274448">Канал изменен. Чтобы изменения вступили в силу, перезапустите устройство.</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
-<translation id="5902536751647951209">Ошибка сертификата аутентификации. Войдите в Chromium ещё раз или обратитесь за информацией к администратору. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Чтобы завершить обновление, перезапустите устройство.</translation>
 <translation id="5987687638152509985">Чтобы начать синхронизацию, обновите Chromium</translation>
 <translation id="6013050204643758987">Chromium OS, как и <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета-версия)<ph name="END_LINK_LINUX_OSS" />, работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -218,7 +217,6 @@
 <translation id="7745317241717453663">Данные о работе в браузере будут удалены с устройства. Чтобы восстановить их позже, войдите в Chromium как <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>
 <translation id="7773960292263897147">Внимание! Chromium не может запретить расширениям записывать историю просмотров. Чтобы отключить данное расширение в режиме инкогнито, снимите этот флажок.</translation>
-<translation id="7774736947049807614">Ошибка сертификата аутентификации. Войдите в Chromium как <ph name="USER_NAME" /> ещё раз или обратитесь за информацией к администратору. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Не удалось установить последнюю версию Chromium, в которой добавлены новые функции и обновления системы безопасности.</translation>
 <translation id="7901117350626490574">Для Chromium доступно обновление. Оно будет установлено при перезапуске браузера.</translation>

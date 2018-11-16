@@ -142,7 +142,6 @@
 <translation id="5862307444128926510">歡迎使用 Chromium</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5895138241574237353">重新啟動</translation>
-<translation id="5902536751647951209">驗證憑證無效，請重新登入 Chromium 或向你的管理員洽詢詳情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">即將更新為最新版本！重新啟動您的裝置即可完成更新程序。</translation>
 <translation id="5987687638152509985">如要開始同步處理，請更新 Chromium</translation>
 <translation id="6013050204643758987">Chromium 作業系統有賴其他<ph name="BEGIN_LINK_CROS_OSS" />開放原始碼軟體<ph name="END_LINK_CROS_OSS" />才得以問世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux (測試版)<ph name="END_LINK_LINUX_OSS" /> 也是如此。</translation>
@@ -222,7 +221,6 @@ Chromium 無法復原你的設定。</translation>
 <translation id="7745317241717453663">登出後，系統會將你的瀏覽資料從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chromium。</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
 <translation id="7773960292263897147">警告：Chromium 無法禁止擴充功能記錄你的瀏覽活動。如要在無痕模式中停用這個擴充功能，請取消選取這個選項。</translation>
-<translation id="7774736947049807614">驗證憑證無效，請以<ph name="USER_NAME" />身分重新登入 Chromium 或向你的管理員洽詢詳情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary 版</translation>
 <translation id="7867198900892795913">Chromium 無法更新至最新版本，因此你並未取得最新功能和安全性問題修正。</translation>
 <translation id="7901117350626490574">有可用的 Chromium 更新，只要重新啟動 Chromium 即可套用。</translation>

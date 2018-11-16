@@ -3136,11 +3136,6 @@ za preglednike imaju isti raspored.
 <translation id="8970205333161758602">Zaustavljanje upita za odbijanje usluge <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Dopusti autentifikaciju "gnubby" za hostove daljinskog pristupa</translation>
 <translation id="8976531594979650914">Upotrijebi zadani pisač sustava kao zadani</translation>
-<translation id="898520305112996948">Omogućuje postavljanje popisa uzoraka URL-a koji navode koje će web-lokacije automatski dobiti dopuštenje za pristup USB uređaju s navedenim ID-jem dobavljača i ID-jem proizvoda. Svaka stavka na popisu mora sadržavati uređaje i uzorke URL-a da bi pravilo bilo važeće. Svaka stavka u uređajima može sadržavati polje ID-ja dobavljača i ID-ja proizvoda. Svaki izostavljeni ID smatra se zamjenskim znakom s jednom iznimkom, a ta je iznimka da se ID proizvoda ne može navesti, a da se ne navede i ID dobavljača. U suprotnom pravilo neće biti važeće. Nevažeće se vrijednosti pravila zanemaruju.
-
-        Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultWebUsbGuardSetting" ako je to pravilo postavljeno, a ako nije, upotrebljavat će se korisnikova osobna konfiguracija.
-
-        Uzorci URL-a u ovom pravilu ne bi trebali biti u sukobu s onima koji su konfigurirani pravilom WebUsbBlockedForUrls. Ako se pojavi sukob, ovo će pravilo imati prednost pred pravilima WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Ne dopuštaj web-lokacijama prikazivanje slika</translation>
 <translation id="9012851181124311976">Konfigurirajte popis URL-ova za prijavu u organizacijama (samo sheme HTTP i HTTPS). Na tim će se URL-ovima snimati otisak prsta za zaporku koji će se upotrebljavati za otkrivanje ponovne upotrebe zaporke.
       Da bi <ph name="PRODUCT_NAME" /> pravilno snimao otiske prsta zaporke, vaše stranice za prijavu moraju slijediti smjernice na https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

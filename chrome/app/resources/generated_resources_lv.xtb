@@ -166,7 +166,6 @@
     Nākamajā ekrānā, lūdzu, nosūtiet atsauksmes, lai mēs varētu novērst problēmu.</translation>
 <translation id="1217668622537098248">Pēc darbības atjaunot peles kreisās pogas klikšķa funkciju</translation>
 <translation id="121783623783282548">Paroles neatbilst.</translation>
-<translation id="1219533395013150448">Jūsu Asistents izmantos šos ierakstus, lai izveidotu jūsu balss modeli, kas tiks glabāts jūsu ierīcē. Šo modeli varat dzēst vai paturēt, izmantojot Asistenta iestatījumus. Skatiet vai dzēsiet balss komandas, izmantojot Google aktivitātes vadīklas.</translation>
 <translation id="122082903575839559">Sertifikāta paraksta algoritms</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 ar RSA šifrējumu</translation>
 <translation id="1221825588892235038">Tikai atlase</translation>
@@ -1491,7 +1490,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> vēlas izveidot savienojumu</translation>
 <translation id="3274763671541996799">Ir atvērts pilnekrāna režīms.</translation>
 <translation id="3275778913554317645">Atvērt kā logu</translation>
-<translation id="3278877214895457897">Kad Chromebook dators ir iestatīts, nospiediet Asistenta pogu vai sakiet “Ok Google”, lai jebkurā brīdī saņemtu palīdzību no Asistenta.</translation>
 <translation id="3279230909244266691">Šis process var ilgt dažas minūtes. Notiek virtuālās mašīnas startēšana.</translation>
 <translation id="3279741024917655738">Ieslēgta pilnekrāna videoklipu rādīšana</translation>
 <translation id="3280237271814976245">Saglabāt kā...</translation>
@@ -1680,7 +1678,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3550915441744863158">Pārlūks Chrome tiek automātiski atjaunināts, tādēļ jums vienmēr būs pieejama visjaunākā versija.</translation>
 <translation id="3551320343578183772">Aizvērt cilni</translation>
 <translation id="3552780134252864554">Izdzēst aizverot</translation>
-<translation id="3553146918065661815">Rādīt brīdinājumu par iziešanu, nospiežot taustiņus ⌘Q</translation>
 <translation id="3555812735919707620">Noņemt paplašinājumu</translation>
 <translation id="3556000484321257665">Jūsu meklētājprogramma tika mainīta uz: <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Neizdevās ierīcē instalēt politiku.</translation>
@@ -1756,7 +1753,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3654045516529121250">Lasīt jūsu piekļuves iestatījumus</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tai ir pastāvīga piekļuve vienam failam.}zero{Tai ir pastāvīga piekļuve # failiem.}one{Tai ir pastāvīga piekļuve # failam.}other{Tai ir pastāvīga piekļuve # failiem.}}</translation>
 <translation id="3660234220361471169">Neuzticami</translation>
-<translation id="3661054927247347545">Pierakstīšanās sertifikāts nav derīgs. Logs tiks aizvērts pēc <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Paplašinājuma ikona</translation>
 <translation id="3665589677786828986">Pārlūkā Chrome tika konstatēts, ka daži jūsu iestatījumi tika bojāti citā programmā, tāpēc šie iestatījumi tika atiestatīti uz sākotnējiem noklusējuma iestatījumiem.</translation>
 <translation id="3668570675727296296">Valodas iestatījumi</translation>
@@ -2889,7 +2885,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5434065355175441495">PKCS #1 RSA šifrējums</translation>
 <translation id="5436492226391861498">Gaida starpniekservera tuneli...</translation>
 <translation id="5436510242972373446">Meklēt <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Visi pārlūka logi drīz tiks automātiski aizvērti, ja nepierakstīsieties.</translation>
 <translation id="5438224778284622050">Vai dzēst bezsaistes failus?</translation>
 <translation id="544083962418256601">Izveidot saīsnes...</translation>
 <translation id="5442228125690314719">Izveidojot diska attēlu, radās kļūda. Lūdzu, mēģiniet vēlreiz.</translation>
@@ -3621,7 +3616,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Pierakstīties tūlīt</translation>
 <translation id="6527303717912515753">Kopīgot</translation>
 <translation id="6528513914570774834">Atļaut citiem lietotājiem šajā ierīcē izmantot šo tīklu</translation>
 <translation id="652948702951888897">Chrome vēsture</translation>
@@ -4090,7 +4084,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7256710573727326513">Atvērt cilnē</translation>
 <translation id="725758059478686223">Drukāšanas pakalpojums</translation>
 <translation id="7257666756905341374">Lasīt datus, ko kopējat un ielīmējat</translation>
-<translation id="7258619945375359543">Ļaujiet Asistentam sniegt ieteikumus, balstoties uz jūsu ekrānā redzamo informāciju</translation>
 <translation id="7258697411818564379">Jūsu PIN ir pievienots</translation>
 <translation id="7262004276116528033">Šo pierakstīšanās pakalpojumu nodrošina <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Aizvērt cilnes</translation>
@@ -4853,7 +4846,6 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="8438566539970814960">Uzlabot meklēšanu un pārlūkošanu</translation>
 <translation id="8439506636278576865">Piedāvāt tulkot lapas šajā valodā</translation>
 <translation id="8440630305826533614">Linux lietotnes</translation>
-<translation id="8446474770554547328">Trīs reizes reģistrējot komandu “Ok Google”, tiks izveidots jūsu balss modelis, kas tiks glabāts jūsu ierīcē. Šo modeli varat dzēst vai paturēt, izmantojot Asistenta iestatījumus. Skatiet vai dzēsiet balss komandas, izmantojot Google aktivitātes vadīklas.</translation>
 <translation id="8446884382197647889">Uzziniet vairāk</translation>
 <translation id="8447409163267621480">Jāiekļauj “Ctrl” vai “Alt”</translation>
 <translation id="8448729345478502352">Palieliniet vai samaziniet ekrānā redzamos vienumus.</translation>

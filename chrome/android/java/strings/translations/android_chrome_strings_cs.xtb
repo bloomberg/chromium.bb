@@ -616,7 +616,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5684874026226664614">Jejda. Tuto stránku se nepodařilo přeložit.</translation>
 <translation id="5686790454216892815">Název souboru je příliš dlouhý</translation>
 <translation id="5689516760719285838">Poloha</translation>
-<translation id="569536719314091526">Pomocí tlačítka Další možnosti tuto stránku můžete přeložit do libovolného jazyka.</translation>
+<translation id="569536719314091526">Pomocí tlačítka Další možnosti můžete tuto stránku přeložit do libovolného jazyka.</translation>
 <translation id="5719837394786370183">Stránky, které otevřete na anonymních kartách, po zavření všech anonymních karet nezanechají žádné stopy v historii prohlížeče, v úložišti souborů cookie ani v historii vyhledávání. Všechny stažené soubory a vytvořené záložky však zůstanou zachovány.
 
 Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměstnavatelem, poskytovatelem internetových služeb ani webovými stránkami, které navštívíte.</translation>
@@ -734,7 +734,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6567212464587185774">Uspořte až 60 % dat a načítejte weby rychleji.</translation>
 <translation id="6573096386450695060">Vždy povolit</translation>
 <translation id="6573431926118603307">Zde se objeví karty, které jste otevřeli v Chromu ve svých ostatních zařízeních.</translation>
-<translation id="6575643671698722332">Resetování se nezdařilo. Zkontrolujte, zda je zařízení online, a zkuste to znovu.</translation>
 <translation id="6583199322650523874">Přidat aktuální stránku do záložek</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Stránky pro počítač</translation>
@@ -859,7 +858,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="7475192538862203634">Pokud se vám tato stránka zobrazuje často, vyzkoušejte tyto <ph name="BEGIN_LINK" />návrhy<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD karta nebyla nalezena. Některé vaše soubory mohou chybět.</translation>
-<translation id="748127970106343339">Potvrdit vymazání identifikačních údajů zařízení</translation>
 <translation id="7481312909269577407">Vpřed</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualizováno <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Zobrazovat hesla</translation>
@@ -1010,9 +1008,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8609465669617005112">Posunout nahoru</translation>
 <translation id="8616006591992756292">Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="8617240290563765734">Otevřít navrhovanou adresu URL uvedenou ve staženém obsahu?</translation>
-<translation id="862875433388403934">Obsah (filmy, hudba atd.) stažený v jiných aplikacích možná nebude možné přehrát, dokud dané aplikace znovu nezískají licence s novými identifikačními údaji zařízení.
-
-Chcete-li získat nové licence, připojte se k internetu a přehrajte stažený obsah.</translation>
 <translation id="8636825310635137004">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, zapněte synchronizaci.</translation>
 <translation id="8641930654639604085">Pokusit se blokovat weby pouze pro dospělé</translation>
 <translation id="8662811608048051533">Odhlásí vás z většiny webů.</translation>
@@ -1070,7 +1065,6 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="9099018167121903954">Staženo: <ph name="KILOBYTES" /> kB</translation>
 <translation id="9100505651305367705">Nabízet zjednodušené zobrazení článků (pokud je podporováno)</translation>
 <translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
-<translation id="9133515669113036225">Resetovat identifikační údaje zařízení</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>
 <translation id="9139068048179869749">Pokud web bude chtít odesílat oznámení, zobrazit dotaz (doporučeno)</translation>

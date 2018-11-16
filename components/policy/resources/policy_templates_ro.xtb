@@ -3135,11 +3135,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="8970205333161758602">Eliminați solicitarea de refuzare <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Permite autentificarea gnubby pentru gazdele de acces la distanță</translation>
 <translation id="8976531594979650914">Folosește imprimanta prestabilită a sistemului ca setare prestabilită</translation>
-<translation id="898520305112996948">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care vor primi automat permisiunea să acceseze un dispozitiv USB cu ID-urile de produs și de furnizor oferite. Fiecare articol din listă trebuie să conțină ambele dispozitive și șabloane de adrese URL pentru ca politica să fie validă. Fiecare articol din dispozitive poate conține un câmp pentru ID-ul furnizorului și ID-ul produsului. Orice ID omis este considerat un metacaracter cu o excepție, și acea excepție este că un ID de produs nu poate fi specificat fără să fie specificat și un ID de furnizor. În caz contrar, politica nu va fi validă. Valorile nevalide ale politicii sunt ignorate.
-
-        Dacă această politică nu este setată, valoarea prestabilită globală va fi folosită pentru toate site-urile, fie din politica „DefaultWebUsbGuardSetting” dacă este setată, fie din configurația personală a utilizatorului, în caz contrar.
-
-        Șabloanele de adrese URL din această politică nu trebuie să fie în contradicție cu cele configurate prin WebUsbBlockedForUrls. Dacă există o contradicție, această politică va avea întâietate în fața WebUsbBlockedForUrls și WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Nu permite niciunui site să afișeze imagini</translation>
 <translation id="9012851181124311976">Configurează lista de adrese URL de autentificare de întreprindere (doar schemele HTTP și HTTPS). Amprenta parolei va fi scanată la aceste adrese URL și folosită pentru detectarea refolosirii parolelor.
       Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect amprenta parolei, asigură-te că paginile de conectare respectă regulile prevăzute în https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

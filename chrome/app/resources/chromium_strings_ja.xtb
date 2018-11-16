@@ -142,7 +142,6 @@
 <translation id="5862307444128926510">Chromium へようこそ</translation>
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
 <translation id="5895138241574237353">再起動</translation>
-<translation id="5902536751647951209">認証証明書でエラーが発生しました。Chromium にログインし直すか、管理者に詳細をお問い合わせください。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">端末を再起動して更新を完了してください。</translation>
 <translation id="5987687638152509985">同期を開始するには、Chromium を更新します</translation>
 <translation id="6013050204643758987">Chromium OS も <ph name="BEGIN_LINK_LINUX_OSS" />Linux（ベータ版）<ph name="END_LINK_LINUX_OSS" />も追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
@@ -222,7 +221,6 @@
 <translation id="7745317241717453663">この端末から閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="7773960292263897147">警告: 拡張機能による閲覧履歴の記録を Chromium で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
-<translation id="7774736947049807614">認証証明書でエラーが発生しました。<ph name="USER_NAME" /> として Chromium にログインし直すか、管理者に詳細をお問い合わせください。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium を最新版に更新できませんでした。新しい機能とセキュリティ修正は適用されていません。</translation>
 <translation id="7901117350626490574">Chromium の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。</translation>

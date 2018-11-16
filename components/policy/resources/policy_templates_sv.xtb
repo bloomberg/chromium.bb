@@ -2283,7 +2283,7 @@
 <translation id="685769593149966548">Gör strikt begränsat läge på YouTube obligatoriskt</translation>
 <translation id="6857824281777105940">Med den här principen styrs huruvida information från Säker webbsökning ska rapporteras, till exempel antal varningar från Säker webbsökning och antalet genomklickningar på varningar från Säker webbsökning.
 
-      När principen lämnas utan inställning eller är inställd på sant samlas data in från Säker webbsökning.
+      När principen inte har någon inställning eller är inställd på sant samlas data in från Säker webbsökning.
       När principen är inställd på falskt samlas inte data in från Säker webbsökning.
 
       Principen gäller endast när <ph name="CHROME_REPORTING_EXTENSION_NAME" /> har aktiverats och datorn är registrerad för <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -2449,7 +2449,7 @@
       När principen lämnas utan inställning används en standard som är specifik för plattformen: Internet Explorer för Windows eller Safari för Mac OS X. Det går inte att öppna en alternativ webbläsare i Linux när den här principen inte är inställd.
 
       När den här principen är inställd på ${ie}, ${firefox}, ${safari} eller
-      ${opera} startas den webbläsaren om den är installerad. ${ie} är endast
+      ${opera} startar den webbläsaren om den är installerad. ${ie} är endast
       tillgänglig i Windows och ${safari} är endast tillgänglig i Windows och Mac
       OS X.
 
@@ -2991,7 +2991,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om den här principen inte anges eller är inaktiverad öppnas PDF-filer med PDF-pluginprogrammet såvida användaren inte inaktiverar det.</translation>
 <translation id="8396145449084377015">Med den här principen styrs huruvida regler ska läsas in från Internet Explorers princip SiteList.
 
-      När den är principen lämnas utan inställning eller är inställd på falskt använder <ph name="PRODUCT_NAME" /> inte Internet Explorers princip <ph name="IEEM_SITELIST_POLICY" /> som en källa för regler för byte av webbläsare.
+      När den här principen inte har någon inställning eller är inställd på falskt använder <ph name="PRODUCT_NAME" /> inte Internet Explorers princip <ph name="IEEM_SITELIST_POLICY" /> som en källa för regler för byte av webbläsare.
 
       När den här principen är inställd på sant läser <ph name="PRODUCT_NAME" /> Internet Explorers <ph name="IEEM_SITELIST_POLICY" /> för att hämta webbadressen till webbplatslistan. Därefter laddas webbplatslistan ned av <ph name="PRODUCT_NAME" /> från den aktuella webbadressen och reglerna tillämpas som om de konfigurerats med principen <ph name="SITELIST_POLICY_NAME" />.
 
@@ -3278,11 +3278,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8970205333161758602">Visa inte avvisningsmeddelandet i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Tillåt gnubby-autentisering för fjärråtkomstvärdar</translation>
 <translation id="8976531594979650914">Använd systemets standardskrivare som standard</translation>
-<translation id="898520305112996948">Tillåter att du anger en lista över webbadressmallar som specificerar vilka webbplatser som automatiskt får tillgång till en USB-enhet med det angivna leverantörs- och produkt id:t. Alla objekt i listan måste innehålla båda enheterna och webbadressmallarna i ordning för att principen ska gälla. Vart och ett av objekten i enheterna kan innehålla ett fält leverantörs- och produkt-id. De id:n som utelämnas behandlas som jokrar med ett undantag och det undantaget är att ett produkt-id inte kan specificeras utan att ett leverantörs-id specificeras. Om det inte görs är principen ogiltig. Ogiltiga värden för principen ignoreras.
-
-        Om inget värde anges för principen används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultWebUsbGuardSetting, om den har ställts in, eller från användarens egna inställningar.
-
-        Webbadressmallar i den principen får inte överlappa med sådana som har konfigurerats via WebUsbBlockedForUrls. Om en överlappning uppstår har den här principen företräde framför WebUsbBlockedForUrls och WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Tillåt inte att bilder visas på någon webbplats</translation>
 <translation id="9012851181124311976">Konfigurera listan med webbadresser för företagsinloggning (endast HTTP och HTTPS). På dessa webbadresser registreras lösenordssignaturer, som används för att upptäcka när ett lösenord återanvänds.
       Se till att inloggningssidorna följer riktlinjerna på https://www.chromium.org/developers/design-documents/create-amazing-password-forms så att <ph name="PRODUCT_NAME" /> kan registrera lösenordssignaturer korrekt.

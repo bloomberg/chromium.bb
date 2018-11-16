@@ -214,7 +214,6 @@
 <translation id="7242029209006116544">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Google Chrome. הנתונים שלך ב-Chrome, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
 <translation id="7296210096911315575">מידע חשוב על בטיחות ועל אופן השימוש</translation>
 <translation id="7308322188646931570">‏Chrome זקוק לגישה לאחסון כדי להוריד קבצים</translation>
-<translation id="7330164299247909639">‏אישור האימות נכשל. עליך להיכנס שוב לחשבונך ב-Google Chrome בשם המשתמש <ph name="USER_NAME" /> או לפנות למנהל המערכת שלך לקבלת מידע נוסף. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">חלון חדש</translation>
 <translation id="7398801000654795464">‏היית מחובר ל-Chrome כ-<ph name="USER_EMAIL_ADDRESS" />. השתמש באותו חשבון כדי להיכנס שוב.</translation>
 <translation id="7408085963519505752">‏תנאים עבור מערכת ההפעלה של Chrome</translation>
@@ -282,7 +281,6 @@
 <translation id="8914504000324227558">‏הפעל מחדש את Chrome</translation>
 <translation id="9026991721384951619">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="9067395829937117663">‏כדי להשתמש ב-Google Chrome יש צורך ב-Windows מגירסה 7 ואילך.</translation>
-<translation id="9084668267983921457">‏אישור האימות נכשל. עליך להיכנס שוב לחשבונך ב-Google Chrome או לפנות למנהל המערכת שלך לקבלת מידע נוסף. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{‏Chrome OS תופעל מחדש בעוד שעה אחת}two{‏Chrome OS תופעל מחדש בעוד שעתיים}many{‏Chrome OS תופעל מחדש בעוד # שעות}other{‏Chrome OS תופעל מחדש בעוד # שעות}}</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="9138603949443464873">‏כדי להחיל את השינויים שביצעת, יש להפעיל מחדש את Chrome</translation>

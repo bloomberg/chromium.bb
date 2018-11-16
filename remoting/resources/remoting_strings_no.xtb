@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1002108253973310084">Det ble oppdaget en ikke-kompatibel protokollversjon. Kontrollér at du har nyeste programvareversjon installert på begge datamaskinene, og prøv igjen.</translation>
+<translation id="1008557486741366299">Ikke nå</translation>
 <translation id="1050693411695664090">Dårlig</translation>
 <translation id="1152528166145813711">Velg</translation>
 <translation id="1199593201721843963">Deaktiver eksterne tilkoblinger</translation>
@@ -347,7 +348,7 @@ PC</translation>
 <translation id="9126115402994542723">Ikke be om PIN-kode igjen når du kobler til denne verten fra denne enheten.</translation>
 <translation id="9149580767411232853">Hold hele det eksterne skrivebordet synlig</translation>
 <translation id="9149992051684092333">Kom i gang med deling av skrivebordet ved å gi adgangskoden nedenfor til personen som skal hjelpe deg.</translation>
-<translation id="9188433529406846933">Autoriser</translation>
+<translation id="9188433529406846933">Godkjenn</translation>
 <translation id="9213184081240281106">Ugyldig vertskonfigurasjon.</translation>
 <translation id="951991426597076286">Avvis</translation>
 <translation id="962733587145768554">Velg «<ph name="SHARE" />» i dialogboksen for tilkoblingen for å fullføre prosessen.</translation>

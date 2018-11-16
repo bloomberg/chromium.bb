@@ -166,7 +166,6 @@
     في الشاشة التالية، يُرجى إرسال تعليقات لمساعدتنا في حل هذه المشكلة.</translation>
 <translation id="1217668622537098248">إعادة ميزة النقر بزر الماوس الأيسر بعد اتخاذ إجراء</translation>
 <translation id="121783623783282548">كلمتا المرور غير متطابقتين.</translation>
-<translation id="1219533395013150448">‏يستخدم "مساعد Google" هذه التسجيلات لإنشاء نموذجك الصوتي الذي يتم تخزينه في جهازك. ويمكنك حذف النموذج أو إعادة ضبطه في إعدادات "مساعد Google". كما يمكنك عرض الأوامر الصوتية أو حذفها في عناصر التحكُّم في النشاط على Google.</translation>
 <translation id="122082903575839559">خوارزمية التوقيع على الشهادة</translation>
 <translation id="1221024147024329929">‏PKCS #1 MD2 مع تشفير RSA</translation>
 <translation id="1221825588892235038">التحديد فقط</translation>
@@ -617,7 +616,7 @@
 <translation id="1880905663253319515">هل تريد حذف الشهادة "<ph name="CERTIFICATE_NAME" />"؟</translation>
 <translation id="1886996562706621347">السماح للمواقع بأن تطلب أن تصبح معالجات تلقائية للبروتوكولات (مستحسن)</translation>
 <translation id="1887442540531652736">خطأ في تسجيل الدخول</translation>
-<translation id="1887597546629269384">‏يمكنك قول "Hey Google" مرة أخرى</translation>
+<translation id="1887597546629269384">‏يُرجى قول "Hey Google" مرة أخرى.</translation>
 <translation id="1887850431809612466">مراجعة الأجهزة</translation>
 <translation id="1889984860246851556">فتح إعدادات الخادم الوكيل</translation>
 <translation id="1890674179660343635">‏&lt;span&gt;رقم التعريف: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -715,7 +714,7 @@
 <translation id="2048653237708779538">الإجراء غير متاح</translation>
 <translation id="204914487372604757">إنشاء اختصار</translation>
 <translation id="2050339315714019657">رأسي</translation>
-<translation id="2052369079215022979">الذي تديره مؤسستك</translation>
+<translation id="2052369079215022979">بإدارة مؤسستك</translation>
 <translation id="2053312383184521053">بيانات حالة الخمول</translation>
 <translation id="205560151218727633">‏شعار مساعد Google</translation>
 <translation id="2058456167109518507">تم رصد جهاز للاتصال</translation>
@@ -1490,7 +1489,6 @@
 <translation id="3271648667212143903">يريد <ph name="ORIGIN" /> الاتصال</translation>
 <translation id="3274763671541996799">تم الانتقال إلى وضع ملء الشاشة.</translation>
 <translation id="3275778913554317645">فتح كنافذة</translation>
-<translation id="3278877214895457897">‏عند إعداد جهاز Chromebook، يُرجى الضغط على زر "مساعد Google" أو قول "OK Google" للاستعانة به في أي وقت.</translation>
 <translation id="3279230909244266691">قد تستغرق هذه العملية بضع دقائق. جارٍ بدء الآلة الافتراضية.</translation>
 <translation id="3279741024917655738">عرض الفيديوهات بملء الشاشة على</translation>
 <translation id="3280237271814976245">الحفظ &amp;باسم...</translation>
@@ -1678,7 +1676,6 @@
 <translation id="3550915441744863158">‏يتم تحديث Chrome تلقائيًا، وبالتالي يتوفر لديك دومًا أحدث إصدار منه.</translation>
 <translation id="3551320343578183772">إغلاق علامة التبويب</translation>
 <translation id="3552780134252864554">تم المحو عند الخروج</translation>
-<translation id="3553146918065661815">‏عرض تحذير قبل الإنهاء باستخدام ⌘Q</translation>
 <translation id="3555812735919707620">إزالة الإضافة</translation>
 <translation id="3556000484321257665">تم تغيير محرك بحثك إلى <ph name="URL" />.</translation>
 <translation id="3559262020195162408">تعذَّر تثبيت السياسة على الجهاز.</translation>
@@ -1754,7 +1751,6 @@
 <translation id="3654045516529121250">الاطّلاع على إعدادات إمكانية الوصول</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{لديه حق الوصول الدائم إلى ملف واحد.}zero{لديه حق الوصول الدائم إلى # من الملفات.}two{لديه حق الوصول الدائم إلى ملفين (#).}few{ لديه حق الوصول الدائم إلى # ملفات.}many{لديه حق الوصول الدائم إلى # ملفًا.}other{لديه حق الوصول الدائم إلى # من الملفات.}}</translation>
 <translation id="3660234220361471169">غير موثوق بها</translation>
-<translation id="3661054927247347545">شهادة تسجيل الدخول غير صالحة، وسيتم غلق النافذة خلال <ph name="MINUTES" /> : <ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">رمز الإضافة</translation>
 <translation id="3665589677786828986">‏اكتشف Chrome أن بعض إعداداتك تم إتلافها من قبل برنامج آخر وإعادة تعيينها للحالة التلقائية الأصلية.</translation>
 <translation id="3668570675727296296">إعدادات اللغة</translation>
@@ -2288,7 +2284,7 @@
 <translation id="4524832533047962394">لا يمكن استخدام وضع التسجيل المُقدَّم على هذا الإصدار من نظام التشغيل. يُرجى التأكد من استخدام أحدث إصدار.</translation>
 <translation id="4525382759303819021">‏التعرّف على آخر التحديثات والاقتراحات في تطبيقات "متجر Play"</translation>
 <translation id="4530494379350999373">الأصل</translation>
-<translation id="4533846798469727141">‏يمكنك الآن قول "Hey Google"</translation>
+<translation id="4533846798469727141">‏الآن، يُرجى قول "Hey Google"</translation>
 <translation id="4533985347672295764">وقت وحدة المعالجة المركزية</translation>
 <translation id="4534661889221639075">يُرجى إعادة المحاولة.</translation>
 <translation id="4535127706710932914">الملف الشخصي التلقائي</translation>
@@ -2884,7 +2880,6 @@
 <translation id="5434065355175441495">‏تشفير PKCS #1 RSA</translation>
 <translation id="5436492226391861498">في انتظار قناة الخادم...</translation>
 <translation id="5436510242972373446">البحث في الموقع <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">سيتم قريبًا إغلاق جميع نوافذ المتصفح تلقائيًا من دون تسجيل الدخول.</translation>
 <translation id="5438224778284622050">هل تريد حذف الملفات بلا إنترنت؟</translation>
 <translation id="544083962418256601">إنشاء اختصارات...</translation>
 <translation id="5442228125690314719">لقد حدث خطأ أثناء إنشاء نسخة القرص. يُرجى إعادة المحاولة.</translation>
@@ -3617,7 +3612,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">تسجيل الدخول الآن</translation>
 <translation id="6527303717912515753">مشاركة</translation>
 <translation id="6528513914570774834">السماح للمستخدمين الآخرين لهذا الجهاز باستخدام هذه الشبكة</translation>
 <translation id="652948702951888897">‏سجل Chrome</translation>
@@ -4086,7 +4080,6 @@
 <translation id="7256710573727326513">فتح في علامة تبويب</translation>
 <translation id="725758059478686223">خدمة الطباعة</translation>
 <translation id="7257666756905341374">قراءة البيانات التي نسختها ولصقتها</translation>
-<translation id="7258619945375359543">‏السماح "لمساعد Google" بتقديم الاقتراحات استنادًا إلى المحتوى المعروض على شاشتك</translation>
 <translation id="7258697411818564379">تمت إضافة رقم التعريف الشخصي</translation>
 <translation id="7262004276116528033">يستضيف <ph name="SAML_DOMAIN" /> خدمة تسجيل الدخول هذه.</translation>
 <translation id="7268365133021434339">إغلاق علامات التبويب</translation>
@@ -4810,7 +4803,7 @@
 <translation id="8371695176452482769">تحدث الآن</translation>
 <translation id="8372369524088641025">‏مفتاح WEP غير صالح</translation>
 <translation id="8373553483208508744">تجاهل علامات التبويب</translation>
-<translation id="8378714024927312812">الذي تديره مؤسستك</translation>
+<translation id="8378714024927312812">بإدارة مؤسستك</translation>
 <translation id="8379878387931047019">لا يدعم هذا الجهاز نوع مفتاح الأمان الذي يطلبه هذا الموقع الإلكتروني.</translation>
 <translation id="8382913212082956454">نسخ عنوان البريد الإل&amp;كتروني</translation>
 <translation id="8386091599636877289">تعذَّر العثور على السياسة.</translation>
@@ -4849,7 +4842,6 @@
 <translation id="8438566539970814960">تحسين عمليات البحث والتصفُّح</translation>
 <translation id="8439506636278576865">عرض ترجمة الصفحات المكتوبة بهذه اللغة</translation>
 <translation id="8440630305826533614">‏تطبيقات Linux</translation>
-<translation id="8446474770554547328">‏يؤدي تسجيل "Ok Google" ثلاث مرات إلى إنشاء نموذجك الصوتي الذي يتم تخزينه على جهازك. ويمكنك حذف النموذج أو إعادة ضبطه في إعدادات "مساعد Google". كما يمكنك عرض الأوامر الصوتية أو حذفها في عناصر التحكُّم في النشاط على Google.</translation>
 <translation id="8446884382197647889">مزيد من المعلومات</translation>
 <translation id="8447409163267621480">‏تضمين إما مفتاح Ctrl أو Alt</translation>
 <translation id="8448729345478502352">تصغير العناصر المعروضة على شاشتك أو تكبيرها</translation>

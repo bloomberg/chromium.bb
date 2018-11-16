@@ -140,7 +140,6 @@
 <translation id="5862307444128926510">Chromium'a Hoş Geldiniz</translation>
 <translation id="5877064549588274448">Kanal değişti. Değişikliklerin uygulanması için cihazınızı yeniden başlatın.</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
-<translation id="5902536751647951209">Kimlik doğrulama sertifikası çalışmadı. Lütfen Chromium'da tekrar oturum açın veya daha fazla bilgi edinmek için yöneticinizle iletişime geçin. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Az kaldı! Güncellemeyi tamamlamak için cihazınızı yeniden başlatın.</translation>
 <translation id="5987687638152509985">Senkronizasyonu başlatmak için Chromium'u güncelleyin</translation>
 <translation id="6013050204643758987">Chromium OS, <ph name="BEGIN_LINK_LINUX_OSS" />Linux'ta (Beta)<ph name="END_LINK_LINUX_OSS" /> olduğu gibi ek <ph name="BEGIN_LINK_CROS_OSS" />açık kaynak yazılımlardan<ph name="END_LINK_CROS_OSS" /> yararlanılarak geliştirilmiştir.</translation>
@@ -220,7 +219,6 @@ Daha fazla talimat için lütfen e-postanızı (<ph name="ACCOUNT_EMAIL" />) kon
 <translation id="7745317241717453663">Bu işlem tarama verilerinizi bu cihazdan silecektir. Verilerinizi daha sonra geri almak için Chromium'da <ph name="USER_EMAIL" /> hesabıyla oturum açın.</translation>
 <translation id="7747138024166251722">Yükleyici geçici bir dizin oluşturamadı. Lütfen, kullanılabilir disk alanını ve yazılım yükleme iznini kontrol edin.</translation>
 <translation id="7773960292263897147">Uyarı: Chromium, uzantıların tarama geçmişinizi kaydetmesini engelleyemez. Gizli modda bu uzantıyı devre dışı bırakmak için bu seçeneğin onay işaretini kaldırın.</translation>
-<translation id="7774736947049807614">Kimlik doğrulama sertifikası çalışmadı. Lütfen <ph name="USER_NAME" /> olarak Chromium'da tekrar oturum açın veya daha fazla bilgi edinmek için yöneticinizle iletişime geçin. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium en son sürüme güncellenemediği için yeni özellikler ve güvenlik düzeltmeleri cihazınızda bulunmuyor.</translation>
 <translation id="7901117350626490574">Chromium için yeni bir güncelleme var. Yeniden başlattığınızda güncelleme hemen uygulanacaktır.</translation>

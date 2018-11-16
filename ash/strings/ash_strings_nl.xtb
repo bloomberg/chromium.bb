@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">Je kunt maximaal <ph name="MULTI_PROFILE_USER_LIMIT" /> accounts hebben in Toegang tot meerdere accounts.</translation>
 <translation id="3154351730702813399">De apparaatbeheerder kan je browseactiviteit controleren.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Verbonden met een apparaat}other{Verbonden met # apparaten}}</translation>
+<translation id="32244657276328332">Niet verbonden met netwerk</translation>
 <translation id="3236488194889173876">Geen mobiel netwerk beschikbaar</translation>
 <translation id="3255483164551725916">Wat kun je doen?</translation>
 <translation id="3294437725009624529">Gast</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Uitgeschakeld voor een app}other{Uitgeschakeld voor # apps}}</translation>
 <translation id="4072264167173457037">Normaal signaal</translation>
 <translation id="4146833061457621061">Speel muziek</translation>
+<translation id="4181841719683918333">Talen</translation>
 <translation id="4217571870635786043">Dicteren</translation>
 <translation id="4261870227682513959">Instellingen voor meldingen weergeven. Meldingen zijn uitgeschakeld</translation>
 <translation id="4269883910223712419">De beheerder van dit apparaat kan het volgende doen:</translation>
@@ -243,6 +245,7 @@
 <translation id="5207949376430453814">Tekstcursor markeren</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
 <translation id="523505283826916779">Toegankelijkheidsinstellingen</translation>
+<translation id="5302048478445481009">Taal</translation>
 <translation id="5313326810920013265">Bluetooth-instellingen</translation>
 <translation id="5331975486040154427">USB-C-apparaat (poort links aan de achterkant)</translation>
 <translation id="5379115545237091094">Te veel pogingen</translation>

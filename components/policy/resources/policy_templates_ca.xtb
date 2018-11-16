@@ -773,7 +773,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
       Si aquesta política es deixa sense establir, només es transmet l'URL com a paràmetre de línia d'ordres.
 
-      Si aquesta política s'estableix en una llista de cadenes, cada cadena es transmet al navegador alternatiu com un paràmetre diferent de línia d'ordres. A Windows, els paràmetres s'uneixen amb espais. A Mac OS X i Linux, un paràmetre pot contenir espais i, tot i així, es tractarà com un sol paràmetre.
+      Si aquesta política s'estableix en una llista de cadenes, cada cadena es transmet al navegador alternatiu com paràmetres diferents de línia d'ordres. A Windows, els paràmetres s'uneixen amb espais. A Mac OS X i Linux, un paràmetre pot contenir espais i, tot i així, es tractarà com un sol paràmetre.
 
       Si un element conté ${url}, se substitueix per l'URL de la pàgina que cal obrir.
 
@@ -2326,11 +2326,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7132877481099023201">URL als quals els dispositius de captura de vídeo podran accedir sense confirmació.</translation>
 <translation id="7158064522994309072">Aquesta política controla quina ordre cal utilitzar per obrir URL en un navegador alternatiu.
 
-      Si aquesta política es deixa sense establir, s'utilitza un valor predeterminat específic de cada plataforma: Internet Explorer per a Windows o Safari per a Mac OS X. A Linux, no es podrà obrir un navegador alternatiu amb aquesta política sense establir.
+      Si aquesta política es deixa sense establir, s'utilitza un valor predeterminat específic de cada plataforma: Internet Explorer per a Windows o Safari per a Mac OS X. A Linux, no es podrà obrir un navegador alternatiu si aquesta política no s'estableix.
 
       Si aquesta política s'estableix en "${ie}", "${firefox}", "${safari}" o "${opera}", s'iniciarà el navegador corresponent si està instal·lat. "${ie}" només està disponible a Windows, i "${safari}" només a Windows i Mac OS X.
 
-      Si aquesta política s'estableix en un camí de fitxer, el fitxer s'utilitza com a executable.</translation>
+      Si aquesta política s'estableix en un camí de fitxer, el fitxer s'utilitzarà com a executable.</translation>
 <translation id="7167436895080860385">Permet que els usuaris mostrin les contrasenyes al gestor de contrasenyes (política obsoleta)</translation>
 <translation id="7173856672248996428">Perfil efímer</translation>
 <translation id="717630378807352957">Permet totes les impressores del fitxer de configuració.</translation>
@@ -3104,11 +3104,6 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="8970205333161758602">Suprimeix l'avís de desactivació de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Permet l'autenticació Gnubby als amfitrions d'accés remot</translation>
 <translation id="8976531594979650914">Utilitza la impressora predeterminada del sistema com a predeterminada</translation>
-<translation id="898520305112996948">Permet definir una llista de patrons d'URL que especifiquin quins llocs web obtindran permís automàticament per accedir a un dispositiu USB amb els identificadors indicats de proveïdor i producte. Perquè la política sigui vàlida, tots els elements de la llista han de contenir tant dispositius com patrons d'URL. A més, cada dispositiu pot contenir un identificador de proveïdor i un altre de producte. Els identificadors omesos es tracten com un comodí, amb excepció dels identificadors de productes, que no es poden especificar si no s'especifica també un identificador de proveïdor. En cas contrari, la política no seria vàlida i se n'ignorarien els valors.
-
-        Si aquesta política es deixa sense establir, s'utilitzarà per a tots els llocs web el valor global predeterminat indicat en la política DefaultWebUsbGuardSetting (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.
-
-        Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. Si hi ha un conflicte, aquesta política té prioritat sobre WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="9012851181124311976">Configura la llista d'URL d'inici de sessió per a empreses (només esquemes HTTP i HTTPS). L'empremta digital de la contrasenya es capturarà en aquests URL i s'utilitzarà per detectar la reutilització de contrasenyes.
       Perquè <ph name="PRODUCT_NAME" /> pugui capturar les empremtes digitals correctament, assegura't que les pàgines d'inici de sessió compleixin les directrius descrites a https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

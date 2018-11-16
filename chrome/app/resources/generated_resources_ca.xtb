@@ -166,7 +166,6 @@
     A la pantalla següent, envieu suggeriments per ajudar-nos a resoldre el problema.</translation>
 <translation id="1217668622537098248">Torna al clic amb el botó esquerre després d'una acció</translation>
 <translation id="121783623783282548">Les contrasenyes no coincideixen.</translation>
-<translation id="1219533395013150448">L'Assistent fa servir aquestes gravacions per crear el teu model de veu, que s'emmagatzema al dispositiu. Pots suprimir o tornar a entrenar el model a la configuració de l'Assistent. Per veure o suprimir les ordres de veu, ves als controls d'activitat de Google.</translation>
 <translation id="122082903575839559">Algoritme de signatura del certificat</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 amb encriptació RSA</translation>
 <translation id="1221825588892235038">Només la selecció</translation>
@@ -301,7 +300,7 @@
 <translation id="142758023928848008">Activa les tecles permanents (per fer tecles de drecera en escriure-les en ordre)</translation>
 <translation id="143027896309062157">Llegeix i modifica totes les dades de l'ordinador i els llocs web que es visitin</translation>
 <translation id="1430915738399379752">Imprimeix</translation>
-<translation id="1432581352905426595">Gestiona motors de cerca</translation>
+<translation id="1432581352905426595">Gestiona els motors de cerca</translation>
 <translation id="1433811987160647649">Demana permís abans d'accedir</translation>
 <translation id="1434696352799406980">Aquesta funció restablirà la pàgina d'inici, la pàgina Pestanya nova, el motor de cerca i les pestanyes fixades que tingueu configurades. També desactivarà totes les extensions i esborrarà les dades temporals, com ara les galetes. Les adreces d'interès, l'historial i les contrasenyes desades no s'esborraran.</translation>
 <translation id="1434886155212424586">La pàgina d'inici és la pàgina Pestanya nova</translation>
@@ -1489,7 +1488,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> es vol connectar</translation>
 <translation id="3274763671541996799">Heu activat el mode de pantalla completa.</translation>
 <translation id="3275778913554317645">Obre com a finestra</translation>
-<translation id="3278877214895457897">Quan el dispositiu Chromebook estigui configurat, prem el botó de l'Assistent o digues "Ok Google" per obtenir ajuda de l'Assistent en qualsevol moment.</translation>
 <translation id="3279230909244266691">Aquest procés pot tardar uns quants minuts. S'està iniciant la màquina virtual.</translation>
 <translation id="3279741024917655738">Mostra els vídeos en pantalla completa a</translation>
 <translation id="3280237271814976245">Desa &amp;com a...</translation>
@@ -1677,7 +1675,6 @@
 <translation id="3550915441744863158">Chrome s'actualitza automàticament perquè en tingueu sempre la versió més recent.</translation>
 <translation id="3551320343578183772">Tanca la pestanya</translation>
 <translation id="3552780134252864554">Esborra en sortir</translation>
-<translation id="3553146918065661815">Mostra un advertiment abans de sortir amb ⌘+Q</translation>
 <translation id="3555812735919707620">Suprimeix l'extensió</translation>
 <translation id="3556000484321257665">El motor de cerca ha canviat a <ph name="URL" />.</translation>
 <translation id="3559262020195162408">No s'ha pogut instal·lar la política al dispositiu.</translation>
@@ -1753,7 +1750,6 @@
 <translation id="3654045516529121250">Consultar la configuració d'accessibilitat</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Té accés permanent a un fitxer.}other{Té accés permanent a # fitxers.}}</translation>
 <translation id="3660234220361471169">No és de confiança</translation>
-<translation id="3661054927247347545">La certificació d'inici de sessió no és vàlida. La finestra es tancarà d'aquí a <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Icona de l'extensió</translation>
 <translation id="3665589677786828986">Chrome ha detectat que un altre programa ha malmès alguns dels paràmetres de configuració i els ha restablert als valors predeterminats originals.</translation>
 <translation id="3668570675727296296">Configuració d'idioma</translation>
@@ -2460,7 +2456,7 @@
 <translation id="479536056609751218">Pàgina web, només HTML</translation>
 <translation id="4798236378408895261">Adjunta <ph name="BEGIN_LINK" />registres de Bluetooth<ph name="END_LINK" /> (ús intern de Google)</translation>
 <translation id="4801448226354548035">Amaga els comptes</translation>
-<translation id="4801512016965057443">Permet la itinerància de dades de telefonia mòbil</translation>
+<translation id="4801512016965057443">Permet la itinerància de dades mòbils</translation>
 <translation id="4801956050125744859">Mantén-les totes dues</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
 <translation id="4807098396393229769">Titular de la targeta</translation>
@@ -2887,7 +2883,6 @@
 <translation id="5434065355175441495">PKCS #1 amb encriptació RSA</translation>
 <translation id="5436492226391861498">S'està esperant un túnel de servidor intermediari...</translation>
 <translation id="5436510242972373446">Cerca <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Totes les finestres del navegador es tancaran automàticament sense que hi inicieu la sessió.</translation>
 <translation id="5438224778284622050">Vols suprimir els fitxers sense connexió?</translation>
 <translation id="544083962418256601">Crea dreceres...</translation>
 <translation id="5442228125690314719">S'ha produït un error en crear la imatge de disc. Torna-ho a provar.</translation>
@@ -3620,7 +3615,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Inicia la sessió ara</translation>
 <translation id="6527303717912515753">Comparteix</translation>
 <translation id="6528513914570774834">Permet que els altres usuaris d'aquest dispositiu facin servir aquesta xarxa</translation>
 <translation id="652948702951888897">Historial de Chrome</translation>
@@ -4089,7 +4083,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7256710573727326513">Obre en una pestanya</translation>
 <translation id="725758059478686223">Servei d'impressió</translation>
 <translation id="7257666756905341374">Llegeix les dades que es copiïn i s'enganxin</translation>
-<translation id="7258619945375359543">Permet que l'Assistent et faci suggeriments basats en el que es mostra a la pantalla</translation>
 <translation id="7258697411818564379">S'ha afegit el PIN</translation>
 <translation id="7262004276116528033">Aquest servei d'inici de sessió s'allotja a <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Tanca les pestanyes</translation>
@@ -4849,7 +4842,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8438566539970814960">Millora les cerques i la navegació</translation>
 <translation id="8439506636278576865">Proposa'm traduir pàgines en aquest idioma</translation>
 <translation id="8440630305826533614">Aplicacions per a Linux</translation>
-<translation id="8446474770554547328">En gravar "Ok Google" 3 vegades, es crea el teu model de veu, que s'emmagatzema al dispositiu. Pots suprimir o tornar a entrenar el model a la configuració de l'Assistent. Per veure o suprimir les ordres de veu, ves als controls d'activitat de Google.</translation>
 <translation id="8446884382197647889">Més informació</translation>
 <translation id="8447409163267621480">Inclou la tecla Ctrl o Alt</translation>
 <translation id="8448729345478502352">Amplia o redueix els elements de la pantalla</translation>

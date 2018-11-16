@@ -132,7 +132,7 @@
 
       Cuando no se establece esta política, no se agregan sitios web a la lista.
 
-      Cuando se establece, todos los elementos se tratan como regla, de forma similar a la política <ph name="URL_LIST_POLICY_NAME" />. No obstante, la lógica es inversa, es decir, las reglas que coinciden no abren un navegador alternativo.
+      Cuando se establece, todos los elementos se tratan como regla, de forma similar a la política <ph name="URL_LIST_POLICY_NAME" />. No obstante, la lógica es inversa; es decir, las reglas que coinciden no abren un navegador alternativo.
 
       A diferencia de <ph name="URL_LIST_POLICY_NAME" />, las reglas se aplican en ambos sentidos. Cuando el complemento de Internet Explorer está presente y habilitado, también controla si <ph name="IE_PRODUCT_NAME" /> debe abrir estas URL en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Usar un script para proxy .pac</translation>
@@ -238,7 +238,7 @@
 <translation id="1559980755219453326">Esta política controla si se envía información de las extensiones y los complementos.
 
       Cuando no se establece esta política o se establece como verdadera, se recopilan datos de las extensiones y los complementos.
-      Cuando se establece como falsa, no se recopila información de las extensiones y los complementos.
+      Cuando se establece como falsa, no se recopila información de las extensiones ni de los complementos.
 
       Esta política solo es válida si se habilita la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1561424797596341174">Anulaciones de políticas en compilaciones de depuración del host de acceso remoto</translation>
@@ -2192,7 +2192,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Especifica las marcas que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las marcas especificadas se aplican solo en la pantalla de acceso. Las marcas establecidas mediante esta política no se propagan a las sesiones de usuario.</translation>
 <translation id="685769593149966548">Aplicar el modo restringido estricto para YouTube</translation>
-<translation id="6857824281777105940">Esta política controla si se envía información de "Navegación segura", lo que incluye la cantidad de advertencias de "Navegación segura" y la cantidad que se omite.
+<translation id="6857824281777105940">Esta política controla si se envía información de "Navegación segura", lo que incluye la cantidad de advertencias de "Navegación segura" y la cantidad de veces que se hace clic en ellas.
 
       Si no se establece esta política o se establece como verdadera, se recopilan los datos de "Navegación segura".
       Si se establece como falsa, no se recopilan los datos de "Navegación segura".
@@ -2350,8 +2350,8 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       instalado. ${ie} solo está disponible en Windows, y ${safari} solo está
       disponible en Windows y Mac OS X.
 
-      Si se establece esta política con una ruta de archivos, ese archivo
-      se usará como archivo ejecutable.</translation>
+      Si se establece esta política con una ruta de archivo, ese archivo
+      se usará como uno ejecutable.</translation>
 <translation id="7167436895080860385">Permitir que los usuarios muestren las contraseñas en el administrador de contraseñas (dejó de estar disponible)</translation>
 <translation id="7173856672248996428">Perfil efímero</translation>
 <translation id="717630378807352957">Permite todas las impresoras del archivo de configuración.</translation>
@@ -3170,11 +3170,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8970205333161758602">Elimina el mensaje de desactivación de <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8976248126101463034">Permitir autenticación gnubby para hosts de acceso remoto</translation>
 <translation id="8976531594979650914">Usar la impresora predeterminada del sistema como predeterminada</translation>
-<translation id="898520305112996948">Permite establecer una lista de patrones de URL que especifique los sitios que obtendrán permiso automáticamente para acceder a un dispositivo USB con los ID del producto y el proveedor correspondientes. Para que la política sea válida, todos los elementos de la lista deben contener tanto dispositivos como patrones de URL. Cada uno de los elementos en los dispositivos puede incluir un campo de ID del producto y el proveedor. Los ID que se omiten se tratan como comodín, con la siguiente excepción: no se puede especificar un ID del producto sin que se especifique un ID del proveedor. De lo contrario, la política no será válida. Se ignoran los valores no válidos de la política.
-
-        Si no se establece esta política, se usará el valor predeterminado global para todos los sitios ya sea de la política "DefaultWebUsbGuardSetting" (si se establece) o de la configuración personal del usuario.
-
-        Los patrones de URL en esta política no deben contradecirse con los que se configuren a través de WebUsbBlockedForUrls. En caso de que suceda, prevalece esta política por sobre WebUsbBlockedForUrls y WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">No permitir que ningún sitio muestre imágenes.</translation>
 <translation id="9012851181124311976">Configura la lista de las URL de acceso empresariales (solo en esquemas HTTP y HTTPS). Se capturará la huella digital de la contraseña en estas URL y se usará para detectar la reutilización de contraseñas.
       Para que <ph name="PRODUCT_NAME" /> capture las huellas digitales de contraseñas correctamente, asegúrate de que tus páginas de acceso cumplan con los lineamientos que se indican en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

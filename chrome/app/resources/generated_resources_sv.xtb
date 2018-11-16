@@ -166,7 +166,6 @@
     Välj Skicka feedback på nästa skärm så att vi kan försöka åtgärda problemet.</translation>
 <translation id="1217668622537098248">Återgå till att vänsterklicka efter åtgärden</translation>
 <translation id="121783623783282548">Lösenorden matchar inte.</translation>
-<translation id="1219533395013150448">Med hjälp av dessa inspelningar skapar assistenten en röstmodell som sparas på enheten. Du raderar eller tränar om modellen i inställningarna för assistenten. Visa eller radera röstkommandon i aktivitetsinställningarna för Google.</translation>
 <translation id="122082903575839559">Certifikatets signaturalgoritm</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 med RSA-kryptering</translation>
 <translation id="1221825588892235038">Endast markering</translation>
@@ -1490,7 +1489,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> vill ansluta</translation>
 <translation id="3274763671541996799">Du har aktiverat helskärmsläget.</translation>
 <translation id="3275778913554317645">Öppna som fönster</translation>
-<translation id="3278877214895457897">När konfigureringen av Chromebook är klar kan du trycka på assistentknappen eller säga ”Ok Google” när som helst när du vill få hjälp av assistenten.</translation>
 <translation id="3279230909244266691">Detta kan ta några minuter. Den virtuella maskinen startas.</translation>
 <translation id="3279741024917655738">Visa videor i helskärmsläge på</translation>
 <translation id="3280237271814976245">Spara so&amp;m...</translation>
@@ -1679,7 +1677,6 @@
 <translation id="3550915441744863158">Chrome uppdateras automatiskt så att du alltid har den senaste versionen</translation>
 <translation id="3551320343578183772">Stäng flik</translation>
 <translation id="3552780134252864554">Rensas vis avslutning</translation>
-<translation id="3553146918065661815">Visa en varning innan du avslutar med ⌘Q</translation>
 <translation id="3555812735919707620">Ta bort tillägg</translation>
 <translation id="3556000484321257665">Sökmotorn har ändrats till <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Det gick inte att installera policyn på enheten.</translation>
@@ -1755,7 +1752,6 @@
 <translation id="3654045516529121250">Läsa tillgänglighetsinställningarna</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Den har permanent åtkomst till en fil.}other{Den har permanent åtkomst till # filer.}}</translation>
 <translation id="3660234220361471169">Opålitliga</translation>
-<translation id="3661054927247347545">Inloggningscertifieringen är ogiltig. Fönstret stängs om <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Tilläggsikon</translation>
 <translation id="3665589677786828986">Chrome har upptäckt att visa av inställningarna har skadats av ett annat program och återställer dem till standardinställningarna.</translation>
 <translation id="3668570675727296296">Språkinställningar</translation>
@@ -2888,7 +2884,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA-kryptering</translation>
 <translation id="5436492226391861498">Väntar på proxytunnel...</translation>
 <translation id="5436510242972373446">Sök <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Alla webbläsarfönster stängs snart automatiskt utan inloggning.</translation>
 <translation id="5438224778284622050">Vill du radera offlinefiler?</translation>
 <translation id="544083962418256601">Skapa genvägar ...</translation>
 <translation id="5442228125690314719">Det gick inte att skapa skivavbildningen. Försök igen.</translation>
@@ -3620,7 +3615,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Logga in nu</translation>
 <translation id="6527303717912515753">Dela</translation>
 <translation id="6528513914570774834">Tillåt att andra användare på den här enheten kan använda det här nätverket</translation>
 <translation id="652948702951888897">Chrome-historik</translation>
@@ -4089,7 +4083,6 @@
 <translation id="7256710573727326513">Öppna i en flik</translation>
 <translation id="725758059478686223">Utskriftstjänst</translation>
 <translation id="7257666756905341374">Läsa data som du kopierar och klistrar in</translation>
-<translation id="7258619945375359543">Tillåt att assistenten ger förslag utifrån vad som visas på skärmen</translation>
 <translation id="7258697411818564379">Pinkoden har lagts till</translation>
 <translation id="7262004276116528033">Inloggningstjänsten tillhandahålls av <ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">Stäng flikar</translation>
@@ -4852,7 +4845,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8438566539970814960">Förbättra sökningar och surfandet</translation>
 <translation id="8439506636278576865">Erbjud att översätta sidor på detta språk</translation>
 <translation id="8440630305826533614">Linux-appar</translation>
-<translation id="8446474770554547328">När ”Ok Google” har spelats in tre gånger skapas din röstmodell som sedan sparas på enheten. Du raderar eller tränar om modellen i inställningarna för assistenten. Visa eller radera röstkommandon i aktivitetsinställningarna för Google.</translation>
 <translation id="8446884382197647889">Läs mer</translation>
 <translation id="8447409163267621480">Ctrl- eller alt-tangenten måste finnas med</translation>
 <translation id="8448729345478502352">Gör objekt på skärmen mindre eller större</translation>

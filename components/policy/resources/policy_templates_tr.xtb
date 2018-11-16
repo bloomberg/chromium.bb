@@ -3219,11 +3219,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> reddetme sorusunu engelle</translation>
 <translation id="8976248126101463034">Uzak erişim ana makineleri için gnubby kimlik doğrulamasına izin ver</translation>
 <translation id="8976531594979650914">Varsayılan Olarak Sistem Varsayılan Yazıcısını Kullan</translation>
-<translation id="898520305112996948">Hangi sitelerin sağlanan tedarikçi ve ürün kimlikleriyle USB cihazlarına erişmesine otomatik olarak izin verileceğini belirten bir url kalıpları listesi ayarlamanıza olanak tanır. Politikanın geçerli olabilmesi için listedeki her öğenin hem cihazları hem de url kalıplarını içermesi gerekir. Cihazlardaki her öğe tedarikçi kimliği ve ürün kimliği alanı içerebilir. Dahil edilmeyen her kimlik bir istisnayla joker olarak değerlendirilir. Bu istisnaya göre tedarikçi kimliği belirtilmeden ürün kimliği de belirtilemez. Aksi halde politika geçerli olmaz. Geçersiz politika değerleri yoksayılır.
-
-        Bu politika ayarlanmadan bırakılırsa küresel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultWebUsbGuardSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
-
-        Bu politikadaki URL kalıpları, WebUsbBlockedForUrls politikasıyla yapılandırılan kalıplarla çakışmamalıdır. Çakışma olması halinde bu politikanın WebUsbBlockedForUrls ve WebUsbAskForUrls politikaları üzerinde önceliği olur.</translation>
 <translation id="8992176907758534924">Hiçbir sitenin resimleri görüntülemesine izin verme</translation>
 <translation id="9012851181124311976">Kurumsal giriş URL'lerinin listesini yapılandırın (yalnızca HTTP ve HTTPS şemaları). Bu URL'lerde şifrelerin dijital parmak izleri yakalanır ve şifrenin tekrar kullanımını algılamak için bu dijital parmak izlerinden yararlanılır.
       <ph name="PRODUCT_NAME" /> uygulamasının şifrelerin dijital parmak izlerini doğru bir şekilde yakalaması için giriş sayfalarınızın https://www.chromium.org/developers/design-documents/create-amazing-password-forms adresinde bulunan kurallara uyduğundan emin olun.

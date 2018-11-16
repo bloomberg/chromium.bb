@@ -3157,11 +3157,6 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
 <translation id="8970205333161758602">Torju tuotteen <ph name="PRODUCT_FRAME_NAME" /> hylkäyspyyntö</translation>
 <translation id="8976248126101463034">Salli etäkäytön isäntien gnubby-todennus</translation>
 <translation id="8976531594979650914">Käytä oletuksena järjestelmän oletustulostinta</translation>
-<translation id="898520305112996948">Voit määrittää luettelon URL-osoitemalleja, joiden määrittämät sivustot saavat automaattisesti pyytää käyttäjältä USB-laitteen käyttöoikeutta, jos sillä on tietty myyjän ja tuotteen tunnus. Luettelon jokaisessa kohteessa on oltava laitteita ja URL-osoitemalleja, jotta käytäntö voi astua voimaan. Jokainen laitekohta voi sisältää kentät myyjän tunnukselle ja tuotteen tunnukselle. Jos tunnusta ei mainita, tätä pidetään jokerimerkkinä, paitsi jos tuotteen tunnus mainitaan ilman myyjän tunnuksen mainitsemista – tämä ei ole mahdollista. Muuten käytäntö ei voi astua voimaan. Virheelliset käytännön arvot ohitetaan.
-
-        Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultWebUsbGuardSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista arvoa.
-
-        Tämän käytännön URL-osoitemallien on sovittava yhteen WebUsbAskForUrls-mallien kanssa. Ristiriitatilanteissa tätä käytäntöä sovelletaan ennen WebUsbBlockedForUrls- ja WebUsbAskForUrls-käytäntöjä.</translation>
 <translation id="8992176907758534924">Älä anna sivustojen näyttää kuvia</translation>
 <translation id="9012851181124311976">Määritä yrityksen kirjautumisen URL-osoitteiden (vain HTTP ja HTTPS) luettelo. Salasanan tunnistetiedosto tallennetaan näihin URL-osoitteisiin, ja sitä käytetään salasanojen uudelleenkäytön tunnistamiseen.
       Jotta <ph name="PRODUCT_NAME" /> tallentaa salasanojen tunnistetiedostot oikein, varmista että kirjautumissivut noudattavat ohjeita osoitteessa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

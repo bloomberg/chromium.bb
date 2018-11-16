@@ -734,7 +734,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6567212464587185774">Akár 60%-kal kevesebb adatforgalom és gyorsabb webhelyek.</translation>
 <translation id="6573096386450695060">Engedélyezés mindig</translation>
 <translation id="6573431926118603307">A más eszközökön futó Chrome böngészőben megnyitott lapok itt jelennek meg.</translation>
-<translation id="6575643671698722332">Nem sikerült. Ellenőrizze a hálózatot, és próbálja újra.</translation>
 <translation id="6583199322650523874">Az aktuális oldal felvétele a könyvjelzők közé</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Asztali webhely</translation>
@@ -859,7 +858,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="7475192538862203634">Ha gyakran látja ezt, próbálja ki ezeket a <ph name="BEGIN_LINK" />javaslatokat<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Az SD-kártya nem található. Előfordulhat, hogy egyes fájlok hiányoznak.</translation>
-<translation id="748127970106343339">Eszközhitelesítési adatok törlésének megerősítése</translation>
 <translation id="7481312909269577407">Előre</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Frissítve: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Jelszavak mutatása</translation>
@@ -1010,9 +1008,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8609465669617005112">Mozgatás felfelé</translation>
 <translation id="8616006591992756292">Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen.</translation>
 <translation id="8617240290563765734">Megnyitja a letöltött tartalomban szereplő javasolt URL-t?</translation>
-<translation id="862875433388403934">Az egyéb alkalmazásokban letöltött tartalmakat (filmek, zene stb.) valószínűleg nem lehet majd lejátszani, amíg az egyes alkalmazások új engedélyeket nem kapnak új eszközhitelesítési adatok alapján.
-
-Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le a letöltött tartalmat.</translation>
 <translation id="8636825310635137004">Ha a többi eszközén is szeretné elérni lapjait, kapcsolja be a szinkronizálást</translation>
 <translation id="8641930654639604085">Felnőtteknek szóló webhelyek letiltásának megkísérlése</translation>
 <translation id="8662811608048051533">A rendszer a legtöbb webhelyről kijelentkezteti Önt.</translation>
@@ -1070,7 +1065,6 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB letöltve</translation>
 <translation id="9100505651305367705">A cikkek egyszerűsített nézetben való megjelenítésének felajánlása (ha támogatott a funkció)</translation>
 <translation id="9100610230175265781">Összetett jelszó szükséges</translation>
-<translation id="9133515669113036225">Az eszközhitelesítési adatok visszaállítása</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="9139068048179869749">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára az értesítések küldését (ajánlott)</translation>

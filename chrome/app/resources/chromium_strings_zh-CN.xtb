@@ -142,7 +142,6 @@
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5895138241574237353">重新启动</translation>
-<translation id="5902536751647951209">身份验证失败。请重新登录 Chromium，或者与您的管理员联系以了解详情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">即将更新到最新版本！重新启动您的设备即可完成更新。</translation>
 <translation id="5987687638152509985">更新 Chromium 以开始同步</translation>
 <translation id="6013050204643758987">Chromium 操作系统是借助了其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />才得以问世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux（测试版）<ph name="END_LINK_LINUX_OSS" />也是如此。</translation>
@@ -222,7 +221,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7745317241717453663">这会从这台设备上删除您的浏览数据。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
 <translation id="7747138024166251722">安装程序无法创建临时目录。请检查您是否有足够的磁盘空间和权限来安装该软件。</translation>
 <translation id="7773960292263897147">警告：Chromium 无法阻止扩展程序记录您的浏览活动。要在无痕模式下停用该扩展程序，请取消选中此选项。</translation>
-<translation id="7774736947049807614">身份验证失败。请以“<ph name="USER_NAME" />”的身份重新登录 Chromium，或者与您的管理员联系以了解详情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium 无法更新至最新版本，因此您未能获得最新的功能和安全修复程序。</translation>
 <translation id="7901117350626490574">Chromium 有一项新的可用更新；一旦您重新启动，系统即会应用这项更新。</translation>

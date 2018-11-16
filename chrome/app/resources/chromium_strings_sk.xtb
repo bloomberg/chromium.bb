@@ -144,7 +144,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5862307444128926510">Vitajte v prehliadači Chromium</translation>
 <translation id="5877064549588274448">Kanál sa zmenil. Ak chcete zmeny použiť, reštartujte zariadenie.</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
-<translation id="5902536751647951209">Certifikát na overenie totožnosti zlyhal. Prihláste sa znova do prehliadača Chromium alebo kontaktuje správcu a požiadajte ho o ďalšie informácie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Aktualizácia je takmer hotová! Dokončite ju reštartovaním zariadenia.</translation>
 <translation id="5987687638152509985">Ak chcete spustiť synchronizáciu, aktualizujte Chromium</translation>
 <translation id="6013050204643758987">Chromium OS mohol vzniknúť vďaka ďalšiemu <ph name="BEGIN_LINK_CROS_OSS" />softvéru open source<ph name="END_LINK_CROS_OSS" />, ako je napríklad <ph name="BEGIN_LINK_LINUX_OSS" />Linux (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -224,7 +223,6 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="7745317241717453663">Táto akcia odstráni zo zariadenia údaje prehliadania. Ak budete chcieť svoje údaje neskôr opäť načítať, prihláste sa do prehliadača Chromium ako <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Inštalátor nemohol vytvoriť dočasný priečinok. Skontrolujte úroveň zaplnenia disku a povolenie na inštaláciu softvéru.</translation>
 <translation id="7773960292263897147">Upozornenie: Chromium nemôže zabrániť rozšíreniam v zaznamenávaní vašej histórie prehliadania. Ak chcete rozšírenie v režime inkognito zakázať, zrušte výber tejto možnosti.</translation>
-<translation id="7774736947049807614">Certifikát na overenie totožnosti zlyhal. Prihláste sa znova do prehliadača Chromium ako <ph name="USER_NAME" /> alebo kontaktuje správcu a požiadajte ho o ďalšie informácie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium sa nepodarilo aktualizovať na najnovšiu verziu. K dispozícii tak nie sú niektoré nové funkcie ani bezpečnostné opravy.</translation>
 <translation id="7901117350626490574">K dispozícii je aktualizácia pre Chromium, ktorá bude uplatnená po najbližšom opätovnom spustení.</translation>

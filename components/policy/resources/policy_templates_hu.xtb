@@ -1735,7 +1735,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       MEGJEGYZÉS: Android rendszeren a webhely-izoláció kísérleti funkció. A támogatás idővel javul, de a funkció használata jelenleg teljesítményproblémákat okozhat.
 
-      MEGJEGYZÉS: Ez a házirend csak az Android rendszeren futó Chrome böngészőre vonatkozik, kizárólag olyan eszközökön, amelyek több mint 1 GB RAM-mal rendelkeznek. Ha nem Android platformon is alkalmazni szeretné a házirendet, használja a IsolateOrigins beállítást.
+      MEGJEGYZÉS: Ez a házirend csak az Android rendszeren futó Chrome böngészőre vonatkozik, kizárólag olyan eszközökön, amelyek több mint 1 GB RAM-mal rendelkeznek. Ha nem Android platformon is alkalmazni szeretné a házirendet, használja az IsolateOrigins beállítást.
       </translation>
 <translation id="5630352020869108293">Utolsó munkamenet visszaállítása</translation>
 <translation id="5645779841392247734">Cookie-k engedélyezése ezeken a webhelyeken</translation>
@@ -1833,7 +1833,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha a beállítás tiltva van, vagy nincs konfigurálva, akkor a rendszer nem proxyzza a gnubby hitelesítési kéréseket.</translation>
 <translation id="5898486742390981550">Ha több felhasználó van bejelentkezve, csak az elsődleges felhasználó használhat Android-alkalmazásokat.</translation>
 <translation id="5900196529149231477">
-      Ez a házirend a bejelentkezési képernyőre vonatkozik. A felhasználói munkamenetre a <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> házirend érvényes. Azt javasoljuk, hogy mindkét házirendet ugyanarra az értékre állítsa. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
+      Ez a házirend a bejelentkezési képernyőre vonatkozik. A felhasználói munkamenetre az <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> házirend érvényes. Azt javasoljuk, hogy mindkét házirendet ugyanarra az értékre állítsa. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
       Ha a házirend engedélyezve van, a vesszővel tagolt listában szereplő összes megnevezett eredet önálló folyamatként fut majd. Ez aldomainek szerint is letiltja a megnevezett eredeteket; pl. a https://example.com/ megadása a https://foo.example.com/ webhely izolálását is eredményezi, mert ez a https://example.com/ webhely része.
       Ha letiltja a házirendet, nem történik kifejezett webhely-izoláció, az IsolateOrigins és SitePerProcess házirendek próbaverziói pedig le lesznek tiltva. A felhasználók parancssori jelzőkkel továbbra is engedélyezhetik manuálisan az IsolateOrigins házirendet.
       Ha nem állítja be a házirendet, a platform alapértelmezett webhely-elszigetelési beállításai lépnek érvénybe a bejelentkezési képernyőnél.
@@ -3160,11 +3160,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8970205333161758602">A(z) <ph name="PRODUCT_FRAME_NAME" /> kikapcsolási figyelmeztetésének elrejtése</translation>
 <translation id="8976248126101463034">Gnubby hitelesítés engedélyezése a távoli hitelesítésű gazdagépeknél</translation>
 <translation id="8976531594979650914">A rendszer alapértelmezett nyomtatójának használata alapértelmezettként</translation>
-<translation id="898520305112996948">Lehetővé teszi URL-mintázatok listájának meghatározását olyan webhelyekre vonatkozóan, amelyek számára a rendszer automatikusan engedélyezi a megadott szállító- és termékazonosítóval rendelkező USB-eszközök elérését. Minden eszköz tartalmazhat szállítóazonosítói és termékazonosítói mezőt is. Minden kihagyott azonosító szabadon behelyettesíthető mezőnek minősül, egyetlen kivétellel: a termékazonosítók kizárólag szállítóazonosítóval együtt adhatók meg. Ellenkező esetben a házirend érvénytelen. Az érvénytelen értékek figyelmen kívül maradnak.
-
-        Ha a házirend nincs beállítva, minden webhelyre a globális alapérték érvényesül: vagy a „DefaultWebUsbGuardSetting” házirendből, ha ez a házirend be van állítva, vagy a felhasználó személyes konfigurációjából.
-
-        A házirend URL-mintázatai nem ütközhetnek a WebUsbBlockedForUrls házirendben megadott URL-ekkel. Ütközés esetén ez a házirend kap elsőbbséget a WebUsbBlockedForUrls és a WebUsbAskForUrls házirendekkel szemben.</translation>
 <translation id="8992176907758534924">Egy webhely sem jeleníthet meg képeket</translation>
 <translation id="9012851181124311976">A vállalati bejelentkezési URL-ek listáját konfigurálja (csak a HTTP- és HTTPS-sémák engedélyezettek). A rendszer ezeken az URL-eken rögzíti a jelszó ujjlenyomatát, és használja a jelszó ismételt használatának észlelésére.
       A <ph name="PRODUCT_NAME" /> akkor tudja megfelelően rögzíteni a jelszavak ujjlenyomatát, ha Ön gondoskodik arról, hogy a bejelentkezési oldalai betartják a https://www.chromium.org/developers/design-documents/create-amazing-password-forms oldalon található irányelveket.

@@ -166,7 +166,6 @@
     请在随即显示的屏幕上发送反馈，以协助我们解决此问题。</translation>
 <translation id="1217668622537098248">执行完操作后还原到左键点击</translation>
 <translation id="121783623783282548">密码不匹配。</translation>
-<translation id="1219533395013150448">Google 助理会使用这些录音创建您的语音模型，并将其存储在您的设备上。您可以在 Google 助理设置部分删除或重新调校该模型，并可以在 Google 活动控制项中查看或删除语音指令。</translation>
 <translation id="122082903575839559">证书签名算法</translation>
 <translation id="1221024147024329929">PKCS #1，带有 RSA 加密的 MD2</translation>
 <translation id="1221825588892235038">仅限选定内容</translation>
@@ -714,7 +713,7 @@
 <translation id="2050339315714019657">纵向</translation>
 <translation id="2052369079215022979">由贵单位管理</translation>
 <translation id="2053312383184521053">闲置状态数据</translation>
-<translation id="205560151218727633">Google 智能助理徽标</translation>
+<translation id="205560151218727633">Google 助理徽标</translation>
 <translation id="2058456167109518507">检测到的设备</translation>
 <translation id="2059913712424898428">时区</translation>
 <translation id="2065405795449409761">Chrome 正受到自动测试软件的控制。</translation>
@@ -949,7 +948,7 @@
 <translation id="2425665904502185219">文件总大小</translation>
 <translation id="2427507373259914951">点击鼠标左键</translation>
 <translation id="2428510569851653187">请说明此标签页崩溃时您在做什么</translation>
-<translation id="2431027948063157455">无法加载 Google 智能助理。请检查您的网络连接，然后重试。</translation>
+<translation id="2431027948063157455">无法加载 Google 助理。请检查您的网络连接，然后重试。</translation>
 <translation id="2432753757290432042">需要更新 Linux（测试版）</translation>
 <translation id="2433452467737464329">在网址中添加查询参数以便自动刷新网页：chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">外观</translation>
@@ -1486,7 +1485,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> 希望连接到以下所选设备：</translation>
 <translation id="3274763671541996799">您已进入全屏模式。</translation>
 <translation id="3275778913554317645">在窗口中打开</translation>
-<translation id="3278877214895457897">设置完 Chromebook 后，您只需按 Google 助理按钮或说出“Ok Google”，便可随时获得 Google 助理的帮助。</translation>
 <translation id="3279230909244266691">此过程可能需要几分钟的时间。正在启动虚拟机。</translation>
 <translation id="3279741024917655738">在以下屏幕显示全屏视频</translation>
 <translation id="3280237271814976245">另存为(&amp;A)...</translation>
@@ -1513,7 +1511,7 @@
 <translation id="3308006649705061278">组织单位 (OU)</translation>
 <translation id="3308116878371095290">系统已禁止设置此网页的 Cookie。</translation>
 <translation id="3308134619352333507">隐藏按钮</translation>
-<translation id="3308852433423051161">正在加载 Google 智能助理…</translation>
+<translation id="3308852433423051161">正在加载 Google 助理…</translation>
 <translation id="3312424061798279731">已启用的语言</translation>
 <translation id="3313590242757056087">要设置受监管用户可以浏览哪些网站，您可以转到 <ph name="MANAGEMENT_URL" /> 配置限制和设置。
 如果您不更改默认设置，<ph name="USER_DISPLAY_NAME" />将可以浏览网络上的所有网站。</translation>
@@ -1635,7 +1633,7 @@
 <translation id="3493881266323043047">有效期</translation>
 <translation id="3494769164076977169">当网站下载第一个文件后要自动下载更多文件时询问您（推荐）</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />个错误。</translation>
-<translation id="3495660573538963482">Google 智能助理设置</translation>
+<translation id="3495660573538963482">Google 助理设置</translation>
 <translation id="3496213124478423963">缩小</translation>
 <translation id="3505030558724226696">撤消对设备的访问权限</translation>
 <translation id="3506093155988721483">使用语音（而非键盘）启动 Google 助理</translation>
@@ -1673,7 +1671,6 @@
 <translation id="3550915441744863158">Chrome会自动更新，因此您使用的始终都是最新版本</translation>
 <translation id="3551320343578183772">关闭标签页</translation>
 <translation id="3552780134252864554">退出时清除</translation>
-<translation id="3553146918065661815">使用 ⌘Q 退出时，先显示警告</translation>
 <translation id="3555812735919707620">卸载扩展程序</translation>
 <translation id="3556000484321257665">您的搜索引擎已改为 <ph name="URL" />。</translation>
 <translation id="3559262020195162408">未能在此设备上安装政策。</translation>
@@ -1749,7 +1746,6 @@
 <translation id="3654045516529121250">读取您的无障碍设置</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{此应用对 1 个文件拥有永久访问权限。}other{此应用对 # 个文件拥有永久访问权限。}}</translation>
 <translation id="3660234220361471169">不可信</translation>
-<translation id="3661054927247347545">登录证书无效，窗口将在 <ph name="MINUTES" /> 分 <ph name="SECONDS" /> 秒后关闭</translation>
 <translation id="3664511988987167893">扩展程序图标</translation>
 <translation id="3665589677786828986">Chrome检测到您的部分设置被其他程序篡改了，因此已将这些设置重置为原始默认设置。</translation>
 <translation id="3668570675727296296">语言设置</translation>
@@ -2103,7 +2099,7 @@
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4195814663415092787">从上次停下的地方继续</translation>
 <translation id="4197674956721858839">压缩选择</translation>
-<translation id="4198146608511578238">只需按住“启动器”图标即可与 Google 智能助理对话。</translation>
+<translation id="4198146608511578238">只需按住“启动器”图标即可与 Google 助理对话。</translation>
 <translation id="4200689466366162458">自定义字词</translation>
 <translation id="4200983522494130825">打开新的标签页(&amp;T)</translation>
 <translation id="4206144641569145248">外星人</translation>
@@ -2876,7 +2872,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA 加密</translation>
 <translation id="5436492226391861498">正在等待代理隧道的响应...</translation>
 <translation id="5436510242972373446">用 <ph name="SITE_NAME" /> 搜索：</translation>
-<translation id="5436822233913560332">如果您不登录，所有浏览器窗口很快都会自动关闭。</translation>
 <translation id="5438224778284622050">要删除离线文件吗？</translation>
 <translation id="544083962418256601">创建快捷方式...</translation>
 <translation id="5442228125690314719">创建磁盘映像时出错。请重试。</translation>
@@ -3533,7 +3528,7 @@
 <translation id="641105183165925463">$1 MB</translation>
 <translation id="6412931879992742813">打开新的无痕式窗口</translation>
 <translation id="6415900369006735853">通过手机连接到互联网</translation>
-<translation id="6417265370957905582">Google 智能助理</translation>
+<translation id="6417265370957905582">Google 助理</translation>
 <translation id="6418160186546245112">正在还原到之前安装的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 版本</translation>
 <translation id="6418481728190846787">永久删除对所有应用的访问权限</translation>
 <translation id="6418511932144861495">安装重要更新</translation>
@@ -3608,7 +3603,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">立即登录</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6528513914570774834">允许此设备的其他用户使用此网络</translation>
 <translation id="652948702951888897">Chrome 历史记录</translation>
@@ -4077,7 +4071,6 @@
 <translation id="7256710573727326513">在标签页中打开</translation>
 <translation id="725758059478686223">打印服务</translation>
 <translation id="7257666756905341374">读取您复制和粘贴的数据</translation>
-<translation id="7258619945375359543">让 Google 助理根据您屏幕上的内容提供建议</translation>
 <translation id="7258697411818564379">您的 PIN 码已添加</translation>
 <translation id="7262004276116528033">此登录服务由 <ph name="SAML_DOMAIN" /> 托管</translation>
 <translation id="7268365133021434339">关闭标签页</translation>
@@ -4837,7 +4830,6 @@
 <translation id="8438566539970814960">改善搜索和浏览体验</translation>
 <translation id="8439506636278576865">询问是否翻译此语言的网页</translation>
 <translation id="8440630305826533614">Linux 应用</translation>
-<translation id="8446474770554547328">录 3 遍“Ok Google”即可创建您的语音模型，并且该模型会存储在您的设备上。您可以在 Google 助理设置部分删除或重新调校该模型，并可以在 Google 活动控制项中查看或删除语音指令。</translation>
 <translation id="8446884382197647889">了解详情</translation>
 <translation id="8447409163267621480">必须以 Ctrl 键或 Alt 键开头</translation>
 <translation id="8448729345478502352">缩小或放大屏幕上的内容</translation>

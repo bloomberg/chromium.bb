@@ -217,7 +217,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="7242029209006116544">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Google Chrome profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chrome verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. İsterseniz mevcut Chrome verilerinizi ayrı tutmak için yeni bir profil oluşturabilirsiniz.<ph name="LEARN_MORE" /></translation>
 <translation id="7296210096911315575">Önemli kullanım ve güvenlik bilgileri</translation>
 <translation id="7308322188646931570">Dosya indirmek için Chrome'un depolama alanına erişmesi gerekiyor</translation>
-<translation id="7330164299247909639">Kimlik doğrulama sertifikası çalışmadı. Lütfen <ph name="USER_NAME" /> olarak Google Chrome'da tekrar oturum açın veya daha fazla bilgi edinmek için yöneticinizle iletişime geçin. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Yeni pencere</translation>
 <translation id="7398801000654795464">Chrome'da <ph name="USER_EMAIL_ADDRESS" /> olarak oturum açtınız. Tekrar oturum açmak için lütfen aynı hesabı kullanın.</translation>
 <translation id="7408085963519505752">Chrome OS Şartları</translation>
@@ -285,7 +284,6 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="8914504000324227558">Chrome'u Yeniden Başlat</translation>
 <translation id="9026991721384951619">Hesap oturum açma ayrıntılarınız güncel olmadığından Chrome OS, verilerinizi senkronize edemedi.</translation>
 <translation id="9067395829937117663">Google Chrome, Windows 7 veya daha sonraki bir sürümü gerektirir.</translation>
-<translation id="9084668267983921457">Kimlik doğrulama sertifikası çalışmadı. Lütfen Google Chrome'da tekrar oturum açın veya daha fazla bilgi edinmek için yöneticinizle iletişime geçin. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS bir saat içinde yeniden başlatılacak}other{Chrome OS # saat içinde yeniden başlatılacak}}</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
 <translation id="9138603949443464873">Yaptığınız değişiklikleri uygulamak için Chrome'u yeniden başlatın</translation>

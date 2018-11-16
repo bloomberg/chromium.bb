@@ -166,7 +166,6 @@
     अगली स्क्रीन पर, समस्या को ठीक करने में सहायता के लिए कृपया सुझाव भेजें.</translation>
 <translation id="1217668622537098248">कार्रवाई के बाद बायां क्लिक वापस लाएं</translation>
 <translation id="121783623783282548">पासवर्ड मेल नहीं खाते.</translation>
-<translation id="1219533395013150448">आपकी Assisatant इन रिकॉर्डिंग का इस्तेमाल आपकी आवाज़ का नमूना बनाने के लिए करती है. आपकी आवाज़ का यह नमूना आपके डिवाइस की मेमोरी में सेव किया जाता है. Assistant की सेटिंग में जाकर इस नमूने को मिटाएं या बदलें. अपने Google गतिविधि नियंत्रणों में बोले गए निर्देशों को देखें या मिटाएं.</translation>
 <translation id="122082903575839559">प्रमाणपत्र हस्ताक्षर कलन विधि</translation>
 <translation id="1221024147024329929">RSA सुरक्षित तरीका के साथ PKCS #1 MD2</translation>
 <translation id="1221825588892235038">केवल चयन</translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> कनेक्ट करना चाहती है</translation>
 <translation id="3274763671541996799">आप पूर्ण स्‍क्रीन में देख रहे हैं.</translation>
 <translation id="3275778913554317645">विंडो के रूप में खोलें</translation>
-<translation id="3278877214895457897">आपका Chromebook सेट अप हो जाने पर, किसी भी समय अपनी Assistant से मदद पाने के लिए Assistant बटन दबाएं या "Ok Google" बोलें.</translation>
 <translation id="3279230909244266691">इस प्रोसेस में कुछ मिनट लग सकते हैं. वर्चुअल मशीन को शुरू किया जा रहा है.</translation>
 <translation id="3279741024917655738">इन पर पूरी स्क्रीन वाले वीडियो दिखाएं</translation>
 <translation id="3280237271814976245">इस &amp;रूप में सहेजें...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Chrome अपने आप अपडेट हो जाता है इसलिए आपके पास हमेशा नवीनतम वर्शन रहता है</translation>
 <translation id="3551320343578183772">टैब बंद करें</translation>
 <translation id="3552780134252864554">बाहर निकलने पर साफ़ की गई</translation>
-<translation id="3553146918065661815">⌘Q के ज़रिए छोड़ने से पहले चेतावनी दिखाएं</translation>
 <translation id="3555812735919707620">एक्सटेंशन निकालें</translation>
 <translation id="3556000484321257665">आपका खोज इंजन <ph name="URL" /> में बदल दिया गया था.</translation>
 <translation id="3559262020195162408">डिवाइस पर नीति इंस्टॉल नहीं की जा सकी.</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">अपनी पहुंच-योग्यता सेटिंग पढ़ें</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{उसे एक फ़ाइल की स्‍थायी ऐक्‍सेस प्राप्‍त है.}one{उसे # फ़ाइलों की स्‍थायी ऐक्‍सेस प्राप्‍त है.}other{उसे # फ़ाइलों की स्‍थायी ऐक्‍सेस प्राप्‍त है.}}</translation>
 <translation id="3660234220361471169">अविश्वसनीय</translation>
-<translation id="3661054927247347545">प्रवेश प्रमाणपत्र मान्य नहीं है, विंडो <ph name="MINUTES" /> : <ph name="SECONDS" /> में बंद हो जाएगी</translation>
 <translation id="3664511988987167893">एक्सटेंशन आइकॉन</translation>
 <translation id="3665589677786828986">Chrome को पता चला है कि आपकी कुछ सेटिंग किसी दूसरे प्रोग्राम के द्वारा दूषित कर दी गई हैं और उन्हें उनके मूल डिफ़ॉल्ट पर रीसेट कर दिया गया है.</translation>
 <translation id="3668570675727296296">भाषा सेटिंग</translation>
@@ -2888,7 +2884,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA सुरक्षित तरीका</translation>
 <translation id="5436492226391861498">प्रॉक्सी टनेल की प्रतीक्षा कर रहा है...</translation>
 <translation id="5436510242972373446">खोज <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">सभी ब्राउज़र विंडो, साइन इन किए बिना जल्द ही अपने आप बंद हो जाएंगी.</translation>
 <translation id="5438224778284622050">ऑफ़लाइन फ़ाइलें हटाएं?</translation>
 <translation id="544083962418256601">शॉर्टकट बनाएं...</translation>
 <translation id="5442228125690314719">डिस्क इमेज बनाते समय गड़बड़ी हुई. कृपया फिर से कोशिश करें.</translation>
@@ -3620,7 +3615,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">अभी प्रवेश करें</translation>
 <translation id="6527303717912515753">शेयर करें</translation>
 <translation id="6528513914570774834">इस डिवाइस के दूसरे उपयोगकर्ताओं को इस नेटवर्क का उपयोग करने दें</translation>
 <translation id="652948702951888897">Chrome इतिहास</translation>
@@ -4089,7 +4083,6 @@
 <translation id="7256710573727326513">टैब में खोलें</translation>
 <translation id="725758059478686223">प्रिंटिंग सेवा</translation>
 <translation id="7257666756905341374">कॉपी बनाया और चिपकाया जाने वाला डेटा पढ़ें</translation>
-<translation id="7258619945375359543">Assistant को अपनी स्क्रीन पर मौजूद सामग्री के आधार पर सुझाव देने दें</translation>
 <translation id="7258697411818564379">आपका पिन जोड़ दिया गया है</translation>
 <translation id="7262004276116528033">यह प्रवेश सेवा <ph name="SAML_DOMAIN" /> द्वारा होस्‍ट की गई है</translation>
 <translation id="7268365133021434339">टैब बंद करें</translation>
@@ -4852,7 +4845,6 @@
 <translation id="8438566539970814960">खोजों और ब्राउज़िंग को बेहतर बनाएं</translation>
 <translation id="8439506636278576865">इस भाषा में पृष्ठों का अनुवाद करने का ऑफ़र दें</translation>
 <translation id="8440630305826533614">Linux ऐप्लिकेशन</translation>
-<translation id="8446474770554547328">तीन बार "Ok Google" रिकॉर्ड करने से आपकी आवाज़ का नमूना बनता है. इसे आपके डिवाइस की मेमोरी में सेव किया जाता है. Assistant की सेटिंग में जाकर इस नमूने को मिटाएं या बदलें. अपने Google गतिविधि नियंत्रणों में बोले गए निर्देशों को देखें या मिटाएं.</translation>
 <translation id="8446884382197647889">अधिक जानें</translation>
 <translation id="8447409163267621480">Ctrl या Alt में से किसी एक को शामिल करें</translation>
 <translation id="8448729345478502352">अपनी स्क्रीन पर मौजूद आइटम को छोटा या बड़ा करें</translation>

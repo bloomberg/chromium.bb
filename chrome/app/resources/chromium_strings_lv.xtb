@@ -142,7 +142,6 @@
 <translation id="5862307444128926510">Laipni lūdzam pārlūkā Chromium!</translation>
 <translation id="5877064549588274448">Kanāls tika mainīts. Lai lietotu izmaiņas, restartējiet ierīci.</translation>
 <translation id="5895138241574237353">Restartēt</translation>
-<translation id="5902536751647951209">Autentificēšanas sertifikāts nedarbojās. Lūdzu, vēlreiz pierakstieties pārlūkā Chromium vai sazinieties ar administratoru, lai iegūtu plašāku informāciju. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Atjaunināšana ir gandrīz pabeigta. Restartējiet ierīci, lai pabeigtu atjaunināšanu.</translation>
 <translation id="5987687638152509985">Lai sāktu sinhronizēšanu, atjauniniet Chromium.</translation>
 <translation id="6013050204643758987">Chromium OS darbību nodrošina papildu <ph name="BEGIN_LINK_CROS_OSS" />atklātā pirmkoda programmatūra<ph name="END_LINK_CROS_OSS" />, tāpat kā <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" /> darbību.</translation>
@@ -220,7 +219,6 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="7745317241717453663">Veicot šo darbību, no šīs ierīces tiks dzēsti pārlūkošanas dati. Lai vēlāk izgūtu datus, pierakstieties pārlūkā Chromium kā <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Instalētājam neizdevās izveidot pagaidu katalogu. Lūdzu, pārbaudiet, vai diskā pietiek vietas un vai ir atļauja instalēt programmatūru.</translation>
 <translation id="7773960292263897147">Brīdinājums! Chromium nevar novērst to, ka paplašinājumi ieraksta jūsu pārlūkošanas vēsturi. Lai atspējotu šo paplašinājumu inkognito režīmā, noņemiet atzīmi no šīs opcijas.</translation>
-<translation id="7774736947049807614">Autentificēšanas sertifikāts nedarbojās. Lūdzu, vēlreiz pierakstieties pārlūkā Chromium kā lietotājs <ph name="USER_NAME" /> vai sazinieties ar administratoru, lai iegūtu plašāku informāciju. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> — Chromium Canary</translation>
 <translation id="7867198900892795913">Nevarēja atjaunināt uz jaunāko Chromium versiju, tādēļ jūs nevarēsiet piekļūt jaunākajām funkcijām un drošības labojumiem.</translation>
 <translation id="7901117350626490574">Pieejams Chromium atjauninājums, un tas tiks lietots, tiklīdz restartēsiet pārlūku.</translation>

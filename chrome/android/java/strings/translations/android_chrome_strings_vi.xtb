@@ -734,7 +734,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6567212464587185774">Tiết kiệm tới 60% dữ liệu và tăng tốc độ tải trang.</translation>
 <translation id="6573096386450695060">Luôn cho phép</translation>
 <translation id="6573431926118603307">Các tab bạn đã mở trong Chrome trên thiết bị khác sẽ xuất hiện tại đây.</translation>
-<translation id="6575643671698722332">Không đặt lại được. Hãy đảm bảo thiết bị ở chế độ trực tuyến và thử lại.</translation>
 <translation id="6583199322650523874">Đánh dấu trang hiện tại</translation>
 <translation id="6584721918629302382">AR (Thực tế tăng cường)</translation>
 <translation id="6593061639179217415">Trang web cho máy tính</translation>
@@ -859,7 +858,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="7475192538862203634">Nếu bạn thường xuyên thấy thông báo này, hãy thử các <ph name="BEGIN_LINK" />đề xuất<ph name="END_LINK" /> sau.</translation>
 <translation id="7475688122056506577">Không tìm thấy thẻ SD. Một số tệp của bạn có thể bị thiếu.</translation>
-<translation id="748127970106343339">Xác nhận xóa thông tin đăng nhập thiết bị</translation>
 <translation id="7481312909269577407">Chuyển tiếp</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Đã cập nhật <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Hiển thị mật khẩu</translation>
@@ -1010,9 +1008,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8609465669617005112">Di chuyển lên</translation>
 <translation id="8616006591992756292">Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Mở URL đề xuất được chỉ định trong nội dung được tải xuống?</translation>
-<translation id="862875433388403934">Nội dung (phim, nhạc, v.v.) được tải xuống trong các ứng dụng khác có thể không còn phát được cho tới khi ứng dụng đó nhận lại giấy phép dựa theo thông tin đăng nhập thiết bị mới.
-
-Để nhận được giấy phép mới, hãy kết nối Internet và phát nội dung đã tải xuống của bạn.</translation>
 <translation id="8636825310635137004">Để có các tab từ các thiết bị khác của bạn, hãy bật đồng bộ hóa.</translation>
 <translation id="8641930654639604085">Cố gắng chặn các trang web cho người lớn</translation>
 <translation id="8662811608048051533">Đăng xuất bạn khỏi hầu hết các trang web.</translation>
@@ -1070,7 +1065,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="9099018167121903954">Đã tải xuống <ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">Đề xuất hiển thị các bài viết ở chế độ xem đơn giản khi được hỗ trợ</translation>
 <translation id="9100610230175265781">Yêu cầu cụm mật khẩu</translation>
-<translation id="9133515669113036225">Đặt lại thông tin đăng nhập thiết bị</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
 <translation id="9139068048179869749">Hỏi trước khi cho phép trang web gửi thông báo (được đề xuất)</translation>

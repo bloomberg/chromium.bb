@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">एक से ज़्यादा साइन-इन की सुविधा में आपके पास ज़्यादा से ज़्यादा <ph name="MULTI_PROFILE_USER_LIMIT" /> खाते हो सकते हैं.</translation>
 <translation id="3154351730702813399">डिवाइस व्यवस्थापक आपकी ब्राउज़िंग गतिविधि की निगरानी कर सकता है.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{किसी डिवाइस से कनेक्ट है}one{# डिवाइस से कनेक्ट है}other{# डिवाइस से कनेक्ट है}}</translation>
+<translation id="32244657276328332">नेटवर्क से जुड़ा हुआ नहीं है</translation>
 <translation id="3236488194889173876">कोई मोबाइल नेटवर्क उपलब्ध नहीं</translation>
 <translation id="3255483164551725916">तुम क्या-क्या कर सकती हो?</translation>
 <translation id="3294437725009624529">अतिथि</translation>
@@ -192,6 +193,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{एक ऐप्लिकेशन के लिए बंद है}one{# ऐप्लिकेशन के लिए बंद है}other{# ऐप्लिकेशन के लिए बंद है}}</translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4146833061457621061">गाने चलाओ</translation>
+<translation id="4181841719683918333">भाषाएं</translation>
 <translation id="4217571870635786043">लिखवाना</translation>
 <translation id="4261870227682513959">सूचना सेटिंग दिखाएं. सूचनाएं बंद हैं</translation>
 <translation id="4269883910223712419">इस डिवाइस के एडमिन ये काम कर सकते हैं:</translation>
@@ -244,6 +246,7 @@
 <translation id="5207949376430453814">लेख कैरेट हाइलाइट करें</translation>
 <translation id="5222676887888702881">प्रस्थान करें</translation>
 <translation id="523505283826916779">पहुंच-योग्यता विकल्प</translation>
+<translation id="5302048478445481009">भाषा</translation>
 <translation id="5313326810920013265">ब्लूटूथ सेटिंग</translation>
 <translation id="5331975486040154427">USB-C डिवाइस (बायां पिछला पोर्ट)</translation>
 <translation id="5379115545237091094">कई बार कोशिश की जा चुकी है</translation>

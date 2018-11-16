@@ -734,7 +734,6 @@
 <translation id="6567212464587185774">צריכת הנתונים מצטמצמת בשיעור של עד 60% והגלישה באינטרנט מהירה יותר.</translation>
 <translation id="6573096386450695060">אני רוצה לאפשר תמיד</translation>
 <translation id="6573431926118603307">‏כרטיסיות שפתחת ב-Chrome במכשירים האחרים שלך יופיעו כאן.</translation>
-<translation id="6575643671698722332">האיפוס נכשל. ודא שהמכשיר שלך במצב מקוון ונסה שוב.</translation>
 <translation id="6583199322650523874">סמן את הדף הנוכחי בסימנייה</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">אתר למחשבים</translation>
@@ -859,7 +858,6 @@
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7475192538862203634">אם אתה רואה זאת לעתים קרובות, נסה את <ph name="BEGIN_LINK" />ההצעות<ph name="END_LINK" /> האלה.</translation>
 <translation id="7475688122056506577">‏לא נמצא כרטיס SD. ייתכן שחלק מהקבצים שלך חסרים.</translation>
-<translation id="748127970106343339">אשר את מחיקת פרטי הכניסה של המכשיר</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (עודכן <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">הצגת סיסמאות</translation>
@@ -1010,7 +1008,6 @@
 <translation id="8609465669617005112">הזז למעלה</translation>
 <translation id="8616006591992756292">‏ייתכן שלחשבון Google שלך יהיו צורות אחרות של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">האם לעבור אל כתובת האתר שצוינה כהצעה בתוכן שהורדת?</translation>
-<translation id="862875433388403934">ייתכן שלא תוכל עוד להפעיל תוכן (סרטים, מוזיקה וכו') שהורדת באפליקציות אחרות עד לרכישה מחדש של רישיונות באפליקציות אלה עם פרטי כניסה למכשיר חדש. כדי להשיג רישיונות חדשים, התחבר לאינטרנט והפעל את התוכן שהורדת.</translation>
 <translation id="8636825310635137004">כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את הסנכרון.</translation>
 <translation id="8641930654639604085">נסה לחסום אתרים שמכילים תוכן למבוגרים</translation>
 <translation id="8662811608048051533">תבוצע יציאה שלך מרוב האתרים.</translation>
@@ -1068,7 +1065,6 @@
 <translation id="9099018167121903954">‏‎<ph name="KILOBYTES" /> KB להורדות</translation>
 <translation id="9100505651305367705">יש להציע הצגת מאמרים בתצוגה פשוטה, כשהאפשרות נתמכת</translation>
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
-<translation id="9133515669113036225">אפס את פרטי הכניסה של המכשיר</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9139068048179869749">שאל לפני שתאפשר לאתרים לשלוח הודעות (מומלץ)</translation>

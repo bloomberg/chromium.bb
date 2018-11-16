@@ -166,7 +166,6 @@
     On the next screen, please send feedback to help us fix the issue.</translation>
 <translation id="1217668622537098248">Revert to left click after action</translation>
 <translation id="121783623783282548">Passwords do not match.</translation>
-<translation id="1219533395013150448">Your Assistant uses these recordings to create your voice model, which is stored in your device. Delete or retrain the model in Assistant settings. View or delete voice commands in your Google activity controls.</translation>
 <translation id="122082903575839559">Certificate Signature Algorithm</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 With RSA Encryption</translation>
 <translation id="1221825588892235038">Selection only</translation>
@@ -1490,7 +1489,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> wants to connect</translation>
 <translation id="3274763671541996799">You have gone full screen.</translation>
 <translation id="3275778913554317645">Open as window</translation>
-<translation id="3278877214895457897">When your Chromebook is set up, press the Assistant button or say "Ok Google" to get help from your Assistant at any time.</translation>
 <translation id="3279230909244266691">This process may take a few minutes. Starting the virtual machine.</translation>
 <translation id="3279741024917655738">Show full screen videos on</translation>
 <translation id="3280237271814976245">Save &amp;as...</translation>
@@ -1679,7 +1677,6 @@
 <translation id="3550915441744863158">Chrome updates automatically so you always have the freshest version</translation>
 <translation id="3551320343578183772">Close Tab</translation>
 <translation id="3552780134252864554">Cleared on Exit</translation>
-<translation id="3553146918065661815">Show a warning before quitting with ⌘Q</translation>
 <translation id="3555812735919707620">Remove extension</translation>
 <translation id="3556000484321257665">Your search engine was changed to <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Failed to install policy on the device.</translation>
@@ -1755,7 +1752,6 @@
 <translation id="3654045516529121250">Read your accessibility settings</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{It has permanent access to one file.}other{It has permanent access to # files.}}</translation>
 <translation id="3660234220361471169">Untrusted</translation>
-<translation id="3661054927247347545">Sign in certification is not valid, window closing in <ph name="MINUTES" /> : <ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Extension Icon</translation>
 <translation id="3665589677786828986">Chrome detected that some of your settings were corrupted by another program and reset them to their original defaults.</translation>
 <translation id="3668570675727296296">Language settings</translation>
@@ -2888,7 +2884,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA Encryption</translation>
 <translation id="5436492226391861498">Waiting for proxy tunnel...</translation>
 <translation id="5436510242972373446">Search <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">All browser windows will soon be closed automatically without sign in.</translation>
 <translation id="5438224778284622050">Delete offline files?</translation>
 <translation id="544083962418256601">Create shortcuts...</translation>
 <translation id="5442228125690314719">Error creating disk image. Please try again.</translation>
@@ -3620,7 +3615,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Sign in now</translation>
 <translation id="6527303717912515753">Share</translation>
 <translation id="6528513914570774834">Allow other users of this device to use this network</translation>
 <translation id="652948702951888897">Chrome history</translation>
@@ -4089,7 +4083,6 @@
 <translation id="7256710573727326513">Open in a tab</translation>
 <translation id="725758059478686223">Printing Service</translation>
 <translation id="7257666756905341374">Read data that you copy and paste</translation>
-<translation id="7258619945375359543">Let the Assistant give suggestions based on what's on your screen</translation>
 <translation id="7258697411818564379">Your PIN is added</translation>
 <translation id="7262004276116528033">This sign-in service is hosted by <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Close Tabs</translation>
@@ -4852,7 +4845,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8438566539970814960">Make searches and browsing better</translation>
 <translation id="8439506636278576865">Offer to translate pages in this language</translation>
 <translation id="8440630305826533614">Linux apps</translation>
-<translation id="8446474770554547328">Recording "Ok Google" 3 times creates your voice model, which is stored on your device. Delete or retrain the model in Assistant settings. View or delete voice commands in your Google activity controls.</translation>
 <translation id="8446884382197647889">Learn More</translation>
 <translation id="8447409163267621480">Include either Ctrl or Alt</translation>
 <translation id="8448729345478502352">Make items on your screen smaller or larger</translation>

@@ -142,7 +142,6 @@
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
-<translation id="5902536751647951209">Falha no certificado de autenticação. Inicie sessão novamente no Chromium ou contacte o gestor para mais informações. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Quase atualizado! Reinicie o dispositivo para concluir a atualização.</translation>
 <translation id="5987687638152509985">Atualize o Chromium para iniciar a sincronização</translation>
 <translation id="6013050204643758987">Foi possível conceber o Chromium OS devido a <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" /> adicional, como o <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -222,7 +221,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7745317241717453663">Esta ação elimina os dados de navegação deste dispositivo. Para recuperar os dados mais tarde, inicie sessão no Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">O programa de instalação não conseguiu criar um directório temporário. Verifique se há espaço livre no disco e permissão para a instalação do software.</translation>
 <translation id="7773960292263897147">Aviso: o Chromium não consegue impedir que as extensões gravem o seu histórico de navegação. Para desativar esta extensão no modo de navegação anónima, desmarque esta opção.</translation>
-<translation id="7774736947049807614">Falha no certificado de autenticação. Inicie sessão novamente no Chromium como <ph name="USER_NAME" /> ou contacte o gestor para mais informações. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Não foi possível atualizar o Chromium para a versão mais recente, pelo que não está a beneficiar das novas funcionalidades e correções de segurança.</translation>
 <translation id="7901117350626490574">Está disponível uma atualização para o Chromium que será aplicada logo que o reinicie.</translation>

@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">Du kan kun have op til <ph name="MULTI_PROFILE_USER_LIMIT" /> konti i samlet login fra flere konti.</translation>
 <translation id="3154351730702813399">Administratoren af enheden kan overvåge din browseraktivitet.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Forbundet til en enhed}one{Forbundet til # enhed}other{Forbundet til # enheder}}</translation>
+<translation id="32244657276328332">Der er ingen netværksforbindelse</translation>
 <translation id="3236488194889173876">Der er ingen tilgængelige mobilnetværk</translation>
 <translation id="3255483164551725916">Hvad kan du gøre?</translation>
 <translation id="3294437725009624529">Gæst</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Deaktiveret for én app}one{Deaktiveret for # app}other{Deaktiveret for # apps}}</translation>
 <translation id="4072264167173457037">Middel signal</translation>
 <translation id="4146833061457621061">Spil musik</translation>
+<translation id="4181841719683918333">Sprog</translation>
 <translation id="4217571870635786043">Diktering</translation>
 <translation id="4261870227682513959">Vis indstillinger for underretninger. Underretninger er slået fra</translation>
 <translation id="4269883910223712419">Administratoren af denne enhed kan gøre følgende:</translation>
@@ -243,6 +245,7 @@
 <translation id="5207949376430453814">Fremhæv tekstmarkør</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="523505283826916779">Indstillinger for hjælpefunktioner</translation>
+<translation id="5302048478445481009">Sprog</translation>
 <translation id="5313326810920013265">Indstillinger for Bluetooth</translation>
 <translation id="5331975486040154427">USB-C-enhed (porten bagpå i venstre side)</translation>
 <translation id="5379115545237091094">For mange forsøg</translation>

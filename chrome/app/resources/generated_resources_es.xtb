@@ -616,6 +616,7 @@
 <translation id="1880905663253319515">¿Quieres eliminar el certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Permitir que los sitios web se conviertan en controladores de protocolos predeterminados (recomendado)</translation>
 <translation id="1887442540531652736">No se ha podido iniciar sesión</translation>
+<translation id="1887597546629269384">Di "Ok Google" otra vez</translation>
 <translation id="1887850431809612466">Revisión de hardware</translation>
 <translation id="1889984860246851556">Abrir la configuración de proxy</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -713,6 +714,7 @@
 <translation id="2048653237708779538">Acción no disponible</translation>
 <translation id="204914487372604757">Crear acceso directo</translation>
 <translation id="2050339315714019657">Vertical</translation>
+<translation id="2052369079215022979">Gestionado por tu organización</translation>
 <translation id="2053312383184521053">Datos de estado de inactividad</translation>
 <translation id="205560151218727633">Logotipo del Asistente de Google</translation>
 <translation id="2058456167109518507">Dispositivo detectado</translation>
@@ -899,6 +901,7 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2339120501444485379">Introduce un nuevo nombre</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> quiere vincularse</translation>
+<translation id="2342740338116612727">Se han añadido marcadores</translation>
 <translation id="2344028582131185878">Descargas automáticas</translation>
 <translation id="2345723121311404059">1 página a <ph name="PRINTER_NAME" /></translation>
 <translation id="2347644257713614136">El uso de Hangouts y Cast for Education está sujeto a la política de privacidad de Google.</translation>
@@ -1487,7 +1490,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3271648667212143903"><ph name="ORIGIN" /> quiere conectarse</translation>
 <translation id="3274763671541996799">Has activado el modo de pantalla completa.</translation>
 <translation id="3275778913554317645">Abrir como ventana</translation>
-<translation id="3278877214895457897">Cuando hayas configurado el Chromebook, pulsa el botón del Asistente o di "Ok Google" para recibir ayuda del Asistente en cualquier momento.</translation>
 <translation id="3279230909244266691">Iniciando la máquina virtual. Este proceso puede tardar unos minutos.</translation>
 <translation id="3279741024917655738">Ver vídeos en pantalla completa</translation>
 <translation id="3280237271814976245">Gu&amp;ardar como...</translation>
@@ -1744,11 +1746,11 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3651488188562686558">Se desconectará de la red Wi-Fi</translation>
 <translation id="3652817283076144888">Inicializando</translation>
 <translation id="3653160965917900914">Archivos compartidos de red</translation>
+<translation id="3653842108912548333">Accede al Asistente con Voice Match</translation>
 <translation id="3653999333232393305">Seguir permitiendo que <ph name="HOST" /> acceda al micrófono</translation>
 <translation id="3654045516529121250">Leer tu configuración de accesibilidad</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tiene acceso permanente a un archivo.}other{Tiene acceso permanente a # archivos.}}</translation>
 <translation id="3660234220361471169">No es de confianza</translation>
-<translation id="3661054927247347545">La certificación de inicio de sesión no es válida; la ventana se cerrará en <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Icono de la extensión</translation>
 <translation id="3665589677786828986">Chrome ha detectado que otro programa ha dañado algunas opciones de configuración y ha restablecido la configuración predeterminada original.</translation>
 <translation id="3668570675727296296">Configuración de idioma</translation>
@@ -2284,6 +2286,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4524832533047962394">El modo de inscripción proporcionado no es compatible con esta versión del sistema operativo. Asegúrate de que estás usando la versión más reciente.</translation>
 <translation id="4525382759303819021">Descarga las últimas actualizaciones y recomendaciones de aplicaciones de Play Store</translation>
 <translation id="4530494379350999373">Origen</translation>
+<translation id="4533846798469727141">Ahora di "Ok Google"</translation>
 <translation id="4533985347672295764">Tiempo de uso de la CPU</translation>
 <translation id="4534661889221639075">Inténtalo de nuevo.</translation>
 <translation id="4535127706710932914">Perfil predeterminado</translation>
@@ -2879,7 +2882,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5434065355175441495">PKCS #1 con cifrado RSA</translation>
 <translation id="5436492226391861498">Esperando túnel proxy...</translation>
 <translation id="5436510242972373446">Buscar <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Pronto se cerrarán todas las ventanas del navegador automáticamente si no inicias sesión.</translation>
 <translation id="5438224778284622050">¿Eliminar archivos sin conexión?</translation>
 <translation id="544083962418256601">Crear accesos directos...</translation>
 <translation id="5442228125690314719">No se ha podido crear la imagen de disco. Inténtalo de nuevo.</translation>
@@ -3259,6 +3261,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="5990386583461751448">Traducida</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para seguir navegando por Internet, pide a tu administrador que quite esta aplicación.}other{Para seguir navegando por Internet, pide a tu administrador que quite estas aplicaciones.}}</translation>
 <translation id="5997337190805127100">Más información sobre el acceso del sitio web</translation>
+<translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultados para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6002458620803359783">Voces preferidas</translation>
 <translation id="6005695835120147974">Router multimedia</translation>
 <translation id="6006484371116297560">Clásico</translation>
@@ -3508,6 +3511,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="637062427944097960">Este archivo se ha abierto en un escritorio diferente. Ve a <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) para verlo.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Volver a intentarlo</translation>
+<translation id="6377268785556383139">1 resultado para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6380143666419481200">Aceptar y continuar</translation>
 <translation id="6384275966486438344">Cambiar configuración de búsqueda por: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Los sitios web pueden guardar y consultar datos de cookies</translation>
@@ -3525,6 +3529,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6405510437656969977">Continúa cuando puedas introducir el PIN</translation>
 <translation id="6406303162637086258">Simular reinicio del navegador</translation>
 <translation id="6406506848690869874">Sincronización</translation>
+<translation id="6406708970972405507">Configuración: <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994">Leer y modificar tus datos en <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> y <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Archivos de imagen</translation>
 <translation id="6410328738210026208">Cambiar canal y Powerwash</translation>
@@ -3608,7 +3613,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
 <ph name="FILE_INFO" />
 <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Iniciar sesión ahora</translation>
 <translation id="6527303717912515753">Compartir</translation>
 <translation id="6528513914570774834">Permitir que otros usuarios de este dispositivo usen esta red</translation>
 <translation id="652948702951888897">Historial de Chrome</translation>
@@ -3806,6 +3810,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6840184929775541289">No es una entidad emisora de certificados.</translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="6841186874966388268">Errores</translation>
+<translation id="6843423766595476978">Ok Google ya se ha configurado</translation>
 <translation id="6845038076637626672">Abrir de forma maximizada</translation>
 <translation id="685040365210406336">No hacer cambios</translation>
 <translation id="6851497530878285708">Aplicación habilitada</translation>
@@ -4065,6 +4070,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7246947237293279874">Proxy de FTP</translation>
 <translation id="7248671827512403053">Aplicación</translation>
 <translation id="725109152065019550">Tu administrador ha inhabilitado el almacenamiento externo en tu cuenta.</translation>
+<translation id="7251346854160851420">Fondo de pantalla predeterminado</translation>
 <translation id="7253521419891527137">&amp;Más información</translation>
 <translation id="7254554697254365959">No se ha podido traducir la página.</translation>
 <translation id="7254951428499890870">¿Seguro que quieres iniciar <ph name="APP_NAME" /> en modo de diagnóstico?</translation>
@@ -4075,7 +4081,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7256710573727326513">Abrir en una pestaña</translation>
 <translation id="725758059478686223">Servicio de impresión</translation>
 <translation id="7257666756905341374">Leer los datos que copias y pegas</translation>
-<translation id="7258619945375359543">Dejar que el Asistente haga sugerencias en función de lo que salga en la pantalla</translation>
 <translation id="7258697411818564379">Se ha añadido el PIN</translation>
 <translation id="7262004276116528033">Este servicio de inicio de sesión está alojado por <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Cerrar pestañas</translation>
@@ -4175,6 +4180,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7417705661718309329">Mapa de Google</translation>
 <translation id="741906494724992817">Esta aplicación no requiere permisos especiales.</translation>
 <translation id="7419433794191666278">Conecta tu Chromebook con el teléfono. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">Se han eliminado marcadores</translation>
 <translation id="7421925624202799674">&amp;Ver código fuente de la página</translation>
 <translation id="7422192691352527311">Preferencias...</translation>
 <translation id="7423098979219808738">Preguntar antes</translation>
@@ -4336,6 +4342,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7698408911093959127">{COUNT,plural, =1{1 elemento en la lista de marcadores}other{# elementos en la lista de marcadores}}</translation>
 <translation id="7701040980221191251">Ninguno</translation>
 <translation id="7701869757853594372">EL USUARIO administra</translation>
+<translation id="7702574632857388784">Eliminar <ph name="FILE_NAME" /> de la lista</translation>
 <translation id="7702907602086592255">Dominio</translation>
 <translation id="7704305437604973648">Tarea</translation>
 <translation id="7704317875155739195">Autocompletar búsquedas y URLs</translation>
@@ -4730,6 +4737,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8249296373107784235">Anular</translation>
 <translation id="8249672078237421304">Preguntar si quieres traducir páginas web que no están escritas en un idioma que entiendas</translation>
 <translation id="8251578425305135684">Miniatura eliminada</translation>
+<translation id="8252569384384439529">Subiendo...</translation>
 <translation id="8253198102038551905">Haz clic en + para consultar las propiedades de la red</translation>
 <translation id="825483282309623688">Necesitas conexión a Internet para restaurar tus datos.</translation>
 <translation id="8256319818471787266">Perrito</translation>
@@ -4796,6 +4804,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8371695176452482769">Habla ahora</translation>
 <translation id="8372369524088641025">Clave WEP incorrecta</translation>
 <translation id="8373553483208508744">Silenciar pestañas</translation>
+<translation id="8378714024927312812">Gestionado por tu organización</translation>
 <translation id="8379878387931047019">Este dispositivo no es compatible con el tipo de llave de seguridad solicitado por el sitio web</translation>
 <translation id="8382913212082956454">Copiar dir&amp;ección de correo electrónico</translation>
 <translation id="8386091599636877289">No se ha encontrado la política.</translation>

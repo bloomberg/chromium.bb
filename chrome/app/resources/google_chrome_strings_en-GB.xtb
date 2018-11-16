@@ -222,7 +222,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7242029209006116544">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chrome data separate. <ph name="LEARN_MORE" /></translation>
 <translation id="7296210096911315575">Important use and safety information</translation>
 <translation id="7308322188646931570">Chrome needs storage access to download files</translation>
-<translation id="7330164299247909639">Authentication certificate failed. Please sign in to Google Chrome again as <ph name="USER_NAME" />, or contact your administrator for more information. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">New window</translation>
 <translation id="7398801000654795464">You were signed in to Chrome as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
 <translation id="7408085963519505752">Chrome OS terms</translation>
@@ -290,7 +289,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8914504000324227558">Relaunch Chrome</translation>
 <translation id="9026991721384951619">Chrome OS could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="9067395829937117663">Google Chrome requires Windows 7 or higher.</translation>
-<translation id="9084668267983921457">Authentication certificate failed. Please sign in to Google Chrome again or contact your administrator for more information. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS will restart in an hour}other{Chrome OS will restart in # hours}}</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="9138603949443464873">To apply your changes, relaunch Chrome</translation>

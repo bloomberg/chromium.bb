@@ -166,7 +166,6 @@
     Di layar berikutnya, kirimkan masukan untuk membantu kami memperbaiki masalah.</translation>
 <translation id="1217668622537098248">Kembali ke klik kiri setelah tindakan</translation>
 <translation id="121783623783282548">Sandi tidak cocok.</translation>
-<translation id="1219533395013150448">Asisten Anda menggunakan rekaman ini untuk membuat model suara Anda, yang disimpan di perangkat. Hapus atau latih ulang model di setelan asisten. Lihat atau hapus perintah suara di kontrol aktivitas Google.</translation>
 <translation id="122082903575839559">Algoritme Tanda Tangan Sertifikat</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 Dengan Enkripsi RSA</translation>
 <translation id="1221825588892235038">Khusus yang terpilih</translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> ingin terhubung</translation>
 <translation id="3274763671541996799">Anda telah memasuki mode layar penuh.</translation>
 <translation id="3275778913554317645">Buka sebagai jendela</translation>
-<translation id="3278877214895457897">Jika Chromebook sudah disiapkan, tekan tombol Asisten atau ucapkan "OK Google" untuk mendapatkan bantuan dari Asisten kapan saja.</translation>
 <translation id="3279230909244266691">Proses ini dapat memerlukan waktu beberapa menit. Memulai mesin virtual.</translation>
 <translation id="3279741024917655738">Tampilkan video layar penuh diaktifkan</translation>
 <translation id="3280237271814976245">Simp&amp;an sebagai...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Chrome memperbarui secara otomatis jadi Anda selalu memiliki versi terbaru</translation>
 <translation id="3551320343578183772">Tutup Tab</translation>
 <translation id="3552780134252864554">Dihapus saat Keluar</translation>
-<translation id="3553146918065661815">Tampilkan peringatan sebelum keluar menggunakan ⌘Q</translation>
 <translation id="3555812735919707620">Buang ekstensi</translation>
 <translation id="3556000484321257665">Mesin telusur diubah ke <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Gagal menginstal kebijakan di perangkat.</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">Baca setelan aksesibilitas Anda</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Memiliki akses permanen ke satu file.}other{Memiliki akses permanen ke # file.}}</translation>
 <translation id="3660234220361471169">Tidak tepercaya</translation>
-<translation id="3661054927247347545">Sertifikasi login tidak valid, jendela akan ditutup dalam <ph name="MINUTES" /> : <ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Ikon Ekstensi</translation>
 <translation id="3665589677786828986">Chrome mendeteksi bahwa beberapa setelan Anda dirusak oleh program lain dan menyetelnya ulang ke setelan default aslinya.</translation>
 <translation id="3668570675727296296">Setelan bahasa</translation>
@@ -2889,7 +2885,6 @@
 <translation id="5434065355175441495">PKCS #1 MD Dengan Enkripsi RSA</translation>
 <translation id="5436492226391861498">Menunggu terowongan proxy...</translation>
 <translation id="5436510242972373446">Telusuri <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Semua jendela browser akan segera ditutup secara otomatis tanpa login.</translation>
 <translation id="5438224778284622050">Hapus file offline?</translation>
 <translation id="544083962418256601">Buat pintasan...</translation>
 <translation id="5442228125690314719">Error saat membuat disk image. Harap coba lagi.</translation>
@@ -3621,7 +3616,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Masuk sekarang</translation>
 <translation id="6527303717912515753">Bagikan</translation>
 <translation id="6528513914570774834">Izinkan pengguna lain di perangkat ini untuk menggunakan jaringan ini</translation>
 <translation id="652948702951888897">Histori Chrome</translation>
@@ -4090,7 +4084,6 @@
 <translation id="7256710573727326513">Buka di tab</translation>
 <translation id="725758059478686223">Layanan Pencetakan</translation>
 <translation id="7257666756905341374">Mengakses data yang Anda salin dan tempel</translation>
-<translation id="7258619945375359543">Biarkan Asisten memberi saran berdasarkan apa yang ditampilkan di layar</translation>
 <translation id="7258697411818564379">PIN Anda ditambahkan</translation>
 <translation id="7262004276116528033">Layanan masuk ini dihosting oleh <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Tutup Tab</translation>
@@ -4853,7 +4846,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8438566539970814960">Jadikan penelusuran dan penjelajahan lebih baik</translation>
 <translation id="8439506636278576865">Tawarkan penerjemahan halaman ke dalam bahasa ini</translation>
 <translation id="8440630305826533614">Aplikasi Linux</translation>
-<translation id="8446474770554547328">Anda dapat membuat model suara dengan merekam "Ok Google" 3 kali, yang akan disimpan di perangkat Anda. Hapus atau latih ulang model di setelan asisten. Lihat atau hapus perintah suara di kontrol aktivitas Google.</translation>
 <translation id="8446884382197647889">Pelajari Lebih Lanjut</translation>
 <translation id="8447409163267621480">Sertakan Ctrl atau Alt</translation>
 <translation id="8448729345478502352">Membuat item di layar menjadi lebih kecil atau lebih besar</translation>

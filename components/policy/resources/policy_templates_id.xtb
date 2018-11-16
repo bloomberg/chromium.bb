@@ -1165,7 +1165,7 @@ Setiap item daftar kebijakan adalah objek yang terdiri dari dua anggota: "share_
       Jika kebijakan ini disetel ke true, paket jaringan pemantauan (yang disebut <ph name="HEARTBEATS_TERM" />) akan dikirimkan.
       Jika disetel ke false atau tidak disetel, tidak ada paket yang akan dikirim.</translation>
 <translation id="3950239119790560549">Memperbarui Batasan Waktu</translation>
-<translation id="3956686688560604829">Gunakan kebijakan SiteList Internet Explorer untuk Dukungan Browser Lawas.</translation>
+<translation id="3956686688560604829">Gunakan kebijakan SiteList Internet Explorer untuk Dukungan Browser Lama.</translation>
 <translation id="3958586912393694012">Izinkan Smart Lock digunakan</translation>
 <translation id="3963602271515417124">Jika disetel ke true, pengesahan jarak jauh diizinkan untuk perangkat dan sertifikat akan otomatis dibuat serta diupload ke Server Pengelolaan Perangkat.
 
@@ -1730,7 +1730,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       CATATAN: Di Android, Isolasi Situs bersifat eksperimental. Dukungan akan disempurnakan seiring waktu, tetapi saat ini dapat menyebabkan masalah performa.
 
-      CATATAN: Kebijakan ini hanya berlaku untuk Chrome di Android yang berjalan di perangkat dengan RAM harus dia tas 1 GB. Untuk menerapkan kebijakan di platform non-Android, gunakan IsolateOrigins.
+      CATATAN: Kebijakan ini hanya berlaku untuk Chrome di Android yang berjalan di perangkat dengan RAM harus lebih dari 1 GB. Untuk menerapkan kebijakan di platform non-Android, gunakan IsolateOrigins.
       </translation>
 <translation id="5630352020869108293">Mengembalikan sesi terakhir</translation>
 <translation id="5645779841392247734">Izinkan cookie di situs ini</translation>
@@ -2346,7 +2346,7 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       tersedia di Windows, dan ${safari} hanya tersedia di Windows dan Mac
       OS X.
 
-      Jika kebijakan ini disetel ke jalur file, file tersebut akan digunakan sebagai
+      Jika kebijakan ini disetel ke lokasi file, file tersebut akan digunakan sebagai
       file yang dapat dijalankan.</translation>
 <translation id="7167436895080860385">Mengizinkan pengguna menampilkan sandi di Pengelola Sandi (tak lagi digunakan)</translation>
 <translation id="7173856672248996428">Profil singkat</translation>
@@ -3116,11 +3116,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8970205333161758602">Tindas permintaan penghentian <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Izinkan autentikasi gnubby untuk host akses jarak jauh</translation>
 <translation id="8976531594979650914">Menggunakan Printer Default Sistem sebagai Default</translation>
-<translation id="898520305112996948">Memungkinkan Anda untuk menetapkan daftar pola URL yang menentukan situs yang otomatis diberi izin untuk mengakses perangkat USB dengan ID vendor dan produk yang ditentukan. Setiap item dalam daftar harus memuat pola URL dan perangkat agar kebijakan tersebut valid. Setiap item dalam perangkat dapat memuat sebuah kolom ID vendor dan ID produk. ID apa pun yang dihilangkan akan diperlakukan sebagai karakter pengganti dengan satu pengecualian, yaitu ID produk tidak dapat ditentukan tanpa menentukan ID vendor. Jika tidak, kebijakan tidak akan valid. Nilai kebijakan yang tidak valid akan diabaikan.
-
-        Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, entah dari kebijakan 'DefaultWebUsbGuardSetting', jika ditetapkan, atau dari konfigurasi pribadi pengguna.
-
-        Pola URL dalam kebijakan ini tidak boleh bertentangan dengan pola URL yang dikonfigurasi melalui WebUsbBlockedForUrls. Jika bertentangan, kebijakan ini akan lebih diutamakan daripada WebUsbBlockedForUrls dan WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Jangan izinkan situs apa pun menampilkan gambar</translation>
 <translation id="9012851181124311976">Mengonfigurasi daftar URL login perusahaan (khusus skema HTTP dan HTTPS). Sidik jari sandi akan diambil di URL tersebut dan digunakan untuk deteksi penggunaan ulang sandi.
       Agar <ph name="PRODUCT_NAME" /> dapat mengambil sidik jari sandi dengan benar, harap pastikan bahwa halaman login Anda mengikuti pedoman di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

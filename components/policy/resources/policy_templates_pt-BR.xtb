@@ -3144,11 +3144,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8970205333161758602">Remover a solicitação de recusa do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Permitir autenticação gnubby para hosts de acesso remoto</translation>
 <translation id="8976531594979650914">Usar a impressora padrão do sistema como padrão</translation>
-<translation id="898520305112996948">Permite que você defina uma lista de padrões de URL que especificam os sites que receberão automaticamente permissão para acessar um dispositivo USB com os IDs de produto e fornecedor determinados. Cada item na lista precisa conter dispositivos e padrões de URL para que a política seja válida. Cada item nos dispositivos pode conter um campo de ID do fornecedor e ID do produto. Todo ID omitido é tratado como um caractere curinga com uma exceção, e essa exceção é que um ID do produto não pode ser especificado sem que um ID do fornecedor também seja especificado. Caso contrário, a política não será válida. Valores de política inválidos são ignorados.
-
-        Se esta política não for definida, o valor global padrão será usado para todos os sites da política "DefaultWebUsbGuardSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.
-
-        Os padrões de URL desta política não podem ser contrários àqueles configurados por meio de WebUsbBlockedForUrls. Se houver conflito, esta política terá precedência sobre WebUsbBlockedForUrls e WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Não permitir que nenhum site exiba imagens</translation>
 <translation id="9012851181124311976">Configure a lista de URLs de login corporativo (somente esquemas HTTP e HTTPS). A impressão digital da senha será capturada nesses URLs e usada para detecção de reutilização de senhas.
       Para que o <ph name="PRODUCT_NAME" /> capture corretamente as impressões digitais de senha, suas páginas de login precisam seguir as diretrizes que constam em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

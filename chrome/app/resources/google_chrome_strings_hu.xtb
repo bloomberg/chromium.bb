@@ -214,7 +214,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7242029209006116544">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Google Chrome-profiljához. Chrome-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. Létrehozhat egy új profilt is meglévő Chrome-adatainak külön tárolásához. <ph name="LEARN_MORE" /></translation>
 <translation id="7296210096911315575">Fontos használati és biztonsági információk</translation>
 <translation id="7308322188646931570">A Chrome-nak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez</translation>
-<translation id="7330164299247909639">A hitelesítési tanúsítvány nem használható. Jelentkezzen be újra a Google Chrome-ba a(z) <ph name="USER_NAME" /> felhasználónévvel, vagy kérjen további információt a rendszergazdájától. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Új ablak</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" /> néven volt bejelentkezve a Chrome-ba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
 <translation id="7408085963519505752">Chrome OS – Szerződési Feltételek</translation>
@@ -282,7 +281,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="8914504000324227558">A Chrome újraindítása</translation>
 <translation id="9026991721384951619">A Chrome OS nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="9067395829937117663">A Google Chrome futtatásához Windows 7 vagy újabb verzió szükséges.</translation>
-<translation id="9084668267983921457">A hitelesítési tanúsítvány nem használható. Jelentkezzen be újra a Google Chrome-ba, vagy kérjen további információt a rendszergazdájától. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{A Chrome OS 1 órán belül újraindul}other{A Chrome OS # órán belül újraindul}}</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="9138603949443464873">A módosítások alkalmazásához indítsa újra a Chrome-ot</translation>

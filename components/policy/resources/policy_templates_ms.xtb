@@ -1803,7 +1803,7 @@
 
       NOTA: Pada Android, Pengasingan Tapak bersifat percubaan. Sokongan akan dipertingkatkan dari semasa ke semasa, tetapi pada masa ini ciri ini mungkin menyebabkan masalah prestasi.
 
-      NOTA: Dasar ini digunakan hanya terhadap Chrome pada Android yang dijalankan pada peranti yang mempunyai 1GB RAM sahaja. Untuk menggunakan dasar pada platform bukan Android, gunakan IsolateOrigins.
+      NOTA: Dasar ini digunakan hanya terhadap Chrome pada Android yang dijalankan pada peranti yang mempunyai sekurang-kurangnya 1GB RAM sahaja. Untuk menggunakan dasar pada platform bukan Android, gunakan IsolateOrigins.
       </translation>
 <translation id="5630352020869108293">Pulihkan sesi terakhir</translation>
 <translation id="5645779841392247734">Benarkan kuki pada tapak ini</translation>
@@ -1908,7 +1908,7 @@
 <translation id="5898486742390981550">Apabila beberapa orang pengguna mengelog masuk, pengguna utama sahaja yang boleh menggunakan apl Android.</translation>
 <translation id="5900196529149231477">
       Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar kepada nilai yang sama. Jika nilai yang ditetapkan oleh kedua-dua dasar ini tidak sepadan, kelewatan mungkin berlaku semasa memasuki sesi pengguna pada waktu nilai yang ditetapkan oleh dasar pengguna sedang digunakan.
-      Jika dasar didayakan, setiap tempat asal yang dinamakan dalam senarai yang dipisahkan koma akan berjalan dalam prosesnya sendiri. Tindakan ini turut mengasingkan tempat asal yang dinamakan mengikut subdomain; mis. menyatakan https://example.com/ juga akan menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak https://example.com/ site.
+      Jika dasar didayakan, setiap tempat asal yang dinamakan dalam senarai yang dipisahkan koma akan berjalan dalam prosesnya sendiri. Tindakan ini turut mengasingkan tempat asal yang dinamakan mengikut subdomain; mis. menyatakan https://example.com/ juga akan menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak https://example.com/.
       Jika dasar ini dilumpuhkan, kedua-dua ciri IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan IsolateOrigins secara manual melalui bendera baris perintah.
       Jika dasar ini tidak dikonfigurasikan, tetapan pengasingan tapak lalai platform akan digunakan untuk skrin log masuk.
       </translation>
@@ -2275,7 +2275,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Menetapkan bendera yang harus digunakan pada <ph name="PRODUCT_NAME" /> semasa bermula. Bendera yang ditetapkan akan digunakan pada skrin log masuk sahaja. Bendera yang ditetapkan melalui dasar ini tidak disebarkan ke dalam sesi pengguna.</translation>
 <translation id="685769593149966548">Kuatkuasakan Mod Sekatan Ketat untuk YouTube</translation>
-<translation id="6857824281777105940">Dasar ini mengawal sama ada hendak melaporkan maklumat Penyemakan Imbas Selamat, termasuk bilangan amaran Penyemakan Imbas Selamat dan bilangan klik lalu amaran penyemakan Imbas Selamat.
+<translation id="6857824281777105940">Dasar ini mengawal sama ada hendak melaporkan maklumat Penyemakan Imbas Selamat, termasuk bilangan amaran Penyemakan Imbas Selamat dan bilangan klikan amaran penyemakan Imbas Selamat.
 
       Apabila dasar ini dibiarkan tanpa ditetapkan atau ditetapkan kepada Benar, data Penyemakan Imbas Selamat akan dikumpulkan.
       Apabila dasar ini ditetapkan kepada Palsu, data Penyemakan Imbas Selamat tidak akan dikumpulkan.
@@ -3277,11 +3277,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8970205333161758602">Sekat gesaan penolakan <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Benarkan pengesahan gnubby untuk hos akses jauh</translation>
 <translation id="8976531594979650914">Gunakan Pencetak Lalai Sistem sebagai Lalai</translation>
-<translation id="898520305112996948">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang akan diberikan kebenaran secara automatik untuk mengakses peranti USB dengan ID vendor dan produk yang dinyatakan. Setiap item dalam senarai mesti mengandungi peranti dan juga pola url untuk menjadikan dasar ini sah. Setiap item dalam peranti boleh mengandungi medan ID vendor dan ID produk. Mana-mana ID yang tidak dimasukkan akan dikendalikan sebagai kad bebas dengan satu pengecualian dan pengecualian itu ialah ID produk tidak boleh dinyatakan jika ID vendor juga tidak dinyatakan. Jika tidak, dasar ini tidak akan sah. Nilai dasar yang tidak sah akan diabaikan.
-
-        Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak daripada dasar 'DefaultWebUsbGuardSetting' jika nilai ini ditetapkan. Jika tidak, konfigurasi peribadi pengguna akan digunakan.
-
-        Pola URL dalam dasar ini seharusnya tidak bercanggah dengan pola yang dikonfigurasikan melalui WebUsbBlockedForUrls. Jika bercanggah, dasar ini akan mengatasi WebUsbBlockedForUrls dan WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Jangan benarkan mana-mana tapak untuk menunjukkan imej</translation>
 <translation id="9012851181124311976">Konfigurasikan senarai URL log masuk perusahaan (skema HTTP dan HTTPS sahaja). Cap jari kata laluan akan ditangkap pada URL ini dan digunakan untuk pengesanan penggunaan semula kata laluan.
       Untuk membolehkan <ph name="PRODUCT_NAME" /> menangkap cap jari kata laluan dengan betul, sila pastikan halaman log masuk anda mematuhi garis panduan di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
@@ -3297,7 +3292,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Tindakan ini juga akan mengasingkan tempat asal yang dinamakan mengikut
       subdomain; mis. menyatakan https://example.com/ juga akan menyebabkan
       https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak
-      https://example.com/ site.
+      https://example.com/.
       Jika dasar ini dilumpuhkan, maka kedua-dua ciri IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan IsolateOrigins secara manual melalui bendera baris perintah.
       Jika dasar tidak dikonfigurasikan, pengguna akan dapat menukar tetapan ini.
       Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan supaya menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh kedua-dua dasar ini tidak sepadan, satu penangguhan mungkin akan berlaku semasa memasuki sesi pengguna pada waktu nilai yang ditetapkan oleh dasar pengguna sedang digunakan.

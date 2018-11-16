@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">Conectarea multiplă acceptă maximum <ph name="MULTI_PROFILE_USER_LIMIT" /> conturi.</translation>
 <translation id="3154351730702813399">Este posibil ca administratorul dispozitivului să monitorizeze activitatea de navigare.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectat la un dispozitiv}few{Conectat la # dispozitive}other{Conectat la # de dispozitive}}</translation>
+<translation id="32244657276328332">Nu este conectat la rețea</translation>
 <translation id="3236488194889173876">Nicio rețea mobilă disponibilă</translation>
 <translation id="3255483164551725916">Ce poți face?</translation>
 <translation id="3294437725009624529">Invitat</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Dezactivat pentru o aplicație}few{Dezactivat pentru # aplicații}other{Dezactivat pentru # de aplicații}}</translation>
 <translation id="4072264167173457037">Semnal mediu</translation>
 <translation id="4146833061457621061">Redă muzică</translation>
+<translation id="4181841719683918333">Limbi</translation>
 <translation id="4217571870635786043">Dictare</translation>
 <translation id="4261870227682513959">Afișează setările pentru notificări. Notificările sunt dezactivate</translation>
 <translation id="4269883910223712419">Administratorul acestui dispozitiv poate:</translation>
@@ -243,6 +245,7 @@
 <translation id="5207949376430453814">Evidențiază cursorul pentru text</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="523505283826916779">Setări de accesibilitate</translation>
+<translation id="5302048478445481009">Limbă</translation>
 <translation id="5313326810920013265">Setări Bluetooth</translation>
 <translation id="5331975486040154427">Dispozitiv USB-C (portul din stânga spate)</translation>
 <translation id="5379115545237091094">Prea multe încercări</translation>

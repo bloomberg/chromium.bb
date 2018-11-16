@@ -3135,11 +3135,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="8970205333161758602">Undertryk opfordringen til afvisning for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Tillad gnubby-godkendelse for hosts for fjernadgang</translation>
 <translation id="8976531594979650914">Brug systemets standardprinter som standard</translation>
-<translation id="898520305112996948">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, som automatisk får tilladelse til at oprette adgang til en USB-enhed med det givne leverandør- og produkt-id. Politikken er kun gyldig, hvis alle elementer på listen indeholder både enheder og webadressemønstre. Hvert element under enheder kan indeholde et felt til leverandør-id og produkt-id. Et udeladt id behandles som et jokertegn med den ene undtagelse, at et produkt-id ikke kan angives, uden at der også angives et leverandør-id. Ellers er politikken ikke gyldig. Ugyldige politikværdier ignoreres.
-
-        Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultWebUsbGuardSetting", hvis den er angivet, eller alternativt brugerens personlige konfiguration.
-
-        Webadressemønstre i denne politik må ikke være i strid med dem, der er konfigureret via WebUsbBlockedForUrls. Hvis der er uoverensstemmelser, har denne politik forrang over WebUsbBlockedForUrls og WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Tillad ikke, at websites viser billeder</translation>
 <translation id="9012851181124311976">Konfigurer listen over webadresser til virksomhedslogin (kun HTTP- og HTTPS-adresser). Fingeraftryk registreres som adgangskoder på disse webadresser og anvendes til at registrere genbrug af adgangskoder.
       Sørg for, at dine sider til login følger retningslinjerne på https://www.chromium.org/developers/design-documents/create-amazing-password-forms, så <ph name="PRODUCT_NAME" /> registrerer fingeraftryk som adgangskoder på korrekt vis.

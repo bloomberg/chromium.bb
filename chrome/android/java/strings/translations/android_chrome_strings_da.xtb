@@ -734,7 +734,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6567212464587185774">Brug op til 60 % færre data, og surf hurtigere på nettet.</translation>
 <translation id="6573096386450695060">Tillad altid</translation>
 <translation id="6573431926118603307">Faner, du har åbnet i Chrome på dine andre enheder, vises her.</translation>
-<translation id="6575643671698722332">Nulstillingsfejl. Sørg for, at enheden er online, og prøv igen.</translation>
 <translation id="6583199322650523874">Føj et bogmærke til den aktuelle side</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Almindeligt website</translation>
@@ -859,7 +858,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="7475192538862203634">Hvis du ser dette jævnligt, kan du prøve disse <ph name="BEGIN_LINK" />forslag<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD-kortet blev fundet. Nogle af dine filer mangler muligvis.</translation>
-<translation id="748127970106343339">Bekræft sletning af loginoplysningerne for enheden</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Opdateret <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Vis adgangskoder</translation>
@@ -1010,9 +1008,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8609465669617005112">Flyt op</translation>
 <translation id="8616006591992756292">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Vil du åbne den foreslåede webadresse, som er angivet i det downloadede indhold?</translation>
-<translation id="862875433388403934">Indhold (film, musik m.m.), der er downloadet i andre apps, kan muligvis ikke længere afspilles, før disse apps får nye licenser, der er baseret på nye loginoplysninger for enheden.
-
-Du kan få nye licenser ved at oprette forbindelse til internettet og afspille det indhold, du har downloadet.</translation>
 <translation id="8636825310635137004">Aktivér synkronisering for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="8641930654639604085">Prøv at blokere websites med indhold for voksne</translation>
 <translation id="8662811608048051533">Logger dig ud af de fleste websites.</translation>
@@ -1070,7 +1065,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB er downloadet</translation>
 <translation id="9100505651305367705">Tilbyd enkel visning af artikler, når det understøttes</translation>
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
-<translation id="9133515669113036225">Nulstil loginoplysningerne for enheden</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="9139068048179869749">Spørg om tilladelse, før websites sender underretninger (anbefales)</translation>

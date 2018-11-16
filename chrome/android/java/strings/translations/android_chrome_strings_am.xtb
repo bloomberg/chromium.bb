@@ -734,7 +734,6 @@
 <translation id="6567212464587185774">እስከ 60% ያነሰ ውሂብ ይጠቀሙና ድሩን ያፍጥኑት።</translation>
 <translation id="6573096386450695060">ሁልጊዜ ፍቀድ</translation>
 <translation id="6573431926118603307">በሌሎች መሣሪያዎችዎ ላይ ባለ Chrome ላይ የከፈቷቸው ትሮች እዚህ ይመጣሉ።</translation>
-<translation id="6575643671698722332">ዳግም ማስጀመር አልተሳካም። የእርስዎ መሣሪያ መስመር ላይ መሆኑን ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="6583199322650523874">የአሁኑን ገጽ ዕልባት አድርግበት</translation>
 <translation id="6584721918629302382">ኤአር</translation>
 <translation id="6593061639179217415">የዴስክቶፕ ጣቢያ</translation>
@@ -859,7 +858,6 @@
 <translation id="7473891865547856676">አይ፣ አመሰግናለሁ</translation>
 <translation id="7475192538862203634">ይህን በተደጋጋሚነት እያዩት ከሆኑ እነዚህን <ph name="BEGIN_LINK" />የአስተያየት ጥቆማዎች<ph name="END_LINK" /> ይሞክሩ።</translation>
 <translation id="7475688122056506577">ኤስዲ ካርድ አልተገኘም። አንዳንዶቹ ፋይሎችዎ ሊጎድሉ ይችላሉ።</translation>
-<translation id="748127970106343339">የመሣሪያ ምስክርነት ስረዛን ያረጋግጡ</translation>
 <translation id="7481312909269577407">ወደ ፊት</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (የተዘመነው በ<ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">የይለፍ ቃላትን አሳይ</translation>
@@ -1010,9 +1008,6 @@
 <translation id="8609465669617005112">ወደላይ አውጣ</translation>
 <translation id="8616006591992756292">የእርስዎ Google መለያ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖረው ይችላል።</translation>
 <translation id="8617240290563765734">በወረደው ይዘት ላይ የተጠቆመው ዩአርኤል ይከፈት?</translation>
-<translation id="862875433388403934">ይዘቶችን (ፊልሞች፣ ሙዚቃ፣ ወዘተ.) የሚያወርዱ መተግበሪያዎች በአዲስ መሣሪያ ምስክርነት ላይ ተመስርተው ፍቃዶችን ዳግም እስኪያገኙ ድረስ በእነሱ የወረዱ ይዘቶችን መልሶ ማጫወት ላይቻል ይችላል።
-
-አዲስ ፍቃዶችን ለማግኘት ከበይነመሩቡ ጋር ይገናኙና የወረዱት ይዘቶችዎን ያጫውቱ።</translation>
 <translation id="8636825310635137004">ትሮችዎን ከሌሎች መሣሪያዎችዎ ለማግኘት ስምረትን ያብሩ።</translation>
 <translation id="8641930654639604085">የአዋቂ ሰው ጣቢያዎችን ለማገድ ሞክር</translation>
 <translation id="8662811608048051533">ከአብዛኛዎቹ ጣቢያዎች ዘግተው እንዲወጡ ያደርገዎታል።</translation>
@@ -1070,7 +1065,6 @@
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> ኪባ ወርዷል</translation>
 <translation id="9100505651305367705">የሚደገፍ ሲሆን ጽሑፎችን በተቃለለ እይታ ለማሳየት ጠይቅ</translation>
 <translation id="9100610230175265781">የይለፍ ሐረግ ያስፈልጋል</translation>
-<translation id="9133515669113036225">የመሣሪያ ምስክርነቶችን ዳግም ያስጀምሩ</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">የመጀመሪያውን አሳይ</translation>
 <translation id="9139068048179869749">ጣቢያዎች ማሳወቂያዎችን እንዲልኩ ከመፍቀድ በፊት ይጠይቅ (የሚመከር)</translation>

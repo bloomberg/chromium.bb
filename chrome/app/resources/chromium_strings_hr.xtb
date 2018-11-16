@@ -142,7 +142,6 @@
 <translation id="5862307444128926510">Dobro došli u Chromium</translation>
 <translation id="5877064549588274448">Kanal je promijenjen. Ponovo pokrenite uređaj za primjenu promjena.</translation>
 <translation id="5895138241574237353">Ponovno pokreni</translation>
-<translation id="5902536751647951209">Certifikat za autentifikaciju nije uspio. Ponovo se prijavite u Chromium ili se obratite administratoru za više informacija. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Ažuriranje će uskoro biti gotovo. Za dovršetak ponovo pokrenite uređaj.</translation>
 <translation id="5987687638152509985">Ažurirajte Chromium da bi se pokrenula sinkronizacija</translation>
 <translation id="6013050204643758987">OS Chromium omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS" />softverom otvorenog izvornog koda<ph name="END_LINK_CROS_OSS" />, isto kao i <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -222,7 +221,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7745317241717453663">Time će se izbrisati podaci o pregledavanju s uređaja. Da biste kasnije dohvatili svoje podatke, prijavite se na Chromium kao <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Program za instalaciju nije izradio privremeni direktorij. Provjerite ima li slobodnog prostora na disku i postoji li dopuštenje za instalaciju softvera.</translation>
 <translation id="7773960292263897147">Upozorenje: Chromium ne može spriječiti proširenja da evidentiraju vašu povijest pregledavanja. Da biste onemogućili proširenje u anonimnom načinu, isključite tu opciju.</translation>
-<translation id="7774736947049807614">Certifikat za autentifikaciju nije uspio. Ponovo se prijavite u Chromium kao <ph name="USER_NAME" /> ili se obratite administratoru za više informacija. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium se nije mogao ažurirati na najnoviju verziju, tako da nemate nove značajke i sigurnosne popravke.</translation>
 <translation id="7901117350626490574">Dostupno je novo ažuriranje za Chromium i primijenit će se nakon ponovnog pokretanja.</translation>

@@ -144,7 +144,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5862307444128926510">Welcome to Chromium</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
 <translation id="5895138241574237353">Restart</translation>
-<translation id="5902536751647951209">Authentication certificate failed. Please sign in to Chromium again or contact your administrator for more information. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Nearly up to date! Restart your device to finish updating.</translation>
 <translation id="5987687638152509985">Update Chromium to start sync</translation>
 <translation id="6013050204643758987">Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS" />open source software<ph name="END_LINK_CROS_OSS" />, as is <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -224,7 +223,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7745317241717453663">This will delete your browsing data from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
 <translation id="7773960292263897147">Warning: Chromium cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.</translation>
-<translation id="7774736947049807614">Authentication certificate failed. Please sign in to Chromium again as <ph name="USER_NAME" /> or contact your administrator for more information. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium couldn't update to the latest version, so you're missing out on new features and security fixes.</translation>
 <translation id="7901117350626490574">A new update for Chromium is available and will be applied as soon as you relaunch.</translation>

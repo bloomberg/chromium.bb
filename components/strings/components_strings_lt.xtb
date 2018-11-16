@@ -146,6 +146,7 @@
 <translation id="1839551713262164453">Nepavyko patvirtinti politikos verčių (rasta klaidų)</translation>
 <translation id="1840414022444569775">Šis kortelės numeris jau naudojamas</translation>
 <translation id="1842969606798536927">Mokėti</translation>
+<translation id="1866450167992311397">Naudokite korteles daugiau vietų</translation>
 <translation id="1871208020102129563">Įgaliotasis serveris nustatytas naudoti fiksuotų įgaliotųjų serverių, o ne .pac scenarijaus URL.</translation>
 <translation id="1871284979644508959">Būtinas laukas</translation>
 <translation id="1874765382782611674">Tinkamos debeto kortelės</translation>
@@ -705,6 +706,7 @@
 <translation id="5720705177508910913">Dabartinis naudotojas</translation>
 <translation id="5730040223043577876">„Chrome“ rekomenduoja iš naujo nustatyti slaptažodį, jei naudojate jį kitose svetainėse.</translation>
 <translation id="5732392974455271431">Jūsų tėvai gali atblokuoti ją už jus</translation>
+<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Ši kortelė ir atsiskaitymo adresas bus išsaugoti jūsų „Google“ paskyroje, todėl galėsite greičiau apdoroti mokėjimus, kai būsite prisijungę}one{Šios kortelės ir atsiskaitymo adresai bus išsaugoti jūsų „Google“ paskyroje, todėl galėsite greičiau apdoroti mokėjimus, kai būsite prisijungę}few{Šios kortelės ir atsiskaitymo adresai bus išsaugoti jūsų „Google“ paskyroje, todėl galėsite greičiau apdoroti mokėjimus, kai būsite prisijungę}many{Šios kortelės ir atsiskaitymo adresai bus išsaugoti jūsų „Google“ paskyroje, todėl galėsite greičiau apdoroti mokėjimus, kai būsite prisijungę}other{Šios kortelės ir atsiskaitymo adresai bus išsaugoti jūsų „Google“ paskyroje, todėl galėsite greičiau apdoroti mokėjimus, kai būsite prisijungę}}</translation>
 <translation id="5763042198335101085">Įveskite galiojantį el. pašto adresą</translation>
 <translation id="5765072501007116331">Jei norite peržiūrėti pristatymo metodus ir reikalavimus, pasirinkite adresą.</translation>
 <translation id="5770114862687765385">Panašu, kad failas sugadintas. Spustelėkite nustatymo iš naujo mygtuką ir nustatykite sesiją iš naujo.</translation>
@@ -786,6 +788,7 @@
 <translation id="6337133576188860026">Atlaisvina mažiau nei <ph name="SIZE" />. Per kitą jūsų apsilankymą kai kurios svetainės gali būti įkeliamos lėčiau.</translation>
 <translation id="6337534724793800597">Filtruoti politiką pagal pavadinimą</translation>
 <translation id="6358450015545214790">Ką tai reiškia?</translation>
+<translation id="635989537247018238">Atlikdami kitą veiksmą galėsite pasirinkti, kurias korteles išsaugoti</translation>
 <translation id="6383221683286411806">Galimi apmokestinimai.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Dar 1 pasiūlymas}one{Dar # pasiūlymas}few{Dar # pasiūlymai}many{Dar # pasiūlymo}other{Dar # pasiūlymų}}</translation>
 <translation id="6387754724289022810">Kad kitą kartą galėtumėte greičiau atlikti mokėjimą, išsaugokite kortelę ir atsiskaitymo adresą „Google“ paskyroje ir šiame įrenginyje.</translation>

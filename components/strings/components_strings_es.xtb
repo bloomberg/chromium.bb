@@ -146,6 +146,7 @@
 <translation id="1839551713262164453">No se ha podido hacer la validación de los valores de la política porque se han producido errores</translation>
 <translation id="1840414022444569775">Esta tarjeta de crédito ya está en uso</translation>
 <translation id="1842969606798536927">Pagar</translation>
+<translation id="1866450167992311397">Utiliza tus tarjetas en más sitios</translation>
 <translation id="1871208020102129563">Se ha configurado el proxy de forma que use servidores proxy fijos, en lugar de una URL de secuencia de comandos .pac.</translation>
 <translation id="1871284979644508959">Campo obligatorio</translation>
 <translation id="1874765382782611674">Tarjetas de débito aceptadas</translation>
@@ -704,6 +705,7 @@
 <translation id="5720705177508910913">Usuario actual</translation>
 <translation id="5730040223043577876">Chrome te recomienda que cambies tu contraseña si la has vuelto a utilizar en otros sitios web.</translation>
 <translation id="5732392974455271431">Tus padres pueden desbloquearlo</translation>
+<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Esta tarjeta y la dirección de facturación asociada se guardarán en tu cuenta de Google para que puedas formalizar las compras más rápido cuando tengas la sesión iniciada}other{Estas tarjetas y las direcciones de facturación asociadas se guardarán en tu cuenta de Google para que puedas formalizar las compras más rápido cuando tengas la sesión iniciada}}</translation>
 <translation id="5763042198335101085">Introduce una dirección de correo electrónico válida</translation>
 <translation id="5765072501007116331">Selecciona una dirección para ver los métodos de entrega y los requisitos</translation>
 <translation id="5770114862687765385">Parece que el archivo está dañado. Haz clic en el botón Recuperar para recuperar la sesión.</translation>
@@ -728,6 +730,7 @@
 <translation id="5922853866070715753">Casi hemos acabado</translation>
 <translation id="5932224571077948991">El sitio web muestra anuncios invasivos o engañosos</translation>
 <translation id="5939518447894949180">Restablecer</translation>
+<translation id="5946937721014915347">Abriendo <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">No te puedes registrar con una cuenta de consumidor (hay una licencia asociada disponible).</translation>
 <translation id="5966151627327109289">Se cerrará la sesión de la mayoría de los sitios web. Es posible que dejes de tener acceso al contenido protegido de <ph name="SITE" /> y otros sitios web.</translation>
 <translation id="5967592137238574583">Edita la información de contacto</translation>
@@ -784,6 +787,7 @@
 <translation id="6337133576188860026">Libera menos de <ph name="SIZE" />. Algunos sitios web pueden tardar más en cargarse la próxima vez que accedas a ellos.</translation>
 <translation id="6337534724793800597">Filtrar políticas por nombre</translation>
 <translation id="6358450015545214790">¿Necesitas ayuda?</translation>
+<translation id="635989537247018238">En el paso siguiente puedes elegir qué tarjetas quieres guardar</translation>
 <translation id="6383221683286411806">Es posible que se cobren cargos en el futuro.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Una sugerencia más}other{# sugerencias más}}</translation>
 <translation id="6387754724289022810">Para pagar más rápido la próxima vez, guarda tu tarjeta y tu dirección de facturación en tu cuenta de Google y en este dispositivo.</translation>
@@ -1196,6 +1200,7 @@ Más información:
 <translation id="935608979562296692">BORRAR FORMULARIO</translation>
 <translation id="936602727769022409">Podrías perder el acceso a tu cuenta de Google. Chromium te recomienda que cambies la contraseña ahora. Se te pedirá que inicies sesión.</translation>
 <translation id="939736085109172342">Nueva carpeta</translation>
+<translation id="945855313015696284">Comprueba la información que aparece a continuación y elimina las tarjetas no válidas</translation>
 <translation id="951104842009476243">Tarjetas prepago y de débito aceptadas</translation>
 <translation id="962484866189421427">Este contenido podría intentar instalar aplicaciones engañosas que se hagan pasar por otra persona o recojan datos que podrían usarse para realizar un seguimiento de tu actividad. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Build oficial</translation>

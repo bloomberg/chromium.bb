@@ -3156,11 +3156,6 @@
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> のサポート終了メッセージを抑制する</translation>
 <translation id="8976248126101463034">リモート アクセス ホストに対して gnubby 認証を許可する</translation>
 <translation id="8976531594979650914">システムのデフォルト プリンタをデフォルトとして使用</translation>
-<translation id="898520305112996948">特定のベンダー ID と製品 ID を持つ USB デバイスへのアクセスを自動的に許可するサイトを、URL パターンのリストで設定します。このポリシーが有効となるためには、リストの各項目でデバイスと URL パターンの両方を指定する必要があります。デバイスの各項目にはベンダー ID と製品 ID を指定できます。指定されていない ID はワイルドカードとして扱われますが、例外として、製品 ID を指定するのであればベンダー ID も指定する必要があります。ベンダー ID の指定なしで製品 ID のみを指定した場合、このポリシーは無効になります。無効なポリシー値は無視されます。
-
-        このポリシーが未設定の場合は、すべてのサイトでグローバルなデフォルト値（「DefaultWebUsbGuardSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
-
-        このポリシーで指定する URL パターンは、WebUsbBlockedForUrls ポリシーで指定する URL パターンと競合しないようにする必要があります。競合する場合は、WebUsbBlockedForUrls や WebUsbAskForUrls よりもこのポリシーが優先されます。</translation>
 <translation id="8992176907758534924">すべてのサイトに対して画像表示を許可しない</translation>
 <translation id="9012851181124311976">企業のログイン URL のリストを設定します（HTTP と HTTPS スキームのみ）。これらの URL では指紋によるパスワード認証が行われ、パスワードの再利用の検出に使用されます。
       指紋によるパスワード認証が <ph name="PRODUCT_NAME" /> で正しく処理されるようにするには、ログインページが https://www.chromium.org/developers/design-documents/create-amazing-password-forms のガイドラインに沿っていることを確認してください。

@@ -734,7 +734,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6567212464587185774">Utilizza fino al 60% di dati in meno e velocizza il Web.</translation>
 <translation id="6573096386450695060">Consenti sempre</translation>
 <translation id="6573431926118603307">Le schede aperte in Chrome sugli altri dispositivi verranno visualizzate qui.</translation>
-<translation id="6575643671698722332">Reimpostazione non riuscita. Verifica che il dispositivo sia online e riprova.</translation>
 <translation id="6583199322650523874">Aggiungi la pagina corrente ai Preferiti</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Sito desktop</translation>
@@ -859,7 +858,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="7475192538862203634">Se il problema si verifica di frequente, prova questi <ph name="BEGIN_LINK" />suggerimenti<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Scheda SD non trovata. Potrebbero mancare alcuni dei tuoi file.</translation>
-<translation id="748127970106343339">Conferma eliminazione credenziali dispositivo</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ultimo aggiornamento: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Mostra password</translation>
@@ -1010,9 +1008,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8609465669617005112">Sposta su</translation>
 <translation id="8616006591992756292">Il tuo account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Aprire l'URL consigliato specificato nei contenuti scaricati?</translation>
-<translation id="862875433388403934">I contenuti (film, musica e così via) scaricati in altre applicazioni potrebbero non essere riproducibili finché tali applicazioni non riacquistano le licenze in base a nuove credenziali del dispositivo.
-
-Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaricati.</translation>
 <translation id="8636825310635137004">Attiva la sincronizzazione per trovare le tue schede degli altri dispositivi.</translation>
 <translation id="8641930654639604085">Prova a bloccare siti per adulti</translation>
 <translation id="8662811608048051533">Vieni scollegato dalla maggior parte dei siti.</translation>
@@ -1070,7 +1065,6 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> kB per i download</translation>
 <translation id="9100505651305367705">Chiedi di mostrare gli articoli in visualizzazione semplificata, se supportata</translation>
 <translation id="9100610230175265781">Passphrase obbligatoria</translation>
-<translation id="9133515669113036225">Reimposta credenziali dispositivo</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostra originale</translation>
 <translation id="9139068048179869749">Chiedi conferma prima di consentire ai siti di inviare notifiche (opzione consigliata)</translation>

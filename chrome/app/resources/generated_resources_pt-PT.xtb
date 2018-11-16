@@ -166,7 +166,6 @@
     No ecrã seguinte, envie os seus comentários para nos ajudar a resolver o problema.</translation>
 <translation id="1217668622537098248">Reverter para clique com o botão esquerdo do rato após a ação.</translation>
 <translation id="121783623783282548">As palavras-passe não correspondem.</translation>
-<translation id="1219533395013150448">O seu Assistente utiliza estas gravações para criar o modelo de voz, o qual é armazenado no seu dispositivo. Elimine ou volte a treinar o modelo nas definições do assistente. Veja ou elimine os comandos de voz nos controlos da atividade Google.</translation>
 <translation id="122082903575839559">Algoritmo de assinatura do certificado</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 Com encriptação RSA</translation>
 <translation id="1221825588892235038">Apenas a seleção</translation>
@@ -617,7 +616,7 @@
 <translation id="1880905663253319515">Eliminar o certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Permitir que os Web sites peçam para se tornarem os processadores de protocolos predefinidos (recomendado)</translation>
 <translation id="1887442540531652736">Erro de início de sessão</translation>
-<translation id="1887597546629269384">Diga "Olá Google" novamente</translation>
+<translation id="1887597546629269384">Diga "Ok Google" novamente</translation>
 <translation id="1887850431809612466">Revisão de hardware</translation>
 <translation id="1889984860246851556">Abrir definições de proxy</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -1491,7 +1490,6 @@ Pretende pará-lo?</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> pretende estabelecer ligação</translation>
 <translation id="3274763671541996799">Mudou para o ecrã inteiro.</translation>
 <translation id="3275778913554317645">Abrir como janela</translation>
-<translation id="3278877214895457897">Quando o Chromebook estiver configurado, prima o botão do Assistente ou diga "Ok Google" para obter ajuda do Assistente em qualquer altura.</translation>
 <translation id="3279230909244266691">Este processo pode demorar alguns minutos. A iniciar a máquina virtual…</translation>
 <translation id="3279741024917655738">Mostrar vídeos em ecrã inteiro em</translation>
 <translation id="3280237271814976245">Guard&amp;ar como...</translation>
@@ -1680,7 +1678,6 @@ Pretende pará-lo?</translation>
 <translation id="3550915441744863158">O Chrome é atualizado automaticamente para que tenha sempre a versão mais recente</translation>
 <translation id="3551320343578183772">Fechar Separador</translation>
 <translation id="3552780134252864554">Apagar à saída</translation>
-<translation id="3553146918065661815">Mostrar um aviso antes de sair com ⌘Q</translation>
 <translation id="3555812735919707620">Remover extensão</translation>
 <translation id="3556000484321257665">O seu motor de pesquisa foi alterado para <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Falha ao instalar a política no dispositivo.</translation>
@@ -1756,7 +1753,6 @@ Pretende pará-lo?</translation>
 <translation id="3654045516529121250">Ler definições de acessibilidade</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tem acesso permanente a um ficheiro.}other{Tem acesso permanente a # ficheiros.}}</translation>
 <translation id="3660234220361471169">Não fidedigno</translation>
-<translation id="3661054927247347545">A certificação do início de sessão não é válida. A janela será fechada dentro de <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Ícone da extensão</translation>
 <translation id="3665589677786828986">O Chrome detetou que algumas das suas definições foram danificadas por outro programa e repôs as respetivas predefinições originais.</translation>
 <translation id="3668570675727296296">Definições de idioma</translation>
@@ -2889,7 +2885,6 @@ Pretende pará-lo?</translation>
 <translation id="5434065355175441495">PKCS #1 Encriptação RSA</translation>
 <translation id="5436492226391861498">A aguardar pelo túnel do proxy...</translation>
 <translation id="5436510242972373446">Pesquisar <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Todas as janelas do navegador sem sessão iniciada serão fechadas automaticamente em breve.</translation>
 <translation id="5438224778284622050">Pretende eliminar os ficheiros offline?</translation>
 <translation id="544083962418256601">Criar atalhos...</translation>
 <translation id="5442228125690314719">Ocorreu um erro ao criar a imagem do disco. Tente novamente.</translation>
@@ -3622,7 +3617,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Iniciar sessão agora</translation>
 <translation id="6527303717912515753">Partilhar</translation>
 <translation id="6528513914570774834">Permitir que outros utilizadores deste dispositivo utilizem esta rede</translation>
 <translation id="652948702951888897">Histórico do Chrome</translation>
@@ -4091,7 +4085,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7256710573727326513">Abrir num separador</translation>
 <translation id="725758059478686223">Serviço de impressão</translation>
 <translation id="7257666756905341374">Ler dados que copia e cola</translation>
-<translation id="7258619945375359543">Permita que o Assistente dê sugestões com base no que está a ser apresentado no seu ecrã.</translation>
 <translation id="7258697411818564379">O seu PIN foi adicionado</translation>
 <translation id="7262004276116528033">Este serviço de início de sessão é alojado por <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Fechar separadores</translation>
@@ -4853,7 +4846,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8438566539970814960">Melhorar as pesquisas e a navegação</translation>
 <translation id="8439506636278576865">Oferecer para traduzir páginas neste idioma</translation>
 <translation id="8440630305826533614">Aplicações para Linux</translation>
-<translation id="8446474770554547328">Ao gravar "Ok Google" três vezes, cria o modelo de voz, o qual é armazenado no seu dispositivo. Elimine ou volte a treinar o modelo nas definições do assistente. Veja ou elimine os comandos de voz nos controlos da atividade Google.</translation>
 <translation id="8446884382197647889">Saiba Mais</translation>
 <translation id="8447409163267621480">Inclua Ctrl ou Alt.</translation>
 <translation id="8448729345478502352">Diminuir ou aumentar os elementos no ecrã</translation>

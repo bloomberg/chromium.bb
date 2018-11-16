@@ -166,7 +166,6 @@
     Auf dem nächsten Bildschirm können Sie uns Feedback geben und uns damit bei der Lösung des Problems helfen.</translation>
 <translation id="1217668622537098248">Nach Aktion zu Linksklick zurückkehren</translation>
 <translation id="121783623783282548">Die Passwörter stimmen nicht überein.</translation>
-<translation id="1219533395013150448">Anhand dieser Aufnahmen erstellt Assistant Ihr Sprachmodell, das auf dem Gerät gespeichert wird. Sie können das Modell in den Assistant-Einstellungen löschen oder neu trainieren. Sprachbefehle lassen sich in den Google-Aktivitätseinstellungen einsehen oder löschen.</translation>
 <translation id="122082903575839559">Algorithmus für Zertifikatsignatur</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 mit RSA-Verschlüsselung</translation>
 <translation id="1221825588892235038">Nur Auswahl</translation>
@@ -1486,7 +1485,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> möchte eine Verbindung herstellen</translation>
 <translation id="3274763671541996799">Sie befinden sich im Vollbildmodus.</translation>
 <translation id="3275778913554317645">In neuem Fenster öffnen</translation>
-<translation id="3278877214895457897">Wenn Ihr Chromebook eingerichtet ist, können Sie die Assistant-Taste drücken oder "Ok Google" sagen, um sich jederzeit von Assistant helfen zu lassen.</translation>
 <translation id="3279230909244266691">Der Vorgang kann einige Minuten dauern. Virtuelle Maschine wird gestartet.</translation>
 <translation id="3279741024917655738">Zeigen von Vollbildvideos ist aktiviert</translation>
 <translation id="3280237271814976245">Speichern &amp;unter...</translation>
@@ -1675,7 +1673,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3550915441744863158">Chrome wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen.</translation>
 <translation id="3551320343578183772">Tab schließen</translation>
 <translation id="3552780134252864554">Wird beim Beenden gelöscht</translation>
-<translation id="3553146918065661815">Vor dem Beenden mit "⌘ + Q" Warnung einblenden</translation>
 <translation id="3555812735919707620">Erweiterung entfernen</translation>
 <translation id="3556000484321257665">Ihre Suchmaschine wurde in <ph name="URL" /> geändert.</translation>
 <translation id="3559262020195162408">Fehler beim Installieren der Richtlinie auf dem Gerät.</translation>
@@ -1751,7 +1748,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3654045516529121250">Einstellungen für Bedienungshilfen lesen</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Dauerhafter Zugriff auf eine Datei}other{Dauerhafter Zugriff auf # Dateien}}</translation>
 <translation id="3660234220361471169">Nicht vertrauenswürdig</translation>
-<translation id="3661054927247347545">Die Anmeldezertifizierung ist ungültig. Das Fenster wird in <ph name="MINUTES" />:<ph name="SECONDS" /> geschlossen.</translation>
 <translation id="3664511988987167893">Erweiterungssymbol</translation>
 <translation id="3665589677786828986">Chrome hat festgestellt, dass einige Ihrer Einstellungen von einem anderen Programm manipuliert wurden, und hat sie auf die ursprünglichen Standardwerte zurückgesetzt.</translation>
 <translation id="3668570675727296296">Spracheinstellungen</translation>
@@ -2884,7 +2880,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5434065355175441495">PKCS #1 RSA-Verschlüsselung</translation>
 <translation id="5436492226391861498">Warten auf Proxy-Tunnel...</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME" /> durchsuchen:</translation>
-<translation id="5436822233913560332">Ohne Anmeldung werden alle Browserfenster in Kürze automatisch geschlossen.</translation>
 <translation id="5438224778284622050">Offlinedateien löschen?</translation>
 <translation id="544083962418256601">Verknüpfungen erstellen...</translation>
 <translation id="5442228125690314719">Fehler beim Erstellen des Datenträgerabbilds. Bitte versuchen Sie es noch einmal.</translation>
@@ -3616,7 +3611,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Jetzt anmelden</translation>
 <translation id="6527303717912515753">Teilen</translation>
 <translation id="6528513914570774834">Anderen Nutzern des Geräts erlauben, dieses Netzwerk zu verwenden</translation>
 <translation id="652948702951888897">Chrome-Verlauf</translation>
@@ -4085,7 +4079,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7256710573727326513">In Tab öffnen</translation>
 <translation id="725758059478686223">Druckdienst</translation>
 <translation id="7257666756905341374">Daten lesen, die Sie kopieren und einfügen</translation>
-<translation id="7258619945375359543">Zulassen, dass Assistant Ihnen Vorschläge zu den Inhalten auf Ihrem Bildschirm anzeigt</translation>
 <translation id="7258697411818564379">PIN wurde hinzugefügt</translation>
 <translation id="7262004276116528033">Dieser Anmeldedienst wird von <ph name="SAML_DOMAIN" /> gehostet.</translation>
 <translation id="7268365133021434339">Tabs schließen</translation>
@@ -4848,7 +4841,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8438566539970814960">Suchanfragen und das Surfen verbessern</translation>
 <translation id="8439506636278576865">Übersetzung für Seiten in dieser Sprache anbieten</translation>
 <translation id="8440630305826533614">Linux-Apps</translation>
-<translation id="8446474770554547328">Durch die dreimalige Aufnahme von "Ok Google" wird Ihr Sprachmodell erstellt, das auf dem Gerät gespeichert wird. Sie können das Modell in den Assistant-Einstellungen löschen oder neu trainieren. Sprachbefehle lassen sich in den Google-Aktivitätseinstellungen einsehen oder löschen.</translation>
 <translation id="8446884382197647889">Weitere Informationen</translation>
 <translation id="8447409163267621480">Entweder Strg oder Alt integrieren</translation>
 <translation id="8448729345478502352">Die Elemente auf dem Bildschirm vergrößern oder verkleinern</translation>

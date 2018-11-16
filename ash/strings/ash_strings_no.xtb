@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">Du kan bare ha opptil <ph name="MULTI_PROFILE_USER_LIMIT" /> kontoer i multipålogging.</translation>
 <translation id="3154351730702813399">Enhetsadministratoren kan overvåke surfeaktiviteten din.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Koblet til en enhet}other{Koblet til # enheter}}</translation>
+<translation id="32244657276328332">Ikke koblet til noe nettverk</translation>
 <translation id="3236488194889173876">Ingen mobilnettverk er tilgjengelige</translation>
 <translation id="3255483164551725916">Hva kan du gjøre?</translation>
 <translation id="3294437725009624529">Gjest</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Slått av for en app}other{Slått av for # apper}}</translation>
 <translation id="4072264167173457037">Middels sterkt signal</translation>
 <translation id="4146833061457621061">Spill av musikk</translation>
+<translation id="4181841719683918333">Språk</translation>
 <translation id="4217571870635786043">Diktering</translation>
 <translation id="4261870227682513959">Vis innstillinger for varsler. Varsler er av</translation>
 <translation id="4269883910223712419">Administratoren av denne enheten kan</translation>
@@ -243,6 +245,7 @@
 <translation id="5207949376430453814">Fremhev tekstinnsettingspunktet</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="523505283826916779">Tilgjengelighetsinnstillinger</translation>
+<translation id="5302048478445481009">Språk</translation>
 <translation id="5313326810920013265">Bluetooth-innstillinger</translation>
 <translation id="5331975486040154427">USB-C-enhet (porten bak på venstre side)</translation>
 <translation id="5379115545237091094">For mange forsøk</translation>

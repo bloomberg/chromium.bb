@@ -166,7 +166,6 @@
     Trên màn hình tiếp theo, vui lòng gửi phản hồi để giúp chúng tôi khắc phục sự cố.</translation>
 <translation id="1217668622537098248">Trở về hành động nhấp chuột trái sau khi thực hiện hành động khác</translation>
 <translation id="121783623783282548">Mật khẩu không khớp.</translation>
-<translation id="1219533395013150448">Trợ lý sẽ sử dụng những bản ghi âm này để tạo mẫu giọng nói của bạn. Mẫu này sẽ được lưu trữ trên thiết bị. Bạn có thể xóa hoặc đào tạo lại mẫu đó trong các tùy chọn cài đặt trợ lý. Ngoài ra, bạn có thể xem hoặc xóa lệnh thoại trong các tùy chọn kiểm soát hoạt động trên Google.</translation>
 <translation id="122082903575839559">Thuật toán Chữ ký Chứng chỉ</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 Với Mã hóa RSA</translation>
 <translation id="1221825588892235038">Chỉ lựa chọn</translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> muốn kết nối</translation>
 <translation id="3274763671541996799">Bạn đang ở chế độ toàn màn hình.</translation>
 <translation id="3275778913554317645">Mở dưới dạng cửa sổ</translation>
-<translation id="3278877214895457897">Khi thiết lập xong Chromebook, hãy nhấn nút Trợ lý hoặc nói "Ok Google" để nhận trợ giúp từ Trợ lý bất cứ lúc nào.</translation>
 <translation id="3279230909244266691">Quá trình này có thể mất vài phút. Đang khởi động máy ảo.</translation>
 <translation id="3279741024917655738">Hiển thị video ở chế độ toàn màn hình trên</translation>
 <translation id="3280237271814976245">Lưu &amp;thành...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Chrome tự động cập nhật nên bạn luôn có phiên bản mới nhất</translation>
 <translation id="3551320343578183772">Đóng Tab</translation>
 <translation id="3552780134252864554">Xóa khi thoát</translation>
-<translation id="3553146918065661815">Hiển thị cảnh báo trước khi thoát bằng ⌘Q</translation>
 <translation id="3555812735919707620">Xóa tiện ích</translation>
 <translation id="3556000484321257665">Công cụ tìm kiếm của bạn đã được thay đổi thành <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Không cài đặt được chính sách trên thiết bị.</translation>
@@ -1751,12 +1748,11 @@
 <translation id="3651488188562686558">Ngắt kết nối khỏi Wi-Fi</translation>
 <translation id="3652817283076144888">Đang khởi chạy</translation>
 <translation id="3653160965917900914">Chia sẻ tệp trong mạng</translation>
-<translation id="3653842108912548333">Truy cập vào Trợ lý của bạn bằng tính năng Voice Match</translation>
+<translation id="3653842108912548333">Sử dụng Trợ lý của bạn bằng tính năng Voice Match</translation>
 <translation id="3653999333232393305">Tiếp tục cho phép <ph name="HOST" /> truy cập micrô của bạn</translation>
 <translation id="3654045516529121250">Đọc cài đặt trợ năng của bạn</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ứng dụng có quyền truy cập vĩnh viễn vào một tệp.}other{Ứng dụng có quyền truy cập vĩnh viễn vào # tệp.}}</translation>
 <translation id="3660234220361471169">Không đáng tin cậy</translation>
-<translation id="3661054927247347545">Chứng chỉ đăng nhập không hợp lệ, cửa sổ sẽ đóng sau <ph name="MINUTES" /> : <ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Biểu tượng tiện ích</translation>
 <translation id="3665589677786828986">Chrome phát hiện thấy rằng một số cài đặt của bạn đã bị lỗi do một chương trình khác gây ra và đặt lại các cài đặt đó về giá trị mặc định ban đầu.</translation>
 <translation id="3668570675727296296">Cài đặt ngôn ngữ</translation>
@@ -2889,7 +2885,6 @@
 <translation id="5434065355175441495">PKCS #1 Mã hóa RSA</translation>
 <translation id="5436492226391861498">Chờ đường hầm proxy...</translation>
 <translation id="5436510242972373446">Tìm kiếm <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Tất cả cửa sổ trình duyệt sẽ sớm bị đóng tự động mà không cần đăng nhập.</translation>
 <translation id="5438224778284622050">Xóa tệp ngoại tuyến?</translation>
 <translation id="544083962418256601">Tạo phím tắt...</translation>
 <translation id="5442228125690314719">Lỗi khi tạo hình ảnh đĩa. Vui lòng thử lại.</translation>
@@ -3621,7 +3616,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Đăng nhập ngay bây giờ</translation>
 <translation id="6527303717912515753">Chia sẻ</translation>
 <translation id="6528513914570774834">Cho phép người dùng khác của thiết bị sử dụng mạng này</translation>
 <translation id="652948702951888897">Lịch sử Chrome</translation>
@@ -4090,7 +4084,6 @@
 <translation id="7256710573727326513">Mở trong một tab</translation>
 <translation id="725758059478686223">Dịch vụ in</translation>
 <translation id="7257666756905341374">Đọc dữ liệu bạn sao chép và dán</translation>
-<translation id="7258619945375359543">Cho phép Trợ lý đưa ra các đề xuất dựa vào nội dung trên màn hình</translation>
 <translation id="7258697411818564379">Bạn đã thêm mã PIN</translation>
 <translation id="7262004276116528033">Dịch vụ đăng nhập này do <ph name="SAML_DOMAIN" /> lưu trữ</translation>
 <translation id="7268365133021434339">Đóng tab</translation>
@@ -4853,7 +4846,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8438566539970814960">Cải thiện tính năng tìm kiếm và duyệt web</translation>
 <translation id="8439506636278576865">Đề xuất dịch trang bằng ngôn ngữ này</translation>
 <translation id="8440630305826533614">Ứng dụng Linux</translation>
-<translation id="8446474770554547328">Việc ghi âm "Ok Google" 3 lần sẽ tạo mẫu giọng nói của bạn. Mẫu này sẽ được lưu trữ trên thiết bị. Bạn có thể xóa hoặc đào tạo lại mẫu đó trong các tùy chọn cài đặt trợ lý. Ngoài ra, bạn có thể xem hoặc xóa lệnh thoại trong các tùy chọn cài đặt kiểm soát hoạt động trên Google.</translation>
 <translation id="8446884382197647889">Tìm hiểu thêm</translation>
 <translation id="8447409163267621480">Bao gồm phím Ctrl hoặc phím Alt</translation>
 <translation id="8448729345478502352">Thu nhỏ hoặc phóng to các mục trên màn hình</translation>

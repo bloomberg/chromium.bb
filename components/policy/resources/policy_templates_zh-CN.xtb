@@ -3059,11 +3059,6 @@
 <translation id="8970205333161758602">阻止显示 <ph name="PRODUCT_FRAME_NAME" />停止支持的提示</translation>
 <translation id="8976248126101463034">允许针对远程访问主机进行 gnubby 身份验证</translation>
 <translation id="8976531594979650914">使用系统默认打印机作为默认选项</translation>
-<translation id="898520305112996948">让您能够以列表的形式设置一系列网址格式，以指定将会自动授权哪些网站通过给定的供应商 ID 和产品 ID 访问 USB 设备。列表中的每项内容都必须包含设备和网址格式这两个部分，此政策才会有效。设备部分中的每项都可包含供应商 ID 和产品 ID 字段。被省略的任何 ID 都会被视为通配符，但例外情况是：如果未指定供应商 ID，便无法指定产品 ID。否则，该政策将会无效。无效的政策值会被忽略。
-
-        如果未设置此政策，系统将会对所有网站使用“DefaultWebUsbGuardSetting”政策中的全局默认值（倘若已设置“DefaultWebUsbGuardSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultWebUsbGuardSetting”政策）。
-
-        此政策中的网址格式不应与通过 WebUsbBlockedForUrls 配置的网址格式冲突。如果存在冲突，则此政策的优先级高于 WebUsbBlockedForUrls 和 WebUsbAskForUrls。</translation>
 <translation id="8992176907758534924">不允许任何网站显示图片</translation>
 <translation id="9012851181124311976">配置企业登录网址（仅限 HTTP 和 HTTPS 方案）列表。系统会在这些网址上捕获密码指纹，并使用指纹进行密码重用检测。
       为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获密码指纹，请务必确保您的登录页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。

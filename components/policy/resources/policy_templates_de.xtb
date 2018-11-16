@@ -131,7 +131,7 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 
       Wenn die Richtlinie nicht festgelegt ist, werden der Liste keine Websites hinzugefügt.
 
-      Wenn die Richtlinie festgelegt ist, wird jedes Element als Regel angesehen, ähnlich wie bei der Richtlinie "<ph name="URL_LIST_POLICY_NAME" />". Die Logik ist jedoch umgedreht: Bei übereinstimmenden Regeln wird kein alternativer Browser geöffnet.
+      Wenn die Richtlinie festgelegt ist, wird jedes Element als Regel angesehen, ähnlich wie bei der Richtlinie "<ph name="URL_LIST_POLICY_NAME" />". Die Logik ist jedoch umgedreht: Wenn es eine Übereinstimmung für die Regel gibt, wird kein alternativer Browser geöffnet.
 
       Im Gegensatz zu "<ph name="URL_LIST_POLICY_NAME" />" gelten die Regeln in beide Richtungen. Wenn das Internet Explorer-Add-in also vorhanden und aktiviert ist, wird damit auch gesteuert, ob <ph name="IE_PRODUCT_NAME" /> diese URLs in <ph name="PRODUCT_NAME" /> öffnen soll.</translation>
 <translation id="1297182715641689552">PAC-Proxy-Skript verwenden</translation>
@@ -233,7 +233,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Wenn die Richtlinie nicht festgelegt oder auf "True" gesetzt ist, werden Daten von Erweiterungen und Plug-ins erfasst.
       Ist die Richtlinie auf "False" festgelegt, werden Daten von Erweiterungen und Plug-ins nicht erfasst.
 
-      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit "<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />" registriert ist.</translation>
+      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät bei "<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />" registriert ist.</translation>
 <translation id="1561424797596341174">Überschreiben von Richtlinien für Fehlerbehebungs-Builds des Hosts für den Remotezugriff</translation>
 <translation id="1561967320164410511">U2F plus Erweiterungen zur individuellen Bestätigung</translation>
 <translation id="1574554504290354326">Diese Einstellung ist veraltet. Verwenden Sie stattdessen "SafeBrowsingExtendedReportingEnabled". Das Aktivieren oder Deaktivieren von "SafeBrowsingExtendedReportingEnabled" entspricht dem Festlegen von "false" für "SafeBrowsingExtendedReportingOptInAllowed".
@@ -650,7 +650,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Falls die Richtlinie nicht konfiguriert ist, kommt die Standardeinstellung zum Einsatz, bei der die Funktion von verwalteten Nutzern nicht verwendet und von nicht verwalteten Nutzern verwendet werden kann.</translation>
 <translation id="2660846099862559570">Nie Proxy verwenden</translation>
 <translation id="2663739737868438950">
-      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" für die eigentliche Nutzersitzung an. Es wird empfohlen, für beide Richtlinien denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
       Sie sollten sich außerdem die Richtlinieneinstellung "IsolateOrigins" ansehen, um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten. Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten. Mit der Einstellung "SitePerProcess" werden alle Websites isoliert.
       Wenn die Richtlinie aktiviert ist, wird für jede Website ein eigener Prozess ausgeführt.
       Wenn die Richtlinie deaktiviert ist, sind die Funktionen "IsolateOrigins" und "SitePerProcess" ebenfalls deaktiviert. Nutzer können "SitePerProcess" aber weiterhin manuell anhand von Befehlszeilenparametern aktivieren.
@@ -780,7 +780,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="3038323923255997294">Apps weiter im Hintergrund ausführen, wenn <ph name="PRODUCT_NAME" /> geschlossen ist</translation>
 <translation id="3046192273793919231">Netzwerkpakete zur Überwachung des Onlinestatus an den Verwaltungsserver senden</translation>
 <translation id="3047732214002457234">Festlegen, wie Daten vom Chrome Cleanup Tool an Google gesendet werden</translation>
-<translation id="304775240152542058">Mit dieser Richtlinie werden Befehlszeilenparameter verwaltet, die beim Öffnen des alternativen Browsers zum Einsatz kommen.
+<translation id="304775240152542058">Mit dieser Richtlinie werden Befehlszeilenparameter verwaltet, die das Starten des alternativen Browsers steuern.
 
       Wenn die Richtlinie nicht festgelegt ist, wird nur die URL als Befehlszeilenparameter weitergegeben.
 
@@ -790,7 +790,7 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
       Wenn kein Element "${url}" enthält, wird die URL am Ende der Befehlszeile angehängt.
 
-      Umgebungsvariablen werden erweitert. Unter Windows wird "%ABC%" durch den Wert der ABC-Umgebungsvariablen ersetzt. Unter Mac OS X und Linux wird "${ABC}" durch den Wert der ABC-Umgebungsvariablen ersetzt.</translation>
+      Umgebungsvariablen werden erweitert. Unter Windows wird die ABC-Umgebungsvariable durch "%ABC%" festgelegt, unter Mac OS X und Linux durch "${ABC}".</translation>
 <translation id="3048744057455266684">Falls diese Richtlinie festgelegt ist und eine Such-URL-Vervollständigung aus der Omnibox diesen Parameter im Suchanfragen-String oder der Fragment-ID enthält, werden die Suchbegriffe und Suchanbieter anstelle der Such-URL angezeigt.
 
           Diese Richtlinie ist optional. Wenn sie nicht konfiguriert wird, erfolgt keine Ersetzung der Suchbegriffe.
@@ -1000,7 +1000,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
       Wenn die Richtlinie aktiviert ist, wird für jede Website ein eigener Prozess ausgeführt.
       Wenn die Richtlinie deaktiviert ist, sind "IsolateOrigins" und "SitePerProcess" ebenfalls deaktiviert. Nutzer können aber "SitePerProcess" weiterhin manuell anhand von Befehlszeilenparametern aktivieren.
       Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />" auf denselben Wert festzulegen. Wenn die von den beiden Richtlinien angegebenen Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> für die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />" denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
 
       HINWEIS: Diese Richtlinie funktioniert nicht unter Android. Wenn "SitePerProcess" unter Android aktiviert werden soll, muss die Richtlinieneinstellung "SitePerProcessAndroid" verwendet werden.
       </translation>
@@ -1724,10 +1724,10 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
       durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dabei werden auch
       durch Subdomains benannte Ursprünge isoliert. Wenn Sie z. B. https://example.com/ angeben,
       wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOriginsAndroid" und "SitePerProcessAndroid" werden deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell anhand von Befehlszeilenparametern aktivieren.
+      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOriginsAndroid" und "SitePerProcessAndroid" werden deaktiviert. Nutzer können aber weiterhin Befehlszeilenparameter verwenden, um "IsolateOrigins" manuell zu aktivieren.
       Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
 
-      HINWEIS: Unter Android ist die Website-Isolierung eine experimentelle Funktion, deren Unterstützung im Laufe der Zeit optimiert wird. Aktuell kann es aber zu Leistungsproblemen kommen.
+      HINWEIS: Unter Android ist die Website-Isolierung eine experimentelle Funktion, an deren optimierter Unterstützung wir derzeit arbeiten. Aktuell kann es aber zu Geschwindigkeitseinbußen kommen.
 
       HINWEIS: Diese Richtlinie funktioniert nur für Chrome unter Android auf Geräten mit mehr als 1 GB RAM. Damit die Richtlinie auf anderen Plattformen als Android genutzt werden kann, muss "IsolateOrigins" verwendet werden.
       </translation>
@@ -1759,11 +1759,11 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 
       Wenn die Richtlinie nicht festgelegt ist, werden der Liste keine Websites hinzugefügt.
 
-      Wenn diese Richtlinie festgelegt ist, wird jedes Element als Regel zum Aufrufen von Inhalten in einem alternativen Browser angesehen. Anhand dieser Regeln kann <ph name="PRODUCT_NAME" /> feststellen, ob eine URL in einem alternativen Browser geöffnet werden soll.
+      Wenn diese Richtlinie festgelegt ist, wird jedes Element als Regel zum Aufrufen der jeweiligen Inhalte in einem alternativen Browser angesehen. Anhand dieser Regeln kann <ph name="PRODUCT_NAME" /> feststellen, ob eine URL in einem alternativen Browser geöffnet werden soll.
 
-      Wenn das Internet Explorer-Add-in vorhanden und aktiviert ist, wechselt Internet Explorer zurück zu <ph name="PRODUCT_NAME" />, wenn die Regeln nicht übereinstimmen.
+      Wenn das Internet Explorer-Add-in vorhanden und aktiviert ist, wechselt Internet Explorer bei Nichtübereinstimmung der Regeln zurück zu <ph name="PRODUCT_NAME" />.
 
-      Falls sich Regeln widersprechen, wird die spezifischste Regel von <ph name="PRODUCT_NAME" /> angewendet.</translation>
+      Falls sich Regeln widersprechen, verwendet <ph name="PRODUCT_NAME" /> die Regel, die am spezifischsten ist.</translation>
 <translation id="5732972008943405952">AutoFill-Formulardaten bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="5765780083710877561">Beschreibung:</translation>
 <translation id="5770738360657678870">Entwicklerversion (möglicherweise nicht stabil)</translation>
@@ -1827,10 +1827,10 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy für Anfragen zur Gnubby-Authentifizierung verwendet.</translation>
 <translation id="5898486742390981550">Wenn mehrere Nutzer angemeldet sind, kann nur der Hauptnutzer Android-Apps verwenden.</translation>
 <translation id="5900196529149231477">
-      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="ISOLATE_ORIGINS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      Diese Richtlinie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="ISOLATE_ORIGINS_POLICY_NAME" />" für die eigentliche Nutzersitzung an. Es wird empfohlen, für beide Richtlinien denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
       Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dabei werden auch durch Subdomains benannte Ursprünge isoliert. Wenn Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
       Wenn die Richtlinie deaktiviert ist, sind "IsolateOrigins" und "SitePerProcess" ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell anhand von Befehlszeilenparametern aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, werden die standardmäßigen Website-Isolierungseinstellungen der Plattform für die Anmeldeseite verwendet.
+      Wenn die Richtlinie nicht konfiguriert ist, werden für die Anmeldeseite die standardmäßigen Plattformeinstellungen für die Isolierung von Websites verwendet.
       </translation>
 <translation id="5901427587865226597">Nur Duplexdruck</translation>
 <translation id="5906199912611534122">Ermöglicht die Aktivierung oder Deaktivierung der Netzwerkbegrenzung.
@@ -2196,7 +2196,7 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
       Wenn die Richtlinie nicht festgelegt oder auf "True" gesetzt ist, werden Safe Browsing-Daten erfasst.
       Ist die Richtlinie auf "False" festgelegt, werden keine Safe Browsing-Daten erfasst.
 
-      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit "<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />" registriert ist.</translation>
+      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät bei "<ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />" registriert ist.</translation>
 <translation id="686079137349561371">Microsoft Windows 7 oder höher</translation>
 <translation id="687046793986382807">Diese Richtlinie gilt ab <ph name="PRODUCT_NAME" /> Version 35 nicht mehr.
 
@@ -2340,7 +2340,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7132877481099023201">URLs, denen ohne Nachfrage Zugriff auf Videoaufnahmegeräte gestattet wird</translation>
 <translation id="7158064522994309072">Mit dieser Richtlinie wird festgelegt, welcher Befehl zum Öffnen von URLs in einem alternativen Browser verwendet werden soll.
 
-      Wenn die Richtlinie nicht festgelegt ist, wird ein plattformspezifischer Standard verwendet: Internet Explorer für Windows oder Safari für Mac OS X. Unter Linux wird kein alternativer Browser geöffnet, wenn die Richtlinie nicht festgelegt ist.
+      Wenn die Richtlinie nicht festgelegt ist, wird eine plattformspezifische Standardeinstellung verwendet: Bei Windows wird der Internet Explorer geöffnet und bei Mac OS X Safari. Unter Linux wird kein alternativer Browser geöffnet, wenn die Richtlinie nicht festgelegt ist.
 
       Wenn die Richtlinie auf "${ie}", "${firefox}", "${safari}" oder "${opera}"
       festgelegt ist, wird der angegebene Browser geöffnet, sofern er installiert ist.
@@ -3124,11 +3124,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8970205333161758602">Hinweis auf Einstellung von <ph name="PRODUCT_FRAME_NAME" /> unterdrücken</translation>
 <translation id="8976248126101463034">Gnubby-Authentifizierung für Remotezugriff-Hosts zulassen</translation>
 <translation id="8976531594979650914">Standarddrucker des Betriebssystems als Standardeinstellung verwenden</translation>
-<translation id="898520305112996948">Hiermit können Sie eine Liste mit URL-Mustern festlegen, die angeben, welchen Websites automatisch die Berechtigung zum Zugriff auf ein USB-Gerät mit der angegebenen Anbieter- und Produkt-ID gewährt wird. Jedes Element in der Liste muss sowohl Geräte als auch URL-Muster enthalten, damit die Richtlinie gültig ist. Jedes Geräteelement kann je ein Feld für eine Anbieter- und eine Produkt-ID enthalten. Fehlende IDs werden als Platzhalter betrachtet, wobei als Ausnahme zu berücksichtigen ist, dass eine Produkt-ID nicht ohne zugehörige Anbieter-ID angegeben werden kann, da die Richtlinie ansonsten ungültig ist. Ungültige Richtlinienwerte werden ignoriert.
-
-        Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultWebUsbGuardSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.
-
-        URL-Muster in dieser Richtlinie dürfen nicht im Widerspruch zu den in WebUsbBlockedForUrls konfigurierten URLs stehen. Im Falle einer Diskrepanz hat diese Richtlinie Vorrang vor "WebUsbBlockedForUrls" und "WebUsbAskForUrls".</translation>
 <translation id="8992176907758534924">Anzeige von Bildern für alle Websites blockieren</translation>
 <translation id="9012851181124311976">Mit dieser Richtlinie wird die Liste der URLs für die Unternehmensanmeldung konfiguriert (nur HTTP- und HTTPS-Schemas). Der Fingerabdruck für die Autorisierung wird unter diesen URLs registriert und für die Prüfung der Wiederverwendung des Passworts genutzt.
       Ihre Anmeldeseiten müssen den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
@@ -3144,9 +3139,9 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Dabei werden auch durch Subdomains benannte Ursprünge isoliert.
       Wenn Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/
       als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, sind die Funktionen "IsolateOrigins" und "SitePerProcess" ebenfalls deaktiviert. Nutzer können aber "IsolateOrigins" weiterhin manuell anhand von Befehlszeilenparametern aktivieren.
+      Wenn die Richtlinie deaktiviert ist, sind die Funktionen "IsolateOrigins" und "SitePerProcess" ebenfalls deaktiviert. Nutzer können aber weiterhin Befehlszeilenparameter verwenden, um "IsolateOrigins" manuell zu aktivieren.
       Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />" auf denselben Wert festzulegen. Wenn die von den beiden Richtlinien angegebenen Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> für die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />" denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, weil der von der Nutzerrichtlinie angegebene Wert erst angewendet werden muss.
 
       HINWEIS: Diese Richtlinie funktioniert nicht unter Android. Wenn "IsolateOrigins" unter Android aktiviert werden soll, muss die Richtlinieneinstellung "IsolateOriginsAndroid" verwendet werden.
       </translation>

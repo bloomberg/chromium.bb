@@ -166,7 +166,6 @@
     บนหน้าจอถัดไป โปรดส่งความคิดเห็นมาที่เราเพื่อช่วยแก้ไขปัญหานี้</translation>
 <translation id="1217668622537098248">เปลี่ยนกลับเป็นคลิกซ้ายหลังจากดำเนินการ</translation>
 <translation id="121783623783282548">รหัสผ่านของคุณไม่ตรงกัน</translation>
-<translation id="1219533395013150448">Assistant ใช้บันทึกเหล่านี้ในการสร้างรูปแบบเสียงของคุณซึ่งจะจัดเก็บไว้ในอุปกรณ์ที่คุณใช้ ลบหรือฝึกรูปแบบนี้ใหม่ได้ในการตั้งค่า Assistant และดูหรือลบคำสั่งเสียงได้ในส่วนควบคุมกิจกรรมของ Google</translation>
 <translation id="122082903575839559">อัลกอริธึมลายเซ็นใบรับรอง </translation>
 <translation id="1221024147024329929">PKCS #1 MD2 พร้อมการเข้ารหัส RSA</translation>
 <translation id="1221825588892235038">เนื้อหาที่เลือกเท่านั้น</translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> ต้องการเชื่อมต่อ</translation>
 <translation id="3274763671541996799">คุณอยู่ในการแสดงแบบเต็มหน้าจอแล้ว</translation>
 <translation id="3275778913554317645">เปิดเป็นหน้าต่าง</translation>
-<translation id="3278877214895457897">เมื่อตั้งค่า Chromebook แล้ว ก็กดปุ่ม Assistant หรือพูดว่า "Ok Google" เพื่อรับความช่วยเหลือจาก Assistant ได้ทุกเมื่อ</translation>
 <translation id="3279230909244266691">ขั้นตอนนี้อาจใช้เวลาสักครู่ กำลังเริ่มเครื่องเสมือน</translation>
 <translation id="3279741024917655738">เปิดวิดีโอเต็มหน้าจอใน</translation>
 <translation id="3280237271814976245">บันทึกใ&amp;ห้เป็น...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Chrome จะอัปเดตโดยอัตโนมัติเพื่อให้คุณได้ใช้เวอร์ชันใหม่ที่สุดอยู่เสมอ</translation>
 <translation id="3551320343578183772">ปิดแท็บ</translation>
 <translation id="3552780134252864554">ล้างเมื่อออก</translation>
-<translation id="3553146918065661815">แสดงคำเตือนก่อนออกโดยใช้ ⌘Q</translation>
 <translation id="3555812735919707620">นำส่วนขยายออก</translation>
 <translation id="3556000484321257665">เครื่องมือค้นหาของคุณเปลี่ยนเป็น <ph name="URL" /></translation>
 <translation id="3559262020195162408">ติดตั้งนโยบายในอุปกรณ์นี้ไม่สำเร็จ</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">อ่านการตั้งค่าการเข้าถึง</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{แอปมีการเข้าถึงอย่างถาวรไปยัง 1 ไฟล์}other{แอปมีการเข้าถึงอย่างถาวรไปยัง # ไฟล์}}</translation>
 <translation id="3660234220361471169">ไม่น่าเชื่อถือ</translation>
-<translation id="3661054927247347545">ใบรับรองการลงชื่อเข้าใช้ไม่ถูกต้อง หน้าต่างจะปิดใน <ph name="MINUTES" /> : <ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">ไอคอนส่วนขยาย</translation>
 <translation id="3665589677786828986">Chrome ตรวจพบว่าการตั้งค่าของคุณบางส่วนได้รับความเสียหายจากโปรแกรมอื่น และรีเซ็ตการตั้งค่าเป็นค่าเริ่มต้นเดิม</translation>
 <translation id="3668570675727296296">การตั้งค่าภาษา</translation>
@@ -2889,7 +2885,6 @@
 <translation id="5434065355175441495">PKCS #1 การเข้ารหัส RSA</translation>
 <translation id="5436492226391861498">กำลังรอช่องทางการเชื่อมต่อพร็อกซี...</translation>
 <translation id="5436510242972373446">ค้นหา <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">อีกไม่นานระบบจะปิดหน้าต่างเบราว์เซอร์ทั้งหมดอัตโนมัติโดยไม่ต้องลงชื่อเข้าใช้</translation>
 <translation id="5438224778284622050">คุณต้องการลบไฟล์ออฟไลน์ใช่ไหม</translation>
 <translation id="544083962418256601">สร้างทางลัด...</translation>
 <translation id="5442228125690314719">เกิดข้อผิดพลาดขณะสร้างดิสก์อิมเมจ โปรดลองอีกครั้ง</translation>
@@ -3621,7 +3616,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">ลงชื่อเข้าใช้เดี๋ยวนี้</translation>
 <translation id="6527303717912515753">แชร์</translation>
 <translation id="6528513914570774834">อนุญาตให้ผู้ใช้อุปกรณ์นี้คนอื่นๆ ใช้เครือข่ายนี้ได้</translation>
 <translation id="652948702951888897">ประวัติการเข้าชมใน Chrome</translation>
@@ -4090,7 +4084,6 @@
 <translation id="7256710573727326513">เปิดในแท็บ</translation>
 <translation id="725758059478686223">บริการการพิมพ์</translation>
 <translation id="7257666756905341374">อ่านข้อมูลที่คุณคัดลอกและวาง</translation>
-<translation id="7258619945375359543">อนุญาตให้ Assistant แสดงคำแนะนำโดยอิงจากสิ่งที่อยู่ในหน้าจอ</translation>
 <translation id="7258697411818564379">เพิ่ม PIN ของคุณแล้ว</translation>
 <translation id="7262004276116528033">บริการลงชื่อเข้าใช้นี้โฮสต์โดย <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">ปิดแท็บ</translation>
@@ -4853,7 +4846,6 @@
 <translation id="8438566539970814960">ปรับปรุงการค้นหาและการท่องเว็บให้ดียิ่งขึ้น</translation>
 <translation id="8439506636278576865">เสนอที่จะแปลหน้าต่างๆ ที่เป็นภาษานี้</translation>
 <translation id="8440630305826533614">แอป Linux</translation>
-<translation id="8446474770554547328">การบันทึก "Ok Google" 3 ครั้งเป็นการสร้างรูปแบบเสียงของคุณซึ่งจะจัดเก็บไว้ในอุปกรณ์ที่คุณใช้ ลบหรือฝึกรูปแบบนี้ใหม่ได้ในการตั้งค่า Assistant และดูหรือลบคำสั่งเสียงได้ในส่วนควบคุมกิจกรรมของ Google</translation>
 <translation id="8446884382197647889">ดูข้อมูลเพิ่มเติม</translation>
 <translation id="8447409163267621480">รวมปุ่ม Ctrl หรือ Alt</translation>
 <translation id="8448729345478502352">ทำให้รายการในหน้าจอมีขนาดเล็กลงหรือใหญ่ขึ้น</translation>

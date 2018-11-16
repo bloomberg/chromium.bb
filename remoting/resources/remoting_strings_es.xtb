@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="1002108253973310084">Se ha detectado una versión de protocolo incompatible. Asegúrate de tener instalada la última versión del software en ambos ordenadores y vuelve a intentarlo.</translation>
+<translation id="1008557486741366299">Ahora no</translation>
 <translation id="1050693411695664090">Mala</translation>
 <translation id="1152528166145813711">Seleccionar…</translation>
 <translation id="1199593201721843963">Inhabilitar conexiones remotas</translation>
@@ -82,6 +83,7 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="2841013758207633010">Hora</translation>
 <translation id="2851754573186462851">Flujo de aplicaciones de Chromium</translation>
 <translation id="2888969873284818612">Se ha producido un error de red. La aplicación se reiniciará cuando el dispositivo vuelva a estar conectado a Internet.</translation>
+<translation id="2891243864890517178">Para Mac (OS X Yosemite 10.10 y versiones superiores)</translation>
 <translation id="289405675947420287">Accede a tu ordenador desde tu dispositivo iOS de forma segura, rápida, sencilla y gratuita.
 
 • Descarga la aplicación Escritorio Remoto de Chrome desde Chrome Web Store en el ordenador al que quieras acceder de forma remota.

@@ -144,7 +144,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5862307444128926510">Welkom bij Chromium</translation>
 <translation id="5877064549588274448">Kanaal gewijzigd. Start het apparaat opnieuw op om de wijzigingen door te voeren.</translation>
 <translation id="5895138241574237353">Opnieuw starten</translation>
-<translation id="5902536751647951209">Verificatiecertificaat mislukt. Log opnieuw in bij Chromium of neem contact op met je beheerder voor meer informatie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Updaten bijna voltooid. Start je apparaat opnieuw op om de update te voltooien.</translation>
 <translation id="5987687638152509985">Chromium updaten om de synchronisatie te starten</translation>
 <translation id="6013050204643758987">Chromium OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS" />open-sourcesoftware<ph name="END_LINK_CROS_OSS" />, net als <ph name="BEGIN_LINK_LINUX_OSS" />Linux (bèta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -224,7 +223,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="7745317241717453663">Hiermee worden je browsergegevens verwijderd van dit apparaat. Als je je gegevens later wilt terughalen, log je in bij Chromium als <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of je nog schijfruimte hebt en of je toestemming hebt om software te installeren.</translation>
 <translation id="7773960292263897147">Waarschuwing: Chromium kan niet voorkomen dat extensies je browsergeschiedenis vastleggen. Als je deze extensie in de incognitomodus wilt uitschakelen, verwijder je het vinkje bij deze optie.</translation>
-<translation id="7774736947049807614">Verificatiecertificaat mislukt. Log opnieuw in bij Chromium als <ph name="USER_NAME" /> of neem contact op met je beheerder voor meer informatie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium kan niet worden geüpdatet naar de nieuwste versie, dus je loopt nieuwe functies en beveiligingsoplossingen mis.</translation>
 <translation id="7901117350626490574">Er is een nieuwe update voor Chromium beschikbaar die wordt toegepast zodra je het programma opnieuw start.</translation>

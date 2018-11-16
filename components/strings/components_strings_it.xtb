@@ -146,6 +146,7 @@
 <translation id="1839551713262164453">Convalida dei valori della norma non riuscita con errori</translation>
 <translation id="1840414022444569775">Questo numero di carta è già stato usato</translation>
 <translation id="1842969606798536927">Paga</translation>
+<translation id="1866450167992311397">Utilizza le tue carte in più posti</translation>
 <translation id="1871208020102129563">L'impostazione del proxy prevede l'utilizzo di server proxy fissi, non di un URL script .pac.</translation>
 <translation id="1871284979644508959">Campo obbligatorio</translation>
 <translation id="1874765382782611674">Carte di debito accettate</translation>
@@ -701,6 +702,7 @@
 <translation id="5720705177508910913">Utente corrente</translation>
 <translation id="5730040223043577876">Chrome ti consiglia di reimpostare la password, se l'hai utilizzata su altri siti.</translation>
 <translation id="5732392974455271431">I tuoi genitori possono sbloccarlo per te</translation>
+<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Questa carta e il relativo indirizzo di fatturazione vengono salvati nel tuo Account Google, così potrai effettuare più rapidamente i pagamenti, ovunque tu sia collegato all'account}other{Queste carte e i relativi indirizzi di fatturazione vengono salvati nel tuo Account Google, così potrai effettuare più rapidamente i pagamenti, ovunque tu sia collegato all'account}}</translation>
 <translation id="5763042198335101085">Inserisci un indirizzo email valido</translation>
 <translation id="5765072501007116331">Seleziona un indirizzo per conoscere i requisiti e i metodi di consegna</translation>
 <translation id="5770114862687765385">Sembra che il file sia danneggiato. Fai clic sul pulsante "Ripristina" per ripristinare la sessione.</translation>
@@ -781,6 +783,7 @@
 <translation id="6337133576188860026">Consente di liberare meno di <ph name="SIZE" />. Alcuni siti potrebbero caricarsi più lentamente alla prossima visita.</translation>
 <translation id="6337534724793800597">Filtra i criteri per nome</translation>
 <translation id="6358450015545214790">Che cosa significano?</translation>
+<translation id="635989537247018238">Nel prossimo passaggio potrai scegliere quali carte salvare</translation>
 <translation id="6383221683286411806">Potrebbe essere applicato un addebito.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 altro suggerimento}other{# altri suggerimenti}}</translation>
 <translation id="6387754724289022810">Per pagare più velocemente la prossima volta, salva la carta e l'indirizzo di fatturazione sul tuo account Google e su questo dispositivo.</translation>

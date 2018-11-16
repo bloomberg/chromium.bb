@@ -734,7 +734,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6567212464587185774">Trošite do 60% manje podataka i ubrzajte web.</translation>
 <translation id="6573096386450695060">Dopusti uvijek</translation>
 <translation id="6573431926118603307">Ovdje će se prikazati kartice koje ste otvorili u Chromeu na svojim ostalim uređajima.</translation>
-<translation id="6575643671698722332">Poništavanje nije uspjelo. Provjerite je li uređaj na mreži i ponovite.</translation>
 <translation id="6583199322650523874">Označavanje trenutačne stranice</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Klasični prikaz</translation>
@@ -859,7 +858,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7475192538862203634">Ako se to često prikazuje, pokušajte s ovim <ph name="BEGIN_LINK" />prijedlozima<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD kartica nije pronađena. Neke od vaših datoteka možda nedostaju.</translation>
-<translation id="748127970106343339">Potvrđivanje brisanja vjerodajnice uređaja</translation>
 <translation id="7481312909269577407">Naprijed</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (ažurirano <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Prikaz zaporki</translation>
@@ -1010,9 +1008,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="8609465669617005112">Premjesti gore</translation>
 <translation id="8616006591992756292">Na vašem Google računu možda postoje drugi oblici povijesti pregledavanja na stranici <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Želite li otvoriti predloženi URL naveden u preuzetom sadržaju?</translation>
-<translation id="862875433388403934">Preuzeti sadržaj (filmovi, glazba itd.) u drugim aplikacijama možda se više neće moći reproducirati dok te aplikacije ponovo ne dobiju licence na temelju nove vjerodajnice uređaja.
-
-Da biste dobili nove licence, povežite se s internetom i reproducirajte preuzeti sadržaj.</translation>
 <translation id="8636825310635137004">Da bi se prikazale kartice s vaših ostalih uređaja, uključite sinkronizaciju.</translation>
 <translation id="8641930654639604085">Pokušaj blokirati web-lokacije za odrasle</translation>
 <translation id="8662811608048051533">Odjavit ćete se s većine web-lokacija.</translation>
@@ -1070,7 +1065,6 @@ Da biste dobili nove licence, povežite se s internetom i reproducirajte preuzet
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB preuzimanja</translation>
 <translation id="9100505651305367705">Nuđenje prikazivanja članaka u pojednostavljenom prikazu kada je to podržano</translation>
 <translation id="9100610230175265781">Potrebna je zaporka</translation>
-<translation id="9133515669113036225">Poništavanje vjerodajnica uređaja</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="9139068048179869749">Web-lokacije moraju tražiti dopuštenje za slanje obavijesti (preporučeno)</translation>

@@ -734,7 +734,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6567212464587185774">Utilisez jusqu'à 60 % de données en moins et naviguez plus rapidement sur le Web.</translation>
 <translation id="6573096386450695060">Toujours autoriser</translation>
 <translation id="6573431926118603307">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils s'affichent ici.</translation>
-<translation id="6575643671698722332">Échec de la réinitialisation. Veuillez vous assurer que l'appareil connecté, puis réessayez.</translation>
 <translation id="6583199322650523874">Marquer la page actuelle en tant que favori</translation>
 <translation id="6584721918629302382">RA</translation>
 <translation id="6593061639179217415">Version pour ordinateur</translation>
@@ -859,7 +858,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7475192538862203634">Si vous rencontrez souvent ce problème, essayez les <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" /> suivantes.</translation>
 <translation id="7475688122056506577">Carte SD introuvable. Certains de vos fichiers risquent d'être manquants.</translation>
-<translation id="748127970106343339">Confirmer la suppression de l'identifiant de l'appareil</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Dernière mise à jour <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Afficher les mots de passe</translation>
@@ -1010,9 +1008,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8609465669617005112">Monter</translation>
 <translation id="8616006591992756292">Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Ouvrir l'URL suggérée indiquée dans le contenu téléchargé ?</translation>
-<translation id="862875433388403934">Il se peut que le contenu (films, musique, etc.) téléchargé dans d'autres applications ne soit plus lisible tant que ces applications n'ont pas obtenu de nouvelles licences sur la base d'un nouvel identifiant d'appareil.
-
-Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le contenu que vous avez téléchargé.</translation>
 <translation id="8636825310635137004">Activez la synchronisation pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="8641930654639604085">Essayer de bloquer les sites réservés aux adultes</translation>
 <translation id="8662811608048051533">Vous déconnecte de la plupart des sites.</translation>
@@ -1070,7 +1065,6 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> Ko téléchargé(s)</translation>
 <translation id="9100505651305367705">Proposer une version simplifiée des articles, si celle-ci est compatible</translation>
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
-<translation id="9133515669113036225">Réinitialiser les identifiants de l'appareil</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9139068048179869749">Demander avant d'autoriser des sites à envoyer des notifications (recommandé)</translation>

@@ -2358,7 +2358,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7132877481099023201">URLs aos quais será concedido acesso a dispositivos de captura de vídeo imediatamente</translation>
 <translation id="7158064522994309072">Esta política controla qual o comando a utilizar para abrir os URLs num navegador alternativo.
 
-      Quando esta política não está definida, é utilizada uma predefinição específica da plataforma: o Internet Explorer para o Windows ou o Safari para o Mac OS X. No Linux, a inicialização de um navegador alternativo falhará quando esta política não estiver definida.
+      Quando esta política não está definida, é utilizada uma predefinição específica da plataforma: o Internet Explorer para o Windows ou o Safari para o Mac OS X. No Linux, a inicialização de um navegador alternativo falha quando esta política não está definida.
 
       Quando esta política está definida para uma das opções ${ie}, ${firefox}, ${safari} ou ${opera}, esse navegador é iniciado se estiver instalado. O ${ie} apenas está disponível no Windows e o ${safari} apenas está disponível no Windows e no Mac OS X.
 
@@ -3167,11 +3167,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8970205333161758602">Suprimir o pedido de recusa do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Permitir autenticação gnubby para anfitriões de acesso remoto</translation>
 <translation id="8976531594979650914">Utilizar a impressora predefinida do sistema como a predefinição</translation>
-<translation id="898520305112996948">Permite-lhe definir uma lista de padrões de URL que especificam os sites aos quais será concedida automaticamente autorização para aceder a um dispositivo USB com os IDs de produto e de fornecedor indicados. Todos os itens na lista devem conter padrões de URL e dispositivos para que a política seja válida. Todos os itens nos dispositivos podem conter um campo de ID de fornecedor e de ID do produto. Os IDs omitidos são tratados como carateres universais, com a exceção de que não é possível especificar um ID do produto sem que o ID de fornecedor também seja especificado. Caso contrário, a política não é válida. Os valores da política inválidos são ignorados.
-
-        Se esta política não for definida, o valor predefinido global é utilizado para todos os sites, quer da política "DefaultWebUsbGuardSetting" se estiver definida, quer da configuração pessoal do utilizador.
-
-        Os padrões de URL nesta política não devem entrar em conflito com os configurados através de WebUsbBlockedForUrls. Se existir conflito, esta política prevalece em relação a WebUsbBlockedForUrls e WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Não permitir que os sites mostrem imagens</translation>
 <translation id="9012851181124311976">Configure a lista de URLs de início de sessão empresariais (apenas para esquemas HTTP e HTTPS). A impressão digital da palavra-passe é capturada nestes URLs e utilizada para a deteção de reutilização da palavra-passe.
       Para que o <ph name="PRODUCT_NAME" /> capture uma impressão digital da palavra-passe corretamente, certifique-se de que as suas páginas de início de sessão seguem as diretrizes apresentadas em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

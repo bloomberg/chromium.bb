@@ -166,7 +166,6 @@
     Saatke järgmisel ekraanil tagasisidet, et saaksime probleemi lahendamisel abiks olla.</translation>
 <translation id="1217668622537098248">Pärast toimingut vasakpoolsele klikile ennistamine</translation>
 <translation id="121783623783282548">Paroolid ei ühti.</translation>
-<translation id="1219533395013150448">Assistent loob salvestuste alusel teie häälemudeli, mis talletatakse teie seadmesse. Assistendi seadetes saate mudeli kustutada või ümber koolitada. Google'i kontotegevuste halduses saate häälkäsklusi vaadata ja kustutada.</translation>
 <translation id="122082903575839559">Sertifikaadi allkirjaalgoritm</translation>
 <translation id="1221024147024329929">PKCS 1 MD2 koos RSA krüpteerimisega</translation>
 <translation id="1221825588892235038">Ainult valitud</translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> soovib ühenduse luua</translation>
 <translation id="3274763671541996799">Lülitasite täisekraanile.</translation>
 <translation id="3275778913554317645">Ava aknana</translation>
-<translation id="3278877214895457897">Kui teie Chromebook on seadistatud, vajutage assistendi nuppu või öelge otsetee sõna „Ok Google”, et assistendilt abi paluda.</translation>
 <translation id="3279230909244266691">Protsess võib võtta mõne minuti. Virtuaalset masinat käivitatakse.</translation>
 <translation id="3279741024917655738">Kuva täisekraanil videod:</translation>
 <translation id="3280237271814976245">Salvesta &amp;nimega...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Chrome teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni</translation>
 <translation id="3551320343578183772">Sule vaheleht</translation>
 <translation id="3552780134252864554">Kustutatakse väljumisel</translation>
-<translation id="3553146918065661815">Hoiatuse kuvamine enne klahvikombinatsiooniga ⌘Q sulgemist</translation>
 <translation id="3555812735919707620">Eemalda laiendus</translation>
 <translation id="3556000484321257665">Otsingumootoriks määrati <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Reeglit ei õnnestunud seadmesse installida.</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">Juurdepääsetavuse seadete lugemine</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Sellel on püsiv juurdepääs ühele failile.}other{Sellel on püsiv juurdepääs # failile.}}</translation>
 <translation id="3660234220361471169">Mitteusaldusväärne</translation>
-<translation id="3661054927247347545">Sisselogimise sertifikaat ei ole kehtiv, aken suletakse <ph name="MINUTES" />:<ph name="SECONDS" /> pärast</translation>
 <translation id="3664511988987167893">Laienduse ikoon</translation>
 <translation id="3665589677786828986">Chrome tuvastas, et teine programm rikkus teie seadeid, ja lähtestas need algsetele vaikevalikutele.</translation>
 <translation id="3668570675727296296">Keeleseaded</translation>
@@ -2293,7 +2289,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4524832533047962394">Operatsioonisüsteemi see versioon ei toeta valitud registreerimisviisi. Veenduge, et käitaksite uusimat versiooni.</translation>
 <translation id="4525382759303819021">Hangi Play poe rakenduste kohta värskeimaid uudiseid ja soovitusi</translation>
 <translation id="4530494379350999373">Päritolu</translation>
-<translation id="4533846798469727141">Nüüd öelge „Hey Google”.</translation>
+<translation id="4533846798469727141">Nüüd öelge „Hey Google”</translation>
 <translation id="4533985347672295764">Protsessoriaeg</translation>
 <translation id="4534661889221639075">Proovige uuesti.</translation>
 <translation id="4535127706710932914">Vaikeprofiil</translation>
@@ -2889,7 +2885,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5434065355175441495">PKCS 1 RSA krüpteerimine</translation>
 <translation id="5436492226391861498">Puhverserveri tunneli ootamine...</translation>
 <translation id="5436510242972373446">Otsi <ph name="SITE_NAME" />-st:</translation>
-<translation id="5436822233913560332">Ilma sisse logimata suletakse kõik brauseriaknad peagi automaatselt.</translation>
 <translation id="5438224778284622050">Kas kustutada võrguühenduseta failid?</translation>
 <translation id="544083962418256601">Loo otseteid ...</translation>
 <translation id="5442228125690314719">Viga kettakujutise loomisel. Proovige uuesti.</translation>
@@ -3519,7 +3514,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="637062427944097960">Fail on avatud muul töölaual. Selle vaatamiseks avage <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Proovi uuesti</translation>
-<translation id="6377268785556383139">1 tulemust otsingule „<ph name="SEARCH_TEXT" />”</translation>
+<translation id="6377268785556383139">1 tulemus otsingule „<ph name="SEARCH_TEXT" />”</translation>
 <translation id="6380143666419481200">Nõustu ja jätka</translation>
 <translation id="6384275966486438344">Muutke oma otsinguseadeid: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Saidid saavad salvestada ja lugeda küpsisefaili andmeid</translation>
@@ -3621,7 +3616,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Logi sisse</translation>
 <translation id="6527303717912515753">Jaga</translation>
 <translation id="6528513914570774834">Luba teistel selle seadme kasutajatel seda võrku kasutada</translation>
 <translation id="652948702951888897">Chrome'i ajalugu</translation>
@@ -4090,7 +4084,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7256710573727326513">Ava vahekaardil</translation>
 <translation id="725758059478686223">Printimisteenus</translation>
 <translation id="7257666756905341374">Kopeeritud ja kleebitud andmete lugemine</translation>
-<translation id="7258619945375359543">Luba assistendil ekraanil kuvatava sisu alusel soovitusi esitada</translation>
 <translation id="7258697411818564379">PIN-kood on lisatud</translation>
 <translation id="7262004276116528033">Sisselogimisteenust hostib <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Sule vahelehed</translation>
@@ -4854,7 +4847,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8438566539970814960">Otsingute ja sirvimise paremaks muutmine</translation>
 <translation id="8439506636278576865">Paku selles keeles olevate lehtede tõlkimist</translation>
 <translation id="8440630305826533614">Linuxi rakendused</translation>
-<translation id="8446474770554547328">Fraasi „Ok Google” kolm korda salvestamine loob teie häälemudeli, mis talletatakse teie seadmesse. Assistendi seadetes saate mudeli kustutada või ümber koolitada. Google'i kontotegevuste halduses saate häälkäsklusi vaadata ja kustutada.</translation>
 <translation id="8446884382197647889">Lisateave</translation>
 <translation id="8447409163267621480">Kaasake Ctrl või Alt</translation>
 <translation id="8448729345478502352">Muutke ekraanil kuvatud üksused väiksemaks või suuremaks</translation>

@@ -125,15 +125,15 @@
 <translation id="1291880496936992484">Cảnh báo: RC4 sẽ bị xóa hoàn toàn khỏi <ph name="PRODUCT_NAME" /> sau phiên bản 52 (khoảng tháng 9 năm 2016) và chính sách này sẽ ngừng hoạt động sau đó.
 
       Nếu chính sách này không được đặt hoặc được đặt thành false thì bộ mã hóa RC4 trong TLS sẽ không được bật. Ngoài ra, chính sách có thể được đặt thành true để duy trì khả năng tương thích với máy chủ lỗi thời. Đây là một biện pháp tạm thời và cần phải định cấu hình lại máy chủ.</translation>
-<translation id="1297117713060236551">Chính sách này kiểm soát danh sách trang web không bao giờ gây ra tình trạng chuyển đổi trình duyệt.
+<translation id="1297117713060236551">Chính sách này kiểm soát danh sách các trang web không bao giờ gây ra tình trạng chuyển đổi trình duyệt.
 
       Lưu ý rằng bạn cũng có thể thêm các thành phần vào danh sách này thông qua chính sách <ph name="USE_IE_SITELIST_POLICY_NAME" />.
 
-      Khi bạn chưa đặt chính sách này thì không có trang web nào được thêm vào danh sách.
+      Khi bạn không đặt chính sách này thì không có trang web nào được thêm vào danh sách.
 
       Khi bạn đặt chính sách này, mỗi mục được coi là một quy tắc, tương tự như chính sách <ph name="URL_LIST_POLICY_NAME" />. Tuy nhiên, logic bị đảo ngược: các quy tắc trùng khớp sẽ không mở một trình duyệt thay thế.
 
-      Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụng cả hai chiều. Tức là, khi có tiện ích bổ trợ Internet Explorer và bạn bật tiện ích này, thì tiện ích này cũng sẽ kiểm soát việc <ph name="IE_PRODUCT_NAME" /> có mở những URL này trong <ph name="PRODUCT_NAME" /> hay không.</translation>
+      Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụng cho cả hai chiều. Tức là, khi có tiện ích bổ trợ Internet Explorer và tiện ích này được bật, thì tiện ích này cũng sẽ kiểm soát việc <ph name="IE_PRODUCT_NAME" /> có mở những URL này trong <ph name="PRODUCT_NAME" /> hay không.</translation>
 <translation id="1297182715641689552">Sử dụng tập lệnh proxy .pac</translation>
 <translation id="1304973015437969093">Cần ID tiện ích/ứng dụng và URL cập nhật để tự động cài đặt</translation>
 <translation id="1307454923744766368">Nguồn gốc hoặc mẫu tên máy chủ mà các hạn chế đối với
@@ -238,7 +238,7 @@
       doanh nghiệp sẽ không thể sử dụng ARC.</translation>
 <translation id="1559980755219453326">Chính sách này kiểm soát việc có nên báo cáo thông tin về tiện ích và plugin hay không.
 
-      Khi bạn chưa đặt hoặc đặt chính sách này thành True, thì dữ liệu về tiện ích và plugin sẽ được thu thập.
+      Khi bạn không đặt hoặc đặt chính sách này thành True, thì dữ liệu về tiện ích và plugin sẽ được thu thập.
       Khi bạn đặt chính sách này thành False, thì dữ liệu về tiện ích và plugin sẽ không được thu thập.
 
       Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -812,7 +812,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3047732214002457234">Kiểm soát cách tính năng Làm sạch Chrome báo cáo dữ liệu cho Google</translation>
 <translation id="304775240152542058">Chính sách này kiểm soát các tham số dòng lệnh để chạy trình duyệt thay thế.
 
-      Khi bạn chưa đặt chính sách này thì chỉ URL được chuyển dưới dạng tham số dòng lệnh.
+      Khi bạn không đặt chính sách này thì chỉ URL được chuyển dưới dạng tham số dòng lệnh.
 
       Khi bạn đặt chính sách này thành một danh sách chuỗi, thì mỗi chuỗi sẽ được chuyển tới trình duyệt thay thế dưới dạng một tham số dòng lệnh. Trên Windows, các tham số được liên kết bằng dấu cách. Trên Mac OS X và Linux, một tham số có thể chứa các dấu cách nhưng vẫn bị coi là một tham số đơn lẻ.
 
@@ -991,12 +991,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3496296378755072552">Trình quản lý mật khẩu</translation>
 <translation id="3500732098526756068">Cho phép bạn kiểm soát hoạt động kích hoạt cảnh báo bảo vệ mật khẩu. Tính năng bảo vệ mật khẩu sẽ cảnh báo người dùng khi họ sử dụng lại mật khẩu được bảo vệ trên các trang web có thể đáng ngờ.
 
-      Bạn có thể sử dụng các chính sách 'PasswordProtectionLoginURLs' và 'PasswordProtectionChangePasswordURL' để định cấu hình mật khẩu nào cần bảo vệ.
+      Bạn có thể sử dụng các chính sách 'PasswordProtectionLoginURLs' và 'PasswordProtectionChangePasswordURL' để định cấu hình mật khẩu cần bảo vệ.
 
       Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOff', thì không có cảnh báo bảo vệ bằng mật khẩu nào hiển thị.
       Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPasswordReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu được bảo vệ của họ trên trang web không có trong danh sách cho phép.
       Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPhishingReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu được bảo vệ của họ trên trang web lừa đảo.
-      Nếu bạn chưa đặt chính sách này thì dịch vụ bảo vệ mật khẩu sẽ chỉ bảo vệ mật khẩu của Google nhưng người dùng sẽ có thể thay đổi tùy chọn cài đặt này.</translation>
+      Nếu bạn không đặt chính sách này thì dịch vụ bảo vệ mật khẩu sẽ chỉ bảo vệ mật khẩu của Google nhưng người dùng sẽ có thể thay đổi tùy chọn cài đặt này.</translation>
 <translation id="3502555714327823858">Cho phép tất cả các chế độ in hai mặt</translation>
 <translation id="350443680860256679">Định cấu hình ARC</translation>
 <translation id="3504791027627803580">Chỉ định URL của công cụ tìm kiếm được dùng để cung cấp tìm kiếm theo hình ảnh. Yêu cầu tìm kiếm sẽ được gửi bằng phương thức GET. Nếu đặt chính sách DefaultSearchProviderImageURLPostParams thì yêu cầu tìm kiếm theo hình ảnh sẽ sử dụng phương thức POST thay thế.
@@ -1015,7 +1015,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu đặt chính sách này thành 'DeveloperToolsAllowed' (giá trị 1), thì bạn có thể truy cập cũng như sử dụng Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript trong tất cả các ngữ cảnh, bao gồm cả ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp.
       Nếu đặt chính sách này thành 'DeveloperToolsDisallowed' (giá trị 2), thì bạn không thể truy cập vào Công cụ dành cho nhà phát triển, cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục menu ngữ cảnh để mở Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
-<translation id="355118380775352753">Các trang web cần mở trong trình duyệt thay thế</translation>
+<translation id="355118380775352753">Các trang web sẽ mở trong trình duyệt thay thế</translation>
 <translation id="3556806727696701427">Bật tính năng Duyệt web an toàn của <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi mục cài đặt này.
 
       Nếu bạn bật mục cài đặt này, thì tính năng Duyệt web an toàn sẽ luôn hoạt động.
@@ -1616,7 +1616,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5208240613060747912">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web không được phép hiển thị thông báo.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
-<translation id="5213038356678567351">Các trang web sẽ không bao giờ kích hoạt nút chuyển trình duyệt.</translation>
+<translation id="5213038356678567351">Các trang web sẽ không bao giờ kích hoạt quá trình chuyển trình duyệt.</translation>
 <translation id="5219844027738217407">Đối với các ứng dụng Android, chính sách này chỉ ảnh hưởng đến micrô. Khi chính sách này được đặt thành true, micrô sẽ bị tắt tiếng cho tất cả ứng dụng Android mà không có ngoại lệ nào.</translation>
 <translation id="5228316810085661003">Độ trễ của tính năng tự động đăng nhập vào tài khoản trên thiết bị.
 
@@ -1794,14 +1794,14 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5586942249556966598">Không làm gì</translation>
 <translation id="5592242031005200087">
       Nếu bạn bật chính sách này thì mỗi nguồn gốc có tên trong
-      danh sách được phân tách bằng dấu phẩy sẽ chạy quy trình riêng. Điều này cũng sẽ cách ly
+      danh sách phân tách bằng dấu phẩy sẽ chạy quy trình riêng. Điều này cũng sẽ cách ly
       các nguồn gốc được đặt tên theo miền phụ; ví dụ: việc chỉ định https://example.com/ cũng
       sẽ khiến https://foo.example.com/ bị cách ly dưới dạng một phần của trang web
       https://example.com/.
       Nếu bạn tắt chính sách này thì sẽ không có hoạt động Cách ly trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOriginsAndroid và SitePerProcessAndroid sẽ bị tắt. Người dùng vẫn có thể bật IsolateOrigins theo cách thủ công qua cờ dòng lệnh.
       Nếu bạn chưa định cấu hình chính sách này thì người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
 
-      LƯU Ý: Trên Android, Cách ly trang web là tính năng thử nghiệm. Tính năng hỗ trợ sẽ cải thiện theo thời gian, nhưng hiện tại, tính năng này có thể gây ra các vấn đề về hiệu suất.
+      LƯU Ý: Trên Android, Cách ly trang web là tính năng thử nghiệm. Việc hỗ trợ sẽ cải thiện theo thời gian, nhưng hiện tại, tính năng này có thể gây ra các vấn đề về hiệu suất.
 
       LƯU Ý: Chính sách này chỉ áp dụng cho Chrome trên Android chạy trên các thiết bị có hơn 1GB RAM. Để áp dụng chính sách này trên các nền tảng không phải Android, hãy sử dụng IsolateOrigins.
       </translation>
@@ -1831,11 +1831,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Lưu ý rằng bạn cũng có thể thêm các thành phần vào danh sách này thông qua chính sách <ph name="USE_IE_SITELIST_POLICY_NAME" />.
 
-      Khi bạn chưa đặt chính sách này thì sẽ không có trang web nào được thêm vào danh sách.
+      Khi bạn không đặt chính sách này thì sẽ không có trang web nào được thêm vào danh sách.
 
       Khi bạn đặt chính sách này thì mỗi mục được coi là một quy tắc để mở nội dung nào đó trên trình duyệt khác. <ph name="PRODUCT_NAME" /> sử dụng các quy tắc đó khi chọn có nên mở URL trên trình duyệt khác hay không.
 
-      Khi có tiện ích bổ trợ Internet Explorer và bạn bật tiện ích này, thì Internet Explorer sẽ chuyển về <ph name="PRODUCT_NAME" /> khi các quy tắc này không trùng khớp.
+      Khi có tiện ích bổ trợ Internet Explorer và tiện ích này được bật, thì Internet Explorer sẽ chuyển về <ph name="PRODUCT_NAME" /> khi các quy tắc này không trùng khớp.
 
       Nếu các quy tắc này mâu thuẫn với nhau thì <ph name="PRODUCT_NAME" /> sẽ sử dụng quy tắc cụ thể nhất.</translation>
 <translation id="5732972008943405952">Nhập dữ liệu biểu mẫu tự động điền từ trình duyệt mặc định trong lần chạy đầu tiên</translation>
@@ -2276,7 +2276,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="685769593149966548">Buộc sử dụng Chế độ hạn chế nghiêm ngặt cho YouTube</translation>
 <translation id="6857824281777105940">Chính sách này kiểm soát việc có nên báo cáo thông tin Duyệt web an toàn, bao gồm cả số lần cảnh báo Duyệt web an toàn và số lần nhấp qua cảnh báo duyệt web an toàn, hay không.
 
-      Khi bạn chưa đặt chính sách này hoặc đặt thành True, thì dữ liệu Duyệt web an toàn sẽ được thu thập.
+      Khi bạn không đặt chính sách này hoặc đặt thành True, thì dữ liệu Duyệt web an toàn sẽ được thu thập.
       Khi bạn đặt chính sách này thành False thì dữ liệu Duyệt web an toàn sẽ không được thu thập.
 
       Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -2438,7 +2438,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7132877481099023201">Các URL sẽ được cấp quyền truy cập thiết bị quay video mà không cần phải hiển thị lời nhắc</translation>
 <translation id="7158064522994309072">Chính sách này sẽ kiểm soát lệnh nào dùng để mở URL trên một trình duyệt thay thế.
 
-      Khi bạn chưa đặt chính sách này thì giá trị mặc định dành riêng cho nền tảng sẽ được dùng: Internet Explorer dành cho Windows hoặc Safari dành cho Mac OS X. Trên Linux, bạn sẽ không chạy được trình duyệt thay thế khi chưa đặt chính sách này.
+      Khi bạn không đặt chính sách này thì một giá trị mặc định dành riêng cho nền tảng sẽ được dùng: Internet Explorer dành cho Windows hoặc Safari dành cho Mac OS X. Trên Linux, bạn sẽ không chạy được trình duyệt thay thế khi chưa đặt chính sách này.
 
       Khi bạn đặt chính sách này thành một trong các trình duyệt như ${ie}, ${firefox}, ${safari} hoặc
       ${opera}, thì trình duyệt đó sẽ chạy nếu đã được cài đặt. ${ie} chỉ
@@ -2975,7 +2975,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu chính sách này không được đặt hoặc đã bị tắt, plugin PDF sẽ được sử dụng để mở các tệp PDF trừ khi người dùng tắt plugin này.</translation>
 <translation id="8396145449084377015">Chính sách này sẽ kiểm soát việc có nên tải các quy tắc từ chính sách SiteList của Internet Explorer hay không.
 
-      Khi bạn chưa đặt chính sách này hoặc đặt thành false, thì <ph name="PRODUCT_NAME" /> không sử dụng chính sách <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer làm nguồn quy tắc để chuyển đổi các trình duyệt.
+      Khi bạn không đặt chính sách này hoặc đặt thành false, thì <ph name="PRODUCT_NAME" /> không sử dụng chính sách <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer làm nguồn quy tắc để chuyển đổi các trình duyệt.
 
       Khi bạn đặt chính sách này thành true, <ph name="PRODUCT_NAME" /> sẽ đọc <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer để lấy URL của danh sách trang web. Sau đó, <ph name="PRODUCT_NAME" /> sẽ tải xuống danh sách trang web từ URL rồi áp dụng các quy tắc như đã được định cấu hình với chính sách <ph name="SITELIST_POLICY_NAME" />.
 
@@ -3260,11 +3260,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8970205333161758602">Loại bỏ lời nhắc từ chối <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Cho phép xác thực gnubby cho máy chủ truy cập từ xa</translation>
 <translation id="8976531594979650914">Sử dụng máy in có sẵn trong hệ thống làm máy in mặc định</translation>
-<translation id="898520305112996948">Cho phép bạn đặt danh sách các mẫu url chỉ định những trang web sẽ tự động được cấp quyền truy cập vào thiết bị USB bằng ID sản phẩm và nhà cung cấp cụ thể. Mỗi mục trong danh sách phải chứa cả mẫu thiết bị và url để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường ID sản phẩm và ID nhà cung cấp. Bất kỳ ID nào bị bỏ qua đều được coi là ký tự đại diện có một ngoại lệ và ngoại lệ đó chính là không thể chỉ định ID sản phẩm nếu không chỉ định được ID nhà cung cấp. Nếu không, chính sách sẽ không có hiệu lực. Các giá trị chính sách không hợp sẽ lệ bị bỏ qua.
-
-        Nếu bạn không đặt chính sách này, thì giá trị mặc định chung sẽ được dùng cho tất cả các trang web của chính sách 'DefaultWebUsbGuardSetting' nếu chính sách này được đặt, hoặc nếu không sẽ được sử dụng cho cấu hình cá nhân của người dùng.
-
-        Các mẫu URL trong chính sách này không được xung đột với các URL đã định cấu hình thông qua WebUsbBlockedForUrls. Nếu có xung đột, thì chính sách này sẽ được ưu tiên so với WebUsbBlockedForUrls và WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Không cho phép bất kỳ trang web nào hiển thị hình ảnh</translation>
 <translation id="9012851181124311976">Định cấu hình danh sách các URL đăng nhập của doanh nghiệp (chỉ dành cho các lược đồ HTTP và HTTPS). Dấu vân tay của mật khẩu sẽ quét trên những URL này và dùng để phát hiện trường hợp sử dụng lại mật khẩu.
       Để <ph name="PRODUCT_NAME" /> có thể quét chính xác dấu vân tay của mật khẩu, hãy đảm bảo các trang đăng nhập của bạn tuân thủ những nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
@@ -3276,7 +3271,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9042911395677044526">Cho phép áp dụng cấu hình mạng cho mỗi người dùng thiết bị <ph name="PRODUCT_OS_NAME" />. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL" /></translation>
 <translation id="906631898352326790">
       Nếu bạn bật chính sách này thì mỗi nguồn gốc có tên trong danh sách
-      được phân tách bằng dấu phẩy sẽ chạy quy trình riêng. Điều này cũng sẽ cách ly
+      phân tách bằng dấu phẩy sẽ chạy quy trình riêng. Điều này cũng sẽ cách ly
       các nguồn gốc được đặt tên theo miền phụ; ví dụ: việc chỉ định https://example.com/ cũng sẽ
       khiến https://foo.example.com/ bị cách ly dưới dạng một phần của trang web
       https://example.com/.

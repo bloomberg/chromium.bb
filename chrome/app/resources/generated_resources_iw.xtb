@@ -166,7 +166,6 @@
     במסך הבא, שלח אלינו משוב כדי לעזור לנו לתקן את הבעיה.</translation>
 <translation id="1217668622537098248">חזרה ללחיצה שמאלית אחרי פעולה</translation>
 <translation id="121783623783282548">הסיסמאות אינן תואמות.</translation>
-<translation id="1219533395013150448">‏ה-Assisatant משתמש בהקלטות האלה כדי ליצור תבנית של הקול שלך ומאחסן אותה במכשיר. אפשר למחוק או לשמור את התבנית בהגדרות של Assisatant. את הפקודות הקוליות אפשר להציג או למחוק בבחירות הפעילויות של Google.</translation>
 <translation id="122082903575839559">אלגוריתם חתימה של אישור </translation>
 <translation id="1221024147024329929">‏PKCS #1 MD2 עם הצפנת RSA</translation>
 <translation id="1221825588892235038">בחירה בלבד</translation>
@@ -1488,7 +1487,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> רוצה להתחבר אל</translation>
 <translation id="3274763671541996799">עברת למסך מלא.</translation>
 <translation id="3275778913554317645">פתח כחלון</translation>
-<translation id="3278877214895457897">‏אחרי הגדרת ה-Chromebook, כדי לקבל עזרה מה-Assistant אפשר תמיד ללחוץ על לחצן ה-Assistant או לומר "OK Google".</translation>
 <translation id="3279230909244266691">הפעולה עשויה להימשך מספר דקות. מתבצעת הפעלה של המכונה הווירטואלית.</translation>
 <translation id="3279741024917655738">הצגת סרטונים במסך מלא פועלת</translation>
 <translation id="3280237271814976245">שמור &amp;בשם...</translation>
@@ -1677,7 +1675,6 @@
 <translation id="3550915441744863158">‏Chrome מתעדכן באופן אוטומטי כך שתשתמש תמיד בגרסה העדכנית ביותר</translation>
 <translation id="3551320343578183772">סגור כרטיסייה</translation>
 <translation id="3552780134252864554">מנוקה בעת היציאה</translation>
-<translation id="3553146918065661815">‏יש להציג אזהרה לפני יציאה בעזרת הקשה על ‎⌘Q</translation>
 <translation id="3555812735919707620">הסר תוסף</translation>
 <translation id="3556000484321257665">מנוע החיפוש השתנה ל-<ph name="URL" />.</translation>
 <translation id="3559262020195162408">התקנת המדיניות במכשיר נכשלה.</translation>
@@ -1753,7 +1750,6 @@
 <translation id="3654045516529121250">קרא את הגדרות הנגישות שלך</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{יש לו גישה קבועה אל קובץ אחד.}two{יש לו גישה קבועה אל # קבצים.}many{יש לו גישה קבועה אל # קבצים.}other{יש לו גישה קבועה אל # קבצים.}}</translation>
 <translation id="3660234220361471169">לא אמין</translation>
-<translation id="3661054927247347545">אישור הכניסה אינו חוקי. החלון ייסגר בעוד <ph name="MINUTES" /> : <ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">סמל התוסף</translation>
 <translation id="3665589677786828986">‏Chrome זיהה שחלק מההגדרות שלך נפגמו על ידי תכנית אחרת ואיפס אותן לברירות המחדל המקוריות.</translation>
 <translation id="3668570675727296296">הגדרות שפה</translation>
@@ -1770,7 +1766,7 @@
 <translation id="3685122418104378273">‏הסנכרון של Google Drive מושבת כברירת מחדל בעת שימוש בנתונים לנייד.</translation>
 <translation id="368789413795732264">אירעה שגיאה בעת ניסיון לכתוב את הקובץ: <ph name="ERROR_TEXT" /></translation>
 <translation id="3688507211863392146">כתיבה לקבצים ותיקיות שאתה פותח ביישום</translation>
-<translation id="3688526734140524629">שנה ערוץ</translation>
+<translation id="3688526734140524629">מעבר לערוץ אחר</translation>
 <translation id="3688578402379768763">מעודכן</translation>
 <translation id="3691231116639905343">אפליקציות מקלדת</translation>
 <translation id="3691267899302886494"><ph name="HOST" /> רוצה לשתף את המסך שלך</translation>
@@ -2887,7 +2883,6 @@
 <translation id="5434065355175441495">‏הצפנת RSA של PKCS #1</translation>
 <translation id="5436492226391861498">‏ממתין ל-Proxy Tunnel...</translation>
 <translation id="5436510242972373446">חפש ב-<ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">עוד מעט כל חלונות הדפדפן ייסגרו באופן אוטומטי ללא כניסה.</translation>
 <translation id="5438224778284622050">האם למחוק קבצים לא מקוונים?</translation>
 <translation id="544083962418256601">יצירת קיצורי דרך...</translation>
 <translation id="5442228125690314719">קרתה שגיאה ביצירת תמונת הדיסק. צריך לנסות שוב.</translation>
@@ -3538,7 +3533,7 @@
 <translation id="6406708970972405507">הגדרות - <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994">לקרוא ולשנות את הנתונים שלך ב-<ph name="WEBSITE_1" />‏, <ph name="WEBSITE_2" /> וב-<ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">קובצי תמונה</translation>
-<translation id="6410328738210026208">‏החלף ערוץ ובצע Powerwash</translation>
+<translation id="6410328738210026208">‏מעבר לערוץ אחר וביצוע Powerwash</translation>
 <translation id="6410668567036790476">הוספת מנוע חיפוש</translation>
 <translation id="641081527798843608">התאמת נושא</translation>
 <translation id="641105183165925463">$1 MB</translation>
@@ -3619,7 +3614,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">היכנס עכשיו</translation>
 <translation id="6527303717912515753">שתף</translation>
 <translation id="6528513914570774834">אפשר למשתמשים האחרים במכשיר הזה להשתמש ברשת הזו</translation>
 <translation id="652948702951888897">‏היסטוריה של Chrome</translation>
@@ -4088,7 +4082,6 @@
 <translation id="7256710573727326513">פתח בכרטיסייה</translation>
 <translation id="725758059478686223">שירות הדפסה</translation>
 <translation id="7257666756905341374">קריאת נתונים שאתה מעתיק ומדביק</translation>
-<translation id="7258619945375359543">‏מתן הרשאה ל-Assitant להציג הצעות לפי התוכן שמופיע על המסך</translation>
 <translation id="7258697411818564379">הקוד נוסף</translation>
 <translation id="7262004276116528033">שירות הכניסה הזה מתארח ב-<ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">סגור כרטיסיות</translation>
@@ -4848,7 +4841,6 @@
 <translation id="8438566539970814960">שיפור החיפושים והגלישה</translation>
 <translation id="8439506636278576865">הצעות לתרגום דפים שנכתבו בשפה זו</translation>
 <translation id="8440630305826533614">‏אפליקציות Linux</translation>
-<translation id="8446474770554547328">‏הקלדת הפקודה "Ok Google" ‏3 פעמים יוצרת את תבנית הקול שלך, שמאוחסנת במכשיר. אפשר למחוק או לשמור את התבנית בהגדרות Assistant. ניתן להציג את הפקודות הקוליות בבחירת הפעילויות ב-Google.</translation>
 <translation id="8446884382197647889">למידע נוסף</translation>
 <translation id="8447409163267621480">‏יש לכלול את Ctrl או Alt</translation>
 <translation id="8448729345478502352">הגדלה או הקטנה של פריטים במסך</translation>

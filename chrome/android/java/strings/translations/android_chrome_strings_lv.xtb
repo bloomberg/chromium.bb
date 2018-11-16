@@ -734,7 +734,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6567212464587185774">Izmantojiet pat par 60% mazāk datu un paātriniet tīmekļa pārlūkošanu.</translation>
 <translation id="6573096386450695060">Vienmēr atļaut</translation>
 <translation id="6573431926118603307">Šeit būs redzamas cilnes, kuras esat atvēris pārlūkā Chrome citās ierīcēs.</translation>
-<translation id="6575643671698722332">Atiestatīšana neizdevās. Nodrošiniet, ka ierīce ir tiešsaistē, un mēģiniet vēlreiz.</translation>
 <translation id="6583199322650523874">Pievienot pašreizējo lapu grāmatzīmēm</translation>
 <translation id="6584721918629302382">PR</translation>
 <translation id="6593061639179217415">Vietne datoriem</translation>
@@ -859,7 +858,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7473891865547856676">Nē, paldies!</translation>
 <translation id="7475192538862203634">Ja šis ziņojums tiek rādīts bieži, izmēģiniet šos <ph name="BEGIN_LINK" />ieteikumus<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD karte nav atrasta. Iespējams, trūkst kādi jūsu faili.</translation>
-<translation id="748127970106343339">Ierīces akreditācijas datu dzēšanas apstiprināšana</translation>
 <translation id="7481312909269577407">Pārsūtīt</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atjaunināts: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Rādīt paroles</translation>
@@ -1010,9 +1008,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8609465669617005112">Virziet uz augšu</translation>
 <translation id="8616006591992756292">Jūsu Google kontam var būt citu veidu pārlūkošanas vēstures dati vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Vai atvērt lejupielādētajā saturā norādīto ieteikto URL?</translation>
-<translation id="862875433388403934">Citās lietojumprogrammās lejupielādētu saturu (filmas, mūziku), iespējams, nevarēs atskaņot, kamēr šajās lietojumprogrammās netiks iegūtas licences, pamatojoties uz jauniem ierīces akreditācijas datiem.
-
-Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojiet lejupielādēto saturu.</translation>
 <translation id="8636825310635137004">Ieslēdziet sinhronizāciju, lai būtu pieejamas cilnes no citām jūsu ierīcēm.</translation>
 <translation id="8641930654639604085">Pēc iespējas bloķēt vietnes ar pieaugušajiem paredzētu saturu</translation>
 <translation id="8662811608048051533">Jūs tiksiet izrakstīts no lielākās daļas vietņu.</translation>
@@ -1070,7 +1065,6 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="9099018167121903954">Lejupielādes: <ph name="KILOBYTES" /> KB.</translation>
 <translation id="9100505651305367705">Piedāvāt rādīt rakstus vienkāršotā skatā, ja tāds tiek atbalstīts</translation>
 <translation id="9100610230175265781">Jāievada ieejas frāze.</translation>
-<translation id="9133515669113036225">Atiestatīt ierīces akreditācijas datus</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="9139068048179869749">Jautāt, pirms atļaut vietnēm sūtīt paziņojumus (ieteicams)</translation>

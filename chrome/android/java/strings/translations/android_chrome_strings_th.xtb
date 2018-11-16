@@ -734,7 +734,6 @@
 <translation id="6567212464587185774">ใช้เน็ตมือถือน้อยลงถึง 60% และท่องเว็บได้เร็วขึ้น</translation>
 <translation id="6573096386450695060">อนุญาตเสมอ</translation>
 <translation id="6573431926118603307">แท็บที่คุณเปิดไว้ใน Chrome ในอุปกรณ์เครื่องอื่นๆ จะปรากฏที่นี่</translation>
-<translation id="6575643671698722332">การรีเซ็ตล้มเหลว ตรวจสอบว่าอุปกรณ์ของคุณออนไลน์และลองอีกครั้ง</translation>
 <translation id="6583199322650523874">บุ๊กมาร์กหน้าปัจจุบัน</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">ไซต์เวอร์ชันเดสก์ท็อป</translation>
@@ -859,7 +858,6 @@
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="7475192538862203634">หากคุณเห็นข้อความนี้บ่อยๆ โปรดลองทำตาม<ph name="BEGIN_LINK" />คำแนะนำ<ph name="END_LINK" />เหล่านี้</translation>
 <translation id="7475688122056506577">ไม่พบการ์ด SD ไฟล์บางไฟล์อาจหายไป</translation>
-<translation id="748127970106343339">ยืนยันการลบข้อมูลรับรองของอุปกรณ์</translation>
 <translation id="7481312909269577407">ส่งต่อ</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (อัปเดตเมื่อ <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">แสดงรหัสผ่าน</translation>
@@ -1010,9 +1008,6 @@
 <translation id="8609465669617005112">เลื่อนขึ้น</translation>
 <translation id="8616006591992756292">บัญชี Google อาจมีประวัติการท่องเว็บรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="8617240290563765734">ต้องการเปิด URL แนะนำซึ่งระบุอยู่ในเนื้อหาที่ดาวน์โหลดไหม</translation>
-<translation id="862875433388403934">เนื้อหา (ภาพยนตร์ เพลง ฯลฯ) ที่ดาวน์โหลดในแอปพลิเคชันอื่นๆ อาจไม่สามารถเล่นได้อีกต่อไปจนกว่าแอปพลิเคชันเหล่านั้นจะได้รับใบอนุญาตอีกครั้งโดยขึ้นอยู่กับข้อมูลรับรองของอุปกรณ์ใหม่
-
-ในการรับใบอนุญาตใหม่ ให้เชื่อมต่ออินเทอร์เน็ตและเล่นเนื้อหาที่ดาวน์โหลดไว้ของคุณ</translation>
 <translation id="8636825310635137004">เปิดการซิงค์เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="8641930654639604085">พยายามบล็อกไซต์สำหรับผู้ใหญ่</translation>
 <translation id="8662811608048051533">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
@@ -1070,7 +1065,6 @@
 <translation id="9099018167121903954">พื้นที่ที่ใช้ไปสำหรับการดาวน์โหลด <ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">เสนอการแสดงบทความในมุมมองอย่างง่าย ในกรณีที่บทความทำได้</translation>
 <translation id="9100610230175265781">ต้องระบุรหัสผ่าน</translation>
-<translation id="9133515669113036225">รีเซ็ตข้อมูลรับรองของอุปกรณ์</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
 <translation id="9139068048179869749">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ส่งการแจ้งเตือน (แนะนำ)</translation>

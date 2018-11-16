@@ -166,7 +166,6 @@
     Lähetä meille palautetta seuraavalla ruudulla, jotta voimme korjata ongelman.</translation>
 <translation id="1217668622537098248">Palaa ykkösklikkaukseen toiminnon jälkeen</translation>
 <translation id="121783623783282548">Salasanat eivät täsmää.</translation>
-<translation id="1219533395013150448">Assistant luo näiden äänitteiden avulla äänimallin, joka tallennetaan laitteellesi. Voit poistaa mallin tai kouluttaa sen uudelleen Assistantin asetuksissa. Jos haluat katsella tai poistaa puhekomentoja, avaa Googlen Toimintojen hallinta.</translation>
 <translation id="122082903575839559">Varmenteen allekirjoitusalgoritmi</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 ja RSA-salaus</translation>
 <translation id="1221825588892235038">Vain valinta</translation>
@@ -1492,7 +1491,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> haluaa muodostaa yhteyden</translation>
 <translation id="3274763671541996799">Koko näytön tila on käytössä.</translation>
 <translation id="3275778913554317645">Avaa ikkunana</translation>
-<translation id="3278877214895457897">Kun Chromebook on määritetty, voit puhua Assistantille milloin tahansa painamalla Assistant-painiketta tai sanomalla Ok Google.</translation>
 <translation id="3279230909244266691">Tämä voi kestää muutaman minuutin. Käynnistetään virtuaalikonetta.</translation>
 <translation id="3279741024917655738">Koko näytön videoiden näyttötapa:</translation>
 <translation id="3280237271814976245">Tallenna &amp;nimellä...</translation>
@@ -1681,7 +1679,6 @@
 <translation id="3550915441744863158">Chrome päivitetään automaattisesti, joten käytössäsi on aina uusin versio</translation>
 <translation id="3551320343578183772">Sulje välilehti</translation>
 <translation id="3552780134252864554">Tyhjennetty poistumisen yhteydessä</translation>
-<translation id="3553146918065661815">Näytä varoitus ennen sulkemista (⌘Q)</translation>
 <translation id="3555812735919707620">Poista laajennus</translation>
 <translation id="3556000484321257665">Hakukoneeksi vaihdettiin <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Käytännön asentaminen laitteelle epäonnistui.</translation>
@@ -1757,7 +1754,6 @@
 <translation id="3654045516529121250">Lukea käytettävyysasetuksia.</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Sillä on yhden tiedoston pysyvä käyttöoikeus.}other{Sillä on # tiedoston pysyvä käyttöoikeus.}}</translation>
 <translation id="3660234220361471169">Ei-luotettu</translation>
-<translation id="3661054927247347545">Kirjautumisen varmenne ei kelpaa, ikkuna sulkeutuu <ph name="MINUTES" /> minuutin ja <ph name="SECONDS" /> sekunnin kuluttua.</translation>
 <translation id="3664511988987167893">Laajennuskuvake</translation>
 <translation id="3665589677786828986">Chrome havaitsi, että toinen ohjelma oli muokannut joitakin selainasetuksia, ja palautti asetukset alkuperäisiksi.</translation>
 <translation id="3668570675727296296">Kieliasetukset</translation>
@@ -2887,7 +2883,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA-salaus</translation>
 <translation id="5436492226391861498">Odotetaan välityspalvelintunnelia...</translation>
 <translation id="5436510242972373446">Haku sivustosta <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Kaikki selainikkunat suljetaan pian automaattisesti ilman sisäänkirjausta.</translation>
 <translation id="5438224778284622050">Poistetaanko offline-tiedostot?</translation>
 <translation id="544083962418256601">Luo pikakuvakkeita...</translation>
 <translation id="5442228125690314719">Näköistiedoston luominen epäonnistui. Yritä uudelleen.</translation>
@@ -3621,7 +3616,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Kirjaudu sisään nyt</translation>
 <translation id="6527303717912515753">Jaa</translation>
 <translation id="6528513914570774834">Anna muiden laitteen käyttäjien käyttää tätä verkkoa</translation>
 <translation id="652948702951888897">Chromen historia</translation>
@@ -4090,7 +4084,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7256710573727326513">Avaa välilehdessä</translation>
 <translation id="725758059478686223">Tulostuspalvelu</translation>
 <translation id="7257666756905341374">Lukea kopioimiasi ja liittämiäsi tietoja</translation>
-<translation id="7258619945375359543">Assistant saa antaa ehdotuksia näytön sisällön perusteella</translation>
 <translation id="7258697411818564379">PIN-koodi on lisätty</translation>
 <translation id="7262004276116528033">Tätä kirjautumispalvelua ylläpitää <ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">Sulje välilehdet</translation>
@@ -4852,7 +4845,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8438566539970814960">Paranna hakuja ja selausta</translation>
 <translation id="8439506636278576865">Tarjoudu kääntämään sivuja tälle kielelle</translation>
 <translation id="8440630305826533614">Linux-sovellukset</translation>
-<translation id="8446474770554547328">Kolmesta Ok Google ‑äänitteestä luodaan äänimalli, joka tallennetaan laitteellesi. Voit poistaa mallin tai kouluttaa sen uudelleen Assistantin asetuksissa. Jos haluat katsella tai poistaa puhekomentoja, avaa Googlen Toimintojen hallinta.</translation>
 <translation id="8446884382197647889">Lisätietoja</translation>
 <translation id="8447409163267621480">Lisää alkuun joko Ctrl tai Alt</translation>
 <translation id="8448729345478502352">Pienennä tai suurenna näytöllä näkyviä kohteita</translation>

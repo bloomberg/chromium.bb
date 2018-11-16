@@ -166,7 +166,6 @@
     Pe următorul ecran, trimite-ne feedback pentru a ne ajuta să remediem problema.</translation>
 <translation id="1217668622537098248">Revino la clic stânga după acțiune</translation>
 <translation id="121783623783282548">Parolele nu se potrivesc.</translation>
-<translation id="1219533395013150448">Asistentul folosește aceste înregistrări pentru a-ți crea modelul vocal, stocat pe dispozitiv. Șterge sau înregistrează din nou acest model în setările Asistentului. Poți să vezi sau să ștergi comenzi vocale în Opțiunile privind activitatea Google.</translation>
 <translation id="122082903575839559">Algoritm de semnare a certificatului</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 cu criptare RSA</translation>
 <translation id="1221825588892235038">Numai elementele selectate</translation>
@@ -1491,7 +1490,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> dorește să se conecteze</translation>
 <translation id="3274763671541996799">Ați intrat în modul ecran complet.</translation>
 <translation id="3275778913554317645">Deschide ca fereastră</translation>
-<translation id="3278877214895457897">După configurarea Chromebookului, apasă butonul Asistentului sau rostește „Ok Google” pentru a obține oricând ajutor de la Asistent.</translation>
 <translation id="3279230909244266691">Poate dura câteva minute. Se pornește mașina virtuală.</translation>
 <translation id="3279741024917655738">Afișează videoclipurile pe ecran complet pe</translation>
 <translation id="3280237271814976245">Salvează c&amp;a...</translation>
@@ -1680,7 +1678,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3550915441744863158">Chrome se actualizează automat, astfel încât să aveți întotdeauna cea mai recentă versiune</translation>
 <translation id="3551320343578183772">Închide fila</translation>
 <translation id="3552780134252864554">Șters la ieșire</translation>
-<translation id="3553146918065661815">Arată un avertisment înainte de a renunța cu ⌘Q</translation>
 <translation id="3555812735919707620">Eliminați extensia</translation>
 <translation id="3556000484321257665">Motorul de căutare a fost înlocuit cu <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Nu s-a putut instala politica pe dispozitiv.</translation>
@@ -1756,7 +1753,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3654045516529121250">Citește setările de accesibilitate</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Aplicația are acces definitiv la un fișier.}few{Aplicația are acces definitiv la # fișiere.}other{Aplicația are acces definitiv la # de fișiere.}}</translation>
 <translation id="3660234220361471169">Nu prezintă încredere</translation>
-<translation id="3661054927247347545">Certificatul de conectare nu este valid; fereastra se închide în <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Pictograma extensiei</translation>
 <translation id="3665589677786828986">Chrome a detectat că unele dintre setări au fost deteriorate de alt program și le-a resetat la valorile inițiale.</translation>
 <translation id="3668570675727296296">Setări de limbă</translation>
@@ -2889,7 +2885,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5434065355175441495">Criptare RSA PKCS #1</translation>
 <translation id="5436492226391861498">Se așteaptă tunelul proxy...</translation>
 <translation id="5436510242972373446">Caută <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Toate ferestrele browserului vor fi închise automat în curând fără conectare.</translation>
 <translation id="5438224778284622050">Ștergi fișierele offline?</translation>
 <translation id="544083962418256601">Creați comenzi rapide...</translation>
 <translation id="5442228125690314719">A apărut o eroare la crearea imaginii discului. Încearcă din nou.</translation>
@@ -3537,7 +3532,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6405510437656969977">Continuă când ești gata să introduci codul PIN</translation>
 <translation id="6406303162637086258">Simulați repornirea browserului</translation>
 <translation id="6406506848690869874">Sincronizare</translation>
-<translation id="6406708970972405507">Setări - <ph name="SECTION_TITLE" /></translation>
+<translation id="6406708970972405507">Setări – <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994">Citește și modifică datele de pe <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și <ph name="WEBSITE_3" /></translation>
 <translation id="6410257289063177456">Fișiere imagine</translation>
 <translation id="6410328738210026208">Schimbați canalul și porniți Powerwash</translation>
@@ -3621,7 +3616,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Conectați-vă acum</translation>
 <translation id="6527303717912515753">Trimite</translation>
 <translation id="6528513914570774834">Permite altor utilizatori ai dispozitivului să folosească această rețea</translation>
 <translation id="652948702951888897">Istoricul Chrome</translation>
@@ -4090,7 +4084,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7256710573727326513">Deschideți într-o filă</translation>
 <translation id="725758059478686223">Serviciul de printare</translation>
 <translation id="7257666756905341374">Citește datele pe care le copiezi și le inserezi</translation>
-<translation id="7258619945375359543">Permite Asistentului să îți ofere sugestii în funcție de ce este afișat pe ecran</translation>
 <translation id="7258697411818564379">Codul PIN a fost adăugat</translation>
 <translation id="7262004276116528033">Acest serviciu de conectare este găzduit de <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Închide filele</translation>
@@ -4853,7 +4846,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8438566539970814960">Îmbunătățește căutările și navigarea</translation>
 <translation id="8439506636278576865">Oferă-te să traduci paginile în această limbă</translation>
 <translation id="8440630305826533614">Aplicații Linux</translation>
-<translation id="8446474770554547328">Dacă înregistrezi „Ok Google” de trei ori, îți creezi modelul vocal, stocat pe dispozitiv. Șterge sau înregistrează din nou modelul în setările Asistentului. Poți să vezi sau să ștergi comenzile vocale din Opțiunile privind activitatea.</translation>
 <translation id="8446884382197647889">Află mai multe</translation>
 <translation id="8447409163267621480">Include Ctrl sau Alt</translation>
 <translation id="8448729345478502352">Micșorează sau mărește elementele de pe ecran</translation>

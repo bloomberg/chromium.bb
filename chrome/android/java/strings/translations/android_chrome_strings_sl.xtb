@@ -615,7 +615,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5684874026226664614">Ojoj, te strani bi bilo mogoče prevesti.</translation>
 <translation id="5686790454216892815">Ime datoteke je predolgo</translation>
 <translation id="5689516760719285838">Lokacija</translation>
-<translation id="569536719314091526">Preverite to stran v kateri koli jezik z gumbom »Več možnosti«</translation>
+<translation id="569536719314091526">Prevedite to stran v kateri koli jezik z gumbom »Več možnosti«</translation>
 <translation id="5719837394786370183">Strani, ki si jih ogledate na zavihkih brez beleženja zgodovine, ne bodo pustile sledi v zgodovini brskalnika, shrambi piškotkov ali zgodovini iskanja, ko zaprete vse zavihke brez beleženja zgodovine. Prenesene datoteke ali ustvarjeni zaznamki se bodo ohranili.
 
 Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne skrijete brskanja pred delodajalcem, ponudnikom internetnih storitev ali spletnimi mesti, ki jih obiskujete.</translation>
@@ -733,7 +733,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6567212464587185774">Prenesite do 60 % manj podatkov in zagotovite hitrejše delovanje spleta.</translation>
 <translation id="6573096386450695060">Vedno dovoli</translation>
 <translation id="6573431926118603307">Zavihki, ki ste jih odprli v Chromu v drugih napravah, bodo prikazani tukaj.</translation>
-<translation id="6575643671698722332">Ponastavitev ni uspela. Vzpostavite povezavo in poskusite znova.</translation>
 <translation id="6583199322650523874">Dodajanje trenutne strani med zaznamke</translation>
 <translation id="6584721918629302382">RR</translation>
 <translation id="6593061639179217415">Spletno mesto za namizne računalnike</translation>
@@ -858,7 +857,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7475192538862203634">Če se to pogosto pokaže, poskusite te <ph name="BEGIN_LINK" />predloge<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Kartice SD ni bilo mogoče najti. Nekatere vaše datoteke morda manjkajo.</translation>
-<translation id="748127970106343339">Potrditev izbrisa poverilnice naprave</translation>
 <translation id="7481312909269577407">Naprej</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Posodobljeno: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Prikaz gesel</translation>
@@ -1009,9 +1007,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8609465669617005112">Premakni navzgor</translation>
 <translation id="8616006591992756292">V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Želite odpreti predlagani URL, naveden v preneseni vsebini?</translation>
-<translation id="862875433388403934">Prenesene vsebine (filmov, glasbe ipd.) morda ne bo mogoče več predvajati v drugih aplikacijah, dokler te znova ne pridobijo licenc na podlagi nove poverilnice naprave.
-
-Nove licence dobite tako, da se povežete v internet in predvajate preneseno vsebino.</translation>
 <translation id="8636825310635137004">Če želite dostopati do zavihkov iz drugih naprav, vklopite sinhronizacijo.</translation>
 <translation id="8641930654639604085">Poskusi blokirati spletna mesta za odrasle</translation>
 <translation id="8662811608048051533">Odjavi vas iz večine spletnih mest.</translation>
@@ -1069,7 +1064,6 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB prenesenih datotek</translation>
 <translation id="9100505651305367705">Možnost prikaza člankov v preprostem pogledu, če je podprt</translation>
 <translation id="9100610230175265781">Zahtevano je geslo</translation>
-<translation id="9133515669113036225">Ponastavitev poverilnic naprave</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
 <translation id="9139068048179869749">Poziv, preden se spletnim mestom dovoli pošiljanje obvestil (priporočeno)</translation>

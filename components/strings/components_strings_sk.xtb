@@ -146,6 +146,7 @@
 <translation id="1839551713262164453">Overenie hodnôt pravidiel zlyhalo a obsahuje chyby</translation>
 <translation id="1840414022444569775">Toto číslo karty sa už používa</translation>
 <translation id="1842969606798536927">Zaplatiť</translation>
+<translation id="1866450167992311397">Používajte karty na viacerých miestach</translation>
 <translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC webovej adresy.</translation>
 <translation id="1871284979644508959">Povinné pole</translation>
 <translation id="1874765382782611674">Akceptované debetné karty</translation>
@@ -700,6 +701,7 @@
 <translation id="5720705177508910913">Aktuálny používateľ</translation>
 <translation id="5730040223043577876">Ak ste heslo použili aj na iných weboch, Chrome ho odporúča obnoviť.</translation>
 <translation id="5732392974455271431">Vaši rodičia ho môžu pre vás odblokovať</translation>
+<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Táto karta a jej fakturačná adresa sa uložia do vášho účtu Google, aby ste mohli po prihlásení rýchlejšie platiť}few{Tieto karty a ich fakturačné adresy sa uložia do vášho účtu Google, aby ste mohli po prihlásení rýchlejšie platiť}many{Tieto karty a ich fakturačné adresy sa uložia do vášho účtu Google, aby ste mohli po prihlásení rýchlejšie platiť}other{Tieto karty a ich fakturačné adresy sa uložia do vášho účtu Google, aby ste mohli po prihlásení rýchlejšie platiť}}</translation>
 <translation id="5763042198335101085">Zadajte platnú e-mailovú adresu</translation>
 <translation id="5765072501007116331">Ak chcete zobraziť spôsoby a požiadavky doručenia, vyberte adresu</translation>
 <translation id="5770114862687765385">Súbor je zrejme poškodený. Obnovte reláciu kliknutím na tlačidlo Obnoviť.</translation>
@@ -780,6 +782,7 @@
 <translation id="6337133576188860026">Uvoľní menej ako <ph name="SIZE" />. Niektoré weby sa môžu pri ďalšej návšteve načítať pomalšie.</translation>
 <translation id="6337534724793800597">Filtrovať pravidlá podľa mena</translation>
 <translation id="6358450015545214790">Čo znamenajú tieto položky?</translation>
+<translation id="635989537247018238">V ďalšom kroku môžete vybrať, ktoré karty chcete uložiť</translation>
 <translation id="6383221683286411806">Ak prejdete ďalej, môžu vám byť účtované poplatky.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ďalší návrh}few{# ďalšie návrhy}many{# ďalšieho návrhu}other{# ďalších návrhov}}</translation>
 <translation id="6387754724289022810">Ak chcete nabudúce zaplatiť rýchlejšie, uložte si kartu a fakturačnú adresu do účtu Google a tohto zariadenia.</translation>

@@ -166,7 +166,6 @@
     Sorunu düzeltmemize yardımcı olmak için lütfen bir sonraki ekranda geri bildirim gönderin.</translation>
 <translation id="1217668622537098248">İşlemden sonra sol tıklamaya geri döndürür</translation>
 <translation id="121783623783282548">Şifreler eşleşmiyor.</translation>
-<translation id="1219533395013150448">Asistanınız bu kayıtları kullanarak ses modelinizi oluşturur ve cihazınızda depolar. Bu modeli Asistan ayarlarından silebilir veya yeniden eğitebilirsiniz. Sesli komutları Google etkinlik kontrollerinizden görüntüleyebilir veya silebilirsiniz.</translation>
 <translation id="122082903575839559">Sertifika İmza Algoritması</translation>
 <translation id="1221024147024329929">PKCS #1 RSA Şifrelemeli MD2</translation>
 <translation id="1221825588892235038">Yalnızca seçilen</translation>
@@ -1437,7 +1436,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3161522574479303604">Tüm diller</translation>
 <translation id="3165390001037658081">Bazı operatörler bu özelliği engelleyebilir.</translation>
 <translation id="316854673539778496">Tüm uzantılarınızı tüm cihazlarınızda almak için oturum açın ve senkronizasyonu etkinleştirin.</translation>
-<translation id="3169472444629675720">Bul</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Ayrıca, oturum açmayı atlayabilir ve <ph name="LINK_START" />misafir olarak göz atabilirsiniz<ph name="LINK_END" />.</translation>
 <translation id="3172045848207518317">Bir site, video girişine erişiyor</translation>
 <translation id="3177909033752230686">Sayfanın Dili:</translation>
@@ -1491,7 +1490,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> bağlanmak istiyor</translation>
 <translation id="3274763671541996799">Tam ekrana geçtiniz.</translation>
 <translation id="3275778913554317645">Pencere olarak aç</translation>
-<translation id="3278877214895457897">Chromebook'unuzu kurarken istediğiniz zaman Asistanınızdan yardım almak için Asistan düğmesine basın veya "Ok Google" deyin.</translation>
 <translation id="3279230909244266691">Bu işlem birkaç dakika sürebilir. Sanal makine başlatılıyor.</translation>
 <translation id="3279741024917655738">Tam ekran videoları şurada göster:</translation>
 <translation id="3280237271814976245">Farklı k&amp;aydet...</translation>
@@ -1680,7 +1678,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3550915441744863158">Chrome otomatik olarak güncellenir, böylece her zaman en yeni sürüme sahip olursunuz.</translation>
 <translation id="3551320343578183772">Sekmeyi Kapat</translation>
 <translation id="3552780134252864554">Çıkışta Temizlenecek</translation>
-<translation id="3553146918065661815">⌘Q ile çıkmadan önce uyarı göster</translation>
 <translation id="3555812735919707620">Uzantıyı kaldır</translation>
 <translation id="3556000484321257665">Arama motorunuz <ph name="URL" /> olarak değiştirildi.</translation>
 <translation id="3559262020195162408">Politika cihaza yüklenemedi.</translation>
@@ -1756,7 +1753,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3654045516529121250">Erişilebilirlik ayarlarınızı okuma</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Bir dosyaya kalıcı erişimi vardır.}other{# dosyaya kalıcı erişimi vardır.}}</translation>
 <translation id="3660234220361471169">Güvenilmeyen</translation>
-<translation id="3661054927247347545">Oturum açma sertifikası geçerli değil, pencere <ph name="MINUTES" /> dakika <ph name="SECONDS" /> saniye içinde kapanacak</translation>
 <translation id="3664511988987167893">Uzantı Simgesi</translation>
 <translation id="3665589677786828986">Chrome, bazı ayarlarınızın başka bir program tarafından bozulduğunu algıladı ve onları orijinal varsayılan değerlerine sıfırladı.</translation>
 <translation id="3668570675727296296">Dil ayarları</translation>
@@ -2889,7 +2885,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5434065355175441495">PKCS #1 RSA Şifrelemesi</translation>
 <translation id="5436492226391861498">Proxy tüneli bekleniyor...</translation>
 <translation id="5436510242972373446">Ara <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Kısa süre sonra tüm tarayıcı pencereleri oturum açılmadan otomatik olarak kapatılacaktır.</translation>
 <translation id="5438224778284622050">Çevrimdışı dosyalar silinsin mi?</translation>
 <translation id="544083962418256601">Kısayol oluştur...</translation>
 <translation id="5442228125690314719">Disk görüntüsü oluşturulurken hata oluştu. Lütfen tekrar deneyin.</translation>
@@ -3622,7 +3617,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Şimdi oturum aç</translation>
 <translation id="6527303717912515753">Paylaş</translation>
 <translation id="6528513914570774834">Bu cihazın diğer kullanıcılarının bu ağı kullanmalarına izin verin</translation>
 <translation id="652948702951888897">Chrome geçmişi</translation>
@@ -4091,7 +4085,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7256710573727326513">Sekme içinde aç</translation>
 <translation id="725758059478686223">Yazdırma Hizmeti</translation>
 <translation id="7257666756905341374">Kopyaladığınız ve yapıştırdığınız verileri okuma</translation>
-<translation id="7258619945375359543">Asistan'ın ekranınızdaki içeriğe göre önerilerde bulunmasını sağlayın</translation>
 <translation id="7258697411818564379">PIN'iniz eklendi</translation>
 <translation id="7262004276116528033">Bu oturum açma hizmeti, <ph name="SAML_DOMAIN" /> tarafından barındırılıyor.</translation>
 <translation id="7268365133021434339">Sekmeleri Kapat</translation>
@@ -4853,7 +4846,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8438566539970814960">Aramaları ve göz atmayı daha iyi yap</translation>
 <translation id="8439506636278576865">Bu dildeki sayfaları çevirmeyi öner</translation>
 <translation id="8440630305826533614">Linux uygulamaları</translation>
-<translation id="8446474770554547328">"Ok Google" ifadesini 3 kez kaydederseniz ses modeliniz oluşturulur ve cihazınızda depolanır. Bu modeli Asistan ayarlarından silebilir veya yeniden eğitebilirsiniz. Sesli komutları Google etkinlik kontrollerinizden görüntüleyebilir veya silebilirsiniz.</translation>
 <translation id="8446884382197647889">Daha Fazla Bilgi Edinin</translation>
 <translation id="8447409163267621480">Ctrl veya Alt tuşunu ekleyin</translation>
 <translation id="8448729345478502352">Ekranınızdaki öğeleri küçültün veya büyütün</translation>

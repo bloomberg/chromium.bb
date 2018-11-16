@@ -166,7 +166,6 @@
     Na ďalšej obrazovke nám pošlite spätnú väzbu, ktorá nám pomôže tento problém vyriešiť.</translation>
 <translation id="1217668622537098248">Po akcii sa vrátiť na kliknutie ľavým tlačidlom myši</translation>
 <translation id="121783623783282548">Heslá sa nezhodujú.</translation>
-<translation id="1219533395013150448">Asistent vytvorí pomocou týchto záznamov model vášho hlasu, ktorý uchová vo vašom zariadení. Môžete ho odstrániť alebo zmeniť v nastaveniach Asistenta. Hlasové príkazy zobrazíte alebo odstránite v riadení aktivity Google.</translation>
 <translation id="122082903575839559">Algoritmus podpisu certifikátu</translation>
 <translation id="1221024147024329929">Štandard PKCS #1 MD2 so šifrovaním RSA</translation>
 <translation id="1221825588892235038">Len výber</translation>
@@ -1490,7 +1489,6 @@ dotyku</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> žiada o pripojenie</translation>
 <translation id="3274763671541996799">Prepli ste na režim celej obrazovky.</translation>
 <translation id="3275778913554317645">Otvárať ako okno</translation>
-<translation id="3278877214895457897">Po nastavení Chromebooku môžete kedykoľvek získať pomoc od Asistenta tak, že stlačíte tlačidlo Asistent a poviete „OK Google“.</translation>
 <translation id="3279230909244266691">Tento proces môže trvať niekoľko minút. Spúšťa sa virtuálny počítač.</translation>
 <translation id="3279741024917655738">Zobrazovať videá na celú obrazovku na</translation>
 <translation id="3280237271814976245">Uložiť &amp;ako...</translation>
@@ -1679,7 +1677,6 @@ dotyku</translation>
 <translation id="3550915441744863158">Prehliadač Chrome sa automaticky aktualizuje, takže budete mať vždy tú najnovšiu verziu</translation>
 <translation id="3551320343578183772">Zatvoriť kartu</translation>
 <translation id="3552780134252864554">Vymazané pri ukončení</translation>
-<translation id="3553146918065661815">Pred ukončením pomocou kombinácie klávesov ⌘Q zobrazovať upozornenie</translation>
 <translation id="3555812735919707620">Odstrániť rozšírenie</translation>
 <translation id="3556000484321257665">Váš vyhľadávač bol zmenený na <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Pravidlo sa nepodarilo v zariadení nainštalovať.</translation>
@@ -1755,7 +1752,6 @@ dotyku</translation>
 <translation id="3654045516529121250">Čítať nastavenia dostupnosti</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Aplikácia má trvalý prístup k jednému súboru.}few{Aplikácia má trvalý prístup k # súborom.}many{Aplikácia má trvalý prístup k # súboru.}other{Aplikácia má trvalý prístup k # súborom.}}</translation>
 <translation id="3660234220361471169">Nedôveryhodné</translation>
-<translation id="3661054927247347545">Certifikácia prihlásenia nie je platná. Okno sa zavrie o <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Ikona rozšírenia</translation>
 <translation id="3665589677786828986">Chrome zistil, že niektoré nastavenia boli poškodené iným programom, a preto obnovil pôvodné predvolené nastavenia.</translation>
 <translation id="3668570675727296296">Nastavenia jazyka</translation>
@@ -2888,7 +2884,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5434065355175441495">Štandard PKCS #1 so šifrovaním RSA</translation>
 <translation id="5436492226391861498">Čaká sa na tunelové prepojenie servera proxy...</translation>
 <translation id="5436510242972373446">Prehľadať webovú stránku <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Ak sa neprihlásite, všetky okná prehliadača sa čoskoro automaticky zatvoria.</translation>
 <translation id="5438224778284622050">Odstrániť súbory offline?</translation>
 <translation id="544083962418256601">Vytvoriť odkazy na pracovnej ploche...</translation>
 <translation id="5442228125690314719">Pri vytváraní obrazu disku sa vyskytla chyba. Skúste to znova.</translation>
@@ -3620,7 +3615,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Prihlásiť sa</translation>
 <translation id="6527303717912515753">Zdieľať</translation>
 <translation id="6528513914570774834">Povoliť ostatným používateľom zariadenia pripojiť sa k tejto sieti</translation>
 <translation id="652948702951888897">História Chromu</translation>
@@ -4089,7 +4083,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7256710573727326513">Otvárať na karte</translation>
 <translation id="725758059478686223">Tlačová služba</translation>
 <translation id="7257666756905341374">Čítať údaje, ktoré kopírujete a prilepujete</translation>
-<translation id="7258619945375359543">Umožnite Asistentovi poskytovať návrhy podľa obsahu na obrazovke</translation>
 <translation id="7258697411818564379">Váš kód PIN bol pridaný</translation>
 <translation id="7262004276116528033">Túto prihlasovaciu službu hostí doména <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Zavrieť karty</translation>
@@ -4851,7 +4844,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8438566539970814960">Zlepšovať vyhľadávania a prehliadanie</translation>
 <translation id="8439506636278576865">Ponúkať preklady stránok v tomto jazyku</translation>
 <translation id="8440630305826533614">Aplikácie pre Linux</translation>
-<translation id="8446474770554547328">Trojnásobným zaznamenaním výrazu „Ok Google“ vytvoríte model svojho hlasu, ktorý sa uchová vo vašom zariadení. Môžete ho odstrániť alebo zmeniť v nastaveniach Asistenta. Hlasové príkazy zobrazíte alebo odstránite v riadení aktivity Google.</translation>
 <translation id="8446884382197647889">Ďalšie informácie</translation>
 <translation id="8447409163267621480">Použite buď Ctrl, alebo Alt</translation>
 <translation id="8448729345478502352">Zväčšte alebo zmenšite položky na obrazovke</translation>

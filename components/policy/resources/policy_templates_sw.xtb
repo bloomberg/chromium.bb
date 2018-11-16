@@ -973,7 +973,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
       Iwapo mipangilio ya sera hii imewekwa kuwa 'PasswordProtectionWarningOff', hamna onyo la ulinzi wa nenosiri litakaloonyeshwa.
       Iwapo mipangilio ya sera hii imewekwa kuwa 'PasswordProtectionWarningOnPasswordReuse', onyo la ulinzi wa nenosiri litaonyeshwa wakati mtumiaji anatumia tena nenosiri linalolindwa kwenye tovuti ambayo haijaidhinishwa.
-      Iwapo mipangilio ya sera hii imewekwa kuwa 'PasswordProtectionWarningOnPhishingReuse', onyo la ulinzi wa nenosiri litaonyeshwa wakati mtumaji anatumia tena nenosiri lake linalolindwa kwenye tovuti inayoiba data binafsi.
+      Iwapo mipangilio ya sera hii imewekwa kuwa 'PasswordProtectionWarningOnPhishingReuse', onyo la ulinzi wa nenosiri litaonyeshwa wakati mtumiaji anatumia tena nenosiri lake linalolindwa kwenye tovuti inayoiba data binafsi.
       Iwapo mipangilio ya sera hii haijawekwa, huduma ya ulinzi wa nenosiri italinda tu manenosiri ya Google lakini mtumiaji yule mwingine ataweza kubadilisha mipangilio hii.</translation>
 <translation id="3502555714327823858">Ruhusu hali zote za kuchapisha pande mbili</translation>
 <translation id="350443680860256679">Weka mipangilio ya ARC</translation>
@@ -1013,7 +1013,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
       Huenda utataka kuangalia mipangilio ya sera ya IsolateOrigins ili upate hali bora kati ya hizi mbili, utengaji na athari ndogo kwa watumiaji, kwa kutumia IsolateOrigins katika orodha ya tovuti unazotaka kutenga. Mipangilio hii, SitePerProcess, inatenga tovuti zote.
       Iwapo sera imewashwa, kila tovuti itatumia mchakato wake.
       Ukizima mipangilio hii, vipengele vyote viwili vya IsolateOrigins na SitePerProcess vitazimwa. Bado watumiaji wataweza kuwasha SitePerProcess wenyewe, kupitia ripoti za mstari wa amri.
-      Iwapo hujaweka mipangilio ya sera, mtumiaji ataweza kubadiisha mipangilio hii.
+      Iwapo hujaweka mipangilio ya sera, mtumiaji ataweza kubadilisha mipangilio hii.
       Kwenye <ph name="PRODUCT_OS_NAME" />, tunapendekeza uweke pia sera ya kifaa ya <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> iwe katika thamani ile ile. Ikiwa thamani hazitalingana, huenda ikachelewesha shughuli ya kuweka kipindi cha mtumiaji wakati thamani iliyobainishwa na sera ya mtumiaji inatumika.
 
       KUMBUKA: Sera hii haitumiki kwenye Android. Ili uwashe SitePerProcess kwenye Android, tumia mipangilio ya sera ya SitePerProcessAndroid.
@@ -1804,7 +1804,7 @@ Sera hii ikiwekwa kuwa ndivyo au isipowekwa, kipindi cha mgeni kinachodhibitiwa 
 
       Wakati programu jalizi ya Internet Explorer inapatikana na imewashwa, Internet Explorer itarudi kwenye <ph name="PRODUCT_NAME" /> iwapo masharti hayatalingana.
 
-      Iwapo masharti yanakinzani, <ph name="PRODUCT_NAME" /> itatumia masharti yaliyo mahususi zaidi.</translation>
+      Iwapo masharti yanakinzana, <ph name="PRODUCT_NAME" /> itatumia masharti yaliyo mahususi zaidi.</translation>
 <translation id="5732972008943405952">Leta data ya fomu ya kujaza otomatiki kutoka kwenye kivinjari chaguomsingi wakati wa uendeshaji wa kwanza</translation>
 <translation id="5765780083710877561">Maelezo:</translation>
 <translation id="5770738360657678870">Kituo cha dev (huenda kikawa si imara)</translation>
@@ -3191,11 +3191,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 <translation id="8970205333161758602">Didimiza kukataa kuuliza kwa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Ruhusu kipengele cha uthibitishaji wa gnubby kwa seva pangishi za uwezo wa kufikia kwa mbali</translation>
 <translation id="8976531594979650914">Tumia Printa Chaguomsingi ya Mfumo kama Chaguomsingi</translation>
-<translation id="898520305112996948">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo zitatoa ruhusa kiotomatiki za kufikia kifaa cha USB chenye vitambulisho mahususi vya bidhaa na muuzaji. Kila kipengee katika orodha lazima kijumuishe ruwaza za url na vifaa ili sera itumike. Kila kipengee katika vifaa kinaweza kujumuisha sehemu ya kitambulisho cha muuzaji na kitambulisho cha bidhaa. Kitambulisho chochote kisichowekwa kinachukuliwa kuwa herufi wakilishi isiyofuata kanuni moja na kanuni hii ni kwamba kitambulisho cha bidhaa hakiwezi kubainishwa bila kitambulisho cha muuzaji kubainishwa pia. Vinginevyo, sera haitakuwa sahihi. Thamani za sera zisizo sahihi hazitumiwi. 
-
-        Ikiwa sera haitawekwa, thamani chaguomsingi ya kijumla itatumiwa kwenye tovuti zote, kutoka sera ya 'DefaultWebUsbGuardSetting', ikiwa sera imewekwa au vinginevyo kutoka mipangilio ya binafsi ya mtumiaji.
-
-        Ruwaza za URL katika sera hii, hazipaswi kukinzana na zile ambazo mipangilio yake inawekwa kupitia WebUsbBlockedForUrls. Kama zinakinzana, sera hii itatumika kwanza kabla ya WebUsbBlockedForUrls na WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Usiruhusu tovuti yoyote kuonyesha picha</translation>
 <translation id="9012851181124311976">Weka mipangilio ya orodha ya URL za biashara za kuingia katika akaunti (HTTP na HTTPS pekee). Alama bainifu ya nenosiri itarekodiwa kwenye URL hizi na kutumika kwa utambulishaji wa nenosiri lililotumika tena.
       Ili <ph name="PRODUCT_NAME" /> iweze kurekodi alama bainifu ipasavyo, tafadhali hakikisha kuwa kurasa zako za kuingia katika akaunti zinafuata mwongozo kwenye https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
