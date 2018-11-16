@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "ash/display/display_configuration_controller.h"
+#include "ash/multi_user/multi_user_window_manager.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
@@ -1253,7 +1254,9 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     const std::string email_string = user_name + "@example.com";
     const AccountId account_id(AccountId::FromUserEmail(email_string));
     // Add a user to the fake user manager.
-    GetFakeUserManager()->AddUser(account_id);
+    auto* user = GetFakeUserManager()->AddUser(account_id);
+    ash_test_helper()->test_session_controller_client()->AddUserSession(
+        user->GetDisplayEmail());
 
     GetFakeUserManager()->LoginUser(account_id);
 
@@ -1273,12 +1276,9 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   // Switch to another user.
   void SwitchActiveUser(const AccountId& account_id) {
     GetFakeUserManager()->SwitchActiveUser(account_id);
-    MultiUserWindowManagerChromeOS* manager =
-        static_cast<MultiUserWindowManagerChromeOS*>(
-            MultiUserWindowManager::GetInstance());
-    manager->SetAnimationSpeedForTest(
-        MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
-    manager->ActiveUserChanged(GetFakeUserManager()->FindUser(account_id));
+    ash::MultiUserWindowManager::Get()->SetAnimationSpeedForTest(
+        ash::MultiUserWindowManager::ANIMATION_SPEED_DISABLED);
+    ash::MultiUserWindowManager::Get()->OnActiveUserSessionChanged(account_id);
     launcher_controller_->browser_status_monitor_for_test()->ActiveUserChanged(
         account_id.GetUserEmail());
 

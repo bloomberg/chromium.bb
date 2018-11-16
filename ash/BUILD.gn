@@ -48,6 +48,11 @@ component("ash") {
     "frame/wide_frame_view.h",
     "login/ui/lock_window.h",
     "magnifier/magnification_controller.h",
+
+    # TODO: move MultiUserWindowManager (and delegate) to sources:
+    # https://crbug.com/756085
+    "multi_user/multi_user_window_manager.h",
+    "multi_user/multi_user_window_manager_delegate.h",
     "new_window_controller.h",
     "root_window_controller.h",
     "screenshot_delegate.h",
@@ -518,6 +523,9 @@ component("ash") {
     "multi_device_setup/multi_device_notification_presenter.h",
     "multi_profile_uma.cc",
     "multi_profile_uma.h",
+    "multi_user/multi_user_window_manager.cc",
+    "multi_user/user_switch_animator.cc",
+    "multi_user/user_switch_animator.h",
     "network_connect_delegate_mus.cc",
     "network_connect_delegate_mus.h",
     "new_window_controller.cc",

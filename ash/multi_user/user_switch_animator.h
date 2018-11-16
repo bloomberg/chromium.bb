@@ -2,26 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_USER_SWITCH_ANIMATOR_CHROMEOS_H_
-#define CHROME_BROWSER_UI_ASH_MULTI_USER_USER_SWITCH_ANIMATOR_CHROMEOS_H_
+#ifndef ASH_MULTI_USER_USER_SWITCH_ANIMATOR_H_
+#define ASH_MULTI_USER_USER_SWITCH_ANIMATOR_H_
 
 #include <map>
 #include <memory>
 #include <string>
 
+#include "ash/ash_export.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/account_id/account_id.h"
 #include "ui/aura/window.h"
 
-class MultiUserWindowManagerChromeOS;
+namespace ash {
+
+class MultiUserWindowManager;
 
 // A class which performs transitions animations between users. Upon creation,
 // the animation gets started and upon destruction the animation gets finished
 // if not done yet.
 // Specifying |animation_disabled| upon creation will perform the transition
 // without visible animations.
-class UserSwitchAnimatorChromeOS {
+class ASH_EXPORT UserSwitchAnimator {
  public:
   // The animation step for the user change animation.
   enum AnimationStep {
@@ -31,10 +36,12 @@ class UserSwitchAnimatorChromeOS {
     ANIMATION_STEP_ENDED           // The animation has ended.
   };
 
-  UserSwitchAnimatorChromeOS(MultiUserWindowManagerChromeOS* owner,
-                             const AccountId& new_account_id,
-                             int animation_speed_ms);
-  ~UserSwitchAnimatorChromeOS();
+  // Creates a UserSwitchAnimator to animate between the current user and
+  // |user_info|.
+  UserSwitchAnimator(MultiUserWindowManager* owner,
+                     mojom::WallpaperUserInfoPtr user_info,
+                     base::TimeDelta animation_speed);
+  ~UserSwitchAnimator();
 
   // Check if a window is covering the entire work area of the screen it is on.
   static bool CoversScreen(aura::Window* window);
@@ -92,13 +99,17 @@ class UserSwitchAnimatorChromeOS {
   void BuildUserToWindowsListMap();
 
   // The owning window manager.
-  MultiUserWindowManagerChromeOS* owner_;
+  MultiUserWindowManager* owner_;
+
+  // Contains the wallpaper configuration for the user switching to. This is
+  // passed to the WallpaperController at the right time.
+  mojom::WallpaperUserInfoPtr wallpaper_user_info_;
 
   // The new user to set.
   AccountId new_account_id_;
 
   // The animation speed in ms. If 0, animations are disabled.
-  int animation_speed_ms_;
+  base::TimeDelta animation_speed_;
 
   // The next animation step for AdvanceUserTransitionAnimation().
   AnimationStep animation_step_;
@@ -117,7 +128,9 @@ class UserSwitchAnimatorChromeOS {
   // For unit tests: Check which wallpaper was set.
   std::string wallpaper_user_id_for_test_;
 
-  DISALLOW_COPY_AND_ASSIGN(UserSwitchAnimatorChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(UserSwitchAnimator);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_USER_SWITCH_ANIMATOR_CHROMEOS_H_
+}  // namespace ash
+
+#endif  // ASH_MULTI_USER_USER_SWITCH_ANIMATOR_H_
