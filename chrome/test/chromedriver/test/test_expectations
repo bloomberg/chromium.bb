@@ -37,6 +37,14 @@ _OS_NEGATIVE_FILTER['win'] = [
 _OS_NEGATIVE_FILTER['linux'] = [
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2664
+    'WindowTest.canFullscreenTheWindow',
+    'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
+    'WindowTest.testSetsTheSizeOfTheCurrentWindowFromFrame',
+    'WindowTest.canFullscreenTheWindowFromFrame',
+    'WindowTest.canFullscreenTheWindowFromIframe',
+    'WindowTest.testSetsTheSizeOfTheCurrentWindow',
+    'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
 ]
 
 _SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
