@@ -10,6 +10,7 @@
 namespace switches {
 
 extern const base::Feature kSyncForceDisableScryptForCustomPassphrase;
+extern const base::Feature kSyncE2ELatencyMeasurement;
 
 }  // namespace switches
 

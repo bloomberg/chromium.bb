@@ -7,10 +7,12 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 
 #include "base/time/time.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 
@@ -43,6 +45,7 @@ class ProcessorEntityTracker {
   const std::string& storage_key() const { return storage_key_; }
   const sync_pb::EntityMetadata& metadata() const { return metadata_; }
   const EntityDataPtr& commit_data() const { return commit_data_; }
+  base::Time unsynced_time() const { return unsynced_time_; }
 
   // Returns true if this data is out of sync with the server.
   // A commit may or may not be in progress at this time.
@@ -66,6 +69,8 @@ class ProcessorEntityTracker {
 
   // Returns true if the specified update version does not contain new data.
   bool UpdateIsReflection(int64_t update_version) const;
+
+  void RecordEntityUpdateLatency(int64_t update_version, const ModelType& type);
 
   // Records that an update from the server was received but ignores its data.
   void RecordIgnoredUpdate(const UpdateResponseData& response_data);
@@ -126,7 +131,7 @@ class ProcessorEntityTracker {
 
   // Increment sequence number in the metadata. This will also update the
   // base_specifics_hash if the entity was not already unsynced.
-  void IncrementSequenceNumber();
+  void IncrementSequenceNumber(base::Time modification_time);
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
@@ -156,6 +161,12 @@ class ProcessorEntityTracker {
 
   // The sequence number of the last item sent to the sync thread.
   int64_t commit_requested_sequence_number_;
+
+  // The time when this entity transition from being synced to being unsynced
+  // (i.e. a local change happened).
+  base::Time unsynced_time_;
+
+  std::map<int64_t, base::Time> unsynced_time_per_committed_server_version_;
 };
 
 }  // namespace syncer

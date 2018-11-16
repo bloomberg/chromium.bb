@@ -35,6 +35,7 @@ struct CommitRequestData {
   // that make use of this struct.
   int64_t sequence_number = 0;
   std::string specifics_hash;
+  base::Time unsynced_time;
 };
 
 struct CommitResponseData {
@@ -51,6 +52,7 @@ struct CommitResponseData {
   int64_t sequence_number = 0;
   int64_t response_version = 0;
   std::string specifics_hash;
+  base::Time unsynced_time;
 };
 
 struct UpdateResponseData {

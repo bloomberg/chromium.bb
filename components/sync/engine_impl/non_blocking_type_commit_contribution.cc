@@ -121,6 +121,7 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
         response_data.client_tag_hash = commit_request.entity->client_tag_hash;
         response_data.sequence_number = commit_request.sequence_number;
         response_data.specifics_hash = commit_request.specifics_hash;
+        response_data.unsynced_time = commit_request.unsynced_time;
         response_list.push_back(response_data);
 
         status->increment_num_successful_commits();
