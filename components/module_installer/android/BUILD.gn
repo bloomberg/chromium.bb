@@ -13,6 +13,6 @@ android_library("module_installer_java") {
   ]
   deps = [
     "//base:base_java",
-    "//third_party/android_deps:com_google_android_play_core_java",
+    "//third_party/google_android_play_core:com_google_android_play_core_java",
   ]
 }
