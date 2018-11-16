@@ -70,7 +70,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // Registered keys. Keyed on key handle (a.k.a. "credential ID").
     std::map<std::vector<uint8_t>,
              RegistrationData,
-             fido_parsing_utils::SpanLess>
+             fido_parsing_utils::RangeLess>
         registrations;
 
     // If set, this callback is called whenever a "press" is required. It allows

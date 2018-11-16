@@ -424,39 +424,6 @@ class span : public internal::ExtentStorage<Extent> {
 template <class T, size_t Extent>
 constexpr size_t span<T, Extent>::extent;
 
-// [span.comparison], span comparison operators
-// Relational operators. Equality is a element-wise comparison.
-template <typename T, size_t X, typename U, size_t Y>
-constexpr bool operator==(span<T, X> lhs, span<U, Y> rhs) noexcept {
-  return std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
-}
-
-template <typename T, size_t X, typename U, size_t Y>
-constexpr bool operator!=(span<T, X> lhs, span<U, Y> rhs) noexcept {
-  return !(lhs == rhs);
-}
-
-template <typename T, size_t X, typename U, size_t Y>
-constexpr bool operator<(span<T, X> lhs, span<U, Y> rhs) noexcept {
-  return std::lexicographical_compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(),
-                                      rhs.cend());
-}
-
-template <typename T, size_t X, typename U, size_t Y>
-constexpr bool operator<=(span<T, X> lhs, span<U, Y> rhs) noexcept {
-  return !(rhs < lhs);
-}
-
-template <typename T, size_t X, typename U, size_t Y>
-constexpr bool operator>(span<T, X> lhs, span<U, Y> rhs) noexcept {
-  return rhs < lhs;
-}
-
-template <typename T, size_t X, typename U, size_t Y>
-constexpr bool operator>=(span<T, X> lhs, span<U, Y> rhs) noexcept {
-  return !(lhs < rhs);
-}
-
 // [span.objectrep], views of object representation
 template <typename T, size_t X>
 span<const uint8_t, (X == dynamic_extent ? dynamic_extent : sizeof(T) * X)>
