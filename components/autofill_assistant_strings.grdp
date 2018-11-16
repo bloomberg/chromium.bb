@@ -19,5 +19,11 @@
     <message name="IDS_AUTOFILL_ASSISTANT_TERMS" desc="The text for the terms and service acceptance checkbox. Sentence-cased." formatter_data="android_java">
       I know the terms and conditions, privacy policy and right of withdrawal of <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="ORIGIN">%1$s<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph> (leave unchecked to read).
     </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER" desc="Shown as Status Message when details differ." formatter_data="android_java">
+      The movie screening is different, do you want to continue?
+    </message>
+    <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER_GO_BACK" desc="Shown on a button allowing going back when details differ." formatter_data="android_java">
+      Go back
+    </message>
   </if>
 </grit-part>

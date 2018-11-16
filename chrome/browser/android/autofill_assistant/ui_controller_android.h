@@ -42,6 +42,7 @@ class UiControllerAndroid : public UiController,
   void HideOverlay() override;
   void Shutdown() override;
   void ShutdownGracefully() override;
+  void CloseCustomTab() override;
   void UpdateScripts(const std::vector<ScriptHandle>& scripts) override;
   void ChooseAddress(
       base::OnceCallback<void(const std::string&)> callback) override;
@@ -53,7 +54,8 @@ class UiControllerAndroid : public UiController,
       const std::string& title,
       const std::vector<std::string>& supported_basic_card_networks) override;
   void HideDetails() override;
-  bool ShowDetails(const DetailsProto& details) override;
+  void ShowDetails(const DetailsProto& details,
+                   base::OnceCallback<void(bool)> callback) override;
   void ShowProgressBar(int progress, const std::string& message) override;
   void HideProgressBar() override;
   void UpdateTouchableArea(bool enabled,
@@ -108,6 +110,9 @@ class UiControllerAndroid : public UiController,
                      const base::android::JavaParamRef<jobject>& jcaller,
                      jboolean success,
                      const base::android::JavaParamRef<jstring>& access_token);
+  void OnShowDetails(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& jcaller,
+                     jboolean success);
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
@@ -129,6 +134,7 @@ class UiControllerAndroid : public UiController,
   std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;
   base::OnceCallback<void(bool, const std::string&)>
       fetch_access_token_callback_;
+  base::OnceCallback<void(bool)> show_details_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);
 };

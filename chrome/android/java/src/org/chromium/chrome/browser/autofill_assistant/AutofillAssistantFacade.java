@@ -15,26 +15,15 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 /** Facade for starting Autofill Assistant on a custom tab. */
 public class AutofillAssistantFacade {
-    private static final String RFC_3339_FORMAT_WITHOUT_TIMEZONE = "yyyy'-'MM'-'dd'T'HH':'mm':'ss";
-
     /** Prefix for Intent extras relevant to this feature. */
     private static final String INTENT_EXTRA_PREFIX =
             "org.chromium.chrome.browser.autofill_assistant.";
 
-    /** Autofill Assistant Study name. */
-    private static final String STUDY_NAME = "AutofillAssistant";
-
-    /** Variation url parameter name. */
-    private static final String URL_PARAMETER_NAME = "url";
 
     /** Special parameter that enables the feature. */
     private static final String PARAMETER_ENABLED = "ENABLED";
@@ -60,8 +49,7 @@ public class AutofillAssistantFacade {
         controller.setUiDelegateHolder(delegateHolder);
         initTabObservers(activity, delegateHolder);
 
-        AutofillAssistantUiDelegate.Details initialDetails = makeDetailsFromParameters(parameters);
-        controller.maybeUpdateDetails(initialDetails);
+        controller.maybeUpdateDetails(Details.makeFromParameters(parameters));
 
         uiDelegate.startOrSkipInitScreen();
     }
@@ -105,39 +93,5 @@ public class AutofillAssistantFacade {
             }
         }
         return result;
-    }
-
-    // TODO(crbug.com/806868): Create a fallback when there are no parameters for details.
-    // TODO(crbug.com/806868): Create a fallback when there are no parameters for details.
-    private static AutofillAssistantUiDelegate.Details makeDetailsFromParameters(
-            Map<String, String> parameters) {
-        String title = "";
-        String description = "";
-        Date date = null;
-        for (String key : parameters.keySet()) {
-            if (key.contains("E_NAME")) {
-                title = parameters.get(key);
-                continue;
-            }
-
-            if (key.contains("R_NAME")) {
-                description = parameters.get(key);
-                continue;
-            }
-
-            if (key.contains("DATETIME")) {
-                try {
-                    // The parameter contains the timezone shift from the current location, that we
-                    // don't care about.
-                    date = new SimpleDateFormat(RFC_3339_FORMAT_WITHOUT_TIMEZONE, Locale.ROOT)
-                                   .parse(parameters.get(key));
-                } catch (ParseException e) {
-                    // Ignore.
-                }
-            }
-        }
-
-        return new AutofillAssistantUiDelegate.Details(
-                title, /* url= */ "", date, description, /* isFinal= */ false);
     }
 }
