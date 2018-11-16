@@ -676,12 +676,6 @@
       "08455FA7CB8734168378F731B00B354CEEE0088F"   // Chrome Reporting Ext. Beta
     ]
   },
-  "screenlockPrivate": {
-    "channel": "stable",
-    "extension_types": ["platform_app"],
-    "location": "component",
-    "platforms": ["chromeos"]
-  },
   "sessions": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
