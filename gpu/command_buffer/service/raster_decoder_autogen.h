@@ -19,12 +19,12 @@ error::Error RasterDecoderImpl::HandleDeleteTexturesImmediate(
       *static_cast<const volatile raster::cmds::DeleteTexturesImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t textures_size;
+  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &textures_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* textures =
-      gles2::GetImmediateDataAs<volatile const GLuint*>(c, data_size,
+      gles2::GetImmediateDataAs<volatile const GLuint*>(c, textures_size,
                                                         immediate_data_size);
   if (textures == nullptr) {
     return error::kOutOfBounds;
@@ -101,12 +101,12 @@ error::Error RasterDecoderImpl::HandleGenQueriesEXTImmediate(
       *static_cast<const volatile raster::cmds::GenQueriesEXTImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t queries_size;
+  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &queries_size)) {
     return error::kOutOfBounds;
   }
   volatile GLuint* queries = gles2::GetImmediateDataAs<volatile GLuint*>(
-      c, data_size, immediate_data_size);
+      c, queries_size, immediate_data_size);
   if (queries == nullptr) {
     return error::kOutOfBounds;
   }
@@ -127,12 +127,12 @@ error::Error RasterDecoderImpl::HandleDeleteQueriesEXTImmediate(
       *static_cast<const volatile raster::cmds::DeleteQueriesEXTImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t queries_size;
+  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &queries_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* queries =
-      gles2::GetImmediateDataAs<volatile const GLuint*>(c, data_size,
+      gles2::GetImmediateDataAs<volatile const GLuint*>(c, queries_size,
                                                         immediate_data_size);
   if (queries == nullptr) {
     return error::kOutOfBounds;
@@ -200,15 +200,15 @@ error::Error RasterDecoderImpl::HandleBeginRasterCHROMIUMImmediate(
   GLint color_type = static_cast<GLint>(c.color_type);
   GLuint color_space_transfer_cache_id =
       static_cast<GLuint>(c.color_space_transfer_cache_id);
-  uint32_t data_size;
-  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
+  uint32_t mailbox_size;
+  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 16>(1, &mailbox_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (mailbox_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLbyte* mailbox =
-      gles2::GetImmediateDataAs<volatile const GLbyte*>(c, data_size,
+      gles2::GetImmediateDataAs<volatile const GLbyte*>(c, mailbox_size,
                                                         immediate_data_size);
   if (mailbox == nullptr) {
     return error::kOutOfBounds;
@@ -309,12 +309,12 @@ RasterDecoderImpl::HandleDeletePaintCacheTextBlobsINTERNALImmediate(
       *static_cast<const volatile raster::cmds::
                        DeletePaintCacheTextBlobsINTERNALImmediate*>(cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t ids_size;
+  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &ids_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* ids =
-      gles2::GetImmediateDataAs<volatile const GLuint*>(c, data_size,
+      gles2::GetImmediateDataAs<volatile const GLuint*>(c, ids_size,
                                                         immediate_data_size);
   if (ids == nullptr) {
     return error::kOutOfBounds;
@@ -331,12 +331,12 @@ error::Error RasterDecoderImpl::HandleDeletePaintCachePathsINTERNALImmediate(
           const volatile raster::cmds::DeletePaintCachePathsINTERNALImmediate*>(
           cmd_data);
   GLsizei n = static_cast<GLsizei>(c.n);
-  uint32_t data_size;
-  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+  uint32_t ids_size;
+  if (!gles2::SafeMultiplyUint32(n, sizeof(GLuint), &ids_size)) {
     return error::kOutOfBounds;
   }
   volatile const GLuint* ids =
-      gles2::GetImmediateDataAs<volatile const GLuint*>(c, data_size,
+      gles2::GetImmediateDataAs<volatile const GLuint*>(c, ids_size,
                                                         immediate_data_size);
   if (ids == nullptr) {
     return error::kOutOfBounds;
@@ -387,15 +387,15 @@ error::Error RasterDecoderImpl::HandleProduceTextureDirectImmediate(
       *static_cast<const volatile raster::cmds::ProduceTextureDirectImmediate*>(
           cmd_data);
   GLuint texture = static_cast<GLuint>(c.texture);
-  uint32_t data_size;
-  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
+  uint32_t mailbox_size;
+  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 16>(1, &mailbox_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (mailbox_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile GLbyte* mailbox = gles2::GetImmediateDataAs<volatile GLbyte*>(
-      c, data_size, immediate_data_size);
+      c, mailbox_size, immediate_data_size);
   if (mailbox == nullptr) {
     return error::kOutOfBounds;
   }
@@ -413,15 +413,15 @@ error::Error RasterDecoderImpl::HandleCreateAndConsumeTextureINTERNALImmediate(
   bool use_buffer = static_cast<bool>(c.use_buffer);
   gfx::BufferUsage buffer_usage = static_cast<gfx::BufferUsage>(c.buffer_usage);
   viz::ResourceFormat format = static_cast<viz::ResourceFormat>(c.format);
-  uint32_t data_size;
-  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 16>(1, &data_size)) {
+  uint32_t mailbox_size;
+  if (!gles2::GLES2Util::ComputeDataSize<GLbyte, 16>(1, &mailbox_size)) {
     return error::kOutOfBounds;
   }
-  if (data_size > immediate_data_size) {
+  if (mailbox_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
   volatile const GLbyte* mailbox =
-      gles2::GetImmediateDataAs<volatile const GLbyte*>(c, data_size,
+      gles2::GetImmediateDataAs<volatile const GLbyte*>(c, mailbox_size,
                                                         immediate_data_size);
   if (!validators_->gfx_buffer_usage.IsValid(buffer_usage)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glCreateAndConsumeTextureINTERNAL",
