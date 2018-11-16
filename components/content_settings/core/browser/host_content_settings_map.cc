@@ -509,6 +509,16 @@ bool HostContentSettingsMap::CanSetNarrowestContentSetting(
   return patterns.first.IsValid() && patterns.second.IsValid();
 }
 
+bool HostContentSettingsMap::IsRestrictedToSecureOrigins(
+    ContentSettingsType type) const {
+  const ContentSettingsInfo* content_settings_info =
+      content_settings::ContentSettingsRegistry::GetInstance()->Get(type);
+  DCHECK(content_settings_info);
+
+  return content_settings_info->origin_restriction() ==
+         ContentSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY;
+}
+
 void HostContentSettingsMap::SetNarrowestContentSetting(
     const GURL& primary_url,
     const GURL& secondary_url,

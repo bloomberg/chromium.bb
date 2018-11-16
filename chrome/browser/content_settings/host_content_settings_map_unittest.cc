@@ -1751,6 +1751,16 @@ TEST_F(HostContentSettingsMapTest, LastModifiedMultipleModifiableProviders) {
   weak_other_provider->RemoveObserver(map);
 }
 
+TEST_F(HostContentSettingsMapTest, IsRestrictedToSecureOrigins) {
+  TestingProfile profile;
+  const auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
+  EXPECT_TRUE(
+      map->IsRestrictedToSecureOrigins(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+
+  EXPECT_FALSE(
+      map->IsRestrictedToSecureOrigins(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+}
+
 TEST_F(HostContentSettingsMapTest, CanSetNarrowestSetting) {
   TestingProfile profile;
   const auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);

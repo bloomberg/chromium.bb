@@ -67,7 +67,8 @@ class ContentSettingsRegistry {
                 WebsiteSettingsInfo::ScopingType scoping_type,
                 Platforms platforms,
                 ContentSettingsInfo::IncognitoBehavior incognito_behavior,
-                ContentSettingsInfo::StorageBehavior storage_behavior);
+                ContentSettingsInfo::StorageBehavior storage_behavior,
+                ContentSettingsInfo::OriginRestriction origin_restriction);
 
   Map content_settings_info_;
   WebsiteSettingsRegistry* website_settings_registry_;
