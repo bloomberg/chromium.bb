@@ -212,7 +212,9 @@ void WebViewAutofillClientIOS::UpdateAutofillPopupDataListValues(
 
 void WebViewAutofillClientIOS::PropagateAutofillPredictions(
     content::RenderFrameHost* rfh,
-    const std::vector<FormStructure*>& forms) {}
+    const std::vector<FormStructure*>& forms) {
+  [bridge_ propagateAutofillPredictionsForForms:forms];
+}
 
 void WebViewAutofillClientIOS::DidFillOrPreviewField(
     const base::string16& autofilled_value,
