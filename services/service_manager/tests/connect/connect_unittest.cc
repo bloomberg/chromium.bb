@@ -73,10 +73,10 @@ void ReceiveQueryResult(mojom::ServiceInfoPtr* out_info,
 }
 
 void ReceiveConnectionResult(mojom::ConnectResult* out_result,
-                             Identity* out_target,
+                             base::Optional<Identity>* out_target,
                              base::RunLoop* loop,
                              int32_t in_result,
-                             const Identity& in_identity) {
+                             const base::Optional<Identity>& in_identity) {
   *out_result = static_cast<mojom::ConnectResult>(in_result);
   *out_target = in_identity;
   loop->Quit();
@@ -177,8 +177,9 @@ class ConnectTest : public testing::Test,
     mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
     mojom::PIDReceiverPtr pid_receiver;
     service_manager_.RegisterService(
-        Identity(service_name, kSystemInstanceGroup), std::move(proxy),
-        mojo::MakeRequest(&pid_receiver));
+        Identity(service_name, kSystemInstanceGroup, base::Token{},
+                 base::Token::CreateRandom()),
+        std::move(proxy), mojo::MakeRequest(&pid_receiver));
     pid_receiver->SetPID(1);
     return request;
   }
@@ -236,12 +237,11 @@ TEST_F(ConnectTest, BindInterface) {
 TEST_F(ConnectTest, Instances) {
   const base::Token kInstanceIdA{1, 2};
   const base::Token kInstanceIdB{3, 4};
-  Identity identity_a(kTestAppName, base::nullopt /* instance_group */,
-                      kInstanceIdA);
+  auto filter_a = ServiceFilter::ByNameWithId(kTestAppName, kInstanceIdA);
   base::Token instance_a1, instance_a2;
   test::mojom::ConnectTestServicePtr service_a1;
   {
-    connector()->BindInterface(identity_a, &service_a1);
+    connector()->BindInterface(filter_a, &service_a1);
     base::RunLoop loop;
     service_a1->GetInstanceId(
         base::BindLambdaForTesting([&](const base::Token& instance_id) {
@@ -252,7 +252,7 @@ TEST_F(ConnectTest, Instances) {
   }
   test::mojom::ConnectTestServicePtr service_a2;
   {
-    connector()->BindInterface(identity_a, &service_a2);
+    connector()->BindInterface(filter_a, &service_a2);
     base::RunLoop loop;
     service_a2->GetInstanceId(
         base::BindLambdaForTesting([&](const base::Token& instance_id) {
@@ -263,12 +263,11 @@ TEST_F(ConnectTest, Instances) {
   }
   EXPECT_EQ(instance_a1, instance_a2);
 
-  Identity identity_b(kTestAppName, base::nullopt /* instance_group */,
-                      kInstanceIdB);
+  auto filter_b = ServiceFilter::ByNameWithId(kTestAppName, kInstanceIdB);
   base::Token instance_b;
   test::mojom::ConnectTestServicePtr service_b;
   {
-    connector()->BindInterface(identity_b, &service_b);
+    connector()->BindInterface(filter_b, &service_b);
     base::RunLoop loop;
     service_b->GetInstanceId(
         base::BindLambdaForTesting([&](const base::Token& instance_id) {
@@ -287,8 +286,7 @@ TEST_F(ConnectTest, ConnectWithGloballyUniqueId) {
   target->WaitForStart();
 
   Identity specific_identity = target->identity();
-  EXPECT_TRUE(specific_identity.globally_unique_id().has_value());
-  EXPECT_FALSE(specific_identity.globally_unique_id()->is_zero());
+  EXPECT_TRUE(specific_identity.IsValid());
 
   // First connect with a basic identity.
   test::mojom::ConnectTestServicePtr proxy;
@@ -479,65 +477,68 @@ TEST_F(ConnectTest, MAYBE_ConnectWithoutExplicitClassBlocked) {
   loop.Run();
 }
 
-TEST_F(ConnectTest, ConnectAsDifferentUser_Allowed) {
+TEST_F(ConnectTest, ConnectToDifferentGroup_Allowed) {
   test::mojom::IdentityTestPtr identity_test;
-  connector()->BindInterface(kTestAppName, &identity_test);
+  connector()->BindInterface(ServiceFilter::ByName(kTestAppName),
+                             &identity_test);
   mojom::ConnectResult result;
-  Identity target(kTestClassAppName, base::Token::CreateRandom());
-  Identity result_identity;
+  auto filter = ServiceFilter::ByNameInGroup(kTestClassAppName,
+                                             base::Token::CreateRandom());
+  base::Optional<Identity> result_identity;
   {
     base::RunLoop loop;
-    identity_test->ConnectToClassAppWithIdentity(
-        target,
+    identity_test->ConnectToClassAppWithFilter(
+        filter,
         base::Bind(&ReceiveConnectionResult, &result, &result_identity, &loop));
     loop.Run();
   }
   EXPECT_EQ(result, mojom::ConnectResult::SUCCEEDED);
-  EXPECT_EQ(target.name(), result_identity.name());
-  EXPECT_TRUE(result_identity.instance_group().has_value());
-  EXPECT_EQ(target.instance_group(), result_identity.instance_group());
-  EXPECT_TRUE(result_identity.instance_id().has_value());
-  EXPECT_EQ(result_identity.instance_id().value(), base::Token(0, 0));
-  EXPECT_TRUE(result_identity.globally_unique_id().has_value());
+  ASSERT_TRUE(result_identity);
+  EXPECT_EQ(filter.service_name(), result_identity->name());
+  EXPECT_EQ(*filter.instance_group(), result_identity->instance_group());
+  EXPECT_TRUE(result_identity->instance_id().is_zero());
+  EXPECT_FALSE(result_identity->globally_unique_id().is_zero());
 }
 
-TEST_F(ConnectTest, ConnectAsDifferentUser_Blocked) {
+TEST_F(ConnectTest, ConnectToDifferentGroup_Blocked) {
   test::mojom::IdentityTestPtr identity_test;
-  connector()->BindInterface(kTestAppAName, &identity_test);
+  connector()->BindInterface(ServiceFilter::ByName(kTestAppAName),
+                             &identity_test);
   mojom::ConnectResult result;
-  Identity target(kTestClassAppName, base::Token::CreateRandom());
-  Identity result_identity;
+  auto filter = ServiceFilter::ByNameInGroup(kTestClassAppName,
+                                             base::Token::CreateRandom());
+  base::Optional<Identity> result_identity;
   {
     base::RunLoop loop;
-    identity_test->ConnectToClassAppWithIdentity(
-        target,
+    identity_test->ConnectToClassAppWithFilter(
+        filter,
         base::Bind(&ReceiveConnectionResult, &result, &result_identity, &loop));
     loop.Run();
   }
   EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
-  EXPECT_FALSE(target == result_identity);
+  EXPECT_FALSE(result_identity);
 }
 
-TEST_F(ConnectTest, ConnectWithDifferentInstanceName_Blocked) {
+TEST_F(ConnectTest, ConnectWithDifferentInstanceId_Blocked) {
   test::mojom::IdentityTestPtr identity_test;
-  connector()->BindInterface(kTestAppAName, &identity_test);
+  connector()->BindInterface(ServiceFilter::ByName(kTestAppAName),
+                             &identity_test);
 
   mojom::ConnectResult result;
-  Identity target(kTestClassAppName, base::nullopt /* instance_group */,
-                  base::Token::CreateRandom());
-  Identity result_identity;
+  auto filter = ServiceFilter::ByNameWithId(kTestClassAppName,
+                                            base::Token::CreateRandom());
+  base::Optional<Identity> result_identity;
   base::RunLoop loop;
-  identity_test->ConnectToClassAppWithIdentity(
-      target, base::BindRepeating(&ReceiveConnectionResult, &result,
+  identity_test->ConnectToClassAppWithFilter(
+      filter, base::BindRepeating(&ReceiveConnectionResult, &result,
                                   &result_identity, &loop));
   loop.Run();
   EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
-  EXPECT_FALSE(target == result_identity);
+  EXPECT_FALSE(result_identity);
 }
 
 // There are various other tests (service manager, lifecycle) that test valid
-// client
-// process specifications. This is the only one for blocking.
+// client process specifications. This is the only one for blocking.
 TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
   base::Process process;
   mojom::ConnectResult result =
@@ -572,7 +573,7 @@ TEST_F(ConnectTest, AllUsersSingleton) {
                        &first_resolved_identity));
     loop.Run();
     ASSERT_TRUE(first_resolved_identity);
-    EXPECT_NE(*first_resolved_identity->instance_group(),
+    EXPECT_NE(first_resolved_identity->instance_group(),
               singleton_instance_group);
   }
   {

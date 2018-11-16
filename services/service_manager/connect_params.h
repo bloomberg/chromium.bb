@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/service_manager/public/cpp/service_filter.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
@@ -20,6 +21,12 @@ namespace service_manager {
 
 // This class represents a request for the application manager to connect to an
 // application.
+//
+// TODO(https://crbug.com/904240): This should really just be an internal type
+// within ServiceManager. At this point its only real value is in providing a
+// default response to a |BindInterface()| or |WarmService()| request when the
+// ServiceManager otherwise drops the request without responding. This is of
+// questionable value.
 class ConnectParams {
  public:
   using ConnectionCallback =
@@ -31,8 +38,9 @@ class ConnectParams {
 
   void set_source(const Identity& source) { source_ = source;  }
   const Identity& source() const { return source_; }
-  void set_target(const Identity& target) { target_ = target; }
-  const Identity& target() const { return target_; }
+
+  void set_target(const ServiceFilter& target) { target_ = target; }
+  const ServiceFilter& target() const { return target_; }
 
   void set_client_process_info(
       mojom::ServicePtr service,
@@ -70,6 +78,10 @@ class ConnectParams {
     connection_callback_ = std::move(callback);
   }
 
+  ConnectionCallback TakeConnectionCallback() {
+    return std::move(connection_callback_);
+  }
+
   void set_response_data(mojom::ConnectResult result,
                          const base::Optional<Identity>& resolved_identity) {
     result_ = result;
@@ -77,11 +89,12 @@ class ConnectParams {
   }
 
  private:
-  // It may be null (i.e., is_null() returns true) which indicates that there is
-  // no source (e.g., for the first application or in tests).
+  // The identity of the instance making this connection request.
   Identity source_;
-  // The identity of the application being connected to.
-  Identity target_;
+
+  // A filter defining the search criteria for a running target instance to
+  // which the source would like to connect.
+  ServiceFilter target_;
 
   mojom::ServicePtr service_;
   mojom::PIDReceiverRequest pid_receiver_request_;

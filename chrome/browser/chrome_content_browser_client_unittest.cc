@@ -389,7 +389,7 @@ TEST(ChromeContentBrowserClientTest, ShouldTerminateOnServiceQuit) {
     bool expect_terminate;
   } kTestCases[] = {
       // Don't terminate for invalid service names.
-      {"", false},
+      {"x", false},
       {"unknown-name", false},
       // Don't terminate for some well-known browser services.
       {content::mojom::kBrowserServiceName, false},
@@ -401,7 +401,8 @@ TEST(ChromeContentBrowserClientTest, ShouldTerminateOnServiceQuit) {
   };
   ChromeContentBrowserClient client;
   for (const auto& test : kTestCases) {
-    service_manager::Identity id(test.service_name);
+    service_manager::Identity id(test.service_name, base::Token{1, 2},
+                                 base::Token{}, base::Token{3, 4});
     EXPECT_EQ(test.expect_terminate, client.ShouldTerminateOnServiceQuit(id))
         << "for service name " << test.service_name;
   }

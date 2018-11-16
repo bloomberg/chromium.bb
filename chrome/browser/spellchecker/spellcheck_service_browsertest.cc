@@ -88,8 +88,8 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     ChromeService::GetInstance()->connector()->OverrideBinderForTesting(
         service_manager::ServiceFilter::ByNameWithIdInGroup(
             chrome::mojom::kRendererServiceName,
-            *renderer_identity.instance_id(),
-            *renderer_identity.instance_group()),
+            renderer_identity.instance_id(),
+            renderer_identity.instance_group()),
         spellcheck::mojom::SpellChecker::Name_,
         base::BindRepeating(&SpellcheckServiceBrowserTest::Bind,
                             base::Unretained(this)));

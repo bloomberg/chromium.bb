@@ -27,8 +27,6 @@ source_set("service_manager") {
   sources = [
     "connect_params.cc",
     "connect_params.h",
-    "connect_util.cc",
-    "connect_util.h",
     "service_manager.cc",
     "service_manager.h",
     "service_overrides.cc",

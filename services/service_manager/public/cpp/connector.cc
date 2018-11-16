@@ -42,10 +42,7 @@ void Connector::RegisterServiceInstance(
   if (!BindConnectorIfNecessary())
     return;
 
-  DCHECK(identity.instance_group() && !identity.instance_group()->is_zero());
-  DCHECK(identity.instance_id());
-  DCHECK(identity.globally_unique_id() &&
-         !identity.globally_unique_id()->is_zero());
+  DCHECK(identity.IsValid());
   DCHECK(service.is_bound() && pid_receiver_request.is_pending());
   connector_->RegisterServiceInstance(
       identity, service.PassInterface().PassHandle(),
@@ -98,6 +95,7 @@ void Connector::FilterInterfaces(const std::string& spec,
                                  mojom::InterfaceProviderPtr target) {
   if (!BindConnectorIfNecessary())
     return;
+  DCHECK(source_identity.IsValid());
   connector_->FilterInterfaces(spec, source_identity, std::move(request),
                                std::move(target));
 }

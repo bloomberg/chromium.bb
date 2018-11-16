@@ -55,7 +55,7 @@ void SpellCheckContentBrowserClient::BindSpellCheckPanelHostRequest(
     const service_manager::BindSourceInfo& source_info) {
   content::RenderProcessHost* render_process_host =
       content::RenderProcessHost::FromRendererInstanceId(
-          *source_info.identity.instance_id());
+          source_info.identity.instance_id());
   auto spell_check_panel_host =
       std::make_unique<SpellCheckMockPanelHost>(render_process_host);
   spell_check_panel_host->SpellCheckPanelHostRequest(std::move(request));

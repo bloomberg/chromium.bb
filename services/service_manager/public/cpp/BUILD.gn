@@ -92,6 +92,8 @@ component("cpp_types") {
 component("mojom_traits") {
   output_name = "service_manager_mojom_traits"
   sources = [
+    "identity_mojom_traits.cc",
+    "identity_mojom_traits.h",
     "service_filter_mojom_traits.cc",
     "service_filter_mojom_traits.h",
   ]

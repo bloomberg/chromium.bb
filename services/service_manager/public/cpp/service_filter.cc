@@ -20,6 +20,8 @@ ServiceFilter::ServiceFilter(const Identity& identity)
 
 ServiceFilter::~ServiceFilter() = default;
 
+ServiceFilter& ServiceFilter::operator=(const ServiceFilter& other) = default;
+
 // static
 ServiceFilter ServiceFilter::ByName(const std::string& service_name) {
   return ServiceFilter(service_name, base::nullopt /* instance_group */,
@@ -53,10 +55,7 @@ ServiceFilter ServiceFilter::ByNameWithIdInGroup(
 
 // static
 ServiceFilter ServiceFilter::ForExactIdentity(const Identity& identity) {
-  DCHECK(identity.instance_group() && !identity.instance_group()->is_zero());
-  DCHECK(identity.instance_id());
-  DCHECK(identity.globally_unique_id() &&
-         !identity.globally_unique_id()->is_zero());
+  DCHECK(identity.IsValid());
   return ServiceFilter(identity.name(), identity.instance_group(),
                        identity.instance_id(), identity.globally_unique_id());
 }

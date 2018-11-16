@@ -36,7 +36,8 @@ class TestConnectorImplBase : public mojom::Connector {
  public:
   TestConnectorImplBase(const base::Token& test_instance_group,
                         bool release_service_on_quit_request)
-      : test_instance_group_(test_instance_group),
+      : fake_guid_(base::Token::CreateRandom()),
+        test_instance_group_(test_instance_group),
         release_service_on_quit_request_(release_service_on_quit_request) {}
   ~TestConnectorImplBase() override = default;
 
@@ -53,7 +54,8 @@ class TestConnectorImplBase : public mojom::Connector {
                             base::Unretained(this), service_context_ptr));
     service_contexts_.emplace(service_context_ptr, std::move(service_context));
     (*service_ptr)
-        ->OnStart(Identity("TestConnectorFactory", test_instance_group_),
+        ->OnStart(Identity("TestConnectorFactory", test_instance_group_,
+                           base::Token{}, base::Token::CreateRandom()),
                   base::BindOnce(&TestConnectorImplBase::OnStartCallback,
                                  base::Unretained(this), service_context_ptr));
   }
@@ -90,12 +92,13 @@ class TestConnectorImplBase : public mojom::Connector {
     DCHECK(service_ptr) << "Binding interface for unregistered service "
                         << service_filter.service_name();
     (*service_ptr)
-        ->OnBindInterface(
-            BindSourceInfo(
-                Identity("TestConnectorFactory", test_instance_group_),
-                CapabilitySet()),
-            interface_name, std::move(interface_pipe), base::DoNothing());
-    std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
+        ->OnBindInterface(BindSourceInfo(Identity("TestConnectorFactory",
+                                                  test_instance_group_,
+                                                  base::Token{}, fake_guid_),
+                                         CapabilitySet()),
+                          interface_name, std::move(interface_pipe),
+                          base::DoNothing());
+    std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, base::nullopt);
   }
 
   void WarmService(const ServiceFilter& service_filter,
@@ -127,6 +130,7 @@ class TestConnectorImplBase : public mojom::Connector {
     NOTREACHED();
   }
 
+  const base::Token fake_guid_;
   base::Token test_instance_group_;
   const bool release_service_on_quit_request_;
   std::map<ServiceContext*, std::unique_ptr<ServiceContext>> service_contexts_;
@@ -195,7 +199,8 @@ class ProxiedServiceConnector : public mojom::Connector {
       TestConnectorFactory::NameToServiceProxyMap* proxies,
       TestConnectorFactory::NameToServiceHandlerMap* handlers,
       const base::Token& test_instance_group)
-      : proxies_(proxies),
+      : fake_guid_(base::Token::CreateRandom()),
+        proxies_(proxies),
         handlers_(handlers),
         test_instance_group_(test_instance_group) {}
 
@@ -229,10 +234,11 @@ class ProxiedServiceConnector : public mojom::Connector {
         << "TestConnectorFactory received a BindInterface request for an "
         << "unregistered service '" << service_filter.service_name() << "'";
     proxy->OnBindInterface(
-        BindSourceInfo(Identity("TestConnectorFactory", test_instance_group_),
+        BindSourceInfo(Identity("TestConnectorFactory", test_instance_group_,
+                                base::Token{}, fake_guid_),
                        CapabilitySet()),
         interface_name, std::move(interface_pipe), base::DoNothing());
-    std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
+    std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, base::nullopt);
   }
 
   void WarmService(const ServiceFilter& filter,
@@ -264,6 +270,7 @@ class ProxiedServiceConnector : public mojom::Connector {
     NOTREACHED();
   }
 
+  const base::Token fake_guid_;
   TestConnectorFactory::NameToServiceProxyMap* const proxies_;
   TestConnectorFactory::NameToServiceHandlerMap* const handlers_;
   const base::Token test_instance_group_;
@@ -322,7 +329,8 @@ mojom::ServiceRequest TestConnectorFactory::RegisterInstance(
     const std::string& service_name) {
   mojom::ServicePtr proxy;
   mojom::ServiceRequest request = mojo::MakeRequest(&proxy);
-  proxy->OnStart(Identity(service_name, test_instance_group_),
+  proxy->OnStart(Identity(service_name, test_instance_group_, base::Token{},
+                          base::Token::CreateRandom()),
                  base::BindOnce(&TestConnectorFactory::OnStartResponseHandler,
                                 base::Unretained(this), service_name));
   service_proxies_[service_name] = std::move(proxy);

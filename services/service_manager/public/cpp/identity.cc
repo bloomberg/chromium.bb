@@ -10,29 +10,19 @@
 
 namespace service_manager {
 
-Identity::Identity() : Identity("") {}
-
-Identity::Identity(const std::string& name) : Identity(name, base::nullopt) {}
+Identity::Identity() = default;
 
 Identity::Identity(const std::string& name,
-                   const base::Optional<base::Token>& instance_group)
-    : Identity(name, instance_group, base::nullopt) {}
-
-Identity::Identity(const std::string& name,
-                   const base::Optional<base::Token>& instance_group,
-                   const base::Optional<base::Token>& instance_id)
-    : Identity(name, instance_group, instance_id, base::nullopt) {}
-
-Identity::Identity(const std::string& name,
-                   const base::Optional<base::Token>& instance_group,
-                   const base::Optional<base::Token>& instance_id,
-                   const base::Optional<base::Token>& globally_unique_id)
+                   const base::Token& instance_group,
+                   const base::Token& instance_id,
+                   const base::Token& globally_unique_id)
     : name_(name),
       instance_group_(instance_group),
       instance_id_(instance_id),
       globally_unique_id_(globally_unique_id) {
-  DCHECK(!instance_group_ || !instance_group_->is_zero());
-  DCHECK(!globally_unique_id_ || !globally_unique_id_->is_zero());
+  DCHECK(!name_.empty());
+  DCHECK(!instance_group_.is_zero());
+  DCHECK(!globally_unique_id_.is_zero());
 }
 
 Identity::Identity(const Identity& other) = default;
@@ -48,28 +38,20 @@ bool Identity::operator<(const Identity& other) const {
 }
 
 bool Identity::operator==(const Identity& other) const {
-  return Matches(other) && globally_unique_id_ == other.globally_unique_id_;
+  return name_ == other.name_ && instance_group_ == other.instance_group_ &&
+         instance_id_ == other.instance_id_ &&
+         globally_unique_id_ == other.globally_unique_id_;
 }
 
 bool Identity::IsValid() const {
-  return !name_.empty();
+  return !name_.empty() && !instance_group_.is_zero() &&
+         !globally_unique_id_.is_zero();
 }
 
 std::string Identity::ToString() const {
-  return base::StringPrintf(
-      "%s/%s/%s/%s",
-      instance_group_ ? instance_group_->ToString().c_str() : "*",
-      name_.c_str(), instance_id_ ? instance_id_->ToString().c_str() : "*",
-      globally_unique_id_ ? globally_unique_id_->ToString().c_str() : "*");
-}
-
-bool Identity::Matches(const Identity& other) const {
-  return name_ == other.name_ && instance_group_ == other.instance_group_ &&
-         instance_id_ == other.instance_id_;
-}
-
-Identity Identity::WithoutGloballyUniqueId() const {
-  return Identity(name_, instance_group_, instance_id_);
+  return base::StringPrintf("%s/%s/%s/%s", instance_group_.ToString().c_str(),
+                            name_.c_str(), instance_id_.ToString().c_str(),
+                            globally_unique_id_.ToString().c_str());
 }
 
 }  // namespace service_manager

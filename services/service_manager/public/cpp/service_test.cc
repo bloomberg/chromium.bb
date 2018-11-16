@@ -23,7 +23,7 @@ ServiceTestClient::~ServiceTestClient() {}
 
 void ServiceTestClient::OnStart() {
   test_->OnStartCalled(context()->connector(), context()->identity().name(),
-                       *context()->identity().instance_group());
+                       context()->identity().instance_group());
 }
 
 void ServiceTestClient::OnBindInterface(
@@ -83,7 +83,9 @@ void ServiceTest::SetUp() {
   context_ = std::make_unique<ServiceContext>(CreateService(),
                                               mojo::MakeRequest(&service));
   background_service_manager_->RegisterService(
-      Identity(test_name_, kSystemInstanceGroup), std::move(service), nullptr);
+      Identity(test_name_, kSystemInstanceGroup, base::Token{},
+               base::Token::CreateRandom()),
+      std::move(service), nullptr);
   connector_ = context_->connector();
   run_loop.Run();
 }

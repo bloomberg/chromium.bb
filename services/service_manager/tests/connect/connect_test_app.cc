@@ -115,7 +115,7 @@ class ConnectTestApp : public Service,
     std::move(callback).Run("APP");
   }
   void GetInstanceId(GetInstanceIdCallback callback) override {
-    std::move(callback).Run(*context()->identity().instance_id());
+    std::move(callback).Run(context()->identity().instance_id());
   }
 
   // test::mojom::StandaloneApp:
@@ -169,18 +169,18 @@ class ConnectTestApp : public Service,
   }
 
   // test::mojom::IdentityTest:
-  void ConnectToClassAppWithIdentity(
-      const service_manager::Identity& target,
-      ConnectToClassAppWithIdentityCallback callback) override {
+  void ConnectToClassAppWithFilter(
+      const service_manager::ServiceFilter& filter,
+      ConnectToClassAppWithFilterCallback callback) override {
     mojom::ConnectResult result;
     base::Optional<Identity> resolved_identity;
     base::RunLoop loop;
     context()->connector()->WarmService(
-        target, base::BindOnce(&OnConnectResult, loop.QuitClosure(), &result,
+        filter, base::BindOnce(&OnConnectResult, loop.QuitClosure(), &result,
                                &resolved_identity));
     base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     loop.Run();
-    std::move(callback).Run(static_cast<int32_t>(result), *resolved_identity);
+    std::move(callback).Run(static_cast<int32_t>(result), resolved_identity);
   }
 
   void OnGotTitle(ConnectToAllowedAppInBlockedPackageCallback* callback,

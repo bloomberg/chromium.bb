@@ -42,8 +42,9 @@ TEST(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
   connection.AddEmbeddedService(kTestServiceName, info);
   connection.Start();
   service_manager::BindSourceInfo source_info(
-      {service_manager::mojom::kServiceName,
-       service_manager::kSystemInstanceGroup},
+      service_manager::Identity(service_manager::mojom::kServiceName,
+                                service_manager::kSystemInstanceGroup,
+                                base::Token{}, base::Token::CreateRandom()),
       service_manager::CapabilitySet());
   service_manager::mojom::ServiceFactoryPtr factory;
   service->OnBindInterface(
