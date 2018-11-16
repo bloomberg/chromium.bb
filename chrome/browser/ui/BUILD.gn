@@ -1384,8 +1384,6 @@ jumbo_split_static_library("ui") {
       "ash/multi_user/multi_user_window_manager_chromeos.h",
       "ash/multi_user/multi_user_window_manager_stub.cc",
       "ash/multi_user/multi_user_window_manager_stub.h",
-      "ash/multi_user/user_switch_animator_chromeos.cc",
-      "ash/multi_user/user_switch_animator_chromeos.h",
       "ash/network/data_promo_notification.cc",
       "ash/network/data_promo_notification.h",
       "ash/network/enrollment_dialog_view.cc",
