@@ -840,4 +840,3 @@ Bug(none) compositing/overflow/grandchild-with-border-radius-ancestor.html [ Fai
 Bug(none) compositing/overflow/siblings-with-border-radius-ancestor.html [ Failure ]
 Bug(none) compositing/overflow/grandchild-composited-with-border-radius-ancestor.html [ Failure ]
 Bug(none) paint/invalidation/float-offscreen.html [ Failure ]
-Bug(none) compositing/video/video-controls-squashing.html [ Failure ]

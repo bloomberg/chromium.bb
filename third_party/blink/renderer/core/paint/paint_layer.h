@@ -754,8 +754,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     IntRect unclipped_absolute_bounding_box;
 
     const LayoutBoxModelObject* clipping_container = nullptr;
-
-    bool is_under_video = false;
   };
 
   void SetNeedsCompositingInputsUpdate();
@@ -823,9 +821,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   const PaintLayer* MaskAncestor() const {
     return GetAncestorDependentCompositingInputs().mask_ancestor;
-  }
-  bool IsUnderVideo() const {
-    return GetAncestorDependentCompositingInputs().is_under_video;
   }
   bool HasDescendantWithClipPath() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
