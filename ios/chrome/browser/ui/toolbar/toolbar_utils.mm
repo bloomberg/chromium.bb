@@ -62,5 +62,5 @@ CGFloat LocationBarHeight(UIContentSizeCategory category) {
       (kLocationBarVerticalMarginDynamicType +
        kAdaptiveLocationBarVerticalMargin);
   verticalMargin = verticalMargin + dynamicTypeVerticalAdjustment;
-  return ToolbarExpandedHeight(category) - verticalMargin;
+  return AlignValueToPixel(ToolbarExpandedHeight(category) - verticalMargin);
 }

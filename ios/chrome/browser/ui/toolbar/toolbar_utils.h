@@ -12,14 +12,15 @@
 CGFloat ToolbarClampedFontSizeMultiplier(UIContentSizeCategory category);
 
 // Returns the height of the toolbar when it is collapsed, based on the current
-// |category|.
+// |category|, rounded to the nearest lower pixel.
 CGFloat ToolbarCollapsedHeight(UIContentSizeCategory category);
 
 // Returns the height of the toolbar when it is expanded, based on the current
-// |category|.
+// |category|, rounded to the nearest lower pixel.
 CGFloat ToolbarExpandedHeight(UIContentSizeCategory category);
 
-// Returns the height of the location bar, based on the |category|.
+// Returns the height of the location bar, based on the |category|, rounded to
+// the nearest lower pixel.
 CGFloat LocationBarHeight(UIContentSizeCategory category);
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_UTILS_H_

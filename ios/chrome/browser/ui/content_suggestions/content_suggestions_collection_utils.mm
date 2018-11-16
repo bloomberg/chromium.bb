@@ -113,7 +113,8 @@ CGFloat doodleTopMargin(BOOL toolbarPresent, CGFloat topInset) {
   if (!IsCompactWidth() && !IsCompactHeight())
     return kDoodleTopMarginRegularXRegular;
   return topInset + kDoodleTopMarginOther +
-         kDoodleScaledTopMarginOther * SystemSuggestedFontSizeMultiplier();
+         AlignValueToPixel(kDoodleScaledTopMarginOther *
+                           SystemSuggestedFontSizeMultiplier());
 }
 
 CGFloat searchFieldTopMargin() {
