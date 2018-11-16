@@ -28,6 +28,7 @@ class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
                                            public ContextClient,
                                            public QuicStreamProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(RTCQuicStream);
 
  public:
   // TODO(steveanton): These maybe should be adjustable.
