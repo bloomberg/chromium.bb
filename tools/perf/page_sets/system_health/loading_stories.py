@@ -401,6 +401,12 @@ class LoadImgurStory(_LoadingStory):
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
+class LoadImgurStory2018(_LoadingStory):
+  NAME = 'load:media:imgur:2018'
+  URL = 'http://imgur.com/gallery/5UlBN'
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
+
+
 class LoadFlickrStory2018(_LoadingStory):
   NAME = 'load:media:flickr:2018'
   URL = 'https://www.flickr.com/photos/tags/noiretblanc'
