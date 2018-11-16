@@ -226,11 +226,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnClick) {
                                 click_location, click_location));
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
 #else
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
 #endif  // OS_LINUX && !OS_CHROMEOS
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -282,13 +281,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectionClipboard) {
 }
 #endif  // OS_LINUX && !OS_CHROMEOS
 
-// MacOS does not support touch.
-#if defined(OS_MACOSX)
-#define MAYBE_SelectAllOnTap DISABLED_SelectAllOnTap
-#else
-#define MAYBE_SelectAllOnTap SelectAllOnTap
-#endif
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MAYBE_SelectAllOnTap) {
+// No touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if !defined(OS_MACOSX) || defined(USE_AURA)
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
   omnibox_view->SetUserText(base::ASCIIToUTF16("http://www.google.com/"));
@@ -332,6 +328,32 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, MAYBE_SelectAllOnTap) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 }
+
+// Tests if executing a command hides touch editing handles.
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
+                       DeactivateTouchEditingOnExecuteCommand) {
+  OmniboxView* view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &view));
+  OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
+  views::TextfieldTestApi textfield_test_api(omnibox_view_views);
+
+  // Put a URL on the clipboard.
+  SetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE, "http://www.example.com/");
+
+  // Tap to activate touch editing.
+  gfx::Point omnibox_center =
+      omnibox_view_views->GetBoundsInScreen().CenterPoint();
+  Tap(omnibox_center, omnibox_center);
+  EXPECT_TRUE(textfield_test_api.touch_selection_controller());
+
+  // Execute a command and check if it deactivate touch editing. Paste & Go is
+  // chosen since it is specific to Omnibox and its execution wouldn't be
+  // delegated to the base Textfield class.
+  omnibox_view_views->ExecuteCommand(IDS_PASTE_AND_GO, ui::EF_NONE);
+  EXPECT_FALSE(textfield_test_api.touch_selection_controller());
+}
+
+#endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTabToFocus) {
   OmniboxView* omnibox_view = NULL;
@@ -466,38 +488,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, BackgroundIsOpaque) {
       toolbar()->location_bar()->omnibox_view();
   ASSERT_TRUE(view);
   EXPECT_FALSE(view->GetRenderText()->subpixel_rendering_suppressed());
-}
-
-// MacOS does not support touch.
-#if defined(OS_MACOSX)
-#define MAYBE_DeactivateTouchEditingOnExecuteCommand \
-  DISABLED_DeactivateTouchEditingOnExecuteCommand
-#else
-#define MAYBE_DeactivateTouchEditingOnExecuteCommand \
-  DeactivateTouchEditingOnExecuteCommand
-#endif
-// Tests if executing a command hides touch editing handles.
-IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
-                       MAYBE_DeactivateTouchEditingOnExecuteCommand) {
-  OmniboxView* view = NULL;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &view));
-  OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
-  views::TextfieldTestApi textfield_test_api(omnibox_view_views);
-
-  // Put a URL on the clipboard.
-  SetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE, "http://www.example.com/");
-
-  // Tap to activate touch editing.
-  gfx::Point omnibox_center =
-      omnibox_view_views->GetBoundsInScreen().CenterPoint();
-  Tap(omnibox_center, omnibox_center);
-  EXPECT_TRUE(textfield_test_api.touch_selection_controller());
-
-  // Execute a command and check if it deactivate touch editing. Paste & Go is
-  // chosen since it is specific to Omnibox and its execution wouldn't be
-  // delegated to the base Textfield class.
-  omnibox_view_views->ExecuteCommand(IDS_PASTE_AND_GO, ui::EF_NONE);
-  EXPECT_FALSE(textfield_test_api.touch_selection_controller());
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, FocusedTextInputClient) {
