@@ -8,7 +8,9 @@
 
 namespace quic {
 
-QuicBatchWriterBuffer::QuicBatchWriterBuffer() {}
+QuicBatchWriterBuffer::QuicBatchWriterBuffer() {
+  memset(buffer_, 0, sizeof(buffer_));
+}
 
 QuicString QuicBatchWriterBuffer::DebugString() const {
   std::ostringstream os;
