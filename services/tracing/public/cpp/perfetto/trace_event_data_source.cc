@@ -23,6 +23,10 @@ using TraceLog = base::trace_event::TraceLog;
 using TraceEvent = base::trace_event::TraceEvent;
 using TraceConfig = base::trace_event::TraceConfig;
 
+namespace {
+static const size_t kMaxEventsPerMessage = 100;
+}  // namespace
+
 namespace tracing {
 
 using ChromeEventBundleHandle =
@@ -131,6 +135,7 @@ class TraceEventDataSource::ThreadLocalEventSink {
         ChromeEventBundleHandle(trace_packet_handle_->set_chrome_events());
     string_table_.clear();
     next_string_table_index_ = 0;
+    current_eventcount_for_message_ = 0;
   }
 
   int GetStringTableIndexForString(const char* str_value) {
@@ -336,7 +341,10 @@ class TraceEventDataSource::ThreadLocalEventSink {
     // If we know that the current thread will never send a Flush message
     // (meaning it's a thread without a messageloop that TraceLog knows about),
     // we need to finalize the packet right away so Perfetto can recover it.
-    if (!thread_will_flush_) {
+    // We also enforce an upper bound on how many submessages we'll add
+    // for a given TracePacket so they won't grow infinitely.
+    if (!thread_will_flush_ ||
+        current_eventcount_for_message_++ > kMaxEventsPerMessage) {
       event_bundle_ = ChromeEventBundleHandle();
       trace_packet_handle_ = perfetto::TraceWriter::TracePacketHandle();
     }
@@ -355,6 +363,7 @@ class TraceEventDataSource::ThreadLocalEventSink {
   perfetto::TraceWriter::TracePacketHandle trace_packet_handle_;
   std::map<intptr_t, int> string_table_;
   int next_string_table_index_ = 0;
+  size_t current_eventcount_for_message_ = 0;
 };
 
 namespace {
