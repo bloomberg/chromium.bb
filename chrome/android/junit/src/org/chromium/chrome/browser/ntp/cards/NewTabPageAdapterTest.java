@@ -98,8 +98,7 @@ import java.util.Locale;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 @DisableFeatures({ChromeFeatureList.CONTENT_SUGGESTIONS_SCROLL_TO_LOAD,
-        ChromeFeatureList.SIMPLIFIED_NTP, ChromeFeatureList.CHROME_DUET,
-        ChromeFeatureList.UNIFIED_CONSENT})
+        ChromeFeatureList.CHROME_DUET, ChromeFeatureList.UNIFIED_CONSENT})
 public class NewTabPageAdapterTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();

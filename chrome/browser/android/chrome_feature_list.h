@@ -78,7 +78,6 @@ extern const base::Feature kPwaImprovedSplashScreen;
 extern const base::Feature kPwaPersistentNotification;
 extern const base::Feature kReaderModeInCCT;
 extern const base::Feature kServiceManagerForDownload;
-extern const base::Feature kSimplifiedNTP;
 extern const base::Feature kSoleIntegration;
 extern const base::Feature kSpannableInlineAutocomplete;
 extern const base::Feature kSpecialLocaleFeature;

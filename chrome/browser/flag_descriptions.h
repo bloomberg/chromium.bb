@@ -1645,9 +1645,6 @@ extern const char kSafeBrowsingUseLocalBlacklistsV2Description[];
 extern const char kSetMarketUrlForTestingName[];
 extern const char kSetMarketUrlForTestingDescription[];
 
-extern const char kSimplifiedNtpName[];
-extern const char kSimplifiedNtpDescription[];
-
 extern const char kSiteExplorationUiName[];
 extern const char kSiteExplorationUiDescription[];
 
