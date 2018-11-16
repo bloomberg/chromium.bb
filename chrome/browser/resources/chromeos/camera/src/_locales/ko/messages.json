@@ -152,7 +152,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "카메라로 촬영된 사진 및 동영상은 다운로드 폴더로 이동됩니다. 파일 앱에서 이러한 사진 및 동영상에 액세스할 수 있습니다.\n\n저장용량 권한이 있는 앱은 사진 및 동영상에 액세스할 수 있습니다.",
+    "message": "카메라로 촬영된 사진 및 동영상은 다운로드 폴더로 이동됩니다. 파일 앱에서 이러한 사진 및 동영상에 액세스할 수 있습니다.\n\n저장용량 사용 권한이 있는 앱은 사진 및 동영상에 액세스할 수 있습니다.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }

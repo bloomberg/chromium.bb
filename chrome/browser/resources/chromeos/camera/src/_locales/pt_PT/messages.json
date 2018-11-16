@@ -12,11 +12,11 @@
     "description": "Error message shown when failing to read or write the file system."
   },
   "errorMsgNoCamera": {
-    "message": "De momento, a câmara está indisponível.\nVerifique se a câmara está ligada corretamente.",
+    "message": "De momento, a câmara não está disponível.\nVerifique se a câmara está ligada corretamente.",
     "description": "Error message shown when it was impossible to connect to the camera due to unavailability."
   },
   "errorMsgGalleryExportFailed": {
-    "message": "Não foi possível exportar $file$.",
+    "message": "Não foi possível exportar o ficheiro $file$.",
     "description": "Error message shown when exporting to an external directory failed. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -132,7 +132,7 @@
     "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "Pretende realmente remover $file$?",
+    "message": "Pretende realmente remover o ficheiro $file$?",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {

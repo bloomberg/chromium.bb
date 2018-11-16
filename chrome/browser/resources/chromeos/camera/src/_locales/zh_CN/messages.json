@@ -1,10 +1,10 @@
 {
   "name": {
-    "message": "相机",
+    "message": "摄像头",
     "description": "Name of the Camera App."
   },
   "description": {
-    "message": "使用相机拍照和录制视频。",
+    "message": "使用摄像头拍照和录制视频。",
     "description": "Short description of the Camera App."
   },
   "errorMsgFileSystemFailed": {
@@ -100,11 +100,11 @@
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "打开/关闭录制视频模式",
+    "message": "切换到录制视频模式",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "打开/关闭拍照模式",
+    "message": "切换到拍照模式",
     "description": "Label for the button to switch to take photo mode."
   },
   "toggleTimerButton": {
@@ -152,7 +152,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "使用此相机拍摄的照片和视频将被移至“下载内容”文件夹。您可在“文件”中访问它们。\n\n具有存储权限的应用将有权访问您的照片和视频。",
+    "message": "使用此摄像头拍摄的照片和视频将被移至“下载内容”文件夹。您可在“文件”中访问它们。\n\n具有存储权限的应用将有权访问您的照片和视频。",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }

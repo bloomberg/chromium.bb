@@ -96,15 +96,15 @@
     "description": "Label for the shutter button to stop recording."
   },
   "switchCameraButton": {
-    "message": "Overschakelen naar volgende camera",
+    "message": "Naar volgende camera",
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "Overschakelen naar video opnemen",
+    "message": "Naar video opnemen",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "Overschakelen naar foto maken",
+    "message": "Naar foto maken",
     "description": "Label for the button to switch to take photo mode."
   },
   "toggleTimerButton": {

@@ -100,11 +100,11 @@
     "description": "Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "switchRecordVideoButton": {
-    "message": "تبديل لتسجيل فيديو",
+    "message": "تبديل لوضع تسجيل الفيديو",
     "description": "Label for the button to switch to record video mode."
   },
   "switchTakePhotoButton": {
-    "message": "تبديل لالتقاط صورة",
+    "message": "تبديل لوضع التقاط الصور",
     "description": "Label for the button to switch to take photo mode."
   },
   "toggleTimerButton": {
@@ -132,7 +132,7 @@
     "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
-    "message": "هل تريد إزالة $file$ بالفعل؟",
+    "message": "هل تريد فعلاً إزالة $file$؟",
     "description": "Confirmation message before removing a selected item from the gallery. Expects a file name to be passed in.",
     "placeholders": {
       "file": {
@@ -142,7 +142,7 @@
     }
   },
   "deleteMultiConfirmationMsg": {
-    "message": "هل تريد إزالة $count$ من العناصر بالفعل؟",
+    "message": "هل تريد فعلاً إزالة $count$ عنصر؟",
     "description": "Confirmation message before removing multiple selected items from the gallery. Expects a file count to be passed in.",
     "placeholders": {
       "count": {
@@ -152,7 +152,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "سيتمّ نقل الصور والفيديوهات الملتقَطة بالكاميرا إلى مجلد \"التنزيلات\" ويمكنك الوصول إليها من خلال تطبيق \"الملفات\".\n\nستتمكَّن التطبيقات من الوصول إلى صورك وفيديوهاتك في حال تزويدها بأذونات الاطّلاع على سعة التخزين.",
+    "message": "سيتمّ نقل الصور والفيديوهات الملتقَطة بالكاميرا إلى مجلد \"التنزيلات\" ويمكنك الوصول إليها من خلال تطبيق \"ملفات\".\n\nستتمكَّن التطبيقات من الوصول إلى صورك وفيديوهاتك في حال تزويدها بأذونات الاطّلاع على سعة التخزين.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }

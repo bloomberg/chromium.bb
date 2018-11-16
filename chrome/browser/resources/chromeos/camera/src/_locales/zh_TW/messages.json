@@ -152,7 +152,7 @@
     }
   },
   "migratePicturesMsg": {
-    "message": "使用相機拍攝的相片和影片將移至「下載內容」資料夾，你可以在「檔案」中存取這些內容。\n\n具備儲存空間權限的應用程式將可存取你的相片和影片。",
+    "message": "使用相機拍攝的相片和影片將移至「下載內容」資料夾，你可以在「檔案」應用程式中找到這些內容。\n\n具備儲存空間權限的應用程式將可存取你的相片和影片。",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
   }
 }

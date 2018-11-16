@@ -46,7 +46,7 @@
     "description": "Status message for spoken feedback when video recording has been stopped."
   },
   "statusMsgCameraSwitched": {
-    "message": "$camera$ активна",
+    "message": "Камера $camera$ активна",
     "description": "Status message for spoken feedback when switching over to another camera.",
     "placeholders": {
       "camera": {
@@ -76,7 +76,7 @@
     "description": "Label for the back button."
   },
   "galleryImages": {
-    "message": "Зображення галерей",
+    "message": "Зображення в галереї",
     "description": "Text to speech label for the gallery list."
   },
   "takePhotoButton": {
