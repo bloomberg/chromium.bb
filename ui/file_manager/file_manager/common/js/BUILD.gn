@@ -62,6 +62,7 @@ js_library("files_app_entry_types") {
 js_unittest("files_app_entry_types_unittest") {
   deps = [
     ":files_app_entry_types",
+    ":mock_entry",
     ":util",
     "//ui/file_manager/base/js:test_error_reporting",
     "//ui/file_manager/base/js:volume_manager_types",

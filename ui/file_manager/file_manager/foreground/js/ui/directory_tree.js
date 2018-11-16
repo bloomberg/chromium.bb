@@ -769,11 +769,7 @@ EntryListItem.prototype.updateSubDirectories = function(
         const entry = results[i];
         if (entry.isDirectory) {
           // For VolumeEntry we want to display its root.
-          if (entry instanceof VolumeEntry) {
-            entries.push(entry.rootEntry);
-          } else {
-            entries.push(entry);
-          }
+          entries.push(util.unwrapEntry(entry));
         }
       }
       readEntry();

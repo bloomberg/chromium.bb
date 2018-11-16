@@ -37,6 +37,7 @@ function testEntryList(testReportCallback) {
   assertEquals('entry-list://my_files', entryList.toURL());
   assertEquals('my_files', entryList.rootType);
   assertFalse(entryList.isNativeType);
+  assertEquals(null, entryList.getNativeEntry());
   assertEquals(0, entryList.children.length);
   assertTrue(entryList.isDirectory);
   assertFalse(entryList.isFile);
@@ -322,25 +323,8 @@ function testCombinedReaderError(testReportCallback) {
  * VolumeEntry delegates many attributes and methods to displayRoot.
  */
 function createFakeDisplayRoot() {
-  const fakeRootEntry = {
-    filesystem: 'fake-filesystem://',
-    fullPath: '/fake/full/path',
-    isDirectory: true,
-    isFile: false,
-    name: 'fs-name',
-    toURL: () => {
-      return 'fake-filesystem://fake/full/path';
-    },
-    createReader: () => {
-      return 'FAKE READER';
-    },
-    getMetadata: (success, error) => {
-      // Returns static date as modificationTime for testing.
-      setTimeout(
-          () => success({modificationTime: new Date(Date.UTC(2018, 6, 27))}));
-    },
-  };
-  return fakeRootEntry;
+  const fs = new MockFileSystem('fake-fs');
+  return fs.root;
 }
 
 /**
@@ -351,13 +335,14 @@ function testVolumeEntry() {
   const volumeEntry =
       fakeVolumeEntry(VolumeManagerCommon.VolumeType.DOWNLOADS, fakeRootEntry);
 
-  assertEquals(fakeRootEntry, volumeEntry.rootEntry);
+  assertEquals(fakeRootEntry, volumeEntry.getNativeEntry());
   assertEquals(VolumeManagerCommon.VolumeType.DOWNLOADS, volumeEntry.iconName);
-  assertEquals('fake-filesystem://', volumeEntry.filesystem);
-  assertEquals('/fake/full/path', volumeEntry.fullPath);
-  assertEquals('fake-filesystem://fake/full/path', volumeEntry.toURL());
+  assertEquals('filesystem:fake-fs/', volumeEntry.filesystem.rootURL);
+  assertEquals('/', volumeEntry.fullPath);
+  assertEquals('filesystem:fake-fs/', volumeEntry.toURL());
   assertEquals('Fake Filesystem', volumeEntry.name);
   assertTrue(volumeEntry.isNativeType);
+  assertEquals(fakeRootEntry, volumeEntry.getNativeEntry());
   assertTrue(volumeEntry.isDirectory);
   assertFalse(volumeEntry.isFile);
 }
@@ -397,6 +382,30 @@ function testVolumeEntryCreateReader(testReportCallback) {
 }
 
 /**
+ * Tests VolumeEntry getFile and getDirectory methods.
+ */
+function testVolumeEntryGetDirectory(testReportCallback) {
+  const root = createFakeDisplayRoot();
+  root.filesystem.populate(['/bla/', '/bla.txt']);
+
+  const volumeEntry = fakeVolumeEntry(null, root);
+  let foundDir = null;
+  let foundFile = null;
+  volumeEntry.getDirectory('/bla', {create: false}, (entry) => {
+    foundDir = entry;
+  });
+  volumeEntry.getFile('/bla.txt', {create: false}, (entry) => {
+    foundFile = entry;
+  });
+
+  reportPromise(
+      waitUntil(() => {
+        return foundDir !== null && foundFile !== null;
+      }),
+      testReportCallback);
+}
+
+/**
  * Tests VolumeEntry which initially doesn't have displayRoot.
  */
 function testVolumeEntryDelayedDisplayRoot(testReportCallback) {
@@ -413,12 +422,13 @@ function testVolumeEntryDelayedDisplayRoot(testReportCallback) {
     }
   });
 
-  // rootEntry starts as null.
-  assertEquals(null, volumeEntry.rootEntry);
+  // rootEntry_ starts as null.
+  assertEquals(null, volumeEntry.rootEntry_);
+  assertEquals(null, volumeEntry.getNativeEntry());
   reportPromise(
       waitUntil(() => callbackTriggered).then(() => {
-        // Eventually rootEntry gets the value.
-        assertEquals(fakeRootEntry, volumeEntry.rootEntry);
+        // Eventually rootEntry_ gets the value.
+        assertEquals(fakeRootEntry, volumeEntry.getNativeEntry());
       }),
       testReportCallback);
 }
@@ -447,12 +457,6 @@ function testVolumeEntryGetMetadata(testReportCallback) {
   reportPromise(
       waitUntil(() => {
         return modificationTime !== null;
-      }).then(() => {
-        // Now we can check the final result.
-        assertEquals(2018, modificationTime.getUTCFullYear());
-        // Date() month is 0-based, so 6 == July. :-(
-        assertEquals(6, modificationTime.getUTCMonth());
-        assertEquals(27, modificationTime.getUTCDate());
       }),
       testReportCallback);
 }
@@ -485,6 +489,7 @@ function testFakeEntry(testReportCallback) {
   assertEquals('crostini', fakeEntry.iconName);
   assertEquals(VolumeManagerCommon.RootType.CROSTINI, fakeEntry.rootType);
   assertFalse(fakeEntry.isNativeType);
+  assertEquals(null, fakeEntry.getNativeEntry());
   assertTrue(fakeEntry.isDirectory);
   assertFalse(fakeEntry.isFile);
 
