@@ -343,6 +343,14 @@ id<GREYMatcher> SignOutAccountsButton() {
   return grey_accessibilityID(kSettingsAccountsSignoutCellId);
 }
 
+id<GREYMatcher> ClearBrowsingDataCell() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
+}
+
+id<GREYMatcher> ClearBrowsingDataButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_CLEAR_BUTTON);
+}
+
 id<GREYMatcher> ClearBrowsingDataCollectionView() {
   return grey_accessibilityID(
       kClearBrowsingDataCollectionViewAccessibilityIdentifier);

@@ -1050,6 +1050,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   [self updateDialogPresenterActiveState];
   [self updateBroadcastState];
 
+  // Stop the NTP on web usage toggle. This happens when clearing browser
+  // data, and forces the NTP to be recreated in -displayTab below.
+  // TODO(crbug.com/906199): Move this to the NewTabPageTabHelper when
+  // WebStateObserver has a webUsage callback.
+  if (!active) {
+    for (const auto& element : _ntpCoordinatorsForWebStates)
+      [element.second stop];
+  }
+
   if (active) {
     // Make sure the tab (if any; it's possible to get here without a current
     // tab if the caller is about to create one) ends up on screen completely.
