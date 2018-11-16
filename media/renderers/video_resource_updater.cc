@@ -404,24 +404,26 @@ void VideoResourceUpdater::ReleaseFrameResources() {
 void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
                                        scoped_refptr<VideoFrame> frame,
                                        gfx::Transform transform,
-                                       gfx::Rect quad_rect,
-                                       gfx::Rect visible_quad_rect,
+                                       gfx::Size rotated_size,
+                                       gfx::Rect visible_layer_rect,
                                        gfx::Rect clip_rect,
                                        bool is_clipped,
                                        bool contents_opaque,
                                        float draw_opacity,
-                                       int sorting_context_id) {
+                                       int sorting_context_id,
+                                       gfx::Rect visible_quad_rect) {
   DCHECK(frame.get());
 
   viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(transform, quad_rect, visible_quad_rect, clip_rect,
-                            is_clipped, contents_opaque, draw_opacity,
-                            SkBlendMode::kSrcOver, sorting_context_id);
+  gfx::Rect rotated_size_rect(rotated_size);
+  shared_quad_state->SetAll(
+      transform, rotated_size_rect, visible_layer_rect, clip_rect, is_clipped,
+      contents_opaque, draw_opacity, SkBlendMode::kSrcOver, sorting_context_id);
 
-  bool needs_blending = !contents_opaque;
-
+  gfx::Rect quad_rect(rotated_size);
   gfx::Rect visible_rect = frame->visible_rect();
+  bool needs_blending = !contents_opaque;
   gfx::Size coded_size = frame->coded_size();
 
   const float tex_width_scale =

@@ -54,10 +54,6 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
       : binding_(this, std::move(*request)) {}
   ~MockCompositorFrameSink() override = default;
 
-  const viz::CompositorFrame& last_submitted_compositor_frame() const {
-    return last_submitted_compositor_frame_;
-  }
-
   MOCK_METHOD1(SetNeedsBeginFrame, void(bool));
   MOCK_METHOD0(SetWantsAnimateOnlyBeginFrames, void());
 
@@ -68,8 +64,7 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
       viz::CompositorFrame frame,
       viz::mojom::blink::HitTestRegionListPtr hit_test_region_list,
       uint64_t submit_time) override {
-    last_submitted_compositor_frame_ = std::move(frame);
-    DoSubmitCompositorFrame(id, &last_submitted_compositor_frame_);
+    DoSubmitCompositorFrame(id, &frame);
   }
   void SubmitCompositorFrameSync(
       const viz::LocalSurfaceId& id,
@@ -77,8 +72,7 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
       viz::mojom::blink::HitTestRegionListPtr hit_test_region_list,
       uint64_t submit_time,
       const SubmitCompositorFrameSyncCallback callback) override {
-    last_submitted_compositor_frame_ = std::move(frame);
-    DoSubmitCompositorFrame(id, &last_submitted_compositor_frame_);
+    DoSubmitCompositorFrame(id, &frame);
   }
 
   MOCK_METHOD1(DidNotProduceFrame, void(const viz::BeginFrameAck&));
@@ -98,8 +92,6 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
 
  private:
   mojo::Binding<viz::mojom::blink::CompositorFrameSink> binding_;
-
-  viz::CompositorFrame last_submitted_compositor_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCompositorFrameSink);
 };
@@ -810,7 +802,7 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
     EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
     EXPECT_EQ(viz::kInitialChildSequenceNumber,
               local_surface_id.child_sequence_number());
-    EXPECT_EQ(gfx::Size(8, 8), submitter_->frame_size_);
+    EXPECT_EQ(gfx::Rect(8, 8), submitter_->frame_size_);
   }
 
   EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
@@ -835,112 +827,7 @@ TEST_F(VideoFrameSubmitterTest, FrameSizeChangeUpdatesLocalSurfaceId) {
     EXPECT_EQ(11u, local_surface_id.parent_sequence_number());
     EXPECT_EQ(viz::kInitialChildSequenceNumber + 1,
               local_surface_id.child_sequence_number());
-    EXPECT_EQ(gfx::Size(2, 2), submitter_->frame_size_);
-  }
-}
-
-TEST_F(VideoFrameSubmitterTest, VideoRotationOutputRect) {
-  MakeSubmitter();
-  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
-  submitter_->StartRendering();
-  EXPECT_TRUE(submitter_->Rendering());
-
-  gfx::Size coded_size(1280, 720);
-  gfx::Size natural_size(1280, 1024);
-  gfx::Size rotated_size(1024, 1280);
-
-  {
-    submitter_->SetRotation(media::VideoRotation::VIDEO_ROTATION_90);
-
-    EXPECT_CALL(*video_frame_provider_, UpdateCurrentFrame(_, _))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
-        .WillOnce(Return(media::VideoFrame::CreateFrame(
-            media::PIXEL_FORMAT_YV12, coded_size, gfx::Rect(coded_size),
-            natural_size, base::TimeDelta())));
-    EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
-    EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
-    EXPECT_CALL(*resource_provider_,
-                AppendQuads(_, _, media::VideoRotation::VIDEO_ROTATION_90, _));
-    EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
-    EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
-
-    viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
-        BEGINFRAME_FROM_HERE, now_src_.get());
-    submitter_->OnBeginFrame(args, {});
-    scoped_task_environment_.RunUntilIdle();
-
-    EXPECT_EQ(sink_->last_submitted_compositor_frame().size_in_pixels(),
-              rotated_size);
-
-    submitter_->DidReceiveFrame();
-
-    WTF::Vector<viz::ReturnedResource> resources;
-    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
-    submitter_->DidReceiveCompositorFrameAck(resources);
-  }
-
-  {
-    submitter_->SetRotation(media::VideoRotation::VIDEO_ROTATION_180);
-
-    EXPECT_CALL(*video_frame_provider_, UpdateCurrentFrame(_, _))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
-        .WillOnce(Return(media::VideoFrame::CreateFrame(
-            media::PIXEL_FORMAT_YV12, coded_size, gfx::Rect(coded_size),
-            natural_size, base::TimeDelta())));
-    EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
-    EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
-    EXPECT_CALL(*resource_provider_,
-                AppendQuads(_, _, media::VideoRotation::VIDEO_ROTATION_180, _));
-    EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
-    EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
-
-    viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
-        BEGINFRAME_FROM_HERE, now_src_.get());
-    submitter_->OnBeginFrame(args, {});
-    scoped_task_environment_.RunUntilIdle();
-
-    // 180 deg rotation has same size.
-    EXPECT_EQ(sink_->last_submitted_compositor_frame().size_in_pixels(),
-              natural_size);
-
-    submitter_->DidReceiveFrame();
-
-    WTF::Vector<viz::ReturnedResource> resources;
-    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
-    submitter_->DidReceiveCompositorFrameAck(resources);
-  }
-
-  {
-    submitter_->SetRotation(media::VideoRotation::VIDEO_ROTATION_270);
-
-    EXPECT_CALL(*video_frame_provider_, UpdateCurrentFrame(_, _))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
-        .WillOnce(Return(media::VideoFrame::CreateFrame(
-            media::PIXEL_FORMAT_YV12, coded_size, gfx::Rect(coded_size),
-            natural_size, base::TimeDelta())));
-    EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
-    EXPECT_CALL(*video_frame_provider_, PutCurrentFrame());
-    EXPECT_CALL(*resource_provider_,
-                AppendQuads(_, _, media::VideoRotation::VIDEO_ROTATION_270, _));
-    EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
-    EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
-
-    viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
-        BEGINFRAME_FROM_HERE, now_src_.get());
-    submitter_->OnBeginFrame(args, {});
-    scoped_task_environment_.RunUntilIdle();
-
-    EXPECT_EQ(sink_->last_submitted_compositor_frame().size_in_pixels(),
-              rotated_size);
-
-    submitter_->DidReceiveFrame();
-
-    WTF::Vector<viz::ReturnedResource> resources;
-    EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
-    submitter_->DidReceiveCompositorFrameAck(resources);
+    EXPECT_EQ(gfx::Rect(2, 2), submitter_->frame_size_);
   }
 }
 
