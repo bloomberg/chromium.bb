@@ -1042,16 +1042,17 @@ suite('EditExceptionDialog', function() {
     assertTrue(input.invalid);
 
     // Simulate user input of invalid text.
-    browserProxy.setIsPatternValid(false);
-    const expectedPattern = 'foobarbaz';
+    browserProxy.setIsPatternValidForType(false);
+    const expectedPattern = '*';
     input.value = expectedPattern;
     input.fire('input');
 
-    return browserProxy.whenCalled('isPatternValid').then(function(pattern) {
-      assertEquals(expectedPattern, pattern);
-      assertTrue(actionButton.disabled);
-      assertTrue(input.invalid);
-    });
+    return browserProxy.whenCalled('isPatternValidForType')
+        .then(function(pattern, category) {
+          assertEquals(expectedPattern, pattern);
+          assertTrue(actionButton.disabled);
+          assertTrue(input.invalid);
+        });
   });
 
   test('action button calls proxy', function() {
@@ -1130,15 +1131,16 @@ suite('AddExceptionDialog', function() {
     assertTrue(actionButton.disabled);
 
     // Simulate user input of invalid text.
-    browserProxy.setIsPatternValid(false);
+    browserProxy.setIsPatternValidForType(false);
     const expectedPattern = 'foobarbaz';
     input.value = expectedPattern;
     input.fire('input');
 
-    return browserProxy.whenCalled('isPatternValid').then(function(pattern) {
-      assertEquals(expectedPattern, pattern);
-      assertTrue(actionButton.disabled);
-      assertTrue(input.invalid);
-    });
+    return browserProxy.whenCalled('isPatternValidForType')
+        .then(function(pattern) {
+          assertEquals(expectedPattern, pattern);
+          assertTrue(actionButton.disabled);
+          assertTrue(input.invalid);
+        });
   });
 });

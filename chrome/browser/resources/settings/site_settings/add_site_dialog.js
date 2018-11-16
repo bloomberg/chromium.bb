@@ -36,6 +36,12 @@ Polymer({
      * @private
      */
     site_: String,
+
+    /**
+     * The error message to display when the pattern is invalid.
+     * @private
+     */
+    errorMessage_: String,
   },
 
   /** @override */
@@ -60,10 +66,12 @@ Polymer({
       return;
     }
 
-    this.browserProxy.isPatternValid(this.site_).then(isValid => {
-      this.$.site.invalid = !isValid;
-      this.$.add.disabled = !isValid;
-    });
+    this.browserProxy.isPatternValidForType(this.site_, this.category)
+        .then(({isValid, reason}) => {
+          this.$.site.invalid = !isValid;
+          this.$.add.disabled = !isValid;
+          this.errorMessage_ = reason || '';
+        });
   },
 
   /** @private */

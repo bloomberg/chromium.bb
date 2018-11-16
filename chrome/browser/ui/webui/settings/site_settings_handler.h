@@ -87,6 +87,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAllSitesLocalStorage);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Patterns);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, PatternsAndContentType);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerInfobarTest,
                            SettingPermissionsTriggersInfobar);
@@ -146,8 +147,8 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Returns whether a given string is a valid origin.
   void HandleIsOriginValid(const base::ListValue* args);
 
-  // Returns whether a given pattern is valid.
-  void HandleIsPatternValid(const base::ListValue* args);
+  // Returns whether the pattern is valid given the type.
+  void HandleIsPatternValidForType(const base::ListValue* args);
 
   // Looks up whether an incognito session is active.
   void HandleUpdateIncognitoStatus(const base::ListValue* args);
