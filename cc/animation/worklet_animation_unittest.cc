@@ -50,7 +50,7 @@ class MockScrollTimeline : public ScrollTimeline {
  public:
   MockScrollTimeline()
       : ScrollTimeline(ElementId(),
-                       ScrollTimeline::Vertical,
+                       ScrollTimeline::ScrollDown,
                        base::nullopt,
                        base::nullopt,
                        0) {}

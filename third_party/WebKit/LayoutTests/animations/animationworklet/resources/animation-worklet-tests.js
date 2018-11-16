@@ -4,14 +4,22 @@ function runInAnimationWorklet(code) {
   );
 }
 
+function waitForAnimationFrames(count, callback) {
+  function rafCallback() {
+    if (count <= 0) {
+      callback();
+    } else {
+      count -= 1;
+      window.requestAnimationFrame(rafCallback);
+    }
+  }
+  rafCallback();
+};
+
 // Wait for two main thread frames to guarantee that compositor has produced
 // at least one frame.
-function waitTwoAnimationFrames(callback){
-  window.requestAnimationFrame( _=> {
-    window.requestAnimationFrame( _ => {
-      callback();
-    })
-  });
+function waitTwoAnimationFrames(callback) {
+  waitForAnimationFrames(2, callback);
 };
 
 // Load test cases in worklet context in sequence and wait until they are resolved.
