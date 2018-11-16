@@ -36,13 +36,11 @@ import java.util.UUID;
 // creation will resume after provisioning completes.
 //
 // Unprovision: If requiresMediaCrypto is false, MediaDrmBridge is not created for playback.
-// Instead, it's created to unprovision the device/origin. resetDeviceCredentials() will trigger the
-// provisioning process to reprovision the device. This is used on older Android versions since
-// direct unprovision is not supported. On newer Android versions, unprovision() will unprovision
-// the origin, as part of clear media licenses.
+// Instead, it's created to unprovision the device/origin, which is only supported on newer Android
+// versions. unprovision() is triggered when user clears media licenses.
 //
-// NotProvisionedException: If this exception is thrown in operations other than createMediaCrypto()
-// and resetDeviceCredentials(), we will fail that operation and not trying to provision again.
+// NotProvisionedException: If this exception is thrown in operations other than
+// createMediaCrypto(), we will fail that operation and not trying to provision again.
 //
 // Session Manager: Each createSession() call creates a new session. All created sessions are
 // managed in mSessionManager except for mMediaCryptoSession.
@@ -103,8 +101,6 @@ public class MediaDrmBridge {
 
     // The persistent storage to record origin provisioning informations.
     private MediaDrmStorageBridge mStorage;
-
-    private boolean mResetDeviceCredentialsPending;
 
     // Whether the current MediaDrmBridge instance is waiting for provisioning response.
     private boolean mProvisioningPending;
@@ -271,7 +267,6 @@ public class MediaDrmBridge {
         mStorage = new MediaDrmStorageBridge(nativeMediaDrmStorageBridge);
         mSessionManager = new MediaDrmSessionManager(mStorage);
 
-        mResetDeviceCredentialsPending = false;
         mProvisioningPending = false;
 
         mMediaDrm.setOnEventListener(new EventListener());
@@ -547,20 +542,6 @@ public class MediaDrmBridge {
     }
 
     /**
-     * Reset the device DRM credentials.
-     */
-    @CalledByNative
-    private void resetDeviceCredentials() {
-        if (mMediaDrm == null) {
-            onResetDeviceCredentialsCompleted(false);
-            return;
-        }
-
-        mResetDeviceCredentialsPending = true;
-        startProvisioning();
-    }
-
-    /**
      * Unprovision the current origin, a.k.a removing the cert for current origin.
      */
     @CalledByNative
@@ -614,12 +595,6 @@ public class MediaDrmBridge {
         if (mMediaCryptoSession != null) {
             closeSessionNoException(mMediaCryptoSession);
             mMediaCryptoSession = null;
-        }
-
-        // Fail device credentials resetting.
-        if (mResetDeviceCredentialsPending) {
-            mResetDeviceCredentialsPending = false;
-            onResetDeviceCredentialsCompleted(false);
         }
 
         if (mMediaDrm != null) {
@@ -1118,13 +1093,6 @@ public class MediaDrmBridge {
             success = isResponseReceived ? provideProvisionResponse(response) : false;
         }
 
-        if (mResetDeviceCredentialsPending) {
-            assert !mRequiresMediaCrypto;
-            onResetDeviceCredentialsCompleted(success);
-            mResetDeviceCredentialsPending = false;
-            return;
-        }
-
         // This may call release() internally. However, sMediaCryptoDeferrer.onProvisionDone() will
         // still be called below to ensure provisioning failure here doesn't block other
         // MediaDrmBridge instances from proceeding.
@@ -1270,12 +1238,6 @@ public class MediaDrmBridge {
         if (isNativeMediaDrmBridgeValid()) {
             nativeOnSessionExpirationUpdate(
                     mNativeMediaDrmBridge, sessionId.emeId(), expirationTime);
-        }
-    }
-
-    private void onResetDeviceCredentialsCompleted(final boolean success) {
-        if (isNativeMediaDrmBridgeValid()) {
-            nativeOnResetDeviceCredentialsCompleted(mNativeMediaDrmBridge, success);
         }
     }
 
@@ -1448,7 +1410,4 @@ public class MediaDrmBridge {
             Object[] keysInfo, boolean hasAdditionalUsableKey, boolean isKeyRelease);
     private native void nativeOnSessionExpirationUpdate(
             long nativeMediaDrmBridge, byte[] emeSessionId, long expirationTime);
-
-    private native void nativeOnResetDeviceCredentialsCompleted(
-            long nativeMediaDrmBridge, boolean success);
 }

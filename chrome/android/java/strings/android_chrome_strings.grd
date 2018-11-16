@@ -1180,20 +1180,6 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_PROTECTED_CONTENT" desc="Title for link to protected content settings [CHAR-LIMIT=32]">
         Protected content
       </message>
-      <message name="IDS_PROTECTED_CONTENT_RESET_FAILED" desc="Protected content preference device credential reset failure toast">
-        Reset failed. Ensure your device is online and try again.
-      </message>
-      <message name="IDS_RESET_DEVICE_CREDENTIALS" desc="Title for device credential reset menu preference">
-        Reset device credentials
-      </message>
-      <message name="IDS_PROTECTED_CONTENT_RESET_TITLE" desc="Title for device credential reset menu preference">
-        Confirm device credential deletion
-      </message>
-      <message name="IDS_PROTECTED_CONTENT_RESET_MESSAGE" desc="Title for device credential reset menu preference">
-        Content (movies, music, etc.) downloaded in other applications may no longer be playable until those application re-acquire licenses based on a new device credential.
-
-To obtain new licenses, connect to the internet and play your downloaded content.
-      </message>
 
       <!-- Google translate preferences -->
       <message name="IDS_GOOGLE_TRANSLATE" desc='Title for the Google Translate settings screen. [CHAR-LIMIT=32]'>
