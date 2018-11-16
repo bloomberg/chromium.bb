@@ -19,6 +19,9 @@ declare_args() {
   # Experimental only. Causes .dex files to be store in the APK uncompressed.
   # Only affects monochrome_public_apk and trichrome_chrome_apk.
   use_uncompressed_dex = false
+
+  # Enable language splits in the Chrome bundles.
+  enable_chrome_language_splits = android_channel == "default"
 }
 
 default_chrome_public_jinja_variables = [
