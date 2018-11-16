@@ -294,6 +294,18 @@ void IdentityTestEnvironment::
 }
 
 void IdentityTestEnvironment::
+    WaitForAccessTokenRequestIfNecessaryAndRespondWithTokenForScopes(
+        const std::string& token,
+        const base::Time& expiration,
+        const std::string& id_token,
+        const identity::ScopeSet& scopes) {
+  WaitForAccessTokenRequestIfNecessary(base::nullopt);
+  token_service_->IssueTokenForScope(
+      scopes,
+      OAuth2AccessTokenConsumer::TokenResponse(token, expiration, id_token));
+}
+
+void IdentityTestEnvironment::
     WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
         const GoogleServiceAuthError& error) {
   WaitForAccessTokenRequestIfNecessary(base::nullopt);
