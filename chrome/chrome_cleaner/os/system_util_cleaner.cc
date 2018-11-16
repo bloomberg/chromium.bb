@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include <accctrl.h>
 #include <aclapi.h>
 #include <lmcons.h>
 #include <shellapi.h>
@@ -14,6 +15,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/process_info.h"
 #include "base/process/process_iterator.h"
@@ -24,8 +27,13 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
+#include "chrome/chrome_cleaner/constants/quarantine_constants.h"
+#include "chrome/chrome_cleaner/os/disk_util.h"
 #include "chrome/chrome_cleaner/os/scoped_service_handle.h"
 #include "chrome/chrome_cleaner/os/system_util.h"
+#include "sandbox/win/src/acl.h"
+#include "sandbox/win/src/sid.h"
 
 namespace chrome_cleaner {
 
@@ -227,6 +235,23 @@ bool SendStopToService(const wchar_t* service_name) {
     }
     PLOG(WARNING) << "Control service failed: could not stop the service.";
     return false;
+  }
+  return true;
+}
+
+bool GetQuarantineFolderPath(base::FilePath* output_path) {
+  DCHECK(output_path);
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kQuarantineDirSwitch)) {
+    *output_path = command_line->GetSwitchValuePath(kQuarantineDirSwitch);
+  } else {
+    base::FilePath product_path;
+    if (!GetAppDataProductDirectory(&product_path)) {
+      LOG(ERROR) << "Failed to get AppData product directory.";
+      return false;
+    }
+    *output_path = product_path.Append(kQuarantineFolder);
   }
   return true;
 }
@@ -472,6 +497,51 @@ base::Process LaunchElevatedProcessWithAssociatedWindow(
   thread.Join();
 
   return runner.GetProcess();
+}
+
+// Only allow administrator group to access the quarantine folder.
+bool InitializeQuarantineFolder(base::FilePath* output_quarantine_path) {
+  DCHECK(output_quarantine_path);
+
+  base::FilePath quarantine_path;
+  if (!GetQuarantineFolderPath(&quarantine_path)) {
+    LOG(ERROR) << "Failed to get quarantine folder path.";
+    return false;
+  }
+
+  if (!base::DirectoryExists(quarantine_path) &&
+      !base::CreateDirectory(quarantine_path)) {
+    LOG(ERROR) << "Failed to create quarantine folder.";
+    return false;
+  }
+
+  sandbox::Sid admin_sid(WinBuiltinAdministratorsSid);
+  if (!admin_sid.IsValid()) {
+    LOG(ERROR) << "Failed to get administrator sid.";
+    return false;
+  }
+  PACL dacl;
+  if (!sandbox::AddSidToDacl(admin_sid, /*old_dacl=*/nullptr, SET_ACCESS,
+                             GENERIC_ALL, &dacl)) {
+    LOG(ERROR) << "Failed to create ACLs.";
+    return false;
+  }
+
+  DWORD result_code = ERROR_SUCCESS;
+  // |PROTECTED_DACL_SECURITY_INFORMATION| will remove inherited ACLs.
+  result_code = ::SetNamedSecurityInfo(
+      const_cast<wchar_t*>(quarantine_path.value().c_str()), SE_FILE_OBJECT,
+      OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION |
+          PROTECTED_DACL_SECURITY_INFORMATION,
+      admin_sid.GetPSID(), /*psidGroup=*/nullptr, dacl, /*pSacl=*/nullptr);
+
+  ::LocalFree(dacl);
+  if (result_code != ERROR_SUCCESS) {
+    LOG(ERROR) << "Failed to set ACLs to quarantine folder.";
+    return false;
+  }
+  *output_quarantine_path = quarantine_path;
+  return true;
 }
 
 }  // namespace chrome_cleaner

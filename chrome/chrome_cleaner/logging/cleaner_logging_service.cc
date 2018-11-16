@@ -163,6 +163,7 @@ void AppendFolderInformation(const FolderInformation& folder,
 void AppendMatchedFile(const MatchedFile& file, MessageBuilder* builder) {
   AppendFileInformation(file.file_information(), builder);
   builder->Add(L", removal_status = ", file.removal_status());
+  builder->Add(L", quarantine_status = ", file.quarantine_status());
 }
 
 void AppendMatchedRegistryEntry(const MatchedRegistryEntry& registry,
@@ -834,11 +835,17 @@ void CleanerLoggingService::UpdateFileRemovalStatuses() {
       auto folder_it = matched_folders_.find(sanitized_path);
 
       if (file_it != matched_files_.end()) {
-        for (MatchedFile* matched_file : file_it->second)
+        for (MatchedFile* matched_file : file_it->second) {
           matched_file->set_removal_status(status.removal_status);
+          matched_file->set_quarantine_status(status.quarantine_status);
+        }
       } else if (folder_it != matched_folders_.end()) {
-        for (MatchedFolder* matched_folder : folder_it->second)
+        for (MatchedFolder* matched_folder : folder_it->second) {
           matched_folder->set_removal_status(status.removal_status);
+          // We don't quarantine folders. So the quarantine status should be
+          // |QUARANTINE_STATUS_UNSPECIFIED| and we don't need to record it.
+          DCHECK(status.quarantine_status == QUARANTINE_STATUS_UNSPECIFIED);
+        }
       } else {
         known_matched_file = false;
       }
@@ -879,6 +886,7 @@ void CleanerLoggingService::UpdateFileRemovalStatuses() {
         file->mutable_file_information()->set_path(sanitized_path);
       }
       file->set_removal_status(status.removal_status);
+      file->set_quarantine_status(status.quarantine_status);
     }
   }
 }

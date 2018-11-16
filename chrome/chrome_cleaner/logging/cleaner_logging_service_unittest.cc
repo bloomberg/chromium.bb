@@ -88,7 +88,7 @@ const wchar_t kMatchedFileToStringExpectedString[] =
     L"product_short_name = 'PNShort', internal_name = 'Internal Name', "
     L"original_filename = 'Something_Original.tmp', file_description = 'Very "
     L"descriptive', file_version = '42.1.2', active_file = '0', removal_status "
-    L"= 0";
+    L"= 0, quarantine_status = 0";
 
 const wchar_t kMatchedRegistryEntryKey[] = L"123";
 const wchar_t kMatchedRegistryEntryValueName[] = L"Value Name";
@@ -1189,6 +1189,19 @@ void ExpectRemovalStatus(const ChromeCleanerReport& report,
   }
 }
 
+// Checks that all files for all UwS entries in |report| have quarantine status
+// |expected_status|.
+void ExpectQuarantineStatus(const ChromeCleanerReport& report,
+                            QuarantineStatus expected_status) {
+  for (const UwS& uws : report.detected_uws()) {
+    for (const MatchedFile& file : uws.files())
+      EXPECT_EQ(expected_status, file.quarantine_status());
+
+    // We should not quarantine any folder.
+    EXPECT_TRUE(uws.folders().empty());
+  }
+}
+
 // Checks that the given path appears in the unknown UwS field with the expected
 // removal status.
 void ExpectUnknownRemovalStatus(const ChromeCleanerReport& report,
@@ -1290,6 +1303,52 @@ TEST_P(CleanerLoggingServiceTest, UpdateRemovalStatus) {
       logging_service_->Terminate();
       logging_service_->Initialize(registry_logger_.get());
     }
+  }
+}
+
+TEST_P(CleanerLoggingServiceTest, UpdateQuarantineStatus) {
+  const base::FilePath kFile1(L"C:\\Program Files\\My Dear UwS\\File1.exe");
+
+  // Creates a vector of all QuarantineStatus enum values to improve readability
+  // of loops in this test and ensure that all QuarantineStatus enumerators are
+  // checked.
+  std::vector<QuarantineStatus> all_quarantine_status;
+  for (int i = QuarantineStatus_MIN; i <= QuarantineStatus_MAX; ++i) {
+    // Status cannot be set to QUARANTINE_STATUS_UNSPECIFIED - this is guarded
+    // by an assert.
+    QuarantineStatus status = static_cast<QuarantineStatus>(i);
+    if (QuarantineStatus_IsValid(status) &&
+        status != QUARANTINE_STATUS_UNSPECIFIED)
+      all_quarantine_status.push_back(status);
+  }
+
+  FileRemovalStatusUpdater* removal_status_updater =
+      FileRemovalStatusUpdater::GetInstance();
+  for (QuarantineStatus status : all_quarantine_status) {
+    logging_service_->EnableUploads(true, registry_logger_.get());
+
+    UwS uws;
+    uws.set_id(1);
+    AddFileToUwS(kFile1, &uws);
+    logging_service_->AddDetectedUwS(uws);
+
+    ChromeCleanerReport report;
+    // The default quarantine status should be |QUARANTINE_STATUS_UNSPECIFIED|.
+    EXPECT_TRUE(report.ParseFromString(logging_service_->RawReportContent()));
+    ExpectQuarantineStatus(report, QUARANTINE_STATUS_UNSPECIFIED);
+
+    // Removal status has to be updated with a valid status.
+    removal_status_updater->UpdateRemovalStatus(kFile1,
+                                                REMOVAL_STATUS_MATCHED_ONLY);
+    removal_status_updater->UpdateQuarantineStatus(kFile1, status);
+    // It should always succeed to override |QUARANTINE_STATUS_UNSPECIFIED|.
+    EXPECT_TRUE(report.ParseFromString(logging_service_->RawReportContent()));
+    ExpectQuarantineStatus(report, status);
+
+    // Reset the logging service, so one the current test doesn't interfere with
+    // the next one.
+    logging_service_->Terminate();
+    logging_service_->Initialize(registry_logger_.get());
   }
 }
 

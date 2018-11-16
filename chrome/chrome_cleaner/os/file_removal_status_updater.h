@@ -50,20 +50,23 @@ GetRemovalStatusOverridePermissionMap();
 
 }  // namespace internal
 
-// This class manages a map of RemovalStatus values for all files and folders
+// This class manages a map of remove statuses for all files and folders
 // encountered during cleaning, keyed by path. It does not distinguish whether
 // the path refers to a file or a folder.
 class FileRemovalStatusUpdater {
  public:
   struct FileRemovalStatus {
-    // The full path that was passed to UpdateRemovalStatus. This is needed
-    // because when a file removal status is logged,
-    // GetFileInformationProtoObject can be called, which needs a full path
-    // that can be resolved.
+    // The full path that was passed to UpdateRemovalStatus or
+    // UpdateQuarantineStatus. This is needed because when a file removal status
+    // is logged, GetFileInformationProtoObject can be called, which needs a
+    // full path that can be resolved.
     base::FilePath path;
 
-    // The status of the last attempted file removal at the above path.
+    // The removal status of the last attempted update at the above path.
     RemovalStatus removal_status = REMOVAL_STATUS_UNSPECIFIED;
+
+    // The quarantine status of the last attempted update at the above path.
+    QuarantineStatus quarantine_status = QUARANTINE_STATUS_UNSPECIFIED;
   };
 
   typedef std::unordered_map<base::string16, FileRemovalStatus>
@@ -82,19 +85,30 @@ class FileRemovalStatusUpdater {
   void UpdateRemovalStatus(const base::FilePath& path, RemovalStatus status);
 
   // Returns the removal status of |path|, or REMOVAL_STATUS_UNSPECIFIED if
-  // UpdateRemovalStatus has never been called for that path.
+  // the removal status have never been updated for that path.
   RemovalStatus GetRemovalStatus(const base::FilePath& path) const;
 
   // Returns the removal status of |sanitized_path|, or
-  // REMOVAL_STATUS_UNSPECIFIED if UpdateRemovalStatus has never been called
-  // for an unsanitized form of that path.
+  // REMOVAL_STATUS_UNSPECIFIED if the removal status have never
+  // been updated for an unsanitized form of that path.
   RemovalStatus GetRemovalStatusOfSanitizedPath(
       const base::string16& sanitized_path) const;
 
+  // Updates quarantine status for a file given by |path|.
+  // Note: UpdateRemovalStatus should be called for |path| at some point as
+  // well, because it is invalid to quarantine a file that doesn't have some
+  // removal status.
+  void UpdateQuarantineStatus(const base::FilePath& path,
+                              QuarantineStatus status);
+
+  // Returns the quarantine status of |path|, or QUARANTINE_STATUS_UNSPECIFIED
+  // if the quarantine status have never been updated for that path.
+  QuarantineStatus GetQuarantineStatus(const base::FilePath& path) const;
+
   // Returns all saved removal statuses, keyed by sanitized path. Each
   // sanitized path is mapped to a single FileRemovalStatus which holds the
-  // path and status values from the most recent call to UpdateRemovalStatus
-  // that had an effect.
+  // path and status values from the most recent call to UpdateRemovalStatus or
+  // UpdateQuarantineStatus that had an effect.
   SanitizedPathToRemovalStatusMap GetAllRemovalStatuses() const;
 
  private:

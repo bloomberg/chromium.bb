@@ -103,14 +103,19 @@ source_set("cleaner_os") {
     ":common_os",
     "//base:base",
     "//chrome/chrome_cleaner/constants:common_strings",
+    "//chrome/chrome_cleaner/constants:quarantine_constants",
     "//chrome/chrome_cleaner/constants:version_header",
+    "//chrome/chrome_cleaner/interfaces:zip_archiver_interface",
     "//chrome/chrome_cleaner/logging/proto:removal_status_proto",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
+    "//chrome/chrome_cleaner/zip_archiver:common",
     "//components/chrome_cleaner/public/constants:constants",
+    "//sandbox/win:sandbox",
   ]
 
   public_deps = [
     ":file_remover_api",
+    "//chrome/chrome_cleaner/logging/proto:removal_status_proto",
   ]
 }
 
@@ -146,7 +151,9 @@ source_set("unittest_sources") {
     "//base/test:test_config",
     "//base/test:test_support",
     "//chrome/chrome_cleaner/constants:common_strings",
+    "//chrome/chrome_cleaner/constants:quarantine_constants",
     "//chrome/chrome_cleaner/constants:version_header",
+    "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/logging/proto:removal_status_proto",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//chrome/chrome_cleaner/strings",
@@ -156,7 +163,11 @@ source_set("unittest_sources") {
     "//chrome/chrome_cleaner/test:test_strings",
     "//chrome/chrome_cleaner/test:test_util",
     "//chrome/chrome_cleaner/test/resources:test_resources",
+    "//chrome/chrome_cleaner/zip_archiver:common",
+    "//chrome/chrome_cleaner/zip_archiver/broker:common",
+    "//chrome/chrome_cleaner/zip_archiver/target:common",
     "//components/chrome_cleaner/public/constants:constants",
+    "//sandbox/win:sandbox",
     "//testing/gmock",
     "//testing/gtest",
   ]
