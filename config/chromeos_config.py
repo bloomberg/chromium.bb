@@ -3747,6 +3747,9 @@ def BranchScheduleConfig():
         'grunt-android-pi-pre-flight-branch'],
        'samus-chrome-pre-flight-branch'),
 
+      # ATTENTION: R69 is a Long Term Support milestone for lakitu and they'd
+      # like to keep it a little longer. Please let lakitu-dev@google.com know
+      # before deleting this.
       ('release-R69-10895.B',
        ['reef-android-nyc-pre-flight-branch'],
        'samus-chrome-pre-flight-branch'),
@@ -3755,7 +3758,11 @@ def BranchScheduleConfig():
   RELEASE_SCHEDULES = [
       '0 6 * * *',
       '0 5 * * *',
-      'triggered',
+      # Normally this should be "triggered" but lakitu needs R69 for a little
+      # longer. Please let lakitu-dev@google.com know before updating this.
+      # TODO(b/111954990): create a lakitu-master-release builder and remove
+      # this.
+      '0 4 * * 0',
   ]
 
   PFQ_SCHEDULE = [
