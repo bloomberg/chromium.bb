@@ -174,8 +174,6 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
-#import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
-#import "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_presenting.h"
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
@@ -433,7 +431,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     PageInfoPresentation,
                                     PasswordControllerDelegate,
                                     PreloadControllerDelegate,
-                                    QRScannerPresenting,
                                     RepostFormTabHelperDelegate,
                                     SadTabCoordinatorDelegate,
                                     SideSwipeControllerDelegate,
@@ -538,9 +535,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Coordinator for displaying alerts.
   AlertCoordinator* _alertCoordinator;
-
-  // Coordinator for the QR scanner.
-  QRScannerLegacyCoordinator* _qrScannerCoordinator;
 
   // Coordinator for displaying Sad Tab.
   id<SadTabTabHelperDelegate> _sadTabCoordinator;
@@ -1359,7 +1353,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
   // Disconnect child coordinators.
   [_activityServiceCoordinator disconnect];
-  [_qrScannerCoordinator disconnect];
   [self.popupMenuCoordinator stop];
   [_pageInfoCoordinator disconnect];
   [self.tabStripCoordinator stop];
@@ -2317,11 +2310,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   _activityServiceCoordinator.positionProvider =
       [self.primaryToolbarCoordinator activityServicePositioner];
   _activityServiceCoordinator.presentationProvider = self;
-
-  _qrScannerCoordinator =
-      [[QRScannerLegacyCoordinator alloc] initWithBaseViewController:self];
-  _qrScannerCoordinator.dispatcher = self.commandDispatcher;
-  _qrScannerCoordinator.presentationProvider = self;
 
   // DownloadManagerCoordinator is already created.
   DCHECK(_downloadManagerCoordinator);
@@ -5302,18 +5290,6 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 - (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title
                                              message:(NSString*)message {
   [self showErrorAlertWithStringTitle:title message:message];
-}
-
-#pragma mark - QRScannerPresenting
-
-- (void)presentQRScannerViewController:(UIViewController*)controller {
-  [self presentViewController:controller animated:YES completion:nil];
-}
-
-- (void)dismissQRScannerViewController:(UIViewController*)controller
-                            completion:(void (^)(void))completion {
-  DCHECK_EQ(controller, self.presentedViewController);
-  [self dismissViewControllerAnimated:YES completion:completion];
 }
 
 #pragma mark - CaptivePortalDetectorTabHelperDelegate

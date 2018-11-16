@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,6 +33,9 @@
 // Coordinator for displaying snackbars.
 @property(nonatomic, strong) SnackbarCoordinator* snackbarCoordinator;
 
+// Coordinator for the QR scanner.
+@property(nonatomic, strong) QRScannerLegacyCoordinator* qrScannerCoordinator;
+
 @end
 
 @implementation BrowserCoordinator
@@ -39,6 +43,7 @@
 // Private child coordinators
 @synthesize formInputAccessoryCoordinator = _formInputAccessoryCoordinator;
 @synthesize snackbarCoordinator = _snackbarCoordinator;
+@synthesize qrScannerCoordinator = _qrScannerCoordinator;
 
 #pragma mark - ChromeCoordinator
 
@@ -96,6 +101,10 @@
   self.snackbarCoordinator = [[SnackbarCoordinator alloc] init];
   self.snackbarCoordinator.dispatcher = self.dispatcher;
   [self.snackbarCoordinator start];
+
+  self.qrScannerCoordinator = [[QRScannerLegacyCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+  self.qrScannerCoordinator.dispatcher = self.dispatcher;
 }
 
 // Stops child coordinators.
@@ -105,6 +114,9 @@
 
   [self.snackbarCoordinator stop];
   self.snackbarCoordinator = nil;
+
+  [self.qrScannerCoordinator stop];
+  self.qrScannerCoordinator = nil;
 }
 
 #pragma mark - FormInputAccessoryCoordinatorDelegate

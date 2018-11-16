@@ -11,9 +11,9 @@
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/ui/commands/load_query_commands.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_alerts.h"
+#include "ios/chrome/browser/ui/qr_scanner/qr_scanner_presenting.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"
-#include "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_presenting.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
