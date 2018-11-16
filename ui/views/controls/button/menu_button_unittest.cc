@@ -19,6 +19,7 @@
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/widget_utils.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/client/drag_drop_client.h"
@@ -88,7 +89,8 @@ class MenuButtonTest : public ViewsTestBase {
 
   void CreateMenuButton(MenuButtonListener* menu_button_listener) {
     CreateWidget();
-    generator_.reset(new ui::test::EventGenerator(widget_->GetNativeWindow()));
+    generator_ =
+        std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
     // Set initial mouse location in a consistent way so that the menu button we
     // are about to create initializes its hover state in a consistent manner.
     generator_->set_current_location(gfx::Point(10, 10));

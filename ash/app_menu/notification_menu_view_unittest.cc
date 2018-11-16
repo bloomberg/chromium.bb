@@ -19,6 +19,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_utils.h"
 
 namespace ash {
 
@@ -174,7 +175,7 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
 
   void DispatchGesture(const ui::GestureEventDetails& details) {
     ui::test::EventGenerator generator(
-        notification_menu_view_->GetWidget()->GetNativeWindow());
+        GetRootWindow(notification_menu_view_->GetWidget()));
 
     ui::GestureEvent event(
         0,

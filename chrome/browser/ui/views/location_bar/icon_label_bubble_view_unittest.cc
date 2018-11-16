@@ -17,6 +17,7 @@
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/animation/test/test_ink_drop.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/widget/widget_utils.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/aura/window.h"
@@ -134,7 +135,8 @@ class IconLabelBubbleViewTest : public ChromeViewsTestBase {
     gfx::FontList font_list;
 
     CreateWidget();
-    generator_.reset(new ui::test::EventGenerator(widget_->GetNativeWindow()));
+    generator_ =
+        std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
     view_ = new TestIconLabelBubbleView(font_list);
     view_->SetBoundsRect(gfx::Rect(0, 0, 24, 24));
     widget_->SetContentsView(view_);

@@ -61,6 +61,11 @@ std::unique_ptr<ui::test::EventGeneratorDelegate>
 CreateAshEventGeneratorDelegate(ui::test::EventGenerator* owner,
                                 gfx::NativeWindow root_window,
                                 gfx::NativeWindow window) {
+  // Tests should not create event generators for a "root window" that's not
+  // actually the root window.
+  if (root_window)
+    DCHECK_EQ(root_window, root_window->GetRootWindow());
+
   // Do not create EventGeneratorDelegateMus if a root window is supplied.
   // Assume that if a root is supplied the event generator should target the
   // specified window, and there is no need to dispatch remotely.

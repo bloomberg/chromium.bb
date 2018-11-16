@@ -24,6 +24,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_utils.h"
 
 namespace {
 
@@ -225,8 +226,8 @@ void SliderTest::SetUp() {
   widget_->SetContentsView(slider_);
   widget_->Show();
 
-  event_generator_.reset(
-      new ui::test::EventGenerator(widget_->GetNativeWindow()));
+  event_generator_ =
+      std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
 }
 
 void SliderTest::TearDown() {

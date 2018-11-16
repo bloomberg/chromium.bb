@@ -21,6 +21,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/widget/widget_utils.h"
 
 namespace {
 
@@ -124,7 +125,8 @@ class AutofillPopupViewNativeViewsTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::SetUp();
 
     CreateWidget();
-    generator_.reset(new ui::test::EventGenerator(widget_.GetNativeWindow()));
+    generator_ =
+        std::make_unique<ui::test::EventGenerator>(GetRootWindow(&widget_));
   }
 
   void TearDown() override {

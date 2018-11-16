@@ -26,6 +26,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/widget/widget_utils.h"
 
 namespace message_center {
 
@@ -292,7 +293,7 @@ bool NotificationViewMDTest::IsRemovedAfterIdle(
 void NotificationViewMDTest::DispatchGesture(
     const ui::GestureEventDetails& details) {
   ui::test::EventGenerator generator(
-      notification_view()->GetWidget()->GetNativeWindow());
+      GetRootWindow(notification_view()->GetWidget()));
   ui::GestureEvent event(0, 0, 0, ui::EventTimeForNow(), details);
   generator.Dispatch(&event);
 }
@@ -481,7 +482,7 @@ TEST_F(NotificationViewMDTest, TestActionButtonClick) {
   UpdateNotificationViews(*notification);
   widget()->Show();
 
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
 
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
@@ -509,7 +510,7 @@ TEST_F(NotificationViewMDTest, TestInlineReply) {
   UpdateNotificationViews(*notification);
   widget()->Show();
 
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
 
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
@@ -596,7 +597,7 @@ TEST_F(NotificationViewMDTest, TestInlineReplyRemovedByUpdate) {
   UpdateNotificationViews(*notification);
   widget()->Show();
 
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
 
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
@@ -830,7 +831,7 @@ TEST_F(NotificationViewMDTest, ExpandLongMessage) {
   gfx::Point done_cursor_location(1, 1);
   views::View::ConvertPointToScreen(notification_view()->header_row_,
                                     &done_cursor_location);
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
   generator.MoveMouseTo(done_cursor_location);
   generator.ClickLeftButton();
 
@@ -940,7 +941,7 @@ TEST_F(NotificationViewMDTest, InlineSettings) {
   views::View::ConvertPointToScreen(
       notification_view()->control_buttons_view_->settings_button(),
       &settings_cursor_location);
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
   generator.MoveMouseTo(settings_cursor_location);
   generator.ClickLeftButton();
   EXPECT_TRUE(notification_view()->settings_row_->visible());
@@ -988,7 +989,7 @@ TEST_F(NotificationViewMDTest, TestClick) {
   UpdateNotificationViews(*notification);
   widget()->Show();
 
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
 
   // Collapse the notification if it's expanded.
   if (notification_view()->expanded_)
@@ -1012,7 +1013,7 @@ TEST_F(NotificationViewMDTest, TestClickExpanded) {
   UpdateNotificationViews(*notification);
   widget()->Show();
 
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
 
   // Expand the notification if it's collapsed.
   if (!notification_view()->expanded_)

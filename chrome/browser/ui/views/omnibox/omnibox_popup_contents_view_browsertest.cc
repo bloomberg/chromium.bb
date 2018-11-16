@@ -254,6 +254,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ClickOmnibox) {
   CreatePopupForTestQuery();
 
   gfx::NativeWindow event_window = browser()->window()->GetNativeWindow();
+#if defined(USE_AURA)
+  event_window = event_window->GetRootWindow();
+#endif
 #if defined(OS_CHROMEOS)
   if (features::IsUsingWindowService())
     event_window = nullptr;

@@ -25,6 +25,7 @@
 #include "ui/views/test/combobox_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_utils.h"
 
 using base::ASCIIToUTF16;
 
@@ -222,7 +223,7 @@ class ComboboxTest : public ViewsTestBase {
     combobox_->SizeToPreferredSize();
 
     event_generator_ =
-        std::make_unique<ui::test::EventGenerator>(widget_->GetNativeWindow());
+        std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
     event_generator_->set_target(ui::test::EventGenerator::Target::WINDOW);
   }
 

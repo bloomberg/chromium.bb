@@ -36,7 +36,7 @@ class CastTestWindowDelegate : public aura::test::TestWindowDelegate {
 
 class TestWindow {
  public:
-  TestWindow(int id) : window_(&delegate_) {
+  explicit TestWindow(int id) : window_(&delegate_) {
     window_.Init(ui::LAYER_NOT_DRAWN);
     window_.set_id(id);
     window_.SetBounds(gfx::Rect(0, 0, 1280, 720));
@@ -88,7 +88,7 @@ TEST_F(CastWindowManagerAuraTest, WindowInput) {
   EXPECT_EQ(&window, focus_client->GetFocusedWindow());
 
   // Confirm that a keyboard event is delivered to the window.
-  ui::test::EventGenerator event_generator(&window);
+  ui::test::EventGenerator event_generator(window.GetRootWindow());
   event_generator.PressKey(ui::VKEY_0, ui::EF_NONE);
   EXPECT_EQ(ui::VKEY_0, window_delegate.key_code());
 }
@@ -117,7 +117,7 @@ TEST_F(CastWindowManagerAuraTest, WindowInputDisabled) {
 
   // Confirm that a key event is *not* delivered to the window when input is
   // disabled.
-  ui::test::EventGenerator event_generator(&window);
+  ui::test::EventGenerator event_generator(window.GetRootWindow());
   event_generator.PressKey(ui::VKEY_0, ui::EF_NONE);
   EXPECT_EQ(ui::VKEY_UNKNOWN, window_delegate.key_code());
 }

@@ -10,6 +10,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/widget_utils.h"
 
 namespace views {
 
@@ -108,7 +109,7 @@ TEST_F(ToggleButtonTest, ShutdownWithFocus) {
 // Verify that ToggleButton::accepts_events_ works as expected.
 TEST_F(ToggleButtonTest, AcceptEvents) {
   EXPECT_FALSE(button()->is_on());
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
 
   // Clicking toggles.
   generator.ClickLeftButton();

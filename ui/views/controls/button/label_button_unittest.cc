@@ -29,6 +29,7 @@
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/widget/widget_utils.h"
 
 using base::ASCIIToUTF16;
 
@@ -608,7 +609,7 @@ class InkDropLabelButtonTest : public ViewsTestBase {
 };
 
 TEST_F(InkDropLabelButtonTest, HoverStateAfterMouseEnterAndExitEvents) {
-  ui::test::EventGenerator event_generator(widget_->GetNativeWindow());
+  ui::test::EventGenerator event_generator(GetRootWindow(widget_.get()));
   const gfx::Point out_of_bounds_point(button_->bounds().bottom_right() +
                                        gfx::Vector2d(1, 1));
   const gfx::Point in_bounds_point(button_->bounds().CenterPoint());

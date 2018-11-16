@@ -27,6 +27,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_utils.h"
 
 namespace {
 
@@ -369,7 +370,7 @@ class MenuRunnerWidgetTest : public MenuRunnerTest {
   std::unique_ptr<ui::test::EventGenerator> EventGeneratorForWidget(
       Widget* widget) {
     return std::make_unique<ui::test::EventGenerator>(
-        IsMus() ? widget->GetNativeWindow() : GetContext(),
+        IsMus() ? GetRootWindow(widget) : GetContext(),
         widget->GetNativeWindow());
   }
 

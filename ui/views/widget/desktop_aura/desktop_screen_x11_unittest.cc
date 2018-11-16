@@ -322,7 +322,7 @@ TEST_F(DesktopScreenX11Test, DoubleClickHeaderMaximizes) {
       DesktopWindowTreeHostX11::GetHostForXID(window->GetHost()->
           GetAcceleratedWidget());
 
-  ui::test::EventGenerator generator(window);
+  ui::test::EventGenerator generator(window->GetRootWindow());
   generator.DoubleClickLeftButton();
   RunPendingMessages();
   EXPECT_TRUE(rwh->IsMaximized());
@@ -348,7 +348,7 @@ TEST_F(DesktopScreenX11Test, DoubleClickTwoDifferentTargetsDoesntMaximizes) {
       DesktopWindowTreeHostX11::GetHostForXID(window->GetHost()->
           GetAcceleratedWidget());
 
-  ui::test::EventGenerator generator(window);
+  ui::test::EventGenerator generator(window->GetRootWindow());
   native_widget->set_window_component(HTCLIENT);
   generator.ClickLeftButton();
   native_widget->set_window_component(HTCAPTION);
@@ -378,7 +378,7 @@ TEST_F(DesktopScreenX11Test, RightClickDuringDoubleClickDoesntMaximize) {
       DesktopWindowTreeHostX11::GetHostForXID(window->GetHost()->
           GetAcceleratedWidget()));
 
-  ui::test::EventGenerator generator(window);
+  ui::test::EventGenerator generator(window->GetRootWindow());
   native_widget->set_window_component(HTCLIENT);
   generator.ClickLeftButton();
   native_widget->set_window_component(HTCAPTION);
