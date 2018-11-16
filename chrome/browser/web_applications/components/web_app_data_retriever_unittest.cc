@@ -9,7 +9,12 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
+#include "chrome/browser/installable/fake_installable_manager.h"
+#include "chrome/browser/installable/installable_data.h"
+#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -20,6 +25,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 
 namespace web_app {
 
@@ -91,6 +97,27 @@ class WebAppDataRetrieverTest : public ChromeRenderViewHostTestHarness {
                         std::vector<WebApplicationInfo::IconInfo> icons) {
     icons_ = std::move(icons);
     std::move(quit_closure).Run();
+  }
+
+  std::unique_ptr<WebApplicationInfo> CreateWebApplicationInfo(
+      const GURL& url,
+      const std::string name,
+      const std::string description,
+      const GURL& scope,
+      base::Optional<SkColor> theme_color) {
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+
+    web_app_info->app_url = url;
+    web_app_info->title = base::UTF8ToUTF16(name);
+    web_app_info->description = base::UTF8ToUTF16(description);
+    web_app_info->scope = scope;
+    web_app_info->theme_color = theme_color;
+
+    return web_app_info;
+  }
+
+  static base::NullableString16 ToNullableUTF16(const std::string& str) {
+    return base::NullableString16(base::UTF8ToUTF16(str), false);
   }
 
  protected:
@@ -276,6 +303,77 @@ TEST_F(WebAppDataRetrieverTest, GetIcons_NoIconsProvided) {
     // Since all icons are generated, they should have an empty url.
     EXPECT_TRUE(icon.url.is_empty());
   }
+}
+
+TEST_F(WebAppDataRetrieverTest, CheckInstallabilityAndRetrieveManifest) {
+  const GURL manifest_start_url = GURL("https://example.com/start");
+  const std::string manifest_short_name = "Short Name from Manifest";
+  const std::string manifest_name = "Name from Manifest";
+  const GURL manifest_scope = GURL("https://example.com/scope");
+  const base::Optional<SkColor> manifest_theme_color = 0xAABBCCDD;
+
+  {
+    auto manifest = std::make_unique<blink::Manifest>();
+    manifest->short_name = ToNullableUTF16(manifest_short_name);
+    manifest->name = ToNullableUTF16(manifest_name);
+    manifest->start_url = manifest_start_url;
+    manifest->scope = manifest_scope;
+    manifest->theme_color = manifest_theme_color;
+
+    FakeInstallableManager::CreateForWebContentsWithManifest(
+        web_contents(), NO_ERROR_DETECTED, GURL("https://example.com/manifest"),
+        std::move(manifest));
+  }
+
+  base::RunLoop run_loop;
+  bool callback_called = false;
+
+  WebAppDataRetriever retriever;
+
+  retriever.CheckInstallabilityAndRetrieveManifest(
+      web_contents(),
+      base::BindLambdaForTesting(
+          [&](const blink::Manifest& result, bool is_installable) {
+            EXPECT_TRUE(is_installable);
+
+            EXPECT_EQ(base::UTF8ToUTF16(manifest_short_name),
+                      result.short_name.string());
+            EXPECT_EQ(base::UTF8ToUTF16(manifest_name), result.name.string());
+            EXPECT_EQ(manifest_start_url, result.start_url);
+            EXPECT_EQ(manifest_scope, result.scope);
+            EXPECT_EQ(manifest_theme_color, result.theme_color);
+
+            callback_called = true;
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(WebAppDataRetrieverTest, CheckInstallabilityFails) {
+  {
+    auto manifest = std::make_unique<blink::Manifest>();
+    FakeInstallableManager::CreateForWebContentsWithManifest(
+        web_contents(), NO_MANIFEST, GURL(), std::move(manifest));
+  }
+
+  base::RunLoop run_loop;
+  bool callback_called = false;
+
+  WebAppDataRetriever retriever;
+
+  retriever.CheckInstallabilityAndRetrieveManifest(
+      web_contents(),
+      base::BindLambdaForTesting(
+          [&](const blink::Manifest& result, bool is_installable) {
+            EXPECT_FALSE(is_installable);
+            callback_called = true;
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  EXPECT_TRUE(callback_called);
 }
 
 }  // namespace web_app

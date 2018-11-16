@@ -13,8 +13,11 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class Profile;
-struct InstallableData;
 struct WebApplicationInfo;
+
+namespace blink {
+struct Manifest;
+}
 
 namespace content {
 class WebContents;
@@ -44,7 +47,6 @@ class WebAppInstallManager final : public InstallManager,
       std::unique_ptr<WebAppDataRetriever> data_retriever);
 
  private:
-  void ResetInstallProcessArguments();
   void CallInstallCallback(const AppId& app_id, InstallResultCode code);
   void ReturnError(InstallResultCode code);
 
@@ -52,22 +54,23 @@ class WebAppInstallManager final : public InstallManager,
   bool InstallInterrupted() const;
 
   void OnGetWebApplicationInfo(
+      bool force_shortcut_app,
       std::unique_ptr<WebApplicationInfo> web_app_info);
-  void OnDidPerformInstallableCheck(const InstallableData& data);
+  void OnDidPerformInstallableCheck(
+      std::unique_ptr<WebApplicationInfo> web_app_info,
+      bool force_shortcut_app,
+      const blink::Manifest& manifest,
+      bool is_installable);
 
-  // Forces the creation of a shortcut app instead of a PWA even if installation
-  // is available.
-  bool force_shortcut_app_ = false;
-
-  // Arguments, valid during installation process:
+  // Saved callback:
   OnceInstallCallback install_callback_;
-  std::unique_ptr<WebApplicationInfo> web_app_info_;
 
   Profile* profile_;
   WebAppRegistrar* registrar_;
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
 
   base::WeakPtrFactory<WebAppInstallManager> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(WebAppInstallManager);
 };
 
