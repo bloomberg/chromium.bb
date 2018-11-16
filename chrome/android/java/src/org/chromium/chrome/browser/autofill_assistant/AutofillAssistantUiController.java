@@ -107,6 +107,11 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @Override
+    public void onInitRejected() {
+        mUiDelegateHolder.shutdown();
+    }
+
+    @Override
     public AutofillAssistantUiDelegate.Details getDetails() {
         return mCurrentDetails;
     }
