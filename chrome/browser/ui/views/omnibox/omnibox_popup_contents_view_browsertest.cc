@@ -40,19 +40,20 @@ namespace {
 // A View that positions itself over another View to intercept clicks.
 class ClickTrackingOverlayView : public views::View {
  public:
-  ClickTrackingOverlayView(views::View* over, gfx::Point* last_click)
-      : last_click_(last_click) {
+  explicit ClickTrackingOverlayView(views::View* over) {
     SetBoundsRect(over->bounds());
     over->parent()->AddChildView(this);
   }
 
   // views::View:
   void OnMouseEvent(ui::MouseEvent* event) override {
-    *last_click_ = event->location();
+    last_click_ = event->location();
   }
 
+  base::Optional<gfx::Point> last_click() const { return last_click_; }
+
  private:
-  gfx::Point* last_click_;
+  base::Optional<gfx::Point> last_click_;
 };
 
 // Helper to wait for theme changes. The wait is triggered when an instance of
@@ -273,11 +274,12 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ClickOmnibox) {
     const gfx::Point expected_point = result->GetLocalBounds().CenterPoint();
     EXPECT_NE(gfx::Point(), expected_point);
 
-    gfx::Point click;
-    ClickTrackingOverlayView overlay(result, &click);
+    ClickTrackingOverlayView overlay(result);
     generator.MoveMouseTo(result->GetBoundsInScreen().CenterPoint());
     generator.ClickLeftButton();
-    EXPECT_EQ(expected_point, click);
+    auto click = overlay.last_click();
+    ASSERT_TRUE(click.has_value());
+    ASSERT_EQ(expected_point, click.value());
   }
 
   // Select the text, so that we can test whether a click is received (which
