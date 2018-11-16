@@ -22,6 +22,22 @@
 
 namespace cc {
 
+namespace {
+
+// After BlinkGenPropertyTrees, the targeted ElementId depends on the property
+// being mutated. If an ElementId is set on the KeyframeModel, we should apply
+// the mutation to the specific element.
+// TODO(flackr): Remove ElementId from ElementAnimations once all element
+// tracking is done on the KeyframeModel - https://crbug.com/900241
+ElementId CalculateTargetElementId(const ElementAnimations* element_animations,
+                                   const KeyframeModel* keyframe_model) {
+  if (keyframe_model->element_id())
+    return keyframe_model->element_id();
+  return element_animations->element_id();
+}
+
+}  // namespace
+
 scoped_refptr<ElementAnimations> ElementAnimations::Create() {
   return base::WrapRefCounted(new ElementAnimations());
 }
@@ -262,9 +278,9 @@ void ElementAnimations::NotifyClientFloatAnimated(
   DCHECK(keyframe_model->target_property_id() == TargetProperty::OPACITY);
   opacity = base::ClampToRange(opacity, 0.0f, 1.0f);
   if (KeyframeModelAffectsActiveElements(keyframe_model))
-    OnOpacityAnimated(ElementListType::ACTIVE, opacity);
+    OnOpacityAnimated(ElementListType::ACTIVE, opacity, keyframe_model);
   if (KeyframeModelAffectsPendingElements(keyframe_model))
-    OnOpacityAnimated(ElementListType::PENDING, opacity);
+    OnOpacityAnimated(ElementListType::PENDING, opacity, keyframe_model);
 }
 
 void ElementAnimations::NotifyClientFilterAnimated(
@@ -272,9 +288,9 @@ void ElementAnimations::NotifyClientFilterAnimated(
     int target_property_id,
     KeyframeModel* keyframe_model) {
   if (KeyframeModelAffectsActiveElements(keyframe_model))
-    OnFilterAnimated(ElementListType::ACTIVE, filters);
+    OnFilterAnimated(ElementListType::ACTIVE, filters, keyframe_model);
   if (KeyframeModelAffectsPendingElements(keyframe_model))
-    OnFilterAnimated(ElementListType::PENDING, filters);
+    OnFilterAnimated(ElementListType::PENDING, filters, keyframe_model);
 }
 
 void ElementAnimations::NotifyClientTransformOperationsAnimated(
@@ -283,9 +299,9 @@ void ElementAnimations::NotifyClientTransformOperationsAnimated(
     KeyframeModel* keyframe_model) {
   gfx::Transform transform = operations.Apply();
   if (KeyframeModelAffectsActiveElements(keyframe_model))
-    OnTransformAnimated(ElementListType::ACTIVE, transform);
+    OnTransformAnimated(ElementListType::ACTIVE, transform, keyframe_model);
   if (KeyframeModelAffectsPendingElements(keyframe_model))
-    OnTransformAnimated(ElementListType::PENDING, transform);
+    OnTransformAnimated(ElementListType::PENDING, transform, keyframe_model);
 }
 
 void ElementAnimations::NotifyClientScrollOffsetAnimated(
@@ -293,9 +309,11 @@ void ElementAnimations::NotifyClientScrollOffsetAnimated(
     int target_property_id,
     KeyframeModel* keyframe_model) {
   if (KeyframeModelAffectsActiveElements(keyframe_model))
-    OnScrollOffsetAnimated(ElementListType::ACTIVE, scroll_offset);
+    OnScrollOffsetAnimated(ElementListType::ACTIVE, scroll_offset,
+                           keyframe_model);
   if (KeyframeModelAffectsPendingElements(keyframe_model))
-    OnScrollOffsetAnimated(ElementListType::PENDING, scroll_offset);
+    OnScrollOffsetAnimated(ElementListType::PENDING, scroll_offset,
+                           keyframe_model);
 }
 
 void ElementAnimations::UpdateClientAnimationState() {
@@ -395,40 +413,48 @@ bool ElementAnimations::IsCurrentlyAnimatingProperty(
 }
 
 void ElementAnimations::OnFilterAnimated(ElementListType list_type,
-                                         const FilterOperations& filters) {
-  DCHECK(element_id());
+                                         const FilterOperations& filters,
+                                         KeyframeModel* keyframe_model) {
+  ElementId target_element_id = CalculateTargetElementId(this, keyframe_model);
+  DCHECK(target_element_id);
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetElementFilterMutated(
-      element_id(), list_type, filters);
+      target_element_id, list_type, filters);
 }
 
 void ElementAnimations::OnOpacityAnimated(ElementListType list_type,
-                                          float opacity) {
-  DCHECK(element_id());
+                                          float opacity,
+                                          KeyframeModel* keyframe_model) {
+  ElementId target_element_id = CalculateTargetElementId(this, keyframe_model);
+  DCHECK(target_element_id);
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetElementOpacityMutated(
-      element_id(), list_type, opacity);
+      target_element_id, list_type, opacity);
 }
 
 void ElementAnimations::OnTransformAnimated(ElementListType list_type,
-                                            const gfx::Transform& transform) {
-  DCHECK(element_id());
+                                            const gfx::Transform& transform,
+                                            KeyframeModel* keyframe_model) {
+  ElementId target_element_id = CalculateTargetElementId(this, keyframe_model);
+  DCHECK(target_element_id);
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetElementTransformMutated(
-      element_id(), list_type, transform);
+      target_element_id, list_type, transform);
 }
 
 void ElementAnimations::OnScrollOffsetAnimated(
     ElementListType list_type,
-    const gfx::ScrollOffset& scroll_offset) {
-  DCHECK(element_id());
+    const gfx::ScrollOffset& scroll_offset,
+    KeyframeModel* keyframe_model) {
+  ElementId target_element_id = CalculateTargetElementId(this, keyframe_model);
+  DCHECK(target_element_id);
   DCHECK(animation_host());
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetElementScrollOffsetMutated(
-      element_id(), list_type, scroll_offset);
+      target_element_id, list_type, scroll_offset);
 }
 
 gfx::ScrollOffset ElementAnimations::ScrollOffsetForAnimation() const {
