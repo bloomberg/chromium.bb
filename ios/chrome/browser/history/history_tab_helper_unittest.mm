@@ -11,6 +11,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_web_state.h"
@@ -183,4 +184,24 @@ TEST_F(HistoryTabHelperTest, EmptyTitleOverwritesPreviousTitle) {
   helper->UpdateHistoryPageTitle(*item);
   QueryURL(test_url);
   EXPECT_NE(base::UTF8ToUTF16(test_title), latest_row_result_.title());
+}
+
+// Tests that the ntp is not saved to history.
+TEST_F(HistoryTabHelperTest, TestNTPNotAdded) {
+  HistoryTabHelper* helper = HistoryTabHelper::FromWebState(&web_state_);
+  ASSERT_TRUE(helper);
+
+  std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
+  GURL test_url("https://www.google.com/");
+  item->SetVirtualURL(test_url);
+  AddVisitForURL(test_url);
+  QueryURL(test_url);
+  EXPECT_EQ(test_url, latest_row_result_.url());
+
+  item = web::NavigationItem::Create();
+  GURL ntp_url(kChromeUIAboutNewTabURL);
+  item->SetVirtualURL(ntp_url);
+  AddVisitForURL(ntp_url);
+  QueryURL(ntp_url);
+  EXPECT_NE(ntp_url, latest_row_result_.url());
 }
