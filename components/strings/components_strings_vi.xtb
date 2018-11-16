@@ -146,6 +146,7 @@
 <translation id="1839551713262164453">Không xác thực được các giá trị của chính sách do xảy ra lỗi</translation>
 <translation id="1840414022444569775">Số thẻ này đã được sử dụng</translation>
 <translation id="1842969606798536927">Thanh toán</translation>
+<translation id="1866450167992311397">Sử dụng thẻ ở nhiều nơi hơn</translation>
 <translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
 <translation id="1871284979644508959">Trường bắt buộc</translation>
 <translation id="1874765382782611674">Thẻ ghi nợ được chấp nhận</translation>
@@ -704,6 +705,7 @@
 <translation id="5720705177508910913">Người dùng hiện tại</translation>
 <translation id="5730040223043577876">Chrome khuyên bạn nên đặt lại mật khẩu của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>
 <translation id="5732392974455271431">Cha mẹ của bạn có thể bỏ chặn trang web cho bạn</translation>
+<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Thẻ này và địa chỉ thanh toán của thẻ sẽ được lưu vào Tài khoản Google của bạn. Nhờ vậy, bạn có thể thanh toán nhanh hơn trên bất kỳ thiết bị nào mà bạn đăng nhập}other{Các thẻ này và địa chỉ thanh toán của chúng sẽ được lưu vào Tài khoản Google của bạn. Nhờ vậy, bạn có thể thanh toán nhanh hơn trên bất kỳ thiết bị nào mà bạn đăng nhập}}</translation>
 <translation id="5763042198335101085">Nhập địa chỉ email hợp lệ</translation>
 <translation id="5765072501007116331">Để xem các yêu cầu và phương thức phân phối, hãy chọn một địa chỉ</translation>
 <translation id="5770114862687765385">Tệp dường như bị lỗi. Hãy nhấp vào nút 'Đặt lại' để đặt lại phiên làm việc này.</translation>
@@ -785,6 +787,7 @@
 <translation id="6337133576188860026">Bộ nhớ đệm còn chưa đầy <ph name="SIZE" />. Một số trang web có thể tải chậm hơn vào lần tới bạn truy cập.</translation>
 <translation id="6337534724793800597">Lọc chính sách theo tên</translation>
 <translation id="6358450015545214790">Những phần này có ý nghĩa gì?</translation>
+<translation id="635989537247018238">Trong bước tiếp theo, bạn có thể chọn thẻ mà bạn muốn lưu</translation>
 <translation id="6383221683286411806">Nếu tiếp tục, bạn có thể bị tính phí.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 đề xuất khác}other{# đề xuất khác}}</translation>
 <translation id="6387754724289022810">Để thanh toán nhanh hơn vào lần tiếp theo, hãy lưu địa chỉ thanh toán và thẻ vào Tài khoản Google của bạn và thiết bị này.</translation>

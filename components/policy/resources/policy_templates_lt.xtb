@@ -3273,11 +3273,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="8970205333161758602">Nerodyti „<ph name="PRODUCT_FRAME_NAME" />“ išjungimo paraginimo</translation>
 <translation id="8976248126101463034">Leidžiamas nuotolinės prieigos prieglobos serverių „Gnubby“ autentifikavimas</translation>
 <translation id="8976531594979650914">Naudoti sistemos numatytąjį spausdintuvą kaip numatytąjį nustatymą</translation>
-<translation id="898520305112996948">Leidžiama nustatyti URL šablonus, nurodančius, kurioms svetainėms bus automatiškai suteikiamas leidimas pasiekti nurodyto gamintojo USB įrenginį, turintį nurodytą produkto ID. Kad politika galiotų, kiekviename sąraše esančiame elemente turi būti įrenginių ir URL šablonai. Kiekvienas įrenginiuose esantis elementas gali turėti pardavėjo ID ir produkto ID lauką. Kiekvienas nenurodytas ID laikomas pakaitos simboliu su viena išimtimi – produkto ID negali būti nurodytas, jei nenurodytas pardavėjo ID. Priešingu atveju politika negalios. Negaliojančių politikų nepaisoma.
-
-        Jei ši politika nenustatyta, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultPluginsSetting“ (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos (kitu atveju).
-
-        Šios politikos URL šablonai negali būti nesuderinami su tais, kurie sukonfigūruoti naudojant „WebUsbBlockedForUrls“. Jei jie nesuderinami, šiai politikai teikiama pirmenybė prieš „WebUsbBlockedForUrls“ ir „WebUsbAskForUrls“.</translation>
 <translation id="8992176907758534924">Neleisti jokioje svetainėje rodyti vaizdų</translation>
 <translation id="9012851181124311976">Konfigūruojamas įmonių prisijungimo URL (tik HTTP ir HTTPS schemų) sąrašas. Šiais URL bus užfiksuotas slaptažodžio piršto antspaudas, kuris bus naudojamas aptinkant, kada slaptažodis naudojamas pakartotinai.
       Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų slaptažodžių kontrolinius kodus, įsitikinkite, kad prisijungimo puslapiuose laikomasi šių gairių: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

@@ -81,6 +81,7 @@
 <translation id="2268130516524549846">ব্লুটুথ অক্ষমিত</translation>
 <translation id="2268813581635650749">সবগুলি প্রস্থান করুন</translation>
 <translation id="2292698582925480719">স্কেল প্রদর্শন করুন</translation>
+<translation id="2302092602801625023">এই অ্যাকাউন্টটি Family Link দ্বারা ম্যানেজ করা</translation>
 <translation id="2303600792989757991">উইন্ডোর ওভারভিউ টগল করুন</translation>
 <translation id="2339073806695260576">একটি নোট, স্ক্রিনশট নিতে, লেজার পয়েন্টার বা ম্যাগনিফিকেশনের কাচ ব্যবহার করার জন্য শেল্ফের স্টাইলাস বোতামটি ট্যাপ করুন।</translation>
 <translation id="2341729377289034582">স্ক্রিনটি পোর্ট্রেট মোডে লক করা আছে</translation>
@@ -142,6 +143,7 @@
 <translation id="3153444934357957346">একধিক সাইন-ইনে আপনার কেবলমাত্র <ph name="MULTI_PROFILE_USER_LIMIT" />টি পর্যন্ত অ্যাকাউন্ট থাকতে পারে।</translation>
 <translation id="3154351730702813399">ডিভাইস প্রশাসক আপনার ব্রাউজিং অ্যাক্টিভিটি পর্যবেক্ষণ করতে পারেন।</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{একটি ডিভাইসে কানেক্ট রয়েছে}one{#টি ডিভাইসে কানেক্ট রয়েছে}other{#টি ডিভাইসে কানেক্ট রয়েছে}}</translation>
+<translation id="32244657276328332">কোনও নেটওয়ার্কে কানেক্ট নেই</translation>
 <translation id="3236488194889173876">কোনো মোবাইল নেটওয়ার্ক উপলব্ধ নেই</translation>
 <translation id="3255483164551725916">আপনি কি করতে পারেন?</translation>
 <translation id="3294437725009624529">অতিথি</translation>
@@ -172,6 +174,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">লক করুন</translation>
 <translation id="3798670284305777884">স্পিকার (অভ্যন্তরীণ)</translation>
+<translation id="3799080171973636491">ফুল-স্ক্রিন ম্যাগনিফায়ারের জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি এটি চালু করতে চান?</translation>
 <translation id="380165613292957338">হাই, আমি কীভাবে সাহায্য করতে পারি?</translation>
 <translation id="383629559565718788">কীবোর্ড সেটিংস দেখান</translation>
 <translation id="3846575436967432996">কোনো নেটওয়ার্ক সংক্রান্ত তথ্য উপলব্ধ নেই</translation>
@@ -189,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{একটি অ্যাপের জন্য বন্ধ আছে}one{#টি অ্যাপের জন্য বন্ধ আছে}other{#টি অ্যাপের জন্য বন্ধ আছে}}</translation>
 <translation id="4072264167173457037">মাঝারি সিগন্যাল</translation>
 <translation id="4146833061457621061">মিউজিক চালান</translation>
+<translation id="4181841719683918333">ভাষাসমূহ</translation>
 <translation id="4217571870635786043">ডিক্টেশন</translation>
 <translation id="4261870227682513959">বিজ্ঞপ্তি সেটিংস দেখান। বিজ্ঞপ্তি বন্ধ আছে</translation>
 <translation id="4269883910223712419">এই ডিভাইসের প্রশাসক এগুলি করতে পারেন:</translation>
@@ -196,12 +200,14 @@
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> চালু করা হচ্ছে</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4321776623976362024">উচ্চ কনট্রাস্টের জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি এটি চালু করতে চান?</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">আতস কাচ</translation>
 <translation id="4351433414020964307">সহায়ক লোড হচ্ছে...</translation>
 <translation id="435527878592612277">আপনার ফটো বেছে নিন</translation>
 <translation id="4378551569595875038">সংযুক্ত হচ্ছে...</translation>
 <translation id="4379531060876907730">এগুলি হল আপনার স্টাইলাস টুল</translation>
+<translation id="4389184120735010762">ডক করা ম্যাগনিফায়ারের জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি এটি চালু করতে চান?</translation>
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME" />-এর সাথে আপনার স্ক্রিন নিয়ন্ত্রন ভাগ করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
 <translation id="4450893287417543264">আর দেখতে চাই না</translation>
@@ -239,6 +245,7 @@
 <translation id="5207949376430453814">পাঠ্যের কার্সার হাইলাইট করুন</translation>
 <translation id="5222676887888702881">প্রস্থান করুন</translation>
 <translation id="523505283826916779">অ্যাক্সেসযোগ্যতার সেটিংস</translation>
+<translation id="5302048478445481009">ভাষা</translation>
 <translation id="5313326810920013265">ব্লুটুথ সেটিংস</translation>
 <translation id="5331975486040154427">USB-C ডিভাইস (বাঁ দিকের পিছনের পোর্ট)</translation>
 <translation id="5379115545237091094">অনেক বেশি চেষ্টা করেছেন</translation>
@@ -391,6 +398,7 @@
 <translation id="7886169021410746335">গোপনীয়তা সেটিংস অ্যাডজাস্ট করুন</translation>
 <translation id="7886277072580235377">আপনি সাইন-আউট করলে আপনার ইন্টারনেট সেশন মুছে ফেলা হবে। <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">একটি ইমেল পাঠান</translation>
+<translation id="7897375687985782769">স্ক্রিন ঘোরানোর জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি স্ক্রিন ঘোরাতে চান?</translation>
 <translation id="7904094684485781019">এই অ্যাকাউন্টের অ্যাডমিনিস্ট্রেটর একাধিক সাইন-ইন অননুমোদিত করেছেন৷</translation>
 <translation id="7933084174919150729">Google সহায়ক শুধুমাত্র প্রাথমিক প্রোফাইলেই ব্যবহার করা যায়।</translation>
 <translation id="79341161159229895">অ্যাকাউন্টটি <ph name="FIRST_PARENT_EMAIL" /> এবং <ph name="SECOND_PARENT_EMAIL" /> পরিচালনা করছেন</translation>
@@ -456,6 +464,7 @@
 <translation id="8921624153894383499">Google সহায়ক এই ভাষায় কথা বলে না।</translation>
 <translation id="8938800817013097409">USB-C ডিভাইস (পিছনের ডান পোর্ট)</translation>
 <translation id="8940956008527784070">(<ph name="PERCENTAGE" />%) কম ব্যাটারি</translation>
+<translation id="8990809378771970590"><ph name="IME_NAME" /> ব্যবহার করা হচ্ছে</translation>
 <translation id="899350903320462459">বিজ্ঞপ্তি সম্পর্কিত অ্যাকশনের জন্য <ph name="LOGIN_ID" /> হিসেবে ডিভাইস আনলক করুন</translation>
 <translation id="8995603266996330174">পরিচালনা করেছেন <ph name="DOMAIN" /> </translation>
 <translation id="9029474291399787231">Adobe Flash Player-এর আপডেট উপলভ্য</translation>

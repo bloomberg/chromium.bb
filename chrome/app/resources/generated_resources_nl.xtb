@@ -166,7 +166,6 @@
     Op het volgende scherm kun je feedback verzenden om ons te helpen bij het oplossen van het probleem.</translation>
 <translation id="1217668622537098248">Terugzetten naar klikken met linkermuisknop na actie</translation>
 <translation id="121783623783282548">De wachtwoorden komen niet overeen.</translation>
-<translation id="1219533395013150448">Je Assistent gebruikt deze opnamen om je spraakmodel te maken. Dit model wordt opgeslagen op je apparaat. Je kunt het model verwijderen of opnieuw trainen in de instellingen van de Assistent. Bekijk of verwijder je spraakactiviteit in de activiteitsopties van Google.</translation>
 <translation id="122082903575839559">Algoritme voor handtekening van certificaat</translation>
 <translation id="1221024147024329929">PKCS nr. 1 MD2 met RSA-encryptie</translation>
 <translation id="1221825588892235038">Alleen selectie</translation>
@@ -617,7 +616,7 @@
 <translation id="1880905663253319515">Certificaat '<ph name="CERTIFICATE_NAME" />' verwijderen?</translation>
 <translation id="1886996562706621347">Websites laten vragen of je ze als de standaardhandler voor protocollen wilt instellen (aanbevolen)</translation>
 <translation id="1887442540531652736">Fout bij inloggen</translation>
-<translation id="1887597546629269384">Zeg nogmaals 'Hey Google'</translation>
+<translation id="1887597546629269384">Zeg nog een keer 'Hey Google'</translation>
 <translation id="1887850431809612466">Hardwarerevisie</translation>
 <translation id="1889984860246851556">Proxyinstellingen openen</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> wil verbinding maken</translation>
 <translation id="3274763671541996799">Je hebt de modus voor volledig scherm ingeschakeld.</translation>
 <translation id="3275778913554317645">Openen als venster</translation>
-<translation id="3278877214895457897">Wanneer je Chromebook is ingesteld, kun je op elk gewenst moment op de Assistent-knop drukken of 'Oké Google' zeggen om hulp van de Assistent te krijgen.</translation>
 <translation id="3279230909244266691">Dit proces kan enkele minuten duren. De virtuele machine wordt gestart.</translation>
 <translation id="3279741024917655738">Video's op volledig scherm weergeven op</translation>
 <translation id="3280237271814976245">Opslaan &amp;als...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Chrome wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie</translation>
 <translation id="3551320343578183772">Tabblad sluiten</translation>
 <translation id="3552780134252864554">Gewist bij afsluiten</translation>
-<translation id="3553146918065661815">Een waarschuwing weergeven voordat je afsluit met ⌘Q</translation>
 <translation id="3555812735919707620">Extensie verwijderen</translation>
 <translation id="3556000484321257665">Je zoekmachine is gewijzigd in <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Kan beleid niet op het apparaat installeren.</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">Je toegankelijkheidsinstellingen lezen</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{De app heeft permanent toegang tot één bestand.}other{De app heeft permanent toegang tot # bestanden.}}</translation>
 <translation id="3660234220361471169">Niet vertrouwd</translation>
-<translation id="3661054927247347545">Inlogcertificering is niet geldig. Het venster wordt gesloten over <ph name="MINUTES" /> : <ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Extensiepictogram</translation>
 <translation id="3665589677786828986">Chrome heeft gedetecteerd dat sommige van je instellingen zijn beschadigd door een ander programma en heeft de instellingen teruggezet naar de oorspronkelijke standaardwaarden.</translation>
 <translation id="3668570675727296296">Taalinstellingen</translation>
@@ -2890,7 +2886,6 @@
 <translation id="5434065355175441495">PKCS nr. 1 met RSA-encryptie</translation>
 <translation id="5436492226391861498">Wachten op proxytunnel...</translation>
 <translation id="5436510242972373446">Zoeken op <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Alle browservensters worden binnenkort automatisch gesloten zonder uit te loggen.</translation>
 <translation id="5438224778284622050">Offline bestanden verwijderen?</translation>
 <translation id="544083962418256601">Snelle links maken...</translation>
 <translation id="5442228125690314719">Fout bij maken van schijfimage. Probeer het opnieuw.</translation>
@@ -3622,7 +3617,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Nu inloggen</translation>
 <translation id="6527303717912515753">Delen</translation>
 <translation id="6528513914570774834">Andere gebruikers van dit apparaat toestaan om dit netwerk te gebruiken</translation>
 <translation id="652948702951888897">Chrome-geschiedenis</translation>
@@ -4091,7 +4085,6 @@
 <translation id="7256710573727326513">Openen in een tabblad</translation>
 <translation id="725758059478686223">Afdrukservice</translation>
 <translation id="7257666756905341374">Gegevens lezen die je kopieert en plakt</translation>
-<translation id="7258619945375359543">Laat de Assistent suggesties doen op basis van wat er op je scherm staat</translation>
 <translation id="7258697411818564379">Je pincode is toegevoegd</translation>
 <translation id="7262004276116528033">Deze inlogservice wordt gehost door <ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">Tabbladen sluiten</translation>
@@ -4853,7 +4846,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8438566539970814960">Zoekopdrachten en browsefunctionaliteit verbeteren</translation>
 <translation id="8439506636278576865">Aanbieden pagina's te vertalen in deze taal</translation>
 <translation id="8440630305826533614">Linux-apps</translation>
-<translation id="8446474770554547328">Je spraakmodel wordt gemaakt door drie keer 'Oké Google' op te nemen. Dit model wordt opgeslagen op je apparaat. Je kunt het model verwijderen of opnieuw trainen in de instellingen van de Assistent. Bekijk of verwijder je spraakactiviteit in de activiteitsopties van Google.</translation>
 <translation id="8446884382197647889">Meer informatie</translation>
 <translation id="8447409163267621480">Neem Ctrl of Alt op</translation>
 <translation id="8448729345478502352">Items op het scherm kleiner of groter maken</translation>

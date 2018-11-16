@@ -214,7 +214,6 @@
 <translation id="7242029209006116544">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Google Chrome. Ваши данные Chrome (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. Чтобы сохранить данные Chrome отдельно, создайте новый профиль. <ph name="LEARN_MORE" /></translation>
 <translation id="7296210096911315575">Использование и безопасность</translation>
 <translation id="7308322188646931570">Для скачивания файлов браузеру Chrome требуется доступ к хранилищу.</translation>
-<translation id="7330164299247909639">Ошибка сертификата аутентификации. Войдите в Google Chrome как <ph name="USER_NAME" /> ещё раз или обратитесь за информацией к администратору. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Новое окно</translation>
 <translation id="7398801000654795464">Ранее вы входили в Chrome как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="7408085963519505752">Условия использования Chrome OS</translation>
@@ -282,7 +281,6 @@
 <translation id="8914504000324227558">Перезапустить Chrome</translation>
 <translation id="9026991721384951619">Не удалось выполнить синхронизацию, так как учетные данные устарели.</translation>
 <translation id="9067395829937117663">Для работы Google Chrome необходима ОС Windows 7 или более поздней версии.</translation>
-<translation id="9084668267983921457">Ошибка сертификата аутентификации. Войдите в Google Chrome ещё раз или обратитесь за информацией к администратору. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome OS перезапустится через 1 час}one{Chrome OS перезапустится через # час}few{Chrome OS перезапустится через # часа}many{Chrome OS перезапустится через # часов}other{Chrome OS перезапустится через # часа}}</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
 <translation id="9138603949443464873">Чтобы изменения вступили в силу, перезапустите Chrome.</translation>

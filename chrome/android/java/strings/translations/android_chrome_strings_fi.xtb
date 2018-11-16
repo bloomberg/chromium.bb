@@ -734,7 +734,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6567212464587185774">Vähennä datankäyttöä jopa 60 % ja selaa verkkoa nopeammin.</translation>
 <translation id="6573096386450695060">Salli aina</translation>
 <translation id="6573431926118603307">Muilla laitteilla Chromessa avaamasi välilehdet näytetään täällä.</translation>
-<translation id="6575643671698722332">Nollaus epäonnistui. Varmista verkkoyhteys ja yritä uudelleen.</translation>
 <translation id="6583199322650523874">Lisää nykyinen sivu kirjanmerkkeihin</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Tietokonesivusto</translation>
@@ -859,7 +858,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7473891865547856676">Ei kiitos</translation>
 <translation id="7475192538862203634">Jos näet tämän ilmoituksen usein, kokeile näitä <ph name="BEGIN_LINK" />ehdotuksia<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD-korttia ei löydy. Osa tiedostoista voi puuttua.</translation>
-<translation id="748127970106343339">Vahvista laitteen kirjautumistietojen poisto</translation>
 <translation id="7481312909269577407">Seuraava</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (päivitettiin <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Näytä salasanat</translation>
@@ -1010,9 +1008,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8609465669617005112">Siirrä ylös</translation>
 <translation id="8616006591992756292">Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Avataanko ladatussa sisällössä määritetty ehdotettu URL-osoite?</translation>
-<translation id="862875433388403934">Muissa sov. ladattua sisältöä (esim. elokuvia, musiikkia) ei ehkä voi toistaa ennen käyttöoik. myöntämistä sovellukselle uudell. uusien laitteen kirjautumistiet. perust.
-
-Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisältö.</translation>
 <translation id="8636825310635137004">Ota synkronointi käyttöön, niin voit käyttää välilehtiäsi kaikilla laitteilla.</translation>
 <translation id="8641930654639604085">Pyri estämään aikuisille tarkoitetut sivustot</translation>
 <translation id="8662811608048051533">Kirjaa sinut ulos useimmilta sivustoilta.</translation>
@@ -1070,7 +1065,6 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> Kt ladattu</translation>
 <translation id="9100505651305367705">Tarjoa yksinkertaistettua näkymää, jos artikkeli tukee sitä</translation>
 <translation id="9100610230175265781">Tunnuslause tarvitaan</translation>
-<translation id="9133515669113036225">Nollaa laitteen kirjautumistiedot</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="9139068048179869749">Pyydä lupaa, kun sivustot yrittävät lähettää ilmoituksia (suositus).</translation>

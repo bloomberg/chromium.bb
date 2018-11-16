@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">در ورود چندگانه به سیستم، می‌توانید حداکثر از <ph name="MULTI_PROFILE_USER_LIMIT" /> حساب استفاده کنید.</translation>
 <translation id="3154351730702813399">سرپرست دستگاه ممکن است فعالیت مرور شما را پایش کند</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{متصل به یک دستگاه.}one{متصل به # دستگاه}other{متصل به # دستگاه}}</translation>
+<translation id="32244657276328332">به شبکه متصل نیست</translation>
 <translation id="3236488194889173876">هیچ شبکه تلفن همراهی دردسترس نیست</translation>
 <translation id="3255483164551725916">‏What can you do?‎ (چه کاری می‌توانی انجام دهی؟)</translation>
 <translation id="3294437725009624529">مهمان</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{خاموش برای یک برنامه}one{خاموش برای # برنامه}other{خاموش برای # برنامه}}</translation>
 <translation id="4072264167173457037">سیگنال متوسط</translation>
 <translation id="4146833061457621061">‏Play music (موسیقی پخش کن)</translation>
+<translation id="4181841719683918333">زبان‌ها</translation>
 <translation id="4217571870635786043">املا</translation>
 <translation id="4261870227682513959">نمایش تنظیمات اعلان. اعلان‌ها خاموش است</translation>
 <translation id="4269883910223712419">سرپرست این دستگاه می‌تواند:</translation>
@@ -244,6 +246,7 @@
 <translation id="5207949376430453814">برجسته کردن هشتک نوشتار</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="523505283826916779">تنظیمات دسترس‌پذیری</translation>
+<translation id="5302048478445481009">زبان</translation>
 <translation id="5313326810920013265">تنظیمات بلوتوث</translation>
 <translation id="5331975486040154427">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
 <translation id="5379115545237091094">تلاش‌های ناموفق زیادی انجام شده است</translation>

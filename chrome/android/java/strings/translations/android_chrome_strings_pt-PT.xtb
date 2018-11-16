@@ -734,7 +734,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6567212464587185774">Utilize até menos 60% de dados e acelere a Web.</translation>
 <translation id="6573096386450695060">Permitir sempre</translation>
 <translation id="6573431926118603307">Os separadores que abriu no Chrome nos seus outros dispositivos são apresentados aqui.</translation>
-<translation id="6575643671698722332">Falha ao repor. Verifique se o dispositivo está online e tente novamente.</translation>
 <translation id="6583199322650523874">Adicionar a página atual aos marcadores</translation>
 <translation id="6584721918629302382">RA</translation>
 <translation id="6593061639179217415">Site para computador</translation>
@@ -859,7 +858,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7475192538862203634">Se vê isto com frequência, experimente estas <ph name="BEGIN_LINK" />sugestões<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Cartão SD não encontrado. Alguns dos seus ficheiros poderão estar em falta.</translation>
-<translation id="748127970106343339">Confirmar a eliminação das credenciais do dispositivo</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizado há <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Mostrar palavras-passe</translation>
@@ -1010,9 +1008,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8609465669617005112">Mover para cima</translation>
 <translation id="8616006591992756292">A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Pretende abrir o URL sugerido que é especificado no conteúdo transferido?</translation>
-<translation id="862875433388403934">É possível que os conteúdos (filmes, música, etc.) transferidos noutras aplicações deixem de ser reproduzíveis enquanto essas aplicações não voltarem a obter licenças com base numa nova credencial de dispositivo.
-
-Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transferido.</translation>
 <translation id="8636825310635137004">Para obter os separadores dos seus outros dispositivos, ative a sincronização.</translation>
 <translation id="8641930654639604085">Tentar bloquear sites para adultos</translation>
 <translation id="8662811608048051533">A sua sessão é terminada na maioria dos sites.</translation>
@@ -1070,7 +1065,6 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB transferido(s)</translation>
 <translation id="9100505651305367705">Sugerir a apresentação de artigos na vista simplificada, quando suportada</translation>
 <translation id="9100610230175265781">Frase de acesso obrigatória</translation>
-<translation id="9133515669113036225">Repor as credenciais do dispositivo</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9139068048179869749">Perguntar antes de permitir que os sites enviem notificações (recomendado)</translation>

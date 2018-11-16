@@ -733,7 +733,6 @@
 <translation id="6567212464587185774">‏تا ‎۶۰٪ داده کمتری مصرف کنید و سرعت وب را افزایش دهید.</translation>
 <translation id="6573096386450695060">همیشه مجاز</translation>
 <translation id="6573431926118603307">‏برگه‌هایی که در دستگاه‌های دیگر در Chrome باز کرده‌اید، در اینجا نمایان می‌شوند.</translation>
-<translation id="6575643671698722332">بازنشانی انجام نشد. مطمئن شوید دستگاهتان آنلاین است و دوباره امتحان کنید.</translation>
 <translation id="6583199322650523874">نشانک گذاشتن صفحه کنونی</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">سایت مخصوص رایانه</translation>
@@ -858,7 +857,6 @@
 <translation id="7473891865547856676">نه متشکرم</translation>
 <translation id="7475192538862203634">درصورتی‌که این مورد را مکرراً مشاهده می‌کنید، این <ph name="BEGIN_LINK" />پیشنهادات<ph name="END_LINK" /> را امتحان کنید.</translation>
 <translation id="7475688122056506577">‏کارت SD پیدا نشد. ممکن است بعضی از فایل‌هایتان جا بیافتد.</translation>
-<translation id="748127970106343339">تأیید حذف اعتبارنامه دستگاه</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (زمان به‌روزرسانی <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">نمایش گذرواژه‌ها</translation>
@@ -1009,9 +1007,6 @@
 <translation id="8609465669617005112">انتقال به بالا</translation>
 <translation id="8616006591992756292">‏ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد.</translation>
 <translation id="8617240290563765734">نشانی وب مشخص شده در محتوای بارگیری‌شده باز شود؟</translation>
-<translation id="862875433388403934">شاید دیگر محتوای بارگیری‌شده (فیلم‌ها، موسیقی و غیره) در برنامه‌های دیگر قابل پخش نباشد، مگر آنکه آن برنامه‌ها مجدداً مجوزها را براساس اعتبارنامه دستگاه جدید بدست آورند.
-
-برای بدست آوردن مجوزهای جدید، به اینترنت وصل شوید و محتوای بارگیری‌شده خودتان را پخش کنید.</translation>
 <translation id="8636825310635137004">برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، همگام‌سازی را روشن کنید.</translation>
 <translation id="8641930654639604085">سایت‌های مخصوص بزرگ‌سالان مسدود شوند</translation>
 <translation id="8662811608048051533">شما را از سیستم اکثر سایت‌ها خارج می‌کند.</translation>
@@ -1069,7 +1064,6 @@
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> کیلوبایت بارگیری شد</translation>
 <translation id="9100505651305367705">پیشنهاد نمایش مقالات در نمای ساده‌شده، درصورت پشتیبانی</translation>
 <translation id="9100610230175265781">عبارت عبور لازم است</translation>
-<translation id="9133515669113036225">بازنشانی اعتبارنامه‌های دستگاه</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="9139068048179869749">قبل از اجازه به سایت‌ها برای ارسال اعلان ابتدا سؤال شود (توصیه می‌شود)</translation>

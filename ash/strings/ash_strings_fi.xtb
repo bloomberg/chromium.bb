@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">Voit lisätä enintään <ph name="MULTI_PROFILE_USER_LIMIT" /> tiliä useille tileille kirjautumista varten.</translation>
 <translation id="3154351730702813399">Laitteen järjestelmänvalvoja saattaa seurata selaustoimintaasi.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Yhdistetty 1 laitteeseen}other{Yhdistetty # laitteeseen}}</translation>
+<translation id="32244657276328332">Ei verkkoyhteyttä</translation>
 <translation id="3236488194889173876">Mobiiliverkkoja ei ole käytettävissä</translation>
 <translation id="3255483164551725916">Mitä osaat tehdä?</translation>
 <translation id="3294437725009624529">Vieras</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Pois käytöstä sovelluksessa}other{Pois käytöstä # sovelluksessa}}</translation>
 <translation id="4072264167173457037">Keskitasoinen signaali</translation>
 <translation id="4146833061457621061">Soita musiikkia</translation>
+<translation id="4181841719683918333">Kielet</translation>
 <translation id="4217571870635786043">Sanelu</translation>
 <translation id="4261870227682513959">Näytä ilmoitusasetukset. Ilmoitukset on poistettu käytöstä.</translation>
 <translation id="4269883910223712419">Tämän laitteen ylläpitäjä voi</translation>
@@ -244,6 +246,7 @@
 <translation id="5207949376430453814">Korosta tekstikursori</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
 <translation id="523505283826916779">Käytettävyysasetukset</translation>
+<translation id="5302048478445481009">Kieli</translation>
 <translation id="5313326810920013265">Bluetooth-asetukset</translation>
 <translation id="5331975486040154427">C-tyypin USB-laite (vasemman sivun taaimmainen portti)</translation>
 <translation id="5379115545237091094">Liian monta yritystä</translation>

@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">Naudodami kelių paskyrų funkciją, galite turėti iki <ph name="MULTI_PROFILE_USER_LIMIT" /> paskyr.</translation>
 <translation id="3154351730702813399">Įrenginio administratorius gali stebėti jūsų naršymo veiklą.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Prisijungta prie įrenginio}one{Prisijungta prie # įrenginio}few{Prisijungta prie # įrenginių}many{Prisijungta prie # įrenginio}other{Prisijungta prie # įrenginių}}</translation>
+<translation id="32244657276328332">Neprisijungta prie tinklo</translation>
 <translation id="3236488194889173876">Nėra jokių pasiekiamų mobiliojo ryšio tinklų</translation>
 <translation id="3255483164551725916">„What can you do?“ (Ką gali atlikti?)</translation>
 <translation id="3294437725009624529">Svečias</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Programos pranešimai išjungti}one{# programos pranešimai išjungti}few{# programų pranešimai išjungti}many{# programos pranešimai išjungti}other{# programų pranešimai išjungti}}</translation>
 <translation id="4072264167173457037">Vidutinio stiprumo signalas</translation>
 <translation id="4146833061457621061">„Play music“ (Leisk muziką)</translation>
+<translation id="4181841719683918333">Kalbos</translation>
 <translation id="4217571870635786043">Diktavimas</translation>
 <translation id="4261870227682513959">Rodyti pranešimų nustatymus. Pranešimai išjungti</translation>
 <translation id="4269883910223712419">Šio įrenginio administratorius gali atlikti nurodytus veiksmus.</translation>
@@ -244,6 +246,7 @@
 <translation id="5207949376430453814">Paryškinti teksto žymeklį</translation>
 <translation id="5222676887888702881">Atsijungti</translation>
 <translation id="523505283826916779">Pasiekiamumo nustatymai</translation>
+<translation id="5302048478445481009">Kalba</translation>
 <translation id="5313326810920013265">„Bluetooth“ nustatymai</translation>
 <translation id="5331975486040154427">USB-C įrenginys (prievadas kairėje, užpakalinėje dalyje)</translation>
 <translation id="5379115545237091094">Per daug bandymų</translation>

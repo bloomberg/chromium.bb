@@ -141,8 +141,9 @@
 <translation id="315116470104423982">મોબાઇલ ડેટા</translation>
 <translation id="3151786313568798007">ઓરિએન્ટેશન</translation>
 <translation id="3153444934357957346">તમે એકથી વધુ સાઇન ઇનમાં માત્ર <ph name="MULTI_PROFILE_USER_LIMIT" /> સુધી એકાઉન્ટ રાખી શકો છો.</translation>
-<translation id="3154351730702813399">ઉપકરણ વ્યવસ્થાપક, તમારી બ્રાઉઝિંગ પ્રવૃત્તિનું નિરીક્ષણ કરી શકે છે.</translation>
+<translation id="3154351730702813399">ડિવાઇસ વ્યવસ્થાપક તમારી બ્રાઉઝિંગ પ્રવૃત્તિને મોનિટર કરી શકે છે.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ઉપકરણ સાથે કનેક્ટ કર્યું}one{# ઉપકરણો સાથે કનેક્ટ કર્યું}other{# ઉપકરણો સાથે કનેક્ટ કર્યું}}</translation>
+<translation id="32244657276328332">નેટવર્કથી કનેક્ટ થયેલું નથી</translation>
 <translation id="3236488194889173876">કોઈ મોબાઇલ નેટવર્ક ઉપલબ્ધ નથી</translation>
 <translation id="3255483164551725916">તમે શું કરી શકો?</translation>
 <translation id="3294437725009624529">અતિથિ</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{એક ઍપ માટે બંધ છે}one{# ઍપ માટે બંધ છે}other{# ઍપ માટે બંધ છે}}</translation>
 <translation id="4072264167173457037">મધ્યમ સિગ્નલ</translation>
 <translation id="4146833061457621061">મ્યુઝિક વગાડો</translation>
+<translation id="4181841719683918333">ભાષાઓ</translation>
 <translation id="4217571870635786043">ડિક્ટેશન</translation>
 <translation id="4261870227682513959">નોટિફિકેશન સેટિંગ બતાવો. નોટિફિકેશન બંધ છે</translation>
 <translation id="4269883910223712419">આ ઉપકરણના વ્યવસ્થાપકની ક્ષમતા:</translation>
@@ -243,6 +245,7 @@
 <translation id="5207949376430453814">ટેક્સ્ટ કૅરેટને હાઇલાઇટ કરો</translation>
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
 <translation id="523505283826916779">ઍક્સેસિબિલિટી સેટિંગ્સ</translation>
+<translation id="5302048478445481009">ભાષા</translation>
 <translation id="5313326810920013265">Bluetooth સેટિંગ</translation>
 <translation id="5331975486040154427">USB-C ડિવાઇસ (ડાબી બાજુનું પાછળનું પોર્ટ)</translation>
 <translation id="5379115545237091094">ઘણા બધા પ્રયાસો</translation>

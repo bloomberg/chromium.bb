@@ -166,7 +166,6 @@
     Veuillez nous envoyer vos commentaires depuis l'écran suivant pour nous aider à résoudre le problème.</translation>
 <translation id="1217668622537098248">Réactiver le clic gauche après l'action</translation>
 <translation id="121783623783282548">Les mots de passe ne correspondent pas.</translation>
-<translation id="1219533395013150448">L'Assistant Google utilise ces enregistrements pour créer votre modèle vocal, qui est enregistré sur votre appareil. Vous pouvez le supprimer ou le réenregistrer dans les paramètres de l'Assistant. Pour afficher ou supprimer les commandes vocales, accédez aux commandes relatives à l'activité Google.</translation>
 <translation id="122082903575839559">Algorithme de signature du certificat</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 avec chiffrement RSA</translation>
 <translation id="1221825588892235038">Sélection uniquement</translation>
@@ -617,7 +616,7 @@
 <translation id="1880905663253319515">Supprimer le certificat "<ph name="CERTIFICATE_NAME" />" ?</translation>
 <translation id="1886996562706621347">Permettre aux sites de demander l'autorisation de devenir gestionnaires par défaut des protocoles (recommandé)</translation>
 <translation id="1887442540531652736">Erreur de connexion</translation>
-<translation id="1887597546629269384">Dites à nouveau "Ok Google"</translation>
+<translation id="1887597546629269384">Dites à nouveau "Dis Google"</translation>
 <translation id="1887850431809612466">Version du matériel</translation>
 <translation id="1889984860246851556">Ouvrir les paramètres de proxy</translation>
 <translation id="1890674179660343635">&lt;span&gt;Identifiant&lt;/span&gt; : <ph name="EXTENSION_ID" /></translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> tente de se connecter</translation>
 <translation id="3274763671541996799">Le mode plein écran a été activé.</translation>
 <translation id="3275778913554317645">Ouvrir dans une fenêtre</translation>
-<translation id="3278877214895457897">Lorsque votre Chromebook est configuré, appuyez sur le bouton de l'Assistant ou dites "Ok Google" pour obtenir son aide à tout moment.</translation>
 <translation id="3279230909244266691">Cette opération peut prendre quelques minutes. Démarrage de la machine virtuelle…</translation>
 <translation id="3279741024917655738">Affichage des vidéos en plein écran sur</translation>
 <translation id="3280237271814976245">Enregistrer &amp;sous...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Chrome se met à jour automatiquement afin que vous disposiez toujours de la version la plus récente.</translation>
 <translation id="3551320343578183772">Fermer l'onglet</translation>
 <translation id="3552780134252864554">Effacé en fin de session</translation>
-<translation id="3553146918065661815">Afficher un avertissement avant de quitter avec ⌘Q</translation>
 <translation id="3555812735919707620">Supprimer l'extension</translation>
 <translation id="3556000484321257665">Votre moteur de recherche a été remplacé par <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Échec de l'installation de la règle sur l'appareil.</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">Lire vos paramètres d'accessibilité</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{L'application possède un accès permanent à un fichier.}one{L'application possède un accès permanent à # fichier.}other{L'application possède un accès permanent à # fichiers.}}</translation>
 <translation id="3660234220361471169">Non approuvé</translation>
-<translation id="3661054927247347545">Le certificat de connexion n'est pas valide. Fermeture de la fenêtre dans <ph name="MINUTES" /> et <ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Icône de l'extension</translation>
 <translation id="3665589677786828986">Chrome a détecté que certains de vos paramètres ont été corrompus par un autre programme. Leurs valeurs par défaut ont été rétablies.</translation>
 <translation id="3668570675727296296">Paramètres linguistiques</translation>
@@ -2293,7 +2289,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4524832533047962394">Le mode d'enregistrement proposé n'est pas compatible avec cette version du système d'exploitation. Vérifiez que vous utilisez bien la version la plus récente.</translation>
 <translation id="4525382759303819021">Obtenir les dernières actualités et recommandations concernant les applications Play Store</translation>
 <translation id="4530494379350999373">Origine</translation>
-<translation id="4533846798469727141">Maintenant, dites "Ok Google"</translation>
+<translation id="4533846798469727141">Maintenant, dites "Dis Google"</translation>
 <translation id="4533985347672295764">Temps CPU</translation>
 <translation id="4534661889221639075">Réessayez.</translation>
 <translation id="4535127706710932914">Profil par défaut</translation>
@@ -2889,7 +2885,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5434065355175441495">Chiffrement RSA PKCS #1</translation>
 <translation id="5436492226391861498">En attente du tunnel proxy...</translation>
 <translation id="5436510242972373446">Rechercher sur <ph name="SITE_NAME" /> :</translation>
-<translation id="5436822233913560332">Sans connexion, toutes les fenêtres du navigateur vont bientôt se fermer automatiquement.</translation>
 <translation id="5438224778284622050">Supprimer les fichiers hors connexion ?</translation>
 <translation id="544083962418256601">Créer des raccourcis…</translation>
 <translation id="5442228125690314719">Erreur lors de la création de l'image disque. Veuillez réessayer.</translation>
@@ -3622,7 +3617,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Se connecter maintenant</translation>
 <translation id="6527303717912515753">Partager</translation>
 <translation id="6528513914570774834">Autoriser les autres utilisateurs de cet appareil à employer ce réseau</translation>
 <translation id="652948702951888897">Historique Chrome</translation>
@@ -4091,7 +4085,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7256710573727326513">Ouvrir dans un onglet</translation>
 <translation id="725758059478686223">Service d'impression</translation>
 <translation id="7257666756905341374">Accéder aux données que vous copiez et collez</translation>
-<translation id="7258619945375359543">Autoriser l'Assistant à proposer des suggestions en fonction des éléments affichés sur votre écran</translation>
 <translation id="7258697411818564379">Votre code a bien été ajouté</translation>
 <translation id="7262004276116528033">Ce service de connexion est hébergé par <ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">Fermer les onglets</translation>
@@ -4854,7 +4847,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8438566539970814960">Améliorer les recherches et la navigation</translation>
 <translation id="8439506636278576865">Proposer de traduire les pages dans cette langue</translation>
 <translation id="8440630305826533614">Applications Linux</translation>
-<translation id="8446474770554547328">Enregistrer "Ok Google" trois fois permet de créer votre modèle vocal, qui est enregistré sur votre appareil. Vous pouvez le supprimer ou le réenregistrer dans les paramètres de l'Assistant. Pour afficher ou supprimer les commandes vocales, accédez aux commandes relatives à l'activité Google.</translation>
 <translation id="8446884382197647889">En savoir plus</translation>
 <translation id="8447409163267621480">Vous devez inclure la touche Ctrl ou la touche Alt</translation>
 <translation id="8448729345478502352">Agrandir ou réduire la taille des éléments à l'écran</translation>

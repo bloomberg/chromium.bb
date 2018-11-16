@@ -1621,7 +1621,7 @@
 <translation id="5208240613060747912">Hiermee kun je een lijst met URL-patronen opgeven van sites waarop geen meldingen mogen worden weergegeven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultNotificationsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
-<translation id="5213038356678567351">Websites die nooit een schakeling tussen browsers moeten activeren.</translation>
+<translation id="5213038356678567351">Websites die nooit een schakeling tussen browsers veroorzaken.</translation>
 <translation id="5219844027738217407">Voor Android-apps is dit beleid alleen van invloed op de microfoon. Wanneer dit beleid is ingesteld op 'True', wordt voor alle Android-apps, zonder uitzondering, de microfoon gedempt.</translation>
 <translation id="5228316810085661003">De vertraging voor automatisch inloggen op het lokale account op het apparaat.
 
@@ -1799,12 +1799,12 @@
       herkomsten geïsoleerd die worden benoemd door subdomeinen. Als je bijvoorbeeld https://example.com/
       opgeeft, wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de
       site https://example.com/.
-      Als het beleid is uitgeschakeld, vindt er geen expliciete site-isolatie plaats en worden praktijktests van IsolateOriginsAndroid en SitePerProcessAndroid uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen, via opdrachtregelmarkeringen.
+      Als het beleid is uitgeschakeld, vindt er geen expliciete site-isolatie plaats en worden praktijktests van IsolateOriginsAndroid en SitePerProcessAndroid uitgeschakeld. Gebruikers kunnen IsolateOrigins nog steeds handmatig inschakelen, via opdrachtregelmarkeringen.
       Als het beleid niet wordt geconfigureerd, kan de gebruiker deze instelling wijzigen.
 
       OPMERKING: Site-isolatie op Android is experimenteel. De ondersteuning zal in de loop der tijd verbeteren, maar kan op dit moment prestatieproblemen veroorzaken.
 
-      OPMERKING: Dit beleid is alleen van toepassing op Chrome op Android-apparaten met meer dan 1 GB RAM. Als je het beleid op andere platforms wilt toepassen, gebruik je SitePerProcess.
+      OPMERKING: Dit beleid is alleen van toepassing op Chrome op Android-apparaten met meer dan 1 GB RAM. Als je het beleid op andere platforms wilt toepassen, gebruik je IsolateOrigins.
       </translation>
 <translation id="5630352020869108293">De laatste sessie herstellen</translation>
 <translation id="5645779841392247734">Cookies toestaan op deze sites</translation>
@@ -1911,7 +1911,7 @@
 <translation id="5900196529149231477">
       Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, dat van toepassing is op de gebruikerssessie. Het is raadzaam beide beleidsregels op dezelfde waarde in te stellen. Als de waarden niet overeenkomen, kan dit een vertraging veroorzaken bij het openen van een gebruikerssessie terwijl de waarde wordt toegepast die in het gebruikersbeleid is opgegeven.
       Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten (origins) in een door komma's gescheiden lijst uitgevoerd in een eigen proces. Hiermee worden ook herkomsten geïsoleerd die worden benoemd door subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de site https://example.com/.
-      Als het beleid is uitgeschakeld, worden de functies van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen, via opdrachtregelmarkeringen.
+      Als het beleid is uitgeschakeld, worden de functies van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen IsolateOrigins nog steeds handmatig inschakelen, via opdrachtregelmarkeringen.
       Als het beleid niet is geconfigureerd, worden de standaardinstellingen voor site-isolatie van het platform gebruikt voor het inlogscherm.
       </translation>
 <translation id="5901427587865226597">Alleen dubbelzijdig afdrukken</translation>
@@ -2280,7 +2280,7 @@
 <translation id="6857824281777105940">Met dit beleid wordt bepaald of informatie over Safe Browsing moet worden gerapporteerd, waaronder het aantal Safe Browsing-waarschuwingen en het aantal doorklikken van Safe Browsing-waarschuwingen.
 
       Wanneer dit beleid niet is ingesteld of is ingesteld op True, worden gegevens over Safe Browsing verzameld.
-      Wanneer dit beleid is ingesteld op False, worden gegevens over Safe Browsing verzameld.
+      Wanneer dit beleid is ingesteld op False, worden er geen gegevens over Safe Browsing verzameld.
 
       Dit beleid is alleen effectief wanneer <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="686079137349561371">Microsoft Windows 7 of later</translation>
@@ -2441,8 +2441,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       beschikbaar in Windows en ${safari} is alleen beschikbaar in  Windows en Mac
       OS X.
 
-      Wanneer dit beleid is ingesteld op een bestandspad, wordt dat bestand gebruikt als een uitvoerbaar
-      bestand.</translation>
+      Wanneer dit beleid is ingesteld op een bestandspad, wordt dat bestand gebruikt als een uitvoerbaar bestand.</translation>
 <translation id="7167436895080860385">Gebruikers toestaan wachtwoorden weer te geven in Wachtwoordbeheer (beëindigd)</translation>
 <translation id="7173856672248996428">Kort geldig profiel</translation>
 <translation id="717630378807352957">Alle printers in het configuratiebestand toestaan.</translation>
@@ -3242,11 +3241,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="8970205333161758602">De prompt <ph name="PRODUCT_FRAME_NAME" /> negeren</translation>
 <translation id="8976248126101463034">Gnubby-verificatie toestaan voor hosts voor externe toegang</translation>
 <translation id="8976531594979650914">Standaardprinter van systeem gebruiken als standaard</translation>
-<translation id="898520305112996948">Hiermee kun je een lijst met URL-patronen instellen die aangeven welke sites automatisch toegang krijgen tot USB-apparaat met de opgegeven verkopers- en product-ID. Het beleid is alleen geldig als elk item in de lijst zowel apparaten als URL-patronen bevat. Elk item in apparaten kan een veld voor verkopers-ID en een veld voor product-ID bevatten. Een ID die is weggelaten, wordt als wildcard behandeld, met één uitzondering, namelijk dat een product-ID niet mag worden opgegeven zonder dat er een verkopers-ID is opgegeven. Anders is het beleid niet geldig. Ongeldige beleidswaarden worden genegeerd.
-
-        Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Deze vind je in het beleid 'DefaultPluginsSetting' (als dit is ingesteld), of in de persoonlijke configuratie van de gebruiker.
-
-        De URL-patronen in dit beleid mogen niet conflicteren met de patronen die zijn ingesteld via WebUsbBlockedForUrls. Als er een conflict is, krijgt dit beleid voorrang op WebUsbBlockedForUrls en WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Niet toestaan dat sites afbeeldingen weergeven</translation>
 <translation id="9012851181124311976">Configureer de lijst met zakelijke login-URL's (alleen http- en https-schema's). De vingerafdruk van het wachtwoord wordt op deze URL's vastgelegd, zodat hergebruik van het wachtwoord kan worden gedetecteerd.
       Als je er zeker van wilt zijn dat <ph name="PRODUCT_NAME" /> vingerafdrukken van wachtwoorden correct vastlegt, moet je ervoor zorgen dat je inlogpagina's voldoen aan de richtlijnen op https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
@@ -3262,7 +3256,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       geïsoleerd die worden benoemd door subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt
       ook https://foo.example.com/ geïsoleerd als onderdeel van de
       site https://example.com/.
-      Als het beleid is uitgeschakeld, worden de functies van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen SitePerProcess nog steeds handmatig inschakelen, via opdrachtregelmarkeringen.
+      Als het beleid is uitgeschakeld, worden de functies van IsolateOrigins en SitePerProcess uitgeschakeld. Gebruikers kunnen IsolateOrigins nog steeds handmatig inschakelen, via opdrachtregelmarkeringen.
       Als het beleid niet wordt geconfigureerd, kan de gebruiker deze instelling wijzigen.
       In <ph name="PRODUCT_OS_NAME" /> is het aan te raden om op ook het apparaatbeleid <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> op dezelfde waarde in te stellen. Als de voor beide beleidsregels opgegeven waarden niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt opgegeven terwijl de waarde van het gebruikersbeleid wordt toegepast.
 

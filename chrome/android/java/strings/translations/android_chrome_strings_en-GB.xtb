@@ -734,7 +734,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6567212464587185774">Use up to 60% less data and speed up the web.</translation>
 <translation id="6573096386450695060">Always allow</translation>
 <translation id="6573431926118603307">Tabs that you've opened in Chrome on your other devices will appear here.</translation>
-<translation id="6575643671698722332">Reset failed. Ensure that your device is online and try again.</translation>
 <translation id="6583199322650523874">Bookmark the current page</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Desktop site</translation>
@@ -859,7 +858,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7473891865547856676">No Thanks</translation>
 <translation id="7475192538862203634">If you’re seeing this frequently, try these <ph name="BEGIN_LINK" />suggestions<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">SD card not found. Some of your files may be missing.</translation>
-<translation id="748127970106343339">Confirm device credential deletion</translation>
 <translation id="7481312909269577407">Forward</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Updated <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Show passwords</translation>
@@ -1010,7 +1008,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8609465669617005112">Move up</translation>
 <translation id="8616006591992756292">Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Open the suggested URL specified in the downloaded content?</translation>
-<translation id="862875433388403934">Content (films, music, etc.) downloaded in other applications may no longer be playable until those applications re-acquire licences based on a new device credential. To obtain new licences, connect to the Internet and play your downloaded content.</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
 <translation id="8641930654639604085">Try to block mature sites</translation>
 <translation id="8662811608048051533">Signs you out of most sites.</translation>
@@ -1068,7 +1065,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB downloaded</translation>
 <translation id="9100505651305367705">Offer to show articles in simplified view, when supported</translation>
 <translation id="9100610230175265781">Passphrase required</translation>
-<translation id="9133515669113036225">Reset device credentials</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Show original</translation>
 <translation id="9139068048179869749">Ask before allowing sites to send notifications (recommended)</translation>

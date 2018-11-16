@@ -166,7 +166,6 @@
     Gå til neste skjermbilde, og send tilbakemelding for å hjelpe oss med å løse problemet.</translation>
 <translation id="1217668622537098248">Gå tilbake til venstreklikk etter handling</translation>
 <translation id="121783623783282548">Passordene stemmer ikke overens.</translation>
-<translation id="1219533395013150448">Assistenten lagrer disse opptakene for å opprette stemmemodellen din, som lagres på enheten din. Du kan slette eller øve inn denne modellen på nytt i Assistent-innstillingene, og du kan se eller slette talekommandoer i Google Aktivitetslagring.</translation>
 <translation id="122082903575839559">Signaturalgoritme for sertifikat</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 med RSA-kryptering</translation>
 <translation id="1221825588892235038">Bare utvalg</translation>
@@ -1487,7 +1486,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> vil koble til</translation>
 <translation id="3274763671541996799">Du bruker full skjerm.</translation>
 <translation id="3275778913554317645">Åpne som vindu</translation>
-<translation id="3278877214895457897">Når Chromebooken er konfigurert, kan du trykke på Assistent-knappen eller si «Ok Google» for å få hjelp av assistenten når som helst.</translation>
 <translation id="3279230909244266691">Denne prosessen kan ta noen minutter. Starter den virtuelle maskinen.</translation>
 <translation id="3279741024917655738">Vis videoer i full skjerm på</translation>
 <translation id="3280237271814976245">L&amp;agre som...</translation>
@@ -1675,7 +1673,6 @@
 <translation id="3550915441744863158">Chrome oppdateres automatisk slik at du alltid har den nyeste versjonen</translation>
 <translation id="3551320343578183772">Lukk fanen</translation>
 <translation id="3552780134252864554">Fjernes ved avslutning</translation>
-<translation id="3553146918065661815">Vis en advarsel før du avslutter med ⌘Q</translation>
 <translation id="3555812735919707620">Fjern utvidelsen</translation>
 <translation id="3556000484321257665">Søkemotoren er endret til <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Kunne ikke installere regelen på enheten.</translation>
@@ -1751,7 +1748,6 @@
 <translation id="3654045516529121250">lese tilgjengelighetsinnstillingene dine</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Den har permanent tilgang til én fil.}other{Den har permanent tilgang til # filer.}}</translation>
 <translation id="3660234220361471169">Uklarert</translation>
-<translation id="3661054927247347545">Påloggingssertifikatet er ugyldig. Vinduet lukkes om <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Utvidelsesikon</translation>
 <translation id="3665589677786828986">Chrome har oppdaget at noen av innstillingene ble ødelagt av et annet program og tilbakestille dem til originalinnstillingene.</translation>
 <translation id="3668570675727296296">Språkinnstillinger</translation>
@@ -2882,7 +2878,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA-kryptering</translation>
 <translation id="5436492226391861498">Venter på mellomtjenertunnel</translation>
 <translation id="5436510242972373446">Søk på <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Hvis du ikke logger på, blir alle nettleservinduer snart lukket automatisk.</translation>
 <translation id="5438224778284622050">Vil du slette filer som er lagret lokalt?</translation>
 <translation id="544083962418256601">Opprett snarveier</translation>
 <translation id="5442228125690314719">Feil ved oppretting av diskavbildning. Prøv på nytt.</translation>
@@ -3614,7 +3609,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Logg på nå</translation>
 <translation id="6527303717912515753">Del</translation>
 <translation id="6528513914570774834">La andre brukere av denne enheten bruke dette nettverket</translation>
 <translation id="652948702951888897">Chrome-logg</translation>
@@ -4083,7 +4077,6 @@
 <translation id="7256710573727326513">Åpne i en fane</translation>
 <translation id="725758059478686223">Utskriftstjeneste</translation>
 <translation id="7257666756905341374">lese data du kopierer og limer inn</translation>
-<translation id="7258619945375359543">La assistenten komme med forslag basert på hva som er på skjermen</translation>
 <translation id="7258697411818564379">PIN-koden din er lagt til</translation>
 <translation id="7262004276116528033">Verten for denne påloggingstjenesten er <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Lukk faner</translation>
@@ -4844,7 +4837,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8438566539970814960">Gjør søking og surfing bedre</translation>
 <translation id="8439506636278576865">Tilby å oversette nettsider på dette språket</translation>
 <translation id="8440630305826533614">Linux-apper</translation>
-<translation id="8446474770554547328">Når du spiller inn «Ok Google» tre ganger, lagres stemmemodellen din på enheten. Du kan slette eller øve inn denne modellen på nytt i Assistent-innstillingene, og du kan se eller slette talekommandoer i Google Aktivitetslagring.</translation>
 <translation id="8446884382197647889">Les mer</translation>
 <translation id="8447409163267621480">Inkluder enten Ctrl eller Alt</translation>
 <translation id="8448729345478502352">Gjør elementer på skjermen mindre eller større.</translation>

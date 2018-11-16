@@ -734,7 +734,6 @@
 <translation id="6567212464587185774">データ使用量を最大 60% 節約でき、ウェブを高速にブラウジングできます。</translation>
 <translation id="6573096386450695060">常に許可</translation>
 <translation id="6573431926118603307">他の端末の Chrome で開いているタブがここに表示されます。</translation>
-<translation id="6575643671698722332">再設定できませんでした。デバイスがオンラインになっていることを確認してもう一度お試しください。</translation>
 <translation id="6583199322650523874">現在のページをブックマークする</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">PC 版サイト</translation>
@@ -859,7 +858,6 @@
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7475192538862203634">このメッセージが繰り返し表示される場合は、こちらの<ph name="BEGIN_LINK" />ヒント<ph name="END_LINK" />をお試しください。</translation>
 <translation id="7475688122056506577">SD カードが見つかりません。一部のファイルが欠落している可能性があります。</translation>
-<translation id="748127970106343339">デバイス認証情報の削除を確認する</translation>
 <translation id="7481312909269577407">進む</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（<ph name="TIME_SINCE_UPDATE" />に更新）</translation>
 <translation id="7494879913343971937">パスワードを表示</translation>
@@ -1010,9 +1008,6 @@
 <translation id="8609465669617005112">上に移動</translation>
 <translation id="8616006591992756292">お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
 <translation id="8617240290563765734">ダウンロード コンテンツに指定されている URL を開きますか？</translation>
-<translation id="862875433388403934">他のアプリケーションでダウンロードしたコンテンツ（映画、音楽など）は再生できなくなっている可能性があります。再生するには、該当のアプリケーションで新しいデバイス認証情報に基づくライセンスを再取得する必要があります。
-
-新しいライセンスを取得するには、インターネットに接続し、ダウンロードしたコンテンツを再生してください。</translation>
 <translation id="8636825310635137004">他の端末と同じタブを使用するには、同期を有効にします。</translation>
 <translation id="8641930654639604085">成人向けのサイトを可能な限りブロックする</translation>
 <translation id="8662811608048051533">ほとんどのサイトからログアウトします。</translation>
@@ -1070,7 +1065,6 @@
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB をダウンロードで使用中</translation>
 <translation id="9100505651305367705">記事の簡易表示がサポートされている場合、簡易表示を提案する</translation>
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
-<translation id="9133515669113036225">デバイス認証情報のリセット</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />（<ph name="ITEM_ID" />）</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9139068048179869749">サイトに通知の送信を許可する前に確認する（推奨）</translation>

@@ -115,23 +115,11 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
       Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu False, v protokole TLS nebudú povolené šifrovacie súpravy RC4. Nastavením tohto pravidla na hodnotu True je možné zaistiť kompatibilitu so zastaraným serverom. Ide o krátkodobé riešenie, takže konfigurácia príslušného servera by mala byť upravená.</translation>
 <translation id="1297117713060236551">Toto pravidlo ovláda zoznam webov, ktoré nikdy nespustia prepnutie prehliadača.
 
-
-
-
       Upozorňujeme, že do tohto zoznamu môžete tiež pridať prvky prostredníctvom pravidla <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
-
-
 
       Keď toto pravidlo nenastavíte, do zoznamu sa nepridajú žiadne weby.
 
-
-
-
       Keď ho nastavíte, jednotlivé položky sa budú rovnako ako v pravidle <ph name="URL_LIST_POLICY_NAME" /> považovať za pravidlá. Platí však opačná logika: pravidlá, ktoré sa zhodujú, nespustia alternatívny prehliadač.
-
-
-
 
       Na rozdiel od <ph name="URL_LIST_POLICY_NAME" /> platia tieto pravidlá obojstranne. Znamená to, že ak používate doplnok pre prehliadač Internet Explorer a je zapnutý, ovládate ním aj to, či má <ph name="IE_PRODUCT_NAME" /> otvárať tieto webové adresy v prehliadači <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Použiť skript servera proxy vo formáte PAC</translation>
@@ -233,14 +221,8 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
 Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť podnikoví používatelia používať funkciu ARC.</translation>
 <translation id="1559980755219453326">Toto pravidlo ovláda, či sa majú nahlasovať údaje o rozšíreniach a doplnkoch.
 
-
-
-
       Keď ho nenastavíte alebo nastavíte na hodnotu true, údaje o rozšíreniach a doplnkoch sa zhromažďujú.
       Keď ho nastavíte na hodnotu false, údaje o rozšíreniach a doplnkoch sa nezhromažďujú.
-
-
-
 
       Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1561424797596341174">Prepísania pravidiel pre zostavy ladenia používané hostiteľom vzdialeného prístupu</translation>
@@ -811,28 +793,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3047732214002457234">Určuje, ako nástroj Chrome Cleanup hlási dáta do Googlu</translation>
 <translation id="304775240152542058">Toto pravidlo ovláda parametre príkazového riadka, ktoré sa majú spustiť v alternatívnom prehliadači.
 
-
-
-
       Keď toto pravidlo nenastavíte, ako parametre príkazového riadka sa budú odovzdávať iba webové adresy.
-
-
-
 
       Keď ho nastavíte na zoznam reťazcov, jednotlivé reťazce budú odovzdané do alternatívneho prehliadača ako samostatné parametre príkazového riadka. V systéme Windows sú tieto parametre spojené medzerami. V systémoch Mac OS X a Linux môže mať parameter medzery a zároveň byť považovaný za jeden parameter.
 
-
-
-
       Ak nejaký prvok obsahuje ${url}, bude nahradený webovou adresou stránky, ktorá sa má spustiť.
 
-
-
-
-      Ak webová adresu ${url} neobsahuje žiadny prvok, webová adresa bude pridaná na konci príkazového riadka.
-
-
-
+      Ak webová adresa ${url} neobsahuje žiadny prvok, webová adresa bude pridaná na konci príkazového riadka.
 
       Premenné prostredia budú rozšírené. V systéme Windows bude premenná %ABC% nahradená hodnotou premennej prostredia ABC. V systémoch Mac OS X a Linux bude premenná ${ABC} nahradená hodnotou premennej prostredia.</translation>
 <translation id="3048744057455266684">Ak je toto pravidlo nastavené a webová adresa vyhľadávania navrhnutá vo všeobecnom poli obsahuje tento parameter v reťazci dopytu alebo v identifikátore fragmentu, potom odporúčanie zobrazí hľadané výrazy a poskytovateľa vyhľadávania namiesto nespracovanej webovej adresy vyhľadávania.
@@ -920,9 +887,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Hodnota pravidla by mala byť uvedená v milisekundách. Hodnoty musia byť nižšie alebo rovnaké ako oneskorenie vypnutia obrazovky (pokiaľ je nastavené) a oneskorenie režimu nečinnosti.</translation>
 <translation id="3251500716404598358">Umožňuje nakonfigurovať pravidlá prepínania prehliadačov.
 
-
-
-
       Nakonfigurované weby sa budú automaticky spúšťať v inom prehliadači ako <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3264793472749429012">Kódovania predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="3273221114520206906">Predvolené nastavenie kódu JavaScript</translation>
@@ -1009,9 +973,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3496296378755072552">Správca hesiel</translation>
 <translation id="3500732098526756068">Umožňuje ovládať spúšťanie upozornenia v rámci ochrany heslom. Ochrana heslom upozorňuje používateľov, keď svoje chránené heslo opätovne použijú na potenciálne podozrivých weboch. 
 
-
       Pomocou pravidiel PasswordProtectionLoginURLs a PasswordProtectionChangePasswordURL môžete nakonfigurovať, ktoré heslo chcete chrániť.
-
 
       Ak toto pravidlo nastavíte na možnosť PasswordProtectionWarningOff, nezobrazí sa žiadne upozornenie v rámci ochrany heslom.
       Ak ho nastavíte na možnosť PasswordProtectionWarningOnPasswordReuse, upozornenie v rámci ochrany heslom sa zobrazí, keď používateľ opätovne použije heslo na webe, ktorý nebol pridaný na zoznam povolených webov.
@@ -1818,9 +1780,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/. Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť prostredníctvom príznaku v príkazovom riadku.
       Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
 
-
       POZNÁMKA: V Androide je izolovanie webov experimentálna funkcia. Podpora sa časom zlepší, ale momentálne môže spôsobovať problémy s výkonnosťou.
-
 
       POZNÁMKA: Toto pravidlo platí iba pre Chrome v systéme Android spustenom v zariadeniach s minimálne 1 GB pamäte RAM. Ak chcete toto pravidlo použiť v platformách, ktoré nepoužívajú Android, použite pravidlo IsolateOrigins.
       </translation>
@@ -1848,18 +1808,13 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="5728154254076636808">Povoliť vytváranie roamingových kópií údajov profilu v prehliadači <ph name="PRODUCT_NAME" /></translation>
 <translation id="5728661376331491504">Toto pravidlo ovláda zoznam webov, ktoré sa majú spustiť v alternatívnom prehliadači.
 
-
       Upozorňujeme, že do tohto zoznamu môžete tiež pridať prvky prostredníctvom pravidla <ph name="USE_IE_SITELIST_POLICY_NAME" />.
-
 
       Ak toto pravidlo ponecháte nenastavené, do zoznamu sa nepridajú žiadne weby.
 
-
       Keď ho nastavíte, jednotlivé položky sa budú považovať za pravidlá pre niečo, čo sa má otvoriť v alternatívnom prehliadači. <ph name="PRODUCT_NAME" /> tieto pravidlá používa pri rozhodovaní, či sa má určitá webová adresa otvoriť v alternatívnom prehliadači.
 
-
       Keď používate doplnok pre prehliadač Internet Explorer a povolíte ho, Internet Explorer sa prepne späť na <ph name="PRODUCT_NAME" />, keď sa pravidlá nezhodujú.
-
 
       Ak si pravidlá odporujú, <ph name="PRODUCT_NAME" /> používa to najšpecifickejšie pravidlo.</translation>
 <translation id="5732972008943405952">Importovať údaje automatického dopĺňania formulárov z predvoleného prehliadača pri prvom spustení</translation>
@@ -2309,10 +2264,8 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="685769593149966548">Vynútiť prísny obmedzený režim v službe YouTube</translation>
 <translation id="6857824281777105940">Toto pravidlo ovláda, či sa majú nahlasovať informácie Bezpečného prehliadania vrátane čísla upozornenia Bezpečného prehliadania alebo čísla prekliknutia k upozorneniu Bezpečnostného prehliadania.
 
-
       Keď toto pravidlo nenastavíte alebo ho nastavíte na hodnotu true, údaje Bezpečného prehliadania sa budú zhromažďovať.
       Keď ho nastavíte na hodnotu false, údaje Bezpečného prehliadania sa nebudú zhromažďovať.
-
 
       Toto pravidlo je účinné iba vtedy, keď povolíte rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="686079137349561371">Microsoft Windows 7 alebo novší</translation>
@@ -2474,15 +2427,12 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="7132877481099023201">Webové adresy, ktorým bude udelený prístup k zariadeniam na zaznamenávanie videa bez zobrazenia výzvy</translation>
 <translation id="7158064522994309072">Toto pravidlo ovláda, pomocou ktorého príkazu sa majú webové adresy otvárať v alternatívnom prehliadači.
 
-
       Keď toto pravidlo ponecháte nenastavené, použije sa predvolená hodnota špecifická pre danú platformu: Internet Explorer pre systém Windows alebo Safari pre systém Mac OS X. Ak ho nenastavíte, v systéme Linux sa alternatívny prehliadač nepodarí spustiť.
-
 
       Keď ho nastavíte na hodnotu ${ie}, ${firefox}, ${safari} alebo
       ${opera}, príslušný prehliadač sa spustí (ak je nainštalovaný). ${ie} je k dispozícii iba
       v systéme Windows a ${safari} je k dispozícii iba v systémoch Windows a Mac
       OS X.
-
 
       Keď toto pravidlo nastavíte na cestu súboru, príslušný súbor sa použije ako
       spustiteľný súbor.</translation>
@@ -3016,20 +2966,11 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="8390049129576938611">Zakáže v prehliadači <ph name="PRODUCT_NAME" /> interný zobrazovač súborov PDF. Súbory PDF sa budú sťahovať a používateľ ich bude môcť otvoriť v predvolenej aplikácii.
 
       Ak toto pravidlo ponecháte nenastavené alebo deaktivované, súbory PDF sa budú otvárať pomocou doplnku PDF (ak ho používateľ nezakáže).</translation>
-<translation id="8396145449084377015">Toto pravidlo riadi, či sa majú načítavať pravidlá z pravidla SiteList prehliadača Internet Explorer.
-
-
-
+<translation id="8396145449084377015">Toto pravidlo riadi, či sa majú načítavať pravidlá z pravidiel SiteList prehliadača Internet Explorer.
 
       Keď toto pravidlo nenastavíte alebo nastavíte na hodnotu false, <ph name="PRODUCT_NAME" /> nepoužije pravidlo <ph name="IEEM_SITELIST_POLICY" /> prehliadača Internet Explorer ako zdroj pravidiel pre prepínanie prehliadačov.
 
-
-
-
-      Keď ho nastavíte na hodnotu true, <ph name="PRODUCT_NAME" /> načíta pravidlo <ph name="IEEM_SITELIST_POLICY" /> prehliadača Internet Explorer a získa webovú adresu zoznamu webov. <ph name="PRODUCT_NAME" /> potom stiahne zoznam webov z danej webovej adresy a uplatní pravidlá, akoby boli nakonfigurované v rámci pravidla <ph name="SITELIST_POLICY_NAME" />.
-
-
-
+      Keď ho nastavíte na hodnotu true, <ph name="PRODUCT_NAME" /> načíta pravidlo <ph name="IEEM_SITELIST_POLICY" /> prehliadača Internet Explorer a získa webovú adresu zoznamu webov. <ph name="PRODUCT_NAME" /> potom stiahne zoznam webov z danej webovej adresy a uplatní pravidlá, akoby boli nakonfigurované v rámci pravidiel <ph name="SITELIST_POLICY_NAME" />.
 
       Ďalšie informácie o pravidle <ph name="IEEM_SITELIST_POLICY" /> prehliadača Internet Explorer získate na https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Vždy otvárať súbory PDF externe</translation>
@@ -3295,11 +3236,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
 <translation id="8970205333161758602">Potlačiť výzvu o zamietnutie od rámca <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Povoliť overovanie gnubby pre hostiteľov so vzdialeným prístupom</translation>
 <translation id="8976531594979650914">Ako predvolenú tlačiareň použiť predvolenú tlačiareň systému</translation>
-<translation id="898520305112996948">Umožňuje nastaviť zoznam vzorov webových adries špecifikujúci weby, ktorým bude automaticky udelené povolenie na prístup k zariadeniu USB s príslušným dodávateľom a identifikátormi produktu. Každá položka v zozname musí obsahovať zariadenia aj vzory webových adries, aby bolo pravidlo platné. Každá položka v zariadeniach môže obsahovať pole pre identifikátor dodávateľa a identifikátor produktu. Akýkoľvek identifikátor, ktorý sa vynechá, sa bude považovať za zástupný znak, s jednou výnimkou, že identifikátor produktu nemôže byť špecifikovaný bez súčasného špecifikovania identifikátora dodávateľa. V opačnom prípade nebude toto pravidlo platné. Neplatné hodnoty pravidla sa ignorujú.
-
-        Ak toto pravidlo nenastavíte, pre všetky weby sa použije globálna predvolená hodnota buď z pravidla DefaultWebUsbGuardSetting (ak je nastavené), alebo z osobnej konfigurácie používateľa.
-
-        Vzory webových adries v tomto pravidle by nemali byť v konflikte so vzormi nakonfigurovanými pravidlom WebUsbBlockedForUrls. Ak nastane konflikt, toto pravidlo sa uprednostní pred pravidlami WebUsbBlockedForUrls a WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Zakázať všetkým stránkam zobrazovať obrázky</translation>
 <translation id="9012851181124311976">Nastavuje zoznam podnikových prihlasovacích webových adries (iba schémy HTTP a HTTPS). Na týchto webových adresách sa bude zaznamenávať digitálny odtlačok hesla, ktorý sa použije na rozpoznanie opätovného použitia hesla.
       Na to, aby služba <ph name="PRODUCT_NAME" /> správne zaznamenávala digitálne odtlačky hesiel, musia prihlasovacie stránky dodržiavať pokyny uvedené na adrese https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
@@ -3314,9 +3250,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Ak ho zakážete, funkcie IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť naďalej povoliť pravidlo SitePerProcess ručne pomocou príznakov v príkazovom riadku.
       Ak toto pravidlo nenakonfigurujete, používateľ bude môcť toto nastavenie meniť.
       V systéme <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť na rovnakú hodnotu aj pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Ak sa hodnoty týchto dvoch pravidiel nezhodujú, môže dôjsť pri vstupe do relácie používateľa k oneskoreniu, zatiaľ čo sa uplatňuje hodnota určená v pravidle používateľa.
-
-
-
 
       POZNÁMKA: Toto pravidlo neplatí pre Android. Ak chcete povoliť pravidlo SitePerProcess v Androide, použite nastavenie pravidla SitePerProcessAndroid.
       </translation>

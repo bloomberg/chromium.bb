@@ -116,14 +116,14 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis regelen ikke er angitt eller er satt til false (usann), er ikke RC4-chifferserier i TLS slått på. Ellers kan den settes til true (sann) for å sikre kompatibilitet med en utdatert tjener. Dette er en midlertidig løsning, og tjeneren bør konfigureres på nytt.</translation>
 <translation id="1297117713060236551">Denne regelen kontrollerer listen over nettsteder som aldri fører til bytting av nettleser.
 
-      Merk at elementer også kan legges til på denne listen via <ph name="USE_IE_SITELIST_POLICY_NAME" />-regelen.
+      Merk at elementer også kan legges til på denne listen via regelen <ph name="USE_IE_SITELIST_POLICY_NAME" />.
 
       Hvis denne regelen ikke er angitt, blir ingen nettsteder lagt til på listen.
 
-      Hvis denne regelen er angitt, blir hvert element behandlet som en regel, på samme måte som <ph name="URL_LIST_POLICY_NAME" />-regelen. Men logikken er reversert: samsvarende regler åpnes ikke i en alternativ nettleser.
+      Hvis denne regelen er angitt, blir hvert element behandlet som en regel, på samme måte som regelen <ph name="URL_LIST_POLICY_NAME" />. Men logikken er reversert: Samsvarende regler åpnes ikke i en alternativ nettleser.
 
       I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder regler begge veier. Det betyr at når Internet Explorer-tilleggsprogrammet er aktivert, kontrollerer det også om <ph name="IE_PRODUCT_NAME" /> skal åpne disse nettadressene i <ph name="PRODUCT_NAME" />.</translation>
-<translation id="1297182715641689552">Bruk et .pac-skript for mellomtjener</translation>
+<translation id="1297182715641689552">Bruk et PAC-skript for proxy-tjenere</translation>
 <translation id="1304973015437969093">ID-er for utvidelser/apper og oppdateringsnettadresser som skal installeres stille</translation>
 <translation id="1307454923744766368">Opprinnelser eller mønstre for vertsnavn der begrensninger for usikre opprinnelser ikke skal gjelde</translation>
 <translation id="1313457536529613143">Angir hvordan prosentandelen for forsinkelse av skjermdemping skaleres når brukeraktiviteten observeres mens skjermen er dempet, eller kort tid etter skjermen er slått av.
@@ -653,8 +653,8 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen ikke er angitt, er dette ikke tillatt som standard for administrerte brukere og tillatt for ikke-administrerte brukere.</translation>
 <translation id="2660846099862559570">Aldri bruk mellomtjener</translation>
 <translation id="2663739737868438950">
-      Denne regelen gjelder for påloggingsskjermen. Se også <ph name="SITE_PER_PROCESS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-      Du kan endre innstillingen av IsolateOrigins-regelen for å få det beste fra begge verdener – isolering og begrenset innvirkning for brukere – ved å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere. Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
+      Denne regelen gjelder for påloggingsskjermen. Se også regelen <ph name="SITE_PER_PROCESS_POLICY_NAME" /> som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke er like, kan det oppstå en forsinkelse når du starter en brukerøkt og verdien fra brukerregelen er aktiv.
+      Du kan endre innstillingen av regelen IsolateOrigins for å få det beste fra begge verdener – isolering og begrenset innvirkning for brukere – ved å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere. Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
       Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
       Hvis regelen er deaktivert, blir funksjonene for både IsolateOrigins og SitePerProcess slått av. Brukerne kan fortsatt aktivere SitePerProcess manuelt, via kommandolinjeflagg.
       Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
@@ -793,13 +793,13 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvis denne regelen ikke er konfigurert, er det bare nettadressen som sendes som kommandolinjeparameter.
 
-      Hvis denne regelen er angitt til en liste med strenger, blir hver streng sendt til den alternative nettleseren som egne kommandolinjelineparametere. På Windows slås parameterne sammen hvis de inneholder mellomrom. På Mac OS X og Linux kan parametere inneholde mellomrom og fortsatt behandles som enkeltstående parametere.
+      Hvis denne regelen er angitt som en liste med strenger, blir hver streng sendt til den alternative nettleseren som egne kommandolinjelineparametere. På Windows slås parameterne sammen hvis de inneholder mellomrom. På Mac OS X og Linux kan parametere inneholde mellomrom og fortsatt behandles som enkeltstående parametere.
 
       Hvis et element inneholder ${url}, blir det erstattet av nettadressen til siden som skal åpnes.
 
       Hvis ingen elementer inneholder ${url}, blir nettadressen lagt til på slutten av kommandolinjen.
 
-      Miljøvariabler gjøres lengre. På Windows blir %ABC% erstattet med verdien til ABC-miljøvariabelen. På Mac OS X og Linux blir ${ABC} erstattet med verdien til ABC-miljøvariabelen.</translation>
+      Miljøvariabler ekspanderes. På Windows blir %ABC% erstattet med verdien av miljøvariabelen ABC. På Mac OS X og Linux blir ${ABC} erstattet med verdien av miljøvariabelen ABC.</translation>
 <translation id="3048744057455266684">Hvis denne innstillingen er angitt og en nettadresse som blir foreslått av søkefeltet inneholder denne parameteren i søkestrengen eller fragmentidentifikatoren, viser forslaget søkeordene og søkeleverandøren i stedet for søkenettadressen.
 
           Denne innstillingen er valgfri. hvis den ikke er angitt, forekommer det ingen søkeordserstatning.
@@ -964,7 +964,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="3496296378755072552">Passordbehandling</translation>
 <translation id="3500732098526756068">Lar deg kontrollere utløsingen av advarsler for passordbeskyttelse. Med passordbeskyttelse varsles brukere ved gjenbruk av beskyttede passord på potensielt mistenkelige nettsteder.
 
-      Du kan bruke reglene «PasswordProtectionLoginURLs» og «PasswordProtectionChangePasswordURL» for å konfigurere hvilke passord som skal beskyttes.
+      Du kan bruke reglene «PasswordProtectionLoginURLs» og «PasswordProtectionChangePasswordURL» til å konfigurere hvilke passord som skal beskyttes.
 
       Hvis denne regelen er angitt som «PasswordProtectionWarningOff», vises det ikke noe varsel for passordbeskyttelse.
       Hvis denne regelen er angitt som «PasswordProtectionWarningOnPasswordReuse», vises det et varsel for passordbeskyttelse ved gjenbruk av beskyttede passord på nettsteder som ikke er godkjent.
@@ -1009,9 +1009,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
       Hvis regelen er deaktivert, blir funksjonene for både IsolateOrigins og SitePerProcess slått av. Brukere kan fremdeles slå på SitePerProcess manuelt, via kommandolinjeflagg.
       Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-      På <ph name="PRODUCT_OS_NAME" /> anbefaler vi at du også angir enhetsinnstillingene for <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> til samme verdi. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      På <ph name="PRODUCT_OS_NAME" /> anbefaler vi at du også angir enhetsinnstillingene for <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> til samme verdi. Hvis verdiene som er angitt av de to reglene, ikke er like, kan det oppstå en forsinkelse når du starter en brukerøkt og verdien fra brukerregelen er aktiv.
 
-      MERK: Denne regelen gjelder ikke for Android. For å slå på SitePerProcess på Android, bruk SitePerProcessAndroid-regelen.
+      MERK: Denne regelen gjelder ikke for Android. For å slå på SitePerProcess på Android, bruk regelen SitePerProcessAndroid.
       </translation>
 <translation id="3627678165642179114">Aktiver eller deaktiver nett-tjeneste for stavekontroll</translation>
 <translation id="3628480121685794414">Slå på ensidig utskrift</translation>
@@ -1177,7 +1177,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       overvåking (såkalte <ph name="HEARTBEATS_TERM" />).
       Hvis den settes til false (usann) eller ikke angis, sendes det ingen pakker.</translation>
 <translation id="3950239119790560549">Oppdater tidsbegrensninger</translation>
-<translation id="3956686688560604829">Bruk SiteList-regelen i Internet Explorer for støtte for eldre nettlesere.</translation>
+<translation id="3956686688560604829">Bruk regelen SiteList i Internet Explorer for støtte for eldre nettlesere.</translation>
 <translation id="3958586912393694012">Tillat bruk av Smart Lock</translation>
 <translation id="3963602271515417124">Hvis denne regelen er angitt som «true» (sann), tillates ekstern attestering for enheten, og et sertifikat genereres automatisk og lastes opp til administreringstjeneren for enheten.
 
@@ -1873,7 +1873,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
           Hvis denne innstillingen ikke er aktivert sendes ikke gnubby-godkjenningsforespørsler via en proxy-tjener.</translation>
 <translation id="5898486742390981550">Når flere brukere er logget på, er det bare hovedbrukeren som kan bruke Android-apper.</translation>
 <translation id="5900196529149231477">
-      Denne regelen gjelder for påloggingsskjermen. Se også <ph name="ISOLATE_ORIGINS_POLICY_NAME" />-regelen, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      Denne regelen gjelder for påloggingsskjermen. Se også regelen <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke er like, kan det oppstå en forsinkelse når du starter en brukerøkt og verdien fra brukerregelen er aktiv.
       Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i kommadelte lister i egne prosesser. Da isoleres også opprinnelser som har navn basert på underdomener. Hvis for eksempel https://example.com/ angis, isoleres også https://foo.example.com/ som en del av nettstedet https://example.com/.
       Hvis regelen er deaktivert, blir funksjonene for både IsolateOrigins og SitePerProcess slått av. Brukerne kan fortsatt aktivere IsolateOrigins manuelt, via kommandolinjeflagg.
       Hvis regelen ikke er konfigurert, blir standardinnstillingene for nettstedsisolering for plattformen brukt for påloggingsskjermen.
@@ -2697,7 +2697,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Identifikatorene som gjenkjennes for tilkoblingstyper er "ethernet", "wifi", "wimax", "bluetooth" og "cellular".</translation>
 <translation id="7763614521440615342">Vis innholdsforslag på nye faner</translation>
 <translation id="7765879851993224640">Tillat bruk av Smart Lock-pålogging.</translation>
-<translation id="7774768074957326919">Bruk systeminnstillingene for mellomtjener</translation>
+<translation id="7774768074957326919">Bruk proxyinnstillingene for systemet</translation>
 <translation id="7775831859772431793">Du kan spesifisere nettadressen til proxy-tjeneren her.
 
           Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
@@ -2936,9 +2936,9 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 
       Hvis denne regelen ikke er angitt eller er angitt som «false» (usant), bruker ikke <ph name="PRODUCT_NAME" /> <ph name="IEEM_SITELIST_POLICY" />-regelen for Internet Explorer som en kilde for regler tilknyttet bytting av nettlesere.
 
-      Hvis denne regelen er angitt som «true» (sant), leser <ph name="PRODUCT_NAME" /> <ph name="IEEM_SITELIST_POLICY" />-regelen for Internet Explorer for å innhente nettadressen for nettstedslisten. <ph name="PRODUCT_NAME" /> laster deretter ned nettstedslisten fra nettadressen og anvender reglene som om de er konfigurert med <ph name="SITELIST_POLICY_NAME" />-regelen.
+      Hvis denne regelen er angitt som «true» (sant), leser <ph name="PRODUCT_NAME" /> regelen <ph name="IEEM_SITELIST_POLICY" /> for Internet Explorer for å innhente nettadressen for nettstedslisten. Deretter laster <ph name="PRODUCT_NAME" /> ned nettstedslisten fra nettadressen og anvender reglene som om de er konfigurert med regelen <ph name="SITELIST_POLICY_NAME" />.
 
-      Her finner du mer informasjon om <ph name="IEEM_SITELIST_POLICY" />-regelen for Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
+      Her finner du mer informasjon om regelen <ph name="IEEM_SITELIST_POLICY" /> for Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Åpne alltid PDF-filer eksternt</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
 <translation id="8417305981081876834">Angi maksimumslengden på PIN-koden for låseskjermen</translation>
@@ -3200,11 +3200,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="8970205333161758602">Ignorer avslagsforespørsel for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Tillat gnubby-autentisering for fjerntilgangsverter</translation>
 <translation id="8976531594979650914">Bruk standardskriveren i systemet, som standard</translation>
-<translation id="898520305112996948">Lar deg angi en liste over nettadressemønstre som bestemmer hvilke nettsteder som automatisk får tilgang til en USB-enhet med de oppgitte leverandør- og produkt-ID-ene. Hvert element på listen må ha både enheter og nettadressemønstre for at regelen skal være gyldig. Hvert element i enhetene kan ha et felt for leverandør-ID og et felt for produkt-ID. ID-er som utelates, behandles som jokertegn, med ett unntak: En produkt-ID ikke kan angis uten at en leverandør-ID også angis – da blir regelen ugyldig. Ugyldige verdier i regelen ignoreres.
-
-        Hvis regelen ikke angis, brukes den globale standardverdien for alle nettsteder – enten fra «DefaultWebUsbGuardSetting»-regelen, hvis den er angitt, ellers brukes brukerens personlige oppsett.
-
-        Nettadressemønstre i denne regelen må ikke kollidere med mønstrene som er konfigurert via WebUsbBlockedForUrls. Hvis de kolliderer, har denne regelen forrang over WebUsbBlockedForUrls og WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
 <translation id="9012851181124311976">Konfigurer listen over påloggingsadresser for bedrifter (bare HTTP- og HTTPS-protokoller). Fingeravtrykk for passord registreres på disse nettadressene og brukes til å oppdage gjenbruk av passord.
       For at <ph name="PRODUCT_NAME" /> skal registrere fingeravtrykk for passord riktig, må du påse at påloggingssidene følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
@@ -3222,9 +3217,9 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       https://example.com/.
       Hvis regelen er deaktivert, blir funksjonene for både IsolateOrigins og SitePerProcess slått av. Brukerne kan fortsatt aktivere IsolateOrigins manuelt, via kommandolinjeflagg.
       Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-      På <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      På <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis verdiene som er angitt av de to reglene, ikke er like, ikke er like, kan det oppstå en forsinkelse når du starter en brukerøkt og verdien fra brukerregelen er aktiv.
 
-      MERK: Denne regelen gjelder ikke på Android. For å slå på IsolateOrigins på Android, bruk innstillingene for IsolateOriginsAndroid-regelen.
+      MERK: Denne regelen gjelder ikke på Android. For å slå på IsolateOrigins på Android, bruk innstillingene for regelen IsolateOriginsAndroid.
       </translation>
 <translation id="9077227880520270584">Nedtelling for automatisk pålogging for den lokale kontoen på enheten</translation>
 <translation id="9084985621503260744">Angi om videoaktivitet skal påvirke strømbehandling</translation>

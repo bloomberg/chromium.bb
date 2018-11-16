@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">मल्टिपल साइन इन मध्ये तुमच्याकडे जास्तीत जास्त फक्त <ph name="MULTI_PROFILE_USER_LIMIT" /> खाती असू शकतात.</translation>
 <translation id="3154351730702813399">डिव्हाइस प्रशासक कदाचित आपल्या ब्राउझिंग क्रियाकलापाचे परीक्षण करू शकतो.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{डिव्हाइसशी कनेक्ट केले}one{# डिव्हाइसशी कनेक्ट केले}other{# डिव्हाइसशी कनेक्ट केले}}</translation>
+<translation id="32244657276328332">नेटवर्कशी कनेक्ट केलेले नाही</translation>
 <translation id="3236488194889173876">कोणतेही मोबाइल नेटवर्क उपलब्ध नाही</translation>
 <translation id="3255483164551725916">तुला काय करता येते?</translation>
 <translation id="3294437725009624529">अतिथी</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{एका अॅपसाठी बंद}one{# अॅपसाठी बंद}other{# अॅप्ससाठी बंद}}</translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
 <translation id="4146833061457621061">म्युझिक प्ले करा</translation>
+<translation id="4181841719683918333">भाषा</translation>
 <translation id="4217571870635786043">डिक्टेशन</translation>
 <translation id="4261870227682513959">सूचना सेटिंग्ज दाखवा. सूचना बंद आहेत</translation>
 <translation id="4269883910223712419">या डिव्हाइसचे प्रशासन पुढील गोष्टी करू शकते:</translation>
@@ -243,6 +245,7 @@
 <translation id="5207949376430453814">मजकूर कॅरेट हायलाइट करा</translation>
 <translation id="5222676887888702881">साइन आउट करा</translation>
 <translation id="523505283826916779">प्रवेशयोग्यता सेटिंग्ज</translation>
+<translation id="5302048478445481009">भाषा</translation>
 <translation id="5313326810920013265">ब्लूटूथ सेटिंग्ज</translation>
 <translation id="5331975486040154427">USB-C डिव्‍हाइस (डाव्या बाजूचे मागील पोर्ट)</translation>
 <translation id="5379115545237091094">खूप जास्त प्रयत्न</translation>

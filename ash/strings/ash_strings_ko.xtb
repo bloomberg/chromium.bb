@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">멀티 로그인에는 계정을 <ph name="MULTI_PROFILE_USER_LIMIT" />개까지만 사용할 수 있습니다.</translation>
 <translation id="3154351730702813399">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{기기 1개에 연결됨}other{기기 #개에 연결됨}}</translation>
+<translation id="32244657276328332">네트워크에 연결되어 있지 않음</translation>
 <translation id="3236488194889173876">사용할 수 있는 모바일 네트워크 없음</translation>
 <translation id="3255483164551725916">무엇을 할 수 있어?</translation>
 <translation id="3294437725009624529">게스트</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{앱 1개에서 사용 중지됨}other{앱 #개에서 사용 중지됨}}</translation>
 <translation id="4072264167173457037">신호 보통</translation>
 <translation id="4146833061457621061">음악을 틀어 줘</translation>
+<translation id="4181841719683918333">언어</translation>
 <translation id="4217571870635786043">음성기록</translation>
 <translation id="4261870227682513959">알림 설정을 표시합니다. 알림이 사용 중지되어 있습니다.</translation>
 <translation id="4269883910223712419">이 기기의 관리자는 다음과 같은 작업을 할 수 있습니다.</translation>
@@ -243,6 +245,7 @@
 <translation id="5207949376430453814">텍스트 캐럿 강조표시</translation>
 <translation id="5222676887888702881">로그아웃</translation>
 <translation id="523505283826916779">접근성 설정</translation>
+<translation id="5302048478445481009">언어</translation>
 <translation id="5313326810920013265">블루투스 설정</translation>
 <translation id="5331975486040154427">USB-C 기기(좌측 후면 포트)</translation>
 <translation id="5379115545237091094">시도 횟수가 너무 많음</translation>

@@ -166,7 +166,6 @@
     En la próxima pantalla, envía un comentario para ayudarnos a solucionar este problema.</translation>
 <translation id="1217668622537098248">Volver al clic con el botón izquierdo después de la acción</translation>
 <translation id="121783623783282548">Las contraseñas no coinciden.</translation>
-<translation id="1219533395013150448">Tu Asistente usa estas grabaciones para crear tu modelo de voz, que se almacena en tu dispositivo. Borra o conserva el modelo en la configuración del Asistente. En los Controles de actividad de Google, podrás ver o borrar los comandos de voz.</translation>
 <translation id="122082903575839559">Algoritmo de firma del certificado</translation>
 <translation id="1221024147024329929">PKCS N. º 1 MD2 con encriptación RSA</translation>
 <translation id="1221825588892235038">Solo selección</translation>
@@ -1488,7 +1487,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> desea conectarse</translation>
 <translation id="3274763671541996799">Has activado el modo de pantalla completa.</translation>
 <translation id="3275778913554317645">Abrir como ventana</translation>
-<translation id="3278877214895457897">Cuando tu Chromebook esté configurada, presiona el botón del Asistente o di "Ok Google" para obtener ayuda en cualquier momento.</translation>
 <translation id="3279230909244266691">Este proceso puede demorar unos minutos. Se está iniciando la máquina virtual.</translation>
 <translation id="3279741024917655738">Activar opción de mostrar los videos en pantalla completa</translation>
 <translation id="3280237271814976245">Gu&amp;ardar como...</translation>
@@ -1677,7 +1675,6 @@
 <translation id="3550915441744863158">Debido a que Chrome se actualiza automáticamente, siempre tendrás la versión más reciente</translation>
 <translation id="3551320343578183772">Cerrar pestaña</translation>
 <translation id="3552780134252864554">Borrar al salir</translation>
-<translation id="3553146918065661815">Mostrar una advertencia antes de salir con ⌘Q</translation>
 <translation id="3555812735919707620">Eliminar extensión</translation>
 <translation id="3556000484321257665">Tu motor de búsqueda se cambió a <ph name="URL" />.</translation>
 <translation id="3559262020195162408">No se pudo instalar la política en el dispositivo.</translation>
@@ -1753,7 +1750,6 @@
 <translation id="3654045516529121250">Leer la configuración de accesibilidad</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tiene acceso permanente a un archivo.}other{Tiene acceso permanente a # archivos.}}</translation>
 <translation id="3660234220361471169">No es de confianza</translation>
-<translation id="3661054927247347545">La certificación de acceso no es válida. La ventana se cerrará en <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Ícono de extensión</translation>
 <translation id="3665589677786828986">Chrome detectó que otro programa dañó algunas opciones de configuración, por lo que la restableció a los valores predeterminados.</translation>
 <translation id="3668570675727296296">Configuración de idiomas</translation>
@@ -2886,7 +2882,6 @@
 <translation id="5434065355175441495">PKCS N. º 1, Encriptación RSA</translation>
 <translation id="5436492226391861498">Esperando túnel proxy...</translation>
 <translation id="5436510242972373446">Buscar <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Todas las ventanas del navegador se cerrarán pronto de manera automática sin acceder a la cuenta.</translation>
 <translation id="5438224778284622050">¿Borrar los archivos sin conexión?</translation>
 <translation id="544083962418256601">Crear accesos directos...</translation>
 <translation id="5442228125690314719">Se produjo un error al crear la imagen de disco. Vuelve a intentarlo.</translation>
@@ -3618,7 +3613,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Acceder ahora</translation>
 <translation id="6527303717912515753">Compartir</translation>
 <translation id="6528513914570774834">Permitir que otros usuarios de este dispositivo usen esta red</translation>
 <translation id="652948702951888897">Historial de Chrome</translation>
@@ -4087,7 +4081,6 @@
 <translation id="7256710573727326513">Abrir en una pestaña</translation>
 <translation id="725758059478686223">Servicio de impresión</translation>
 <translation id="7257666756905341374">Leer los datos que copias y pegas</translation>
-<translation id="7258619945375359543">Permitir que el Asistente proporcione sugerencias basadas en lo que tienes en tu pantalla</translation>
 <translation id="7258697411818564379">Se agregó tu PIN</translation>
 <translation id="7262004276116528033">El servicio de acceso a la cuenta está alojado en <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Cerrar pestañas</translation>
@@ -4851,7 +4844,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8438566539970814960">Mejorar las búsquedas y la navegación</translation>
 <translation id="8439506636278576865">Ofrecer la traducción de páginas en este idioma</translation>
 <translation id="8440630305826533614">Apps de Linux</translation>
-<translation id="8446474770554547328">Cuando grabas "Ok Google" 3 veces, se crea tu modelo de voz, que se almacena en tu dispositivo. Borra o vuelve a entrenar el modelo en la configuración del Asistente. En los Controles de actividad de Google, puedes ver o borrar los comandos de voz.</translation>
 <translation id="8446884382197647889">Más información</translation>
 <translation id="8447409163267621480">Incluir Ctrl o Alt</translation>
 <translation id="8448729345478502352">Aumenta o reduce el tamaño de los elementos en tu pantalla</translation>

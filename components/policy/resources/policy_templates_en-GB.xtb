@@ -3275,11 +3275,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8970205333161758602">Suppress the <ph name="PRODUCT_FRAME_NAME" /> turn-down prompt</translation>
 <translation id="8976248126101463034">Allow gnubby authentication for remote access hosts</translation>
 <translation id="8976531594979650914">Use System Default Printer as Default</translation>
-<translation id="898520305112996948">Allows you to set a list of URL patterns that specify which sites will automatically be granted permission to access a USB device with the given vendor and product IDs. Each item in the list must contain both devices and URL patterns in order for the policy to be valid. Each item in devices can contain a vendor ID and product ID field. Any ID that is omitted is treated as a wildcard with one exception, and that exception is that a product ID cannot be specified without a vendor ID also being specified. Otherwise, the policy will not be valid. Invalid policy values are ignored.
-
-        If this policy is left not set, the global default value will be used for all sites either from the 'DefaultWebUsbGuardSetting' policy if it is set, or the user's personal configuration otherwise.
-
-        URL patterns in this policy should not clash with the ones configured via WebUsbBlockedForUrls. If there is a clash, this policy will take precedence over WebUsbBlockedForUrls and WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Do not allow any site to show images</translation>
 <translation id="9012851181124311976">Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Fingerprint of password will be captured on these URLs and used for password reuse detection.
       In order for <ph name="PRODUCT_NAME" /> to correctly capture password fingerprints, please make sure that your login pages follow the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

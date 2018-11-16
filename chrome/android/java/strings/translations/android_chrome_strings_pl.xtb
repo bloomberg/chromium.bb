@@ -203,7 +203,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="2436117022029368436">Wysyła do Google dane, które pomagają ulepszać Chrome i funkcje przeglądania</translation>
 <translation id="2440823041667407902">Dostęp do lokalizacji</translation>
 <translation id="2450083983707403292">Czy chcesz jeszcze raz rozpocząć pobieranie pliku <ph name="FILE_NAME" />?</translation>
-<translation id="2476578072172137802">Ustawienia witryny</translation>
+<translation id="2476578072172137802">Ustawienia witryn</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
 <translation id="2496180316473517155">Historia przeglądania</translation>
 <translation id="2498359688066513246">Pomoc i opinie</translation>
@@ -402,7 +402,7 @@ Jeśli chcesz dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d zakładka}few{%1$d zakładki}many{%1$d zakładek}other{%1$d zakładki}}</translation>
 <translation id="4149994727733219643">Uproszczony widok stron internetowych</translation>
 <translation id="4159800535322890630">Blokuj witrynom dostęp do czujników</translation>
-<translation id="4165986682804962316">Ustawienia witryn</translation>
+<translation id="4165986682804962316">Ustawienia witryny</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="4179980317383591987">Wykorzystano <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Języki</translation>
@@ -734,7 +734,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6567212464587185774">Przesyłaj nawet o 60% mniej danych i przyspiesz internet.</translation>
 <translation id="6573096386450695060">Zawsze zezwalaj</translation>
 <translation id="6573431926118603307">Tutaj wyświetlą się karty otwarte w Chrome na innych urządzeniach.</translation>
-<translation id="6575643671698722332">Błąd resetowania. Upewnij się, że urządzenie jest online, i spróbuj ponownie.</translation>
 <translation id="6583199322650523874">Dodaj bieżącą stronę do zakładek</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Wersja na komputer</translation>
@@ -859,7 +858,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7475192538862203634">Jeśli często widzisz ten komunikat, przeczytaj te <ph name="BEGIN_LINK" />wskazówki<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Nie znaleziono karty SD. Może brakować niektórych Twoich plików.</translation>
-<translation id="748127970106343339">Potwierdź usunięcie z urządzenia danych logowania</translation>
 <translation id="7481312909269577407">Dalej</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (zaktualizowana <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Pokazuj hasła</translation>
@@ -1010,9 +1008,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8609465669617005112">W górę</translation>
 <translation id="8616006591992756292">Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Otworzyć sugerowany URL określony w pobranych materiałach?</translation>
-<translation id="862875433388403934">Odtwarzanie pobranych treści (filmów, muzyki itp.) w innych aplikacjach może wymagać uzyskania licencji na podstawie nowych danych logowania urządzenia.
-
-Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treści.</translation>
 <translation id="8636825310635137004">Aby korzystać z kart ze swoich innych urządzeń, włącz synchronizację</translation>
 <translation id="8641930654639604085">Próbuj blokować strony dla dorosłych</translation>
 <translation id="8662811608048051533">Wylogowuje z większości stron internetowych.</translation>
@@ -1070,7 +1065,6 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB pobranych plików</translation>
 <translation id="9100505651305367705">Proponuj wyświetlanie artykułów w widoku uproszczonym, gdy jest obsługiwany</translation>
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
-<translation id="9133515669113036225">Zresetuj dane logowania na urządzeniu</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9139068048179869749">Pytaj, zanim zezwolisz stronom na wysyłanie powiadomień (zalecane)</translation>

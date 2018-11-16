@@ -398,6 +398,7 @@
 <translation id="4058278702844053247">একটি পৃষ্ঠা লোড হচ্ছে</translation>
 <translation id="4065205963140826639">‘পরবর্তী’ বোতাম খুঁজতে সার্চ + ডান তীরচিহ্ন ব্যবহার করে দেখুন, এটা ক্লিক করার জন্য সার্চ + স্পেস টিপুন।</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{টিলড চিহ্ন}one{#টি টিলড চিহ্ন}other{#টি টিলড চিহ্ন}}</translation>
+<translation id="4086311032171418648">শিক্ষণ মোড থামানো হচ্ছে</translation>
 <translation id="409334809956508737">পূর্ববর্তী বস্তু</translation>
 <translation id="4099274309791143834">উপমেনুর সাথে</translation>
 <translation id="4101527861445851766">একটি টিকচিহ্ন দেওয়া চেকবাক্স</translation>
@@ -500,6 +501,7 @@
 <translation id="4877261390094455813">একটি সার্চ ক্যোয়ারী লিখুন৷</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">অভ্যন্তরীণ লিঙ্ক</translation>
+<translation id="4915087353619183190">শিক্ষণ মোড শুরু করা হচ্ছে। এটির ক্রিয়াকলাপ সম্বন্ধে জানার জন্য qwerty কী, রিফ্রেশ করা যায় এমন ব্রেইল কী বা স্পর্শের ইঙ্গিত টিপুন। বেরিয়ে আসার জন্য কন্ট্রোলের সাথে w অথবা escape কী টিপুন।</translation>
 <translation id="492295894462528572">মুখবন্ধ</translation>
 <translation id="495170559598752135">ক্রিয়াসমূহ</translation>
 <translation id="4953585991029886728">পাঠ্য সম্পাদনা করুন</translation>

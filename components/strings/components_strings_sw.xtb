@@ -146,6 +146,7 @@
 <translation id="1839551713262164453">Imeshindwa kuthibitisha thamani za sera kutokana na hitilafu</translation>
 <translation id="1840414022444569775">Nambari hii ya kadi tayari imetumika</translation>
 <translation id="1842969606798536927">Lipa</translation>
+<translation id="1866450167992311397">Tumia kadi zako katika sehemu nyingi</translation>
 <translation id="1871208020102129563">Proksi imewekwa ili kutumia seva za proksi thabiti, siyo URL ya hati .pac.</translation>
 <translation id="1871284979644508959">Lazima sehemu hii ijazwe</translation>
 <translation id="1874765382782611674">Kadi za Malipo Zinazokubaliwa</translation>
@@ -704,6 +705,7 @@
 <translation id="5720705177508910913">Mtumiaji wa sasa</translation>
 <translation id="5730040223043577876">Chrome inapendekeza ubadilishe nenosiri lako ikiwa ulilitumia tena kwenye tovuti zingine.</translation>
 <translation id="5732392974455271431">Wazazi wako wanaweza kukuondolea kizuizi</translation>
+<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Tutahifadhi maelezo ya kadi hii pamoja na anwani ya kutuma bili kwenye Akaunti yako ya Google ili uweze kulipa haraka unapokuwa umeingia katika akaunti}other{Tutahifadhi maelezo ya kadi hizi pamoja na anwani za kutuma bili kwenye Akaunti yako ya Google ili uweze kulipa haraka unapokuwa umeingia katika akaunti}}</translation>
 <translation id="5763042198335101085">Andika anwani sahihi ya barua pepe</translation>
 <translation id="5765072501007116331">Chagua mahali ili uone njia za kusafirisha na mahitaji</translation>
 <translation id="5770114862687765385">Inaonekana faili imeharibika. Bofya kitufe cha 'Pakia upya' ili uanzishe upya kipindi.</translation>
@@ -785,6 +787,7 @@
 <translation id="6337133576188860026">Huongeza nafasi isiyozidi <ph name="SIZE" />. Baadhi ya tovuti huenda zikapakia polepole zaidi utakapozivinjari tena.</translation>
 <translation id="6337534724793800597">Chuja sera kwa jina</translation>
 <translation id="6358450015545214790">Je, hii inamaanisha nini?</translation>
+<translation id="635989537247018238">Katika hatua inayofuata, unaweza kuchagua kadi ambazo ungependa kuhifadhi</translation>
 <translation id="6383221683286411806">Huenda ukatozwa gharama.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{Pendekezo jingine 1}other{Mapendekezo mengine #}}</translation>
 <translation id="6387754724289022810">Ili ulipe kwa haraka wakati ujao, hifadhi anwani ya kutuma bili na maelezo ya kadi yako kwenye Akaunti yako ya Google na kwenye kifaa hiki.</translation>

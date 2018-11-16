@@ -3066,11 +3066,6 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="8970205333161758602">Eliminazione del messaggio di richiesta di turndown di <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Consenti l'autenticazione Gnubby per gli host di accesso remoto</translation>
 <translation id="8976531594979650914">Usa stampante di sistema come predefinita</translation>
-<translation id="898520305112996948">Consente di impostare un elenco di pattern URL che specificano i siti a cui sarà consentito automaticamente di accedere a un dispositivo USB usando gli ID fornitore e prodotto forniti. Ogni voce nell'elenco deve contenere sia i dispositivi sia i pattern URL affinché la norma sia valida. Ogni elemento nei dispositivi può contenere un campo ID fornitore e un campo ID prodotto. Gli ID omessi vengono considerati come caratteri jolly con eccezione, ovvero non sarà possibile specificare un ID prodotto senza che venga specificato anche un ID fornitore. In caso contrario, la norma non sarà valida. I valori non validi della norma vengono ignorati.
-
-        Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultWebUsbGuardSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.
-
-        I pattern URL di questa norma non devono essere in conflitto con quelli configurati tramite la norma WebUsbBlockedForUrls. In caso di conflitto, questa norma avrà precedenza su WebUsbBlockedForUrls e WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
 <translation id="9012851181124311976">Configura l'elenco di URL di accesso aziendali (solo schemi HTTP e HTTPS). L'impronta digitale della password sarà acquisita su questi URL e utilizzata successivamente per il rilevamento del riutilizzo della password.
       Affinché <ph name="PRODUCT_NAME" /> possa acquisire correttamente le impronte digitali delle password, assicurati che le pagine di accesso rispettino le linee guida all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

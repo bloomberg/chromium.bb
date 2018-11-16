@@ -166,7 +166,6 @@
     Sa susunod na screen, mangyaring magpadala ng feedback upang tulungan kaming ayusin ang isyu.</translation>
 <translation id="1217668622537098248">I-revert sa pag-left click pagkatapos ng pagkilos</translation>
 <translation id="121783623783282548">Hindi magkatugma ang mga password.</translation>
-<translation id="1219533395013150448">Ginagamit ng iyong Assistant ang mga recording na ito para gumawa ng voice model mo, na sino-store sa iyong device. I-delete o panatilihin ang model sa mga setting ng assistant. Tingnan o i-delete ang mga command gamit ang boses sa iyong mga kontrol ng aktibidad sa Google.</translation>
 <translation id="122082903575839559">Certificate Signature Algorithm</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 na May RSA Encryption</translation>
 <translation id="1221825588892235038">Pinili lang</translation>
@@ -617,7 +616,7 @@
 <translation id="1880905663253319515">Tanggalin ang certificate na "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Payagan ang mga site na hilinging maging default na mga handler para sa mga protocol (inirerekomenda)</translation>
 <translation id="1887442540531652736">Error sa pag-sign in</translation>
-<translation id="1887597546629269384">Sabihing muli ang "Hey Google"</translation>
+<translation id="1887597546629269384">Sabihin ulit ang "Hey Google"</translation>
 <translation id="1887850431809612466">Rebisyon ng hardware</translation>
 <translation id="1889984860246851556">Buksan ang mga setting ng proxy</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903">Gustong kumonekta ng <ph name="ORIGIN" /></translation>
 <translation id="3274763671541996799">Nag-full screen ka.</translation>
 <translation id="3275778913554317645">Buksan bilang window</translation>
-<translation id="3278877214895457897">Kapag na-set up ang iyong Chromebook, pindutin ang button ng Assistant o sabihin ang "Ok Google" para humingi ng tulong sa Assistant mo anumang oras.</translation>
 <translation id="3279230909244266691">Maaaring abutin nang ilang minuto ang prosesong ito. Sinisimulan ang virtual machine.</translation>
 <translation id="3279741024917655738">Ipakita ang mga fullscreen video sa</translation>
 <translation id="3280237271814976245">I-save &amp;bilang...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Awtomatikong nag-a-update ang Chrome upang palagi kang mayroon ng pinakabagong bersyon</translation>
 <translation id="3551320343578183772">Isara ang Tab</translation>
 <translation id="3552780134252864554">Na-clear sa Paglabas</translation>
-<translation id="3553146918065661815">Magpakita ng babala bago lumabas sa ⌘Q</translation>
 <translation id="3555812735919707620">Alisin ang extension</translation>
 <translation id="3556000484321257665">Ginawang <ph name="URL" /> ang iyong search engine.</translation>
 <translation id="3559262020195162408">Hindi na-install ang patakaran sa device.</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">Basahin ang iyong mga setting ng pagiging naa-access</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{May permanenteng access ito sa isang file.}one{May permanenteng access ito sa # file.}other{May permanenteng access ito sa # na file.}}</translation>
 <translation id="3660234220361471169">Hindi pinagkakatiwalaan</translation>
-<translation id="3661054927247347545">Di-wasto ang certification ng pag-sign in, magsasara ang window sa loob ng <ph name="MINUTES" /> : <ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Icon ng Extension</translation>
 <translation id="3665589677786828986">Natunton ng Chrome na ilan sa iyong mga setting ay nasira ng isa pang program at ni-reset ang mga ito sa kanilang mga orihinal na default.</translation>
 <translation id="3668570675727296296">Mga setting ng wika</translation>
@@ -2889,7 +2885,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA Encryption</translation>
 <translation id="5436492226391861498">Naghihintay para sa proxy tunnel...</translation>
 <translation id="5436510242972373446">Hanapan ang <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Awtomatikong magsasara ang lahat ng window ng browser nang hindi nagsa-sign in.</translation>
 <translation id="5438224778284622050">Gusto mo bang i-delete ang mga offline na file?</translation>
 <translation id="544083962418256601">Lumikha ng mga shortcut...</translation>
 <translation id="5442228125690314719">Nagkaroon ng error sa paggawa ng larawan ng disk. Pakisubukang muli.</translation>
@@ -3621,7 +3616,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Mag-sign in ngayon</translation>
 <translation id="6527303717912515753">Ibahagi</translation>
 <translation id="6528513914570774834">Payagan ang iba pang user ng device na ito na gamitin ang network na ito</translation>
 <translation id="652948702951888897">History sa Chrome</translation>
@@ -4090,7 +4084,6 @@
 <translation id="7256710573727326513">Buksan sa isang tab</translation>
 <translation id="725758059478686223">Serbisyo sa Pag-print</translation>
 <translation id="7257666756905341374">Basahin ang data na iyong kinokopya at pine-paste</translation>
-<translation id="7258619945375359543">Payagan ang iyong Assistant na magbigay ng mga suhestyon batay sa kung ano ang nasa screen mo</translation>
 <translation id="7258697411818564379">Naidagdag ang iyong PIN</translation>
 <translation id="7262004276116528033">Hino-host ng <ph name="SAML_DOMAIN" /> ang serbisyo sa pag-sign in</translation>
 <translation id="7268365133021434339">Isara ang Mga Tab</translation>
@@ -4854,7 +4847,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8439506636278576865">Mag-alok na magsalin ng mga page sa wikang ito
 </translation>
 <translation id="8440630305826533614">Mga Linux app</translation>
-<translation id="8446474770554547328">Kapag nag-record ng "Ok Google" nang 3 beses, magagawa ang iyong voice model na iso-store sa device mo. I-delete o panatilihin ang model sa mga setting ng assistant. Tingnan o i-delete ang mga command gamit ang boses sa iyong mga kontrol ng aktibidad sa Google.</translation>
 <translation id="8446884382197647889">Matuto nang Higit Pa</translation>
 <translation id="8447409163267621480">Isama ang Ctrl o Alt</translation>
 <translation id="8448729345478502352">Paliitin o palakihin ang mga item sa iyong screen</translation>

@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">Maaari ka lang magkaroon ng hanggang <ph name="MULTI_PROFILE_USER_LIMIT" /> (na) account sa maraming pag-sign in.</translation>
 <translation id="3154351730702813399">Maaaring subaybayan ng admin ng device ang iyong aktibidad sa pag-browse.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Nakakonekta sa isang device}one{Nakakonekta sa # device}other{Nakakonekta sa # na device}}</translation>
+<translation id="32244657276328332">Hindi nakakonekta sa network</translation>
 <translation id="3236488194889173876">Walang available na mobile network</translation>
 <translation id="3255483164551725916">Ano'ng maaari mong gawin?</translation>
 <translation id="3294437725009624529">Bisita</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Naka-off para sa isang app}one{Naka-off para sa # app}other{Naka-off para sa # na app}}</translation>
 <translation id="4072264167173457037">Katamtaman ang signal</translation>
 <translation id="4146833061457621061">Mag-play ng musika</translation>
+<translation id="4181841719683918333">Mga Wika</translation>
 <translation id="4217571870635786043">Pagdidikta</translation>
 <translation id="4261870227682513959">Ipakita ang mga setting ng notification. Naka-off ang mga notification</translation>
 <translation id="4269883910223712419">May kakayahan ang admin ng device na ito na:</translation>
@@ -243,6 +245,7 @@
 <translation id="5207949376430453814">I-highlight ang text caret</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="523505283826916779">Mga setting ng accessibility</translation>
+<translation id="5302048478445481009">Wika</translation>
 <translation id="5313326810920013265">Mga setting ng Bluetooth</translation>
 <translation id="5331975486040154427">USB-C device (port sa kaliwang bahagi sa likod)</translation>
 <translation id="5379115545237091094">Masyadong maraming pagtatangka</translation>

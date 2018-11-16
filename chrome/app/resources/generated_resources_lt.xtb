@@ -166,7 +166,6 @@
     Kitame ekrane atsiųskite atsiliepimą, kad padėtumėte išspręsti problemą.</translation>
 <translation id="1217668622537098248">Grąžinti kairįjį paspaudimą po veiksmo</translation>
 <translation id="121783623783282548">Slaptažodžiai neatitinka.</translation>
-<translation id="1219533395013150448">Padėjėjas naudoja šiuos įrašus balso modeliui kurti, kuris saugomas jūsų įrenginyje. Ištrinkite arba palikite modelį Padėjėjo nustatymuose. Peržiūrėkite arba ištrinkite komandas balsu naudodami „Google“ veiklos valdiklius.</translation>
 <translation id="122082903575839559">Sertifikato parašo algoritmas</translation>
 <translation id="1221024147024329929">PKCS Nr. 1 MD2 su RSA šifruote</translation>
 <translation id="1221825588892235038">Tik pasirinkimas</translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> nori prisijungti</translation>
 <translation id="3274763671541996799">Naudojate viso ekrano režimą.</translation>
 <translation id="3275778913554317645">Atidaryti kaip langą</translation>
-<translation id="3278877214895457897">Kai „Chromebook“ nustatytas, norėdami bet kuriuo metu gauti pagalbos iš Padėjėjo, paspauskite Padėjėjo mygtuką arba pasakykite „Ok Google“.</translation>
 <translation id="3279230909244266691">Šis procesas gali užtrukti kelias minutes. Paleidžiamas virtualus įrenginys.</translation>
 <translation id="3279741024917655738">Nustatymas „Rodyti vaizdo įrašus viso ekrano režimu“ įjungtas</translation>
 <translation id="3280237271814976245">Išsaugoti &amp;kaip...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">„Chrome“ atnaujinama automatiškai, todėl visada turite naujausią versiją</translation>
 <translation id="3551320343578183772">Uždaryti skirtuką</translation>
 <translation id="3552780134252864554">Išvalyti išeinant</translation>
-<translation id="3553146918065661815">Rodyti įspėjimą, prieš išeinant paspaudus ⌘Q</translation>
 <translation id="3555812735919707620">Pašalinti plėtinį</translation>
 <translation id="3556000484321257665">Paieškos variklis pakeistas į <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Nepavyko įrenginyje įdiegti politikos.</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">Skaitykite pasiekiamumo nustatymus</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Suteikta nuolatinė prieiga prie vieno failo.}one{Suteikta nuolatinė prieiga prie # failo.}few{Suteikta nuolatinė prieiga prie # failų.}many{Suteikta nuolatinė prieiga prie # failo.}other{Suteikta nuolatinė prieiga prie # failų.}}</translation>
 <translation id="3660234220361471169">Nepatikima</translation>
-<translation id="3661054927247347545">Prisijungimo sertifikatas negalioja. Langas bus uždarytas po <ph name="MINUTES" /> min. <ph name="SECONDS" /> sek.</translation>
 <translation id="3664511988987167893">Plėtinio piktograma</translation>
 <translation id="3665589677786828986">„Chrome“ aptiko, kad kai kuriuos nustatymus sugadino kita programa, ir nustatė juos iš naujo į pirminius numatytuosius nustatymus.</translation>
 <translation id="3668570675727296296">Kalbos nustatymai</translation>
@@ -2889,7 +2885,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5434065355175441495">PKCS Nr. 1 RSA šifruotė</translation>
 <translation id="5436492226391861498">Laukiama, kol bus nustatytas tarpinio serverio tunelis...</translation>
 <translation id="5436510242972373446">Ieškoti <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Visi naršyklės langai netrukus bus automatiškai uždaryti neprisijungus.</translation>
 <translation id="5438224778284622050">Ištrinti neprisijungus pasiekiamus failus?</translation>
 <translation id="544083962418256601">Kurti sparčiuosius klavišus...</translation>
 <translation id="5442228125690314719">Kuriant disko vaizdą įvyko klaida. Bandykite dar kartą.</translation>
@@ -3622,7 +3617,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Prisijungti dabar</translation>
 <translation id="6527303717912515753">Bendrinti</translation>
 <translation id="6528513914570774834">Leisti kitiems šio įrenginio naudotojams naudoti šį tinklą</translation>
 <translation id="652948702951888897">„Chrome“ istorija</translation>
@@ -4091,7 +4085,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7256710573727326513">Atidaryti skirtuko lape</translation>
 <translation id="725758059478686223">Spausdinimo paslauga</translation>
 <translation id="7257666756905341374">Skaityti kopijuojamus ir įklijuojamus duomenis</translation>
-<translation id="7258619945375359543">Leisti Padėjėjui teikti pasiūlymų pagal tai, kas rodoma ekrane</translation>
 <translation id="7258697411818564379">PIN kodas pridėtas</translation>
 <translation id="7262004276116528033">Ši prisijungimo paslauga priglobiama <ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">Uždaryti skirtukus</translation>
@@ -4854,7 +4847,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8438566539970814960">Tobulinti paieškas ir naršymą</translation>
 <translation id="8439506636278576865">Siūlyti versti puslapius šia kalba</translation>
 <translation id="8440630305826533614">„Linux“ programos</translation>
-<translation id="8446474770554547328">Tris kartus įrašius „Ok Google“ sukuriamas jūsų balso modelis, kuris saugomas jūsų įrenginyje. Ištrinkite arba palikite modelį Padėjėjo nustatymuose. Peržiūrėkite arba ištrinkite komandas balsu naudodami „Google“ veiklos valdiklius.</translation>
 <translation id="8446884382197647889">Sužinokite daugiau</translation>
 <translation id="8447409163267621480">Naudokite „Ctrl“ arba „Alt“</translation>
 <translation id="8448729345478502352">Padidinkite arba sumažinkite elementus ekrane</translation>

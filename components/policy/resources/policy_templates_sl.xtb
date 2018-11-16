@@ -815,7 +815,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če ta pravilnik ni nastavljen, se kot parameter ukazne vrstice posreduje samo URL.
 
-      Če je ta pravilnik nastavljen na seznam nizov, je vsak niz posredovan nadomestnemu brskalniku kot ločen paramater ukazne vrstice. V sistemu Windows so parametri združeni s presledki. V sistemih macOS in Linux lahko parameter vsebuje presledke in se še vedno obravnava kot en parameter.
+      Če je ta pravilnik nastavljen na seznam nizov, je vsak niz posredovan nadomestnemu brskalniku kot ločen parameter ukazne vrstice. V sistemu Windows so parametri združeni s presledki. V sistemih macOS in Linux lahko parameter vsebuje presledke in se še vedno obravnava kot en parameter.
 
       Če kateri element vsebuje ${url}, ga nadomesti URL strani, ki naj bo odprta.
 
@@ -1208,7 +1208,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je pravilnik omogočen, se pošiljajo omrežni paketi za spremljanje (t.i. <ph name="HEARTBEATS_TERM" />).
       Če je onemogočen ali ni nastavljen, se paketi ne pošiljajo.</translation>
 <translation id="3950239119790560549">Posodobitev omejitev časa</translation>
-<translation id="3956686688560604829">Uporaba pravilnika za sezname spletnih mest za Internet Explorer za podporo zastarelih brskalnikov.</translation>
+<translation id="3956686688560604829">Uporaba pravilnika za sezname spletnih mest za Internet Explorer za podporo starejših brskalnikov.</translation>
 <translation id="3958586912393694012">Dovoli uporabo funkcije Smart Lock</translation>
 <translation id="3963602271515417124">Če je ta pravilnik omogočen, bo za to napravo dovoljeno potrjevanje na daljavo in samodejno bo ustvarjeno potrdilo, ki bo preneseno v strežnik za upravljanje naprav.
 
@@ -3277,11 +3277,6 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
 <translation id="8970205333161758602">Ne prikaže poziva za preklop za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Dovoli preverjanje pristnosti »gnubby« za gostitelje za oddaljeni dostop</translation>
 <translation id="8976531594979650914">Uporaba sistemsko privzetega tiskalnika kot privzeti tiskalnik</translation>
-<translation id="898520305112996948">Omogoča nastavitev seznama vzorcev URL-jev, ki določajo spletna mesta, ki jim bo samodejno odobreno dovoljenje za dostop do naprave USB z danim ID-jem ponudnika storitve in izdelka. Vsak element na seznamu mora vsebovati naprave in vzorce URL-jev, če želite, da je pravilnik veljaven. Vsak element v napravah lahko vsebuje polje za ID ponudnika storitev in ID izdelka. Vsak izpuščeni ID se obravnava kot nadomestni znak z eno izjemo, in sicer to, da ID-ja izdelka ni mogoče navesti brez navajanja ID-ja ponudnika storitve. V nasprotnem primeru pravilnik ni veljaven. Neveljavne vrednosti v pravilniku so prezrte.
-
-        Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena globalna privzeta vrednost iz pravilnika »DefaultWebUsbGuardSetting«, če je nastavljen, ali iz osebnih nastavitev uporabnika.
-
-        Vzorci URL-jev v tem pravilniku ne smejo biti v nasprotju s tistimi, ki so konfigurirani v pravilniku »WebUsbBlockedForUrls«. Če pride do nasprotja, ima ta pravilnik prednost pred pravilnikoma »WebUsbBlockedForUrls« in »WebUsbAskForUrls«.</translation>
 <translation id="8992176907758534924">Nobenemu spletnemu mestu ne dovoli prikaza slik</translation>
 <translation id="9012851181124311976">Konfiguriranje seznama URL-jev prijave za poslovna okolja (samo sheme HTTP in HTTPS). Na teh URL-jih bo zajet prstni odtis gesla in uporabljen za odkrivanje vnovične uporabe enakega gesla.
       Če želite, da bo <ph name="PRODUCT_NAME" /> pravilno zajel prstne odtise gesel, poskrbite, da so strani za prijavo skladne s smernicami na naslovu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

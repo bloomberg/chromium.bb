@@ -166,7 +166,6 @@
     Nella seguente schermata, invia un feedback per aiutarci a risolvere il problema.</translation>
 <translation id="1217668622537098248">Ripristina il clic con il pulsante sinistro dopo l'azione</translation>
 <translation id="121783623783282548">Le password non coincidono.</translation>
-<translation id="1219533395013150448">L'assistente utilizza queste registrazioni per creare il tuo modello vocale, che viene memorizzato nel tuo dispositivo. Elimina o reimposta il modello nelle impostazioni dell'assistente. Visualizza o elimina i comandi vocali in Gestione attività Google.</translation>
 <translation id="122082903575839559">Algoritmo di firma certificato</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 con crittografia RSA</translation>
 <translation id="1221825588892235038">Solo selezione</translation>
@@ -1489,7 +1488,6 @@
 <translation id="3271648667212143903">Il sito <ph name="ORIGIN" /> desidera collegarsi</translation>
 <translation id="3274763671541996799">Sei passato a schermo intero.</translation>
 <translation id="3275778913554317645">Apri come finestra</translation>
-<translation id="3278877214895457897">Dopo aver configurato il Chromebook, premi il pulsante Assistente o dì "Ok Google" per farti aiutare dall'assistente in qualsiasi momento.</translation>
 <translation id="3279230909244266691">Questa procedura potrebbe richiedere alcuni minuti. Avvio della macchina virtuale in corso.</translation>
 <translation id="3279741024917655738">Mostra video a schermo intero su</translation>
 <translation id="3280237271814976245">Salva con &amp;nome...</translation>
@@ -1676,7 +1674,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3550915441744863158">Chrome si aggiorna automaticamente per consentirti di avere sempre la versione più recente</translation>
 <translation id="3551320343578183772">Chiudi scheda</translation>
 <translation id="3552780134252864554">Cancellato all'uscita</translation>
-<translation id="3553146918065661815">Mostra un avviso prima di uscire con ⌘Q</translation>
 <translation id="3555812735919707620">Rimuovi estensione</translation>
 <translation id="3556000484321257665">Motore di ricerca sostituito con: <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Impossibile installare le norme sul dispositivo.</translation>
@@ -1752,7 +1749,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3654045516529121250">Lettura delle impostazioni di accessibilità</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ha accesso permanente a un file.}other{Ha accesso permanente a # file.}}</translation>
 <translation id="3660234220361471169">Non attendibile</translation>
-<translation id="3661054927247347545">Certificato di accesso non valido; la finestra verrà chiusa tra <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Icona dell'estensione</translation>
 <translation id="3665589677786828986">Chrome ha rilevato che alcune impostazioni sono state danneggiate da un altro programma e le ha ripristinate con i valori originali predefiniti.</translation>
 <translation id="3668570675727296296">Impostazioni lingua</translation>
@@ -2884,7 +2880,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5434065355175441495">PKCS #1 con crittografia RSA</translation>
 <translation id="5436492226391861498">In attesa del tunnel proxy...</translation>
 <translation id="5436510242972373446">Cerca su <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">A breve verranno chiuse automaticamente tutte le finestre del browser senza accesso.</translation>
 <translation id="5438224778284622050">Eliminare i file offline?</translation>
 <translation id="544083962418256601">Crea scorciatoie...</translation>
 <translation id="5442228125690314719">Errore durante la creazione dell'immagine disco. Riprova.</translation>
@@ -3616,7 +3611,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Accedi adesso</translation>
 <translation id="6527303717912515753">Condividi</translation>
 <translation id="6528513914570774834">Consenti ad altri utenti del dispositivo di usare questa rete</translation>
 <translation id="652948702951888897">Cronologia di Chrome</translation>
@@ -4085,7 +4079,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7256710573727326513">Apri in una scheda</translation>
 <translation id="725758059478686223">Servizio di stampa</translation>
 <translation id="7257666756905341374">Lettura dei dati copiati e incollati</translation>
-<translation id="7258619945375359543">Permetti all'assistente di darti suggerimenti basati sui contenuti dello schermo</translation>
 <translation id="7258697411818564379">PIN aggiunto</translation>
 <translation id="7262004276116528033">Questo servizio di accesso è in hosting su <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Chiudi schede</translation>
@@ -4845,7 +4838,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8438566539970814960">Migliora le ricerche e le attività di navigazione</translation>
 <translation id="8439506636278576865">Proponi di tradurre pagine in questa lingua</translation>
 <translation id="8440630305826533614">App Linux</translation>
-<translation id="8446474770554547328">Se registri "Ok Google" tre volte, viene creato il tuo modello vocale, memorizzato nel tuo dispositivo. Elimina o riqualifica il modello nelle impostazioni dell'assistente. Visualizza o elimina i comandi vocali in Gestione attività Google.</translation>
 <translation id="8446884382197647889">Ulteriori informazioni</translation>
 <translation id="8447409163267621480">Includi CTRL o ALT</translation>
 <translation id="8448729345478502352">Ingrandisci o rimpicciolisci gli elementi sullo schermo</translation>

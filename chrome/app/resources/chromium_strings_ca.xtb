@@ -142,7 +142,6 @@
 <translation id="5862307444128926510">Us donem la benvinguda a Chromium</translation>
 <translation id="5877064549588274448">El canal ha canviat. Reinicieu el dispositiu perquè s'apliquin els canvis.</translation>
 <translation id="5895138241574237353">Reinicia</translation>
-<translation id="5902536751647951209">El certificat d'autenticació ha fallat. Torna a iniciar la sessió a Chromium o contacta amb l'administrador per obtenir més informació. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Gairebé heu acabat. Reinicieu el dispositiu per completar l'actualització.</translation>
 <translation id="5987687638152509985">Actualitza Chromium per iniciar la sincronització</translation>
 <translation id="6013050204643758987">Chromium OS és possible gràcies a <ph name="BEGIN_LINK_CROS_OSS" />programari lliure<ph name="END_LINK_CROS_OSS" /> addicional, com ara <ph name="BEGIN_LINK_LINUX_OSS" />Linux (versió beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -222,7 +221,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7745317241717453663">Amb aquesta acció, se suprimiran les teves dades de navegació d'aquest dispositiu. Per recuperar les teves dades més endavant, inicia la sessió a Chromium com a <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">L'instal·lador no ha pogut crear un directori temporal. Comprova que hi ha espai lliure al disc i que tens permís per instal·lar el programari.</translation>
 <translation id="7773960292263897147">Advertiment: Chromium no pot evitar que les extensions registrin l'historial de navegació. Per desactivar aquesta extensió en mode d'incògnit, desmarca aquesta opció.</translation>
-<translation id="7774736947049807614">El certificat d'autenticació ha fallat. Torna a iniciar la sessió a Chromium com a <ph name="USER_NAME" /> o contacta amb l'administrador per obtenir més informació. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium no s'ha pogut actualitzar a la darrera versió, així que no pots gaudir de les noves funcions ni de les correccions de seguretat.</translation>
 <translation id="7901117350626490574">Hi ha una actualització de Chromium disponible i s'aplicarà tan aviat com el tornis a iniciar.</translation>

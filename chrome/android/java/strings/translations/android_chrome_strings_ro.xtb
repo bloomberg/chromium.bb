@@ -734,7 +734,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6567212464587185774">Folosește cu până la 60% mai puține date și navighează mai rapid pe web.</translation>
 <translation id="6573096386450695060">Permite întotdeauna</translation>
 <translation id="6573431926118603307">Filele deschise în Chrome pe alte dispozitive vor apărea aici.</translation>
-<translation id="6575643671698722332">Nu s-a resetat. Asigură-te că ești online și încearcă din nou.</translation>
 <translation id="6583199322650523874">Marchează pagina curentă</translation>
 <translation id="6584721918629302382">RA</translation>
 <translation id="6593061639179217415">Versiune site desktop</translation>
@@ -859,7 +858,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7475192538862203634">Dacă acest mesaj apare frecvent, încearcă următoarele <ph name="BEGIN_LINK" />sugestii<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">Nu s-a găsit cardul SD. Este posibil ca unele fișiere să lipsească.</translation>
-<translation id="748127970106343339">Confirmă ștergerea datelor de conectare de pe dispozitiv</translation>
 <translation id="7481312909269577407">Înainte</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Actualizată la <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Afișează parolele</translation>
@@ -1010,9 +1008,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8609465669617005112">Mutați mai sus</translation>
 <translation id="8616006591992756292">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">Deschizi adresa URL sugerată specificată în conținutul descărcat?</translation>
-<translation id="862875433388403934">Conținutul (filme, muzică etc.) descărcat în alte aplicații nu va mai fi redat decât după ce aplicațiile obțin din nou licențe pe baza unor date de conectare noi pe dispozitiv.
-
-Pentru licențe noi, conectează-te la internet și redă conținutul descărcat.</translation>
 <translation id="8636825310635137004">Pentru a accesa filele de pe alte dispozitive, activează sincronizarea.</translation>
 <translation id="8641930654639604085">Încearcă să blochezi site-urile destinate adulților</translation>
 <translation id="8662811608048051533">Te deconectează de pe majoritatea site-urilor.</translation>
@@ -1070,7 +1065,6 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB pentru descărcări</translation>
 <translation id="9100505651305367705">Oferă afișarea simplificată a articolelor, dacă este acceptată</translation>
 <translation id="9100610230175265781">Este necesară o expresie de acces</translation>
-<translation id="9133515669113036225">Resetează datele de conectare de pe dispozitiv</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9139068048179869749">Întreabă înainte de a permite site-urilor să trimită notificări (recomandat)</translation>

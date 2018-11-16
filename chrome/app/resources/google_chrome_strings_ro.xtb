@@ -214,7 +214,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7242029209006116544">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chrome existente. <ph name="LEARN_MORE" /></translation>
 <translation id="7296210096911315575">Informații importante cu privire la folosire și siguranță</translation>
 <translation id="7308322188646931570">Pentru a descărca fișiere, Chrome necesită acces la stocare</translation>
-<translation id="7330164299247909639">Eroare privind certificatul de autentificare. Conectează-te la Google Chrome din nou ca <ph name="USER_NAME" /> sau contactează administratorul pentru mai multe informații. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
 <translation id="7398801000654795464">Ați fost conectat(ă) la Chrome ca <ph name="USER_EMAIL_ADDRESS" />. Utilizați același cont pentru a vă conecta din nou.</translation>
 <translation id="7408085963519505752">Termeni și condiții pentru sistemul de operare Chrome</translation>
@@ -282,7 +281,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="8914504000324227558">Relansați Chrome</translation>
 <translation id="9026991721384951619">Sistemul de operare Chrome nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
 <translation id="9067395829937117663">Google Chrome necesită Windows 7 sau o versiune ulterioară.</translation>
-<translation id="9084668267983921457">Eroare privind certificatul de autentificare. Conectează-te la Google Chrome din nou sau contactează administratorul pentru mai multe informații. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Sistemul de operare Chrome va reporni într-o oră}few{Sistemul de operare Chrome va reporni în # ore}other{Sistemul de operare Chrome va reporni în # de ore}}</translation>
 <translation id="911206726377975832">Ștergi și datele de navigare?</translation>
 <translation id="9138603949443464873">Pentru a aplica modificările, relansează Chrome</translation>

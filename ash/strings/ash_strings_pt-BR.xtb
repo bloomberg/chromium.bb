@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">Só é possível ter até <ph name="MULTI_PROFILE_USER_LIMIT" /> contas em login múltiplo.</translation>
 <translation id="3154351730702813399">O administrador do dispositivo pode monitorar sua atividade de navegação.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectado a um dispositivo}one{Conectado a # dispositivo}other{Conectado a # dispositivos}}</translation>
+<translation id="32244657276328332">Não conectado à rede</translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3255483164551725916">O que você pode fazer?</translation>
 <translation id="3294437725009624529">Visitante</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desativadas para um app}one{Desativadas para # app}other{Desativadas para # apps}}</translation>
 <translation id="4072264167173457037">Sinal médio</translation>
 <translation id="4146833061457621061">Ouvir música</translation>
+<translation id="4181841719683918333">Idiomas</translation>
 <translation id="4217571870635786043">Ditado</translation>
 <translation id="4261870227682513959">Mostrar configurações de notificação. As notificações estão desativadas</translation>
 <translation id="4269883910223712419">O administrador deste dispositivo pode:</translation>
@@ -244,6 +246,7 @@
 <translation id="5207949376430453814">Destacar cursor de texto</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="523505283826916779">Configurações de acessibilidade</translation>
+<translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configurações de Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="5379115545237091094">Muitas tentativas</translation>

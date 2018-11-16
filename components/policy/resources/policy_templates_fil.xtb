@@ -3269,11 +3269,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="8970205333161758602">Pigilan ang turndown prompt sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Payagan ang pagpapatotoo ng gnubby para sa mga host ng malayuang pag-access</translation>
 <translation id="8976531594979650914">Gamitin ang Default na Printer ng System bilang Default</translation>
-<translation id="898520305112996948">Nagbibigay-daan sa iyong magtakda ng listahan ng mga pattern ng url na tumutukoy sa kung aling mga site ang awtomatikong mabibigyan ng pahintulot na mag-access ng USB device gamit ang mga ibinigay na vendor at product ID. Dapat maglaman ang bawat item sa listahan ng parehong device at pattern ng url para maging valid ang patakaran. Ang bawat item sa mga device ay maaaring magkaroon ng field ng vendor ID at product ID. Ang anumang aalising ID ay ituturing na wildcard na may isang exception, kung saan hindi maaaring tukuyin ang product ID nang wala ring tinutukoy na vendor ID. Kung hindi, hindi magiging valid ang patakaran. Binabalewala ang mga invalid na value ng patakaran.
-
-        Kung hindi itatakda ang patakarang ito, gagamitin ang pangkalahatang default na value para sa lahat ng site mula sa patakarang 'DefaultWebUsbGuardSetting' kung nakatakda ito, o kung hindi naman ay sa personal na configuration ng user.
-
-        Ang mga pattern ng URL sa patakarang ito ay dapat tumugma sa mga naka-configure sa pamamagitan ng WebUsbBlockedForUrls. Kung may hindi pagkakatugma, mangingibabaw ang patakarang ito sa WebUsbBlockedForUrls at WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Huwag payagan ang anumang site na magpakita ng mga larawan</translation>
 <translation id="9012851181124311976">I-configure ang listahan ng mga login URL ng enterprise (mga HTTP at HTTPS scheme lang). Maka-capture ang fingerprint ng password sa mga URL na ito at gagamitin ang mga ito para sa pag-detect ng muling paggamit ng password.
       Para ma-capture nang tama ng <ph name="PRODUCT_NAME" /> ang mga fingerprint ng password, pakitiyak na sumusunod ang iyong mga page ng pag-log in sa mga alituntunin sa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

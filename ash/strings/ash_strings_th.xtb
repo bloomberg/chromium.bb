@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">คุณมีบัญชีได้สูงสุด <ph name="MULTI_PROFILE_USER_LIMIT" /> บัญชีในการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="3154351730702813399">ผู้ดูแลระบบของอุปกรณ์อาจตรวจสอบกิจกรรมการท่องเว็บของคุณ</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{เชื่อมต่ออุปกรณ์แล้ว 1 เครื่อง}other{เชื่อมต่ออุปกรณ์แล้ว # เครื่อง}}</translation>
+<translation id="32244657276328332">ไม่ได้เชื่อมต่อกับเครือข่าย</translation>
 <translation id="3236488194889173876">ไม่มีเครือข่ายมือถือพร้อมใช้งาน</translation>
 <translation id="3255483164551725916">เธอทำอะไรได้บ้าง</translation>
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ปิดไว้สำหรับ 1 แอป}other{ปิดไว้สำหรับ # แอป}}</translation>
 <translation id="4072264167173457037">สัญญาณแรงปานกลาง</translation>
 <translation id="4146833061457621061">เปิดเพลง</translation>
+<translation id="4181841719683918333">ภาษา</translation>
 <translation id="4217571870635786043">การพิมพ์ตามคำบอก</translation>
 <translation id="4261870227682513959">แสดงการตั้งค่าการแจ้งเตือน การแจ้งเตือนปิดอยู่</translation>
 <translation id="4269883910223712419">ผู้ดูแลระบบของอุปกรณ์เครื่องนี้ทำสิ่งต่อไปนี้ได้</translation>
@@ -244,6 +246,7 @@
 <translation id="5207949376430453814">ไฮไลต์เครื่องหมาย Caret ของข้อความ</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="523505283826916779">การตั้งค่าสำหรับการเข้าถึง</translation>
+<translation id="5302048478445481009">ภาษา </translation>
 <translation id="5313326810920013265">การตั้งค่าบลูทูธ</translation>
 <translation id="5331975486040154427">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
 <translation id="5379115545237091094">ลองหลายครั้งเกินไป</translation>

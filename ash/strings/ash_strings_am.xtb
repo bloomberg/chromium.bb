@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">በአንድ ጊዜ ብዙ መግባት ላይ እስከ <ph name="MULTI_PROFILE_USER_LIMIT" /> መለያዎች ድረስ ብቻ ነው ሊኖርዎት የሚችለው።</translation>
 <translation id="3154351730702813399">የመሣሪያው አስተዳዳሪ የአሰሳ እንቅስቃሴዎን ሊከታተል ይችላል።</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{ከአንድ መሣሪያ ጋር ተገናኝቷል}one{ከ# መሣሪያዎች ጋር ተገናኝቷል}other{ከ# መሣሪያዎች ጋር ተገናኝቷል}}</translation>
+<translation id="32244657276328332">ወደ አውታረ መረብ አልተገናኘም</translation>
 <translation id="3236488194889173876">ምንም የተንቀሳቃሽ ስልክ አውታረ መረብ የለም</translation>
 <translation id="3255483164551725916">ምን ማድረግ ይችላሉ?</translation>
 <translation id="3294437725009624529">እንግዳ</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ቅናሽ ለአንድ መተግበሪያ}one{ቅናሽ ለ# መተግበሪያዎች}other{ቅናሽ ለ# መተግበሪያዎች}}</translation>
 <translation id="4072264167173457037">መካከለኛ ሲግናል</translation>
 <translation id="4146833061457621061">Play ሙዚቃ</translation>
+<translation id="4181841719683918333">ቋንቋዎች</translation>
 <translation id="4217571870635786043">በቃል ማስጻፍ</translation>
 <translation id="4261870227682513959">የማሳወቂያ ቅንብሮችን አሳይ። ማሳወቂያዎች ጠፍተዋል</translation>
 <translation id="4269883910223712419">የዚህ መሣሪያ የሚከተሉትን የማድረግ ችሎታ አለው፦</translation>
@@ -243,6 +245,7 @@
 <translation id="5207949376430453814">የጽሑፍ ድፋቱን አድምቅ</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
 <translation id="523505283826916779">የተደራሽነት ቅንብሮች</translation>
+<translation id="5302048478445481009">ቋንቋ</translation>
 <translation id="5313326810920013265">የብሉቱዝ ቅንብሮች</translation>
 <translation id="5331975486040154427">USB-C መሣሪያ (የግራ ጎን ኋላ ወደብ)</translation>
 <translation id="5379115545237091094">በጣም ብዙ ሙከራዎች</translation>

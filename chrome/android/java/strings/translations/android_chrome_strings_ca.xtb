@@ -734,7 +734,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6567212464587185774">Utilitza fins a un 60% menys de dades i navega més de pressa.</translation>
 <translation id="6573096386450695060">Permet sempre</translation>
 <translation id="6573431926118603307">Les pestanyes que tingueu obertes a Chrome als altres dispositius es mostraran aquí.</translation>
-<translation id="6575643671698722332">El restabliment ha fallat. Assegureu-vos que el dispositiu estigui en línia i torneu-ho a provar.</translation>
 <translation id="6583199322650523874">Afegeix la pàgina actual a les adreces d'interès</translation>
 <translation id="6584721918629302382">Realitat augmentada</translation>
 <translation id="6593061639179217415">Lloc web per a ordinador</translation>
@@ -859,7 +858,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="7475192538862203634">Si això passa sovint, proveu aquests <ph name="BEGIN_LINK" />suggeriments<ph name="END_LINK" />.</translation>
 <translation id="7475688122056506577">La targeta SD no s'ha trobat. Pot ser que faltin alguns fitxers.</translation>
-<translation id="748127970106343339">Confirma la supressió de les credencials del dispositiu</translation>
 <translation id="7481312909269577407">Endavant</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (última actualització: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Mostra les contrasenyes</translation>
@@ -1010,9 +1008,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8609465669617005112">Desplaça cap amunt</translation>
 <translation id="8616006591992756292">A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />, trobaràs altres maneres d'explorar l'historial del teu compte de Google.</translation>
 <translation id="8617240290563765734">Voleu obrir l'URL suggerit que s'especifica al contingut que s'ha baixat?</translation>
-<translation id="862875433388403934">És possible que el contingut (pel·lícules, música, etc.) que hàgiu baixat en altres aplicacions ja no es pugui reproduir fins que aquestes aplicacions no tornin a adquirir llicències basades en les credencials del dispositiu nou.
-
-Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingut que tingueu baixat.</translation>
 <translation id="8636825310635137004">Activeu la sincronització per accedir a les vostres pestanyes des dels altres dispositius que tingueu.</translation>
 <translation id="8641930654639604085">Prova de bloquejar els llocs web per a adults</translation>
 <translation id="8662811608048051533">Et tanca la sessió de la majoria de llocs.</translation>
@@ -1070,7 +1065,6 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> kB en baixades</translation>
 <translation id="9100505651305367705">Proposa mostrar articles en visualització simplificada, quan s'admeti</translation>
 <translation id="9100610230175265781">S'ha d'introduir una frase de contrasenya </translation>
-<translation id="9133515669113036225">Restableix les credencials del dispositiu</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9139068048179869749">Pregunta abans de permetre que els llocs enviïn notificacions (opció recomanada)</translation>

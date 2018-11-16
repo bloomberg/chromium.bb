@@ -216,7 +216,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7242029209006116544">你已登入管理化環境下的帳戶，並將管理控制權授予你的 Chrome 設定檔。你的 Chrome 資料 (例如應用程式、書籤、記錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。你可以透過 Google 帳戶資訊主頁刪除這些資料，但你無法將這些資料與其他帳戶建立關聯。如要另行保留現有的 Chromium 資料，你可以選擇建立新的設定檔。<ph name="LEARN_MORE" /></translation>
 <translation id="7296210096911315575">重要的使用與安全資訊</translation>
 <translation id="7308322188646931570">Chrome 需要儲存空間存取權，才能下載檔案</translation>
-<translation id="7330164299247909639">驗證憑證無效，請以<ph name="USER_NAME" />身分重新登入 Google Chrome 或向你的管理員洽詢詳情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">新視窗</translation>
 <translation id="7398801000654795464">你使用了 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入 Chrome，請使用相同帳戶重新登入。</translation>
 <translation id="7408085963519505752">Chrome 作業系統條款</translation>
@@ -284,7 +283,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="8914504000324227558">重新啟動 Chrome</translation>
 <translation id="9026991721384951619">你的帳戶登入詳細資料尚未更新，因此 Chrome 作業系統無法同步處理你的資料。</translation>
 <translation id="9067395829937117663">Google Chrome 僅支援 Windows 7 以上版本的作業系統。</translation>
-<translation id="9084668267983921457">驗證憑證無效，請重新登入 Google Chrome 或向你的管理員洽詢詳情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="909149346112452267">{0,plural, =1{Chrome 作業系統將於 1 小時後重新啟動}other{Chrome 作業系統將於 # 小時後重新啟動}}</translation>
 <translation id="911206726377975832">你要一併刪除瀏覽資料嗎？</translation>
 <translation id="9138603949443464873">如要套用變更，請重新啟動 Chrome</translation>

@@ -166,7 +166,6 @@
     در صفحه بعدی، لطفاً برای کمک به ما جهت اصلاح مشکل، بازخوردی ارسال کنید.</translation>
 <translation id="1217668622537098248">بعد از کنش، به کلیک چپ بازنشانی کنید</translation>
 <translation id="121783623783282548">گذرواژه‌ها با هم مطابقت ندارند.</translation>
-<translation id="1219533395013150448">‏«دستیار» از این موارد ضبط‌شده برای ایجاد مدل صوتی شما که در دستگاهتان ذخیره می‌شود استفاده می‌کند. در تنظیمات دستیار این مدل را حذف کنید یا آموزش مجدد دهید. در کنترل‌های فعالیت Google فرمان‌های صوتی را مشاهده یا حذف کنید.</translation>
 <translation id="122082903575839559">الگوریتم امضای گواهی</translation>
 <translation id="1221024147024329929">‏PKCS #1 MD2 با رمزگذاری RSA</translation>
 <translation id="1221825588892235038">فقط انتخاب</translation>
@@ -1487,7 +1486,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> می‌خواهد مرتبط شود</translation>
 <translation id="3274763671541996799">شما به حالت تمام صفحه رفته‌اید.</translation>
 <translation id="3275778913554317645">باز کردن به‌عنوان پنجره</translation>
-<translation id="3278877214895457897">‏وقتی Chromebook راه‌اندازی شد، دکمه «دستیار» را فشار دهید یا بگویید «OK Google» تا در هرزمانی از «دستیار» کمک بگیرید.</translation>
 <translation id="3279230909244266691">این فرایند ممکن است چند دقیقه طول بکشد. درحال شروع دستگاه مجازی.</translation>
 <translation id="3279741024917655738">نمایش ویدیوهای تمام‌صفحه در</translation>
 <translation id="3280237271814976245">ذخیره &amp;بعنوان</translation>
@@ -1676,7 +1674,6 @@
 <translation id="3550915441744863158">‏Chrome به صورت خودکار به‌روزرسانی می‌شود تا همیشه تازه‌ترین نسخه را در اختیار داشته باشید.</translation>
 <translation id="3551320343578183772">بستن برگه</translation>
 <translation id="3552780134252864554">هنگام «خروج» پاک شد</translation>
-<translation id="3553146918065661815">‏نمایش هشدار قبل از خروج با ‎⌘Q</translation>
 <translation id="3555812735919707620">حذف برنامه افزودنی</translation>
 <translation id="3556000484321257665">موتور جستجو به <ph name="URL" /> تغییر کرد.</translation>
 <translation id="3559262020195162408">خط‌مشی روی دستگاه نصب نشد.</translation>
@@ -1752,7 +1749,6 @@
 <translation id="3654045516529121250">خواندن تنظیمات دسترس‌پذیری خودتان</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{به یک فایل دسترسی دائم دارد.}one{به # فایل دسترسی دائم دارد.}other{به # فایل دسترسی دائم دارد.}}</translation>
 <translation id="3660234220361471169">غیر قابل اطمینان</translation>
-<translation id="3661054927247347545">گواهی ورود به سیستم معتبر نیست، پنجره پس از <ph name="MINUTES" />:<ph name="SECONDS" /> بسته می‌شود</translation>
 <translation id="3664511988987167893">نماد افزونه</translation>
 <translation id="3665589677786828986">‏Chrome تشخیص داد که برنامه دیگری برخی از تنظیمات شما را خراب کرده است و این تنظیمات را به پیش‌فرض‌های اولیه آن‌ها بازنشانی کرد.</translation>
 <translation id="3668570675727296296">تنظیمات زبان</translation>
@@ -2885,7 +2881,6 @@
 <translation id="5434065355175441495">‏PKCS #1 RSA رمزگذاری</translation>
 <translation id="5436492226391861498">منتظر تونل پراکسی...</translation>
 <translation id="5436510242972373446">جستجوی <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">همه پنجره‌های مرورگر، بدون ورود به سیستم، به‌زودی به‌طور خودکار بسته می‌شوند.</translation>
 <translation id="5438224778284622050">فایل‌های آفلاین حذف شوند؟</translation>
 <translation id="544083962418256601">ایجاد میان‌برها...</translation>
 <translation id="5442228125690314719">هنگام ایجاد تصویر دیسک خطایی روی داد. لطفاً دوباره امتحان کنید.</translation>
@@ -3617,7 +3612,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         ‏<ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">اکنون به سیستم وارد شوید</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
 <translation id="6528513914570774834">به سایر کاربران این دستگاه اجازه داده شود از این شبکه استفاده کنند</translation>
 <translation id="652948702951888897">‏سابقه Chrome</translation>
@@ -4086,7 +4080,6 @@
 <translation id="7256710573727326513">باز کردن در برگه</translation>
 <translation id="725758059478686223">سرویس چاپ</translation>
 <translation id="7257666756905341374">خواندن داده‌هایی که کپی و جای‌گذاری می‌کنید</translation>
-<translation id="7258619945375359543">اجازه به «دستیار» برای ارائه پیشنهادها براساس محتوای صفحه‌نمایش</translation>
 <translation id="7258697411818564379">پین اضافه شد</translation>
 <translation id="7262004276116528033">این خدمات ورود به سیستم توسط <ph name="SAML_DOMAIN" /> میزبانی شده است</translation>
 <translation id="7268365133021434339">بستن برگه‌ها</translation>
@@ -4849,7 +4842,6 @@
 <translation id="8438566539970814960">بهبود جستجوها و مرور</translation>
 <translation id="8439506636278576865">ترجمه صفحات نوشته شده به این زبان پیشنهاد داده شود</translation>
 <translation id="8440630305826533614">‏برنامه‌های Linux</translation>
-<translation id="8446474770554547328">‏با ۳ بار ضبط کردن «Ok Google» مدل صوتی‌تان ایجاد می‌شود و در دستگاهتان ذخیره می‌شود. در تنظیمات دستیار این مدل را حذف کنید یا آموزش مجدد دهید. در کنترل‌های فعالیت Google فرمان‌های صوتی را مشاهده یا حذف کنید.</translation>
 <translation id="8446884382197647889">بیشتر بیاموزید</translation>
 <translation id="8447409163267621480">‏باید شامل Ctrl یا Alt باشد</translation>
 <translation id="8448729345478502352">بزرگ‌تر با کوچک‌تر کردن موارد روی صفحه</translation>

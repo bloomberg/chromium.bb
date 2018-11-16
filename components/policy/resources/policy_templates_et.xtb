@@ -678,8 +678,7 @@
 <translation id="2663739737868438950">
       See reegel kehtib sisselogimiskuval. Vaadake ka reeglit <ph name="SITE_PER_PROCESS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on mõlemale reeglile määrata sama väärtus. Kui väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
       Soovitame teil vaadata reegli IsolateOrigins seadet, et kasutada nii isoleerimist kui ka piirata mõju kasutajate jaoks, kasutades reeglit IsolateOrigins saitide puhul, mille soovite isoleerida. Seade SitePerProcess isoleerib kõik saidid.
-      Kui reegel on lubatud, käitatakse iga komadega eraldatud loendis
-      nimetatud lähtekohta eraldi protsessina.
+      Kui reegel on lubatud, käitatakse iga saiti eraldi protsessina.
       Kui reegel on keelatud, keelatakse reeglite
 IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerProcess siiski käsureamärgistuse abil käsitsi lubada.
       Kui reegel on seadistamata, saavad kasutajad seadet muuta.
@@ -1036,7 +1035,7 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 <translation id="3624171042292187668">
       Soovitame teil vaadata reegli IsolateOrigins seadet, et kasutada nii isoleerimist kui ka piirata mõju kasutajate jaoks, kasutades reeglit IsolateOrigins saitide puhul, mille soovite isoleerida. Seade SitePerProcess isoleerib kõik saidid.
       Kui reegel on lubatud, käitatakse iga saiti eraldi protsessina.
-      Kui reegel on keelatud, keelatakse reeglite IsolateOrigins ja SitePerProcess testid. Kasutajad saavad reegli SitePerProcess siiski käsureamärgistuse abil käsitsi lubada.
+      Kui reegel on keelatud, keelatakse reeglite IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerProcess siiski käsureamärgistuse abil käsitsi lubada.
       Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
       Operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> on soovitatav seadistada ka seadmereegel <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> samale väärtusele. Kui kahes reeglis määratud väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
 
@@ -2987,7 +2986,7 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Kui reegel on määramata või seatud väärtusele Väär, ei kasuta <ph name="PRODUCT_NAME" /> brauseri vahetamise reeglite allikana Internet Exploreri reeglit <ph name="IEEM_SITELIST_POLICY" />.
 
-      Kui reegel on seatud väärtusele Tõene, loeb <ph name="PRODUCT_NAME" /> Internet Exploreri reeglit <ph name="IEEM_SITELIST_POLICY" /> saidiloendi URL hankimiseks. Seejärel laadib <ph name="PRODUCT_NAME" /> saidiloendi URL-ilt alla ja rakendab reeglid samamoodi nagu siis, kui need on seadistatud reegliga <ph name="SITELIST_POLICY_NAME" />.
+      Kui reegel on seatud väärtusele Tõene, loeb <ph name="PRODUCT_NAME" /> Internet Exploreri reeglit <ph name="IEEM_SITELIST_POLICY" /> saidiloendi URL-i hankimiseks. Seejärel laadib <ph name="PRODUCT_NAME" /> saidiloendi URL-ilt alla ja rakendab reeglid samamoodi nagu siis, kui need on seadistatud reegliga <ph name="SITELIST_POLICY_NAME" />.
 
       Lisateave Internet Exploreri reegli <ph name="IEEM_SITELIST_POLICY" /> kohta: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Ava PDF-failid alati väliselt</translation>
@@ -3270,11 +3269,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="8970205333161758602">Toote <ph name="PRODUCT_FRAME_NAME" /> tagasilükkamisviiba keelamine</translation>
 <translation id="8976248126101463034">Gnubby autentimise lubamine kaugjuurdepääsuhostidele</translation>
 <translation id="8976531594979650914">Kasuta vaikeseadena süsteemi vaikeprinterit</translation>
-<translation id="898520305112996948">Võimaldab luua URL-i mustrite loendi, mis määrab saidid, millele antakse automaatselt luba määratud tootja ja toote ID-ga USB-seadmetele juurdepääsemiseks. Selleks et reegel kehtiks, peab iga loendis olev üksus olema kehtiv. Iga seadmete hulgas olev üksus võib hõlmata tootja ID ja toote ID välja. Väljajäetud ID-sid koheldakse metamärgina ühe erandiga: toote ID-d ei saa ilma tootja ID-ta määrata. Muidu on reegel kehtetu. Kehtetuid väärtusi eiratakse.
-
-        Kui reegel jäetakse määramata, kasutatakse kõigi saitide puhul globaalset vaikeväärtust, mis põhineb reeglil „DefaultWebUsbGuardSetting” (kui see on määratud) või kasutaja isiklikul konfiguratsioonil.
-
-        Selle reegli URL-i mustrid ei tohi olla vastuolus reegli WebUsbBlockedForUrls kaudu seadistatud mustritega. Vastuolu korral alistab see reegel reeglid WebUsbBlockedForUrls ja WebUsbAskForUrls.</translation>
 <translation id="8992176907758534924">Keela kõigil saitidel kujutiste näitamine</translation>
 <translation id="9012851181124311976">Seadistage ettevõtte sisselogimis-URL-ide loend (ainult HTTP- ja HTTPS-skeemid). Parooli sõrmejälg jäädvustatakse nendel URL-idel ja seda kasutatakse parooli uuesti kasutamise tuvastamiseks.
       Selleks et <ph name="PRODUCT_NAME" /> jäädvustaks paroolide sõrmejäljed õigesti, veenduge, et teie sisselogimislehed järgiksid aadressil https://www.chromium.org/developers/design-documents/create-amazing-password-forms olevaid juhiseid.

@@ -166,7 +166,6 @@
     다음 화면에서 Google이 문제를 해결할 수 있도록 의견을 보내주시기 바랍니다.</translation>
 <translation id="1217668622537098248">작업 후 왼쪽 클릭으로 되돌리기</translation>
 <translation id="121783623783282548">비밀번호가 일치하지 않습니다.</translation>
-<translation id="1219533395013150448">어시스턴트는 이 녹음을 사용하여 음성 모델을 생성하며, 음성 모델은 기기에 저장됩니다. 어시스턴트 설정에서 모델을 삭제하거나 다시 학습시키세요. Google 활동 제어에서 음성 명령을 확인하거나 삭제할 수 있습니다.</translation>
 <translation id="122082903575839559">인증서 서명 알고리즘</translation>
 <translation id="1221024147024329929">PKCS #1 MD2(RSA 암호화 사용)</translation>
 <translation id="1221825588892235038">선택 영역만</translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" />에서 연결하려고 함</translation>
 <translation id="3274763671541996799">전체화면으로 전환되었습니다.</translation>
 <translation id="3275778913554317645">창으로 열기</translation>
-<translation id="3278877214895457897">Chromebook 설정이 완료되면 언제든지 어시스턴트 버튼을 누르거나 "Ok Google"이라고 말하여 어시스턴트로부터 도움을 받으세요.</translation>
 <translation id="3279230909244266691">이 과정은 몇 분 정도 소요될 수 있습니다. 가상 머신을 시작합니다.</translation>
 <translation id="3279741024917655738">다음에서 동영상을 전체화면으로 표시</translation>
 <translation id="3280237271814976245">다른 이름으로 저장(&amp;A)...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
 <translation id="3551320343578183772">탭 닫기</translation>
 <translation id="3552780134252864554">종료 시 삭제됨</translation>
-<translation id="3553146918065661815">⌘Q로 종료하기 전 경고 표시</translation>
 <translation id="3555812735919707620">확장 프로그램 삭제</translation>
 <translation id="3556000484321257665">검색엔진이 <ph name="URL" />(으)로 변경되었습니다.</translation>
 <translation id="3559262020195162408">기기에 정책을 설치하지 못했습니다.</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">접근성 설정 확인</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{파일 1개에 영구적으로 액세스할 수 있습니다.}other{파일 #개에 영구적으로 액세스할 수 있습니다.}}</translation>
 <translation id="3660234220361471169">신뢰할 수 없음</translation>
-<translation id="3661054927247347545">로그인 인증서가 유효하지 않습니다. <ph name="MINUTES" />:<ph name="SECONDS" /> 후에 창이 닫힙니다.</translation>
 <translation id="3664511988987167893">확장 프로그램 아이콘</translation>
 <translation id="3665589677786828986">Chrome에서 다른 프로그램이 브라우저 설정을 일부 손상시키고 원래 기본값으로 재설정했음을 감지했습니다.</translation>
 <translation id="3668570675727296296">언어 설정</translation>
@@ -2887,7 +2883,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA 암호화</translation>
 <translation id="5436492226391861498">프록시 터널을 기다리는 중...</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME" /> 검색:</translation>
-<translation id="5436822233913560332">로그인하지 않으면 모든 브라우저 창이 곧 자동으로 닫힙니다.</translation>
 <translation id="5438224778284622050">오프라인 파일을 삭제하시겠습니까?</translation>
 <translation id="544083962418256601">바로가기 만들기...</translation>
 <translation id="5442228125690314719">디스크 이미지를 생성하는 중 오류가 발생했습니다. 다시 시도해 주세요.</translation>
@@ -3619,7 +3614,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">지금 로그인</translation>
 <translation id="6527303717912515753">공유</translation>
 <translation id="6528513914570774834">이 기기의 다른 사용자가 이 네트워크를 사용하도록 허용</translation>
 <translation id="652948702951888897">Chrome 방문 기록</translation>
@@ -4088,7 +4082,6 @@
 <translation id="7256710573727326513">탭에서 열기</translation>
 <translation id="725758059478686223">인쇄 서비스</translation>
 <translation id="7257666756905341374">복사하여 붙여넣은 데이터 조회</translation>
-<translation id="7258619945375359543">어시스턴트가 화면에 표시된 내용을 기반으로 항목을 추천하도록 허용합니다.</translation>
 <translation id="7258697411818564379">PIN이 추가됨</translation>
 <translation id="7262004276116528033">이 로그인 서비스는 <ph name="SAML_DOMAIN" />에서 호스팅됩니다.</translation>
 <translation id="7268365133021434339">탭 닫기</translation>
@@ -4851,7 +4844,6 @@
 <translation id="8438566539970814960">검색 및 탐색 기능 개선</translation>
 <translation id="8439506636278576865">이 언어로 된 페이지에 대한 번역 옵션 제공</translation>
 <translation id="8440630305826533614">Linux 앱</translation>
-<translation id="8446474770554547328">"Ok Google"을 세 번 녹음하면 음성 모델이 생성되어 기기에 저장됩니다. 어시스턴트 설정에서 모델을 삭제하거나 다시 학습시키세요. Google 활동 제어에서 음성 명령을 확인하거나 삭제할 수 있습니다.</translation>
 <translation id="8446884382197647889">자세히 알아보기</translation>
 <translation id="8447409163267621480">Ctrl 또는 Alt 중 하나를 포함해야 합니다</translation>
 <translation id="8448729345478502352">화면에 표시되는 항목을 축소 또는 확대합니다.</translation>

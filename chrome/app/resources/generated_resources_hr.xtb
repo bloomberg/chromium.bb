@@ -166,7 +166,6 @@
     Na sljedećem zaslonu pošaljite povratne informacije kako biste nam pomogli riješiti poteškoću.</translation>
 <translation id="1217668622537098248">Vrati na lijevi klik nakon radnje</translation>
 <translation id="121783623783282548">Zaporke se ne podudaraju.</translation>
-<translation id="1219533395013150448">Pomoću tih snimki Asistent izrađuje vaš glasovni model koji će se spremiti na vaš uređaj. Taj model možete izbrisati ili ponovo postaviti u postavkama Asistenta. Glasovne naredbe možete pregledati ili izbrisati u Googleovim kontrolama aktivnosti.</translation>
 <translation id="122082903575839559">Algoritam potpisa certifikata</translation>
 <translation id="1221024147024329929">PKCS br. 1 MD2 s RSA enkripcijom</translation>
 <translation id="1221825588892235038">Samo odabir</translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903">Web-lokacija <ph name="ORIGIN" /> želi se povezati</translation>
 <translation id="3274763671541996799">Prešli ste u način prikaza na cijelom zaslonu.</translation>
 <translation id="3275778913554317645">Otvori kao prozor</translation>
-<translation id="3278877214895457897">Dok se Chromebook postavlja, pritisnite gumb Asistent ili recite "Ok Google" da biste dobili pomoć od Asistenta u bilo kojem trenutku.</translation>
 <translation id="3279230909244266691">Taj postupak može potrajati nekoliko minuta. Pokreće se virtualno računalo.</translation>
 <translation id="3279741024917655738">Prikaži videozapise preko cijelog zaslona na</translation>
 <translation id="3280237271814976245">Spremi &amp;kao...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Chrome se automatski ažurira tako da uvijek imate najnoviju verziju</translation>
 <translation id="3551320343578183772">Zatvori karticu</translation>
 <translation id="3552780134252864554">Briše se pri izlazu</translation>
-<translation id="3553146918065661815">Prikaži upozorenje prije zatvaranja prečacem ⌘Q</translation>
 <translation id="3555812735919707620">Ukloni proširenje</translation>
 <translation id="3556000484321257665">Vaša je tražilica promijenjena u <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Instalacija pravila na uređaju nije uspjela.</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">čitati postavke pristupačnosti</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ima trajni pristup jednoj datoteci.}one{Ima trajni pristup # datoteci.}few{Ima trajni pristup do # datoteke.}other{Ima trajni pristup do # datoteka.}}</translation>
 <translation id="3660234220361471169">Nepouzdano</translation>
-<translation id="3661054927247347545">Certifikat za prijavu nije važeći, prozor će se zatvoriti za <ph name="MINUTES" />.<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Ikona proširenja</translation>
 <translation id="3665589677786828986">Chrome je otkrio da je neki drugi program promijenio vaše postavke, pa ih je vratio na izvorne zadane vrijednosti.</translation>
 <translation id="3668570675727296296">Postavke jezika</translation>
@@ -2889,7 +2885,6 @@
 <translation id="5434065355175441495">PKCS br. 1 RSA enkripcija</translation>
 <translation id="5436492226391861498">Čekanje na proxy tunel...</translation>
 <translation id="5436510242972373446">Pretraži <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Svi prozori preglednika uskoro će se automatski zatvoriti bez prijave.</translation>
 <translation id="5438224778284622050">Želite li izbrisati offline datoteke?</translation>
 <translation id="544083962418256601">Stvaranje prečaca...</translation>
 <translation id="5442228125690314719">Došlo je do pogreške prilikom izrade slike diska. Pokušajte ponovo.</translation>
@@ -3621,7 +3616,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Prijavite se sada</translation>
 <translation id="6527303717912515753">Podijeli</translation>
 <translation id="6528513914570774834">Dopusti drugim korisnicima ovog uređaja da upotrebljavaju ovu mrežu</translation>
 <translation id="652948702951888897">Chromeova povijest</translation>
@@ -4090,7 +4084,6 @@
 <translation id="7256710573727326513">Otvori na kartici</translation>
 <translation id="725758059478686223">Usluga ispisa</translation>
 <translation id="7257666756905341374">čitati podatke koje kopirate i lijepite</translation>
-<translation id="7258619945375359543">Dopustite Asistentu da daje prijedloge na temelju sadržaja vašeg zaslona.</translation>
 <translation id="7258697411818564379">Vaš je PIN dodan</translation>
 <translation id="7262004276116528033">Tu uslugu prijave hostira <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Zatvori kartice</translation>
@@ -4854,7 +4847,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8438566539970814960">Poboljšajte pretraživanje i pregledavanje</translation>
 <translation id="8439506636278576865">Ponudi prevođenje stranica na tom jeziku</translation>
 <translation id="8440630305826533614">Linux aplikacije</translation>
-<translation id="8446474770554547328">Triput snimite "Ok Google" kako biste izradili svoj glasovni model koji će se spremiti na vaš uređaj. Taj model možete izbrisati ili ponovo postaviti u postavkama Asistenta. Glasovne naredbe možete pregledati ili izbrisati u Googleovim kontrolama aktivnosti.</translation>
 <translation id="8446884382197647889">Saznajte više</translation>
 <translation id="8447409163267621480">Mora sadržavati Ctrl ili Alt</translation>
 <translation id="8448729345478502352">Povećajte ili smanjite stavke na zaslonu</translation>

@@ -142,7 +142,6 @@
 <translation id="5862307444128926510">‏مرحبًا بك في Chromium</translation>
 <translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
-<translation id="5902536751647951209">‏لقد تعذّرت شهادة المصادقة. يُرجى تسجيل الدخول إلى Chromium مرة أخرى أو الاتصال بمشرفك لمزيد من المعلومات. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">أوشك التحديث على الانتهاء! أعِد تشغيل الجهاز لإنهاء التحديث.</translation>
 <translation id="5987687638152509985">‏تحديث Chromium لبدء المزامنة</translation>
 <translation id="6013050204643758987">‏أصبح نظام التشغيل Chromium متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS" />برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS" />إضافي، كما في نظام التشغيل <ph name="BEGIN_LINK_LINUX_OSS" />Linux (الإصدار التجريبي)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -222,7 +221,6 @@
 <translation id="7745317241717453663">‏سيؤدي هذا إلى حذف بيانات التصفح من هذا الجهاز. لاسترداد بياناتك لاحقًا، سجّل الدخول إلى Chromium كـ <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">تعذر على أداة المثبِّت إنشاء دليل مؤقت. يُرجى التحقق من وجود مساحة خالية على القرص وتوفر الإذن اللازم لتثبيت البرنامج.</translation>
 <translation id="7773960292263897147">‏تحذير: يتعذّر على Chromium منع الإضافات من تسجيل سجل التصفح. لإيقاف هذه الإضافة في وضع التصفح المتخفي، ألغِ تحديد هذا الخيار.</translation>
-<translation id="7774736947049807614">‏لقد تعذّرت شهادة المصادقة. يُرجى تسجيل الدخول إلى Chromium مرة أخرى بصفتك <ph name="USER_NAME" /> أو الاتصال بمشرفك لمزيد من المعلومات. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">‏تعذّر تحديث Chromium إلى آخر إصدار، لذلك قد تفوتك الميزات الجديدة وعمليات إصلاح الأمان.</translation>
 <translation id="7901117350626490574">‏يتوفر تحديث جديد لبرنامج Chromium وسيتم تطبيقه عند إعادة التشغيل.</translation>

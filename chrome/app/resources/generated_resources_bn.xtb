@@ -615,6 +615,7 @@
 <translation id="1880905663253319515">শংসাপত্র মুছবেন "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">সাইটগুলিকে প্রোটোকলের জন্য ডিফল্ট পরিচালক হতে জিজ্ঞাসা করার অনুমতি দেয় (প্রস্তাবিত)</translation>
 <translation id="1887442540531652736">সাইন-ইন করার সময় সমস্যা হয়েছে</translation>
+<translation id="1887597546629269384">আবার "Hey Google" বলুন</translation>
 <translation id="1887850431809612466">হার্ডওয়্যার পুনর্বিবেচনাগুলি</translation>
 <translation id="1889984860246851556">প্রক্সি সেটিংস খুলুন</translation>
 <translation id="1890674179660343635">&lt;span&gt;আইডি: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -712,6 +713,7 @@
 <translation id="2048653237708779538">অ্যাকশন উপলভ্য নেই</translation>
 <translation id="204914487372604757">শর্টকাট তৈরি করুন</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
+<translation id="2052369079215022979">আপনার প্রতিষ্ঠানের দ্বারা ম্যানেজ করা</translation>
 <translation id="2053312383184521053">নিষ্ক্রিয় অবস্থার ডেটা</translation>
 <translation id="205560151218727633">Google সহায়ক লোগো</translation>
 <translation id="2058456167109518507">ডিভাইস শনাক্ত করা হয়েছে</translation>
@@ -898,6 +900,7 @@
 <translation id="2336381494582898602">পাওয়ারওয়াশ</translation>
 <translation id="2339120501444485379">নতুন নাম লিখুন</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> এদের সঙ্গে যুক্ত হতে চাচ্ছে</translation>
+<translation id="2342740338116612727">বুকমার্ক যোগ করা হয়েছে</translation>
 <translation id="2344028582131185878">স্বয়ংক্রিয় ডাউনলোডগুলি</translation>
 <translation id="2345723121311404059"><ph name="PRINTER_NAME" /> এ ১ পাতা</translation>
 <translation id="2347644257713614136">Hangouts এবং শিক্ষার জন্য Cast-এর ব্যবহার Google-এর গোপনীয়তা নীতি দ্বারা পরিচালিত হয়।</translation>
@@ -1487,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> এদের সঙ্গে সংযুক্ত হতে চায়</translation>
 <translation id="3274763671541996799">আপনি পূর্ণ পর্দায় দেথতে শুরু করেছেন৷</translation>
 <translation id="3275778913554317645">উইন্ডো হিসাবে খুলুন</translation>
-<translation id="3278877214895457897">আপনার Chromebook সেট-আপ করা হয়ে গেলে, অ্যাসিস্ট্যান্টের থেকে যেকোনও সময় সাহায্য পেতে অ্যাসিস্ট্যান্ট বোতামটি টিপুন অথবা "Ok Google" বলুন।</translation>
 <translation id="3279230909244266691">এতে কয়েক মিনিট সময় লাগতে পারে। ভার্চুয়াল মেশিন শুরু করা হচ্ছে।</translation>
 <translation id="3279741024917655738">এতে সম্পূর্ণ স্ক্রিন ভিডিও দেখুন</translation>
 <translation id="3280237271814976245">এই &amp;রূপে সেভ করুন...</translation>
@@ -1743,11 +1745,11 @@
 <translation id="3651488188562686558">ওয়াই ফাই থেকে সংযোগ বিচ্ছিন্ন করুন</translation>
 <translation id="3652817283076144888">শুরু হচ্ছে</translation>
 <translation id="3653160965917900914">নেটওয়ার্ক ফাইল শেয়ার</translation>
+<translation id="3653842108912548333">Voice Match-এর সাহায্যে আপনার অ্যাসিস্ট্যান্ট অ্যাক্সেস করুন</translation>
 <translation id="3653999333232393305"><ph name="HOST" /> কে আপনার মাইক্রোফোন অ্যাক্সেস করার মঞ্জুরি অবিরত রাখুন</translation>
 <translation id="3654045516529121250">আপনার অ্যাক্সেসযোগ্যতার সেটিংস পড়ুন</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{একটি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}one{#টি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}other{#টি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}}</translation>
 <translation id="3660234220361471169">অবিশ্বস্থ</translation>
-<translation id="3661054927247347545">সাইন-ইন সার্টিফিকেশনটি ভুল, <ph name="MINUTES" /> : <ph name="SECONDS" /> এ উইন্ডো বন্ধ হয়ে যাবে।</translation>
 <translation id="3664511988987167893">এক্সটেনশনের আইকন</translation>
 <translation id="3665589677786828986">Chrome শনাক্ত করেছে যে অন্য কোনো প্রোগ্রাম আপনার কিছু সেটিংস ক্ষতিগ্রস্ত করেছে এবং সেগুলিকে তাদের মূল ডিফল্টে আবার সেট করেছে।</translation>
 <translation id="3668570675727296296">ভাষা সেটিংস</translation>
@@ -2283,6 +2285,7 @@
 <translation id="4524832533047962394">অপারেটিং সিস্টেমের এই ভার্সনটি প্রদত্ত নথিভুক্তকরণের মোড সমর্থন করে না। আপনি সর্বাধুনিক ভার্সনটি চালাচ্ছেন কিনা দেখুন।</translation>
 <translation id="4525382759303819021">Play স্টোর অ্যাপ সম্পর্কে লেটেস্ট আপডেট ও প্রস্তাবনা পান</translation>
 <translation id="4530494379350999373">উৎস</translation>
+<translation id="4533846798469727141">এখন "Hey Google" বলুন</translation>
 <translation id="4533985347672295764">CPU সময়</translation>
 <translation id="4534661889221639075">আবার চেষ্টা করুন।</translation>
 <translation id="4535127706710932914">ডিফল্ট প্রোফাইল</translation>
@@ -2877,7 +2880,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA এনক্রিপশান</translation>
 <translation id="5436492226391861498">প্রক্সি টানেলের জন্য প্রতীক্ষারত...</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME" /> খুঁজুন:</translation>
-<translation id="5436822233913560332">সমস্ত ব্রাউজার উইন্ডো শীঘ্রই সাইন-ইন ছাড়াই স্বয়ংক্রিয়ভাবে বন্ধ হয়ে যাবে।</translation>
 <translation id="5438224778284622050">অফলাইন ফাইলগুলি মুছবেন?</translation>
 <translation id="544083962418256601">শর্টকাটগুলি তৈরি করুন...</translation>
 <translation id="5442228125690314719">ডিস্ক ইমেজ তৈরি করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।</translation>
@@ -3258,6 +3260,7 @@
 <translation id="5990386583461751448">অনূদিত</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{আপনি যাতে ওয়েব ব্রাউজ করা চালিয়ে যেতে পারেন তার জন্য অ্যাডমিনিস্ট্রেটরকে এই অ্যাপ্লিকেশনটি সরিয়ে দিতে বলুন।}one{আপনি যাতে ওয়েব ব্রাউজ করা চালিয়ে যেতে পারেন তার জন্য অ্যাডমিনিস্ট্রেটরকে এই অ্যাপ্লিকেশনগুলি সরিয়ে দিতে বলুন।}other{আপনি যাতে ওয়েব ব্রাউজ করা চালিয়ে যেতে পারেন তার জন্য অ্যাডমিনিস্ট্রেটরকে এই অ্যাপ্লিকেশনগুলি সরিয়ে দিতে বলুন।}}</translation>
 <translation id="5997337190805127100">সাইট অ্যাক্সেস সম্পর্কে আরও জানুন</translation>
+<translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />'-এর জন্য <ph name="RESULT_COUNT" />টি ফলাফল</translation>
 <translation id="6002458620803359783">পছন্দসই ভয়েস</translation>
 <translation id="6005695835120147974">মিডিয়া রাউটার</translation>
 <translation id="6006484371116297560">ক্লাসিক</translation>
@@ -3508,6 +3511,7 @@
 <translation id="637062427944097960">এই ফাইলটি একটি আলাদা ডেস্কটপে খোলা রয়েছে৷ এটিকে দেখতে <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) এ সরান৷</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">আবার চেষ্টা করুন</translation>
+<translation id="6377268785556383139">'<ph name="SEARCH_TEXT" />'-এর জন্য ১টি ফলাফল</translation>
 <translation id="6380143666419481200">স্বীকার ও চালিয়ে যান</translation>
 <translation id="6384275966486438344">আপনার সার্চের সেটিংস এ পরিবর্তন করুন: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">সাইটগুলি কুকি ডেটা সংরক্ষণ করতে ও পড়তে পারে</translation>
@@ -3525,6 +3529,7 @@
 <translation id="6405510437656969977">পিন লেখার জন্য প্রস্তুত হলে চালিয়ে যান</translation>
 <translation id="6406303162637086258">ব্রাউজার আরম্ভ অনুকরণ করুন</translation>
 <translation id="6406506848690869874">সিঙ্ক</translation>
+<translation id="6406708970972405507">সেটিংস - <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, ও <ph name="WEBSITE_3" /> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
 <translation id="6410257289063177456">ছবি ফাইলসমূহ</translation>
 <translation id="6410328738210026208">চ্যানেল পরিবর্তন  করুন এবং পাওয়ারওয়াশ করুন</translation>
@@ -3608,7 +3613,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">এখনই প্রবেশ করুন</translation>
 <translation id="6527303717912515753">শেয়ার করুন</translation>
 <translation id="6528513914570774834">এই ডিভাইসের অন্যান্য ব্যবহারকারীদের এই নেটওয়ার্ক ব্যবহার করতে দিন</translation>
 <translation id="652948702951888897">Chrome ইতিহাস</translation>
@@ -3806,6 +3810,7 @@
 <translation id="6840184929775541289">একটি শংসাপত্র কর্তৃপক্ষ নয়</translation>
 <translation id="6840313690797192085">$১ PB</translation>
 <translation id="6841186874966388268">ত্রুটিগুলি</translation>
+<translation id="6843423766595476978">Ok Google সেট হয়ে গেছে</translation>
 <translation id="6845038076637626672">সর্বাধিক খুলুন</translation>
 <translation id="685040365210406336">কোনও পরিবর্তন করবেন না</translation>
 <translation id="6851497530878285708">অ্যাপ সক্ষম করা হয়েছে</translation>
@@ -4065,6 +4070,7 @@
 <translation id="7246947237293279874">FTP প্রক্সী</translation>
 <translation id="7248671827512403053">অ্যাপ্লিকেশান</translation>
 <translation id="725109152065019550">দুঃখিত, আপনার প্রশাসক আপনার অ্যাকাউন্টে বাহ্যিক সঞ্চয়স্থান অক্ষম করেছে৷</translation>
+<translation id="7251346854160851420">ডিফল্ট ওয়ালপেপার</translation>
 <translation id="7253521419891527137">এবং আরও জানুন</translation>
 <translation id="7254554697254365959">এই পৃষ্ঠাটির অনুবাদ করা যায়নি।</translation>
 <translation id="7254951428499890870">আপনি কি ডায়গনিস্টিক মোডে "<ph name="APP_NAME" />" লঞ্চ করার বিষয়ে নিশ্চিত?</translation>
@@ -4075,7 +4081,6 @@
 <translation id="7256710573727326513">একটি ট্যাবে খুলুন</translation>
 <translation id="725758059478686223">প্রিন্টিং পরিষেবা</translation>
 <translation id="7257666756905341374">আপনি যে ডেটা প্রতিলিপি ও লেপন করেন তা পড়ুন</translation>
-<translation id="7258619945375359543">আপনার স্ক্রিনে যা আছে তার উপর নির্ভর করে প্রস্তাব দেওয়ার জন্য অ্যাসিস্ট্যান্টকে অনুমতি দিন</translation>
 <translation id="7258697411818564379">আপনার পিন যোগ করা হয়েছে</translation>
 <translation id="7262004276116528033">এই প্রবেশ করা পরিষেবাটি <ph name="SAML_DOMAIN" /> দ্বারা হোস্ট করা হয়</translation>
 <translation id="7268365133021434339">ট্যাবগুলি বন্ধ করুন</translation>
@@ -4175,6 +4180,7 @@
 <translation id="7417705661718309329">Google ম্যাপ</translation>
 <translation id="741906494724992817">এই অ্যাপ্লিকেশানটির জন্য কোনো বিশেষ অনুমতির প্রয়োজন নেই।</translation>
 <translation id="7419433794191666278">আপনার ফোনের সাথে Chromebook কানেক্ট করুন। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">বুকমার্ক সরানো হয়েছে</translation>
 <translation id="7421925624202799674">পৃষ্ঠা উৎস &amp;দেখুন</translation>
 <translation id="7422192691352527311">অভিরুচিসমূহ...</translation>
 <translation id="7423098979219808738">প্রথমে জিজ্ঞাসা করুন</translation>
@@ -4336,6 +4342,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{বুকমার্ক তালিকাতে ১টি আইটেম আছে}one{বুকমার্ক তালিকাতে #টি আইটেম আছে}other{বুকমার্ক তালিকাতে #টি আইটেম আছে}}</translation>
 <translation id="7701040980221191251">কিছুই নয়</translation>
 <translation id="7701869757853594372">ব্যবহারকারীর হ্যান্ডলগুলি</translation>
+<translation id="7702574632857388784">তালিকা থেকে <ph name="FILE_NAME" /> সরান</translation>
 <translation id="7702907602086592255">ডোমেন</translation>
 <translation id="7704305437604973648">কার্য</translation>
 <translation id="7704317875155739195">সার্চ এবং ইউআরএলগুলি নিজে থেকে সম্পূর্ণ হতে দিন</translation>
@@ -4728,6 +4735,7 @@
 <translation id="8249296373107784235">বাতিল</translation>
 <translation id="8249672078237421304">আপনি যে ভাষাতে পড়েন সেই ভাষাতে না থাকা পৃষ্ঠাগুলি অনুবাদ করার প্রস্তাব দিন</translation>
 <translation id="8251578425305135684">থাম্বনেল সরানো হয়েছে৷</translation>
+<translation id="8252569384384439529">আপলোড হচ্ছে...</translation>
 <translation id="8253198102038551905">নেটওয়ার্কের প্রোপাটিজ পেতে '+'-এ ক্লিক করুন</translation>
 <translation id="825483282309623688">আপনার ডেটা পুনরুদ্ধার করতে, আপনার একটি ইন্টারনেট সংযোগ প্রয়োজন।</translation>
 <translation id="8256319818471787266">স্পার্কি</translation>
@@ -4795,6 +4803,7 @@
 <translation id="8371695176452482769">এখনই বলুন</translation>
 <translation id="8372369524088641025">খারাপ WEP কী</translation>
 <translation id="8373553483208508744">ট্যাবগুলি মিউট করুন</translation>
+<translation id="8378714024927312812">আপনার প্রতিষ্ঠানের দ্বারা ম্যানেজ করা</translation>
 <translation id="8379878387931047019">এই ওয়েবসাইটটি খুলতে যে নিরাপত্তা কী প্রয়োজন সেটি এই ডিভাইসে কাজ করে না</translation>
 <translation id="8382913212082956454">&amp;ইমেল ঠিকানা কপি করুন</translation>
 <translation id="8386091599636877289">নীতি খুঁজে পাওয়া যায়নি।</translation>

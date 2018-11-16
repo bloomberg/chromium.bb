@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">Vous ne pouvez vous connecter qu'à <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes au maximum dans le cadre de la connexion multicompte.</translation>
 <translation id="3154351730702813399">L'administrateur de cet appareil peut contrôler votre activité de navigation.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connecté à un appareil}one{Connecté à # appareil}other{Connecté à # appareils}}</translation>
+<translation id="32244657276328332">Non connecté à un réseau</translation>
 <translation id="3236488194889173876">Aucun réseau mobile disponible</translation>
 <translation id="3255483164551725916">Que sais-tu faire ?</translation>
 <translation id="3294437725009624529">Invité</translation>
@@ -173,7 +174,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Verrouiller</translation>
 <translation id="3798670284305777884">Haut-parleur (interne)</translation>
-<translation id="3799080171973636491">Vous avez utilisé le raccourci clavier de la loupe plein écran. Voulez-vous l'activer ?</translation>
+<translation id="3799080171973636491">Vous avez appuyé sur le raccourci clavier de la loupe plein écran. Voulez-vous l'activer ?</translation>
 <translation id="380165613292957338">Bonjour, comment puis-je vous aider ?</translation>
 <translation id="383629559565718788">Afficher les paramètres du clavier</translation>
 <translation id="3846575436967432996">Aucune information disponible concernant le réseau</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Notifications désactivées pour une application}one{Notifications désactivées pour # application}other{Notifications désactivées pour # applications}}</translation>
 <translation id="4072264167173457037">Signal de moyenne intensité</translation>
 <translation id="4146833061457621061">Joue de la musique</translation>
+<translation id="4181841719683918333">Langues</translation>
 <translation id="4217571870635786043">Dictée</translation>
 <translation id="4261870227682513959">Afficher les paramètres de notification. Les notifications sont désactivées</translation>
 <translation id="4269883910223712419">L'administrateur de cet appareil peut :</translation>
@@ -198,7 +200,7 @@
 <translation id="4279490309300973883">Mise en miroir</translation>
 <translation id="4292681942966152062">Activation de <ph name="NETWORK_NAME" />…</translation>
 <translation id="4321179778687042513">ctrl</translation>
-<translation id="4321776623976362024">Vous avez utilisé le raccourci clavier du contraste élevé. Voulez-vous l'activer ?</translation>
+<translation id="4321776623976362024">Vous avez appuyé sur le raccourci clavier du contraste élevé. Voulez-vous l'activer ?</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
 <translation id="4338109981321384717">Loupe</translation>
@@ -206,7 +208,7 @@
 <translation id="435527878592612277">Sélectionner votre photo</translation>
 <translation id="4378551569595875038">Connexion</translation>
 <translation id="4379531060876907730">Voici vos outils de stylet</translation>
-<translation id="4389184120735010762">Vous avez utilisé le raccourci clavier de la loupe ancrée. Voulez-vous l'activer ?</translation>
+<translation id="4389184120735010762">Vous avez appuyé sur le raccourci clavier de la loupe ancrée. Voulez-vous l'activer ?</translation>
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Ne plus afficher</translation>
@@ -244,6 +246,7 @@
 <translation id="5207949376430453814">Mettre le curseur de texte en surbrillance</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="523505283826916779">Paramètres d'accessibilité</translation>
+<translation id="5302048478445481009">Langue</translation>
 <translation id="5313326810920013265">Paramètres Bluetooth</translation>
 <translation id="5331975486040154427">Appareil USB de type C (port situé sur la gauche de l'appareil, à l'arrière)</translation>
 <translation id="5379115545237091094">Trop de tentatives</translation>
@@ -395,7 +398,7 @@
 <translation id="7886169021410746335">Régler les paramètres de confidentialité</translation>
 <translation id="7886277072580235377">Votre session Internet est effacée lorsque vous vous déconnectez. <ph name="LEARN_MORE" /></translation>
 <translation id="788781083998633524">Envoie un e-mail</translation>
-<translation id="7897375687985782769">Vous avez utilisé le raccourci clavier de rotation d'écran. Voulez-vous faire pivoter l'écran ?</translation>
+<translation id="7897375687985782769">Vous avez appuyé sur le raccourci clavier de rotation d'écran. Voulez-vous faire pivoter l'écran ?</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
 <translation id="7933084174919150729">L'Assistant Google n'est disponible que pour le profil principal.</translation>
 <translation id="79341161159229895">Compte géré par <ph name="FIRST_PARENT_EMAIL" /> et <ph name="SECOND_PARENT_EMAIL" /></translation>

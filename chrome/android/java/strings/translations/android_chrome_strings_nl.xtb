@@ -548,7 +548,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5240817131241497236">De instellingen waarmee je synchronisatie, personalisatie en andere Google-services in Chrome beheert, zijn gewijzigd. Dit is mogelijk van invloed op je huidige instellingen.</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Instellingen<ph name="END_LINK1" /> kunnen op elk gewenst moment worden aangepast. Google kan content op sites die je bezoekt en je browseractiviteit en interacties gebruiken om Chrome en andere Google-services (zoals Translate, Zoeken en advertenties) te personaliseren.</translation>
 <translation id="5271967389191913893">Het apparaat kan de content niet openen die moet worden gedownload.</translation>
-<translation id="5274381992091475657">Assistent voor auto-aanvullen</translation>
+<translation id="5274381992091475657">Assistent voor automatisch aanvullen</translation>
 <translation id="528192093759286357">Sleep vanaf de bovenkant en tik op de knop Terug om het volledige scherm te sluiten.</translation>
 <translation id="5284584623296338184">Wijzigingen in je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden niet meer gesynchroniseerd met je Google-account. Je bestaande gegevens blijven echter opgeslagen in je Google-account.</translation>
 <translation id="5300589172476337783">Weergeven</translation>
@@ -734,7 +734,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6567212464587185774">Gebruik tot 60% minder data en maak internet sneller.</translation>
 <translation id="6573096386450695060">Altijd toestaan</translation>
 <translation id="6573431926118603307">Tabbladen die je op andere apparaten in Chrome hebt geopend, worden hier weergegeven.</translation>
-<translation id="6575643671698722332">Herstel mislukt. Kijk of apparaat online is en probeer opnieuw.</translation>
 <translation id="6583199322650523874">Een bladwijzer toevoegen voor de huidige pagina</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">Desktopsite</translation>
@@ -859,7 +858,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7473891865547856676">Nee, bedankt</translation>
 <translation id="7475192538862203634">Als je deze melding vaker ziet, kun je deze <ph name="BEGIN_LINK" />suggesties<ph name="END_LINK" /> proberen.</translation>
 <translation id="7475688122056506577">SD-kaart niet gevonden. Sommige van je bestanden kunnen ontbreken.</translation>
-<translation id="748127970106343339">Verwijderen van apparaatinloggegevens bevestigen</translation>
 <translation id="7481312909269577407">Vooruit</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (geüpdatet: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Wachtwoorden weergeven</translation>
@@ -1010,9 +1008,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8609465669617005112">Omhoog</translation>
 <translation id="8616006591992756292">Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="8617240290563765734">De voorgestelde URL in de gedownloade content openen?</translation>
-<translation id="862875433388403934">Content (films, muziek, enzovoort) die is gedownload in andere apps kan mogelijk niet langer worden afgespeeld, totdat die apps opnieuw licenties verkrijgen op basis van nieuwe apparaatinloggegevens.
-
-Maak verbinding met internet en speel je gedownloade content af om nieuwe licenties te krijgen.</translation>
 <translation id="8636825310635137004">Schakel synchronisatie in om de tabbladen op je andere apparaten te bekijken</translation>
 <translation id="8641930654639604085">Sites met content voor volwassenen proberen te blokkeren</translation>
 <translation id="8662811608048051533">Hiermee word je uitgelogd van de meeste sites.</translation>
@@ -1070,7 +1065,6 @@ Maak verbinding met internet en speel je gedownloade content af om nieuwe licent
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB gedownload</translation>
 <translation id="9100505651305367705">Aanbieden om artikelen weer te geven in een vereenvoudigde weergave (indien ondersteund)</translation>
 <translation id="9100610230175265781">Wachtwoordzin vereist</translation>
-<translation id="9133515669113036225">Apparaatinloggegevens opnieuw instellen</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9139068048179869749">Vragen voordat sites meldingen mogen verzenden (aanbevolen)</translation>

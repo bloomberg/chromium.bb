@@ -166,7 +166,6 @@
     Kérjük, hogy a következő képernyőn küldjön visszajelzést: visszajelzésével segítséget nyújt a probléma kijavításához.</translation>
 <translation id="1217668622537098248">Visszaállítás bal kattintásra a művelet elvégzése után</translation>
 <translation id="121783623783282548">A jelszavak nem egyeznek.</translation>
-<translation id="1219533395013150448">Segédje arra használja ezeket a felvételeket, hogy létrehozza az Ön hangmintáját, amelyet a rendszer az eszközön tárol. A hangmintát a Segéd beállításaiban tudja törölni és újra megtanítani. A hangalapú utasításokat a Google Tevékenységvezérlők között tekintheti meg és törölheti.</translation>
 <translation id="122082903575839559">Tanúsítvány aláírási algoritmusa</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 RSA titkosítással</translation>
 <translation id="1221825588892235038">Csak a kijelölt</translation>
@@ -1492,7 +1491,6 @@
 <translation id="3271648667212143903">A(z) <ph name="ORIGIN" /> csatlakozni szeretne</translation>
 <translation id="3274763671541996799">Teljes képernyős módra váltott.</translation>
 <translation id="3275778913554317645">Megnyitás ablakként</translation>
-<translation id="3278877214895457897">Miután beállította a Chromebookot, a Segéd-gomb megnyomásával, illetve az „Ok Google” kimondásával bármikor segítséget kérhet Segédjétől.</translation>
 <translation id="3279230909244266691">Ez a folyamat néhány percet is igénybe vehet. A virtuális gép indítása folyamatban van.</translation>
 <translation id="3279741024917655738">Teljes képernyős videók megjelenítése a következőn</translation>
 <translation id="3280237271814976245">Mentés &amp;másként...</translation>
@@ -1681,7 +1679,6 @@
 <translation id="3550915441744863158">A Chrome automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik.</translation>
 <translation id="3551320343578183772">Lap bezárása</translation>
 <translation id="3552780134252864554">Törlés kilépéskor</translation>
-<translation id="3553146918065661815">Figyelmeztetés megjelenítése, mielőtt kilépne a ⌘Q billentyűparancs használatával</translation>
 <translation id="3555812735919707620">Bővítmény eltávolítása</translation>
 <translation id="3556000484321257665">A keresőmotor a következőre módosult: <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Nem sikerült telepíteni a házirendet az eszközre.</translation>
@@ -1757,7 +1754,6 @@
 <translation id="3654045516529121250">A kisegítő lehetőségek beállításainak áttekintése</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Állandó hozzáférése van egy fájlhoz.}other{Állandó hozzáférése van # fájlhoz.}}</translation>
 <translation id="3660234220361471169">Nem megbízható</translation>
-<translation id="3661054927247347545">A bejelentkezéshez használt tanúsítvány érvénytelen, az ablak bezárásáig hátralévő idő: <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Bővítmény ikonja</translation>
 <translation id="3665589677786828986">A Chrome azt észlelte, hogy egy másik program miatt megsérült néhány beállítás, ezért visszaállítja őket az eredeti alapértelmezett értékekre.</translation>
 <translation id="3668570675727296296">Nyelvi beállítások</translation>
@@ -2890,7 +2886,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5434065355175441495">PKCS #1 RSA titkosítás</translation>
 <translation id="5436492226391861498">Várakozás a proxy alagútra...</translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME" /> keresés:</translation>
-<translation id="5436822233913560332">Az összes böngészőablak automatikusan bezáródik, kijelentkezés nélkül.</translation>
 <translation id="5438224778284622050">Törli az offline fájlokat?</translation>
 <translation id="544083962418256601">Parancsikonok létrehozása...</translation>
 <translation id="5442228125690314719">Nem sikerült létrehozni a lemezképet. Próbálja újra.</translation>
@@ -3623,7 +3618,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Bejelentkezés most</translation>
 <translation id="6527303717912515753">Megosztás</translation>
 <translation id="6528513914570774834">Engedélyezi a hálózat használatát az eszköz többi felhasználója számára</translation>
 <translation id="652948702951888897">Chrome-előzmények</translation>
@@ -4092,7 +4086,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7256710573727326513">Megnyitás lapon</translation>
 <translation id="725758059478686223">Nyomtatási szolgáltatás</translation>
 <translation id="7257666756905341374">Az Ön által másolt és beillesztett adatok olvasása</translation>
-<translation id="7258619945375359543">A Segéd javaslatokat tehet a képernyő tartalma alapján.</translation>
 <translation id="7258697411818564379">PIN-kód beállítva</translation>
 <translation id="7262004276116528033">Ezt a bejelentkezési szolgáltatást a(z) <ph name="SAML_DOMAIN" /> biztosítja</translation>
 <translation id="7268365133021434339">Lapok bezárása</translation>
@@ -4855,7 +4848,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8438566539970814960">Keresések és böngészés javítása</translation>
 <translation id="8439506636278576865">Kínálja fel az ezen a nyelven írt oldalak fordítását</translation>
 <translation id="8440630305826533614">Linux-alkalmazások</translation>
-<translation id="8446474770554547328">Az „Ok Google” háromszori felvételével létrehozza hangmintáját, amelyet a rendszer az eszközön tárol. A hangmintát a Segéd beállításaiban tudja törölni és újra megtanítani. A hangalapú utasításokat a Google Tevékenységvezérlők között tekintheti meg és törölheti.</translation>
 <translation id="8446884382197647889">További információ</translation>
 <translation id="8447409163267621480">Használja a Ctrl vagy az Alt gombot</translation>
 <translation id="8448729345478502352">Nagyíthatja és kicsinyítheti a képernyőn megjelenő elemeket</translation>

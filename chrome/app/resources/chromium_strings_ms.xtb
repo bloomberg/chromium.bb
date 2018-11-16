@@ -142,7 +142,6 @@
 <translation id="5862307444128926510">Selamat datang ke Chromium</translation>
 <translation id="5877064549588274448">Saluran berubah. Mulakan semula peranti anda untuk menggunakan perubahan.</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
-<translation id="5902536751647951209">Sijil pengesahan gagal. Sila log masuk ke Chromium sekali lagi atau hubungi pentadbir anda untuk mendapatkan maklumat lanjut. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Hampir terkini! Mulakan semula peranti anda untuk menyelesaikan kemas kini.</translation>
 <translation id="5987687638152509985">Kemas kini Chromium untuk memulakan penyegerakan</translation>
 <translation id="6013050204643758987">OS Chromium menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS" />perisian sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan, sebagaimana <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -222,7 +221,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7745317241717453663">Tindakan ini akan memadamkan data semakan imbas anda daripada peranti ini. Untuk mendapatkan kembali data anda kemudian, log masuk ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat mencipta direktori sementara. Sila semak ruang cakera kosong dan kebenaran untuk memasang perisian.</translation>
 <translation id="7773960292263897147">Amaran: Chromium tidak dapat menghalang sambungan daripada merakamkan sejarah penyemakan imbas anda. Untuk melumpuhkan sambungan ini dalam mod inkognito, nyahpilih pilihan ini.</translation>
-<translation id="7774736947049807614">Sijil pengesahan gagal. Sila log masuk ke Chromium sekali lagi sebagai <ph name="USER_NAME" /> atau hubungi pentadbir anda untuk mendapatkan maklumat lanjut. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium tidak dapat mengemas kini kepada versi terkini, maka anda terlepas ciri baharu dan penyelesaian keselamatan.</translation>
 <translation id="7901117350626490574">Kemas kini baharu tersedia untuk Chromium dan akan digunakan sebaik sahaja anda melancarkan Chromium semula.</translation>

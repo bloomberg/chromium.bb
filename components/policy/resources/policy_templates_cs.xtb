@@ -115,7 +115,7 @@ Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální po
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, v protokolu TLS nebudou povoleny šifrovací sady RC4. Nastavením této zásady na hodnotu true je možné zajistit kompatibilitu se zastaralým serverem. Toto nastavení by však mělo být použito pouze jako dočasné nouzové opatření a server by měl být překonfigurován.</translation>
 <translation id="1297117713060236551">Tato zásada určuje seznam webů, které nikdy nezpůsobí přepnutí prohlížeče.
 
-      Prvky lze do tohoto seznamu přidat také pomocí zásady <ph name="USE_IE_SITELIST_POLICY_NAME" />.
+      Položky lze do tohoto seznamu přidat také pomocí zásady <ph name="USE_IE_SITELIST_POLICY_NAME" />.
 
       Pokud tato zásada není nastavena, nepřidají se do seznamu žádné weby.
 
@@ -216,7 +216,7 @@ Pokud je tato zásada nastavena na hodnotu false nebo ponechána bez nastavení,
 Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživatelé rozšíření ARC nebudou moci používat.</translation>
 <translation id="1559980755219453326">Tato zásada určuje, zda se mají hlásit informace o rozšířeních a pluginech.
 
-      Pokud je tato zásada ponechána nenastavená nebo je nastavena na hodnotu True, údaje o rozšířeních a pluginech se shromažďují.
+      Pokud je tato zásada ponechána nenastavená nebo je nastavená na hodnotu True, údaje o rozšířeních a pluginech se shromažďují.
       Pokud je tato zásada nastavená na hodnotu False, údaje o rozšířeních a pluginech se neshromažďují.
 
       Tato zásada je účinná pouze v případě, že je zapnutá zásada <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a počítač je zaregistrován pomocí zásady <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -2918,7 +2918,7 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
 
       Když je ponechána nenastavená nebo je nastavená na hodnotu false, <ph name="PRODUCT_NAME" /> zásadu <ph name="IEEM_SITELIST_POLICY" /> prohlížeče Internet Explorer jako zdroj pravidel pro přepínání prohlížečů nepoužívá.
 
-      Když je nastavená na hodnotu true, <ph name="PRODUCT_NAME" /> čte zásadu <ph name="IEEM_SITELIST_POLICY" /> prohlížeče Internet Explorer a získává z ní adresu URL seznamu webů. <ph name="PRODUCT_NAME" /> poté seznam webů z dané adresy URL stáhne a pravidla použije, jako kdyby byla nakonfigurována pomocí zásady <ph name="SITELIST_POLICY_NAME" />.
+      Když je nastavená na hodnotu true, <ph name="PRODUCT_NAME" /> čte zásadu <ph name="IEEM_SITELIST_POLICY" /> prohlížeče Internet Explorer a získává z ní adresu URL seznamu webů. <ph name="PRODUCT_NAME" /> poté seznam webů z dané adresy URL stáhne a pravidla použije, jako kdyby byla nakonfigurovaná pomocí zásady <ph name="SITELIST_POLICY_NAME" />.
 
       Další informace o zásadě <ph name="IEEM_SITELIST_POLICY" /> prohlížeče Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Soubory PDF otevírat vždy externě</translation>
@@ -3170,11 +3170,6 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 <translation id="8970205333161758602">Potlačení oznámení o ukončení podpory pluginu <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Povolit ověřování gnubby pro hostitele vzdáleného přístupu</translation>
 <translation id="8976531594979650914">Jako výchozí tiskárnu použít výchozí tiskárnu systému</translation>
-<translation id="898520305112996948">Umožňuje nastavit seznam vzorů adres URL určujících, kterým webům bude automaticky uděleno oprávnění k přístupu k zařízením USB od určitého dodavatele s určitými ID produktu. Aby zásada byla platná, musí každá položka v seznamu obsahovat jak zařízení, tak vzory adres URL. Každá položka zařízení může obsahovat pole ID dodavatele a ID produktu. Chybějící ID je považováno za zástupný znak. ID produktu však nesmí být zadáno bez ID dodavatele, jinak zásada nebude platná. Neplatné hodnoty zásady jsou ignorovány.
-
-        Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultWebUsbGuardSetting (pokud je nastavena), nebo z osobního nastavení uživatele.
-
-        Vzory adres URL v této zásadě by neměly být v konfliktu se vzory nakonfigurovanými prostřednictvím zásady WebUsbBlockedForUrls. V případě konfliktu bude mít tato zásada před zásadami WebUsbBlockedForUrls a WebUsbAskForUrls přednost.</translation>
 <translation id="8992176907758534924">Nepovolit zobrazení obrázků žádným webovým stránkám</translation>
 <translation id="9012851181124311976">Konfiguruje seznam podnikových přihlašovacích adres URL (pouze schémata HTTP a HTTPS). Na těchto adresách URL bude pořizován otisk hesla, který bude následně sloužit k detekci opětovného použití hesla.
       Aby prohlížeč <ph name="PRODUCT_NAME" /> mohl správně pořizovat otisky hesel, měly by přihlašovací stránky odpovídat pokynům na stránce https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

@@ -510,7 +510,7 @@
 <translation id="4915549754973153784">기기를 검색할 때 <ph name="BEGIN_LINK" />도움말 보기<ph name="END_LINK" />...</translation>
 <translation id="4943872375798546930">검색결과가 없습니다.</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" />에서 내 화면을 공유하는 중입니다.</translation>
-<translation id="4961107849584082341">이 페이지를 어떤 언어로든 번역하세요.</translation>
+<translation id="4961107849584082341">이 페이지를 원하는 언어로 번역하세요.</translation>
 <translation id="4961334780091921942">모든 기기의 비밀번호, 방문 기록 등</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정에서 로그아웃합니다. 이렇게 하면 내 Chrome 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="497421865427891073">앞으로 이동</translation>
@@ -616,7 +616,7 @@
 <translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
 <translation id="5686790454216892815">파일 이름이 너무 깁니다.</translation>
 <translation id="5689516760719285838">위치</translation>
-<translation id="569536719314091526">옵션 더보기 버튼을 눌러 이 페이지를 어떤 언어로든 번역하세요</translation>
+<translation id="569536719314091526">옵션 더보기 버튼을 눌러 이 페이지를 원하는 언어로 번역하세요</translation>
 <translation id="5719837394786370183">시크릿 탭을 모두 닫으면 시크릿 탭에서 본 페이지는 브라우저 방문 기록, 쿠키 저장소 또는 방문 기록 어디에도 흔적이 남지 않습니다. 단, 다운로드한 파일이나 생성한 북마크는 유지됩니다.
 
 하지만 완전한 비밀이 보장되는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체(ISP), 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
@@ -734,7 +734,6 @@
 <translation id="6567212464587185774">데이터 사용량을 최대 60%까지 절약하고 웹 속도를 높이세요.</translation>
 <translation id="6573096386450695060">항상 허용</translation>
 <translation id="6573431926118603307">다른 기기의 Chrome에서 연 탭이 여기에 표시됩니다.</translation>
-<translation id="6575643671698722332">재설정하지 못했습니다. 온라인 연결을 확인하고 다시 시도하세요.</translation>
 <translation id="6583199322650523874">현재 페이지 북마크</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">데스크톱 사이트</translation>
@@ -859,7 +858,6 @@
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7475192538862203634">이 메시지가 자주 표시된다면 다음 <ph name="BEGIN_LINK" />권장사항<ph name="END_LINK" />을 시도해 보세요.</translation>
 <translation id="7475688122056506577">SD 카드가 없습니다. 일부 파일이 누락되었을 수 있습니다.</translation>
-<translation id="748127970106343339">기기 사용자 인증 정보 삭제 확인</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />(<ph name="TIME_SINCE_UPDATE" />에 업데이트됨)</translation>
 <translation id="7494879913343971937">비밀번호 표시</translation>
@@ -1010,9 +1008,6 @@
 <translation id="8609465669617005112">위로 이동</translation>
 <translation id="8616006591992756292">Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
 <translation id="8617240290563765734">다운로드한 콘텐츠에 지정된 추천 URL을 여시겠습니까?</translation>
-<translation id="862875433388403934">다른 애플리케이션에서 다운로드한 콘텐츠(영화, 음악 등)는 해당 애플리케이션이 새로운 기기 사용자 인증 정보를 기반으로 라이선스를 다시 취득해야 재생할 수 있습니다.
-
-새로운 라이선스를 취득하려면 인터넷에 연결하고 다운로드한 콘텐츠를 재생하세요.</translation>
 <translation id="8636825310635137004">다른 기기에서 탭을 가져오려면 동기화를 사용 설정하세요.</translation>
 <translation id="8641930654639604085">성인용 사이트 차단 시도</translation>
 <translation id="8662811608048051533">대부분의 사이트에서 로그아웃됩니다.</translation>
@@ -1070,7 +1065,6 @@
 <translation id="9099018167121903954"><ph name="KILOBYTES" />KB가 다운로드됨</translation>
 <translation id="9100505651305367705">지원되는 경우 간단히 보기로 기사를 표시하는 기능 제공</translation>
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
-<translation id="9133515669113036225">기기 사용자 인증 정보 재설정</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />(<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">원본 보기</translation>
 <translation id="9139068048179869749">사이트에서 알림을 보내도록 허용하기 전에 확인(권장)</translation>

@@ -166,7 +166,6 @@
     Pada skrin berikutnya, sila hantar maklum balas untuk membantu kami menyelesaikan isu ini.</translation>
 <translation id="1217668622537098248">Kembali ke klik kiri selepas tindakan</translation>
 <translation id="121783623783282548">Kata laluan tidak sepadan.</translation>
-<translation id="1219533395013150448">Assisatant anda menggunakan rakaman ini untuk membuat model suara anda, yang disimpan pada peranti anda. Padamkan atau ulang semula model tersebut dalam tetapan Assistant. Lihat atau padamkan perintah suara dalam kawalan aktiviti Google anda.</translation>
 <translation id="122082903575839559">Algoritma Tandatangan Sijil</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 Dengan Penyulitan RSA</translation>
 <translation id="1221825588892235038">Pemilihan sahaja</translation>
@@ -1492,7 +1491,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> ingin menyambung</translation>
 <translation id="3274763671541996799">Anda telah menggunakan skrin penuh.</translation>
 <translation id="3275778913554317645">Buka sebagai tetingkap</translation>
-<translation id="3278877214895457897">Apabila Chromebook anda selesai disediakan, tekan butang Assistant atau sebut "Ok Google" untuk mendapatkan bantuan daripada Assistant anda pada bila-bila masa.</translation>
 <translation id="3279230909244266691">Proses ini mungkin mengambil masa beberapa minit. Memulakan mesin maya.</translation>
 <translation id="3279741024917655738">Tunjukkan video skrin penuh pada</translation>
 <translation id="3280237271814976245">Simpan &amp;sebagai...</translation>
@@ -1681,7 +1679,6 @@
 <translation id="3550915441744863158">Chrome dikemas kini secara automatik supaya anda sentiasa mempunyai versi yang baharu</translation>
 <translation id="3551320343578183772">Tutup Tab</translation>
 <translation id="3552780134252864554">Dikosongkan semasa Keluar</translation>
-<translation id="3553146918065661815">Tunjukkan amaran sebelum berhenti dengan ⌘Q</translation>
 <translation id="3555812735919707620">Alih keluar pelanjutan</translation>
 <translation id="3556000484321257665">Enjin carian anda telah ditukar kepada <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Gagal memasang dasar pada peranti.</translation>
@@ -1757,7 +1754,6 @@
 <translation id="3654045516529121250">Baca tetapan kebolehaksesan anda</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Apl mempunyai akses tetap kepada satu fail.}other{Apl mempunyai akses tetap kepada # fail.}}</translation>
 <translation id="3660234220361471169">Tidak Dipercayai</translation>
-<translation id="3661054927247347545">Pensijilan log masuk tidak sah, tetingkap akan ditutup dalam <ph name="MINUTES" /> : <ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Ikon Sambungan</translation>
 <translation id="3665589677786828986">Chrome mengesan bahawa sesetengah tetapan anda telah terganggu oleh program lain dan menetapkannya semula kepada tetapan lalainya yang asal.</translation>
 <translation id="3668570675727296296">Tetapan bahasa</translation>
@@ -2890,7 +2886,6 @@
 <translation id="5434065355175441495">PKCS #1 Penyulitan RSA</translation>
 <translation id="5436492226391861498">Menunggu terowong proksi...</translation>
 <translation id="5436510242972373446">Cari <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Semua tetingkap penyemak imbas akan ditutup secara automatik tidak lama lagi tanpa log masuk.</translation>
 <translation id="5438224778284622050">Padam fail luar talian?</translation>
 <translation id="544083962418256601">Buat pintasan...</translation>
 <translation id="5442228125690314719">Ralat semasa membuat imej cakera. Sila cuba lagi.</translation>
@@ -3622,7 +3617,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Log masuk sekarang</translation>
 <translation id="6527303717912515753">Kongsi</translation>
 <translation id="6528513914570774834">Benarkan pengguna lain peranti ini untuk menggunakan rangkaian ini</translation>
 <translation id="652948702951888897">Sejarah Chrome</translation>
@@ -4091,7 +4085,6 @@
 <translation id="7256710573727326513">Buka dalam tab</translation>
 <translation id="725758059478686223">Perkhidmatan Cetak</translation>
 <translation id="7257666756905341374">Baca data yang anda salin dan tampal</translation>
-<translation id="7258619945375359543">Benarkan Assistant memberikan cadangan berdasarkan paparan skrin anda</translation>
 <translation id="7258697411818564379">PIN anda telah ditambahkan</translation>
 <translation id="7262004276116528033">Perkhidmatan log masuk ini dihoskan oleh <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Tutup Tab</translation>
@@ -4855,7 +4848,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8438566539970814960">Mempertingkatkan carian dan penyemakan imbas</translation>
 <translation id="8439506636278576865">Tawaran untuk menterjemahkan halaman dalam bahasa ini</translation>
 <translation id="8440630305826533614">Apl Linux</translation>
-<translation id="8446474770554547328">“Ok Google” yang dirakam 3 kali akan menghasilkan model suara anda, yang disimpan pada peranti anda. Padamkan atau ulang semula model ini dalam tetapan Assistant. Lihat atau padamkan perintah suara dalam kawalan aktiviti Google anda.</translation>
 <translation id="8446884382197647889">Ketahui Lebih Lanjut</translation>
 <translation id="8447409163267621480">Termasuk sama ada Ctrl atau Alt</translation>
 <translation id="8448729345478502352">Kecilkan atau besarkan item pada skrin anda</translation>

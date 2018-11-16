@@ -616,6 +616,7 @@
 <translation id="1880905663253319515">要刪除憑證「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="1886996562706621347">允許網站要求成為通訊協定的預設處理常式 (建議)</translation>
 <translation id="1887442540531652736">登入錯誤</translation>
+<translation id="1887597546629269384">再說一次「嘿 Google」</translation>
 <translation id="1887850431809612466">硬體版本</translation>
 <translation id="1889984860246851556">開啟 Proxy 設定</translation>
 <translation id="1890674179660343635">&lt;span&gt;ID：&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -713,6 +714,7 @@
 <translation id="2048653237708779538">無法執行操作</translation>
 <translation id="204914487372604757">建立捷徑</translation>
 <translation id="2050339315714019657">縱向</translation>
+<translation id="2052369079215022979">由貴機構管理</translation>
 <translation id="2053312383184521053">閒置狀態資料</translation>
 <translation id="205560151218727633">Google 助理標誌</translation>
 <translation id="2058456167109518507">偵測到裝置</translation>
@@ -899,6 +901,7 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2339120501444485379">輸入新名稱</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> 要求配對</translation>
+<translation id="2342740338116612727">已新增書籤</translation>
 <translation id="2344028582131185878">自動下載</translation>
 <translation id="2345723121311404059">將 1 個網頁傳送至「<ph name="PRINTER_NAME" />」列印</translation>
 <translation id="2347644257713614136">Hangouts 和 Cast for Education 的相關使用行為受到《Google 隱私權政策》所規範。</translation>
@@ -1486,7 +1489,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> 要求連線</translation>
 <translation id="3274763671541996799">你已進入全螢幕模式。</translation>
 <translation id="3275778913554317645">在視窗中開啟</translation>
-<translation id="3278877214895457897">Chromebook 設定完成後，只要按下 Google 助理按鈕或說出「Ok Google」，就能隨時向你的 Google 助理下達指令。</translation>
 <translation id="3279230909244266691">正在啟動虛擬機器，過程可能需要幾分鐘。</translation>
 <translation id="3279741024917655738">在以下位置顯示全螢幕影片</translation>
 <translation id="3280237271814976245">另存新檔(&amp;A)...</translation>
@@ -1745,11 +1747,11 @@
 <translation id="3651488188562686558">中斷 Wi-Fi 連線</translation>
 <translation id="3652817283076144888">正在初始化</translation>
 <translation id="3653160965917900914">網路檔案共用</translation>
+<translation id="3653842108912548333">透過 Voice Match 功能存取 Google 助理</translation>
 <translation id="3653999333232393305">繼續允許 <ph name="HOST" /> 存取你的麥克風</translation>
 <translation id="3654045516529121250">讀取你的協助工具設定</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{應用程式可永久存取 1 個檔案。}other{應用程式可永久存取 # 個檔案。}}</translation>
 <translation id="3660234220361471169">不受信任</translation>
-<translation id="3661054927247347545">登入憑證無效，視窗將於 <ph name="MINUTES" /> : <ph name="SECONDS" /> 後關閉</translation>
 <translation id="3664511988987167893">擴充功能圖示</translation>
 <translation id="3665589677786828986">Chrome 偵測到另一個程式竄改了部分瀏覽器設定，現已將這些設定重設為原始預設值。</translation>
 <translation id="3668570675727296296">語言設定</translation>
@@ -2285,6 +2287,7 @@
 <translation id="4524832533047962394">這個版本的作業系統不支援目前提供的註冊模式。請確認你使用的是最新版本。</translation>
 <translation id="4525382759303819021">取得 Play 商店應用程式的最新更新和推薦項目</translation>
 <translation id="4530494379350999373">來源</translation>
+<translation id="4533846798469727141">現在說出「嘿 Google」</translation>
 <translation id="4533985347672295764">CPU 時間</translation>
 <translation id="4534661889221639075">請再試一次。</translation>
 <translation id="4535127706710932914">預設設定檔</translation>
@@ -2880,7 +2883,6 @@
 <translation id="5434065355175441495">PKCS #1 RSA 加密</translation>
 <translation id="5436492226391861498">正在等待 Proxy 通道...</translation>
 <translation id="5436510242972373446">搜尋 <ph name="SITE_NAME" />：</translation>
-<translation id="5436822233913560332">所有瀏覽器視窗即將自動關閉，但不會登出帳戶。</translation>
 <translation id="5438224778284622050">要刪除離線檔案嗎？</translation>
 <translation id="544083962418256601">建立捷徑...</translation>
 <translation id="5442228125690314719">建立磁碟映像檔時發生錯誤，請再試一次。</translation>
@@ -3260,6 +3262,7 @@
 <translation id="5990386583461751448">已翻譯</translation>
 <translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{為確保你可以持續瀏覽網路，請要求你的管理員移除這個應用程式。}other{為確保你可以持續瀏覽網路，請要求你的管理員移除這些應用程式。}}</translation>
 <translation id="5997337190805127100">進一步瞭解網站存取權</translation>
+<translation id="6000758707621254961">有 <ph name="RESULT_COUNT" /> 個與「<ph name="SEARCH_TEXT" />」相符的搜尋結果</translation>
 <translation id="6002458620803359783">聲音偏好</translation>
 <translation id="6005695835120147974">媒體路由器</translation>
 <translation id="6006484371116297560">傳統版</translation>
@@ -3509,6 +3512,7 @@
 <translation id="637062427944097960">這個檔案已在其他電腦上開啟。前往 <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) 查看。</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">再試一次</translation>
+<translation id="6377268785556383139">有 1 個與「<ph name="SEARCH_TEXT" />」相符的搜尋結果</translation>
 <translation id="6380143666419481200">接受並繼續</translation>
 <translation id="6384275966486438344">將你的搜尋設定變更為：<ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">網站可以儲存及讀取 Cookie 資料</translation>
@@ -3526,6 +3530,7 @@
 <translation id="6405510437656969977">當你準備好輸入 PIN 碼時再繼續操作</translation>
 <translation id="6406303162637086258">模擬瀏覽器重新啟動</translation>
 <translation id="6406506848690869874">同步</translation>
+<translation id="6406708970972405507">設定 - <ph name="SECTION_TITLE" /></translation>
 <translation id="6408118934673775994">讀取及變更你在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 網站上的資料</translation>
 <translation id="6410257289063177456">圖片檔</translation>
 <translation id="6410328738210026208">變更版本並執行 Powerwash</translation>
@@ -3609,7 +3614,6 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">立即登入</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6528513914570774834">允許這個裝置的其他使用者使用這個網路</translation>
 <translation id="652948702951888897">Chrome 歷史記錄</translation>
@@ -3807,6 +3811,7 @@
 <translation id="6840184929775541289">這不是憑證授權單位</translation>
 <translation id="6840313690797192085">$1 PB</translation>
 <translation id="6841186874966388268">錯誤</translation>
+<translation id="6843423766595476978">Ok Google 設定完成</translation>
 <translation id="6845038076637626672">最大化開啟</translation>
 <translation id="685040365210406336">不進行任何變更</translation>
 <translation id="6851497530878285708">應用程式已啟用</translation>
@@ -4066,6 +4071,7 @@
 <translation id="7246947237293279874">FTP Proxy</translation>
 <translation id="7248671827512403053">應用程式</translation>
 <translation id="725109152065019550">很抱歉，你的管理員已停用你帳戶中的外部儲存裝置。</translation>
+<translation id="7251346854160851420">預設桌布</translation>
 <translation id="7253521419891527137">瞭解詳情(&amp;L)</translation>
 <translation id="7254554697254365959">無法翻譯這個網頁的內容。</translation>
 <translation id="7254951428499890870">你確定要在診斷模式中啟動「<ph name="APP_NAME" />」？</translation>
@@ -4076,7 +4082,6 @@
 <translation id="7256710573727326513">在分頁中開啟</translation>
 <translation id="725758059478686223">列印服務</translation>
 <translation id="7257666756905341374">讀取你複製和貼上的資料</translation>
-<translation id="7258619945375359543">允許 Google 助理根據畫面顯示內容提供建議</translation>
 <translation id="7258697411818564379">PIN 碼新增成功</translation>
 <translation id="7262004276116528033">這是由 <ph name="SAML_DOMAIN" /> 代管的登入服務。</translation>
 <translation id="7268365133021434339">關閉分頁</translation>
@@ -4176,6 +4181,7 @@
 <translation id="7417705661718309329">Google 地圖</translation>
 <translation id="741906494724992817">這個應用程式不需要任何特殊權限。</translation>
 <translation id="7419433794191666278">將你的手機與 Chromebook 連結。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
+<translation id="742130257665691897">已移除書籤</translation>
 <translation id="7421925624202799674">檢視網頁原始碼(&amp;V)</translation>
 <translation id="7422192691352527311">偏好設定...</translation>
 <translation id="7423098979219808738">先詢問我</translation>
@@ -4336,6 +4342,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{書籤清單中有 1 個項目}other{書籤清單中有 # 個項目}}</translation>
 <translation id="7701040980221191251">無</translation>
 <translation id="7701869757853594372">USER 控制代碼</translation>
+<translation id="7702574632857388784">從清單中移除 <ph name="FILE_NAME" /></translation>
 <translation id="7702907602086592255">網域</translation>
 <translation id="7704305437604973648">工作</translation>
 <translation id="7704317875155739195">自動完成搜尋字詞與網址</translation>
@@ -4729,6 +4736,7 @@
 <translation id="8249296373107784235">取消</translation>
 <translation id="8249672078237421304">詢問是否將網頁翻譯成你慣用的語言</translation>
 <translation id="8251578425305135684">已移除縮圖。</translation>
+<translation id="8252569384384439529">上傳中...</translation>
 <translation id="8253198102038551905">按一下 [+] 即可查看網路屬性</translation>
 <translation id="825483282309623688">您必須連上網際網路，才能還原資料。</translation>
 <translation id="8256319818471787266">小黃</translation>
@@ -4795,6 +4803,7 @@
 <translation id="8371695176452482769">請說話</translation>
 <translation id="8372369524088641025">WEP 金鑰有誤</translation>
 <translation id="8373553483208508744">關閉多個分頁音訊</translation>
+<translation id="8378714024927312812">由貴機構管理</translation>
 <translation id="8379878387931047019">這部裝置不支援這個網站所要求的安全金鑰類型</translation>
 <translation id="8382913212082956454">複製電子郵件地址(&amp;E)</translation>
 <translation id="8386091599636877289">找不到政策。</translation>

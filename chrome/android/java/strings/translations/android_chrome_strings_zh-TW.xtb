@@ -170,6 +170,7 @@
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2156074688469523661">其餘網站 (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
+<translation id="2221802148287197464">自動化</translation>
 <translation id="2227444325776770048">以<ph name="USER_FULL_NAME" />的身分繼續使用</translation>
 <translation id="2232379019872353004">將部分系統資訊和網頁內容傳送給 Google</translation>
 <translation id="2234876718134438132">同步處理和 Google 服務</translation>
@@ -240,6 +241,7 @@
 <translation id="2777555524387840389">還剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2779651927720337254">失敗</translation>
 <translation id="2781151931089541271">還剩 1 秒</translation>
+<translation id="2783359740176230170">快速結帳</translation>
 <translation id="2803478378562657435">正在顯示已儲存的密碼和密碼選項</translation>
 <translation id="2810645512293415242">網頁內容經過簡化，不僅節省數據用量，更加快載入速度。</translation>
 <translation id="281504910091592009">你可以查看及管理 <ph name="BEGIN_LINK" />Google 帳戶<ph name="END_LINK" />中儲存的密碼</translation>
@@ -362,6 +364,7 @@
 <translation id="3868004864571585162">Cookie、媒體授權和網站資料</translation>
 <translation id="3894427358181296146">新增資料夾</translation>
 <translation id="3895926599014793903">強制啟用縮放功能</translation>
+<translation id="3918221729963301892">不要再顯示</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">合併我的資料</translation>
 <translation id="393697183122708255">沒有可用的語音搜尋功能</translation>
@@ -507,6 +510,7 @@
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />查看說明<ph name="END_LINK" />。正在掃描裝置…</translation>
 <translation id="4943872375798546930">沒有結果</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共用你的畫面。</translation>
+<translation id="4961107849584082341">將這個網頁翻譯成任何語言</translation>
 <translation id="4961334780091921942">你所有裝置上的密碼、歷史記錄和其他設定</translation>
 <translation id="4961700429721424617">您即將登出由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶。系統會將您的 Chrome 資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
 <translation id="497421865427891073">往前</translation>
@@ -544,6 +548,7 @@
 <translation id="5240817131241497236">Chrome 的同步處理、個人化功能和其他 Google 服務控制設定已變更。這可能影響你目前的設定。</translation>
 <translation id="5264003212305142034">你隨時可以調整<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />。Google 可能會根據你所造訪網站的內容、瀏覽器互動行為和瀏覽活動，提供個人化的 Chrome 體驗和 Google 服務體驗，例如翻譯、搜尋和廣告。</translation>
 <translation id="5271967389191913893">裝置無法開啟您要下載的這項內容。</translation>
+<translation id="5274381992091475657">自動填入助理</translation>
 <translation id="528192093759286357">從頂端拖曳並輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="5284584623296338184">您更改過的書籤、歷史記錄、密碼和其他設定不會繼續與您 Google 帳戶中的資料保持同步，但是您 Google 帳戶現有的資料仍會保留。</translation>
 <translation id="5300589172476337783">顯示</translation>
@@ -611,6 +616,7 @@
 <translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5689516760719285838">位置</translation>
+<translation id="569536719314091526">透過 [更多選項] 按鈕將這個網頁翻譯成任何語言</translation>
 <translation id="5719837394786370183">當您關閉所有無痕式分頁後，您在其中瀏覽的網頁都不會保留在瀏覽器記錄、Cookie 儲存庫或搜尋記錄中。不過，系統會將您下載的檔案或建立的書籤全部予以保留。
 
 不過，這並不代表您完全沒有瀏覽記錄。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽記錄，您所造訪的網站也可記錄您的瀏覽活動。</translation>
@@ -652,6 +658,7 @@
 <translation id="5962718611393537961">輕觸即可收合</translation>
 <translation id="5990142338020175451">體驗更加個人化的 Google 服務 (例如更適切的網頁建議)</translation>
 <translation id="6000066717592683814">繼續使用 Google</translation>
+<translation id="6001839398155993679">立即開始</translation>
 <translation id="6005538289190791541">建議的密碼</translation>
 <translation id="6039379616847168523">跳至下一個分頁</translation>
 <translation id="6040143037577758943">關閉</translation>
@@ -727,7 +734,6 @@
 <translation id="6567212464587185774">最多可節省 60% 數據用量並加快網頁載入速度。</translation>
 <translation id="6573096386450695060">一律允許</translation>
 <translation id="6573431926118603307">您在其他裝置上透過 Chrome 開啟的分頁會顯示在這裡。</translation>
-<translation id="6575643671698722332">重設失敗。請確認裝置已連上網路，然後再試一次。</translation>
 <translation id="6583199322650523874">將目前的網頁加入書籤</translation>
 <translation id="6584721918629302382">AR</translation>
 <translation id="6593061639179217415">電腦版網站</translation>
@@ -826,6 +832,7 @@
 <translation id="7250468141469952378">已選取 <ph name="ITEM_COUNT" /> 個項目</translation>
 <translation id="7253272406652746122">在裝置的「設定」應用程式中，透過「帳戶」頁面新增 Google 帳戶。</translation>
 <translation id="7274013316676448362">已封鎖網站</translation>
+<translation id="728491846437309531">Google 助理可幫助你輕鬆快速地在網站上完成工作</translation>
 <translation id="729975465115245577">你的裝置沒有可儲存密碼檔案的應用程式。</translation>
 <translation id="7302081693174882195">詳細資料：依儲存資料量排序</translation>
 <translation id="7333031090786104871">仍在新增先前的網站</translation>
@@ -851,7 +858,6 @@
 <translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="7475192538862203634">如果您經常看到這個頁面，請嘗試這些<ph name="BEGIN_LINK" />建議<ph name="END_LINK" />。</translation>
 <translation id="7475688122056506577">找不到 SD 卡。部分檔案可能會遺失。</translation>
-<translation id="748127970106343339">確認刪除裝置憑證</translation>
 <translation id="7481312909269577407">往前</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (上次更新時間：<ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">顯示密碼</translation>
@@ -1002,9 +1008,6 @@
 <translation id="8609465669617005112">上移</translation>
 <translation id="8616006591992756292">你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="8617240290563765734">開啟這項下載內容中指定的建議網址？</translation>
-<translation id="862875433388403934">其他應用程式必須以新的裝置憑證重新取得授權，才能順利播放已下載的內容 (例如電影、音樂等)。
-
-如要取得新授權，請先連線至網際網路，然後再播放您已下載的內容。</translation>
 <translation id="8636825310635137004">如要存取您在其他裝置上開啟的分頁，請開啟同步處理功能。</translation>
 <translation id="8641930654639604085">嘗試封鎖成人網站</translation>
 <translation id="8662811608048051533">你會從大多數網站登出。</translation>
@@ -1062,7 +1065,6 @@
 <translation id="9099018167121903954">下載內容佔 <ph name="KILOBYTES" /> KB</translation>
 <translation id="9100505651305367705">詢問是否以簡易模式顯示支援這項功能的文章</translation>
 <translation id="9100610230175265781">請提供通關密語</translation>
-<translation id="9133515669113036225">重設裝置憑證</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9139068048179869749">允許網站傳送通知前，必須先詢問您 (建議)</translation>

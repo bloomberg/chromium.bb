@@ -143,6 +143,7 @@
 <translation id="3153444934357957346">Només pots tenir <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes com a màxim en un inici de sessió múltiple.</translation>
 <translation id="3154351730702813399">És possible que l'administrador del dispositiu supervisi l'activitat de navegació.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connectat a un dispositiu}other{Connectat a # dispositius}}</translation>
+<translation id="32244657276328332">No hi ha connexió a la xarxa</translation>
 <translation id="3236488194889173876">No hi ha cap xarxa mòbil disponible</translation>
 <translation id="3255483164551725916">Què pots fer?</translation>
 <translation id="3294437725009624529">Convidat</translation>
@@ -191,6 +192,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivades en una aplicació}other{Desactivades en # aplicacions}}</translation>
 <translation id="4072264167173457037">Senyal mitjà</translation>
 <translation id="4146833061457621061">Reprodueix música</translation>
+<translation id="4181841719683918333">Idiomes</translation>
 <translation id="4217571870635786043">Dictat</translation>
 <translation id="4261870227682513959">Mostra la configuració de notificacions. Les notificacions estan desactivades.</translation>
 <translation id="4269883910223712419">L'administrador d'aquest dispositiu pot dur a terme les accions següents:</translation>
@@ -243,6 +245,7 @@
 <translation id="5207949376430453814">Ressalta la marca d'inserció de text</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="523505283826916779">Configuració d'accessibilitat</translation>
+<translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configuració del Bluetooth</translation>
 <translation id="5331975486040154427">Dispositiu USB-C (port posterior esquerre)</translation>
 <translation id="5379115545237091094">Massa intents</translation>

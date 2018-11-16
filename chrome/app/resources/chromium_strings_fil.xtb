@@ -144,7 +144,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="5862307444128926510">Maligayang Pagdating sa Chromium</translation>
 <translation id="5877064549588274448">Binago ang channel. I-restart ang iyong device upang ilapat ang mga pagbabago.</translation>
 <translation id="5895138241574237353">I-restart</translation>
-<translation id="5902536751647951209">Hindi nagtagumpay ang certificate ng pag-authenticate. Mag-sign in muli sa Chromium o makipag-ugnayan sa iyong administrator para sa higit pang impormasyon. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Halos napapanahon na! I-restart ang iyong device upang tapusin ang pag-a-update.</translation>
 <translation id="5987687638152509985">I-update ang Chromium upang simulan ang pag-sync</translation>
 <translation id="6013050204643758987">Ang Chromium OS ay ginagawang posible ng karagdagang <ph name="BEGIN_LINK_CROS_OSS" />open source na software<ph name="END_LINK_CROS_OSS" />, gayundin ng <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
@@ -224,7 +223,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="7745317241717453663">Ide-delete nito ang iyong data mula sa pag-browse sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Hindi makalikha ng pansamantalang direktoryo ang installer. Paki-suri para sa puwang sa disk na walang laman at pahintulot upang i-install ang software.</translation>
 <translation id="7773960292263897147">Babala: Hindi mapipigilan ng Chromium ang pagtatala ng mga extension sa iyong history ng pag-browse. Upang i-disable ang extension na ito sa incognito mode, alisin sa pagkakapili ang opsyong ito.</translation>
-<translation id="7774736947049807614">Hindi nagtagumpay ang certificate ng pag-authenticate. Mag-sign muli sa Chromium bilang si <ph name="USER_NAME" /> o makipag-ugnayan sa iyong administrator para sa higit pang impormasyon. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Hindi ma-update ang Chromium sa pinakabagong bersyon, kaya may napapalampas kang mga bagong feature at pag-aayos sa seguridad.</translation>
 <translation id="7901117350626490574">May available na bagong update para sa Chromium at ilalapat ito sa sandaling muli kang maglunsad.</translation>

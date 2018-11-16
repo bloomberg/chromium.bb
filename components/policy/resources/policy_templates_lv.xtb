@@ -3237,11 +3237,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> noraidīšanas uzvednes aizliegšana</translation>
 <translation id="8976248126101463034">Gnubby autentifikācijas atļaušana attālās piekļuves saimniekdatoriem</translation>
 <translation id="8976531594979650914">Sistēmas noklusējuma printera izmantošana pēc noklusējuma</translation>
-<translation id="898520305112996948">Ļauj jums iestatīt to URL modeļu sarakstu, kas norāda, kurām vietnēm tiks automātiski piešķirta atļauja piekļūt USB ierīcei, izmantojot norādīto pakalpojumu sniedzēja un produkta ID. Lai politika būtu derīga, katrā saraksta vienumā jānorāda gan ierīces, gan URL modeļi. Katrs vienums ierīcēs var ietvert pakalpojumus sniedzēja ID un produkta ID lauku. Katrs izlaistais ID tiek uzskatīts par aizstājējzīmi, izņemot vienu gadījumu — produkta ID nevar norādīt, ja nav norādīts arī pakalpojumu sniedzēja ID. Pretējā gadījumā politika nebūs spēkā. Nederīgas politikas vērtības tiks ignorētas.
-
-        Ja politika netiks iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultWebUsbGuardSetting” (ja tā ir iestatīta); pretējā gadījumā tiks izmantota lietotāja personīgā konfigurācija.
-
-        Šajā politikā norādītie URL modeļi nedrīkst būt pretrunā ar modeļiem, kas konfigurēti politikā “WebUsbBlockedForUrls”. Ja rodas pretrunas, šai politikai ir lielāka prioritāte nekā politikām “WebUsbBlockedForUrls” un “WebUsbAskForUrls”.</translation>
 <translation id="8992176907758534924">Neatļaut nevienai vietnei rādīt attēlus</translation>
 <translation id="9012851181124311976">Ļauj konfigurēt uzņēmuma pieteikšanās vietrāžus URL (tikai HTTP un HTTPS shēmas). Šajos vietrāžos URL tiks tverts paroles ciparfails, lai noteiktu atkārtotu paroles lietošanu.
       Lai <ph name="PRODUCT_NAME" /> pareizi tvertu paroles ciparfailu, pieteikšanās lapām ir jāatbilst šīm vadlīnijām: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.

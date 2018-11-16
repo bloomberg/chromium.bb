@@ -166,7 +166,6 @@
     Na naslednjem zaslonu nam pošljite povratne informacije, da bomo lahko odpravili težavo.</translation>
 <translation id="1217668622537098248">Povrnitev na levi klik po dejanju</translation>
 <translation id="121783623783282548">Gesli se ne ujemata.</translation>
-<translation id="1219533395013150448">Pomočnik uporablja te posnetke za ustvarjanje glasovne modela, ki je shranjen v napravi. Model lahko izbrišete ali znova usposobite v nastavitvah Pomočnika. Glasovne ukaze si lahko ogledate ali jih izbrišete v Googlovih kontrolnikih za dejavnost.</translation>
 <translation id="122082903575839559">Algoritem podpisa potrdila</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 s šifriranjem RSA</translation>
 <translation id="1221825588892235038">Samo izbor</translation>
@@ -1491,7 +1490,6 @@
 <translation id="3271648667212143903"><ph name="ORIGIN" /> se želi povezati</translation>
 <translation id="3274763671541996799">Odprli ste način celotnega zaslona.</translation>
 <translation id="3275778913554317645">Odpri kot okno</translation>
-<translation id="3278877214895457897">Ko je Chromebook nastavljen, pritisnite gumb za Pomočnika ali izgovorite »Ok Google«, če želite, da vam Pomočnik kadar koli pomaga.</translation>
 <translation id="3279230909244266691">To lahko traja nekaj minut. Zagon navideznega računalnika.</translation>
 <translation id="3279741024917655738">Prikaz celozaslonskih videoposnetkov na</translation>
 <translation id="3280237271814976245">Shrani &amp;kot ...</translation>
@@ -1680,7 +1678,6 @@
 <translation id="3550915441744863158">Chrome se posodablja samodejno, zato boste vedno imeli najnovejšo različico</translation>
 <translation id="3551320343578183772">Zapri zavihek</translation>
 <translation id="3552780134252864554">Izbris ob izhodu</translation>
-<translation id="3553146918065661815">Prikaži opozorilo pred zapiranjem s kombinacijo ⌘ in Q</translation>
 <translation id="3555812735919707620">Odstrani razširitev</translation>
 <translation id="3556000484321257665">Iskalnik je bil spremenjen v <ph name="URL" />.</translation>
 <translation id="3559262020195162408">Namestitev pravilnika v napravi ni uspela.</translation>
@@ -1756,7 +1753,6 @@
 <translation id="3654045516529121250">Branje nastavitev za funkcije za ljudi s posebnimi potrebami</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ima trajni dostop do ene datoteke.}one{Ima trajni dostop do # datoteke.}two{Ima trajni dostop do # datotek.}few{Ima trajni dostop do # datotek.}other{Ima trajni dostop do # datotek.}}</translation>
 <translation id="3660234220361471169">Ni vredno zaupanja</translation>
-<translation id="3661054927247347545">Potrdilo za prijavo ni veljavno; okno se bo zaprlo čez <ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="3664511988987167893">Ikona razširitve</translation>
 <translation id="3665589677786828986">Chrome je zaznal, da je drug program spremenil nastavitve, in jih ponastavil na prvotne privzete nastavitve.</translation>
 <translation id="3668570675727296296">Jezikovne nastavitve</translation>
@@ -2889,7 +2885,6 @@
 <translation id="5434065355175441495">PKCS #1 s šifriranjem RSA</translation>
 <translation id="5436492226391861498">Čakanje na tunel namestniškega strežnika ...</translation>
 <translation id="5436510242972373446">Iskanje po <ph name="SITE_NAME" />:</translation>
-<translation id="5436822233913560332">Vsa okna brskalnika bodo kmalu samodejno zaprta brez prijave.</translation>
 <translation id="5438224778284622050">Želite izbrisati datoteke brez povezave?</translation>
 <translation id="544083962418256601">Ustvarjanje bližnjic ...</translation>
 <translation id="5442228125690314719">Napaka pri izdelavi slike diska. Poskusite znova.</translation>
@@ -3622,7 +3617,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="6522797484310591766">Prijava</translation>
 <translation id="6527303717912515753">Skupna raba</translation>
 <translation id="6528513914570774834">Omogoči drugim uporabnikom te naprave uporabo tega omrežja</translation>
 <translation id="652948702951888897">Zgodovina v Chromu</translation>
@@ -4091,7 +4085,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7256710573727326513">Odpri na zavihku</translation>
 <translation id="725758059478686223">Storitev tiskanja</translation>
 <translation id="7257666756905341374">Branje podatkov, ki jih kopirate in prilepite</translation>
-<translation id="7258619945375359543">Dovolite, da vam Pomočnik daje predloge glede na vsebino zaslona</translation>
 <translation id="7258697411818564379">Vaša koda PIN je dodana</translation>
 <translation id="7262004276116528033">Prijavno storitev gosti <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Zapri zavihke</translation>
@@ -4854,7 +4847,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8438566539970814960">Izboljšanje iskanja in brskanja</translation>
 <translation id="8439506636278576865">Ponudi prevajanje strani v tem jeziku</translation>
 <translation id="8440630305826533614">Aplikacije za Linux</translation>
-<translation id="8446474770554547328">S trikratnim snemanjem sprožilne besede »Ok Google« se ustvari glasovni model, ki je shranjen v napravi. Model lahko izbrišete ali znova usposobite v nastavitvah Pomočnika. Glasovne ukaze si lahko ogledate ali jih izbrišete v Googlovih kontrolnikih za dejavnost.</translation>
 <translation id="8446884382197647889">Več o tem</translation>
 <translation id="8447409163267621480">Vključevati morajo ali Ctrl ali Alt</translation>
 <translation id="8448729345478502352">Pomanjšajte ali povečajte elemente na zaslonu.</translation>
