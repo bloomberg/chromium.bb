@@ -14901,6 +14901,7 @@ Called by update_net_error_codes.py.-->
   <int value="498" label="BrowserSwitcherUseIeSitelist"/>
   <int value="499" label="ReportExtensionsAndPluginsData"/>
   <int value="500" label="ReportSafeBrowsingData"/>
+  <int value="501" label="DeviceWiFiFastTransitionEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

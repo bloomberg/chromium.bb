@@ -93,6 +93,7 @@ source_set("chromeos") {
     "//chromeos/components/proximity_auth",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/components/tether",
+    "//chromeos/network",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/machine_learning/public/cpp",
     "//chromeos/services/machine_learning/public/mojom",

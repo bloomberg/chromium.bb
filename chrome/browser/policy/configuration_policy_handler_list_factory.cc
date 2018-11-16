@@ -799,6 +799,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 
 #if defined(OS_CHROMEOS)
+  { key::kDeviceWiFiFastTransitionEnabled,
+    chromeos::prefs::kDeviceWiFiFastTransitionEnabled,
+    base::Value::Type::DICTIONARY },
+
   { key::kNetworkThrottlingEnabled,
     prefs::kNetworkThrottlingEnabled,
     base::Value::Type::DICTIONARY },

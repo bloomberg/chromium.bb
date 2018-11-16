@@ -10398,6 +10398,38 @@
       'id': 351,
     },
     {
+      'name': 'DeviceWiFiFastTransitionEnabled',
+      'device_only': True,
+      'caption': '''Enable 802.11r Fast Transition''',
+      'desc': '''Allows enabling or disabling Fast Transition.
+      This applies to all users, and to all interfaces on the device.
+      In order for Fast Transition to be used, both this setting and the per-network ONC property need to be enabled.
+      Once set, Fast Transition persists until the policy is changed to disable it.
+
+      If policy is not set, Fast Transition is not used.
+      If set to false, Fast Transition is not used.
+      If set to true, Fast Transition is used when the wireless access point supports it.''',
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'enabled': {
+            'description': 'A boolean flag indicating if Fast Transition is enabled.',
+            'type': 'boolean'
+          }
+        },
+        'required': ['enabled']
+      },
+      'supported_on': ['chrome_os:72-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': {'enabled': True},
+      'tags': [],
+      'id': 501,
+    },
+    {
       'name': 'LoginVideoCaptureAllowedUrls',
       'type': 'list',
       'schema': {
@@ -13942,5 +13974,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  500
+  'highest_id_currently_used':  501
 }

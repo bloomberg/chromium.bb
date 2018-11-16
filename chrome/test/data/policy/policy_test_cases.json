@@ -3706,6 +3706,16 @@
     ]
   },
 
+  "DeviceWiFiFastTransitionEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceWiFiFastTransitionEnabled": {"enabled": "true"} },
+    "pref_mappings": [
+      { "pref": "net.device_wifi_fast_transition_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "LoginVideoCaptureAllowedUrls": {
     "os": ["chromeos"],
     "test_policy": { "LoginVideoCaptureAllowedUrls": [ "https://example.com" ] },

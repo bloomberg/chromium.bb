@@ -587,6 +587,12 @@ void FakeShillManagerClient::SetNetworkThrottlingStatus(
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
+bool FakeShillManagerClient::GetFastTransitionStatus() {
+  base::Value* fast_transition_status = stub_properties_.FindKey(
+      base::StringPiece(shill::kWifiGlobalFTEnabledProperty));
+  return fast_transition_status && fast_transition_status->GetBool();
+}
+
 void FakeShillManagerClient::SetupDefaultEnvironment() {
   // Bail out from setup if there is no message loop. This will be the common
   // case for tests that are not testing Shill.
