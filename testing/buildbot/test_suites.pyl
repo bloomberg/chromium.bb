@@ -553,6 +553,20 @@
       },
     },
 
+    'chromium_code_coverage_isolated_scripts': {
+      'webkit_layout_tests': {
+        'args': [
+          '--num-retries=3',
+        ],
+        'isolate_name': 'webkit_layout_tests_exparchive',
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 12,
+         },
+      },
+    },
+
+
     'chromium_gtests': {
       'angle_unittests': {},
       'base_unittests': {},
