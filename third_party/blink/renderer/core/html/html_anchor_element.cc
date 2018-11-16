@@ -398,9 +398,12 @@ void HTMLAnchorElement::HandleClick(Event& event) {
     request.SetReferrerPolicy(policy);
   }
 
-  if (hasAttribute(kDownloadAttr)) {
+  // Ignore the download attribute if we either can't read the content, or
+  // the event is an alt-click or similar.
+  if (hasAttribute(kDownloadAttr) &&
+      NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
+      GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
     if (GetDocument().IsSandboxed(kSandboxDownloads)) {
-      // TODO(jochen): Also measure navigations resulting in downloads.
       UseCounter::Count(
           GetDocument(),
           UserGestureIndicator::ProcessingUserGesture()
@@ -408,20 +411,16 @@ void HTMLAnchorElement::HandleClick(Event& event) {
               : WebFeature::
                     kHTMLAnchorElementDownloadInSandboxWithoutUserGesture);
     }
-    // Ignore the download attribute if we either can't read the content, or
-    // the event is an alt-click or similar.
-    if (NavigationPolicyFromEvent(&event) != kNavigationPolicyDownload &&
-        GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
-      RecordDownloadMetrics(frame);
-      request.SetSuggestedFilename(
-          static_cast<String>(FastGetAttribute(kDownloadAttr)));
-      request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
-      request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
-      frame->Client()->DownloadURL(request,
-                                   DownloadCrossOriginRedirects::kNavigate);
-      return;
-    }
+    RecordDownloadMetrics(frame);
+    request.SetSuggestedFilename(
+        static_cast<String>(FastGetAttribute(kDownloadAttr)));
+    request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
+    request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
+    frame->Client()->DownloadURL(request,
+                                 DownloadCrossOriginRedirects::kNavigate);
+    return;
   }
+
   request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
   FrameLoadRequest frame_request(&GetDocument(), request,
                                  getAttribute(kTargetAttr));
