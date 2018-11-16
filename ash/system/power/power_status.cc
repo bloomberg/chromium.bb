@@ -466,6 +466,23 @@ std::pair<base::string16, base::string16> PowerStatus::GetStatusStrings()
   return std::make_pair(percentage, status);
 }
 
+base::string16 PowerStatus::GetInlinedStatusString() const {
+  base::string16 percentage_text;
+  base::string16 status_text;
+  std::tie(percentage_text, status_text) = GetStatusStrings();
+
+  if (!percentage_text.empty() && !status_text.empty()) {
+    return percentage_text +
+           l10n_util::GetStringUTF16(
+               IDS_ASH_STATUS_TRAY_BATTERY_STATUS_SEPARATOR) +
+           status_text;
+  } else if (!percentage_text.empty()) {
+    return percentage_text;
+  } else {
+    return status_text;
+  }
+}
+
 PowerStatus::PowerStatus() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);

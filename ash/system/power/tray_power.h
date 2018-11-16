@@ -27,6 +27,9 @@ class PowerTrayView : public TrayItemView,
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
   // PowerStatus::Observer:
   void OnPowerStatusChanged() override;
@@ -39,6 +42,7 @@ class PowerTrayView : public TrayItemView,
   void UpdateImage();
 
   base::string16 accessible_name_;
+  base::string16 tooltip_;
   base::Optional<PowerStatus::BatteryImageInfo> info_;
   session_manager::SessionState icon_session_state_color_ =
       session_manager::SessionState::UNKNOWN;
