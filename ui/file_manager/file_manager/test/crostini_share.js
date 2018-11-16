@@ -53,6 +53,15 @@ crostiniShare.testSharePathsCrostiniSuccess = (done) => {
         });
       })
       .then(() => {
+        // Check toast is shown.
+        return test.repeatUntil(() => {
+          return document.querySelector('#toast').shadowRoot.querySelector(
+                     '#container:not([hidden])') ||
+              test.pending('wait for toast');
+        });
+      })
+      .then(() => {
+
         // Right-click 'photos' directory.
         // Check 'Share with Linux' is not shown in menu.
         assertTrue(test.fakeMouseRightClick(photos), 'right-click photos');

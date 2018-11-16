@@ -347,6 +347,13 @@ function FileManagerUI(providersModel, element, launchParam) {
    */
   this.actionsSubmenu = new ActionsSubmenu(this.fileContextMenu);
 
+  /**
+   * @type {!FilesToast}
+   * @const
+   */
+  this.toast =
+      /** @type {!FilesToast} */ (document.querySelector('files-toast'));
+
   // Initialize attributes.
   this.element.setAttribute('type', this.dialogType_);
 

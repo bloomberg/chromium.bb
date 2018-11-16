@@ -198,6 +198,7 @@ for filename, substitutions in (
     )),
     ('foreground/elements/elements_bundle.html', (
         ('="files_ripple', elements_path('files_ripple')),
+        ('="files_toast', elements_path('files_toast')),
         ('="files_toggle_ripple', elements_path('files_toggle_ripple')),
         ('="files_tooltip', elements_path('files_tooltip')),
         ('="icons', elements_path('icons')),

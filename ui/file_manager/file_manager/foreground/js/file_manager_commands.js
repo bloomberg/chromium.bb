@@ -396,6 +396,7 @@ CommandHandler.MenuCommandsForUMA = {
   HIDDEN_ANDROID_FOLDERS_HIDE: 'toggle-hidden-android-folders-off',
   SHARE_WITH_LINUX: 'share-with-linux',
   MANAGE_LINUX_SHARING: 'manage-linux-sharing',
+  MANAGE_LINUX_SHARING_TOAST: 'manage-linux-sharing-toast',
 };
 
 /**
@@ -422,6 +423,7 @@ CommandHandler.ValidMenuCommandsForUMA = [
   CommandHandler.MenuCommandsForUMA.HIDDEN_ANDROID_FOLDERS_HIDE,
   CommandHandler.MenuCommandsForUMA.SHARE_WITH_LINUX,
   CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING,
+  CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING_TOAST,
 ];
 console.assert(
     Object.keys(CommandHandler.MenuCommandsForUMA).length ===
@@ -1660,6 +1662,17 @@ CommandHandler.COMMANDS_['share-with-linux'] = /** @type {Command} */ ({
                   chrome.runtime.lastError.message);
             } else {
               fileManager.crostini.registerSharedPath(dir);
+              // Show toast with link to manage sharing.
+              fileManager.ui.toast.show(str('FOLDER_SHARED_WITH_CROSTINI'), {
+                text: str('MANAGE_LINUX_SHARING_BUTTON_LABEL'),
+                callback: () => {
+                  chrome.fileManagerPrivate.openSettingsSubpage(
+                      'crostini/sharedPaths');
+                  CommandHandler.recordMenuItemSelected_(
+                      CommandHandler.MenuCommandsForUMA
+                          .MANAGE_LINUX_SHARING_TOAST);
+                }
+              });
             }
           });
     }
