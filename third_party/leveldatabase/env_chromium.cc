@@ -29,7 +29,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -73,7 +73,7 @@ static const char kDatabaseNameSuffixForRebuildDB[] = "__tmp_for_rebuild";
 static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
                                              std::vector<FilePath>* result) {
   TRACE_EVENT0("leveldb", "ChromiumEnv::GetDirectoryEntries");
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   result->clear();
 #if defined(OS_WIN)
   FilePath dir_filepath = dir_param.Append(FILE_PATH_LITERAL("*"));
