@@ -232,11 +232,14 @@ void AwMainDelegate::PreSandboxStartup() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  const std::string locale = command_line.GetSwitchValueASCII(switches::kLang);
-  base::i18n::SetICUDefaultLocale(locale);
-
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
+  const bool is_browser_process = process_type.empty();
+  if (!is_browser_process) {
+    base::i18n::SetICUDefaultLocale(
+        command_line.GetSwitchValueASCII(switches::kLang));
+  }
+
   int crash_signal_fd = -1;
   if (process_type == switches::kRendererProcess) {
     auto* global_descriptors = base::GlobalDescriptors::GetInstance();
@@ -260,7 +263,7 @@ void AwMainDelegate::PreSandboxStartup() {
     crash_signal_fd =
         global_descriptors->Get(kAndroidWebViewCrashSignalDescriptor);
   }
-  if (process_type.empty()) {
+  if (is_browser_process) {
     if (command_line.HasSwitch(switches::kWebViewSandboxedRenderer)) {
       process_type = breakpad::kBrowserProcessType;
     } else {
