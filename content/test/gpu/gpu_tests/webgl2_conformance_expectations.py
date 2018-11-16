@@ -97,6 +97,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'gl-bindAttribLocation-aliasing-inactive.html',
         ['no_angle'], bug=829541)
 
+    # Newly introduced flaky failure.
+    # TODO(kbr): re-enable after fixing test.
+    self.Flaky('conformance/textures/misc/' +
+               'canvas-teximage-after-multiple-drawimages.html',
+               bug=905682)
+
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
     self.Skip('conformance/rendering/texture-switch-performance.html',
