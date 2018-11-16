@@ -15,6 +15,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
 #include "device/fido/public_key_credential_rp_entity.h"
@@ -45,6 +46,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   // https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20180305.html#authenticatorMakeCredential
   std::vector<uint8_t> EncodeAsCBOR() const;
 
+  CtapMakeCredentialRequest& SetAuthenticatorAttachment(
+      AuthenticatorAttachment authenticator_attachment);
   CtapMakeCredentialRequest& SetUserVerification(
       UserVerificationRequirement user_verification);
   CtapMakeCredentialRequest& SetResidentKeyRequired(bool resident_key);
@@ -68,6 +71,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   UserVerificationRequirement user_verification() const {
     return user_verification_;
   }
+  AuthenticatorAttachment authenticator_attachment() const {
+    return authenticator_attachment_;
+  }
   bool resident_key_required() const { return resident_key_required_; }
   bool is_individual_attestation() const { return is_individual_attestation_; }
   bool hmac_secret() const { return hmac_secret_; }
@@ -87,6 +93,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   PublicKeyCredentialParams public_key_credential_params_;
   UserVerificationRequirement user_verification_ =
       UserVerificationRequirement::kPreferred;
+  AuthenticatorAttachment authenticator_attachment_ =
+      AuthenticatorAttachment::kAny;
   bool resident_key_required_ = false;
   bool is_individual_attestation_ = false;
   // hmac_secret_ indicates whether the "hmac-secret" extension should be

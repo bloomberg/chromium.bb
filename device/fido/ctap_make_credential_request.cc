@@ -96,6 +96,13 @@ std::vector<uint8_t> CtapMakeCredentialRequest::EncodeAsCBOR() const {
   return cbor_request;
 }
 
+CtapMakeCredentialRequest&
+CtapMakeCredentialRequest::SetAuthenticatorAttachment(
+    AuthenticatorAttachment authenticator_attachment) {
+  authenticator_attachment_ = authenticator_attachment;
+  return *this;
+}
+
 CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetUserVerification(
     UserVerificationRequirement user_verification) {
   user_verification_ = user_verification;

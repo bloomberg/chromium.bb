@@ -9,6 +9,7 @@
 
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/cable/cable_discovery_data.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
@@ -62,11 +63,10 @@ struct TypeConverter<
 };
 
 template <>
-struct TypeConverter<
-    ::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment,
-    ::blink::mojom::AuthenticatorAttachment> {
-  static ::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment
-  Convert(const ::blink::mojom::AuthenticatorAttachment& input);
+struct TypeConverter<::device::AuthenticatorAttachment,
+                     ::blink::mojom::AuthenticatorAttachment> {
+  static ::device::AuthenticatorAttachment Convert(
+      const ::blink::mojom::AuthenticatorAttachment& input);
 };
 
 template <>

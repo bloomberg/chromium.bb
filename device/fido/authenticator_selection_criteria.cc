@@ -9,10 +9,10 @@ namespace device {
 AuthenticatorSelectionCriteria::AuthenticatorSelectionCriteria() = default;
 
 AuthenticatorSelectionCriteria::AuthenticatorSelectionCriteria(
-    AuthenticatorAttachment authenticator_attachement,
+    AuthenticatorAttachment authenticator_attachment,
     bool require_resident_key,
     UserVerificationRequirement user_verification_requirement)
-    : authenticator_attachement_(authenticator_attachement),
+    : authenticator_attachment_(authenticator_attachment),
       require_resident_key_(require_resident_key),
       user_verification_requirement_(user_verification_requirement) {}
 

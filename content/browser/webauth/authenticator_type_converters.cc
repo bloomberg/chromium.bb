@@ -116,10 +116,10 @@ TypeConverter<std::vector<::device::PublicKeyCredentialDescriptor>,
 }
 
 // static
-::device::UserVerificationRequirement
-TypeConverter<::device::UserVerificationRequirement,
-              UserVerificationRequirement>::
-    Convert(const UserVerificationRequirement& input) {
+::device::UserVerificationRequirement TypeConverter<
+    ::device::UserVerificationRequirement,
+    UserVerificationRequirement>::Convert(const UserVerificationRequirement&
+                                              input) {
   switch (input) {
     case UserVerificationRequirement::PREFERRED:
       return ::device::UserVerificationRequirement::kPreferred;
@@ -133,23 +133,19 @@ TypeConverter<::device::UserVerificationRequirement,
 }
 
 // static
-::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment TypeConverter<
-    ::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment,
+::device::AuthenticatorAttachment TypeConverter<
+    ::device::AuthenticatorAttachment,
     AuthenticatorAttachment>::Convert(const AuthenticatorAttachment& input) {
   switch (input) {
     case AuthenticatorAttachment::NO_PREFERENCE:
-      return ::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment::
-          kAny;
+      return ::device::AuthenticatorAttachment::kAny;
     case AuthenticatorAttachment::PLATFORM:
-      return ::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment::
-          kPlatform;
+      return ::device::AuthenticatorAttachment::kPlatform;
     case AuthenticatorAttachment::CROSS_PLATFORM:
-      return ::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment::
-          kCrossPlatform;
+      return ::device::AuthenticatorAttachment::kCrossPlatform;
   }
   NOTREACHED();
-  return ::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment::
-      kAny;
+  return ::device::AuthenticatorAttachment::kAny;
 }
 
 // static
@@ -158,8 +154,7 @@ TypeConverter<::device::AuthenticatorSelectionCriteria,
               AuthenticatorSelectionCriteriaPtr>::
     Convert(const AuthenticatorSelectionCriteriaPtr& input) {
   return device::AuthenticatorSelectionCriteria(
-      ConvertTo<
-          ::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment>(
+      ConvertTo<::device::AuthenticatorAttachment>(
           input->authenticator_attachment),
       input->require_resident_key,
       ConvertTo<::device::UserVerificationRequirement>(
