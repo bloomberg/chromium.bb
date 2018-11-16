@@ -24,7 +24,7 @@ source_set("find_bar") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/resources:menu_shadow",
-    "//ios/chrome/browser/ui/toolbar/buttons",
+    "//ios/chrome/browser/ui/toolbar/public",
     "//ios/third_party/material_components_ios",
     "//ui/base",
     "//ui/gfx",

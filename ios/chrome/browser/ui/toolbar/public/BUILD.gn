@@ -10,7 +10,11 @@ source_set("public") {
     "primary_toolbar_coordinator.h",
     "side_swipe_toolbar_interacting.h",
     "side_swipe_toolbar_snapshot_providing.h",
+    "toolbar_constants.h",
+    "toolbar_constants.mm",
     "toolbar_coordinating.h",
+    "toolbar_utils.h",
+    "toolbar_utils.mm",
   ]
   deps = [
     ":feature_flags",

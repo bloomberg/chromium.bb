@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_view_controller.h"
 
-#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/secondary_toolbar_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
