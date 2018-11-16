@@ -172,10 +172,10 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 
   // Attaches a WebFrameWidget that will provide a WebFrameWidget interface to
   // the WebView. Called as part of initialization or when the main frame
-  // RenderWidget is swapped in, to connect it to the new local main frame.
+  // RenderWidget is unfrozen, to connect it to the new local main frame.
   void AttachWebFrameWidget(blink::WebFrameWidget* frame_widget);
   // Detaches the current WebFrameWidget, disconnecting it from the main frame.
-  // Called when the RenderWidget is being swapped out, because the local main
+  // Called when the RenderWidget is being frozen, because the local main
   // frame is going away.
   void DetachWebFrameWidget();
 
