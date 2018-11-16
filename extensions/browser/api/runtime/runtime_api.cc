@@ -558,7 +558,8 @@ void RuntimeEventRouter::OnExtensionUninstalled(
     const std::string& extension_id,
     UninstallReason reason) {
   if (!(reason == UNINSTALL_REASON_USER_INITIATED ||
-        reason == UNINSTALL_REASON_MANAGEMENT_API)) {
+        reason == UNINSTALL_REASON_MANAGEMENT_API ||
+        reason == UNINSTALL_REASON_CHROME_WEBSTORE)) {
     return;
   }
 

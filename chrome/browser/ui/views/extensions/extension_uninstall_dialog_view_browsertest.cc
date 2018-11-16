@@ -174,14 +174,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
 }
 #endif  // defined(OS_CHROMEOS)
 
-// Test that when the user clicks Uninstall on the ExtensionUninstallDialog, the
+class ParameterizedExtensionUninstallDialogViewBrowserTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<extensions::UninstallReason> {};
+
+// Test that when the user clicks Uninstall on the ExtensionUninstallDialog the
 // extension's uninstall url (when it is specified) should open and be the
 // active tab.
-// TODO(catmullings): Disabled due to flake on Win 10 x64.
-// https://crbug.com/725197
-IN_PROC_BROWSER_TEST_F(
-    ExtensionUninstallDialogViewBrowserTest,
-    DISABLED_EnsureExtensionUninstallURLIsActiveTabAfterUninstall) {
+IN_PROC_BROWSER_TEST_P(ParameterizedExtensionUninstallDialogViewBrowserTest,
+                       EnsureExtensionUninstallURLIsActiveTabAfterUninstall) {
   scoped_refptr<const extensions::Extension> extension(BuildTestExtension());
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser()->profile())
@@ -203,10 +204,8 @@ IN_PROC_BROWSER_TEST_F(
           &delegate));
   content::RunAllPendingInMessageLoop();
 
-  dialog->ConfirmUninstall(extension,
-                           // UNINSTALL_REASON_USER_INITIATED is used to trigger
-                           // complete uninstallation.
-                           extensions::UNINSTALL_REASON_USER_INITIATED,
+  extensions::UninstallReason uninstall_reason = GetParam();
+  dialog->ConfirmUninstall(extension, uninstall_reason,
                            extensions::UNINSTALL_SOURCE_FOR_TESTING);
 
   content::RunAllPendingInMessageLoop();
@@ -223,8 +222,8 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(kUninstallUrl, GetActiveUrl(browser()));
 
   run_loop.Run();
-  // The delegate should not be canceled because the user chose to uninstall the
-  // extension, which should be successful.
+  // The delegate should not be canceled because the user chose to uninstall
+  // the extension, which should be successful.
   EXPECT_TRUE(!delegate.canceled());
 }
 
@@ -387,3 +386,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
                        InvokeUi_UninstallByExtensionShowReportAbuse) {
   RunTest(UNINSTALL_BY_EXTENSION, EXTENSION_FROM_WEBSTORE);
 }
+
+INSTANTIATE_TEST_CASE_P(
+    ,
+    ParameterizedExtensionUninstallDialogViewBrowserTest,
+    testing::Values(extensions::UNINSTALL_REASON_USER_INITIATED,
+                    extensions::UNINSTALL_REASON_CHROME_WEBSTORE));
