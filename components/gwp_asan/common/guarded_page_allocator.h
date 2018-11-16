@@ -72,6 +72,8 @@ class GuardedPageAllocator {
 
  private:
   using BitMap = uint64_t;
+  static_assert(kGpaMaxPages == sizeof(BitMap) * 8,
+                "Maximum number of pages is the size of free_pages_ bitmap");
 
   // Structure for storing data about a slot.
   struct SlotMetadata {
@@ -123,9 +125,6 @@ class GuardedPageAllocator {
     // previously been called.
     void Reset();
   };
-
-  // Number of bits in the free_pages_ bitmap.
-  static constexpr size_t kFreePagesNumBits = sizeof(BitMap) * 8;
 
   // Does not allocate any memory for the allocator, to finish initializing call
   // Init().
@@ -179,7 +178,7 @@ class GuardedPageAllocator {
 
   // Information about every allocation, including its size, offset, and
   // pointers to the allocation/deallocation stack traces (if present.)
-  SlotMetadata data_[kFreePagesNumBits] = {};
+  SlotMetadata data_[kGpaMaxPages] = {};
 
   uintptr_t pages_base_addr_ = 0;  // Points to start of mapped region.
   uintptr_t pages_end_addr_ = 0;   // Points to the end of mapped region.

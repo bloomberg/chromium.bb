@@ -20,13 +20,12 @@ namespace internal {
 // TODO: Delete out-of-line constexpr defininitons once C++17 is in use.
 constexpr size_t GuardedPageAllocator::kGpaMaxPages;
 constexpr size_t GuardedPageAllocator::kGpaAllocAlignment;
-constexpr size_t GuardedPageAllocator::kFreePagesNumBits;
 
 GuardedPageAllocator::GuardedPageAllocator() {}
 
 void GuardedPageAllocator::Init(size_t num_pages) {
   CHECK_GT(num_pages, 0U);
-  CHECK_LE(num_pages, kFreePagesNumBits);
+  CHECK_LE(num_pages, kGpaMaxPages);
   num_pages_ = num_pages;
 
   page_size_ = base::GetPageSize();
@@ -37,7 +36,7 @@ void GuardedPageAllocator::Init(size_t num_pages) {
     // there should be no risk of a race here.
     base::AutoLock lock(lock_);
     free_pages_ =
-        (num_pages_ == kFreePagesNumBits) ? ~0ULL : (1ULL << num_pages_) - 1;
+        (num_pages_ == kGpaMaxPages) ? ~0ULL : (1ULL << num_pages_) - 1;
   }
 
   for (size_t i = 0; i < num_pages_; i++)
@@ -134,20 +133,19 @@ size_t GuardedPageAllocator::ReserveSlot() {
   if (double_free_detected_)
     return SIZE_MAX;
 
-  uint64_t rot = base::RandGenerator(kFreePagesNumBits);
+  uint64_t rot = base::RandGenerator(kGpaMaxPages);
   BitMap rotated_bitmap =
-      (free_pages_ << rot) | (free_pages_ >> (kFreePagesNumBits - rot));
+      (free_pages_ << rot) | (free_pages_ >> (kGpaMaxPages - rot));
   int rotated_selection = CountTrailingZeroBits64(rotated_bitmap);
-  size_t selection =
-      (rotated_selection - rot + kFreePagesNumBits) % kFreePagesNumBits;
-  DCHECK_LT(selection, kFreePagesNumBits);
+  size_t selection = (rotated_selection - rot + kGpaMaxPages) % kGpaMaxPages;
+  DCHECK_LT(selection, kGpaMaxPages);
   DCHECK(free_pages_ & (1ULL << selection));
   free_pages_ &= ~(1ULL << selection);
   return selection;
 }
 
 void GuardedPageAllocator::FreeSlot(size_t slot) {
-  DCHECK_LT(slot, kFreePagesNumBits);
+  DCHECK_LT(slot, kGpaMaxPages);
 
   BitMap bit = 1ULL << slot;
   base::AutoLock lock(lock_);
@@ -207,7 +205,7 @@ GuardedPageAllocator::ErrorType GuardedPageAllocator::GetErrorType(
 }
 
 uintptr_t GuardedPageAllocator::SlotToAddr(size_t slot) const {
-  DCHECK_LT(slot, kFreePagesNumBits);
+  DCHECK_LT(slot, kGpaMaxPages);
   return first_page_addr_ + 2 * slot * page_size_;
 }
 
@@ -216,7 +214,7 @@ size_t GuardedPageAllocator::AddrToSlot(uintptr_t addr) const {
   uintptr_t offset = addr - first_page_addr_;
   DCHECK_EQ((offset / page_size_) % 2, 0ULL);
   size_t slot = offset / page_size_ / 2;
-  DCHECK_LT(slot, kFreePagesNumBits);
+  DCHECK_LT(slot, kGpaMaxPages);
   return slot;
 }
 
