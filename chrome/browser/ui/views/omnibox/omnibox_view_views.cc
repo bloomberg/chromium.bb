@@ -1560,10 +1560,9 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
     }
   } else if (data.HasString() && data.GetString(&text)) {
     text = StripJavascriptSchemas(base::CollapseWhitespace(text, true));
-  }
-
-  if (text.empty())
+  } else {
     return ui::DragDropTypes::DRAG_NONE;
+  }
 
   SetUserText(text);
   if (!HasFocus())
