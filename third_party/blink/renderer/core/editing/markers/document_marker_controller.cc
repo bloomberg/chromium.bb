@@ -397,13 +397,11 @@ DocumentMarker* DocumentMarkerController::FirstMarkerAroundPosition(
     return nullptr;
 
   const PositionInFlatTree start_of_word_or_null =
-      StartOfWord(CreateVisiblePosition(position), kPreviousWordIfOnBoundary)
-          .DeepEquivalent();
+      StartOfWordPosition(position, kPreviousWordIfOnBoundary);
   const PositionInFlatTree start =
       start_of_word_or_null.IsNotNull() ? start_of_word_or_null : position;
   const PositionInFlatTree end_of_word_or_null =
-      EndOfWord(CreateVisiblePosition(position), kNextWordIfOnBoundary)
-          .DeepEquivalent();
+      EndOfWordPosition(position, kNextWordIfOnBoundary);
   const PositionInFlatTree end =
       end_of_word_or_null.IsNotNull() ? end_of_word_or_null : position;
 
