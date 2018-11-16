@@ -726,8 +726,7 @@ TEST_F(WidgetTest, WindowMouseModalityTest) {
 #if defined(OS_WIN)
 // Tests whether we can activate the top level widget when a modal dialog is
 // active.
-// Flaky: crbug.com/613428
-TEST_F(WidgetTest, DISABLED_WindowModalityActivationTest) {
+TEST_F(WidgetTest, WindowModalityActivationTest) {
   TestDesktopWidgetDelegate widget_delegate;
   widget_delegate.InitWidget(CreateParams(Widget::InitParams::TYPE_WINDOW));
 
