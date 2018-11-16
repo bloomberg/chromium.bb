@@ -438,6 +438,11 @@ if (is_android) {
       "android/java/src/org/chromium/base/MultiprocessTestClientService2.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientService3.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientService4.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService5.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService6.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService7.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService8.java",
+      "android/java/src/org/chromium/base/MultiprocessTestClientService9.java",
       "android/java/src/org/chromium/base/MultiprocessTestClientServiceDelegate.java",
     ]
   }

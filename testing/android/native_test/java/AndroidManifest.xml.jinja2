@@ -52,7 +52,7 @@ found in the LICENSE file.
 
         <!-- If you change the number below, make sure to add/remove actual service classes
              org/chromium/base/MultiprocessTestClientService*.java -->
-        {% set num_test_client_services = 5 %}
+        {% set num_test_client_services = 10 %}
         <meta-data android:name="org.chromium.native_test.NUM_TEST_CLIENT_SERVICES"
                    android:value="{{ num_test_client_services }}"/>
         {% for i in range(num_test_client_services) %}
