@@ -12,6 +12,7 @@ include_rules = [
   "+services/resource_coordinator",
   "+services/service_manager",
   "+ui/ozone/public",
+  "+ui/views/test",
   "+v8/include/v8.h",
 ]
 
@@ -24,8 +25,5 @@ specific_include_rules = {
     "+services/network/network_context.h",
     "+third_party/iaccessible2",
     "+ui/base/resource/resource_bundle.h",
-  ],
-  "content_browser_test.cc": [
-    "+ui/views/test/widget_test_api.h"
   ],
 }

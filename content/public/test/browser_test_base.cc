@@ -57,6 +57,11 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_MACOSX)
+#include "ui/events/test/event_generator.h"
+#include "ui/views/test/event_generator_delegate_mac.h"
+#endif
+
 #if defined(OS_POSIX)
 #include "base/process/process_handle.h"
 #endif
@@ -148,6 +153,9 @@ BrowserTestBase::BrowserTestBase()
 #if defined(USE_AURA)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(base::BindRepeating(
       &aura::test::EventGeneratorDelegateAura::Create, nullptr));
+#elif defined(OS_MACOSX)
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      base::BindRepeating(&views::test::CreateEventGeneratorDelegateMac));
 #endif
 }
 
@@ -338,7 +346,7 @@ void BrowserTestBase::SetUp() {
 }
 
 void BrowserTestBase::TearDown() {
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_MACOSX)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       ui::test::EventGeneratorDelegate::FactoryFunction());
 #endif
