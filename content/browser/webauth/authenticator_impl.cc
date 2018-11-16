@@ -38,6 +38,7 @@
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
@@ -65,9 +66,14 @@ namespace content {
 namespace client_data {
 const char kCreateType[] = "webauthn.create";
 const char kGetType[] = "webauthn.get";
+const char kU2fSignType[] = "navigator.id.getAssertion";
+const char kU2fRegisterType[] = "navigator.id.finishEnrollment";
 }  // namespace client_data
 
 namespace {
+
+constexpr char kCryptotokenOrigin[] =
+    "chrome-extension://kmendfapggjehodndflmmgagdbamhnfd";
 
 // AttestationPromptResult enumerates events related to attestation prompts.
 // These values are recorded in an UMA histogram and so should not be
@@ -92,11 +98,22 @@ enum class AttestationPromptResult {
   kMaxValue = kAbandoned,
 };
 
+bool OriginIsCryptoTokenExtension(const url::Origin& origin) {
+  auto cryptotoken_origin = url::Origin::Create(GURL(kCryptotokenOrigin));
+  return cryptotoken_origin == origin;
+}
+
 // Ensure that the origin's effective domain is a valid domain.
 // Only the domain format of host is valid.
 // Reference https://url.spec.whatwg.org/#valid-domain-string and
 // https://html.spec.whatwg.org/multipage/origin.html#concept-origin-effective-domain.
 bool HasValidEffectiveDomain(url::Origin caller_origin) {
+  // For calls originating in the CryptoToken U2F extension, allow CryptoToken
+  // to validate domain.
+  if (OriginIsCryptoTokenExtension(caller_origin) &&
+      base::FeatureList::IsEnabled(device::kWebAuthProxyCryptotoken))
+    return true;
+
   return !caller_origin.opaque() &&
          !url::HostIsIPAddress(caller_origin.host()) &&
          content::IsOriginSecure(caller_origin.GetURL()) &&
@@ -115,6 +132,10 @@ bool HasValidEffectiveDomain(url::Origin caller_origin) {
 // https://html.spec.whatwg.org/multipage/origin.html#is-a-registrable-domain-suffix-of-or-is-equal-to.
 bool IsRelyingPartyIdValid(const std::string& relying_party_id,
                            url::Origin caller_origin) {
+  if (OriginIsCryptoTokenExtension(caller_origin) &&
+      base::FeatureList::IsEnabled(device::kWebAuthProxyCryptotoken))
+    return true;
+
   if (relying_party_id.empty())
     return false;
 
@@ -140,6 +161,12 @@ bool IsRelyingPartyIdValid(const std::string& relying_party_id,
 }
 
 bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
+  // The CryptoToken U2F extension checks the appid before calling the WebAuthn
+  // APIs so there is no need to validate it here.
+  if (OriginIsCryptoTokenExtension(origin) &&
+      base::FeatureList::IsEnabled(device::kWebAuthProxyCryptotoken))
+    return true;
+
   // See
   // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-appid-and-facets-v1.2-ps-20170411.html#determining-if-a-caller-s-facetid-is-authorized-for-an-appid
 
@@ -519,16 +546,17 @@ bool AuthenticatorImpl::IsFocused() const {
 // static
 std::string AuthenticatorImpl::SerializeCollectedClientDataToJson(
     const std::string& type,
-    const url::Origin& origin,
-    base::span<const uint8_t> challenge) {
-  static constexpr char kTypeKey[] = "type";
+    const std::string& origin,
+    base::span<const uint8_t> challenge,
+    bool use_legacy_u2f_type_key /* = false */) {
   static constexpr char kChallengeKey[] = "challenge";
   static constexpr char kOriginKey[] = "origin";
 
   base::DictionaryValue client_data;
-  client_data.SetKey(kTypeKey, base::Value(type));
+  client_data.SetKey(use_legacy_u2f_type_key ? "typ" : "type",
+                     base::Value(type));
   client_data.SetKey(kChallengeKey, base::Value(Base64UrlEncode(challenge)));
-  client_data.SetKey(kOriginKey, base::Value(origin.Serialize()));
+  client_data.SetKey(kOriginKey, base::Value(origin));
 
   if (base::RandDouble() < 0.2) {
     // An extra key is sometimes added to ensure that RPs do not make
@@ -611,10 +639,19 @@ void AuthenticatorImpl::MakeCredential(
     connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
 
   // Save client data to return with the authenticator response.
-  // TODO(kpaulhamus): Fetch and add the Token Binding ID public key used to
-  // communicate with the origin.
-  client_data_json_ = SerializeCollectedClientDataToJson(
-      client_data::kCreateType, caller_origin, std::move(options->challenge));
+  // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
+  // used to communicate with the origin.
+  if (OriginIsCryptoTokenExtension(caller_origin)) {
+    // As Cryptotoken validates the origin, accept the relying party id as the
+    // origin from requests originating from Cryptotoken.
+    client_data_json_ = SerializeCollectedClientDataToJson(
+        client_data::kU2fRegisterType, relying_party_id_,
+        std::move(options->challenge), true /* use_legacy_u2f_type_key */);
+  } else {
+    client_data_json_ = SerializeCollectedClientDataToJson(
+        client_data::kCreateType, caller_origin.Serialize(),
+        std::move(options->challenge));
+  }
 
   const bool individual_attestation =
       options->attestation ==
@@ -675,6 +712,21 @@ void AuthenticatorImpl::GetAssertion(
 
   url::Origin caller_origin = render_frame_host_->GetLastCommittedOrigin();
 
+  // Save client data to return with the authenticator response.
+  // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
+  // used to communicate with the origin.
+  if (OriginIsCryptoTokenExtension(caller_origin)) {
+    // As Cryptotoken validates the origin, accept the relying party id as the
+    // origin from requests originating from Cryptotoken.
+    client_data_json_ = SerializeCollectedClientDataToJson(
+        client_data::kU2fSignType, options->relying_party_id,
+        std::move(options->challenge), true /* use_legacy_u2f_type_key */);
+  } else {
+    client_data_json_ = SerializeCollectedClientDataToJson(
+        client_data::kGetType, caller_origin.Serialize(),
+        std::move(options->challenge));
+  }
+
   if (!HasValidEffectiveDomain(caller_origin)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
@@ -721,9 +773,6 @@ void AuthenticatorImpl::GetAssertion(
 
   if (!connector_)
     connector_ = ServiceManagerConnection::GetForProcess()->GetConnector();
-
-  client_data_json_ = SerializeCollectedClientDataToJson(
-      client_data::kGetType, caller_origin, std::move(options->challenge));
 
   auto ctap_request =
       CreateCtapGetAssertionRequest(client_data_json_, std::move(options),

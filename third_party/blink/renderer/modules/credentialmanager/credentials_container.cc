@@ -54,6 +54,8 @@ using MojoPublicKeyCredentialRequestOptions =
     mojom::blink::PublicKeyCredentialRequestOptions;
 using mojom::blink::GetAssertionAuthenticatorResponsePtr;
 
+constexpr char kCryptotokenOrigin[] =
+    "chrome-extension://kmendfapggjehodndflmmgagdbamhnfd";
 enum class RequiredOriginType { kSecure, kSecureAndSameWithAncestors };
 
 bool IsSameOriginWithAncestors(const Frame* frame) {
@@ -131,6 +133,13 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
     resolver->Reject(DOMException::Create(DOMExceptionCode::kNotAllowedError,
                                           error_message));
     return false;
+  }
+
+  auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
+  if (cryptotoken_origin->IsSameSchemeHostPort(origin)) {
+    // Allow CryptoToken U2F extension to assert any origin, as cryptotoken
+    // handles origin checking separately.
+    return true;
   }
 
   if (origin->Protocol() != url::kHttpScheme &&

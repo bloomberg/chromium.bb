@@ -104,12 +104,16 @@ class CONTENT_EXPORT AuthenticatorImpl : public blink::mojom::Authenticator,
   bool IsFocused() const;
 
   // Builds the CollectedClientData[1] dictionary with the given values,
-  // serializes it to JSON, and returns the resulting string.
+  // serializes it to JSON, and returns the resulting string. For legacy U2F
+  // requests coming from the CryptoToken U2F extension, modifies the object key
+  // 'type' as required[2].
   // [1] https://w3c.github.io/webauthn/#dictdef-collectedclientdata
+  // [2] https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#client-data
   static std::string SerializeCollectedClientDataToJson(
       const std::string& type,
-      const url::Origin& origin,
-      base::span<const uint8_t> challenge);
+      const std::string& origin,
+      base::span<const uint8_t> challenge,
+      bool use_legacy_u2f_type_key = false);
 
   // mojom:Authenticator
   void MakeCredential(

@@ -24,6 +24,7 @@
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_frame_host.h"
 #include "device/base/features.h"
@@ -32,6 +33,7 @@
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/fake_fido_discovery.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/mock_fido_device.h"
@@ -89,6 +91,10 @@ typedef struct {
 
 constexpr char kTestOrigin1[] = "https://a.google.com";
 constexpr char kTestRelyingPartyId[] = "google.com";
+constexpr char kCryptotokenOrigin[] =
+    "chrome-extension://kmendfapggjehodndflmmgagdbamhnfd";
+constexpr char kTestExtensionOrigin[] =
+    "chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef";
 
 // Test data. CBOR test data can be built using the given
 // diagnostic strings and the utility at "http://CBOR.me/".
@@ -368,7 +374,7 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
 
   std::string GetTestClientDataJSON(std::string type) {
     return AuthenticatorImpl::SerializeCollectedClientDataToJson(
-        std::move(type), GetTestOrigin(), GetTestChallengeBytes());
+        std::move(type), GetTestOrigin().Serialize(), GetTestChallengeBytes());
   }
 
   AuthenticatorStatus TryAuthenticationWithAppId(const std::string& origin,
@@ -703,6 +709,63 @@ TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
     EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN,
               TryAuthenticationWithAppId(test_case.origin,
                                          test_case.claimed_authority));
+  }
+}
+
+// Verify that a request coming from Cryptotoken bypasses origin checks.
+TEST_F(AuthenticatorImplTest, CryptotokenBypass) {
+  EnableFeature(device::kWebAuthProxyCryptotoken);
+  SimulateNavigation(GURL(kTestOrigin1));
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
+
+  {
+    OverrideLastCommittedOrigin(main_rfh(),
+                                url::Origin::Create(GURL(kCryptotokenOrigin)));
+    // First, verify that the Cryptotoken request succeeds with the appid.
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->relying_party_id = std::string(kTestOrigin1);
+
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    // Inject a registration for the URL (which is a U2F AppID).
+    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+        options->allow_credentials[0]->id, kTestOrigin1));
+
+    options->appid = kTestOrigin1;
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+
+    EXPECT_EQ(true, callback_receiver.value()->echo_appid_extension);
+    EXPECT_EQ(true, callback_receiver.value()->appid_extension);
+  }
+
+  {
+    OverrideLastCommittedOrigin(
+        main_rfh(), url::Origin::Create(GURL(kTestExtensionOrigin)));
+    // Next, verify that other extensions cannot bypass the origin checks.
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->relying_party_id = std::string(kTestOrigin1);
+
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    // Inject a registration for the URL (which is a U2F AppID).
+    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+        options->allow_credentials[0]->id, kTestOrigin1));
+
+    options->appid = kTestOrigin1;
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    ASSERT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
   }
 }
 
