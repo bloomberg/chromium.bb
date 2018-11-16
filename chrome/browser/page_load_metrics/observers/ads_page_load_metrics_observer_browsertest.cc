@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
@@ -684,6 +685,16 @@ IN_PROC_BROWSER_TEST_P(SubframeDownloadSandboxOriginAdGestureBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Download.Subframe.SandboxOriginAdGesture", expected_value,
       1 /* expected_count */);
+
+  if (sandbox && origin == Origin::kNavigation) {
+    blink::mojom::WebFeature feature =
+        gesture ? blink::mojom::WebFeature::
+                      kNavigationDownloadInSandboxWithUserGesture
+                : blink::mojom::WebFeature::
+                      kNavigationDownloadInSandboxWithoutUserGesture;
+    histogram_tester.ExpectBucketCount(internal::kFeaturesHistogramName,
+                                       feature, 1 /* expected_count */);
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(

@@ -2081,6 +2081,8 @@ enum WebFeature {
   kHTMLAnchorElementHrefTranslateAttribute = 2629,
   kWebKitUserModifyEffective = 2630,
   kPlainTextEditingEffective = 2631,
+  kNavigationDownloadInSandboxWithUserGesture = 2632,
+  kNavigationDownloadInSandboxWithoutUserGesture = 2633,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

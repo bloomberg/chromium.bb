@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
@@ -232,16 +233,32 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   content::RenderFrameHost* ad_host = FindFrameMaybeUnsafe(navigation_handle);
 
   if (navigation_handle->IsDownload()) {
+    bool sandboxed = ad_host->IsSandboxed(blink::WebSandboxFlags::kDownloads);
+    bool gesture = navigation_handle->HasUserGesture();
+
     unsigned value = 0;
-    if (ad_host->IsSandboxed(blink::WebSandboxFlags::kDownloads))
+    if (sandboxed)
       value |= blink::DownloadStats::kSandboxBit;
     if (!IsSubframeSameOriginToMainFrame(ad_host, /*use_parent_origin=*/false))
       value |= blink::DownloadStats::kCrossOriginBit;
     if (ad_types.any())
       value |= blink::DownloadStats::kAdBit;
-    if (navigation_handle->HasUserGesture())
+    if (gesture)
       value |= blink::DownloadStats::kGestureBit;
     blink::DownloadStats::RecordSubframeSandboxOriginAdGesture(value);
+
+    if (sandboxed) {
+      blink::mojom::WebFeature web_feature =
+          gesture ? blink::mojom::WebFeature::
+                        kNavigationDownloadInSandboxWithUserGesture
+                  : blink::mojom::WebFeature::
+                        kNavigationDownloadInSandboxWithoutUserGesture;
+      page_load_metrics::mojom::PageLoadFeatures page_load_features(
+          {web_feature}, {} /* css_properties */,
+          {} /* animated_css_properties */);
+      page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
+          ad_host, page_load_features);
+    }
   }
 
   RecordAdFrameData(frame_tree_node_id, ad_types, ad_host,
