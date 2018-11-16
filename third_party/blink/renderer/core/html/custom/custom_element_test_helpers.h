@@ -49,9 +49,11 @@ class TestCustomElementDefinition : public CustomElementDefinition {
       : CustomElementDefinition(descriptor) {}
 
   TestCustomElementDefinition(const CustomElementDescriptor& descriptor,
-                              HashSet<AtomicString>&& observed_attributes)
+                              HashSet<AtomicString>&& observed_attributes,
+                              const Vector<String>& disabled_features)
       : CustomElementDefinition(descriptor,
-                                std::move(observed_attributes)) {}
+                                std::move(observed_attributes),
+                                disabled_features) {}
 
   ~TestCustomElementDefinition() override = default;
 

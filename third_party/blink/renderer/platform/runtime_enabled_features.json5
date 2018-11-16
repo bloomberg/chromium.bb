@@ -397,6 +397,10 @@
       name: "EditingNG",
     },
     {
+      // http://crbug.com/905922
+      name: "ElementInternals",
+    },
+    {
       // https://crbug.com/879270
       name: "ElementTiming",
       status: "test",

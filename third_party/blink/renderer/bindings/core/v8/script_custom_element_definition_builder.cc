@@ -113,17 +113,38 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
       return false;
     }
 
-    if (v8_observed_attributes->IsUndefined())
-      return true;
+    if (!v8_observed_attributes->IsUndefined()) {
+      const Vector<String>& observed_attrs =
+          NativeValueTraits<IDLSequence<IDLString>>::NativeValue(
+              isolate, v8_observed_attributes, exception_state_);
+      if (exception_state_.HadException())
+        return false;
+      observed_attributes_.ReserveCapacityForSize(observed_attrs.size());
+      for (const auto& attribute : observed_attrs)
+        observed_attributes_.insert(AtomicString(attribute));
+    }
+  }
 
-    const Vector<String>& observed_attrs =
-        NativeValueTraits<IDLSequence<IDLString>>::NativeValue(
-            isolate, v8_observed_attributes, exception_state_);
-    if (exception_state_.HadException())
+  if (RuntimeEnabledFeatures::ElementInternalsEnabled()) {
+    auto* isolate = script_state_->GetIsolate();
+    v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
+    v8::TryCatch try_catch(isolate);
+    v8::Local<v8::Value> v8_disabled_features;
+
+    if (!constructor_->CallbackObject()
+             ->Get(current_context, V8AtomicString(isolate, "disabledFeatures"))
+             .ToLocal(&v8_disabled_features)) {
+      exception_state_.RethrowV8Exception(try_catch.Exception());
       return false;
-    observed_attributes_.ReserveCapacityForSize(observed_attrs.size());
-    for (const auto& attribute : observed_attrs)
-      observed_attributes_.insert(AtomicString(attribute));
+    }
+
+    if (!v8_disabled_features->IsUndefined()) {
+      disabled_features_ =
+          NativeValueTraits<IDLSequence<IDLString>>::NativeValue(
+              isolate, v8_disabled_features, exception_state_);
+      if (exception_state_.HadException())
+        return false;
+    }
   }
 
   return true;
@@ -135,7 +156,8 @@ CustomElementDefinition* ScriptCustomElementDefinitionBuilder::Build(
   return ScriptCustomElementDefinition::Create(
       script_state_, registry_, descriptor, id, constructor_,
       connected_callback_, disconnected_callback_, adopted_callback_,
-      attribute_changed_callback_, std::move(observed_attributes_));
+      attribute_changed_callback_, std::move(observed_attributes_),
+      disabled_features_);
 }
 
 }  // namespace blink

@@ -29,11 +29,14 @@ CustomElementDefinition::CustomElementDefinition(
 
 CustomElementDefinition::CustomElementDefinition(
     const CustomElementDescriptor& descriptor,
-    const HashSet<AtomicString>& observed_attributes)
+    const HashSet<AtomicString>& observed_attributes,
+    const Vector<String>& disabled_features)
     : descriptor_(descriptor),
       observed_attributes_(observed_attributes),
       has_style_attribute_changed_callback_(
-          observed_attributes.Contains(html_names::kStyleAttr.LocalName())) {}
+          observed_attributes.Contains(html_names::kStyleAttr.LocalName())),
+      disable_internals_(disabled_features.Contains(String("internals"))) {}
+
 CustomElementDefinition::~CustomElementDefinition() = default;
 
 void CustomElementDefinition::Trace(blink::Visitor* visitor) {
