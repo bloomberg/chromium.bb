@@ -56,6 +56,7 @@ cr_slider.SliderTick;
         type: Boolean,
         computed: 'computeDisabled_(disabled, ticks.*)',
         reflectToAttribute: true,
+        observer: 'onDisabledChanged_',
       },
 
       dragging: {
@@ -247,6 +248,12 @@ cr_slider.SliderTick;
     /** @private */
     onBlur_: function() {
       this.holdDown_ = false;
+    },
+
+    /** @private */
+    onDisabledChanged_: function() {
+      this.$.knob.setAttribute('tabindex', this.disabled_ ? '-1' : '0');
+      this.blur();
     },
 
     /** @private */
