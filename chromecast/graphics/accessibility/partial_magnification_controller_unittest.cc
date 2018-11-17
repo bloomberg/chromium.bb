@@ -5,7 +5,7 @@
 #include "chromecast/graphics/accessibility/partial_magnification_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_base.h"
-#include "ui/aura/test/event_generator_delegate_aura.h"
+#include "ui/aura/test/default_event_generator_delegate.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/test/event_generator.h"
@@ -33,17 +33,13 @@ class CastTestWindowDelegate : public aura::test::TestWindowDelegate {
 };
 
 class TestEventGeneratorDelegate
-    : public aura::test::EventGeneratorDelegateAura {
+    : public aura::test::DefaultEventGeneratorDelegate {
  public:
   explicit TestEventGeneratorDelegate(aura::Window* root_window)
-      : root_window_(root_window) {}
+      : DefaultEventGeneratorDelegate(root_window), root_window_(root_window) {}
   ~TestEventGeneratorDelegate() override = default;
 
-  // EventGeneratorDelegateAura overrides:
-  ui::EventTarget* GetTargetAt(const gfx::Point& point) override {
-    return root_window_->GetHost()->window();
-  }
-
+  // aura::test::DefaultEventGeneratorDelegate:
   aura::client::ScreenPositionClient* GetScreenPositionClient(
       const aura::Window* window) const override {
     return aura::client::GetScreenPositionClient(root_window_);

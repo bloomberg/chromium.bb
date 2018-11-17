@@ -12,6 +12,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_port_mus.h"
+#include "ui/aura/test/default_event_generator_delegate.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -25,29 +26,6 @@
 namespace aura {
 namespace test {
 namespace {
-
-class DefaultEventGeneratorDelegate : public EventGeneratorDelegateAura {
- public:
-  explicit DefaultEventGeneratorDelegate(gfx::NativeWindow root_window)
-      : root_window_(root_window) {}
-
-  ~DefaultEventGeneratorDelegate() override = default;
-
-  // EventGeneratorDelegateAura:
-  ui::EventTarget* GetTargetAt(const gfx::Point& location) override {
-    return root_window_->GetHost()->window();
-  }
-
-  client::ScreenPositionClient* GetScreenPositionClient(
-      const aura::Window* window) const override {
-    return nullptr;
-  }
-
- private:
-  Window* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultEventGeneratorDelegate);
-};
 
 // EventTargeterMus serves to send events to the remote window-service by way
 // of the RemoteEventInjector interface.
@@ -128,10 +106,6 @@ class EventGeneratorDelegateMus : public EventGeneratorDelegateAura {
   ui::EventTarget* GetTargetAt(const gfx::Point& location) override {
     return &event_targeter_;
   }
-  client::ScreenPositionClient* GetScreenPositionClient(
-      const aura::Window* window) const override {
-    return client::GetScreenPositionClient(window->GetRootWindow());
-  }
   ui::EventSource* GetEventSource(ui::EventTarget* target) override {
     return target == &event_targeter_
                ? &event_targeter_
@@ -195,6 +169,12 @@ EventGeneratorDelegateAura::Create(service_manager::Connector* connector,
 EventGeneratorDelegateAura::EventGeneratorDelegateAura() = default;
 
 EventGeneratorDelegateAura::~EventGeneratorDelegateAura() = default;
+
+client::ScreenPositionClient*
+EventGeneratorDelegateAura::GetScreenPositionClient(
+    const Window* window) const {
+  return client::GetScreenPositionClient(window->GetRootWindow());
+}
 
 ui::EventSource* EventGeneratorDelegateAura::GetEventSource(
     ui::EventTarget* target) {

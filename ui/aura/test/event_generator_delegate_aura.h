@@ -42,7 +42,7 @@ class EventGeneratorDelegateAura : public ui::test::EventGeneratorDelegate {
   // coordinates used in EventGenerator. EventGenerator uses
   // root Window's coordinate if this returns NULL.
   virtual client::ScreenPositionClient* GetScreenPositionClient(
-      const aura::Window* window) const = 0;
+      const Window* window) const;
 
   // Overridden from ui::test::EventGeneratorDelegate:
   ui::EventSource* GetEventSource(ui::EventTarget* target) override;
