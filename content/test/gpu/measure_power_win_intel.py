@@ -72,18 +72,15 @@ def LocateBrowser(options_browser):
 
 
 def LaunchBrowser(browser, user_data_dir, url, extra_browser_args):
-  args = []
-  shell = False
+  browser_proc = None
   if browser == 'edge':
-    args.append('start')
-    edge_cmd = 'microsoft-edge:'
+    cmd = 'start microsoft-edge:'
     if url:
-      edge_cmd = edge_cmd + url
-    args.append(edge_cmd)
-    # Without |shell| sets to true, launching Edge won't work.
-    shell = True
+      cmd = cmd + '\"' + url + '\"'
+    logging.debug(cmd)
+    browser_proc = subprocess.Popen(cmd, shell=True)
   else:
-    args.append(browser)
+    args = [browser]
     if url:
       args.append(url)
     if browser.endswith("chrome.exe"):
@@ -91,10 +88,11 @@ def LaunchBrowser(browser, user_data_dir, url, extra_browser_args):
       args.append('--no-first-run')
       args.append('--no-default-browser-check')
       args.append('--autoplay-policy=no-user-gesture-required')
-      if extra_browser_args:
-        args.extend(extra_browser_args.split(' '))
-  logging.debug(" ".join(args))
-  browser_proc = subprocess.Popen(args, shell=shell)
+      args.append('--start-maximized')
+      if len(extra_browser_args) > 0:
+        args.extend(extra_browser_args)
+    logging.debug(" ".join(args))
+    browser_proc = subprocess.Popen(args)
   return browser_proc
 
 
@@ -105,9 +103,6 @@ def MeasurePowerOnce(browser, logfile, duration, delay, resolution, url,
   browser_proc = LaunchBrowser(browser, user_data_dir, url, extra_browser_args)
   ipg_utils.RunIPG(duration + delay, resolution, logfile)
   if browser == 'edge':
-    # Because Edge is launched with |shell| set to true, browser_proc isn't
-    # the Edge process, so the following is used to kill all Edge processes
-    # in the system, including ones not launched through this script.
     subprocess.call("taskkill /F /IM MicrosoftEdge.exe /T")
   else:
     browser_proc.kill()
@@ -159,6 +154,10 @@ def main(argv):
   parser.add_option("--extra-browser-args", dest="extra_browser_args",
                     help="specify extra command line switches for the browser "
                     "that are separated by spaces (quoted).")
+  parser.add_option("--extra-browser-args-filename",
+                    dest="extra_browser_args_filename", metavar="FILE",
+                    help="specify extra command line switches for the browser "
+                    "in a text file that are separated by whitespace.")
   # TODO(zmo): add an option --start-fullscreen
   (options, _) = parser.parse_args(args=argv)
   if options.verbose:
@@ -175,13 +174,25 @@ def main(argv):
 
   all_results = []
 
+  extra_brower_args = []
+  if options.extra_browser_args:
+    extra_browser_args = options.extra_browser_args.split()
+  if options.extra_browser_args_filename:
+    if not os.path.isfile(options.extra_browser_args_filename):
+      logging.error("Can't locate file at %s",
+                    options.extra_browser_args_filename)
+    else:
+      with open(options.extra_browser_args_filename, 'r') as file:
+        extra_browser_args.extend(file.read().split())
+        file.close()
+
   for run in range(1, options.repeat + 1):
     logfile = ipg_utils.GenerateIPGLogFilename(
         log_prefix, options.logdir, run, options.repeat, True)
     print "Iteration #%d out of %d" % (run, options.repeat)
     results = MeasurePowerOnce(browser, logfile, options.duration,
                                options.delay, options.resolution, options.url,
-                               options.extra_browser_args)
+                               extra_browser_args)
     print results
     all_results.append(results)
 
