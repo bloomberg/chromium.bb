@@ -70,6 +70,9 @@ class CC_PAINT_EXPORT ServiceTransferCacheEntry {
   static bool SafeConvertToType(uint32_t raw_type,
                                 TransferCacheEntryType* type);
 
+  // Returns true if the entry needs a GrContext during deserialization.
+  static bool UsesGrContext(TransferCacheEntryType type);
+
   virtual ~ServiceTransferCacheEntry() {}
 
   // Returns the type of this entry.

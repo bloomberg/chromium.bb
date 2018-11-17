@@ -3250,10 +3250,18 @@ void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
   ServiceDiscardableHandle handle(std::move(handle_buffer), handle_shm_offset,
                                   handle_shm_id);
 
+  // If the entry is going to use skia during deserialization, make sure we mark
+  // the context state dirty.
+  GrContext* context_for_entry =
+      cc::ServiceTransferCacheEntry::UsesGrContext(entry_type) ? gr_context()
+                                                               : nullptr;
+  if (context_for_entry)
+    raster_decoder_context_state_->need_context_state_reset = true;
+
   if (!transfer_cache()->CreateLockedEntry(
           ServiceTransferCache::EntryKey(raster_decoder_id_, entry_type,
                                          entry_id),
-          handle, gr_context(), base::make_span(data_memory, data_size))) {
+          handle, context_for_entry, base::make_span(data_memory, data_size))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
                        "Failure to deserialize transfer cache entry.");
     return;
