@@ -15,7 +15,7 @@ const CSSValue* StrokeWidth::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return css_property_parser_helpers::ConsumeLengthOrPercent(
-      range, kSVGAttributeMode, kValueRangeAll,
+      range, kSVGAttributeMode, kValueRangeNonNegative,
       css_property_parser_helpers::UnitlessQuirk::kForbid);
 }
 
