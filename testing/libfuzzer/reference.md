@@ -31,12 +31,12 @@ running:
 
 | Builder | Description |
 |---------|-------------|
-|Linux ASan | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Linux ASan' out/Directory` |
-|Linux ASan Debug | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Linux ASan Debug' out/Directory` |
-|Linux MSan \[[*](#MSan)\] | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Linux MSan' out/Directory` |
-|Linux UBSan \[[*](#UBSan)\]| `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Linux UBSan' out/Directory` |
-|Mac ASan | `tools/mb/mb.py gen -m chromium.fyi -b 'Libfuzzer Upload Mac ASan' out/Directory` |
-|Windows ASan | `tools/mb/mb.py gen -m chromium.fyi -b "Libfuzzer Upload Windows ASan" out/Directory` |
+|Linux ASan | `tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Linux ASan' out/Directory` |
+|Linux ASan Debug | `tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Linux ASan Debug' out/Directory` |
+|Linux MSan \[[*](#MSan)\] | `tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Linux MSan' out/Directory` |
+|Linux UBSan \[[*](#UBSan)\]| `tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Linux UBSan' out/Directory` |
+|Mac ASan | `tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Mac ASan' out/Directory` |
+|Windows ASan | `python tools\mb\mb.py gen -m chromium.fuzz -b "Libfuzzer Upload Windows ASan" out\Directory` |
 
 
 ### Linux

@@ -18,7 +18,7 @@ powershell.
 2. Generate gn build configuration for libFuzzer:
 
 ```
-python tools\mb\mb.py gen -m chromium.fyi -b "Libfuzzer Upload Windows ASan" out\libFuzzer
+python tools\mb\mb.py gen -m chromium.fuzz -b "Libfuzzer Upload Windows ASan" out\libFuzzer
 ```
 
 3. Build the fuzzer:
