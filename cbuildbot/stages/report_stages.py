@@ -262,9 +262,11 @@ class BuildStartStage(generic_stages.BuilderStage):
       db_type = cidb.CIDBConnectionFactory.GetCIDBConnectionType()
       db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
       if db:
+        wfall = d['buildbot-master-name']
         try:
           build_id = db.InsertBuild(
               builder_name=d['builder-name'],
+              waterfall=wfall,
               build_number=d['build-number'],
               build_config=d['bot-config'],
               bot_hostname=d['bot-hostname'],

@@ -10,6 +10,7 @@ from __future__ import print_function
 import mock
 
 from chromite.cbuildbot import build_status_unittest
+from chromite.lib.const import waterfall
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import cidb
@@ -52,7 +53,7 @@ class BuilderStatusLibTests(cros_test_lib.MockTestCase):
     db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(db)
     master_build_id = db.InsertBuild(
-        'master', 1, 'master', 'bot_hostname',
+        'master', waterfall.WATERFALL_SWARMING, 1, 'master', 'bot_hostname',
         buildbucket_id='0')
 
     self.assertEqual(
@@ -61,13 +62,13 @@ class BuilderStatusLibTests(cros_test_lib.MockTestCase):
             master_build_id, db))
 
     slave_build_id_1 = db.InsertBuild(
-        'slave_1', 1, 'slave_1', 'bot_hostname',
+        'slave_1', waterfall.WATERFALL_SWARMING, 1, 'slave_1', 'bot_hostname',
         master_build_id=master_build_id, buildbucket_id='1')
     slave_build_id_2 = db.InsertBuild(
-        'slave_2', 2, 'slave_2', 'bot_hostname',
+        'slave_2', waterfall.WATERFALL_SWARMING, 2, 'slave_2', 'bot_hostname',
         master_build_id=master_build_id, buildbucket_id='2')
     db.InsertBuild(
-        'slave_3', 3, 'slave_3', 'bot_hostname',
+        'slave_3', waterfall.WATERFALL_SWARMING, 3, 'slave_3', 'bot_hostname',
         master_build_id=master_build_id, buildbucket_id='3')
     for slave_build_id in (slave_build_id_1, slave_build_id_2):
       db.InsertBuildMessage(
@@ -239,12 +240,12 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
   def _InsertMasterSlaveBuildsToCIDB(self):
     """Insert master and slave builds into fake_cidb."""
-    master = self.db.InsertBuild('master', 1,
+    master = self.db.InsertBuild('master', waterfall.WATERFALL_SWARMING, 1,
                                  'master', 'host1')
-    slave1 = self.db.InsertBuild('slave1', 2,
+    slave1 = self.db.InsertBuild('slave1', waterfall.WATERFALL_SWARMING, 2,
                                  'slave1', 'host1', master_build_id=0,
                                  buildbucket_id='id_1', status='fail')
-    slave2 = self.db.InsertBuild('slave2', 3,
+    slave2 = self.db.InsertBuild('slave2', waterfall.WATERFALL_SWARMING, 3,
                                  'slave2', 'host1', master_build_id=0,
                                  buildbucket_id='id_2', status='fail')
     return master, slave1, slave2
@@ -297,7 +298,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
   def testGetAllSlaveCIDBStatusInfoWithRetriedBuilds(self):
     """GetAllSlaveCIDBStatusInfo doesn't return retried builds."""
     self._InsertMasterSlaveBuildsToCIDB()
-    self.db.InsertBuild('slave1', 3,
+    self.db.InsertBuild('slave1', waterfall.WATERFALL_SWARMING, 3,
                         'slave1', 'host1', master_build_id=0,
                         buildbucket_id='id_3', status='inflight')
 
@@ -532,7 +533,7 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     slave = 'cyan-paladin'
     builder_number = 37
 
-    slave_id = self.db.InsertBuild(slave,
+    slave_id = self.db.InsertBuild(slave, waterfall.WATERFALL_SWARMING,
                                    builder_number, slave, 'bot_hostname',
                                    master_build_id=self.master_build_id)
     self.db.InsertBuildMessage(
@@ -550,14 +551,14 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     slave = 'cyan-paladin'
     builder_number = 37
 
-    slave_id = self.db.InsertBuild(slave,
+    slave_id = self.db.InsertBuild(slave, waterfall.WATERFALL_SWARMING,
                                    builder_number, slave, 'bot_hostname',
                                    master_build_id=self.master_build_id)
     self.db.InsertBuildMessage(self.master_build_id,
                                message_value=slave_id)
     builder_number = 1
 
-    self.db.InsertBuild(slave,
+    self.db.InsertBuild(slave, waterfall.WATERFALL_SWARMING,
                         builder_number, slave, 'bot_hostname')
     self.db.InsertBuildMessage(slave)
 

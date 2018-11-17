@@ -50,7 +50,7 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.fake_db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
     build_id = self.fake_db.InsertBuild(
-        'builder name', 1, 'build config', 'bot hostname')
+        'builder name', 'waterfall', 1, 'build config', 'bot hostname')
 
     self._Prepare(build_id=build_id)
 
@@ -78,7 +78,8 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
     """Test that master/slave version mismatch causes failure."""
     master_release_tag = '9999.0.0-rc1'
     master_build_id = self.fake_db.InsertBuild(
-        'master', 2, 'master config', 'master hostname')
+        'master', waterfall.WATERFALL_INTERNAL, 2, 'master config',
+        'master hostname')
     master_metadata = metadata_lib.CBuildbotMetadata()
     master_metadata.UpdateKeyDictWithDict(
         'version', {'full' : 'R39-9999.0.0-rc1',
@@ -153,7 +154,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
     os.environ['BUILDBOT_MASTERNAME'] = waterfall.WATERFALL_SWARMING
 
     master_build_id = self.db.InsertBuild(
-        'master_build', 1,
+        'master_build', waterfall.WATERFALL_SWARMING, 1,
         'master_build_config', 'bot_hostname')
 
     self.PatchObject(toolchain, 'GetToolchainsForBoard')
@@ -473,7 +474,7 @@ class DetectRelevantChangesStageTest(
     self.fake_db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
     build_id = self.fake_db.InsertBuild(
-        'test-paladin', 1, 'test-paladin', 'bot_hostname')
+        'test-paladin', 'chromeos', 1, 'test-paladin', 'bot_hostname')
     self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
 
   def ConstructStage(self):

@@ -731,7 +731,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return self._Execute('SELECT NOW()').fetchall()[0][0]
 
   @minimum_schema(65)
-  def InsertBuild(self, builder_name, build_number,
+  def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname, master_build_id=None,
                   timeout_seconds=None, important=None, buildbucket_id=None,
                   branch=None):
@@ -739,6 +739,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     Args:
       builder_name: buildbot builder name.
+      waterfall: buildbot waterfall name.
       build_number: buildbot build number.
       build_config: cbuildbot config of build
       bot_hostname: hostname of bot running the build
@@ -754,9 +755,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     values = {
         'builder_name': builder_name,
         'buildbot_generation': constants.BUILDBOT_GENERATION,
-        # This column is nullable but all entries show empty string when no
-        # waterfall. Should this be null instead?
-        'waterfall': '',
+        'waterfall': waterfall,
         'build_number': build_number,
         'build_config': build_config,
         'bot_hostname': bot_hostname,

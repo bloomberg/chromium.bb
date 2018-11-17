@@ -16,6 +16,7 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
+from chromite.lib.const import waterfall
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -306,7 +307,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 """
     json_dump_dict = json.loads(json_str)
     db = fake_cidb.FakeCIDBConnection()
-    build_id = db.InsertBuild('build_1', 1,
+    build_id = db.InsertBuild('build_1', waterfall.WATERFALL_INTERNAL, 1,
                               'build_1', 'bot_hostname')
 
     # When json_dump_dict is None

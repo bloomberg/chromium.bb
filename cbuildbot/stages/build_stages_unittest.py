@@ -16,6 +16,7 @@ from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
+from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import build_summary
@@ -572,14 +573,14 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
 
     self.fake_db.InsertBuild(
-        'test_builder', 666, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 666, 'test_config',
         'test_hostname',
         status=constants.BUILDER_STATUS_INFLIGHT,
         timeout_seconds=23456,
         buildbucket_id='100')
 
     self.fake_db.InsertBuild(
-        'test_builder', 666, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 666, 'test_config',
         'test_hostname',
         status=constants.BUILDER_STATUS_INFLIGHT,
         timeout_seconds=23456,
@@ -638,7 +639,7 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
   def testChrootReusePreviousMasterFailed(self):
     master_id = self.fake_db.InsertBuild(
-        'test_builder', 123, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 123, 'test_config',
         'test_hostname', status=constants.BUILDER_STATUS_FAILED,
         buildbucket_id='2178')
     self.PatchObject(
@@ -655,7 +656,7 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
   def testChrootReuseAllPassed(self):
     master_id = self.fake_db.InsertBuild(
-        'test_builder', 123, 'test_config',
+        'test_builder', waterfall.WATERFALL_SWARMING, 123, 'test_config',
         'test_hostname', status=constants.BUILDER_STATUS_PASSED,
         buildbucket_id='2178')
     self.PatchObject(

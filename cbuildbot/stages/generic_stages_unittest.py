@@ -507,7 +507,7 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
     db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(db)
 
-    build_id = db.InsertBuild('lumpy-pre-cq', 1,
+    build_id = db.InsertBuild('lumpy-pre-cq', waterfall.WATERFALL_INTERNAL, 1,
                               'lumpy-pre-cq', 'bot_hostname',
                               status=constants.BUILDER_STATUS_INFLIGHT)
     stage_id = db.InsertBuildStage(build_id, 'BuildPackages', status='fail')

@@ -24,6 +24,7 @@ from chromite.lib import fake_cidb
 from chromite.lib import hwtest_results
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
+from chromite.lib.const import waterfall
 
 
 # pylint: disable=protected-access
@@ -155,7 +156,7 @@ class CommitQueueHandleChangesStageTests(
     master_build_id = stage._run.attrs.metadata.GetValue('build_id')
     db = fake_cidb.FakeCIDBConnection()
     slave_build_id = db.InsertBuild(
-        'slave_1', 1, 'slave_1', 'bot_hostname',
+        'slave_1', waterfall.WATERFALL_INTERNAL, 1, 'slave_1', 'bot_hostname',
         master_build_id=master_build_id, buildbucket_id='123')
     cidb.CIDBConnectionFactory.SetupMockCidb(db)
     mock_failed_hwtests = mock.Mock()

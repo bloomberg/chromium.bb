@@ -71,7 +71,7 @@ def MakePool(overlays=constants.PUBLIC_OVERLAYS, build_number=1,
   builder_run = FakeBuilderRun(fake_db)
   if fake_db:
     build_id = fake_db.InsertBuild(
-        builder_name, build_number,
+        builder_name, waterfall.WATERFALL_INTERNAL, build_number,
         'build-config', 'bot hostname', buildbucket_id=buildbucket_id)
     builder_run.attrs.metadata.UpdateWithDict({'build_id': build_id})
 
@@ -777,7 +777,7 @@ class TestCoreLogic(_Base):
     # Create a passing build.
     for i in range(2):
       self.fake_db.InsertBuild(
-          builder_name, i, builder_name, 'abcdelicious',
+          builder_name, None, i, builder_name, 'abcdelicious',
           status=constants.BUILDER_STATUS_PASSED)
 
     self.assertEqual(slave_pool._GetFailStreak(), 0)
@@ -785,24 +785,24 @@ class TestCoreLogic(_Base):
     # Add a fail streak.
     for i in range(3, 6):
       self.fake_db.InsertBuild(
-          builder_name, i, builder_name, 'abcdelicious',
+          builder_name, None, i, builder_name, 'abcdelicious',
           status=constants.BUILDER_STATUS_FAILED)
 
     self.assertEqual(slave_pool._GetFailStreak(), 3)
 
     # Add another success and failure.
     self.fake_db.InsertBuild(
-        builder_name, 6, builder_name, 'abcdelicious',
+        builder_name, None, 6, builder_name, 'abcdelicious',
         status=constants.BUILDER_STATUS_PASSED)
     self.fake_db.InsertBuild(
-        builder_name, 7, builder_name, 'abcdelicious',
+        builder_name, None, 7, builder_name, 'abcdelicious',
         status=constants.BUILDER_STATUS_FAILED)
 
     self.assertEqual(slave_pool._GetFailStreak(), 1)
 
     # Finally just add one last pass and make sure fail streak is wiped.
     self.fake_db.InsertBuild(
-        builder_name, 8, builder_name, 'abcdelicious',
+        builder_name, None, 8, builder_name, 'abcdelicious',
         status=constants.BUILDER_STATUS_PASSED)
 
     self.assertEqual(slave_pool._GetFailStreak(), 0)

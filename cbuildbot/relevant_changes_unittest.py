@@ -35,7 +35,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
 
     self.fake_cidb = fake_cidb.FakeCIDBConnection()
     self.master_build_id = self.fake_cidb.InsertBuild(
-        self._bot_id, '1', self._bot_id, 'bot_hostname')
+        self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname')
     self._patch_factory = patch_unittest.MockPatchFactory()
 
   def _InsertSlaveBuildAndCLActions(self, slave_config, changes=None,
@@ -49,7 +49,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
       changes = set(self._patch_factory.GetPatches(how_many=4))
 
     test_build_id = self.fake_cidb.InsertBuild(
-        slave_config, '2', slave_config, 'bot_hostname',
+        slave_config, 'chromeos', '2', slave_config, 'bot_hostname',
         master_build_id=master_build_id, buildbucket_id='bb_id_1',
         status=status)
 
@@ -133,7 +133,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
   def testGetPreviouslyPassedSlavesForChangesWithIrrelevantSlaves(self):
     """Test GetPreviouslyPassedSlavesForChanges with irrelevant slaves."""
     new_master_build_id = self.fake_cidb.InsertBuild(
-        self._bot_id, '1', self._bot_id, 'bot_hostname',
+        self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname',
         master_build_id=self.master_build_id)
     changes = self._patch_factory.GetPatches(how_many=2)
     self._InsertSlaveBuildAndCLActions(
@@ -152,7 +152,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
   def testGetPreviouslyPassedSlavesForChangesWithInvalidConfig(self):
     """Test GetPreviouslyPassedSlavesForChanges with invalid build config."""
     new_master_build_id = self.fake_cidb.InsertBuild(
-        self._bot_id, '1', self._bot_id, 'bot_hostname',
+        self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname',
         master_build_id=self.master_build_id)
     changes = self._patch_factory.GetPatches(how_many=2)
     self._InsertSlaveBuildAndCLActions(
@@ -172,7 +172,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
   def testGetPreviouslyPassedSlavesForChangesWithFailedSlaves(self):
     """Test GetPreviouslyPassedSlavesForChanges with failed slaves."""
     new_master_build_id = self.fake_cidb.InsertBuild(
-        self._bot_id, '1', self._bot_id, 'bot_hostname',
+        self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname',
         master_build_id=self.master_build_id)
     changes = self._patch_factory.GetPatches(how_many=2)
     self._InsertSlaveBuildAndCLActions(
@@ -193,7 +193,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
   def testGetPreviouslyPassedSlavesForChangesWithdNewSlaves(self):
     """Test GetPreviouslyPassedSlavesForChanges with new slaves."""
     new_master_build_id = self.fake_cidb.InsertBuild(
-        self._bot_id, '1', self._bot_id, 'bot_hostname',
+        self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname',
         master_build_id=self.master_build_id)
     changes = self._patch_factory.GetPatches(how_many=2)
     self._InsertSlaveBuildAndCLActions(
@@ -217,7 +217,7 @@ class RelevantChangesTest(cros_test_lib.MockTestCase):
   def testGetPreviouslyPassedSlavesForChangesWithdMixedSlaves(self):
     """Test GetPreviouslyPassedSlavesForChanges with mixed slaves."""
     new_master_build_id = self.fake_cidb.InsertBuild(
-        self._bot_id, '1', self._bot_id, 'bot_hostname',
+        self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname',
         master_build_id=self.master_build_id)
     changes = self._patch_factory.GetPatches(how_many=2)
     self._InsertSlaveBuildAndCLActions(
@@ -278,7 +278,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     self.buildbucket_ids = [bb_info.buildbucket_id
                             for bb_info in self.buildbucket_info_dict.values()]
     self.master_build_id = self.fake_cidb.InsertBuild(
-        self._bot_id, '1', self._bot_id, 'bot_hostname')
+        self._bot_id, 'chromeos', '1', self._bot_id, 'bot_hostname')
     self.changes = self._patch_factory.GetPatches(how_many=4)
     self._InsertCLActionsForBuild(self.master_build_id, self.changes,
                                   constants.CL_ACTION_PICKED_UP)
@@ -409,7 +409,7 @@ class TriageRelevantChangesTest(cros_test_lib.MockTestCase):
     """
     return {
         build: self.fake_cidb.InsertBuild(
-            build, '1', build, 'bot_hostname',
+            build, 'chromeos', '1', build, 'bot_hostname',
             master_build_id=self.master_build_id,
             buildbucket_id=buildbucket_info_dict[build].buildbucket_id)
         for build in builds

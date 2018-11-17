@@ -55,7 +55,7 @@ class FakeCIDBConnection(object):
     """Gets the current database time."""
     return self.fake_time or datetime.datetime.now()
 
-  def InsertBuild(self, builder_name, build_number,
+  def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname, master_build_id=None,
                   timeout_seconds=None, status=constants.BUILDER_STATUS_PASSED,
                   important=None, buildbucket_id=None, milestone_version=None,
@@ -78,8 +78,7 @@ class FakeCIDBConnection(object):
     row = {'id': build_id,
            'builder_name': builder_name,
            'buildbot_generation': constants.BUILDBOT_GENERATION,
-           # Empty string or null / leave unset?
-           'waterfall': '',
+           'waterfall': waterfall,
            'build_number': build_number,
            'build_config' : build_config,
            'bot_hostname': bot_hostname,
