@@ -370,6 +370,50 @@ TEST_F(ScriptRunIteratorTest, Chinese) {
   CHECK_SCRIPT_RUNS({{"萬國碼", USCRIPT_HAN}});
 }
 
+struct JapaneseMixedScript {
+  const char* string;
+  // The expected primary_script when the string alone was evaluated.
+  UScriptCode script;
+} japanese_mixed_scripts[] = {{"あ", USCRIPT_HIRAGANA},
+                              // Katakana should be normalized to Hiragana
+                              {"ア", USCRIPT_HIRAGANA},
+                              // Script_Extensions=Hira Kana
+                              {"\u30FC", USCRIPT_HIRAGANA},
+                              // Script_Extensions=Hani Hira Kana
+                              {"\u303C", USCRIPT_HAN},
+                              // Script_Extensions=Bopo Hang Hani Hira Kana
+                              {"\u3003", USCRIPT_BOPOMOFO},
+                              // Script_Extensions=Bopo Hang Hani Hira Kana Yiii
+                              {"\u3001", USCRIPT_BOPOMOFO}};
+
+class JapaneseMixedScriptTest
+    : public ScriptRunIteratorTest,
+      public testing::WithParamInterface<JapaneseMixedScript> {};
+
+INSTANTIATE_TEST_CASE_P(ScriptRunIteratorTest,
+                        JapaneseMixedScriptTest,
+                        testing::ValuesIn(japanese_mixed_scripts));
+
+TEST_P(JapaneseMixedScriptTest, Data) {
+  const auto& data = GetParam();
+  std::string string(data.string);
+
+  CheckRuns({{string.data(), data.script}});
+
+  // If the string follows Hiragana or Katakana, or is followed by Hiragnaa or
+  // Katakana, it should be normalized as Hiragana.
+  std::string hiragana("か");
+  std::string katakana("カ");
+  CheckRuns({{(hiragana + string).data(), USCRIPT_HIRAGANA}});
+  CheckRuns({{(string + hiragana).data(), USCRIPT_HIRAGANA}});
+
+  CheckRuns({{(katakana + string).data(), USCRIPT_HIRAGANA}});
+  CheckRuns({{(string + katakana).data(), USCRIPT_HIRAGANA}});
+
+  CheckRuns({{(hiragana + string + katakana).data(), USCRIPT_HIRAGANA}});
+  CheckRuns({{(katakana + string + hiragana).data(), USCRIPT_HIRAGANA}});
+}
+
 // Close bracket without matching open is ignored
 TEST_F(ScriptRunIteratorTest, UnbalancedParens1) {
   CHECK_SCRIPT_RUNS(
