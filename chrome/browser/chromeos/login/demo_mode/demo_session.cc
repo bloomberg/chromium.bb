@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
@@ -38,7 +39,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
@@ -356,6 +356,21 @@ void DemoSession::OverrideIgnorePinPolicyAppsForTesting(
   ignore_pin_policy_offline_apps_ = std::move(apps);
 }
 
+void DemoSession::ActiveUserChanged(const user_manager::User* user) {
+  const base::RepeatingClosure hide_web_store_icon = base::BindRepeating([]() {
+    ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+        prefs::kHideWebStoreIcon, true);
+  });
+  user_manager::User* active_user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  DCHECK_NE(active_user, user);
+  if (!active_user->is_profile_created()) {
+    active_user->AddProfileCreatedObserver(hide_web_store_icon);
+    return;
+  }
+  hide_web_store_icon.Run();
+}
+
 DemoSession::DemoSession()
     : offline_enrolled_(IsDemoModeOfflineEnrolled()),
       ignore_pin_policy_offline_apps_(GetIgnorePinPolicyApps()),
@@ -367,9 +382,12 @@ DemoSession::DemoSession()
     session_manager_observer_.Add(session_manager::SessionManager::Get());
     OnSessionStateChanged();
   }
+  ChromeUserManager::Get()->AddSessionStateObserver(this);
 }
 
-DemoSession::~DemoSession() = default;
+DemoSession::~DemoSession() {
+  ChromeUserManager::Get()->RemoveSessionStateObserver(this);
+}
 
 void DemoSession::InstallDemoResources() {
   DCHECK(demo_resources_->loaded());

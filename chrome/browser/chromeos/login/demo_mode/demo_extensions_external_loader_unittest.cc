@@ -140,7 +140,8 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
   DemoExtensionsExternalLoaderTest()
       : test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
+                &test_url_loader_factory_)),
+        scoped_user_manager_(std::make_unique<FakeChromeUserManager>()) {}
 
   ~DemoExtensionsExternalLoaderTest() override = default;
 
@@ -221,6 +222,8 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
       test_shared_loader_factory_;
 
   content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
+
+  user_manager::ScopedUserManager scoped_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoExtensionsExternalLoaderTest);
 };

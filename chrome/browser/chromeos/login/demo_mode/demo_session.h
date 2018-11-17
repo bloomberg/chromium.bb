@@ -15,6 +15,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_extensions_external_loader.h"
 #include "components/session_manager/core/session_manager_observer.h"
+#include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class PrefRegistrySimple;
@@ -30,7 +31,8 @@ class DemoResources;
 // Tracks global demo session state, such as whether the demo session has
 // started and the state of demo mode resources.
 class DemoSession : public session_manager::SessionManagerObserver,
-                    extensions::ExtensionRegistryObserver {
+                    public extensions::ExtensionRegistryObserver,
+                    public user_manager::UserManager::UserSessionStateObserver {
  public:
   // Type of demo mode configuration.
   // Warning: DemoModeConfig is stored in local state. Existing entries should
@@ -105,6 +107,9 @@ class DemoSession : public session_manager::SessionManagerObserver,
   // Sets app IDs and package names that shouldn't be pinned by policy when the
   // device is offline in Demo Mode.
   void OverrideIgnorePinPolicyAppsForTesting(std::vector<std::string> apps);
+
+  // user_manager::UserManager::UserSessionStateObserver:
+  void ActiveUserChanged(const user_manager::User* user) override;
 
   bool offline_enrolled() const { return offline_enrolled_; }
 
