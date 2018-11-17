@@ -44,56 +44,56 @@ TEST(TaskSchedulerSequenceTest, PushTakeRemove) {
   testing::StrictMock<MockTask> mock_task_d;
   testing::StrictMock<MockTask> mock_task_e;
 
-  std::unique_ptr<Sequence::Transaction> transaction =
+  std::unique_ptr<Sequence::Transaction> sequence_transaction =
       MakeRefCounted<Sequence>(TaskTraits(TaskPriority::BEST_EFFORT))
           ->BeginTransaction();
 
   // Push task A in the sequence. PushTask() should return true since it's the
   // first task->
-  EXPECT_TRUE(transaction->PushTask(CreateTask(&mock_task_a)));
+  EXPECT_TRUE(sequence_transaction->PushTask(CreateTask(&mock_task_a)));
 
   // Push task B, C and D in the sequence. PushTask() should return false since
   // there is already a task in a sequence.
-  EXPECT_FALSE(transaction->PushTask(CreateTask(&mock_task_b)));
-  EXPECT_FALSE(transaction->PushTask(CreateTask(&mock_task_c)));
-  EXPECT_FALSE(transaction->PushTask(CreateTask(&mock_task_d)));
+  EXPECT_FALSE(sequence_transaction->PushTask(CreateTask(&mock_task_b)));
+  EXPECT_FALSE(sequence_transaction->PushTask(CreateTask(&mock_task_c)));
+  EXPECT_FALSE(sequence_transaction->PushTask(CreateTask(&mock_task_d)));
 
   // Take the task in front of the sequence. It should be task A.
-  Optional<Task> task = transaction->TakeTask();
+  Optional<Task> task = sequence_transaction->TakeTask();
   ExpectMockTask(&mock_task_a, &task.value());
   EXPECT_FALSE(task->sequenced_time.is_null());
 
   // Remove the empty slot. Task B should now be in front.
-  EXPECT_FALSE(transaction->Pop());
-  task = transaction->TakeTask();
+  EXPECT_FALSE(sequence_transaction->Pop());
+  task = sequence_transaction->TakeTask();
   ExpectMockTask(&mock_task_b, &task.value());
   EXPECT_FALSE(task->sequenced_time.is_null());
 
   // Remove the empty slot. Task C should now be in front.
-  EXPECT_FALSE(transaction->Pop());
-  task = transaction->TakeTask();
+  EXPECT_FALSE(sequence_transaction->Pop());
+  task = sequence_transaction->TakeTask();
   ExpectMockTask(&mock_task_c, &task.value());
   EXPECT_FALSE(task->sequenced_time.is_null());
 
   // Remove the empty slot.
-  EXPECT_FALSE(transaction->Pop());
+  EXPECT_FALSE(sequence_transaction->Pop());
 
   // Push task E in the sequence.
-  EXPECT_FALSE(transaction->PushTask(CreateTask(&mock_task_e)));
+  EXPECT_FALSE(sequence_transaction->PushTask(CreateTask(&mock_task_e)));
 
   // Task D should be in front.
-  task = transaction->TakeTask();
+  task = sequence_transaction->TakeTask();
   ExpectMockTask(&mock_task_d, &task.value());
   EXPECT_FALSE(task->sequenced_time.is_null());
 
   // Remove the empty slot. Task E should now be in front.
-  EXPECT_FALSE(transaction->Pop());
-  task = transaction->TakeTask();
+  EXPECT_FALSE(sequence_transaction->Pop());
+  task = sequence_transaction->TakeTask();
   ExpectMockTask(&mock_task_e, &task.value());
   EXPECT_FALSE(task->sequenced_time.is_null());
 
   // Remove the empty slot. The sequence should now be empty.
-  EXPECT_TRUE(transaction->Pop());
+  EXPECT_TRUE(sequence_transaction->Pop());
 }
 
 // Verifies the sort key of a BEST_EFFORT sequence that contains one task.
@@ -152,29 +152,29 @@ TEST(TaskSchedulerSequenceTest, GetSortKeyForeground) {
 // Verify that a DCHECK fires if Pop() is called on a sequence whose front slot
 // isn't empty.
 TEST(TaskSchedulerSequenceTest, PopNonEmptyFrontSlot) {
-  std::unique_ptr<Sequence::Transaction> transaction =
+  std::unique_ptr<Sequence::Transaction> sequence_transaction =
       MakeRefCounted<Sequence>(TaskTraits())->BeginTransaction();
-  transaction->PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
+  sequence_transaction->PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
 
-  EXPECT_DCHECK_DEATH({ transaction->Pop(); });
+  EXPECT_DCHECK_DEATH({ sequence_transaction->Pop(); });
 }
 
 // Verify that a DCHECK fires if TakeTask() is called on a sequence whose front
 // slot is empty.
 TEST(TaskSchedulerSequenceTest, TakeEmptyFrontSlot) {
-  std::unique_ptr<Sequence::Transaction> transaction =
+  std::unique_ptr<Sequence::Transaction> sequence_transaction =
       MakeRefCounted<Sequence>(TaskTraits())->BeginTransaction();
-  transaction->PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
+  sequence_transaction->PushTask(Task(FROM_HERE, DoNothing(), TimeDelta()));
 
-  EXPECT_TRUE(transaction->TakeTask());
-  EXPECT_DCHECK_DEATH({ transaction->TakeTask(); });
+  EXPECT_TRUE(sequence_transaction->TakeTask());
+  EXPECT_DCHECK_DEATH({ sequence_transaction->TakeTask(); });
 }
 
 // Verify that a DCHECK fires if TakeTask() is called on an empty sequence.
 TEST(TaskSchedulerSequenceTest, TakeEmptySequence) {
-  std::unique_ptr<Sequence::Transaction> transaction =
+  std::unique_ptr<Sequence::Transaction> sequence_transaction =
       MakeRefCounted<Sequence>(TaskTraits())->BeginTransaction();
-  EXPECT_DCHECK_DEATH({ transaction->TakeTask(); });
+  EXPECT_DCHECK_DEATH({ sequence_transaction->TakeTask(); });
 }
 
 }  // namespace internal

@@ -75,19 +75,24 @@ bool MockSchedulerTaskRunnerDelegate::PostTaskWithSequence(
   DCHECK(task.task);
   DCHECK(sequence);
 
+  std::unique_ptr<Sequence::Transaction> sequence_transaction =
+      sequence->BeginTransaction();
+
   if (!task_tracker_->WillPostTask(&task,
                                    sequence->traits().shutdown_behavior()))
     return false;
 
   if (task.delayed_run_time.is_null()) {
-    worker_pool_->PostTaskWithSequenceNow(std::move(task), std::move(sequence));
+    worker_pool_->PostTaskWithSequenceNow(std::move(task),
+                                          std::move(sequence_transaction));
   } else {
     delayed_task_manager_->AddDelayedTask(
         std::move(task), BindOnce(
                              [](scoped_refptr<Sequence> sequence,
                                 SchedulerWorkerPool* worker_pool, Task task) {
                                worker_pool->PostTaskWithSequenceNow(
-                                   std::move(task), std::move(sequence));
+                                   std::move(task),
+                                   sequence->BeginTransaction());
                              },
                              std::move(sequence), worker_pool_));
   }

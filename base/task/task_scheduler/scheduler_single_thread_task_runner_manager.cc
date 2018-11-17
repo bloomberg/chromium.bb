@@ -338,8 +338,8 @@ class SchedulerSingleThreadTaskRunnerManager::SchedulerSingleThreadTaskRunner
     const bool sequence_was_empty =
         sequence_->BeginTransaction()->PushTask(std::move(task));
     if (sequence_was_empty) {
-      if (outer_->task_tracker_->WillScheduleSequence(sequence_,
-                                                      GetDelegate())) {
+      if (outer_->task_tracker_->WillScheduleSequence(
+              sequence_->BeginTransaction(), GetDelegate())) {
         GetDelegate()->ReEnqueueSequence(sequence_);
         worker_->WakeUp();
       }

@@ -25,19 +25,26 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
    public:
     virtual ~Delegate() = default;
 
-    // Invoked when a |sequence| is non-empty after the SchedulerWorkerPool has
-    // run a task from it. The implementation must enqueue |sequence| in the
-    // appropriate priority queue, depending on |sequence| traits.
-    virtual void ReEnqueueSequence(scoped_refptr<Sequence> sequence) = 0;
+    // Invoked when the Sequence locked by |sequence_transaction| is non-empty
+    // after the SchedulerWorkerPool has run a task from it. The implementation
+    // must enqueue the Sequence in the appropriate priority queue, depending
+    // on the Sequence's traits.
+    virtual void ReEnqueueSequence(
+        std::unique_ptr<Sequence::Transaction> sequence_transaction) = 0;
   };
 
   ~SchedulerWorkerPool() override;
 
-  // Posts |task| to be executed by this SchedulerWorkerPool as part of
-  // |sequence|. This must only be called after |task| has gone through
-  // TaskTracker::WillPostTask() and after |task|'s delayed run
-  // time.
-  void PostTaskWithSequenceNow(Task task, scoped_refptr<Sequence> sequence);
+  // CanScheduleSequenceObserver:
+  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override = 0;
+
+  // Posts |task| to be executed by this SchedulerWorkerPool as part of the
+  // Sequence locked by |sequence_transaction|. This must only be called after
+  // |task| has gone through TaskTracker::WillPostTask() and after |task|'s
+  // delayed run time.
+  void PostTaskWithSequenceNow(
+      Task task,
+      std::unique_ptr<Sequence::Transaction> sequence_transaction);
 
   // Registers the worker pool in TLS.
   void BindToCurrentThread();
@@ -56,10 +63,17 @@ class BASE_EXPORT SchedulerWorkerPool : public CanScheduleSequenceObserver {
   // task during JoinForTesting(). This can only be called once.
   virtual void JoinForTesting() = 0;
 
-  // Enqueues |sequence| in the worker pool's priority queue, then wakes up a
-  // worker if the worker pool is not bound to the current thread, i.e. if
-  // |sequence| is changing pools.
-  virtual void ReEnqueueSequence(scoped_refptr<Sequence> sequence) = 0;
+  // Enqueues the Sequence locked by |sequence_transaction| in the worker
+  // pool's priority queue, then wakes up a worker if the worker pool is not
+  // bound to the current thread, i.e. if the Sequence is changing pools.
+  virtual void ReEnqueueSequence(
+      std::unique_ptr<Sequence::Transaction> sequence_transaction) = 0;
+
+  // Called when a Sequence locked by |sequence_transaction| can be scheduled.
+  // It is expected that TaskTracker::RunNextTask() will be called with the
+  // Sequence as argument after this is called.
+  virtual void OnCanScheduleSequence(
+      std::unique_ptr<Sequence::Transaction> sequence_transaction) = 0;
 
  protected:
   SchedulerWorkerPool(TrackedRef<TaskTracker> task_tracker,

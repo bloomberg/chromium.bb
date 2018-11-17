@@ -106,7 +106,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler,
   void ReportHeartbeatMetrics() const;
 
   // SchedulerWorkerPool::Delegate:
-  void ReEnqueueSequence(scoped_refptr<Sequence> sequence) override;
+  void ReEnqueueSequence(
+      std::unique_ptr<Sequence::Transaction> sequence_transaction) override;
 
   // SchedulerTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,

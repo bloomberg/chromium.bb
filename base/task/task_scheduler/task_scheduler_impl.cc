@@ -219,8 +219,9 @@ bool TaskSchedulerImpl::PostDelayedTaskWithTraits(const Location& from_here,
                                                   OnceClosure task,
                                                   TimeDelta delay) {
   // Post |task| as part of a one-off single-task Sequence.
+  const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
   return PostTaskWithSequence(Task(from_here, std::move(task), delay),
-                              MakeRefCounted<Sequence>(traits));
+                              MakeRefCounted<Sequence>(new_traits));
 }
 
 scoped_refptr<TaskRunner> TaskSchedulerImpl::CreateTaskRunnerWithTraits(
@@ -305,11 +306,13 @@ void TaskSchedulerImpl::SetExecutionFenceEnabled(bool execution_fence_enabled) {
   task_tracker_->SetExecutionFenceEnabled(execution_fence_enabled);
 }
 
-void TaskSchedulerImpl::ReEnqueueSequence(scoped_refptr<Sequence> sequence) {
-  DCHECK(sequence);
-  const TaskTraits new_traits =
-      SetUserBlockingPriorityIfNeeded(sequence->traits());
-  GetWorkerPoolForTraits(new_traits)->ReEnqueueSequence(std::move(sequence));
+void TaskSchedulerImpl::ReEnqueueSequence(
+    std::unique_ptr<Sequence::Transaction> sequence_transaction) {
+  DCHECK(sequence_transaction);
+  const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(
+      sequence_transaction->sequence()->traits());
+  GetWorkerPoolForTraits(new_traits)
+      ->ReEnqueueSequence(std::move(sequence_transaction));
 }
 
 bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
@@ -319,27 +322,25 @@ bool TaskSchedulerImpl::PostTaskWithSequence(Task task,
   CHECK(task.task);
   DCHECK(sequence);
 
-  const TaskTraits new_traits =
-      SetUserBlockingPriorityIfNeeded(sequence->traits());
-
-  if (!task_tracker_->WillPostTask(&task, new_traits.shutdown_behavior()))
+  if (!task_tracker_->WillPostTask(&task,
+                                   sequence->traits().shutdown_behavior()))
     return false;
 
   if (task.delayed_run_time.is_null()) {
-    GetWorkerPoolForTraits(new_traits)
-        ->PostTaskWithSequenceNow(std::move(task), std::move(sequence));
+    std::unique_ptr<Sequence::Transaction> sequence_transaction =
+        sequence->BeginTransaction();
+    GetWorkerPoolForTraits(sequence->traits())
+        ->PostTaskWithSequenceNow(std::move(task),
+                                  std::move(sequence_transaction));
   } else {
     delayed_task_manager_.AddDelayedTask(
         std::move(task),
         BindOnce(
             [](scoped_refptr<Sequence> sequence,
                TaskSchedulerImpl* task_scheduler_impl, Task task) {
-              const TaskTraits new_traits =
-                  task_scheduler_impl->SetUserBlockingPriorityIfNeeded(
-                      sequence->traits());
-              task_scheduler_impl->GetWorkerPoolForTraits(new_traits)
+              task_scheduler_impl->GetWorkerPoolForTraits(sequence->traits())
                   ->PostTaskWithSequenceNow(std::move(task),
-                                            std::move(sequence));
+                                            sequence->BeginTransaction());
             },
             std::move(sequence), Unretained(this)));
   }
