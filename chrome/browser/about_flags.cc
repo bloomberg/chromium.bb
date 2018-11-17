@@ -120,6 +120,7 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
+#include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/device/public/cpp/device_features.h"
@@ -179,7 +180,7 @@
 #include "extensions/common/switches.h"
 #endif  // ENABLE_EXTENSIONS
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PDF)
 #include "pdf/pdf_features.h"
 #endif
 
@@ -3838,11 +3839,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVizHitTestDrawQuadDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableVizHitTestDrawQuad)},
 
-#if BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(ENABLE_PDF)
     {"pdf-form-save", flag_descriptions::kPdfFormSaveName,
      flag_descriptions::kPdfFormSaveDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kSaveEditedPDFForm)},
+#endif  // BUILDFLAG(ENABLE_PDF)
 
+#if BUILDFLAG(ENABLE_PLUGINS)
     {"pdf-isolation", flag_descriptions::kPdfIsolationName,
      flag_descriptions::kPdfIsolationDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPdfIsolation)},
