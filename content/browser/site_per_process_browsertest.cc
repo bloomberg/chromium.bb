@@ -10671,8 +10671,13 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
 
 // This test verifies that the handles associated with an active touch selection
 // are still correctly positioned after a pinch-zoom operation.
+#if defined(OS_ANDROID)  // Flaky on Android.  See https://crbug.com/906204.
+#define MAYBE_SelectionThenPinchInOOPIF DISABLED_SelectionThenPinchInOOPIF
+#else
+#define MAYBE_SelectionThenPinchInOOPIF SelectionThenPinchInOOPIF
+#endif
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
-                       SelectionThenPinchInOOPIF) {
+                       MAYBE_SelectionThenPinchInOOPIF) {
   // Load test URL with cross-process child.
   SetupTest();
 
