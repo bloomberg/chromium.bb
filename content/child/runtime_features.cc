@@ -513,6 +513,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(blink::features::kJankTracking) ||
       enableExperimentalWebPlatformFeatures);
 
+  WebRuntimeFeatures::EnableFirstContentfulPaintPlusPlus(
+      base::FeatureList::IsEnabled(
+          blink::features::kFirstContentfulPaintPlusPlus));
+
   WebRuntimeFeatures::EnableNoHoverDuringScroll(
       base::FeatureList::IsEnabled(features::kNoHoverDuringScroll));
 }
