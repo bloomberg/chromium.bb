@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -41,6 +42,7 @@
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -73,10 +75,12 @@ class MockWebMediaPlayerForImpl : public EmptyWebMediaPlayer {
   // WebMediaPlayer overrides:
   WebTimeRanges Seekable() const override { return seekable_; }
   bool HasVideo() const override { return true; }
+  bool HasAudio() const override { return has_audio_; }
   SurfaceLayerMode GetVideoSurfaceLayerMode() const override {
     return SurfaceLayerMode::kAlways;
   }
 
+  bool has_audio_ = false;
   WebTimeRanges seekable_;
 };
 
@@ -268,6 +272,8 @@ class MediaControlsImplTest : public PageTestBase,
                                                    false /* requestSeek */);
     SimulateLoadedMetadata();
   }
+
+  void SetHasAudio(bool has_audio) { WebMediaPlayer()->has_audio_ = has_audio; }
 
   void ClickOverflowButton() {
     MediaControls()
@@ -999,7 +1005,16 @@ TEST_F(MediaControlsImplTest, TimeIsCorrectlyFormatted) {
 
 namespace {
 
-class MediaControlsImplTestWithMockScheduler : public MediaControlsImplTest {
+class ModernMediaControlsImplTest : public MediaControlsImplTest {
+ public:
+  void SetUp() override {
+    RuntimeEnabledFeatures::SetModernMediaControlsEnabled(true);
+    MediaControlsImplTest::SetUp();
+  }
+};
+
+class MediaControlsImplTestWithMockScheduler
+    : public ModernMediaControlsImplTest {
  public:
   MediaControlsImplTestWithMockScheduler() { EnablePlatform(); }
 
@@ -1008,7 +1023,7 @@ class MediaControlsImplTestWithMockScheduler : public MediaControlsImplTest {
     // DocumentParserTiming has DCHECKS to make sure time > 0.0.
     platform()->AdvanceClockSeconds(1);
 
-    MediaControlsImplTest::SetUp();
+    ModernMediaControlsImplTest::SetUp();
   }
 
   bool IsCursorHidden() {
@@ -1265,6 +1280,55 @@ TEST_F(MediaControlsImplTest, OverflowMenuMetricsTimeToDismiss) {
   GetHistogramTester().ExpectTotalCount(kTimeToActionHistogramName, 0);
 }
 
+TEST_F(MediaControlsImplTestWithMockScheduler,
+       ShowVolumeSliderAfterHoverTimerFired) {
+  const double kTimeToShowVolumeSlider = 0.2;
+
+  EnsureSizing();
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  platform()->RunForPeriodSeconds(1);
+  SetHasAudio(true);
+  SimulateLoadedMetadata();
+
+  LayoutTestSupport::SetIsRunningLayoutTest(false);
+
+  Element* volume_slider = GetElementByShadowPseudoId(
+      MediaControls(), "-webkit-media-controls-volume-slider");
+  Element* mute_btn = GetElementByShadowPseudoId(
+      MediaControls(), "-webkit-media-controls-mute-button");
+
+  ASSERT_NE(nullptr, volume_slider);
+  ASSERT_NE(nullptr, mute_btn);
+
+  EXPECT_TRUE(IsElementVisible(*mute_btn));
+  EXPECT_TRUE(volume_slider->classList().contains("closed"));
+
+  DOMRect* mute_btn_rect = mute_btn->getBoundingClientRect();
+  WebFloatPoint mute_btn_center(
+      mute_btn_rect->left() + mute_btn_rect->width() / 2,
+      mute_btn_rect->top() + mute_btn_rect->height() / 2);
+  WebFloatPoint edge(0, 0);
+
+  // Hover on mute button and stay
+  MouseMoveTo(mute_btn_center);
+  platform()->RunForPeriodSeconds(kTimeToShowVolumeSlider - 0.001);
+  EXPECT_TRUE(volume_slider->classList().contains("closed"));
+
+  platform()->RunForPeriodSeconds(0.002);
+  EXPECT_FALSE(volume_slider->classList().contains("closed"));
+
+  MouseMoveTo(edge);
+  EXPECT_TRUE(volume_slider->classList().contains("closed"));
+
+  // Hover on mute button and move away before timer fired
+  MouseMoveTo(mute_btn_center);
+  platform()->RunForPeriodSeconds(kTimeToShowVolumeSlider - 0.001);
+  EXPECT_TRUE(volume_slider->classList().contains("closed"));
+
+  MouseMoveTo(edge);
+  EXPECT_TRUE(volume_slider->classList().contains("closed"));
+}
+
 TEST_F(MediaControlsImplTest, CastOverlayDefaultHidesOnTimer) {
   MediaControls().MediaElement().SetBooleanAttribute(html_names::kControlsAttr,
                                                      false);
@@ -1324,14 +1388,6 @@ TEST_F(MediaControlsImplTest, isConnected) {
   MediaControls().MediaElement().remove();
   EXPECT_FALSE(MediaControls().isConnected());
 }
-
-class ModernMediaControlsImplTest : public MediaControlsImplTest {
- public:
-  void SetUp() override {
-    RuntimeEnabledFeatures::SetModernMediaControlsEnabled(true);
-    MediaControlsImplTest::SetUp();
-  }
-};
 
 TEST_F(ModernMediaControlsImplTest, ControlsShouldUseSafeAreaInsets) {
   UpdateAllLifecyclePhasesForTest();

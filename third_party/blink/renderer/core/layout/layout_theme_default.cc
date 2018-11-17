@@ -162,6 +162,9 @@ int LayoutThemeDefault::SliderTickOffsetFromTrackCenter() const {
 }
 
 void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
+  if (!Platform::Current()->ThemeEngine())
+    return;
+
   IntSize size = Platform::Current()->ThemeEngine()->GetSize(
       WebThemeEngine::kPartSliderThumb);
 

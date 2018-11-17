@@ -427,6 +427,14 @@ function runAfterDoubleTapTimerFired(func) {
   setTimeout(func, doubleTapTimeoutMs);
 }
 
+function hoverMuteButton(video, func) {
+  // 300ms slack because the test could be flaky on Mac Test build
+  // even with volume slider delay set to 0ms
+  const delayedCallback = function() { setTimeout(func, 300); };
+  const muteBtn = muteButton(video);
+  hoverOverControl(muteBtn, delayedCallback);
+}
+
 function hasEnabledFullscreenButton(element) {
   var button = fullscreenButton(element);
   return !button.disabled && button.style.display != "none";
