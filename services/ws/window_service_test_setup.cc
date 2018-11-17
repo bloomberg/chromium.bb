@@ -13,7 +13,6 @@
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_binding.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
@@ -106,10 +105,6 @@ class EventGeneratorDelegateWs : public aura::test::EventGeneratorDelegateAura {
   // EventGeneratorDelegateAura:
   ui::EventTarget* GetTargetAt(const gfx::Point& location) override {
     return &event_targeter_;
-  }
-  aura::client::ScreenPositionClient* GetScreenPositionClient(
-      const aura::Window* window) const override {
-    return aura::client::GetScreenPositionClient(window->GetRootWindow());
   }
   ui::EventSource* GetEventSource(ui::EventTarget* target) override {
     return target == &event_targeter_

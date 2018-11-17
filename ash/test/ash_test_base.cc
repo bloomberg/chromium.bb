@@ -44,7 +44,6 @@
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_test_helper.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_converter.h"
@@ -80,11 +79,6 @@ class AshEventGeneratorDelegate
     display::Screen* screen = display::Screen::GetScreen();
     display::Display display = screen->GetDisplayNearestPoint(point_in_screen);
     return Shell::GetRootWindowForDisplayId(display.id())->GetHost()->window();
-  }
-
-  aura::client::ScreenPositionClient* GetScreenPositionClient(
-      const aura::Window* window) const override {
-    return aura::client::GetScreenPositionClient(window->GetRootWindow());
   }
 
   ui::EventDispatchDetails DispatchKeyEventToIME(ui::EventTarget* target,

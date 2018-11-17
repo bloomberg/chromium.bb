@@ -247,6 +247,8 @@ jumbo_static_library("test_support") {
     "test/aura_test_suite_setup.h",
     "test/aura_test_utils.cc",
     "test/aura_test_utils.h",
+    "test/default_event_generator_delegate.cc",
+    "test/default_event_generator_delegate.h",
     "test/env_test_helper.cc",
     "test/env_test_helper.h",
     "test/event_generator_delegate_aura.cc",
