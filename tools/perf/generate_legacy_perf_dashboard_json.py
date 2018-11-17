@@ -73,8 +73,14 @@ class LegacyResultsProcessor(object):
 
     def __init__(self):
       self.important = False
-      self.values = []
+      self.value = 0.0
       self.stddev = 0.0
+
+    def __str__(self):
+      result = _FormatHumanReadable(self.value)
+      if self.stddev:
+        result += '+/-%s' % _FormatHumanReadable(self.stddev)
+      return result
 
   class Graph(object):
     """Encapsulates a set of points that should appear on the same graph."""
@@ -94,7 +100,7 @@ class LegacyResultsProcessor(object):
       """Returns a dictionary mapping trace names to [value, stddev]."""
       traces_dict = {}
       for name, trace in self.traces.items():
-        traces_dict[name] = trace.values
+        traces_dict[name] = [str(trace.value), str(trace.stddev)]
       return traces_dict
 
 
@@ -135,39 +141,37 @@ class LegacyResultsProcessor(object):
     graph = self._graphs.get(graph_name, self.Graph())
     graph.units = (match_dict['UNITS'] or '').strip()
     trace = graph.traces.get(trace_name, self.Trace())
-    value = match_dict['VALUE']
+    trace.value = match_dict['VALUE']
     trace.important = match_dict['IMPORTANT'] or False
 
     # Compute the mean and standard deviation for a list or a histogram,
     # or the numerical value of a scalar value.
-    if value.startswith('['):
+    if trace.value.startswith('['):
       try:
-        value_list = [float(x) for x in value.strip('[],').split(',')]
+        value_list = [float(x) for x in trace.value.strip('[],').split(',')]
       except ValueError:
         # Report, but ignore, corrupted data lines. (Lines that are so badly
         # broken that they don't even match the RESULTS_REGEX won't be
         # detected.)
-        logging.warning("Bad test output: '%s'" % value.strip())
+        logging.warning("Bad test output: '%s'" % trace.value.strip())
         return
-      value, trace.stddev, filedata = self._CalculateStatistics(
+      trace.value, trace.stddev, filedata = self._CalculateStatistics(
           value_list, trace_name)
       assert filedata is not None
       for filename in filedata:
         self._PrependLog(filename, filedata[filename])
-      trace.values += value_list
-    elif value.startswith('{'):
-      stripped = value.strip('{},')
+    elif trace.value.startswith('{'):
+      stripped = trace.value.strip('{},')
       try:
-        value, trace.stddev = [float(x) for x in stripped.split(',')]
+        trace.value, trace.stddev = [float(x) for x in stripped.split(',')]
       except ValueError:
-        logging.warning("Bad test output: '%s'" % value.strip())
+        logging.warning("Bad test output: '%s'" % trace.value.strip())
         return
-      trace.values.append(value)
     else:
       try:
-        trace.values.append(float(value))
+        trace.value = float(trace.value)
       except ValueError:
-        logging.warning("Bad test output: '%s'" % value.strip())
+        logging.warning("Bad test output: '%s'" % trace.value.strip())
         return
 
     graph.traces[trace_name] = trace
