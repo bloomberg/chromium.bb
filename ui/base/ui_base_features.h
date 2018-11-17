@@ -43,6 +43,10 @@ UI_BASE_EXPORT extern const base::Feature kTSFImeSupport;
 UI_BASE_EXPORT bool IsUsingWMPointerForTouch();
 #endif  // defined(OS_WIN)
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+UI_BASE_EXPORT extern const base::Feature kEnableAutomaticUiAdjustmentsForTouch;
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -67,6 +71,9 @@ UI_BASE_EXPORT bool IsMultiProcessMash();
 // similar to kMash, but leaves ash and browser running in the same process.
 // See //ash/README.md.
 UI_BASE_EXPORT bool IsSingleProcessMash();
+
+// Whether the UI may accommodate touch input in response to hardware changes.
+UI_BASE_EXPORT bool IsAutomaticUiAdjustmentsForTouchEnabled();
 
 #if defined(OS_MACOSX)
 UI_BASE_EXPORT extern const base::Feature kHostWindowsInAppShimProcess;

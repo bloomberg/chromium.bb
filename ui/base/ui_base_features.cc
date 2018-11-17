@@ -120,6 +120,11 @@ const base::Feature kPrecisionTouchpadScrollPhase{
     "PrecisionTouchpadScrollPhase", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+const base::Feature kEnableAutomaticUiAdjustmentsForTouch{
+    "EnableAutomaticUiAdjustmentsForTouch", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 // Enables stylus appearing as touch when in contact with digitizer.
 const base::Feature kDirectManipulationStylus = {
@@ -147,6 +152,15 @@ bool IsMultiProcessMash() {
 
 bool IsSingleProcessMash() {
   return base::FeatureList::IsEnabled(features::kSingleProcessMash);
+}
+
+bool IsAutomaticUiAdjustmentsForTouchEnabled() {
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+  return base::FeatureList::IsEnabled(
+      features::kEnableAutomaticUiAdjustmentsForTouch);
+#else
+  return false;
+#endif
 }
 
 #if defined(OS_MACOSX)
