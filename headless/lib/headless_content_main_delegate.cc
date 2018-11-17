@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/environment.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
@@ -19,8 +20,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "cc/base/switches.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/viz/common/switches.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/profiling.h"
@@ -54,6 +57,12 @@
 #endif
 
 namespace headless {
+
+namespace features {
+const base::Feature kVirtualTime{"VirtualTime",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+}
+
 namespace {
 // Keep in sync with content/common/content_constants_internal.h.
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -424,5 +433,33 @@ HeadlessContentMainDelegate::CreateContentUtilityClient() {
   return utility_client_.get();
 }
 #endif  // !defined(CHROME_MULTIPLE_DLL_BROWSER)
+
+void HeadlessContentMainDelegate::PostEarlyInitialization(
+    bool is_running_tests) {
+  if (base::FeatureList::IsEnabled(features::kVirtualTime)) {
+    // Only pass viz flags into the virtual time mode.
+    const char* const switches[] = {
+        // TODO(eseckler): Make --run-all-compositor-stages-before-draw a
+        // per-BeginFrame mode so that we can activate it for individual
+        // requests
+        // only. With surface sync becoming the default, we can then make
+        // virtual_time_enabled a per-request option, too.
+        // We control BeginFrames ourselves and need all compositing stages to
+        // run.
+        ::switches::kRunAllCompositorStagesBeforeDraw,
+        ::switches::kDisableNewContentRenderingTimeout,
+        cc::switches::kDisableThreadedAnimation,
+        ::switches::kDisableThreadedScrolling,
+        // Animtion-only BeginFrames are only supported when updates from the
+        // impl-thread are disabled, see go/headless-rendering.
+        cc::switches::kDisableCheckerImaging,
+        // Ensure that image animations don't resync their animation timestamps
+        // when looping back around.
+        ::switches::kDisableImageAnimationResync,
+    };
+    for (const auto* flag : switches)
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(flag);
+  }
+}
 
 }  // namespace headless

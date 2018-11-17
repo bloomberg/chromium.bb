@@ -50,6 +50,8 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
   content::ContentUtilityClient* CreateContentUtilityClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;
 
+  void PostEarlyInitialization(bool is_running_tests) override;
+
   HeadlessBrowserImpl* browser() const { return browser_.get(); }
 
 #if defined(OS_LINUX)
