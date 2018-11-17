@@ -19,6 +19,7 @@ import("//components/spellcheck/spellcheck_build_features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//net/features.gni")
+import("//pdf/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//rlz/buildflags/buildflags.gni")
@@ -4216,6 +4217,13 @@ jumbo_split_static_library("browser") {
     }
   }
 
+  if (enable_pdf) {
+    deps += [
+      "//pdf:buildflags",
+      "//pdf:features",
+    ]
+  }
+
   if (enable_plugins) {
     sources += [
       "browsing_data/browsing_data_flash_lso_helper.cc",
@@ -4296,7 +4304,6 @@ jumbo_split_static_library("browser") {
     deps += [
       "//components/pdf/browser",
       "//media:media_buildflags",
-      "//pdf:features",
       "//ppapi/buildflags",
       "//ppapi/proxy:ipc",
       "//services/device/public/mojom",
