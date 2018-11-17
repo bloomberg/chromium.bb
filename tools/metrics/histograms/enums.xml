@@ -33602,6 +33602,22 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Render process no longer exists"/>
 </enum>
 
+<enum name="MhtmlLoadResult">
+  <int value="0" label="Success">Archive loaded successfully</int>
+  <int value="1" label="Empty file">
+    Failed to load archive because the file was empty
+  </int>
+  <int value="2" label="URL scheme not allowed">
+    Failed to load archive because the url wasn't http(s), file, or content
+  </int>
+  <int value="3" label="Invalid archive">
+    Failed to load archive because it was not valid MHTML
+  </int>
+  <int value="4" label="Missing main resource">
+    Failed to load archive because it had no main resource
+  </int>
+</enum>
+
 <enum name="MicrophoneMuteResult">
   <int value="0" label="Muted"/>
   <int value="1" label="Not muted"/>
