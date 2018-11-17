@@ -330,15 +330,15 @@ bool MergeCapabilities(const base::DictionaryValue* always_match,
   return true;
 }
 
+// Implementation of "matching capabilities", as defined in W3C spec at
+// https://www.w3.org/TR/webdriver/#dfn-matching-capabilities.
+// It checks some requested capabilities and make sure they are supported.
+// Currently, we only check "browserName", but more can be added as necessary.
 bool MatchCapabilities(const base::DictionaryValue* capabilities) {
-  // Attempt to match the capabilities requested to the actual capabilities.
-  // Reject if they don't match.
-  if (capabilities->HasKey("browserName")) {
-    std::string name;
-    capabilities->GetString("browserName", &name);
-    if (name != "chrome") {
+  const base::Value* name;
+  if (capabilities->Get("browserName", &name) && !name->is_none()) {
+    if (!(name->is_string() && name->GetString() == "chrome"))
       return false;
-    }
   }
   return true;
 }

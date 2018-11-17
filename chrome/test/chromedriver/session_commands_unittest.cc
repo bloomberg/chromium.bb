@@ -151,6 +151,12 @@ TEST(SessionCommandsTest, ProcessCapabilities_AlwaysMatch) {
   std::string result_string;
   ASSERT_TRUE(result.GetString("browserName", &result_string));
   ASSERT_EQ(result_string, "chrome");
+
+  // Null "browserName" treated as not specifying "browserName"
+  params.SetPath({"capabilities", "alwaysMatch", "browserName"}, base::Value());
+  status = ProcessCapabilities(params, &result);
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_FALSE(result.GetString("browserName", &result_string));
 }
 
 TEST(SessionCommandsTest, ProcessCapabilities_FirstMatch) {
