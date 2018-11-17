@@ -822,8 +822,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=610951)
     self.Fail('WebglExtension_EXT_sRGB',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
-    self.Flaky('conformance/attribs/gl-bindAttribLocation-matrix.html',
-        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=906092)
 
     # Nexus 6 (Adreno 420) and 6P (Adreno 430)
     self.Fail('conformance/context/' +
