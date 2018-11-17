@@ -14,7 +14,7 @@ import re
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
-from chromite.scripts import cros_vm
+from chromite.lib import vm
 
 
 class CrOSTest(object):
@@ -55,7 +55,7 @@ class CrOSTest(object):
     self.results_src = opts.results_src
     self.results_dest_dir = opts.results_dest_dir
 
-    self._device = cros_vm.Device.Create(opts)
+    self._device = vm.Device.Create(opts)
 
   def __del__(self):
     self._StopVM()
@@ -296,9 +296,9 @@ def ParseCommandLine(argv):
     List of parsed options for CrOSTest.
   """
 
-  cros_vm_parser = cros_vm.VM.GetParser()
+  vm_parser = vm.VM.GetParser()
   parser = commandline.ArgumentParser(description=__doc__,
-                                      parents=[cros_vm_parser],
+                                      parents=[vm_parser],
                                       add_help=False, logging=False)
   parser.add_argument('--start-vm', action='store_true', default=False,
                       help='Start a new VM before running tests.')
