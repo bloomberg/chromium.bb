@@ -42,13 +42,14 @@
 
   python tools/code_coverage/coverage.py pdfium_fuzzer \\
       -b out/coverage -o out/report \\
-      -c 'out/coverage/pdfium_fuzzer -runs=<runs> <corpus_dir>' \\
+      -c 'out/coverage/pdfium_fuzzer -runs=0 <corpus_dir>' \\
       -f third_party/pdfium
 
   where:
     <corpus_dir> - directory containing samples files for this format.
-    <runs> - number of times to fuzz target function. Should be 0 when you just
-             want to see the coverage on corpus and don't want to fuzz at all.
+
+  To learn more about generating code coverage reports for fuzz targets, see
+  https://chromium.googlesource.com/chromium/src/+/master/testing/libfuzzer/efficient_fuzzer.md#Code-Coverage
 
   * Sample workflow for running Blink web tests:
 

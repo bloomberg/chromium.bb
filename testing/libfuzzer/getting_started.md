@@ -21,8 +21,13 @@ doesn't require any special configuration and gives meaningful output quickly
 for speed, coverage and other parameters.
 
 ```bash
-# With address sanitizer
-gn gen out/libfuzzer '--args=use_libfuzzer=true is_asan=true is_debug=false is_component_build=true' --check
+# AddressSanitizer is the default config we recommend testing with.
+# Linux:
+tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Linux ASan' out/libfuzzer
+# Mac:
+tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Mac ASan' out/libfuzzer
+# Windows:
+python tools\mb\mb.py gen -m chromium.fuzz -b "Libfuzzer Upload Windows ASan" out\libfuzzer
 ```
 
 Supported sanitizer configurations are:
@@ -32,13 +37,10 @@ Supported sanitizer configurations are:
 | `is_asan=true` | Enables [Address Sanitizer] to catch problems like buffer overruns. (only supported sanitizer on Windows and Mac)|
 | `is_msan=true` | Enables [Memory Sanitizer] to catch problems like uninitialized reads<sup>\[[*](reference.md#MSan)\]</sup>. |
 | `is_ubsan_security=true` | Enables [Undefined Behavior Sanitizer] to catch<sup>\[[*](reference.md#UBSan)\]</sup> undefined behavior like integer overflow. |
-| | It is possible to run libfuzzer without any sanitizers; *probably not what you want*.|
+| | It is possible to run fuzz targets without any sanitizers; *probably not what you want*.|
 
 Fuzz targets are built with minimal symbols by default. The symbol level
 can be adjusted in the usual way by setting `symbol_level`.
-
-To get the exact GN configuration that are used on our builders, see
-[Build Config].
 
 ## Write Fuzz Target
 
@@ -61,7 +63,10 @@ do not use `testing/libfuzzer/fuzzers` directory, this was a directory used for
 initial sample fuzz targets and is no longer recommended for landing new fuzz
 targets.
 
-[quic_stream_factory_fuzzer.cc] is a good example of real-world fuzz target.
+Most of the fuzz targets are very small. They may perform one or a few API calls
+using the data provided by fuzzing engine as an argument. Other fuzz targets may
+be more complex if a certain initialization procedure needs to be performed.
+[quic_stream_factory_fuzzer.cc] is a good example of a complex fuzz target.
 
 ## Define GN Target
 
@@ -80,15 +85,21 @@ fuzzer_test("my_fuzzer") {
 Build with ninja as usual and run:
 
 ```bash
+# Build the fuzz target.
 ninja -C out/libfuzzer url_parse_fuzzer
-./out/libfuzzer/url_parse_fuzzer
+# Create an empty corpus directory.
+mkdir corpus
+# Run the fuzz target.
+./out/libfuzzer/url_parse_fuzzer corpus
+# If have other corpus directories, pass their paths as well:
+./out/libfuzzer/url_parse_fuzzer corpus seed_corpus_dir_1 seed_corpus_dir_N
 ```
 
 Your fuzz target should produce output like this:
 
 ```
 INFO: Seed: 1511722356
-INFO: Loaded 2 modules   (115485 guards): 22572 [0x7fe8acddf560, 0x7fe8acdf5610), 92913 [0xaa05d0, 0xafb194), 
+INFO: Loaded 2 modules   (115485 guards): 22572 [0x7fe8acddf560, 0x7fe8acdf5610), 92913 [0xaa05d0, 0xafb194),
 INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
 INFO: A corpus is not provided, starting from an empty corpus
 #2  INITED cov: 961 ft: 48 corp: 1/1b exec/s: 0 rss: 48Mb
@@ -147,6 +158,13 @@ if (size < kMinInputLength || size > kMaxInputLength)
   return 0;
 ```
 
+* Generate a [code coverage report]. Note that code coverage of a fuzz target
+depends heavily on the corpus provided when running the target. To generate an
+actionable code coverage report for a new fuzz target, it is recommended to run
+fuzz target built with ASan locally for a little while (several minutes / hours)
+in order to produce some corpus, which then should be used for generating code
+coverage report.
+
 ### Disable noisy error message logging
 
 If the code that you are fuzzing generates lot of error messages when
@@ -165,7 +183,7 @@ struct Environment {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static Environment env;
-  
+
   // Put your fuzzing code here and use data+size as input.
   return 0;
 }
@@ -316,3 +334,4 @@ performance and for optimization hints.
 [its own documentation]: http://llvm.org/docs/LibFuzzer.html#output
 [Getting Started with libprotobuf-mutator in Chromium]: libprotobuf-mutator.md
 [base::FuzzedDataProvider]: https://cs.chromium.org/chromium/src/base/test/fuzzed_data_provider.h
+[code coverage report]: efficient_fuzzer.md#Code-Coverage
