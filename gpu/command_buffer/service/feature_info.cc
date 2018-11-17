@@ -428,16 +428,18 @@ void FeatureInfo::InitializeFeatures() {
 
   bool enable_es3 = IsWebGL2OrES3OrHigherContext();
 
-  // Pixel buffer bindings can be manipulated by the client if ES3 is enabled or
-  // the GL_NV_pixel_buffer_object extension is exposed by ANGLE when using the
-  // passthrough command decoder
-  bool pixel_buffers_exposed =
-      enable_es3 || gfx::HasExtension(extensions, "GL_NV_pixel_buffer_object");
+  // Really it's part of core OpenGL 2.1 and up, but let's assume the
+  // extension is still advertised.
+  bool has_pixel_buffers =
+      gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile ||
+      gfx::HasExtension(extensions, "GL_ARB_pixel_buffer_object") ||
+      gfx::HasExtension(extensions, "GL_NV_pixel_buffer_object");
 
-  // Both decoders may bind pixel buffers if exposing an ES3 or WebGL 2 context
-  // and the passthrough command decoder may also bind PBOs if
-  // NV_pixel_buffer_object is exposed.
-  ScopedPixelUnpackBufferOverride scoped_pbo_override(pixel_buffers_exposed, 0);
+  // If ES3 or pixel buffer objects are enabled by the driver, we have to assume
+  // the unpack buffer binding may be changed on the underlying context. This is
+  // true whether or not this particular decoder exposes PBOs, as it could be
+  // changed on another decoder that does expose them.
+  ScopedPixelUnpackBufferOverride scoped_pbo_override(has_pixel_buffers, 0);
 
   AddExtensionString("GL_ANGLE_translated_shader_source");
   AddExtensionString("GL_CHROMIUM_async_pixel_transfers");
@@ -1265,13 +1267,6 @@ void FeatureInfo::InitializeFeatures() {
       gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile ||
       gfx::HasExtension(extensions, "GL_ARB_map_buffer_range") ||
       gfx::HasExtension(extensions, "GL_EXT_map_buffer_range");
-
-  // Really it's part of core OpenGL 2.1 and up, but let's assume the
-  // extension is still advertised.
-  bool has_pixel_buffers =
-      gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile ||
-      gfx::HasExtension(extensions, "GL_ARB_pixel_buffer_object") ||
-      gfx::HasExtension(extensions, "GL_NV_pixel_buffer_object");
 
   // We will use either glMapBuffer() or glMapBufferRange() for async readbacks.
   if (has_pixel_buffers && ui_gl_fence_works &&
