@@ -5695,21 +5695,6 @@
             ]
         }
     ],
-    "Win10AcceleratedDefaultBrowserFlow": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "Win10AcceleratedDefaultBrowserFlow"
-                    ]
-                }
-            ]
-        }
-    ],
     "WinOOPSelectFileDialog": [
         {
             "platforms": [

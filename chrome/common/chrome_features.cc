@@ -678,7 +678,7 @@ const base::Feature kWebRtcRemoteEventLogGzipped{
 #if defined(OS_WIN)
 // Enables the accelerated default browser flow for Windows 10.
 const base::Feature kWin10AcceleratedDefaultBrowserFlow{
-    "Win10AcceleratedDefaultBrowserFlow", base::FEATURE_DISABLED_BY_DEFAULT};
+    "Win10AcceleratedDefaultBrowserFlow", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
 #if defined(OS_ANDROID)
