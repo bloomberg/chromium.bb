@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 
+import org.chromium.chrome.browser.AppHooksModule;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.BaseActivityDelegate;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.BaseModuleEntryPoint;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.IActivityDelegate;
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.IActivityHost;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.IModuleHost;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.IObjectWrapper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 
 /**
  * Utility class that contains fake CCT dynamic module classes and convenience calls
@@ -31,6 +33,22 @@ public class CustomTabsDynamicModuleTestUtils {
     /* package */ final static String FAKE_MODULE_CLASS_NAME = FakeCCTDynamicModule.class.getName();
     /* package */ final static ComponentName FAKE_MODULE_COMPONENT_NAME = new ComponentName(
             FAKE_MODULE_PACKAGE_NAME, FAKE_MODULE_CLASS_NAME);
+
+    /**
+     * To load a fake module in tests we need to bypass a check if package name of module
+     * is Google-signed. This class overrides this check for testing.
+     */
+    /* package */ static class AppHooksModuleForTest extends AppHooksModule {
+        @Override
+        public ExternalAuthUtils provideExternalAuthUtils() {
+            return new ExternalAuthUtils() {
+                @Override
+                public boolean isGoogleSigned(String packageName) {
+                    return true;
+                }
+            };
+        }
+    }
 
     /**
      * This class is used to test CCT module loader.
