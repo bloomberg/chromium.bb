@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsM
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 
 import javax.inject.Singleton;
 
@@ -30,4 +31,6 @@ public interface ChromeAppComponent {
     // Temporary getters for DI migration process. All of these getters
     // should eventually be replaced with constructor injection.
     EnabledStateMonitor resolveContextualSuggestionsEnabledStateMonitor();
+
+    ExternalAuthUtils resolveExternalAuthUtils();
 }

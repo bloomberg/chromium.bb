@@ -15,6 +15,8 @@ import dagger.Subcomponent;
 @Subcomponent(modules = {ChromeActivityCommonsModule.class, ContextualSuggestionsModule.class})
 @ActivityScope
 public interface ChromeActivityComponent {
+    ChromeAppComponent getParent();
+
     // Temporary getters for DI migration process.
     ContextualSuggestionsCoordinator resolveContextualSuggestionsCoordinator();
 }

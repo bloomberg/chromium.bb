@@ -223,6 +223,13 @@ public class ChromeApplication extends Application {
                 ModuleFactoryOverrides.getOverrideFor(ChromeAppModule.Factory.class);
         ChromeAppModule module =
                 overriddenFactory == null ? new ChromeAppModule() : overriddenFactory.create();
-        return DaggerChromeAppComponent.builder().chromeAppModule(module).build();
+
+        AppHooksModule.Factory appHooksFactory =
+                ModuleFactoryOverrides.getOverrideFor(AppHooksModule.Factory.class);
+        AppHooksModule appHooksModule =
+                appHooksFactory == null ? new AppHooksModule() : appHooksFactory.create();
+
+        return DaggerChromeAppComponent.builder().chromeAppModule(module)
+                .appHooksModule(appHooksModule).build();
     }
 }

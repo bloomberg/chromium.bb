@@ -323,7 +323,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             return;
         }
 
-        if (!ExternalAuthUtils.getInstance().isGoogleSigned(componentName.getPackageName())) {
+        ExternalAuthUtils authUtils = getComponent().getParent().resolveExternalAuthUtils();
+        if (!authUtils.isGoogleSigned(componentName.getPackageName())) {
             Log.w(TAG, "The %s package is not Google-signed.", componentName.getPackageName());
             ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.NOT_GOOGLE_SIGNED);
             return;
