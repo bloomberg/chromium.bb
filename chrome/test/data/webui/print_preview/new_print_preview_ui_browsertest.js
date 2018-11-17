@@ -662,6 +662,13 @@ TEST_F(
     });
 GEN('#endif');
 
+TEST_F(
+    'PrintPreviewDestinationSelectTest', 'KioskModeSelectsFirstPrinter',
+    function() {
+      this.runMochaTest(
+          destination_select_test.TestNames.KioskModeSelectsFirstPrinter);
+    });
+
 PrintPreviewDestinationDialogTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {
