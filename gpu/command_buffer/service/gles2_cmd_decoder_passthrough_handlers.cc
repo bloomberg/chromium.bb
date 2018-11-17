@@ -305,8 +305,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveUniformsiv(
   GLsizei uniformCount = static_cast<GLsizei>(bucket->size() / sizeof(GLuint));
   const GLuint* indices = bucket->GetDataAs<const GLuint*>(0, bucket->size());
   typedef cmds::GetActiveUniformsiv::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      params_shm_id, params_shm_offset, Result::ComputeSize(uniformCount));
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(uniformCount).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
+  Result* result = GetSharedMemoryAs<Result*>(params_shm_id, params_shm_offset,
+                                              checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (params == nullptr) {
     return error::kOutOfBounds;
@@ -338,8 +342,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetAttachedShaders(
 
   typedef cmds::GetAttachedShaders::Result Result;
   uint32_t maxCount = Result::ComputeMaxResults(result_size);
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(maxCount).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
-                                              Result::ComputeSize(maxCount));
+                                              checked_size);
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -760,9 +768,12 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformIndices(
     return error::kInvalidArguments;
   }
   typedef cmds::GetUniformIndices::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-      indices_shm_id, indices_shm_offset,
-      Result::ComputeSize(static_cast<size_t>(count)));
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(count).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
+  Result* result = GetSharedMemoryAs<Result*>(indices_shm_id,
+                                              indices_shm_offset, checked_size);
   GLuint* indices = result ? result->GetData() : nullptr;
   if (indices == nullptr) {
     return error::kOutOfBounds;

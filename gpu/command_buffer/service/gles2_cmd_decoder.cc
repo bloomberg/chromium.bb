@@ -13009,9 +13009,12 @@ error::Error GLES2DecoderImpl::HandleGetUniformIndices(
     return error::kInvalidArguments;
   }
   typedef cmds::GetUniformIndices::Result Result;
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(count).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.indices_shm_id, c.indices_shm_offset,
-      Result::ComputeSize(static_cast<size_t>(count)));
+      c.indices_shm_id, c.indices_shm_offset, checked_size);
   GLuint* indices = result ? result->GetData() : nullptr;
   if (indices == nullptr) {
     return error::kOutOfBounds;
@@ -15198,8 +15201,9 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
   typedef cmds::GetVertexAttribPointerv::Result Result;
-  Result* result = GetSharedMemoryAs<Result*>(
-        c.pointer_shm_id, c.pointer_shm_offset, Result::ComputeSize(1));
+  Result* result =
+      GetSharedMemoryAs<Result*>(c.pointer_shm_id, c.pointer_shm_offset,
+                                 Result::ComputeSize(1).ValueOrDie());
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -15244,7 +15248,7 @@ bool GLES2DecoderImpl::GetUniformSetup(GLuint program_id,
   // Make sure we have enough room for the result on failure.
   SizedResult<T>* result;
   result = GetSharedMemoryAs<SizedResult<T>*>(
-      shm_id, shm_offset, SizedResult<T>::ComputeSize(0));
+      shm_id, shm_offset, SizedResult<T>::ComputeSize(0).ValueOrDie());
   if (!result) {
     *error = error::kOutOfBounds;
     return false;
@@ -15279,8 +15283,11 @@ bool GLES2DecoderImpl::GetUniformSetup(GLuint program_id,
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glGetUniform", "unknown type");
     return false;
   }
-  result = GetSharedMemoryAs<SizedResult<T>*>(
-      shm_id, shm_offset, SizedResult<T>::ComputeSize(num_elements));
+  uint32_t checked_size = 0;
+  if (!SizedResult<T>::ComputeSize(num_elements).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
+  result = GetSharedMemoryAs<SizedResult<T>*>(shm_id, shm_offset, checked_size);
   if (!result) {
     *error = error::kOutOfBounds;
     return false;
@@ -15428,8 +15435,12 @@ error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
   }
   typedef cmds::GetAttachedShaders::Result Result;
   uint32_t max_count = Result::ComputeMaxResults(result_size);
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(max_count).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.result_shm_id, c.result_shm_offset, Result::ComputeSize(max_count));
+      c.result_shm_id, c.result_shm_offset, checked_size);
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -15532,8 +15543,12 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformBlockiv(
     num_values = static_cast<GLsizei>(num);
   }
   typedef cmds::GetActiveUniformBlockiv::Result Result;
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (params == nullptr) {
     return error::kOutOfBounds;
@@ -15627,8 +15642,12 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformsiv(
   GLsizei count = static_cast<GLsizei>(bucket->size() / sizeof(GLuint));
   const GLuint* indices = bucket->GetDataAs<const GLuint*>(0, bucket->size());
   typedef cmds::GetActiveUniformsiv::Result Result;
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(count).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(count));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (params == nullptr) {
     return error::kOutOfBounds;
@@ -18341,8 +18360,12 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
         break;
     }
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (params == nullptr) {
     return error::kOutOfBounds;
