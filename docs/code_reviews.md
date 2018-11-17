@@ -217,20 +217,29 @@ different directories. For example, adding a parameter to a common function in
 `//base`, with callers in `//chrome/browser/foo`, `//net/bar`, and many other
 directories. If the updates to the callers is mechanical, you can:
 
-  * Get a normal owner of the lower-level code you're changing (in this
-    example, the function in `//base`) to do a proper review of those changes.
+  1. Get a normal owner of the lower-level code you're changing (in this
+     example, the function in `//base`) to do a proper review of those changes.
 
-  * Get _somebody_ to review the downstream changes made to the callers as a
-    result of the `//base` change. This is often the same person from the
-    previous step but could be somebody else.
+  2. Get _somebody_ to review the downstream changes made to the callers as a
+     result of the `//base` change. This is often the same person from the
+     previous step but could be somebody else.
 
-  * Add the owners of the affected downstream directories as TBR. (In this
-    example, reviewers from `//chrome/browser/foo/OWNERS`, `//net/bar/OWNERS`,
-    etc.)
+  3. TBR the owner of the lower-level code you're changing (in this example,
+     `//base`), after they've LGTM'ed the API change, to bypass owners review of
+     the API consumers incurring trivial side-effects.
 
 This process ensures that all code is reviewed prior to checkin and that the
-concept of the change is reviewed by a qualified person, but you don't have to
-wait for many individual owners to review trivial changes to their directories.
+concept of the change is reviewed by a qualified person, without having to ping
+many owners with little say in the trivial side-effects they incur.
+
+**Note:** The above policy is only viable for strictly mechanical changes. For
+large-scale scripted changes you should:
+
+  1. Have an owner of the core change review the script.
+
+  2. Use `git cl split` to shard the large change into many small CLs with a
+     clear description of what each reviewer is expected to verify
+     ([example](https://chromium-review.googlesource.com/1191225)).
 
 #### Documentation updates
 
