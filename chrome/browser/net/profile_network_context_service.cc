@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -26,6 +27,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -51,6 +53,8 @@
 #endif
 
 namespace {
+
+bool* g_discard_domain_reliability_uploads_for_testing = nullptr;
 
 std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
   std::vector<std::string> strings;
@@ -313,6 +317,11 @@ void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
   proxy_config_monitor_.FlushForTesting();
 }
 
+void ProfileNetworkContextService::SetDiscardDomainReliabilityUploadsForTesting(
+    bool value) {
+  g_discard_domain_reliability_uploads_for_testing = new bool(value);
+}
+
 network::mojom::NetworkContextParamsPtr
 ProfileNetworkContextService::CreateNetworkContextParams(
     bool in_memory,
@@ -417,6 +426,19 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
   network_context_params->enable_certificate_reporting = true;
   network_context_params->enable_expect_ct_reporting = true;
+
+  if (domain_reliability::DomainReliabilityServiceFactory::
+          ShouldCreateService()) {
+    network_context_params->enable_domain_reliability = true;
+    network_context_params->domain_reliability_upload_reporter =
+        domain_reliability::DomainReliabilityServiceFactory::
+            kUploadReporterString;
+    network_context_params->discard_domain_reliablity_uploads =
+        g_discard_domain_reliability_uploads_for_testing
+            ? *g_discard_domain_reliability_uploads_for_testing
+            : !g_browser_process->local_state()->GetBoolean(
+                  metrics::prefs::kMetricsReportingEnabled);
+  }
 
   if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
     auto* drp_settings =

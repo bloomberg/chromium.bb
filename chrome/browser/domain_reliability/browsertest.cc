@@ -8,12 +8,14 @@
 #include "base/run_loop.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
+#include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/domain_reliability/service.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/base/net_errors.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -40,15 +42,16 @@ class DomainReliabilityBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableDomainReliability);
   }
 
-  void SetUpOnMainThread() override {
-    DomainReliabilityService* service = GetService();
-    if (service)
-      service->SetDiscardUploadsForTesting(false);
+  void SetUp() override {
+    ProfileNetworkContextService::SetDiscardDomainReliabilityUploadsForTesting(
+        false);
+    InProcessBrowserTest::SetUp();
   }
 
-  DomainReliabilityService* GetService() {
-    return DomainReliabilityServiceFactory::GetForBrowserContext(
-        browser()->profile());
+  network::mojom::NetworkContext* GetNetworkContext() {
+    return content::BrowserContext::GetDefaultStoragePartition(
+               browser()->profile())
+        ->GetNetworkContext();
   }
 
  private:
@@ -72,11 +75,13 @@ class DomainReliabilityDisabledBrowserTest
 
 IN_PROC_BROWSER_TEST_F(DomainReliabilityDisabledBrowserTest,
                        ServiceNotCreated) {
-  EXPECT_FALSE(GetService());
+  EXPECT_FALSE(domain_reliability::DomainReliabilityServiceFactory::
+                   ShouldCreateService());
 }
 
 IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, ServiceCreated) {
-  EXPECT_TRUE(GetService());
+  EXPECT_TRUE(domain_reliability::DomainReliabilityServiceFactory::
+                  ShouldCreateService());
 }
 
 static const char kUploadPath[] = "/domainreliability/upload";
@@ -102,8 +107,6 @@ std::unique_ptr<net::test_server::HttpResponse> TestRequestHandler(
 }
 
 IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, Upload) {
-  DomainReliabilityService* service = GetService();
-
   base::RunLoop run_loop;
 
   net::test_server::EmbeddedTestServer test_server(
@@ -130,19 +133,20 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, Upload) {
   GURL error_url = test_server.GetURL("/close-socket");
   GURL upload_url = test_server.GetURL(kUploadPath);
 
-  auto config = std::make_unique<DomainReliabilityConfig>();
-  config->origin = test_server.base_url().GetOrigin();
-  config->include_subdomains = false;
-  config->collectors.push_back(std::make_unique<GURL>(upload_url));
-  config->success_sample_rate = 1.0;
-  config->failure_sample_rate = 1.0;
-  service->AddContextForTesting(std::move(config));
+  {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    GetNetworkContext()->AddDomainReliabilityContextForTesting(
+        test_server.base_url().GetOrigin(), upload_url);
+  }
 
   // Trigger an error.
 
   ui_test_utils::NavigateToURL(browser(), error_url);
 
-  service->ForceUploadsForTesting();
+  {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    GetNetworkContext()->ForceDomainReliabilityUploadsForTesting();
+  }
 
   run_loop.Run();
 
@@ -168,20 +172,21 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, Upload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, UploadAtShutdown) {
-  DomainReliabilityService* service = GetService();
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  auto config = std::make_unique<DomainReliabilityConfig>();
-  config->origin = GURL("https://localhost/");
-  config->include_subdomains = false;
-  config->collectors.push_back(std::make_unique<GURL>(
-      net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_IO_PENDING)));
-  config->success_sample_rate = 1.0;
-  config->failure_sample_rate = 1.0;
-  service->AddContextForTesting(std::move(config));
+  GURL upload_url = embedded_test_server()->GetURL("/hung");
+  {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    GetNetworkContext()->AddDomainReliabilityContextForTesting(
+        GURL("https://localhost/"), upload_url);
+  }
 
   ui_test_utils::NavigateToURL(browser(), GURL("https://localhost/"));
 
-  service->ForceUploadsForTesting();
+  {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    GetNetworkContext()->ForceDomainReliabilityUploadsForTesting();
+  }
 
   // At this point, there is an upload pending. If everything goes well, the
   // test will finish, destroy the profile, and Domain Reliability will shut

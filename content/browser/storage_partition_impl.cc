@@ -916,6 +916,17 @@ void StoragePartitionImpl::OnCanSendReportingReports(
   std::move(callback).Run(origins_out);
 }
 
+void StoragePartitionImpl::OnCanSendDomainReliabilityUpload(
+    const GURL& origin,
+    OnCanSendDomainReliabilityUploadCallback callback) {
+  PermissionController* permission_controller =
+      BrowserContext::GetPermissionController(browser_context_);
+  std::move(callback).Run(
+      permission_controller->GetPermissionStatus(
+          content::PermissionType::BACKGROUND_SYNC, origin, origin) ==
+      blink::mojom::PermissionStatus::GRANTED);
+}
+
 void StoragePartitionImpl::ClearDataImpl(
     uint32_t remove_mask,
     uint32_t quota_storage_remove_mask,

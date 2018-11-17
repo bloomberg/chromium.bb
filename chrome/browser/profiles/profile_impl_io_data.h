@@ -16,10 +16,6 @@
 
 class ReportingPermissionsChecker;
 
-namespace domain_reliability {
-class DomainReliabilityMonitor;
-}  // namespace domain_reliability
-
 namespace net {
 class CookieStore;
 struct ReportingPolicy;
@@ -46,9 +42,7 @@ class ProfileImplIOData : public ProfileIOData {
               const base::FilePath& profile_path,
               storage::SpecialStoragePolicy* special_storage_policy,
               std::unique_ptr<ReportingPermissionsChecker>
-                  reporting_permissions_checker,
-              std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
-                  domain_reliability_monitor);
+                  reporting_permissions_checker);
 
     // These Create*ContextGetter() functions are only exposed because the
     // circular relationship between Profile, ProfileIOData::Handle, and the
@@ -126,8 +120,6 @@ class ProfileImplIOData : public ProfileIOData {
     bool persist_session_cookies;
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy;
     std::unique_ptr<ReportingPermissionsChecker> reporting_permissions_checker;
-    std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
-        domain_reliability_monitor;
   };
 
   ProfileImplIOData();

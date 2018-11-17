@@ -251,6 +251,15 @@ struct NetworkContextParams {
   // Parameters for constructing the cookie manager.
   CookieManagerParams? cookie_manager_params;
 
+  // Whether to enable Domain Reliability.
+  bool enable_domain_reliability = false;
+
+  // The uploader reporter name to use for Domain Reliability uploads.
+  string domain_reliability_upload_reporter;
+
+  // Whether to discard Domain Reliability uploads.
+  bool discard_domain_reliablity_uploads = false;
+
   // Sets whether the NetworkContext should be used for globally scoped tasks
   // that need to make network requests. Currently this includes DNS over HTTPS
   // requests and certain cert validation requests (OCSP, AIA, etc) on some
@@ -360,6 +369,9 @@ interface NetworkContextClient {
   // Replies with the origins that are allowed.
   OnCanSendReportingReports(array<url.mojom.Origin> origins) =>
       (array<url.mojom.Origin> origins);
+
+  // Checks if a Domain Reliability report can be uploaded for the given origin.
+  OnCanSendDomainReliabilityUpload(url.mojom.Url origin) => (bool allowed);
 };
 
 // Represents a distinct context for making network requests, with its own
@@ -462,6 +474,15 @@ interface NetworkContext {
   // If a non-null |filter| is specified, will clear only entries matching the
   // filter.
   ClearNetworkErrorLogging(ClearDataFilter? filter) => ();
+
+  // Mirror of domain_reliability::DomainReliabilityClearMode.
+  enum DomainReliabilityClearMode {CLEAR_CONTEXTS, CLEAR_BEACONS};
+  // Clears Domain Reliability entries, specified by |mode|.
+  ClearDomainReliability(ClearDataFilter? filter,
+                         DomainReliabilityClearMode mode) => ();
+
+  // Returns a JSON value containing data for displaying on a debugging page.
+  GetDomainReliabilityJSON() => (mojo_base.mojom.Value data);
 
   // Queues a report via the Reporting API. |type| describes the type of report
   // (as well as what data will contained in |body|). |group| specifies the
@@ -741,4 +762,14 @@ interface NetworkContext {
   VerifyCertificateForTesting(X509Certificate certificate,
                               string hostname,
                               string ocsp_response) => (int32 error_code);
+
+  [Sync]
+  // Adds a Domain Reliability Context.
+  AddDomainReliabilityContextForTesting(
+    url.mojom.Url origin, url.mojom.Url upload_url) => ();
+
+  [Sync]
+  // Forces all pending Domain Reliability uploads to run now, even if their
+  // minimum delay has not yet passed.
+  ForceDomainReliabilityUploadsForTesting() => ();
 };

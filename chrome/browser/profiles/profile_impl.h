@@ -44,10 +44,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace domain_reliability {
-class DomainReliabilityMonitor;
-}
-
 namespace policy {
 class ConfigurationPolicyProvider;
 class ProfilePolicyConnector;
@@ -191,9 +187,6 @@ class ProfileImpl : public Profile {
   void UpdateIsEphemeralInStorage();
 
   void GetMediaCacheParameters(base::FilePath* cache_path, int* max_size);
-
-  std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
-  CreateDomainReliabilityMonitor(PrefService* local_state);
 
   // Creates an instance of the Identity Service for this Profile, populating it
   // with the appropriate instances of its dependencies.

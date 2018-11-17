@@ -75,6 +75,8 @@ class ProfileNetworkContextService : public KeyedService,
   // Flushes all pending proxy configuration changes.
   void FlushProxyConfigMonitorForTesting();
 
+  static void SetDiscardDomainReliabilityUploadsForTesting(bool value);
+
  private:
   // Checks |quic_allowed_|, and disables QUIC if needed.
   void DisableQuicIfNotAllowed();

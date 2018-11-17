@@ -24,6 +24,7 @@
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
 #include "components/cookie_config/cookie_store_util.h"
+#include "components/domain_reliability/monitor.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/json_pref_store.h"
@@ -35,6 +36,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cookies/cookie_monster.h"
@@ -109,7 +111,6 @@
 #endif  // !defined(OS_IOS)
 
 #if BUILDFLAG(ENABLE_REPORTING)
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_policy.h"
@@ -222,8 +223,6 @@ base::RepeatingCallback<bool(const std::string& host_name)> MakeDomainFilter(
                              std::move(filter_domains));
 }
 
-// Generic functions but currently only used for reporting.
-#if BUILDFLAG(ENABLE_REPORTING)
 // Predicate function to determine if the given |url| matches the |filter_type|,
 // |filter_domains| and |filter_origins| from a |mojom::ClearDataFilter|.
 bool MatchesUrlFilter(mojom::ClearDataFilter_Type filter_type,
@@ -263,7 +262,6 @@ base::RepeatingCallback<bool(const GURL&)> BuildUrlFilter(
                              std::move(filter_domains),
                              std::move(filter_origins));
 }
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void OnClearedChannelIds(net::SSLConfigService* ssl_config_service,
                          base::OnceClosure callback) {
@@ -359,12 +357,23 @@ class NetworkContext::ContextNetworkDelegate
       network_context_->network_service()->OnBeforeURLRequest();
   }
 
+  void OnBeforeRedirectInternal(net::URLRequest* request,
+                                const GURL& new_location) override {
+    if (network_context_->domain_reliability_monitor_)
+      network_context_->domain_reliability_monitor_->OnBeforeRedirect(request);
+  }
+
   void OnCompletedInternal(net::URLRequest* request,
                            bool started,
                            int net_error) override {
     // TODO(mmenke): Once the network service ships on all platforms, can move
     // this logic into URLLoader's completion method.
     DCHECK_NE(net::ERR_IO_PENDING, net_error);
+
+    if (network_context_->domain_reliability_monitor_) {
+      network_context_->domain_reliability_monitor_->OnCompleted(request,
+                                                                 started);
+    }
 
     // Record network errors that HTTP requests complete with, including OK and
     // ABORTED.
@@ -581,6 +590,9 @@ NetworkContext::~NetworkContext() {
     net::ShutdownGlobalCertNetFetcher();
 #endif
   }
+
+  if (domain_reliability_monitor_)
+    domain_reliability_monitor_->Shutdown();
 
   if (url_request_context_ &&
       url_request_context_->transport_security_state()) {
@@ -899,6 +911,38 @@ void NetworkContext::QueueReport(const std::string& type,
   NOTREACHED();
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+void NetworkContext::ClearDomainReliability(
+    mojom::ClearDataFilterPtr filter,
+    DomainReliabilityClearMode mode,
+    ClearDomainReliabilityCallback callback) {
+  if (domain_reliability_monitor_) {
+    domain_reliability::DomainReliabilityClearMode dr_mode;
+    if (mode ==
+        mojom::NetworkContext::DomainReliabilityClearMode::CLEAR_CONTEXTS) {
+      dr_mode = domain_reliability::CLEAR_CONTEXTS;
+    } else {
+      dr_mode = domain_reliability::CLEAR_BEACONS;
+    }
+
+    domain_reliability_monitor_->ClearBrowsingData(
+        dr_mode, BuildUrlFilter(std::move(filter)));
+  }
+  std::move(callback).Run();
+}
+
+void NetworkContext::GetDomainReliabilityJSON(
+    GetDomainReliabilityJSONCallback callback) {
+  if (!domain_reliability_monitor_) {
+    base::DictionaryValue data;
+    data.SetString("error", "no_service");
+    std::move(callback).Run(std::move(data));
+    return;
+  }
+
+  std::move(callback).Run(
+      std::move(*domain_reliability_monitor_->GetWebUIData()));
+}
 
 void NetworkContext::CloseAllConnections(CloseAllConnectionsCallback callback) {
   net::HttpNetworkSession* http_session =
@@ -1483,6 +1527,26 @@ void NetworkContext::ResetURLLoaderFactories() {
     factory->ClearBindings();
 }
 
+void NetworkContext::AddDomainReliabilityContextForTesting(
+    const GURL& origin,
+    const GURL& upload_url,
+    AddDomainReliabilityContextForTestingCallback callback) {
+  auto config = std::make_unique<domain_reliability::DomainReliabilityConfig>();
+  config->origin = origin;
+  config->include_subdomains = false;
+  config->collectors.push_back(std::make_unique<GURL>(upload_url));
+  config->success_sample_rate = 1.0;
+  config->failure_sample_rate = 1.0;
+  domain_reliability_monitor_->AddContextForTesting(std::move(config));
+  std::move(callback).Run();
+}
+
+void NetworkContext::ForceDomainReliabilityUploadsForTesting(
+    ForceDomainReliabilityUploadsForTestingCallback callback) {
+  domain_reliability_monitor_->ForceUploadsForTesting();
+  std::move(callback).Run();
+}
+
 // ApplyContextParamsToBuilder represents the core configuration for
 // translating |network_context_params| into a set of configuration that can
 // be used to build a request context. All new initialization should be done
@@ -1814,6 +1878,19 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
+  if (params_->enable_domain_reliability) {
+    domain_reliability_monitor_ =
+        std::make_unique<domain_reliability::DomainReliabilityMonitor>(
+            params_->domain_reliability_upload_reporter,
+            base::BindRepeating(&NetworkContext::CanUploadDomainReliability,
+                                base::Unretained(this)));
+    domain_reliability_monitor_->InitURLRequestContext(
+        result.url_request_context.get());
+    domain_reliability_monitor_->AddBakedInConfigs();
+    domain_reliability_monitor_->SetDiscardUploads(
+        params_->discard_domain_reliablity_uploads);
+  }
+
   if (proxy_delegate_) {
     proxy_delegate_->SetProxyResolutionService(
         result.url_request_context->proxy_resolution_service());
@@ -1954,6 +2031,16 @@ void NetworkContext::DestroySocketManager(P2PSocketManager* socket_manager) {
   auto iter = socket_managers_.find(socket_manager);
   DCHECK(iter != socket_managers_.end());
   socket_managers_.erase(iter);
+}
+
+void NetworkContext::CanUploadDomainReliability(
+    const GURL& origin,
+    base::OnceCallback<void(bool)> callback) {
+  client_->OnCanSendDomainReliabilityUpload(
+      origin,
+      base::BindOnce([](base::OnceCallback<void(bool)> callback,
+                        bool allowed) { std::move(callback).Run(allowed); },
+                     std::move(callback)));
 }
 
 void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,

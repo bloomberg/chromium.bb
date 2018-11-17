@@ -34,7 +34,6 @@
 #include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/domain_reliability/monitor.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -262,8 +261,6 @@ int ChromeNetworkDelegate::OnHeadersReceived(
 
 void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
                                              const GURL& new_location) {
-  if (domain_reliability_monitor_)
-    domain_reliability_monitor_->OnBeforeRedirect(request);
   extensions_delegate_->NotifyBeforeRedirect(request, new_location);
   variations::StripVariationHeaderIfNeeded(new_location, request);
 }
@@ -295,8 +292,6 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
                                         bool started,
                                         int net_error) {
   extensions_delegate_->NotifyCompleted(request, started, net_error);
-  if (domain_reliability_monitor_)
-    domain_reliability_monitor_->OnCompleted(request, started);
   extensions_delegate_->ForwardDoneRequestStatus(request);
 }
 

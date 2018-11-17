@@ -57,7 +57,6 @@
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/dom_distiller/core/url_constants.h"
-#include "components/domain_reliability/monitor.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
@@ -577,7 +576,6 @@ ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
       main_request_context_(nullptr),
       resource_context_(new ResourceContext(this)),
       chrome_network_delegate_unowned_(nullptr),
-      domain_reliability_monitor_unowned_(nullptr),
       profile_type_(profile_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -627,9 +625,6 @@ ProfileIOData::~ProfileIOData() {
     memcpy(&media_context_vtable_cache[current_context],
            static_cast<void*>(it->second), sizeof(void*));
   }
-
-  if (domain_reliability_monitor_unowned_)
-    domain_reliability_monitor_unowned_->Shutdown();
 
   current_context = 0;
   for (auto it = isolated_media_request_context_map_.begin();
@@ -860,21 +855,6 @@ bool ProfileIOData::IsOffTheRecord() const {
       || profile_type() == Profile::GUEST_PROFILE;
 }
 
-void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Prep the PrefMember and send it to the IO thread, since this value will be
-  // read from there.
-  enable_metrics_.Init(metrics::prefs::kMetricsReportingEnabled,
-                       g_browser_process->local_state());
-  enable_metrics_.MoveToThread(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-}
-
-bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return enable_metrics_.GetValue();
-}
-
 chrome_browser_net::Predictor* ProfileIOData::GetPredictor() {
   return nullptr;
 }
@@ -1083,19 +1063,6 @@ void ProfileIOData::Init(
             std::move(profile_params_->main_network_context_params),
             std::move(builder), &main_request_context_);
 
-    if (chrome_network_delegate_unowned_->domain_reliability_monitor()) {
-      // Save a pointer to shut down Domain Reliability cleanly before the
-      // URLRequestContext is dismantled.
-      domain_reliability_monitor_unowned_ =
-          chrome_network_delegate_unowned_->domain_reliability_monitor();
-
-      domain_reliability_monitor_unowned_->InitURLRequestContext(
-          main_request_context_);
-      domain_reliability_monitor_unowned_->AddBakedInConfigs();
-      domain_reliability_monitor_unowned_->SetDiscardUploads(
-          !GetMetricsEnabledStateOnIOThread());
-    }
-
     resource_context_->request_context_ = main_request_context_;
   }
 
@@ -1237,7 +1204,6 @@ void ProfileIOData::ShutdownOnUIThread(
   force_google_safesearch_.Destroy();
   force_youtube_restrict_.Destroy();
   allowed_domains_for_apps_.Destroy();
-  enable_metrics_.Destroy();
   safe_browsing_enabled_.Destroy();
   safe_browsing_whitelist_domains_.Destroy();
   network_prediction_options_.Destroy();
