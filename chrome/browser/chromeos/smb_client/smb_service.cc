@@ -190,7 +190,8 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
 
   SmbUrl parsed_url(share_path.value());
   if (!parsed_url.IsValid()) {
-    std::move(callback).Run(
+    FireMountCallback(
+        std::move(callback),
         TranslateErrorToMountResult(base::File::Error::FILE_ERROR_INVALID_URL));
     return;
   }
