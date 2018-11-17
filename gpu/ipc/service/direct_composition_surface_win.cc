@@ -9,6 +9,8 @@
 #include <dxgi1_6.h>
 
 #include "base/containers/circular_deque.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -1295,6 +1297,16 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
                                   OverlayFormatToString(g_overlay_format_used),
                               SUCCEEDED(hr));
     if (FAILED(hr)) {
+      // TODO(sunnyps): Remove after debugging NV12 create swap chain failure.
+      OverlayFormat format = g_overlay_format_used;
+      DXGI_FORMAT dxgi_format = g_overlay_dxgi_format_used;
+      base::debug::Alias(&format);
+      base::debug::Alias(&dxgi_format);
+      base::debug::Alias(&hr);
+      base::debug::Alias(&swap_chain_size);
+      base::debug::Alias(&protected_video_type);
+      base::debug::DumpWithoutCrashing();
+
       DLOG(ERROR) << "Failed to create "
                   << OverlayFormatToString(g_overlay_format_used)
                   << " swap chain of size " << swap_chain_size.ToString()
