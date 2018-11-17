@@ -1466,9 +1466,6 @@ void QuicChromiumClientSession::OnGoAway(const quic::QuicGoAwayFrame& frame) {
 void QuicChromiumClientSession::OnRstStream(
     const quic::QuicRstStreamFrame& frame) {
   quic::QuicSession::OnRstStream(frame);
-  // TODO(zhongyi): remove the call to OnCanCreateNewOutgoingStream when
-  // b/119278038 is fixed and the bugfix is merged to chromium.
-  OnCanCreateNewOutgoingStream();
 }
 
 void QuicChromiumClientSession::OnConnectionClosed(

@@ -730,6 +730,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
     const QuicString client_common_set_hashes_;
     const QuicString client_cached_cert_hashes_;
     const bool sct_supported_by_client_;
+    const QuicString sni_;
     CryptoHandshakeMessage message_;
     std::unique_ptr<BuildServerConfigUpdateMessageResultCallback> cb_;
   };
@@ -744,6 +745,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       const QuicString& client_common_set_hashes,
       const QuicString& client_cached_cert_hashes,
       bool sct_supported_by_client,
+      const QuicString& sni,
       bool ok,
       const QuicReferenceCountedPointer<ProofSource::Chain>& chain,
       const QuicString& signature,

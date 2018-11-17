@@ -828,6 +828,11 @@ TEST_P(QuicSpdySessionTestServer, SendGoAway) {
 }
 
 TEST_P(QuicSpdySessionTestServer, DoNotSendGoAwayTwice) {
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    // TODO(b/118808809): Enable this test for version 99 when GOAWAY is
+    // supported.
+    return;
+  }
   EXPECT_CALL(*connection_, SendControlFrame(_))
       .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
   session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
@@ -836,6 +841,11 @@ TEST_P(QuicSpdySessionTestServer, DoNotSendGoAwayTwice) {
 }
 
 TEST_P(QuicSpdySessionTestServer, InvalidGoAway) {
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    // TODO(b/118808809): Enable this test for version 99 when GOAWAY is
+    // supported.
+    return;
+  }
   QuicGoAwayFrame go_away(kInvalidControlFrameId, QUIC_PEER_GOING_AWAY,
                           session_.next_outgoing_stream_id(), "");
   session_.OnGoAway(go_away);

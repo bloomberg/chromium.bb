@@ -69,6 +69,13 @@ void QuicControlFrameManager::WriteOrBufferBlocked(QuicStreamId id) {
       QuicFrame(new QuicBlockedFrame(++last_control_frame_id_, id)));
 }
 
+void QuicControlFrameManager::WriteOrBufferStopSending(uint16_t code,
+                                                       QuicStreamId stream_id) {
+  QUIC_DVLOG(1) << "Writing STOP_SENDING_FRAME";
+  WriteOrBufferQuicFrame(QuicFrame(
+      new QuicStopSendingFrame(++last_control_frame_id_, stream_id, code)));
+}
+
 void QuicControlFrameManager::WritePing() {
   QUIC_DVLOG(1) << "Writing PING_FRAME";
   if (HasBufferedFrames()) {

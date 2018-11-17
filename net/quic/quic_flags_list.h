@@ -171,9 +171,7 @@ QUIC_FLAG(bool,
 
 // If ture, make QuicSession::GetStream faster by skipping the lookup into
 // static stream map, when possible.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_session_faster_get_stream,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_session_faster_get_stream, true)
 
 // If true, when session decides what to write, set a approximate retransmission
 // for packets to be retransmitted. Also check packet state in
@@ -304,7 +302,7 @@ QUIC_FLAG(bool,
 // If true, public reset packets sent from GFE will include a kEPID tag.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_enable_server_epid_in_public_reset,
-          false)
+          true)
 
 // If true, public reset packets sent from GFE will include a kEPID tag.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_spurious_ack_alarm, false)

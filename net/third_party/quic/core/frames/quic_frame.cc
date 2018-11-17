@@ -166,6 +166,7 @@ bool IsControlFrame(QuicFrameType type) {
     case STREAM_ID_BLOCKED_FRAME:
     case MAX_STREAM_ID_FRAME:
     case PING_FRAME:
+    case STOP_SENDING_FRAME:
       return true;
     default:
       return false;
@@ -188,6 +189,8 @@ QuicControlFrameId GetControlFrameId(const QuicFrame& frame) {
       return frame.max_stream_id_frame.control_frame_id;
     case PING_FRAME:
       return frame.ping_frame.control_frame_id;
+    case STOP_SENDING_FRAME:
+      return frame.stop_sending_frame->control_frame_id;
     default:
       return kInvalidControlFrameId;
   }
@@ -216,6 +219,9 @@ void SetControlFrameId(QuicControlFrameId control_frame_id, QuicFrame* frame) {
     case MAX_STREAM_ID_FRAME:
       frame->max_stream_id_frame.control_frame_id = control_frame_id;
       return;
+    case STOP_SENDING_FRAME:
+      frame->stop_sending_frame->control_frame_id = control_frame_id;
+      return;
     default:
       QUIC_BUG
           << "Try to set control frame id of a frame without control frame id";
@@ -239,6 +245,9 @@ QuicFrame CopyRetransmittableControlFrame(const QuicFrame& frame) {
       break;
     case PING_FRAME:
       copy = QuicFrame(QuicPingFrame(frame.ping_frame.control_frame_id));
+      break;
+    case STOP_SENDING_FRAME:
+      copy = QuicFrame(new QuicStopSendingFrame(*frame.stop_sending_frame));
       break;
     default:
       QUIC_BUG << "Try to copy a non-retransmittable control frame: " << frame;

@@ -39,6 +39,8 @@ TEST_F(QuicFramesTest, AckFrameToString) {
       "{ largest_acked: 5, ack_delay_time: 3, packets: [ 4 5  ], "
       "received_packets: [ 6 at 7  ], ecn_counters_populated: 0 }\n",
       stream.str());
+  QuicFrame quic_frame(&frame);
+  EXPECT_FALSE(IsControlFrame(quic_frame.type));
 }
 
 TEST_F(QuicFramesTest, BigAckFrameToString) {
@@ -54,6 +56,8 @@ TEST_F(QuicFramesTest, BigAckFrameToString) {
       "{ largest_acked: 500, ack_delay_time: 3, packets: [ 4...500  ], "
       "received_packets: [ 500 at 7  ], ecn_counters_populated: 0 }\n",
       stream.str());
+  QuicFrame quic_frame(&frame);
+  EXPECT_FALSE(IsControlFrame(quic_frame.type));
 }
 
 TEST_F(QuicFramesTest, PaddingFrameToString) {
@@ -62,6 +66,8 @@ TEST_F(QuicFramesTest, PaddingFrameToString) {
   std::ostringstream stream;
   stream << frame;
   EXPECT_EQ("{ num_padding_bytes: 1 }\n", stream.str());
+  QuicFrame quic_frame(frame);
+  EXPECT_FALSE(IsControlFrame(quic_frame.type));
 }
 
 TEST_F(QuicFramesTest, RstStreamFrameToString) {
@@ -75,6 +81,52 @@ TEST_F(QuicFramesTest, RstStreamFrameToString) {
   stream << rst_stream;
   EXPECT_EQ("{ control_frame_id: 1, stream_id: 1, error_code: 6 }\n",
             stream.str());
+  EXPECT_TRUE(IsControlFrame(frame.type));
+}
+
+TEST_F(QuicFramesTest, StopSendingFrameToString) {
+  QuicStopSendingFrame stop_sending;
+  QuicFrame frame(&stop_sending);
+  SetControlFrameId(1, &frame);
+  EXPECT_EQ(1u, GetControlFrameId(frame));
+  stop_sending.stream_id = 321;
+  stop_sending.application_error_code = QUIC_STREAM_CANCELLED;
+  std::ostringstream stream;
+  stream << stop_sending;
+  EXPECT_EQ(
+      "{ control_frame_id: 1, stream_id: 321, application_error_code: 6 }\n",
+      stream.str());
+  EXPECT_TRUE(IsControlFrame(frame.type));
+}
+
+TEST_F(QuicFramesTest, StreamIdBlockedFrameToString) {
+  QuicStreamIdBlockedFrame stream_id_blocked;
+  QuicFrame frame(stream_id_blocked);
+  SetControlFrameId(1, &frame);
+  EXPECT_EQ(1u, GetControlFrameId(frame));
+  // QuicStreamIdBlocked is copied into a QuicFrame (as opposed to putting a
+  // pointer to it into QuicFrame) so need to work with the copy in |frame| and
+  // not the original one, stream_id_blocked.
+  frame.stream_id_blocked_frame.stream_id = 321;
+  std::ostringstream stream;
+  stream << frame.stream_id_blocked_frame;
+  EXPECT_EQ("{ control_frame_id: 1, stream id: 321 }\n", stream.str());
+  EXPECT_TRUE(IsControlFrame(frame.type));
+}
+
+TEST_F(QuicFramesTest, MaxStreamIdFrameToString) {
+  QuicMaxStreamIdFrame max_stream_id;
+  QuicFrame frame(max_stream_id);
+  SetControlFrameId(1, &frame);
+  EXPECT_EQ(1u, GetControlFrameId(frame));
+  // QuicMaxStreamId is copied into a QuicFrame (as opposed to putting a
+  // pointer to it into QuicFrame) so need to work with the copy in |frame| and
+  // not the original one, max_stream_id.
+  frame.max_stream_id_frame.max_stream_id = 321;
+  std::ostringstream stream;
+  stream << frame.max_stream_id_frame;
+  EXPECT_EQ("{ control_frame_id: 1, stream_id: 321 }\n", stream.str());
+  EXPECT_TRUE(IsControlFrame(frame.type));
 }
 
 TEST_F(QuicFramesTest, ConnectionCloseFrameToString) {
@@ -88,6 +140,8 @@ TEST_F(QuicFramesTest, ConnectionCloseFrameToString) {
       "frame_type: 0"
       "}\n",
       stream.str());
+  QuicFrame quic_frame(&frame);
+  EXPECT_FALSE(IsControlFrame(quic_frame.type));
 }
 
 TEST_F(QuicFramesTest, GoAwayFrameToString) {
@@ -105,6 +159,7 @@ TEST_F(QuicFramesTest, GoAwayFrameToString) {
       "reason_phrase: "
       "'Reason' }\n",
       stream.str());
+  EXPECT_TRUE(IsControlFrame(frame.type));
 }
 
 TEST_F(QuicFramesTest, WindowUpdateFrameToString) {
@@ -118,6 +173,7 @@ TEST_F(QuicFramesTest, WindowUpdateFrameToString) {
   stream << window_update;
   EXPECT_EQ("{ control_frame_id: 3, stream_id: 1, byte_offset: 2 }\n",
             stream.str());
+  EXPECT_TRUE(IsControlFrame(frame.type));
 }
 
 TEST_F(QuicFramesTest, BlockedFrameToString) {
@@ -129,6 +185,7 @@ TEST_F(QuicFramesTest, BlockedFrameToString) {
   std::ostringstream stream;
   stream << blocked;
   EXPECT_EQ("{ control_frame_id: 4, stream_id: 1 }\n", stream.str());
+  EXPECT_TRUE(IsControlFrame(frame.type));
 }
 
 TEST_F(QuicFramesTest, PingFrameToString) {
@@ -139,6 +196,7 @@ TEST_F(QuicFramesTest, PingFrameToString) {
   std::ostringstream stream;
   stream << frame.ping_frame;
   EXPECT_EQ("{ control_frame_id: 5 }\n", stream.str());
+  EXPECT_TRUE(IsControlFrame(frame.type));
 }
 
 TEST_F(QuicFramesTest, StreamFrameToString) {
@@ -150,6 +208,7 @@ TEST_F(QuicFramesTest, StreamFrameToString) {
   std::ostringstream stream;
   stream << frame;
   EXPECT_EQ("{ stream_id: 1, fin: 0, offset: 2, length: 3 }\n", stream.str());
+  EXPECT_FALSE(IsControlFrame(frame.type));
 }
 
 TEST_F(QuicFramesTest, StopWaitingFrameToString) {
@@ -158,6 +217,8 @@ TEST_F(QuicFramesTest, StopWaitingFrameToString) {
   std::ostringstream stream;
   stream << frame;
   EXPECT_EQ("{ least_unacked: 2 }\n", stream.str());
+  QuicFrame quic_frame(&frame);
+  EXPECT_FALSE(IsControlFrame(quic_frame.type));
 }
 
 TEST_F(QuicFramesTest, IsAwaitingPacket) {

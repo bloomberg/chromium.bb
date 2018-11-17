@@ -161,6 +161,12 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // a packet flusher is added, ensure the |message|'s buffer is not modified or
   // deleted before exiting the flusher's scope. OnMessageAcked and
   // OnMessageLost are called when a particular message gets acked or lost.
+  //
+  // Note that SendMessage will fail with status = MESSAGE_STATUS_BLOCKED
+  // if connection is congestion control blocked or underlying socket is write
+  // blocked. In this case the caller can retry sending message again when
+  // connection becomes available, for example after getting OnCanWrite()
+  // callback.
   MessageResult SendMessage(QuicStringPiece message);
 
   // Called when message with |message_id| gets acked.
@@ -186,6 +192,9 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
 
   // Sends a WINDOW_UPDATE frame.
   virtual void SendWindowUpdate(QuicStreamId id, QuicStreamOffset byte_offset);
+
+  // Create and transmit a STOP_SENDING frame
+  virtual void SendStopSending(uint16_t code, QuicStreamId stream_id);
 
   // Removes the stream associated with 'stream_id' from the active stream map.
   virtual void CloseStream(QuicStreamId stream_id);
