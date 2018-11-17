@@ -20,6 +20,14 @@ class TestNuxEmailProxy extends TestBrowserProxy {
 
     /** @private {!Array<!nux.BookmarkListItem>} */
     this.emailList_ = [];
+
+    /** @private {number} */
+    this.stubSavedProvider_;
+  }
+
+  /** @param {number} id */
+  setSavedProvider(id) {
+    this.stubSavedProvider_ = id;
   }
 
   /** @override */
@@ -40,6 +48,7 @@ class TestNuxEmailProxy extends TestBrowserProxy {
   /** @override */
   getSavedProvider() {
     this.methodCalled('getSavedProvider');
+    return this.stubSavedProvider_;
   }
   /** @override */
   recordClickedOption() {
