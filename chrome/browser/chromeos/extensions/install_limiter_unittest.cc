@@ -7,7 +7,9 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_test_helper.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,12 +27,15 @@ constexpr int kSmallExtensionSize = 200000;
 class InstallLimiterTest
     : public testing::TestWithParam<chromeos::DemoSession::DemoModeConfig> {
  public:
-  InstallLimiterTest() = default;
+  InstallLimiterTest()
+      : scoped_user_manager_(
+            std::make_unique<chromeos::FakeChromeUserManager>()) {}
   ~InstallLimiterTest() override = default;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   chromeos::ScopedStubInstallAttributes test_install_attributes_;
+  user_manager::ScopedUserManager scoped_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallLimiterTest);
 };
