@@ -25,9 +25,17 @@
         position: relative;
       }
 
+      #barContainer,
+      #bar {
+        /* Using border instead of background-color to address pixel rounding
+           at low zoom levels (e.g. 33%). The browser will round border widths
+           to a minimum of 1px.*/
+        border-top-style: solid;
+        border-top-width: 2px;
+      }
+
       #barContainer {
-        background-color: var(--google-blue-600-opacity-24);
-        border-radius: 1px;
+        border-top-color: var(--google-blue-600-opacity-24);
         height: 2px;
         margin: 0 16px;
         position: absolute;
@@ -36,11 +44,11 @@
       }
 
       #bar {
-        background-color: var(--google-blue-600);
-        border-radius: 1px;
+        border-top-color: var(--google-blue-600);
         height: 2px;
         left: 0;
         position: absolute;
+        top: -2px;
         transition: width 80ms ease;
         width: 0;
       }
@@ -153,11 +161,11 @@
       }
 
       :host([disabled_]) #barContainer {
-        background-color: var(--google-grey-600-opacity-24);
+        border-top-color: var(--google-grey-600-opacity-24);
       }
 
       :host([disabled_]) #bar {
-        background-color: var(--google-grey-600);
+        border-top-color: var(--google-grey-600);
       }
 
       :host([disabled_]) inactive-marker::after,
@@ -166,7 +174,7 @@
       }
 
       :host([disabled_]) #knobContainer {
-        margin-inline-start: 9px;
+        margin-inline-start: 10px;
         top: 9px;
       }
       :host([disabled_]) #knob {
