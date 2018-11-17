@@ -107,6 +107,16 @@ ui::DomKey DomKeyboardLayoutMapWin::GetDomKeyFromDomCodeForLayout(
   if (key_type == -1)
     return ui::DomKey::DeadKeyFromCombiningCharacter(char_buffer[0]);
 
+  // Special case for Backquote on Japanese keyboard layout.
+  // Technically, this layout is not completely ASCII-capable because the
+  // Backquote key is used as a IME function key (hankaku/zenkaku) and is thus
+  // not a printable key. However, other than this key, it is a perfectly
+  // usable ASCII-capable layout and it matches the values printed on the
+  // keyboard, so we have special handling to allow this key.
+  if (dom_code == ui::DomCode::BACKQUOTE &&
+      0x04110411 == reinterpret_cast<unsigned int>(keyboard_layout))
+    return ui::DomKey::ZENKAKU_HANKAKU;
+
   return ui::DomKey::NONE;
 }
 
