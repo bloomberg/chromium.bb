@@ -160,6 +160,10 @@ void WebRuntimeFeatures::EnableFileSystem(bool enable) {
   RuntimeEnabledFeatures::SetFileSystemEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableFirstContentfulPaintPlusPlus(bool enable) {
+  RuntimeEnabledFeatures::SetFirstContentfulPaintPlusPlusEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableForceTallerSelectPopup(bool enable) {
   RuntimeEnabledFeatures::SetForceTallerSelectPopupEnabled(enable);
 }

@@ -16,6 +16,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kEagerCacheStorageSetupForServiceWorkers;
 BLINK_COMMON_EXPORT extern const base::Feature
     kEnableGpuRasterizationViewportRestriction;
+BLINK_COMMON_EXPORT extern const base::Feature kFirstContentfulPaintPlusPlus;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kMojoBlobURLs;
 BLINK_COMMON_EXPORT extern const base::Feature kOnionSoupDOMStorage;

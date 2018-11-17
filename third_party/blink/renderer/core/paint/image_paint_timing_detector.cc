@@ -282,9 +282,8 @@ void ImagePaintTimingDetector::ReportSwapTime(
     base::TimeTicks timestamp) {
   // The callback is safe from race-condition only when running on main-thread.
   DCHECK(ThreadState::Current()->IsMainThread());
-  // This callback is queued only when there are records in
-  // records_pending_timing_.
-  DCHECK_GT(records_pending_timing_.size(), 0UL);
+  // Not guranteed to be non-empty, because record can be removed before the
+  // callback.
   while (records_pending_timing_.size() > 0) {
     DOMNodeId node_id = records_pending_timing_.front();
     if (!id_record_map_.Contains(node_id)) {
