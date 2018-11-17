@@ -17,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.media.ThumbnailUtils;
 import android.support.annotation.ColorInt;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -52,6 +53,8 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentOptions;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -211,7 +214,13 @@ class AutofillAssistantUiDelegate {
     // Names borrowed from :
     // - https://guidelines.googleplex.com/googlematerial/components/chips.html
     // - https://guidelines.googleplex.com/googlematerial/components/buttons.html
-    private enum ChipStyle { CHIP_ASSISTIVE, BUTTON_FILLED, BUTTON_HAIRLINE }
+    @IntDef({ChipStyle.CHIP_ASSISTIVE, ChipStyle.BUTTON_FILLED, ChipStyle.BUTTON_HAIRLINE})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface ChipStyle {
+        int CHIP_ASSISTIVE = 0;
+        int BUTTON_FILLED = 1;
+        int BUTTON_HAIRLINE = 2;
+    }
 
     /**
      * Constructs an assistant UI delegate.
@@ -294,12 +303,13 @@ class AutofillAssistantUiDelegate {
         }
 
         boolean alignRight = hasHighlightedScript(scriptHandles);
-        ChipStyle nonHighlightStyle =
-                alignRight ? ChipStyle.BUTTON_HAIRLINE : ChipStyle.CHIP_ASSISTIVE;
+        @ChipStyle
+        int nonHighlightStyle = alignRight ? ChipStyle.BUTTON_HAIRLINE : ChipStyle.CHIP_ASSISTIVE;
         ArrayList<View> childViews = new ArrayList<>();
         for (int i = 0; i < scriptHandles.size(); i++) {
             ScriptHandle scriptHandle = scriptHandles.get(i);
-            ChipStyle chipStyle =
+            @ChipStyle
+            int chipStyle =
                     scriptHandle.isHighlight() ? ChipStyle.BUTTON_FILLED : nonHighlightStyle;
             TextView chipView = createChipView(scriptHandle.getName(), chipStyle);
             chipView.setOnClickListener((unusedView) -> {
@@ -371,16 +381,16 @@ class AutofillAssistantUiDelegate {
                 () -> mCarouselScroll.fullScroll(alignRight ? View.FOCUS_RIGHT : View.FOCUS_LEFT));
     }
 
-    private TextView createChipView(String text, ChipStyle style) {
+    private TextView createChipView(String text, @ChipStyle int style) {
         int resId = -1;
         switch (style) {
-            case CHIP_ASSISTIVE:
+            case ChipStyle.CHIP_ASSISTIVE:
                 resId = R.layout.autofill_assistant_chip_assistive;
                 break;
-            case BUTTON_FILLED:
+            case ChipStyle.BUTTON_FILLED:
                 resId = R.layout.autofill_assistant_button_filled;
                 break;
-            case BUTTON_HAIRLINE:
+            case ChipStyle.BUTTON_HAIRLINE:
                 resId = R.layout.autofill_assistant_button_hairline;
                 break;
         }
