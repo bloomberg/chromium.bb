@@ -74,3 +74,23 @@ OnboardingWelcomeWelcomeAppTest = class extends OnboardingWelcomeBrowserTest {
 TEST_F('OnboardingWelcomeWelcomeAppTest', 'All', function() {
   mocha.run();
 });
+
+OnboardingWelcomeSigninViewTest = class extends OnboardingWelcomeBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://welcome/signin_view.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'signin_view_test.js',
+      'test_nux_email_proxy.js',
+      'test_welcome_browser_proxy.js',
+    ]);
+  }
+};
+
+TEST_F('OnboardingWelcomeSigninViewTest', 'All', function() {
+  mocha.run();
+});

@@ -13,8 +13,8 @@ class TestWelcomeBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  handleActivateSignIn() {
-    this.methodCalled('handleActivateSignIn');
+  handleActivateSignIn(providerId) {
+    this.methodCalled('handleActivateSignIn', providerId);
   }
 
   /** @override */
@@ -23,7 +23,7 @@ class TestWelcomeBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  goToURL() {
-    this.methodCalled('goToURL');
+  goToURL(url) {
+    this.methodCalled('goToURL', url);
   }
 }
