@@ -63,7 +63,8 @@ done
 
 # Chrome on Android is not localized to the following languages and we
 # have to minimize the locale data for them.
-EXTRA_LANGUAGES="bn et gu kn ml mr ms ta te"
+#EXTRA_LANGUAGES="bn et gu kn ml mr ms ta te"
+EXTRA_LANGUAGES="gu kn ml mr ms ta te"
 
 # TODO(jshin): Copied from scripts/trim_data.sh. Need to refactor.
 echo Creating minimum locale data in locales

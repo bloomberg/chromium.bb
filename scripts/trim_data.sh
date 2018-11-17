@@ -142,8 +142,9 @@ function filter_currency_data {
     echo "Overwriting $i for $locale"
     sed -n -r -i \
       '1, /^'${locale}'\{$/ p
-       /^    "%%ALIAS"\{/p
-       /^    %%Parent\{/p
+       /^    "%%ALIAS"\{/ p
+       /^    ___\{..\}$/ p
+       /^    %%Parent\{/ p
        /^    Currencies\{$/, /^    \}$/ {
          /^    Currencies\{$/ p
          /^        '$KEEPLIST'\{$/, /^        \}$/ p
@@ -179,12 +180,13 @@ function filter_region_data {
   sed -i  '/[0-35-9][0-9][0-9]{/ d' ${dataroot}/region/*.txt
 }
 
-
-
+# This assumes that exemplar city ("ec") is only present in
+# non-meta zones and that meta zones are listed after non-meta
+# zones.
 function remove_exemplar_cities {
   for i in ${dataroot}/zone/*.txt
   do
-    [ $i != 'root.txt' ] && \
+    [ $i != "${dataroot}/zone/root.txt" ] && \
     sed -i '/^    zoneStrings/, /^        "meta:/ {
       /^    zoneStrings/ p
       /^        "meta:/ p
