@@ -135,17 +135,18 @@ class BASE_EXPORT TaskTracker {
   // metadata on |task| if desired.
   bool WillPostTask(Task* task, TaskShutdownBehavior shutdown_behavior);
 
-  // Informs this TaskTracker that |sequence| is about to be scheduled. If this
-  // returns |sequence|, it is expected that RunAndPopNextTask() will soon be
-  // called with |sequence| as argument. Otherwise, RunAndPopNextTask() must not
-  // be called with |sequence| as argument until |observer| is notified that
-  // |sequence| can be scheduled (the caller doesn't need to keep a pointer to
-  // |sequence|; it will be included in the notification to |observer|).
-  // WillPostTask() must have allowed the task in front of |sequence| to be
-  // posted before this is called. |observer| is only required if the priority
-  // of |sequence| is TaskPriority::BEST_EFFORT
-  scoped_refptr<Sequence> WillScheduleSequence(
-      scoped_refptr<Sequence> sequence,
+  // Informs this TaskTracker that the Sequence locked by |sequence_transaction|
+  // is about to be scheduled. If this returns |sequence_transaction|, it is
+  // expected that RunAndPopNextTask() will soon be called with the Sequence as
+  // argument. Otherwise, RunAndPopNextTask() must not be called with the
+  // Sequence as argument until |observer| is notified that the Sequence can be
+  // scheduled (the caller doesn't need to keep a pointer to the Sequence; it
+  // will be included in the notification to |observer|). WillPostTask() must
+  // have allowed the task in front of the Sequence to be posted before this is
+  // called. |observer| is only required if the priority of the Sequence is
+  // TaskPriority::BEST_EFFORT.
+  std::unique_ptr<Sequence::Transaction> WillScheduleSequence(
+      std::unique_ptr<Sequence::Transaction> sequence_transaction,
       CanScheduleSequenceObserver* observer);
 
   // Runs the next task in |sequence| unless the current shutdown state prevents

@@ -273,16 +273,21 @@ SchedulerWorkerPoolImpl::~SchedulerWorkerPoolImpl() {
 
 void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
     scoped_refptr<Sequence> sequence) {
-  PushSequenceToPriorityQueue(std::move(sequence));
+  DCHECK(sequence);
+  OnCanScheduleSequence(sequence->BeginTransaction());
+}
+
+void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
+    std::unique_ptr<Sequence::Transaction> sequence_transaction) {
+  PushSequenceToPriorityQueue(std::move(sequence_transaction));
   WakeUpOneWorker();
 }
 
 void SchedulerWorkerPoolImpl::PushSequenceToPriorityQueue(
-    scoped_refptr<Sequence> sequence) {
-  DCHECK(sequence);
-  const auto sequence_sort_key = sequence->BeginTransaction()->GetSortKey();
-  shared_priority_queue_.BeginTransaction()->Push(std::move(sequence),
-                                                  sequence_sort_key);
+    std::unique_ptr<Sequence::Transaction> sequence_transaction) {
+  DCHECK(sequence_transaction);
+  shared_priority_queue_.BeginTransaction()->Push(
+      sequence_transaction->sequence(), sequence_transaction->GetSortKey());
 }
 
 void SchedulerWorkerPoolImpl::GetHistograms(
@@ -364,8 +369,8 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
 }
 
 void SchedulerWorkerPoolImpl::ReEnqueueSequence(
-    scoped_refptr<Sequence> sequence) {
-  PushSequenceToPriorityQueue(std::move(sequence));
+    std::unique_ptr<Sequence::Transaction> sequence_transaction) {
+  PushSequenceToPriorityQueue(std::move(sequence_transaction));
   if (!IsBoundToCurrentThread())
     WakeUpOneWorker();
 }
@@ -558,7 +563,8 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask() {
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::ReEnqueueSequence(
     scoped_refptr<Sequence> sequence) {
-  outer_->delegate_->ReEnqueueSequence(std::move(sequence));
+  DCHECK(sequence);
+  outer_->delegate_->ReEnqueueSequence(sequence->BeginTransaction());
 }
 
 TimeDelta

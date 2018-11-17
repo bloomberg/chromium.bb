@@ -61,8 +61,8 @@ void PlatformNativeWorkerPoolWin::JoinForTesting() {
 }
 
 void PlatformNativeWorkerPoolWin::ReEnqueueSequence(
-    scoped_refptr<Sequence> sequence) {
-  OnCanScheduleSequence(std::move(sequence));
+    std::unique_ptr<Sequence::Transaction> sequence_transaction) {
+  OnCanScheduleSequence(std::move(sequence_transaction));
 }
 
 // static
@@ -100,11 +100,16 @@ scoped_refptr<Sequence> PlatformNativeWorkerPoolWin::GetWork() {
 
 void PlatformNativeWorkerPoolWin::OnCanScheduleSequence(
     scoped_refptr<Sequence> sequence) {
-  const SequenceSortKey sequence_sort_key =
-      sequence->BeginTransaction()->GetSortKey();
-  auto transaction(priority_queue_.BeginTransaction());
+  DCHECK(sequence);
+  OnCanScheduleSequence(sequence->BeginTransaction());
+}
 
-  transaction->Push(std::move(sequence), sequence_sort_key);
+void PlatformNativeWorkerPoolWin::OnCanScheduleSequence(
+    std::unique_ptr<Sequence::Transaction> sequence_transaction) {
+  DCHECK(sequence_transaction);
+
+  priority_queue_.BeginTransaction()->Push(sequence_transaction->sequence(),
+                                           sequence_transaction->GetSortKey());
   if (started_) {
     // TODO(fdoray): Handle priorities by having different work objects and
     // using ::SetThreadpoolCallbackPriority() and

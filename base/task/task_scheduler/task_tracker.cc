@@ -453,11 +453,11 @@ bool TaskTracker::WillPostTask(Task* task,
   return true;
 }
 
-scoped_refptr<Sequence> TaskTracker::WillScheduleSequence(
-    scoped_refptr<Sequence> sequence,
+std::unique_ptr<Sequence::Transaction> TaskTracker::WillScheduleSequence(
+    std::unique_ptr<Sequence::Transaction> sequence_transaction,
     CanScheduleSequenceObserver* observer) {
-  DCHECK(sequence);
-  const SequenceSortKey sort_key = sequence->BeginTransaction()->GetSortKey();
+  DCHECK(sequence_transaction);
+  const SequenceSortKey sort_key = sequence_transaction->GetSortKey();
   const int priority_index = static_cast<int>(sort_key.priority());
 
   AutoSchedulerLock auto_lock(preemption_state_[priority_index].lock);
@@ -465,7 +465,7 @@ scoped_refptr<Sequence> TaskTracker::WillScheduleSequence(
   if (preemption_state_[priority_index].current_scheduled_sequences <
       preemption_state_[priority_index].max_scheduled_sequences) {
     ++preemption_state_[priority_index].current_scheduled_sequences;
-    return sequence;
+    return sequence_transaction;
   }
 
   // It is convenient not to have to specify an observer when scheduling
@@ -473,7 +473,8 @@ scoped_refptr<Sequence> TaskTracker::WillScheduleSequence(
   DCHECK(observer);
 
   preemption_state_[priority_index].preempted_sequences.emplace(
-      std::move(sequence), sort_key.next_task_sequenced_time(), observer);
+      sequence_transaction->sequence(), sort_key.next_task_sequenced_time(),
+      observer);
   return nullptr;
 }
 

@@ -123,7 +123,7 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
   const SequenceToken token_ = SequenceToken::Create();
 
   // Synchronizes access to all members.
-  mutable SchedulerLock lock_;
+  mutable SchedulerLock lock_{UniversalPredecessor()};
 
   // Queue of tasks to execute.
   base::queue<Task> queue_;

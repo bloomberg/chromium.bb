@@ -61,7 +61,8 @@ TEST_F(TaskSchedulerTaskTrackerPosixTest, RunTask) {
   EXPECT_TRUE(tracker_.WillPostTask(&task, default_traits.shutdown_behavior()));
 
   auto sequence = test::CreateSequenceWithTask(std::move(task), default_traits);
-  EXPECT_EQ(sequence, tracker_.WillScheduleSequence(sequence, nullptr));
+  EXPECT_TRUE(
+      tracker_.WillScheduleSequence(sequence->BeginTransaction(), nullptr));
   // Expect RunAndPopNextTask to return nullptr since |sequence| is empty after
   // popping a task from it.
   EXPECT_FALSE(tracker_.RunAndPopNextTask(sequence, nullptr));
@@ -85,7 +86,8 @@ TEST_F(TaskSchedulerTaskTrackerPosixTest, FileDescriptorWatcher) {
   EXPECT_TRUE(tracker_.WillPostTask(&task, default_traits.shutdown_behavior()));
 
   auto sequence = test::CreateSequenceWithTask(std::move(task), default_traits);
-  EXPECT_EQ(sequence, tracker_.WillScheduleSequence(sequence, nullptr));
+  EXPECT_TRUE(
+      tracker_.WillScheduleSequence(sequence->BeginTransaction(), nullptr));
   // Expect RunAndPopNextTask to return nullptr since |sequence| is empty after
   // popping a task from it.
   EXPECT_FALSE(tracker_.RunAndPopNextTask(sequence, nullptr));
