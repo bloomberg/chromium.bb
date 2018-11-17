@@ -245,7 +245,8 @@ void ScreenTimeController::SaveCurrentStateToPref(
   state_dict->SetKey(kScreenStateTimeUsageLimitEnabled,
                      base::Value(state.is_time_usage_limit_enabled));
   state_dict->SetKey(kScreenStateRemainingUsage,
-                     base::Value(state.remaining_usage.InMinutes()));
+                     base::Value(base::checked_cast<int>(
+                         state.remaining_usage.InMilliseconds())));
   state_dict->SetKey(kScreenStateUsageLimitStarted,
                      base::Value(state.time_usage_limit_started.ToDoubleT()));
   state_dict->SetKey(kScreenStateNextStateChangeTime,
@@ -303,7 +304,7 @@ ScreenTimeController::GetLastStateFromPref() {
   if (!remaining_usage || !remaining_usage->is_int())
     return base::nullopt;
   result.remaining_usage =
-      base::TimeDelta::FromMinutes(remaining_usage->GetInt());
+      base::TimeDelta::FromMilliseconds(remaining_usage->GetInt());
 
   // Verify time_usage_limit_started from the pref is a double value.
   const base::Value* time_usage_limit_started =
