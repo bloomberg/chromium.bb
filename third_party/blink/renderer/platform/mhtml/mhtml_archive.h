@@ -55,6 +55,19 @@ class PLATFORM_EXPORT MHTMLArchive final
  public:
   static MHTMLArchive* Create(const KURL&, scoped_refptr<const SharedBuffer>);
 
+  // Every outcome when loading an archive with MHTMLArchive::Create (mirroring
+  // MHTMLLoadResult in tools/metrics/histograms/enums.xml).
+  enum class LoadResult {
+    kSuccess,
+    kEmptyFile,
+    kUrlSchemeNotAllowed,
+    kInvalidArchive,
+    kMissingMainResource,
+
+    kMaxValue = kMissingMainResource
+  };
+  static const char* kLoadResultUmaName;
+
   // Binary encoding results in smaller MHTML files but they might not work in
   // other browsers.
   enum EncodingPolicy { kUseDefaultEncoding, kUseBinaryEncoding };
@@ -107,6 +120,8 @@ class PLATFORM_EXPORT MHTMLArchive final
 
  private:
   MHTMLArchive();
+
+  static void ReportLoadResult(LoadResult result);
 
   void SetMainResource(ArchiveResource*);
   void AddSubresource(ArchiveResource*);

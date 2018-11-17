@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 
 #include <stddef.h>
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/date_components.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
@@ -196,24 +197,38 @@ String ConvertToPrintableCharacters(const String& text) {
 
 }  // namespace
 
+const char* MHTMLArchive::kLoadResultUmaName =
+    "PageSerialization.MhtmlLoading.LoadResult";
+
 MHTMLArchive::MHTMLArchive() = default;
+
+// static
+void MHTMLArchive::ReportLoadResult(MHTMLArchive::LoadResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kLoadResultUmaName, result);
+}
 
 MHTMLArchive* MHTMLArchive::Create(const KURL& url,
                                    scoped_refptr<const SharedBuffer> data) {
   // |data| may be null if archive file is empty.
-  if (!data)
+  if (!data || data->IsEmpty()) {
+    ReportLoadResult(LoadResult::kEmptyFile);
     return nullptr;
+  }
 
   // MHTML pages can only be loaded from local URLs, http/https URLs, and
   // content URLs(Android specific).  The latter is now allowed due to full
   // sandboxing enforcement on MHTML pages.
-  if (!CanLoadArchive(url))
+  if (!CanLoadArchive(url)) {
+    ReportLoadResult(LoadResult::kUrlSchemeNotAllowed);
     return nullptr;
+  }
 
   MHTMLParser parser(std::move(data));
   HeapVector<Member<ArchiveResource>> resources = parser.ParseArchive();
-  if (resources.IsEmpty())
+  if (resources.IsEmpty()) {
+    ReportLoadResult(LoadResult::kInvalidArchive);
     return nullptr;  // Invalid MHTML file.
+  }
 
   MHTMLArchive* archive = new MHTMLArchive;
   archive->date_ = parser.CreationDate();
@@ -246,8 +261,12 @@ MHTMLArchive* MHTMLArchive::Create(const KURL& url,
     else
       archive->AddSubresource(resource);
   }
-  if (archive->MainResource())
+  if (archive->MainResource()) {
+    ReportLoadResult(LoadResult::kSuccess);
     return archive;
+  }
+
+  ReportLoadResult(LoadResult::kMissingMainResource);
   return nullptr;
 }
 
