@@ -71,8 +71,12 @@ error::Error RasterDecoderImpl::HandleGetIntegerv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetIntegerv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetIntegerv", pname, "pname");

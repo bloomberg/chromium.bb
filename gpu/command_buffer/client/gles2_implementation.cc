@@ -3623,14 +3623,20 @@ void GLES2Implementation::GetAttachedShaders(GLuint program,
   }
   TRACE_EVENT0("gpu", "GLES2::GetAttachedShaders");
   typedef cmds::GetAttachedShaders::Result Result;
-  uint32_t size = Result::ComputeSize(maxcount);
-  Result* result = static_cast<Result*>(transfer_buffer_->Alloc(size));
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(maxcount).AssignIfValid(&checked_size)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glGetAttachedShaders",
+               "allocation too large");
+    return;
+  }
+  Result* result = static_cast<Result*>(transfer_buffer_->Alloc(checked_size));
   if (!result) {
     return;
   }
   result->SetNumResults(0);
   helper_->GetAttachedShaders(program, transfer_buffer_->GetShmId(),
-                              transfer_buffer_->GetOffset(result), size);
+                              transfer_buffer_->GetOffset(result),
+                              checked_size);
   int32_t token = helper_->InsertToken();
   WaitForCmd();
   if (count) {

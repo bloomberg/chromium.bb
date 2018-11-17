@@ -1287,8 +1287,12 @@ error::Error GLES2DecoderImpl::HandleGetBooleanv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetBooleanv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLboolean* params = result ? result->GetData() : nullptr;
   if (!validators_->g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetBooleanv", pname, "pname");
@@ -1326,8 +1330,12 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteri64v(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetBufferParameteri64v", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint64* params = result ? result->GetData() : nullptr;
   if (!validators_->buffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetBufferParameteri64v", target,
@@ -1362,8 +1370,12 @@ error::Error GLES2DecoderImpl::HandleGetBufferParameteriv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetBufferParameteriv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->buffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetBufferParameteriv", target, "target");
@@ -1409,8 +1421,12 @@ error::Error GLES2DecoderImpl::HandleGetFloatv(uint32_t immediate_data_size,
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetFloatv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLfloat* params = result ? result->GetData() : nullptr;
   if (!validators_->g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetFloatv", pname, "pname");
@@ -1449,8 +1465,12 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
                                     pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->framebuffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetFramebufferAttachmentParameteriv",
@@ -1498,8 +1518,12 @@ error::Error GLES2DecoderImpl::HandleGetInteger64v(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetInteger64v", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint64* params = result ? result->GetData() : nullptr;
   if (!validators_->g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetInteger64v", pname, "pname");
@@ -1536,8 +1560,12 @@ error::Error GLES2DecoderImpl::HandleGetIntegeri_v(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetIntegeri_v", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(c.data_shm_id, c.data_shm_offset,
-                                              Result::ComputeSize(num_values));
+                                              checked_size);
   GLint* data = result ? result->GetData() : nullptr;
   if (!validators_->indexed_g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetIntegeri_v", pname, "pname");
@@ -1569,8 +1597,12 @@ error::Error GLES2DecoderImpl::HandleGetInteger64i_v(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetInteger64i_v", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(c.data_shm_id, c.data_shm_offset,
-                                              Result::ComputeSize(num_values));
+                                              checked_size);
   GLint64* data = result ? result->GetData() : nullptr;
   if (!validators_->indexed_g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetInteger64i_v", pname, "pname");
@@ -1599,8 +1631,12 @@ error::Error GLES2DecoderImpl::HandleGetIntegerv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetIntegerv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->g_l_state.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetIntegerv", pname, "pname");
@@ -1635,8 +1671,12 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetProgramiv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->program_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetProgramiv", pname, "pname");
@@ -1673,8 +1713,12 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
                                     "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->render_buffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetRenderbufferParameteriv", target,
@@ -1718,8 +1762,12 @@ error::Error GLES2DecoderImpl::HandleGetSamplerParameterfv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetSamplerParameterfv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLfloat* params = result ? result->GetData() : nullptr;
   if (!validators_->sampler_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetSamplerParameterfv", pname, "pname");
@@ -1757,8 +1805,12 @@ error::Error GLES2DecoderImpl::HandleGetSamplerParameteriv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetSamplerParameteriv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->sampler_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetSamplerParameteriv", pname, "pname");
@@ -1793,8 +1845,12 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetShaderiv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->shader_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetShaderiv", pname, "pname");
@@ -1830,8 +1886,12 @@ error::Error GLES2DecoderImpl::HandleGetSynciv(uint32_t immediate_data_size,
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetSynciv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.values_shm_id, c.values_shm_offset, Result::ComputeSize(num_values));
+      c.values_shm_id, c.values_shm_offset, checked_size);
   GLint* values = result ? result->GetData() : nullptr;
   if (!validators_->sync_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetSynciv", pname, "pname");
@@ -1866,8 +1926,12 @@ error::Error GLES2DecoderImpl::HandleGetTexParameterfv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetTexParameterfv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLfloat* params = result ? result->GetData() : nullptr;
   if (!validators_->get_tex_param_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetTexParameterfv", target, "target");
@@ -1906,8 +1970,12 @@ error::Error GLES2DecoderImpl::HandleGetTexParameteriv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetTexParameteriv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->get_tex_param_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetTexParameteriv", target, "target");
@@ -1946,8 +2014,12 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribfv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetVertexAttribfv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLfloat* params = result ? result->GetData() : nullptr;
   if (!validators_->vertex_attribute.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetVertexAttribfv", pname, "pname");
@@ -1982,8 +2054,12 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribiv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetVertexAttribiv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->vertex_attribute.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetVertexAttribiv", pname, "pname");
@@ -2020,8 +2096,12 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribIiv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetVertexAttribIiv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLint* params = result ? result->GetData() : nullptr;
   if (!validators_->vertex_attribute.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetVertexAttribIiv", pname, "pname");
@@ -2058,8 +2138,12 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribIuiv(
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetVertexAttribIuiv", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+      c.params_shm_id, c.params_shm_offset, checked_size);
   GLuint* params = result ? result->GetData() : nullptr;
   if (!validators_->vertex_attribute.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetVertexAttribIuiv", pname, "pname");

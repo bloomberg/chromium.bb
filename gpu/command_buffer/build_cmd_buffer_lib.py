@@ -2940,9 +2940,13 @@ class GETnHandler(TypeHandler):
     LOCAL_SET_GL_ERROR_INVALID_ENUM(":%(func_name)s", pname, "pname");
     return error::kNoError;
   }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
   Result* result = GetSharedMemoryAs<Result*>(
       c.%(last_arg_name)s_shm_id, c.%(last_arg_name)s_shm_offset,
-      Result::ComputeSize(num_values));
+      checked_size);
   %(last_arg_type)s %(last_arg_name)s = result ? result->GetData() : nullptr;
 """
     f.write(code % {
