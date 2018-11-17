@@ -13,8 +13,8 @@ namespace CSSLonghand {
 const CSSValue* X::ParseSingleValue(CSSParserTokenRange& range,
                                     const CSSParserContext& context,
                                     const CSSParserLocalContext&) const {
-  return css_property_parser_helpers::ConsumeSVGGeometryPropertyLength(range,
-                                                                       context);
+  return css_property_parser_helpers::ConsumeSVGGeometryPropertyLength(
+      range, context, kValueRangeAll);
 }
 
 const CSSValue* X::CSSValueFromComputedStyleInternal(

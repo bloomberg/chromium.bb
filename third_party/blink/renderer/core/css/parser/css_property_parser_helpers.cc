@@ -433,10 +433,10 @@ bool IsNonZeroUserUnitsValue(const CSSPrimitiveValue* value) {
 
 CSSPrimitiveValue* ConsumeSVGGeometryPropertyLength(
     CSSParserTokenRange& range,
-    const CSSParserContext& context) {
-  // TODO(fs): Not all callers should be using kValueRangeAll.
+    const CSSParserContext& context,
+    ValueRange value_range) {
   CSSPrimitiveValue* value = ConsumeLengthOrPercent(
-      range, kSVGAttributeMode, kValueRangeAll, UnitlessQuirk::kForbid);
+      range, kSVGAttributeMode, value_range, UnitlessQuirk::kForbid);
   if (IsNonZeroUserUnitsValue(value))
     context.Count(WebFeature::kSVGGeometryPropertyHasNonZeroUnitlessValue);
   return value;
