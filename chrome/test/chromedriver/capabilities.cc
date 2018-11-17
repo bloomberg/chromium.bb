@@ -761,6 +761,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
 
   for (base::DictionaryValue::Iterator it(desired_caps); !it.IsAtEnd();
        it.Advance()) {
+    if (it.value().is_none())
+      continue;
     if (parser_map.find(it.key()) == parser_map.end()) {
       // The specified capability is unrecognized. W3C spec requires us to
       // return an error. In legacy mode, for backward compatibility reasons,
