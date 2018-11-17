@@ -57,7 +57,7 @@ function testMediaElement(t, element) {
 
   // Hovering over the mute button before preloading should not open the volume
   // slider.
-  hoverOverControl(muteBtn, t.step_func(() => {
+  hoverMuteButton(element, t.step_func(() => {
     assert_false(isVolumeSliderOpen(element), element.id + ': volume slider should not open before metadata load');
 
     // Move the cursor away from the mute button and start testing the loaded
@@ -72,7 +72,7 @@ function testMediaElement(t, element) {
 
     // Hovering over the mute button after preloading should open the volume
     // slider.
-    hoverOverControl(muteBtn, t.step_func(() => {
+    hoverMuteButton(element, t.step_func(() => {
       assert_true(isVolumeSliderOpen(element), element.id + ': volume slider should open when hovering the mute button');
 
       // Moving the cursor onto the volume slider should not hide the volume slider.
