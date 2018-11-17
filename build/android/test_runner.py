@@ -496,6 +496,9 @@ def AddJUnitTestOptions(parser):
   parser = parser.add_argument_group('junit arguments')
 
   parser.add_argument(
+      '--jacoco', action='store_true',
+      help='Generate jacoco report.')
+  parser.add_argument(
       '--coverage-dir', type=os.path.realpath,
       help='Directory to store coverage info.')
   parser.add_argument(
@@ -1015,6 +1018,10 @@ def main():
       args.enable_concurrent_adb):
     parser.error('--replace-system-package and --enable-concurrent-adb cannot '
                  'be used together')
+
+  if (getattr(args, 'jacoco', False) and
+      not getattr(args, 'coverage_dir', '')):
+    parser.error('--jacoco requires --coverage-dir')
 
   if (hasattr(args, 'debug_socket') or
       (hasattr(args, 'wait_for_java_debugger') and
