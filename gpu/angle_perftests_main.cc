@@ -17,16 +17,14 @@ int RunHelper(base::TestSuite* test_suite) {
 
 }  // namespace
 
-extern bool g_OnlyOneRunFrame;
+void ANGLEProcessPerfTestArgs(int *argc, char **argv);
 
 int main(int argc, char** argv) {
-  for (int i = 0; i < argc; ++i) {
-    if (strcmp("--one-frame-only", argv[i]) == 0) {
-      g_OnlyOneRunFrame = true;
-    }
-  }
-
+  // base::CommandLine::Init must be called before ANGLEProcessPerfTestArgs.
+  // See comment in angle_deqp_tests_main.cc.
   base::CommandLine::Init(argc, argv);
+  ANGLEProcessPerfTestArgs(&argc, argv);
+
   base::TestSuite test_suite(argc, argv);
   int rt = base::LaunchUnitTestsSerially(
       argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
