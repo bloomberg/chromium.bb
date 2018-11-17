@@ -238,16 +238,20 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
     // So, meanwhile, we set the link everytime we update the text.
     // TODO: fix the translation text, and main html.
     var learnMoreLink = label.querySelector(this.learnMoreLinkId_);
-    learnMoreLink.addEventListener(
-        'click', (event) => this.onLearnMoreLinkClicked(event));
-    learnMoreLink.addEventListener(
-        'keydown', (event) => this.suppressKeyDown(event));
+    if (learnMoreLink) {
+      learnMoreLink.addEventListener(
+          'click', (event) => this.onLearnMoreLinkClicked(event));
+      learnMoreLink.addEventListener(
+          'keydown', (event) => this.suppressKeyDown(event));
+    }
     // settings-link is used only in privacy section.
     var settingsLink = label.querySelector('#settings-link');
-    settingsLink.addEventListener(
-        'click', (event) => this.onPrivacySettingsLinkClicked(event));
-    settingsLink.addEventListener(
-        'keydown', (event) => this.suppressKeyDown(event));
+    if (settingsLink) {
+      settingsLink.addEventListener(
+          'click', (event) => this.onPrivacySettingsLinkClicked(event));
+      settingsLink.addEventListener(
+          'keydown', (event) => this.suppressKeyDown(event));
+    }
   }
 
   /** Called when "privacy settings" link is clicked. */
