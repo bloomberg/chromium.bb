@@ -189,6 +189,13 @@ cr.define('print_preview', function() {
       this.pdfPrinterEnabled_ = false;
 
       /**
+       * Whether to select the first printer that is found. Used when
+       * pdfPrinterEnabled_ is false.
+       * @private {boolean}
+       */
+      this.selectFirstDestination_ = false;
+
+      /**
        * ID of the system default destination.
        * @private {string}
        */
@@ -391,7 +398,7 @@ cr.define('print_preview', function() {
 
       if (this.systemDefaultDestinationId_.length == 0 &&
           !isRecentDestinationValid) {
-        this.selectPdfDestination_();
+        this.selectFinalFallbackDestination_();
         return;
       }
 
@@ -453,7 +460,7 @@ cr.define('print_preview', function() {
         return;
       }
 
-      this.selectPdfDestination_();
+      this.selectFinalFallbackDestination_();
     }
 
     /**
@@ -789,20 +796,37 @@ cr.define('print_preview', function() {
     }
 
     /**
-     * Selects 'Save to PDF' destination (since it always exists).
+     * Selects the Save as PDF fallback if it is available. If not, selects the
+     * first destination if it exists. If the store is empty, starts loading all
+     * printers to find one to select.
      * @private
      */
-    selectPdfDestination_() {
-      const saveToPdfKey = this.getDestinationKey_(
-          print_preview.DestinationOrigin.LOCAL,
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF, '');
-      this.selectDestination(
-          this.destinationMap_[saveToPdfKey] || this.destinations_[0] || null);
+    selectFinalFallbackDestination_() {
+      // Save as PDF should always exist if it is enabled.
+      if (this.pdfPrinterEnabled_) {
+        const saveToPdfKey = this.getDestinationKey_(
+            print_preview.DestinationOrigin.LOCAL,
+            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF, '');
+        this.selectDestination(assert(this.destinationMap_[saveToPdfKey]));
+        return;
+      }
+
+      // Try selecting the first destination if there is at least one
+      // destination already loaded.
+      if (this.destinations_.length > 0) {
+        this.selectDestination(this.destinations_[0]);
+        return;
+      }
+
+      // Load all destinations to find one to select.
+      this.selectFirstDestination_ = true;
+      this.startLoadAllDestinations();
     }
 
     /**
-     * Attempts to select system default destination with a fallback to
-     * 'Save to PDF' destination.
+     * Attempts to select system default destination with a fallback to the
+     * 'Save to PDF' destination and a final fallback to the first destination
+     * in the store.
      * @private
      */
     selectDefaultDestination_() {
@@ -818,7 +842,7 @@ cr.define('print_preview', function() {
           }
         }
       }
-      this.selectPdfDestination_();
+      this.selectFinalFallbackDestination_();
     }
 
     /**
@@ -1231,8 +1255,12 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintSearchDone_(event) {
-      if (event.printers) {
+      if (event.printers && event.printers.length > 0) {
         this.insertDestinations_(event.printers);
+        if (this.selectFirstDestination_) {
+          this.selectDestination(this.destinations_[0]);
+          this.selectFirstDestination_ = false;
+        }
       }
       if (event.searchDone) {
         const origins = this.loadedCloudOrigins_[event.user] || [];
@@ -1309,6 +1337,11 @@ cr.define('print_preview', function() {
       }
       this.insertDestinations_(printers.map(
           printer => print_preview.parseDestination(type, printer)));
+
+      if (this.selectFirstDestination_) {
+        this.selectDestination(this.destinations_[0]);
+        this.selectFirstDestination_ = false;
+      }
     }
 
     /**

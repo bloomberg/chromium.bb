@@ -11,6 +11,7 @@ cr.define('destination_select_test', function() {
         'multiple recent destinations one request',
     DefaultDestinationSelectionRules: 'default destination selection rules',
     SystemDefaultPrinterPolicy: 'system default printer policy',
+    KioskModeSelectsFirstPrinter: 'kiosk mode selects first printer',
   };
 
   const suiteName = 'DestinationSelectTests';
@@ -59,6 +60,23 @@ cr.define('destination_select_test', function() {
     }
 
     /**
+     * Checks that a printer is displayed to the user with the name given
+     * by |printerName|.
+     * @param {string} printerName The printer name that should be displayed.
+     */
+    function assertPrinterDisplay(printerName) {
+      const destinationSettings = page.$$('print-preview-destination-settings');
+
+      // Check that the throbber is hidden and the destination info is shown.
+      assertTrue(destinationSettings.$$('.throbber-container').hidden);
+      assertFalse(destinationSettings.$$('.destination-settings-box').hidden);
+
+      // Check that the destination matches the expected destination.
+      assertEquals(
+          printerName, destinationSettings.$$('.destination-name').textContent);
+    }
+
+    /**
      * Tests that if the user has a single valid recent destination the
      * destination is automatically reselected.
      */
@@ -74,6 +92,7 @@ cr.define('destination_select_test', function() {
         assertEquals('ID1', argsArray[1].destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
         assertEquals('ID1', page.destination_.id);
+        assertPrinterDisplay('One');
       });
     });
 
@@ -98,6 +117,7 @@ cr.define('destination_select_test', function() {
             assertEquals('ID1', argsArray[1].destinationId);
             assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
             assertEquals('ID1', page.destination_.id);
+            assertPrinterDisplay('One');
 
             // Load all local destinations.
             page.destinationStore_.startLoadDestinations(
@@ -175,6 +195,7 @@ cr.define('destination_select_test', function() {
         assertEquals('ID4', argsArray[1].destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
         assertEquals('ID4', page.destination_.id);
+        assertPrinterDisplay('Four');
       });
     });
 
@@ -202,6 +223,28 @@ cr.define('destination_select_test', function() {
         assertEquals('FooDevice', argsArray[1].destinationId);
         assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
         assertEquals('FooDevice', page.destination_.id);
+        assertPrinterDisplay('FooName');
+      });
+    });
+
+    /**
+     * Tests that if there is no system default destination, the default
+     * selection rules and recent destinations are empty, and the preview
+     * is in app kiosk mode (so no PDF printer), the first destination returned
+     * from printer fetch is selected.
+     */
+    test(assert(TestNames.KioskModeSelectsFirstPrinter), function() {
+      initialSettings.serializedDefaultDestinationSelectionRulesStr = '';
+      initialSettings.serializedAppStateStr = '';
+      initialSettings.isInAppKioskMode = true;
+      initialSettings.printerName = '';
+
+      return setInitialSettings().then(function(argsArray) {
+        // Should have loaded the first destination as the selected printer.
+        assertEquals(destinations[0].id, argsArray[1].destinationId);
+        assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
+        assertEquals(destinations[0].id, page.destination_.id);
+        assertPrinterDisplay(destinations[0].displayName);
       });
     });
   });
