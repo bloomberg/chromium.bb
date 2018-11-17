@@ -257,7 +257,7 @@ class MediaCasesStorySet(story.StorySet):
             url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
             page_set=self,
             tags=['vp9', 'opus', 'audio_video'],
-            traffic_setting=traffic_setting_module.REGULAR_3G),
+            traffic_setting=traffic_setting_module.WIFI),
         _BeginningToEndPlayPage(
             url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
             page_set=self,
