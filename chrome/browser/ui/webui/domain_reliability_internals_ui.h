@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace base {
@@ -22,8 +23,10 @@ class DomainReliabilityInternalsUI : public content::WebUIController {
   ~DomainReliabilityInternalsUI() override;
 
  private:
-  void UpdateData(const base::ListValue* args) const;
-  void OnDataUpdated(std::unique_ptr<base::Value> data) const;
+  void UpdateData(const base::ListValue* args);
+  void OnDataUpdated(base::Value data) const;
+
+  base::WeakPtrFactory<DomainReliabilityInternalsUI> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DomainReliabilityInternalsUI);
 };

@@ -8,10 +8,6 @@
 # Uncategorized timeouts or test failures.
 -RegisterProtocolHandlerBrowserTest.CustomHandler
 
-# Domain Reliability has yet to be hookup to the NetworkService.
-# https://crbug.com/853251
--DomainReliabilityBrowserTest.Upload
-
 # These tests use URLFetchers directly.
 # https://crbug.com/853798
 -ProfileBrowserTest.SeparateMediaCache

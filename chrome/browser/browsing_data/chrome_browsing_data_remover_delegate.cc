@@ -73,7 +73,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/device_event_log/device_event_log.h"
-#include "components/domain_reliability/service.h"
 #include "components/feed/content/feed_host_service.h"
 #include "components/feed/core/feed_scheduler_host.h"
 #include "components/history/core/browser/history_service.h"
@@ -273,6 +272,20 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
       webapp_registry_(new WebappRegistry()),
 #endif
       weak_ptr_factory_(this) {
+  domain_reliability_clearer_ = base::BindRepeating(
+      [](BrowserContext* browser_context,
+         const content::BrowsingDataFilterBuilder& filter_builder,
+         network::mojom::NetworkContext_DomainReliabilityClearMode mode,
+         network::mojom::NetworkContext::ClearDomainReliabilityCallback
+             callback) {
+        network::mojom::NetworkContext* network_context =
+            BrowserContext::GetDefaultStoragePartition(browser_context)
+                ->GetNetworkContext();
+        network_context->ClearDomainReliability(
+            filter_builder.BuildNetworkServiceFilter(), mode,
+            std::move(callback));
+      },
+      browser_context);
 }
 
 ChromeBrowsingDataRemoverDelegate::~ChromeBrowsingDataRemoverDelegate() {}
@@ -1067,23 +1080,18 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   }
 
   //////////////////////////////////////////////////////////////////////////////
-  // Domain reliability service.
+  // Domain reliability.
   if (remove_mask &
       (content::BrowsingDataRemover::DATA_TYPE_COOKIES | DATA_TYPE_HISTORY)) {
-    domain_reliability::DomainReliabilityService* service =
-      domain_reliability::DomainReliabilityServiceFactory::
-          GetForBrowserContext(profile_);
-    if (service) {
-      domain_reliability::DomainReliabilityClearMode mode;
-      if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES)
-        mode = domain_reliability::CLEAR_CONTEXTS;
-      else
-        mode = domain_reliability::CLEAR_BEACONS;
-
-      service->ClearBrowsingData(mode, nullable_filter,
-                                 base::AdaptCallbackForRepeating(
-                                     CreatePendingTaskCompletionClosure()));
-    }
+    network::mojom::NetworkContext_DomainReliabilityClearMode mode;
+    if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES)
+      mode = network::mojom::NetworkContext::DomainReliabilityClearMode::
+          CLEAR_CONTEXTS;
+    else
+      mode = network::mojom::NetworkContext::DomainReliabilityClearMode::
+          CLEAR_BEACONS;
+    domain_reliability_clearer_.Run(
+        filter_builder, mode, CreatePendingTaskCompletionClosureForMojo());
   }
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -1158,6 +1166,12 @@ void ChromeBrowsingDataRemoverDelegate::OverrideFlashLSOHelperForTesting(
   flash_lso_helper_ = flash_lso_helper;
 }
 #endif
+
+void ChromeBrowsingDataRemoverDelegate::
+    OverrideDomainReliabilityClearerForTesting(
+        DomainReliabilityClearer clearer) {
+  domain_reliability_clearer_ = std::move(clearer);
+}
 
 void ChromeBrowsingDataRemoverDelegate::OnKeywordsLoaded(
     base::RepeatingCallback<bool(const GURL&)> url_filter,

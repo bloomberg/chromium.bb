@@ -72,7 +72,6 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/domain_reliability/monitor.h"
-#include "components/domain_reliability/service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/feed/core/pref_names.h"
 #include "components/history/core/browser/history_service.h"
@@ -137,13 +136,8 @@
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 using content::BrowsingDataFilterBuilder;
-using domain_reliability::CLEAR_BEACONS;
-using domain_reliability::CLEAR_CONTEXTS;
 using domain_reliability::DomainReliabilityClearMode;
-using domain_reliability::DomainReliabilityKeyedServiceWrapper;
 using domain_reliability::DomainReliabilityMonitor;
-using domain_reliability::DomainReliabilityService;
-using domain_reliability::DomainReliabilityServiceFactory;
 using testing::_;
 using testing::ByRef;
 using testing::Eq;
@@ -489,100 +483,6 @@ class RemoveFaviconTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveFaviconTester);
 };
 
-class MockDomainReliabilityService : public DomainReliabilityService {
- public:
-  MockDomainReliabilityService() {}
-
-  ~MockDomainReliabilityService() override {}
-
-  std::unique_ptr<DomainReliabilityMonitor> CreateMonitor(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      const domain_reliability::DomainReliabilityContext::UploadAllowedCallback&
-          upload_allowed_callback) override {
-    NOTREACHED();
-    return std::unique_ptr<DomainReliabilityMonitor>();
-  }
-
-  void ClearBrowsingData(
-      DomainReliabilityClearMode clear_mode,
-      const base::Callback<bool(const GURL&)>& origin_filter,
-      const base::Closure& callback) override {
-    clear_count_++;
-    last_clear_mode_ = clear_mode;
-    last_filter_ = origin_filter;
-    callback.Run();
-  }
-
-  void GetWebUIData(const base::Callback<void(std::unique_ptr<base::Value>)>&
-                        callback) const override {
-    NOTREACHED();
-  }
-
-  void SetDiscardUploadsForTesting(bool discard_uploads) override {
-    NOTREACHED();
-  }
-
-  void AddContextForTesting(
-      std::unique_ptr<const domain_reliability::DomainReliabilityConfig> config)
-      override {
-    NOTREACHED();
-  }
-
-  void ForceUploadsForTesting() override { NOTREACHED(); }
-
-  int clear_count() const { return clear_count_; }
-
-  DomainReliabilityClearMode last_clear_mode() const {
-    return last_clear_mode_;
-  }
-
-  const base::Callback<bool(const GURL&)>& last_filter() const {
-    return last_filter_;
-  }
-
- private:
-  unsigned clear_count_ = 0;
-  DomainReliabilityClearMode last_clear_mode_;
-  base::Callback<bool(const GURL&)> last_filter_;
-};
-
-struct TestingDomainReliabilityServiceFactoryUserData
-    : public base::SupportsUserData::Data {
-  TestingDomainReliabilityServiceFactoryUserData(
-      content::BrowserContext* context,
-      MockDomainReliabilityService* service)
-      : context(context),
-        service(service),
-        attached(false) {}
-  ~TestingDomainReliabilityServiceFactoryUserData() override {}
-
-  content::BrowserContext* const context;
-  MockDomainReliabilityService* const service;
-  bool attached;
-
-  static const void* kKey;
-};
-
-// static
-const void* TestingDomainReliabilityServiceFactoryUserData::kKey =
-    &TestingDomainReliabilityServiceFactoryUserData::kKey;
-
-std::unique_ptr<KeyedService> TestingDomainReliabilityServiceFactoryFunction(
-    content::BrowserContext* context) {
-  const void* kKey = TestingDomainReliabilityServiceFactoryUserData::kKey;
-
-  TestingDomainReliabilityServiceFactoryUserData* data =
-      static_cast<TestingDomainReliabilityServiceFactoryUserData*>(
-          context->GetUserData(kKey));
-  EXPECT_TRUE(data);
-  EXPECT_EQ(data->context, context);
-  EXPECT_FALSE(data->attached);
-
-  data->attached = true;
-  return std::make_unique<DomainReliabilityKeyedServiceWrapper>(data->service);
-}
-
 std::unique_ptr<KeyedService> BuildProtocolHandlerRegistry(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
@@ -592,45 +492,41 @@ std::unique_ptr<KeyedService> BuildProtocolHandlerRegistry(
 
 class ClearDomainReliabilityTester {
  public:
-  explicit ClearDomainReliabilityTester(TestingProfile* profile)
-      : profile_(profile) {
-    AttachService();
+  explicit ClearDomainReliabilityTester(TestingProfile* profile) {
+    static_cast<ChromeBrowsingDataRemoverDelegate*>(
+        profile->GetBrowsingDataRemoverDelegate())
+        ->OverrideDomainReliabilityClearerForTesting(base::BindRepeating(
+            &ClearDomainReliabilityTester::Clear, base::Unretained(this)));
   }
 
-  unsigned clear_count() const { return mock_service_.clear_count(); }
+  unsigned clear_count() const { return clear_count_; }
 
-  DomainReliabilityClearMode last_clear_mode() const {
-    return mock_service_.last_clear_mode();
+  network::mojom::NetworkContext::DomainReliabilityClearMode last_clear_mode()
+      const {
+    return last_clear_mode_;
   }
 
   const base::Callback<bool(const GURL&)>& last_filter() const {
-    return mock_service_.last_filter();
+    return last_filter_;
   }
 
  private:
-  void AttachService() {
-    const void* kKey = TestingDomainReliabilityServiceFactoryUserData::kKey;
+  void Clear(
+      const content::BrowsingDataFilterBuilder& filter_builder,
+      network::mojom::NetworkContext_DomainReliabilityClearMode mode,
+      network::mojom::NetworkContext::ClearDomainReliabilityCallback callback) {
+    ++clear_count_;
+    last_clear_mode_ = mode;
+    std::move(callback).Run();
 
-    // Attach kludgey UserData struct to profile.
-    TestingDomainReliabilityServiceFactoryUserData* data =
-        new TestingDomainReliabilityServiceFactoryUserData(profile_,
-                                                           &mock_service_);
-    EXPECT_FALSE(profile_->GetUserData(kKey));
-    profile_->SetUserData(kKey, base::WrapUnique(data));
-
-    // Set and use factory that will attach service stuffed in kludgey struct.
-    DomainReliabilityServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-        profile_,
-        base::BindRepeating(&TestingDomainReliabilityServiceFactoryFunction));
-
-    // Verify and detach kludgey struct.
-    EXPECT_EQ(data, profile_->GetUserData(kKey));
-    EXPECT_TRUE(data->attached);
-    profile_->RemoveUserData(kKey);
+    last_filter_ = filter_builder.IsEmptyBlacklist()
+                       ? base::RepeatingCallback<bool(const GURL&)>()
+                       : filter_builder.BuildGeneralFilter();
   }
 
-  TestingProfile* profile_;
-  MockDomainReliabilityService mock_service_;
+  unsigned clear_count_ = 0;
+  network::mojom::NetworkContext::DomainReliabilityClearMode last_clear_mode_;
+  base::RepeatingCallback<bool(const GURL&)> last_filter_;
 };
 
 class RemovePasswordsTester {
@@ -1187,8 +1083,7 @@ class BrowsingDataRemoverTestingProfile : public TestingProfile {
 class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
  public:
   ChromeBrowsingDataRemoverDelegateTest()
-      : profile_(new BrowsingDataRemoverTestingProfile()),
-        clear_domain_reliability_tester_(profile_.get()) {
+      : profile_(new BrowsingDataRemoverTestingProfile()) {
     remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_.get());
 
     ProtocolHandlerRegistryFactory::GetInstance()->SetTestingFactory(
@@ -1275,10 +1170,6 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     return profile_.get();
   }
 
-  const ClearDomainReliabilityTester& clear_domain_reliability_tester() {
-    return clear_domain_reliability_tester_;
-  }
-
   bool Match(const GURL& origin,
              int mask,
              storage::SpecialStoragePolicy* policy) {
@@ -1291,9 +1182,6 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
-
-  // Needed to mock out DomainReliabilityService, even for unrelated tests.
-  ClearDomainReliabilityTester clear_domain_reliability_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowsingDataRemoverDelegateTest);
 };
@@ -1781,21 +1669,21 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 #endif
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_Null) {
-  const ClearDomainReliabilityTester& tester =
-      clear_domain_reliability_tester();
+  ClearDomainReliabilityTester tester(GetProfile());
 
   EXPECT_EQ(0u, tester.clear_count());
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_Beacons) {
-  const ClearDomainReliabilityTester& tester =
-      clear_domain_reliability_tester();
+  ClearDomainReliabilityTester tester(GetProfile());
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
   EXPECT_EQ(1u, tester.clear_count());
-  EXPECT_EQ(CLEAR_BEACONS, tester.last_clear_mode());
+  EXPECT_EQ(
+      network::mojom::NetworkContext::DomainReliabilityClearMode::CLEAR_BEACONS,
+      tester.last_clear_mode());
   EXPECT_TRUE(tester.last_filter().is_null());
 }
 
@@ -1803,8 +1691,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_Beacons) {
 // a filterable datatype.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        DISABLED_DomainReliability_Beacons_WithFilter) {
-  const ClearDomainReliabilityTester& tester =
-      clear_domain_reliability_tester();
+  ClearDomainReliabilityTester tester(GetProfile());
 
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
@@ -1814,27 +1701,29 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, builder->Copy());
   EXPECT_EQ(1u, tester.clear_count());
-  EXPECT_EQ(CLEAR_BEACONS, tester.last_clear_mode());
+  EXPECT_EQ(
+      network::mojom::NetworkContext::DomainReliabilityClearMode::CLEAR_BEACONS,
+      tester.last_clear_mode());
   EXPECT_TRUE(ProbablySameFilters(
       builder->BuildGeneralFilter(), tester.last_filter()));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_Contexts) {
-  const ClearDomainReliabilityTester& tester =
-      clear_domain_reliability_tester();
+  ClearDomainReliabilityTester tester(GetProfile());
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 content::BrowsingDataRemover::DATA_TYPE_COOKIES,
                                 false);
   EXPECT_EQ(1u, tester.clear_count());
-  EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
+  EXPECT_EQ(network::mojom::NetworkContext::DomainReliabilityClearMode::
+                CLEAR_CONTEXTS,
+            tester.last_clear_mode());
   EXPECT_TRUE(tester.last_filter().is_null());
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        DomainReliability_Contexts_WithFilter) {
-  const ClearDomainReliabilityTester& tester =
-      clear_domain_reliability_tester();
+  ClearDomainReliabilityTester tester(GetProfile());
 
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
@@ -1844,14 +1733,15 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
                               content::BrowsingDataRemover::DATA_TYPE_COOKIES,
                               builder->Copy());
   EXPECT_EQ(1u, tester.clear_count());
-  EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
+  EXPECT_EQ(network::mojom::NetworkContext::DomainReliabilityClearMode::
+                CLEAR_CONTEXTS,
+            tester.last_clear_mode());
   EXPECT_TRUE(ProbablySameFilters(
       builder->BuildGeneralFilter(), tester.last_filter()));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_ContextsWin) {
-  const ClearDomainReliabilityTester& tester =
-      clear_domain_reliability_tester();
+  ClearDomainReliabilityTester tester(GetProfile());
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -1859,19 +1749,22 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DomainReliability_ContextsWin) {
           content::BrowsingDataRemover::DATA_TYPE_COOKIES,
       false);
   EXPECT_EQ(1u, tester.clear_count());
-  EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
+  EXPECT_EQ(network::mojom::NetworkContext::DomainReliabilityClearMode::
+                CLEAR_CONTEXTS,
+            tester.last_clear_mode());
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        DomainReliability_ProtectedOrigins) {
-  const ClearDomainReliabilityTester& tester =
-      clear_domain_reliability_tester();
+  ClearDomainReliabilityTester tester(GetProfile());
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
                                 content::BrowsingDataRemover::DATA_TYPE_COOKIES,
                                 true);
   EXPECT_EQ(1u, tester.clear_count());
-  EXPECT_EQ(CLEAR_CONTEXTS, tester.last_clear_mode());
+  EXPECT_EQ(network::mojom::NetworkContext::DomainReliabilityClearMode::
+                CLEAR_CONTEXTS,
+            tester.last_clear_mode());
 }
 
 // TODO(juliatuttle): This isn't actually testing the no-monitor case, since

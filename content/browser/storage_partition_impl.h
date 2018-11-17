@@ -157,6 +157,9 @@ class CONTENT_EXPORT StoragePartitionImpl
   void OnCanSendReportingReports(
       const std::vector<url::Origin>& origins,
       OnCanSendReportingReportsCallback callback) override;
+  void OnCanSendDomainReliabilityUpload(
+      const GURL& origin,
+      OnCanSendDomainReliabilityUploadCallback callback) override;
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter() {
     return url_loader_factory_getter_;

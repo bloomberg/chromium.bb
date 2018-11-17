@@ -48,7 +48,6 @@
 #include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
-#include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -104,8 +103,6 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/domain_reliability/monitor.h"
-#include "components/domain_reliability/service.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/language/core/browser/pref_names.h"
@@ -327,31 +324,6 @@ std::unique_ptr<service_manager::Service> CreateAppService(Profile* profile) {
   return std::make_unique<apps::AppService>();
 }
 #endif
-
-void CheckDomainReliablityUploadAllowedOnUIThread(
-    Profile* profile,
-    const GURL& origin,
-    base::OnceCallback<void(bool)> callback) {
-  // Profile is safe since ProfileImpl always outlives IO thread.
-  content::PermissionController* permission_controller =
-      content::BrowserContext::GetPermissionController(profile);
-  DCHECK(permission_controller);
-  bool allowed = permission_controller->GetPermissionStatus(
-                     content::PermissionType::BACKGROUND_SYNC, origin,
-                     origin) == blink::mojom::PermissionStatus::GRANTED;
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(std::move(callback), allowed));
-}
-
-void CheckDomainReliablityUploadAllowedOnIOThread(
-    Profile* profile,
-    const GURL& origin,
-    base::OnceCallback<void(bool)> callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(CheckDomainReliablityUploadAllowedOnUIThread, profile,
-                     origin, std::move(callback)));
-}
 
 }  // namespace
 
@@ -698,11 +670,9 @@ void ProfileImpl::DoFinalInit() {
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
-  PrefService* local_state = g_browser_process->local_state();
   io_data_.Init(media_cache_path, media_cache_max_size, extensions_cookie_path,
                 GetPath(), GetSpecialStoragePolicy(),
-                reporting_permissions_checker_factory_.CreateChecker(),
-                CreateDomainReliabilityMonitor(local_state));
+                reporting_permissions_checker_factory_.CreateChecker());
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
@@ -1491,20 +1461,6 @@ void ProfileImpl::GetMediaCacheParameters(base::FilePath* cache_path,
     *cache_path = path.Append(cache_path->BaseName());
 
   *max_size = prefs_->GetInteger(prefs::kMediaCacheSize);
-}
-
-std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
-ProfileImpl::CreateDomainReliabilityMonitor(PrefService* local_state) {
-  domain_reliability::DomainReliabilityService* service =
-      domain_reliability::DomainReliabilityServiceFactory::GetInstance()
-          ->GetForBrowserContext(this);
-  if (!service)
-    return std::unique_ptr<domain_reliability::DomainReliabilityMonitor>();
-
-  return service->CreateMonitor(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-      base::BindRepeating(CheckDomainReliablityUploadAllowedOnIOThread, this));
 }
 
 std::unique_ptr<service_manager::Service> ProfileImpl::CreateIdentityService() {

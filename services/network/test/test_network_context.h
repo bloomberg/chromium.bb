@@ -71,6 +71,12 @@ class TestNetworkContext : public mojom::NetworkContext {
   void ClearNetworkErrorLogging(
       mojom::ClearDataFilterPtr filter,
       ClearNetworkErrorLoggingCallback callback) override {}
+  void ClearDomainReliability(
+      mojom::ClearDataFilterPtr filter,
+      DomainReliabilityClearMode mode,
+      ClearDomainReliabilityCallback callback) override {}
+  void GetDomainReliabilityJSON(
+      GetDomainReliabilityJSONCallback callback) override {}
   void QueueReport(const std::string& type,
                    const std::string& group,
                    const GURL& url,
@@ -182,7 +188,6 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::P2PSocketManagerRequest socket_manager_request) override {}
   void CreateMdnsResponder(
       mojom::MdnsResponderRequest responder_request) override {}
-
   void ResetURLLoaderFactories() override {}
   void ForceReloadProxyConfig(
       ForceReloadProxyConfigCallback callback) override {}
@@ -190,6 +195,12 @@ class TestNetworkContext : public mojom::NetworkContext {
   void DeleteDynamicDataForHost(
       const std::string& host,
       DeleteDynamicDataForHostCallback callback) override {}
+  void AddDomainReliabilityContextForTesting(
+      const GURL& origin,
+      const GURL& upload_url,
+      AddDomainReliabilityContextForTestingCallback callback) override {}
+  void ForceDomainReliabilityUploadsForTesting(
+      ForceDomainReliabilityUploadsForTestingCallback callback) override {}
 };
 
 }  // namespace network

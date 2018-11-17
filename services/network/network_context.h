@@ -64,6 +64,10 @@ class ChromeRequireCTDelegate;
 class TreeStateTracker;
 }  // namespace certificate_transparency
 
+namespace domain_reliability {
+class DomainReliabilityMonitor;
+}  // namespace domain_reliability
+
 namespace network {
 class CertVerifierWithTrustAnchors;
 class CookieManager;
@@ -194,6 +198,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ClearNetworkErrorLogging(
       mojom::ClearDataFilterPtr filter,
       ClearNetworkErrorLoggingCallback callback) override;
+  void ClearDomainReliability(mojom::ClearDataFilterPtr filter,
+                              DomainReliabilityClearMode mode,
+                              ClearDomainReliabilityCallback callback) override;
+  void GetDomainReliabilityJSON(
+      GetDomainReliabilityJSONCallback callback) override;
   void CloseAllConnections(CloseAllConnectionsCallback callback) override;
   void CloseIdleConnections(CloseIdleConnectionsCallback callback) override;
   void SetNetworkConditions(const base::UnguessableToken& throttling_profile_id,
@@ -305,13 +314,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::P2PSocketManagerRequest socket_manager_request) override;
   void CreateMdnsResponder(
       mojom::MdnsResponderRequest responder_request) override;
-
   void ResetURLLoaderFactories() override;
   void QueueReport(const std::string& type,
                    const std::string& group,
                    const GURL& url,
                    const base::Optional<std::string>& user_agent,
                    base::Value body) override;
+  void AddDomainReliabilityContextForTesting(
+      const GURL& origin,
+      const GURL& upload_url,
+      AddDomainReliabilityContextForTestingCallback callback) override;
+  void ForceDomainReliabilityUploadsForTesting(
+      ForceDomainReliabilityUploadsForTestingCallback callback) override;
 
   // Destroys |request| when a proxy lookup completes.
   void OnProxyLookupComplete(ProxyLookupRequest* proxy_lookup_request);
@@ -378,6 +392,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   GURL GetHSTSRedirect(const GURL& original_url);
 
   void DestroySocketManager(P2PSocketManager* socket_manager);
+
+  void CanUploadDomainReliability(const GURL& origin,
+                                  base::OnceCallback<void(bool)> callback);
 
   void OnCertVerifyForSignedExchangeComplete(int cert_verify_id, int result);
 
@@ -522,6 +539,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::unique_ptr<NetworkQualitiesPrefDelegate>
       network_qualities_pref_delegate_;
+
+  std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
+      domain_reliability_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

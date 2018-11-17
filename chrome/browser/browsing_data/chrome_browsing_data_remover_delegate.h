@@ -25,6 +25,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/pepper_flash_settings_manager.h"
@@ -181,6 +182,13 @@ class ChromeBrowsingDataRemoverDelegate
       scoped_refptr<BrowsingDataFlashLSOHelper> flash_lso_helper);
 #endif
 
+  using DomainReliabilityClearer = base::RepeatingCallback<void(
+      const content::BrowsingDataFilterBuilder& filter_builder,
+      network::mojom::NetworkContext_DomainReliabilityClearMode,
+      network::mojom::NetworkContext::ClearDomainReliabilityCallback)>;
+  void OverrideDomainReliabilityClearerForTesting(
+      DomainReliabilityClearer clearer);
+
  private:
   using WebRtcEventLogManager = webrtc_event_logging::WebRtcEventLogManager;
 
@@ -206,7 +214,7 @@ class ChromeBrowsingDataRemoverDelegate
   // A helper method that checks if time period is for "all time".
   bool IsForAllTime() const;
 
-#if defined (OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   void OnClearPlatformKeys(base::OnceClosure done, base::Optional<bool> result);
 #endif
 
@@ -257,6 +265,8 @@ class ChromeBrowsingDataRemoverDelegate
   // Used to deauthorize content licenses for Pepper Flash.
   std::unique_ptr<PepperFlashSettingsManager> pepper_flash_settings_manager_;
 #endif
+
+  DomainReliabilityClearer domain_reliability_clearer_;
 
   // Used if we need to clear history.
   base::CancelableTaskTracker history_task_tracker_;

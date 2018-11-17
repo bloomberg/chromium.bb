@@ -55,10 +55,6 @@ namespace data_reduction_proxy {
 class DataReductionProxyIOData;
 }
 
-namespace domain_reliability {
-class DomainReliabilityMonitor;
-}
-
 namespace extensions {
 class InfoMap;
 }
@@ -126,7 +122,7 @@ class ProfileIOData {
 
   // Initializes the ProfileIOData object and primes the RequestContext
   // generation. Must be called prior to any of the Get*() methods other than
-  // GetResouceContext or GetMetricsEnabledStateOnIOThread.
+  // GetResouceContext.
   void Init(
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) const;
@@ -222,15 +218,6 @@ class ProfileIOData {
     return &account_consistency_mirror_required_pref_;
   }
 #endif
-
-  // Initialize the member needed to track the metrics enabled state. This is
-  // only to be called on the UI thread.
-  void InitializeMetricsEnabledStateOnUIThread();
-
-  // Returns whether or not metrics reporting is enabled in the browser instance
-  // on which this profile resides. This is safe for use from the IO thread, and
-  // should only be called from there.
-  bool GetMetricsEnabledStateOnIOThread() const;
 
   void set_client_cert_store_factory_for_testing(
       const base::Callback<std::unique_ptr<net::ClientCertStore>()>& factory) {
@@ -555,8 +542,6 @@ class ProfileIOData {
   mutable BooleanPrefMember account_consistency_mirror_required_pref_;
 #endif
 
-  BooleanPrefMember enable_metrics_;
-
   // Pointed to by URLRequestContext.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   mutable scoped_refptr<extensions::InfoMap> extension_info_map_;
@@ -595,9 +580,6 @@ class ProfileIOData {
   // Owned (possibly with one or more layers of LayeredNetworkDelegate) by the
   // URLRequestContext, which is owned by the |main_network_context_|.
   mutable ChromeNetworkDelegate* chrome_network_delegate_unowned_;
-  // Owned by |chrome_network_delegate_unowned_|.
-  mutable domain_reliability::DomainReliabilityMonitor*
-      domain_reliability_monitor_unowned_;
 
   const Profile::ProfileType profile_type_;
 

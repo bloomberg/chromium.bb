@@ -241,7 +241,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   NotifierStateTrackerFactory::GetInstance();
   data_use_measurement::ChromeDataUseAscriberServiceFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
-  domain_reliability::DomainReliabilityServiceFactory::GetInstance();
   DownloadCoreServiceFactory::GetInstance();
   DownloadServiceFactory::GetInstance();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
