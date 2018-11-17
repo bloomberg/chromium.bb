@@ -38,6 +38,8 @@ const DomCode writing_system_key_domcodes[] = {
 const size_t kWritingSystemKeyDomCodeEntries =
     base::size(writing_system_key_domcodes);
 
+const uint32_t kHankakuZenkakuPlaceholder = 0x89d2;
+
 // Mapping from Unicode combining characters to corresponding printable
 // character.
 const static struct {
@@ -81,9 +83,16 @@ base::flat_map<std::string, std::string> DomKeyboardLayout::GetMap() {
       continue;
 
     std::string key_str;
-    size_t len = base::WriteUnicodeCharacter(unicode, &key_str);
-    if (len == 0)
-      continue;
+    // Special handling for the Japanese BACKQUOTE, which is an IME key used
+    // to switch between half-width and full-width mode.
+    if (unicode == kHankakuZenkakuPlaceholder) {
+      // 半角/全角 = hankaku/zenkaku = halfwidth/fullwidth
+      key_str = "\u534a\u89d2/\u5168\u89d2";
+    } else {
+      size_t len = base::WriteUnicodeCharacter(unicode, &key_str);
+      if (len == 0)
+        continue;
+    }
     dom_map.emplace(KeycodeConverter::DomCodeToCodeString(dom_code), key_str);
   }
   return dom_map;
@@ -91,8 +100,7 @@ base::flat_map<std::string, std::string> DomKeyboardLayout::GetMap() {
 
 bool DomKeyboardLayout::IsAsciiCapable() {
   uint16_t uniA = layout_[DomCode::US_A];
-  uint16_t uniBackquote = layout_[DomCode::BACKQUOTE];
-  return uniA >= 'a' && uniA <= 'z' && uniBackquote != 0;
+  return uniA >= 'a' && uniA <= 'z';
 }
 
 }  // namespace ui
