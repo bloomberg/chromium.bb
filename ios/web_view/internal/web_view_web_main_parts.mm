@@ -52,10 +52,18 @@ void WebViewWebMainParts::PreCreateThreads() {
        switches::kSyncSupportSecondaryAccount.name,
        switches::kSyncUSSAutofillWalletData.name},
       ",");
+  std::string disabled_features = base::JoinString(
+      {// TODO(crbug.com/873790): Remove after supporting user consents.
+       switches::kSyncUserConsentSeparateType.name,
+       // Allows form_structure.cc to run heuristics on single field forms.
+       // This is needed to find autofillable password forms with less than 3
+       // fields in CWVAutofillControllerDelegate's
+       // |autofillController:didScanForAutofillableForms:| method.
+       autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics.name},
+      ",");
   feature_list->InitializeFromCommandLine(
       /*enable_features=*/enable_features,
-      // TODO(crbug.com/873790): Figure out if USER_CONSENTS need to be enabled.
-      /*disable_features=*/switches::kSyncUserConsentSeparateType.name);
+      /*disable_features=*/disabled_features);
   base::FeatureList::SetInstance(std::move(feature_list));
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 }

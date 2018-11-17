@@ -47,8 +47,9 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision) {
 // Called to notify of all autofillable forms in the document after page load.
 // Autofillable forms are any form that has the potential to be autofilled
 // using a CWVAutofillSuggestion, regardless if any such suggestions exist yet.
+// Note that |forms| may be empty, indicating no forms were found.
 - (void)autofillController:(CWVAutofillController*)autofillController
-    didFindAutofillableForms:(NSArray<CWVAutofillForm*>*)forms;
+    didScanForAutofillableForms:(NSArray<CWVAutofillForm*>*)forms;
 
 // Called when a form field element receives a "focus" event.
 - (void)autofillController:(CWVAutofillController*)autofillController
