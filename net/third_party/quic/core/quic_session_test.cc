@@ -202,6 +202,8 @@ class TestSession : public QuicSession {
     return consumed;
   }
 
+  MOCK_METHOD0(OnCanCreateNewOutgoingStream, void());
+
   void set_writev_consumes_all_data(bool val) {
     writev_consumes_all_data_ = val;
   }
@@ -800,6 +802,11 @@ TEST_P(QuicSessionTestServer, SendGoAway) {
 }
 
 TEST_P(QuicSessionTestServer, DoNotSendGoAwayTwice) {
+  if (transport_version() == QUIC_VERSION_99) {
+    // TODO(b/118808809): Enable this test for version 99 when GOAWAY is
+    // supported.
+    return;
+  }
   EXPECT_CALL(*connection_, SendControlFrame(_))
       .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
   session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
@@ -808,6 +815,11 @@ TEST_P(QuicSessionTestServer, DoNotSendGoAwayTwice) {
 }
 
 TEST_P(QuicSessionTestServer, InvalidGoAway) {
+  if (transport_version() == QUIC_VERSION_99) {
+    // TODO(b/118808809): Enable this test for version 99 when GOAWAY is
+    // supported.
+    return;
+  }
   QuicGoAwayFrame go_away(kInvalidControlFrameId, QUIC_PEER_GOING_AWAY,
                           session_.next_outgoing_stream_id(), "");
   session_.OnGoAway(go_away);
@@ -1224,6 +1236,18 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseServerRejectStream) {
   }
 }
 
+TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpenedOutgoing) {
+  // Verify that a draining stream (which has received a FIN but not consumed
+  // it) does not count against the open quota (because it is closed from the
+  // protocol point of view).
+  TestStream* stream = session_.CreateOutgoingBidirectionalStream();
+  QuicStreamId stream_id = stream->id();
+  QuicStreamFrame data1(stream_id, true, 0, QuicStringPiece("HT"));
+  session_.OnStreamFrame(data1);
+  EXPECT_CALL(session_, OnCanCreateNewOutgoingStream()).Times(1);
+  session_.StreamDraining(stream_id);
+}
+
 TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpened) {
   // Verify that a draining stream (which has received a FIN but not consumed
   // it) does not count against the open quota (because it is closed from the
@@ -1357,6 +1381,22 @@ TEST_P(QuicSessionTestServer, ZombieStreams) {
   EXPECT_FALSE(QuicContainsKey(session_.zombie_streams(), stream2->id()));
   EXPECT_EQ(1u, session_.closed_streams()->size());
   EXPECT_EQ(stream2->id(), session_.closed_streams()->front()->id());
+}
+
+TEST_P(QuicSessionTestServer, RstStreamReceivedAfterRstStreamSent) {
+  TestStream* stream2 = session_.CreateOutgoingBidirectionalStream();
+  QuicStreamPeer::SetStreamBytesWritten(3, stream2);
+  EXPECT_TRUE(stream2->IsWaitingForAcks());
+
+  EXPECT_CALL(*connection_, SendControlFrame(_));
+  EXPECT_CALL(*connection_, OnStreamReset(stream2->id(), _));
+  EXPECT_CALL(session_, OnCanCreateNewOutgoingStream()).Times(0);
+  stream2->Reset(quic::QUIC_STREAM_CANCELLED);
+
+  QuicRstStreamFrame rst1(kInvalidControlFrameId, stream2->id(),
+                          QUIC_ERROR_PROCESSING_STREAM, 0);
+  EXPECT_CALL(session_, OnCanCreateNewOutgoingStream()).Times(1);
+  session_.OnRstStream(rst1);
 }
 
 // Regression test of b/71548958.

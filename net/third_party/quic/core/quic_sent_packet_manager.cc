@@ -266,6 +266,8 @@ void QuicSentPacketManager::PostProcessAfterMarkingPacketHandled(
     bool rtt_updated,
     QuicByteCount prior_bytes_in_flight) {
   if (aggregate_acked_stream_frames_ && session_decides_what_to_write()) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_aggregate_acked_stream_frames_2,
+                      1, 2);
     unacked_packets_.NotifyAggregatedStreamFrameAcked(
         last_ack_frame_.ack_delay_time);
   }
@@ -556,6 +558,8 @@ void QuicSentPacketManager::MarkPacketHandled(QuicPacketNumber packet_number,
       unacked_packets_.MaybeAggregateAckedStreamFrame(*info, ack_delay_time);
     } else {
       if (aggregate_acked_stream_frames_ && session_decides_what_to_write()) {
+        QUIC_FLAG_COUNT_N(
+            quic_reloadable_flag_quic_aggregate_acked_stream_frames_2, 2, 2);
         unacked_packets_.NotifyAggregatedStreamFrameAcked(ack_delay_time);
       }
       const bool new_data_acked =

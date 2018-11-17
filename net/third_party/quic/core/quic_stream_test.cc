@@ -8,6 +8,7 @@
 
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/core/quic_versions.h"
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
@@ -64,17 +65,18 @@ class TestStream : public QuicStream {
   QuicString data_;
 };
 
-class QuicStreamTest : public QuicTestWithParam<bool> {
+class QuicStreamTestBase : public QuicTestWithParam<ParsedQuicVersion> {
  public:
-  QuicStreamTest()
+  QuicStreamTestBase()
       : initial_flow_control_window_bytes_(kMaxPacketSize),
         zero_(QuicTime::Delta::Zero()),
         supported_versions_(AllSupportedVersions()) {}
 
   void Initialize() {
+    ParsedQuicVersionVector version_vector;
+    version_vector.push_back(GetParam());
     connection_ = new StrictMock<MockQuicConnection>(
-        &helper_, &alarm_factory_, Perspective::IS_SERVER,
-        ParsedVersionOfIndex(supported_versions_, 0));
+        &helper_, &alarm_factory_, Perspective::IS_SERVER, version_vector);
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
     session_ = QuicMakeUnique<StrictMock<MockQuicSession>>(connection_);
 
@@ -84,6 +86,7 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
         session_->config(), initial_flow_control_window_bytes_);
 
     stream_ = new TestStream(kTestStreamId, session_.get(), BIDIRECTIONAL);
+    EXPECT_NE(nullptr, stream_);
     // session_ now owns stream_.
     session_->ActivateStream(QuicWrapUnique(stream_));
     // Ignore resetting when session_ is terminated.
@@ -130,12 +133,28 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
   QuicTime::Delta zero_;
   ParsedQuicVersionVector supported_versions_;
   const QuicStreamId kTestStreamId =
-      QuicUtils::GetHeadersStreamId(
-          AllSupportedVersions()[0].transport_version) +
-      2;
+      QuicUtils::GetHeadersStreamId(GetParam().transport_version) + 2;
 };
 
-TEST_F(QuicStreamTest, WriteAllData) {
+// Non parameterized QuicStreamTest used for tests that do not
+// have any dependencies on the quic version.
+class QuicStreamTest : public QuicStreamTestBase {};
+
+// Index value of 1 has the test run with supported-version[1], which is some
+// version OTHER than 99.
+INSTANTIATE_TEST_CASE_P(
+    QuicStreamTests,
+    QuicStreamTest,
+    ::testing::ValuesIn(ParsedVersionOfIndex(AllSupportedVersions(), 1)));
+
+// Make a parameterized version of the QuicStreamTest for those tests
+// that need to differentiate based on version number.
+class QuicParameterizedStreamTest : public QuicStreamTestBase {};
+INSTANTIATE_TEST_CASE_P(QuicParameterizedStreamTests,
+                        QuicParameterizedStreamTest,
+                        ::testing::ValuesIn(AllSupportedVersions()));
+
+TEST_P(QuicStreamTest, WriteAllData) {
   Initialize();
 
   size_t length =
@@ -151,7 +170,7 @@ TEST_F(QuicStreamTest, WriteAllData) {
   EXPECT_FALSE(HasWriteBlockedStreams());
 }
 
-TEST_F(QuicStreamTest, NoBlockingIfNoDataOrFin) {
+TEST_P(QuicStreamTest, NoBlockingIfNoDataOrFin) {
   Initialize();
 
   // Write no data and no fin.  If we consume nothing we should not be write
@@ -161,7 +180,7 @@ TEST_F(QuicStreamTest, NoBlockingIfNoDataOrFin) {
   EXPECT_FALSE(HasWriteBlockedStreams());
 }
 
-TEST_F(QuicStreamTest, BlockIfOnlySomeDataConsumed) {
+TEST_P(QuicStreamTest, BlockIfOnlySomeDataConsumed) {
   Initialize();
 
   // Write some data and no fin.  If we consume some but not all of the data,
@@ -176,7 +195,7 @@ TEST_F(QuicStreamTest, BlockIfOnlySomeDataConsumed) {
   EXPECT_EQ(1u, stream_->BufferedDataBytes());
 }
 
-TEST_F(QuicStreamTest, BlockIfFinNotConsumedWithData) {
+TEST_P(QuicStreamTest, BlockIfFinNotConsumedWithData) {
   Initialize();
 
   // Write some data and no fin.  If we consume all the data but not the fin,
@@ -192,7 +211,7 @@ TEST_F(QuicStreamTest, BlockIfFinNotConsumedWithData) {
   ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
 }
 
-TEST_F(QuicStreamTest, BlockIfSoloFinNotConsumed) {
+TEST_P(QuicStreamTest, BlockIfSoloFinNotConsumed) {
   Initialize();
 
   // Write no data and a fin.  If we consume nothing we should be write blocked,
@@ -203,7 +222,7 @@ TEST_F(QuicStreamTest, BlockIfSoloFinNotConsumed) {
   ASSERT_EQ(1u, write_blocked_list_->NumBlockedStreams());
 }
 
-TEST_F(QuicStreamTest, CloseOnPartialWrite) {
+TEST_P(QuicStreamTest, CloseOnPartialWrite) {
   Initialize();
 
   // Write some data and no fin. However, while writing the data
@@ -215,7 +234,7 @@ TEST_F(QuicStreamTest, CloseOnPartialWrite) {
   ASSERT_EQ(0u, write_blocked_list_->NumBlockedStreams());
 }
 
-TEST_F(QuicStreamTest, WriteOrBufferData) {
+TEST_P(QuicStreamTest, WriteOrBufferData) {
   Initialize();
 
   EXPECT_FALSE(HasWriteBlockedStreams());
@@ -256,7 +275,7 @@ TEST_F(QuicStreamTest, WriteOrBufferData) {
   stream_->OnCanWrite();
 }
 
-TEST_F(QuicStreamTest, WriteOrBufferDataReachStreamLimit) {
+TEST_P(QuicStreamTest, WriteOrBufferDataReachStreamLimit) {
   Initialize();
   QuicString data("aaaaa");
   QuicStreamPeer::SetStreamBytesWritten(kMaxStreamLength - data.length(),
@@ -269,7 +288,7 @@ TEST_F(QuicStreamTest, WriteOrBufferDataReachStreamLimit) {
                   "Write too many data via stream");
 }
 
-TEST_F(QuicStreamTest, ConnectionCloseAfterStreamClose) {
+TEST_P(QuicStreamTest, ConnectionCloseAfterStreamClose) {
   Initialize();
 
   QuicStreamPeer::CloseReadSide(stream_);
@@ -282,7 +301,7 @@ TEST_F(QuicStreamTest, ConnectionCloseAfterStreamClose) {
   EXPECT_EQ(QUIC_NO_ERROR, stream_->connection_error());
 }
 
-TEST_F(QuicStreamTest, RstAlwaysSentIfNoFinSent) {
+TEST_P(QuicStreamTest, RstAlwaysSentIfNoFinSent) {
   // For flow control accounting, a stream must send either a FIN or a RST frame
   // before termination.
   // Test that if no FIN has been sent, we send a RST.
@@ -308,7 +327,7 @@ TEST_F(QuicStreamTest, RstAlwaysSentIfNoFinSent) {
   EXPECT_TRUE(rst_sent());
 }
 
-TEST_F(QuicStreamTest, RstNotSentIfFinSent) {
+TEST_P(QuicStreamTest, RstNotSentIfFinSent) {
   // For flow control accounting, a stream must send either a FIN or a RST frame
   // before termination.
   // Test that if a FIN has been sent, we don't also send a RST.
@@ -333,7 +352,7 @@ TEST_F(QuicStreamTest, RstNotSentIfFinSent) {
   EXPECT_FALSE(rst_sent());
 }
 
-TEST_F(QuicStreamTest, OnlySendOneRst) {
+TEST_P(QuicStreamTest, OnlySendOneRst) {
   // For flow control accounting, a stream must send either a FIN or a RST frame
   // before termination.
   // Test that if a stream sends a RST, it doesn't send an additional RST during
@@ -357,7 +376,7 @@ TEST_F(QuicStreamTest, OnlySendOneRst) {
   EXPECT_TRUE(rst_sent());
 }
 
-TEST_F(QuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
+TEST_P(QuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
   set_initial_flow_control_window_bytes(1000);
 
   Initialize();
@@ -394,7 +413,7 @@ TEST_F(QuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
       QuicFlowControllerPeer::SendWindowOffset(stream_->flow_controller()));
 }
 
-TEST_F(QuicStreamTest, FrameStats) {
+TEST_P(QuicStreamTest, FrameStats) {
   Initialize();
 
   EXPECT_EQ(0, stream_->num_frames_received());
@@ -411,7 +430,7 @@ TEST_F(QuicStreamTest, FrameStats) {
 // Verify that when we receive a packet which violates flow control (i.e. sends
 // too much data on the stream) that the stream sequencer never sees this frame,
 // as we check for violation and close the connection early.
-TEST_F(QuicStreamTest, StreamSequencerNeverSeesPacketsViolatingFlowControl) {
+TEST_P(QuicStreamTest, StreamSequencerNeverSeesPacketsViolatingFlowControl) {
   Initialize();
 
   // Receive a stream frame that violates flow control: the byte offset is
@@ -430,7 +449,7 @@ TEST_F(QuicStreamTest, StreamSequencerNeverSeesPacketsViolatingFlowControl) {
 
 // Verify that after the consumer calls StopReading(), the stream still sends
 // flow control updates.
-TEST_F(QuicStreamTest, StopReadingSendsFlowControl) {
+TEST_P(QuicStreamTest, StopReadingSendsFlowControl) {
   Initialize();
 
   stream_->StopReading();
@@ -455,7 +474,7 @@ TEST_F(QuicStreamTest, StopReadingSendsFlowControl) {
       QuicFlowControllerPeer::ReceiveWindowOffset(stream_->flow_controller()));
 }
 
-TEST_F(QuicStreamTest, FinalByteOffsetFromFin) {
+TEST_P(QuicStreamTest, FinalByteOffsetFromFin) {
   Initialize();
 
   EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
@@ -471,7 +490,7 @@ TEST_F(QuicStreamTest, FinalByteOffsetFromFin) {
   EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
 }
 
-TEST_F(QuicStreamTest, FinalByteOffsetFromRst) {
+TEST_P(QuicStreamTest, FinalByteOffsetFromRst) {
   Initialize();
 
   EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
@@ -481,7 +500,7 @@ TEST_F(QuicStreamTest, FinalByteOffsetFromRst) {
   EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
 }
 
-TEST_F(QuicStreamTest, InvalidFinalByteOffsetFromRst) {
+TEST_P(QuicStreamTest, InvalidFinalByteOffsetFromRst) {
   Initialize();
 
   EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
@@ -495,7 +514,7 @@ TEST_F(QuicStreamTest, InvalidFinalByteOffsetFromRst) {
   stream_->OnClose();
 }
 
-TEST_F(QuicStreamTest, FinalByteOffsetFromZeroLengthStreamFrame) {
+TEST_P(QuicStreamTest, FinalByteOffsetFromZeroLengthStreamFrame) {
   // When receiving Trailers, an empty stream frame is created with the FIN set,
   // and is passed to OnStreamFrame. The Trailers may be sent in advance of
   // queued body bytes being sent, and thus the final byte offset may exceed
@@ -533,7 +552,7 @@ TEST_F(QuicStreamTest, FinalByteOffsetFromZeroLengthStreamFrame) {
       QuicFlowControllerPeer::ReceiveWindowOffset(session_->flow_controller()));
 }
 
-TEST_F(QuicStreamTest, OnStreamResetOffsetOverflow) {
+TEST_P(QuicStreamTest, OnStreamResetOffsetOverflow) {
   Initialize();
   QuicRstStreamFrame rst_frame(kInvalidControlFrameId, stream_->id(),
                                QUIC_STREAM_CANCELLED, kMaxStreamLength + 1);
@@ -541,7 +560,7 @@ TEST_F(QuicStreamTest, OnStreamResetOffsetOverflow) {
   stream_->OnStreamReset(rst_frame);
 }
 
-TEST_F(QuicStreamTest, OnStreamFrameUpperLimit) {
+TEST_P(QuicStreamTest, OnStreamFrameUpperLimit) {
   Initialize();
 
   // Modify receive window offset and sequencer buffer total_bytes_read_ to
@@ -563,7 +582,7 @@ TEST_F(QuicStreamTest, OnStreamFrameUpperLimit) {
   stream_->OnStreamFrame(stream_frame2);
 }
 
-TEST_F(QuicStreamTest, StreamTooLong) {
+TEST_P(QuicStreamTest, StreamTooLong) {
   Initialize();
   EXPECT_CALL(*connection_, CloseConnection(QUIC_STREAM_LENGTH_OVERFLOW, _, _))
       .Times(1);
@@ -573,7 +592,7 @@ TEST_F(QuicStreamTest, StreamTooLong) {
                        "Receive stream frame reaches max stream length");
 }
 
-TEST_F(QuicStreamTest, SetDrainingIncomingOutgoing) {
+TEST_P(QuicParameterizedStreamTest, SetDrainingIncomingOutgoing) {
   // Don't have incoming data consumed.
   Initialize();
 
@@ -602,7 +621,7 @@ TEST_F(QuicStreamTest, SetDrainingIncomingOutgoing) {
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 }
 
-TEST_F(QuicStreamTest, SetDrainingOutgoingIncoming) {
+TEST_P(QuicParameterizedStreamTest, SetDrainingOutgoingIncoming) {
   // Don't have incoming data consumed.
   Initialize();
 
@@ -631,7 +650,7 @@ TEST_F(QuicStreamTest, SetDrainingOutgoingIncoming) {
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 }
 
-TEST_F(QuicStreamTest, EarlyResponseFinHandling) {
+TEST_P(QuicStreamTest, EarlyResponseFinHandling) {
   // Verify that if the server completes the response before reading the end of
   // the request, the received FIN is recorded.
 
@@ -656,7 +675,7 @@ TEST_F(QuicStreamTest, EarlyResponseFinHandling) {
   EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
 }
 
-TEST_F(QuicStreamTest, StreamWaitsForAcks) {
+TEST_P(QuicStreamTest, StreamWaitsForAcks) {
   Initialize();
   QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
@@ -707,7 +726,7 @@ TEST_F(QuicStreamTest, StreamWaitsForAcks) {
   EXPECT_EQ(0u, QuicStreamPeer::SendBuffer(stream_).size());
 }
 
-TEST_F(QuicStreamTest, StreamDataGetAckedOutOfOrder) {
+TEST_P(QuicStreamTest, StreamDataGetAckedOutOfOrder) {
   Initialize();
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
@@ -735,7 +754,7 @@ TEST_F(QuicStreamTest, StreamDataGetAckedOutOfOrder) {
   EXPECT_FALSE(stream_->IsWaitingForAcks());
 }
 
-TEST_F(QuicStreamTest, CancelStream) {
+TEST_P(QuicStreamTest, CancelStream) {
   Initialize();
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
@@ -758,7 +777,7 @@ TEST_F(QuicStreamTest, CancelStream) {
   EXPECT_FALSE(stream_->IsWaitingForAcks());
 }
 
-TEST_F(QuicStreamTest, RstFrameReceivedStreamNotFinishSending) {
+TEST_P(QuicStreamTest, RstFrameReceivedStreamNotFinishSending) {
   Initialize();
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
@@ -781,7 +800,7 @@ TEST_F(QuicStreamTest, RstFrameReceivedStreamNotFinishSending) {
   EXPECT_FALSE(stream_->IsWaitingForAcks());
 }
 
-TEST_F(QuicStreamTest, RstFrameReceivedStreamFinishSending) {
+TEST_P(QuicStreamTest, RstFrameReceivedStreamFinishSending) {
   Initialize();
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
@@ -801,7 +820,7 @@ TEST_F(QuicStreamTest, RstFrameReceivedStreamFinishSending) {
   EXPECT_EQ(1u, QuicStreamPeer::SendBuffer(stream_).size());
 }
 
-TEST_F(QuicStreamTest, ConnectionClosed) {
+TEST_P(QuicStreamTest, ConnectionClosed) {
   Initialize();
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
@@ -820,7 +839,7 @@ TEST_F(QuicStreamTest, ConnectionClosed) {
   EXPECT_FALSE(stream_->IsWaitingForAcks());
 }
 
-TEST_F(QuicStreamTest, WriteBufferedData) {
+TEST_P(QuicStreamTest, WriteBufferedData) {
   // Set buffered data low water mark to be 100.
   SetQuicFlag(&FLAGS_quic_buffered_data_threshold, 100);
   // Do not stream level flow control block this stream.
@@ -929,7 +948,7 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
   EXPECT_FALSE(stream_->CanWriteNewData());
 }
 
-TEST_F(QuicStreamTest, WritevDataReachStreamLimit) {
+TEST_P(QuicStreamTest, WritevDataReachStreamLimit) {
   Initialize();
   QuicString data("aaaaa");
   QuicStreamPeer::SetStreamBytesWritten(kMaxStreamLength - data.length(),
@@ -951,7 +970,7 @@ TEST_F(QuicStreamTest, WritevDataReachStreamLimit) {
                   "Write too many data via stream");
 }
 
-TEST_F(QuicStreamTest, WriteMemSlices) {
+TEST_P(QuicStreamTest, WriteMemSlices) {
   // Set buffered data low water mark to be 100.
   SetQuicFlag(&FLAGS_quic_buffered_data_threshold, 100);
   // Do not flow control block this stream.
@@ -1017,7 +1036,7 @@ TEST_F(QuicStreamTest, WriteMemSlices) {
   EXPECT_TRUE(stream_->write_side_closed());
 }
 
-TEST_F(QuicStreamTest, WriteMemSlicesReachStreamLimit) {
+TEST_P(QuicStreamTest, WriteMemSlicesReachStreamLimit) {
   Initialize();
   QuicStreamPeer::SetStreamBytesWritten(kMaxStreamLength - 5u, stream_);
   char data[5];
@@ -1043,7 +1062,7 @@ TEST_F(QuicStreamTest, WriteMemSlicesReachStreamLimit) {
                   "Write too many data via stream");
 }
 
-TEST_F(QuicStreamTest, StreamDataGetAckedMultipleTimes) {
+TEST_P(QuicStreamTest, StreamDataGetAckedMultipleTimes) {
   Initialize();
   QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
@@ -1099,7 +1118,7 @@ TEST_F(QuicStreamTest, StreamDataGetAckedMultipleTimes) {
   EXPECT_FALSE(stream_->IsWaitingForAcks());
 }
 
-TEST_F(QuicStreamTest, OnStreamFrameLost) {
+TEST_P(QuicStreamTest, OnStreamFrameLost) {
   Initialize();
 
   // Send [0, 9).
@@ -1164,7 +1183,7 @@ TEST_F(QuicStreamTest, OnStreamFrameLost) {
   EXPECT_TRUE(stream_->IsStreamFrameOutstanding(27, 0, true));
 }
 
-TEST_F(QuicStreamTest, CannotBundleLostFin) {
+TEST_P(QuicStreamTest, CannotBundleLostFin) {
   Initialize();
 
   // Send [0, 18) and fin.
@@ -1190,7 +1209,7 @@ TEST_F(QuicStreamTest, CannotBundleLostFin) {
   stream_->OnCanWrite();
 }
 
-TEST_F(QuicStreamTest, MarkConnectionLevelWriteBlockedOnWindowUpdateFrame) {
+TEST_P(QuicStreamTest, MarkConnectionLevelWriteBlockedOnWindowUpdateFrame) {
   // Set a small initial control window size.
   set_initial_flow_control_window_bytes(100);
   Initialize();
@@ -1213,7 +1232,7 @@ TEST_F(QuicStreamTest, MarkConnectionLevelWriteBlockedOnWindowUpdateFrame) {
 }
 
 // Regression test for b/73282665.
-TEST_F(QuicStreamTest,
+TEST_P(QuicStreamTest,
        MarkConnectionLevelWriteBlockedOnWindowUpdateFrameWithNoBufferedData) {
   // Set a small initial flow control window size.
   const uint32_t kSmallWindow = 100;
@@ -1236,7 +1255,7 @@ TEST_F(QuicStreamTest,
   EXPECT_TRUE(HasWriteBlockedStreams());
 }
 
-TEST_F(QuicStreamTest, RetransmitStreamData) {
+TEST_P(QuicStreamTest, RetransmitStreamData) {
   Initialize();
   InSequence s;
 
@@ -1272,7 +1291,7 @@ TEST_F(QuicStreamTest, RetransmitStreamData) {
   EXPECT_TRUE(stream_->RetransmitStreamData(0, 8, true));
 }
 
-TEST_F(QuicStreamTest, ResetStreamOnTtlExpiresRetransmitLostData) {
+TEST_P(QuicStreamTest, ResetStreamOnTtlExpiresRetransmitLostData) {
   Initialize();
 
   EXPECT_CALL(*session_, WritevData(_, stream_->id(), 200, 0, FIN))
@@ -1296,7 +1315,7 @@ TEST_F(QuicStreamTest, ResetStreamOnTtlExpiresRetransmitLostData) {
   stream_->OnCanWrite();
 }
 
-TEST_F(QuicStreamTest, ResetStreamOnTtlExpiresEarlyRetransmitData) {
+TEST_P(QuicStreamTest, ResetStreamOnTtlExpiresEarlyRetransmitData) {
   Initialize();
 
   EXPECT_CALL(*session_, WritevData(_, stream_->id(), 200, 0, FIN))
@@ -1312,6 +1331,21 @@ TEST_F(QuicStreamTest, ResetStreamOnTtlExpiresEarlyRetransmitData) {
   // Verify stream gets reset because TTL expires.
   EXPECT_CALL(*session_, SendRstStream(_, QUIC_STREAM_TTL_EXPIRED, _)).Times(1);
   stream_->RetransmitStreamData(0, 100, false);
+}
+
+// Test that QuicStream::StopSending A) is a no-op if the connection is not in
+// version 99, B) that it properly invokes QuicSession::StopSending, and C) that
+// the correct data is passed along, including getting the stream ID.
+TEST_P(QuicParameterizedStreamTest, CheckStopSending) {
+  Initialize();
+  const int kStopSendingCode = 123;
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    EXPECT_CALL(*session_, SendStopSending(kStopSendingCode, stream_->id()))
+        .Times(1);
+  } else {
+    EXPECT_CALL(*session_, SendStopSending(_, _)).Times(0);
+  }
+  stream_->SendStopSending(kStopSendingCode);
 }
 
 }  // namespace

@@ -53,6 +53,10 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // immediately.
   void WriteOrBufferBlocked(QuicStreamId id);
 
+  // Tries to send an IETF-QUIC STOP_SENDING frame. The frame is buffered if it
+  // can not be sent immediately.
+  void WriteOrBufferStopSending(uint16_t code, QuicStreamId stream_id);
+
   // Sends a PING_FRAME. Do not send PING if there is buffered frames.
   void WritePing();
 

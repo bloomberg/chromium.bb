@@ -509,6 +509,8 @@ void QuicSession::SendRstStream(QuicStreamId id,
 
 void QuicSession::SendGoAway(QuicErrorCode error_code,
                              const QuicString& reason) {
+  // GOAWAY frame is not supported in v99.
+  DCHECK_NE(QUIC_VERSION_99, connection_->transport_version());
   if (goaway_sent_) {
     return;
   }
@@ -573,7 +575,8 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
   // If we haven't received a FIN or RST for this stream, we need to keep track
   // of the how many bytes the stream's flow controller believes it has
   // received, for accurate connection level flow control accounting.
-  if (!stream->HasFinalReceivedByteOffset()) {
+  const bool had_fin_or_rst = stream->HasFinalReceivedByteOffset();
+  if (!had_fin_or_rst) {
     InsertLocallyClosedStreamsHighestOffset(
         stream_id, stream->flow_controller()->highest_received_byte_offset());
   }
@@ -596,7 +599,7 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
   // Decrease the number of streams being emulated when a new one is opened.
   connection_->SetNumOpenStreams(dynamic_stream_map_.size());
 
-  if (!stream_was_draining && !IsIncomingStream(stream_id)) {
+  if (!stream_was_draining && !IsIncomingStream(stream_id) && had_fin_or_rst) {
     // Streams that first became draining already called OnCanCreate...
     // This covers the case where the stream went directly to being closed.
     OnCanCreateNewOutgoingStream();
@@ -630,6 +633,8 @@ void QuicSession::OnFinalByteOffsetReceived(
   locally_closed_streams_highest_offset_.erase(it);
   if (IsIncomingStream(stream_id)) {
     --num_locally_closed_incoming_streams_highest_offset_;
+  } else {
+    OnCanCreateNewOutgoingStream();
   }
 }
 
@@ -1412,6 +1417,10 @@ QuicPacketLength QuicSession::GetLargestMessagePayload() const {
 
 bool QuicSession::deprecate_post_process_after_data() const {
   return connection_->deprecate_post_process_after_data();
+}
+
+void QuicSession::SendStopSending(uint16_t code, QuicStreamId stream_id) {
+  control_frame_manager_.WriteOrBufferStopSending(code, stream_id);
 }
 
 void QuicSession::OnCanCreateNewOutgoingStream() {}

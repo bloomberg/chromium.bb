@@ -1555,6 +1555,7 @@ QuicCryptoServerConfig::BuildServerConfigUpdateMessageProofSourceCallback::
       client_common_set_hashes_(params.client_common_set_hashes),
       client_cached_cert_hashes_(params.client_cached_cert_hashes),
       sct_supported_by_client_(params.sct_supported_by_client),
+      sni_(params.sni),
       message_(std::move(message)),
       cb_(std::move(cb)) {}
 
@@ -1566,7 +1567,7 @@ void QuicCryptoServerConfig::BuildServerConfigUpdateMessageProofSourceCallback::
   config_->FinishBuildServerConfigUpdateMessage(
       version_, compressed_certs_cache_, common_cert_sets_,
       client_common_set_hashes_, client_cached_cert_hashes_,
-      sct_supported_by_client_, ok, chain, proof.signature,
+      sct_supported_by_client_, sni_, ok, chain, proof.signature,
       proof.leaf_cert_scts, std::move(details), std::move(message_),
       std::move(cb_));
 }
@@ -1578,6 +1579,7 @@ void QuicCryptoServerConfig::FinishBuildServerConfigUpdateMessage(
     const QuicString& client_common_set_hashes,
     const QuicString& client_cached_cert_hashes,
     bool sct_supported_by_client,
+    const QuicString& sni,
     bool ok,
     const QuicReferenceCountedPointer<ProofSource::Chain>& chain,
     const QuicString& signature,
@@ -1598,7 +1600,8 @@ void QuicCryptoServerConfig::FinishBuildServerConfigUpdateMessage(
   message.SetStringPiece(kPROF, signature);
   if (sct_supported_by_client && enable_serving_sct_) {
     if (leaf_cert_sct.empty()) {
-      QUIC_LOG_EVERY_N_SEC(WARNING, 60) << "SCT is expected but it is empty.";
+      QUIC_LOG_EVERY_N_SEC(WARNING, 60)
+          << "SCT is expected but it is empty. SNI: " << sni;
     } else {
       message.SetStringPiece(kCertificateSCTTag, leaf_cert_sct);
     }

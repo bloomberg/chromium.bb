@@ -917,4 +917,14 @@ void QuicStream::OnDeadlinePassed() {
   Reset(QUIC_STREAM_TTL_EXPIRED);
 }
 
+void QuicStream::SendStopSending(uint16_t code) {
+  if (transport_version() != QUIC_VERSION_99) {
+    // If the connection is not version 99, do nothing.
+    // Do not QUIC_BUG or anything; the application really does not need to know
+    // what version the connection is in.
+    return;
+  }
+  session_->SendStopSending(code, id_);
+}
+
 }  // namespace quic
