@@ -126,7 +126,16 @@ struct VisualProperties;
 // - RenderViewImpl (deprecated)
 // - Fullscreen mode (RenderWidgetFullScreen)
 // - Popup "menus" (like the color chooser and date picker)
-// - Widgets for frames (for out-of-process iframe support)
+// - Widgets for frames (the main frame, and subframes due to out-of-process
+//   iframe support)
+//
+// Because the main frame RenderWidget is used to implement RenderViewImpl
+// (deprecated) it has a shared lifetime. But the RenderViewImpl may have
+// a proxy main frame which does not use a RenderWidget. Thus a RenderWidget
+// can be frozen, during the time in which we wish we could delete it but we
+// can't, and it should be (relatively.. it's a work in progress) unused during
+// that time. This does not apply to subframes, whose lifetimes are not tied to
+// the RenderViewImpl.
 class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
@@ -821,6 +830,9 @@ class CONTENT_EXPORT RenderWidget
   // RenderViewImpl for its main frame, but there is a proxy main frame in
   // RenderViewImpl's frame tree. Since proxy frames do not have content they
   // do not need a RenderWidget.
+  // This flag should never be used for RenderWidgets attached to subframes, as
+  // those RenderWidgets are able to be created/deleted along with the frames,
+  // unlike the main frame RenderWidget (for now).
   // TODO(419087): In this case the RenderWidget should not exist at all as
   // it has nothing to display, but since we can't destroy it without destroying
   // the RenderViewImpl, we freeze it instead.

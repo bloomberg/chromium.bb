@@ -1560,7 +1560,7 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
   } else if (!is_frozen_) {
     // Begins the compositor's scheduler to start producing frames.
     // Don't do this if the RenderWidget is attached to a RenderViewImpl for a
-    // remote main frame, as this RenderWidget is a zombie then, which won't be
+    // proxy main frame, as this RenderWidget is frozen then, and won't be
     // used for compositing until a WebFrameWidget is attached.
     StartCompositor();
   }

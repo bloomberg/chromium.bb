@@ -5912,7 +5912,7 @@ bool RenderFrameImpl::SwapIn() {
 
   // If this is the main frame going from a remote frame to a local frame,
   // it needs to set RenderViewImpl's pointer for the main frame to itself,
-  // ensure RenderWidget is no longer in swapped out mode.
+  // ensure RenderWidget is no longer frozen.
   if (is_main_frame_) {
     CHECK(!render_view_->main_render_frame_);
     render_view_->main_render_frame_ = this;
