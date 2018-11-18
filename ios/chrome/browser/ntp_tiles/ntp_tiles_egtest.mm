@@ -21,6 +21,7 @@
 #endif
 
 using chrome_test_util::ClearBrowsingDataCell;
+using chrome_test_util::ClearBrowsingDataCollectionView;
 using chrome_test_util::ClearBrowsingDataButton;
 using chrome_test_util::ConfirmClearBrowsingDataButton;
 using chrome_test_util::SettingsDoneButton;
@@ -130,6 +131,12 @@ using web::test::HttpServer;
   [ChromeEarlGreyUI tapClearBrowsingDataMenuButton:ClearBrowsingDataButton()];
   [[EarlGrey selectElementWithMatcher:ConfirmClearBrowsingDataButton()]
       performAction:grey_tap()];
+
+  // Before returning, make sure that the top of the Clear Browsing Data
+  // settings screen is visible to match the state at the start of the method.
+  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataCollectionView()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
+
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
