@@ -960,8 +960,12 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
       filelist.updateListItemExternalProps(
           listItem,
           this.metadataModel_.getCache(
-              [entry], ['availableOffline', 'customIconUrl', 'shared'])[0],
-          util.isTeamDriveRoot(entry), util.isComputersRoot(entry));
+              [entry],
+              [
+                'availableOffline', 'customIconUrl', 'shared', 'isMachineRoot',
+                'isExternalMedia'
+              ])[0],
+          util.isTeamDriveRoot(entry));
     });
   } else if (type === 'import-history') {
     forEachCell('.table-row-cell > .status', function(item, entry, unused) {

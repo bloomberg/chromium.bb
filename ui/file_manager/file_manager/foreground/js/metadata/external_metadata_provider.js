@@ -41,7 +41,10 @@ ExternalMetadataProvider.PROPERTY_NAMES = [
   'canDelete',
   'canRename',
   'canAddChildren',
-  'canShare'
+  'canShare',
+  'isMachineRoot',
+  'isExternalMedia',
+  'isArbitrarySyncFolder',
 ];
 
 ExternalMetadataProvider.prototype.__proto__ = MetadataProvider.prototype;
@@ -138,6 +141,13 @@ ExternalMetadataProvider.prototype.convertResults_ =
       item.canAddChildren = prop.canAddChildren;
     if (prop.canShare !== undefined || nameMap['canShare'])
       item.canShare = prop.canShare;
+    if (prop.isMachineRoot !== undefined || nameMap['isMachineRoot'])
+      item.isMachineRoot = prop.isMachineRoot;
+    if (prop.isExternalMedia !== undefined || nameMap['isExternalMedia'])
+      item.isExternalMedia = prop.isExternalMedia;
+    if (prop.isArbitrarySyncFolder !== undefined ||
+        nameMap['isArbitrarySyncFolder'])
+      item.isArbitrarySyncFolder = prop.isArbitrarySyncFolder;
     results.push(item);
   }
   return results;
