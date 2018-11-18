@@ -1696,7 +1696,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   self.primaryToolbarHeightConstraint.constant =
       [self primaryToolbarHeightWithInset];
 
-  if (self.currentWebState) {
+  if (self.currentWebState && self.webUsageEnabled) {
     NewTabPageTabHelper* NTPHelper =
         NewTabPageTabHelper::FromWebState(self.currentWebState);
     if (NTPHelper && NTPHelper->IsActive()) {
