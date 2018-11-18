@@ -24,7 +24,11 @@ option(ENABLE_IWYU "Enables include-what-you-use support." OFF)
 option(ENABLE_WERROR "Enable warnings as errors." OFF)
 option(ENABLE_WEBM_PARSER "Enables new parser API." OFF)
 
-require_cxx_flag_nomsvc("-std=c++11")
+if(WIN32)
+  require_cxx_flag_nomsvc("-std=gnu++11")
+else()
+  require_cxx_flag_nomsvc("-std=c++11")
+endif()
 
 add_cxx_preproc_definition("__STDC_CONSTANT_MACROS")
 add_cxx_preproc_definition("__STDC_FORMAT_MACROS")
