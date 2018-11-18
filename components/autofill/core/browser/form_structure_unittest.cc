@@ -1291,6 +1291,7 @@ TEST_F(FormStructureTest, PasswordFormShouldBeQueried) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes();
+  EXPECT_TRUE(form_structure.has_password_field());
   EXPECT_TRUE(form_structure.ShouldBeQueried());
   EXPECT_TRUE(form_structure.ShouldBeUploaded());
 }
