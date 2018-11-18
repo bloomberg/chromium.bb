@@ -19,7 +19,6 @@ void DevToolsDockTile::Update(const std::string& label, gfx::Image image) {
     [imageView setImage:nsImage];
     [dockTile setContentView:imageView];
   }
-  if (!label.empty())
-    [dockTile setBadgeLabel:base::SysUTF8ToNSString(label)];
+  [dockTile setBadgeLabel:base::SysUTF8ToNSString(label)];
   [dockTile display];
 }
