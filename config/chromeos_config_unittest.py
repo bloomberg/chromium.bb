@@ -277,6 +277,7 @@ class UnifiedBuildConfigTestCase(object):
     chromeos_config.CqBuilders(
         self._site_config, self._boards_dict, self._fake_ge_build_config)
 
+
 class UnifiedBuildReleaseBuilders(
     cros_test_lib.OutputTestCase, UnifiedBuildConfigTestCase):
   """Tests that verify how unified builder configs are generated"""
@@ -294,6 +295,7 @@ class UnifiedBuildReleaseBuilders(
 
     master_release = self._site_config['master-release']
     self.assertIn('coral-release', master_release['slave_configs'])
+
 
 class UnifiedBuildCqBuilders(
     cros_test_lib.OutputTestCase, UnifiedBuildConfigTestCase):
@@ -654,7 +656,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
         self.assertTrue(
             config.hw_tests,
             "Release builder %s must run hw tests." % build_name)
-
 
   def testHWTestsReleaseBuilderWeakRequirement(self):
     """Make sure most release configs run hw tests."""

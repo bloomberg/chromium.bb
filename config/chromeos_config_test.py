@@ -454,6 +454,7 @@ def InsertHwTestsOverrideDefaults(build):
       hw_config.file_bugs = False
       hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
 
+
 def EnsureVmTestsOnVmTestBoards(site_config, boards_dict, _gs_build_config):
   """Make sure VMTests are only enabled on boards that support them.
 

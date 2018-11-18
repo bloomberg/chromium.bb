@@ -139,25 +139,31 @@ def IsPFQType(b_type):
   return b_type in (constants.PFQ_TYPE, constants.PALADIN_TYPE,
                     constants.CHROME_PFQ_TYPE, constants.ANDROID_PFQ_TYPE)
 
+
 def IsCQType(b_type):
   """Returns True if this build type is a Commit Queue."""
   return b_type == constants.PALADIN_TYPE
+
 
 def IsCanaryType(b_type):
   """Returns True if this build type is a Canary."""
   return b_type == constants.CANARY_TYPE
 
+
 def IsMasterChromePFQ(config):
   """Returns True if this build is master chrome PFQ type."""
   return config.build_type == constants.CHROME_PFQ_TYPE and config.master
+
 
 def IsMasterAndroidPFQ(config):
   """Returns True if this build is master Android PFQ type."""
   return config.build_type == constants.ANDROID_PFQ_TYPE and config.master
 
+
 def IsMasterCQ(config):
   """Returns True if this build is master CQ."""
   return config.build_type == constants.PALADIN_TYPE and config.master
+
 
 def RetryAlreadyStartedSlaves(config):
   """Returns True if wants to retry slaves which already start but fail.
@@ -167,6 +173,7 @@ def RetryAlreadyStartedSlaves(config):
   still want to retry the slave.
   """
   return config.name == constants.CQ_MASTER
+
 
 def GetCriticalStageForRetry(config):
   """Get critical stage names for retry decisions.
@@ -1654,7 +1661,7 @@ class SiteConfig(dict):
     return PrettyJsonDict(self)
 
 #
-# Methods related to working with GE Data.
+# Functions related to working with GE Data.
 #
 
 def LoadGEBuildConfigFromFile(
@@ -1675,6 +1682,7 @@ def GeBuildConfigAllBoards(ge_build_config):
   """
   return [b['name'] for b in ge_build_config['boards']]
 
+
 def GetUnifiedBuildConfigAllBuilds(ge_build_config):
   """Extract a list of all unified build configurations.
 
@@ -1688,6 +1696,7 @@ def GetUnifiedBuildConfigAllBuilds(ge_build_config):
     A list of unified build configurations (json configs)
   """
   return ge_build_config.get('reference_board_unified_builds', [])
+
 
 class BoardGroup(object):
   """Class holds leader_boards and follower_boards for grouped boards"""
@@ -1705,6 +1714,7 @@ class BoardGroup(object):
   def __str__(self):
     return ('Leader_boards: %s Follower_boards: %s' %
             (self.leader_boards, self.follower_boards))
+
 
 def GroupBoardsByBuilderAndBoardGroup(board_list):
   """Group boards by builder and board_group.
@@ -1758,6 +1768,7 @@ def GroupBoardsByBuilder(board_list):
 
   return builder_to_boards_dict
 
+
 def GetArchBoardDict(ge_build_config):
   """Get a dict mapping arch types to board names.
 
@@ -1783,7 +1794,7 @@ def GetArchBoardDict(ge_build_config):
   return arch_board_dict
 
 #
-# Methods related to loading/saving Json.
+# Functions related to loading/saving Json.
 #
 class ObjectJSONEncoder(json.JSONEncoder):
   """Json Encoder that encodes objects as their dictionaries."""
@@ -1932,6 +1943,7 @@ def GetSiteParams():
   site_params = SiteParameters()
   site_params.update(DefaultSiteParameters())
   return site_params
+
 
 def append_useflags(useflags):
   """Used to append a set of useflags to existing useflags.

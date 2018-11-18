@@ -1641,6 +1641,7 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       )
   )
 
+
 def CqBuilders(site_config, boards_dict, ge_build_config):
   """Create all CQ build configs.
 
