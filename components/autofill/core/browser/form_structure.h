@@ -239,6 +239,8 @@ class FormStructure {
     return has_author_specified_upi_vpa_hint_;
   }
 
+  bool has_password_field() const { return has_password_field_; }
+
   void set_submission_event(
       PasswordForm::SubmissionIndicatorEvent submission_event) {
     submission_event_ = submission_event;
