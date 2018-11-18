@@ -299,29 +299,29 @@ tree .tree-item[selected] > .tree-row >
 
 [volume-type-icon='computers_grand_root'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/my_files.png) 1x,
-      url(../images/volumes/2x/my_files.png) 2x);
+      url(../images/volumes/devices.png) 1x,
+      url(../images/volumes/2x/devices.png) 2x);
 }
 
 .tree-row[selected] [volume-type-icon='computers_grand_root'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/my_files_active.png) 1x,
-      url(../images/volumes/2x/my_files_active.png) 2x);
+      url(../images/volumes/devices_active.png) 1x,
+      url(../images/volumes/2x/devices_active.png) 2x);
 }
 
 [volume-type-icon='computer'],
 .computers-root[file-type-icon='folder'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/hard_drive.png) 1x,
-      url(../images/volumes/2x/hard_drive.png) 2x);
+      url(../images/volumes/computer.png) 1x,
+      url(../images/volumes/2x/computer.png) 2x);
 }
 
 .tree-row[selected] [volume-type-icon='computer'],
 tree .tree-item[selected] > .tree-row >
 .computers-root[file-type-icon='folder'] {
   background-image: -webkit-image-set(
-      url(../images/volumes/hard_drive_active.png) 1x,
-      url(../images/volumes/2x/hard_drive_active.png) 2x);
+      url(../images/volumes/computer_active.png) 1x,
+      url(../images/volumes/2x/computer_active.png) 2x);
 }
 
 [volume-type-icon='drive_offline'] {
@@ -360,12 +360,15 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/recent_active.png) 2x);
 }
 
+.external-media-root[file-type-icon='folder'],
 [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/usb.png) 1x,
       url(../images/volumes/2x/usb.png) 2x);
 }
 
+tree .tree-item[selected] > .tree-row >
+.external-media-root[file-type-icon='folder'],
 .tree-row[selected] [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/usb_active.png) 1x,
