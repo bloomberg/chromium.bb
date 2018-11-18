@@ -79,6 +79,7 @@ typedef void *EGLContext;
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
 #include "shared/os-compatibility.h"
+#include "shared/string-helpers.h"
 
 #include "window.h"
 
@@ -88,6 +89,8 @@ typedef void *EGLContext;
 
 #define ZWP_RELATIVE_POINTER_MANAGER_V1_VERSION 1
 #define ZWP_POINTER_CONSTRAINTS_V1_VERSION 1
+
+#define DEFAULT_XCURSOR_SIZE 32
 
 struct shm_pool;
 
@@ -1340,14 +1343,19 @@ create_cursors(struct display *display)
 	const char *config_file;
 	struct weston_config *config;
 	struct weston_config_section *s;
-	int size = 32;
-	char *theme = NULL;
+	int size = DEFAULT_XCURSOR_SIZE;
+	char *theme = NULL, *size_str;
 	unsigned int i, j;
 	struct wl_cursor *cursor;
 
 	theme = getenv("XCURSOR_THEME");
-	if (getenv("XCURSOR_SIZE"))
-		size = atoi(getenv("XCURSOR_SIZE"));
+
+	size_str = getenv("XCURSOR_SIZE");
+	if (size_str) {
+		safe_strtoint(size_str, &size);
+		if (size <= 0)
+			size = DEFAULT_XCURSOR_SIZE;
+	}
 
 	config_file = weston_config_get_name_from_env();
 	config = weston_config_parse(config_file);
