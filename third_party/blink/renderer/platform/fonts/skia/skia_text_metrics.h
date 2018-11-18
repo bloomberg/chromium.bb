@@ -7,15 +7,18 @@
 
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
 
-#include <SkPaint.h>
+#include <SkFont.h>
 #include <hb.h>
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+
+class SkPaint;
 
 namespace blink {
 
 class SkiaTextMetrics final {
  public:
-  SkiaTextMetrics(const SkPaint*);
+  SkiaTextMetrics(const SkPaint* legacy_paint);
+  SkiaTextMetrics(const SkFont&);
 
   void GetGlyphWidthForHarfBuzz(hb_codepoint_t, hb_position_t* width);
   void GetGlyphWidthForHarfBuzz(unsigned count,
@@ -32,7 +35,7 @@ class SkiaTextMetrics final {
   static hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value);
 
  private:
-  const SkPaint* paint_;
+  const SkFont font_;
 };
 
 }  // namespace blink
