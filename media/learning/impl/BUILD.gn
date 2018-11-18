@@ -10,6 +10,9 @@ component("impl") {
     "learner.h",
     "learning_session_impl.cc",
     "learning_session_impl.h",
+    "learning_task_controller.h",
+    "learning_task_controller_impl.cc",
+    "learning_task_controller_impl.h",
     "random_tree.cc",
     "random_tree.h",
   ]
@@ -29,10 +32,12 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "learning_session_impl_unittest.cc",
     "random_tree_unittest.cc",
   ]
 
   deps = [
+    ":impl",
     "//base/test:test_support",
     "//media:test_support",
     "//media/learning/impl",
