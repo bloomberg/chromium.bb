@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class ComputedStyle;
 class LayoutNGListMarker;
 class LayoutUnit;
 class NGBlockNode;
@@ -64,7 +65,8 @@ class CORE_EXPORT NGUnpositionedListMarker final {
  private:
   bool IsImage() const;
 
-  scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
+  scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace& parent_space,
+                                       const ComputedStyle& parent_style,
                                        FontBaseline) const;
   LayoutUnit ComputeIntrudedFloatOffset(const NGConstraintSpace&,
                                         const NGBoxFragmentBuilder*,

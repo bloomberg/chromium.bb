@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class ComputedStyle;
 struct NGBfcOffset;
 
 // Adjusts {@code offset} to the clearance line.
@@ -35,6 +36,7 @@ CORE_EXPORT bool AdjustToClearance(LayoutUnit clearance_offset,
 // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
 NGConstraintSpace CreateExtrinsicConstraintSpaceForChild(
     const NGConstraintSpace& container_constraint_space,
+    const ComputedStyle& container_style,
     LayoutUnit container_extrinsic_block_size,
     NGLayoutInputNode child);
 

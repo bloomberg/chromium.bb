@@ -779,7 +779,7 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item) {
   if (mode_ == NGLineBreakerMode::kContent) {
     item_result->layout_result =
         NGBlockNode(ToLayoutBox(item.GetLayoutObject()))
-            .LayoutAtomicInline(constraint_space_,
+            .LayoutAtomicInline(constraint_space_, node_.Style(),
                                 line_info_->LineStyle().GetFontBaseline(),
                                 line_info_->UseFirstLineStyle());
     DCHECK(item_result->layout_result->PhysicalFragment());
@@ -861,8 +861,8 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
   }
 
   LayoutUnit inline_margin_size =
-      ComputeMarginBoxInlineSizeForUnpositionedFloat(constraint_space_,
-                                                     &unpositioned_float);
+      ComputeMarginBoxInlineSizeForUnpositionedFloat(
+          constraint_space_, node_.Style(), &unpositioned_float);
 
   LayoutUnit bfc_block_offset = line_opportunity_.bfc_block_offset;
 
@@ -904,7 +904,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item) {
         constraint_space_.ReplacedPercentageResolutionSize(),
         {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
         constraint_space_.BfcOffset().block_offset, &unpositioned_float,
-        constraint_space_, exclusion_space_);
+        constraint_space_, node_.Style(), exclusion_space_);
     positioned_floats_->push_back(positioned_float);
 
     NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(

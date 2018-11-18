@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
@@ -24,14 +25,18 @@ bool AdjustToClearance(LayoutUnit clearance_offset, NGBfcOffset* offset) {
 
 NGConstraintSpace CreateExtrinsicConstraintSpaceForChild(
     const NGConstraintSpace& container_constraint_space,
+    const ComputedStyle& container_style,
     LayoutUnit container_extrinsic_block_size,
     NGLayoutInputNode child) {
   NGLogicalSize extrinsic_size(NGSizeIndefinite,
                                container_extrinsic_block_size);
+  LayoutUnit fallback_inline_size = CalculateOrthogonalFallbackInlineSize(
+      container_style, container_constraint_space.InitialContainingBlockSize());
 
   return NGConstraintSpaceBuilder(container_constraint_space,
                                   child.Style().GetWritingMode(),
                                   child.CreatesNewFormattingContext())
+      .SetOrthogonalFallbackInlineSize(fallback_inline_size)
       .SetAvailableSize(extrinsic_size)
       .SetPercentageResolutionSize(extrinsic_size)
       .SetIsIntermediateLayout(true)

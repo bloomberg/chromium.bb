@@ -901,7 +901,8 @@ void NGInlineLayoutAlgorithm::PositionPendingFloats(
                  ConstraintSpace().PercentageResolutionSize(),
                  ConstraintSpace().ReplacedPercentageResolutionSize(),
                  origin_bfc_offset, bfc_block_offset, unpositioned_floats_,
-                 ConstraintSpace(), exclusion_space, &positioned_floats);
+                 ConstraintSpace(), Style(), exclusion_space,
+                 &positioned_floats);
 
   positioned_floats_.AppendVector(positioned_floats);
   unpositioned_floats_.Shrink(0);

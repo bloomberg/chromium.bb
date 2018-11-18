@@ -60,19 +60,15 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       space_.bitfields_.flags |= NGConstraintSpace::kOrthogonalWritingModeRoot;
   }
 
-  // If inline size is indefinite, use size of initial containing block.
+  // If inline size is indefinite, use the fallback size for available inline
+  // size for orthogonal flow roots. See:
   // https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
   void AdjustInlineSizeIfNeeded(LayoutUnit* inline_size) const {
     DCHECK(!is_in_parallel_flow_);
-
     if (*inline_size != NGSizeIndefinite)
       return;
-
-    if (static_cast<WritingMode>(space_.bitfields_.writing_mode) ==
-        WritingMode::kHorizontalTb)
-      *inline_size = space_.initial_containing_block_size_.width;
-    else
-      *inline_size = space_.initial_containing_block_size_.height;
+    DCHECK_NE(orthogonal_fallback_inline_size_, NGSizeIndefinite);
+    *inline_size = orthogonal_fallback_inline_size_;
   }
 
   NGConstraintSpaceBuilder& SetAvailableSize(NGLogicalSize available_size) {
@@ -94,6 +90,13 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetReplacedPercentageResolutionSize(
       NGLogicalSize replaced_percentage_resolution_size);
+
+  // Set the fallback available inline-size for an orthogonal child. The size is
+  // the inline size in the writing mode of the orthogonal child.
+  NGConstraintSpaceBuilder& SetOrthogonalFallbackInlineSize(LayoutUnit size) {
+    orthogonal_fallback_inline_size_ = size;
+    return *this;
+  }
 
   NGConstraintSpaceBuilder& SetFragmentainerBlockSize(LayoutUnit size) {
 #if DCHECK_IS_ON()
@@ -295,6 +298,12 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   }
 
   NGConstraintSpace space_;
+
+  // Orthogonal writing mode roots may need a fallback, to prevent available
+  // inline size from being indefinite, which isn't allowed. This is the
+  // available inline size in the writing mode of the orthogonal child.
+  LayoutUnit orthogonal_fallback_inline_size_ = NGSizeIndefinite;
+
   bool is_in_parallel_flow_;
   bool is_new_fc_;
   bool force_orthogonal_writing_mode_root_;

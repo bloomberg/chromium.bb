@@ -77,9 +77,11 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   bool UseLogicalBottomMarginEdgeForInlineBlockBaseline() const;
 
   // Layout an atomic inline; e.g., inline block.
-  scoped_refptr<NGLayoutResult> LayoutAtomicInline(const NGConstraintSpace&,
-                                                   FontBaseline,
-                                                   bool use_first_line_style);
+  scoped_refptr<NGLayoutResult> LayoutAtomicInline(
+      const NGConstraintSpace& parent_constraint_space,
+      const ComputedStyle& parent_style,
+      FontBaseline,
+      bool use_first_line_style);
 
   // Runs layout on the underlying LayoutObject and creates a fragment for the
   // resulting geometry.

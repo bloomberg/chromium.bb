@@ -467,6 +467,12 @@ MinMaxSize ComputeMinAndMaxContentContribution(
           NGConstraintSpaceBuilder(
               *constraint_space, node.Style().GetWritingMode(),
               /* is_new_fc */ constraint_space->IsNewFormattingContext())
+              .SetOrthogonalFallbackInlineSize(
+                  // TODO(mstensho): This is broken and needs to be cleaned
+                  // up. First of all, we don't know whom |constraint_space| is
+                  // for. Could be for |node|, or could be for its parent,
+                  // depending on call site.
+                  constraint_space->AvailableSize().inline_size)
               .SetAvailableSize(constraint_space->AvailableSize())
               .SetPercentageResolutionSize(
                   constraint_space->PercentageResolutionSize())
@@ -1138,6 +1144,43 @@ NGLogicalSize CalculateReplacedChildPercentageSize(
   return AdjustChildPercentageSizeForQuirksAndFlex(
       space, node, child_percentage_size,
       space.ReplacedPercentageResolutionBlockSize());
+}
+
+LayoutUnit CalculateOrthogonalFallbackInlineSize(
+    const ComputedStyle& parent_style,
+    NGPhysicalSize orthogonal_children_containing_block_size) {
+  LayoutUnit fallback_size;
+  if (IsHorizontalWritingMode(parent_style.GetWritingMode()))
+    fallback_size = orthogonal_children_containing_block_size.height;
+  else
+    fallback_size = orthogonal_children_containing_block_size.width;
+
+  if (!parent_style.LogicalMaxHeight().IsFixed())
+    return fallback_size;
+
+  LayoutUnit size(parent_style.LogicalMaxHeight().GetFloatValue());
+  if (parent_style.LogicalMinHeight().IsFixed()) {
+    size = std::max(
+        size, LayoutUnit(parent_style.LogicalMinHeight().GetFloatValue()));
+  }
+  // Calculate the content-box size.
+  if (parent_style.BoxSizing() == EBoxSizing::kBorderBox) {
+    // We're unable to resolve percentages at this point, so make sure we're
+    // only dealing with fixed-size values.
+    if (!parent_style.PaddingBefore().IsFixed() ||
+        !parent_style.PaddingAfter().IsFixed())
+      return fallback_size;
+
+    LayoutUnit border_padding(parent_style.BorderBefore().Width() +
+                              parent_style.BorderAfter().Width() +
+                              parent_style.PaddingBefore().GetFloatValue() +
+                              parent_style.PaddingAfter().GetFloatValue());
+
+    size -= border_padding;
+    size = size.ClampNegativeToZero();
+  }
+
+  return std::min(fallback_size, size);
 }
 
 }  // namespace blink

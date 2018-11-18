@@ -783,11 +783,19 @@ bool NGBlockNode::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
 
 scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
     const NGConstraintSpace& parent_constraint_space,
+    const ComputedStyle& parent_style,
     FontBaseline baseline_type,
     bool use_first_line_style) {
   NGConstraintSpaceBuilder space_builder(
       parent_constraint_space, Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetUseFirstLineStyle(use_first_line_style);
+
+  if (!IsParallelWritingMode(parent_constraint_space.GetWritingMode(),
+                             Style().GetWritingMode())) {
+    LayoutUnit fallback_inline_size = CalculateOrthogonalFallbackInlineSize(
+        parent_style, parent_constraint_space.InitialContainingBlockSize());
+    space_builder.SetOrthogonalFallbackInlineSize(fallback_inline_size);
+  }
 
   // Request to compute baseline during the layout, except when we know the box
   // would synthesize box-baseline.

@@ -265,7 +265,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
       if (!IsParallelWritingMode(Style().GetWritingMode(),
                                  child.Style().GetWritingMode())) {
         extrinsic_constraint_space = CreateExtrinsicConstraintSpaceForChild(
-            ConstraintSpace(), extrinsic_block_size, child);
+            ConstraintSpace(), Style(), extrinsic_block_size, child);
         optional_constraint_space = &extrinsic_constraint_space;
       }
       child_sizes = ComputeMinAndMaxContentContribution(
@@ -2009,12 +2009,26 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     const NGLogicalSize child_available_size,
     const base::Optional<LayoutUnit> floats_bfc_block_offset) {
   const ComputedStyle& style = Style();
-  WritingMode child_writing_mode = child.IsInline()
-                                       ? style.GetWritingMode()
-                                       : child.Style().GetWritingMode();
+  const ComputedStyle& child_style = child.Style();
+  WritingMode child_writing_mode =
+      child.IsInline() ? style.GetWritingMode() : child_style.GetWritingMode();
 
   NGConstraintSpaceBuilder space_builder(ConstraintSpace(), child_writing_mode,
                                          child_data.is_new_fc);
+
+  if (!IsParallelWritingMode(ConstraintSpace().GetWritingMode(),
+                             child_writing_mode)) {
+    space_builder.SetIsShrinkToFit(child_style.LogicalWidth().IsAuto());
+    // TODO(mstensho): The spec [1] says to use the size of the nearest
+    // scrollport as constraint, if that's smaller than the initial containing
+    // block, but we haven't implemented that yet; we always just use the
+    // initial containing block size.
+    //
+    // [1] https://www.w3.org/TR/css-writing-modes-3/#orthogonal-auto
+    LayoutUnit fallback_size = CalculateOrthogonalFallbackInlineSize(
+        Style(), ConstraintSpace().InitialContainingBlockSize());
+    space_builder.SetOrthogonalFallbackInlineSize(fallback_size);
+  }
 
   space_builder.SetAvailableSize(child_available_size)
       .SetPercentageResolutionSize(child_percentage_size_)
@@ -2047,15 +2061,9 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
                                     ? LayoutUnit::Min()
                                     : ConstraintSpace().ClearanceOffset();
   if (child.IsBlock()) {
-    const ComputedStyle& child_style = child.Style();
-    bool is_shrink_to_fit =
-        !IsParallelWritingMode(ConstraintSpace().GetWritingMode(),
-                               child_writing_mode) &&
-        child_style.LogicalWidth().IsAuto();
     LayoutUnit child_clearance_offset =
         exclusion_space_.ClearanceOffset(ResolvedClear(child_style, Style()));
     clearance_offset = std::max(clearance_offset, child_clearance_offset);
-    space_builder.SetIsShrinkToFit(is_shrink_to_fit);
     space_builder.SetTextDirection(child_style.Direction());
 
     // PositionListMarker() requires a first line baseline.
@@ -2265,7 +2273,7 @@ void NGBlockLayoutAlgorithm::PositionPendingFloats(
   PositionFloats(child_available_size_, child_percentage_size_,
                  replaced_child_percentage_size_, origin_bfc_offset,
                  bfc_block_offset, unpositioned_floats_, ConstraintSpace(),
-                 &exclusion_space_, &positioned_floats);
+                 Style(), &exclusion_space_, &positioned_floats);
 
   AddPositionedFloats(positioned_floats);
 

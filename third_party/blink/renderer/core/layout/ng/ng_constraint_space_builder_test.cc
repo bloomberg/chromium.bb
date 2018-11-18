@@ -22,6 +22,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromHorizontalICB) {
   NGLogicalSize fixed_size{LayoutUnit(100), LayoutUnit(200)};
   NGLogicalSize indefinite_size{NGSizeIndefinite, NGSizeIndefinite};
 
+  horizontal_builder.SetOrthogonalFallbackInlineSize(icb_size.height);
   horizontal_builder.SetAvailableSize(fixed_size);
   horizontal_builder.SetPercentageResolutionSize(fixed_size);
 
@@ -29,6 +30,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromHorizontalICB) {
       horizontal_builder.ToConstraintSpace(), WritingMode::kVerticalLr,
       /* is_new_fc */ true);
 
+  vertical_builder.SetOrthogonalFallbackInlineSize(icb_size.height);
   vertical_builder.SetAvailableSize(indefinite_size);
   vertical_builder.SetPercentageResolutionSize(indefinite_size);
 
@@ -49,6 +51,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromVerticalICB) {
   NGLogicalSize fixed_size{LayoutUnit(100), LayoutUnit(200)};
   NGLogicalSize indefinite_size{NGSizeIndefinite, NGSizeIndefinite};
 
+  horizontal_builder.SetOrthogonalFallbackInlineSize(icb_size.width);
   horizontal_builder.SetAvailableSize(fixed_size);
   horizontal_builder.SetPercentageResolutionSize(fixed_size);
 
@@ -56,6 +59,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromVerticalICB) {
       horizontal_builder.ToConstraintSpace(), WritingMode::kHorizontalTb,
       /* is_new_fc */ true);
 
+  vertical_builder.SetOrthogonalFallbackInlineSize(icb_size.width);
   vertical_builder.SetAvailableSize(indefinite_size);
   vertical_builder.SetPercentageResolutionSize(indefinite_size);
 
