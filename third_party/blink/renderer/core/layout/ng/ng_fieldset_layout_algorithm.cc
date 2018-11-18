@@ -170,7 +170,7 @@ base::Optional<MinMaxSize> NGFieldsetLayoutAlgorithm::ComputeMinMaxSize(
         extrinsic_block_size = extrinsic_block_size.ClampNegativeToZero();
       }
       extrinsic_constraint_space = CreateExtrinsicConstraintSpaceForChild(
-          ConstraintSpace(), extrinsic_block_size, legend);
+          ConstraintSpace(), Style(), extrinsic_block_size, legend);
       optional_constraint_space = &extrinsic_constraint_space;
     }
     sizes = ComputeMinAndMaxContentContribution(
@@ -199,6 +199,9 @@ NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForLegend(
     NGLogicalSize available_size) {
   NGConstraintSpaceBuilder builder(
       ConstraintSpace(), legend.Style().GetWritingMode(), /* is_new_fc */ true);
+  LayoutUnit fallback_size = CalculateOrthogonalFallbackInlineSize(
+      Style(), ConstraintSpace().InitialContainingBlockSize());
+  builder.SetOrthogonalFallbackInlineSize(fallback_size);
   builder.SetAvailableSize(available_size);
   NGLogicalSize percentage_size =
       CalculateChildPercentageSize(ConstraintSpace(), Node(), available_size);

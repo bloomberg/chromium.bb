@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class ComputedStyle;
 class NGBlockNode;
 class NGConstraintSpace;
 class NGContainerFragmentBuilder;
@@ -35,8 +36,9 @@ typedef int NGFloatTypes;
 
 // Returns the inline size (relative to {@code parent_space}) of the
 // unpositioned float.
-CORE_EXPORT LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
+LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
     const NGConstraintSpace& parent_space,
+    const ComputedStyle& parent_style,
     NGUnpositionedFloat* unpositioned_float);
 
 // Positions {@code unpositioned_float} into {@code new_parent_space}.
@@ -49,6 +51,7 @@ PositionFloat(const NGLogicalSize& float_available_size,
               LayoutUnit parent_bfc_block_offset,
               NGUnpositionedFloat*,
               const NGConstraintSpace& parent_space,
+              const ComputedStyle& parent_style,
               NGExclusionSpace* exclusion_space);
 
 // Positions the list of {@code unpositioned_floats}. Adds them as exclusions to
@@ -60,7 +63,8 @@ CORE_EXPORT void PositionFloats(
     const NGBfcOffset& origin_bfc_offset,
     LayoutUnit container_block_offset,
     NGUnpositionedFloatVector& unpositioned_floats,
-    const NGConstraintSpace& space,
+    const NGConstraintSpace& parent_space,
+    const ComputedStyle& parent_style,
     NGExclusionSpace* exclusion_space,
     NGPositionedFloatVector* positioned_floats);
 

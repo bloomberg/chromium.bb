@@ -40,6 +40,9 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   LayoutUnit flex_container_content_inline_size =
       flex_container_content_box_size.inline_size;
 
+  LayoutUnit orthogonal_fallback_size = CalculateOrthogonalFallbackInlineSize(
+      Style(), ConstraintSpace().InitialContainingBlockSize());
+
   FlexLayoutAlgorithm algorithm(&Style(), flex_container_content_inline_size);
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
@@ -47,10 +50,11 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     if (child.IsOutOfFlowPositioned())
       continue;
 
+    WritingMode child_writing_mode = child.Style().GetWritingMode();
     NGConstraintSpace child_space =
-        NGConstraintSpaceBuilder(ConstraintSpace(),
-                                 child.Style().GetWritingMode(),
+        NGConstraintSpaceBuilder(ConstraintSpace(), child_writing_mode,
                                  /* is_new_fc */ true)
+            .SetOrthogonalFallbackInlineSize(orthogonal_fallback_size)
             .SetAvailableSize(flex_container_content_box_size)
             .SetPercentageResolutionSize(flex_container_content_box_size)
             .ToConstraintSpace();
@@ -128,6 +132,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       NGLogicalSize available_size(flex_item.flexed_content_size +
                                        flex_item.main_axis_border_and_padding,
                                    flex_container_content_box_size.block_size);
+      space_builder.SetOrthogonalFallbackInlineSize(orthogonal_fallback_size);
       space_builder.SetAvailableSize(available_size);
       space_builder.SetPercentageResolutionSize(
           flex_container_content_box_size);
@@ -179,6 +184,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         NGLogicalSize available_size(flex_item.flexed_content_size +
                                          flex_item.main_axis_border_and_padding,
                                      flex_item.cross_axis_size);
+        space_builder.SetOrthogonalFallbackInlineSize(orthogonal_fallback_size);
         space_builder.SetAvailableSize(available_size);
         space_builder.SetPercentageResolutionSize(
             flex_container_content_box_size);

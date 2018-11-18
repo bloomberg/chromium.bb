@@ -929,7 +929,7 @@ static LayoutUnit ComputeContentSize(
                                  float_node.Style().GetWritingMode())) {
         DCHECK(constraint_space);
         extrinsic_constraint_space = CreateExtrinsicConstraintSpaceForChild(
-            *constraint_space, input.extrinsic_block_size, float_node);
+            *constraint_space, style, input.extrinsic_block_size, float_node);
         optional_constraint_space = &extrinsic_constraint_space;
       }
 
