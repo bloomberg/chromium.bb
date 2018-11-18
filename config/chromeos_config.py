@@ -3030,22 +3030,37 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   unified_board_names = set([b[config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]
                              for b in unified_builds])
 
-  ### Master release config.
-  master_config = site_config.Add(
-      'master-release',
-      site_config.templates.release,
-      boards=[],
-      master=True,
-      slave_configs=[],
-      sync_chrome=False,
-      chrome_sdk=False,
-      afdo_use=False,
-      branch_util_test=True,
-      active_waterfall=waterfall.WATERFALL_SWARMING,
-      # Because PST is 8 hours from UTC, these times are the same in both. But
-      # daylight savings time is NOT adjusted for
-      schedule='  0 2,10,18 * * *',
-  )
+  def _IsLakituConfig(config):
+    # Let's start with only lakitu_next since this is the first time we are
+    # adding a second master release builder.
+    # TODO: include all lakitu boards here.
+    return 'lakitu_next' in config['name']
+
+  def _CreateMasterConfig(name):
+    return site_config.Add(
+        name,
+        site_config.templates.release,
+        boards=[],
+        master=True,
+        slave_configs=[],
+        sync_chrome=False,
+        chrome_sdk=False,
+        afdo_use=False,
+        branch_util_test=True,
+        active_waterfall=waterfall.WATERFALL_SWARMING,
+        # Because PST is 8 hours from UTC, these times are the same in both. But
+        # daylight savings time is NOT adjusted for
+        schedule='  0 2,10,18 * * *',
+    )
+
+  ### Master release configs.
+  master_config = _CreateMasterConfig('master-release')
+  lakitu_master_config = _CreateMasterConfig('lakitu-master-release')
+
+  def _AssignToMaster(config):
+    """Add |config| as a slave config to the appropriate master config."""
+    master = lakitu_master_config if _IsLakituConfig(config) else master_config
+    master.AddSlave(config)
 
   ### Release configs.
 
@@ -3153,7 +3168,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
                   hw_test_list.CtsGtsQualTests()),
     )
 
-    master_config.AddSlave(site_config[config_name])
+    _AssignToMaster(site_config[config_name])
 
   def GetReleaseConfigName(board):
     """Convert a board name into a release config name."""
@@ -3193,7 +3208,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         site_config[config_name].apply(
             _GetConfigValues(board),
         )
-        master_config.AddSlave(site_config[config_name])
+        _AssignToMaster(site_config[config_name])
 
   def _AdjustGroupedReleaseConfigs(builder_group_dict):
     """Adjust leader and follower configs for grouped boards"""
@@ -3209,7 +3224,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
           site_config[config_name].apply(
               _GetConfigValues(board),
           )
-          master_config.AddSlave(site_config[config_name])
+          _AssignToMaster(site_config[config_name])
 
         # Followers are built on GCE instances, and turn off testing that breaks
         # on GCE. The missing tests run on the leader board.
@@ -3222,7 +3237,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
               chrome_sdk_build_chrome=False,
               vm_tests=[],
           )
-          master_config.AddSlave(site_config[config_name])
+          _AssignToMaster(site_config[config_name])
 
   def _AdjustReleaseConfigs():
     """Adjust ungrouped and grouped release configs"""
@@ -3742,7 +3757,7 @@ def BranchScheduleConfig():
   #
   # Define each branched schedule with:
   #   branch_name: Name of the branch to build as a string.
-  #   config_name: Name of the buidl config already present on the branch.
+  #   config_name: Name of the build config already present on the branch.
   #   label: Display label for UI use. Usually release, factory, firmware.
   #   schedule: When to do the build. Can take several formats.
   #     'triggered' for manual builds.

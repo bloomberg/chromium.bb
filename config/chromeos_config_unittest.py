@@ -739,8 +739,10 @@ class CBuildBotTest(ChromeosConfigTestBase):
                         'chrome-infra before adding this config.' %
                         (config.name, config.build_type))
         # We have multiple masters for Android PFQ.
+        # We also have multiple masters for canary: "master-release" for boards
+        # except lakitu and "lakitu-master-release" for lakitu boards.
         self.assertTrue(config.build_type not in found_types or
-                        config.build_type in ('pfq', 'android'),
+                        config.build_type in ('pfq', 'android', 'canary'),
                         'Duplicate master configs of build type %s' %
                         config.build_type)
         found_types.add(config.build_type)
