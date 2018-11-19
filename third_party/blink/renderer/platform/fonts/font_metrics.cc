@@ -33,7 +33,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/vdmx_parser.h"
 
-#include <SkPaint.h>
+#include <SkFont.h>
 #include <SkTypeface.h>
 
 namespace blink {
@@ -49,13 +49,13 @@ void FontMetrics::AscentDescentWithHacks(
     unsigned& visual_overflow_inflation_for_ascent,
     unsigned& visual_overflow_inflation_for_descent,
     const FontPlatformData& platform_data,
-    const SkPaint& paint,
+    const SkFont& font,
     bool subpixel_ascent_descent) {
-  SkTypeface* face = paint.getTypeface();
+  SkTypeface* face = font.getTypeface();
   DCHECK(face);
 
   SkFontMetrics metrics;
-  paint.getFontMetrics(&metrics);
+  font.getMetrics(&metrics);
 
   int vdmx_ascent = 0, vdmx_descent = 0;
   bool is_vdmx_valid = false;
@@ -66,8 +66,9 @@ void FontMetrics::AscentDescentWithHacks(
   // done.  This code should be pushed into FreeType (hinted font metrics).
   static const uint32_t kVdmxTag = SkSetFourByteTag('V', 'D', 'M', 'X');
   int pixel_size = platform_data.size() + 0.5;
-  if (!paint.isAutohinted() && (paint.getHinting() == SkFontHinting::kFull ||
-                                paint.getHinting() == SkFontHinting::kNormal)) {
+  if (!font.isForceAutoHinting() &&
+      (font.getHinting() == SkFontHinting::kFull ||
+       font.getHinting() == SkFontHinting::kNormal)) {
     size_t vdmx_size = face->getTableSize(kVdmxTag);
     if (vdmx_size && vdmx_size < kMaxVDMXTableSize) {
       uint8_t* vdmx_table = (uint8_t*)WTF::Partitions::FastMalloc(

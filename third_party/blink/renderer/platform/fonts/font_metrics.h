@@ -25,7 +25,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
-#include <SkPaint.h>
+class SkFont;
 
 namespace blink {
 
@@ -168,7 +168,7 @@ class FontMetrics {
       unsigned& visual_overflow_inflation_for_ascent,
       unsigned& visual_overflow_inflation_for_descent,
       const FontPlatformData&,
-      const SkPaint&,
+      const SkFont&,
       bool subpixel_ascent_descent = false);
 
  private:

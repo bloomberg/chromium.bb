@@ -79,17 +79,16 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
 
   SkFontMetrics metrics;
 
-  paint_ = SkPaint();
-  platform_data_.SetupSkPaint(&paint_);
-  paint_.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-  paint_.getFontMetrics(&metrics);
+  font_ = SkFont();
+  platform_data_.SetupSkFont(&font_);
+  font_.getMetrics(&metrics);
 
   float ascent;
   float descent;
 
   FontMetrics::AscentDescentWithHacks(
       ascent, descent, visual_overflow_inflation_for_ascent_,
-      visual_overflow_inflation_for_descent_, platform_data_, paint_,
+      visual_overflow_inflation_for_descent_, platform_data_, font_,
       subpixel_ascent_descent);
 
   font_metrics_.SetAscent(ascent);
@@ -161,7 +160,7 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
   }
 #endif
 
-  SkTypeface* face = paint_.getTypeface();
+  SkTypeface* face = font_.getTypeface();
   DCHECK(face);
   if (int units_per_em = face->getUnitsPerEm())
     font_metrics_.SetUnitsPerEm(units_per_em);
@@ -349,7 +348,7 @@ FloatRect SimpleFontData::PlatformBoundsForGlyph(Glyph glyph) const {
   static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
 
   SkRect bounds;
-  SkiaTextMetrics(&paint_).GetSkiaBoundsForGlyph(glyph, &bounds);
+  SkiaTextMetrics(font_).GetSkiaBoundsForGlyph(glyph, &bounds);
   return FloatRect(bounds);
 }
 
@@ -361,7 +360,7 @@ void SimpleFontData::BoundsForGlyphs(const Vector<Glyph, 256>& glyphs,
     return;
 
   DCHECK_EQ(bounds->size(), glyphs.size());
-  SkiaTextMetrics(&paint_).GetSkiaBoundsForGlyphs(glyphs, bounds->data());
+  SkiaTextMetrics(font_).GetSkiaBoundsForGlyphs(glyphs, bounds->data());
 }
 
 float SimpleFontData::PlatformWidthForGlyph(Glyph glyph) const {
@@ -370,7 +369,7 @@ float SimpleFontData::PlatformWidthForGlyph(Glyph glyph) const {
 
   static_assert(sizeof(glyph) == 2, "Glyph id should not be truncated.");
 
-  return SkiaTextMetrics(&paint_).GetSkiaWidthForGlyph(glyph);
+  return SkiaTextMetrics(font_).GetSkiaWidthForGlyph(glyph);
 }
 
 }  // namespace blink
