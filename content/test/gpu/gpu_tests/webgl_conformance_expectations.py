@@ -640,8 +640,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/image/' +
                'tex-2d-rgb-rgb-unsigned_byte.html',
                ['linux', 'nvidia'], bug=596622)
-    self.Flaky('conformance2/context/methods-2.html',
-               ['linux', 'nvidia'], bug=906212)
 
     # NVIDIA P400 OpenGL
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
