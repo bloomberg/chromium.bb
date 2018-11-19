@@ -458,6 +458,16 @@ class VolumeEntry {
   }
 
   /**
+   * @return {!Array<!Entry|!FilesAppEntry>} List of entries that are shown as
+   *     children of this Volume in the UI, but are not actually entries of the
+   *     Volume.  E.g. 'Play files' is shown as a child of 'My files'.  Use
+   *     createReader to find real child entries of the Volume's filesystem.
+   */
+  getUIChildren() {
+    return this.children_;
+  }
+
+  /**
    * @return {string} Full path for this volume.
    * This method is defined on Entry.
    * @override.

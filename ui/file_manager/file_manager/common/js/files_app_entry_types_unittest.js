@@ -169,6 +169,9 @@ function testVolumeEntryFindIndex() {
   // Test findIndexByVolumeInfo.
   assertEquals(0, volumeEntry.findIndexByVolumeInfo(crostini.volumeInfo));
   assertEquals(1, volumeEntry.findIndexByVolumeInfo(android.volumeInfo));
+  assertEquals(2, volumeEntry.getUIChildren().length);
+  assertEquals(crostini, volumeEntry.getUIChildren()[0]);
+  assertEquals(android, volumeEntry.getUIChildren()[1]);
 
   // Test removeByVolumeType.
   assertTrue(

@@ -1394,8 +1394,13 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "getRootPaths") {
-    // Obtain the root paths.
-    const auto downloads_root = util::GetDownloadsMountPointName(profile());
+    // Obtain the root paths. TODO(lucmult): Remove the + /Downloads once
+    // MyFilesVolume is rolled out.
+    const auto downloads_root =
+        util::GetDownloadsMountPointName(profile()) +
+        (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume)
+             ? "/Downloads"
+             : "");
 
     base::DictionaryValue dictionary;
     dictionary.SetString("downloads", "/" + downloads_root);
