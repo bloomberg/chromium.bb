@@ -272,6 +272,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // for a LayoutObject.
   static FragmentRange InlineFragmentsFor(const LayoutObject*);
 
+  const NGPaintFragment* LastForSameLayoutObject() const;
   NGPaintFragment* LastForSameLayoutObject();
 
   // Called when lines containing |child| is dirty.

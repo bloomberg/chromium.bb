@@ -501,6 +501,10 @@ NGPaintFragment::FragmentRange NGPaintFragment::InlineFragmentsFor(
   return FragmentRange(nullptr, false);
 }
 
+const NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() const {
+  return const_cast<NGPaintFragment*>(this)->LastForSameLayoutObject();
+}
+
 NGPaintFragment* NGPaintFragment::LastForSameLayoutObject() {
   NGPaintFragment* fragment = this;
   while (fragment->next_for_same_layout_object_)
