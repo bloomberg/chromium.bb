@@ -105,7 +105,7 @@ class LoadImageRequest {
      */
     this.url;
 
-    /** @type{ImageOrientation|number|ImageTransformParam|undefined} */
+    /** @type{ImageOrientation|ImageTransformParam|undefined} */
     this.orientation;
     /** @type {number|undefined} */
     this.scale;

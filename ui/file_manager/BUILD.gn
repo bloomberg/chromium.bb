@@ -60,6 +60,7 @@ group("unit_test_data") {
     "file_manager/background/js:unit_tests",
     "file_manager/common/js:unit_tests",
     "file_manager/foreground/js:unit_tests",
+    "file_manager/foreground/js/metadata:unit_tests",
     "file_manager/foreground/js/ui:unit_tests",
     "gallery/js:unit_tests",
     "gallery/js/image_editor:unit_tests",
