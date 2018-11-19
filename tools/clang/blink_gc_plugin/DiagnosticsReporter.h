@@ -86,6 +86,10 @@ class DiagnosticsReporter {
   void OptionalUsedWithGC(const clang::Expr* expr,
                           const clang::CXXRecordDecl* optional,
                           const clang::CXXRecordDecl* gc_type);
+  void MissingMixinMarker(const clang::CXXRecordDecl* bad_class,
+                          const clang::CXXRecordDecl* mixin_class,
+                          const clang::CXXBaseSpecifier* first_base);
+  void MissingMixinMarkerNote(const clang::CXXBaseSpecifier* base);
 
  private:
   clang::DiagnosticBuilder ReportDiagnostic(
@@ -150,6 +154,8 @@ class DiagnosticsReporter {
 
   unsigned diag_unique_ptr_used_with_gc_;
   unsigned diag_optional_used_with_gc_;
+  unsigned diag_missing_mixin_marker_;
+  unsigned diag_missing_mixin_marker_note_;
 };
 
 #endif // TOOLS_BLINK_GC_PLUGIN_DIAGNOSTICS_REPORTER_H_
