@@ -10099,6 +10099,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ManualFallback_CreditCard_OpenManageCreditCard">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on &quot;Manage credit cards&quot; on the Password Manual
+    Fallback view.
+  </description>
+</action>
+
 <action name="ManualFallback_OpenCreditCard">
   <owner>javierrobles@chromium.org</owner>
   <description>The user opened Credit Card Manual Fallback view.</description>
@@ -10141,6 +10149,14 @@ should be able to be added at any place in this file.
   <owner>javierrobles@chromium.org</owner>
   <description>
     The user tapped on a username in the Password Manual Fallback view.
+  </description>
+</action>
+
+<action name="ManualFallback_Profiles_OpenManageProfiles">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on &quot;Manage addresses&quot; on the Password Manual
+    Fallback view.
   </description>
 </action>
 
