@@ -350,11 +350,6 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
     notification_manager_.SendNotifications(
         container_behavior_->OccludedBoundsAffectWorkspaceLayout(), new_bounds,
         occluded_bounds_in_screen, observer_list_);
-
-    if (IsKeyboardOverscrollEnabled())
-      ui_->InitInsets(occluded_bounds_in_screen);
-    else
-      ui_->ResetInsets();
   } else {
     visual_bounds_in_screen_ = gfx::Rect();
   }

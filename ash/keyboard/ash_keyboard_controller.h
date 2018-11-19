@@ -109,6 +109,8 @@ class ASH_EXPORT AshKeyboardController
   void OnKeyboardConfigChanged() override;
   void OnKeyboardVisibilityStateChanged(bool is_visible) override;
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
+  void OnKeyboardWorkspaceOccludedBoundsChanged(
+      const gfx::Rect& bounds) override;
   void OnKeyboardEnableFlagsChanged(
       std::set<keyboard::mojom::KeyboardEnableFlag>& keyboard_enable_flags)
       override;

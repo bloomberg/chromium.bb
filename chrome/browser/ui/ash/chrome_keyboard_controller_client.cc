@@ -305,6 +305,12 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
   router->BroadcastEvent(std::move(event));
 }
 
+void ChromeKeyboardControllerClient::OnKeyboardOccludedBoundsChanged(
+    const gfx::Rect& bounds) {
+  for (auto& observer : observers_)
+    observer.OnKeyboardOccludedBoundsChanged(bounds);
+}
+
 Profile* ChromeKeyboardControllerClient::GetProfile() {
   if (profile_for_test_)
     return profile_for_test_;

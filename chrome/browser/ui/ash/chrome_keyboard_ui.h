@@ -38,8 +38,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   aura::Window* GetKeyboardWindow() const override;
   ui::InputMethod* GetInputMethod() override;
   void ReloadKeyboardIfNeeded() override;
-  void InitInsets(const gfx::Rect& new_bounds) override;
-  void ResetInsets() override;
 
   // aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,

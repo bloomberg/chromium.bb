@@ -48,7 +48,5 @@ ui::InputMethod* TestKeyboardUI::GetInputMethod() {
 }
 
 void TestKeyboardUI::ReloadKeyboardIfNeeded() {}
-void TestKeyboardUI::InitInsets(const gfx::Rect& keyboard_bounds) {}
-void TestKeyboardUI::ResetInsets() {}
 
 }  // namespace ash

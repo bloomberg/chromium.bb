@@ -34,7 +34,6 @@ ChromeKeyboardUI::ChromeKeyboardUI(content::BrowserContext* context)
     : browser_context_(context) {}
 
 ChromeKeyboardUI::~ChromeKeyboardUI() {
-  ResetInsets();
   DCHECK(!keyboard_controller());
 }
 
@@ -82,16 +81,6 @@ void ChromeKeyboardUI::ReloadKeyboardIfNeeded() {
   DCHECK(keyboard_contents_);
   keyboard_contents_->SetKeyboardUrl(
       ChromeKeyboardControllerClient::Get()->GetVirtualKeyboardUrl());
-}
-
-void ChromeKeyboardUI::InitInsets(const gfx::Rect& new_bounds) {
-  DCHECK(keyboard_contents_);
-  keyboard_contents_->window_bounds_observer()->UpdateOccludedBounds(
-      new_bounds);
-}
-
-void ChromeKeyboardUI::ResetInsets() {
-  InitInsets(gfx::Rect());
 }
 
 // aura::WindowObserver:

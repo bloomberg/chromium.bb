@@ -31,8 +31,6 @@ class TestKeyboardUI : public keyboard::KeyboardUI {
   // Overridden from keyboard::KeyboardUI:
   ui::InputMethod* GetInputMethod() override;
   void ReloadKeyboardIfNeeded() override;
-  void InitInsets(const gfx::Rect& keyboard_bounds) override;
-  void ResetInsets() override;
 
   aura::test::TestWindowDelegate delegate_;
   std::unique_ptr<aura::Window> keyboard_window_;

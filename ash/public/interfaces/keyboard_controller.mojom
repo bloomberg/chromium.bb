@@ -36,6 +36,9 @@ interface KeyboardControllerObserver {
 
   // Called when the keyboard bounds change.
   OnKeyboardVisibleBoundsChanged(gfx.mojom.Rect new_bounds);
+
+  // Called when the keyboard occluded bounds change.
+  OnKeyboardOccludedBoundsChanged(gfx.mojom.Rect new_bounds);
 };
 
 interface KeyboardController {

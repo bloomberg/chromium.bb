@@ -7,7 +7,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_bounds_observer.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -18,10 +17,23 @@ ChromeKeyboardBoundsObserver::ChromeKeyboardBoundsObserver(
     aura::Window* keyboard_window)
     : keyboard_window_(keyboard_window) {
   DCHECK(keyboard_window_);
+  ChromeKeyboardControllerClient::Get()->AddObserver(this);
 }
 
 ChromeKeyboardBoundsObserver::~ChromeKeyboardBoundsObserver() {
+  UpdateOccludedBounds(gfx::Rect());
+
   RemoveAllObservedWindows();
+
+  ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
+}
+
+void ChromeKeyboardBoundsObserver::OnKeyboardOccludedBoundsChanged(
+    const gfx::Rect& new_bounds) {
+  UpdateOccludedBounds(
+      ChromeKeyboardControllerClient::Get()->IsKeyboardOverscrollEnabled()
+          ? new_bounds
+          : gfx::Rect());
 }
 
 void ChromeKeyboardBoundsObserver::UpdateOccludedBounds(
