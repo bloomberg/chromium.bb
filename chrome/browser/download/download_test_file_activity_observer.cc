@@ -52,8 +52,8 @@ class DownloadTestFileActivityObserver::MockDownloadManagerDelegate
   }
 
  protected:
-  void ShowFilePicker(
-      const std::string& guid,
+  void ShowFilePickerForDownload(
+      download::DownloadItem* download,
       const base::FilePath& suggested_path,
       const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback)
       override {
