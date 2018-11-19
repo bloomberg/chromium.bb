@@ -89,11 +89,9 @@ CreateNetworkChangeNotifierIfNeeded() {
     // On Android, NetworkChangeNotifier objects are always set up in process
     // before NetworkService is run.
     return nullptr;
-#elif defined(OS_CHROMEOS) || defined(OS_IOS) || defined(OS_FUCHSIA)
-    // ChromeOS has its own implementation of NetworkChangeNotifier that lives
-    // outside of //net. iOS doesn't embed //content. Fuchsia doesn't have an
-    // implementation yet.
-    // TODO(xunjieli): Figure out what to do for these 3 platforms.
+#elif defined(OS_IOS) || defined(OS_FUCHSIA)
+    // iOS doesn't embed //content. Fuchsia doesn't have an implementation yet.
+    // TODO(xunjieli): Figure out what to do for these 2 platforms.
     NOTIMPLEMENTED();
     return nullptr;
 #endif

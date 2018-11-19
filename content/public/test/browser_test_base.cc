@@ -66,6 +66,12 @@
 #include "base/process/process_handle.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "content/public/browser/network_service_instance.h"
+#include "net/base/network_change_notifier.h"
+#include "net/base/network_change_notifier_chromeos.h"
+#endif
+
 #if defined(USE_AURA)
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"  // nogncheck
@@ -386,6 +392,17 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
   if (handle_sigterm_)
     signal(SIGTERM, DumpStackTraceSignalHandler);
 #endif  // defined(OS_POSIX)
+
+#if defined(OS_CHROMEOS)
+  // Manually set the connection type since ChromeOS's NetworkChangeNotifier
+  // implementation relies on some other class controlling it (normally
+  // NetworkChangeManagerClient), which may not be set up in all browser tests.
+  net::NetworkChangeNotifierChromeos* network_change_notifier =
+      static_cast<net::NetworkChangeNotifierChromeos*>(
+          content::GetNetworkChangeNotifier());
+  network_change_notifier->OnConnectionChanged(
+      net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+#endif
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableTracing)) {
