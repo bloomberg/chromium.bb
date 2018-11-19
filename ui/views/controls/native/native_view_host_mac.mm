@@ -261,6 +261,10 @@ gfx::NativeCursor NativeViewHostMac::GetCursor(int x, int y) {
   return gfx::kNullCursor;
 }
 
+void NativeViewHostMac::SetVisible(bool visible) {
+  [native_view_ setHidden:!visible];
+}
+
 // static
 NativeViewHostWrapper* NativeViewHostWrapper::CreateWrapper(
     NativeViewHost* host) {

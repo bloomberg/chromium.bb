@@ -129,6 +129,10 @@ void WebView::SetCrashedOverlayView(View* crashed_overlay_view) {
 
   if (crashed_overlay_view_) {
     RemoveChildView(crashed_overlay_view_);
+    // Show the hosted web contents view iff the crashed
+    // overlay is NOT showing, to ensure hit testing is
+    // correct on Mac. See https://crbug.com/896508
+    holder_->SetVisible(true);
     if (!crashed_overlay_view_->owned_by_client())
       delete crashed_overlay_view_;
   }
@@ -136,6 +140,7 @@ void WebView::SetCrashedOverlayView(View* crashed_overlay_view) {
   crashed_overlay_view_ = crashed_overlay_view;
   if (crashed_overlay_view_) {
     AddChildView(crashed_overlay_view_);
+    holder_->SetVisible(false);
     crashed_overlay_view_->SetBoundsRect(gfx::Rect(size()));
   }
 
