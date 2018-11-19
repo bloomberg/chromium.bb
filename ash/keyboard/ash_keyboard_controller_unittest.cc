@@ -48,6 +48,7 @@ class TestObserver : public mojom::KeyboardControllerObserver {
   }
   void OnKeyboardVisibilityChanged(bool visible) override {}
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override {}
+  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& bounds) override {}
   void OnKeyboardConfigChanged(KeyboardConfigPtr config) override {
     config_ = *config;
   }

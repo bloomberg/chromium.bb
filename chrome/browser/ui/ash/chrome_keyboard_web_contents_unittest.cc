@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
@@ -22,8 +23,16 @@ class ChromeKeyboardWebContentsTest : public ChromeRenderViewHostTestHarness {
   ChromeKeyboardWebContentsTest() = default;
   ~ChromeKeyboardWebContentsTest() override = default;
 
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    chrome_keyboard_controller_client_ =
+        std::make_unique<ChromeKeyboardControllerClient>(
+            nullptr /* connector */);
+  }
+
   void TearDown() override {
     chrome_keyboard_web_contents_.reset();
+    chrome_keyboard_controller_client_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -34,6 +43,8 @@ class ChromeKeyboardWebContentsTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
+  std::unique_ptr<ChromeKeyboardControllerClient>
+      chrome_keyboard_controller_client_;
   std::unique_ptr<ChromeKeyboardWebContents> chrome_keyboard_web_contents_;
 };
 

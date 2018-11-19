@@ -269,6 +269,13 @@ void AshKeyboardController::OnKeyboardVisibleBoundsChanged(
   });
 }
 
+void AshKeyboardController::OnKeyboardWorkspaceOccludedBoundsChanged(
+    const gfx::Rect& bounds) {
+  observers_.ForAllPtrs([&bounds](mojom::KeyboardControllerObserver* observer) {
+    observer->OnKeyboardOccludedBoundsChanged(bounds);
+  });
+}
+
 void AshKeyboardController::OnKeyboardEnableFlagsChanged(
     std::set<keyboard::mojom::KeyboardEnableFlag>& keyboard_enable_flags) {
   std::vector<keyboard::mojom::KeyboardEnableFlag> flags(

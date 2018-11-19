@@ -8,12 +8,15 @@
 #include <set>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
 // Class responsible for updating insets for windows overlapping the virtual
 // keyboard.
-class ChromeKeyboardBoundsObserver : public aura::WindowObserver {
+class ChromeKeyboardBoundsObserver
+    : public aura::WindowObserver,
+      public ChromeKeyboardControllerClient::Observer {
  public:
   explicit ChromeKeyboardBoundsObserver(aura::Window* keyboard_window);
   ~ChromeKeyboardBoundsObserver() override;
@@ -21,6 +24,10 @@ class ChromeKeyboardBoundsObserver : public aura::WindowObserver {
   // Provides the bounds occluded by the keyboard any time they change.
   // (i.e. by the KeyboardController through KeyboardUI::InitInsets).
   void UpdateOccludedBounds(const gfx::Rect& occluded_bounds);
+
+  // keyboard::ChromeKeyboardControllerClient::Observer:
+  void OnKeyboardVisibilityChanged(bool visible) override {}
+  void OnKeyboardOccludedBoundsChanged(const gfx::Rect& new_bounds) override;
 
  private:
   void AddObservedWindow(aura::Window* window);
