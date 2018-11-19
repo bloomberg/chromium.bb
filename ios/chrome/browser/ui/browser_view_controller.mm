@@ -113,8 +113,6 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
-#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #import "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
@@ -413,7 +411,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @interface BrowserViewController ()<ActivityServicePresentation,
                                     BubblePresenterDelegate,
                                     CaptivePortalDetectorTabHelperDelegate,
-                                    ConsentBumpCoordinatorDelegate,
                                     CRWNativeContentProvider,
                                     CRWWebStateDelegate,
                                     DialogPresenterDelegate,
@@ -690,9 +687,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Whether the safe area insets should be used to adjust the viewport.
 @property(nonatomic, readonly) BOOL usesSafeInsetsForViewportAdjustments;
 
-// Coordinator to ask the user for the new consent.
-@property(nonatomic, strong) ConsentBumpCoordinator* consentBumpCoordinator;
-
 // BVC initialization
 // ------------------
 // If the BVC is initialized with a valid browser state & tab model immediately,
@@ -880,7 +874,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // DialogPresenterDelegate property
 @synthesize dialogPresenterDelegateIsPresenting =
     _dialogPresenterDelegateIsPresenting;
-@synthesize consentBumpCoordinator = _consentBumpCoordinator;
 
 #pragma mark - Object lifecycle
 
@@ -4640,24 +4633,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   }
 }
 
-- (void)showConsentBumpIfNeeded {
-  DCHECK(!self.consentBumpCoordinator);
-  if (![ConsentBumpCoordinator
-          shouldShowConsentBumpWithBrowserState:_browserState]) {
-    return;
-  }
-  self.consentBumpCoordinator =
-      [[ConsentBumpCoordinator alloc] initWithBaseViewController:self
-                                                    browserState:_browserState];
-  self.consentBumpCoordinator.delegate = self;
-  [self.consentBumpCoordinator start];
-  self.consentBumpCoordinator.viewController.modalPresentationStyle =
-      UIModalPresentationFormSheet;
-  [self presentViewController:self.consentBumpCoordinator.viewController
-                     animated:YES
-                   completion:nil];
-}
-
 - (void)focusFakebox {
   id nativeController = [self nativeControllerForTab:self.tabModel.currentTab];
   DCHECK([nativeController conformsToProtocol:@protocol(NewTabPageOwning)]);
@@ -5381,23 +5356,6 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 
 - (void)showSyncPassphraseSettings {
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
-}
-
-#pragma mark - ConsentBumpCoordinatorDelegate
-
-- (void)consentBumpCoordinator:(ConsentBumpCoordinator*)coordinator
-    didFinishNeedingToShowSettings:(BOOL)shouldShowSettings {
-  DCHECK(self.consentBumpCoordinator);
-  DCHECK(self.consentBumpCoordinator.viewController);
-  auto completion = ^{
-    if (shouldShowSettings) {
-      [self.dispatcher showGoogleServicesSettingsFromViewController:self];
-    }
-  };
-  [self.consentBumpCoordinator.viewController
-      dismissViewControllerAnimated:YES
-                         completion:completion];
-  self.consentBumpCoordinator = nil;
 }
 
 #pragma mark - NewTabPageTabHelperDelegate

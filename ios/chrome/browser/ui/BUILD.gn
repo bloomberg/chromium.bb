@@ -311,7 +311,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/app_launcher",
-    "//ios/chrome/browser/ui/authentication/consent_bump",
     "//ios/chrome/browser/ui/autofill:autofill",
     "//ios/chrome/browser/ui/autofill/manual_fill",
     "//ios/chrome/browser/ui/bookmarks",

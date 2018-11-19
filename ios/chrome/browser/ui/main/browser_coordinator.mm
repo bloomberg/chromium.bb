@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/main/browser_coordinator.h"
 
+#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
@@ -19,7 +21,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface BrowserCoordinator ()<FormInputAccessoryCoordinatorDelegate>
+@interface BrowserCoordinator ()<ConsentBumpCoordinatorDelegate,
+                                 FormInputAccessoryCoordinatorDelegate>
 
 // Handles command dispatching.
 @property(nonatomic, strong) CommandDispatcher* dispatcher;
@@ -27,6 +30,9 @@
 // =================================================
 // Child Coordinators, listed in alphabetical order.
 // =================================================
+
+// Coordinator to ask the user for the new consent.
+@property(nonatomic, strong) ConsentBumpCoordinator* consentBumpCoordinator;
 
 // Coordinator in charge of the presenting autofill options above the
 // keyboard.
@@ -50,6 +56,7 @@
 @implementation BrowserCoordinator
 @synthesize dispatcher = _dispatcher;
 // Child coordinators
+@synthesize consentBumpCoordinator = _consentBumpCoordinator;
 @synthesize formInputAccessoryCoordinator = _formInputAccessoryCoordinator;
 @synthesize qrScannerCoordinator = _qrScannerCoordinator;
 @synthesize readingListCoordinator = _readingListCoordinator;
@@ -106,6 +113,9 @@
   // Dispatcher should be instantiated so that it can be passed to child
   // coordinators.
   DCHECK(self.dispatcher);
+
+  /* ConsentBumpCoordinator is created and started by a BrowserCommand */
+
   self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState
@@ -128,6 +138,9 @@
 
 // Stops child coordinators.
 - (void)stopChildCoordinators {
+  [self.consentBumpCoordinator stop];
+  self.consentBumpCoordinator = nil;
+
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
 
@@ -145,6 +158,25 @@
 }
 
 #pragma mark - BrowserCoordinatorCommands
+
+- (void)showConsentBumpIfNeeded {
+  DCHECK(!self.consentBumpCoordinator);
+  if (![ConsentBumpCoordinator
+          shouldShowConsentBumpWithBrowserState:self.browserState]) {
+    return;
+  }
+  self.consentBumpCoordinator = [[ConsentBumpCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                    browserState:self.browserState];
+  self.consentBumpCoordinator.delegate = self;
+  [self.consentBumpCoordinator start];
+  self.consentBumpCoordinator.viewController.modalPresentationStyle =
+      UIModalPresentationFormSheet;
+  [self.viewController
+      presentViewController:self.consentBumpCoordinator.viewController
+                   animated:YES
+                 completion:nil];
+}
 
 - (void)showReadingList {
   self.readingListCoordinator = [[ReadingListCoordinator alloc]
@@ -175,6 +207,25 @@
   self.recentTabsCoordinator.loader = self.viewController;
   self.recentTabsCoordinator.dispatcher = self.applicationCommandHandler;
   [self.recentTabsCoordinator start];
+}
+
+#pragma mark - ConsentBumpCoordinatorDelegate
+
+- (void)consentBumpCoordinator:(ConsentBumpCoordinator*)coordinator
+    didFinishNeedingToShowSettings:(BOOL)shouldShowSettings {
+  DCHECK(self.consentBumpCoordinator);
+  DCHECK(self.consentBumpCoordinator.viewController);
+  auto completion = ^{
+    if (shouldShowSettings) {
+      [self.applicationCommandHandler
+          showGoogleServicesSettingsFromViewController:self.viewController];
+    }
+  };
+  [self.consentBumpCoordinator.viewController
+      dismissViewControllerAnimated:YES
+                         completion:completion];
+  [self.consentBumpCoordinator stop];
+  self.consentBumpCoordinator = nil;
 }
 
 #pragma mark - FormInputAccessoryCoordinatorDelegate
