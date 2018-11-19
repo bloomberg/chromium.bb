@@ -46,5 +46,8 @@ Home-page: https://grpc.io/
 License: Apache License 2.0
 
 Local modifications in ./rpc
- - protoc --python_out=. *.proto
- - touch __init__.py
+```
+touch __init__.py
+cd ../..
+protoc --python_out=. google/rpc/*.proto
+```
