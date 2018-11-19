@@ -19,7 +19,8 @@ const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";
 const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
 
 // Boolean indicating that TiclInvalidationService should use GCM channel.
-// False or lack of settings means XMPPPushClient channel.
+// False means XMPPPushClient channel.
+// TODO(crbug.com/904782): Get rid of this; it's always true.
 const char kInvalidationServiceUseGCMChannel[] =
     "invalidation_service.use_gcm_channel";
 

@@ -13,25 +13,17 @@ namespace syncer {
 
 const char kFaviconSyncTag[] = "favicon_sync";
 const char kPreCommitUpdateAvoidanceTag[] = "pre_commit_update_avoidance";
-const char kGCMInvalidationsTag[] = "gcm_invalidations";
 
 // A structure to hold the enable status of experimental sync features.
 struct Experiments {
-  Experiments()
-      : favicon_sync_limit(200),
-        // By default GCM channel is enabled:
-        gcm_invalidations_enabled(true) {}
+  Experiments() : favicon_sync_limit(200) {}
 
   bool Matches(const Experiments& rhs) {
-    return (favicon_sync_limit == rhs.favicon_sync_limit &&
-            gcm_invalidations_enabled == rhs.gcm_invalidations_enabled);
+    return favicon_sync_limit == rhs.favicon_sync_limit;
   }
 
   // The number of favicons that a client is permitted to sync.
   int favicon_sync_limit;
-
-  // Enable invalidations over GCM channel.
-  bool gcm_invalidations_enabled;
 };
 
 }  // namespace syncer
