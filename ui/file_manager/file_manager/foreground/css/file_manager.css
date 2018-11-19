@@ -2154,6 +2154,7 @@ list.autocomplete-suggestions > [lead] {
   -webkit-padding-end: 12px;
   -webkit-padding-start: 16px;
   flex: 1 0 0;
+  overflow: hidden;
 }
 
 #progress-center .progress-bar {
