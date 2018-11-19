@@ -66,15 +66,15 @@ class AdmxGenerator(object):
     self._BeginAdmlTemplate()
     self._BeginAdmxTemplate()
 
-    root_category_full_name = ('extension_' + self._extension_id)
+    root_category_name = 'extension'
 
     # Add a category element for the root
-    self._AddCategory(self._extension_name, root_category_full_name,
+    self._AddCategory(self._extension_name, root_category_name,
                       'Google:Cat_Google')
 
     properties = self._schema['properties']
     for policy_name, policy_schema in properties.items():
-      self._AddPolicy(policy_name, policy_schema, root_category_full_name,
+      self._AddPolicy(policy_name, policy_schema, root_category_name,
                       self._REGISTRY_KEY)
 
     return self._ToPrettyXml(self._admx_doc.toxml()), self._ToPrettyXml(
