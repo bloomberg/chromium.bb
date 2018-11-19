@@ -85,8 +85,8 @@ TEST_F(LoginMetricsRecorderTest, NoteActionButtonClick) {
 
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
-      data_dispatcher(),
-      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
   SetUserCount(1);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 

@@ -44,12 +44,12 @@ class LoginTestBase : public AshTestBase {
   // shown.
   std::unique_ptr<views::Widget> CreateWidgetWithContent(views::View* content);
 
-  // Changes the active number of users. Fires an event on |data_dispatcher()|.
+  // Changes the active number of users. Fires an event on |DataDispatcher()|.
   void SetUserCount(size_t count);
 
   // Append number of |num_users| regular auth users.
   // Changes the active number of users. Fires an event on
-  // |data_dispatcher()|.
+  // |DataDispatcher()|.
   void AddUsers(size_t num_users);
 
   // Add a single user with the specified |email|.
@@ -57,7 +57,7 @@ class LoginTestBase : public AshTestBase {
 
   // Append number of |num_public_accounts| public account users.
   // Changes the active number of users. Fires an event on
-  // |data_dispatcher()|.
+  // |DataDispatcher()|.
   void AddPublicAccountUsers(size_t num_public_accounts);
 
   std::vector<mojom::LoginUserInfoPtr>& users() { return users_; }
@@ -66,8 +66,7 @@ class LoginTestBase : public AshTestBase {
 
   // If the LockScreen is instantiated, returns its data dispatcher. Otherwise,
   // returns a standalone instance.
-  // TODO(crbug/906676): rename this method to DataDispatcher.
-  LoginDataDispatcher* data_dispatcher();
+  LoginDataDispatcher* DataDispatcher();
 
   // AshTestBase:
   void TearDown() override;
