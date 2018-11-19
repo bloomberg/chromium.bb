@@ -474,8 +474,7 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
     const GURL& url,
     const AutocompleteInput& input,
     const TemplateURLService* template_url_service,
-    const base::string16& keyword,
-    const std::string& additional_query_params) {
+    const base::string16& keyword) {
   if (!url.is_valid())
     return url;
 
@@ -496,12 +495,10 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
         stripped_destination_url,
         template_url_service->search_terms_data(),
         &search_terms)) {
-      TemplateURLRef::SearchTermsArgs search_terms_args(search_terms);
-      if (!additional_query_params.empty())
-        search_terms_args.additional_query_params = additional_query_params;
       stripped_destination_url =
           GURL(template_url->url_ref().ReplaceSearchTerms(
-              search_terms_args, template_url_service->search_terms_data()));
+              TemplateURLRef::SearchTermsArgs(search_terms),
+              template_url_service->search_terms_data()));
     }
   }
 
@@ -624,9 +621,8 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
 void AutocompleteMatch::ComputeStrippedDestinationURL(
     const AutocompleteInput& input,
     TemplateURLService* template_url_service) {
-  stripped_destination_url = GURLToStrippedGURL(
-      destination_url, input, template_url_service, keyword,
-      search_terms_args ? search_terms_args->additional_query_params : "");
+  stripped_destination_url =
+      GURLToStrippedGURL(destination_url, input, template_url_service, keyword);
 }
 
 void AutocompleteMatch::GetKeywordUIState(
