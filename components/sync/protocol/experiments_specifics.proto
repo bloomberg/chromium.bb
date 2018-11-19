@@ -74,6 +74,7 @@ message ExperimentsSpecifics {
   optional GcmChannelFlags gcm_channel = 6;
   // No longer used as of M43.
   optional EnhancedBookmarksFlags obsolete_enhanced_bookmarks = 7;
+  // No longer used as of M72.
   optional GcmInvalidationsFlags gcm_invalidations = 8;
   // No longer used as of M51.
   optional WalletSyncFlags obsolete_wallet_sync = 9;

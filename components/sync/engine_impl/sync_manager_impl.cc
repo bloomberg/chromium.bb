@@ -925,17 +925,6 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
     // know about this.
   }
 
-  ReadNode gcm_invalidations_node(&trans);
-  if (gcm_invalidations_node.InitByClientTagLookup(
-          EXPERIMENTS, kGCMInvalidationsTag) == BaseNode::INIT_OK) {
-    const sync_pb::GcmInvalidationsFlags& gcm_invalidations =
-        gcm_invalidations_node.GetExperimentsSpecifics().gcm_invalidations();
-    if (gcm_invalidations.has_enabled()) {
-      experiments->gcm_invalidations_enabled = gcm_invalidations.enabled();
-      found_experiment = true;
-    }
-  }
-
   return found_experiment;
 }
 
