@@ -18,7 +18,7 @@ test(function() {
     player.currentTime = 5;
     element.style.fontSize = '20px';
     element.style.width = '100px';
-    assert_equals(getComputedStyle(element).shapeMargin, 'calc(30px + 40%)');
+    assert_equals(getComputedStyle(element).shapeMargin, 'calc(40% + 30px)');
 }, 'shapeMargin responsive to style changes');
 
 </script>

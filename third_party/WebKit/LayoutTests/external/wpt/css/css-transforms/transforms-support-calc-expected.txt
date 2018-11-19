@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL translate supports calc assert_equals: expected "calc(20% + 30px) calc(100% - 200px)" but got "calc(30px + 20%) calc(-200px + 100%)"
+FAIL translate supports calc assert_equals: expected "calc(20% + 30px) calc(100% - 200px)" but got "calc(20% + 30px) calc(100% + -200px)"
 PASS rotate supports calc
 PASS scale supports calc
 PASS perspective supports calc
