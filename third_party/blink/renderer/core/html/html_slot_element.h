@@ -68,10 +68,14 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   Node* AssignedNodePreviousTo(const Node&) const;
 
   void AppendAssignedNode(Node&);
-  void ClearAssignedNodes();
 
   const HeapVector<Member<Node>> FlattenedAssignedNodes();
-  void RecalcFlatTreeChildren();
+
+  void WillRecalcAssignedNodes() { ClearAssignedNodes(); }
+  void DidRecalcAssignedNodes() {
+    UpdateFlatTreeNodeDataForAssignedNodes();
+    RecalcFlatTreeChildren();
+  }
 
   void AttachLayoutTree(AttachContext&) final;
   void DetachLayoutTree(const AttachContext& = AttachContext()) final;
@@ -134,10 +138,12 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
   const HeapVector<Member<Node>>& GetDistributedNodes();
 
+  void RecalcFlatTreeChildren();
+  void UpdateFlatTreeNodeDataForAssignedNodes();
+  void ClearAssignedNodes();
   void ClearAssignedNodesAndFlatTreeChildren();
 
   HeapVector<Member<Node>> assigned_nodes_;
-  HeapHashMap<Member<const Node>, unsigned> assigned_nodes_index_;
   HeapVector<Member<Node>> flat_tree_children_;
 
   bool slotchange_event_enqueued_ = false;

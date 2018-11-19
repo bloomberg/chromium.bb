@@ -51,6 +51,7 @@ class Element;
 class Event;
 class EventDispatchHandlingState;
 class ExceptionState;
+class FlatTreeNodeData;
 class GetRootNodeOptions;
 class HTMLQualifiedName;
 class HTMLSlotElement;
@@ -775,6 +776,10 @@ class CORE_EXPORT Node : public EventTarget {
 
   NodeListsNodeData* NodeLists();
   void ClearNodeLists();
+
+  // EnsureFlatTreeNodeData() must be called beforehand
+  FlatTreeNodeData& GetFlatTreeNodeData() const;
+  FlatTreeNodeData& EnsureFlatTreeNodeData();
 
   virtual bool WillRespondToMouseMoveEvents();
   virtual bool WillRespondToMouseClickEvents();

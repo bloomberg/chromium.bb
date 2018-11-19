@@ -114,6 +114,8 @@ Node* FlatTreeTraversal::TraverseSiblings(const Node& node,
 Node* FlatTreeTraversal::TraverseSiblingsForV1HostChild(
     const Node& node,
     TraversalDirection direction) {
+  // TODO(crbug.com/906494): Use flat_tree_node_data::assigned_slot to avoid
+  // hashmap lookup
   HTMLSlotElement* slot = node.AssignedSlot();
   if (!slot)
     return nullptr;

@@ -1250,6 +1250,16 @@ void Node::ClearNodeLists() {
   RareData()->ClearNodeLists();
 }
 
+FlatTreeNodeData& Node::EnsureFlatTreeNodeData() {
+  return EnsureRareData().EnsureFlatTreeNodeData();
+}
+
+FlatTreeNodeData& Node::GetFlatTreeNodeData() const {
+  DCHECK(HasRareData());
+  DCHECK(RareData()->GetFlatTreeNodeData());
+  return *RareData()->GetFlatTreeNodeData();
+}
+
 bool Node::IsDescendantOf(const Node* other) const {
   // Return true if other is an ancestor of this, otherwise false
   if (!other || !other->hasChildren() || isConnected() != other->isConnected())
