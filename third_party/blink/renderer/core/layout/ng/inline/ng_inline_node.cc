@@ -161,7 +161,8 @@ void CollectInlinesInternal(
       // box to prevent having inline/block-mixed children.
       DCHECK(node->IsInline());
       LayoutInline* layout_inline = ToLayoutInline(node);
-      layout_inline->UpdateShouldCreateBoxFragment();
+      if (update_layout)
+        layout_inline->UpdateShouldCreateBoxFragment();
 
       builder->EnterInline(layout_inline);
 
