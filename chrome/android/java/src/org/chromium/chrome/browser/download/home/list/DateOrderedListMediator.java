@@ -387,7 +387,7 @@ class DateOrderedListMediator {
      * changes between empty and non-empty.
      */
     private static class EmptyStateObserver implements OfflineItemFilterObserver {
-        private boolean mIsEmpty;
+        private Boolean mIsEmpty;
         private final DateOrderedListObserver mDateOrderedListObserver;
         private final OfflineItemFilter mOfflineItemFilter;
 
@@ -419,8 +419,8 @@ class DateOrderedListMediator {
         }
 
         private void calculateEmptyState() {
-            boolean isEmpty = mOfflineItemFilter.getItems().isEmpty();
-            if (mIsEmpty == isEmpty) return;
+            Boolean isEmpty = mOfflineItemFilter.getItems().isEmpty();
+            if (isEmpty.equals(mIsEmpty)) return;
 
             mIsEmpty = isEmpty;
             mDateOrderedListObserver.onEmptyStateChanged(mIsEmpty);
