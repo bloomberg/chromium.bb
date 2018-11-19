@@ -579,7 +579,7 @@
   },
   {
     "name": "disable-new-zip-unpacker",
-    // "owners": [ "your-team" ],
+    "owners": [ "chromeos-files-syd@google.com" ],
     "expiry_milestone": 76
   },
   {
