@@ -27,7 +27,7 @@
 namespace {
 const int kRowCount = 6;
 const CGFloat kRowHeight = 48.0;
-const CGFloat kShortcutsRowHeight = 320;
+const CGFloat kShortcutsRowHeight = 220;
 const CGFloat kAnswerRowHeight = 64.0;
 const CGFloat kTopAndBottomPadding = 8.0;
 UIColor* BackgroundColorTablet() {
