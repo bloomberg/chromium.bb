@@ -1109,9 +1109,12 @@ TEST_F(ModelTypeWorkerTest, EncryptionBlocksUpdates) {
   AddPendingKey();
   EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
 
-  // Update progress marker, should be blocked.
-  server()->SetProgressMarkerToken("token2");
-  DeliverRawUpdates(SyncEntityList());
+  // Receive an encrypted update with that new key, which we can't access.
+  SetUpdateEncryptionFilter(1);
+  TriggerUpdateFromServer(10, kTag1, kValue1);
+
+  // At this point, the cryptographer does not have access to the key, so the
+  // updates will be undecryptable. This should block all updates.
   EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
 
   // Update local cryptographer, verify everything is pushed to processor.
@@ -1268,7 +1271,7 @@ TEST_F(ModelTypeWorkerTest, ReceiveUndecryptableEntries) {
   // Receive a new foreign encryption key that we can't decrypt.
   AddPendingKey();
 
-  // Receive an encrypted with that new key, which we can't access.
+  // Receive an encrypted update with that new key, which we can't access.
   SetUpdateEncryptionFilter(1);
   TriggerUpdateFromServer(10, kTag1, kValue1);
 
@@ -1802,7 +1805,7 @@ TEST_F(ModelTypeWorkerPasswordsTest, ReceiveUndecryptablePasswordEntries) {
   sync_pb::EntitySpecifics encrypted_specifics =
       EncryptPasswordSpecifics(GetNthKeyParams(1), unencrypted_password);
 
-  // Receive an encrypted with that new key, which we can't access.
+  // Receive an encrypted update with that new key, which we can't access.
   SyncEntity entity = server()->UpdateFromServer(
       /*version_offset=*/10, kHash1, encrypted_specifics);
   worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
