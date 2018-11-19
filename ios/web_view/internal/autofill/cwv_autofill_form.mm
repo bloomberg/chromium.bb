@@ -27,7 +27,11 @@
     if (formTypes.find(autofill::CREDIT_CARD_FORM) != formTypes.end()) {
       _type |= CWVAutofillFormTypeCreditCards;
     }
-    if (formTypes.find(autofill::PASSWORD_FORM) != formTypes.end()) {
+    // Underlying autofill code does not parse password fields because it does
+    // not consider password forms as autofillable. In other words, |formTypes|
+    // will never contain PASSWORD_FORM. Luckily, it already provides a function
+    // to check if it has any password fields.
+    if (formStructure.has_password_field()) {
       _type |= CWVAutofillFormTypePasswords;
     }
   }
