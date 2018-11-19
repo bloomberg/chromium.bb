@@ -271,10 +271,6 @@ Still reading?
   <issue id="ResourceType" severity="Error">
     <ignore regexp="/javatests/"/>
   </issue>
-  <issue id="RedundantNamespace">
-    <!-- Please do not add any additional suppressions here with the exception of the 1 file below -->
-    <ignore regexp="chrome/android/java/res_autofill_assistant/layout/init_screen.xml"/>
-  </issue>
   <!-- TODO(crbug.com/831774): Play Services starts complaining about RestrictedApi. Needs investigation -->
   <issue id="RestrictedApi" severity="ignore"/>
   <issue id="RtlCompat" severity="ignore"/>
