@@ -30,6 +30,8 @@
             android:id="@+id/payment_container_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
             android:orientation="vertical" />
 
     </org.chromium.chrome.browser.widget.FadingEdgeScrollView>
@@ -39,13 +41,21 @@
     checkbox field, so we wrap it in a FrameLayout and control the margins and
     padding there.
     -->
+    <TextView
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_marginStart="@dimen/editor_dialog_section_large_spacing"
+        android:layout_marginTop="@dimen/editor_dialog_section_small_spacing"
+        android:textAppearance="@style/BlueLink2"
+        android:text="@string/autofill_assistant_terms_title" />
+
     <FrameLayout
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="28dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginStart="@dimen/editor_dialog_section_large_spacing"
+        android:layout_marginEnd="@dimen/editor_dialog_section_large_spacing"
+        android:layout_marginTop="@dimen/editor_dialog_section_small_spacing"
+        android:layout_marginBottom="@dimen/editor_dialog_section_small_spacing"
         android:paddingTop="9dp"
         android:paddingBottom="9dp"
         android:paddingStart="12dp"
