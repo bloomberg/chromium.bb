@@ -133,6 +133,7 @@ TEST_F(TLSSocketTest, DestroyWhileReadPending) {
   net::StaticSocketDataProvider data_provider(kReads, kWrites);
   mock_client_socket_factory()->AddSocketDataProvider(&data_provider);
   net::SSLSocketDataProvider ssl_socket(net::ASYNC, net::OK);
+  ssl_socket.expected_ssl_version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
 
   std::unique_ptr<TLSSocket> socket = CreateSocket();
@@ -239,7 +240,7 @@ TEST_P(TLSSocketTest, ReadWrite) {
       net::MockWrite(net::SYNCHRONOUS, kTestMsg, kTestMsgLength, 0)};
   net::SequencedSocketData data_provider(kReads, kWrites);
   net::SSLSocketDataProvider ssl_socket(io_mode, net::OK);
-
+  ssl_socket.expected_ssl_version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
   mock_client_socket_factory()->AddSocketDataProvider(&data_provider);
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
   std::unique_ptr<TLSSocket> socket = CreateSocket();
@@ -284,6 +285,7 @@ TEST_P(TLSSocketTest, PartialRead) {
       net::MockWrite(net::SYNCHRONOUS, kTestMsg, kTestMsgLength, 0)};
   net::SequencedSocketData data_provider(kReads, kWrites);
   net::SSLSocketDataProvider ssl_socket(io_mode, net::OK);
+  ssl_socket.expected_ssl_version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
   mock_client_socket_factory()->AddSocketDataProvider(&data_provider);
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
   std::unique_ptr<TLSSocket> socket = CreateSocket();
@@ -328,6 +330,7 @@ TEST_P(TLSSocketTest, ReadError) {
       net::MockWrite(net::SYNCHRONOUS, kTestMsg, kTestMsgLength, 0)};
   net::SequencedSocketData data_provider(kReads, kWrites);
   net::SSLSocketDataProvider ssl_socket(io_mode, net::OK);
+  ssl_socket.expected_ssl_version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
   mock_client_socket_factory()->AddSocketDataProvider(&data_provider);
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
 
@@ -384,6 +387,7 @@ TEST_P(TLSSocketTest, MultipleWrite) {
                      1)};
   net::SequencedSocketData data_provider(kReads, kWrites);
   net::SSLSocketDataProvider ssl_socket(io_mode, net::OK);
+  ssl_socket.expected_ssl_version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
   mock_client_socket_factory()->AddSocketDataProvider(&data_provider);
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
   std::unique_ptr<TLSSocket> socket = CreateSocket();
@@ -418,7 +422,7 @@ TEST_P(TLSSocketTest, PartialWrite) {
 
   net::SequencedSocketData data_provider(kReads, kWrites);
   net::SSLSocketDataProvider ssl_socket(io_mode, net::OK);
-
+  ssl_socket.expected_ssl_version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
   mock_client_socket_factory()->AddSocketDataProvider(&data_provider);
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
 
@@ -458,7 +462,7 @@ TEST_P(TLSSocketTest, WriteError) {
 
   net::SequencedSocketData data_provider(kReads, kWrites);
   net::SSLSocketDataProvider ssl_socket(io_mode, net::OK);
-
+  ssl_socket.expected_ssl_version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
   mock_client_socket_factory()->AddSocketDataProvider(&data_provider);
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
   std::unique_ptr<TLSSocket> socket = CreateSocket();

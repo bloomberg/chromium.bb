@@ -944,6 +944,11 @@ TEST_F(SSLClientSocketPoolTest, Tag) {
   test_server.AddDefaultHandlers(base::FilePath());
   ASSERT_TRUE(test_server.Start());
 
+  // TLS 1.3 sockets aren't reused until the read side has been pumped.
+  // TODO(crbug.com/906668): Support pumping the read side and setting the
+  // socket to be reusable.
+  ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+
   TransportClientSocketPool tcp_pool(
       kMaxSockets, kMaxSocketsPerGroup, &host_resolver_,
       ClientSocketFactory::GetDefaultFactory(), NULL, NULL);

@@ -2771,6 +2771,13 @@ TEST_F(URLLoaderTest, ClientAuthNoCertificate) {
   net::SSLServerConfig ssl_config;
   ssl_config.client_cert_type =
       net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+
+  // TLS 1.3 client auth errors show up post-handshake, resulting in a read
+  // error which on Windows causes the socket to shutdown immediately before the
+  // error is read.
+  // TODO(crbug.com/906668): Add support for testing this in TLS 1.3.
+  ssl_config.version_max = net::SSL_PROTOCOL_VERSION_TLS1_2;
+
   test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
   test_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("services/test/data")));

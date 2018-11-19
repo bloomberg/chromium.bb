@@ -12,7 +12,7 @@ namespace net {
 // services/network/public/mojom/ssl_config.mojom.
 const uint16_t kDefaultSSLVersionMin = SSL_PROTOCOL_VERSION_TLS1;
 
-const uint16_t kDefaultSSLVersionMax = SSL_PROTOCOL_VERSION_TLS1_2;
+const uint16_t kDefaultSSLVersionMax = SSL_PROTOCOL_VERSION_TLS1_3;
 
 const TLS13Variant kDefaultTLS13Variant = kTLS13VariantFinal;
 

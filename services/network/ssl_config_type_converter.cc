@@ -34,7 +34,7 @@ int MojoSSLVersionToNetSSLVersion(network::mojom::SSLVersion mojo_version) {
       return net::SSL_PROTOCOL_VERSION_TLS1_3;
   }
   NOTREACHED();
-  return net::SSL_PROTOCOL_VERSION_TLS1_2;
+  return net::SSL_PROTOCOL_VERSION_TLS1_3;
 }
 
 net::SSLConfig

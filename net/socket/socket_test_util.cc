@@ -322,10 +322,10 @@ SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
       channel_id_service(NULL),
       expected_ssl_version_min(kDefaultSSLVersionMin),
       expected_ssl_version_max(kDefaultSSLVersionMax) {
-  SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2,
+  SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_3,
                                 &ssl_info.connection_status);
-  // Set to TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
-  SSLConnectionStatusSetCipherSuite(0xcca9, &ssl_info.connection_status);
+  // Set to TLS_CHACHA20_POLY1305_SHA256
+  SSLConnectionStatusSetCipherSuite(0x1301, &ssl_info.connection_status);
 }
 
 SSLSocketDataProvider::SSLSocketDataProvider(
