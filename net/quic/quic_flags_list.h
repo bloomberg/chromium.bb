@@ -310,3 +310,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_spurious_ack_alarm, false)
 // If true, QuicSpdyStream::WritevBody() will convert iovs into QuicMemSliceSpan
 // and call WriteMemSlices instead.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_call_write_mem_slices, false)
+
+// If true, enables the BBS4 and BBS5 connection options, which reduce BBR's
+// pacing rate in STARTUP as more losses occur as a fraction of CWND.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
+          false)
