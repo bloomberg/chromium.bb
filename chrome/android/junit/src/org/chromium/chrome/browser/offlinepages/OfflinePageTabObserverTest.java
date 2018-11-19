@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 public class OfflinePageTabObserverTest {
     // Using a null tab, as it cannot be mocked. TabHelper will help return proper mocked responses.
     private static final int TAB_ID = 77;
+    private static final String TAB_URL = "mock.com";
 
     @Mock
     private ChromeActivity mActivity;
@@ -76,6 +77,7 @@ public class OfflinePageTabObserverTest {
         // Setting up a mock tab. These are the values common to most tests, but individual
         // tests might easily overwrite them.
         doReturn(TAB_ID).when(mTab).getId();
+        doReturn(TAB_URL).when(mTab).getUrl();
         doReturn(false).when(mTab).isFrozen();
         doReturn(false).when(mTab).isHidden();
         doReturn(mActivity).when(mTab).getActivity();
@@ -183,7 +185,7 @@ public class OfflinePageTabObserverTest {
 
         observer.startObservingTab(mTab);
         doReturn(true).when(mOfflinePageUtils).isConnected();
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         verify(observer, times(1)).showReloadSnackbar(any(Tab.class));
     }
@@ -200,7 +202,7 @@ public class OfflinePageTabObserverTest {
 
         verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
         assertFalse(observer.wasSnackbarSeen(mTab));
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         verify(observer, times(1)).showReloadSnackbar(any(Tab.class));
         assertTrue(observer.isObservingTab(mTab));
@@ -222,7 +224,7 @@ public class OfflinePageTabObserverTest {
         observer.onUrlUpdated(mTab);
         assertFalse(observer.isLoadedTab(mTab));
 
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
         assertTrue(observer.isLoadedTab(mTab));
 
         verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
@@ -242,7 +244,7 @@ public class OfflinePageTabObserverTest {
         observer.onUrlUpdated(mTab);
         assertFalse(observer.isLoadedTab(mTab));
 
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
         assertTrue(observer.isLoadedTab(mTab));
 
         verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
@@ -257,7 +259,7 @@ public class OfflinePageTabObserverTest {
         hideTab(null);
 
         observer.startObservingTab(mTab);
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
         assertFalse(observer.wasSnackbarSeen(mTab));
@@ -279,7 +281,7 @@ public class OfflinePageTabObserverTest {
 
         observer.startObservingTab(mTab);
         doReturn(true).when(mOfflinePageUtils).isShowingOfflinePreview(mTab);
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
         assertFalse(observer.wasSnackbarSeen(mTab));
@@ -300,7 +302,7 @@ public class OfflinePageTabObserverTest {
         hideTab(null);
 
         observer.startObservingTab(mTab);
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         observer.onShown(mTab, FROM_NEW);
         verify(observer, times(0)).showReloadSnackbar(any(Tab.class));
@@ -328,7 +330,7 @@ public class OfflinePageTabObserverTest {
         connect(observer, false);
         showTab(null);
         observer.startObservingTab(mTab);
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         // Snackbar is showing over here.
         verify(observer, times(1)).showReloadSnackbar(any(Tab.class));
@@ -377,7 +379,7 @@ public class OfflinePageTabObserverTest {
         showTab(null);
 
         observer.startObservingTab(mTab);
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         // Snackbar was shown, so all other conditions are met.
         verify(observer, times(1)).showReloadSnackbar(any(Tab.class));
@@ -429,7 +431,7 @@ public class OfflinePageTabObserverTest {
         connect(observer, false);
         showTab(null);
         observer.startObservingTab(mTab);
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         // URL updated, but tab still shows offline page.
         observer.onUrlUpdated(mTab);
@@ -440,7 +442,7 @@ public class OfflinePageTabObserverTest {
         verify(observer, times(0)).stopObservingTab(any(Tab.class));
         verify(mSnackbarManager, times(1)).dismissSnackbars(eq(mSnackbarController));
 
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         // URL updated and tab no longer shows offline page.
         doReturn(false).when(mOfflinePageUtils).isOfflinePage(any(Tab.class));
@@ -497,7 +499,7 @@ public class OfflinePageTabObserverTest {
         disconnect(observer, false);
         showTab(null);
         observer.startObservingTab(mTab);
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         assertTrue(observer.isObservingNetworkChanges());
 
@@ -514,7 +516,7 @@ public class OfflinePageTabObserverTest {
         disconnect(observer, false);
         showTab(null);
         observer.startObservingTab(mTab);
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         assertTrue(observer.isObservingNetworkChanges());
 
@@ -533,7 +535,7 @@ public class OfflinePageTabObserverTest {
         disconnect(observer, false);
         hideTab(null);
         observer.startObservingTab(mTab);
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         assertTrue(observer.isObservingNetworkChanges());
         connect(observer, true);
@@ -587,12 +589,12 @@ public class OfflinePageTabObserverTest {
         connect(observer, false);
         showTab(null);
         observer.startObservingTab(mTab);
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         verify(observer, times(1)).showReloadSnackbar(any(Tab.class));
 
         // Event ignored, snackbar not shown again.
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
         verify(observer, times(1)).showReloadSnackbar(any(Tab.class));
 
         // Event ignored, snackbar not shown again.
@@ -637,7 +639,7 @@ public class OfflinePageTabObserverTest {
         connect(observer, false);
         showTab(null);
         observer.startObservingTab(mTab);
-        observer.onPageLoadFinished(mTab);
+        observer.onPageLoadFinished(mTab, TAB_URL);
 
         // Snackbar is showing over here.
         verify(observer, times(1)).showReloadSnackbar(any(Tab.class));

@@ -38,7 +38,7 @@ public class UkmTest {
     @Rule
     public SyncTestRule mSyncTestRule = new SyncTestRule();
 
-    private static final String DEBUG_PAGE = "chrome://ukm";
+    private static final String DEBUG_PAGE = "chrome://ukm/";
 
     @Before
     public void setUp() throws InterruptedException {

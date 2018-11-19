@@ -152,7 +152,7 @@ public class NewTabPageRecyclerViewTest {
         SnippetArticle suggestion = suggestions.get(suggestions.size() - 1);
         int suggestionPosition = getLastCardPosition();
         final View suggestionView = getViewHolderAtPosition(suggestionPosition).itemView;
-        ChromeTabUtils.waitForTabPageLoaded(mTab, () -> {
+        ChromeTabUtils.waitForTabPageLoaded(mTab, suggestion.mUrl, () -> {
             TestTouchUtils.performClickOnMainSync(
                     InstrumentationRegistry.getInstrumentation(), suggestionView);
         });

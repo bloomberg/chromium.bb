@@ -105,7 +105,7 @@ public class UrlOverridingTest {
         }
 
         @Override
-        public void onPageLoadFinished(Tab tab) {
+        public void onPageLoadFinished(Tab tab, String url) {
             mFinishCallback.notifyCalled();
         }
 

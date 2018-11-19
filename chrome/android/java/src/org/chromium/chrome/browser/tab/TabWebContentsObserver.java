@@ -177,7 +177,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             if (mTab.getNativePage() != null) {
                 mTab.pushNativePageStateToNavigationEntry();
             }
-            if (isMainFrame) mTab.didFinishPageLoad();
+            if (isMainFrame) mTab.didFinishPageLoad(validatedUrl);
             PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
             auditor.notifyAuditEvent(
                     mTab.getApplicationContext(), AuditEvent.OPEN_URL_SUCCESS, validatedUrl, "");

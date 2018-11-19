@@ -36,9 +36,13 @@ public class UrlConstants {
     public static final String HTTP_URL_PREFIX = "http://";
     public static final String HTTPS_URL_PREFIX = "https://";
 
+    public static final String ABOUT_URL = "chrome://about/";
+
+    public static final String CHROME_BLANK_URL = "chrome://blank/";
+
     public static final String NTP_HOST = "newtab";
     public static final String NTP_URL = "chrome-native://newtab/";
-    public static final String NTP_NON_NATIVE_URL = "chrome://newtab";
+    public static final String NTP_NON_NATIVE_URL = "chrome://newtab/";
 
     public static final String BOOKMARKS_HOST = "bookmarks";
     public static final String BOOKMARKS_URL = "chrome-native://bookmarks/";

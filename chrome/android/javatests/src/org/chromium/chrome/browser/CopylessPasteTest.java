@@ -116,8 +116,8 @@ public class CopylessPasteTest {
     @Feature({"CopylessPaste"})
     public void testInvalidScheme() throws InterruptedException, TimeoutException {
         // CopylessPaste only parses http and https.
-        mActivityTestRule.loadUrl("chrome://newtab");
-        mActivityTestRule.loadUrl("chrome://about");
+        mActivityTestRule.loadUrl(UrlConstants.NTP_NON_NATIVE_URL);
+        mActivityTestRule.loadUrl(UrlConstants.ABOUT_URL);
         Assert.assertEquals(0, mCallbackHelper.getCallCount());
     }
 

@@ -841,7 +841,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             private boolean mTriggeredPreviewChange;
 
             @Override
-            public void onPageLoadFinished(Tab tab) {
+            public void onPageLoadFinished(Tab tab, String url) {
                 // Update the color when the page load finishes.
                 updateColor(tab);
             }
@@ -1059,9 +1059,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         // Manually generating metrics in case the hidden tab has completely finished loading.
         if (mUsingHiddenTab && !tab.isLoading() && !tab.isShowingErrorPage()) {
             mTabObserver.onPageLoadStarted(tab, params.getUrl());
-            mTabObserver.onPageLoadFinished(tab);
+            mTabObserver.onPageLoadFinished(tab, params.getUrl());
             mTabNavigationEventObserver.onPageLoadStarted(tab, params.getUrl());
-            mTabNavigationEventObserver.onPageLoadFinished(tab);
+            mTabNavigationEventObserver.onPageLoadFinished(tab, params.getUrl());
         }
 
         // No actual load to do if tab already has the exact correct url.

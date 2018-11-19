@@ -75,7 +75,7 @@ public class OmniboxStartupMetrics {
         mTabModelSelectorTabObserver =
                 new TabModelSelectorTabObserver(mActivity.getTabModelSelector()) {
                     @Override
-                    public void onPageLoadFinished(Tab tab) {
+                    public void onPageLoadFinished(Tab tab, String url) {
                         updateStartupState(StartupState.POST_FIRST_PAGELOAD_FINISHED);
                     }
                 };
