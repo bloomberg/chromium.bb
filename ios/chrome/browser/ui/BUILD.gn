@@ -354,7 +354,6 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/print",
     "//ios/chrome/browser/ui/qr_scanner:coordinator",
     "//ios/chrome/browser/ui/reading_list",
-    "//ios/chrome/browser/ui/recent_tabs",
     "//ios/chrome/browser/ui/sad_tab",
     "//ios/chrome/browser/ui/sad_tab:coordinator",
     "//ios/chrome/browser/ui/sad_tab:features",

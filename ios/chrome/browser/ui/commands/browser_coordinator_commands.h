@@ -15,6 +15,9 @@
 // Shows the Reading List UI.
 - (void)showReadingList;
 
+// Shows recent tabs.
+- (void)showRecentTabs;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COORDINATOR_COMMANDS_H_

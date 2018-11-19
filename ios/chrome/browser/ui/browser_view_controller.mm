@@ -176,7 +176,6 @@
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
-#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #include "ios/chrome/browser/ui/sad_tab/features.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_coordinator.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_legacy_coordinator.h"
@@ -623,8 +622,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // for the presentation of a new tab. Can be used to record performance metrics.
 @property(nonatomic, strong, nullable)
     ProceduralBlock foregroundTabWasAddedCompletionBlock;
-// Coordinator for Recent Tabs.
-@property(nonatomic, strong) ChromeCoordinator* recentTabsCoordinator;
 // Coordinator for tablet tab strip.
 @property(nonatomic, strong) TabStripLegacyCoordinator* tabStripCoordinator;
 // Coordinator for Infobars.
@@ -844,13 +841,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Adds the given url to the reading list.
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title;
 
-// Recent Tabs
-// ------------
-// Creates the right RecentTabs Coordinator, once we stop supporting the legacy
-// implementation we can delete this method and start the coordinator on
-// |showRecentTabs|.
-- (void)createRecentTabsCoordinator;
-
 @end
 
 @implementation BrowserViewController
@@ -867,7 +857,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @synthesize activityOverlayCoordinator = _activityOverlayCoordinator;
 @synthesize foregroundTabWasAddedCompletionBlock =
     _foregroundTabWasAddedCompletionBlock;
-@synthesize recentTabsCoordinator = _recentTabsCoordinator;
 @synthesize tabStripCoordinator = _tabStripCoordinator;
 @synthesize tabStripView = _tabStripView;
 @synthesize popupMenuCoordinator = _popupMenuCoordinator;
@@ -1776,7 +1765,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     self.typingShield = nil;
     if (_voiceSearchController)
       _voiceSearchController->SetDispatcher(nil);
-    self.recentTabsCoordinator = nil;
     self.primaryToolbarCoordinator = nil;
     self.secondaryToolbarContainerCoordinator = nil;
     self.secondaryToolbarCoordinator = nil;
@@ -3012,17 +3000,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
   [self showSnackbar:l10n_util::GetNSString(
                          IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];
-}
-
-#pragma mark - Private Methods: Recent Tabs
-
-- (void)createRecentTabsCoordinator {
-  RecentTabsCoordinator* recentTabsCoordinator =
-      [[RecentTabsCoordinator alloc] initWithBaseViewController:self
-                                                   browserState:_browserState];
-  recentTabsCoordinator.loader = self;
-  recentTabsCoordinator.dispatcher = self.dispatcher;
-  self.recentTabsCoordinator = recentTabsCoordinator;
 }
 
 #pragma mark - ** Protocol Implementations and Helpers **
@@ -4599,24 +4576,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 - (void)showBookmarksManager {
   [self initializeBookmarkInteractionController];
   [_bookmarkInteractionController presentBookmarks];
-}
-
-- (void)showRecentTabs {
-  // TODO(crbug.com/825431): If BVC's clearPresentedState is ever called (such
-  // as in tearDown after a failed egtest), then this coordinator is left in a
-  // started state even though its corresponding VC is no longer on screen.
-  // That causes issues when the coordinator is started again and we destroy the
-  // old mediator without disconnecting it first.  Temporarily work around these
-  // issues by not having a long lived coordinator.  A longer-term solution will
-  // require finding a way to stop this coordinator so that the mediator is
-  // properly disconnected and destroyed and does not live longer than its
-  // associated VC.
-  if (self.recentTabsCoordinator) {
-    [self.recentTabsCoordinator stop];
-    self.recentTabsCoordinator = nil;
-  }
-  [self createRecentTabsCoordinator];
-  [self.recentTabsCoordinator start];
 }
 
 - (void)requestDesktopSite {

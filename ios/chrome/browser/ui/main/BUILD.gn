@@ -32,6 +32,7 @@ source_set("main") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/qr_scanner:coordinator",
     "//ios/chrome/browser/ui/reading_list",
+    "//ios/chrome/browser/ui/recent_tabs",
     "//ios/chrome/browser/ui/snackbar",
     "//ios/public/provider/chrome/browser",
   ]
