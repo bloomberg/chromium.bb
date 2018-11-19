@@ -56,7 +56,9 @@ test suites which a given CL affects, and ensures that they all pass.
 
 ### What exactly does CQ run?
 
-CQ runs the jobs specified in [cq.cfg](../../infra/config/branch/cq.cfg).
+CQ runs the jobs specified in [cq.cfg](../../infra/config/branch/cq.cfg). See
+[`cq_builders.md`](cq_builders.md) for an auto generated file with links to
+information about the builders on the CQ.
 
 Some of these jobs are experimental. This means they are executed on a
 percentage of CQ builds, and the outcome of the build doesn't affect if the CL
