@@ -185,6 +185,11 @@ bool UtilityServiceFactory::HandleServiceRequest(
         std::make_unique<video_capture::ServiceImpl>(std::move(request));
   }
 
+  if (!running_service_) {
+    running_service_ = GetContentClient()->utility()->HandleServiceRequest(
+        name, std::move(request));
+  }
+
   if (running_service_) {
     // If we actually started a service for this request, make sure its
     // self-termination results in full process termination.

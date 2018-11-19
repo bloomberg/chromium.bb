@@ -38,6 +38,8 @@ class ServiceManagerConnectionImpl : public ServiceManagerConnection {
   void AddEmbeddedService(
       const std::string& name,
       const service_manager::EmbeddedServiceInfo& info) override;
+  void SetDefaultServiceRequestHandler(
+      const ServiceRequestHandler& handler) override;
 
   // Invoked when the connection to the Service Manager is lost.
   void OnConnectionLost();
@@ -48,9 +50,14 @@ class ServiceManagerConnectionImpl : public ServiceManagerConnection {
                     const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle request_handle);
 
+  void OnUnhandledServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request);
+
   std::unique_ptr<service_manager::Connector> connector_;
 
   scoped_refptr<IOThreadContext> context_;
+  ServiceRequestHandler default_request_handler_;
 
   base::WeakPtrFactory<ServiceManagerConnectionImpl> weak_factory_;
 

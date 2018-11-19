@@ -173,6 +173,9 @@ ServiceManagerContext::ServiceManagerContext() {
   packaged_services_connection_ = ServiceManagerConnection::Create(
       std::move(packaged_services_request),
       base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO}));
+  packaged_services_connection_->SetDefaultServiceRequestHandler(
+      base::BindRepeating(&ServiceManagerContext::OnUnhandledServiceRequest,
+                          weak_ptr_factory_.GetWeakPtr()));
 
   service_manager::mojom::ServicePtr root_browser_service;
   ServiceManagerConnection::Set(ServiceManagerConnection::Create(
@@ -212,6 +215,27 @@ ServiceManagerContext::~ServiceManagerContext() {
     in_process_context_->ShutDown();
   if (ServiceManagerConnection::Get())
     ServiceManagerConnection::Destroy();
+}
+
+void ServiceManagerContext::OnUnhandledServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  std::unique_ptr<service_manager::Service> service =
+      GetWebClient()->HandleServiceRequest(service_name, std::move(request));
+  if (!service) {
+    LOG(ERROR) << "Ignoring unhandled request for service: " << service_name;
+    return;
+  }
+
+  auto* raw_service = service.get();
+  service->set_termination_closure(
+      base::BindOnce(&ServiceManagerContext::OnServiceQuit,
+                     base::Unretained(this), raw_service));
+  running_services_.emplace(raw_service, std::move(service));
+}
+
+void ServiceManagerContext::OnServiceQuit(service_manager::Service* service) {
+  running_services_.erase(service);
 }
 
 }  // namespace web

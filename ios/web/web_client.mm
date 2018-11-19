@@ -8,6 +8,7 @@
 
 #include "ios/web/public/app/web_main_parts.h"
 #include "ios/web/public/features.h"
+#include "services/service_manager/public/cpp/service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -78,6 +79,12 @@ NSString* WebClient::GetDocumentStartScriptForAllFrames(
 NSString* WebClient::GetDocumentStartScriptForMainFrame(
     BrowserState* browser_state) const {
   return @"";
+}
+
+std::unique_ptr<service_manager::Service> WebClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  return nullptr;
 }
 
 std::unique_ptr<base::Value> WebClient::GetServiceManifestOverlay(

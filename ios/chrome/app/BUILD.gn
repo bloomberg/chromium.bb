@@ -22,6 +22,11 @@ service_manifest("chrome_browser_manifest_overlay") {
   packaged_services = [ "//services/identity:manifest" ]
 }
 
+service_manifest("chrome_packaged_services_manifest_overlay") {
+  source = "//ios/chrome/browser/chrome_packaged_services_manifest_overlay.json"
+  packaged_services = [ "//components/services/unzip:manifest" ]
+}
+
 source_set("app") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [

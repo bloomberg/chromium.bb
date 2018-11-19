@@ -65,6 +65,7 @@ include_rules = [
   "+components/search_provider_logos",
   "+components/security_interstitials",
   "+components/security_state",
+  "+components/services/unzip",
   "+components/sessions",
   "+components/signin/core/browser",
   "+components/signin/ios/browser",

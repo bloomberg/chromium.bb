@@ -12,10 +12,12 @@
 #include "content/public/common/content_client.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/embedded_service_info.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace content {
 
-// Embedder API for participating in renderer logic.
+// Embedder API for participating in utility process logic.
 class CONTENT_EXPORT ContentUtilityClient {
  public:
   using StaticServiceMap =
@@ -30,6 +32,15 @@ class CONTENT_EXPORT ContentUtilityClient {
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   virtual void RegisterServices(StaticServiceMap* services) {}
+
+  // Allows the embedder to handle an incoming service request. If this is
+  // called, this utility process was started for the sole purpose of running
+  // the service identified by |service_name|. If this returns null, the process
+  // will imminently be terminated. If it returns non-null, the process will run
+  // until the returned Service implementation terminates itself.
+  virtual std::unique_ptr<service_manager::Service> HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request);
 
   virtual void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) {}

@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "components/services/patch/patch_service.h"
+#include "components/services/patch/public/interfaces/constants.mojom.h"
 #include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/component_patcher_unittest.h"
 #include "components/update_client/test_installer.h"
@@ -150,11 +151,11 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
   command_args->SetString("patch", "binary_courgette_patch.bin");
 
   // The operation needs a connector to access the PatchService.
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory =
-      service_manager::TestConnectorFactory::CreateForUniqueService(
-          std::make_unique<patch::PatchService>());
+  service_manager::TestConnectorFactory connector_factory;
+  patch::PatchService patch_service(
+      connector_factory.RegisterInstance(patch::mojom::kServiceName));
   std::unique_ptr<service_manager::Connector> connector =
-      connector_factory->CreateConnector();
+      connector_factory.CreateConnector();
 
   TestCallback callback;
   scoped_refptr<DeltaUpdateOp> op =
@@ -190,11 +191,11 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
   command_args->SetString("patch", "binary_bsdiff_patch.bin");
 
   // The operation needs a connector to access the PatchService.
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory =
-      service_manager::TestConnectorFactory::CreateForUniqueService(
-          std::make_unique<patch::PatchService>());
+  service_manager::TestConnectorFactory connector_factory;
+  patch::PatchService patch_service(
+      connector_factory.RegisterInstance(patch::mojom::kServiceName));
   std::unique_ptr<service_manager::Connector> connector =
-      connector_factory->CreateConnector();
+      connector_factory.CreateConnector();
 
   TestCallback callback;
   scoped_refptr<DeltaUpdateOp> op =

@@ -32,7 +32,6 @@
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,9 +101,8 @@ class ZipFileInstallerTest : public testing::Test {
       : browser_threads_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         data_decoder_(test_connector_factory_.RegisterInstance(
             data_decoder::mojom::kServiceName)),
-        unzip_service_context_(unzip::UnzipService::CreateService(),
-                               test_connector_factory_.RegisterInstance(
-                                   unzip::mojom::kServiceName)),
+        unzip_service_(test_connector_factory_.RegisterInstance(
+            unzip::mojom::kServiceName)),
         connector_(test_connector_factory_.CreateConnector()) {
     test_connector_factory_.set_ignore_quit_requests(true);
   }
@@ -183,7 +181,7 @@ class ZipFileInstallerTest : public testing::Test {
  private:
   service_manager::TestConnectorFactory test_connector_factory_;
   data_decoder::DataDecoderService data_decoder_;
-  service_manager::ServiceContext unzip_service_context_;
+  unzip::UnzipService unzip_service_;
   std::unique_ptr<service_manager::Connector> connector_;
 };
 
