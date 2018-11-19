@@ -267,8 +267,6 @@ class SyncEngineTest : public testing::Test {
     params.to_purge = Intersection(engine_types_, disabled_types);
     params.ready_task =
         base::Bind(&SyncEngineTest::DownloadReady, base::Unretained(this));
-    params.retry_callback =
-        base::Bind(&SyncEngineTest::OnDownloadRetry, base::Unretained(this));
 
     ModelTypeSet ready_types =
         Difference(params.enabled_types, params.to_download);
@@ -283,8 +281,6 @@ class SyncEngineTest : public testing::Test {
     engine_types_.PutAll(succeeded_types);
     std::move(quit_loop_).Run();
   }
-
-  void OnDownloadRetry() { NOTIMPLEMENTED(); }
 
   void SetEngineTypes(ModelTypeSet engine_types) {
     EXPECT_TRUE(engine_types_.Empty());

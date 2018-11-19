@@ -84,14 +84,6 @@ bool IsActionableError(const SyncProtocolError& error) {
   return (error.action != UNKNOWN_ACTION);
 }
 
-void RunAndReset(base::Closure* task) {
-  DCHECK(task);
-  if (task->is_null())
-    return;
-  task->Run();
-  task->Reset();
-}
-
 #define ENUM_CASE(x) \
   case x:            \
     return #x;       \
@@ -104,12 +96,10 @@ ConfigurationParams::ConfigurationParams()
 ConfigurationParams::ConfigurationParams(
     sync_pb::SyncEnums::GetUpdatesOrigin origin,
     ModelTypeSet types_to_download,
-    const base::Closure& ready_task,
-    const base::Closure& retry_task)
+    const base::Closure& ready_task)
     : origin(origin),
       types_to_download(types_to_download),
-      ready_task(ready_task),
-      retry_task(retry_task) {
+      ready_task(ready_task) {
   DCHECK(!ready_task.is_null());
 }
 ConfigurationParams::ConfigurationParams(const ConfigurationParams& other) =
@@ -495,7 +485,6 @@ void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
 
   if (!CanRunJobNow(priority)) {
     SDVLOG(2) << "Unable to run configure job right now.";
-    RunAndReset(&pending_configure_params_->retry_task);
     return;
   }
 
@@ -516,8 +505,6 @@ void SyncSchedulerImpl::DoConfigurationSyncCycleJob(JobPriority priority) {
     HandleFailure(cycle.status_controller().model_neutral_state());
     // Sync cycle might receive response from server that causes scheduler to
     // stop and draws pending_configure_params_ invalid.
-    if (started_)
-      RunAndReset(&pending_configure_params_->retry_task);
   }
 }
 

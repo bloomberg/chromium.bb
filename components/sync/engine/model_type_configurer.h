@@ -44,7 +44,6 @@ class ModelTypeConfigurer {
     // The awkward part is handling when SyncEngine calls ConfigureDataTypes on
     // itself to configure Nigori.
     base::Callback<void(ModelTypeSet, ModelTypeSet)> ready_task;
-    base::Closure retry_callback;
 
     // Whether full sync (or sync the feature) is enabled;
     bool is_sync_feature_enabled;

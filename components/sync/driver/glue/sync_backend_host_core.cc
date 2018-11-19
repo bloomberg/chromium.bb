@@ -169,8 +169,7 @@ void SyncBackendHostCore::OnInitializationComplete(
   sync_manager_->ConfigureSyncer(
       reason, new_control_types, SyncManager::SyncFeatureState::INITIALIZING,
       base::Bind(&SyncBackendHostCore::DoInitialProcessControlTypes,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Closure());
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SyncBackendHostCore::OnConnectionStatusChange(ConnectionStatus status) {
@@ -484,22 +483,18 @@ void SyncBackendHostCore::DoConfigureSyncer(
     ModelTypeConfigurer::ConfigureParams params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!params.ready_task.is_null());
-  DCHECK(!params.retry_callback.is_null());
 
   registrar_->ConfigureDataTypes(params.enabled_types, params.disabled_types);
 
   base::Closure chained_ready_task(base::Bind(
       &SyncBackendHostCore::DoFinishConfigureDataTypes,
       weak_ptr_factory_.GetWeakPtr(), params.to_download, params.ready_task));
-  base::Closure chained_retry_task(
-      base::Bind(&SyncBackendHostCore::DoRetryConfiguration,
-                 weak_ptr_factory_.GetWeakPtr(), params.retry_callback));
 
   sync_manager_->ConfigureSyncer(params.reason, params.to_download,
                                  params.is_sync_feature_enabled
                                      ? SyncManager::SyncFeatureState::ON
                                      : SyncManager::SyncFeatureState::OFF,
-                                 chained_ready_task, chained_retry_task);
+                                 chained_ready_task);
 }
 
 void SyncBackendHostCore::DoFinishConfigureDataTypes(
@@ -521,13 +516,6 @@ void SyncBackendHostCore::DoFinishConfigureDataTypes(
              &SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop,
              enabled_types, succeeded_configuration_types,
              failed_configuration_types, ready_task);
-}
-
-void SyncBackendHostCore::DoRetryConfiguration(
-    const base::Closure& retry_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  host_.Call(FROM_HERE, &SyncBackendHostImpl::RetryConfigurationOnFrontendLoop,
-             retry_callback);
 }
 
 void SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding() {

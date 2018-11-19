@@ -169,8 +169,7 @@ ModelTypeSet SyncManagerImpl::GetTypesWithEmptyProgressMarkerToken(
 void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
                                       ModelTypeSet to_download,
                                       SyncFeatureState sync_feature_state,
-                                      const base::Closure& ready_task,
-                                      const base::Closure& retry_task) {
+                                      const base::Closure& ready_task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ready_task.is_null());
   DCHECK(initialized_);
@@ -183,7 +182,7 @@ void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
            << "\n\t"
            << "types to download: " << ModelTypeSetToString(to_download);
   ConfigurationParams params(GetOriginFromReason(reason), to_download,
-                             ready_task, retry_task);
+                             ready_task);
 
   scheduler_->Start(SyncScheduler::CONFIGURATION_MODE, base::Time());
   scheduler_->ScheduleConfiguration(params);

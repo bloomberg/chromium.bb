@@ -2539,15 +2539,12 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
   EXPECT_CALL(*scheduler(), ScheduleConfiguration(_))
       .WillOnce(SaveArg<0>(&params));
 
-  CallbackCounter ready_task_counter, retry_task_counter;
+  CallbackCounter ready_task_counter;
   sync_manager_.ConfigureSyncer(
       reason, types_to_download, SyncManager::SyncFeatureState::ON,
       base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&ready_task_counter)),
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&retry_task_counter)));
+                 base::Unretained(&ready_task_counter)));
   EXPECT_EQ(0, ready_task_counter.times_called());
-  EXPECT_EQ(0, retry_task_counter.times_called());
   EXPECT_EQ(sync_pb::SyncEnums::RECONFIGURATION, params.origin);
   EXPECT_EQ(types_to_download, params.types_to_download);
 }
