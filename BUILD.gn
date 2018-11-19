@@ -553,7 +553,6 @@ group("gn_all") {
         "//media/cast:tap_proxy",
         "//skia:filter_fuzz_stub",
         "//skia:image_operations_bench",
-        "//third_party/sqlite:sqlite_shell",
         "//ui/snapshot:snapshot_unittests",
       ]
 
@@ -667,6 +666,10 @@ group("gn_all") {
 
   if (is_mac || is_linux || is_android) {
     deps += [ "//third_party/perfetto:all" ]
+  }
+
+  if (is_mac || is_linux) {
+    deps += [ "//third_party/sqlite:sqlite_shell" ]
   }
 
   if (is_linux && !is_chromeos && !is_chromecast) {

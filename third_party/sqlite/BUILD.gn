@@ -345,7 +345,7 @@ group("sqlite") {
   ]
 }
 
-if (is_linux) {
+if (is_linux || is_mac) {
   executable("sqlite_shell") {
     include_dirs = [
       # shell.c contains an '#include "sqlite3.h", which we want to be
@@ -355,11 +355,20 @@ if (is_linux) {
 
     sources = [
       "amalgamation/shell/shell.c",
-      "src/src/shell_icu_linux.c",
 
       # Include a dummy c++ file to force linking of libstdc++.
       "build_as_cpp.cc",
     ]
+
+    if (is_linux) {
+      sources += [ "src/src/shell_icu_linux.c" ]
+    }
+
+    # TODO(pwnall): Re-enable the shell on Windows when compilation errors are
+    #               fixed upstream.
+    if (is_win) {
+      sources += [ "src/src/shell_icu_win.c" ]
+    }
 
     deps = [
       ":sqlite",
