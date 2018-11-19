@@ -5279,5 +5279,5 @@ crbug.com/905772 [ Linux ] virtual/sampling-heap-profiler/inspector-protocol/mem
 crbug.com/905827 [ Mac10.13 ] fast/dom/StyleSheet/stylesheet-move-between-documents-crash.html [ Failure Pass ]
 
 #Sheriff 2018-11-19
-crbug.com/906591 [ Win10 ] printing/single-line-must-not-be-split-into-two-pages.html [ Failure ]
-crbug.com/906591 [ Win10 ] virtual/threaded/printing/single-line-must-not-be-split-into-two-pages.html [ Failure ]
+crbug.com/906591 printing/single-line-must-not-be-split-into-two-pages.html [ Failure ]
+crbug.com/906591 virtual/threaded/printing/single-line-must-not-be-split-into-two-pages.html [ Failure ]
