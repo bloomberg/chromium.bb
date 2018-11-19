@@ -357,12 +357,6 @@ void SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop(
   }
 }
 
-void SyncBackendHostImpl::RetryConfigurationOnFrontendLoop(
-    const base::Closure& retry_callback) {
-  SDVLOG(1) << "Failed to complete configuration, informing of retry.";
-  retry_callback.Run();
-}
-
 void SyncBackendHostImpl::HandleActionableErrorEventOnFrontendLoop(
     const SyncProtocolError& sync_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

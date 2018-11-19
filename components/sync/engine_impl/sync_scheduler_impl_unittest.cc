@@ -403,15 +403,12 @@ TEST_F(SyncSchedulerImplTest, Config) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
   PumpLoop();
   ASSERT_EQ(1, ready_counter.times_called());
-  ASSERT_EQ(0, retry_counter.times_called());
 }
 
 // Simulate a failure and make sure the config request is retried.
@@ -431,21 +428,17 @@ TEST_F(SyncSchedulerImplTest, ConfigWithBackingOff) {
                       RecordSyncShare(&times, false)));
 
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
   RunLoop();
   ASSERT_EQ(0, ready_counter.times_called());
-  ASSERT_EQ(1, retry_counter.times_called());
 
   // RunLoop() will trigger TryCanaryJob which will retry configuration.
   // Since retry_task was already called it shouldn't be called again.
   RunLoop();
   ASSERT_EQ(0, ready_counter.times_called());
-  ASSERT_EQ(1, retry_counter.times_called());
 
   Mock::VerifyAndClearExpectations(syncer());
 
@@ -476,15 +469,12 @@ TEST_F(SyncSchedulerImplTest, ConfigWithStop) {
                       RecordSyncShare(&times, false)));
 
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
   PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
-  ASSERT_EQ(0, retry_counter.times_called());
 }
 
 // Verify that in the absence of valid auth token the command will fail.
@@ -497,15 +487,12 @@ TEST_F(SyncSchedulerImplTest, ConfigNoAuthToken) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
   PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
-  ASSERT_EQ(1, retry_counter.times_called());
 }
 
 // Verify that in the absence of valid auth token the command will pass if local
@@ -524,15 +511,12 @@ TEST_F(SyncSchedulerImplTest, ConfigNoAuthTokenLocalSync) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
   PumpLoop();
   ASSERT_EQ(1, ready_counter.times_called());
-  ASSERT_EQ(0, retry_counter.times_called());
 }
 
 // Issue a nudge when the config has failed. Make sure both the config and
@@ -551,15 +535,12 @@ TEST_F(SyncSchedulerImplTest, NudgeWithConfigWithBackingOff) {
       .WillOnce(DoAll(Invoke(test_util::SimulateConfigureFailed),
                       RecordSyncShare(&times, false)));
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
   RunLoop();
   ASSERT_EQ(0, ready_counter.times_called());
-  ASSERT_EQ(1, retry_counter.times_called());
   Mock::VerifyAndClearExpectations(syncer());
 
   // Ask for a nudge while dealing with repeated configure failure.
@@ -836,15 +817,12 @@ TEST_F(SyncSchedulerImplTest, ThrottlingDoesThrottle) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
   PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
-  ASSERT_EQ(1, retry_counter.times_called());
 }
 
 TEST_F(SyncSchedulerImplTest, ThrottlingExpiresFromPoll) {
@@ -920,15 +898,12 @@ TEST_F(SyncSchedulerImplTest, ThrottlingExpiresFromConfigure) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
   PumpLoop();
   EXPECT_EQ(0, ready_counter.times_called());
-  EXPECT_EQ(1, retry_counter.times_called());
   EXPECT_TRUE(scheduler()->IsGlobalThrottle());
 
   RunLoop();
@@ -1253,15 +1228,12 @@ TEST_F(SyncSchedulerImplTest, ConfigurationMode) {
                       RecordSyncShare(&times, true)))
       .RetiresOnSaturation();
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, config_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
   RunLoop();
   ASSERT_EQ(1, ready_counter.times_called());
-  ASSERT_EQ(0, retry_counter.times_called());
 
   Mock::VerifyAndClearExpectations(syncer());
 
@@ -1345,11 +1317,9 @@ TEST_F(BackoffTriggersSyncSchedulerImplTest, FailGetEncryptionKey) {
 
   ModelTypeSet types(THEMES);
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
   RunLoop();
 
@@ -1394,15 +1364,12 @@ TEST_F(SyncSchedulerImplTest, BackoffDropsJobs) {
   StartSyncConfiguration();
 
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
   PumpLoop();
   ASSERT_EQ(0, ready_counter.times_called());
-  ASSERT_EQ(1, retry_counter.times_called());
 }
 
 // Test that backoff is shaping traffic properly with consecutive errors.
@@ -1653,11 +1620,9 @@ TEST_F(SyncSchedulerImplTest, DoubleCanaryInConfigure) {
 
   ModelTypeSet model_types(THEMES);
   CallbackCounter ready_counter;
-  CallbackCounter retry_counter;
   ConfigurationParams params(
       sync_pb::SyncEnums::RECONFIGURATION, model_types,
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)),
-      base::Bind(&CallbackCounter::Callback, base::Unretained(&retry_counter)));
+      base::Bind(&CallbackCounter::Callback, base::Unretained(&ready_counter)));
   scheduler()->ScheduleConfiguration(params);
 
   scheduler()->OnConnectionStatusChange(

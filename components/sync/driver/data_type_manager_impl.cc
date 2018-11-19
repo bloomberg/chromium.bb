@@ -428,10 +428,6 @@ void DataTypeManagerImpl::ProcessReconfigure() {
   ConfigureImpl(last_requested_types_, last_requested_context_);
 }
 
-void DataTypeManagerImpl::OnDownloadRetry() {
-  DCHECK_EQ(CONFIGURING, state_);
-}
-
 void DataTypeManagerImpl::DownloadReady(
     ModelTypeSet types_to_download,
     ModelTypeSet first_sync_types,
@@ -631,8 +627,6 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
   params->ready_task =
       base::Bind(&DataTypeManagerImpl::DownloadReady,
                  weak_ptr_factory_.GetWeakPtr(), download_types_queue_.front());
-  params->retry_callback = base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
-                                      weak_ptr_factory_.GetWeakPtr());
   params->is_sync_feature_enabled = last_requested_context_.storage_option ==
                                     ConfigureContext::STORAGE_ON_DISK;
 

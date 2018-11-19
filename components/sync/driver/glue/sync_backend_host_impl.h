@@ -173,11 +173,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void HandleSyncCycleCompletedOnFrontendLoop(
       const SyncCycleSnapshot& snapshot);
 
-  // Called when the syncer failed to perform a configuration and will
-  // eventually retry. FinishingConfigurationOnFrontendLoop(..) will be called
-  // on successful completion.
-  void RetryConfigurationOnFrontendLoop(const base::Closure& retry_callback);
-
   // For convenience, checks if initialization state is INITIALIZED.
   bool initialized() const { return initialized_; }
 
