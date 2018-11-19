@@ -204,6 +204,18 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /**
+     * True when the payments privacy page link should be shown.
+     * @private {boolean}
+     */
+    showPaymentsPagePrivacyLinkText_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('showPaymentsPagePrivacyLinkText');
+      },
+      readOnly: true,
+    },
   },
 
   listeners: {
