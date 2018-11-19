@@ -8,7 +8,6 @@
 #include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/ble_advertisement_device_queue.h"
 #include "chromeos/components/tether/ble_advertiser_impl.h"
-#include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/ble_connection_metrics_logger.h"
 #include "chromeos/components/tether/ble_scanner_impl.h"
 #include "chromeos/components/tether/ble_service_data_helper_impl.h"
@@ -127,14 +126,6 @@ AsynchronousShutdownObjectContainerImpl::
                     ble_service_data_helper_.get(),
                     ble_synchronizer_.get(),
                     tether_host_fetcher_)),
-      ble_connection_manager_(
-          base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-              ? nullptr
-              : std::make_unique<BleConnectionManager>(
-                    adapter,
-                    ble_advertisement_device_queue_.get(),
-                    ble_advertiser_.get(),
-                    ble_scanner_.get())),
       ble_connection_metrics_logger_(
           base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
               ? nullptr
@@ -143,7 +134,6 @@ AsynchronousShutdownObjectContainerImpl::
           DisconnectTetheringRequestSenderImpl::Factory::NewInstance(
               device_sync_client,
               secure_channel_client,
-              ble_connection_manager_.get(),
               tether_host_fetcher_)),
       network_configuration_remover_(
           std::make_unique<NetworkConfigurationRemover>(
@@ -153,22 +143,15 @@ AsynchronousShutdownObjectContainerImpl::
           network_state_handler,
           pref_service,
           network_configuration_remover_.get())) {
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    ble_connection_manager_->AddMetricsObserver(
-        ble_connection_metrics_logger_.get());
-  }
 }
 
 AsynchronousShutdownObjectContainerImpl::
     ~AsynchronousShutdownObjectContainerImpl() {
+  disconnect_tethering_request_sender_->RemoveObserver(this);
   if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    ble_connection_manager_->RemoveMetricsObserver(
-        ble_connection_metrics_logger_.get());
     ble_advertiser_->RemoveObserver(this);
     ble_scanner_->RemoveObserver(this);
   }
-
-  disconnect_tethering_request_sender_->RemoveObserver(this);
 }
 
 void AsynchronousShutdownObjectContainerImpl::Shutdown(
@@ -191,13 +174,6 @@ void AsynchronousShutdownObjectContainerImpl::Shutdown(
 TetherHostFetcher*
 AsynchronousShutdownObjectContainerImpl::tether_host_fetcher() {
   return tether_host_fetcher_;
-}
-
-BleConnectionManager*
-AsynchronousShutdownObjectContainerImpl::ble_connection_manager() {
-  return base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-             ? nullptr
-             : ble_connection_manager_.get();
 }
 
 DisconnectTetheringRequestSender*

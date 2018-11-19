@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/active_host.h"
-#include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/host_connection_metrics_logger.h"
@@ -44,7 +43,6 @@ TetherConnectorImpl::TetherConnectorImpl(
     WifiHotspotConnector* wifi_hotspot_connector,
     ActiveHost* active_host,
     TetherHostFetcher* tether_host_fetcher,
-    BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     DeviceIdTetherNetworkGuidMap* device_id_tether_network_guid_map,
     HostScanCache* host_scan_cache,
@@ -58,7 +56,6 @@ TetherConnectorImpl::TetherConnectorImpl(
       wifi_hotspot_connector_(wifi_hotspot_connector),
       active_host_(active_host),
       tether_host_fetcher_(tether_host_fetcher),
-      connection_manager_(connection_manager),
       tether_host_response_recorder_(tether_host_response_recorder),
       device_id_tether_network_guid_map_(device_id_tether_network_guid_map),
       host_scan_cache_(host_scan_cache),
@@ -262,7 +259,7 @@ void TetherConnectorImpl::OnTetherHostToConnectFetched(
   connect_tethering_operation_ =
       ConnectTetheringOperation::Factory::NewInstance(
           *tether_host_to_connect, device_sync_client_, secure_channel_client_,
-          connection_manager_, tether_host_response_recorder_,
+          tether_host_response_recorder_,
           host_scan_cache_->DoesHostRequireSetup(tether_network_guid));
   connect_tethering_operation_->AddObserver(this);
   connect_tethering_operation_->Initialize();

@@ -50,11 +50,11 @@ class MessageTransferOperation {
       const cryptauth::RemoteDeviceRefList& devices_to_connect,
       secure_channel::ConnectionPriority connection_priority,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client,
-      BleConnectionManager* connection_manager);
+      secure_channel::SecureChannelClient* secure_channel_client);
   virtual ~MessageTransferOperation();
 
-  // Initializes the operation by registering devices with BleConnectionManager.
+  // Initializes the operation by registering device connection listeners with
+  // SecureChannel.
   void Initialize();
 
  protected:

@@ -51,7 +51,6 @@ class BleServiceDataHelper;
 namespace tether {
 
 class BleAdvertisementDeviceQueue;
-class BleConnectionManager;
 class BleConnectionMetricsLogger;
 class NetworkConfigurationRemover;
 class TetherHostFetcher;
@@ -102,7 +101,6 @@ class AsynchronousShutdownObjectContainerImpl
   // AsynchronousShutdownObjectContainer:
   void Shutdown(const base::Closure& shutdown_complete_callback) override;
   TetherHostFetcher* tether_host_fetcher() override;
-  BleConnectionManager* ble_connection_manager() override;
   DisconnectTetheringRequestSender* disconnect_tethering_request_sender()
       override;
   NetworkConfigurationRemover* network_configuration_remover() override;
@@ -151,7 +149,6 @@ class AsynchronousShutdownObjectContainerImpl
   std::unique_ptr<secure_channel::BleSynchronizerBase> ble_synchronizer_;
   std::unique_ptr<BleAdvertiser> ble_advertiser_;
   std::unique_ptr<BleScanner> ble_scanner_;
-  std::unique_ptr<BleConnectionManager> ble_connection_manager_;
   std::unique_ptr<BleConnectionMetricsLogger> ble_connection_metrics_logger_;
   std::unique_ptr<DisconnectTetheringRequestSender>
       disconnect_tethering_request_sender_;

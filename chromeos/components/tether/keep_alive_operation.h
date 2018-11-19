@@ -21,8 +21,6 @@ class SecureChannelClient;
 
 namespace tether {
 
-class BleConnectionManager;
-
 // Operation which sends a keep-alive message to a tether host and receives an
 // update about the host's status.
 class KeepAliveOperation : public MessageTransferOperation {
@@ -32,8 +30,7 @@ class KeepAliveOperation : public MessageTransferOperation {
     static std::unique_ptr<KeepAliveOperation> NewInstance(
         cryptauth::RemoteDeviceRef device_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
-        secure_channel::SecureChannelClient* secure_channel_client,
-        BleConnectionManager* connection_manager);
+        secure_channel::SecureChannelClient* secure_channel_client);
 
     static void SetInstanceForTesting(Factory* factory);
 
@@ -41,8 +38,7 @@ class KeepAliveOperation : public MessageTransferOperation {
     virtual std::unique_ptr<KeepAliveOperation> BuildInstance(
         cryptauth::RemoteDeviceRef device_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
-        secure_channel::SecureChannelClient* secure_channel_client,
-        BleConnectionManager* connection_manager);
+        secure_channel::SecureChannelClient* secure_channel_client);
 
    private:
     static Factory* factory_instance_;
@@ -63,10 +59,10 @@ class KeepAliveOperation : public MessageTransferOperation {
   void RemoveObserver(Observer* observer);
 
  protected:
-  KeepAliveOperation(cryptauth::RemoteDeviceRef device_to_connect,
-                     device_sync::DeviceSyncClient* device_sync_client,
-                     secure_channel::SecureChannelClient* secure_channel_client,
-                     BleConnectionManager* connection_manager);
+  KeepAliveOperation(
+      cryptauth::RemoteDeviceRef device_to_connect,
+      device_sync::DeviceSyncClient* device_sync_client,
+      secure_channel::SecureChannelClient* secure_channel_client);
 
   // MessageTransferOperation:
   void OnDeviceAuthenticated(cryptauth::RemoteDeviceRef remote_device) override;

@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/chromeos_features.h"
-#include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto_test_util.h"
 #include "chromeos/components/tether/timer_factory.h"
@@ -42,13 +41,11 @@ class TestOperation : public MessageTransferOperation {
  public:
   TestOperation(const cryptauth::RemoteDeviceRefList& devices_to_connect,
                 device_sync::DeviceSyncClient* device_sync_client,
-                secure_channel::SecureChannelClient* secure_channel_client,
-                BleConnectionManager* connection_manager)
+                secure_channel::SecureChannelClient* secure_channel_client)
       : MessageTransferOperation(devices_to_connect,
                                  secure_channel::ConnectionPriority::kLow,
                                  device_sync_client,
-                                 secure_channel_client,
-                                 connection_manager) {}
+                                 secure_channel_client) {}
   ~TestOperation() override = default;
 
   bool HasDeviceAuthenticated(cryptauth::RemoteDeviceRef remote_device) {
@@ -194,8 +191,6 @@ class MessageTransferOperationTest : public testing::Test {
     fake_device_sync_client_->set_local_device_metadata(test_local_device_);
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
-
-    fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
   }
 
   void ConstructOperation(cryptauth::RemoteDeviceRefList remote_devices) {
@@ -216,9 +211,9 @@ class MessageTransferOperationTest : public testing::Test {
           std::move(fake_connection_attempt));
     }
 
-    operation_ = base::WrapUnique(new TestOperation(
-        remote_devices, fake_device_sync_client_.get(),
-        fake_secure_channel_client_.get(), fake_ble_connection_manager_.get()));
+    operation_ = base::WrapUnique(
+        new TestOperation(remote_devices, fake_device_sync_client_.get(),
+                          fake_secure_channel_client_.get()));
     operation_->SetTimerFactoryForTest(base::WrapUnique(test_timer_factory_));
     VerifyOperationStartedAndFinished(false /* has_started */,
                                       false /* has_finished */);
@@ -302,7 +297,6 @@ class MessageTransferOperationTest : public testing::Test {
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client_;
-  std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   TestTimerFactory* test_timer_factory_;
   std::unique_ptr<TestOperation> operation_;
 

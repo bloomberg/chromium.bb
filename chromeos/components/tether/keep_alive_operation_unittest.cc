@@ -91,9 +91,9 @@ class KeepAliveOperationTest : public testing::Test {
         std::make_unique<secure_channel::FakeSecureChannelClient>();
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
 
-    operation_ = base::WrapUnique(new KeepAliveOperation(
-        test_device_, fake_device_sync_client_.get(),
-        fake_secure_channel_client_.get(), fake_ble_connection_manager_.get()));
+    operation_ = base::WrapUnique(
+        new KeepAliveOperation(test_device_, fake_device_sync_client_.get(),
+                               fake_secure_channel_client_.get()));
 
     test_observer_ = base::WrapUnique(new TestObserver());
     operation_->AddObserver(test_observer_.get());

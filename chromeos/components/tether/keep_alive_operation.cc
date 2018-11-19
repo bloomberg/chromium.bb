@@ -23,14 +23,12 @@ KeepAliveOperation::Factory* KeepAliveOperation::Factory::factory_instance_ =
 std::unique_ptr<KeepAliveOperation> KeepAliveOperation::Factory::NewInstance(
     cryptauth::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client,
-    BleConnectionManager* connection_manager) {
+    secure_channel::SecureChannelClient* secure_channel_client) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
   return factory_instance_->BuildInstance(device_to_connect, device_sync_client,
-                                          secure_channel_client,
-                                          connection_manager);
+                                          secure_channel_client);
 }
 
 // static
@@ -41,24 +39,20 @@ void KeepAliveOperation::Factory::SetInstanceForTesting(Factory* factory) {
 std::unique_ptr<KeepAliveOperation> KeepAliveOperation::Factory::BuildInstance(
     cryptauth::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client,
-    BleConnectionManager* connection_manager) {
-  return base::WrapUnique(
-      new KeepAliveOperation(device_to_connect, device_sync_client,
-                             secure_channel_client, connection_manager));
+    secure_channel::SecureChannelClient* secure_channel_client) {
+  return base::WrapUnique(new KeepAliveOperation(
+      device_to_connect, device_sync_client, secure_channel_client));
 }
 
 KeepAliveOperation::KeepAliveOperation(
     cryptauth::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client,
-    BleConnectionManager* connection_manager)
+    secure_channel::SecureChannelClient* secure_channel_client)
     : MessageTransferOperation(
           cryptauth::RemoteDeviceRefList{device_to_connect},
           secure_channel::ConnectionPriority::kMedium,
           device_sync_client,
-          secure_channel_client,
-          connection_manager),
+          secure_channel_client),
       remote_device_(device_to_connect),
       clock_(base::DefaultClock::GetInstance()) {}
 
