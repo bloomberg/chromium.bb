@@ -1380,6 +1380,9 @@ std::unordered_set<std::string> ArcAppListPrefs::GetAppsAndShortcutsForPackage(
       prefs_->GetDictionary(arc::prefs::kArcApps);
   for (base::DictionaryValue::Iterator app_it(*apps); !app_it.IsAtEnd();
        app_it.Advance()) {
+    if (!crx_file::id_util::IdIsValid(app_it.key()))
+      continue;
+
     const base::Value* value = &app_it.value();
     const base::DictionaryValue* app;
     if (!value->GetAsDictionary(&app)) {
@@ -1389,7 +1392,7 @@ std::unordered_set<std::string> ArcAppListPrefs::GetAppsAndShortcutsForPackage(
 
     std::string app_package;
     if (!app->GetString(kPackageName, &app_package)) {
-      NOTREACHED();
+      LOG(ERROR) << "App is malformed: " << app_it.key();
       continue;
     }
 
