@@ -462,6 +462,8 @@ void RenderFrameProxy::OnChildFrameProcessGone() {
 
 void RenderFrameProxy::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
+  DCHECK(!enable_surface_synchronization_);
+
   // If this WebFrame has already been detached, its parent will be null. This
   // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
   // message may arrive after the frame was removed from the frame tree, but
@@ -469,12 +471,8 @@ void RenderFrameProxy::OnFirstSurfaceActivation(
   if (!web_frame()->Parent())
     return;
 
-  if (!enable_surface_synchronization_) {
-    compositing_helper_->SetSurfaceId(surface_info.id(), local_frame_size(),
-                                      cc::DeadlinePolicy::UseDefaultDeadline());
-  }
-  compositing_helper_->SetOldestAcceptableFallback(surface_info.id(),
-                                                   local_frame_size());
+  compositing_helper_->SetSurfaceId(surface_info.id(), local_frame_size(),
+                                    cc::DeadlinePolicy::UseDefaultDeadline());
 }
 
 void RenderFrameProxy::OnIntrinsicSizingInfoOfChildChanged(

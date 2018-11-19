@@ -49,7 +49,6 @@ bool ClientSurfaceEmbedder::HasPrimarySurfaceId() const {
 void ClientSurfaceEmbedder::SetFallbackSurfaceInfo(
     const viz::SurfaceInfo& surface_info) {
   fallback_surface_info_ = surface_info;
-  surface_layer_owner_->layer()->SetOldestAcceptableFallback(surface_info.id());
   UpdateSizeAndGutters();
 }
 

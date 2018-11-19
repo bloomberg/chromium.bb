@@ -236,7 +236,6 @@ void WindowPortLocal::OnFirstSurfaceActivation(
                                    SK_ColorWHITE,
                                    cc::DeadlinePolicy::UseDefaultDeadline(),
                                    false /* stretch_content_to_fill_bounds */);
-  window_->layer()->SetOldestAcceptableFallback(surface_info.id());
 }
 
 void WindowPortLocal::OnFrameTokenChanged(uint32_t frame_token) {}
