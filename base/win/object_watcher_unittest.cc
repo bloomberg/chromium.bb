@@ -5,9 +5,10 @@
 #include "base/win/object_watcher.h"
 
 #include <process.h>
+#include <windows.h>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -32,8 +33,9 @@ class DecrementCountDelegate : public ObjectWatcher::Delegate {
   int* counter_;
 };
 
-void RunTest_BasicSignal(MessageLoop::Type message_loop_type) {
-  MessageLoop message_loop(message_loop_type);
+void RunTest_BasicSignal(
+    test::ScopedTaskEnvironment::MainThreadType main_thread_type) {
+  test::ScopedTaskEnvironment scoped_task_environment(main_thread_type);
 
   ObjectWatcher watcher;
   EXPECT_FALSE(watcher.IsWatching());
@@ -55,8 +57,9 @@ void RunTest_BasicSignal(MessageLoop::Type message_loop_type) {
   CloseHandle(event);
 }
 
-void RunTest_BasicCancel(MessageLoop::Type message_loop_type) {
-  MessageLoop message_loop(message_loop_type);
+void RunTest_BasicCancel(
+    test::ScopedTaskEnvironment::MainThreadType main_thread_type) {
+  test::ScopedTaskEnvironment scoped_task_environment(main_thread_type);
 
   ObjectWatcher watcher;
 
@@ -72,8 +75,9 @@ void RunTest_BasicCancel(MessageLoop::Type message_loop_type) {
   CloseHandle(event);
 }
 
-void RunTest_CancelAfterSet(MessageLoop::Type message_loop_type) {
-  MessageLoop message_loop(message_loop_type);
+void RunTest_CancelAfterSet(
+    test::ScopedTaskEnvironment::MainThreadType main_thread_type) {
+  test::ScopedTaskEnvironment scoped_task_environment(main_thread_type);
 
   ObjectWatcher watcher;
 
@@ -101,8 +105,9 @@ void RunTest_CancelAfterSet(MessageLoop::Type message_loop_type) {
   CloseHandle(event);
 }
 
-void RunTest_SignalBeforeWatch(MessageLoop::Type message_loop_type) {
-  MessageLoop message_loop(message_loop_type);
+void RunTest_SignalBeforeWatch(
+    test::ScopedTaskEnvironment::MainThreadType main_thread_type) {
+  test::ScopedTaskEnvironment scoped_task_environment(main_thread_type);
 
   ObjectWatcher watcher;
 
@@ -119,15 +124,16 @@ void RunTest_SignalBeforeWatch(MessageLoop::Type message_loop_type) {
   CloseHandle(event);
 }
 
-void RunTest_OutlivesMessageLoop(MessageLoop::Type message_loop_type) {
-  // Simulate a MessageLoop that dies before an ObjectWatcher.  This ordinarily
-  // doesn't happen when people use the Thread class, but it can happen when
-  // people use the Singleton pattern or atexit.
+void RunTest_OutlivesTaskEnvironment(
+    test::ScopedTaskEnvironment::MainThreadType main_thread_type) {
+  // Simulate a task environment that dies before an ObjectWatcher.  This
+  // ordinarily doesn't happen when people use the Thread class, but it can
+  // happen when people use the Singleton pattern or atexit.
   HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);  // not signaled
   {
     ObjectWatcher watcher;
     {
-      MessageLoop message_loop(message_loop_type);
+      test::ScopedTaskEnvironment scoped_task_environment(main_thread_type);
 
       QuitDelegate delegate;
       watcher.StartWatchingOnce(event, &delegate);
@@ -153,8 +159,9 @@ class QuitAfterMultipleDelegate : public ObjectWatcher::Delegate {
   int iterations_;
 };
 
-void RunTest_ExecuteMultipleTimes(MessageLoop::Type message_loop_type) {
-  MessageLoop message_loop(message_loop_type);
+void RunTest_ExecuteMultipleTimes(
+    test::ScopedTaskEnvironment::MainThreadType main_thread_type) {
+  test::ScopedTaskEnvironment scoped_task_environment(main_thread_type);
 
   ObjectWatcher watcher;
   EXPECT_FALSE(watcher.IsWatching());
@@ -182,39 +189,44 @@ void RunTest_ExecuteMultipleTimes(MessageLoop::Type message_loop_type) {
 //-----------------------------------------------------------------------------
 
 TEST(ObjectWatcherTest, BasicSignal) {
-  RunTest_BasicSignal(MessageLoop::TYPE_DEFAULT);
-  RunTest_BasicSignal(MessageLoop::TYPE_IO);
-  RunTest_BasicSignal(MessageLoop::TYPE_UI);
+  RunTest_BasicSignal(test::ScopedTaskEnvironment::MainThreadType::DEFAULT);
+  RunTest_BasicSignal(test::ScopedTaskEnvironment::MainThreadType::IO);
+  RunTest_BasicSignal(test::ScopedTaskEnvironment::MainThreadType::UI);
 }
 
 TEST(ObjectWatcherTest, BasicCancel) {
-  RunTest_BasicCancel(MessageLoop::TYPE_DEFAULT);
-  RunTest_BasicCancel(MessageLoop::TYPE_IO);
-  RunTest_BasicCancel(MessageLoop::TYPE_UI);
+  RunTest_BasicCancel(test::ScopedTaskEnvironment::MainThreadType::DEFAULT);
+  RunTest_BasicCancel(test::ScopedTaskEnvironment::MainThreadType::IO);
+  RunTest_BasicCancel(test::ScopedTaskEnvironment::MainThreadType::UI);
 }
 
 TEST(ObjectWatcherTest, CancelAfterSet) {
-  RunTest_CancelAfterSet(MessageLoop::TYPE_DEFAULT);
-  RunTest_CancelAfterSet(MessageLoop::TYPE_IO);
-  RunTest_CancelAfterSet(MessageLoop::TYPE_UI);
+  RunTest_CancelAfterSet(test::ScopedTaskEnvironment::MainThreadType::DEFAULT);
+  RunTest_CancelAfterSet(test::ScopedTaskEnvironment::MainThreadType::IO);
+  RunTest_CancelAfterSet(test::ScopedTaskEnvironment::MainThreadType::UI);
 }
 
 TEST(ObjectWatcherTest, SignalBeforeWatch) {
-  RunTest_SignalBeforeWatch(MessageLoop::TYPE_DEFAULT);
-  RunTest_SignalBeforeWatch(MessageLoop::TYPE_IO);
-  RunTest_SignalBeforeWatch(MessageLoop::TYPE_UI);
+  RunTest_SignalBeforeWatch(
+      test::ScopedTaskEnvironment::MainThreadType::DEFAULT);
+  RunTest_SignalBeforeWatch(test::ScopedTaskEnvironment::MainThreadType::IO);
+  RunTest_SignalBeforeWatch(test::ScopedTaskEnvironment::MainThreadType::UI);
 }
 
-TEST(ObjectWatcherTest, OutlivesMessageLoop) {
-  RunTest_OutlivesMessageLoop(MessageLoop::TYPE_DEFAULT);
-  RunTest_OutlivesMessageLoop(MessageLoop::TYPE_IO);
-  RunTest_OutlivesMessageLoop(MessageLoop::TYPE_UI);
+TEST(ObjectWatcherTest, OutlivesTaskEnvironment) {
+  RunTest_OutlivesTaskEnvironment(
+      test::ScopedTaskEnvironment::MainThreadType::DEFAULT);
+  RunTest_OutlivesTaskEnvironment(
+      test::ScopedTaskEnvironment::MainThreadType::IO);
+  RunTest_OutlivesTaskEnvironment(
+      test::ScopedTaskEnvironment::MainThreadType::UI);
 }
 
 TEST(ObjectWatcherTest, ExecuteMultipleTimes) {
-  RunTest_ExecuteMultipleTimes(MessageLoop::TYPE_DEFAULT);
-  RunTest_ExecuteMultipleTimes(MessageLoop::TYPE_IO);
-  RunTest_ExecuteMultipleTimes(MessageLoop::TYPE_UI);
+  RunTest_ExecuteMultipleTimes(
+      test::ScopedTaskEnvironment::MainThreadType::DEFAULT);
+  RunTest_ExecuteMultipleTimes(test::ScopedTaskEnvironment::MainThreadType::IO);
+  RunTest_ExecuteMultipleTimes(test::ScopedTaskEnvironment::MainThreadType::UI);
 }
 
 }  // namespace win

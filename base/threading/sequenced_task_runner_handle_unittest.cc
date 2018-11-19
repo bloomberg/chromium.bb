@@ -52,7 +52,7 @@ class SequencedTaskRunnerHandleTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST_F(SequencedTaskRunnerHandleTest, FromMessageLoop) {
+TEST_F(SequencedTaskRunnerHandleTest, FromTaskEnvironment) {
   VerifyCurrentSequencedTaskRunner();
   RunLoop().RunUntilIdle();
 }
@@ -72,7 +72,7 @@ TEST_F(SequencedTaskRunnerHandleTest, NoHandleFromUnsequencedTask) {
   scoped_task_environment_.RunUntilIdle();
 }
 
-TEST(SequencedTaskRunnerHandleTestWithoutMessageLoop, FromHandleInScope) {
+TEST(SequencedTaskRunnerHandleTestWithoutTaskEnvironment, FromHandleInScope) {
   scoped_refptr<SequencedTaskRunner> test_task_runner(new TestSimpleTaskRunner);
   EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet());
   EXPECT_FALSE(ThreadTaskRunnerHandle::IsSet());

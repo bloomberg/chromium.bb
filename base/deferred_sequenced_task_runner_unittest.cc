@@ -9,10 +9,11 @@
 #include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,10 +57,10 @@ class DeferredSequencedTaskRunnerTest : public testing::Test {
 
  protected:
   DeferredSequencedTaskRunnerTest()
-      : loop_(),
-        runner_(new DeferredSequencedTaskRunner(loop_.task_runner())) {}
+      : runner_(
+            new DeferredSequencedTaskRunner(ThreadTaskRunnerHandle::Get())) {}
 
-  MessageLoop loop_;
+  test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<DeferredSequencedTaskRunner> runner_;
   mutable Lock lock_;
   std::vector<int> executed_task_ids_;
@@ -205,7 +206,7 @@ TEST_F(DeferredSequencedTaskRunnerTest, StartWithTaskRunner) {
                          std::move(quit_closure).Run();
                        },
                        &run_called, run_loop.QuitClosure()));
-  runner->StartWithTaskRunner(loop_.task_runner());
+  runner->StartWithTaskRunner(ThreadTaskRunnerHandle::Get());
   run_loop.Run();
   EXPECT_TRUE(run_called);
 }

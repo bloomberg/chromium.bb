@@ -10,9 +10,9 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -166,10 +166,10 @@ TEST(CancelableCallbackTest, IsNull) {
   EXPECT_TRUE(cancelable.IsCancelled());
 }
 
-// CancelableCallback posted to a MessageLoop with PostTask.
-//  - Callbacks posted to a MessageLoop can be cancelled.
+// CancelableCallback posted to a task environment with PostTask.
+//  - Posted callbacks can be cancelled.
 TEST(CancelableCallbackTest, PostTask) {
-  MessageLoop loop;
+  test::ScopedTaskEnvironment scoped_task_environment;
 
   int count = 0;
   CancelableClosure cancelable(base::Bind(&Increment,
@@ -182,7 +182,7 @@ TEST(CancelableCallbackTest, PostTask) {
 
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, cancelable.callback());
 
-  // Cancel before running the message loop.
+  // Cancel before running the tasks.
   cancelable.Cancel();
   RunLoop().RunUntilIdle();
 

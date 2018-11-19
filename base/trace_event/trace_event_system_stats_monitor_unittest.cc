@@ -8,8 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,14 +33,14 @@ class TraceSystemStatsMonitorTest : public testing::Test {
 //////////////////////////////////////////////////////////////////////////////
 
 TEST_F(TraceSystemStatsMonitorTest, TraceEventSystemStatsMonitor) {
-  MessageLoop message_loop;
+  test::ScopedTaskEnvironment scoped_task_environment;
 
   // Start with no observers of the TraceLog.
   EXPECT_EQ(0u, TraceLog::GetInstance()->GetObserverCountForTest());
 
   // Creating a system stats monitor adds it to the TraceLog observer list.
   std::unique_ptr<TraceEventSystemStatsMonitor> system_stats_monitor(
-      new TraceEventSystemStatsMonitor(message_loop.task_runner()));
+      new TraceEventSystemStatsMonitor(ThreadTaskRunnerHandle::Get()));
   EXPECT_EQ(1u, TraceLog::GetInstance()->GetObserverCountForTest());
   EXPECT_TRUE(
       TraceLog::GetInstance()->HasEnabledStateObserver(
