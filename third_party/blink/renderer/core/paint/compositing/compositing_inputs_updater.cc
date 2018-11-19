@@ -238,6 +238,9 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
         layer->DirectCompositingReasons());
   }
 
+  if (layer->GetLayoutObject().IsVideo())
+    info.is_under_video = true;
+
   bool should_recurse =
       layer->ChildNeedsCompositingInputsUpdate() || update_type == kForceUpdate;
 
@@ -359,6 +362,8 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   properties.ancestor_scrolling_layer = info.scrolling_ancestor;
   if (info.needs_reparent_scroll && layout_object.StyleRef().IsStacked())
     properties.scroll_parent = info.scrolling_ancestor;
+
+  properties.is_under_video = info.is_under_video;
 
   layer->UpdateAncestorDependentCompositingInputs(properties);
 }

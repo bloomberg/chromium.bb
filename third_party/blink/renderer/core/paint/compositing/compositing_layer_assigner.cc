@@ -135,15 +135,10 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   const PaintLayer& squashing_layer =
       squashing_state.most_recent_mapping->OwningLayer();
 
-  // FIXME: this special case for video exists only to deal with corner cases
-  // where a LayoutVideo does not report that it needs to be directly
-  // composited.  Video does not currently support sharing a backing, but this
-  // could be generalized in the future. The following layout tests fail if we
-  // permit the video to share a backing with other layers.
-  //
-  // compositing/video/video-controls-layer-creation.html
-  if (layer->GetLayoutObject().IsVideo() ||
-      squashing_layer.GetLayoutObject().IsVideo())
+  // Don't squash into or out of any thing underneath a video, including the
+  // user-agent shadow DOM for controls. This is is to work around a
+  // bug involving overflow clip of videos. See crbug.com/900602.
+  if (layer->IsUnderVideo() || squashing_layer.IsUnderVideo())
     return SquashingDisallowedReason::kSquashingVideoIsDisallowed;
 
   // Don't squash iframes, frames or plugins.

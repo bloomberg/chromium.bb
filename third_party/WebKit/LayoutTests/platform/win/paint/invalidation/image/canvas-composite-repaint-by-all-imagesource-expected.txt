@@ -466,18 +466,15 @@
       "drawsContent": false
     },
     {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false
-    },
-    {
       "name": "LayoutFlexibleBox (relative positioned) DIV class='sizing-small phase-ready state-stopped'",
       "position": [15, 859],
       "bounds": [150, 60]
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
+      "name": "LayoutBlockFlow (positioned) DIV",
       "position": [15, 859],
-      "bounds": [150, 60]
+      "bounds": [150, 60],
+      "drawsContent": false
     }
   ]
 }
