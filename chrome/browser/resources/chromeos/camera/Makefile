@@ -105,12 +105,11 @@ RESOURCES = \
 	src/js/main.js \
 	src/js/models/gallery.js \
 	src/js/models/file_system.js \
-	src/js/router.js \
+	src/js/nav.js \
 	src/js/scrollbar.js \
 	src/js/toast.js \
 	src/js/tooltip.js \
 	src/js/util.js \
-	src/js/view.js \
 	src/js/views/browser.js \
 	src/js/views/camera.js \
 	src/js/views/camera/gallerybutton.js \
@@ -118,6 +117,7 @@ RESOURCES = \
 	src/js/views/camera/options.js \
 	src/js/views/camera/preview.js \
 	src/js/views/camera/recordtime.js \
+	src/js/views/view.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \
 	src/sounds/record_end.ogg \

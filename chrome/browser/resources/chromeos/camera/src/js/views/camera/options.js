@@ -21,17 +21,10 @@ cca.views.camera = cca.views.camera || {};
 
 /**
  * Creates a controller for the options of Camera view.
- * @param {cca.Router} router View router to switch views.
  * @param {function()} onNewStreamNeeded Callback to request new stream.
  * @constructor
  */
-cca.views.camera.Options = function(router, onNewStreamNeeded) {
-  /**
-   * @type {cca.Router}
-   * @private
-   */
-  this.router_ = router;
-
+cca.views.camera.Options = function(onNewStreamNeeded) {
   /**
    * @type {function()}
    * @private

@@ -76,12 +76,12 @@ cca.ScrollBar = function(scroller) {
   window.addEventListener('mouseup', this.onMouseUp_.bind(this));
   window.addEventListener('mousemove', this.onMouseMove_.bind(this));
 
-  this.scroller.element.addEventListener('scroll', this.onScroll_.bind(this));
+  this.scroller.element.addEventListener('scroll', this.redraw.bind(this));
   this.domObserver_ = new MutationObserver(this.onDomChanged_.bind(this));
   this.domObserver_.observe(
       this.scroller.element, {subtree: true, attributes: true});
 
-  this.redraw_();
+  this.redraw();
 };
 
 /**
@@ -90,15 +90,7 @@ cca.ScrollBar = function(scroller) {
  */
 cca.ScrollBar.prototype.setThumbHidden = function(hidden) {
   this.thumbHidden_ = hidden;
-  this.redraw_();
-};
-
-/**
- * Scroll handler.
- * @private
- */
-cca.ScrollBar.prototype.onScroll_ = function() {
-  this.redraw_();
+  this.redraw();
 };
 
 /**
@@ -216,7 +208,7 @@ cca.ScrollBar.prototype.onMouseMove_ = function(event) {
        this.thumbLastScreenPosition_) * (scrollTotal / clientTotal);
 
   this.setScrollPosition(scrollPosition);
-  this.redraw_();
+  this.redraw();
 
   this.thumbLastScreenPosition_ = this.getScreenPosition(event);
 };
@@ -232,23 +224,15 @@ cca.ScrollBar.prototype.onDomChanged_ = function() {
     this.domChangedTimer_ = null;
   }
   this.domChangedTimer_ = setTimeout(function() {
-    this.redraw_();
+    this.redraw();
     this.domChangedTimer_ = null;
   }.bind(this), 50);
 };
 
 /**
- * Resize handler to update the thumb size/position by redrawing the scroll bar.
- */
-cca.ScrollBar.prototype.onResize = function() {
-  this.redraw_();
-};
-
-/**
  * Redraws the scroll bar.
- * @private
  */
-cca.ScrollBar.prototype.redraw_ = function() {
+cca.ScrollBar.prototype.redraw = function() {
   var clientTotal = this.getClientTotal();
   var scrollTotal = this.getScrollTotal();
 

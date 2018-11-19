@@ -16,13 +16,11 @@ cca.views = cca.views || {};
 
 /**
  * Creates the Dialog view controller.
- * @param {cca.Router} router View router to switch views.
- * @extends {cca.View}
+ * @extends {cca.views.View}
  * @constructor
  */
-cca.views.Dialog = function(router) {
-  cca.View.call(
-      this, router, document.querySelector('#dialog'), 'dialog');
+cca.views.Dialog = function() {
+  cca.views.View.call(this, '#dialog');
 
   /**
    * @type {HTMLButtonElement}
@@ -52,28 +50,16 @@ cca.views.Dialog = function(router) {
       'click', this.onNegativeButtonClicked_.bind(this));
 };
 
-/**
- * Type of the dialog.
- * @enum {number}
- */
-cca.views.Dialog.Type = Object.freeze({
-  CONFIRMATION: 0,
-  ALERT: 1,
-});
-
 cca.views.Dialog.prototype = {
-  __proto__: cca.View.prototype,
+  __proto__: cca.views.View.prototype,
 };
 
 /**
- * Enters the view. Assumes, that the corresponding arguments are provided
- * according to each type:
- * CONFIRMATION type with 'message' argument,
- * ALERT type with 'message' argument,
- * @param {Object=} opt_arguments Arguments for the dialog.
+ * @param {string} message Message of the dialog.
+ * @param {boolean} cancellable Whether the dialog is cancellable.
  * @override
  */
-cca.views.Dialog.prototype.onEnter = function(opt_arguments) {
+cca.views.Dialog.prototype.entering = function(message, cancellable) {
   // Update the element's text content and hide it if there is no text content.
   var updateElement = function(element, text) {
     if (text) {
@@ -84,32 +70,21 @@ cca.views.Dialog.prototype.onEnter = function(opt_arguments) {
       element.hidden = true;
     }
   };
-
-  var positiveText = null;
-  var negativeText = null;
-  var messageText = null;
-  switch (opt_arguments.type) {
-    case cca.views.Dialog.Type.CONFIRMATION:
-      positiveText = { name: 'dialogOKButton' };
-      negativeText = { name: 'dialogCancelButton' };
-      messageText = { content: opt_arguments.message };
-      break;
-    case cca.views.Dialog.Type.ALERT:
-      positiveText = { name: 'dialogOKButton' };
-      messageText = { content: opt_arguments.message };
-      break;
-  }
+  var messageText = { content: message };
+  var positiveText = { name: 'dialogOKButton' };
+  var negativeText = cancellable ? { name: 'dialogCancelButton' } : null;
+  updateElement(this.messageElement_, messageText);
   updateElement(this.positiveButton_, positiveText);
   updateElement(this.negativeButton_, negativeText);
-  updateElement(this.messageElement_, messageText);
 };
 
 /**
  * @override
  */
-cca.views.Dialog.prototype.onActivate = function() {
-  if (!this.positiveButton_.hidden)
+cca.views.Dialog.prototype.focus = function() {
+  if (!this.positiveButton_.hidden) {
     this.positiveButton_.focus();
+  }
 };
 
 /**
@@ -118,7 +93,7 @@ cca.views.Dialog.prototype.onActivate = function() {
  * @private
  */
 cca.views.Dialog.prototype.onPositiveButtonClicked_ = function(event) {
-  this.router.back({isPositive: true});
+  this.leave(true);
 };
 
 /**
@@ -135,7 +110,7 @@ cca.views.Dialog.prototype.onNegativeButtonClicked_ = function(event) {
  * @private
  */
 cca.views.Dialog.prototype.closeDialog_ = function() {
-  this.router.back({isPositive: false});
+  this.leave(false);
 };
 
 /**

@@ -17,14 +17,12 @@ cca.views = cca.views || {};
 /**
  * Creates the Browser view controller.
  * TODO(yuli): Merge GalleryBase into Browser.
- * @param {cca.Router} router View router to switch views.
  * @param {cca.models.Gallery} model Model object.
  * @extends {camera.view.GalleryBase}
  * @constructor
  */
-cca.views.Browser = function(router, model) {
-  cca.views.GalleryBase.call(
-      this, router, model, document.querySelector('#browser'), 'browser');
+cca.views.Browser = function(model) {
+  cca.views.GalleryBase.call(this, '#browser', model);
 
   /**
    * @type {cca.util.SmoothScroller}
@@ -76,7 +74,7 @@ cca.views.Browser = function(router, model) {
   document.querySelector('#browser-delete').addEventListener(
       'click', this.onDeleteButtonClicked_.bind(this));
   document.querySelector('#browser-back').addEventListener(
-      'click', this.router.back.bind(this.router));
+      'click', this.leave.bind(this));
 };
 
 cca.views.Browser.prototype = {
@@ -94,17 +92,13 @@ cca.views.Browser.prototype.prepare = function() {
 };
 
 /**
- * Enters the view. Assumes, that the arguments may be provided.
- * @param {Object=} opt_arguments Arguments for the browser.
+ * @param {cca.models.Gallery.Picture} picture Picture to be selected.
  * @override
  */
-cca.views.Browser.prototype.onEnter = function(opt_arguments) {
-  var index = null;
-  if (opt_arguments && opt_arguments.picture) {
-    index = this.pictureIndex(opt_arguments.picture);
-  }
-  // Navigate to the newest picture if the given picture isn't found.
+cca.views.Browser.prototype.entering = function(picture) {
+  var index = this.pictureIndex(picture);
   if (index == null && this.pictures.length) {
+    // Select the latest picture if the given picture isn't found.
     index = this.pictures.length - 1;
   }
   this.setSelectedIndex(index);
@@ -114,15 +108,7 @@ cca.views.Browser.prototype.onEnter = function(opt_arguments) {
 /**
  * @override
  */
-cca.views.Browser.prototype.onActivate = function() {
-  if (!this.scroller_.animating)
-    this.synchronizeFocus();
-};
-
-/**
- * @override
- */
-cca.views.Browser.prototype.onLeave = function() {
+cca.views.Browser.prototype.leaving = function() {
   this.scrollTracker_.stop();
   this.setSelectedIndex(null);
 };
@@ -130,12 +116,21 @@ cca.views.Browser.prototype.onLeave = function() {
 /**
  * @override
  */
-cca.views.Browser.prototype.onResize = function() {
+cca.views.Browser.prototype.focus = function() {
+  if (!this.scroller_.animating) {
+    this.synchronizeFocus();
+  }
+};
+
+/**
+ * @override
+ */
+cca.views.Browser.prototype.layout = function() {
   this.pictures.forEach(function(picture) {
     cca.views.Browser.updateElementSize_(picture.element);
   });
 
-  this.scrollBar_.onResize();
+  this.scrollBar_.redraw();
   var selectedPicture = this.lastSelectedPicture();
   if (selectedPicture) {
     cca.util.scrollToCenter(selectedPicture.element, this.scroller_,
@@ -249,7 +244,7 @@ cca.views.Browser.prototype.updatePicturesResolutions_ = function() {
 
   var replaceElement = function(wrapper, element) {
     wrapper.replaceChild(element, wrapper.firstElementChild);
-    cca.views.Browser.initElementTabIndex_(element);
+    cca.nav.setTabIndex(this, element, -1);
     cca.views.Browser.updateElementSize_(wrapper);
   };
 
@@ -394,7 +389,7 @@ cca.views.Browser.prototype.onPictureDeleted = function(picture) {
  */
 cca.views.Browser.prototype.addPictureToDOM = function(picture) {
   var wrapper = document.createElement('div');
-  cca.views.Browser.initElementTabIndex_(wrapper);
+  cca.nav.setTabIndex(this, wrapper, -1);
   cca.util.makeUnfocusableByMouse(wrapper);
   wrapper.className = 'media-wrapper';
   wrapper.id = 'browser-picture-' + (this.lastPictureIndex_++);
@@ -408,7 +403,7 @@ cca.views.Browser.prototype.addPictureToDOM = function(picture) {
     var isVideo = !thumbnailURL && picture.isMotionPicture;
     var element = wrapper.appendChild(document.createElement(
         isVideo ? 'video' : 'img'));
-    cca.views.Browser.initElementTabIndex_(element);
+    cca.nav.setTabIndex(this, element, -1);
     var updateElementSize = () => {
       cca.views.Browser.updateElementSize_(wrapper);
     };
@@ -459,16 +454,4 @@ cca.views.Browser.updateElementSize_ = function(wrapper) {
   var maxWidth = browserPadder.clientWidth * 0.7;
   var maxHeight = browserPadder.clientHeight * 0.7;
   cca.util.updateElementSize(wrapper, maxWidth, maxHeight, false);
-};
-
-/**
- * Initializes the element's tabindex.
- * @param {HTMLElement} element Element whose tabindex to be initialized.
- * @private
- */
-cca.views.Browser.initElementTabIndex_ = function(element) {
-  if (!this.active) {
-    element.dataset.tabindex = '-1';
-  }
-  element.tabIndex = -1;
 };

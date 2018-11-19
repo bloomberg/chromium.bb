@@ -21,18 +21,11 @@ cca.views.camera = cca.views.camera || {};
 
 /**
  * Creates a controller for the gallery-button of Camera view.
- * @param {cca.Router} router View router to switch views.
  * @param {cca.models.Gallery} model Model object.
  * @implements {cca.models.Gallery.Observer}
  * @constructor
  */
-cca.views.camera.GalleryButton = function(router, model) {
-  /**
-   * @type {cca.Router}
-   * @private
-   */
-  this.router_ = router;
-
+cca.views.camera.GalleryButton = function(model) {
   /**
    * @type {cca.models.Gallery}
    * @private
@@ -107,8 +100,7 @@ cca.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
       }
     });
   } else {
-    this.router_.navigate(cca.Router.ViewIdentifier.BROWSER,
-        {picture: picture});
+    cca.nav.browser(picture);
   }
 };
 

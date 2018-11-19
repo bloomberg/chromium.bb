@@ -16,16 +16,14 @@ cca.views = cca.views || {};
 
 /**
  * Creates the Gallery Base view controller.
- * @param {cca.Router} router View router to switch views.
+ * @param {string} selector Selector text of the view's root element.
  * @param {cca.models.Gallery} model Model object.
- * @param {HTMLElement} rootElement Root element of the view.
- * @param {string} name View name.
- * @extends {cca.View}
+ * @extends {cca.views.View}
  * @implements {cca.models.Gallery.Observer}
  * @constructor
  */
-cca.views.GalleryBase = function(router, model, rootElement, name) {
-  cca.View.call(this, router, rootElement, name);
+cca.views.GalleryBase = function(selector, model) {
+  cca.views.View.call(this, selector);
 
   /**
    * @type {cca.models.Gallery}
@@ -82,7 +80,7 @@ cca.views.GalleryBase.DOMPicture.prototype = {
 };
 
 cca.views.GalleryBase.prototype = {
-  __proto__: cca.View.prototype,
+  __proto__: cca.views.View.prototype,
 };
 
 /**
@@ -121,24 +119,23 @@ cca.views.GalleryBase.prototype.exportSelection = function() {
  */
 cca.views.GalleryBase.prototype.deleteSelection = function() {
   var selectedIndexes = this.selectedIndexes;
-  if (!selectedIndexes.length)
+  if (!selectedIndexes.length) {
     return;
-
+  }
   var multi = selectedIndexes.length > 1;
   var param = multi ? selectedIndexes.length.toString() :
       this.lastSelectedPicture().picture.pictureEntry.name;
-  this.router.navigate(cca.Router.ViewIdentifier.DIALOG, {
-    type: cca.views.Dialog.Type.CONFIRMATION,
-    message: chrome.i18n.getMessage(multi ?
-        'deleteMultiConfirmationMsg' : 'deleteConfirmationMsg', param),
-  }, (result) => {
-    if (!result.isPositive)
+  var message = chrome.i18n.getMessage(
+      multi ? 'deleteMultiConfirmationMsg' : 'deleteConfirmationMsg', param);
+  cca.nav.dialog(message, true).then((confirmed) => {
+    if (!confirmed) {
       return;
+    }
     var selectedPictures = this.selectedPictures();
     for (var i = selectedPictures.length - 1; i >= 0; i--) {
       this.model_.deletePicture(selectedPictures[i].picture).catch((error) => {
         console.error(error);
-        // TODO(yuli): Move Toast out of views/ and show a toast message here.
+        // TODO(yuli): Show a toast message here.
       });
     }
   });
@@ -199,12 +196,7 @@ cca.views.GalleryBase.prototype.pictureIndex = function(picture) {
  */
 cca.views.GalleryBase.prototype.setSelectedIndex = function(index) {
   var updateSelection = (element, select) => {
-    if (this.active) {
-      element.tabIndex = select ? 0 : -1;
-    } else {
-      element.tabIndex = -1;
-      element.dataset.tabindex = select ? '0' : '-1';
-    }
+    cca.nav.setTabIndex(this, element, select ? 0 : -1);
     element.classList.toggle('selected', select);
     element.setAttribute('aria-selected', select ? 'true' : 'false');
   };
@@ -251,9 +243,9 @@ cca.views.GalleryBase.prototype.onPictureDeleted = function(picture) {
       this.setSelectedIndex(Math.max(0, index - 1));
     } else {
       this.setSelectedIndex(null);
-      if (this.entered) {
-        this.router.back();
-      }
+      // Assume browser-view's picture-deletion only occurs when browser-view is
+      // active and don't need to handle inactive empty browser-view for now.
+      this.leave();
     }
   }
 };
@@ -269,7 +261,7 @@ cca.views.GalleryBase.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       break;
     case 'Escape':
-      this.router.back();
+      this.leave();
       event.preventDefault();
       break;
     case 'Ctrl-S': // Ctrl+S for saving.
@@ -307,7 +299,8 @@ cca.views.GalleryBase.prototype.addPictureToDOM = function(picture) {
 cca.views.GalleryBase.prototype.synchronizeFocus = function() {
   // Synchronize focus on the last selected picture.
   var selectedPicture = this.lastSelectedPicture();
-  if (selectedPicture && this.active) {
-    selectedPicture.element.focus();
+  var element = selectedPicture && selectedPicture.element;
+  if (element && element.tabIndex >= 0) {
+    element.focus();
   }
 };
