@@ -10,26 +10,6 @@
 
 namespace blink {
 
-namespace {
-
-// UScriptCode and OpenType script are not 1:1; specifically, both Hiragana and
-// Katakana map to 'kana' in OpenType. They will be mapped correctly in
-// HarfBuzz, but normalizing earlier helps to reduce splitting runs between
-// these scripts.
-// https://docs.microsoft.com/en-us/typography/opentype/spec/scripttags
-inline UScriptCode getScriptForOpenType(UChar32 ch, UErrorCode* status) {
-  UScriptCode script = uscript_getScript(ch, status);
-  if (UNLIKELY(U_FAILURE(*status)))
-    return script;
-  if (UNLIKELY(script == USCRIPT_KATAKANA ||
-               script == USCRIPT_KATAKANA_OR_HIRAGANA)) {
-    return USCRIPT_HIRAGANA;
-  }
-  return script;
-}
-
-}  // namespace
-
 typedef ScriptData::PairedBracketType PairedBracketType;
 
 constexpr int ScriptRunIterator::kMaxScriptCount;
@@ -47,10 +27,6 @@ void ICUScriptData::GetScripts(UChar32 ch, UScriptCodeList& dst) const {
   // regardless of the capacity passed to the call. So count can be greater
   // than dst->size(), if a later version of the unicode data has more
   // than kMaxScriptCount items.
-
-  // |uscript_getScriptExtensions| do not need to be collated to
-  // USCRIPT_HIRAGANA because when ScriptExtensions contains Kana, it contains
-  // Hira as well, and Hira is always before Kana.
   int count = uscript_getScriptExtensions(ch, &dst[0], dst.size(), &status);
   if (status == U_BUFFER_OVERFLOW_ERROR) {
     // Allow this, we'll just use what we have.
@@ -59,7 +35,7 @@ void ICUScriptData::GetScripts(UChar32 ch, UScriptCodeList& dst) const {
     count = dst.size();
     status = U_ZERO_ERROR;
   }
-  UScriptCode primary_script = getScriptForOpenType(ch, &status);
+  UScriptCode primary_script = uscript_getScript(ch, &status);
 
   if (U_FAILURE(status)) {
     DLOG(ERROR) << "Could not get icu script data: " << status << " for 0x"
