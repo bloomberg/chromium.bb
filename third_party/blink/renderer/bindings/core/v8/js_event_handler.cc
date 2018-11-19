@@ -135,7 +135,7 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   String result_for_beforeunload;
   if (IsOnBeforeUnloadEventHandler()) {
     // TODO(yukiy): use |NativeValueTraits|.
-    V8StringResource<> native_result(v8_return_value);
+    V8StringResource<kTreatNullAsNullString> native_result(v8_return_value);
 
     // |native_result.Prepare()| throws exception if it fails to convert
     // |native_result| to String.
