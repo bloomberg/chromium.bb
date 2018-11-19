@@ -28,7 +28,7 @@ namespace media {
 // hardware accelerators (see V4L2VideoDecodeAccelerator) for more details.
 class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
  public:
-  explicit V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device,
+  explicit V4L2ImageProcessor(scoped_refptr<V4L2Device> device,
                               v4l2_memory input_memory_type,
                               v4l2_memory output_memory_type);
   ~V4L2ImageProcessor() override;
@@ -77,7 +77,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // should pass non-empty |output_dmabuf_fds| and the processed frame will be
   // stored in those buffers. If the number of |output_dmabuf_fds| is not
   // expected, this function will return false.
-  bool Process(const scoped_refptr<VideoFrame>& frame,
+  bool Process(scoped_refptr<VideoFrame> frame,
                int output_buffer_index,
                std::vector<base::ScopedFD> output_dmabuf_fds,
                FrameReadyCB cb) override;
