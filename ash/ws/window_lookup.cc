@@ -18,12 +18,5 @@ aura::Window* GetWindowByClientId(ws::Id transport_id) {
       ->GetWindowByClientId(transport_id);
 }
 
-ws::ClientSpecificId GetFirstWindowTreeClientId() {
-  return Shell::Get()
-      ->window_service_owner()
-      ->window_service()
-      ->GetFirstWindowTreeClientId();
-}
-
 }  // namespace window_lookup
 }  // namespace ash

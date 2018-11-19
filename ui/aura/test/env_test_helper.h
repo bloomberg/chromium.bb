@@ -57,6 +57,7 @@ class EnvTestHelper {
     env_->mode_ = mode;
     if (mode == Env::Mode::MUS)
       env_->EnableMusOSExchangeDataProvider();
+    env_->in_mus_shutdown_ = false;
     return old_mode;
   }
 

@@ -113,7 +113,20 @@ void ChangeCompletionWaiter::OnChangeCompleted(uint32_t change_id,
 void WaitForAllChangesToComplete(WindowTreeClient* client) {
   if (Env::GetInstance()->mode() == Env::Mode::LOCAL)
     return;
-  AllChangesCompletedWaiter(client ? client : GetWindowTreeClient()).Wait();
+  if (!client)
+    client = GetWindowTreeClient();
+
+  // Wait for any local changes.
+  AllChangesCompletedWaiter(client).Wait();
+
+  // Do this to flush any incoming calls from the server.
+  WindowTreeClientTestApi(client).FlushForTesting();
+
+  // And wait for any outgoing calls.
+  AllChangesCompletedWaiter(client).Wait();
+
+  // In theory we could keep doing the above until there are no more outgoing
+  // requests.
 }
 
 }  // namespace test

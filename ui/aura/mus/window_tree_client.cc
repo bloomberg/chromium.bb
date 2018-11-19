@@ -222,6 +222,11 @@ bool WindowTreeClient::WaitForDisplays() {
   return valid_wait;
 }
 
+WindowMus* WindowTreeClient::GetWindowByServerId(ws::Id id) {
+  IdToWindowMap::const_iterator it = windows_.find(id);
+  return it != windows_.end() ? it->second : nullptr;
+}
+
 void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
   DCHECK(tree_);
   DCHECK(window);
@@ -372,11 +377,6 @@ void WindowTreeClient::RegisterWindowMus(WindowMus* window) {
     window->GetWindow()->set_frame_sink_id(
         port->GenerateFrameSinkIdFromServerId());
   }
-}
-
-WindowMus* WindowTreeClient::GetWindowByServerId(ws::Id id) {
-  IdToWindowMap::const_iterator it = windows_.find(id);
-  return it != windows_.end() ? it->second : nullptr;
 }
 
 bool WindowTreeClient::IsWindowKnown(aura::Window* window) {

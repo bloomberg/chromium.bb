@@ -26,8 +26,14 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
+#include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/mus/mus_client.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -80,6 +86,26 @@ void RecordUMAForTransferredWindowType(aura::Window* window) {
                             NUM_TELEPORT_WINDOW_TYPES);
 }
 
+// Returns the WindowMus to use when sending messages to the server.
+aura::WindowMus* GetWindowMus(aura::Window* window) {
+  if (!aura::WindowMus::Get(window))
+    return nullptr;
+
+  aura::Window* root_window = window->GetRootWindow();
+  if (!root_window)
+    return nullptr;
+
+  // DesktopNativeWidgetAura creates two aura Windows. GetNativeWindow() returns
+  // the child window. Get the widget for |window| and its root. If the Widgets
+  // are the same, it means |window| is the native window of a
+  // DesktopNativeWidgetAura. Use the root window to notify the server as that
+  // corresponds to the top-level window that ash knows about.
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
+  views::Widget* root_widget =
+      views::Widget::GetWidgetForNativeView(root_window);
+  return widget == root_widget ? aura::WindowMus::Get(root_window) : nullptr;
+}
+
 }  // namespace
 
 // This class keeps track of all applications which were started for a user.
@@ -110,7 +136,14 @@ MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
     : current_account_id_(current_account_id),
       ash_multi_user_window_manager_(
           std::make_unique<ash::MultiUserWindowManager>(this,
-                                                        current_account_id)) {}
+                                                        current_account_id)) {
+  if (features::IsUsingWindowService()) {
+    multi_user_window_manager_mojom_ =
+        views::MusClient::Get()
+            ->window_tree_client()
+            ->BindWindowManagerInterface<ash::mojom::MultiUserWindowManager>();
+  }
+}
 
 MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
   // This may trigger callbacks to us, delete it early on.
@@ -176,14 +209,25 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
   DCHECK(GetWindowOwner(window).empty());
   window_to_entry_[window] = new WindowEntry(account_id);
 
-  ash_multi_user_window_manager_->SetWindowOwner(window, account_id);
+  // Check if this window was created due to a user interaction. If it was,
+  // transfer it to the current user.
+  const bool show_for_current_user =
+      window->GetProperty(aura::client::kCreatedByUserGesture);
+  if (window->env()->mode() == aura::Env::Mode::MUS) {
+    aura::WindowMus* window_mus = GetWindowMus(window);
+    if (window_mus) {
+      multi_user_window_manager_mojom_->SetWindowOwner(
+          window_mus->server_id(), account_id, show_for_current_user);
+    }  // else case can happen during shutdown, or for child windows.
+  } else {
+    ash_multi_user_window_manager_->SetWindowOwner(window, account_id,
+                                                   show_for_current_user);
+  }
 
   // Add observers to track state changes.
   window->AddObserver(this);
 
-  // Check if this window was created due to a user interaction. If it was,
-  // transfer it to the current user.
-  if (window->GetProperty(aura::client::kCreatedByUserGesture))
+  if (show_for_current_user)
     window_to_entry_[window]->set_show_for_user(current_account_id_);
 
   // Notify entry adding.
@@ -200,7 +244,18 @@ const AccountId& MultiUserWindowManagerChromeOS::GetWindowOwner(
 void MultiUserWindowManagerChromeOS::ShowWindowForUser(
     aura::Window* window,
     const AccountId& account_id) {
-  ash_multi_user_window_manager_->ShowWindowForUser(window, account_id);
+  if (!window)
+    return;
+
+  if (window->env()->mode() == aura::Env::Mode::MUS) {
+    aura::WindowMus* window_mus = GetWindowMus(window);
+    if (window_mus) {
+      multi_user_window_manager_mojom_->ShowWindowForUser(
+          window_mus->server_id(), account_id);
+    }
+  } else {
+    ash_multi_user_window_manager_->ShowWindowForUser(window, account_id);
+  }
 }
 
 bool MultiUserWindowManagerChromeOS::AreWindowsSharedAmongUsers() const {

@@ -128,6 +128,8 @@ class AURA_EXPORT WindowTreeClient
 
   const base::Optional<uint32_t>& id() const { return id_; }
 
+  WindowMus* GetWindowByServerId(ws::Id id);
+
   void SetCanFocus(Window* window, bool can_focus);
   void SetCanAcceptDrops(WindowMus* window, bool can_accept_drops);
   void SetEventTargetingPolicy(WindowMus* window,
@@ -241,8 +243,6 @@ class AURA_EXPORT WindowTreeClient
       bool create_discardable_memory = true);
 
   void RegisterWindowMus(WindowMus* window);
-
-  WindowMus* GetWindowByServerId(ws::Id id);
 
   bool IsWindowKnown(aura::Window* window);
 

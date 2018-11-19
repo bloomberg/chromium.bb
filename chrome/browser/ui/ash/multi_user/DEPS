@@ -8,5 +8,6 @@ specific_include_rules = {
   "multi_user_window_manager_chromeos_unittest\.cc": [
     "+ash/multi_user/user_switch_animator.h",
     "+ash/session/session_controller.h",
+    "+ash/ws/window_lookup.h",
   ],
 }

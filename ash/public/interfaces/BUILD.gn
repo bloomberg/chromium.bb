@@ -42,6 +42,7 @@ mojom("interfaces_internal") {
     "login_user_info.mojom",
     "media.mojom",
     "menu.mojom",
+    "multi_user_window_manager.mojom",
     "new_window.mojom",
     "night_light_controller.mojom",
     "note_taking_controller.mojom",
