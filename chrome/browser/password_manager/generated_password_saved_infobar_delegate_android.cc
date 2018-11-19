@@ -32,8 +32,10 @@ GeneratedPasswordSavedInfoBarDelegateAndroid::
   base::string16 link = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_LINK);
 
   size_t offset = 0;
-  message_text_ = l10n_util::GetStringFUTF16(
-      IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT_INFOBAR, link, &offset);
+  message_text_ =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CONFIRM_SAVED_TITLE);
+  details_message_text_ = l10n_util::GetStringFUTF16(
+      IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT, link, &offset);
   inline_link_range_ = gfx::Range(offset, offset + link.length());
 }
 
