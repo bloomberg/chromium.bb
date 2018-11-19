@@ -758,23 +758,6 @@ var ENTRIES = {
     },
   }),
 
-  teamDriveADirectory: new TestEntryInfo({
-    type: EntryType.DIRECTORY,
-    targetPath: 'teamDriveADirectory',
-    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
-    nameText: 'teamDriveADirectory',
-    sizeText: '--',
-    typeText: 'Folder',
-    teamDriveName: 'Team Drive A',
-    capabilities: {
-      canCopy: true,
-      canDelete: true,
-      canRename: true,
-      canAddChildren: true,
-      canShare: false,
-    },
-  }),
-
   teamDriveAHostedFile: new TestEntryInfo({
     type: EntryType.FILE,
     targetPath: 'teamDriveAHostedDoc',

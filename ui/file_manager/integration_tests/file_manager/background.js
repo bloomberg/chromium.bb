@@ -246,7 +246,6 @@ var TEAM_DRIVE_ENTRY_SET = [
   ENTRIES.hello,
   ENTRIES.teamDriveA,
   ENTRIES.teamDriveAFile,
-  ENTRIES.teamDriveADirectory,
   ENTRIES.teamDriveAHostedFile,
   ENTRIES.teamDriveB,
   ENTRIES.teamDriveBFile,
