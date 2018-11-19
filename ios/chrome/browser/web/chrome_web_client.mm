@@ -11,6 +11,8 @@
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/services/unzip/public/interfaces/constants.mojom.h"
+#include "components/services/unzip/unzip_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
@@ -23,7 +25,6 @@
 #include "ios/chrome/browser/passwords/credential_manager_features.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
-#include "ios/chrome/browser/unzip/unzip_service_creator.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #include "ios/chrome/grit/ios_resources.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -152,6 +153,8 @@ std::unique_ptr<base::Value> ChromeWebClient::GetServiceManifestOverlay(
   int identifier = -1;
   if (name == web::mojom::kBrowserServiceName)
     identifier = IDR_CHROME_BROWSER_MANIFEST_OVERLAY;
+  else if (name == web::mojom::kPackagedServicesServiceName)
+    identifier = IDR_CHROME_PACKAGED_SERVICES_MANIFEST_OVERLAY;
 
   if (identifier == -1)
     return nullptr;
@@ -214,7 +217,13 @@ void ChromeWebClient::PrepareErrorPage(NSError* error,
   *error_html = GetErrorPage(error, is_post, is_off_the_record);
 }
 
-void ChromeWebClient::RegisterServices(StaticServiceMap* services) {
-  // The Unzip service is used by the component updater.
-  RegisterUnzipService(services);
+std::unique_ptr<service_manager::Service> ChromeWebClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  if (service_name == unzip::mojom::kServiceName) {
+    // The Unzip service is used by the component updater.
+    return std::make_unique<unzip::UnzipService>(std::move(request));
+  }
+
+  return nullptr;
 }

@@ -9,14 +9,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "components/prefs/pref_service.h"
-#include "components/services/patch/patch_service.h"
-#include "components/services/unzip/unzip_service.h"
+#include "components/services/patch/public/interfaces/constants.mojom.h"
+#include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/protocol_handler.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "url/gurl.h"
 
 namespace update_client {
@@ -39,17 +37,15 @@ TestConfigurator::TestConfigurator()
       enabled_cup_signing_(false),
       enabled_component_updates_(true),
       use_JSON_(false),
+      connector_(connector_factory_.CreateConnector()),
+      unzip_service_(
+          connector_factory_.RegisterInstance(unzip::mojom::kServiceName)),
+      patch_service_(
+          connector_factory_.RegisterInstance(patch::mojom::kServiceName)),
       test_shared_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)) {
-  service_manager::TestConnectorFactory::NameToServiceMap services;
-  services.insert(
-      std::make_pair("patch_service", std::make_unique<patch::PatchService>()));
-  services.insert(
-      std::make_pair("unzip_service", unzip::UnzipService::CreateService()));
-  connector_factory_ = service_manager::TestConnectorFactory::CreateForServices(
-      std::move(services));
-  connector_ = connector_factory_->CreateConnector();
+  connector_factory_.set_ignore_quit_requests(true);
 }
 
 TestConfigurator::~TestConfigurator() {

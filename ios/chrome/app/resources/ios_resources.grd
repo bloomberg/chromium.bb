@@ -11,6 +11,7 @@
       <include name="IDR_IOS_OMAHA_HTML" file="omaha/omaha.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_IOS_OMAHA_JS" file="omaha/omaha.js" type="BINDATA" compress="gzip" />
       <include name="IDR_CHROME_BROWSER_MANIFEST_OVERLAY" file="${root_gen_dir}/ios/chrome/app/chrome_browser_manifest_overlay.json" use_base_dir="false" type="BINDATA" />
+      <include name="IDR_CHROME_PACKAGED_SERVICES_MANIFEST_OVERLAY" file="${root_gen_dir}/ios/chrome/app/chrome_packaged_services_manifest_overlay.json" use_base_dir="false" type="BINDATA" />
       <include name="IDR_IOS_UKM_INTERNALS_HTML" file="../../../../components/ukm/debug/ukm_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
       <include name="IDR_IOS_UKM_INTERNALS_JS" file="../../../../components/ukm/debug/ukm_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
     </includes>

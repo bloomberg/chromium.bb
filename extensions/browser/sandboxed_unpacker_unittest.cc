@@ -37,7 +37,6 @@
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -171,11 +170,12 @@ class SandboxedUnpackerTest : public ExtensionsTest {
               RegisterDataDecoder());
     }
 
-    if (!unzip_service)
-      unzip_service = unzip::UnzipService::CreateService();
-    unzip_service_context_ = std::make_unique<service_manager::ServiceContext>(
-        std::move(unzip_service),
-        test_connector_factory_.RegisterInstance(unzip::mojom::kServiceName));
+    if (unzip_service) {
+      unzip_service_ = std::move(unzip_service);
+    } else {
+      unzip_service_ =
+          std::make_unique<unzip::UnzipService>(RegisterUnzipService());
+    }
 
     connector_ = test_connector_factory_.CreateConnector();
 
@@ -188,6 +188,10 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   service_manager::mojom::ServiceRequest RegisterDataDecoder() {
     return test_connector_factory_.RegisterInstance(
         data_decoder::mojom::kServiceName);
+  }
+
+  service_manager::mojom::ServiceRequest RegisterUnzipService() {
+    return test_connector_factory_.RegisterInstance(unzip::mojom::kServiceName);
   }
 
   void TearDown() override {
@@ -282,7 +286,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   std::unique_ptr<service_manager::Connector> connector_;
 
   std::unique_ptr<service_manager::Service> data_decoder_service_;
-  std::unique_ptr<service_manager::ServiceContext> unzip_service_context_;
+  std::unique_ptr<service_manager::Service> unzip_service_;
 };
 
 TEST_F(SandboxedUnpackerTest, EmptyDefaultLocale) {
@@ -474,7 +478,7 @@ TEST_F(SandboxedUnpackerTest, SkipHashCheck) {
 TEST_F(SandboxedUnpackerTest, UnzipperServiceFails) {
   InitSanboxedUnpacker(
       /*data_decoder_service=*/nullptr,
-      std::make_unique<unzip::CrashyUnzipService>());
+      std::make_unique<unzip::CrashyUnzipService>(RegisterUnzipService()));
   SetupUnpacker("good_package.crx", "");
   EXPECT_FALSE(InstallSucceeded());
   EXPECT_FALSE(GetInstallErrorMessage().empty());

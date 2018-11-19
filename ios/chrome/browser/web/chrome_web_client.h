@@ -53,7 +53,9 @@ class ChromeWebClient : public web::WebClient {
                         bool is_post,
                         bool is_off_the_record,
                         NSString** error_html) override;
-  void RegisterServices(StaticServiceMap* services) override;
+  std::unique_ptr<service_manager::Service> HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeWebClient);

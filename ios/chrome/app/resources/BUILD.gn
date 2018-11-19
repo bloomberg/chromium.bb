@@ -38,6 +38,7 @@ grit("ios_resources") {
   ]
   deps = [
     "//ios/chrome/app:chrome_browser_manifest_overlay",
+    "//ios/chrome/app:chrome_packaged_services_manifest_overlay",
   ]
 }
 

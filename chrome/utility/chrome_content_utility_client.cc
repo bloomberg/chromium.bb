@@ -266,22 +266,6 @@ void ChromeContentUtilityClient::RegisterServices(
   }
 #endif
 
-#if !defined(OS_ANDROID)
-  {
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory =
-        base::BindRepeating(&patch::PatchService::CreateService);
-    services->emplace(patch::mojom::kServiceName, service_info);
-  }
-#endif
-
-  {
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory =
-        base::BindRepeating(&unzip::UnzipService::CreateService);
-    services->emplace(unzip::mojom::kServiceName, service_info);
-  }
-
 #if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
   // On Windows the service is running elevated.
   RegisterRemovableStorageWriterService(services);
@@ -337,6 +321,21 @@ void ChromeContentUtilityClient::RegisterServices(
     services->emplace(simple_browser::mojom::kServiceName, service_info);
   }
 #endif
+}
+
+std::unique_ptr<service_manager::Service>
+ChromeContentUtilityClient::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  if (service_name == unzip::mojom::kServiceName)
+    return std::make_unique<unzip::UnzipService>(std::move(request));
+
+#if !defined(OS_ANDROID)
+  if (service_name == patch::mojom::kServiceName)
+    return std::make_unique<patch::PatchService>(std::move(request));
+#endif
+
+  return nullptr;
 }
 
 void ChromeContentUtilityClient::RegisterNetworkBinders(

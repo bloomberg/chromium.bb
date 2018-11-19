@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,7 +60,9 @@ void CountFiles(const base::FilePath& dir,
 
 class UnzipTest : public testing::Test {
  public:
-  UnzipTest() = default;
+  UnzipTest()
+      : unzip_service_(
+            connector_factory_.RegisterInstance(unzip::mojom::kServiceName)) {}
   ~UnzipTest() override = default;
 
   // Unzips |zip_file| into |output_dir| and returns true if the unzip was
@@ -75,7 +78,7 @@ class UnzipTest : public testing::Test {
                          const base::FilePath& output_dir,
                          UnzipFilterCallback filter_callback) {
     std::unique_ptr<service_manager::Connector> connector =
-        connector_factory_->CreateConnector()->Clone();
+        connector_factory_.CreateConnector()->Clone();
 
     base::RunLoop run_loop;
     bool result = false;
@@ -102,9 +105,6 @@ class UnzipTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     unzip_dir_ = temp_dir_.GetPath();
-    connector_factory_ =
-        service_manager::TestConnectorFactory::CreateForUniqueService(
-            UnzipService::CreateService());
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -112,7 +112,8 @@ class UnzipTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::FilePath unzip_dir_;
 
-  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
+  service_manager::TestConnectorFactory connector_factory_;
+  unzip::UnzipService unzip_service_;
 };
 
 TEST_F(UnzipTest, UnzipBadArchive) {
