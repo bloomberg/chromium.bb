@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #include <SkFont.h>
-#include <SkPaint.h>
 #include <SkPath.h>
 
 namespace blink {
@@ -22,32 +21,27 @@ T* advance_by_byte_size(T* p, unsigned byte_size) {
 
 }  // namespace
 
-SkiaTextMetrics::SkiaTextMetrics(const SkPaint* paint)
-    : font_(SkFont::LEGACY_ExtractFromPaint(*paint)) {
-  CHECK(paint->getTextEncoding() == SkPaint::kGlyphID_TextEncoding);
-}
-
-SkiaTextMetrics::SkiaTextMetrics(const SkFont& font) : font_(font) {}
-
-void SkiaTextMetrics::GetGlyphWidthForHarfBuzz(hb_codepoint_t codepoint,
-                                               hb_position_t* width) {
+void GetGlyphWidthForHarfBuzz(const SkFont& font,
+                              hb_codepoint_t codepoint,
+                              hb_position_t* width) {
   DCHECK_LE(codepoint, 0xFFFFu);
   CHECK(width);
 
   SkScalar sk_width;
   uint16_t glyph = codepoint;
 
-  font_.getWidths(&glyph, 1, &sk_width, nullptr);
-  if (!font_.isSubpixel())
+  font.getWidths(&glyph, 1, &sk_width, nullptr);
+  if (!font.isSubpixel())
     sk_width = SkScalarRoundToInt(sk_width);
   *width = SkiaScalarToHarfBuzzPosition(sk_width);
 }
 
-void SkiaTextMetrics::GetGlyphWidthForHarfBuzz(unsigned count,
-                                               hb_codepoint_t* glyphs,
-                                               unsigned glyph_stride,
-                                               hb_position_t* advances,
-                                               unsigned advance_stride) {
+void GetGlyphWidthForHarfBuzz(const SkFont& font,
+                              unsigned count,
+                              hb_codepoint_t* glyphs,
+                              unsigned glyph_stride,
+                              hb_position_t* advances,
+                              unsigned advance_stride) {
   // Batch the call to getWidths because its function entry cost is not
   // cheap. getWidths accepts multiple glyphd ID, but not from a sparse
   // array that copy them to a regular array.
@@ -57,9 +51,9 @@ void SkiaTextMetrics::GetGlyphWidthForHarfBuzz(unsigned count,
     glyph_array[i] = *glyphs;
   }
   Vector<SkScalar, 256> sk_width_array(count);
-  font_.getWidths(glyph_array.data(), count, sk_width_array.data(), nullptr);
+  font.getWidths(glyph_array.data(), count, sk_width_array.data(), nullptr);
 
-  if (!font_.isSubpixel()) {
+  if (!font.isSubpixel()) {
     for (unsigned i = 0; i < count; i++)
       sk_width_array[i] = SkScalarRoundToInt(sk_width_array[i]);
   }
@@ -71,16 +65,17 @@ void SkiaTextMetrics::GetGlyphWidthForHarfBuzz(unsigned count,
   }
 }
 
-void SkiaTextMetrics::GetGlyphExtentsForHarfBuzz(hb_codepoint_t codepoint,
-                                                 hb_glyph_extents_t* extents) {
+void GetGlyphExtentsForHarfBuzz(const SkFont& font,
+                                hb_codepoint_t codepoint,
+                                hb_glyph_extents_t* extents) {
   DCHECK_LE(codepoint, 0xFFFFu);
   CHECK(extents);
 
   SkRect sk_bounds;
   uint16_t glyph = codepoint;
 
-  font_.getWidths(&glyph, 1, nullptr, &sk_bounds);
-  if (!font_.isSubpixel()) {
+  font.getWidths(&glyph, 1, nullptr, &sk_bounds);
+  if (!font.isSubpixel()) {
     // Use roundOut() rather than round() to avoid rendering glyphs
     // outside the visual overflow rect. crbug.com/452914.
     sk_bounds.set(sk_bounds.roundOut());
@@ -94,35 +89,36 @@ void SkiaTextMetrics::GetGlyphExtentsForHarfBuzz(hb_codepoint_t codepoint,
   extents->height = SkiaScalarToHarfBuzzPosition(-sk_bounds.height());
 }
 
-void SkiaTextMetrics::GetSkiaBoundsForGlyph(Glyph glyph, SkRect* bounds) {
+void GetBoundsForGlyph(const SkFont& font, Glyph glyph, SkRect* bounds) {
 #if defined(OS_MACOSX)
   // TODO(drott): Remove this once we have better metrics bounds
   // on Mac, https://bugs.chromium.org/p/skia/issues/detail?id=5328
   SkPath path;
-  font_.getPath(glyph, &path);
+  font.getPath(glyph, &path);
   *bounds = path.getBounds();
 #else
-  font_.getWidths(&glyph, 1, nullptr, bounds);
+  font.getWidths(&glyph, 1, nullptr, bounds);
 #endif
 
-  if (!font_.isSubpixel()) {
+  if (!font.isSubpixel()) {
     SkIRect ir;
     bounds->roundOut(&ir);
     bounds->set(ir);
   }
 }
 
-void SkiaTextMetrics::GetSkiaBoundsForGlyphs(const Vector<Glyph, 256>& glyphs,
-                                             SkRect* bounds) {
+void GetBoundsForGlyphs(const SkFont& font,
+                        const Vector<Glyph, 256>& glyphs,
+                        SkRect* bounds) {
 #if defined(OS_MACOSX)
   for (unsigned i = 0; i < glyphs.size(); i++) {
-    GetSkiaBoundsForGlyph(glyphs[i], &bounds[i]);
+    GetBoundsForGlyph(font, glyphs[i], &bounds[i]);
   }
 #else
   static_assert(sizeof(Glyph) == 2, "Skia expects 2 bytes glyph id.");
-  font_.getWidths(glyphs.data(), glyphs.size(), nullptr, bounds);
+  font.getWidths(glyphs.data(), glyphs.size(), nullptr, bounds);
 
-  if (!font_.isSubpixel()) {
+  if (!font.isSubpixel()) {
     for (unsigned i = 0; i < glyphs.size(); i++) {
       SkIRect ir;
       bounds[i].roundOut(&ir);
@@ -132,17 +128,17 @@ void SkiaTextMetrics::GetSkiaBoundsForGlyphs(const Vector<Glyph, 256>& glyphs,
 #endif
 }
 
-float SkiaTextMetrics::GetSkiaWidthForGlyph(Glyph glyph) {
+float GetWidthForGlyph(const SkFont& font, Glyph glyph) {
   SkScalar sk_width;
-  font_.getWidths(&glyph, 1, &sk_width, nullptr);
+  font.getWidths(&glyph, 1, &sk_width, nullptr);
 
-  if (!font_.isSubpixel())
+  if (!font.isSubpixel())
     sk_width = SkScalarRoundToInt(sk_width);
 
   return SkScalarToFloat(sk_width);
 }
 
-hb_position_t SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(SkScalar value) {
+hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value) {
   // We treat HarfBuzz hb_position_t as 16.16 fixed-point.
   static const int kHbPosition1 = 1 << 16;
   return clampTo<int>(value * kHbPosition1);

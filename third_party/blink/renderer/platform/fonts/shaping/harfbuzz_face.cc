@@ -131,8 +131,7 @@ static hb_position_t HarfBuzzGetGlyphHorizontalAdvance(hb_font_t* hb_font,
       reinterpret_cast<HarfBuzzFontData*>(font_data);
   hb_position_t advance = 0;
 
-  SkiaTextMetrics(hb_font_data->font_)
-      .GetGlyphWidthForHarfBuzz(glyph, &advance);
+  GetGlyphWidthForHarfBuzz(hb_font_data->font_, glyph, &advance);
   return advance;
 }
 
@@ -146,9 +145,8 @@ static void HarfBuzzGetGlyphHorizontalAdvances(hb_font_t* font,
                                                void* user_data) {
   HarfBuzzFontData* hb_font_data =
       reinterpret_cast<HarfBuzzFontData*>(font_data);
-  SkiaTextMetrics(hb_font_data->font_)
-      .GetGlyphWidthForHarfBuzz(count, first_glyph, glyph_stride, first_advance,
-                                advance_stride);
+  GetGlyphWidthForHarfBuzz(hb_font_data->font_, count, first_glyph,
+                           glyph_stride, first_advance, advance_stride);
 }
 
 static hb_bool_t HarfBuzzGetGlyphVerticalOrigin(hb_font_t* hb_font,
@@ -168,8 +166,8 @@ static hb_bool_t HarfBuzzGetGlyphVerticalOrigin(hb_font_t* hb_font,
   Glyph the_glyph = glyph;
   vertical_data->GetVerticalTranslationsForGlyphs(hb_font_data->font_,
                                                   &the_glyph, 1, result);
-  *x = SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(-result[0]);
-  *y = SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(-result[1]);
+  *x = SkiaScalarToHarfBuzzPosition(-result[0]);
+  *y = SkiaScalarToHarfBuzzPosition(-result[1]);
   return true;
 }
 
@@ -182,14 +180,12 @@ static hb_position_t HarfBuzzGetGlyphVerticalAdvance(hb_font_t* hb_font,
   scoped_refptr<OpenTypeVerticalData> vertical_data =
       hb_font_data->VerticalData();
   if (!vertical_data) {
-    return SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(
-        hb_font_data->height_fallback_);
+    return SkiaScalarToHarfBuzzPosition(hb_font_data->height_fallback_);
   }
 
   Glyph the_glyph = glyph;
   float advance_height = -vertical_data->AdvanceHeight(the_glyph);
-  return SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(
-      SkFloatToScalar(advance_height));
+  return SkiaScalarToHarfBuzzPosition(SkFloatToScalar(advance_height));
 }
 
 static hb_position_t HarfBuzzGetGlyphHorizontalKerning(
@@ -208,9 +204,8 @@ static hb_position_t HarfBuzzGetGlyphHorizontalKerning(
   int32_t kerning_adjustments[1] = {0};
 
   if (typeface->getKerningPairAdjustments(glyphs, 2, kerning_adjustments)) {
-    return SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(
-        SkIntToScalar(kerning_adjustments[0]) *
-        hb_font_data->SizePerUnit(*typeface));
+    return SkiaScalarToHarfBuzzPosition(SkIntToScalar(kerning_adjustments[0]) *
+                                        hb_font_data->SizePerUnit(*typeface));
   }
 
   return 0;
@@ -224,8 +219,7 @@ static hb_bool_t HarfBuzzGetGlyphExtents(hb_font_t* hb_font,
   HarfBuzzFontData* hb_font_data =
       reinterpret_cast<HarfBuzzFontData*>(font_data);
 
-  SkiaTextMetrics(hb_font_data->font_)
-      .GetGlyphExtentsForHarfBuzz(glyph, extents);
+  GetGlyphExtentsForHarfBuzz(hb_font_data->font_, glyph, extents);
   return true;
 }
 
@@ -435,8 +429,7 @@ hb_font_t* HarfBuzzFace::GetScaledFont(
   harfbuzz_font_data_->UpdateFallbackMetricsAndScale(*platform_data_,
                                                      vertical_layout);
 
-  int scale =
-      SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(platform_data_->size());
+  int scale = SkiaScalarToHarfBuzzPosition(platform_data_->size());
   hb_font_set_scale(unscaled_font_, scale, scale);
   hb_font_set_ptem(unscaled_font_, platform_data_->size() / kCssPixelsPerPoint);
 

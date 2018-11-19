@@ -7,36 +7,32 @@
 
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
 
-#include <SkFont.h>
 #include <hb.h>
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/skia/include/core/SkRect.h"
 
-class SkPaint;
+class SkFont;
 
 namespace blink {
 
-class SkiaTextMetrics final {
- public:
-  SkiaTextMetrics(const SkPaint* legacy_paint);
-  SkiaTextMetrics(const SkFont&);
+void GetGlyphWidthForHarfBuzz(const SkFont&,
+                              hb_codepoint_t,
+                              hb_position_t* width);
+void GetGlyphWidthForHarfBuzz(const SkFont&,
+                              unsigned count,
+                              hb_codepoint_t* first_glyph,
+                              unsigned glyph_stride,
+                              hb_position_t* first_advance,
+                              unsigned advance_stride);
+void GetGlyphExtentsForHarfBuzz(const SkFont&,
+                                hb_codepoint_t,
+                                hb_glyph_extents_t*);
 
-  void GetGlyphWidthForHarfBuzz(hb_codepoint_t, hb_position_t* width);
-  void GetGlyphWidthForHarfBuzz(unsigned count,
-                                hb_codepoint_t* first_glyph,
-                                unsigned glyph_stride,
-                                hb_position_t* first_advance,
-                                unsigned advance_stride);
-  void GetGlyphExtentsForHarfBuzz(hb_codepoint_t, hb_glyph_extents_t*);
+void GetBoundsForGlyph(const SkFont&, Glyph, SkRect* bounds);
+void GetBoundsForGlyphs(const SkFont&, const Vector<Glyph, 256>&, SkRect*);
+float GetWidthForGlyph(const SkFont&, Glyph);
 
-  void GetSkiaBoundsForGlyph(Glyph, SkRect* bounds);
-  void GetSkiaBoundsForGlyphs(const Vector<Glyph, 256>&, SkRect*);
-  float GetSkiaWidthForGlyph(Glyph);
-
-  static hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value);
-
- private:
-  const SkFont font_;
-};
+hb_position_t SkiaScalarToHarfBuzzPosition(SkScalar value);
 
 }  // namespace blink
 
