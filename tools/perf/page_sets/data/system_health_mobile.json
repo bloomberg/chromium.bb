@@ -156,6 +156,9 @@
         "load:media:youtube": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
+        "load:media:youtube:2018": {
+            "DEFAULT": "system_health_mobile_2d7e2af174.wprgo"
+        },
         "load:news:bbc": {
             "DEFAULT": "system_health_mobile_002.wprgo"
         },

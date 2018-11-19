@@ -174,6 +174,9 @@
             "mac": "system_health_desktop_040.wprgo",
             "win": "system_health_desktop_047.wprgo"
         },
+        "load:media:youtube:2018": {
+            "DEFAULT": "system_health_desktop_cef8441ac0.wprgo"
+        },
         "load:news:bbc": {
             "DEFAULT": "system_health_desktop_002.wprgo"
         },

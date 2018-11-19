@@ -352,6 +352,14 @@ class LoadYouTubeStory(_LoadingStory):
           story_tags.YEAR_2016]
 
 
+class LoadYouTubeStory2018(_LoadingStory):
+  # No way to disable autoplay on desktop.
+  NAME = 'load:media:youtube:2018'
+  URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.HEALTH_CHECK,
+          story_tags.YEAR_2018]
+
+
 class LoadDailymotionStory(_LoadingStory):
   # The side panel with related videos doesn't show on desktop due to
   # https://github.com/chromium/web-page-replay/issues/74.
