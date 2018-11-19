@@ -24,9 +24,10 @@ void PreferencesLauncher::ShowAutofillCreditCardSettings(
       base::android::AttachCurrentThread(), web_contents->GetJavaWebContents());
 }
 
-void PreferencesLauncher::ShowPasswordSettings() {
+void PreferencesLauncher::ShowPasswordSettings(
+    content::WebContents* web_contents) {
   Java_PreferencesLauncher_showPasswordSettings(
-      base::android::AttachCurrentThread());
+      base::android::AttachCurrentThread(), web_contents->GetJavaWebContents());
 }
 
 }  // namespace android
