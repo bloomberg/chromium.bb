@@ -80,10 +80,18 @@ void SetSystemPagesAccessInternal(
     size_t length,
     PageAccessibilityConfiguration accessibility) {
   if (accessibility == PageInaccessible) {
-    CHECK_NE(0, VirtualFree(address, length, MEM_DECOMMIT));
+    if (!VirtualFree(address, length, MEM_DECOMMIT)) {
+      // We check `GetLastError` for `ERROR_SUCCESS` here so that in a crash
+      // report we get the error number.
+      CHECK_EQ(static_cast<uint32_t>(ERROR_SUCCESS), GetLastError());
+    }
   } else {
-    CHECK_NE(nullptr, VirtualAlloc(address, length, MEM_COMMIT,
-                                   GetAccessFlags(accessibility)));
+    if (!VirtualAlloc(address, length, MEM_COMMIT,
+                      GetAccessFlags(accessibility))) {
+      // We check `GetLastError` for `ERROR_SUCCESS` here so that in a crash
+      // report we get the error number.
+      CHECK_EQ(static_cast<uint32_t>(ERROR_SUCCESS), GetLastError());
+    }
   }
 }
 
