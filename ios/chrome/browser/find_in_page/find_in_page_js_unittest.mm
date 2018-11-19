@@ -23,9 +23,10 @@
 
 namespace {
 
-// JavaScript invocation to search for 'foo' (for 1000 milliseconds).
-NSString* kJavaScriptToSearchForFoo =
-    @"__gCrWeb.findInPage.highlightWord('foo', false, 1000)";
+// JavaScript invocation format string, with one NSString placeholder for the
+// search target and timeout set to 1000ms.
+NSString* kJavaScriptSearchCallFormat =
+    @"__gCrWeb.findInPage.highlightWord('%@', 1000)";
 
 // Other JavaScript functions invoked by the tests.
 NSString* kJavaScriptIncrementIndex = @"__gCrWeb.findInPage.incrementIndex()";
@@ -97,7 +98,8 @@ class FindInPageJsTest : public ChromeWebTest {
 
     // Search for 'foo'. Performing the search sets the index to point to the
     // first visible occurrence of 'foo'.
-    ExecuteJavaScript(kJavaScriptToSearchForFoo);
+    ExecuteJavaScript(
+        [NSString stringWithFormat:kJavaScriptSearchCallFormat, @"foo"]);
     AssertJavaScriptValue(kJavaScriptIndex, 1);
     AssertJavaScriptValue(kJavaScriptSpansLength, kNumberOfFoosInHtml);
   }
@@ -194,7 +196,8 @@ TEST_F(FindInPageJsTest, NoneVisible) {
 
   // Search for 'foo'. Performing the search sets the index to point to 0 since
   // there are no visible occurrences of 'foo'.
-  ExecuteJavaScript(kJavaScriptToSearchForFoo);
+  ExecuteJavaScript(
+      [NSString stringWithFormat:kJavaScriptSearchCallFormat, @"foo"]);
   AssertJavaScriptValue(kJavaScriptIndex, 0);
   AssertJavaScriptValue(kJavaScriptSpansLength, 6);
 
@@ -218,9 +221,8 @@ TEST_F(FindInPageJsTest, SearchForNonAscii) {
 
   // Search for the non-Ascii value. Performing the search sets the index to
   // point to the first visible occurrence of the non-Ascii.
-  NSString* result = ExecuteJavaScript([NSString
-      stringWithFormat:@"__gCrWeb.findInPage.highlightWord('%@', false, 1000)",
-                       kNonAscii]);
+  NSString* result = ExecuteJavaScript(
+      [NSString stringWithFormat:kJavaScriptSearchCallFormat, kNonAscii]);
   ASSERT_TRUE(result);
   AssertJavaScriptValue(kJavaScriptIndex, 0);
   AssertJavaScriptValue(kJavaScriptSpansLength, 1);
@@ -236,8 +238,8 @@ TEST_F(FindInPageJsTest, SearchForWhitespace) {
 
   // Search for space. Performing the search sets the index to
   // point to the first visible occurrence of the whitespace.
-  NSString* result =
-      ExecuteJavaScript(@"__gCrWeb.findInPage.highlightWord(' ', false, 1000)");
+  NSString* result = ExecuteJavaScript(
+      [NSString stringWithFormat:kJavaScriptSearchCallFormat, @" "]);
   ASSERT_TRUE(result);
   AssertJavaScriptValue(kJavaScriptIndex, 0);
   AssertJavaScriptValue(kJavaScriptSpansLength, 8);

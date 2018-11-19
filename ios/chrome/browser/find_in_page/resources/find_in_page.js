@@ -107,27 +107,10 @@ function getCurrentSpan_() {
 /**
  * Creates the regex needed to find the text.
  * @param {string} findText Phrase to look for.
- * @param {boolean} opt_split True to split up the phrase.
  * @return {RegExp} regex needed to find the text.
  */
-function getRegex_(findText, opt_split) {
-  let regexString = '';
-  if (opt_split) {
-    let words = [];
-    let split = findText.split(' ');
-    for (let i = 0; i < split.length; i++) {
-      words.push(escapeRegex_(split[i]));
-    }
-    let joinedWords = words.join('|');
-    regexString = '(' +
-        // Match at least one word.
-        '\\b(?:' + joinedWords + ')' +
-        // Include zero or more additional words separated by whitespace.
-        '(?:\\s*\\b(?:' + joinedWords + '))*' +
-        ')';
-  } else {
-    regexString = '(' + escapeRegex_(findText) + ')';
-  }
+function getRegex_(findText) {
+  let regexString = '(' + escapeRegex_(findText) + ')';
   return new RegExp(regexString, 'ig');
 };
 
@@ -153,14 +136,11 @@ __gCrWeb.findInPage.overTime = function() {
 /**
  * Looks for a phrase in the DOM.
  * @param {string} findText Phrase to look for like "ben franklin".
- * @param {boolean} opt_split True to split up the words and look for any
- *     of them.  False to require the full phrase to be there.
- *     Undefined will try the full phrase, and if nothing is found do the split.
  * @param {number} timeout Maximum time to run.
  * @return {string} How many results there are in the page in the form of
        [highlightedWordsCount, [index, pageLocationX, pageLocationY]].
  */
-__gCrWeb.findInPage.highlightWord = function(findText, opt_split, timeout) {
+__gCrWeb.findInPage.highlightWord = function(findText, timeout) {
   if (__gCrWeb.findInPage.spans && __gCrWeb.findInPage.spans.length) {
     // Clean up a previous run.
     clearHighlight_();
@@ -193,7 +173,7 @@ __gCrWeb.findInPage.highlightWord = function(findText, opt_split, timeout) {
   __gCrWeb.findInPage.replacementsIndex = 0;
   __gCrWeb.findInPage.replacementNewNodesIndex = 0;
 
-  __gCrWeb.findInPage.regex = getRegex_(findText, opt_split);
+  __gCrWeb.findInPage.regex = getRegex_(findText);
 
   searchInProgress_ = true;
 
@@ -209,7 +189,6 @@ __gCrWeb.findInPage.highlightWord = function(findText, opt_split, timeout) {
                     whether the text was found and int idicates text position.
  */
 __gCrWeb.findInPage.pumpSearch = function(timeout) {
-  let opt_split = false;
   // TODO(justincohen): It would be better if this DCHECKed.
   if (searchInProgress_ == false)
     return NO_RESULTS;
@@ -335,25 +314,11 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
 
   searchInProgress_ = false;
 
-  // Try again flow.
-  // If opt_split is true, we are done since we won't do any better.
-  // If opt_split is false, they were explicit about wanting the full thing
-  // so do not try with a split.
-  // If opt_split is undefined and we did not find an answer, go ahead and try
-  // splitting the terms.
-  if (__gCrWeb.findInPage.spans.length == 0 && opt_split === undefined) {
-    // Try to be more aggressive:
-    return __gCrWeb.findInPage.highlightWord(findText, true);
+  let pos = __gCrWeb.findInPage.goNext();
+  if (pos) {
+    return '[' + __gCrWeb.findInPage.visibleFound + ',' + pos + ']';
   } else {
-    let pos = __gCrWeb.findInPage.goNext();
-    if (pos) {
-      return '[' + __gCrWeb.findInPage.visibleFound + ',' + pos + ']';
-    } else if (opt_split === undefined) {
-      // Nothing visible, go ahead and be more aggressive.
-      return __gCrWeb.findInPage.highlightWord(findText, true);
-    } else {
-      return NO_RESULTS;
-    }
+    return NO_RESULTS;
   }
 };
 

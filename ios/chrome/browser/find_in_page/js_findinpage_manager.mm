@@ -30,7 +30,7 @@ NSString* const kFindInPageInit = @"window.__gCrWeb.findInPage && "
 // to spend any time at runtime to format this constant into another constant.
 NSString* const kFindInPageVerbatim =
     @"window.__gCrWeb.findInPage && "
-     "window.__gCrWeb.findInPage.highlightWord(%@, false, 100.0);";
+     "window.__gCrWeb.findInPage.highlightWord(%@, 100.0);";
 
 // The timeout of 100ms is hardcoded into this string so we don't have
 // to spend any time at runtime to format this constant into another constant.
