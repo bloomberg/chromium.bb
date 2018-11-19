@@ -172,7 +172,8 @@ void WebContentsViewMac::StartDragging(
   // The drag invokes a nested event loop, arrange to continue
   // processing events.
   base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
-  NSDragOperation mask = static_cast<NSDragOperation>(allowed_operations);
+  NSDragOperation mask = static_cast<NSDragOperation>(allowed_operations) &
+                         ~NSDragOperationGeneric;
   NSPoint offset = NSPointFromCGPoint(
       gfx::PointAtOffsetFromOrigin(image_offset).ToCGPoint());
   [cocoa_view_ startDragWithDropData:drop_data
