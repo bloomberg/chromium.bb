@@ -134,7 +134,11 @@ std::string MediaRouterUiForTest::GetSinkName(
 MediaRoute::Id MediaRouterUiForTest::GetRouteIdForSink(
     const MediaSink::Id& sink_id) const {
   CastDialogSinkButton* sink_button = GetSinkButton(sink_id);
-  return sink_button->sink().route_id;
+  if (!sink_button->sink().route) {
+    NOTREACHED() << "Route not found for sink " << sink_id;
+    return "";
+  }
+  return sink_button->sink().route->media_route_id();
 }
 
 std::string MediaRouterUiForTest::GetStatusTextForSink(
@@ -173,7 +177,7 @@ void MediaRouterUiForTest::OnDialogModelUpdated(CastDialogView* dialog_view) {
                        case WatchType::kAnyIssue:
                          return sink_button->sink().issue.has_value();
                        case WatchType::kAnyRoute:
-                         return !sink_button->sink().route_id.empty();
+                         return sink_button->sink().route.has_value();
                        case WatchType::kNone:
                        case WatchType::kDialogClosed:
                          NOTREACHED() << "Invalid WatchType";

@@ -51,13 +51,8 @@ struct UIMediaSink {
   // non-https scheme.
   GURL presentation_url;
 
-  // Active route ID, or empty string if none.
-  std::string route_id;
-
-  // The ID of the tab associated with the media route specified by |route_id|.
-  // This is a nullopt if the route is not associated with a tab (e.g. because
-  // it is for desktop Casting) or there is no route.
-  base::Optional<int> tab_id;
+  // Active route associated with the sink.
+  base::Optional<MediaRoute> route;
 
   // The icon to use for the sink.
   SinkIconType icon_type = SinkIconType::GENERIC;

@@ -36,7 +36,7 @@ class CastDialogMetrics {
   // sink) was taken prior to that.
   void OnStartCasting(const base::Time& start_time, int selected_sink_index);
 
-  void OnStopCasting();
+  void OnStopCasting(bool is_local_route);
 
   void OnCastModeSelected();
 

@@ -117,7 +117,7 @@ TEST_F(MediaRouterViewsUITest, NotifyObserver) {
             const UIMediaSink& ui_sink = model.media_sinks()[0];
             EXPECT_EQ(sink.id(), ui_sink.id);
             EXPECT_EQ(UIMediaSinkState::CONNECTED, ui_sink.state);
-            EXPECT_EQ(route.media_route_id(), ui_sink.route_id);
+            EXPECT_EQ(route.media_route_id(), ui_sink.route->media_route_id());
           })));
   ui_->OnRoutesUpdated({route}, {});
 

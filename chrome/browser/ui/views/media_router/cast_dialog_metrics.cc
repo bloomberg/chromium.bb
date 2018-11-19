@@ -38,10 +38,14 @@ void CastDialogMetrics::OnStartCasting(const base::Time& start_time,
   MaybeRecordFirstAction(MediaRouterUserAction::START_LOCAL);
 }
 
-void CastDialogMetrics::OnStopCasting() {
-  // TODO(https://crbug.com/853369): In order to record this as the first user
-  // action, we must determine whether we're stopping a local or non-local
-  // route.
+void CastDialogMetrics::OnStopCasting(bool is_local_route) {
+  if (is_local_route) {
+    MediaRouterMetrics::RecordStopLocalRoute();
+    MaybeRecordFirstAction(MediaRouterUserAction::STOP_LOCAL);
+  } else {
+    MediaRouterMetrics::RecordStopRemoteRoute();
+    MaybeRecordFirstAction(MediaRouterUserAction::STOP_REMOTE);
+  }
 }
 
 void CastDialogMetrics::OnCastModeSelected() {
@@ -61,8 +65,7 @@ void CastDialogMetrics::OnRecordSinkCount(int sink_count) {
 void CastDialogMetrics::MaybeRecordFirstAction(MediaRouterUserAction action) {
   if (first_action_recorded_)
     return;
-  // TODO(https://crbug.com/853369): Record initial user action once we can
-  // determine whether a OnStopCasting() call is for a local or non-local route.
+  MediaRouterMetrics::RecordMediaRouterInitialUserAction(action);
   first_action_recorded_ = true;
 }
 

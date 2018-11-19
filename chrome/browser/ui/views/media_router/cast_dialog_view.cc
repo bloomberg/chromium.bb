@@ -381,7 +381,10 @@ void CastDialogView::SinkPressed(size_t index) {
 
   selected_sink_index_ = index;
   const UIMediaSink& sink = sink_buttons_.at(index)->sink();
-  if (sink.route_id.empty()) {
+  if (sink.route) {
+    controller_->StopCasting(sink.route->media_route_id());
+    metrics_.OnStopCasting(sink.route->is_local());
+  } else {
     base::Optional<MediaCastMode> cast_mode = GetCastModeToUse(sink);
     if (cast_mode) {
       // Starting local file casting may open a new tab synchronously on the UI
@@ -396,9 +399,6 @@ void CastDialogView::SinkPressed(size_t index) {
         set_close_on_deactivate(true);
       metrics_.OnStartCasting(base::Time::Now(), index);
     }
-  } else {
-    controller_->StopCasting(sink.route_id);
-    metrics_.OnStopCasting();
   }
 }
 

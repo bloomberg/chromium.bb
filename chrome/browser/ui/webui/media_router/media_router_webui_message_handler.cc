@@ -700,7 +700,11 @@ void MediaRouterWebUIMessageHandler::OnCloseRoute(const base::ListValue* args) {
     return;
   }
   media_router_ui_->TerminateRoute(route_id);
-  UMA_HISTOGRAM_BOOLEAN("MediaRouter.Ui.Action.StopRoute", !is_local);
+  if (is_local) {
+    MediaRouterMetrics::RecordStopLocalRoute();
+  } else {
+    MediaRouterMetrics::RecordStopRemoteRoute();
+  }
 }
 
 void MediaRouterWebUIMessageHandler::OnCloseDialog(
