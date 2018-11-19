@@ -17,9 +17,6 @@ extern const char kHelpURL[];
 // The origin of an AutofillDataModel created or modified in the settings page.
 extern const char kSettingsOrigin[];
 
-// The privacy page URL of the chrome settings.
-extern const char kPrivacySettingsURL[];
-
 // The number of fields required by Autofill to execute its heuristic and
 // crowd-sourcing query/upload routines.
 size_t MinRequiredFieldsForHeuristics();

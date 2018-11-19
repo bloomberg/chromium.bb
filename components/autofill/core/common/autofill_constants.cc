@@ -18,8 +18,6 @@ const char kHelpURL[] =
 
 const char kSettingsOrigin[] = "Chrome settings";
 
-const char kPrivacySettingsURL[] = "chrome://settings/privacy";
-
 size_t MinRequiredFieldsForHeuristics() {
   return base::FeatureList::IsEnabled(
              autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics)

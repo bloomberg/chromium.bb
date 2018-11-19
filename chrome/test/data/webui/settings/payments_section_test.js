@@ -618,19 +618,5 @@ cr.define('settings_payments_section', function() {
       // All migration requirements are met, verify migration button is shown.
       assertFalse(section.$$('#migrateCreditCards').hidden);
     });
-
-    test('verifyPrivacyLinkHidden', function() {
-      // By default, the link should not be visible.
-      const section = createPaymentsSection([], {});
-
-      assertTrue(section.$$('#paymentsPagePrivacyLink').hidden);
-    });
-
-    test('verifyPrivacyLinkVisible', function() {
-      loadTimeData.overrideValues({showPaymentsPagePrivacyLinkText: true});
-      const section = createPaymentsSection([], {});
-
-      assertFalse(section.$$('#paymentsPagePrivacyLink').hidden);
-    });
   });
 });
