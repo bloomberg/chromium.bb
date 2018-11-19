@@ -2022,9 +2022,6 @@ extern const char kEnableEhvInputDescription[];
 extern const char kEnableEncryptionMigrationName[];
 extern const char kEnableEncryptionMigrationDescription[];
 
-extern const char kEnableFloatingVirtualKeyboardName[];
-extern const char kEnableFloatingVirtualKeyboardDescription[];
-
 extern const char kEnableFullscreenHandwritingVirtualKeyboardName[];
 extern const char kEnableFullscreenHandwritingVirtualKeyboardDescription[];
 
@@ -2066,9 +2063,6 @@ extern const char kEnableUnifiedMultiDeviceSettingsDescription[];
 
 extern const char kEnableUnifiedMultiDeviceSetupName[];
 extern const char kEnableUnifiedMultiDeviceSetupDescription[];
-
-extern const char kEnableVirtualKeyboardMdUiName[];
-extern const char kEnableVirtualKeyboardMdUiDescription[];
 
 extern const char kEnableVirtualKeyboardUkmName[];
 extern const char kEnableVirtualKeyboardUkmDescription[];
