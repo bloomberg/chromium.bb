@@ -38,6 +38,17 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
     // Called to show all available offline content.
     virtual void LaunchDownloadsPage() = 0;
 
+    // Schedules a request to save the page later. This is different from the
+    // download button in that the page is only saved temporarily. This is used
+    // only for the auto-fetch-on-net-error-page feature.
+    virtual void SavePageForLater() = 0;
+
+    // Cancels the request to save the page later. This cancels a previous call
+    // to |SavePageForLater|, or the automatic request made when loading the
+    // error page. This is used only for the auto-fetch-on-net-error-page
+    // feature.
+    virtual void CancelSavePage() = 0;
+
    protected:
     Delegate();
     virtual ~Delegate();
@@ -86,6 +97,8 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
 
   void LaunchOfflineItem(gin::Arguments* args);
   void LaunchDownloadsPage();
+  void SavePageForLater();
+  void CancelSavePage();
 
   // gin::WrappableBase
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(

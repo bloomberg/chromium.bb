@@ -48,6 +48,12 @@
     <message name="IDS_ERRORPAGES_OFFLINE_CONTENT_SUMMARY_BUTTON" desc="Label for the button that will take the user to the downloads home, attached to the offline content summary card shown in an error page">
       Take me there now
     </message>
+    <message name="IDS_ERRORPAGES_SAVE_PAGE_BUTTON" desc="Label for the button that will save the page for later. The saved page is not retained in Downloads, unlike with the DOWNLOAD button.">
+      Save page for later
+    </message>
+    <message name="IDS_ERRORPAGES_CANCEL_SAVE_PAGE_BUTTON" desc="Label for the button that will cancel the request to save the page for later. 'Cancel' is colored blue with the 'a' tag.">
+      Chrome will let you know when this page is ready. &lt;a&gt;Cancel&lt;/a&gt;
+    </message>
   </if>
 
   <message name="IDS_ERRORPAGES_SUGGESTION_VISIT_GOOGLE_CACHE" desc="When a page fails to load, sometimes we viewing a version of the page cached on Google's servers.">

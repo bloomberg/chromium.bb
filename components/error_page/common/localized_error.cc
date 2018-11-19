@@ -1071,22 +1071,27 @@ void LocalizedError::GetStrings(
       !is_incognito && failed_url.is_valid() &&
       failed_url.SchemeIsHTTPOrHTTPS() &&
       IsOfflineError(error_domain, error_code)) {
-    error_strings->SetPath(
-        {"downloadButton", "msg"},
-        base::Value(l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DOWNLOAD)));
-    error_strings->SetPath({"downloadButton", "disabledMsg"},
-                           base::Value(l10n_util::GetStringUTF16(
-                               IDS_ERRORPAGES_BUTTON_DOWNLOADING)));
+    if (!auto_fetch_feature_enabled) {
+      error_strings->SetPath({"downloadButton", "msg"},
+                             base::Value(l10n_util::GetStringUTF16(
+                                 IDS_ERRORPAGES_BUTTON_DOWNLOAD)));
+      error_strings->SetPath({"downloadButton", "disabledMsg"},
+                             base::Value(l10n_util::GetStringUTF16(
+                                 IDS_ERRORPAGES_BUTTON_DOWNLOADING)));
+    } else {
+      error_strings->SetString("attemptAutoFetch", "true");
+      error_strings->SetPath({"savePageLater", "savePageMsg"},
+                             base::Value(l10n_util::GetStringUTF16(
+                                 IDS_ERRORPAGES_SAVE_PAGE_BUTTON)));
+      error_strings->SetPath({"savePageLater", "cancelMsg"},
+                             base::Value(l10n_util::GetStringUTF16(
+                                 IDS_ERRORPAGES_CANCEL_SAVE_PAGE_BUTTON)));
+    }
   }
 
   error_strings->SetString(
       "closeDescriptionPopup",
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_CLOSE_POPUP_BUTTON));
-
-  if (auto_fetch_feature_enabled && IsOfflineError(error_domain, error_code) &&
-      !is_incognito) {
-    error_strings->SetString("attemptAutoFetch", "true");
-  }
 
   if (IsOfflineError(error_domain, error_code) && !is_incognito) {
     switch (offline_content_feature_state) {

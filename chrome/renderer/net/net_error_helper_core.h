@@ -248,6 +248,9 @@ class NetErrorHelperCore {
   // Shows all available offline content.
   void LaunchDownloadsPage();
 
+  void CancelSavePage();
+  void SavePageForLater();
+
  private:
   struct ErrorPageInfo;
 

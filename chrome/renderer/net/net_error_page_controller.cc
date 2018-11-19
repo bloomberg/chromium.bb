@@ -102,6 +102,16 @@ void NetErrorPageController::LaunchDownloadsPage() {
     delegate_->LaunchDownloadsPage();
 }
 
+void NetErrorPageController::SavePageForLater() {
+  if (delegate_)
+    delegate_->SavePageForLater();
+}
+
+void NetErrorPageController::CancelSavePage() {
+  if (delegate_)
+    delegate_->CancelSavePage();
+}
+
 NetErrorPageController::NetErrorPageController(base::WeakPtr<Delegate> delegate)
     : delegate_(delegate) {
 }
@@ -129,5 +139,7 @@ gin::ObjectTemplateBuilder NetErrorPageController::GetObjectTemplateBuilder(
       .SetMethod("launchOfflineItem",
                  &NetErrorPageController::LaunchOfflineItem)
       .SetMethod("launchDownloadsPage",
-                 &NetErrorPageController::LaunchDownloadsPage);
+                 &NetErrorPageController::LaunchDownloadsPage)
+      .SetMethod("savePageForLater", &NetErrorPageController::SavePageForLater)
+      .SetMethod("cancelSavePage", &NetErrorPageController::CancelSavePage);
 }
