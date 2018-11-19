@@ -85,7 +85,8 @@ class CrostiniInstallerView
   void OnComponentLoaded(crostini::CrostiniResult result) override;
   void OnConciergeStarted(crostini::CrostiniResult result) override;
   void OnDiskImageCreated(crostini::CrostiniResult result,
-                          vm_tools::concierge::DiskImageStatus status) override;
+                          vm_tools::concierge::DiskImageStatus status,
+                          int64_t disk_size_available) override;
   void OnVmStarted(crostini::CrostiniResult result) override;
   void OnContainerDownloading(int32_t download_percent) override;
   void OnContainerCreated(crostini::CrostiniResult result) override;

@@ -64,6 +64,7 @@ constexpr char kCrostiniSetupResultHistogram[] = "Crostini.SetupResult";
 constexpr char kCrostiniSetupSourceHistogram[] = "Crostini.SetupSource";
 constexpr char kCrostiniTimeFromDeviceSetupToInstall[] =
     "Crostini.TimeFromDeviceSetupToInstall";
+constexpr char kCrostiniDiskImageSizeHistogram[] = "Crostini.DiskImageSize";
 
 void RecordTimeFromDeviceSetupToInstallMetric() {
   base::PostTaskWithTraitsAndReplyWithResult(
@@ -258,10 +259,15 @@ void CrostiniInstallerView::OnConciergeStarted(CrostiniResult result) {
 
 void CrostiniInstallerView::OnDiskImageCreated(
     CrostiniResult result,
-    vm_tools::concierge::DiskImageStatus status) {
+    vm_tools::concierge::DiskImageStatus status,
+    int64_t disk_size_available) {
   DCHECK_EQ(state_, State::CREATE_DISK_IMAGE);
   if (status == vm_tools::concierge::DiskImageStatus::DISK_STATUS_EXISTS) {
     do_cleanup_ = false;
+  } else if (result == CrostiniResult::SUCCESS) {
+    // Record the max space for the disk image at creation time, measured in GiB
+    base::UmaHistogramCustomCounts(kCrostiniDiskImageSizeHistogram,
+                                   disk_size_available >> 30, 1, 1024, 64);
   }
   if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to create disk imagewith error code: "
