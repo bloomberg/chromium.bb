@@ -650,14 +650,6 @@ extern const char kGamepadExtensionsDescription[];
 extern const char kGamepadVibrationName[];
 extern const char kGamepadVibrationDescription[];
 
-extern const char kGpuRasterizationMsaaSampleCountName[];
-extern const char kGpuRasterizationMsaaSampleCountDescription[];
-extern const char kGpuRasterizationMsaaSampleCountZero[];
-extern const char kGpuRasterizationMsaaSampleCountTwo[];
-extern const char kGpuRasterizationMsaaSampleCountFour[];
-extern const char kGpuRasterizationMsaaSampleCountEight[];
-extern const char kGpuRasterizationMsaaSampleCountSixteen[];
-
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 extern const char kForceGpuRasterization[];
