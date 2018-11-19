@@ -39,7 +39,7 @@ GURL StripRef(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
-std::set<PhishingClassifierDelegate*> PhishingClassifierDelegates() {
+std::set<PhishingClassifierDelegate*>& PhishingClassifierDelegates() {
   static base::NoDestructor<std::set<PhishingClassifierDelegate*>> s;
   return *s;
 }
