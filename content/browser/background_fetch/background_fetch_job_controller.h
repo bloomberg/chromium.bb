@@ -109,6 +109,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
       const scoped_refptr<BackgroundFetchRequestInfo>& request) override;
   void AbortFromDelegate(
       blink::mojom::BackgroundFetchFailureReason failure_reason) override;
+  void GetUploadData(
+      blink::mojom::FetchAPIRequestPtr request,
+      BackgroundFetchDelegate::GetUploadDataCallback callback) override;
 
   // Aborts the fetch. |callback| will run with the result of marking the
   // registration for deletion.
@@ -136,6 +139,10 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // with the result of marking the registration for deletion.
   void Finish(blink::mojom::BackgroundFetchFailureReason reason_to_abort,
               ErrorCallback callback);
+
+  void DidGetUploadData(BackgroundFetchDelegate::GetUploadDataCallback callback,
+                        blink::mojom::BackgroundFetchError error,
+                        std::vector<BackgroundFetchSettledFetch> fetches);
 
   // Manager for interacting with the DB. It is owned by the
   // BackgroundFetchContext.

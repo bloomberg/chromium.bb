@@ -49,7 +49,8 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
                    const std::string& method,
                    const GURL& url,
                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
-                   const net::HttpRequestHeaders& headers) override {
+                   const net::HttpRequestHeaders& headers,
+                   bool has_request_body) override {
     if (!client())
       return;
 
@@ -134,6 +135,10 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
 
   void AbortFromDelegate(
       blink::mojom::BackgroundFetchFailureReason reason_to_abort) override {}
+
+  void GetUploadData(
+      blink::mojom::FetchAPIRequestPtr request,
+      BackgroundFetchDelegate::GetUploadDataCallback callback) override {}
 
   bool request_started_ = false;
   bool request_completed_ = false;

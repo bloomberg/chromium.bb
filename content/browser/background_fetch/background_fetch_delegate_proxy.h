@@ -52,6 +52,12 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
     virtual void AbortFromDelegate(
         blink::mojom::BackgroundFetchFailureReason) = 0;
 
+    // Called by the delegate when the Download Service is requesting the
+    // upload data.
+    virtual void GetUploadData(
+        blink::mojom::FetchAPIRequestPtr request,
+        BackgroundFetchDelegate::GetUploadDataCallback callback) = 0;
+
     virtual ~Controller() {}
   };
 
@@ -142,6 +148,11 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
 
   // Should only be called from the BackgroundFetchDelegate (on the IO thread).
   void DidActivateUI(const std::string& job_unique_id);
+
+  // Should only be called from the BackgroundFetchDelegate (on the IO thread).
+  void GetUploadData(const std::string& job_unique_id,
+                     const std::string& download_guid,
+                     BackgroundFetchDelegate::GetUploadDataCallback callback);
 
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
   base::WeakPtr<Core> ui_core_ptr_;

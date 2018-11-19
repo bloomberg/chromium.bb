@@ -12,10 +12,12 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_request_info.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -23,7 +25,7 @@ class GURL;
 
 namespace gfx {
 class Size;
-}
+}  // namespace gfx
 
 namespace net {
 class HttpRequestHeaders;
@@ -60,6 +62,8 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
   using GetIconDisplaySizeCallback = base::OnceCallback<void(const gfx::Size&)>;
   using GetPermissionForOriginCallback =
       base::OnceCallback<void(BackgroundFetchPermission)>;
+  using GetUploadDataCallback =
+      base::OnceCallback<void(scoped_refptr<network::ResourceRequestBody>)>;
 
   // Client interface that a BackgroundFetchDelegate would use to signal the
   // progress of a background fetch.
@@ -99,6 +103,12 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
     // Called by the delegate when it's shutting down to signal that the
     // delegate is no longer valid.
     virtual void OnDelegateShutdown() = 0;
+
+    // Called by the Download Client when it needs the upload data for
+    // the given |download_guid|.
+    virtual void GetUploadData(const std::string& job_unique_id,
+                               const std::string& download_guid,
+                               GetUploadDataCallback callback) = 0;
   };
 
   BackgroundFetchDelegate();
@@ -132,7 +142,8 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
       const std::string& method,
       const GURL& url,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
-      const net::HttpRequestHeaders& headers) = 0;
+      const net::HttpRequestHeaders& headers,
+      bool has_request_body) = 0;
 
   // Aborts any downloads associated with |job_unique_id|.
   virtual void Abort(const std::string& job_unique_id) = 0;

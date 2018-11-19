@@ -4,8 +4,10 @@
 
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_request_match_params.h"
 #include "content/public/common/origin_util.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 #include <utility>
@@ -293,6 +295,41 @@ void BackgroundFetchJobController::DidMarkRequestAsComplete(
     return;
   }
   Finish(BackgroundFetchFailureReason::NONE, base::DoNothing());
+}
+
+void BackgroundFetchJobController::GetUploadData(
+    blink::mojom::FetchAPIRequestPtr request,
+    BackgroundFetchDelegate::GetUploadDataCallback callback) {
+  data_manager_->MatchRequests(
+      registration_id(),
+      std::make_unique<BackgroundFetchRequestMatchParams>(
+          std::move(request), /* match_params= */ nullptr,
+          /* match_all= */ false),
+      base::BindOnce(&BackgroundFetchJobController::DidGetUploadData,
+                     GetWeakPtr(), std::move(callback)));
+}
+
+void BackgroundFetchJobController::DidGetUploadData(
+    BackgroundFetchDelegate::GetUploadDataCallback callback,
+    BackgroundFetchError error,
+    std::vector<BackgroundFetchSettledFetch> fetches) {
+  if (error != BackgroundFetchError::NONE) {
+    Abort(BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE,
+          base::DoNothing());
+    std::move(callback).Run(/* request_body= */ nullptr);
+    return;
+  }
+
+  DCHECK_EQ(fetches.size(), 1u);
+  DCHECK(fetches[0].request->blob);
+
+  network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+  blink::mojom::BlobPtr blob_ptr(std::move(fetches[0].request->blob->blob));
+  blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
+
+  auto request_body = base::MakeRefCounted<network::ResourceRequestBody>();
+  request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
+  std::move(callback).Run(std::move(request_body));
 }
 
 }  // namespace content
