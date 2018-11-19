@@ -309,7 +309,7 @@
   },
   {
     "name": "background-task-component-update",
-    // "owners": [ "your-team" ],
+    "owners": [ "sorin", "waffles", "tiborg" ],
     "expiry_milestone": 76
   },
   {
