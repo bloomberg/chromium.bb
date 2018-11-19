@@ -7,8 +7,31 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace content {
+
+// static
+void IndexedDBBlobInfo::ConvertBlobInfo(
+    const std::vector<IndexedDBBlobInfo>& blob_info,
+    std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info) {
+  blob_or_file_info->reserve(blob_info.size());
+  for (const auto& iter : blob_info) {
+    if (!iter.mark_used_callback().is_null())
+      iter.mark_used_callback().Run();
+
+    auto info = blink::mojom::IDBBlobInfo::New();
+    info->mime_type = iter.type();
+    info->size = iter.size();
+    if (iter.is_file()) {
+      info->file = blink::mojom::IDBFileInfo::New();
+      info->file->name = iter.file_name();
+      info->file->path = iter.file_path();
+      info->file->last_modified = iter.last_modified();
+    }
+    blob_or_file_info->push_back(std::move(info));
+  }
+}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo()
     : is_file_(false), size_(-1), key_(DatabaseMetaDataKey::kInvalidBlobKey) {

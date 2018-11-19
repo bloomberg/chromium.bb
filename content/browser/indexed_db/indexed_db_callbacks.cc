@@ -92,49 +92,6 @@ class SafeIOThreadCursorWrapper {
   DISALLOW_COPY_AND_ASSIGN(SafeIOThreadCursorWrapper);
 };
 
-void ConvertBlobInfo(
-    const std::vector<IndexedDBBlobInfo>& blob_info,
-    std::vector<blink::mojom::IDBBlobInfoPtr>* blob_or_file_info) {
-  blob_or_file_info->reserve(blob_info.size());
-  for (const auto& iter : blob_info) {
-    if (!iter.mark_used_callback().is_null())
-      iter.mark_used_callback().Run();
-
-    auto info = blink::mojom::IDBBlobInfo::New();
-    info->mime_type = iter.type();
-    info->size = iter.size();
-    if (iter.is_file()) {
-      info->file = blink::mojom::IDBFileInfo::New();
-      info->file->name = iter.file_name();
-      info->file->path = iter.file_path();
-      info->file->last_modified = iter.last_modified();
-    }
-    blob_or_file_info->push_back(std::move(info));
-  }
-}
-
-// Destructively converts an IndexedDBReturnValue to a Mojo ReturnValue.
-blink::mojom::IDBReturnValuePtr ConvertReturnValue(
-    IndexedDBReturnValue* value) {
-  auto mojo_value = blink::mojom::IDBReturnValue::New();
-  mojo_value->value = blink::mojom::IDBValue::New();
-  if (value->primary_key.IsValid()) {
-    mojo_value->primary_key = value->primary_key;
-    mojo_value->key_path = value->key_path;
-  }
-  if (!value->empty()) {
-    // TODO(crbug.com/902498): Use mojom traits to map directly from
-    //                         std::string.
-    const char* value_data = value->bits.data();
-    mojo_value->value->bits =
-        std::vector<uint8_t>(value_data, value_data + value->bits.length());
-    // Release value->bits std::string.
-    value->bits.clear();
-  }
-  ConvertBlobInfo(value->blob_info, &mojo_value->value->blob_or_file_info);
-  return mojo_value;
-}
-
 }  // namespace
 
 // Expected to be created and called from IO thread.
@@ -197,23 +154,6 @@ class IndexedDBCallbacks::IOThreadHelper {
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadHelper);
 };
-
-// static
-blink::mojom::IDBValuePtr IndexedDBCallbacks::ConvertAndEraseValue(
-    IndexedDBValue* value) {
-  auto mojo_value = blink::mojom::IDBValue::New();
-  if (!value->empty()) {
-    // TODO(crbug.com/902498): Use mojom traits to map directly from
-    //                         std::string.
-    const char* value_data = value->bits.data();
-    mojo_value->bits =
-        std::vector<uint8_t>(value_data, value_data + value->bits.length());
-    // Release value->bits std::string.
-    value->bits.clear();
-  }
-  ConvertBlobInfo(value->blob_info, &mojo_value->blob_or_file_info);
-  return mojo_value;
-}
 
 IndexedDBCallbacks::IndexedDBCallbacks(
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
@@ -347,7 +287,7 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
   blink::mojom::IDBValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
   if (value) {
-    mojo_value = ConvertAndEraseValue(value);
+    mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
     blob_info.swap(value->blob_info);
   }
 
@@ -374,7 +314,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
   blink::mojom::IDBValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
   if (value) {
-    mojo_value = ConvertAndEraseValue(value);
+    mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
     blob_info.swap(value->blob_info);
   }
 
@@ -401,7 +341,7 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
   std::vector<blink::mojom::IDBValuePtr> mojo_values;
   mojo_values.reserve(values->size());
   for (size_t i = 0; i < values->size(); ++i)
-    mojo_values.push_back(ConvertAndEraseValue(&(*values)[i]));
+    mojo_values.push_back(IndexedDBValue::ConvertAndEraseValue(&(*values)[i]));
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
@@ -420,7 +360,7 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
   blink::mojom::IDBReturnValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
   if (value) {
-    mojo_value = ConvertReturnValue(value);
+    mojo_value = IndexedDBReturnValue::ConvertReturnValue(value);
     blob_info = value->blob_info;
   }
 
@@ -442,8 +382,10 @@ void IndexedDBCallbacks::OnSuccessArray(
 
   std::vector<blink::mojom::IDBReturnValuePtr> mojo_values;
   mojo_values.reserve(values->size());
-  for (size_t i = 0; i < values->size(); ++i)
-    mojo_values.push_back(ConvertReturnValue(&(*values)[i]));
+  for (size_t i = 0; i < values->size(); ++i) {
+    mojo_values.push_back(
+        IndexedDBReturnValue::ConvertReturnValue(&(*values)[i]));
+  }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                            base::BindOnce(&IOThreadHelper::SendSuccessArray,
