@@ -1123,10 +1123,9 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     if (!this_ref)
       return ui::POST_DISPATCH_NONE;
 
-    // Do not check mnemonics if the Alt, Ctrl, or Cmd modifiers are pressed.
-    // For example Ctrl+<T> is an accelerator, but <T> only is a mnemonic.
-    const int kKeyFlagsMask =
-        ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN;
+    // Do not check mnemonics if the Alt or Ctrl modifiers are pressed. For
+    // example Ctrl+<T> is an accelerator, but <T> only is a mnemonic.
+    const int kKeyFlagsMask = ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN;
     const int flags = event->flags();
     if (exit_type() == EXIT_NONE && (flags & kKeyFlagsMask) == 0) {
       base::char16 c = event->GetCharacter();

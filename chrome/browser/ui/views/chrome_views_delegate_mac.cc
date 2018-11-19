@@ -17,19 +17,3 @@ views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
 bool ChromeViewsDelegate::ShouldMirrorArrowsInRTL() const {
   return base::FeatureList::IsEnabled(features::kMacRTL);
 }
-
-views::ViewsDelegate::ProcessMenuAcceleratorResult
-ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
-    const ui::Accelerator& accelerator) {
-  using Result = views::ViewsDelegate::ProcessMenuAcceleratorResult;
-  bool is_modified = accelerator.IsCtrlDown() || accelerator.IsAltDown() ||
-                     accelerator.IsCmdDown();
-
-  // Using an accelerator on Mac closes any open menu. Note that Mac behavior is
-  // different between context menus (which block use of accelerators) and other
-  // types of menus, which close when an accelerator is sent and do repost the
-  // accelerator. In MacViews, this happens naturally because context menus are
-  // (modal) Cocoa menus and other menus are Views menus, which will go through
-  // this code path.
-  return is_modified ? Result::CLOSE_MENU : Result::LEAVE_MENU_OPEN;
-}
