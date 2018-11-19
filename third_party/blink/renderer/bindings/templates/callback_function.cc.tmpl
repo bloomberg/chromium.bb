@@ -19,7 +19,7 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | j
 {{callback_invoke(
     'callback function', 'invoke',
     return_cpp_type, native_value_traits_tag, arguments,
-    is_treat_non_object_as_null,
+    is_treat_non_object_as_null, False,
     callback_function_name, 'invoke')}}
 }
 
@@ -28,7 +28,7 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Construct({{argument_declarations[
 {{callback_invoke(
     'callback function', 'construct',
     return_cpp_type, native_value_traits_tag, arguments,
-    is_treat_non_object_as_null,
+    is_treat_non_object_as_null, False,
     callback_function_name, 'construct')}}
 }
 {% endif %}
@@ -46,6 +46,42 @@ void {{cpp_class}}::InvokeAndReportException({{argument_declarations | join(', '
              }});
   // An exception if any is killed with the v8::TryCatch above.
   ALLOW_UNUSED_LOCAL(maybe_result);
+}
+{% endif %}
+
+{% if callback_function_name == 'EventHandlerNonNull' %}
+bool {{cpp_class}}::IsRunnableOrThrowException(IgnorePause ignore_pause) {
+  bool is_runnable =
+      ignore_pause == IgnorePause::kIgnore ?
+      IsCallbackFunctionRunnableIgnoringPause(
+          CallbackRelevantScriptState(), IncumbentScriptState()) :
+      IsCallbackFunctionRunnable(
+          CallbackRelevantScriptState(), IncumbentScriptState());
+  if (is_runnable)
+    return true;
+
+  // Wrapper-tracing for the callback function makes the function object and
+  // its creation context alive. Thus it's safe to use the creation context
+  // of the callback function here.
+  v8::HandleScope handle_scope(GetIsolate());
+  v8::Local<v8::Object> callback_object = CallbackObject();
+  CHECK(!callback_object.IsEmpty());
+  v8::Context::Scope context_scope(callback_object->CreationContext());
+  V8ThrowException::ThrowError(
+      GetIsolate(),
+      ExceptionMessages::FailedToExecute(
+          "invoke",
+          "{{callback_function_name}}",
+          "The provided callback is no longer runnable."));
+  return false;
+}
+
+v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::InvokeWithoutRunnabilityCheck({{argument_declarations | join(', ')}}) {
+{{callback_invoke(
+    'callback function', 'invoke',
+    return_cpp_type, native_value_traits_tag, arguments,
+    is_treat_non_object_as_null, True,
+    callback_function_name, 'invoke')}}
 }
 {% endif %}
 

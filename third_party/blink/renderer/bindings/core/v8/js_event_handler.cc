@@ -103,8 +103,19 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
     arguments = {ScriptValue::From(script_state_of_listener, js_event)};
   }
 
+  const bool is_beforeunload_event =
+      event.IsBeforeUnloadEvent() &&
+      event.type() == event_type_names::kBeforeunload;
+  if (!event_handler_->IsRunnableOrThrowException(
+          is_beforeunload_event
+              ? V8EventHandlerNonNull::IgnorePause::kIgnore
+              : V8EventHandlerNonNull::IgnorePause::kDontIgnore)) {
+    return;
+  }
   ScriptValue result;
-  if (!event_handler_->Invoke(event.currentTarget(), arguments).To(&result) ||
+  if (!event_handler_
+           ->InvokeWithoutRunnabilityCheck(event.currentTarget(), arguments)
+           .To(&result) ||
       GetIsolate()->IsExecutionTerminating())
     return;
   v8::Local<v8::Value> v8_return_value = result.V8Value();
@@ -148,8 +159,7 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   //             then return value will never be false, since in such cases
   //             return value will have been coerced into either null or a
   //             DOMString.
-  if (event.IsBeforeUnloadEvent() &&
-      event.type() == event_type_names::kBeforeunload) {
+  if (is_beforeunload_event) {
     if (result_for_beforeunload) {
       event.preventDefault();
       BeforeUnloadEvent* before_unload_event = ToBeforeUnloadEvent(&event);

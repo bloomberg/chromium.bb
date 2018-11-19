@@ -88,7 +88,7 @@ v8::Maybe<{{method.cpp_type}}> {{v8_class}}::{{method.name}}({{method.argument_d
 {{callback_invoke(
     'callback interface', None,
     method.cpp_type, method.native_value_traits_tag, method.arguments,
-    False,
+    False, False,
     interface_name, method.name)}}
 }
 
@@ -107,6 +107,42 @@ void {{v8_class}}::InvokeAndReportException({{methods[0].argument_declarations |
       }});
   // An exception if any is killed with the v8::TryCatch above.
   ALLOW_UNUSED_LOCAL(maybe_result);
+}
+{% endif %}
+
+{% if interface_name == 'EventListener' %}
+bool {{v8_class}}::IsRunnableOrThrowException(IgnorePause ignore_pause) {
+  bool is_runnable =
+      ignore_pause == IgnorePause::kIgnore ?
+      IsCallbackFunctionRunnableIgnoringPause(
+          CallbackRelevantScriptState(), IncumbentScriptState()) :
+      IsCallbackFunctionRunnable(
+          CallbackRelevantScriptState(), IncumbentScriptState());
+  if (is_runnable)
+    return true;
+
+  // Wrapper-tracing for the callback function makes the function object and
+  // its creation context alive. Thus it's safe to use the creation context
+  // of the callback function here.
+  v8::HandleScope handle_scope(GetIsolate());
+  v8::Local<v8::Object> callback_object = CallbackObject();
+  CHECK(!callback_object.IsEmpty());
+  v8::Context::Scope context_scope(callback_object->CreationContext());
+  V8ThrowException::ThrowError(
+      GetIsolate(),
+      ExceptionMessages::FailedToExecute(
+          "{{methods[0].name}}",
+          "{{interface_name}}",
+          "The provided callback is no longer runnable."));
+  return false;
+}
+
+v8::Maybe<{{methods[0].cpp_type}}> {{v8_class}}::InvokeWithoutRunnabilityCheck({{methods[0].argument_declarations | join(', ')}}) {
+{{callback_invoke(
+    'callback interface', None,
+    methods[0].cpp_type, methods[0].native_value_traits_tag, methods[0].arguments,
+    False, True,
+    interface_name, methods[0].name)}}
 }
 {% endif %}
 
