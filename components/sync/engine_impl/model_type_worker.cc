@@ -571,9 +571,16 @@ void ModelTypeWorker::DecryptStoredEntities() {
       specifics = data->specifics;
     } else {
       DCHECK(data->specifics.has_encrypted());
-      if (!cryptographer_->CanDecrypt(data->specifics.encrypted()) ||
-          !DecryptSpecifics(*cryptographer_, data->specifics, &specifics)) {
+      if (!cryptographer_->CanDecrypt(data->specifics.encrypted())) {
         ++it;
+        continue;
+      }
+
+      if (!DecryptSpecifics(*cryptographer_, data->specifics, &specifics)) {
+        // Decryption error should be permanent (e.g. corrupt data), since
+        // CanDecrypt() above claims decryption keys are up-to-date. Let's
+        // ignore this update to avoid blocking other updates.
+        it = entries_pending_decryption_.erase(it);
         continue;
       }
     }
