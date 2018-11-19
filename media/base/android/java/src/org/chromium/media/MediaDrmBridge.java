@@ -76,9 +76,17 @@ public class MediaDrmBridge {
     private static final UUID WIDEVINE_UUID =
             UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
 
-    // On Android L and before, MediaDrm doesn't support KeyStatus. Use a dummy
-    // key ID to report key status info.
-    // See details: https://github.com/w3c/encrypted-media/issues/32
+    // On Android L and before, MediaDrm doesn't support KeyStatus at all. On later Android
+    // versions, key IDs are not available on sessions where getKeyRequest() has been called with
+    // KEY_TYPE_RELEASE. In these cases, the EME spec recommends to use a one-byte key ID 0:
+    // "Some older platforms may contain Key System implementations that do not expose key IDs,
+    // making it impossible to provide a compliant user agent implementation. To maximize
+    // interoperability, user agent implementations exposing such CDMs should implement this member
+    // as follows: Whenever a non-empty list is appropriate, such as when the key session
+    // represented by this object may contain key(s), populate the map with a single pair containing
+    // the one-byte key ID 0 and the MediaKeyStatus most appropriate for the aggregated status of
+    // this object."
+    // See details: https://www.w3.org/TR/encrypted-media/#dom-mediakeysession-keystatuses
     private static final byte[] DUMMY_KEY_ID = new byte[] {0};
 
     // Special provision response to remove the cert.
