@@ -7,8 +7,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
-#include <string>
 
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
@@ -140,8 +138,8 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
     DISALLOW_COPY_AND_ASSIGN(WindowEntry);
   };
 
-  // TODO: make map to std::unique_ptr<WindowEntry>.
-  using WindowToEntryMap = std::map<aura::Window*, WindowEntry*>;
+  using WindowToEntryMap =
+      std::map<aura::Window*, std::unique_ptr<WindowEntry>>;
 
   const AccountId& GetWindowOwner(aura::Window* window) const;
 

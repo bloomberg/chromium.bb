@@ -150,13 +150,12 @@ MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
   ash_multi_user_window_manager_.reset();
 
   // Remove all window observers.
-  WindowToEntryMap::iterator window = window_to_entry_.begin();
-  while (window != window_to_entry_.end()) {
+  while (!window_to_entry_.empty()) {
     // Explicitly remove this from window observer list since OnWindowDestroyed
     // no longer does that.
-    window->first->RemoveObserver(this);
-    OnWindowDestroyed(window->first);
-    window = window_to_entry_.begin();
+    aura::Window* window = window_to_entry_.begin()->first;
+    window->RemoveObserver(this);
+    OnWindowDestroyed(window);
   }
 
   // Remove all app observers.
@@ -207,7 +206,10 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
     return;
 
   DCHECK(GetWindowOwner(window).empty());
-  window_to_entry_[window] = new WindowEntry(account_id);
+  std::unique_ptr<WindowEntry> window_entry_ptr =
+      std::make_unique<WindowEntry>(account_id);
+  WindowEntry* window_entry = window_entry_ptr.get();
+  window_to_entry_[window] = std::move(window_entry_ptr);
 
   // Check if this window was created due to a user interaction. If it was,
   // transfer it to the current user.
@@ -228,7 +230,7 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
   window->AddObserver(this);
 
   if (show_for_current_user)
-    window_to_entry_[window]->set_show_for_user(current_account_id_);
+    window_entry->set_show_for_user(current_account_id_);
 
   // Notify entry adding.
   for (Observer& observer : observers_)
@@ -259,9 +261,8 @@ void MultiUserWindowManagerChromeOS::ShowWindowForUser(
 }
 
 bool MultiUserWindowManagerChromeOS::AreWindowsSharedAmongUsers() const {
-  WindowToEntryMap::const_iterator it = window_to_entry_.begin();
-  for (; it != window_to_entry_.end(); ++it) {
-    if (it->second->owner() != it->second->show_for_user())
+  for (auto& window_pair : window_to_entry_) {
+    if (window_pair.second->owner() != window_pair.second->show_for_user())
       return true;
   }
   return false;
@@ -269,10 +270,9 @@ bool MultiUserWindowManagerChromeOS::AreWindowsSharedAmongUsers() const {
 
 void MultiUserWindowManagerChromeOS::GetOwnersOfVisibleWindows(
     std::set<AccountId>* account_ids) const {
-  for (WindowToEntryMap::const_iterator it = window_to_entry_.begin();
-       it != window_to_entry_.end(); ++it) {
-    if (it->first->IsVisible())
-      account_ids->insert(it->second->owner());
+  for (auto& window_pair : window_to_entry_) {
+    if (window_pair.first->IsVisible())
+      account_ids->insert(window_pair.second->owner());
   }
 }
 
@@ -333,8 +333,6 @@ void MultiUserWindowManagerChromeOS::RemoveObserver(Observer* observer) {
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
-  // Remove the window from the owners list.
-  delete window_to_entry_[window];
   window_to_entry_.erase(window);
 }
 
