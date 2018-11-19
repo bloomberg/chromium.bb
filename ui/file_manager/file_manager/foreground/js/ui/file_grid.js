@@ -669,6 +669,14 @@ FileGrid.prototype.setImportStatusVisible = function(visible) {
  * @private
  */
 FileGrid.prototype.onSplice_ = function() {
+  // When adjusting search parameters, |dataModel| is transiently empty.
+  // Updating whether image-dominant is active at these times can cause spurious
+  // changes. Avoid this problem by not updating whether image-dominant is
+  // active when |dataModel| is empty.
+  if (this.dataModel.getFileCount() == 0 &&
+      this.dataModel.getFolderCount() == 0) {
+    return;
+  }
   this.classList.toggle('image-dominant', this.dataModel.isImageDominant());
 };
 
