@@ -892,7 +892,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
   // MessagePortImpl to self-destruct and tear down its FIDL channel.
   {
     base::RunLoop run_loop;
-    message_port.set_error_handler([&run_loop]() { run_loop.Quit(); });
+    message_port.set_error_handler(
+        [&run_loop](zx_status_t status) { run_loop.Quit(); });
     controller->LoadUrl(url::kAboutBlankURL, nullptr);
     CheckRunWithTimeout(&run_loop);
   }
