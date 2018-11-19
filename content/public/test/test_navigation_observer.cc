@@ -129,6 +129,7 @@ TestNavigationObserver::TestNavigationObserver(
       target_url_(target_url),
       last_navigation_succeeded_(false),
       last_net_error_code_(net::OK),
+      last_navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       message_loop_runner_(new MessageLoopRunner(quit_mode)),
       web_contents_created_callback_(
           base::Bind(&TestNavigationObserver::OnWebContentsCreated,
