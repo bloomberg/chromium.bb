@@ -14,8 +14,9 @@
 
 namespace blink {
 
-// This class is representing a polymorphic WebInputEvent structure with its
-// coalesced events. The event could be any events defined in WebInputEvent.h.
+// This class represents a polymorphic WebInputEvent structure with its
+// coalesced events. The event could be any event defined in WebInputEvent.h,
+// including those that cannot be coalesced.
 class BLINK_PLATFORM_EXPORT WebCoalescedInputEvent {
  public:
   explicit WebCoalescedInputEvent(const WebInputEvent&);
