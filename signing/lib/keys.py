@@ -30,6 +30,9 @@ class SignerSubkeyMissingError(SignerKeyMissingError):
 class KeyPair(object):
   """Container for a key's files.
 
+  A KeyPair contains the information about a particular public/private pair of
+  keys, including file names, and version.
+
   Attributes:
     name: name of keypair
     keydir: location of key files
@@ -40,8 +43,27 @@ class KeyPair(object):
     keyblock: keyblock file complete path
   """
 
+  # On disk, we have (valid) file names like:
+  # - firmware_data_key.vbprivk  -- non-unified build
+  # - firmware_data_key.loem1.vbprivk -- unified build
+  # - kernel_data_key.vbprivk
+  # - kernel_subkey.vbprivk
+  # - key_ec_efs.vbprik2 (which pairs with .vbpubk2, instead of .vbpubk)
+
+  # All of the following regular expressions are used to validate names and
+  # extensions. From KeyPair's perspective, a name is simply a string of 2 or
+  # more alphanumeric characters, possibly containing a single '.' somewhere in
+  # the middle, with one of two valid extensions ('.vbprik2' or '.vbprivk').
+  _name_re = re.compile(r'\w+\.?\w+$')
+
+  # Valid key file name endings:
+  # - .vbprivk (pairs with .vbpubk)
+  # - .vbprik2 (pairs with .vbpubk2)
+  _priv_ext_re = re.compile(r'\.vbpri(vk|k2)$')
+  _pub_ext_re = re.compile(r'\.vbpubk2?$')
+
   def __init__(self, name, keydir, version=1, subkeys=(),
-               pub_ext='.vbpubk', priv_ext='.vbprivk'):
+               pub_ext=None, priv_ext='.vbprivk'):
     """Initialize KeyPair.
 
     Args:
@@ -55,21 +77,29 @@ class KeyPair(object):
     self.name = name
     self.keydir = keydir
     self.version = int(version)
-    self._pub_ext = pub_ext
+    # Use the correct version for pub_ext if they did not specify.
+    self._pub_ext = (pub_ext if pub_ext else
+                     '.vbpubk' if priv_ext == '.vbprivk' else
+                     '.vbpubk2')
     self._priv_ext = priv_ext
 
     self.subkeys = {}
     for subkey in subkeys:
       self.AddSubkey(subkey)
 
-    # Do not allow leading '.', '/' anywhere in the name, nor empty names.
-    if not name or name.startswith('.') or '/' in name:
+    # Validate input parameters.
+    if not self._name_re.match(name):
       raise ValueError('Illegal value for name')
+    if not self._pub_ext_re.match(self._pub_ext):
+      raise ValueError('Illegal value for pub_ext')
+    if not self._priv_ext_re.match(priv_ext):
+      raise ValueError('Illegal value for priv_ext')
 
-    self.public = os.path.join(keydir, name + pub_ext)
-    self.private = os.path.join(keydir, name + priv_ext)
+    self.public = os.path.join(keydir, name + self._pub_ext)
+    self.private = os.path.join(keydir, name + self._priv_ext)
 
-    #strip '_data_key' from any name, since this is a common convention
+    # As we create the keyblock name, strip '_data_key' from any name, since
+    # this is a common convention.
     keyblock_name = ''.join(name.split('_data_key'))
     self.keyblock = os.path.join(keydir, keyblock_name + '.keyblock')
 
@@ -243,7 +273,8 @@ def KeysetFromDir(key_dir):
 
   # Match any private key file name
   # Ex: firmware_data_key.loem4.vbprivk, kernel_subkey.vbprivk
-  keypair_re = re.compile(r'(?P<name>\w+)(\.(?P<subkey>\w+))?\.vbprivk')
+  # All of the buildtarget specific keys use .vbprivk for the suffix.
+  keypair_re = re.compile(r'(?P<name>\w+)(\.(?P<subkey>\w+))?\.vbprivk$')
 
   for f_name in os.listdir(key_dir):
     key_match = keypair_re.match(f_name)

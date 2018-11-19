@@ -18,6 +18,7 @@ from chromite.signing.lib import keys
 
 MOCK_SHA1SUM = 'e2c1c92d7d7aa7dfed5e8375edd30b7ae52b7450'
 
+# pylint: disable=protected-access
 
 def MockVbutilKey(rc, sha1sum=MOCK_SHA1SUM):
   """Adds vbutil_key mocks to |rc|"""
@@ -160,9 +161,30 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
 
   def testInitWithPrivExt(self):
     """Test init with priv_ext kwarg."""
-    k_ext = keys.KeyPair('k_ext', self.tempdir, priv_ext='.vbprivk2')
+    k_ext = keys.KeyPair('k_ext', self.tempdir, priv_ext='.vbprik2')
     self.assertEqual(k_ext.private,
-                     os.path.join(self.tempdir, 'k_ext.vbprivk2'))
+                     os.path.join(self.tempdir, 'k_ext.vbprik2'))
+    self.assertEqual(k_ext.public,
+                     os.path.join(self.tempdir, 'k_ext.vbpubk2'))
+
+  def testRejectsInvalidPubExt(self):
+    """Test init with bad pub_ext argument."""
+    with self.assertRaises(ValueError):
+      keys.KeyPair('foo', self.tempdir, pub_ext='.bar')
+
+  def testRejectsInvalidPrivExt(self):
+    """Test init with bad priv_ext argument."""
+    with self.assertRaises(ValueError):
+      keys.KeyPair('foo', self.tempdir, priv_ext='.bar')
+
+  def testSetsPubExtCorrectly(self):
+    """Test init sets pub_ext correctly based on priv_ext argument."""
+    k1 = keys.KeyPair('k1', self.tempdir, priv_ext='.vbprivk')
+    k2 = keys.KeyPair('k2', self.tempdir, priv_ext='.vbprik2')
+    self.assertEqual(k1._pub_ext, '.vbpubk')
+    self.assertEqual(k2._pub_ext, '.vbpubk2')
+    self.assertEqual(k1.public, '%s/k1.vbpubk' % self.tempdir)
+    self.assertEqual(k2.public, '%s/k2.vbpubk2' % self.tempdir)
 
   def testCmpSame(self):
     k1 = keys.KeyPair('key1', self.tempdir)
@@ -174,16 +196,6 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
     k1 = keys.KeyPair('key1', self.tempdir)
     k2 = keys.KeyPair('key2', self.tempdir)
     self.assertNotEqual(k1, k2)
-
-  def testAddSubkey(self):
-    k1 = keys.KeyPair('key1', self.tempdir)
-
-    k1.AddSubkey('loem1')
-    k_loem1 = k1.subkeys['loem1']
-    self.assertIsInstance(k_loem1, keys.KeyPair)
-    self.assertEqual(k_loem1.name, 'key1.loem1')
-    self.assertEqual(k1.keydir, k_loem1.keydir)
-    self.assertEqual(k1.version, k_loem1.version)
 
   def testExistsEmpty(self):
     self.assertFalse(keys.KeyPair('key1', self.tempdir).Exists())
@@ -215,6 +227,18 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
     self.assertTrue(k1.Exists())
     self.assertTrue(k1.Exists(require_private=True))
     self.assertFalse(k1.Exists(require_public=True))
+
+  def testExistsWithBothKeys(self):
+    """Exists() works correctly when private/public are both required."""
+    k1 = keys.KeyPair('key1', self.tempdir)
+
+    CreateDummyPrivateKey(k1)
+    CreateDummyPublic(k1)
+    self.assertTrue(k1.Exists())
+    self.assertTrue(k1.Exists(require_private=True))
+    self.assertTrue(k1.Exists(require_public=True))
+    self.assertTrue(k1.Exists(
+        require_private=True, require_public=True))
 
   def testKeyblockExistsMissing(self):
     k1 = keys.KeyPair('key1', self.tempdir)
