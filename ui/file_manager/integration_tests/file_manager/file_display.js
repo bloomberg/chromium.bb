@@ -21,7 +21,7 @@ function fileDisplay(path, defaultEntries) {
     function() {
       setupAndWaitUntilReady(null, path, this.next);
     },
-    // Verify the default file list.
+    // Verify the default file list is present in |result|.
     function(result) {
       appId = result.windowId;
       chrome.test.assertEq(defaultList, result.fileList);
@@ -31,17 +31,11 @@ function fileDisplay(path, defaultEntries) {
     function() {
       addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
     },
-    // Wait for the new file entries.
+    // Verify the newly added entries appear in the file list.
     function() {
-      remoteCall.waitForFileListChange(appId, defaultList.length)
-          .then(this.next);
-    },
-    // Verify the new file list.
-    function(fileList) {
       const expectedList =
-          defaultList.concat([ENTRIES.newlyAdded.getExpectedRow()]).sort();
-      chrome.test.assertEq(expectedList, fileList);
-      this.next();
+          defaultList.concat([ENTRIES.newlyAdded.getExpectedRow()]);
+      remoteCall.waitForFiles(appId, expectedList).then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
@@ -313,14 +307,12 @@ function searchDownloads(searchTerm, expectedResults) {
           'fakeEvent', appId, ['#search-box cr-input', 'input'], this.next);
     },
     function(result) {
-      remoteCall.waitForFileListChange(appId, BASIC_LOCAL_ENTRY_SET.length).
-      then(this.next);
+      chrome.test.assertTrue(!!result);
+      remoteCall
+          .waitForFiles(appId, TestEntryInfo.getExpectedRows(expectedResults))
+          .then(this.next);
     },
-    function(actualFilesAfter) {
-      chrome.test.assertEq(
-          TestEntryInfo.getExpectedRows(expectedResults).sort(),
-          actualFilesAfter);
-
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
