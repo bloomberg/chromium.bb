@@ -3671,9 +3671,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (CGFloat)overscrollActionsControllerHeaderInset:
     (OverscrollActionsController*)controller {
-  if (controller == [[[self tabModel] currentTab] overscrollActionsController])
-    return self.headerHeight;
-  else
+  if (controller ==
+      [[[self tabModel] currentTab] overscrollActionsController]) {
+    if (!base::ios::IsRunningOnIOS12OrLater() &&
+        self.currentWebState->GetContentsMimeType() == "application/pdf") {
+      return self.headerHeight - self.view.safeAreaInsets.top;
+    } else {
+      return self.headerHeight;
+    }
+  } else
     return 0;
 }
 
