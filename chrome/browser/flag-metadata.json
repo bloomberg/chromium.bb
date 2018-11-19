@@ -2230,11 +2230,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "gpu-rasterization-msaa-sample-count",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "grant-notifications-to-dse",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
