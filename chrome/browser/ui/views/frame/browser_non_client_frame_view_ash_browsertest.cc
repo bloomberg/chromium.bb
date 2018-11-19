@@ -778,8 +778,7 @@ class HostedAppNonClientFrameViewAshTest
   }
 
   AppMenu* GetAppMenu() {
-    return hosted_app_button_container_->app_menu_button_
-        ->app_menu_for_testing();
+    return hosted_app_button_container_->app_menu_button_->app_menu();
   }
 
   SkColor GetActiveColor() {

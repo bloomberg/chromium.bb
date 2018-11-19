@@ -57,6 +57,8 @@ class AppMenu : public views::MenuDelegate,
 
   bool for_drop() const { return (run_flags_ & FOR_DROP) != 0; }
 
+  views::MenuItemView* root_menu_item() { return root_; }
+
   void AddObserver(AppMenuObserver* observer);
   void RemoveObserver(AppMenuObserver* observer);
 

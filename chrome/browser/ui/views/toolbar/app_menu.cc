@@ -1025,6 +1025,11 @@ bool AppMenu::GetAccelerator(int command_id,
 }
 
 void AppMenu::WillShowMenu(MenuItemView* menu) {
+  if (menu != root_) {
+    for (AppMenuObserver& observer : observer_list_)
+      observer.OnShowSubmenu();
+  }
+
   if (menu == bookmark_menu_)
     CreateBookmarkMenu();
   else if (bookmark_menu_delegate_)
@@ -1051,6 +1056,9 @@ bool AppMenu::ShouldCloseOnDragComplete() {
 }
 
 void AppMenu::OnMenuClosed(views::MenuItemView* menu) {
+  for (AppMenuObserver& observer : observer_list_)
+    observer.AppMenuClosed();
+
   if (bookmark_menu_delegate_.get()) {
     BookmarkModel* model =
         BookmarkModelFactory::GetForBrowserContext(browser_->profile());

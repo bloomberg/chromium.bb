@@ -8,7 +8,11 @@
 class AppMenuObserver {
  public:
   // Invoked when the AppMenu is about to be destroyed (from its destructor).
-  virtual void AppMenuDestroyed() = 0;
+  virtual void AppMenuDestroyed() {}
+
+  virtual void AppMenuClosed() {}
+
+  virtual void OnShowSubmenu() {}
 
  protected:
   virtual ~AppMenuObserver() {}
