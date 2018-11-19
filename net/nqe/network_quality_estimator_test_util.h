@@ -243,9 +243,9 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
                              base::TimeDelta rtt) override;
 
   // NetworkQualityEstimator implementation that returns the overridden
-  // network
-  // id (instead of invoking platform APIs).
+  // network id and signal strength (instead of invoking platform APIs).
   nqe::internal::NetworkID GetCurrentNetworkID() const override;
+  int32_t GetCurrentSignalStrength() const override;
 
   // Net log provided to network quality estimator.
   std::unique_ptr<net::BoundTestNetLog> net_log_;
