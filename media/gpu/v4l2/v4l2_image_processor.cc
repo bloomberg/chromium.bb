@@ -68,26 +68,18 @@ V4L2ImageProcessor::JobRecord::~JobRecord() {}
 V4L2ImageProcessor::V4L2ImageProcessor(scoped_refptr<V4L2Device> device,
                                        v4l2_memory input_memory_type,
                                        v4l2_memory output_memory_type,
-                                       VideoPixelFormat input_format,
-                                       VideoPixelFormat output_format,
+                                       const VideoFrameLayout& input_layout,
+                                       const VideoFrameLayout& output_layout,
                                        gfx::Size input_visible_size,
-                                       gfx::Size input_allocated_size,
                                        gfx::Size output_visible_size,
-                                       gfx::Size output_allocated_size,
-                                       size_t input_planes_count,
-                                       size_t output_planes_count,
                                        size_t num_buffers,
                                        const base::Closure& error_cb)
-    : input_visible_size_(input_visible_size),
-      input_allocated_size_(input_allocated_size),
-      output_visible_size_(output_visible_size),
-      output_allocated_size_(output_allocated_size),
-      input_format_(input_format),
-      output_format_(output_format),
+    : input_layout_(input_layout),
+      input_visible_size_(input_visible_size),
       input_memory_type_(input_memory_type),
+      output_layout_(output_layout),
+      output_visible_size_(output_visible_size),
       output_memory_type_(output_memory_type),
-      input_planes_count_(input_planes_count),
-      output_planes_count_(output_planes_count),
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       device_(device),
       device_thread_("V4L2ImageProcessorThread"),
@@ -133,12 +125,10 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
       scoped_refptr<V4L2Device> device,
       v4l2_memory input_memory_type,
       v4l2_memory output_memory_type,
-      VideoPixelFormat input_format,
-      VideoPixelFormat output_format,
+      const VideoFrameLayout& input_layout,
+      const VideoFrameLayout& output_layout,
       gfx::Size input_visible_size,
-      gfx::Size input_allocated_size,
       gfx::Size output_visible_size,
-      gfx::Size output_allocated_size,
       size_t num_buffers,
       const base::Closure& error_cb) {
   VLOGF(2);
@@ -157,10 +147,10 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
     return nullptr;
   }
   const uint32_t input_format_fourcc =
-      V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format);
+      V4L2Device::VideoPixelFormatToV4L2PixFmt(input_layout.format());
   if (!device->Open(V4L2Device::Type::kImageProcessor, input_format_fourcc)) {
     VLOGF(1) << "Failed to open device for input format: "
-             << VideoPixelFormatToString(input_format)
+             << VideoPixelFormatToString(input_layout.format())
              << " fourcc: " << FourccToString(input_format_fourcc);
     return nullptr;
   }
@@ -169,21 +159,26 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-  format.fmt.pix_mp.width = input_allocated_size.width();
-  format.fmt.pix_mp.height = input_allocated_size.height();
+  format.fmt.pix_mp.width = input_layout.coded_size().width();
+  format.fmt.pix_mp.height = input_layout.coded_size().height();
   format.fmt.pix_mp.pixelformat = input_format_fourcc;
   if (device->Ioctl(VIDIOC_S_FMT, &format) != 0) {
     VLOGF(1) << "Failed to negotiate input format";
     return nullptr;
   }
-  const size_t input_planes_count = format.fmt.pix_mp.num_planes;
-  DCHECK_LE(input_planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
-  const gfx::Size negotiated_input_allocated_size =
-      V4L2Device::CodedSizeFromV4L2Format(format);
-  if (!gfx::Rect(negotiated_input_allocated_size)
+
+  base::Optional<VideoFrameLayout> negotiated_input_layout =
+      V4L2Device::V4L2FormatToVideoFrameLayout(format);
+  if (!negotiated_input_layout) {
+    VLOGF(1) << "Failed to negotiate input VideoFrameLayout";
+    return nullptr;
+  }
+  DCHECK_LE(negotiated_input_layout->num_buffers(),
+            static_cast<size_t>(VIDEO_MAX_PLANES));
+  if (!gfx::Rect(negotiated_input_layout->coded_size())
       .Contains(gfx::Rect(input_visible_size))) {
     VLOGF(1) << "Negotiated input allocated size: "
-             << negotiated_input_allocated_size.ToString()
+             << negotiated_input_layout->coded_size().ToString()
              << " should contain visible size: "
              << input_visible_size.ToString();
     return nullptr;
@@ -192,32 +187,36 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   // Try to set output format.
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  format.fmt.pix_mp.width = output_allocated_size.width();
-  format.fmt.pix_mp.height = output_allocated_size.height();
+  format.fmt.pix_mp.width = output_layout.coded_size().width();
+  format.fmt.pix_mp.height = output_layout.coded_size().height();
   format.fmt.pix_mp.pixelformat =
-      V4L2Device::VideoPixelFormatToV4L2PixFmt(output_format);
+      V4L2Device::VideoPixelFormatToV4L2PixFmt(output_layout.format());
   if (device->Ioctl(VIDIOC_S_FMT, &format) != 0) {
     VLOGF(1) << "Failed to negotiate output format";
     return nullptr;
   }
-  const size_t output_planes_count = format.fmt.pix_mp.num_planes;
-  DCHECK_LE(output_planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
-  const gfx::Size negotiated_output_allocated_size =
-      V4L2Device::CodedSizeFromV4L2Format(format);
-  if (!gfx::Rect(negotiated_output_allocated_size)
-      .Contains(gfx::Rect(output_allocated_size))) {
-    VLOGF(1) << "Negotiated output allocated size: "
-             << negotiated_output_allocated_size.ToString()
-             << " should contain original output allocated size: "
-             << output_allocated_size.ToString();
+  base::Optional<VideoFrameLayout> negotiated_output_layout =
+      V4L2Device::V4L2FormatToVideoFrameLayout(format);
+  if (!negotiated_output_layout) {
+    VLOGF(1) << "Failed to negotiate output VideoFrameLayout";
     return nullptr;
+  }
+  DCHECK_LE(negotiated_output_layout->num_buffers(),
+            static_cast<size_t>(VIDEO_MAX_PLANES));
+  if (!gfx::Rect(negotiated_output_layout->coded_size())
+      .Contains(gfx::Rect(output_layout.coded_size()))) {
+    VLOGF(1) << "Negotiated output allocated size: "
+             << negotiated_output_layout->coded_size().ToString()
+             << " should contain original output allocated size: "
+             << output_layout.coded_size().ToString();
+    return nullptr;
+
   }
 
   auto processor = base::WrapUnique(new V4L2ImageProcessor(
-      std::move(device), input_memory_type, output_memory_type, input_format,
-      output_format, input_visible_size, negotiated_input_allocated_size,
-      output_visible_size, negotiated_output_allocated_size, input_planes_count,
-      output_planes_count, num_buffers, std::move(error_cb)));
+      std::move(device), input_memory_type, output_memory_type,
+      *negotiated_input_layout, *negotiated_output_layout, input_visible_size,
+      output_visible_size, num_buffers, std::move(error_cb)));
   if (!processor->Initialize()) {
     VLOGF(1) << "Failed to initialize V4L2ImageProcessor";
     return nullptr;
@@ -251,14 +250,10 @@ bool V4L2ImageProcessor::Initialize() {
       base::Bind(&V4L2ImageProcessor::StartDevicePoll, base::Unretained(this)));
 
   VLOGF(2) << "V4L2ImageProcessor initialized for "
-           << " input_format:" << VideoPixelFormatToString(input_format_)
-           << ", output_format:" << VideoPixelFormatToString(output_format_)
+           << "input_layout: " << input_layout_
+           << ", output_layout: " << output_layout_
            << ", input_visible_size: " << input_visible_size_.ToString()
-           << ", input_allocated_size: " << input_allocated_size_.ToString()
-           << ", input_planes_count: " << input_planes_count_
-           << ", output_visible_size: " << output_visible_size_.ToString()
-           << ", output_allocated_size: " << output_allocated_size_.ToString()
-           << ", output_planes_count: " << output_planes_count_;
+           << ", output_visible_size: " << output_visible_size_.ToString();
 
   return true;
 }
@@ -320,11 +315,11 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
 }
 
 gfx::Size V4L2ImageProcessor::input_allocated_size() const {
-  return input_allocated_size_;
+  return input_layout_.coded_size();
 }
 
 gfx::Size V4L2ImageProcessor::output_allocated_size() const {
-  return output_allocated_size_;
+  return output_layout_.coded_size();
 }
 
 bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
@@ -351,9 +346,10 @@ bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
       return false;
   }
 
-  if (output_dmabuf_fds.size() != output_planes_count_) {
-    VLOGF(1) << "wrong number of output fds. Expected " << output_planes_count_
-             << ", actual " << output_dmabuf_fds.size();
+  if (output_dmabuf_fds.size() != output_layout_.num_buffers()) {
+    VLOGF(1) << "wrong number of output fds. Expected "
+             << output_layout_.num_buffers() << ", actual "
+             << output_dmabuf_fds.size();
     return false;
   }
 
@@ -362,14 +358,9 @@ bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
   job_record->output_buffer_index = output_buffer_index;
   job_record->ready_cb = std::move(cb);
 
-  auto layout =
-      VideoFrameLayout::Create(output_format_, output_allocated_size_);
-  if (!layout) {
-    return false;
-  }
   // Create the output frame
   job_record->output_frame = VideoFrame::WrapExternalDmabufs(
-      *layout, gfx::Rect(output_visible_size_), output_visible_size_,
+      output_layout_, gfx::Rect(output_visible_size_), output_visible_size_,
       std::move(output_dmabuf_fds), job_record->input_frame->timestamp());
 
   if (!job_record->output_frame)
@@ -545,7 +536,7 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
     for (unsigned int i = 0; i < output_buffer_map_.size(); i++) {
       OutputRecord& output_record = output_buffer_map_[i];
       output_record.dmabuf_fds = device_->GetDmabufsForV4L2Buffer(
-          i, output_planes_count_, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
+          i, output_layout_.num_buffers(), V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
       if (output_record.dmabuf_fds.empty()) {
         VLOGF(1) << "failed to get fds of output buffer";
         return false;
@@ -702,7 +693,7 @@ void V4L2ImageProcessor::Dequeue() {
     dqbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
     dqbuf.memory = input_memory_type_;
     dqbuf.m.planes = planes;
-    dqbuf.length = input_planes_count_;
+    dqbuf.length = input_layout_.num_buffers();
     if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
         // EAGAIN if we're just out of buffers to dequeue.
@@ -719,7 +710,6 @@ void V4L2ImageProcessor::Dequeue() {
     free_input_buffers_.push_back(dqbuf.index);
     input_buffer_queued_count_--;
   }
-
   // Dequeue completed output (VIDEO_CAPTURE) buffers, recycle to the free list.
   // Return the finished buffer to the client via the job ready callback.
   while (output_buffer_queued_count_ > 0) {
@@ -729,7 +719,7 @@ void V4L2ImageProcessor::Dequeue() {
     dqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     dqbuf.memory = output_memory_type_;
     dqbuf.m.planes = planes;
-    dqbuf.length = output_planes_count_;
+    dqbuf.length = output_layout_.num_buffers();
     if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
       if (errno == EAGAIN) {
         // EAGAIN if we're just out of buffers to dequeue.
@@ -778,22 +768,22 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   qbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   qbuf.memory = input_memory_type_;
   qbuf.m.planes = qbuf_planes;
-  qbuf.length = input_planes_count_;
+  qbuf.length = input_layout_.num_buffers();
 
   std::vector<int> fds;
   if (input_memory_type_ == V4L2_MEMORY_DMABUF) {
     auto& scoped_fds = input_record.frame->DmabufFds();
-    if (scoped_fds.size() != input_planes_count_) {
+    if (scoped_fds.size() != input_layout_.num_buffers()) {
       VLOGF(1) << "Invalid number of planes in the frame";
       return false;
     }
     for (auto& fd : scoped_fds)
       fds.push_back(fd.get());
   }
-  for (size_t i = 0; i < input_planes_count_; ++i) {
+  for (size_t i = 0; i < input_layout_.num_buffers(); ++i) {
     qbuf.m.planes[i].bytesused =
         VideoFrame::PlaneSize(input_record.frame->format(), i,
-                              input_allocated_size_)
+                              input_allocated_size())
             .GetArea();
     qbuf.m.planes[i].length = qbuf.m.planes[i].bytesused;
     switch (input_memory_type_) {
@@ -840,7 +830,7 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(const JobRecord* job_record) {
   qbuf.memory = output_memory_type_;
   if (output_memory_type_ == V4L2_MEMORY_DMABUF) {
     auto& fds = job_record->output_frame->DmabufFds();
-    if (fds.size() != output_planes_count_) {
+    if (fds.size() != output_layout_.num_buffers()) {
       VLOGF(1) << "Invalid number of FDs in output record";
       return false;
     }
@@ -848,7 +838,7 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(const JobRecord* job_record) {
       qbuf_planes[i].m.fd = fds[i].get();
   }
   qbuf.m.planes = qbuf_planes;
-  qbuf.length = output_planes_count_;
+  qbuf.length = output_layout_.num_buffers();
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   output_record.at_device = true;
   output_buffer_queued_count_++;
