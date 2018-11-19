@@ -111,6 +111,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void ForceResetTouchActionForTest();
 
  private:
+  friend class InputRouterImplTest;
   friend class InputRouterImplTestBase;
   friend class MockRenderWidgetHost;
   friend class RenderWidgetHostSitePerProcessTest;
@@ -216,6 +217,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
       GestureEventWithLatencyInfo& gesture_event,
       const FilterGestureEventResult& existing_result);
   void ProcessDeferredGestureEventQueue();
+  void OnSetWhiteListedTouchAction(cc::TouchAction touch_action);
 
   InputRouterImplClient* client_;
   InputDispositionHandler* disposition_handler_;
