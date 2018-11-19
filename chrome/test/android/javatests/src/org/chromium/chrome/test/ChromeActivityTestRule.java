@@ -536,13 +536,13 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     }
 
     /**
-     * @return The number of incognito tabs currently open.
+     * @return The number of tabs currently open.
      */
-    public int incognitoTabsCount() {
+    public int tabsCount(boolean incognito) {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() {
-                return getActivity().getTabModelSelector().getModel(true).getCount();
+                return getActivity().getTabModelSelector().getModel(incognito).getCount();
             }
         });
     }

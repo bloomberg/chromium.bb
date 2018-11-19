@@ -155,7 +155,7 @@ public class PartnerDisableIncognitoModeIntegrationTest {
             waitForParentalControlsEnabledState(true);
 
             CriteriaHelper.pollInstrumentationThread(
-                    Criteria.equals(0, () -> mActivityTestRule.incognitoTabsCount()));
+                    Criteria.equals(0, () -> mActivityTestRule.tabsCount(true /* incognito */)));
         } finally {
             testServer.stopAndDestroyServer();
         }
