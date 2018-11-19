@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
+#include "chrome_elf/sha1/sha1.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,9 +43,7 @@ std::vector<third_party_dlls::PackedListModule> CreateUniqueModuleEntries(
 
   for (auto& entry : entries) {
     // Fill up each bytes for both SHA1 hashes.
-    for (size_t i = 0;
-         i < arraysize(third_party_dlls::PackedListModule::basename_hash);
-         ++i) {
+    for (size_t i = 0; i < elf_sha1::kSHA1Length; ++i) {
       entry.basename_hash[i] = byte_distribution(random_engine);
       entry.code_id_hash[i] = byte_distribution(random_engine);
     }
@@ -186,10 +185,12 @@ class FakeModuleListFilter : public ModuleListFilter {
 
   void AddWhitelistedModule(const third_party_dlls::PackedListModule& module) {
     whitelisted_modules_.emplace(
-        base::StringPiece(reinterpret_cast<const char*>(module.basename_hash),
-                          base::size(module.basename_hash)),
-        base::StringPiece(reinterpret_cast<const char*>(module.code_id_hash),
-                          base::size(module.basename_hash)));
+        base::StringPiece(
+            reinterpret_cast<const char*>(&module.basename_hash[0]),
+            base::size(module.basename_hash)),
+        base::StringPiece(
+            reinterpret_cast<const char*>(&module.code_id_hash[0]),
+            base::size(module.basename_hash)));
   }
 
   // ModuleListFilter:

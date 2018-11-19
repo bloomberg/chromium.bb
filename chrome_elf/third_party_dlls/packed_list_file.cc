@@ -42,7 +42,7 @@ std::wstring& GetBlFilePath() {
 // std::equal_range/std::is_sorted. Must return TRUE if lhs < rhs.
 bool HashBinaryPredicate(const PackedListModule& lhs,
                          const PackedListModule& rhs) {
-  return elf_sha1::CompareHashes(lhs.basename_hash, rhs.basename_hash) < 0;
+  return lhs.basename_hash < rhs.basename_hash;
 }
 
 // Given a file opened for read, pull in the packed list.
@@ -172,19 +172,16 @@ ThirdPartyStatus InitInternal() {
 // Public defines & functions
 //------------------------------------------------------------------------------
 
-bool IsModuleListed(const std::string& basename_hash,
-                    const std::string& fingerprint_hash) {
+bool IsModuleListed(const elf_sha1::Digest& basename_hash,
+                    const elf_sha1::Digest& fingerprint_hash) {
   assert(g_initialized);
-  assert(!basename_hash.empty() && !fingerprint_hash.empty());
-  assert(basename_hash.length() == elf_sha1::kSHA1Length &&
-         fingerprint_hash.length() == elf_sha1::kSHA1Length);
 
   if (!g_bl_module_array_size)
     return false;
 
   PackedListModule target = {};
-  ::memcpy(target.basename_hash, basename_hash.data(), elf_sha1::kSHA1Length);
-  ::memcpy(target.code_id_hash, fingerprint_hash.data(), elf_sha1::kSHA1Length);
+  target.basename_hash = basename_hash;
+  target.code_id_hash = fingerprint_hash;
 
   // Binary search for primary hash (basename).  There can be more than one
   // match.
@@ -194,7 +191,7 @@ bool IsModuleListed(const std::string& basename_hash,
 
   // Search for secondary hash.
   for (PackedListModule* i = pair.first; i != pair.second; ++i) {
-    if (!elf_sha1::CompareHashes(target.code_id_hash, i->code_id_hash))
+    if (target.code_id_hash == i->code_id_hash)
       return true;
   }
 

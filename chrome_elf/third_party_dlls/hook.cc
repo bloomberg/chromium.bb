@@ -294,25 +294,24 @@ NTSTATUS NewNtMapViewOfSectionImpl(
   }
 
   // Note that one of either image_name or section_basename can be empty.
-  std::string image_name_hash;
+  elf_sha1::Digest image_name_hash;
   if (!image_name.empty())
     image_name_hash = elf_sha1::SHA1HashString(image_name);
-  std::string section_basename_hash;
+  elf_sha1::Digest section_basename_hash;
   if (!section_basename.empty())
     section_basename_hash = elf_sha1::SHA1HashString(section_basename);
-  std::string fingerprint_hash =
-      GetFingerprintString(time_date_stamp, image_size);
-  fingerprint_hash = elf_sha1::SHA1HashString(fingerprint_hash);
+  elf_sha1::Digest fingerprint_hash = elf_sha1::SHA1HashString(
+      GetFingerprintString(time_date_stamp, image_size));
 
   // Check sources for blacklist decision.
   bool block = false;
 
-  if (!image_name_hash.empty() &&
+  if (!image_name.empty() &&
       IsModuleListed(image_name_hash, fingerprint_hash)) {
     // 1) Third-party DLL blacklist, check for image name from PE header.
     block = true;
-  } else if (!section_basename_hash.empty() &&
-             section_basename_hash.compare(image_name_hash) != 0 &&
+  } else if (!section_basename.empty() &&
+             section_basename_hash != image_name_hash &&
              IsModuleListed(section_basename_hash, fingerprint_hash)) {
     // 2) Third-party DLL blacklist, check for image name from the section.
     block = true;
