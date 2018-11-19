@@ -1487,7 +1487,7 @@ public class ChromeTabbedActivity
 
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelectorImpl) {
             @Override
-            public void onPageLoadFinished(final Tab tab) {
+            public void onPageLoadFinished(final Tab tab, String url) {
                 mAppIndexingUtil.extractCopylessPasteMetadata(tab);
             }
 

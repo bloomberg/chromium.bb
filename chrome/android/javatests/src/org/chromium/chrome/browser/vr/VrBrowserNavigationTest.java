@@ -128,10 +128,11 @@ public class VrBrowserNavigationTest {
      * navigation. This is desirable since we are testing navigation transitions end-to-end.
      */
     private void navigateTo(final @Page int to) throws InterruptedException {
-        ChromeTabUtils.waitForTabPageLoaded(mTestRule.getActivity().getActivityTab(), () -> {
-            mVrBrowserTestFramework.runJavaScriptOrFail(
-                    "window.location.href = '" + getUrl(to) + "';", POLL_TIMEOUT_SHORT_MS);
-        }, POLL_TIMEOUT_LONG_MS);
+        ChromeTabUtils.waitForTabPageLoaded(
+                mTestRule.getActivity().getActivityTab(), getUrl(to), () -> {
+                    mVrBrowserTestFramework.runJavaScriptOrFail(
+                            "window.location.href = '" + getUrl(to) + "';", POLL_TIMEOUT_SHORT_MS);
+                }, POLL_TIMEOUT_LONG_MS);
     }
 
     private void enterFullscreenOrFail(WebContents webContents)

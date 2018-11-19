@@ -321,7 +321,7 @@ public final class PageViewTimerTest {
         return () -> getTabObserver().didFirstVisuallyNonEmptyPaint(tab);
     }
     private Runnable showContentByOnPageLoadFinished(Tab tab) {
-        return () -> getTabObserver().onPageLoadFinished(tab);
+        return () -> getTabObserver().onPageLoadFinished(tab, STARTING_URL);
     }
 
     private Runnable showContentByOnLoadStopped(Tab tab) {

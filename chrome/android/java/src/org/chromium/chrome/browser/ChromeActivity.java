@@ -702,7 +702,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab) {
+            public void onPageLoadFinished(Tab tab, String url) {
                 postDeferredStartupIfNeeded();
                 OfflinePageUtils.showOfflineSnackbarIfNecessary(tab);
             }

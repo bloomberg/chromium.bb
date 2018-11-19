@@ -303,7 +303,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
         Assert.assertNotNull("Cannot load the URL in a null tab", tab);
         final AtomicInteger result = new AtomicInteger();
 
-        ChromeTabUtils.waitForTabPageLoaded(tab, new Runnable() {
+        ChromeTabUtils.waitForTabPageLoaded(tab, url, new Runnable() {
             @Override
             public void run() {
                 ThreadUtils.runOnUiThreadBlocking(new Runnable() {

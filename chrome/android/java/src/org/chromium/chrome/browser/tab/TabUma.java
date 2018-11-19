@@ -389,7 +389,7 @@ public class TabUma extends EmptyTabObserver implements UserData {
 
     /** Called when the correspoding tab completes a page load. */
     @Override
-    public void onPageLoadFinished(Tab tab) {
+    public void onPageLoadFinished(Tab tab, String url) {
         // Record only tab restores that the user became aware of. If the restore is triggered
         // speculatively and completes before the user switches to the tab, then this case is
         // reflected in Tab.StatusWhenSwitchedBackToForeground metric.

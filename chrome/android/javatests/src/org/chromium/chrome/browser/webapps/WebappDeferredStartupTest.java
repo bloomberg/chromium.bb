@@ -32,7 +32,7 @@ public class WebappDeferredStartupTest {
         private boolean mIsPageLoadFinished;
 
         @Override
-        public void onPageLoadFinished(Tab tab) {
+        public void onPageLoadFinished(Tab tab, String url) {
             mIsPageLoadFinished = true;
         }
 

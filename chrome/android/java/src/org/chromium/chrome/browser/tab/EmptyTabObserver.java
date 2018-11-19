@@ -43,7 +43,7 @@ public class EmptyTabObserver implements TabObserver {
     public void onPageLoadStarted(Tab tab, String url) { }
 
     @Override
-    public void onPageLoadFinished(Tab tab) { }
+    public void onPageLoadFinished(Tab tab, String url) {}
 
     @Override
     public void onPageLoadFailed(Tab tab, int errorCode) { }

@@ -86,8 +86,9 @@ public interface TabObserver {
      * Called when a tab has finished loading a page.
      *
      * @param tab The notifying {@link Tab}.
+     * @param url The committed URL that was navigated to.
      */
-    void onPageLoadFinished(Tab tab);
+    void onPageLoadFinished(Tab tab, String url);
 
     /**
      * Called when a tab has failed loading a page.

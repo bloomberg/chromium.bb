@@ -422,7 +422,7 @@ public class Tab
 
             if (didFinishLoad) {
                 // Simulate the PAGE_LOAD_FINISHED notification that we did not get.
-                didFinishPageLoad();
+                didFinishPageLoad(url);
             }
         }
     };
@@ -890,7 +890,7 @@ public class Tab
         if (isLoading()) {
             RewindableIterator<TabObserver> observers = getTabObservers();
             while (observers.hasNext()) {
-                observers.next().onPageLoadFinished(this);
+                observers.next().onPageLoadFinished(this, getUrl());
             }
         }
         if (getWebContents() != null) getWebContents().stop();
@@ -1480,13 +1480,14 @@ public class Tab
 
     /**
      * Called when a page has finished loading.
+     * @param url URL that was loaded.
      */
-    protected void didFinishPageLoad() {
+    protected void didFinishPageLoad(String url) {
         mIsTabStateDirty = true;
         updateTitle();
         updateFullscreenEnabledState();
 
-        for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
+        for (TabObserver observer : mObservers) observer.onPageLoadFinished(this, url);
         mIsBeingRestored = false;
 
         // TODO(crbug.com/889682): Consider moving the rest of this function to a Tab User data.

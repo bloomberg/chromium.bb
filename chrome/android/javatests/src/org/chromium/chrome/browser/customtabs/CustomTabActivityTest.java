@@ -1226,7 +1226,7 @@ public class CustomTabActivityTest {
         final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
         tab.addObserver(new EmptyTabObserver() {
             @Override
-            public void onPageLoadFinished(Tab tab) {
+            public void onPageLoadFinished(Tab tab, String url) {
                 pageLoadFinishedHelper.notifyCalled();
             }
         });
@@ -1288,7 +1288,7 @@ public class CustomTabActivityTest {
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab) {
+            public void onPageLoadFinished(Tab tab, String url) {
                 pageLoadFinishedHelper.notifyCalled();
             }
         });
@@ -1328,7 +1328,7 @@ public class CustomTabActivityTest {
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab) {
+            public void onPageLoadFinished(Tab tab, String url) {
                 pageLoadFinishedHelper.notifyCalled();
             }
         });

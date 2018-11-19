@@ -336,7 +336,7 @@ public class NewTabPageTest {
                 (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
 
-        ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
+        ChromeTabUtils.waitForTabPageLoaded(mTab, null, new Runnable() {
             @Override
             public void run() {
                 KeyUtils.singleKeyEventView(InstrumentationRegistry.getInstrumentation(), urlBar,
@@ -353,7 +353,7 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(InterestFeedParams.class)
     public void testClickMostVisitedItem(boolean interestFeedEnabled) throws InterruptedException {
-        ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
+        ChromeTabUtils.waitForTabPageLoaded(mTab, mSiteSuggestions.get(0).url, new Runnable() {
             @Override
             public void run() {
                 View mostVisitedItem = mTileGridLayout.getChildAt(0);
@@ -422,7 +422,7 @@ public class NewTabPageTest {
     public void testUrlFocusAnimationsDisabledOnLoad(boolean interestFeedEnabled)
             throws InterruptedException {
         Assert.assertFalse(getUrlFocusAnimationsDisabled());
-        ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
+        ChromeTabUtils.waitForTabPageLoaded(mTab, mTestServer.getURL(TEST_PAGE), new Runnable() {
             @Override
             public void run() {
                 ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -480,7 +480,7 @@ public class NewTabPageTest {
             final CallbackHelper loadedCallback = new CallbackHelper();
             mTab.addObserver(new EmptyTabObserver() {
                 @Override
-                public void onPageLoadFinished(Tab tab) {
+                public void onPageLoadFinished(Tab tab, String url) {
                     loadedCallback.notifyCalled();
                     tab.removeObserver(this);
                 }

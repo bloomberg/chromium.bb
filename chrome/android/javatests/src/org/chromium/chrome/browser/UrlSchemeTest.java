@@ -208,7 +208,7 @@ public class UrlSchemeTest {
         try {
             TestFileUtil.createNewHtmlFile(
                     file, target, "<img src=\"" + createContentUrl(target) + "\">");
-            mActivityTestRule.loadUrl("file:///" + file.getAbsolutePath());
+            mActivityTestRule.loadUrl("file://" + file.getAbsolutePath());
             ensureResourceRequestCountInContentProvider(target, 0);
         } finally {
             TestFileUtil.deleteFile(file);

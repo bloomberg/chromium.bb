@@ -131,7 +131,7 @@ public class PageViewTimer {
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab) {
+            public void onPageLoadFinished(Tab tab, String url) {
                 assert tab == mCurrentTab;
                 mPageDidPaint = true;
             }

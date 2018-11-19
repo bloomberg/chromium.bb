@@ -181,7 +181,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             }
 
             @Override
-            public void onPageLoadFinished(Tab tab) {
+            public void onPageLoadFinished(Tab tab, String url) {
                 mUma.onPageLoadFinished(tab.getId());
             }
 

@@ -794,7 +794,7 @@ public class OfflinePageUtils {
          * contents.
          */
         @Override
-        public void onPageLoadFinished(Tab tab) {
+        public void onPageLoadFinished(Tab tab, String url) {
             if (!tab.isBeingRestored()) return;
 
             // We first compute the bitwise tab restore context.

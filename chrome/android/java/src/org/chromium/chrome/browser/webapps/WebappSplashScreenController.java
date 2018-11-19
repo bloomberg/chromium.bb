@@ -144,7 +144,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
     }
 
     @Override
-    public void onPageLoadFinished(Tab tab) {
+    public void onPageLoadFinished(Tab tab, String url) {
         if (canHideSplashScreen()) {
             hideSplashScreenOnDrawingFinished(tab, WebappUma.SplashScreenHidesReason.LOAD_FINISHED);
         }

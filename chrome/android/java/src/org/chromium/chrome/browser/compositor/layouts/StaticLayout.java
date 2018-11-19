@@ -143,7 +143,7 @@ public class StaticLayout extends Layout {
         super.setTabModelSelector(modelSelector, manager);
         new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
-            public void onPageLoadFinished(Tab tab) {
+            public void onPageLoadFinished(Tab tab, String url) {
                 if (isActive()) unstallImmediately(tab.getId());
             }
         };

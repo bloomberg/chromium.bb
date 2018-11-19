@@ -395,12 +395,9 @@ public abstract class XrTestFramework {
     public int loadUrlAndAwaitInitialization(String url, int timeoutSec)
             throws InterruptedException {
         int result = mRule.loadUrl(url, timeoutSec);
-        // TODO(https://crbug.com/894796): Remove the isInitializationComplete undefined check once
-        // loadUrl is fixed.
         Assert.assertTrue("Timed out waiting for JavaScript test initialization",
-                pollJavaScriptBoolean("(typeof isInitializationComplete !== 'undefined') && "
-                                + "isInitializationComplete()",
-                        POLL_TIMEOUT_LONG_MS, mRule.getWebContents()));
+                pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_LONG_MS,
+                        mRule.getWebContents()));
         return result;
     }
 

@@ -37,7 +37,7 @@ public class TabTestUtils {
      */
     public static void simulatePageLoadFinished(Tab tab) {
         RewindableIterator<TabObserver> observers = tab.getTabObservers();
-        while (observers.hasNext()) observers.next().onPageLoadFinished(tab);
+        while (observers.hasNext()) observers.next().onPageLoadFinished(tab, tab.getUrl());
     }
 
     /**

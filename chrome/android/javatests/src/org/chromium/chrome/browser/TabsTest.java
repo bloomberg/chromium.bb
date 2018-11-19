@@ -79,7 +79,6 @@ import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.content_public.common.ContentSwitches;
-import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -530,7 +529,7 @@ public class TabsTest {
 
         int initialTabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, false);
+                mActivityTestRule.getActivity(), UrlConstants.CHROME_BLANK_URL, false);
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().getLayoutManager().showOverview(false); });
 
@@ -1570,7 +1569,7 @@ public class TabsTest {
     @DisabledTest(message = "crbug.com/882003")
     public void testToolbarSwipeNextThenPrevTab() throws InterruptedException, TimeoutException {
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, false);
+                mActivityTestRule.getActivity(), UrlConstants.CHROME_BLANK_URL, false);
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
 
@@ -1593,9 +1592,9 @@ public class TabsTest {
     public void testToolbarSwipeNextThenPrevTabIncognito()
             throws InterruptedException, TimeoutException {
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, true);
+                mActivityTestRule.getActivity(), UrlConstants.CHROME_BLANK_URL, true);
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), ContentUrlConstants.ABOUT_BLANK_URL, true);
+                mActivityTestRule.getActivity(), UrlConstants.CHROME_BLANK_URL, true);
         mActivityTestRule.getActivity().getTabModelSelector().selectModel(true);
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
@@ -1952,7 +1951,7 @@ public class TabsTest {
                     pageLoadedCallbacks[index] = pageLoadCallback;
                     currentTab.addObserver(new EmptyTabObserver() {
                         @Override
-                        public void onPageLoadFinished(Tab tab) {
+                        public void onPageLoadFinished(Tab tab, String url) {
                             pageLoadCallback.notifyCalled();
                             tab.removeObserver(this);
                         }
