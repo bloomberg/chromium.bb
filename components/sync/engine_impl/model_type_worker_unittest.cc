@@ -1180,6 +1180,34 @@ TEST_F(ModelTypeWorkerTest, ReceiveDecryptableEntities) {
   EXPECT_FALSE(update2.encryption_key_name.empty());
 }
 
+// Test the receipt of decryptable entities, and that the worker will keep the
+// entities until the decryption key arrives.
+TEST_F(ModelTypeWorkerTest,
+       ReceiveDecryptableEntitiesShouldWaitTillKeyArrives) {
+  NormalInitialize();
+
+  // This next update will be encrypted using the second key.
+  SetUpdateEncryptionFilter(2);
+  TriggerUpdateFromServer(10, kTag1, kValue1);
+
+  // Worker cannot decrypt it.
+  EXPECT_FALSE(processor()->HasUpdateResponse(kHash1));
+
+  // Allow the cryptographer to decrypt using the first key.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  // Worker still cannot decrypt it.
+  EXPECT_FALSE(processor()->HasUpdateResponse(kHash1));
+
+  // Allow the cryptographer to decrypt using the second key.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  // The worker can now decrypt the update and forward it to the processor.
+  EXPECT_TRUE(processor()->HasUpdateResponse(kHash1));
+}
+
 // Test initializing a CommitQueue with a cryptographer at startup.
 TEST_F(ModelTypeWorkerTest, InitializeWithCryptographer) {
   // Set up some encryption state.
@@ -1715,6 +1743,43 @@ TEST_F(ModelTypeWorkerPasswordsTest, ReceiveDecryptablePasswordEntities) {
   EXPECT_FALSE(update.entity->specifics.has_encrypted());
   EXPECT_FALSE(
       update.entity->specifics.password().has_client_only_encrypted_data());
+}
+
+// Similar to ReceiveDecryptableEntities but for PASSWORDS, which have a custom
+// encryption mechanism.
+TEST_F(ModelTypeWorkerPasswordsTest,
+       ReceiveDecryptablePasswordShouldWaitTillKeyArrives) {
+  NormalInitialize();
+
+  // Receive an encrypted password, encrypted with the second ecnryption key.
+  sync_pb::PasswordSpecificsData unencrypted_password;
+  unencrypted_password.set_password_value(kPassword);
+  sync_pb::EntitySpecifics encrypted_specifics =
+      EncryptPasswordSpecifics(GetNthKeyParams(2), unencrypted_password);
+
+  SyncEntity entity = server()->UpdateFromServer(
+      /*version_offset=*/10, kHash1, encrypted_specifics);
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  // Worker cannot decrypt it.
+  EXPECT_FALSE(processor()->HasUpdateResponse(kHash1));
+
+  // Allow the cryptographer to decrypt using the first key.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  // Worker still cannot decrypt it.
+  EXPECT_FALSE(processor()->HasUpdateResponse(kHash1));
+
+  // Allow the cryptographer to decrypt using the second key.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  // The worker can now decrypt the update and forward it to the processor.
+  EXPECT_TRUE(processor()->HasUpdateResponse(kHash1));
 }
 
 // Analogous to ReceiveUndecryptableEntries but for PASSWORDS, which have a
