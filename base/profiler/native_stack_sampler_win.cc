@@ -355,7 +355,8 @@ NativeStackSamplerError SuspendThreadAndRecordStack(
   uintptr_t bottom = 0u;
 
   {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "SuspendThread");
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
+                 "SuspendThread");
     {
       ScopedSuspendThread suspend_thread(thread_handle);
 
@@ -393,7 +394,8 @@ NativeStackSamplerError SuspendThreadAndRecordStack(
     test_delegate->OnPreStackWalk();
 
   {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"), "RecordStack");
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
+                 "RecordStack");
 
     RewritePointersToStackMemory(top, bottom, &thread_context,
                                  stack_copy_buffer);
@@ -452,7 +454,7 @@ void NativeStackSamplerWin::ProfileRecordingStarting() {
 std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
     StackBuffer* stack_buffer,
     ProfileBuilder* profile_builder) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
                "NativeStackSamplerWin::RecordStackFrames");
   DCHECK(stack_buffer);
 
@@ -476,7 +478,7 @@ std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
 
 std::vector<Frame> NativeStackSamplerWin::CreateFrames(
     const std::vector<RecordedFrame>& stack) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cpu_profiler.debug"),
                "NativeStackSamplerWin::CreateFrames");
 
   std::vector<Frame> frames;
