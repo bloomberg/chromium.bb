@@ -351,6 +351,8 @@ void MultideviceHandler::RegisterPrefChangeListeners() {
 }
 
 void MultideviceHandler::NotifySmartLockSignInEnabledChanged() {
+  AllowJavascript();
+
   bool sign_in_enabled = prefs_->GetBoolean(
       proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled);
   FireWebUIListener("smart-lock-signin-enabled-changed",
