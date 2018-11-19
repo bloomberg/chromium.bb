@@ -62,11 +62,14 @@ void StubCrosSettingsProvider::SetCurrentUserIsOwner(bool owner) {
 
 void StubCrosSettingsProvider::DoSet(const std::string& path,
                                      const base::Value& value) {
+  bool is_value_changed = false;
   if (current_user_is_owner_)
-    values_.SetValue(path, value.CreateDeepCopy());
+    is_value_changed = values_.SetValue(path, value.CreateDeepCopy());
   else
     LOG(WARNING) << "Changing settings from non-owner, setting=" << path;
-  NotifyObservers(path);
+
+  if (is_value_changed || !current_user_is_owner_)
+    NotifyObservers(path);
 }
 
 void StubCrosSettingsProvider::SetDefaults() {
