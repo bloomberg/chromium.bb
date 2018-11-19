@@ -1495,7 +1495,7 @@ class OutputApiUnittest(PresubmitTestsBase):
     self._testIncludingCQTrybots(
       """A change to GPU-related code.
 
-Cq-Include-Trybots:  master.tryserver.blink:linux_trusty_blink_rel ;luci.chromium.try:win_optional_gpu_tests_rel
+Cq-Include-Trybots:  luci.chromium.try:linux-blink-rel;luci.chromium.try:win_optional_gpu_tests_rel
 """,
       [
         'luci.chromium.try:linux_optional_gpu_tests_rel',
@@ -1503,7 +1503,7 @@ Cq-Include-Trybots:  master.tryserver.blink:linux_trusty_blink_rel ;luci.chromiu
       ],
       """A change to GPU-related code.
 
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel;master.tryserver.blink:linux_trusty_blink_rel""")
+Cq-Include-Trybots: luci.chromium.try:linux-blink-rel;luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel""")
 
     # Starting without any CQ_INCLUDE_TRYBOTS line.
     self._testIncludingCQTrybots(
