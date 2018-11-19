@@ -40,7 +40,7 @@ struct HarfBuzzFontData {
 
  public:
   HarfBuzzFontData()
-      : paint_(),
+      : font_(),
         space_in_gpos_(SpaceGlyphInOpenTypeTables::Unknown),
         space_in_gsub_(SpaceGlyphInOpenTypeTables::Unknown),
         vertical_data_(nullptr),
@@ -51,19 +51,19 @@ struct HarfBuzzFontData {
   // layout information is found from the font.
   void UpdateFallbackMetricsAndScale(
       const FontPlatformData& platform_data,
-      const SkPaint& paint,
       HarfBuzzFace::VerticalLayoutCallbacks vertical_layout) {
     float ascent = 0;
     float descent = 0;
     unsigned dummy_ascent_inflation = 0;
     unsigned dummy_descent_inflation = 0;
 
-    paint_ = paint;
+    font_ = SkFont();
+    platform_data.SetupSkFont(&font_);
 
     if (UNLIKELY(vertical_layout == HarfBuzzFace::PrepareForVerticalLayout)) {
       FontMetrics::AscentDescentWithHacks(
           ascent, descent, dummy_ascent_inflation, dummy_descent_inflation,
-          platform_data, paint);
+          platform_data, font_);
       ascent_fallback_ = ascent;
       // Simulate the rounding that FontMetrics does so far for returning the
       // integer Height()
@@ -87,7 +87,7 @@ struct HarfBuzzFontData {
     if (size_per_unit_ != kInvalidFallbackMetricsValue)
       return size_per_unit_;
     int units_per_em = typeface.getUnitsPerEm();
-    size_per_unit_ = paint_.getTextSize() / units_per_em;
+    size_per_unit_ = font_.getSize() / units_per_em;
     return size_per_unit_;
   }
 
@@ -98,14 +98,14 @@ struct HarfBuzzFontData {
       DCHECK_NE(size_per_unit_, kInvalidFallbackMetricsValue);
 
       vertical_data_ =
-          OpenTypeVerticalData::CreateUnscaled(paint_.refTypeface());
+          OpenTypeVerticalData::CreateUnscaled(font_.refTypeface());
     }
     vertical_data_->SetScaleAndFallbackMetrics(size_per_unit_, ascent_fallback_,
                                                height_fallback_);
     return vertical_data_;
   }
 
-  SkPaint paint_;
+  SkFont font_;
 
   // Capture these scaled fallback metrics from FontPlatformData so that a
   // OpenTypeVerticalData object can be constructed from them when needed.

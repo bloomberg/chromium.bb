@@ -33,9 +33,10 @@
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-#include <SkPaint.h>
 #include <SkRefCnt.h>
 #include <SkTypeface.h>
+
+class SkFont;
 
 namespace blink {
 
@@ -55,7 +56,7 @@ class PLATFORM_EXPORT OpenTypeVerticalData
   bool HasVerticalMetrics() const { return !advance_heights_.IsEmpty(); }
   float AdvanceHeight(Glyph) const;
 
-  void GetVerticalTranslationsForGlyphs(const SkPaint&,
+  void GetVerticalTranslationsForGlyphs(const SkFont&,
                                         const Glyph*,
                                         size_t,
                                         float* out_xy_array) const;

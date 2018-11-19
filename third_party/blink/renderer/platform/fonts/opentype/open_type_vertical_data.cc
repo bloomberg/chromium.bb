@@ -263,7 +263,7 @@ float OpenTypeVerticalData::AdvanceHeight(Glyph glyph) const {
 }
 
 void OpenTypeVerticalData::GetVerticalTranslationsForGlyphs(
-    const SkPaint& paint,
+    const SkFont& font,
     const Glyph* glyphs,
     size_t count,
     float* out_xy_array) const {
@@ -304,7 +304,7 @@ void OpenTypeVerticalData::GetVerticalTranslationsForGlyphs(
       float top_side_bearing = top_side_bearing_f_unit * size_per_unit_;
 
       SkRect skiaBounds;
-      SkiaTextMetrics(&paint).GetSkiaBoundsForGlyph(glyph, &skiaBounds);
+      SkiaTextMetrics(font).GetSkiaBoundsForGlyph(glyph, &skiaBounds);
       FloatRect bounds(skiaBounds);
       out_xy_array[1] = bounds.Y() - top_side_bearing;
       continue;
