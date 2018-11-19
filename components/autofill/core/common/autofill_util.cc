@@ -17,12 +17,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 
 namespace autofill {
 
-const base::Feature kAutofillKeyboardAccessory{
-    "AutofillKeyboardAccessory", base::FEATURE_DISABLED_BY_DEFAULT};
+using features::kAutofillKeyboardAccessory;
+
 const char kAutofillKeyboardAccessoryAnimationDurationKey[] =
     "animation_duration_millis";
 const char kAutofillKeyboardAccessoryLimitLabelWidthKey[] =

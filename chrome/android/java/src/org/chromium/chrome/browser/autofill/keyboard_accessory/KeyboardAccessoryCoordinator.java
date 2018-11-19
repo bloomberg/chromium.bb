@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIONS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TAB_SELECTION_CALLBACKS;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.VISIBLE;
@@ -14,12 +15,16 @@ import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAc
 import android.support.annotation.Px;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModernViewBinder.ModernActionViewHolder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.ActionViewHolder;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.TabViewBinder;
 import org.chromium.chrome.browser.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
+import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
 import org.chromium.ui.ViewProvider;
@@ -70,7 +75,7 @@ public class KeyboardAccessoryCoordinator {
             ViewProvider<KeyboardAccessoryView> viewProvider) {
         PropertyModel model = new PropertyModel
                                       .Builder(ACTIONS, TABS, VISIBLE, BOTTOM_OFFSET_PX, ACTIVE_TAB,
-                                              TAB_SELECTION_CALLBACKS)
+                                              TAB_SELECTION_CALLBACKS, SHOW_KEYBOARD_CALLBACK)
                                       .with(TABS, new ListModel<>())
                                       .with(ACTIONS, new ListModel<>())
                                       .with(ACTIVE_TAB, null)
@@ -79,8 +84,13 @@ public class KeyboardAccessoryCoordinator {
         mMediator = new KeyboardAccessoryMediator(model, visibilityDelegate);
         viewProvider.whenLoaded(view -> view.setTabSelectionAdapter(mMediator));
 
-        LazyConstructionPropertyMcp.create(
-                model, VISIBLE, viewProvider, KeyboardAccessoryViewBinder::bind);
+        PropertyModelChangeProcessor
+                .ViewBinder<PropertyModel, KeyboardAccessoryView, PropertyKey> viewBinder =
+                KeyboardAccessoryViewBinder::bind;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
+            viewBinder = KeyboardAccessoryModernViewBinder::bind;
+        }
+        LazyConstructionPropertyMcp.create(model, VISIBLE, viewProvider, viewBinder);
         KeyboardAccessoryMetricsRecorder.registerKeyboardAccessoryModelMetricsObserver(model);
     }
 
@@ -92,10 +102,14 @@ public class KeyboardAccessoryCoordinator {
      */
     static RecyclerViewAdapter<ActionViewHolder, Void> createActionsAdapter(
             ListModel<KeyboardAccessoryData.Action> actions) {
+        RecyclerViewAdapter.ViewHolderFactory<ActionViewHolder> factory = ActionViewHolder::create;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
+            factory = ModernActionViewHolder::create;
+        }
         return new RecyclerViewAdapter<>(
                 new SimpleRecyclerViewMcp<>(actions, KeyboardAccessoryData.Action::getActionType,
                         ActionViewHolder::bind),
-                ActionViewHolder::create);
+                factory);
     }
 
     /**

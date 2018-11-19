@@ -17,12 +17,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction
-        .GENERATE_PASSWORD_AUTOMATIC;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties
-        .ACTIVE_TAB;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties
-        .TABS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
 import static org.chromium.chrome.browser.tab.Tab.INVALID_TAB_ID;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType.FROM_BROWSER_ACTIONS;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_CLOSE;
@@ -50,8 +47,7 @@ import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData
-        .PropertyProvider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.ListModel;
@@ -76,7 +72,8 @@ import java.util.Map;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
-@EnableFeatures(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)
+@EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY,
+        ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @DisableFeatures(ChromeFeatureList.EXPERIMENTAL_UI)
 public class ManualFillingControllerTest {
     @Mock
@@ -88,7 +85,7 @@ public class ManualFillingControllerTest {
     @Mock
     private ViewGroup mMockContentView;
     @Mock
-    private KeyboardAccessoryView mMockKeyboardAccessoryView;
+    private KeyboardAccessoryModernView mMockKeyboardAccessoryView;
     @Mock
     private AccessorySheetView mMockViewPager;
     @Mock

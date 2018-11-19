@@ -28,7 +28,7 @@ import org.chromium.chrome.R;
  * suggestions and manual entry points assisting the user in filling forms.
  */
 class KeyboardAccessoryView extends LinearLayout {
-    private RecyclerView mActionsView;
+    protected RecyclerView mActionsView;
     private TabLayout mTabLayout;
     private TabLayout.TabLayoutOnPageChangeListener mPageChangeListener;
 

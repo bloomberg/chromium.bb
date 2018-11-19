@@ -79,7 +79,8 @@ public class KeyboardAccessoryMetricsRecorder {
             }
             if (propertyKey == KeyboardAccessoryProperties.ACTIVE_TAB
                     || propertyKey == KeyboardAccessoryProperties.BOTTOM_OFFSET_PX
-                    || propertyKey == KeyboardAccessoryProperties.TAB_SELECTION_CALLBACKS) {
+                    || propertyKey == KeyboardAccessoryProperties.TAB_SELECTION_CALLBACKS
+                    || propertyKey == KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK) {
                 return;
             }
             assert false : "Every property update needs to be handled explicitly!";

@@ -2332,9 +2332,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"autofill-keyboard-accessory-view",
      flag_descriptions::kAutofillAccessoryViewName,
      flag_descriptions::kAutofillAccessoryViewDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(autofill::kAutofillKeyboardAccessory,
-                                    kAutofillKeyboardAccessoryFeatureVariations,
-                                    "AutofillKeyboardAccessoryVariations")},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         autofill::features::kAutofillKeyboardAccessory,
+         kAutofillKeyboardAccessoryFeatureVariations,
+         "AutofillKeyboardAccessoryVariations")},
 #endif  // OS_ANDROID
 #if defined(OS_WIN)
     {"try-supported-channel-layouts",

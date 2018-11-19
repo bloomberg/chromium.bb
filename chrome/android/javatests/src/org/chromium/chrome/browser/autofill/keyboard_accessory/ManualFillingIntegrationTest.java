@@ -63,6 +63,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY,
+        ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY,
         // TODO(crbug.com/894428): Remove and use the embedded test server instead of data urls.
         ChromeFeatureList.AUTOFILL_ALLOW_NON_HTTP_ACTIVATION})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})

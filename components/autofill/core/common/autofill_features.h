@@ -41,6 +41,7 @@ extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
 extern const base::Feature kAutofillExpandedPopupViews;
 extern const base::Feature kAutofillGetPaymentsIdentityFromSync;
+extern const base::Feature kAutofillKeyboardAccessory;
 extern const base::Feature kAutofillLocalCardMigrationShowFeedback;
 extern const base::Feature kAutofillManualFallback;
 extern const base::Feature kAutofillManualFallbackPhaseTwo;

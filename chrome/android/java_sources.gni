@@ -113,6 +113,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryMediator.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryMetricsRecorder.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryProperties.java",
+  "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryModernView.java",
+  "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryModernViewBinder.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryView.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardAccessoryViewBinder.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/ManualFillingCoordinator.java",
