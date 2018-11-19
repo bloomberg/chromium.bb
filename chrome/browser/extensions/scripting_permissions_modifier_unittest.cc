@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/test/base/testing_profile.h"
@@ -486,9 +487,10 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
     URLPatternSet patterns;
     patterns.AddPattern(URLPattern(Extension::kValidHostPermissionSchemes,
                                    "https://example.com/*"));
-    PermissionsUpdater(profile()).GrantOptionalPermissions(
-        *extension, PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                                  patterns, URLPatternSet()));
+    permissions_test_util::GrantOptionalPermissionsAndWaitForCompletion(
+        profile(), *extension,
+        PermissionSet(APIPermissionSet(), ManifestPermissionSet(), patterns,
+                      URLPatternSet()));
   }
 
   EXPECT_THAT(GetEffectivePatternsAsStrings(*extension),
@@ -806,8 +808,8 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 
   const URLPattern all_com_pattern(Extension::kValidHostPermissionSchemes,
                                    "https://*.com/*");
-  PermissionsUpdater(profile()).GrantRuntimePermissions(
-      *extension,
+  permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension,
       PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
                     URLPatternSet({all_com_pattern}), URLPatternSet()));
 

@@ -4,7 +4,12 @@
 
 #include "extensions/browser/renderer_startup_helper.h"
 
+#include <utility>
+#include <vector>
+
+#include "base/bind_helpers.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -18,13 +23,16 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/common/cors_util.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "url/origin.h"
 
 using content::BrowserContext;
 
@@ -231,6 +239,20 @@ void RendererStartupHelper::OnExtensionLoaded(const Extension& extension) {
   if (extension.is_theme())
     return;
 
+  // Registers the initial origin access lists to the BrowserContext
+  // asynchronously.
+  url::Origin extension_origin = url::Origin::Create(extension.url());
+  std::vector<network::mojom::CorsOriginPatternPtr> allow_list =
+      CreateCorsOriginAccessAllowList(extension);
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    ExtensionsClient::Get()->AddOriginAccessPermissions(extension, true,
+                                                        &allow_list);
+  }
+
+  content::BrowserContext::SetCorsOriginAccessListsForOrigin(
+      browser_context_, extension_origin, std::move(allow_list),
+      CreateCorsOriginAccessBlockList(extension), base::DoNothing::Once());
+
   // We don't need to include tab permisisons here, since the extension
   // was just loaded.
   // Uninitialized renderers will be informed of the extension load during the
@@ -259,6 +281,14 @@ void RendererStartupHelper::OnExtensionUnloaded(const Extension& extension) {
     DCHECK(base::ContainsKey(initialized_processes_, process));
     process->Send(new ExtensionMsg_Unloaded(extension.id()));
   }
+
+  // Resets registered origin access lists in the BrowserContext asynchronously.
+  url::Origin extension_origin = url::Origin::Create(extension.url());
+  content::BrowserContext::SetCorsOriginAccessListsForOrigin(
+      browser_context_, extension_origin,
+      std::vector<network::mojom::CorsOriginPatternPtr>(),
+      std::vector<network::mojom::CorsOriginPatternPtr>(),
+      base::DoNothing::Once());
 
   for (auto& process_extensions_pair : pending_active_extensions_)
     process_extensions_pair.second.erase(extension.id());

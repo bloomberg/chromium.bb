@@ -74,6 +74,9 @@ class PermissionsRequestFunction : public UIThreadExtensionFunction {
 
  private:
   void OnInstallPromptDone(ExtensionInstallPrompt::Result result);
+  void OnRuntimePermissionsGranted();
+  void OnOptionalPermissionsGranted();
+  void RespondIfRequestsFinished();
 
   std::unique_ptr<ExtensionInstallPrompt> install_ui_;
 
@@ -81,6 +84,9 @@ class PermissionsRequestFunction : public UIThreadExtensionFunction {
   std::unique_ptr<const PermissionSet> requested_withheld_;
   // Requested permissions that are currently optional, and not granted.
   std::unique_ptr<const PermissionSet> requested_optional_;
+
+  bool requesting_withheld_permissions_ = false;
+  bool requesting_optional_permissions_ = false;
 
   // The permissions, if any, that Chrome would prompt the user for. This will
   // be recorded if and only if the prompt is being bypassed for a test (see

@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
@@ -520,8 +521,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest,
   PermissionSet all_chromium_set(APIPermissionSet(), ManifestPermissionSet(),
                                  URLPatternSet({all_chromium}),
                                  URLPatternSet({all_chromium}));
-  PermissionsUpdater(profile()).GrantRuntimePermissions(*extension,
-                                                        all_chromium_set);
+  permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension, all_chromium_set);
 
   // The extension should only be granted http://chromium.org/* (since that's
   // the intersection with what it requested).
@@ -572,8 +573,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsSpecificHosts) {
   PermissionSet all_chromium_set(APIPermissionSet(), ManifestPermissionSet(),
                                  URLPatternSet({all_chromium}),
                                  URLPatternSet({all_chromium}));
-  PermissionsUpdater(profile()).GrantRuntimePermissions(*extension,
-                                                        all_chromium_set);
+  permissions_test_util::GrantRuntimePermissionsAndWaitForCompletion(
+      profile(), *extension, all_chromium_set);
 
   // The generated info should use the entirety of the granted permission,
   // which is *://chromium.org/*.
@@ -653,8 +654,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, WithheldUrlsOverlapping) {
     PermissionSet example_com_set(APIPermissionSet(), ManifestPermissionSet(),
                                   URLPatternSet({example_com}),
                                   URLPatternSet({example_com}));
-    PermissionsUpdater(profile()).GrantRuntimePermissions(*extension,
-                                                          example_com_set);
+    PermissionsUpdater(profile()).GrantRuntimePermissions(
+        *extension, example_com_set, base::DoNothing::Once());
   }
 
   {
@@ -681,8 +682,8 @@ TEST_F(ExtensionInfoGeneratorUnitTest, WithheldUrlsOverlapping) {
     PermissionSet example_com_set(APIPermissionSet(), ManifestPermissionSet(),
                                   URLPatternSet({example_com}),
                                   URLPatternSet({example_com}));
-    PermissionsUpdater(profile()).GrantRuntimePermissions(*extension,
-                                                          example_com_set);
+    PermissionsUpdater(profile()).GrantRuntimePermissions(
+        *extension, example_com_set, base::DoNothing::Once());
   }
 
   {
