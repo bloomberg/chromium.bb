@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,6 +16,7 @@
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/navigation_entry.h"
@@ -25,6 +27,29 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace web_app {
+
+namespace {
+
+char GetLetterForIcon(const GURL& app_url) {
+  char icon_letter = ' ';
+  std::string domain_and_registry(
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          app_url,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+
+  // TODO(crbug.com/867311): Decode the app URL or the domain before retrieving
+  // the first character, otherwise we generate an icon with "x" if the domain
+  // or app URL starts with a UTF-8 character.
+  if (!domain_and_registry.empty()) {
+    icon_letter = domain_and_registry[0];
+  } else if (app_url.has_host()) {
+    icon_letter = app_url.host_piece()[0];
+  }
+  DCHECK(icon_letter >= '!' && icon_letter <= '~');
+  return icon_letter;
+}
+
+}  // namespace
 
 WebAppDataRetriever::WebAppDataRetriever() = default;
 
@@ -90,31 +115,11 @@ void WebAppDataRetriever::GetIcons(const GURL& app_url,
                                    GetIconsCallback callback) {
   // TODO(crbug.com/864904): Download icons using |icon_urls|.
 
-  // Generate missing icons.
-  static constexpr int kIconSizesToGenerate[] = {
-      icon_size::k32, icon_size::k64,  icon_size::k48,
-      icon_size::k96, icon_size::k128, icon_size::k256,
-  };
-
-  // Get the letter to use in the generated icon.
-  char icon_letter = ' ';
-  std::string domain_and_registry(
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          app_url,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-
-  // TODO(crbug.com/867311): Decode the app URL or the domain before retrieving
-  // the first character, otherwise we generate an icon with "x" if the domain
-  // or app URL starts with a UTF-8 character.
-  if (!domain_and_registry.empty()) {
-    icon_letter = domain_and_registry[0];
-  } else if (app_url.has_host()) {
-    icon_letter = app_url.host_piece()[0];
-  }
-  DCHECK(icon_letter >= '!' && icon_letter <= '~');
+  const char icon_letter = GetLetterForIcon(app_url);
+  const std::set<int> sizes_to_generate = SizesToGenerate();
 
   std::vector<WebApplicationInfo::IconInfo> icons;
-  for (int size : kIconSizesToGenerate) {
+  for (int size : sizes_to_generate) {
     WebApplicationInfo::IconInfo icon_info;
     icon_info.width = size;
     icon_info.height = size;
