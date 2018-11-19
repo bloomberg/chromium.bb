@@ -369,9 +369,8 @@ void PerfProvider::Init() {
 
   // Register as an observer of session restore.
   on_session_restored_callback_subscription_ =
-      SessionRestore::RegisterOnSessionRestoredCallback(
-          base::Bind(&PerfProvider::OnSessionRestoreDone,
-                     weak_factory_.GetWeakPtr()));
+      SessionRestore::RegisterOnSessionRestoredCallback(base::BindRepeating(
+          &PerfProvider::OnSessionRestoreDone, weak_factory_.GetWeakPtr()));
 
   // Check the login state. At the time of writing, this class is instantiated
   // before login. A subsequent login would activate the profiling. However,
@@ -618,12 +617,10 @@ void PerfProvider::SuspendDone(const base::TimeDelta& sleep_duration) {
   // Randomly pick a delay before doing the collection.
   base::TimeDelta collection_delay = RandomTimeDelta(
       resume_params.max_collection_delay());
-  timer_.Start(FROM_HERE,
-               collection_delay,
-               base::Bind(&PerfProvider::CollectPerfDataAfterResume,
-                          weak_factory_.GetWeakPtr(),
-                          sleep_duration,
-                          collection_delay));
+  timer_.Start(FROM_HERE, collection_delay,
+               base::BindOnce(&PerfProvider::CollectPerfDataAfterResume,
+                              weak_factory_.GetWeakPtr(), sleep_duration,
+                              collection_delay));
 }
 
 void PerfProvider::OnSessionRestoreDone(int num_tabs_restored) {
@@ -658,13 +655,10 @@ void PerfProvider::OnSessionRestoreDone(int num_tabs_restored) {
   // Randomly pick a delay before doing the collection.
   base::TimeDelta collection_delay = RandomTimeDelta(
       restore_params.max_collection_delay());
-  timer_.Start(
-      FROM_HERE,
-      collection_delay,
-      base::Bind(&PerfProvider::CollectPerfDataAfterSessionRestore,
-                 weak_factory_.GetWeakPtr(),
-                 collection_delay,
-                 num_tabs_restored));
+  timer_.Start(FROM_HERE, collection_delay,
+               base::BindOnce(&PerfProvider::CollectPerfDataAfterSessionRestore,
+                              weak_factory_.GetWeakPtr(), collection_delay,
+                              num_tabs_restored));
 }
 
 void PerfProvider::OnUserLoggedIn() {
@@ -754,9 +748,10 @@ void PerfProvider::CollectIfNecessary(
 
   perf_output_call_.reset(new PerfOutputCall(
       collection_params_.collection_duration(), command,
-      base::Bind(&PerfProvider::ParseOutputProtoIfValid,
-                 weak_factory_.GetWeakPtr(), base::Passed(&incognito_observer),
-                 base::Passed(&sampled_profile), subcommand)));
+      base::BindOnce(&PerfProvider::ParseOutputProtoIfValid,
+                     weak_factory_.GetWeakPtr(),
+                     base::Passed(&incognito_observer),
+                     base::Passed(&sampled_profile), subcommand)));
 }
 
 void PerfProvider::DoPeriodicCollection() {
