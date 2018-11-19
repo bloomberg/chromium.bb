@@ -576,6 +576,10 @@ const base::Feature kSysInternals{"SysInternals",
 const base::Feature kSystemWebApps{"SystemWebApps",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the App Management UI.
+const base::Feature kAppManagement{"AppManagement",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable TopSites to source and sort its site data using site engagement.
 const base::Feature kTopSitesFromSiteEngagement{
     "TopSitesFromSiteEngagement", base::FEATURE_DISABLED_BY_DEFAULT};

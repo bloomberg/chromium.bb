@@ -379,6 +379,9 @@ extern const base::Feature kSysInternals;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSystemWebApps;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppManagement;
+
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kTabMetricsLogging;
 #endif

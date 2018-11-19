@@ -46,6 +46,9 @@ if (closure_compile) {
         "webapks:closure_compile",
       ]
     }
+    if (!is_android) {
+      deps += [ "app_management:closure_compile" ]
+    }
   }
 }
 

@@ -106,6 +106,7 @@
           "translate.mojom.ContentTranslateDriver",
 
           // TODO(beng): These should be moved to a separate capability.
+          "app_management.mojom.PageHandlerFactory",
           "eoc_internals.mojom.PageHandler",
           "media.mojom.MediaEngagementScoreDetailsProvider",
           "mojom.BluetoothInternalsHandler",
