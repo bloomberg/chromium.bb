@@ -45,4 +45,20 @@ bool ServiceTransferCacheEntry::SafeConvertToType(
   return true;
 }
 
+// static
+bool ServiceTransferCacheEntry::UsesGrContext(TransferCacheEntryType type) {
+  switch (type) {
+    case TransferCacheEntryType::kRawMemory:
+    case TransferCacheEntryType::kColorSpace:
+    case TransferCacheEntryType::kPath:
+    case TransferCacheEntryType::kShader:
+      return false;
+    case TransferCacheEntryType::kImage:
+      return true;
+  }
+
+  NOTREACHED();
+  return true;
+}
+
 }  // namespace cc
