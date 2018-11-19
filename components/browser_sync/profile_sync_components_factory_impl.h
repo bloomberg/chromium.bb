@@ -57,8 +57,7 @@ class ProfileSyncComponentsFactoryImpl
 
   // SyncApiComponentFactory implementation:
   syncer::DataTypeController::TypeVector CreateCommonDataTypeControllers(
-      syncer::ModelTypeSet disabled_types,
-      syncer::LocalDeviceInfoProvider* local_device_info_provider) override;
+      syncer::ModelTypeSet disabled_types) override;
   std::unique_ptr<syncer::DataTypeManager> CreateDataTypeManager(
       syncer::ModelTypeSet initial_types,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&

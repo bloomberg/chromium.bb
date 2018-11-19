@@ -281,13 +281,11 @@ base::Closure ChromeSyncClient::GetPasswordStateChangedCallback() {
 }
 
 syncer::DataTypeController::TypeVector
-ChromeSyncClient::CreateDataTypeControllers(
-    syncer::LocalDeviceInfoProvider* local_device_info_provider) {
+ChromeSyncClient::CreateDataTypeControllers() {
   syncer::ModelTypeSet disabled_types = GetDisabledTypesFromCommandLine();
 
   syncer::DataTypeController::TypeVector controllers =
-      component_factory_->CreateCommonDataTypeControllers(
-          disabled_types, local_device_info_provider);
+      component_factory_->CreateCommonDataTypeControllers(disabled_types);
 
   const base::RepeatingClosure dump_stack = base::BindRepeating(
       &syncer::ReportUnrecoverableError, chrome::GetChannel());
@@ -574,11 +572,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return base::WeakPtr<syncer::SyncableService>();
     }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    case syncer::SESSIONS: {
-      return SessionSyncServiceFactory::GetForProfile(profile_)
-          ->GetSyncableService()
-          ->AsWeakPtr();
-    }
     case syncer::PASSWORDS: {
       return password_store_.get()
                  ? password_store_->GetPasswordSyncableService()

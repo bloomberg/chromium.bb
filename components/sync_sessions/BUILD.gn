@@ -4,8 +4,6 @@
 
 static_library("sync_sessions") {
   sources = [
-    "abstract_sessions_sync_manager.cc",
-    "abstract_sessions_sync_manager.h",
     "favicon_cache.cc",
     "favicon_cache.h",
     "local_session_event_handler_impl.cc",
@@ -17,8 +15,6 @@ static_library("sync_sessions") {
     "open_tabs_ui_delegate.h",
     "open_tabs_ui_delegate_impl.cc",
     "open_tabs_ui_delegate_impl.h",
-    "session_data_type_controller.cc",
-    "session_data_type_controller.h",
     "session_model_type_controller.cc",
     "session_model_type_controller.h",
     "session_store.cc",
@@ -31,8 +27,6 @@ static_library("sync_sessions") {
     "session_sync_service.h",
     "sessions_global_id_mapper.cc",
     "sessions_global_id_mapper.h",
-    "sessions_sync_manager.cc",
-    "sessions_sync_manager.h",
     "sync_sessions_client.cc",
     "sync_sessions_client.h",
     "synced_session.cc",
@@ -103,11 +97,9 @@ source_set("unit_tests") {
     "local_session_event_handler_impl_unittest.cc",
     "lost_navigations_recorder_unittest.cc",
     "open_tabs_ui_delegate_impl_unittest.cc",
-    "session_data_type_controller_unittest.cc",
     "session_store_unittest.cc",
     "session_sync_bridge_unittest.cc",
     "sessions_global_id_mapper_unittest.cc",
-    "sessions_sync_manager_unittest.cc",
     "synced_session_tracker_unittest.cc",
     "synced_session_unittest.cc",
     "tab_node_pool_unittest.cc",

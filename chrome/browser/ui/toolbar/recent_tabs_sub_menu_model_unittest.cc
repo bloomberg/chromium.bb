@@ -40,7 +40,6 @@
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync_sessions/session_sync_service.h"
-#include "components/sync_sessions/sessions_sync_manager.h"
 #include "components/sync_sessions/synced_session.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"

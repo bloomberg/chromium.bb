@@ -140,11 +140,10 @@ base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {
 }
 
 syncer::DataTypeController::TypeVector
-WebViewSyncClient::CreateDataTypeControllers(
-    syncer::LocalDeviceInfoProvider* local_device_info_provider) {
+WebViewSyncClient::CreateDataTypeControllers() {
   // The iOS port does not have any platform-specific datatypes.
   return component_factory_->CreateCommonDataTypeControllers(
-      GetDisabledTypes(), local_device_info_provider);
+      GetDisabledTypes());
 }
 
 BookmarkUndoService* WebViewSyncClient::GetBookmarkUndoServiceIfExists() {

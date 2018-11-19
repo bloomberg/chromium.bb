@@ -63,11 +63,8 @@ class SyncApiComponentFactory {
   // Creates and returns enabled datatypes and their controllers.
   // |disabled_types| allows callers to prevent certain types from being
   // created (e.g. to honor command-line flags).
-  // TODO(crbug.com/895455): Remove |local_device_info_provider| once the
-  // migration to USS is completed.
   virtual DataTypeController::TypeVector CreateCommonDataTypeControllers(
-      ModelTypeSet disabled_types,
-      LocalDeviceInfoProvider* local_device_info_provider) = 0;
+      ModelTypeSet disabled_types) = 0;
 
   virtual std::unique_ptr<DataTypeManager> CreateDataTypeManager(
       ModelTypeSet initial_types,

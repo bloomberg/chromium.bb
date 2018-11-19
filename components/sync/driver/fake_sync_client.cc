@@ -71,11 +71,10 @@ base::Closure FakeSyncClient::GetPasswordStateChangedCallback() {
   return base::DoNothing();
 }
 
-DataTypeController::TypeVector FakeSyncClient::CreateDataTypeControllers(
-    LocalDeviceInfoProvider* local_device_info_provider) {
+DataTypeController::TypeVector FakeSyncClient::CreateDataTypeControllers() {
   DCHECK(factory_);
   return factory_->CreateCommonDataTypeControllers(
-      /*disabled_types=*/ModelTypeSet(), local_device_info_provider);
+      /*disabled_types=*/ModelTypeSet());
 }
 
 autofill::PersonalDataManager* FakeSyncClient::GetPersonalDataManager() {

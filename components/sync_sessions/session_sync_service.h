@@ -19,14 +19,13 @@
 namespace syncer {
 class GlobalIdMapper;
 class ModelTypeControllerDelegate;
-class SyncableService;
 }  // namespace syncer
 
 namespace sync_sessions {
 
-class AbstractSessionsSyncManager;
 class FaviconCache;
 class OpenTabsUIDelegate;
+class SessionSyncBridge;
 class SyncSessionsClient;
 
 // KeyedService responsible session sync (aka tab sync), including favicon sync.
@@ -53,9 +52,7 @@ class SessionSyncService : public KeyedService {
   // Schedules garbage collection of foreign sessions.
   void ScheduleGarbageCollection();
 
-  // For ProfileSyncService to initialize the controller for SESSIONS. Exactly
-  // one of the two below will return non-null (depending on a feature toggle).
-  syncer::SyncableService* GetSyncableService();
+  // For ProfileSyncService to initialize the controller for SESSIONS.
   base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate();
 
   // For ProfileSyncService to initialize the controller for FAVICON_IMAGES and
@@ -80,9 +77,7 @@ class SessionSyncService : public KeyedService {
 
   bool proxy_tabs_running_ = false;
 
-  // Locally owned SyncableService or ModelTypeSyncBridge implementations.
-  std::unique_ptr<sync_sessions::AbstractSessionsSyncManager>
-      sessions_sync_manager_;
+  std::unique_ptr<SessionSyncBridge> bridge_;
 
   base::CallbackList<void()> foreign_sessions_changed_callback_list_;
 
