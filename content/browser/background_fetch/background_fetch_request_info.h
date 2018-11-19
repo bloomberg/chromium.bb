@@ -68,6 +68,12 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
     return *fetch_request_;
   }
 
+  // Returns the Fetch API Request Ptr object that details the developer's
+  // request.
+  const blink::mojom::FetchAPIRequestPtr& fetch_request_ptr() const {
+    return fetch_request_;
+  }
+
   // Returns the response code for the download. Available for both successful
   // and failed requests.
   int GetResponseCode() const;

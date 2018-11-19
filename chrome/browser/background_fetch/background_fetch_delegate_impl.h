@@ -63,7 +63,8 @@ class BackgroundFetchDelegateImpl
                    const std::string& method,
                    const GURL& url,
                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
-                   const net::HttpRequestHeaders& headers) override;
+                   const net::HttpRequestHeaders& headers,
+                   bool has_request_body) override;
   void Abort(const std::string& job_unique_id) override;
   void MarkJobComplete(const std::string& job_unique_id) override;
   void UpdateUI(const std::string& job_unique_id,
@@ -118,6 +119,10 @@ class BackgroundFetchDelegateImpl
   // GUIDs.
   std::set<std::string> TakeOutstandingGuids();
 
+  // Gets the upload data, if any, associated with the |download_guid|.
+  void GetUploadData(const std::string& download_guid,
+                     download::GetUploadDataCallback callback);
+
   base::WeakPtr<BackgroundFetchDelegateImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -147,10 +152,15 @@ class BackgroundFetchDelegateImpl
     void UpdateOfflineItem();
     void MarkJobAsStarted();
 
-    // Set of DownloadService GUIDs that are currently downloading. They are
-    // added by DownloadUrl and are removed when the download completes, fails
-    // or is cancelled.
-    base::flat_set<std::string> current_download_guids;
+    enum class UploadData {
+      kAbsent,
+      kIncluded,
+    };
+
+    // Set of DownloadService GUIDs that are currently processed. They are
+    // added by DownloadUrl and are removed when the fetch completes, fails,
+    // or is cancelled. The GUID maps to whether the fetch has upload data.
+    std::map<std::string, UploadData> current_fetch_guids;
 
     offline_items_collection::OfflineItem offline_item;
     State job_state;
@@ -168,7 +178,8 @@ class BackgroundFetchDelegateImpl
 
   // Starts a download according to |params| belonging to |job_unique_id|.
   void StartDownload(const std::string& job_unique_id,
-                     const download::DownloadParams& params);
+                     const download::DownloadParams& params,
+                     bool has_request_body);
 
   // Updates the OfflineItem that controls the contents of download
   // notifications and notifies any OfflineContentProvider::Observer that was
