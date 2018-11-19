@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 
-#include "base/metrics/user_metrics.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
@@ -30,8 +29,7 @@ NSString* const PasswordDoneButtonAccessibilityIdentifier =
 
 @interface ManualFillPasswordCoordinator ()<
     PasswordListDelegate,
-    UIViewControllerTransitioningDelegate,
-    UIPopoverPresentationControllerDelegate>
+    UIViewControllerTransitioningDelegate>
 
 // Fetches and filters the passwords for the view controller.
 @property(nonatomic, strong) ManualFillPasswordMediator* passwordMediator;
@@ -44,11 +42,6 @@ NSString* const PasswordDoneButtonAccessibilityIdentifier =
 // passwords. Owned by the view controllers hierarchy.
 @property(nonatomic, weak) PasswordViewController* allPasswordsViewController;
 
-// The object in charge of interacting with the web view. Used to fill the data
-// in the forms.
-@property(nonatomic, strong)
-    ManualFillInjectionHandler* manualFillInjectionHandler;
-
 // Button presenting this coordinator in a popover. Used for continuation after
 // dismissing any presented view controller. iPad only.
 @property(nonatomic, weak) UIButton* presentingButton;
@@ -57,10 +50,10 @@ NSString* const PasswordDoneButtonAccessibilityIdentifier =
 
 @implementation ManualFillPasswordCoordinator
 
-@synthesize allPasswordsViewController = _allPasswordsViewController;
-@synthesize manualFillInjectionHandler = _manualFillInjectionHandler;
-@synthesize passwordMediator = _passwordMediator;
-@synthesize passwordViewController = _passwordViewController;
+// Property tagged dynamic because it overrides super class delegate with and
+// extension of the super delegate type (i.e. PasswordCoordinatorDelegate
+// extends FallbackCoordinatorDelegate)
+@dynamic delegate;
 
 - (instancetype)
 initWithBaseViewController:(UIViewController*)viewController
@@ -68,12 +61,12 @@ initWithBaseViewController:(UIViewController*)viewController
               webStateList:(WebStateList*)webStateList
           injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
   self = [super initWithBaseViewController:viewController
-                              browserState:browserState];
+                              browserState:browserState
+                          injectionHandler:injectionHandler];
   if (self) {
     _passwordViewController =
         [[PasswordViewController alloc] initWithSearchController:nil];
     _passwordViewController.contentInsetsAlwaysEqualToSafeArea = YES;
-    _manualFillInjectionHandler = injectionHandler;
 
     auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState, ServiceAccessType::EXPLICIT_ACCESS);
@@ -82,47 +75,20 @@ initWithBaseViewController:(UIViewController*)viewController
                                                    passwordStore:passwordStore];
     _passwordMediator.consumer = _passwordViewController;
     _passwordMediator.navigationDelegate = self;
-    _passwordMediator.contentDelegate = _manualFillInjectionHandler;
+    _passwordMediator.contentDelegate = injectionHandler;
   }
   return self;
 }
 
 - (void)stop {
-  if (IsIPadIdiom() && self.passwordViewController.presentingViewController) {
-    [self.passwordViewController dismissViewControllerAnimated:true
-                                                    completion:nil];
-  } else {
-    [self.passwordViewController.view removeFromSuperview];
-  }
+  [super stop];
   [self.allPasswordsViewController dismissViewControllerAnimated:YES
                                                       completion:nil];
 }
 
-- (UIViewController*)viewController {
-  return self.passwordViewController;
-}
-
 - (void)presentFromButton:(UIButton*)button {
+  [super presentFromButton:button];
   self.presentingButton = button;
-  self.passwordViewController.modalPresentationStyle =
-      UIModalPresentationPopover;
-
-  // The |button.window.rootViewController| is used in order to present above
-  // the keyboard. This way the popover will be dismissed on keyboard
-  // interaction and it won't be covered when the keyboard is near the top of
-  // the screen.
-  [button.window.rootViewController
-      presentViewController:self.passwordViewController
-                   animated:YES
-                 completion:nil];
-
-  UIPopoverPresentationController* popoverPresentationController =
-      self.passwordViewController.popoverPresentationController;
-  popoverPresentationController.sourceView = button;
-  popoverPresentationController.sourceRect = button.bounds;
-  popoverPresentationController.permittedArrowDirections =
-      UIPopoverArrowDirectionUp | UIMenuControllerArrowDown;
-  popoverPresentationController.delegate = self;
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate
@@ -169,6 +135,12 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   animator.presenting = NO;
   animator.direction = TableAnimatorDirectionFromLeading;
   return animator;
+}
+
+#pragma mark - FallbackCoordinator
+
+- (UIViewController*)viewController {
+  return self.passwordViewController;
 }
 
 #pragma mark - PasswordListDelegate
@@ -226,24 +198,10 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 }
 
 - (void)openPasswordSettings {
-  // On iPad, dismiss the popover before the settings are presented.
-  if (IsIPadIdiom() && self.passwordViewController.presentingViewController) {
-    [self.passwordViewController
-        dismissViewControllerAnimated:true
-                           completion:^{
-                             [self openPasswordSettings];
-                           }];
-    return;
-  }
-  [self.delegate openPasswordSettings];
-}
-
-#pragma mark - UIPopoverPresentationControllerDelegate
-
-- (void)popoverPresentationControllerDidDismissPopover:
-    (UIPopoverPresentationController*)popoverPresentationController {
-  base::RecordAction(base::UserMetricsAction("ManualFallback_ClosePopover"));
-  [self.delegate resetAccessoryView];
+  __weak id<PasswordCoordinatorDelegate> delegate = self.delegate;
+  [self dismissIfNecessaryThenDoCompletion:^{
+    [delegate openPasswordSettings];
+  }];
 }
 
 @end

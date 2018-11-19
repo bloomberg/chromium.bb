@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/fallback_coordinator.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
-
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -77,8 +77,8 @@ initWithBaseViewController:(UIViewController*)viewController
 - (void)stop {
   [super stop];
   if (![self dismissIfNecessaryThenDoCompletion:nil]) {
-    // TODO(crbug.com/845472): merge with password coordinator and explain why
-    // we remove from super view when we can't dismiss.
+    // dismissIfNecessaryThenDoCompletion dismisses, via the UIKit API, only
+    // for popovers (iPads). For iPhones we need to remove the view.
     [self.viewController.view removeFromSuperview];
   }
 }
@@ -87,6 +87,7 @@ initWithBaseViewController:(UIViewController*)viewController
 
 - (void)popoverPresentationControllerDidDismissPopover:
     (UIPopoverPresentationController*)popoverPresentationController {
+  base::RecordAction(base::UserMetricsAction("ManualFallback_ClosePopover"));
   [self.delegate resetAccessoryView];
 }
 
