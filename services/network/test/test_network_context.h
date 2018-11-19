@@ -89,7 +89,8 @@ class TestNetworkContext : public mojom::NetworkContext {
   void SetAcceptLanguage(const std::string& new_accept_language) override {}
   void SetEnableReferrers(bool enable_referrers) override {}
 #if defined(OS_CHROMEOS)
-  void UpdateTrustAnchors(const net::CertificateList& trust_anchors) override {}
+  void UpdateAdditionalCertificates(
+      mojom::AdditionalCertificatesPtr additional_certificates) override {}
 #endif
 #if BUILDFLAG(IS_CT_SUPPORTED)
   void SetCTPolicy(

@@ -15,6 +15,7 @@ include_rules = [
   "+remoting/host/it2me",  # For CRD host in remote command
   "+services/device/public",
   "+services/metrics/public",
+  "+services/network",
   "+services/tracing/public",
   "+services/viz/public/interfaces",
   # Chromeos should not use ozone directly, it must go through mojo as ozone

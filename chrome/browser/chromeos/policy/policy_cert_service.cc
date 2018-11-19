@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#include "chrome/browser/chromeos/policy/temp_certs_cache_nss.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/x509_certificate.h"
 #include "services/network/cert_verifier_with_trust_anchors.h"
+#include "services/network/nss_temp_certs_cache_chromeos.h"
 #include "services/network/public/cpp/features.h"
 
 namespace policy {
@@ -110,7 +110,9 @@ void PolicyCertService::OnPolicyProvidedCertsChangedInternal(
   // expecting that the operation of creating in-memory NSS certs is cheap in
   // that case.
   temp_policy_provided_certs_ =
-      std::make_unique<TempCertsCacheNSS>(all_server_and_authority_certs);
+      std::make_unique<network::NSSTempCertsCacheChromeOS>(
+          all_server_and_authority_certs);
+  all_server_and_authority_certs_ = all_server_and_authority_certs;
 
   // Do not use certificates installed via ONC policy if the current session has
   // multiple profiles. This is important to make sure that any possibly tainted
@@ -119,17 +121,18 @@ void PolicyCertService::OnPolicyProvidedCertsChangedInternal(
   if (!trust_anchors.empty() && user_manager_->GetLoggedInUsers().size() > 1u) {
     LOG(ERROR) << "Ignoring ONC-pushed certificates update because multiple "
                << "users are logged in.";
-    return;
+    trust_anchors_.clear();
+  } else {
+    trust_anchors_ = trust_anchors;
   }
-
-  trust_anchors_ = trust_anchors;
 
   if (!notify)
     return;
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     ProfileNetworkContextServiceFactory::GetForContext(profile_)
-        ->UpdateTrustAnchors(trust_anchors_);
+        ->UpdateAdditionalCertificates(all_server_and_authority_certs_,
+                                       trust_anchors_);
     return;
   }
 

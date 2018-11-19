@@ -104,6 +104,7 @@
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "services/network/cert_verifier_with_trust_anchors.h"
 #include "services/network/cert_verify_proc_chromeos.h"
+#include "services/network/nss_temp_certs_cache_chromeos.h"
 #endif
 
 #if !defined(OS_IOS)
@@ -993,9 +994,17 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
 }
 
 #if defined(OS_CHROMEOS)
-void NetworkContext::UpdateTrustAnchors(
-    const net::CertificateList& trust_anchors) {
-  cert_verifier_with_trust_anchors_->SetTrustAnchors(trust_anchors);
+void NetworkContext::UpdateAdditionalCertificates(
+    mojom::AdditionalCertificatesPtr additional_certificates) {
+  if (!additional_certificates) {
+    nss_temp_certs_cache_.reset();
+    cert_verifier_with_trust_anchors_->SetTrustAnchors(net::CertificateList());
+    return;
+  }
+  nss_temp_certs_cache_ = std::make_unique<network::NSSTempCertsCacheChromeOS>(
+      additional_certificates->all_certificates);
+  cert_verifier_with_trust_anchors_->SetTrustAnchors(
+      additional_certificates->trust_anchors);
 }
 #endif
 
@@ -1980,8 +1989,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
       cert_verifier_with_trust_anchors_ = new CertVerifierWithTrustAnchors(
           base::Bind(&NetworkContext::TrustAnchorUsed, base::Unretained(this)));
-      cert_verifier_with_trust_anchors_->SetTrustAnchors(
-          params_->initial_trust_anchors);
+      UpdateAdditionalCertificates(
+          std::move(params_->initial_additional_certificates));
       cert_verifier_with_trust_anchors_->InitializeOnIOThread(verify_proc);
       cert_verifier = base::WrapUnique(cert_verifier_with_trust_anchors_);
     }

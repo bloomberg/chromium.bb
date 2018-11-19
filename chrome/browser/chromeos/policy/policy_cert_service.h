@@ -30,10 +30,10 @@ typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 
 namespace network {
 class CertVerifierWithTrustAnchors;
+class NSSTempCertsCacheChromeOS;
 }
 
 namespace policy {
-class TempCertsCacheNSS;
 
 // This service is the counterpart of PolicyCertVerifier on the UI thread. It's
 // responsible for pushing the current list of trust anchors to the CertVerifier
@@ -66,6 +66,9 @@ class PolicyCertService : public KeyedService,
 
   bool has_policy_certificates() const { return !trust_anchors_.empty(); }
 
+  const net::CertificateList& all_server_and_authority_certs() const {
+    return all_server_and_authority_certs_;
+  }
   const net::CertificateList& trust_anchors() const { return trust_anchors_; }
 
   // UserNetworkConfigurationUpdater::PolicyProvidedCertsObserver:
@@ -97,12 +100,14 @@ class PolicyCertService : public KeyedService,
   std::string user_id_;
   UserNetworkConfigurationUpdater* net_conf_updater_;
   user_manager::UserManager* user_manager_;
+  net::CertificateList all_server_and_authority_certs_;
   net::CertificateList trust_anchors_;
 
   // Holds all policy-provided server and authority certificates and makes them
   // available to NSS as temp certificates. This is needed so they can be used
   // as intermediates when NSS verifies a certificate.
-  std::unique_ptr<TempCertsCacheNSS> temp_policy_provided_certs_;
+  std::unique_ptr<network::NSSTempCertsCacheChromeOS>
+      temp_policy_provided_certs_;
 
   // Weak pointers to handle callbacks from PolicyCertVerifier on the IO thread.
   // The factory and the created WeakPtrs must only be used on the UI thread.
