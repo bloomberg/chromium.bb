@@ -8,7 +8,7 @@
 #include "base/hash.h"
 #include "base/json/string_escape.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "base/values.h"
 #include "services/tracing/public/cpp/perfetto/heap_scattered_stream_delegate.h"
 #include "third_party/perfetto/include/perfetto/protozero/message_handle.h"

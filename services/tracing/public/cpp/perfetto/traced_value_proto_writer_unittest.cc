@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/traced_value.h"
 #include "services/tracing/public/cpp/perfetto/heap_scattered_stream_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pb.h"
