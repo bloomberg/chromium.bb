@@ -102,25 +102,25 @@ void NnPredictTest::runNnPredictTest(const NN_CONFIG *const shape) {
 
   for (int iter = 0; iter < 10000 && !HasFatalFailure(); ++iter) {
     for (int node = 0; node < shape->num_inputs; node++) {
-      inputs[node] = ((float)rng_.Rand31() - (1 << 30)) / (1 << 31);
+      inputs[node] = ((float)rng_.Rand31() - (1 << 30)) / (1u << 31);
     }
     for (int layer = 0; layer < shape->num_hidden_layers; layer++) {
       for (int node = 0; node < NN_MAX_NODES_PER_LAYER; node++) {
-        bias[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1 << 31);
+        bias[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1u << 31);
       }
       for (int node = 0; node < NN_MAX_NODES_PER_LAYER * NN_MAX_NODES_PER_LAYER;
            node++) {
-        weights[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1 << 31);
+        weights[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1u << 31);
       }
     }
     // Now the outputs:
     int layer = shape->num_hidden_layers;
     for (int node = 0; node < NN_MAX_NODES_PER_LAYER; node++) {
-      bias[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1 << 31);
+      bias[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1u << 31);
     }
     for (int node = 0; node < NN_MAX_NODES_PER_LAYER * NN_MAX_NODES_PER_LAYER;
          node++) {
-      weights[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1 << 31);
+      weights[layer][node] = ((float)rng_.Rand31() - (1 << 30)) / (1u << 31);
     }
 
     av1_nn_predict_c(inputs, &nn_config, outputs_ref);
