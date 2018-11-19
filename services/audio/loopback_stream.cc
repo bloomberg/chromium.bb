@@ -376,29 +376,35 @@ void LoopbackStream::FlowNetwork::GenerateMoreAudio() {
   // or more intervals.
   const int frames_per_buffer = mix_bus_->frames();
   frames_elapsed_ += frames_per_buffer;
-  const base::TimeTicks now = clock_->NowTicks();
-  const int64_t required_frames_elapsed =
-      (now - first_generate_time_).InMicroseconds() *
-      output_params_.sample_rate() / base::Time::kMicrosecondsPerSecond;
-  if (frames_elapsed_ < required_frames_elapsed) {
-    TRACE_EVENT_INSTANT1("audio", "GenerateMoreAudio Is Behind",
-                         TRACE_EVENT_SCOPE_THREAD, "frames_behind",
-                         (required_frames_elapsed - frames_elapsed_));
-    // Audio generation has fallen behind. Skip-ahead the frame counter so that
-    // audio generation will resume for the next buffer after the one that
-    // should be generating right now. http://crbug.com/847487
-    const int64_t required_buffers_elapsed =
-        ((required_frames_elapsed + frames_per_buffer - 1) / frames_per_buffer);
-    frames_elapsed_ = (required_buffers_elapsed + 1) * frames_per_buffer;
-  }
   next_generate_time_ =
       first_generate_time_ +
       base::TimeDelta::FromMicroseconds(frames_elapsed_ *
                                         base::Time::kMicrosecondsPerSecond /
                                         output_params_.sample_rate());
+  const base::TimeTicks now = clock_->NowTicks();
+  if (next_generate_time_ < now) {
+    TRACE_EVENT_INSTANT1("audio", "GenerateMoreAudio Is Behind",
+                         TRACE_EVENT_SCOPE_THREAD, u8"µsec_behind",
+                         (now - next_generate_time_).InMicroseconds());
+    // Audio generation has fallen behind. Skip-ahead the frame counter so that
+    // audio generation will resume for the next buffer after the one that
+    // should be generating right now. http://crbug.com/847487
+    const int64_t target_frame_count =
+        (now - first_generate_time_).InMicroseconds() *
+        output_params_.sample_rate() / base::Time::kMicrosecondsPerSecond;
+    frames_elapsed_ =
+        (target_frame_count / frames_per_buffer + 1) * frames_per_buffer;
+    next_generate_time_ =
+        first_generate_time_ +
+        base::TimeDelta::FromMicroseconds(frames_elapsed_ *
+                                          base::Time::kMicrosecondsPerSecond /
+                                          output_params_.sample_rate());
+  }
 
-  // Use the OneShotTimer to call this method again at the desired time.
-  DCHECK_GE(next_generate_time_ - now, base::TimeDelta());
+  // Note: It's acceptable for |next_generate_time_| to be slightly before |now|
+  // due to integer truncation behaviors in the math above. The timer task
+  // started below will just run immediately and there will be no harmful
+  // effects in the next GenerateMoreAudio() call. http://crbug.com/847487
   timer_->Start(FROM_HERE, next_generate_time_ - now, this,
                 &FlowNetwork::GenerateMoreAudio);
 }
