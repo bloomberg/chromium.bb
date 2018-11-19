@@ -664,7 +664,7 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
 
     for (const auto& display : screen->GetAllDisplays()) {
       const gfx::Rect& bounds = display.bounds();
-      const gfx::Insets& insets = display.GetWorkAreaInsets();
+      const gfx::Insets& insets = GetAdjustedInsets(display);
 
       double device_scale_factor = display.device_scale_factor();
 
