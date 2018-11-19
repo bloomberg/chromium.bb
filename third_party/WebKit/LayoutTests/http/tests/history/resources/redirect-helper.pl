@@ -3,12 +3,12 @@
 
 $REDIRECT_CODE = $ENV{'QUERY_STRING'} || '301';
 
-$STATUS_TEXTS = {
+%STATUS_TEXTS = (
   '301' => 'Moved Permanently',
   '302' => 'Moved Temporarily',
   '303' => 'See Other',
   '307' => 'Moved Temporarily'
-};
+);
 
 print "Status: $REDIRECT_CODE $STATUS_TEXTS{$REDIRECT_CODE}\r\n";
 print "Location: redirect-target.html#2\r\n";
