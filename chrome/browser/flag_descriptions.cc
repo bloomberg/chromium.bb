@@ -3346,11 +3346,6 @@ const char kEnableEncryptionMigrationDescription[] =
     "If enabled and the device supports ARC, the user will be asked to update "
     "the encryption of user data when the user signs in.";
 
-const char kEnableFloatingVirtualKeyboardName[] =
-    "Enable floating virtual keyboard";
-const char kEnableFloatingVirtualKeyboardDescription[] =
-    "If enabled, the keyboard will use floating behavior by default.";
-
 const char kEnableFullscreenHandwritingVirtualKeyboardName[] =
     "Enable full screen handwriting virtual keyboard";
 const char kEnableFullscreenHandwritingVirtualKeyboardDescription[] =
@@ -3421,11 +3416,6 @@ const char kEnableUnifiedMultiDeviceSetupName[] =
     "Enable unified MultiDevice setup";
 const char kEnableUnifiedMultiDeviceSetupDescription[] =
     "Enable the device to setup all MultiDevice services in a single workflow.";
-
-const char kEnableVirtualKeyboardMdUiName[] =
-    "Enable Material Design virtual keyboard";
-const char kEnableVirtualKeyboardMdUiDescription[] =
-    "If enabled, loads the Material Design UI for the virtual keyboard.";
 
 const char kEnableVirtualKeyboardUkmName[] = "Enable UKM for virtual keyboard";
 const char kEnableVirtualKeyboardUkmDescription[] =

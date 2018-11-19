@@ -354,36 +354,16 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   results->SetBoolean("hotrodmode", g_hotrod_keyboard_enabled);
   std::unique_ptr<base::ListValue> features(new base::ListValue());
 
-  // 'floatingvirtualkeyboard' is the name of the feature flag for the legacy
-  // floating keyboard that was prototyped quite some time ago. It is currently
-  // referenced by the extension even though we never enable this value and so
-  // re-using that value is not feasible due to the semi-tandem nature of the
-  // keyboard extension. The 'floatingkeybard' flag represents the new floating
-  // keyboard and should be used for new extension-side feature work for the
-  // floating keyboard.
-  // TODO(blakeo): once the old flag's usages have been removed from the
-  // extension and all pushes have settled, remove this overly verbose comment.
-  features->AppendString(GenerateFeatureFlag(
-      "floatingkeyboard",
-      base::FeatureList::IsEnabled(features::kEnableFloatingVirtualKeyboard)));
+  features->AppendString(GenerateFeatureFlag("floatingkeyboard", true));
   features->AppendString(GenerateFeatureFlag(
       "gesturetyping", !base::CommandLine::ForCurrentProcess()->HasSwitch(
                            keyboard::switches::kDisableGestureTyping)));
-  // TODO(shend): Gesture editing is not implemented in the MD UI.
-  // https://crbug.com/890134.
-  bool enable_gesture_editing =
-      !base::FeatureList::IsEnabled(features::kEnableVirtualKeyboardMdUi) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          keyboard::switches::kDisableGestureEditing);
-  features->AppendString(
-      GenerateFeatureFlag("gestureediting", enable_gesture_editing));
+  // TODO(https://crbug.com/890134): Implement gesture editing.
+  features->AppendString(GenerateFeatureFlag("gestureediting", false));
   features->AppendString(GenerateFeatureFlag(
       "fullscreenhandwriting",
       base::FeatureList::IsEnabled(
           features::kEnableFullscreenHandwritingVirtualKeyboard)));
-  features->AppendString(GenerateFeatureFlag(
-      "virtualkeyboardmdui",
-      base::FeatureList::IsEnabled(features::kEnableVirtualKeyboardMdUi)));
   features->AppendString(GenerateFeatureFlag(
       "imeservice", base::FeatureList::IsEnabled(
                         chromeos::features::kImeServiceConnectable)));
