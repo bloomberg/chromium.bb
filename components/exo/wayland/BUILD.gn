@@ -63,6 +63,8 @@ source_set("wayland") {
     "zcr_stylus_tools.h",
     "zwp_input_timestamps_manager.cc",
     "zwp_input_timestamps_manager.h",
+    "zwp_pointer_gestures.cc",
+    "zwp_pointer_gestures.h",
     "zwp_text_input_manager.cc",
     "zwp_text_input_manager.h",
     "zxdg_shell.cc",
