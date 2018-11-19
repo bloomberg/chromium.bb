@@ -49,6 +49,7 @@ namespace {
 // this array may either refer to features defined in the header of this file or
 // in other locations in the code base (e.g. chrome/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
+    &autofill::features::kAutofillKeyboardAccessory,
     &autofill::features::kAutofillManualFallbackAndroid,
     &autofill::features::kAutofillRefreshStyleAndroid,
     &autofill::features::kAutofillEnableCompanyName,

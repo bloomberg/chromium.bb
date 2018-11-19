@@ -19,7 +19,6 @@ struct Feature;
 
 namespace autofill {
 
-extern const base::Feature kAutofillKeyboardAccessory;
 extern const char kAutofillKeyboardAccessoryAnimationDurationKey[];
 extern const char kAutofillKeyboardAccessoryLimitLabelWidthKey[];
 extern const char kAutofillKeyboardAccessoryHintKey[];

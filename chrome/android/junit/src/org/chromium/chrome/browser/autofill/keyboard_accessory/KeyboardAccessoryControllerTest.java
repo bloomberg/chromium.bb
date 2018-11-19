@@ -32,6 +32,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
 import org.chromium.chrome.browser.modelutil.ListObservable;
@@ -39,6 +40,8 @@ import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyObservable.PropertyObserver;
 import org.chromium.chrome.test.util.browser.modelutil.FakeViewProvider;
+
+import java.util.HashMap;
 
 /**
  * Controller tests for the keyboard accessory component.
@@ -56,7 +59,7 @@ public class KeyboardAccessoryControllerTest {
     @Mock
     private KeyboardAccessoryCoordinator.VisibilityDelegate mMockVisibilityDelegate;
     @Mock
-    private KeyboardAccessoryView mMockView;
+    private KeyboardAccessoryModernView mMockView;
 
     private final KeyboardAccessoryData.Tab mTestTab =
             new KeyboardAccessoryData.Tab(null, null, 0, 0, null);
@@ -69,6 +72,9 @@ public class KeyboardAccessoryControllerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
+        HashMap<String, Boolean> features = new HashMap<>();
+        features.put(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY, true);
+        ChromeFeatureList.setTestFeatures(features);
 
         mCoordinator = new KeyboardAccessoryCoordinator(
                 mMockVisibilityDelegate, new FakeViewProvider<>(mMockView));

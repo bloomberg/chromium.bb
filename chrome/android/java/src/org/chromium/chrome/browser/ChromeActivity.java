@@ -163,7 +163,6 @@ import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
-import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -1434,16 +1433,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
         super.finishNativeInitialization();
 
-        ViewGroup coordinator = findViewById(R.id.coordinator);
-        ViewStub accessoryBarStub = findViewById(R.id.keyboard_accessory_stub);
-        ViewStub accessorySheetStub = findViewById(R.id.keyboard_accessory_sheet_stub);
-        if (accessoryBarStub != null && accessorySheetStub != null) {
-            mManualFillingController.initialize(getWindowAndroid(),
-                    new DeferredViewStubInflationProvider<>(accessoryBarStub),
-                    new DeferredViewStubInflationProvider<>(accessorySheetStub));
-            getCompositorViewHolder().setKeyboardExtensionView(
-                    mManualFillingController.getKeyboardExtensionSizeManager());
-        }
+        mManualFillingController.initialize(getWindowAndroid(),
+                findViewById(R.id.keyboard_accessory_stub),
+                findViewById(R.id.keyboard_accessory_sheet_stub));
+        getCompositorViewHolder().setKeyboardExtensionView(
+                mManualFillingController.getKeyboardExtensionSizeManager());
 
         // Create after native initialization so subclasses that override this method have a chance
         // to setup.
@@ -1451,6 +1445,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         if (supportsContextualSuggestionsBottomSheet()
                 && FeatureUtilities.areContextualSuggestionsEnabled(this)) {
+            ViewGroup coordinator = findViewById(R.id.coordinator);
             getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
             mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
             mBottomSheet.init(coordinator, this);
