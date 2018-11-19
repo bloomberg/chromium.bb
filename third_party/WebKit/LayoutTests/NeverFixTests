@@ -2075,3 +2075,43 @@ virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-o
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-stop-manual.https.html [ WontFix ]
 external/wpt/pointerevents/pointerevent_pointermove-manual.html [ WontFix ]
 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ WontFix ]
+
+# ====== Tests incompatible with the default Site Isolation from here ======
+# See also third_party/WebKit/LayoutTests/virtual/not-site-per-process/README.md
+#
+# When modifying the list of files that behave differently with and without
+# OOPIFs, please consider modifying all the locations below:
+# - LayoutTests/NeverFixTests (the section here)
+# - LayoutTests/VirtualTestSuites (virtual/not-site-per-process suite)
+# - LayoutTests/virtual/not-site-per-process/README.md
+
+# Tests permanently disabled with Site Isolation (e.g. tests that use
+# document.domain are are therefore inherently incompatible with isolation of
+# WPT origins):
+Bug(none) external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction [ WontFix ]
+Bug(none) external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ WontFix ]
+Bug(none) virtual/mojo-blob-urls/external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ WontFix ]
+Bug(none) external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ WontFix ]
+Bug(none) external/wpt/dom/events/EventListener-incumbent-global-2.sub.html [ WontFix ]
+Bug(none) external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ WontFix ]
+Bug(none) external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html [ WontFix ]
+Bug(none) external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html [ WontFix ]
+Bug(none) external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html [ WontFix ]
+Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ WontFix ]
+Bug(none) external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ WontFix ]
+Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ WontFix ]
+Bug(none) virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ WontFix ]
+Bug(none) external/wpt/wasm/serialization/window-domain-success.sub.html [ WontFix ]
+Bug(none) external/wpt/wasm/serialization/window-similar-but-cross-origin-success.sub.html [ WontFix ]
+
+# Code cache isolation tests only make sense if either
+# 1) site isolation is disabled or
+#    (covered by virtual/not-site-per-process/.../isolated-code-cache)
+# 2) site isolation is enabled together with --enable-features=IsolatedCodeCache
+#    (covered by virtual/site-isolated-code-cache/.../isolated-code-cache)
+# but don't make sense if
+# 3) site isolation is enabled without also enabling
+#    IsolatedCodeCache (tests disabled by the test expectation below).
+Bug(none) http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix ]
+
+# ====== Tests incompatible with the default Site Isolation until here ======

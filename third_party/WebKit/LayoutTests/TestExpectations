@@ -13,7 +13,6 @@ Bug(intentional) external/wpt/infrastructure/expected-fail/timeout.html [ Timeou
 
 crbug.com/807686 crbug.com/24182 jquery/manipulation.html [ Timeout Pass ]
 
-
 # See crbug.com/891427. These tests either fail or become flaky on one or more
 # platforms when --enable-display-compositor-pixel-dump is turned on. They need
 # triage. Note that these overlap with several existing entries in this
@@ -98,6 +97,71 @@ crbug.com/887140 hdr/color-jpeg-with-color-profile.html [ Failure ]
 crbug.com/887140 hdr/color-profile-video.html [ Failure ]
 crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
 
+
+# ====== Site Isolation failures from here ======
+# See also third_party/WebKit/LayoutTests/virtual/not-site-per-process/README.md
+#
+# When modifying the list of files that behave differently with and without
+# OOPIFs, please consider modifying all the locations below:
+# - LayoutTests/TestExpectations (the section here)
+# - LayoutTests/VirtualTestSuites (virtual/not-site-per-process suite)
+# - LayoutTests/virtual/not-site-per-process/README.md
+
+# Tests temporarily disabled with Site Isolation - test issues or test harness
+# issues (e.g. missing OOPIF support in the test harness).
+# TODO(lukasza, alexmos): Burn down this list.
+crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
+crbug.com/585188 http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
+crbug.com/585188 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-all.html [ Failure ]
+crbug.com/585188 virtual/outofblink-cors/http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html [ Failure ]
+crbug.com/606594 http/tests/local/serviceworker/fetch-request-body-file.html [ Skip ]
+crbug.com/645641 external/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
+crbug.com/650348 http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
+crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash ]
+crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+crbug.com/771003 virtual/outofblink-cors-ns/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+crbug.com/771003 virtual/outofblink-cors/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
+
+# Tests temporarily disabled with Site Isolation - known differences in product
+# behavior (either accepted for the long-term, or for the short-term):
+# TODO(lukasza, alexmos): Burn down this list.
+# Text auto-sizing:
+crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure Crash ]
+crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure Crash ]
+# Console message differences (e.g. full URI vs origin-only):
+crbug.com/619662 http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
+crbug.com/619662 virtual/outofblink-cors-ns/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
+crbug.com/619662 virtual/outofblink-cors/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
+crbug.com/619662 virtual/stable/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
+crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
+crbug.com/669083 virtual/outofblink-cors-ns/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
+crbug.com/669083 virtual/outofblink-cors/http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
+crbug.com/886588 external/wpt/dom/events/EventListener-addEventListener.sub.window.html [ Failure ]
+
+# Tests temporarily disabled with Site Isolation - uninvestigated bugs:
+# TODO(lukasza, alexmos): Burn down this list.
+crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
+crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-blockable.js [ Timeout ]
+crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-none.js [ Timeout ]
+crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js [ Timeout ]
+crbug.com/678482 http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
+crbug.com/678491 http/tests/misc/webtiming-no-origin.html [ Crash Pass ]
+crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
+crbug.com/769508 fast/css/acid2.html [ Failure ]
+crbug.com/778372 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Crash ]
+crbug.com/793127 external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html [ Crash ]
+crbug.com/793127 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
+crbug.com/793127 virtual/outofblink-cors-ns/http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
+crbug.com/793127 virtual/outofblink-cors/http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
+crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
+crbug.com/807675 http/tests/images/image-decode-in-frame.html [ Crash Failure ]
+crbug.com/819800 external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html [ Failure ]
+crbug.com/822372 http/tests/printing/cross-site-frame-scrolled.html [ Crash ]
+crbug.com/822372 http/tests/printing/cross-site-frame.html [ Crash ]
+crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
+crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
+crbug.com/901502 http/tests/devtools/oopif/oopif-storage.js [ Pass Failure ]
+# ====== Site Isolation failures until here ======
 
 # ====== Oilpan-only failures from here ======
 # Most of these actually cause the tests to report success, rather than
@@ -1749,7 +1813,7 @@ crbug.com/840238 http/tests/devtools/elements/shadow/shadow-distribution.js [ Fa
 crbug.com/667560 [ Debug ] http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
 crbug.com/778515 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
 
-crbug.com/667560 [ Win ] http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Timeout ]
+crbug.com/667560 http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Timeout ]
 
 crbug.com/778391 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
 crbug.com/778391 http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Pass Failure ]
@@ -4038,9 +4102,9 @@ crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-st
 crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-idb.any.worker.html [ Failure ]
 crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-notifications-api.any.html [ Failure ]
 crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/serialization-via-notifications-api.any.worker.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Failure ]
+crbug.com/798864 [ Android ] virtual/not-site-per-process/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html [ Failure ]
 crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-serviceworker-failure.https.html [ Failure ]
-crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Failure ]
+crbug.com/798864 [ Android ] virtual/not-site-per-process/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html [ Failure ]
 crbug.com/798864 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-simple-success.html [ Failure ]
 crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism/canblock-dedicatedworker.html [ Failure ]
 crbug.com/798864 [ Android ] external/wpt/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-agent-formalism/canblock-serviceworker.https.html [ Failure ]
@@ -4713,7 +4777,7 @@ crbug.com/838254 virtual/video-surface-layer/media/webkit-media-controls-webkit-
 crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [ Pass Failure ]
 
 # This will break for now
-crbug.com/841933 http/tests/webaudio/autoplay-crossorigin.html [ Skip ]
+crbug.com/841933 virtual/not-site-per-process/http/tests/webaudio/autoplay-crossorigin.html [ Skip ]
 
 # Sheriff 2018-05-22
 crbug.com/845610 [ Win ] http/tests/inspector-protocol/target/target-browser-context.js [ Pass Failure ]
