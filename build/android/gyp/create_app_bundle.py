@@ -172,8 +172,7 @@ def _RewriteLanguageAssetPath(src_path):
   locales#<language>/<locale>.pak, where <language> is the language code
   from the locale.
 
-  Returns a list of paths. The language split should be duplicated at all the
-  returned paths.
+  Returns new path.
   """
   if not src_path.startswith(_LOCALES_SUBDIR) or not src_path.endswith('.pak'):
     return [src_path]
@@ -189,11 +188,16 @@ def _RewriteLanguageAssetPath(src_path):
   else:
     android_language = android_locale
 
-  result_paths = ['assets/locales#lang_%s/%s.pak' % (android_language, locale)]
   if android_language == _FALLBACK_LANGUAGE:
-    result_paths.append('assets/locales/%s.pak' % locale)
+    # Fallback language .pak files must be placed in a different directory
+    # to ensure they are always stored in the base module.
+    result_path = 'assets/fallback-locales/%s.pak' % locale
+  else:
+    # Other language .pak files go into a language-specific asset directory
+    # that bundletool will store in separate split APKs.
+    result_path = 'assets/locales#lang_%s/%s.pak' % (android_language, locale)
 
-  return result_paths
+  return result_path
 
 
 def _SplitModuleForAssetTargeting(src_module_zip, tmp_dir, split_dimensions):
@@ -230,16 +234,15 @@ def _SplitModuleForAssetTargeting(src_module_zip, tmp_dir, split_dimensions):
         src_path = info.filename
         is_compressed = info.compress_type != zipfile.ZIP_STORED
 
-        dst_paths = [src_path]
+        dst_path = src_path
         if src_path in language_files:
-          dst_paths = _RewriteLanguageAssetPath(src_path)
+          dst_path = _RewriteLanguageAssetPath(src_path)
 
-        for dst_path in dst_paths:
-          build_utils.AddToZipHermetic(
-              dst_zip,
-              dst_path,
-              data=src_zip.read(src_path),
-              compress=is_compressed)
+        build_utils.AddToZipHermetic(
+            dst_zip,
+            dst_path,
+            data=src_zip.read(src_path),
+            compress=is_compressed)
 
     return tmp_zip
 

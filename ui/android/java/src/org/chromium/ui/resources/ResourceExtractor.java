@@ -39,6 +39,7 @@ public class ResourceExtractor {
     private static final String V8_SNAPSHOT_DATA_FILENAME = "snapshot_blob.bin";
     private static final String FALLBACK_LOCALE = "en-US";
     private static final String COMPRESSED_LOCALES_DIR = "locales";
+    private static final String COMPRESSED_LOCALES_FALLBACK_DIR = "fallback-locales";
     private static final int BUFFER_SIZE = 16 * 1024;
 
     private class ExtractTask extends AsyncTask<Void> {
@@ -173,6 +174,10 @@ public class ResourceExtractor {
         //
         //   Where <lang> is an Android-specific ISO-639-1 language identifier.
         //
+        // * With the exception of the fallback (English) pak files which are stored
+        //   in the base module under:
+        //       assets/locales-fallback/<locale>.pak
+        //
         //   Moreover, when the bundle uses APK splits, there is no guarantee that the split
         //   corresponding to the current device locale is installed yet, but the one matching
         //   uiLanguage should be there, since the value is determined by loading a resource string
@@ -193,6 +198,10 @@ public class ResourceExtractor {
                            assetManager, COMPRESSED_LOCALES_DIR, activeLocales.get(0) + ".pak")) {
             // This is a regular APK, and all pak files are available.
             localesSrcDir = COMPRESSED_LOCALES_DIR;
+        } else if (assetPathHasFile(assetManager, COMPRESSED_LOCALES_FALLBACK_DIR,
+                           activeLocales.get(0) + ".pak")) {
+            // This is a fallback language pak file.
+            localesSrcDir = COMPRESSED_LOCALES_FALLBACK_DIR;
         } else {
             // This is an app bundle, but the split containing the pak files for the current UI
             // locale is *not* installed yet. This should never happen in theory, and there is
