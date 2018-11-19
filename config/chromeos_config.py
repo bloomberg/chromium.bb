@@ -1770,8 +1770,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'guado', # contact:egemih@
       'guado-accelerator', # contact:perley@ (crbug.com/748635)
       'lasilla-ground', # contact:jemele@
-      'lasilla-sky', # contact:jemele@
-      'macchiato-ground', # contact:jemele@
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
       'whirlwind', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
