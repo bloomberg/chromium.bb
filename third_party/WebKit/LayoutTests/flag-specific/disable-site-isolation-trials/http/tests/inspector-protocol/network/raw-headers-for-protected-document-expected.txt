@@ -4,5 +4,5 @@ Tests that raw response headers are not reported in case of site isolation.
 Set-Cookie: name=value
 
 <script src="http://devtools.oopif.test:8000/inspector-protocol/network/resources/cookie.pl">
-Set-Cookie: undefined
+Set-Cookie: name=value
 

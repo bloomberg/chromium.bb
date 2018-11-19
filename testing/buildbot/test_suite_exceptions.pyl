@@ -839,6 +839,14 @@
       },
     },
   },
+  'not_site_per_process_webkit_layout_tests': {
+    'remove_from': [
+      # chromium.linux
+      # TODO(dpranke): Should we be running this step on Linux Tests (dbg)(1)?
+      'Linux Tests (dbg)(1)',
+      'Linux Tests (dbg)(1)(32)',
+    ],
+  },
   'notification_helper_unittests': {
     'remove_from': [
       # The test uses WinRT, which only exists in Windows 8 or above.
@@ -920,14 +928,6 @@
         },
       },
     },
-  },
-  'site_per_process_webkit_layout_tests': {
-    'remove_from': [
-      # chromium.linux
-      # TODO(dpranke): Should we be running this step on Linux Tests (dbg)(1)?
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-    ],
   },
   'sizes': {
     'remove_from': [

@@ -801,5 +801,225 @@
     "base": "http/tests/devtools/isolated-code-cache",
     "args": ["--enable-features=IsolatedCodeCache",
              "--site-per-process"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/devtools/isolated-code-cache",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/content-security-policy/securitypolicyviolation/upgrade-insecure-requests-reporting.https.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/dom/events/EventListener-addEventListener.sub.window.js",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/dom/events/EventListener-incumbent-global-1.sub.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/dom/events/EventListener-incumbent-global-2.sub.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects-on-new-window.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-success.sub.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-similar-but-cross-origin-success.sub.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/html/syntax/parsing/html5lib_tests19.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/payment-request/allowpaymentrequest/setting-allowpaymentrequest-timing.https.sub.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/wasm/serialization/window-domain-success.sub.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "external/wpt/wasm/serialization/window-similar-but-cross-origin-success.sub.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "fast/css/acid2.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/devtools/debugger/fetch-breakpoints.js",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/devtools/oopif/oopif-storage.js",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/images/image-decode-in-frame.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/inspector-protocol/access-inspected-object.js",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/inspector-protocol/request-mixed-content-status-blockable.js",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/inspector-protocol/request-mixed-content-status-none.js",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/loading/bad-server-subframe.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/local/drag-over-remote-content.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/local/serviceworker/fetch-request-body-file.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/misc/iframe-script-modify-attr.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/misc/webtiming-no-origin.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/navigation/cross-origin-fragment-navigation-is-async.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/printing/cross-site-frame-scrolled.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/printing/cross-site-frame.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/security/mixedContent/insecure-iframe-in-main-frame.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/text-autosizing/narrow-iframe.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/text-autosizing/wide-iframe.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/webaudio/autoplay-crossorigin.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/xmlhttprequest/origin-whitelisting-all.html",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
+    "base": "http/tests/xmlhttprequest/origin-whitelisting-ip-addresses.html",
+    "args": ["--disable-site-isolation-trials"]
   }
 ]
