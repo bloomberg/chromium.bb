@@ -20,6 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minHeight="36dp"
+        android:layout_marginEnd="0dp"
         android:text="@string/next"
         style="@style/FilledButton.Flat" />
 </org.chromium.chrome.browser.autofill_assistant.ui.PaymentRequestBottomBar>
