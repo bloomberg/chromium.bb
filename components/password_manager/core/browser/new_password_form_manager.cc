@@ -280,7 +280,7 @@ void NewPasswordFormManager::Save() {
         metrics_util::PASSWORD_USED);
   }
 
-  // TODO(https://crbug.com/831123): Implement updating Password Form Managers.
+  client_->UpdateFormManagers();
 }
 
 void NewPasswordFormManager::Update(const PasswordForm& credentials_to_update) {
@@ -308,6 +308,8 @@ void NewPasswordFormManager::Update(const PasswordForm& credentials_to_update) {
       FindOtherCredentialsToUpdate();
   form_saver_->Update(pending_credentials_, best_matches_,
                       &more_credentials_to_update, nullptr);
+
+  client_->UpdateFormManagers();
 }
 
 void NewPasswordFormManager::UpdateUsername(
