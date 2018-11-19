@@ -41,6 +41,7 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
 
  private:
   ScenicWindowManager* const window_manager_;
+  std::unique_ptr<GLOzone> egl_implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(ScenicSurfaceFactory);
 };

@@ -11,6 +11,9 @@
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/gl/gl_surface_egl.h"
+#include "ui/ozone/common/egl_util.h"
+#include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_canvas.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
@@ -22,6 +25,37 @@
 namespace ui {
 
 namespace {
+
+class GLOzoneEGLScenic : public GLOzoneEGL {
+ public:
+  GLOzoneEGLScenic() = default;
+  ~GLOzoneEGLScenic() override = default;
+
+  // GLOzone:
+  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+      gfx::AcceleratedWidget window) override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
+      const gfx::Size& size) override {
+    return gl::InitializeGLSurface(
+        base::MakeRefCounted<gl::PbufferGLSurfaceEGL>(size));
+  }
+
+  EGLNativeDisplayType GetNativeDisplay() override {
+    return EGL_DEFAULT_DISPLAY;
+  }
+
+ protected:
+  bool LoadGLES2Bindings(gl::GLImplementation implementation) override {
+    return LoadDefaultEGLGLES2Bindings(implementation);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLScenic);
+};
 
 // TODO(crbug.com/852011): Implement this class - currently it's just a stub.
 class ScenicPixmap : public gfx::NativePixmap {
@@ -69,18 +103,24 @@ class ScenicPixmap : public gfx::NativePixmap {
 }  // namespace
 
 ScenicSurfaceFactory::ScenicSurfaceFactory(ScenicWindowManager* window_manager)
-    : window_manager_(window_manager) {}
+    : window_manager_(window_manager),
+      egl_implementation_(std::make_unique<GLOzoneEGLScenic>()) {}
 
 ScenicSurfaceFactory::~ScenicSurfaceFactory() = default;
 
 std::vector<gl::GLImplementation>
 ScenicSurfaceFactory::GetAllowedGLImplementations() {
-  return std::vector<gl::GLImplementation>{};
+  // TODO(spang): Remove this after crbug.com/897208 is fixed.
+  return std::vector<gl::GLImplementation>{gl::kGLImplementationSwiftShaderGL};
 }
 
 GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
-  NOTREACHED();
-  return nullptr;
+  switch (implementation) {
+    case gl::kGLImplementationSwiftShaderGL:
+      return egl_implementation_.get();
+    default:
+      return nullptr;
+  }
 }
 
 std::unique_ptr<SurfaceOzoneCanvas> ScenicSurfaceFactory::CreateCanvasForWidget(
