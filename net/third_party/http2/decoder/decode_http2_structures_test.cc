@@ -105,12 +105,12 @@ TEST_F(FrameHeaderDecoderTest, DecodesLiteral) {
   {
     // Realistic input.
     const char kData[] = {
-        0x00, 0x00, 0x05,        // Payload length: 5
-        0x01,                    // Frame type: HEADERS
-        0x08,                    // Flags: PADDED
-        0x00, 0x00, 0x00, 0x01,  // Stream ID: 1
-        0x04,                    // Padding length: 4
-        0x00, 0x00, 0x00, 0x00,  // Padding bytes
+        '\x00', '\x00', '\x05',          // Payload length: 5
+        '\x01',                          // Frame type: HEADERS
+        '\x08',                          // Flags: PADDED
+        '\x00', '\x00', '\x00', '\x01',  // Stream ID: 1
+        '\x04',                          // Padding length: 4
+        '\x00', '\x00', '\x00', '\x00',  // Padding bytes
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -123,10 +123,10 @@ TEST_F(FrameHeaderDecoderTest, DecodesLiteral) {
   {
     // Unlikely input.
     const char kData[] = {
-        0xffu, 0xffu, 0xffu,         // Payload length: uint24 max
-        0xffu,                       // Frame type: Unknown
-        0xffu,                       // Flags: Unknown/All
-        0xffu, 0xffu, 0xffu, 0xffu,  // Stream ID: uint31 max, plus R-bit
+        '\xff', '\xff', '\xff',          // Payload length: uint24 max
+        '\xff',                          // Frame type: Unknown
+        '\xff',                          // Flags: Unknown/All
+        '\xff', '\xff', '\xff', '\xff',  // Stream ID: uint31 max, plus R-bit
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -150,8 +150,8 @@ class PriorityFieldsDecoderTest
 TEST_F(PriorityFieldsDecoderTest, DecodesLiteral) {
   {
     const char kData[] = {
-        0x80u, 0x00, 0x00, 0x05,  // Exclusive (yes) and Dependency (5)
-        0xffu,                    // Weight: 256 (after adding 1)
+        '\x80', '\x00', '\x00', '\x05',  // Exclusive (yes) and Dependency (5)
+        '\xff',                          // Weight: 256 (after adding 1)
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -162,9 +162,9 @@ TEST_F(PriorityFieldsDecoderTest, DecodesLiteral) {
   }
   {
     const char kData[] = {
-        0x7f,  0xffu,
-        0xffu, 0xffu,  // Exclusive (no) and Dependency (0x7fffffff)
-        0x00,          // Weight: 1 (after adding 1)
+        '\x7f', '\xff',
+        '\xff', '\xff',  // Exclusive (no) and Dependency (0x7fffffff)
+        '\x00',          // Weight: 1 (after adding 1)
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -187,7 +187,7 @@ class RstStreamFieldsDecoderTest
 TEST_F(RstStreamFieldsDecoderTest, DecodesLiteral) {
   {
     const char kData[] = {
-        0x00, 0x00, 0x00, 0x01,  // Error: PROTOCOL_ERROR
+        '\x00', '\x00', '\x00', '\x01',  // Error: PROTOCOL_ERROR
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -197,7 +197,8 @@ TEST_F(RstStreamFieldsDecoderTest, DecodesLiteral) {
   }
   {
     const char kData[] = {
-        0xffu, 0xffu, 0xffu, 0xffu,  // Error: max uint32 (Unknown error code)
+        '\xff', '\xff', '\xff',
+        '\xff',  // Error: max uint32 (Unknown error code)
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -219,8 +220,8 @@ class SettingFieldsDecoderTest
 TEST_F(SettingFieldsDecoderTest, DecodesLiteral) {
   {
     const char kData[] = {
-        0x00, 0x01,              // Setting: HEADER_TABLE_SIZE
-        0x00, 0x00, 0x40, 0x00,  // Value: 16K
+        '\x00', '\x01',                  // Setting: HEADER_TABLE_SIZE
+        '\x00', '\x00', '\x40', '\x00',  // Value: 16K
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -232,8 +233,8 @@ TEST_F(SettingFieldsDecoderTest, DecodesLiteral) {
   }
   {
     const char kData[] = {
-        0x00,  0x00,                 // Setting: Unknown (0)
-        0xffu, 0xffu, 0xffu, 0xffu,  // Value: max uint32
+        '\x00', '\x00',                  // Setting: Unknown (0)
+        '\xff', '\xff', '\xff', '\xff',  // Value: max uint32
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -255,7 +256,7 @@ class PushPromiseFieldsDecoderTest
 TEST_F(PushPromiseFieldsDecoderTest, DecodesLiteral) {
   {
     const char kData[] = {
-        0x00, 0x01, 0x8au, 0x92u,  // Promised Stream ID: 101010
+        '\x00', '\x01', '\x8a', '\x92',  // Promised Stream ID: 101010
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -266,7 +267,8 @@ TEST_F(PushPromiseFieldsDecoderTest, DecodesLiteral) {
     // Promised stream id has R-bit (reserved for future use) set, which
     // should be cleared by the decoder.
     const char kData[] = {
-        0xffu, 0xffu, 0xffu, 0xffu,  // Promised Stream ID: max uint31 and R-bit
+        '\xff', '\xff', '\xff',
+        '\xff',  // Promised Stream ID: max uint31 and R-bit
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -287,7 +289,7 @@ TEST_F(PingFieldsDecoderTest, DecodesLiteral) {
   {
     // Each byte is different, so can detect if order changed.
     const char kData[] = {
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        '\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07',
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -298,7 +300,7 @@ TEST_F(PingFieldsDecoderTest, DecodesLiteral) {
   {
     // All zeros, detect problems handling NULs.
     const char kData[] = {
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -308,7 +310,7 @@ TEST_F(PingFieldsDecoderTest, DecodesLiteral) {
   }
   {
     const char kData[] = {
-        0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu, 0xffu,
+        '\xff', '\xff', '\xff', '\xff', '\xff', '\xff', '\xff', '\xff',
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -330,8 +332,8 @@ class GoAwayFieldsDecoderTest : public StructureDecoderTest<Http2GoAwayFields> {
 TEST_F(GoAwayFieldsDecoderTest, DecodesLiteral) {
   {
     const char kData[] = {
-        0x00, 0x00, 0x00, 0x00,  // Last Stream ID: 0
-        0x00, 0x00, 0x00, 0x00,  // Error: NO_ERROR (0)
+        '\x00', '\x00', '\x00', '\x00',  // Last Stream ID: 0
+        '\x00', '\x00', '\x00', '\x00',  // Error: NO_ERROR (0)
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -342,8 +344,8 @@ TEST_F(GoAwayFieldsDecoderTest, DecodesLiteral) {
   }
   {
     const char kData[] = {
-        0x00, 0x00, 0x00, 0x01,  // Last Stream ID: 1
-        0x00, 0x00, 0x00, 0x0d,  // Error: HTTP_1_1_REQUIRED
+        '\x00', '\x00', '\x00', '\x01',  // Last Stream ID: 1
+        '\x00', '\x00', '\x00', '\x0d',  // Error: HTTP_1_1_REQUIRED
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -354,8 +356,10 @@ TEST_F(GoAwayFieldsDecoderTest, DecodesLiteral) {
   }
   {
     const char kData[] = {
-        0xffu, 0xffu, 0xffu, 0xffu,  // Last Stream ID: max uint31 and R-bit
-        0xffu, 0xffu, 0xffu, 0xffu,  // Error: max uint32 (Unknown error code)
+        '\xff', '\xff',
+        '\xff', '\xff',  // Last Stream ID: max uint31 and R-bit
+        '\xff', '\xff',
+        '\xff', '\xff',  // Error: max uint32 (Unknown error code)
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -378,7 +382,7 @@ class WindowUpdateFieldsDecoderTest
 TEST_F(WindowUpdateFieldsDecoderTest, DecodesLiteral) {
   {
     const char kData[] = {
-        0x00, 0x01, 0x00, 0x00,  // Window Size Increment: 2 ^ 16
+        '\x00', '\x01', '\x00', '\x00',  // Window Size Increment: 2 ^ 16
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -389,7 +393,7 @@ TEST_F(WindowUpdateFieldsDecoderTest, DecodesLiteral) {
     // Increment must be non-zero, but we need to be able to decode the invalid
     // zero to detect it.
     const char kData[] = {
-        0x00, 0x00, 0x00, 0x00,  // Window Size Increment: 0
+        '\x00', '\x00', '\x00', '\x00',  // Window Size Increment: 0
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -402,7 +406,7 @@ TEST_F(WindowUpdateFieldsDecoderTest, DecodesLiteral) {
     // clang-format off
     const char kData[] = {
         // Window Size Increment: max uint31 and R-bit
-        0xffu, 0xffu, 0xffu, 0xffu,
+        '\xff', '\xff', '\xff', '\xff',
     };
     // clang-format on
     DecodeLeadingStructure(kData);
@@ -424,7 +428,7 @@ class AltSvcFieldsDecoderTest : public StructureDecoderTest<Http2AltSvcFields> {
 TEST_F(AltSvcFieldsDecoderTest, DecodesLiteral) {
   {
     const char kData[] = {
-        0x00, 0x00,  // Origin Length: 0
+        '\x00', '\x00',  // Origin Length: 0
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -433,7 +437,7 @@ TEST_F(AltSvcFieldsDecoderTest, DecodesLiteral) {
   }
   {
     const char kData[] = {
-        0x00, 0x14,  // Origin Length: 20
+        '\x00', '\x14',  // Origin Length: 20
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
@@ -442,7 +446,7 @@ TEST_F(AltSvcFieldsDecoderTest, DecodesLiteral) {
   }
   {
     const char kData[] = {
-        0xffu, 0xffu,  // Origin Length: uint16 max
+        '\xff', '\xff',  // Origin Length: uint16 max
     };
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {

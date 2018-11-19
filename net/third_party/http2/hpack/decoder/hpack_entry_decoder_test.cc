@@ -56,7 +56,7 @@ class HpackEntryDecoderTest : public RandomDecoderTest {
 
 TEST_F(HpackEntryDecoderTest, IndexedHeader_Literals) {
   {
-    const char input[] = {0x82u};  // == Index 2 ==
+    const char input[] = {'\x82'};  // == Index 2 ==
     DecodeBuffer b(input);
     auto do_check = [this]() {
       VERIFY_AND_RETURN_SUCCESS(collector_.ValidateIndexedHeader(2));
@@ -67,7 +67,7 @@ TEST_F(HpackEntryDecoderTest, IndexedHeader_Literals) {
   }
   collector_.Clear();
   {
-    const char input[] = {0xfeu};  // == Index 126 ==
+    const char input[] = {'\xfe'};  // == Index 126 ==
     DecodeBuffer b(input);
     auto do_check = [this]() {
       VERIFY_AND_RETURN_SUCCESS(collector_.ValidateIndexedHeader(126));
@@ -78,7 +78,7 @@ TEST_F(HpackEntryDecoderTest, IndexedHeader_Literals) {
   }
   collector_.Clear();
   {
-    const char input[] = {0xffu, 0x00};  // == Index 127 ==
+    const char input[] = {'\xff', '\x00'};  // == Index 127 ==
     DecodeBuffer b(input);
     auto do_check = [this]() {
       VERIFY_AND_RETURN_SUCCESS(collector_.ValidateIndexedHeader(127));

@@ -226,10 +226,11 @@ class Http2FrameDecoderTest : public RandomDecoderTest {
 
 TEST_F(Http2FrameDecoderTest, DataEmpty) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x00,        // Payload length: 0
-      0x00,                    // DATA
-      0x00,                    // Flags: none
-      0x00, 0x00, 0x00, 0x00,  // Stream ID: 0 (invalid but unchecked here)
+      '\x00', '\x00', '\x00',  // Payload length: 0
+      '\x00',                  // DATA
+      '\x00',                  // Flags: none
+      '\x00', '\x00', '\x00',
+      '\x00',  // Stream ID: 0 (invalid but unchecked here)
   };
   Http2FrameHeader header(0, Http2FrameType::DATA, 0, 0);
   FrameParts expected(header, "");
@@ -238,10 +239,10 @@ TEST_F(Http2FrameDecoderTest, DataEmpty) {
 
 TEST_F(Http2FrameDecoderTest, HeadersEmpty) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x00,        // Payload length: 0
-      0x01,                    // HEADERS
-      0x00,                    // Flags: none
-      0x00, 0x00, 0x00, 0x01,  // Stream ID: 0  (REQUIRES ID)
+      '\x00', '\x00', '\x00',          // Payload length: 0
+      '\x01',                          // HEADERS
+      '\x00',                          // Flags: none
+      '\x00', '\x00', '\x00', '\x01',  // Stream ID: 0  (REQUIRES ID)
   };
   Http2FrameHeader header(0, Http2FrameType::HEADERS, 0, 1);
   FrameParts expected(header, "");
@@ -250,12 +251,12 @@ TEST_F(Http2FrameDecoderTest, HeadersEmpty) {
 
 TEST_F(Http2FrameDecoderTest, Priority) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x05,        // Length: 5
-      0x02,                     //   Type: PRIORITY
-      0x00,                     //  Flags: none
-      0x00,  0x00, 0x00, 0x02,  // Stream: 2
-      0x80u, 0x00, 0x00, 0x01,  // Parent: 1 (Exclusive)
-      0x10,                     // Weight: 17
+      '\x00', '\x00', '\x05',          // Length: 5
+      '\x02',                          //   Type: PRIORITY
+      '\x00',                          //  Flags: none
+      '\x00', '\x00', '\x00', '\x02',  // Stream: 2
+      '\x80', '\x00', '\x00', '\x01',  // Parent: 1 (Exclusive)
+      '\x10',                          // Weight: 17
   };
   Http2FrameHeader header(5, Http2FrameType::PRIORITY, 0, 2);
   FrameParts expected(header);
@@ -265,11 +266,11 @@ TEST_F(Http2FrameDecoderTest, Priority) {
 
 TEST_F(Http2FrameDecoderTest, RstStream) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x04,        // Length: 4
-      0x03,                    //   Type: RST_STREAM
-      0x00,                    //  Flags: none
-      0x00, 0x00, 0x00, 0x01,  // Stream: 1
-      0x00, 0x00, 0x00, 0x01,  //  Error: PROTOCOL_ERROR
+      '\x00', '\x00', '\x04',          // Length: 4
+      '\x03',                          //   Type: RST_STREAM
+      '\x00',                          //  Flags: none
+      '\x00', '\x00', '\x00', '\x01',  // Stream: 1
+      '\x00', '\x00', '\x00', '\x01',  //  Error: PROTOCOL_ERROR
   };
   Http2FrameHeader header(4, Http2FrameType::RST_STREAM, 0, 1);
   FrameParts expected(header);
@@ -279,10 +280,10 @@ TEST_F(Http2FrameDecoderTest, RstStream) {
 
 TEST_F(Http2FrameDecoderTest, SettingsEmpty) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x00,        // Length: 0
-      0x04,                    //   Type: SETTINGS
-      0x00,                    //  Flags: none
-      0x00, 0x00, 0x00, 0x01,  // Stream: 1 (invalid but unchecked here)
+      '\x00', '\x00', '\x00',          // Length: 0
+      '\x04',                          //   Type: SETTINGS
+      '\x00',                          //  Flags: none
+      '\x00', '\x00', '\x00', '\x01',  // Stream: 1 (invalid but unchecked here)
   };
   Http2FrameHeader header(0, Http2FrameType::SETTINGS, 0, 1);
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, header));
@@ -290,10 +291,10 @@ TEST_F(Http2FrameDecoderTest, SettingsEmpty) {
 
 TEST_F(Http2FrameDecoderTest, SettingsAck) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x00,        //   Length: 6
-      0x04,                    //     Type: SETTINGS
-      0x01,                    //    Flags: ACK
-      0x00, 0x00, 0x00, 0x00,  //   Stream: 0
+      '\x00', '\x00', '\x00',          //   Length: 6
+      '\x04',                          //     Type: SETTINGS
+      '\x01',                          //    Flags: ACK
+      '\x00', '\x00', '\x00', '\x00',  //   Stream: 0
   };
   Http2FrameHeader header(0, Http2FrameType::SETTINGS, Http2FrameFlag::ACK, 0);
   FrameParts expected(header);
@@ -302,11 +303,13 @@ TEST_F(Http2FrameDecoderTest, SettingsAck) {
 
 TEST_F(Http2FrameDecoderTest, PushPromiseMinimal) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x04,        // Payload length: 4
-      0x05,                    // PUSH_PROMISE
-      0x04,                    // Flags: END_HEADERS
-      0x00, 0x00, 0x00, 0x02,  //   Stream: 2 (invalid but unchecked here)
-      0x00, 0x00, 0x00, 0x01,  // Promised: 1 (invalid but unchecked here)
+      '\x00', '\x00', '\x04',  // Payload length: 4
+      '\x05',                  // PUSH_PROMISE
+      '\x04',                  // Flags: END_HEADERS
+      '\x00', '\x00', '\x00',
+      '\x02',  //   Stream: 2 (invalid but unchecked here)
+      '\x00', '\x00', '\x00',
+      '\x01',  // Promised: 1 (invalid but unchecked here)
   };
   Http2FrameHeader header(4, Http2FrameType::PUSH_PROMISE,
                           Http2FrameFlag::END_HEADERS, 2);
@@ -317,12 +320,12 @@ TEST_F(Http2FrameDecoderTest, PushPromiseMinimal) {
 
 TEST_F(Http2FrameDecoderTest, Ping) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x08,        //   Length: 8
-      0x06,                     //     Type: PING
-      0xfeu,                    //    Flags: no valid flags
-      0x00,  0x00, 0x00, 0x00,  //   Stream: 0
-      's',   'o',  'm',  'e',   // "some"
-      'd',   'a',  't',  'a',   // "data"
+      '\x00', '\x00', '\x08',          //   Length: 8
+      '\x06',                          //     Type: PING
+      '\xfe',                          //    Flags: no valid flags
+      '\x00', '\x00', '\x00', '\x00',  //   Stream: 0
+      's',    'o',    'm',    'e',     // "some"
+      'd',    'a',    't',    'a',     // "data"
   };
   Http2FrameHeader header(8, Http2FrameType::PING, 0, 0);
   FrameParts expected(header);
@@ -333,12 +336,12 @@ TEST_F(Http2FrameDecoderTest, Ping) {
 
 TEST_F(Http2FrameDecoderTest, PingAck) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x08,        //   Length: 8
-      0x06,                     //     Type: PING
-      0xffu,                    //    Flags: ACK (plus all invalid flags)
-      0x00,  0x00, 0x00, 0x00,  //   Stream: 0
-      's',   'o',  'm',  'e',   // "some"
-      'd',   'a',  't',  'a',   // "data"
+      '\x00', '\x00', '\x08',          //   Length: 8
+      '\x06',                          //     Type: PING
+      '\xff',                          //    Flags: ACK (plus all invalid flags)
+      '\x00', '\x00', '\x00', '\x00',  //   Stream: 0
+      's',    'o',    'm',    'e',     // "some"
+      'd',    'a',    't',    'a',     // "data"
   };
   Http2FrameHeader header(8, Http2FrameType::PING, Http2FrameFlag::ACK, 0);
   FrameParts expected(header);
@@ -349,12 +352,12 @@ TEST_F(Http2FrameDecoderTest, PingAck) {
 
 TEST_F(Http2FrameDecoderTest, GoAwayMinimal) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x08,         // Length: 8 (no opaque data)
-      0x07,                      //   Type: GOAWAY
-      0xffu,                     //  Flags: 0xff (no valid flags)
-      0x00,  0x00, 0x00, 0x01,   // Stream: 1 (invalid but unchecked here)
-      0x80u, 0x00, 0x00, 0xffu,  //   Last: 255 (plus R bit)
-      0x00,  0x00, 0x00, 0x09,   //  Error: COMPRESSION_ERROR
+      '\x00', '\x00', '\x08',          // Length: 8 (no opaque data)
+      '\x07',                          //   Type: GOAWAY
+      '\xff',                          //  Flags: 0xff (no valid flags)
+      '\x00', '\x00', '\x00', '\x01',  // Stream: 1 (invalid but unchecked here)
+      '\x80', '\x00', '\x00', '\xff',  //   Last: 255 (plus R bit)
+      '\x00', '\x00', '\x00', '\x09',  //  Error: COMPRESSION_ERROR
   };
   Http2FrameHeader header(8, Http2FrameType::GOAWAY, 0, 1);
   FrameParts expected(header);
@@ -365,11 +368,11 @@ TEST_F(Http2FrameDecoderTest, GoAwayMinimal) {
 
 TEST_F(Http2FrameDecoderTest, WindowUpdate) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x04,        // Length: 4
-      0x08,                     //   Type: WINDOW_UPDATE
-      0x0f,                     //  Flags: 0xff (no valid flags)
-      0x00,  0x00, 0x00, 0x01,  // Stream: 1
-      0x80u, 0x00, 0x04, 0x00,  //   Incr: 1024 (plus R bit)
+      '\x00', '\x00', '\x04',          // Length: 4
+      '\x08',                          //   Type: WINDOW_UPDATE
+      '\x0f',                          //  Flags: 0xff (no valid flags)
+      '\x00', '\x00', '\x00', '\x01',  // Stream: 1
+      '\x80', '\x00', '\x04', '\x00',  //   Incr: 1024 (plus R bit)
   };
   Http2FrameHeader header(4, Http2FrameType::WINDOW_UPDATE, 0, 1);
   FrameParts expected(header);
@@ -379,10 +382,11 @@ TEST_F(Http2FrameDecoderTest, WindowUpdate) {
 
 TEST_F(Http2FrameDecoderTest, ContinuationEmpty) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x00,        // Payload length: 0
-      0x09,                    // CONTINUATION
-      0x00,                    // Flags: none
-      0x00, 0x00, 0x00, 0x00,  // Stream ID: 0 (invalid but unchecked here)
+      '\x00', '\x00', '\x00',  // Payload length: 0
+      '\x09',                  // CONTINUATION
+      '\x00',                  // Flags: none
+      '\x00', '\x00', '\x00',
+      '\x00',  // Stream ID: 0 (invalid but unchecked here)
   };
   Http2FrameHeader header(0, Http2FrameType::CONTINUATION, 0, 0);
   FrameParts expected(header);
@@ -391,11 +395,12 @@ TEST_F(Http2FrameDecoderTest, ContinuationEmpty) {
 
 TEST_F(Http2FrameDecoderTest, AltSvcMinimal) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x02,        // Payload length: 2
-      0x0a,                     // ALTSVC
-      0xffu,                    // Flags: none (plus 0xff)
-      0x00,  0x00, 0x00, 0x00,  // Stream ID: 0 (invalid but unchecked here)
-      0x00,  0x00,              // Origin Length: 0
+      '\x00', '\x00', '\x02',  // Payload length: 2
+      '\x0a',                  // ALTSVC
+      '\xff',                  // Flags: none (plus 0xff)
+      '\x00', '\x00', '\x00',
+      '\x00',          // Stream ID: 0 (invalid but unchecked here)
+      '\x00', '\x00',  // Origin Length: 0
   };
   Http2FrameHeader header(2, Http2FrameType::ALTSVC, 0, 0);
   FrameParts expected(header);
@@ -406,10 +411,10 @@ TEST_F(Http2FrameDecoderTest, AltSvcMinimal) {
 
 TEST_F(Http2FrameDecoderTest, UnknownEmpty) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x00,        // Payload length: 0
-      0x20,                     // 32 (unknown)
-      0xffu,                    // Flags: all
-      0x00,  0x00, 0x00, 0x00,  // Stream ID: 0
+      '\x00', '\x00', '\x00',          // Payload length: 0
+      '\x20',                          // 32 (unknown)
+      '\xff',                          // Flags: all
+      '\x00', '\x00', '\x00', '\x00',  // Stream ID: 0
   };
   Http2FrameHeader header(0, static_cast<Http2FrameType>(32), 0xff, 0);
   FrameParts expected(header);
@@ -421,11 +426,11 @@ TEST_F(Http2FrameDecoderTest, UnknownEmpty) {
 
 TEST_F(Http2FrameDecoderTest, DataPayload) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x03,        // Payload length: 7
-      0x00,                     // DATA
-      0x80u,                    // Flags: 0x80
-      0x00,  0x00, 0x02, 0x02,  // Stream ID: 514
-      'a',   'b',  'c',         // Data
+      '\x00', '\x00', '\x03',          // Payload length: 7
+      '\x00',                          // DATA
+      '\x80',                          // Flags: 0x80
+      '\x00', '\x00', '\x02', '\x02',  // Stream ID: 514
+      'a',    'b',    'c',             // Data
   };
   Http2FrameHeader header(3, Http2FrameType::DATA, 0, 514);
   FrameParts expected(header, "abc");
@@ -434,11 +439,11 @@ TEST_F(Http2FrameDecoderTest, DataPayload) {
 
 TEST_F(Http2FrameDecoderTest, HeadersPayload) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x03,        // Payload length: 3
-      0x01,                    // HEADERS
-      0x05,                    // Flags: END_STREAM | END_HEADERS
-      0x00, 0x00, 0x00, 0x02,  // Stream ID: 0  (REQUIRES ID)
-      'a',  'b',  'c',         // HPACK fragment (doesn't have to be valid)
+      '\x00', '\x00', '\x03',          // Payload length: 3
+      '\x01',                          // HEADERS
+      '\x05',                          // Flags: END_STREAM | END_HEADERS
+      '\x00', '\x00', '\x00', '\x02',  // Stream ID: 0  (REQUIRES ID)
+      'a',    'b',    'c',  // HPACK fragment (doesn't have to be valid)
   };
   Http2FrameHeader header(
       3, Http2FrameType::HEADERS,
@@ -449,12 +454,12 @@ TEST_F(Http2FrameDecoderTest, HeadersPayload) {
 
 TEST_F(Http2FrameDecoderTest, HeadersPriority) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x05,        // Payload length: 5
-      0x01,                     // HEADERS
-      0x20,                     // Flags: PRIORITY
-      0x00,  0x00, 0x00, 0x02,  // Stream ID: 0  (REQUIRES ID)
-      0x00,  0x00, 0x00, 0x01,  // Parent: 1 (Not Exclusive)
-      0xffu,                    // Weight: 256
+      '\x00', '\x00', '\x05',          // Payload length: 5
+      '\x01',                          // HEADERS
+      '\x20',                          // Flags: PRIORITY
+      '\x00', '\x00', '\x00', '\x02',  // Stream ID: 0  (REQUIRES ID)
+      '\x00', '\x00', '\x00', '\x01',  // Parent: 1 (Not Exclusive)
+      '\xff',                          // Weight: 256
   };
   Http2FrameHeader header(5, Http2FrameType::HEADERS, Http2FrameFlag::PRIORITY,
                           2);
@@ -465,14 +470,14 @@ TEST_F(Http2FrameDecoderTest, HeadersPriority) {
 
 TEST_F(Http2FrameDecoderTest, Settings) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x0c,        // Length: 12
-      0x04,                    //   Type: SETTINGS
-      0x00,                    //  Flags: none
-      0x00, 0x00, 0x00, 0x00,  // Stream: 0
-      0x00, 0x04,              //  Param: INITIAL_WINDOW_SIZE
-      0x0a, 0x0b, 0x0c, 0x0d,  //  Value: 168496141
-      0x00, 0x02,              //  Param: ENABLE_PUSH
-      0x00, 0x00, 0x00, 0x03,  //  Value: 3 (invalid but unchecked here)
+      '\x00', '\x00', '\x0c',          // Length: 12
+      '\x04',                          //   Type: SETTINGS
+      '\x00',                          //  Flags: none
+      '\x00', '\x00', '\x00', '\x00',  // Stream: 0
+      '\x00', '\x04',                  //  Param: INITIAL_WINDOW_SIZE
+      '\x0a', '\x0b', '\x0c', '\x0d',  //  Value: 168496141
+      '\x00', '\x02',                  //  Param: ENABLE_PUSH
+      '\x00', '\x00', '\x00', '\x03',  //  Value: 3 (invalid but unchecked here)
   };
   Http2FrameHeader header(12, Http2FrameType::SETTINGS, 0, 0);
   FrameParts expected(header);
@@ -485,12 +490,12 @@ TEST_F(Http2FrameDecoderTest, Settings) {
 
 TEST_F(Http2FrameDecoderTest, PushPromisePayload) {
   const char kFrameData[] = {
-      0x00, 0x00, 7,            // Payload length: 7
-      0x05,                     // PUSH_PROMISE
-      0x04,                     // Flags: END_HEADERS
-      0x00, 0x00, 0x00, 0xffu,  // Stream ID: 255
-      0x00, 0x00, 0x01, 0x00,   // Promised: 256
-      'a',  'b',  'c',          // HPACK fragment (doesn't have to be valid)
+      '\x00', '\x00', 7,               // Payload length: 7
+      '\x05',                          // PUSH_PROMISE
+      '\x04',                          // Flags: END_HEADERS
+      '\x00', '\x00', '\x00', '\xff',  // Stream ID: 255
+      '\x00', '\x00', '\x01', '\x00',  // Promised: 256
+      'a',    'b',    'c',  // HPACK fragment (doesn't have to be valid)
   };
   Http2FrameHeader header(7, Http2FrameType::PUSH_PROMISE,
                           Http2FrameFlag::END_HEADERS, 255);
@@ -501,13 +506,13 @@ TEST_F(Http2FrameDecoderTest, PushPromisePayload) {
 
 TEST_F(Http2FrameDecoderTest, GoAwayOpaqueData) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x0e,        // Length: 14
-      0x07,                     //   Type: GOAWAY
-      0xffu,                    //  Flags: 0xff (no valid flags)
-      0x80u, 0x00, 0x00, 0x00,  // Stream: 0 (plus R bit)
-      0x00,  0x00, 0x01, 0x00,  //   Last: 256
-      0x00,  0x00, 0x00, 0x03,  //  Error: FLOW_CONTROL_ERROR
-      'o',   'p',  'a',  'q',  'u', 'e',
+      '\x00', '\x00', '\x0e',          // Length: 14
+      '\x07',                          //   Type: GOAWAY
+      '\xff',                          //  Flags: 0xff (no valid flags)
+      '\x80', '\x00', '\x00', '\x00',  // Stream: 0 (plus R bit)
+      '\x00', '\x00', '\x01', '\x00',  //   Last: 256
+      '\x00', '\x00', '\x00', '\x03',  //  Error: FLOW_CONTROL_ERROR
+      'o',    'p',    'a',    'q',    'u', 'e',
   };
   Http2FrameHeader header(14, Http2FrameType::GOAWAY, 0, 0);
   FrameParts expected(header, "opaque");
@@ -518,11 +523,11 @@ TEST_F(Http2FrameDecoderTest, GoAwayOpaqueData) {
 
 TEST_F(Http2FrameDecoderTest, ContinuationPayload) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x03,        // Payload length: 3
-      0x09,                     // CONTINUATION
-      0xffu,                    // Flags: END_HEADERS | 0xfb
-      0x00,  0x00, 0x00, 0x02,  // Stream ID: 2
-      'a',   'b',  'c',         // Data
+      '\x00', '\x00', '\x03',          // Payload length: 3
+      '\x09',                          // CONTINUATION
+      '\xff',                          // Flags: END_HEADERS | 0xfb
+      '\x00', '\x00', '\x00', '\x02',  // Stream ID: 2
+      'a',    'b',    'c',             // Data
   };
   Http2FrameHeader header(3, Http2FrameType::CONTINUATION,
                           Http2FrameFlag::END_HEADERS, 2);
@@ -532,13 +537,13 @@ TEST_F(Http2FrameDecoderTest, ContinuationPayload) {
 
 TEST_F(Http2FrameDecoderTest, AltSvcPayload) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x08,        // Payload length: 3
-      0x0a,                    // ALTSVC
-      0x00,                    // Flags: none
-      0x00, 0x00, 0x00, 0x02,  // Stream ID: 2
-      0x00, 0x03,              // Origin Length: 0
-      'a',  'b',  'c',         // Origin
-      'd',  'e',  'f',         // Value
+      '\x00', '\x00', '\x08',          // Payload length: 3
+      '\x0a',                          // ALTSVC
+      '\x00',                          // Flags: none
+      '\x00', '\x00', '\x00', '\x02',  // Stream ID: 2
+      '\x00', '\x03',                  // Origin Length: 0
+      'a',    'b',    'c',             // Origin
+      'd',    'e',    'f',             // Value
   };
   Http2FrameHeader header(8, Http2FrameType::ALTSVC, 0, 2);
   FrameParts expected(header);
@@ -548,11 +553,11 @@ TEST_F(Http2FrameDecoderTest, AltSvcPayload) {
 
 TEST_F(Http2FrameDecoderTest, UnknownPayload) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x03,        // Payload length: 3
-      0x30,                    // 48 (unknown)
-      0x00,                    // Flags: none
-      0x00, 0x00, 0x00, 0x02,  // Stream ID: 2
-      'a',  'b',  'c',         // Payload
+      '\x00', '\x00', '\x03',          // Payload length: 3
+      '\x30',                          // 48 (unknown)
+      '\x00',                          // Flags: none
+      '\x00', '\x00', '\x00', '\x02',  // Stream ID: 2
+      'a',    'b',    'c',             // Payload
   };
   Http2FrameHeader header(3, static_cast<Http2FrameType>(48), 0, 2);
   FrameParts expected(header, "abc");
@@ -564,13 +569,13 @@ TEST_F(Http2FrameDecoderTest, UnknownPayload) {
 
 TEST_F(Http2FrameDecoderTest, DataPayloadAndPadding) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x07,        // Payload length: 7
-      0x00,                    // DATA
-      0x09,                    // Flags: END_STREAM | PADDED
-      0x00, 0x00, 0x00, 0x02,  // Stream ID: 0  (REQUIRES ID)
-      0x03,                    // Pad Len
-      'a',  'b',  'c',         // Data
-      0x00, 0x00, 0x00,        // Padding
+      '\x00', '\x00', '\x07',          // Payload length: 7
+      '\x00',                          // DATA
+      '\x09',                          // Flags: END_STREAM | PADDED
+      '\x00', '\x00', '\x00', '\x02',  // Stream ID: 0  (REQUIRES ID)
+      '\x03',                          // Pad Len
+      'a',    'b',    'c',             // Data
+      '\x00', '\x00', '\x00',          // Padding
   };
   Http2FrameHeader header(7, Http2FrameType::DATA,
                           Http2FrameFlag::END_STREAM | Http2FrameFlag::PADDED,
@@ -582,13 +587,13 @@ TEST_F(Http2FrameDecoderTest, DataPayloadAndPadding) {
 
 TEST_F(Http2FrameDecoderTest, HeadersPayloadAndPadding) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x07,        // Payload length: 7
-      0x01,                    // HEADERS
-      0x08,                    // Flags: PADDED
-      0x00, 0x00, 0x00, 0x02,  // Stream ID: 0  (REQUIRES ID)
-      0x03,                    // Pad Len
-      'a',  'b',  'c',         // HPACK fragment (doesn't have to be valid)
-      0x00, 0x00, 0x00,        // Padding
+      '\x00', '\x00', '\x07',          // Payload length: 7
+      '\x01',                          // HEADERS
+      '\x08',                          // Flags: PADDED
+      '\x00', '\x00', '\x00', '\x02',  // Stream ID: 0  (REQUIRES ID)
+      '\x03',                          // Pad Len
+      'a',    'b',    'c',     // HPACK fragment (doesn't have to be valid)
+      '\x00', '\x00', '\x00',  // Padding
   };
   Http2FrameHeader header(7, Http2FrameType::HEADERS, Http2FrameFlag::PADDED,
                           2);
@@ -599,15 +604,15 @@ TEST_F(Http2FrameDecoderTest, HeadersPayloadAndPadding) {
 
 TEST_F(Http2FrameDecoderTest, HeadersPayloadPriorityAndPadding) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x0c,        // Payload length: 12
-      0x01,                     // HEADERS
-      0xffu,                    // Flags: all, including undefined
-      0x00,  0x00, 0x00, 0x02,  // Stream ID: 0  (REQUIRES ID)
-      0x03,                     // Pad Len
-      0x80u, 0x00, 0x00, 0x01,  // Parent: 1 (Exclusive)
-      0x10,                     // Weight: 17
-      'a',   'b',  'c',         // HPACK fragment (doesn't have to be valid)
-      0x00,  0x00, 0x00,        // Padding
+      '\x00', '\x00', '\x0c',          // Payload length: 12
+      '\x01',                          // HEADERS
+      '\xff',                          // Flags: all, including undefined
+      '\x00', '\x00', '\x00', '\x02',  // Stream ID: 0  (REQUIRES ID)
+      '\x03',                          // Pad Len
+      '\x80', '\x00', '\x00', '\x01',  // Parent: 1 (Exclusive)
+      '\x10',                          // Weight: 17
+      'a',    'b',    'c',     // HPACK fragment (doesn't have to be valid)
+      '\x00', '\x00', '\x00',  // Padding
   };
   Http2FrameHeader header(12, Http2FrameType::HEADERS,
                           Http2FrameFlag::END_STREAM |
@@ -622,14 +627,14 @@ TEST_F(Http2FrameDecoderTest, HeadersPayloadPriorityAndPadding) {
 
 TEST_F(Http2FrameDecoderTest, PushPromisePayloadAndPadding) {
   const char kFrameData[] = {
-      0x00,  0x00, 11,          // Payload length: 11
-      0x05,                     // PUSH_PROMISE
-      0xffu,                    // Flags: END_HEADERS | PADDED | 0xf3
-      0x00,  0x00, 0x00, 0x01,  // Stream ID: 1
-      0x03,                     // Pad Len
-      0x00,  0x00, 0x00, 0x02,  // Promised: 2
-      'a',   'b',  'c',         // HPACK fragment (doesn't have to be valid)
-      0x00,  0x00, 0x00,        // Padding
+      '\x00', '\x00', 11,              // Payload length: 11
+      '\x05',                          // PUSH_PROMISE
+      '\xff',                          // Flags: END_HEADERS | PADDED | 0xf3
+      '\x00', '\x00', '\x00', '\x01',  // Stream ID: 1
+      '\x03',                          // Pad Len
+      '\x00', '\x00', '\x00', '\x02',  // Promised: 2
+      'a',    'b',    'c',     // HPACK fragment (doesn't have to be valid)
+      '\x00', '\x00', '\x00',  // Padding
   };
   Http2FrameHeader header(11, Http2FrameType::PUSH_PROMISE,
                           Http2FrameFlag::END_HEADERS | Http2FrameFlag::PADDED,
@@ -645,10 +650,10 @@ TEST_F(Http2FrameDecoderTest, PushPromisePayloadAndPadding) {
 
 TEST_F(Http2FrameDecoderTest, DataMissingPadLengthField) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x00,        // Payload length: 0
-      0x00,                    // DATA
-      0x08,                    // Flags: PADDED
-      0x00, 0x00, 0x00, 0x01,  // Stream ID: 1
+      '\x00', '\x00', '\x00',          // Payload length: 0
+      '\x00',                          // DATA
+      '\x08',                          // Flags: PADDED
+      '\x00', '\x00', '\x00', '\x01',  // Stream ID: 1
   };
   Http2FrameHeader header(0, Http2FrameType::DATA, Http2FrameFlag::PADDED, 1);
   FrameParts expected(header);
@@ -658,12 +663,12 @@ TEST_F(Http2FrameDecoderTest, DataMissingPadLengthField) {
 
 TEST_F(Http2FrameDecoderTest, HeaderPaddingTooLong) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x02,        // Payload length: 0
-      0x01,                     // HEADERS
-      0x08,                     // Flags: PADDED
-      0x00,  0x01, 0x00, 0x00,  // Stream ID: 65536
-      0xffu,                    // Pad Len: 255
-      0x00,                     // Only one byte of padding
+      '\x00', '\x00', '\x02',          // Payload length: 0
+      '\x01',                          // HEADERS
+      '\x08',                          // Flags: PADDED
+      '\x00', '\x01', '\x00', '\x00',  // Stream ID: 65536
+      '\xff',                          // Pad Len: 255
+      '\x00',                          // Only one byte of padding
   };
   Http2FrameHeader header(2, Http2FrameType::HEADERS, Http2FrameFlag::PADDED,
                           65536);
@@ -674,11 +679,11 @@ TEST_F(Http2FrameDecoderTest, HeaderPaddingTooLong) {
 
 TEST_F(Http2FrameDecoderTest, HeaderMissingPriority) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x04,        // Payload length: 0
-      0x01,                    // HEADERS
-      0x20,                    // Flags: PRIORITY
-      0x00, 0x01, 0x00, 0x00,  // Stream ID: 65536
-      0x00, 0x00, 0x00, 0x00,  // Priority (truncated)
+      '\x00', '\x00', '\x04',          // Payload length: 0
+      '\x01',                          // HEADERS
+      '\x20',                          // Flags: PRIORITY
+      '\x00', '\x01', '\x00', '\x00',  // Stream ID: 65536
+      '\x00', '\x00', '\x00', '\x00',  // Priority (truncated)
   };
   Http2FrameHeader header(4, Http2FrameType::HEADERS, Http2FrameFlag::PRIORITY,
                           65536);
@@ -687,11 +692,11 @@ TEST_F(Http2FrameDecoderTest, HeaderMissingPriority) {
 
 TEST_F(Http2FrameDecoderTest, PriorityTooShort) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x04,        // Length: 5
-      0x02,                     //   Type: PRIORITY
-      0x00,                     //  Flags: none
-      0x00,  0x00, 0x00, 0x02,  // Stream: 2
-      0x80u, 0x00, 0x00, 0x01,  // Parent: 1 (Exclusive)
+      '\x00', '\x00', '\x04',          // Length: 5
+      '\x02',                          //   Type: PRIORITY
+      '\x00',                          //  Flags: none
+      '\x00', '\x00', '\x00', '\x02',  // Stream: 2
+      '\x80', '\x00', '\x00', '\x01',  // Parent: 1 (Exclusive)
   };
   Http2FrameHeader header(4, Http2FrameType::PRIORITY, 0, 2);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -699,11 +704,11 @@ TEST_F(Http2FrameDecoderTest, PriorityTooShort) {
 
 TEST_F(Http2FrameDecoderTest, RstStreamTooShort) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x03,        // Length: 4
-      0x03,                    //   Type: RST_STREAM
-      0x00,                    //  Flags: none
-      0x00, 0x00, 0x00, 0x01,  // Stream: 1
-      0x00, 0x00, 0x00,        //  Truncated
+      '\x00', '\x00', '\x03',          // Length: 4
+      '\x03',                          //   Type: RST_STREAM
+      '\x00',                          //  Flags: none
+      '\x00', '\x00', '\x00', '\x01',  // Stream: 1
+      '\x00', '\x00', '\x00',          //  Truncated
   };
   Http2FrameHeader header(3, Http2FrameType::RST_STREAM, 0, 1);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -713,14 +718,14 @@ TEST_F(Http2FrameDecoderTest, RstStreamTooShort) {
 // invalid.
 TEST_F(Http2FrameDecoderTest, SettingsWrongSize) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x09,        // Length: 2
-      0x04,                    //   Type: SETTINGS
-      0x00,                    //  Flags: none
-      0x00, 0x00, 0x00, 0x00,  // Stream: 0
-      0x00, 0x02,              //  Param: ENABLE_PUSH
-      0x00, 0x00, 0x00, 0x03,  //  Value: 1
-      0x00, 0x04,              //  Param: INITIAL_WINDOW_SIZE
-      0x00,                    //  Value: Truncated
+      '\x00', '\x00', '\x09',          // Length: 2
+      '\x04',                          //   Type: SETTINGS
+      '\x00',                          //  Flags: none
+      '\x00', '\x00', '\x00', '\x00',  // Stream: 0
+      '\x00', '\x02',                  //  Param: ENABLE_PUSH
+      '\x00', '\x00', '\x00', '\x03',  //  Value: 1
+      '\x00', '\x04',                  //  Param: INITIAL_WINDOW_SIZE
+      '\x00',                          //  Value: Truncated
   };
   Http2FrameHeader header(9, Http2FrameType::SETTINGS, 0, 0);
   FrameParts expected(header);
@@ -731,11 +736,11 @@ TEST_F(Http2FrameDecoderTest, SettingsWrongSize) {
 
 TEST_F(Http2FrameDecoderTest, PushPromiseTooShort) {
   const char kFrameData[] = {
-      0x00, 0x00, 3,           // Payload length: 3
-      0x05,                    // PUSH_PROMISE
-      0x00,                    // Flags: none
-      0x00, 0x00, 0x00, 0x01,  // Stream ID: 1
-      0x00, 0x00, 0x00,        // Truncated promise id
+      '\x00', '\x00', 3,               // Payload length: 3
+      '\x05',                          // PUSH_PROMISE
+      '\x00',                          // Flags: none
+      '\x00', '\x00', '\x00', '\x01',  // Stream ID: 1
+      '\x00', '\x00', '\x00',          // Truncated promise id
   };
   Http2FrameHeader header(3, Http2FrameType::PUSH_PROMISE, 0, 1);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -743,12 +748,12 @@ TEST_F(Http2FrameDecoderTest, PushPromiseTooShort) {
 
 TEST_F(Http2FrameDecoderTest, PushPromisePaddedTruncatedPromise) {
   const char kFrameData[] = {
-      0x00, 0x00, 4,           // Payload length: 4
-      0x05,                    // PUSH_PROMISE
-      0x08,                    // Flags: PADDED
-      0x00, 0x00, 0x00, 0x01,  // Stream ID: 1
-      0x00,                    // Pad Len
-      0x00, 0x00, 0x00,        // Truncated promise id
+      '\x00', '\x00', 4,               // Payload length: 4
+      '\x05',                          // PUSH_PROMISE
+      '\x08',                          // Flags: PADDED
+      '\x00', '\x00', '\x00', '\x01',  // Stream ID: 1
+      '\x00',                          // Pad Len
+      '\x00', '\x00', '\x00',          // Truncated promise id
   };
   Http2FrameHeader header(4, Http2FrameType::PUSH_PROMISE,
                           Http2FrameFlag::PADDED, 1);
@@ -757,12 +762,12 @@ TEST_F(Http2FrameDecoderTest, PushPromisePaddedTruncatedPromise) {
 
 TEST_F(Http2FrameDecoderTest, PingTooShort) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x07,        //   Length: 8
-      0x06,                     //     Type: PING
-      0xfeu,                    //    Flags: no valid flags
-      0x00,  0x00, 0x00, 0x00,  //   Stream: 0
-      's',   'o',  'm',  'e',   // "some"
-      'd',   'a',  't',         // Too little
+      '\x00', '\x00', '\x07',          //   Length: 8
+      '\x06',                          //     Type: PING
+      '\xfe',                          //    Flags: no valid flags
+      '\x00', '\x00', '\x00', '\x00',  //   Stream: 0
+      's',    'o',    'm',    'e',     // "some"
+      'd',    'a',    't',             // Too little
   };
   Http2FrameHeader header(7, Http2FrameType::PING, 0, 0);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -770,10 +775,10 @@ TEST_F(Http2FrameDecoderTest, PingTooShort) {
 
 TEST_F(Http2FrameDecoderTest, GoAwayTooShort) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x00,        // Length: 0
-      0x07,                     //   Type: GOAWAY
-      0xffu,                    //  Flags: 0xff (no valid flags)
-      0x00,  0x00, 0x00, 0x00,  // Stream: 0
+      '\x00', '\x00', '\x00',          // Length: 0
+      '\x07',                          //   Type: GOAWAY
+      '\xff',                          //  Flags: 0xff (no valid flags)
+      '\x00', '\x00', '\x00', '\x00',  // Stream: 0
   };
   Http2FrameHeader header(0, Http2FrameType::GOAWAY, 0, 0);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -781,11 +786,11 @@ TEST_F(Http2FrameDecoderTest, GoAwayTooShort) {
 
 TEST_F(Http2FrameDecoderTest, WindowUpdateTooShort) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x03,        // Length: 3
-      0x08,                     //   Type: WINDOW_UPDATE
-      0x0f,                     //  Flags: 0xff (no valid flags)
-      0x00,  0x00, 0x00, 0x01,  // Stream: 1
-      0x80u, 0x00, 0x04,        // Truncated
+      '\x00', '\x00', '\x03',          // Length: 3
+      '\x08',                          //   Type: WINDOW_UPDATE
+      '\x0f',                          //  Flags: 0xff (no valid flags)
+      '\x00', '\x00', '\x00', '\x01',  // Stream: 1
+      '\x80', '\x00', '\x04',          // Truncated
   };
   Http2FrameHeader header(3, Http2FrameType::WINDOW_UPDATE, 0, 1);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -793,11 +798,11 @@ TEST_F(Http2FrameDecoderTest, WindowUpdateTooShort) {
 
 TEST_F(Http2FrameDecoderTest, AltSvcTruncatedOriginLength) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x01,        // Payload length: 3
-      0x0a,                    // ALTSVC
-      0x00,                    // Flags: none
-      0x00, 0x00, 0x00, 0x02,  // Stream ID: 2
-      0x00,                    // Origin Length: truncated
+      '\x00', '\x00', '\x01',          // Payload length: 3
+      '\x0a',                          // ALTSVC
+      '\x00',                          // Flags: none
+      '\x00', '\x00', '\x00', '\x02',  // Stream ID: 2
+      '\x00',                          // Origin Length: truncated
   };
   Http2FrameHeader header(1, Http2FrameType::ALTSVC, 0, 2);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -805,12 +810,12 @@ TEST_F(Http2FrameDecoderTest, AltSvcTruncatedOriginLength) {
 
 TEST_F(Http2FrameDecoderTest, AltSvcTruncatedOrigin) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x05,        // Payload length: 3
-      0x0a,                    // ALTSVC
-      0x00,                    // Flags: none
-      0x00, 0x00, 0x00, 0x02,  // Stream ID: 2
-      0x00, 0x04,              // Origin Length: 4 (too long)
-      'a',  'b',  'c',         // Origin
+      '\x00', '\x00', '\x05',          // Payload length: 3
+      '\x0a',                          // ALTSVC
+      '\x00',                          // Flags: none
+      '\x00', '\x00', '\x00', '\x02',  // Stream ID: 2
+      '\x00', '\x04',                  // Origin Length: 4 (too long)
+      'a',    'b',    'c',             // Origin
   };
   Http2FrameHeader header(5, Http2FrameType::ALTSVC, 0, 2);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -824,13 +829,13 @@ TEST_F(Http2FrameDecoderTest, AltSvcTruncatedOrigin) {
 TEST_F(Http2FrameDecoderTest, BeyondMaximum) {
   decoder_.set_maximum_payload_size(2);
   const char kFrameData[] = {
-      0x00, 0x00, 0x07,        // Payload length: 7
-      0x00,                    // DATA
-      0x09,                    // Flags: END_STREAM | PADDED
-      0x00, 0x00, 0x00, 0x02,  // Stream ID: 0  (REQUIRES ID)
-      0x03,                    // Pad Len
-      'a',  'b',  'c',         // Data
-      0x00, 0x00, 0x00,        // Padding
+      '\x00', '\x00', '\x07',          // Payload length: 7
+      '\x00',                          // DATA
+      '\x09',                          // Flags: END_STREAM | PADDED
+      '\x00', '\x00', '\x00', '\x02',  // Stream ID: 0  (REQUIRES ID)
+      '\x03',                          // Pad Len
+      'a',    'b',    'c',             // Data
+      '\x00', '\x00', '\x00',          // Padding
   };
   Http2FrameHeader header(7, Http2FrameType::DATA,
                           Http2FrameFlag::END_STREAM | Http2FrameFlag::PADDED,
@@ -854,13 +859,13 @@ TEST_F(Http2FrameDecoderTest, BeyondMaximum) {
 
 TEST_F(Http2FrameDecoderTest, PriorityTooLong) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x06,        // Length: 5
-      0x02,                     //   Type: PRIORITY
-      0x00,                     //  Flags: none
-      0x00,  0x00, 0x00, 0x02,  // Stream: 2
-      0x80u, 0x00, 0x00, 0x01,  // Parent: 1 (Exclusive)
-      0x10,                     // Weight: 17
-      0x00,                     // Too much
+      '\x00', '\x00', '\x06',          // Length: 5
+      '\x02',                          //   Type: PRIORITY
+      '\x00',                          //  Flags: none
+      '\x00', '\x00', '\x00', '\x02',  // Stream: 2
+      '\x80', '\x00', '\x00', '\x01',  // Parent: 1 (Exclusive)
+      '\x10',                          // Weight: 17
+      '\x00',                          // Too much
   };
   Http2FrameHeader header(6, Http2FrameType::PRIORITY, 0, 2);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -868,12 +873,12 @@ TEST_F(Http2FrameDecoderTest, PriorityTooLong) {
 
 TEST_F(Http2FrameDecoderTest, RstStreamTooLong) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x05,        // Length: 4
-      0x03,                    //   Type: RST_STREAM
-      0x00,                    //  Flags: none
-      0x00, 0x00, 0x00, 0x01,  // Stream: 1
-      0x00, 0x00, 0x00, 0x01,  //  Error: PROTOCOL_ERROR
-      0x00,                    // Too much
+      '\x00', '\x00', '\x05',          // Length: 4
+      '\x03',                          //   Type: RST_STREAM
+      '\x00',                          //  Flags: none
+      '\x00', '\x00', '\x00', '\x01',  // Stream: 1
+      '\x00', '\x00', '\x00', '\x01',  //  Error: PROTOCOL_ERROR
+      '\x00',                          // Too much
   };
   Http2FrameHeader header(5, Http2FrameType::RST_STREAM, 0, 1);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -881,12 +886,12 @@ TEST_F(Http2FrameDecoderTest, RstStreamTooLong) {
 
 TEST_F(Http2FrameDecoderTest, SettingsAckTooLong) {
   const char kFrameData[] = {
-      0x00, 0x00, 0x06,        //   Length: 6
-      0x04,                    //     Type: SETTINGS
-      0x01,                    //    Flags: ACK
-      0x00, 0x00, 0x00, 0x00,  //   Stream: 0
-      0x00, 0x00,              //   Extra
-      0x00, 0x00, 0x00, 0x00,  //   Extra
+      '\x00', '\x00', '\x06',          //   Length: 6
+      '\x04',                          //     Type: SETTINGS
+      '\x01',                          //    Flags: ACK
+      '\x00', '\x00', '\x00', '\x00',  //   Stream: 0
+      '\x00', '\x00',                  //   Extra
+      '\x00', '\x00', '\x00', '\x00',  //   Extra
   };
   Http2FrameHeader header(6, Http2FrameType::SETTINGS, Http2FrameFlag::ACK, 0);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -894,13 +899,13 @@ TEST_F(Http2FrameDecoderTest, SettingsAckTooLong) {
 
 TEST_F(Http2FrameDecoderTest, PingAckTooLong) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x09,        //   Length: 8
-      0x06,                     //     Type: PING
-      0xffu,                    //    Flags: ACK | 0xfe
-      0x00,  0x00, 0x00, 0x00,  //   Stream: 0
-      's',   'o',  'm',  'e',   // "some"
-      'd',   'a',  't',  'a',   // "data"
-      0x00,                     // Too much
+      '\x00', '\x00', '\x09',          //   Length: 8
+      '\x06',                          //     Type: PING
+      '\xff',                          //    Flags: ACK | 0xfe
+      '\x00', '\x00', '\x00', '\x00',  //   Stream: 0
+      's',    'o',    'm',    'e',     // "some"
+      'd',    'a',    't',    'a',     // "data"
+      '\x00',                          // Too much
   };
   Http2FrameHeader header(9, Http2FrameType::PING, Http2FrameFlag::ACK, 0);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
@@ -908,12 +913,12 @@ TEST_F(Http2FrameDecoderTest, PingAckTooLong) {
 
 TEST_F(Http2FrameDecoderTest, WindowUpdateTooLong) {
   const char kFrameData[] = {
-      0x00,  0x00, 0x05,        // Length: 5
-      0x08,                     //   Type: WINDOW_UPDATE
-      0x0f,                     //  Flags: 0xff (no valid flags)
-      0x00,  0x00, 0x00, 0x01,  // Stream: 1
-      0x80u, 0x00, 0x04, 0x00,  //   Incr: 1024 (plus R bit)
-      0x00,                     // Too much
+      '\x00', '\x00', '\x05',          // Length: 5
+      '\x08',                          //   Type: WINDOW_UPDATE
+      '\x0f',                          //  Flags: 0xff (no valid flags)
+      '\x00', '\x00', '\x00', '\x01',  // Stream: 1
+      '\x80', '\x00', '\x04', '\x00',  //   Incr: 1024 (plus R bit)
+      '\x00',                          // Too much
   };
   Http2FrameHeader header(5, Http2FrameType::WINDOW_UPDATE, 0, 1);
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, header));
