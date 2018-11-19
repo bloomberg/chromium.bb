@@ -195,4 +195,28 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfCustomPassphraseInUse) {
             GetUploadToGoogleState(&service, syncer::DEVICE_INFO));
 }
 
+TEST(SyncServiceUtilsTest, UploadToGoogleDisabledForSecondaryAccount) {
+  TestSyncService service;
+  service.SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
+  service.SetPreferredDataTypes(ProtocolTypes());
+  service.SetActiveDataTypes(ProtocolTypes());
+  service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  service.SetNonEmptyLastCycleSnapshot();
+
+  // Sanity check: Everything's looking good, so upload is considered active.
+  ASSERT_EQ(UploadState::ACTIVE,
+            GetUploadToGoogleState(&service, syncer::BOOKMARKS));
+
+  // Mark the syncing account as non-primary. With this, only Sync-the-transport
+  // (not Sync-the-feature) can run.
+  service.SetIsAuthenticatedAccountPrimary(false);
+  ASSERT_FALSE(service.CanSyncFeatureStart());
+
+  // Upload should NOT be active now. Even though the data type is active, we're
+  // running in standalone transport mode, so we don't have consent for
+  // uploading.
+  EXPECT_EQ(UploadState::NOT_ACTIVE,
+            GetUploadToGoogleState(&service, syncer::BOOKMARKS));
+}
+
 }  // namespace syncer
