@@ -28,6 +28,7 @@
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
+#include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notification_button.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
@@ -282,6 +283,35 @@ TEST_F(NotificationViewTest, CreateOrUpdateTest) {
   EXPECT_TRUE(NULL == GetSettingsButton());
   // We still expect an icon view for all layouts.
   EXPECT_TRUE(NULL != notification_view()->icon_view_);
+}
+
+TEST_F(NotificationViewTest, UpdateViewsOrderingTest) {
+  EXPECT_NE(nullptr, notification_view()->title_view_);
+  EXPECT_NE(nullptr, notification_view()->message_view_);
+  EXPECT_EQ(0, notification_view()->top_view_->GetIndexOf(
+                   notification_view()->title_view_));
+  EXPECT_EQ(1, notification_view()->top_view_->GetIndexOf(
+                   notification_view()->message_view_));
+
+  notification()->set_title(base::string16());
+
+  notification_view()->CreateOrUpdateViews(*notification());
+
+  EXPECT_EQ(nullptr, notification_view()->title_view_);
+  EXPECT_NE(nullptr, notification_view()->message_view_);
+  EXPECT_EQ(0, notification_view()->top_view_->GetIndexOf(
+                   notification_view()->message_view_));
+
+  notification()->set_title(base::UTF8ToUTF16("title"));
+
+  notification_view()->CreateOrUpdateViews(*notification());
+
+  EXPECT_NE(nullptr, notification_view()->title_view_);
+  EXPECT_NE(nullptr, notification_view()->message_view_);
+  EXPECT_EQ(0, notification_view()->top_view_->GetIndexOf(
+                   notification_view()->title_view_));
+  EXPECT_EQ(1, notification_view()->top_view_->GetIndexOf(
+                   notification_view()->message_view_));
 }
 
 TEST_F(NotificationViewTest, CreateOrUpdateTestSettingsButton) {
