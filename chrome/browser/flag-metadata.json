@@ -1669,7 +1669,8 @@
   },
   {
     "name": "enable-service-worker-imported-script-update-check",
-    // "owners": [ "your-team" ],
+    "owners": [ "worker-dev@chromium.org" ],
+    // It's still in development. Tentatively set to M76 as the expiry_milestone.
     "expiry_milestone": 76
   },
   {
@@ -1679,8 +1680,9 @@
   },
   {
     "name": "enable-service-worker-servicification",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "worker-dev@chromium.org" ],
+    // Enabled by default in M72.
+    "expiry_milestone": 73
   },
   {
     "name": "enable-settings-shortcut-search",
