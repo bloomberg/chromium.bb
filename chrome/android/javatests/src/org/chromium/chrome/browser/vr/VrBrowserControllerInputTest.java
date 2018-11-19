@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
@@ -299,7 +300,7 @@ public class VrBrowserControllerInputTest {
         mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_gamepad_button"),
                 PAGE_LOAD_TIMEOUT_S);
 
-        mVrTestRule.loadUrl("chrome://history", PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(UrlConstants.HISTORY_URL, PAGE_LOAD_TIMEOUT_S);
 
         RecyclerView recyclerView =
                 ((HistoryPage) (mVrTestRule.getActivity().getActivityTab().getNativePage()))
