@@ -62,6 +62,12 @@ class KeyPair(object):
   _priv_ext_re = re.compile(r'\.vbpri(vk|k2)$')
   _pub_ext_re = re.compile(r'\.vbpubk2?$')
 
+  # This is used by ParsePrivateKeyFilename to recognize a valid private key
+  # file name.  Keyset initialization only creates KeyPairs for valid private
+  # keys that it finds in the directory.
+  _priv_filename_re = re.compile(
+      r'(?P<name>\w+\.?\w+)(?P<ext>\.vbpri(?:vk|k2))$')
+
   def __init__(self, name, keydir, version=1, subkeys=(),
                pub_ext=None, priv_ext='.vbprivk'):
     """Initialize KeyPair.
@@ -121,6 +127,20 @@ class KeyPair(object):
                                    version=self.version,
                                    pub_ext=self._pub_ext,
                                    priv_ext=self._priv_ext)
+
+  @classmethod
+  def ParsePrivateKeyFilename(cls, file_name):
+    """Extract the name and extension from the filename.
+
+    Args:
+      file_name: a filename that may or may not be a private key.  Leading
+          directories are ignored.
+
+    Returns:
+      None or re.MatchObject with named groups 'name' and 'ext'.
+    """
+    basename = file_name.split('/')[-1]
+    return cls._priv_filename_re.match(basename)
 
   def Exists(self, require_public=False, require_private=False):
     """Returns True if ether key or subkeys exists on disk."""

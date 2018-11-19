@@ -197,6 +197,25 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
     k2 = keys.KeyPair('key2', self.tempdir)
     self.assertNotEqual(k1, k2)
 
+  def testParsePrivateKeyFilenameReturnsValues(self):
+    """Make sure that we return the correct name/ext."""
+    v1 = keys.KeyPair.ParsePrivateKeyFilename('foo.vbprivk')
+    self.assertEqual('foo', v1.group('name'))
+    self.assertEqual('.vbprivk', v1.group('ext'))
+    v2 = keys.KeyPair.ParsePrivateKeyFilename('bar.vbprik2')
+    self.assertEqual('bar', v2.group('name'))
+    self.assertEqual('.vbprik2', v2.group('ext'))
+
+  def testParsePrivateKeyFilenameReturnsNone(self):
+    """Non-private key filenames return None"""
+    self.assertEqual(None, keys.KeyPair.ParsePrivateKeyFilename('foo.vbpubk'))
+
+  def testParsePrivateKeyFilenameStripsDir(self):
+    """Leading directories in the path are ignored."""
+    name = keys.KeyPair.ParsePrivateKeyFilename(
+        '/path/to/foo.vbprivk').group('name')
+    self.assertEqual('foo', name)
+
   def testExistsEmpty(self):
     self.assertFalse(keys.KeyPair('key1', self.tempdir).Exists())
 
