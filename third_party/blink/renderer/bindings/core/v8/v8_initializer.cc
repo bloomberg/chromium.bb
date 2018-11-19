@@ -768,8 +768,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
 
   V8PerIsolateData::From(isolate)->SetThreadDebugger(
       std::make_unique<MainThreadDebugger>(isolate));
-
-  BindingSecurity::InitWrapperCreationSecurityCheck();
 }
 
 static void ReportFatalErrorInWorker(const char* location,

@@ -42,10 +42,21 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/bindings/wrapper_creation_security_check.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
+
+void BindingSecurity::Init() {
+  BindingSecurityForPlatform::SetShouldAllowAccessToV8ContextWithExceptionState(
+      ShouldAllowAccessToV8Context);
+  BindingSecurityForPlatform::
+      SetShouldAllowAccessToV8ContextWithErrorReportOption(
+          ShouldAllowAccessToV8Context);
+  BindingSecurityForPlatform::SetShouldAllowWrapperCreationOrThrowException(
+      ShouldAllowWrapperCreationOrThrowException);
+  BindingSecurityForPlatform::SetRethrowWrapperCreationException(
+      RethrowWrapperCreationException);
+}
 
 namespace {
 
@@ -285,6 +296,129 @@ bool BindingSecurity::ShouldAllowAccessToFrame(
                          reporting_option);
 }
 
+namespace {
+
+template <typename ExceptionStateOrErrorReportOption>
+bool ShouldAllowAccessToV8ContextInternal(
+    v8::Local<v8::Context> accessing_context,
+    v8::Local<v8::Context> target_context,
+    ExceptionStateOrErrorReportOption& error_report) {
+  // Fast path for the most likely case.
+  if (accessing_context == target_context)
+    return true;
+
+  // Workers and worklets do not support multiple contexts, so both of
+  // |accessing_context| and |target_context| must be windows at this point.
+
+  LocalFrame* target_frame = ToLocalFrameIfNotDetached(target_context);
+  // TODO(dcheng): Why doesn't this code just use DOMWindows throughout? Can't
+  // we just always use ToLocalDOMWindow(context)?
+  if (!target_frame) {
+    // Sandbox detached frames - they can't create cross origin objects.
+    LocalDOMWindow* accessing_window = ToLocalDOMWindow(accessing_context);
+    LocalDOMWindow* target_window = ToLocalDOMWindow(target_context);
+
+    // TODO(https://crbug.com/723057): This is tricky: this intentionally uses
+    // the internal CanAccessWindow() helper rather than ShouldAllowAccessTo().
+    // ShouldAllowAccessTo() unconditionally denies access if the DOMWindow is
+    // not attached to a Frame, but this code is intended for handling the
+    // detached DOMWindow case.
+    return CanAccessWindow(accessing_window, target_window, error_report);
+  }
+
+  const DOMWrapperWorld& accessing_world =
+      DOMWrapperWorld::World(accessing_context);
+  const DOMWrapperWorld& target_world = DOMWrapperWorld::World(target_context);
+  CHECK_EQ(accessing_world.GetWorldId(), target_world.GetWorldId());
+
+  return !accessing_world.IsMainWorld() ||
+         BindingSecurity::ShouldAllowAccessToFrame(
+             ToLocalDOMWindow(accessing_context), target_frame, error_report);
+}
+
+}  // namespace
+
+bool BindingSecurity::ShouldAllowAccessToV8Context(
+    v8::Local<v8::Context> accessing_context,
+    v8::Local<v8::Context> target_context,
+    ExceptionState& exception_state) {
+  return ShouldAllowAccessToV8ContextInternal(accessing_context, target_context,
+                                              exception_state);
+}
+
+bool BindingSecurity::ShouldAllowAccessToV8Context(
+    v8::Local<v8::Context> accessing_context,
+    v8::Local<v8::Context> target_context,
+    ErrorReportOption reporting_option) {
+  return ShouldAllowAccessToV8ContextInternal(accessing_context, target_context,
+                                              reporting_option);
+}
+
+bool BindingSecurity::ShouldAllowWrapperCreationOrThrowException(
+    v8::Local<v8::Context> accessing_context,
+    v8::Local<v8::Context> creation_context,
+    const WrapperTypeInfo* wrapper_type_info) {
+  // Fast path for the most likely case.
+  if (accessing_context == creation_context)
+    return true;
+
+  // According to
+  // https://html.spec.whatwg.org/multipage/browsers.html#security-location,
+  // cross-origin script access to a few properties of Location is allowed.
+  // Location already implements the necessary security checks.
+  if (wrapper_type_info->Equals(&V8Location::wrapperTypeInfo))
+    return true;
+
+  ExceptionState exception_state(accessing_context->GetIsolate(),
+                                 ExceptionState::kConstructionContext,
+                                 wrapper_type_info->interface_name);
+  return ShouldAllowAccessToV8Context(accessing_context, creation_context,
+                                      exception_state);
+}
+
+void BindingSecurity::RethrowWrapperCreationException(
+    v8::Local<v8::Context> accessing_context,
+    v8::Local<v8::Context> creation_context,
+    const WrapperTypeInfo* wrapper_type_info,
+    v8::Local<v8::Value> cross_context_exception) {
+  DCHECK(!cross_context_exception.IsEmpty());
+  v8::Isolate* isolate = creation_context->GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
+                                 wrapper_type_info->interface_name);
+  if (!ShouldAllowAccessToV8Context(accessing_context, creation_context,
+                                    exception_state)) {
+    // A cross origin exception has turned into a SecurityError.
+    CHECK(exception_state.HadException());
+    return;
+  }
+  exception_state.RethrowV8Exception(cross_context_exception);
+}
+
+void BindingSecurity::FailedAccessCheckFor(v8::Isolate* isolate,
+                                           const WrapperTypeInfo* type,
+                                           v8::Local<v8::Object> holder) {
+  DOMWindow* target = FindWindow(isolate, type, holder);
+  // Failing to find a target means something is wrong. Failing to throw an
+  // exception could be a security issue, so just crash.
+  CHECK(target);
+
+  // TODO(https://crbug.com/723057): This is intended to match the legacy
+  // behavior of when access checks revolved around Frame pointers rather than
+  // DOMWindow pointers. This prevents web-visible behavior changes, since the
+  // previous implementation had to follow the back pointer to the Frame, and
+  // would have to early return when it was null.
+  if (!target->GetFrame())
+    return;
+
+  // TODO(dcheng): Add ContextType, interface name, and property name as
+  // arguments, so the generated exception can be more descriptive.
+  ExceptionState exception_state(isolate, ExceptionState::kUnknownContext,
+                                 nullptr, nullptr);
+  exception_state.ThrowSecurityError(
+      target->SanitizedCrossDomainAccessErrorMessage(CurrentDOMWindow(isolate)),
+      target->CrossDomainAccessErrorMessage(CurrentDOMWindow(isolate)));
+}
+
 bool BindingSecurity::ShouldAllowNamedAccessTo(
     const DOMWindow* accessing_window,
     const DOMWindow* target_window) {
@@ -311,96 +445,6 @@ bool BindingSecurity::ShouldAllowNamedAccessTo(
   // so there is no need to worry about URL spoofing.
 
   return true;
-}
-
-bool BindingSecurity::ShouldAllowAccessToCreationContext(
-    v8::Local<v8::Context> creation_context,
-    const WrapperTypeInfo* type) {
-  // According to
-  // https://html.spec.whatwg.org/multipage/browsers.html#security-location,
-  // cross-origin script access to a few properties of Location is allowed.
-  // Location already implements the necessary security checks.
-  if (type->Equals(&V8Location::wrapperTypeInfo))
-    return true;
-
-  v8::Isolate* isolate = creation_context->GetIsolate();
-  LocalFrame* frame = ToLocalFrameIfNotDetached(creation_context);
-  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
-                                 type->interface_name);
-  // TODO(dcheng): Why doesn't this code just use DOMWindows throughout? Can't
-  // we just always use ToLocalDOMWindow(creation_context)?
-  if (!frame) {
-    // Sandbox detached frames - they can't create cross origin objects.
-    LocalDOMWindow* calling_window = CurrentDOMWindow(isolate);
-    LocalDOMWindow* target_window = ToLocalDOMWindow(creation_context);
-
-    // TODO(https://crbug.com/723057): This is tricky: this intentionally uses
-    // the internal CanAccessWindow() helper rather than ShouldAllowAccessTo().
-    // ShouldAllowAccessTo() unconditionally denies access if the DOMWindow is
-    // not attached to a Frame, but this code is intended for handling the
-    // detached DOMWindow case.
-    return CanAccessWindow(calling_window, target_window, exception_state);
-  }
-  const DOMWrapperWorld& current_world =
-      DOMWrapperWorld::World(isolate->GetCurrentContext());
-  CHECK_EQ(current_world.GetWorldId(),
-           DOMWrapperWorld::World(creation_context).GetWorldId());
-
-  return !current_world.IsMainWorld() ||
-         ShouldAllowAccessToFrame(CurrentDOMWindow(isolate), frame,
-                                  exception_state);
-}
-
-void BindingSecurity::RethrowCrossContextException(
-    v8::Local<v8::Context> creation_context,
-    const WrapperTypeInfo* type,
-    v8::Local<v8::Value> cross_context_exception) {
-  DCHECK(!cross_context_exception.IsEmpty());
-  v8::Isolate* isolate = creation_context->GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
-                                 type->interface_name);
-  if (type->Equals(&V8Location::wrapperTypeInfo)) {
-    // Convert cross-context exception to security error
-    LocalDOMWindow* calling_window = CurrentDOMWindow(isolate);
-    LocalDOMWindow* target_window = ToLocalDOMWindow(creation_context);
-    exception_state.ThrowSecurityError(
-        target_window->SanitizedCrossDomainAccessErrorMessage(calling_window),
-        target_window->CrossDomainAccessErrorMessage(calling_window));
-    return;
-  }
-  exception_state.RethrowV8Exception(cross_context_exception);
-}
-
-void BindingSecurity::InitWrapperCreationSecurityCheck() {
-  WrapperCreationSecurityCheck::SetSecurityCheckFunction(
-      &ShouldAllowAccessToCreationContext);
-  WrapperCreationSecurityCheck::SetRethrowExceptionFunction(
-      &RethrowCrossContextException);
-}
-
-void BindingSecurity::FailedAccessCheckFor(v8::Isolate* isolate,
-                                           const WrapperTypeInfo* type,
-                                           v8::Local<v8::Object> holder) {
-  DOMWindow* target = FindWindow(isolate, type, holder);
-  // Failing to find a target means something is wrong. Failing to throw an
-  // exception could be a security issue, so just crash.
-  CHECK(target);
-
-  // TODO(https://crbug.com/723057): This is intended to match the legacy
-  // behavior of when access checks revolved around Frame pointers rather than
-  // DOMWindow pointers. This prevents web-visible behavior changes, since the
-  // previous implementation had to follow the back pointer to the Frame, and
-  // would have to early return when it was null.
-  if (!target->GetFrame())
-    return;
-
-  // TODO(dcheng): Add ContextType, interface name, and property name as
-  // arguments, so the generated exception can be more descriptive.
-  ExceptionState exception_state(isolate, ExceptionState::kUnknownContext,
-                                 nullptr, nullptr);
-  exception_state.ThrowSecurityError(
-      target->SanitizedCrossDomainAccessErrorMessage(CurrentDOMWindow(isolate)),
-      target->CrossDomainAccessErrorMessage(CurrentDOMWindow(isolate)));
 }
 
 }  // namespace blink
