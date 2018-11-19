@@ -874,6 +874,32 @@
             ]
         }
     ],
+    "AutofillSmallFormUploads": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "disable_features": [
+                        "AutofillEnforceMinRequiredFieldsForUpload"
+                    ]
+                },
+                {
+                    "name": "Control",
+                    "enable_features": [
+                        "AutofillEnforceMinRequiredFieldsForUpload"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillUpstreamDisallowEloAndJcb": [
         {
             "platforms": [
