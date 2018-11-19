@@ -26,7 +26,7 @@ function testNormalImage() {
   var options = {
     maxWidth: 100,
     maxHeight: 100,
-    orientation: ImageOrientation.fromDriveOrientation(0)
+    orientation: ImageOrientation.fromClockwiseRotation(0)
   };
   var result = calculateCopyParametersFromOptions(source, options);
   assertEquals(0, result.source.x);
@@ -53,7 +53,7 @@ function testRotatedImage() {
   var options = {
     maxWidth: 100,
     maxHeight: 100,
-    orientation: ImageOrientation.fromDriveOrientation(1)
+    orientation: ImageOrientation.fromClockwiseRotation(1)
   };
   var result = calculateCopyParametersFromOptions(source, options);
   assertEquals(0, result.source.x);
@@ -81,7 +81,7 @@ function testCroppedImage() {
     width: 50,
     height: 50,
     crop: true,
-    orientation: ImageOrientation.fromDriveOrientation(0)
+    orientation: ImageOrientation.fromClockwiseRotation(0)
   };
   var result = calculateCopyParametersFromOptions(source, options);
   assertEquals(350, result.source.x);
@@ -109,7 +109,7 @@ function testCroppedImageWithResize() {
     width: 50,
     height: 50,
     crop: true,
-    orientation: ImageOrientation.fromDriveOrientation(0)
+    orientation: ImageOrientation.fromClockwiseRotation(0)
   };
   var result = calculateCopyParametersFromOptions(source, options);
   assertEquals(87, result.source.x);
@@ -137,7 +137,7 @@ function testCroppedTinyImage() {
     width: 50,
     height: 50,
     crop: true,
-    orientation: ImageOrientation.fromDriveOrientation(0)
+    orientation: ImageOrientation.fromClockwiseRotation(0)
   };
   var result = calculateCopyParametersFromOptions(source, options);
   assertEquals(5, result.source.x);
@@ -165,7 +165,7 @@ function testCroppedRotatedImage() {
     width: 50,
     height: 50,
     crop: true,
-    orientation: ImageOrientation.fromDriveOrientation(1)
+    orientation: ImageOrientation.fromClockwiseRotation(1)
   };
   var result = calculateCopyParametersFromOptions(source, options);
   assertEquals(0, result.source.x);

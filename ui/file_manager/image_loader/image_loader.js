@@ -98,11 +98,9 @@ ImageLoader.prototype.onIncomingRequest_ = function(
   };
   // Incoming requests won't have the full type.
   assert(!(request.orientation instanceof ImageOrientation));
+  assert(!(typeof request.orientation === 'number'));
 
-  if (typeof request.orientation === 'number') {
-    request.orientation =
-        ImageOrientation.fromDriveOrientation(request.orientation);
-  } else if (request.orientation) {
+  if (request.orientation) {
     request.orientation =
         ImageOrientation.fromRotationAndScale(request.orientation);
   } else {
