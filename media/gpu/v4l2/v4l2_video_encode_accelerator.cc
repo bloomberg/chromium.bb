@@ -209,20 +209,17 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
       return false;
     }
 
-    scoped_refptr<V4L2Device> device = V4L2Device::Create();
-    image_processor_.reset(
-        new V4L2ImageProcessor(device, V4L2_MEMORY_USERPTR, V4L2_MEMORY_MMAP));
-
     // Convert from |config.input_format| to |device_input_format_|, keeping the
     // size at |visible_size_| and requiring the output buffers to be of at
     // least |input_allocated_size_|. Unretained is safe because |this| owns
     // image processor and there will be no callbacks after processor destroys.
-    if (!image_processor_->Initialize(
-            config.input_format, device_input_format_, visible_size_,
-            visible_size_, visible_size_, input_allocated_size_,
-            kImageProcBufferCount,
-            base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
-                       base::Unretained(this)))) {
+    image_processor_ = V4L2ImageProcessor::Create(
+        V4L2Device::Create(), V4L2_MEMORY_USERPTR, V4L2_MEMORY_MMAP,
+        config.input_format, device_input_format_, visible_size_, visible_size_,
+        visible_size_, input_allocated_size_, kImageProcBufferCount,
+        base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
+                   base::Unretained(this)));
+    if (!image_processor_) {
       VLOGF(1) << "Failed initializing image processor";
       return false;
     }

@@ -7,13 +7,14 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
-#include "media/base/video_frame.h"
-#include "media/base/video_types.h"
+#include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
+
+class VideoFrame;
 
 // An image processor is used to convert from one image format to another (e.g.
 // I420 to NV12) while optionally scaling. It is useful in situations where
@@ -23,21 +24,6 @@ namespace media {
 // This class exposes the interface that an image processor should implement.
 class ImageProcessor {
  public:
-  // Initializes the processor to convert from |input_format| to |output_format|
-  // and/or scale from |input_visible_size| to |output_visible_size|.
-  // Request the input buffers to be of at least |input_allocated_size| and the
-  // output buffers to be of at least |output_allocated_size|. The number of
-  // input buffers and output buffers will be |num_buffers|. Provided |error_cb|
-  // will be posted to the child thread if an error occurs after initialization.
-  // Return true if the requested configuration is supported.
-  virtual bool Initialize(VideoPixelFormat input_format,
-                          VideoPixelFormat output_format,
-                          gfx::Size input_visible_size,
-                          gfx::Size input_allocated_size,
-                          gfx::Size output_visible_size,
-                          gfx::Size output_allocated_size,
-                          int num_buffers,
-                          const base::Closure& error_cb) = 0;
 
   // Returns input allocated size required by the processor to be fed with.
   virtual gfx::Size input_allocated_size() const = 0;
