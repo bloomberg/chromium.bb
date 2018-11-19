@@ -346,8 +346,8 @@ float BrowserCompositorMac::GetDeviceScaleFactor() const {
   return dfh_display_.device_scale_factor();
 }
 
-void BrowserCompositorMac::AllocateNewSurfaceIdOnEviction() {
-  dfh_local_surface_id_allocator_.GenerateId();
+void BrowserCompositorMac::InvalidateLocalSurfaceIdOnEviction() {
+  dfh_local_surface_id_allocator_.Invalidate();
 }
 
 std::vector<viz::SurfaceId>

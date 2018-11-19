@@ -192,6 +192,12 @@ void WindowPortLocal::AllocateLocalSurfaceId() {
   UpdateLocalSurfaceId();
 }
 
+void WindowPortLocal::InvalidateLocalSurfaceId() {
+  if (!parent_local_surface_id_allocator_)
+    return;
+  parent_local_surface_id_allocator_->Invalidate();
+}
+
 viz::ScopedSurfaceIdAllocator WindowPortLocal::GetSurfaceIdAllocator(
     base::OnceCallback<void()> allocation_task) {
   return viz::ScopedSurfaceIdAllocator(

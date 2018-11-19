@@ -2400,7 +2400,7 @@ RenderWidgetHostViewAndroid::DidUpdateVisualProperties(
 }
 
 void RenderWidgetHostViewAndroid::WasEvicted() {
-  local_surface_id_allocator_.GenerateId();
+  local_surface_id_allocator_.Invalidate();
 }
 
 }  // namespace content

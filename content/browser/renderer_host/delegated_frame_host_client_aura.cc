@@ -55,8 +55,8 @@ float DelegatedFrameHostClientAura::GetDeviceScaleFactor() const {
   return render_widget_host_view_->device_scale_factor_;
 }
 
-void DelegatedFrameHostClientAura::AllocateNewSurfaceIdOnEviction() {
-  render_widget_host_view_->AllocateNewSurfaceIdOnEviction();
+void DelegatedFrameHostClientAura::InvalidateLocalSurfaceIdOnEviction() {
+  render_widget_host_view_->InvalidateLocalSurfaceIdOnEviction();
 }
 
 std::vector<viz::SurfaceId>

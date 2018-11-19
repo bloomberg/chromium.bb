@@ -558,7 +558,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Called when the window title is changed.
   void WindowTitleChanged();
 
-  void AllocateNewSurfaceIdOnEviction();
+  void InvalidateLocalSurfaceIdOnEviction();
 
   const bool is_mus_browser_plugin_guest_;
 

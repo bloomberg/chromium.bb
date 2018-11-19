@@ -50,7 +50,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual void OnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual float GetDeviceScaleFactor() const = 0;
-  virtual void AllocateNewSurfaceIdOnEviction() = 0;
+  virtual void InvalidateLocalSurfaceIdOnEviction() = 0;
   virtual std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() = 0;
 };
 

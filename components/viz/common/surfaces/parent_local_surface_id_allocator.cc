@@ -124,7 +124,7 @@ ParentLocalSurfaceIdAllocator::GetCurrentLocalSurfaceIdAllocation() const {
 }
 
 bool ParentLocalSurfaceIdAllocator::HasValidLocalSurfaceIdAllocation() const {
-  return current_local_surface_id_allocation_.IsValid();
+  return !is_invalid_ && current_local_surface_id_allocation_.IsValid();
 }
 
 // static

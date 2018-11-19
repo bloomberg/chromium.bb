@@ -297,6 +297,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task) override;
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation() override;
+  void InvalidateLocalSurfaceId() override;
   void OnEventTargetingPolicyChanged() override;
   bool ShouldRestackTransientChildren() override;
   void RegisterFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;

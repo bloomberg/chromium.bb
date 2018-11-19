@@ -360,7 +360,7 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
     host_frame_sink_manager_->EvictSurfaces(surface_ids);
   }
   frame_evictor_->OnSurfaceDiscarded();
-  client_->AllocateNewSurfaceIdOnEviction();
+  client_->InvalidateLocalSurfaceIdOnEviction();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

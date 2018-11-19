@@ -501,6 +501,15 @@ void RenderWidgetHostViewAura::Show() {
   if (is_mus_browser_plugin_guest_)
     return;
 
+  // If the viz::LocalSurfaceIdAllocation is invalid, we may have been evicted,
+  // and no other visual properties have since been changed. Allocate a new id
+  // and start synchronizing.
+  if (!window_->GetLocalSurfaceIdAllocation().IsValid()) {
+    window_->AllocateLocalSurfaceId();
+    SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                window_->GetLocalSurfaceIdAllocation());
+  }
+
   window_->Show();
   WasUnOccluded();
 }
@@ -2096,6 +2105,10 @@ bool RenderWidgetHostViewAura::SynchronizeVisualProperties(
   DCHECK(window_);
   window_->UpdateLocalSurfaceIdFromEmbeddedClient(
       child_local_surface_id_allocation);
+  // If the viz::LocalSurfaceIdAllocation is invalid, we may have been evicted,
+  // allocate a new one to establish bounds.
+  if (!GetLocalSurfaceIdAllocation().IsValid())
+    window_->AllocateLocalSurfaceId();
 
   if (delegated_frame_host_) {
     delegated_frame_host_->EmbedSurface(
@@ -2589,8 +2602,8 @@ void RenderWidgetHostViewAura::TakeFallbackContentFrom(
   host()->GetContentRenderingTimeoutFrom(view_aura->host());
 }
 
-void RenderWidgetHostViewAura::AllocateNewSurfaceIdOnEviction() {
-  window_->UpdateLocalSurfaceIdFromEmbeddedClient(base::nullopt);
+void RenderWidgetHostViewAura::InvalidateLocalSurfaceIdOnEviction() {
+  window_->InvalidateLocalSurfaceId();
 }
 
 }  // namespace content
