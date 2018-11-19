@@ -26,6 +26,13 @@ class LoginTestBase : public AshTestBase {
   LoginTestBase();
   ~LoginTestBase() override;
 
+  // Shows a full Lock/Login screen. These methods are useful for when we want
+  // to test interactions between multiple lock screen components, or when some
+  // component needs to be able to talk directly to the lockscreen (e.g. getting
+  // the ScreenType).
+  void ShowLockScreen();
+  void ShowLoginScreen();
+
   // Sets the primary test widget. The widget can be retrieved using |widget()|.
   // This can be used to make a widget scoped to the whole test, e.g. if the
   // widget is created in a SetUp override.
@@ -45,6 +52,9 @@ class LoginTestBase : public AshTestBase {
   // |data_dispatcher()|.
   void AddUsers(size_t num_users);
 
+  // Add a single user with the specified |email|.
+  void AddUserByEmail(const std::string& email);
+
   // Append number of |num_public_accounts| public account users.
   // Changes the active number of users. Fires an event on
   // |data_dispatcher()|.
@@ -54,7 +64,10 @@ class LoginTestBase : public AshTestBase {
 
   const std::vector<mojom::LoginUserInfoPtr>& users() const { return users_; }
 
-  LoginDataDispatcher* data_dispatcher() { return &data_dispatcher_; }
+  // If the LockScreen is instantiated, returns its data dispatcher. Otherwise,
+  // returns a standalone instance.
+  // TODO(crbug/906676): rename this method to DataDispatcher.
+  LoginDataDispatcher* data_dispatcher();
 
   // AshTestBase:
   void TearDown() override;
