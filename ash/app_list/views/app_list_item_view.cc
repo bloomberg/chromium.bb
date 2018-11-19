@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -462,24 +461,19 @@ void AppListItemView::OnContextMenuModelReceived(
 
   if (!apps_grid_view_->IsSelectedView(this))
     apps_grid_view_->ClearAnySelectedView();
-  int run_types = views::MenuRunner::HAS_MNEMONICS;
+
+  int run_types = views::MenuRunner::HAS_MNEMONICS |
+                  views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+                  views::MenuRunner::FIXED_ANCHOR |
+                  views::MenuRunner::CONTEXT_MENU;
 
   if (source_type == ui::MENU_SOURCE_TOUCH)
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
 
-  views::MenuAnchorPosition anchor_position = views::MENU_ANCHOR_TOPLEFT;
-  gfx::Rect anchor_rect = gfx::Rect(point, gfx::Size());
-
-  if (::features::IsTouchableAppContextMenuEnabled()) {
-    run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT |
-                 views::MenuRunner::FIXED_ANCHOR |
-                 views::MenuRunner::CONTEXT_MENU;
-    anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT;
-    anchor_rect = apps_grid_view_->GetIdealBounds(this);
-    // Anchor the menu to the same rect that is used for selection highlight.
-    AdaptBoundsForSelectionHighlight(&anchor_rect);
-    views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
-  }
+  gfx::Rect anchor_rect = apps_grid_view_->GetIdealBounds(this);
+  // Anchor the menu to the same rect that is used for selection highlight.
+  AdaptBoundsForSelectionHighlight(&anchor_rect);
+  views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
       item_weak_->GetMetadata()->id, this, source_type, this,
@@ -487,7 +481,8 @@ void AppListItemView::OnContextMenuModelReceived(
       base::BindOnce(&AppListItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()));
   context_menu_->Build(std::move(menu));
-  context_menu_->Run(anchor_rect, anchor_position, run_types);
+  context_menu_->Run(anchor_rect, views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT,
+                     run_types);
   apps_grid_view_->SetSelectedView(this);
 }
 
