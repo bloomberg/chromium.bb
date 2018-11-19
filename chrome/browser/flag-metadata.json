@@ -868,11 +868,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-av1-decoder",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-background-blur",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

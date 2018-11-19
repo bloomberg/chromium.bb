@@ -151,10 +151,6 @@ const char kAutoplayPolicyUserGestureRequired[] = "User gesture is required.";
 const char kAutoplayPolicyDocumentUserActivation[] =
     "Document user activation is required.";
 
-const char kAv1DecoderName[] = "Enable AV1 video decoding.";
-const char kAv1DecoderDescription[] =
-    "Allow decoding of files with the AV1 video codec.";
-
 const char kAwaitOptimizationName[] = "Await optimization";
 const char kAwaitOptimizationDescription[] =
     "Enables await taking 1 tick on the microtask queue.";

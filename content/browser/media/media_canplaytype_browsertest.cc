@@ -579,20 +579,7 @@ class MediaCanPlayTypeTest : public MediaBrowserTest {
 };
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-class AV1MediaCanPlayTypeTest : public MediaCanPlayTypeTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    scoped_feature_list_.InitAndEnableFeature(media::kAv1Decoder);
-    MediaCanPlayTypeTest::SetUpCommandLine(command_line);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Note: This must be a separate test since features can not be changed after
-// the initial navigation.
-IN_PROC_BROWSER_TEST_F(AV1MediaCanPlayTypeTest, CodecSupportTest_av1) {
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_av1) {
   // Fully qualified codec strings are required. These tests are not exhaustive
   // since codec string parsing is exhaustively tested elsewhere.
   EXPECT_EQ(kNot, CanPlay("'video/webm; codecs=\"av1\"'"));

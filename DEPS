@@ -31,7 +31,6 @@ gclient_gn_args = [
   'build_with_chromium',
   'checkout_android',
   'checkout_android_native_support',
-  'checkout_libaom',
   'checkout_nacl',
   'checkout_oculus_sdk',
 ]
@@ -79,9 +78,6 @@ vars = {
   # process the raw profiles produced by instrumented targets (built with
   # the gn arg 'use_clang_coverage').
   'checkout_clang_coverage_tools': False,
-
-  # libaom provides support for AV1.
-  'checkout_libaom': True,
 
   # By default do not check out the Oculus SDK. Only available for Googlers.
   'checkout_oculus_sdk' : 'checkout_src_internal and checkout_win',
@@ -867,10 +863,8 @@ deps = {
   'src/third_party/libaddressinput/src':
     Var('chromium_git') + '/external/libaddressinput.git' + '@' + 'd7ed8e2f3f35ce9a3aafdfdc48745ceab66e7229',
 
-  'src/third_party/libaom/source/libaom': {
-    'url': Var('aomedia_git') + '/aom.git' + '@' +  '716f2896c6babc140a6a774c21653c3f4d04d9de',
-    'condition': 'checkout_libaom',
-  },
+  'src/third_party/libaom/source/libaom':
+    Var('aomedia_git') + '/aom.git' + '@' +  '716f2896c6babc140a6a774c21653c3f4d04d9de',
 
   # Userspace interface to kernel DRM services.
   'src/third_party/libdrm/src': {

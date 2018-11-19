@@ -413,13 +413,6 @@ static bool VerifyCodec(const CodecInfo* codec_info,
       }
 #endif
 
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-      if (codec_info->tag == CodecInfo::HISTOGRAM_AV1 &&
-          !base::FeatureList::IsEnabled(kAv1Decoder)) {
-        return false;
-      }
-#endif
-
       if (video_codecs)
         video_codecs->push_back(codec_info->tag);
       return true;
