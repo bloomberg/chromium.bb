@@ -260,8 +260,8 @@ void ProfileSyncService::Initialize() {
           /*dump_stack=*/base::BindRepeating(&syncer::ReportUnrecoverableError,
                                              channel_)));
 
-  data_type_controllers_ = BuildDataTypeControllerMap(
-      sync_client_->CreateDataTypeControllers(local_device_.get()));
+  data_type_controllers_ =
+      BuildDataTypeControllerMap(sync_client_->CreateDataTypeControllers());
 
   if (gaia_cookie_manager_service_)
     gaia_cookie_manager_service_->AddObserver(this);

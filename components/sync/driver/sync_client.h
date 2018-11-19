@@ -44,7 +44,6 @@ class SessionSyncService;
 
 namespace syncer {
 
-class LocalDeviceInfoProvider;
 class ModelTypeStoreService;
 class SyncService;
 class SyncableService;
@@ -80,10 +79,7 @@ class SyncClient {
   virtual bool HasPasswordStore() = 0;
 
   // Returns a vector with all supported datatypes and their controllers.
-  // TODO(crbug.com/895455): Remove |local_device_info_provider| once the
-  // migration to USS is completed.
-  virtual DataTypeController::TypeVector CreateDataTypeControllers(
-      LocalDeviceInfoProvider* local_device_info_provider) = 0;
+  virtual DataTypeController::TypeVector CreateDataTypeControllers() = 0;
 
   // Returns a callback that will be invoked when password sync state has
   // potentially been changed.

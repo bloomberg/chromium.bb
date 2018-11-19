@@ -48,7 +48,6 @@
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
-#include "components/sync_sessions/session_data_type_controller.h"
 #include "components/sync_sessions/session_model_type_controller.h"
 #include "components/sync_sessions/session_sync_service.h"
 
@@ -57,7 +56,6 @@ using bookmarks::BookmarkModel;
 using sync_bookmarks::BookmarkChangeProcessor;
 using sync_bookmarks::BookmarkDataTypeController;
 using sync_bookmarks::BookmarkModelAssociator;
-using sync_sessions::SessionDataTypeController;
 using syncer::AsyncDirectoryTypeController;
 using syncer::DataTypeController;
 using syncer::DataTypeManager;
@@ -138,8 +136,7 @@ ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {}
 
 syncer::DataTypeController::TypeVector
 ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
-    syncer::ModelTypeSet disabled_types,
-    syncer::LocalDeviceInfoProvider* local_device_info_provider) {
+    syncer::ModelTypeSet disabled_types) {
   syncer::DataTypeController::TypeVector controllers;
   const base::RepeatingClosure dump_stack =
       base::BindRepeating(&syncer::ReportUnrecoverableError, channel_);
@@ -273,7 +270,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
           base::BindRepeating(
               &sync_sessions::SessionSyncService::ProxyTabsStateChanged,
               base::Unretained(sync_client_->GetSessionSyncService()))));
-      if (FeatureList::IsEnabled(switches::kSyncUSSSessions)) {
         controllers.push_back(
             std::make_unique<sync_sessions::SessionModelTypeController>(
                 sync_client_->GetPrefService(),
@@ -282,11 +278,6 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                         ->GetControllerDelegate()
                         .get()),
                 history_disabled_pref_));
-      } else {
-        controllers.push_back(std::make_unique<SessionDataTypeController>(
-            dump_stack, sync_client_, local_device_info_provider,
-            history_disabled_pref_));
-      }
     }
 
     // Favicon sync is enabled by default. Register unless explicitly disabled.

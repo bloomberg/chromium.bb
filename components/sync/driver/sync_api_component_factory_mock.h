@@ -28,10 +28,8 @@ class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
   SyncApiComponentFactoryMock();
   ~SyncApiComponentFactoryMock() override;
 
-  MOCK_METHOD2(CreateCommonDataTypeControllers,
-               DataTypeController::TypeVector(
-                   ModelTypeSet disabled_types,
-                   LocalDeviceInfoProvider* local_device_info_provider));
+  MOCK_METHOD1(CreateCommonDataTypeControllers,
+               DataTypeController::TypeVector(ModelTypeSet disabled_types));
   MOCK_METHOD6(CreateDataTypeManager,
                std::unique_ptr<DataTypeManager>(
                    ModelTypeSet,

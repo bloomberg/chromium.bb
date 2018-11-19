@@ -15,7 +15,6 @@
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
-#include "components/sync_sessions/abstract_sessions_sync_manager.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/local_session_event_handler_impl.h"
 #include "components/sync_sessions/open_tabs_ui_delegate_impl.h"
@@ -36,8 +35,7 @@ class SyncSessionsClient;
 // sync server. See
 // https://chromium.googlesource.com/chromium/src/+/lkcr/docs/sync/model_api.md#Implementing-ModelTypeSyncBridge
 // for details.
-class SessionSyncBridge : public AbstractSessionsSyncManager,
-                          public syncer::ModelTypeSyncBridge,
+class SessionSyncBridge : public syncer::ModelTypeSyncBridge,
                           public LocalSessionEventHandlerImpl::Delegate {
  public:
   // Raw pointers must not be null and their pointees must outlive this object.
@@ -47,13 +45,10 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~SessionSyncBridge() override;
 
-  // AbstractSessionsSyncManager implementation.
-  void ScheduleGarbageCollection() override;
-  FaviconCache* GetFaviconCache() override;
-  SessionsGlobalIdMapper* GetGlobalIdMapper() override;
-  OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
-  syncer::SyncableService* GetSyncableService() override;
-  syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() override;
+  void ScheduleGarbageCollection();
+  FaviconCache* GetFaviconCache();
+  SessionsGlobalIdMapper* GetGlobalIdMapper();
+  OpenTabsUIDelegate* GetOpenTabsUIDelegate();
 
   // ModelTypeSyncBridge implementation.
   void OnSyncStarting(

@@ -124,10 +124,6 @@ const base::Feature kSyncUSSBookmarks{"SyncUSSBookmarks",
 const base::Feature kSyncUSSPasswords{"SyncUSSPasswords",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable USS implementation of sessions.
-const base::Feature kSyncUSSSessions{"SyncUSSSessions",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable USS implementation of autofill profile datatype.
 const base::Feature kSyncUSSAutofillProfile{"SyncUSSAutofillProfile",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

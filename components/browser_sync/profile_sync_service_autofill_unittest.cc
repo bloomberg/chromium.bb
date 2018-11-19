@@ -434,7 +434,7 @@ class ProfileSyncServiceAutofillTest
     CreateSyncService(std::move(sync_client_owned_), std::move(callback));
 
     EXPECT_CALL(*profile_sync_service_bundle()->component_factory(),
-                CreateCommonDataTypeControllers(_, _))
+                CreateCommonDataTypeControllers(_))
         .WillOnce(testing::InvokeWithoutArgs([=]() {
           syncer::DataTypeController::TypeVector controllers;
           controllers.push_back(

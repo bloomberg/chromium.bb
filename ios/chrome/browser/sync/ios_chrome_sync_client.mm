@@ -180,11 +180,10 @@ base::Closure IOSChromeSyncClient::GetPasswordStateChangedCallback() {
 }
 
 syncer::DataTypeController::TypeVector
-IOSChromeSyncClient::CreateDataTypeControllers(
-    syncer::LocalDeviceInfoProvider* local_device_info_provider) {
+IOSChromeSyncClient::CreateDataTypeControllers() {
   // The iOS port does not have any platform-specific datatypes.
   return component_factory_->CreateCommonDataTypeControllers(
-      GetDisabledTypesFromCommandLine(), local_device_info_provider);
+      GetDisabledTypesFromCommandLine());
 }
 
 BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoServiceIfExists() {
@@ -263,11 +262,6 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       // Add a not reached to avoid having ARTICLES sync be enabled silently.
       NOTREACHED();
       return base::WeakPtr<syncer::SyncableService>();
-    }
-    case syncer::SESSIONS: {
-      return SessionSyncServiceFactory::GetForBrowserState(browser_state_)
-          ->GetSyncableService()
-          ->AsWeakPtr();
     }
     case syncer::PASSWORDS: {
       return password_store_ ? password_store_->GetPasswordSyncableService()

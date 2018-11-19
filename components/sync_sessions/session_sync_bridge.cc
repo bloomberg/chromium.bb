@@ -151,14 +151,6 @@ OpenTabsUIDelegate* SessionSyncBridge::GetOpenTabsUIDelegate() {
   return syncing_->open_tabs_ui_delegate.get();
 }
 
-syncer::SyncableService* SessionSyncBridge::GetSyncableService() {
-  return nullptr;
-}
-
-syncer::ModelTypeSyncBridge* SessionSyncBridge::GetModelTypeSyncBridge() {
-  return this;
-}
-
 std::unique_ptr<MetadataChangeList>
 SessionSyncBridge::CreateMetadataChangeList() {
   return std::make_unique<syncer::InMemoryMetadataChangeList>();

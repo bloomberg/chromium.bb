@@ -25,9 +25,7 @@ class SyncClientMock : public SyncClient {
   MOCK_METHOD0(GetHistoryService, history::HistoryService*());
   MOCK_METHOD0(HasPasswordStore, bool());
   MOCK_METHOD0(GetSessionSyncService, sync_sessions::SessionSyncService*());
-  MOCK_METHOD1(CreateDataTypeControllers,
-               DataTypeController::TypeVector(
-                   LocalDeviceInfoProvider* local_device_info_provider));
+  MOCK_METHOD0(CreateDataTypeControllers, DataTypeController::TypeVector());
   MOCK_METHOD0(GetPasswordStateChangedCallback, base::RepeatingClosure());
 
   MOCK_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());

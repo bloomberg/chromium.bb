@@ -34,8 +34,7 @@ class FakeSyncClient : public SyncClient {
   sync_sessions::SessionSyncService* GetSessionSyncService() override;
   bool HasPasswordStore() override;
   base::Closure GetPasswordStateChangedCallback() override;
-  DataTypeController::TypeVector CreateDataTypeControllers(
-      LocalDeviceInfoProvider* local_device_info_provider) override;
+  DataTypeController::TypeVector CreateDataTypeControllers() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
   invalidation::InvalidationService* GetInvalidationService() override;

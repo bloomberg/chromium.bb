@@ -82,7 +82,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
         profile_sync_service_bundle_.CreateBasicInitParams(start_behavior,
                                                            builder.Build());
 
-    ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_, _))
+    ON_CALL(*component_factory(), CreateCommonDataTypeControllers(_))
         .WillByDefault(InvokeWithoutArgs([=]() {
           syncer::DataTypeController::TypeVector controllers;
           for (syncer::ModelType type : registered_types) {
