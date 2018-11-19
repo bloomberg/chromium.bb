@@ -193,8 +193,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, SpinnerController) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileListModel) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/file_list_model_unittest.html")));
+  RunGeneratedTest("/foreground/js/file_list_model_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTapHandler) {
