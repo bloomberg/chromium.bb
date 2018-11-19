@@ -46,7 +46,7 @@ class BrowserState;
 struct ContextMenuParams;
 struct FaviconURL;
 struct LoadCommittedDetails;
-class NavigationContextImpl;
+class NavigationContext;
 class NavigationManager;
 class SessionCertificatePolicyCacheImpl;
 class WebInterstitialImpl;
@@ -78,12 +78,12 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void SetWebController(CRWWebController* web_controller);
 
   // Notifies the observers that a navigation has started.
-  void OnNavigationStarted(web::NavigationContextImpl* context);
+  void OnNavigationStarted(web::NavigationContext* context);
 
   // Notifies the observers that a navigation has finished. For same-document
   // navigations notifies the observers about favicon URLs update using
   // candidates received in OnFaviconUrlUpdated.
-  void OnNavigationFinished(web::NavigationContextImpl* context);
+  void OnNavigationFinished(web::NavigationContext* context);
 
   // Called when current window's canGoBack / canGoForward state was changed.
   void OnBackForwardStateChanged();

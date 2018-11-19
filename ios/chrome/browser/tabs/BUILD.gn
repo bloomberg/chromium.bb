@@ -197,7 +197,6 @@ source_set("unit_tests") {
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//ios/web/test/fakes:fakes",
-    "//ios/web/web_state:navigation_context",
     "//net",
     "//testing/gmock",
     "//testing/gtest",

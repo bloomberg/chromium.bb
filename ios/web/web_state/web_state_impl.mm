@@ -735,27 +735,23 @@ void WebStateImpl::TakeSnapshot(CGRect rect, SnapshotCallback callback) {
                 }];
 }
 
-void WebStateImpl::OnNavigationStarted(web::NavigationContextImpl* context) {
+void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {
   // Navigation manager loads internal URLs to restore session history and
   // create back-forward entries for Native View and WebUI. Do not trigger
   // external callbacks.
-  if (context->IsPlaceholderNavigation() ||
-      wk_navigation_util::IsRestoreSessionUrl(context->GetUrl())) {
+  if (wk_navigation_util::IsWKInternalUrl(context->GetUrl()))
     return;
-  }
 
   for (auto& observer : observers_)
     observer.DidStartNavigation(this, context);
 }
 
-void WebStateImpl::OnNavigationFinished(web::NavigationContextImpl* context) {
+void WebStateImpl::OnNavigationFinished(web::NavigationContext* context) {
   // Navigation manager loads internal URLs to restore session history and
   // create back-forward entries for Native View and WebUI. Do not trigger
   // external callbacks.
-  if (context->IsPlaceholderNavigation() ||
-      wk_navigation_util::IsRestoreSessionUrl(context->GetUrl())) {
+  if (wk_navigation_util::IsWKInternalUrl(context->GetUrl()))
     return;
-  }
 
   for (auto& observer : observers_)
     observer.DidFinishNavigation(this, context);
