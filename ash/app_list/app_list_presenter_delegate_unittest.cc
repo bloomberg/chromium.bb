@@ -1088,6 +1088,13 @@ TEST_F(AppListPresenterDelegateTest, SearchBoxShownOnSmallDisplay) {
   EXPECT_LE(0, view->GetWidget()->GetNativeView()->bounds().y());
 }
 
+// Tests that no crash occurs after an attempt to show app list in an invalid
+// display.
+TEST_F(AppListPresenterDelegateTest, ShowInInvalidDisplay) {
+  GetAppListTestHelper()->ShowAndRunLoop(display::kInvalidDisplayId);
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
+}
+
 // Test a variety of behaviors for home launcher (app list in tablet mode).
 class AppListPresenterDelegateHomeLauncherTest
     : public AppListPresenterDelegateTest {

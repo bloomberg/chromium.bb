@@ -126,6 +126,11 @@ void AppListPresenterImpl::Show(int64_t display_id,
     return;
   }
 
+  if (!delegate_->GetRootWindowForDisplayId(display_id)) {
+    LOG(ERROR) << "Root window does not exist for display: " << display_id;
+    return;
+  }
+
   is_visible_ = true;
   RequestPresentationTime(display_id, event_time_stamp);
 
