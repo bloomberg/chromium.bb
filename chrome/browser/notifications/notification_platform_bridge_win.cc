@@ -654,7 +654,6 @@ class NotificationPlatformBridgeWinImpl
 
  private:
   friend class base::RefCountedThreadSafe<NotificationPlatformBridgeWinImpl>;
-  friend class MockIToastNotifier;
   friend class NotificationPlatformBridgeWin;
 
   ~NotificationPlatformBridgeWinImpl() {
