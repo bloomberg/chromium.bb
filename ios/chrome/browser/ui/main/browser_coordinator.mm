@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -38,6 +39,9 @@
 // Coordinator for displaying the Reading List.
 @property(nonatomic, strong) ReadingListCoordinator* readingListCoordinator;
 
+// Coordinator for Recent Tabs.
+@property(nonatomic, strong) RecentTabsCoordinator* recentTabsCoordinator;
+
 // Coordinator for displaying snackbars.
 @property(nonatomic, strong) SnackbarCoordinator* snackbarCoordinator;
 
@@ -49,6 +53,7 @@
 @synthesize formInputAccessoryCoordinator = _formInputAccessoryCoordinator;
 @synthesize qrScannerCoordinator = _qrScannerCoordinator;
 @synthesize readingListCoordinator = _readingListCoordinator;
+@synthesize recentTabsCoordinator = _recentTabsCoordinator;
 @synthesize snackbarCoordinator = _snackbarCoordinator;
 
 #pragma mark - ChromeCoordinator
@@ -114,6 +119,8 @@
 
   /* ReadingListCoordinator is created and started by a BrowserCommand */
 
+  /* RecentTabsCoordinator is created and started by a BrowserCommand */
+
   self.snackbarCoordinator = [[SnackbarCoordinator alloc] init];
   self.snackbarCoordinator.dispatcher = self.dispatcher;
   [self.snackbarCoordinator start];
@@ -130,6 +137,9 @@
   [self.readingListCoordinator stop];
   self.readingListCoordinator = nil;
 
+  [self.recentTabsCoordinator stop];
+  self.recentTabsCoordinator = nil;
+
   [self.snackbarCoordinator stop];
   self.snackbarCoordinator = nil;
 }
@@ -142,6 +152,29 @@
                     browserState:self.browserState
                           loader:self.viewController];
   [self.readingListCoordinator start];
+}
+
+- (void)showRecentTabs {
+  // TODO(crbug.com/825431): If BVC's clearPresentedState is ever called (such
+  // as in tearDown after a failed egtest), then this coordinator is left in a
+  // started state even though its corresponding VC is no longer on screen.
+  // That causes issues when the coordinator is started again and we destroy the
+  // old mediator without disconnecting it first.  Temporarily work around these
+  // issues by not having a long lived coordinator.  A longer-term solution will
+  // require finding a way to stop this coordinator so that the mediator is
+  // properly disconnected and destroyed and does not live longer than its
+  // associated VC.
+  if (self.recentTabsCoordinator) {
+    [self.recentTabsCoordinator stop];
+    self.recentTabsCoordinator = nil;
+  }
+
+  self.recentTabsCoordinator = [[RecentTabsCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                    browserState:self.browserState];
+  self.recentTabsCoordinator.loader = self.viewController;
+  self.recentTabsCoordinator.dispatcher = self.applicationCommandHandler;
+  [self.recentTabsCoordinator start];
 }
 
 #pragma mark - FormInputAccessoryCoordinatorDelegate

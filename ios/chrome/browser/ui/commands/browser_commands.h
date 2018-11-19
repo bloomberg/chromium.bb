@@ -87,9 +87,6 @@ class GURL;
 // Shows the bookmarks manager.
 - (void)showBookmarksManager;
 
-// Shows recent tabs.
-- (void)showRecentTabs;
-
 // Requests the "desktop" version of the current page in the active tab.
 - (void)requestDesktopSite;
 
