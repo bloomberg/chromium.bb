@@ -214,7 +214,7 @@ public class ModalDialogView implements View.OnClickListener {
             setButtonText(ButtonType.NEGATIVE, resources.getString(mParams.negativeButtonTextId));
             mNegativeButton.setOnClickListener(this);
         } else if (mParams.negativeButtonText != null) {
-            setButtonText(ButtonType.POSITIVE, mParams.negativeButtonText);
+            setButtonText(ButtonType.NEGATIVE, mParams.negativeButtonText);
         }
     }
 
