@@ -57,7 +57,7 @@ class ImageProcessor {
   // should pass non-empty |output_dmabuf_fds| and the processed frame will be
   // stored in those buffers. If the number of |output_dmabuf_fds| is not
   // expected, this function will return false.
-  virtual bool Process(const scoped_refptr<VideoFrame>& frame,
+  virtual bool Process(scoped_refptr<VideoFrame> frame,
                        int output_buffer_index,
                        std::vector<base::ScopedFD> output_dmabuf_fds,
                        FrameReadyCB cb) = 0;

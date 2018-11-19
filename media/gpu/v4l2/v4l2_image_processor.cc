@@ -64,7 +64,7 @@ V4L2ImageProcessor::JobRecord::JobRecord() : output_buffer_index(-1) {}
 
 V4L2ImageProcessor::JobRecord::~JobRecord() {}
 
-V4L2ImageProcessor::V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device,
+V4L2ImageProcessor::V4L2ImageProcessor(scoped_refptr<V4L2Device> device,
                                        v4l2_memory input_memory_type,
                                        v4l2_memory output_memory_type)
     : input_format_(PIXEL_FORMAT_UNKNOWN),
@@ -256,7 +256,7 @@ gfx::Size V4L2ImageProcessor::output_allocated_size() const {
   return output_allocated_size_;
 }
 
-bool V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
+bool V4L2ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
                                  int output_buffer_index,
                                  std::vector<base::ScopedFD> output_dmabuf_fds,
                                  FrameReadyCB cb) {
