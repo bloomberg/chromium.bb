@@ -330,6 +330,13 @@ void SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
     return;
   }
 
+  if (gpu_service_->is_using_vulkan()) {
+    // Probably this texture is created with wrong inteface (GLES2Interface).
+    DLOG(ERROR) << "Failed to fulfill the promise texture whose backend is not "
+                   "compitable with vulkan.";
+    return;
+  }
+
   auto* mailbox_manager = gpu_service_->mailbox_manager();
   auto* texture_base = mailbox_manager->ConsumeTexture(metadata.mailbox);
   if (!texture_base) {
