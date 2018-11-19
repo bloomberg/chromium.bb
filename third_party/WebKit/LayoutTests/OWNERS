@@ -1,4 +1,4 @@
 *
 
 per-file SmokeTests=set noparent
-per-file SmokeTests=file://third_party/WebKit/Tools/OWNERS
+per-file SmokeTests=file://third_party/blink/tools/OWNERS
