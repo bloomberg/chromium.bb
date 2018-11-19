@@ -175,14 +175,6 @@ void NavigationContextImpl::SetIsNativeContentPresented(
   is_native_content_presented_ = is_native_content_presented;
 }
 
-bool NavigationContextImpl::IsPlaceholderNavigation() const {
-  return is_placeholder_navigation_;
-}
-
-void NavigationContextImpl::SetPlaceholderNavigation(bool flag) {
-  is_placeholder_navigation_ = flag;
-}
-
 NavigationContextImpl::NavigationContextImpl(WebState* web_state,
                                              const GURL& url,
                                              bool has_user_gesture,

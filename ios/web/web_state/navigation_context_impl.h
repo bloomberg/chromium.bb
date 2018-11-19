@@ -85,10 +85,6 @@ class NavigationContextImpl : public NavigationContext {
   bool IsNativeContentPresented() const;
   void SetIsNativeContentPresented(bool is_native_content_presented);
 
-  // true if this navigation context is a placeholder navigation.
-  bool IsPlaceholderNavigation() const;
-  void SetPlaceholderNavigation(bool flag);
-
  private:
   NavigationContextImpl(WebState* web_state,
                         const GURL& url,
@@ -113,7 +109,6 @@ class NavigationContextImpl : public NavigationContext {
   bool is_loading_error_page_ = false;
   bool is_loading_html_string_ = false;
   bool is_native_content_presented_ = false;
-  bool is_placeholder_navigation_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationContextImpl);
 };

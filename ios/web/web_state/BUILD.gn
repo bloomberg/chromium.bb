@@ -58,7 +58,6 @@ source_set("wk_web_view_security_util") {
 source_set("navigation_context") {
   deps = [
     "//base",
-    "//ios/web/navigation:core",
     "//ios/web/public",
   ]
 
