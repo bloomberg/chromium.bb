@@ -62,9 +62,10 @@ CWV_EXPORT
 - (void)fillSuggestion:(CWVAutofillSuggestion*)suggestion
      completionHandler:(nullable void (^)(void))completionHandler;
 
-// Deletes a suggestion from the data store. This suggestion will not be fetched
-// again.
-- (void)removeSuggestion:(CWVAutofillSuggestion*)suggestion;
+// Deletes a suggestion from the data store.
+// Returns YES if suggestion exists and can be deleted.
+// Note that it may take a short while before |suggestion| is no longer fetched.
+- (BOOL)removeSuggestion:(CWVAutofillSuggestion*)suggestion;
 
 // Changes focus to the previous sibling of the currently focused field.
 // No-op if no field is currently focused or if previous field is not available.

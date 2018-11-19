@@ -270,8 +270,7 @@ TEST_F(WebViewAutofillTest, TestSuggestionFetchFillClear) {
 }
 
 // Tests that CWVAutofillController can remove a suggestion.
-TEST_F(WebViewAutofillTest, DISABLED_TestSuggestionFetchRemoveFetch) {
-  // TODO(crbug.com/898990): Needs to be reenabled.
+TEST_F(WebViewAutofillTest, TestSuggestionFetchRemoveFetch) {
   ASSERT_TRUE(test_server_->Start());
   ASSERT_TRUE(LoadTestPage());
   ASSERT_TRUE(SetFormFieldValue(kTestNameFieldID, kTestNameFieldValue));
@@ -287,10 +286,11 @@ TEST_F(WebViewAutofillTest, DISABLED_TestSuggestionFetchRemoveFetch) {
 
   CWVAutofillSuggestion* suggestion_to_remove =
       fetched_suggestions_after_creating.firstObject;
-  [autofill_controller_ removeSuggestion:suggestion_to_remove];
+  EXPECT_TRUE([autofill_controller_ removeSuggestion:suggestion_to_remove]);
 
-  NSArray* fetched_suggestions_after_removing = FetchSuggestions();
-  ASSERT_EQ(0U, fetched_suggestions_after_removing.count);
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
+    return FetchSuggestions().count == 0;
+  }));
 }
 
 }  // namespace ios_web_view
