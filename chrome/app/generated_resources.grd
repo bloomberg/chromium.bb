@@ -5080,6 +5080,9 @@ the Bookmarks menu.">
       <message name="IDS_NEWTAB_PROMO_2" desc="Variations option 3. Text shown on promotional UI appearing next to the New Tab button, which encourages users to use it.">
         Open a new tab to browse two sites at once
       </message>
+      <message name="IDS_REOPEN_TAB_PROMO" desc="Text shown on promotional UI appearing next to the app menu button">
+        Reopen a tab if you accidentally closed it
+      </message>
 
       <!-- Browser Hung Plugin Detector -->
       <if expr="is_win">

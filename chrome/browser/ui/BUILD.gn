@@ -3298,6 +3298,8 @@ jumbo_split_static_library("ui") {
       "in_product_help/reopen_tab_in_product_help_factory.h",
       "in_product_help/reopen_tab_in_product_help_trigger.cc",
       "in_product_help/reopen_tab_in_product_help_trigger.h",
+      "views/feature_promos/reopen_tab_promo_controller.cc",
+      "views/feature_promos/reopen_tab_promo_controller.h",
     ]
   }
 

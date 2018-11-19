@@ -57,7 +57,7 @@ BrowserAppMenuButton* AppMenuTestApiViews::GetAppMenuButton() {
 }
 
 AppMenu* AppMenuTestApiViews::GetAppMenu() {
-  return GetAppMenuButton()->app_menu_for_testing();
+  return GetAppMenuButton()->app_menu();
 }
 
 }  // namespace
