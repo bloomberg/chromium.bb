@@ -70,7 +70,7 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   bool IsHomeLauncherEnabledInTabletMode() override { return false; }
   bool GetOnScreenKeyboardShown() override { return false; }
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override {
-    return nullptr;
+    return container_->GetRootWindow();
   }
   void OnVisibilityChanged(bool visible, aura::Window* root_window) override {}
   void OnTargetVisibilityChanged(bool visible) override {}
