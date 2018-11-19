@@ -130,6 +130,10 @@
     'arc_fileapi': {
       'filepath': 'chrome/browser/chromeos/arc/fileapi'
     },
+    'arc_ime': {
+      'filepath': 'chrome/browser/chromeos/arc/input_method_manager/'\
+                  '|components/arc/ime/'
+    },
     'arc_kiosk': {
       'filepath': 'chrome/browser/chromeos/app_mode/arc/'\
                   '|components/arc/kiosk/'\
@@ -1813,6 +1817,7 @@
     'arc_auth': ['khmel+watch@chromium.org'],
     'arc_common': ['hashimoto+watch@chromium.org'],
     'arc_fileapi': ['nya+watch@chromium.org'],
+    'arc_ime': ['yhanada+watch@chromium.org'],
     'arc_kiosk': ['poromov+watch@chromium.org'],
     'arc_net': ['abhishekbh@chromium.org',
                 'cernekee@chromium.org',
