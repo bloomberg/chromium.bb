@@ -4,24 +4,34 @@
 
 package org.chromium.chrome.browser.infobar;
 
+import android.text.SpannableString;
+import android.text.Spanned;
+
+import org.chromium.ui.text.NoUnderlineClickableSpan;
+
 /**
  * An infobar to notify that the generated password was saved.
  */
 public class GeneratedPasswordSavedInfoBar extends ConfirmInfoBar {
     private final int mInlineLinkRangeStart;
     private final int mInlineLinkRangeEnd;
+    private final String mDetailsMessage;
 
     /**
      * Creates and shows the infobar to notify that the generated password was saved.
      * @param iconDrawableId Drawable ID corresponding to the icon that the infobar will show.
      * @param messageText Message to display in the infobar.
+     * @param detailsMessageText  Message containing additional details to be displayed in the
+     * infobar.
      * @param inlineLinkRangeStart The start of the range of the messageText that should be a link.
      * @param inlineLinkRangeEnd The end of the range of the messageText that should be a link.
      * @param buttonLabel String to display on the button.
      */
     public GeneratedPasswordSavedInfoBar(int iconDrawableId, String messageText,
-            int inlineLinkRangeStart, int inlineLinkRangeEnd, String buttonLabel) {
+            String detailsMessageText, int inlineLinkRangeStart, int inlineLinkRangeEnd,
+            String buttonLabel) {
         super(iconDrawableId, null, messageText, null, buttonLabel, null);
+        mDetailsMessage = detailsMessageText;
         mInlineLinkRangeStart = inlineLinkRangeStart;
         mInlineLinkRangeEnd = inlineLinkRangeEnd;
     }
@@ -34,6 +44,10 @@ public class GeneratedPasswordSavedInfoBar extends ConfirmInfoBar {
     @Override
     public void createContent(InfoBarLayout layout) {
         super.createContent(layout);
-        layout.setInlineMessageLink(mInlineLinkRangeStart, mInlineLinkRangeEnd);
+        InfoBarControlLayout detailsMessageLayout = layout.addControlLayout();
+        SpannableString detailsMessageWithLink = new SpannableString(mDetailsMessage);
+        detailsMessageWithLink.setSpan(new NoUnderlineClickableSpan((view) -> onLinkClicked()),
+                mInlineLinkRangeStart, mInlineLinkRangeEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+        detailsMessageLayout.addDescription(detailsMessageWithLink);
     }
 }

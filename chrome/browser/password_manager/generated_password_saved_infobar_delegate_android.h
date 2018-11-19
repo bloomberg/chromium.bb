@@ -27,7 +27,12 @@ class GeneratedPasswordSavedInfoBarDelegateAndroid
   // Returns the translated text of the message to display.
   const base::string16& message_text() const { return message_text_; }
 
-  // Returns the range of the message text that should be a link.
+  // Returns the translated text of the details message to display. T
+  const base::string16& details_message_text() const {
+    return details_message_text_;
+  }
+
+  // Returns the range of the details message text that should be a link.
   const gfx::Range& inline_link_range() const { return inline_link_range_; }
 
   // Returns the translated label of the button.
@@ -46,7 +51,11 @@ class GeneratedPasswordSavedInfoBarDelegateAndroid
   // The translated text of the message to display.
   base::string16 message_text_;
 
-  // The range of the message that should be a link.
+  // The translated text of the details message to display. This message
+  // explains where the generated password is saved.
+  base::string16 details_message_text_;
+
+  // The range of the details message that should be a link.
   gfx::Range inline_link_range_;
 
   // The translated label of the button.
