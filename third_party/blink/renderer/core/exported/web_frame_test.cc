@@ -11524,6 +11524,60 @@ TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
       << visual_viewport.VisibleRectInDocument().ToString() << "]";
 }
 
+// Test bubbling a document (End key) scroll from an inner iframe. This test
+// passes if it does not crash. https://crbug.com/904247.
+TEST_F(WebFrameSimTest, ScrollToEndBubblingCrash) {
+  WebView().Resize(WebSize(500, 300));
+  WebView().GetPage()->GetSettings().SetScrollAnimatorEnabled(false);
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        body, html {
+          width: 100%;
+          height: 100%;
+          margin: 0;
+        }
+        #frame {
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
+      </style>
+      <iframe id="frame" srcdoc="
+          <!DOCTYPE html>
+          <style>html {height: 300%;}</style>
+      "></iframe>
+  )HTML");
+
+  Compositor().BeginFrame();
+  RunPendingTasks();
+
+  // Focus the iframe.
+  WebView().AdvanceFocus(false);
+
+  WebKeyboardEvent key_event(WebInputEvent::kRawKeyDown,
+                             WebInputEvent::kNoModifiers,
+                             WebInputEvent::GetStaticTimeStampForTests());
+  key_event.windows_key_code = VKEY_END;
+
+  // Scroll the iframe to the end.
+  key_event.SetType(WebInputEvent::kRawKeyDown);
+  WebView().HandleInputEvent(WebCoalescedInputEvent(key_event));
+  key_event.SetType(WebInputEvent::kKeyUp);
+  WebView().HandleInputEvent(WebCoalescedInputEvent(key_event));
+
+  Compositor().BeginFrame();
+
+  // End key should now bubble from the iframe up to the main viewport.
+  key_event.SetType(WebInputEvent::kRawKeyDown);
+  WebView().HandleInputEvent(WebCoalescedInputEvent(key_event));
+  key_event.SetType(WebInputEvent::kKeyUp);
+  WebView().HandleInputEvent(WebCoalescedInputEvent(key_event));
+}
+
 // Basic smoke test of the paint path used by the Android disambiguation popup.
 TEST_F(WebFrameSimTest, DisambiguationPopupPixelTest) {
   WebView().Resize(WebSize(400, 600));
