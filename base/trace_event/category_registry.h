@@ -83,7 +83,9 @@ class BASE_EXPORT CategoryRegistry {
 #endif
   }
 
-  static bool IsBuiltinCategory(const TraceCategory*);
+  // Returns whether |category| points at one of the meta categories that
+  // shouldn't be displayed in the tracing UI.
+  static bool IsMetaCategory(const TraceCategory* category);
 
  private:
   friend class TraceCategoryTest;

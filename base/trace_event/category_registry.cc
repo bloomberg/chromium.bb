@@ -122,9 +122,9 @@ const TraceCategory* CategoryRegistry::GetCategoryByStatePtr(
 }
 
 // static
-bool CategoryRegistry::IsBuiltinCategory(const TraceCategory* category) {
+bool CategoryRegistry::IsMetaCategory(const TraceCategory* category) {
   DCHECK(IsValidCategoryPtr(category));
-  return category < &categories_[BuiltinCategories::Size()];
+  return category <= kCategoryMetadata;
 }
 
 // static
