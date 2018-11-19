@@ -80,17 +80,6 @@ public class ArCoreJavaUtils {
         return ContextUtils.getApplicationContext();
     }
 
-    /**
-     * Determines whether ARCore's SDK should be loaded. Currently, this only
-     * depends on the OS version, but could be more sophisticated.
-     *
-     * @return true if the SDK should be loaded.
-     */
-    @CalledByNative
-    private static boolean shouldLoadArCoreSdk() {
-        return Build.VERSION.SDK_INT >= MIN_SDK_VERSION;
-    }
-
     @CalledByNative
     private static ArCoreJavaUtils create(long nativeArCoreJavaUtils) {
         ThreadUtils.assertOnUiThread();

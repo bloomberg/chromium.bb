@@ -6,6 +6,7 @@
 
 #include <dlfcn.h>
 
+#include "base/android/build_info.h"
 #include "base/logging.h"
 
 namespace {
@@ -92,6 +93,11 @@ bool LoadArCoreSdk(const std::string& libraryPath) {
 #undef CALL
 
   return true;
+}
+
+bool SupportsArCore() {
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_OREO;
 }
 
 }  // namespace vr
