@@ -149,6 +149,47 @@ void LogKeyboardControlEvent(KeyboardControlEvent event) {
                             KEYBOARD_CONTROL_MAX);
 }
 
+class InputMethodKeyboardController : public ui::InputMethodKeyboardController {
+ public:
+  explicit InputMethodKeyboardController(
+      KeyboardController* keyboard_controller)
+      : keyboard_controller_(keyboard_controller) {}
+
+  ~InputMethodKeyboardController() override = default;
+
+  // ui::InputMethodKeyboardController
+  bool DisplayVirtualKeyboard() override {
+    // Calling |ShowKeyboardInternal| may move the keyboard to another display.
+    if (keyboard_controller_->IsKeyboardEnableRequested() &&
+        !keyboard_controller_->keyboard_locked()) {
+      keyboard_controller_->ShowKeyboard(false /* locked */);
+      return true;
+    }
+    return false;
+  }
+
+  void DismissVirtualKeyboard() override {
+    keyboard_controller_->HideKeyboardByUser();
+  }
+
+  void AddObserver(
+      ui::InputMethodKeyboardControllerObserver* observer) override {
+    // TODO: Implement.
+  }
+
+  void RemoveObserver(
+      ui::InputMethodKeyboardControllerObserver* observer) override {
+    // TODO: Implement.
+  }
+
+  bool IsKeyboardVisible() override {
+    return keyboard_controller_->IsKeyboardVisible();
+  }
+
+ private:
+  KeyboardController* keyboard_controller_;
+};
+
 }  // namespace
 
 // Observer for both keyboard show and hide animations. It should be owned by
@@ -178,7 +219,9 @@ class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
 };
 
 KeyboardController::KeyboardController()
-    : ime_observer_(this),
+    : input_method_keyboard_controller_(
+          std::make_unique<InputMethodKeyboardController>(this)),
+      ime_observer_(this),
       weak_factory_report_lingering_state_(this),
       weak_factory_will_hide_(this) {
   DCHECK_EQ(g_keyboard_controller, nullptr);
@@ -575,10 +618,6 @@ void KeyboardController::HideKeyboardImplicitlyBySystem() {
                      weak_factory_will_hide_.GetWeakPtr(),
                      HIDE_REASON_SYSTEM_IMPLICIT),
       base::TimeDelta::FromMilliseconds(kHideKeyboardDelayMs));
-}
-
-void KeyboardController::DismissVirtualKeyboard() {
-  HideKeyboardByUser();
 }
 
 // private
@@ -1039,26 +1078,6 @@ void KeyboardController::RecordUkmKeyboardShown() {
 
 void KeyboardController::SetDraggableArea(const gfx::Rect& rect) {
   container_behavior_->SetDraggableArea(rect);
-}
-
-// InputMethodKeyboardController overrides:
-
-bool KeyboardController::DisplayVirtualKeyboard() {
-  // Calling |ShowKeyboardInternal| may move the keyboard to another display.
-  if (keyboard::IsKeyboardEnabled() && !keyboard_locked_) {
-    ShowKeyboardInternal(display::Display());
-    return true;
-  }
-  return false;
-}
-void KeyboardController::AddObserver(
-    ui::InputMethodKeyboardControllerObserver* observer) {
-  // TODO: Implement me
-}
-
-void KeyboardController::RemoveObserver(
-    ui::InputMethodKeyboardControllerObserver* observer) {
-  // TODO: Implement me
 }
 
 bool KeyboardController::IsKeyboardVisible() {
