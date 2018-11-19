@@ -1606,12 +1606,6 @@ const char kRegionalLocalesAsDisplayUIDescription[] =
     "user in Language Settings. The actual locale of the system is derived "
     "from the user selection based on some simple fallback logic.";
 
-const char kRemoveNavigationHistoryName[] =
-    "Remove navigation entry on history deletion";
-const char kRemoveNavigationHistoryDescription[] =
-    "Remove a navigation entry when the corresponding history entry has been "
-    "deleted.";
-
 const char kRewriteLevelDBOnDeletionName[] =
     "Rewrite LevelDB instances after full deletions";
 const char kRewriteLevelDBOnDeletionDescription[] =

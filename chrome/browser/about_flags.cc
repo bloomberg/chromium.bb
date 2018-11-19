@@ -50,7 +50,6 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/browser_sync/browser_sync_switches.h"
-#include "components/browsing_data/core/features.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -2807,10 +2806,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFullscreenToolbarRevealDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kFullscreenToolbarReveal)},
 #endif  // OS_MACOSX
-    {"remove-navigation-history",
-     flag_descriptions::kRemoveNavigationHistoryName,
-     flag_descriptions::kRemoveNavigationHistoryDescription, kOsAll,
-     FEATURE_VALUE_TYPE(browsing_data::features::kRemoveNavigationHistory)},
     {"rewrite-leveldb-on-deletion",
      flag_descriptions::kRewriteLevelDBOnDeletionName,
      flag_descriptions::kRewriteLevelDBOnDeletionDescription, kOsAll,
