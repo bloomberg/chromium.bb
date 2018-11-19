@@ -32,13 +32,6 @@ crbug.com/661182 fast/loader/open-in-srcdoc-unload.html [ Leak ]
 crbug.com/506754 http/tests/serviceworker/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 http/tests/serviceworker/window-close-during-registration.html [ Leak ]
 
-crbug.com/672740 http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Leak Pass ]
-crbug.com/672740 http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
-crbug.com/672740 virtual/outofblink-cors/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Leak Pass ]
-crbug.com/672740 virtual/outofblink-cors/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
-crbug.com/672740 virtual/outofblink-cors-ns/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Leak Pass ]
-crbug.com/672740 virtual/outofblink-cors-ns/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
-
 crbug.com/786995 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Leak Pass ]
 crbug.com/859640 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js  [ Leak Pass ]
 
