@@ -239,6 +239,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
   // Same task id, different package name.
   event2->node_data.clear();
   event2->node_data.push_back(arc::mojom::AccessibilityNodeInfoData::New());
+  event2->source_id = 3;
   event2->node_data[0]->id = 3;
   event2->node_data[0]->string_properties =
       base::flat_map<arc::mojom::AccessibilityStringProperty, std::string>();
