@@ -12,6 +12,9 @@
 // and representative of the contents.
 @protocol BrowserCoordinatorCommands
 
+// Shows the consent bump if it is required.
+- (void)showConsentBumpIfNeeded;
+
 // Shows the Reading List UI.
 - (void)showReadingList;
 
