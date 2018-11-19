@@ -6,6 +6,8 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -98,15 +100,11 @@ PackedListModule GeneratePackedListModule(const std::string& image_name,
   // Internally, an empty string should not be passed in here.
   assert(!image_name.empty());
 
-  // SHA1 hash the two strings, and copy them into the new struct.
-  std::string code_id = GetFingerprintString(timedatestamp, imagesize);
-  code_id = elf_sha1::SHA1HashString(code_id);
-  std::string name_hash = elf_sha1::SHA1HashString(image_name);
-
+  // SHA1 hash the two strings into the new struct.
   PackedListModule packed_module;
-  ::memcpy(packed_module.code_id_hash, code_id.data(), elf_sha1::kSHA1Length);
-  ::memcpy(packed_module.basename_hash, name_hash.data(),
-           elf_sha1::kSHA1Length);
+  packed_module.code_id_hash =
+      elf_sha1::SHA1HashString(GetFingerprintString(timedatestamp, imagesize));
+  packed_module.basename_hash = elf_sha1::SHA1HashString(image_name);
 
   return packed_module;
 }
@@ -480,15 +478,14 @@ TEST_F(ThirdPartyTest, SHA1SanityCheck) {
   // Get hashes from base_sha1.
   const std::string module_basename_hash =
       base::SHA1HashString(base::UTF16ToUTF8(kChineseUnicode));
-  const std::string module_code_id_hash =
-      base::SHA1HashString(base::StringPrintf(
-          "%08lX%lx", module_data.timedatestamp, module_data.imagesize));
+  const std::string module_code_id_hash = base::SHA1HashString(
+      GetFingerprintString(module_data.timedatestamp, module_data.imagesize));
 
   // Compare the hashes.
-  EXPECT_EQ(::memcmp(elf_sha1_generated.basename_hash,
+  EXPECT_EQ(::memcmp(&elf_sha1_generated.basename_hash[0],
                      module_basename_hash.data(), elf_sha1::kSHA1Length),
             0);
-  EXPECT_EQ(::memcmp(elf_sha1_generated.code_id_hash,
+  EXPECT_EQ(::memcmp(&elf_sha1_generated.code_id_hash[0],
                      module_code_id_hash.data(), elf_sha1::kSHA1Length),
             0);
 }
