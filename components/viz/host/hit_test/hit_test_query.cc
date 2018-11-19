@@ -200,10 +200,19 @@ bool HitTestQuery::FindTargetInRegionForLocation(
       location_transformed -
       hit_test_data_[region_index].rect.OffsetFromOrigin();
 
-  if (hit_test_data_[region_index].flags & HitTestRegionFlags::kHitTestAsk) {
+  const uint32_t flags = hit_test_data_[region_index].flags;
+
+  // Verify that async_hit_test_reasons is set if and only if there's
+  // a kHitTestAsk flag.
+  DCHECK_EQ(!!(flags & HitTestRegionFlags::kHitTestAsk),
+            !!hit_test_data_[region_index].async_hit_test_reasons);
+
+  if (flags & HitTestRegionFlags::kHitTestAsk) {
     target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
     target->location_in_target = location_in_target;
-    target->flags = hit_test_data_[region_index].flags;
+    target->flags = flags;
+    RecordSlowPathHitTestReasons(
+        hit_test_data_[region_index].async_hit_test_reasons);
     return true;
   }
 
@@ -221,19 +230,14 @@ bool HitTestQuery::FindTargetInRegionForLocation(
     child_region = child_region + child_region_child_count + 1;
   }
 
-  const uint32_t flags = hit_test_data_[region_index].flags;
   if (!RegionMatchEventSource(event_source, flags))
     return false;
 
-  // Verify that async_hit_test_reasons is set if and only if there's
-  // a kHitTestAsk flag.
-  DCHECK_EQ(!!(flags & HitTestRegionFlags::kHitTestAsk),
-            !!hit_test_data_[region_index].async_hit_test_reasons);
-  if (flags &
-      (HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestAsk)) {
+  if (flags & HitTestRegionFlags::kHitTestMine) {
     target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
     target->location_in_target = location_in_target;
     target->flags = flags;
+    // We record fast path hit testing instances with reason kNotAsyncHitTest.
     RecordSlowPathHitTestReasons(
         hit_test_data_[region_index].async_hit_test_reasons);
     return true;
