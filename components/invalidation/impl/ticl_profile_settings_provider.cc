@@ -19,10 +19,6 @@ TiclProfileSettingsProvider::TiclProfileSettingsProvider(PrefService* prefs)
     : prefs_(prefs) {
   registrar_.Init(prefs_);
   registrar_.Add(
-      prefs::kInvalidationServiceUseGCMChannel,
-      base::Bind(&TiclProfileSettingsProvider::FireOnUseGCMChannelChanged,
-                 base::Unretained(this)));
-  registrar_.Add(
       gcm::prefs::kGCMChannelStatus,
       base::Bind(&TiclProfileSettingsProvider::FireOnUseGCMChannelChanged,
                  base::Unretained(this)));
@@ -31,19 +27,7 @@ TiclProfileSettingsProvider::TiclProfileSettingsProvider(PrefService* prefs)
 TiclProfileSettingsProvider::~TiclProfileSettingsProvider() {}
 
 bool TiclProfileSettingsProvider::UseGCMChannel() const {
-  if (prefs_->GetBoolean(prefs::kInvalidationServiceUseGCMChannel)) {
-    // Use GCM channel if it was enabled via prefs.
-    return true;
-  }
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kInvalidationUseGCMChannel)) {
-    // Use GCM channel if it was enabled via a command-line switch.
-    return true;
-  }
-
-  // By default, do not use GCM channel.
-  return false;
+  return true;
 }
 
 }  // namespace invalidation

@@ -36,10 +36,6 @@ void ProfileInvalidationProvider::Shutdown() {
 // static
 void ProfileInvalidationProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kInvalidationServiceUseGCMChannel,
-      true);  // if no value in prefs, use GCM channel.
-
   registry->RegisterStringPref(prefs::kFCMInvalidationClientIDCache,
                                /*default_value=*/std::string());
 }
