@@ -49,10 +49,6 @@ template("fuzzer_test") {
       test_deps += invoker.deps
     }
 
-    if (defined(invoker.libs)) {
-      libs = invoker.libs
-    }
-
     if (defined(invoker.seed_corpus) || defined(invoker.seed_corpuses)) {
       assert(!(defined(invoker.seed_corpus) && defined(invoker.seed_corpuses)),
              "Do not use both seed_corpus and seed_corpuses for $target_name.")
@@ -198,6 +194,7 @@ template("fuzzer_test") {
                                "defines",
                                "include_dirs",
                                "sources",
+                               "libs",
                              ])
       deps = test_deps
 
