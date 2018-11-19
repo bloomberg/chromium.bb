@@ -1681,31 +1681,25 @@ void Document::DispatchDidReceiveTitle() {
 
 void Document::setTitle(const String& title) {
   // Title set by JavaScript -- overrides any title elements.
-  if (!title_element_) {
-    if (IsHTMLDocument() || IsXHTMLDocument()) {
+  Element* element = documentElement();
+  if (IsSVGSVGElement(element)) {
+    if (!title_element_) {
+      title_element_ = SVGTitleElement::Create(*this);
+      element->InsertBefore(title_element_.Get(), element->firstChild());
+    }
+    if (auto* svg_title = ToSVGTitleElementOrNull(title_element_))
+      svg_title->SetText(title);
+  } else if (element && element->IsHTMLElement()) {
+    if (!title_element_) {
       HTMLElement* head_element = head();
       if (!head_element)
         return;
       title_element_ = HTMLTitleElement::Create(*this);
       head_element->AppendChild(title_element_.Get());
-    } else if (IsSVGDocument()) {
-      Element* element = documentElement();
-      if (!IsSVGSVGElement(element))
-        return;
-      title_element_ = SVGTitleElement::Create(*this);
-      element->InsertBefore(title_element_.Get(), element->firstChild());
     }
-  } else {
-    if (!IsHTMLDocument() && !IsXHTMLDocument() && !IsSVGDocument())
-      title_element_ = nullptr;
+    if (auto* html_title = ToHTMLTitleElementOrNull(title_element_))
+      html_title->setText(title);
   }
-
-  if (auto* html_title = ToHTMLTitleElementOrNull(title_element_))
-    html_title->setText(title);
-  else if (auto* svg_title = ToSVGTitleElementOrNull(title_element_))
-    svg_title->SetText(title);
-  else
-    UpdateTitle(title);
 }
 
 void Document::SetTitleElement(Element* title_element) {
