@@ -1058,9 +1058,6 @@ void ProfileSyncService::OnExperimentsChanged(
     return;
 
   current_experiments_ = experiments;
-
-  sync_client_->GetPrefService()->SetBoolean(
-      invalidation::prefs::kInvalidationServiceUseGCMChannel, true);
 }
 
 void ProfileSyncService::OnConnectionStatusChange(
