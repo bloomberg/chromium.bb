@@ -1,26 +1,45 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_container_shadow_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/promise_resolver.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="activity_log_item.html">
+<link rel="import" href="navigation_helper.html">
+<link rel="import" href="shared_style.html">
 
 <dom-module id="extensions-activity-log">
   <template>
-    <style include="iron-flex cr-shared-style">
-      #container {
-        height: 100%;
-        overflow: overlay;
-      }
-
-      #main {
-        background-color: white;
-        margin: auto;
-        min-height: 100%;
-        padding-bottom: 64px;
-        width: var(--cr-toolbar-field-width);
+    <style include="iron-flex cr-shared-style shared-style">
+      .empty-activity-message {
+        color: #6e6e6e;
+        font-size: 123%;  /* Should be 16px when 100% is 13px. */
+        font-weight: 500;
+        margin-top: 80px;
+        text-align: center;
       }
     </style>
-    <div id="container">
-      <div id="main">
-        Welcome to the new activity log
+    <div class="page-container" id="container">
+      <div class="page-content">
+        <div class="page-header">
+          <paper-icon-button-light class="icon-arrow-back no-overlap">
+            <button id="close-button" aria-label="$i18n{back}"
+                on-click="onCloseButtonTap_"></button>
+          </paper-icon-button-light>
+          <span>$i18n{activityLogPageHeading}</span>
+        </div>
+        <div id="no-activities" class="empty-activity-message"
+            hidden$="[[!shouldShowEmptyActivityLogMessage_(
+                activityData_)]]">
+            <span>$i18n{noActivities}</span>
+        </div>
+        <div hidden$="[[!activityData_]]">
+          <template is="dom-repeat" items="[[activityData_.activities]]">
+            <activity-log-item id="[[item.activityId]]" data="[[item]]">
+            </activity-log-item>
+          </template>
+        </div>
       </div>
     </div>
   </template>

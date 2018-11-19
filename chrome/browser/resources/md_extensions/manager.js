@@ -94,6 +94,13 @@ cr.define('extensions', function() {
        */
       detailViewItem_: Object,
 
+      /**
+       * The id of the item for the activity log view subpage.
+       * See also errorPageItem_.
+       * @private {!string|undefined}
+       */
+      activityLogItemId_: String,
+
       /** @private {!Array<!chrome.developerPrivate.ExtensionInfo>} */
       extensions_: Array,
 
@@ -385,6 +392,8 @@ cr.define('extensions', function() {
           this.errorPageItem_ && this.errorPageItem_.id == item.id &&
           this.currentPage_.page == Page.ERRORS) {
         this.errorPageItem_ = item;
+      } else if (this.currentPage_.page == Page.ACTIVITY_LOG) {
+        this.activityLogItemId_ = item.id;
       }
     },
 
@@ -467,6 +476,8 @@ cr.define('extensions', function() {
               {page: Page.DETAILS, extensionId: newPage.extensionId});
           return;
         }
+
+        this.activityLogItemId_ = assert(data.id);
       }
 
       if (fromPage != toPage) {

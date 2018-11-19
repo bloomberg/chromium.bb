@@ -98,7 +98,8 @@
       </cr-lazy-render>
       <cr-lazy-render id="activity-log">
         <template>
-          <extensions-activity-log slot="view">
+          <extensions-activity-log delegate="[[delegate]]" slot="view"
+              extension-id="[[activityLogItemId_]]">
           </extensions-activity-log>
         </template>
       </cr-lazy-render>

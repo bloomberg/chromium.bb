@@ -61,10 +61,16 @@
     "dependencies": ["manifest:action"],
     "contexts": ["blessed_extension"]
   },
-  "activityLogPrivate": {
+  "activityLogPrivate": [{
     "dependencies": ["permission:activityLogPrivate"],
     "contexts": ["blessed_extension"]
-  },
+  }, {
+    "channel": "stable",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://extensions/*"
+    ]
+  }],
   "app": {
     "blacklist": [
       "2FC374607C2DF285634B67C64A2E356C607091C3",  // Quickoffice
