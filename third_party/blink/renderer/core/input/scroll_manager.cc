@@ -187,10 +187,10 @@ bool ScrollManager::CanScroll(const ScrollState& scroll_state,
   if (!current_node.GetLayoutBox())
     return false;
 
-  // We need to always add the root scroller in the main frame even if the
-  // viewport isn't scrollable since we can always pinch-zoom and scroll as
-  // well as for overscroll effects.
-  if (current_node.IsEffectiveRootScroller() && frame_->IsMainFrame())
+  // We need to always add the global root scroller even if it isn't scrollable
+  // since we can always pinch-zoom and scroll as well as for overscroll
+  // effects.
+  if (current_node.GetLayoutBox()->IsGlobalRootScroller())
     return true;
 
   ScrollableArea* scrollable_area =
