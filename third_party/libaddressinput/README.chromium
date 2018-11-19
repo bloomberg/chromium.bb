@@ -18,6 +18,7 @@ PaymentRequest and autofill.
 Local Modifications:
 - Use Chrome's version of JSON reader in chromium/json.cc.
 - Use Chrome's version of loose string comparison in chromium/string_compare.cc.
+- fuzz/: Added fuzz targets.
 
 Note:
 
