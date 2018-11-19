@@ -20,6 +20,8 @@ class SyncUserSettings {
 
   // Whether the user wants Sync to run, a.k.a. the Sync feature toggle in
   // settings. This maps to DISABLE_REASON_USER_CHOICE.
+  // NOTE: This is true by default, even if the user has never enabled Sync or
+  // isn't even signed in.
   virtual bool IsSyncRequested() const = 0;
   virtual void SetSyncRequested(bool requested) = 0;
 
@@ -30,18 +32,21 @@ class SyncUserSettings {
 
   // Whether the initial Sync setup has been completed, meaning the user has
   // consented to Sync.
+  // NOTE: On Android and ChromeOS, this gets set automatically, so it doesn't
+  // really mean anything. See |browser_defaults::kSyncAutoStarts|.
   virtual bool IsFirstSetupComplete() const = 0;
   virtual void SetFirstSetupComplete() = 0;
 
   // The user's chosen data types. The "sync everything" flag means to sync all
-  // current and future data types. The "chosen types" are always a subset of
+  // current and future data types. If it is set, then GetChosenDataTypes() will
+  // always return "all types". The chosen types are always a subset of
   // syncer::UserSelectableTypes().
+  // NOTE: By default, GetChosenDataTypes() returns "all types", even if the
+  // user has never enabled Sync, or if only Sync-the-transport is running.
   virtual bool IsSyncEverythingEnabled() const = 0;
   virtual syncer::ModelTypeSet GetChosenDataTypes() const = 0;
   virtual void SetChosenDataTypes(bool sync_everything,
                                   syncer::ModelTypeSet types) = 0;
-  // TODO(crbug.com/884159): Should we also expose the "preferred" types here,
-  // which additionally include implied and forced types?
 
   // Encryption.
   virtual bool IsEncryptEverythingAllowed() const = 0;
