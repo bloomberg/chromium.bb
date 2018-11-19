@@ -36,6 +36,7 @@
 # failing tests.
 
 ActiveDirectoryJoinTest.*
+AppManagementAppTest.*
 AudioPlayerBrowserTest.*
 BluetoothInternalsTest.*
 CertificateViewerModalUITest.*
