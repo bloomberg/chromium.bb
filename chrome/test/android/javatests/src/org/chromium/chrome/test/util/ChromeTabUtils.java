@@ -5,6 +5,7 @@
 package org.chromium.chrome.test.util;
 
 import android.app.Instrumentation;
+import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.view.View;
@@ -44,8 +45,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import javax.annotation.Nullable;
 
 /**
  * A utility class that contains methods generic to all Tabs tests.
