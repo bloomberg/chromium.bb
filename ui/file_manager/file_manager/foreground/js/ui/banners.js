@@ -672,6 +672,7 @@ Banners.prototype.showLowDownloadsSpaceWarning_ = function(show) {
 
     var close = this.document_.createElement('div');
     close.className = 'banner-close';
+    close.tabIndex = 0;
     box.appendChild(close);
     close.addEventListener('click', function() {
       var values = {};
