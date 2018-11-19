@@ -115,6 +115,10 @@ class AURA_EXPORT WindowPort {
   virtual viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task) = 0;
 
+  // Marks the current viz::LocalSurfaceId as invalid. AllocateLocalSurfaceId
+  // must be called before submitting new CompositorFrames.
+  virtual void InvalidateLocalSurfaceId() = 0;
+
   virtual void UpdateLocalSurfaceIdFromEmbeddedClient(
       const viz::LocalSurfaceIdAllocation&
           embedded_client_local_surface_id_allocation) = 0;

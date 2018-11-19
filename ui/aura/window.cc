@@ -1141,6 +1141,10 @@ const viz::LocalSurfaceIdAllocation& Window::GetLocalSurfaceIdAllocation()
   return port_->GetLocalSurfaceIdAllocation();
 }
 
+void Window::InvalidateLocalSurfaceId() {
+  port_->InvalidateLocalSurfaceId();
+}
+
 void Window::UpdateLocalSurfaceIdFromEmbeddedClient(
     const base::Optional<viz::LocalSurfaceIdAllocation>&
         embedded_client_local_surface_id_allocation) {

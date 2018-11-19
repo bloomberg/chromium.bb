@@ -51,6 +51,7 @@ class AURA_EXPORT WindowPortLocal : public WindowPort,
   void AllocateLocalSurfaceId() override;
   viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task) override;
+  void InvalidateLocalSurfaceId() override;
   void UpdateLocalSurfaceIdFromEmbeddedClient(
       const viz::LocalSurfaceIdAllocation&
           embedded_client_local_surface_id_allocation) override;

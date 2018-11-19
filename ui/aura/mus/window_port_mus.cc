@@ -519,6 +519,10 @@ viz::ScopedSurfaceIdAllocator WindowPortMus::GetSurfaceIdAllocator(
                                        std::move(allocation_task));
 }
 
+void WindowPortMus::InvalidateLocalSurfaceId() {
+  parent_local_surface_id_allocator_.Invalidate();
+}
+
 void WindowPortMus::UpdateLocalSurfaceIdFromEmbeddedClient(
     const viz::LocalSurfaceIdAllocation&
         embedded_client_local_surface_id_allocation) {

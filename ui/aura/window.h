@@ -419,6 +419,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns the current viz::LocalSurfaceIdAllocation.
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation() const;
 
+  // Marks the current viz::LocalSurfaceId as invalid. AllocateLocalSurfaceId
+  // must be called before submitting new CompositorFrames.
+  void InvalidateLocalSurfaceId();
+
   // Sets the current viz::LocalSurfaceId, in cases where the embedded client
   // has allocated one. Also sets child sequence number component of the
   // viz::LocalSurfaceId allocator.
