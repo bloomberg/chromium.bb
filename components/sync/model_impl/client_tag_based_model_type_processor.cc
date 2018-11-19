@@ -1406,22 +1406,29 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
   std::string type_string = ModelTypeToString(type_);
 
   while (batch->HasNext()) {
-    KeyAndData data = batch->Next();
-    std::unique_ptr<base::DictionaryValue> node =
-        data.second->ToDictionaryValue();
-    ProcessorEntityTracker* entity = GetEntityForStorageKey(data.first);
-    // Entity could be null if there are some unapplied changes.
+    KeyAndData key_and_data = batch->Next();
+    std::unique_ptr<EntityData> data = std::move(key_and_data.second);
+
+    // There is an overlap between EntityData fields from the bridge and
+    // EntityMetadata fields from the processor's entity tracker, metadata is
+    // the authoritative source of truth.
+    ProcessorEntityTracker* entity = GetEntityForStorageKey(key_and_data.first);
+    // Tracker could be null if there are some unapplied changes.
     if (entity != nullptr) {
-      std::unique_ptr<base::DictionaryValue> metadata =
-          EntityMetadataToValue(entity->metadata());
-      base::Value* server_id = metadata->FindKey("server_id");
-      if (server_id) {
-        // Set ID value as directory, "s" means server.
-        node->SetString("ID", "s" + server_id->GetString());
-      }
-      node->Set("metadata", std::move(metadata));
+      const sync_pb::EntityMetadata& metadata = entity->metadata();
+      // Set id value as directory, "s" means server.
+      data->id = "s" + metadata.server_id();
+      data->creation_time = ProtoTimeToTime(metadata.creation_time());
+      data->modification_time = ProtoTimeToTime(metadata.modification_time());
+      data->client_tag_hash = metadata.client_tag_hash();
     }
+
+    std::unique_ptr<base::DictionaryValue> node = data->ToDictionaryValue();
     node->SetString("modelType", type_string);
+    // Copy the whole metadata message into the dictionary (if existing).
+    if (entity != nullptr) {
+      node->Set("metadata", EntityMetadataToValue(entity->metadata()));
+    }
     all_nodes->Append(std::move(node));
   }
 
