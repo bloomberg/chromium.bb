@@ -63,6 +63,7 @@ uint32_t GetLogEntrySize(uint32_t path_len);
 }  // namespace third_party_dlls
 
 // Exported API for calling from outside chrome_elf.dll.
+
 // Drains the load attempt LogEntries into the provided buffer.
 // - Returns the number of bytes written.  See comments above for LogEntry
 //   details.
@@ -74,7 +75,6 @@ extern "C" uint32_t DrainLog(uint8_t* buffer,
                              uint32_t buffer_size,
                              uint32_t* log_remaining);
 
-// Exported API for calling from outside chrome_elf.dll.
 // Register an event to be notified when load-attempt logs are available
 // via DrainLog API.
 // - Pass in a HANDLE to an event created via ::CreateEvent(), or nullptr to
@@ -82,5 +82,11 @@ extern "C" uint32_t DrainLog(uint8_t* buffer,
 // - This function will duplicate |event_handle|, and call ::SetEvent() when any
 //   new load-attempt log is added.
 extern "C" bool RegisterLogNotification(HANDLE event_handle);
+
+// Returns the number of times a module was blocked.
+extern "C" uint32_t GetBlockedModulesCount();
+
+// Returns the number of unique modules that have been blocked.
+extern "C" uint32_t GetUniqueBlockedModulesCount();
 
 #endif  // CHROME_ELF_THIRD_PARTY_DLLS_LOGGING_API_H_

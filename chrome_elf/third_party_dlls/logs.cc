@@ -8,6 +8,7 @@
 
 #include <assert.h>
 
+#include <atomic>
 #include <vector>
 
 #include "chrome_elf/sha1/sha1.h"
@@ -23,6 +24,10 @@ HANDLE g_log_mutex = nullptr;
 // An event handle that can be registered by outside modules via
 // RegisterLogNotification().
 HANDLE g_notification_event = nullptr;
+
+// Keep track of the count of blocked modules.
+std::atomic<uint32_t> g_blocked_modules_count;
+std::atomic<uint32_t> g_unique_blocked_modules_count;
 
 // This structure will be translated into LogEntry when draining log.
 struct LogEntryInternal {
@@ -75,15 +80,23 @@ class Log {
 
   // Add a LogEntryInternal to the log.  Take ownership of the argument.
   void AddEntry(LogEntryInternal&& entry) {
-    // Sanity checks.  If this is a block, do not add duplicate logs.  Check
-    // both the "permanent" block record Log, as well as this Log (which
-    // hasn't been drained yet).
-    if (entries_.size() == kMaxLogEntries ||
-        (log_type_ == LogType::kBlocked &&
-         (GetBlockedRecordLog().ContainsEntry(entry) ||
-          ContainsEntry(entry)))) {
-      return;
+    if (log_type_ == LogType::kBlocked) {
+      // Count the number of modules that were blocked.
+      g_blocked_modules_count.fetch_add(1, std::memory_order_relaxed);
+
+      // As opposed to kAllowed entries, it's possible to receive duplicate
+      // kBlocked entries. Do not add a new entry for those duplicates.
+      if (GetBlockedRecordLog().ContainsEntry(entry) || ContainsEntry(entry)) {
+        return;
+      } else {
+        // Also count the number of unique modules that were blocked.
+        g_unique_blocked_modules_count.fetch_add(1, std::memory_order_relaxed);
+      }
     }
+
+    // Ensure the log size stays reasonable.
+    if (entries_.size() == kMaxLogEntries)
+      return;
     entries_.push_back(std::move(entry));
 
     // Fire the global notification event - if any is registered.
@@ -310,4 +323,12 @@ bool RegisterLogNotification(HANDLE event_handle) {
   g_notification_event = temp;
 
   return true;
+}
+
+uint32_t GetBlockedModulesCount() {
+  return g_blocked_modules_count.load(std::memory_order_relaxed);
+}
+
+uint32_t GetUniqueBlockedModulesCount() {
+  return g_unique_blocked_modules_count.load(std::memory_order_relaxed);
 }

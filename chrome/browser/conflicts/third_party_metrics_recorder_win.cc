@@ -5,6 +5,7 @@
 #include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -15,6 +16,10 @@
 #include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 #include "components/crash/core/common/crash_key.h"
+
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome_elf/third_party_dlls/logging_api.h"
+#endif
 
 namespace {
 
@@ -28,6 +33,15 @@ bool IsGoogleModule(base::StringPiece16 subject) {
 
 ThirdPartyMetricsRecorder::ThirdPartyMetricsRecorder() {
   current_value_.reserve(kCrashKeySize);
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // It is safe to use base::Unretained() since the timer is a member variable
+  // of this class.
+  heartbeat_metrics_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMinutes(5),
+      base::BindRepeating(&ThirdPartyMetricsRecorder::RecordHeartbeatMetrics,
+                          base::Unretained(this)));
+#endif
 }
 
 ThirdPartyMetricsRecorder::~ThirdPartyMetricsRecorder() = default;
@@ -136,3 +150,22 @@ void ThirdPartyMetricsRecorder::AddUnsignedModuleToCrashkeys(
 
   unsigned_modules_keys[current_key_index_].Set(current_value_);
 }
+
+#if defined(GOOGLE_CHROME_BUILD)
+void ThirdPartyMetricsRecorder::RecordHeartbeatMetrics() {
+  UMA_HISTOGRAM_COUNTS_1M(
+      "ThirdPartyModules.Heartbeat.UniqueBlockedModulesCount",
+      GetUniqueBlockedModulesCount());
+
+  uint32_t blocked_modules_count = GetBlockedModulesCount();
+  UMA_HISTOGRAM_COUNTS_1M("ThirdPartyModules.Heartbeat.BlockedModulesCount",
+                          blocked_modules_count);
+
+  // Stop recording when |blocked_modules_count| gets too high. This is to avoid
+  // dealing with the possible integer overflow that would result in emitting
+  // wrong values. The exact cutoff point is not important but it must be higher
+  // than the max value for the histogram (1M in this case).
+  if (blocked_modules_count > std::numeric_limits<uint32_t>::max() / 2)
+    heartbeat_metrics_timer_.Reset();
+}
+#endif
