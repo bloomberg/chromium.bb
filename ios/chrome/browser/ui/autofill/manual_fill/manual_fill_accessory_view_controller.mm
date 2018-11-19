@@ -39,7 +39,7 @@ constexpr CGFloat ManualFillIconsRightInset = 24;
 
 }  // namespace
 
-static NSTimeInterval MFAnimationDuration = 0.20;
+static NSTimeInterval MFAnimationDuration = 0;
 
 @interface ManualFillAccessoryViewController ()
 
