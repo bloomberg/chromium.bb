@@ -91,7 +91,6 @@ test.util.sync.getFileList = function(contentWindow) {
  */
 test.util.sync.selectFile = function(contentWindow, filename) {
   var rows = contentWindow.document.querySelectorAll('#detail-table li');
-  test.util.sync.focus(contentWindow, '#file-list');
   test.util.sync.fakeKeyDown(
       contentWindow, '#file-list', 'Home', false, false, false);
   for (var index = 0; index < rows.length; ++index) {

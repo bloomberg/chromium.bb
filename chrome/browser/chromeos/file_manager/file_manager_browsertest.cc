@@ -544,19 +544,12 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("shareFileDrive").EnableDriveFs(),
                       TestCase("shareDirectoryDrive").DisableDriveFs(),
                       TestCase("shareDirectoryDrive").EnableDriveFs(),
-                      TestCase("shareHostedFileDrive"),
                       TestCase("manageHostedFileDrive").DisableDriveFs(),
                       TestCase("manageHostedFileDrive").EnableDriveFs(),
                       TestCase("manageFileDrive").DisableDriveFs(),
                       TestCase("manageFileDrive").EnableDriveFs(),
                       TestCase("manageDirectoryDrive").DisableDriveFs(),
-                      TestCase("manageDirectoryDrive").EnableDriveFs(),
-                      TestCase("shareFileTeamDrive"),
-                      TestCase("shareDirectoryTeamDrive"),
-                      TestCase("shareHostedFileTeamDrive"),
-                      TestCase("manageHostedFileTeamDrive"),
-                      TestCase("manageFileTeamDrive"),
-                      TestCase("manageDirectoryTeamDrive")));
+                      TestCase("manageDirectoryDrive").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     SuggestAppDialog, /* suggest_app_dialog.js */

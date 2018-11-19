@@ -9,32 +9,19 @@
  *
  * @param {!string} path Path of the file or directory to be shared.
  * @param {!string} url Expected URL for the browser to visit.
- * @param {!string|undefined} teamDrive If set, the team drive to switch to.
  */
-function shareWithOthersExpectBrowserURL(path, url, teamDrive = undefined) {
+function shareWithOthersExpectBrowserURL(path, url) {
   let appId;
 
   StepsRunner.run([
     // Open Files app on Drive.
     function() {
       setupAndWaitUntilReady(
-          null, RootPath.DRIVE, this.next, [],
-          BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
-    },
-    // Navigate to the specified team drive if one is specified.
-    function(results) {
-      appId = results.windowId;
-      if (!teamDrive) {
-        this.next();
-        return;
-      }
-      remoteCall
-          .navigateWithDirectoryTree(
-              appId, `/team_drives/${teamDrive}`, 'Team Drives', 'drive')
-          .then(this.next);
+          null, RootPath.DRIVE, this.next, [], BASIC_DRIVE_ENTRY_SET);
     },
     // Select the given |path|.
-    function() {
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil('selectFile', appId, [path], this.next);
     },
     // Wait for the entry to be selected.
@@ -93,32 +80,19 @@ function shareWithOthersExpectBrowserURL(path, url, teamDrive = undefined) {
  *
  * @param {!string} path Path of the file or directory to be managed.
  * @param {!string} url Expected URL for the browser to visit.
- * @param {!string|undefined} teamDrive If set, the team drive to switch to.
  */
-function manageWithDriveExpectBrowserURL(path, url, teamDrive = undefined) {
+function manageWithDriveExpectBrowserURL(path, url) {
   let appId;
 
   StepsRunner.run([
     // Open Files app on Drive.
     function() {
       setupAndWaitUntilReady(
-          null, RootPath.DRIVE, this.next, [],
-          BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
-    },
-    // Navigate to the specified team drive if one is specified.
-    function(results) {
-      appId = results.windowId;
-      if (!teamDrive) {
-        this.next();
-        return;
-      }
-      remoteCall
-          .navigateWithDirectoryTree(
-              appId, `/team_drives/${teamDrive}`, 'Team Drives', 'drive')
-          .then(this.next);
+          null, RootPath.DRIVE, this.next, [], BASIC_DRIVE_ENTRY_SET);
     },
     // Select the given |path|.
-    function() {
+    function(results) {
+      appId = results.windowId;
       remoteCall.callRemoteTestUtil('selectFile', appId, [path], this.next);
     },
     // Wait for the entry to be selected.
@@ -194,15 +168,6 @@ testcase.shareDirectoryDrive = function() {
 };
 
 /**
- * Tests sharing a hosted file (gdoc) on Drive.
- */
-testcase.shareHostedFileDrive = function() {
-  const URL =
-      'https://document_alternate_link/Test%20Document?userstoinvite=%22%22';
-  shareWithOthersExpectBrowserURL('Test Document.gdoc', URL);
-};
-
-/**
  * Tests managing a file on Drive.
  */
 testcase.manageFileDrive = function() {
@@ -226,103 +191,4 @@ testcase.manageHostedFileDrive = function() {
   manageWithDriveExpectBrowserURL('Test Document.gdoc', URL);
 };
 
-/**
- * Tests sharing a file in a team drive.
- */
-testcase.shareFileTeamDrive = function() {
-  const URL =
-      'https://file_alternate_link/teamDriveAFile.txt?userstoinvite=%22%22';
-  shareWithOthersExpectBrowserURL('teamDriveAFile.txt', URL, 'Team Drive A');
-};
-
-/**
- * Tests that sharing a directory in a team drive is not allowed.
- */
-testcase.shareDirectoryTeamDrive = function() {
-  let appId;
-  const teamDrive = 'Team Drive A';
-  const path = 'teamDriveADirectory';
-
-  StepsRunner.run([
-    // Open Files app on Drive.
-    function() {
-      setupAndWaitUntilReady(
-          null, RootPath.DRIVE, this.next, [],
-          BASIC_DRIVE_ENTRY_SET.concat(TEAM_DRIVE_ENTRY_SET));
-    },
-    // Navigate to the team drive.
-    function(results) {
-      appId = results.windowId;
-      remoteCall
-          .navigateWithDirectoryTree(
-              appId, `/team_drives/${teamDrive}`, 'Team Drives', 'drive')
-          .then(this.next);
-    },
-    // Select the given |path|.
-    function() {
-      remoteCall.callRemoteTestUtil('selectFile', appId, [path], this.next);
-    },
-    // Wait for the entry to be selected.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'selectFile failed');
-      remoteCall.waitForElement(appId, '.table-row[selected]').then(this.next);
-    },
-    // Right-click the selected entry.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseRightClick', appId, ['.table-row[selected]'], this.next);
-    },
-    // Wait for the context menu to appear.
-    function(result) {
-      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
-      remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])')
-          .then(this.next);
-    },
-    // Wait for the "Share" menu item to appear.
-    function(result) {
-      chrome.test.assertTrue(!!result);
-      remoteCall
-          .waitForElement(appId, '[command="#share"]:not([hidden])[disabled]')
-          .then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
-};
-
-/**
- * Tests sharing a hosted file (gdoc) in a team drive.
- */
-testcase.shareHostedFileTeamDrive = function() {
-  const URL =
-      'https://document_alternate_link/teamDriveAHostedDoc?userstoinvite=%22%22';
-  shareWithOthersExpectBrowserURL(
-      'teamDriveAHostedDoc.gdoc', URL, 'Team Drive A');
-};
-
-/**
- * Tests managing a file in a team drive.
- */
-testcase.manageFileTeamDrive = function() {
-  const URL = 'https://file_alternate_link/teamDriveAFile.txt';
-  manageWithDriveExpectBrowserURL('teamDriveAFile.txt', URL, 'Team Drive A');
-};
-
-/**
- * Tests managing a directory in a team drive.
- */
-testcase.manageDirectoryTeamDrive = function() {
-  const URL = 'https://folder_alternate_link/teamDriveADirectory';
-  manageWithDriveExpectBrowserURL('teamDriveADirectory', URL, 'Team Drive A');
-};
-
-/**
- * Tests managing a hosted file (gdoc) in a team drive.
- */
-testcase.manageHostedFileTeamDrive = function() {
-  const URL = 'https://document_alternate_link/teamDriveAHostedDoc';
-  manageWithDriveExpectBrowserURL(
-      'teamDriveAHostedDoc.gdoc', URL, 'Team Drive A');
-};
+// TODO(903637): Add tests for sharing a file on Team Drives.
