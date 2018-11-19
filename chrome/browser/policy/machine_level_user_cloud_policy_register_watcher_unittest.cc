@@ -38,7 +38,9 @@ class FakeDMTokenStorage : public BrowserDMTokenStorage {
   std::string RetrieveDMToken() override { return dm_token_; }
   std::string RetrieveEnrollmentToken() override { return enrollment_token_; }
   std::string RetrieveClientId() override { return kClientId; }
-  bool ShouldDisplayErrorMessageOnFailure() override { return true; }
+  bool ShouldDisplayErrorMessageOnFailure() override {
+    return should_display_error_message_on_failure_;
+  }
 
   std::string InitClientId() override {
     NOTREACHED();
@@ -63,10 +65,14 @@ class FakeDMTokenStorage : public BrowserDMTokenStorage {
   void set_enrollment_token(const std::string& enrollment_token) {
     enrollment_token_ = enrollment_token;
   }
+  void set_should_display_error_message_on_failure(bool should_display) {
+    should_display_error_message_on_failure_ = should_display;
+  }
 
  private:
   std::string enrollment_token_;
   std::string dm_token_;
+  bool should_display_error_message_on_failure_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDMTokenStorage);
 };
@@ -204,6 +210,32 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest, EnrollmentSucceed) {
 }
 
 TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+       EnrollmentSucceedWithNoErrorMessageSetup) {
+  base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(*dialog(), DisplayLaunchingInformationWithThrobber(_));
+  EXPECT_CALL(*dialog(), IsShowing()).WillOnce(Return(true));
+  storage()->set_should_display_error_message_on_failure(false);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &FakeMachineLevelUserCloudPolicyController::FireNotification,
+          base::Unretained(controller()), true));
+  EXPECT_EQ(RegisterResult::kEnrollmentSuccess,
+            watcher()->WaitUntilCloudPolicyEnrollmentFinished());
+  histogram_tester.ExpectBucketCount(
+      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
+      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+          kShown,
+      1);
+  histogram_tester.ExpectBucketCount(
+      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
+      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+          kClosedSuccess,
+      1);
+}
+
+TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
        EnrollmentFailedAndQuit) {
   base::HistogramTester histogram_tester;
 
@@ -283,6 +315,31 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
 }
 
 TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+       EnrollmentCanceledBeforeFinishWithNoErrorMessageSetup) {
+  base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(*dialog(), DisplayLaunchingInformationWithThrobber(_));
+  storage()->set_should_display_error_message_on_failure(false);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MockEnterpriseStartupDialog::UserClickedTheButton,
+                     base::Unretained(dialog()), false));
+  EXPECT_EQ(RegisterResult::kQuitDueToFailure,
+            watcher()->WaitUntilCloudPolicyEnrollmentFinished());
+  histogram_tester.ExpectBucketCount(
+      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
+      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+          kShown,
+      1);
+  histogram_tester.ExpectBucketCount(
+      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
+      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+          kClosedAbort,
+      1);
+}
+
+TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
        EnrollmentFailedBeforeDialogDisplay) {
   base::HistogramTester histogram_tester;
 
@@ -302,6 +359,45 @@ TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
       MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
           kClosedFail,
       1);
+}
+
+TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+       EnrollmentFailedWithoutErrorMessage) {
+  base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(*dialog(), DisplayLaunchingInformationWithThrobber(_));
+  EXPECT_CALL(*dialog(), IsShowing()).WillOnce(Return(true));
+  storage()->set_should_display_error_message_on_failure(false);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &FakeMachineLevelUserCloudPolicyController::FireNotification,
+          base::Unretained(controller()), false));
+  EXPECT_EQ(RegisterResult::kEnrollmentFailedSilently,
+            watcher()->WaitUntilCloudPolicyEnrollmentFinished());
+  histogram_tester.ExpectBucketCount(
+      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
+      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+          kShown,
+      1);
+  histogram_tester.ExpectBucketCount(
+      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
+      MachineLevelUserCloudPolicyRegisterWatcher::EnrollmentStartupDialog::
+          kClosedFailAndIgnore,
+      1);
+}
+
+TEST_F(MachineLevelUserCloudPolicyRegisterWatcherTest,
+       EnrollmentFailedBeforeDialogDisplayWithoutErrorMessage) {
+  base::HistogramTester histogram_tester;
+
+  storage()->set_should_display_error_message_on_failure(false);
+  controller()->FireNotification(false);
+  EXPECT_EQ(RegisterResult::kEnrollmentFailedSilentlyBeforeDialogDisplayed,
+            watcher()->WaitUntilCloudPolicyEnrollmentFinished());
+  histogram_tester.ExpectTotalCount(
+      MachineLevelUserCloudPolicyRegisterWatcher::kStartupDialogHistogramName,
+      0);
 }
 
 }  // namespace policy

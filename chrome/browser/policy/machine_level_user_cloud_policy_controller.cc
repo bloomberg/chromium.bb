@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/machine_level_user_cloud_policy_helper.h"
@@ -36,6 +37,10 @@
 
 #if !defined(GOOGLE_CHROME_BUILD)
 #include "chrome/common/chrome_switches.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/app_controller_mac.h"
 #endif
 
 namespace policy {
@@ -194,12 +199,30 @@ void MachineLevelUserCloudPolicyController::Init(
   }
 }
 
-MachineLevelUserCloudPolicyController::RegisterResult
-MachineLevelUserCloudPolicyController::WaitUntilPolicyEnrollmentFinished() {
+bool MachineLevelUserCloudPolicyController::
+    WaitUntilPolicyEnrollmentFinished() {
   if (policy_register_watcher_) {
-    return policy_register_watcher_->WaitUntilCloudPolicyEnrollmentFinished();
+    switch (
+        policy_register_watcher_->WaitUntilCloudPolicyEnrollmentFinished()) {
+      case RegisterResult::kNoEnrollmentNeeded:
+      case RegisterResult::kEnrollmentSuccessBeforeDialogDisplayed:
+      case RegisterResult::kEnrollmentFailedSilentlyBeforeDialogDisplayed:
+        return true;
+      case RegisterResult::kEnrollmentSuccess:
+      case RegisterResult::kEnrollmentFailedSilently:
+#if defined(OS_MACOSX)
+        app_controller_mac::EnterpriseStartupDialogClosed();
+#endif
+        return true;
+      case RegisterResult::kRestartDueToFailure:
+        chrome::AttemptRestart();
+        return false;
+      case RegisterResult::kQuitDueToFailure:
+        chrome::AttemptExit();
+        return false;
+    }
   }
-  return RegisterResult::kNoEnrollmentNeeded;
+  return true;
 }
 
 void MachineLevelUserCloudPolicyController::AddObserver(Observer* observer) {
