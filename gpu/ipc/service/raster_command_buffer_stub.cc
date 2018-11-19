@@ -68,12 +68,6 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
     CommandBufferStub* share_command_buffer_stub,
     const GPUCreateCommandBufferConfig& init_params,
     base::UnsafeSharedMemoryRegion shared_state_shm) {
-#if defined(OS_FUCHSIA)
-  // TODO(crbug.com/707031): Implement this.
-  NOTIMPLEMENTED();
-  LOG(ERROR) << "ContextResult::kFatalFailure: no fuchsia support";
-  return gpu::ContextResult::kFatalFailure;
-#else
   TRACE_EVENT0("gpu", "RasterBufferStub::Initialize");
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
 
@@ -221,7 +215,6 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   manager->delegate()->DidCreateContextSuccessfully();
   initialized_ = true;
   return gpu::ContextResult::kSuccess;
-#endif  // defined(OS_FUCHSIA)
 }
 
 // RasterInterface clients should not manipulate the front buffer.
