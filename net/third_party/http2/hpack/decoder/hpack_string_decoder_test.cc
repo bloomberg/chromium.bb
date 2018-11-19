@@ -81,7 +81,7 @@ class HpackStringDecoderTest : public RandomDecoderTest {
 TEST_F(HpackStringDecoderTest, DecodeEmptyString) {
   {
     Validator validator = ValidateDoneAndEmpty(MakeValidator("", kCompressed));
-    const char kData[] = {0x80u};
+    const char kData[] = {'\x80'};
     DecodeBuffer b(kData);
     EXPECT_TRUE(
         DecodeAndValidateSeveralWays(&b, kMayReturnZeroOnFirst, validator));
@@ -90,7 +90,7 @@ TEST_F(HpackStringDecoderTest, DecodeEmptyString) {
     // Make sure it stops after decoding the empty string.
     Validator validator =
         ValidateDoneAndOffset(1, MakeValidator("", kUncompressed));
-    const char kData[] = {0x00, 0xffu};
+    const char kData[] = {'\x00', '\xff'};
     DecodeBuffer b(kData);
     EXPECT_EQ(2u, b.Remaining());
     EXPECT_TRUE(
