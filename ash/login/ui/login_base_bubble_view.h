@@ -25,6 +25,9 @@ class ASH_EXPORT LoginBaseBubbleView : public views::BubbleDialogDelegateView {
   // Returns the button responsible for opening this bubble.
   virtual LoginButton* GetBubbleOpener() const;
 
+  // Returns whether or not this bubble should show persistently.
+  virtual bool IsPersistent() const;
+
   // views::BubbleDialogDelegateView:
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;

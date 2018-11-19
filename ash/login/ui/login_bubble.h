@@ -40,12 +40,6 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
 
   static const int kUserMenuRemoveUserButtonIdForTest;
 
-  // Flags passed to ShowErrorBubble().
-  static constexpr uint32_t kFlagsNone = 0;
-  // If set, the shown error bubble will not be closed due to an unrelated user
-  // action - e.g. the bubble will not be closed if the user starts typing.
-  static constexpr uint32_t kFlagPersistent = 1 << 0;
-
   LoginBubble();
   ~LoginBubble() override;
 
@@ -53,7 +47,7 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   // |anchor_view| is the anchor for placing the bubble view.
   void ShowErrorBubble(views::View* content,
                        views::View* anchor_view,
-                       uint32_t flags);
+                       bool show_persistently);
 
   // Shows a user menu bubble.
   // |anchor_view| is the anchor for placing the bubble view.
@@ -127,9 +121,6 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
 
   // Repositions the bubble view if it extends too far right or down.
   void EnsureBubbleInScreen();
-
-  // Flags passed to ShowErrorBubble().
-  uint32_t flags_ = kFlagsNone;
 
   LoginBaseBubbleView* bubble_view_ = nullptr;
 
