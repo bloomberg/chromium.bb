@@ -253,7 +253,7 @@ bool Surface::QueueFrame(
 
     // If the deadline is in the past, then the CompositorFrame will activate
     // immediately.
-    if (deadline_->Set(ResolveFrameDeadline(frame))) {
+    if (deadline_->Set(ResolveFrameDeadline(pending_frame_data_->frame))) {
       // Ask the SurfaceDependencyTracker to inform |this| when its dependencies
       // are resolved.
       surface_manager_->dependency_tracker()->RequestSurfaceResolution(this);
