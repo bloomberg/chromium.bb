@@ -597,6 +597,12 @@ typedef struct SPEED_FEATURES {
   // prune wedge and compound segment approximate rd evaluation based on
   // compound average rd/ref_best_rd
   int prune_comp_type_by_comp_avg;
+
+  // Prune/gate motion mode evaluation based on token based rd
+  // during transform search for inter blocks
+  // Values are 0 (not used) , 1 - 3 with progressively increasing
+  // aggressiveness
+  int prune_motion_mode_level;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
