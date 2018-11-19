@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
+
+#include <string>
+
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,20 +34,38 @@ const base::FeatureParam<std::string>
 const base::FeatureParam<bool> kNuxOnboardingForceEnabledShowEmailInterstitial =
     {&kNuxOnboardingForceEnabled, "show-email-interstitial", true};
 
+int GetOnboardingGroup() {
+  // Preppend a 0 to avoid issues with empty string.
+  return std::stoi("0" + base::GetFieldTrialParamValue(
+                             /* Must match finch study name */ "NaviOnboarding",
+                             "onboarding-group"));
+}
+
 bool IsNuxOnboardingEnabled(Profile* profile) {
   if (base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled)) {
     return true;
   } else {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
     // To avoid diluting data collection, existing users should not be assigned
-    // an NUX group. So, the kOnboardDuringNUX flag is used to short-circuit the
-    // feature checks below.
+    // an NUX group. So, the kNuxOnboardGroup integer is used to short-circuit
+    // the feature checks below.
     PrefService* prefs = profile->GetPrefs();
-    bool onboard_during_nux =
-        prefs && prefs->GetBoolean(prefs::kOnboardDuringNUX);
+    if (!prefs)
+      return false;
 
-    return onboard_during_nux &&
-           base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature);
+    int onboard_group = prefs->GetInteger(prefs::kNuxOnboardGroup);
+
+    if (onboard_group == 0)
+      return false;
+
+    int current_group = GetOnboardingGroup();
+    if (onboard_group != current_group) {
+      // Remove user from group if they're not part of the current experiment.
+      prefs->SetInteger(prefs::kNuxOnboardGroup, 0);
+      return false;
+    }
+
+    return base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature);
 #else
     return false;
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)

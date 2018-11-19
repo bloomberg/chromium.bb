@@ -1283,10 +1283,10 @@ const char kHasSeenWelcomePage[] = "browser.has_seen_welcome_page";
 const char kHasSeenWin10PromoPage[] = "browser.has_seen_win10_promo_page";
 
 #if defined(GOOGLE_CHROME_BUILD)
-// Whether or not this user went through the first-run experience after NUX
-// launched. This is necessary for determining which users to keep "tagging"
-// with the NUX finch experiment group, and allows a more accurate analysis.
-const char kOnboardDuringNUX[] = "browser.onboard_during_nux";
+// Put the user into an onboarding group that's decided when they go through
+// the first run onboarding experience. Only users in a group will have their
+// finch group pinged to keep track of them for the experiment.
+const char kNuxOnboardGroup[] = "browser.onboard_group";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 

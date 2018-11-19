@@ -63,6 +63,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
@@ -1078,9 +1079,10 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (profile->IsNewProfile() || first_run::IsChromeFirstRun()) {
     profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-    // Enterprise users should not be included in any NUX flow.
+    // Enterprise users should not be included in any NUX/Navi flow.
     if (!base::win::IsEnterpriseManaged()) {
-      profile->GetPrefs()->SetBoolean(prefs::kOnboardDuringNUX, true);
+      int group = nux::GetOnboardingGroup();
+      profile->GetPrefs()->SetInteger(prefs::kNuxOnboardGroup, group);
     }
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   }
