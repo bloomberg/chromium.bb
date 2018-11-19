@@ -1897,6 +1897,16 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddBoolean("isAccountManagerEnabled",
                           chromeos::switches::IsAccountManagerEnabled());
 #endif
+
+  base::string16 payment_privacy_cross_link = l10n_util::GetStringFUTF16(
+      IDS_SETTINGS_PAYMENTS_PAGE_PRIVACY_LINK_TEXT,
+      base::ASCIIToUTF16(autofill::kPrivacySettingsURL));
+  html_source->AddString("paymentsPagePrivacyLinkText",
+                         payment_privacy_cross_link);
+  html_source->AddBoolean(
+      "showPaymentsPagePrivacyLinkText",
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableAccountWalletStorage));
 }
 
 void AddPrintingStrings(content::WebUIDataSource* html_source) {

@@ -42,7 +42,7 @@
       }
     </style>
     <settings-toggle-button id="autofillCreditCardToggle"
-        class="settings-box first"
+        class="settings-box first list-item"
         aria-label="$i18n{creditCards}" no-extension-indicator
         label="$i18n{enableCreditCardsLabel}"
         sub-label="$i18n{enableCreditCardsSublabel}"
@@ -61,6 +61,12 @@
         </extension-controlled-indicator>
       </div>
     </template>
+
+    <div class="settings-box list-item underbar" id="paymentsPagePrivacyLink"
+        hidden$="[[!showPaymentsPagePrivacyLinkText_]]">
+      <div>$i18nRaw{paymentsPagePrivacyLinkText}</div>
+    </div>
+
     <div class="settings-box continuation">
       <h2 class="start">$i18n{creditCards}</h2>
       <paper-button id="addCreditCard"
