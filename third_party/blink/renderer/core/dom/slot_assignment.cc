@@ -229,7 +229,7 @@ void SlotAssignment::RecalcAssignment() {
   needs_assignment_recalc_ = false;
 
   for (Member<HTMLSlotElement> slot : Slots())
-    slot->ClearAssignedNodes();
+    slot->WillRecalcAssignedNodes();
 
   const bool is_user_agent = owner_->IsUserAgent();
 
@@ -266,10 +266,15 @@ void SlotAssignment::RecalcAssignment() {
       }
     }
 
-    if (slot)
+    if (slot) {
       slot->AppendAssignedNode(child);
-    else
+    } else {
+      // TODO(crbug.com/906494) Clear child's flat_tree_node_data here, which
+      // should be useful for shortcut in flat tree traversal later; we can skip
+      // hashmap lookup (node->slot) there if we know the node doesn't have
+      // an assigned slot.
       child.LazyReattachIfAttached();
+    }
   }
 
   if (owner_->isConnected()) {
@@ -279,7 +284,7 @@ void SlotAssignment::RecalcAssignment() {
   }
 
   for (auto& slot : Slots())
-    slot->RecalcFlatTreeChildren();
+    slot->DidRecalcAssignedNodes();
 }
 
 const HeapVector<Member<HTMLSlotElement>>& SlotAssignment::Slots() {

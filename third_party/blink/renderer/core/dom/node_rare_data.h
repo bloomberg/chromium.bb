@@ -32,6 +32,7 @@ namespace blink {
 class ComputedStyle;
 enum class DynamicRestyleFlags;
 enum class ElementFlags;
+class FlatTreeNodeData;
 class LayoutObject;
 class MutationObserverRegistration;
 class NodeListsNodeData;
@@ -134,6 +135,9 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
     return *node_lists_;
   }
 
+  FlatTreeNodeData* GetFlatTreeNodeData() const { return flat_tree_node_data_; }
+  FlatTreeNodeData& EnsureFlatTreeNodeData();
+
   NodeMutationObserverData* MutationObserverData() {
     return mutation_observer_data_.Get();
   }
@@ -197,6 +201,7 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
 
   TraceWrapperMember<NodeListsNodeData> node_lists_;
   TraceWrapperMember<NodeMutationObserverData> mutation_observer_data_;
+  Member<FlatTreeNodeData> flat_tree_node_data_;
 
   unsigned connected_frame_count_ : kConnectedFrameCountBits;
   unsigned element_flags_ : kNumberOfElementFlags;

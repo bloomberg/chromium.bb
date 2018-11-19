@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_node_data.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -43,7 +44,7 @@ namespace blink {
 
 struct SameSizeAsNodeRareData {
   void* pointer_;
-  Member<void*> willbe_member_[2];
+  Member<void*> willbe_member_[3];
   unsigned bitfields_;
 };
 
@@ -83,6 +84,7 @@ void NodeMutationObserverData::RemoveRegistration(
 
 void NodeRareData::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(mutation_observer_data_);
+  visitor->Trace(flat_tree_node_data_);
   // Do not keep empty NodeListsNodeData objects around.
   if (node_lists_ && node_lists_->IsEmpty())
     node_lists_.Clear();
@@ -112,6 +114,12 @@ void NodeRareData::IncrementConnectedSubframeCount() {
 NodeListsNodeData& NodeRareData::CreateNodeLists() {
   node_lists_ = NodeListsNodeData::Create();
   return *node_lists_;
+}
+
+FlatTreeNodeData& NodeRareData::EnsureFlatTreeNodeData() {
+  if (!flat_tree_node_data_)
+    flat_tree_node_data_ = MakeGarbageCollected<FlatTreeNodeData>();
+  return *flat_tree_node_data_;
 }
 
 // Ensure the 10 bits reserved for the connected_frame_count_ cannot overflow.
