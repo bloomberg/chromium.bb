@@ -717,7 +717,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     private void expand(PaymentRequestSection section) {
-        if (!mIsExpandedToFullHeight) {
+        if (!mIsExpandedToFullHeight && section != null) {
             // Container now takes the full height of the screen, animating towards it.
             mRequestView.getLayoutParams().height = LayoutParams.MATCH_PARENT;
             mRequestView.addOnLayoutChangeListener(new SheetEnlargingAnimator(true));
@@ -733,12 +733,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
             // Disable all but the first button.
             updateSectionButtons();
-
-            mIsExpandedToFullHeight = true;
         }
 
         // Update the section contents when they're selected.
         mSelectedSection = section;
+        mIsExpandedToFullHeight = mSelectedSection != null;
         if (mSelectedSection == mOrderSummarySection) {
             mClient.getShoppingCart(new Callback<ShoppingCart>() {
                 @Override
