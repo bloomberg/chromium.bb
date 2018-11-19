@@ -20,7 +20,9 @@ class FeedbackContext extends JSONObject {
             return new FeedbackContext(activity, client, details, statusMessage)
                     .toString(indentSpaces);
         } catch (JSONException e) {
-            return "{\"error\": \"" + e.getMessage() + "\"}";
+            // Note: it is potentially unsafe to return e.getMessage(): the exception message
+            // could be wrangled and used as an attack vector when arriving at the JSON parser.
+            return "{\"error\": \"Failed to convert feedback context to string.\"}";
         }
     }
 
