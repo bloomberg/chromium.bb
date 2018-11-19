@@ -69,25 +69,16 @@ class ChildFrameCompositingHelperTest : public testing::Test {
 TEST_F(ChildFrameCompositingHelperTest, ChildFrameGoneClearsFallback) {
   // The primary and fallback surface IDs should start out as invalid.
   EXPECT_FALSE(compositing_helper()->surface_id().is_valid());
-  EXPECT_FALSE(compositing_helper()->oldest_acceptable_fallback().is_valid());
 
-  const viz::SurfaceId fallback_surface_id =
-      MakeSurfaceId(viz::FrameSinkId(1, 1), 1);
+  const viz::SurfaceId surface_id = MakeSurfaceId(viz::FrameSinkId(1, 1), 1);
   const gfx::Size frame_size_in_dip(100, 100);
-  compositing_helper()->SetOldestAcceptableFallback(fallback_surface_id,
-                                                    frame_size_in_dip);
+  compositing_helper()->SetSurfaceId(surface_id, frame_size_in_dip,
+                                     cc::DeadlinePolicy::UseDefaultDeadline());
+  EXPECT_EQ(surface_id, compositing_helper()->surface_id());
 
-  // Since the fallback surface ID was set before the primary surface ID then
-  // the primary is set to the same value as the fallback. Verify this is so.
-  EXPECT_EQ(fallback_surface_id, compositing_helper()->surface_id());
-  EXPECT_EQ(fallback_surface_id,
-            compositing_helper()->oldest_acceptable_fallback());
-
-  // Reporting that the child frame is gone should clear both the primary and
-  // fallback surface Ids.
+  // Reporting that the child frame is gone should clear the surface id.
   compositing_helper()->ChildFrameGone(frame_size_in_dip, 1.f);
   EXPECT_FALSE(compositing_helper()->surface_id().is_valid());
-  EXPECT_FALSE(compositing_helper()->oldest_acceptable_fallback().is_valid());
 }
 
 }  // namespace content

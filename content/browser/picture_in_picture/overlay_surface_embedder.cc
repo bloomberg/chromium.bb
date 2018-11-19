@@ -46,7 +46,6 @@ void OverlaySurfaceEmbedder::SetSurfaceId(const viz::SurfaceId& surface_id) {
                                SK_ColorBLACK,
                                cc::DeadlinePolicy::UseDefaultDeadline(),
                                true /* stretch_content_to_fill_bounds */);
-  video_layer_->SetOldestAcceptableFallback(surface_id);
 }
 
 void OverlaySurfaceEmbedder::UpdateLayerBounds() {
