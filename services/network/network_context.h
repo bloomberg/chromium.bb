@@ -76,6 +76,7 @@ class HostResolver;
 class NetworkService;
 class NetworkServiceProxyDelegate;
 class MdnsResponderManager;
+class NSSTempCertsCacheChromeOS;
 class P2PSocketManager;
 class ProxyLookupRequest;
 class ResourceScheduler;
@@ -210,7 +211,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void SetAcceptLanguage(const std::string& new_accept_language) override;
   void SetEnableReferrers(bool enable_referrers) override;
 #if defined(OS_CHROMEOS)
-  void UpdateTrustAnchors(const net::CertificateList& trust_anchors) override;
+  void UpdateAdditionalCertificates(
+      mojom::AdditionalCertificatesPtr additional_certificates) override;
 #endif
 #if BUILDFLAG(IS_CT_SUPPORTED)
   void SetCTPolicy(
@@ -499,6 +501,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
 #if defined(OS_CHROMEOS)
   CertVerifierWithTrustAnchors* cert_verifier_with_trust_anchors_ = nullptr;
+  // Additional certificates made available to NSS cert validation as temporary
+  // certificates.
+  std::unique_ptr<network::NSSTempCertsCacheChromeOS> nss_temp_certs_cache_;
 #endif
 
   // Created on-demand. Null if unused.

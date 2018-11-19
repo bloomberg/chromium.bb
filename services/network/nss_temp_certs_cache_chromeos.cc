@@ -2,17 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/temp_certs_cache_nss.h"
+#include "services/network/nss_temp_certs_cache_chromeos.h"
 
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
-#include "chromeos/network/onc/onc_utils.h"
 #include "net/cert/x509_util_nss.h"
 
-namespace policy {
+namespace network {
 
-TempCertsCacheNSS::TempCertsCacheNSS(const net::CertificateList& certificates) {
+NSSTempCertsCacheChromeOS::NSSTempCertsCacheChromeOS(
+    const net::CertificateList& certificates) {
   for (const auto& certificate : certificates) {
     net::ScopedCERTCertificate x509_cert =
         net::x509_util::CreateCERTCertificateFromX509Certificate(
@@ -26,6 +23,6 @@ TempCertsCacheNSS::TempCertsCacheNSS(const net::CertificateList& certificates) {
   }
 }
 
-TempCertsCacheNSS::~TempCertsCacheNSS() {}
+NSSTempCertsCacheChromeOS::~NSSTempCertsCacheChromeOS() {}
 
-}  // namespace policy
+}  // namespace network

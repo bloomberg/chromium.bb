@@ -200,17 +200,24 @@ void ProfileNetworkContextService::SetUpProfileIODataNetworkContext(
 }
 
 #if defined(OS_CHROMEOS)
-void ProfileNetworkContextService::UpdateTrustAnchors(
+void ProfileNetworkContextService::UpdateAdditionalCertificates(
+    const net::CertificateList& all_additional_certificates,
     const net::CertificateList& trust_anchors) {
   content::BrowserContext::ForEachStoragePartition(
-      profile_,
-      base::BindRepeating(
-          [](const net::CertificateList& trust_anchors,
-             content::StoragePartition* storage_partition) {
-            storage_partition->GetNetworkContext()->UpdateTrustAnchors(
-                trust_anchors);
-          },
-          trust_anchors));
+      profile_, base::BindRepeating(
+                    [](const net::CertificateList& all_additional_certificates,
+                       const net::CertificateList& trust_anchors,
+                       content::StoragePartition* storage_partition) {
+                      auto additional_certificates =
+                          network::mojom::AdditionalCertificates::New();
+                      additional_certificates->all_certificates =
+                          all_additional_certificates;
+                      additional_certificates->trust_anchors = trust_anchors;
+                      storage_partition->GetNetworkContext()
+                          ->UpdateAdditionalCertificates(
+                              std::move(additional_certificates));
+                    },
+                    all_additional_certificates, trust_anchors));
 }
 #endif
 
@@ -469,7 +476,12 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
       policy::PolicyCertService* service =
           policy::PolicyCertServiceFactory::GetForProfile(profile_);
-      network_context_params->initial_trust_anchors = service->trust_anchors();
+      network_context_params->initial_additional_certificates =
+          network::mojom::AdditionalCertificates::New();
+      network_context_params->initial_additional_certificates
+          ->all_certificates = service->all_server_and_authority_certs();
+      network_context_params->initial_additional_certificates->trust_anchors =
+          service->trust_anchors();
     }
   }
 #endif

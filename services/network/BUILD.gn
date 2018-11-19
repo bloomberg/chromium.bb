@@ -193,6 +193,8 @@ jumbo_component("network_service") {
       "cert_verifier_with_trust_anchors.h",
       "cert_verify_proc_chromeos.cc",
       "cert_verify_proc_chromeos.h",
+      "nss_temp_certs_cache_chromeos.cc",
+      "nss_temp_certs_cache_chromeos.h",
     ]
   }
 
@@ -338,6 +340,7 @@ source_set("tests") {
     sources += [
       "cert_verifier_with_trust_anchors_unittest.cc",
       "cert_verify_proc_chromeos_unittest.cc",
+      "nss_temp_certs_cache_chromeos_unittest.cc",
     ]
   }
 
