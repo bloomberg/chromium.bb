@@ -117,6 +117,13 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
       return window_component;
     }
 
+#if defined(OS_CHROMEOS)
+    // If the resize handle is clicked on, we want to force the hit test to
+    // force a resize drag.
+    if (window->GetResizeHandleControlsBounds().Contains(point))
+      return window->GetResizeHTComponent();
+#endif
+
     // Allows for dragging and resizing the window.
     return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
   }
@@ -810,6 +817,10 @@ gfx::Rect OverlayWindowViews::GetCloseControlsBounds() {
   return close_controls_view_->GetMirroredBounds();
 }
 
+gfx::Rect OverlayWindowViews::GetResizeHandleControlsBounds() {
+  return resize_handle_view_->GetMirroredBounds();
+}
+
 gfx::Rect OverlayWindowViews::GetPlayPauseControlsBounds() {
   return play_pause_controls_view_->GetMirroredBounds();
 }
@@ -824,6 +835,10 @@ gfx::Rect OverlayWindowViews::GetSecondCustomControlsBounds() {
   if (!second_custom_controls_view_)
     return gfx::Rect();
   return second_custom_controls_view_->GetMirroredBounds();
+}
+
+int OverlayWindowViews::GetResizeHTComponent() const {
+  return resize_handle_view_->GetHTComponent();
 }
 
 ui::Layer* OverlayWindowViews::GetControlsScrimLayer() {

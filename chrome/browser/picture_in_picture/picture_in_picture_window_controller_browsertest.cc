@@ -40,6 +40,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/hit_test.h"
 #endif
 
 using ::testing::_;
@@ -1623,6 +1624,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The resize button should be in the top left corner.
   EXPECT_GT(center.x(), resize_button_position.x());
   EXPECT_GT(center.y(), resize_button_position.y());
+  // The resize button hit test should start a top left resizing drag.
+  EXPECT_EQ(HTTOPLEFT, overlay_window_views->GetResizeHTComponent());
 
   // Move the window to the bottom left corner.
   gfx::Rect bottom_left_bounds(0, bottom_right_bounds.y(),
@@ -1640,6 +1643,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The resize button should be in the top right corner.
   EXPECT_LT(center.x(), resize_button_position.x());
   EXPECT_GT(center.y(), resize_button_position.y());
+  // The resize button hit test should start a top right resizing drag.
+  EXPECT_EQ(HTTOPRIGHT, overlay_window_views->GetResizeHTComponent());
 
   // Move the window to the top right corner.
   gfx::Rect top_right_bounds(bottom_right_bounds.x(), 0,
@@ -1657,6 +1662,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The resize button should be in the bottom left corner.
   EXPECT_GT(center.x(), resize_button_position.x());
   EXPECT_LT(center.y(), resize_button_position.y());
+  // The resize button hit test should start a bottom left resizing drag.
+  EXPECT_EQ(HTBOTTOMLEFT, overlay_window_views->GetResizeHTComponent());
 
   // Move the window to the top left corner.
   gfx::Rect top_left_bounds(0, 0, bottom_right_bounds.width(),
@@ -1673,6 +1680,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // The resize button should be in the bottom right corner.
   EXPECT_LT(center.x(), resize_button_position.x());
   EXPECT_LT(center.y(), resize_button_position.y());
+  // The resize button hit test should start a bottom right resizing drag.
+  EXPECT_EQ(HTBOTTOMRIGHT, overlay_window_views->GetResizeHTComponent());
 }
 
 #endif  // defined(OS_CHROMEOS)
