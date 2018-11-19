@@ -489,8 +489,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
   std::string SignIn(const std::string& email) {
     identity::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile());
-    identity::MakePrimaryAccountAvailable(signin_manager_, token_service_,
-                                          identity_manager, email);
+    identity::MakePrimaryAccountAvailable(identity_manager, email);
     return identity_manager->GetPrimaryAccountId();
   }
 

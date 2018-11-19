@@ -18,6 +18,14 @@ class IdentityTestEnvironmentProfileAdaptor;
 
 namespace identity {
 
+namespace {
+#if defined(OS_CHROMEOS)
+using SigninManagerForTest = FakeSigninManagerBase;
+#else
+using SigninManagerForTest = FakeSigninManager;
+#endif  // OS_CHROMEOS
+}
+
 // Internal class that creates and owns dependencies of IdentityManager
 // when those dependencies are not passed in externally.
 class IdentityManagerDependenciesOwner;
@@ -31,12 +39,6 @@ class IdentityManagerDependenciesOwner;
 // base::test::ScopedTaskEnvironment instance variable to fulfill this
 // requirement.
 class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
-#if defined(OS_CHROMEOS)
-  using SigninManagerForTest = FakeSigninManagerBase;
-#else
-  using SigninManagerForTest = FakeSigninManager;
-#endif  // OS_CHROMEOS
-
  public:
   // Preferred constructor: constructs an IdentityManager object and its
   // dependencies internally. Cannot be used if the client of this class

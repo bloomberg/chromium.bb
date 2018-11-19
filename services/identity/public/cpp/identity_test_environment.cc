@@ -207,58 +207,50 @@ IdentityManager* IdentityTestEnvironment::identity_manager() {
 
 AccountInfo IdentityTestEnvironment::SetPrimaryAccount(
     const std::string& email) {
-  return identity::SetPrimaryAccount(signin_manager_, identity_manager(),
-                                     email);
+  return identity::SetPrimaryAccount(identity_manager(), email);
 }
 
 void IdentityTestEnvironment::SetRefreshTokenForPrimaryAccount() {
-  identity::SetRefreshTokenForPrimaryAccount(token_service_,
-                                             identity_manager());
+  identity::SetRefreshTokenForPrimaryAccount(identity_manager());
 }
 
 void IdentityTestEnvironment::SetInvalidRefreshTokenForPrimaryAccount() {
-  identity::SetInvalidRefreshTokenForPrimaryAccount(token_service_,
-                                                    identity_manager());
+  identity::SetInvalidRefreshTokenForPrimaryAccount(identity_manager());
 }
 
 void IdentityTestEnvironment::RemoveRefreshTokenForPrimaryAccount() {
-  identity::RemoveRefreshTokenForPrimaryAccount(token_service_,
-                                                identity_manager());
+  identity::RemoveRefreshTokenForPrimaryAccount(identity_manager());
 }
 
 AccountInfo IdentityTestEnvironment::MakePrimaryAccountAvailable(
     const std::string& email) {
-  return identity::MakePrimaryAccountAvailable(signin_manager_, token_service_,
-                                               identity_manager(), email);
+  return identity::MakePrimaryAccountAvailable(identity_manager(), email);
 }
 
 void IdentityTestEnvironment::ClearPrimaryAccount(
     ClearPrimaryAccountPolicy policy) {
-  identity::ClearPrimaryAccount(signin_manager_, identity_manager(), policy);
+  identity::ClearPrimaryAccount(identity_manager(), policy);
 }
 
 AccountInfo IdentityTestEnvironment::MakeAccountAvailable(
     const std::string& email) {
-  return identity::MakeAccountAvailable(
-      account_tracker_service_, token_service_, identity_manager(), email);
+  return identity::MakeAccountAvailable(identity_manager(), email);
 }
 
 void IdentityTestEnvironment::SetRefreshTokenForAccount(
     const std::string& account_id) {
-  return identity::SetRefreshTokenForAccount(token_service_, identity_manager(),
-                                             account_id);
+  return identity::SetRefreshTokenForAccount(identity_manager(), account_id);
 }
 
 void IdentityTestEnvironment::SetInvalidRefreshTokenForAccount(
     const std::string& account_id) {
-  return identity::SetInvalidRefreshTokenForAccount(
-      token_service_, identity_manager(), account_id);
+  return identity::SetInvalidRefreshTokenForAccount(identity_manager(),
+                                                    account_id);
 }
 
 void IdentityTestEnvironment::RemoveRefreshTokenForAccount(
     const std::string& account_id) {
-  return identity::RemoveRefreshTokenForAccount(token_service_,
-                                                identity_manager(), account_id);
+  return identity::RemoveRefreshTokenForAccount(identity_manager(), account_id);
 }
 
 void IdentityTestEnvironment::SetCookieAccounts(
@@ -407,7 +399,7 @@ void IdentityTestEnvironment::WaitForAccessTokenRequestIfNecessary(
 
 void IdentityTestEnvironment::UpdateAccountInfoForAccount(
     AccountInfo account_info) {
-  identity::UpdateAccountInfoForAccount(account_tracker_service_, account_info);
+  identity::UpdateAccountInfoForAccount(identity_manager(), account_info);
 }
 
 }  // namespace identity
