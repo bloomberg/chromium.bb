@@ -1979,25 +1979,30 @@ TEST_F(PasswordManagerTest,
 }
 
 TEST_F(PasswordManagerTest, UpdateFormManagers) {
-  // Seeing some forms should result in creating PasswordFormManagers and
-  // querying PasswordStore. Calling UpdateFormManagers should result in
-  // querying the store again.
-  EXPECT_CALL(*store_, GetLogins(_, _));
+  for (bool new_parsing_for_saving : {false, true}) {
+    SCOPED_TRACE(testing::Message()
+                 << "new_parsing_for_saving = " << new_parsing_for_saving);
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (new_parsing_for_saving)
+      TurnOnNewParsingForSaving(&scoped_feature_list);
 
-  PasswordForm form;
-  std::vector<PasswordForm> observed;
-  observed.push_back(form);
-  manager()->OnPasswordFormsParsed(&driver_, observed);
-  ASSERT_EQ(1u, manager()->pending_login_managers().size());
-  PasswordFormManager* form_manager =
-      manager()->pending_login_managers().front().get();
+    // Seeing a form should result in creating PasswordFormManager and
+    // NewPasswordFormManager and querying PasswordStore. Calling
+    // UpdateFormManagers should result in querying the store again.
+    EXPECT_CALL(*store_, GetLogins(_, _))
+        .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
 
-  // The first GetLogins should have fired, but to unblock the second, we need
-  // to first send a response from the store (to be ignored).
-  static_cast<FormFetcherImpl*>(form_manager->GetFormFetcher())
-      ->OnGetPasswordStoreResults(std::vector<std::unique_ptr<PasswordForm>>());
-  EXPECT_CALL(*store_, GetLogins(_, _));
-  manager()->UpdateFormManagers();
+    manager()->OnPasswordFormsParsed(&driver_, {PasswordForm()});
+
+    // When new parsing is on, both PasswordFormManager and
+    // NewPasswordFormManager query the password store.
+    size_t expected_calls_to_store = new_parsing_for_saving ? 2 : 1;
+
+    EXPECT_CALL(*store_, GetLogins(_, _)).Times(expected_calls_to_store);
+    manager()->UpdateFormManagers();
+
+    testing::Mock::VerifyAndClearExpectations(&store_);
+  }
 }
 
 TEST_F(PasswordManagerTest, DropFormManagers) {
