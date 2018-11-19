@@ -348,6 +348,10 @@ nqe::internal::NetworkID TestNetworkQualityEstimator::GetCurrentNetworkID()
                                   INT32_MIN);
 }
 
+int32_t TestNetworkQualityEstimator::GetCurrentSignalStrength() const {
+  return INT32_MIN;
+}
+
 TestNetworkQualityEstimator::LocalHttpTestServer::LocalHttpTestServer(
     const base::FilePath& document_root) {
   AddDefaultHandlers(document_root);
