@@ -96,3 +96,11 @@ uint32_t DrainLog(uint8_t* buffer,
 bool RegisterLogNotification(HANDLE event_handle) {
   return true;
 }
+
+uint32_t GetBlockedModulesCount() {
+  return 0;
+}
+
+uint32_t GetUniqueBlockedModulesCount() {
+  return 0;
+}

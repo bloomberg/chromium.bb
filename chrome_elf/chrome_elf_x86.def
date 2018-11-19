@@ -33,6 +33,8 @@ EXPORTS
   IsBlacklistInitialized
   SuccessfullyBlocked
 
-  ; From chrome_elf/third_party_dlls/logs
+  ; From chrome_elf/third_party_dlls/logs.cc
   DrainLog
   RegisterLogNotification
+  GetBlockedModulesCount
+  GetUniqueBlockedModulesCount

@@ -11,6 +11,10 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 
+#if defined(GOOGLE_CHROME_BUILD)
+#include "base/timer/timer.h"
+#endif
+
 struct ModuleInfoData;
 struct ModuleInfoKey;
 
@@ -35,6 +39,15 @@ class ThirdPartyMetricsRecorder : public ModuleDatabaseObserver {
   // will start overwriting the current values in the crash keys. This is not
   // a problem in practice because this class is leaked.
   void AddUnsignedModuleToCrashkeys(const base::string16& module_basename);
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // Invoked periodically to record heartbeat metrics related to third-party
+  // DLL blocking.
+  void RecordHeartbeatMetrics();
+
+  // Timer that controls when heartbeat metrics are recorded.
+  base::RepeatingTimer heartbeat_metrics_timer_;
+#endif
 
   // The index of the crash key that is currently being updated.
   size_t current_key_index_ = 0;
