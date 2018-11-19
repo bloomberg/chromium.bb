@@ -87,9 +87,19 @@ String Normalize(const String& input) {
 
 FormData::FormData(const WTF::TextEncoding& encoding) : encoding_(encoding) {}
 
-FormData::FormData(HTMLFormElement* form) : encoding_(UTF8Encoding()) {
-  if (form)
-    form->ConstructFormDataSet(nullptr, *this);
+FormData::FormData() : encoding_(UTF8Encoding()) {}
+
+FormData* FormData::Create(HTMLFormElement* form,
+                           ExceptionState& exception_state) {
+  DCHECK(form);
+  auto* form_data = new FormData();
+  if (!form->ConstructEntryList(nullptr, *form_data)) {
+    DCHECK(RuntimeEnabledFeatures::FormDataEventEnabled());
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The form is constructing entry list.");
+    return nullptr;
+  }
+  return form_data;
 }
 
 void FormData::Trace(blink::Visitor* visitor) {
