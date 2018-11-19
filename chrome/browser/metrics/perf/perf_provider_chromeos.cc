@@ -746,16 +746,16 @@ void PerfProvider::CollectIfNecessary(
       base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   PerfSubcommand subcommand = GetPerfSubcommandType(command);
 
-  perf_output_call_.reset(new PerfOutputCall(
+  perf_output_call_ = std::make_unique<PerfOutputCall>(
       collection_params_.collection_duration(), command,
       base::BindOnce(&PerfProvider::ParseOutputProtoIfValid,
                      weak_factory_.GetWeakPtr(),
                      base::Passed(&incognito_observer),
-                     base::Passed(&sampled_profile), subcommand)));
+                     base::Passed(&sampled_profile), subcommand));
 }
 
 void PerfProvider::DoPeriodicCollection() {
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::PERIODIC_COLLECTION);
 
   CollectIfNecessary(std::move(sampled_profile));
@@ -765,7 +765,7 @@ void PerfProvider::CollectPerfDataAfterResume(
     const base::TimeDelta& sleep_duration,
     const base::TimeDelta& time_after_resume) {
   // Fill out a SampledProfile protobuf that will contain the collected data.
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESUME_FROM_SUSPEND);
   sampled_profile->set_suspend_duration_ms(sleep_duration.InMilliseconds());
   sampled_profile->set_ms_after_resume(time_after_resume.InMilliseconds());
@@ -777,7 +777,7 @@ void PerfProvider::CollectPerfDataAfterSessionRestore(
     const base::TimeDelta& time_after_restore,
     int num_tabs_restored) {
   // Fill out a SampledProfile protobuf that will contain the collected data.
-  std::unique_ptr<SampledProfile> sampled_profile(new SampledProfile);
+  auto sampled_profile = std::make_unique<SampledProfile>();
   sampled_profile->set_trigger_event(SampledProfile::RESTORE_SESSION);
   sampled_profile->set_ms_after_restore(time_after_restore.InMilliseconds());
   sampled_profile->set_num_tabs_restored(num_tabs_restored);
