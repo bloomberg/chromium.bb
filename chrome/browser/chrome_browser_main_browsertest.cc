@@ -18,6 +18,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -127,7 +128,9 @@ class ChromeBrowserMainExtraPartsNetFactoryInstaller
 
 class ChromeBrowserMainBrowserTest : public InProcessBrowserTest {
  public:
-  ChromeBrowserMainBrowserTest() = default;
+  ChromeBrowserMainBrowserTest() {
+    net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
+  }
 
  protected:
   // InProcessBrowserTest:

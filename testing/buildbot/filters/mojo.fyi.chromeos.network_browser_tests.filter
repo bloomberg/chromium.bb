@@ -13,26 +13,6 @@
 # https://crbug.com/892357
 -KioskUpdateTest.LaunchCachedOfflineEnabledAppNoNetwork
 
-# |NetworkChangeNotifier()| Not implemented.
-# https://crbug.com/882610
--ChromeBrowserMainBrowserTest.VariationsServiceStartsRequestOnNetworkChange
--NetworkConnectionTrackerBrowserTest.SimulateNetworkServiceCrash
--BackgroundFetchBrowserTest.FetchCanBePausedAndResumed
--BackgroundFetchBrowserTest.FetchesRunToCompletionAndUpdateTitle_Failed
--BackgroundFetchBrowserTest.FetchesRunToCompletionAndUpdateTitle_Fetched
--BackgroundFetchBrowserTest.FetchFromChildFrameWithPermissions
--BackgroundFetchBrowserTest.FetchFromServiceWorker
--BackgroundFetchBrowserTest.OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalLargerThanActualSize
--BackgroundFetchBrowserTest.OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalSmallerThanActualSize
-
-# Stuck at 'Network not available' page, should be related to the
-# |NetworkChangeNotifier()| issue.
-# https://crbug.com/882610
--WizardControllerDeviceStateExplicitRequirement/WizardControllerDeviceStateExplicitRequirementTest.ControlFlowForcedReEnrollment/0
--WizardControllerDeviceStateExplicitRequirement/WizardControllerDeviceStateExplicitRequirementTest.ControlFlowForcedReEnrollment/1
--WizardControllerDeviceStateTest.ControlFlowDeviceDisabled
--WizardControllerDeviceStateWithInitialEnrollmentTest.ControlFlowInitialEnrollment
-
 # Flaky with error: `Check failed: (sequence_checker_).CalledOnValidSequence()`.
 -DevToolsSanityTest.DisposeEmptyBrowserContext
 
