@@ -18,8 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
-#include "media/base/video_frame.h"
-#include "media/base/video_types.h"
+#include "media/base/video_frame_layout.h"
 #include "media/gpu/image_processor.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
@@ -69,12 +68,10 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
       scoped_refptr<V4L2Device> device,
       v4l2_memory input_memory_type,
       v4l2_memory output_memory_type,
-      VideoPixelFormat input_format,
-      VideoPixelFormat output_format,
+      const VideoFrameLayout& input_layout,
+      const VideoFrameLayout& output_layout,
       gfx::Size input_visible_size,
-      gfx::Size input_allocated_size,
       gfx::Size output_visible_size,
-      gfx::Size output_allocated_size,
       size_t num_buffers,
       const base::Closure& error_cb);
 
@@ -118,14 +115,10 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   V4L2ImageProcessor(scoped_refptr<V4L2Device> device,
                      v4l2_memory input_memory_type,
                      v4l2_memory output_memory_type,
-                     VideoPixelFormat input_format,
-                     VideoPixelFormat output_format,
+                     const VideoFrameLayout& input_layout,
+                     const VideoFrameLayout& output_layout,
                      gfx::Size input_visible_size,
-                     gfx::Size input_allocated_size,
                      gfx::Size output_visible_size,
-                     gfx::Size output_allocated_size,
-                     size_t input_planes_count,
-                     size_t output_planes_count,
                      size_t num_buffers,
                      const base::Closure& error_cb);
 
@@ -160,22 +153,15 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // callbacks will be invoked.
   void Destroy();
 
-  // Size and format-related members remain constant after initialization.
-  // The visible/allocated sizes of the input frame.
+  // Stores input frame's format, coded_size, buffer and plane layout.
+  const VideoFrameLayout input_layout_;
   const gfx::Size input_visible_size_;
-  const gfx::Size input_allocated_size_;
-
-  // The visible/allocated sizes of the destination frame.
-  const gfx::Size output_visible_size_;
-  const gfx::Size output_allocated_size_;
-
-  const VideoPixelFormat input_format_;
-  const VideoPixelFormat output_format_;
   const v4l2_memory input_memory_type_;
-  const v4l2_memory output_memory_type_;
 
-  const size_t input_planes_count_;
-  const size_t output_planes_count_;
+  // Stores input frame's format, coded_size, buffer and plane layout.
+  const VideoFrameLayout output_layout_;
+  const gfx::Size output_visible_size_;
+  const v4l2_memory output_memory_type_;
 
   // Our original calling task runner for the child thread.
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;

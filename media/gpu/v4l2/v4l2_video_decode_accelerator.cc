@@ -26,6 +26,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
+#include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 #include "media/video/h264_parser.h"
@@ -2357,13 +2358,26 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
       (output_mode_ == Config::OutputMode::ALLOCATE ? V4L2_MEMORY_MMAP
                                                     : V4L2_MEMORY_DMABUF);
 
+  auto input_layout = VideoFrameLayout::Create(
+      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
+      coded_size_);
+  if (!input_layout) {
+    VLOGF(1) << "Invalid input layout";
+    return false;
+  }
+  auto output_layout = VideoFrameLayout::Create(
+      V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_),
+      egl_image_size_);
+  if (!output_layout) {
+    VLOGF(1) << "Invalid output layout";
+    return false;
+  }
+
   // Unretained is safe because |this| owns image processor and there will be
   // no callbacks after processor destroys.
   image_processor_ = V4L2ImageProcessor::Create(
       image_processor_device_, input_memory_type, output_memory_type,
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_),
-      visible_size_, coded_size_, visible_size_, egl_image_size_,
+      *input_layout, *output_layout, visible_size_, visible_size_,
       output_buffer_map_.size(),
       base::Bind(&V4L2VideoDecodeAccelerator::ImageProcessorError,
                  base::Unretained(this)));
