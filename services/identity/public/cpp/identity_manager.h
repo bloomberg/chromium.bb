@@ -46,6 +46,7 @@ class MultiProfileDownloadNotificationTest;
 namespace identity {
 
 class PrimaryAccountMutator;
+enum class ClearPrimaryAccountPolicy;
 
 // Gives access to information about the user's Google identities. See
 // ./README.md for detailed documentation.
@@ -265,10 +266,32 @@ class IdentityManager : public SigninManagerBase::Observer,
   void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
  private:
-  // These clients need to call SetPrimaryAccountSynchronouslyForTests().
-  friend AccountInfo SetPrimaryAccount(SigninManagerBase* signin_manager,
-                                       IdentityManager* identity_manager,
+  // These test helpers need to use some of the private methods below.
+  friend AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
                                        const std::string& email);
+  friend void SetRefreshTokenForPrimaryAccount(
+      IdentityManager* identity_manager);
+  friend void SetInvalidRefreshTokenForPrimaryAccount(
+      IdentityManager* identity_manager);
+  friend void RemoveRefreshTokenForPrimaryAccount(
+      IdentityManager* identity_manager);
+  friend AccountInfo MakePrimaryAccountAvailable(
+      IdentityManager* identity_manager,
+      const std::string& email);
+  friend void ClearPrimaryAccount(IdentityManager* identity_manager,
+                                  ClearPrimaryAccountPolicy policy);
+  friend AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
+                                          const std::string& email);
+  friend void SetRefreshTokenForAccount(IdentityManager* identity_manager,
+                                        const std::string& account_id);
+  friend void SetInvalidRefreshTokenForAccount(
+      IdentityManager* identity_manager,
+      const std::string& account_id);
+  friend void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
+                                           const std::string& account_id);
+  friend void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
+                                          AccountInfo account_info);
+
   friend MultiProfileDownloadNotificationTest;
   friend file_manager::MultiProfileFilesAppBrowserTest;
 
@@ -277,6 +300,11 @@ class IdentityManager : public SigninManagerBase::Observer,
   friend arc::ArcTermsOfServiceDefaultNegotiatorTest;
   friend chromeos::ChromeSessionManager;
   friend chromeos::UserSessionManager;
+
+  // Private getters used for testing only (i.e. see identity_test_utils.h).
+  SigninManagerBase* GetSigninManager();
+  ProfileOAuth2TokenService* GetTokenService();
+  AccountTrackerService* GetAccountTrackerService();
 
   // Sets the primary account info synchronously with both the IdentityManager
   // and its backing SigninManager/ProfileOAuth2TokenService instances.

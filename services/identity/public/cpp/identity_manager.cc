@@ -207,6 +207,18 @@ void IdentityManager::RemoveDiagnosticsObserver(DiagnosticsObserver* observer) {
   diagnostics_observer_list_.RemoveObserver(observer);
 }
 
+SigninManagerBase* IdentityManager::GetSigninManager() {
+  return signin_manager_;
+}
+
+ProfileOAuth2TokenService* IdentityManager::GetTokenService() {
+  return token_service_;
+}
+
+AccountTrackerService* IdentityManager::GetAccountTrackerService() {
+  return account_tracker_service_;
+}
+
 void IdentityManager::SetPrimaryAccountSynchronouslyForTests(
     const std::string& gaia_id,
     const std::string& email_address,

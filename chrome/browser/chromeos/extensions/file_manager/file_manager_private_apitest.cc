@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_profile.h"
@@ -37,7 +36,6 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/file_change.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"
 #include "google_apis/drive/test_util.h"
@@ -365,7 +363,6 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
         {features::kCrostini, features::kExperimentalCrostiniUI}, {});
     // Profile must be signed in with email for crostini.
     identity::SetPrimaryAccount(
-        SigninManagerFactory::GetForProfileIfExists(browser()->profile()),
         IdentityManagerFactory::GetForProfileIfExists(browser()->profile()),
         "testuser@gmail.com");
   }

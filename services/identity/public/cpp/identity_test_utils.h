@@ -10,18 +10,7 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_info.h"
 
-class AccountTrackerService;
 class FakeGaiaCookieManagerService;
-class FakeSigninManagerBase;
-class FakeSigninManager;
-class ProfileOAuth2TokenService;
-class SigninManagerBase;
-
-#if defined(OS_CHROMEOS)
-using SigninManagerForTest = FakeSigninManagerBase;
-#else
-using SigninManagerForTest = FakeSigninManager;
-#endif  // OS_CHROMEOS
 
 // Test-related utilities that don't fit in either IdentityTestEnvironment or
 // IdentityManager itself. NOTE: Using these utilities directly is discouraged,
@@ -57,28 +46,24 @@ class IdentityManager;
 // SigninManager callbacks for signin success. Blocks until the primary account
 // is set. Returns the AccountInfo of the newly-set account.
 // NOTE: See disclaimer at top of file re: direct usage.
-AccountInfo SetPrimaryAccount(SigninManagerBase* signin_manager,
-                              IdentityManager* identity_manager,
+AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
                               const std::string& email);
 
 // Sets a refresh token for the primary account (which must already be set).
 // Blocks until the refresh token is set.
 // NOTE: See disclaimer at top of file re: direct usage.
-void SetRefreshTokenForPrimaryAccount(ProfileOAuth2TokenService* token_service,
-                                      IdentityManager* identity_manager);
+void SetRefreshTokenForPrimaryAccount(IdentityManager* identity_manager);
 
 // Sets a special invalid refresh token for the primary account (which must
 // already be set). Blocks until the refresh token is set.
 // NOTE: See disclaimer at top of file re: direct usage.
 void SetInvalidRefreshTokenForPrimaryAccount(
-    ProfileOAuth2TokenService* token_service,
     IdentityManager* identity_manager);
 
 // Removes any refresh token for the primary account, if present. Blocks until
 // the refresh token is removed.
 // NOTE: See disclaimer at top of file re: direct usage.
 void RemoveRefreshTokenForPrimaryAccount(
-    ProfileOAuth2TokenService* token_service,
     IdentityManager* identity_manager);
 
 // Makes the primary account (which must not already be set) available for the
@@ -89,8 +74,6 @@ void RemoveRefreshTokenForPrimaryAccount(
 // newly-available account.
 // NOTE: See disclaimer at top of file re: direct usage.
 AccountInfo MakePrimaryAccountAvailable(
-    SigninManagerBase* signin_manager,
-    ProfileOAuth2TokenService* token_service,
     IdentityManager* identity_manager,
     const std::string& email);
 
@@ -100,7 +83,6 @@ AccountInfo MakePrimaryAccountAvailable(
 // until the primary account is cleared.
 // NOTE: See disclaimer at top of file re: direct usage.
 void ClearPrimaryAccount(
-    SigninManagerBase* signin_manager,
     IdentityManager* identity_manager,
     ClearPrimaryAccountPolicy policy = ClearPrimaryAccountPolicy::DEFAULT);
 
@@ -109,31 +91,26 @@ void ClearPrimaryAccount(
 // until the account is available. Returns the AccountInfo of the
 // newly-available account.
 // NOTE: See disclaimer at top of file re: direct usage.
-AccountInfo MakeAccountAvailable(AccountTrackerService* account_tracker_service,
-                                 ProfileOAuth2TokenService* token_service,
-                                 IdentityManager* identity_manager,
+AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
                                  const std::string& email);
 
 // Sets a refresh token for the given account (which must already be available).
 // Blocks until the refresh token is set.
 // NOTE: See disclaimer at top of file re: direct usage.
-void SetRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
-                               IdentityManager* identity_manager,
+void SetRefreshTokenForAccount(IdentityManager* identity_manager,
                                const std::string& account_id);
 
 // Sets a special invalid refresh token for the given account (which must
 // already be available). Blocks until the refresh token is set.
 // NOTE: See disclaimer at top of file re: direct usage.
-void SetInvalidRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
-                                      IdentityManager* identity_manager,
+void SetInvalidRefreshTokenForAccount(IdentityManager* identity_manager,
                                       const std::string& account_id);
 
 // Removes any refresh token that is present for the given account. Blocks until
 // the refresh token is removed. Is a no-op if no refresh token is present for
 // the given account.
 // NOTE: See disclaimer at top of file re: direct usage.
-void RemoveRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
-                                  IdentityManager* identity_manager,
+void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
                                   const std::string& account_id);
 
 // Puts the given accounts into the Gaia cookie, replacing any previous
@@ -145,7 +122,7 @@ void SetCookieAccounts(FakeGaiaCookieManagerService* cookie_manager,
 
 // Updates the info for |account_info.account_id|, which must be a known
 // account.
-void UpdateAccountInfoForAccount(AccountTrackerService* account_tracker_service,
+void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                  AccountInfo account_info);
 
 }  // namespace identity
