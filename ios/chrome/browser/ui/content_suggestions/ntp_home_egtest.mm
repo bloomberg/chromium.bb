@@ -118,11 +118,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       chrome_test_util::GetOriginalBrowserState();
   ReadingListModelFactory::GetForBrowserState(browserState)->DeleteAllEntries();
 
-  // Resets the Service associated with this browserState to a service with
-  // default providers. The previous service is deleted.
+  // Resets the Service associated with this browserState to a new service with
+  // no providers. The previous service is deleted.
   IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
       browserState,
-      base::BindRepeating(&CreateChromeContentSuggestionsServiceWithProviders));
+      base::BindRepeating(&CreateChromeContentSuggestionsService));
   [super tearDown];
 }
 
