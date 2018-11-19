@@ -332,17 +332,16 @@ PerfProvider::CollectionParams::CollectionParams(
     base::TimeDelta periodic_interval,
     TriggerParams resume_from_suspend,
     TriggerParams restore_session)
-    : collection_duration_(collection_duration.ToInternalValue()),
-      periodic_interval_(periodic_interval.ToInternalValue()),
+    : collection_duration_(collection_duration),
+      periodic_interval_(periodic_interval),
       resume_from_suspend_(resume_from_suspend),
-      restore_session_(restore_session) {
-}
+      restore_session_(restore_session) {}
 
 PerfProvider::CollectionParams::TriggerParams::TriggerParams(
     int64_t sampling_factor,
     base::TimeDelta max_collection_delay)
     : sampling_factor_(sampling_factor),
-      max_collection_delay_(max_collection_delay.ToInternalValue()) {}
+      max_collection_delay_(max_collection_delay) {}
 
 PerfProvider::PerfProvider()
     : login_observer_(this),
