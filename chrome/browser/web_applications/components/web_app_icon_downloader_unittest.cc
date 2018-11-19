@@ -19,6 +19,8 @@
 
 using content::RenderViewHostTester;
 
+namespace web_app {
+
 namespace {
 
 // Creates valid SkBitmaps of the dimensions found in |sizes| and pushes them
@@ -293,3 +295,5 @@ TEST_F(WebAppIconDownloaderTest, PageNavigatesSameDocument) {
   EXPECT_TRUE(downloader.downloads_succeeded());
   histogram_tester_.ExpectUniqueSample(kTestHistogramName, 2, 1);
 }
+
+}  // namespace web_app
