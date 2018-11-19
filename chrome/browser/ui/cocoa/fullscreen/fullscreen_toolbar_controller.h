@@ -22,8 +22,7 @@ class WebContents;
 }
 
 // This enum class represents the appearance of the fullscreen toolbar, which
-// includes the tab strip and omnibox. These values are logged in a histogram
-// and shouldn't be renumbered or removed.
+// includes the tab strip and omnibox.
 enum class FullscreenToolbarStyle {
   // The toolbar is present. Moving the cursor to the top
   // causes the menubar to appear and the toolbar to slide down.
@@ -34,8 +33,6 @@ enum class FullscreenToolbarStyle {
   // Toolbar is hidden. Moving cursor to top causes the menubar
   // to appear, but not the toolbar.
   TOOLBAR_NONE,
-  // The last enum value. Used for logging in a histogram.
-  TOOLBAR_LAST = TOOLBAR_NONE
 };
 
 // The protocol to query the status of the fullscreen mode and to provide
@@ -139,9 +136,6 @@ enum class FullscreenToolbarStyle {
 - (void)setToolbarStyle:(FullscreenToolbarStyle)style;
 
 - (id<FullscreenToolbarContextDelegate>)delegate;
-
-// Helper function to record the toolbar style.
-+ (void)recordToolbarStyle:(FullscreenToolbarStyle)style;
 
 @end
 
