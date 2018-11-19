@@ -492,6 +492,55 @@ TEST_F(ArcSessionManagerTest, Provisioning_Success) {
   EXPECT_TRUE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 }
 
+// Verifies that Play Store shown is suppressed on restart when required.
+TEST_F(ArcSessionManagerTest, PlayStoreSuppressed) {
+  // Set up the situation that terms were accepted in the previous session.
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  // Set the flag indicating that the provisioning was initiated from OOBE in
+  // the previous session.
+  prefs->SetBoolean(prefs::kArcProvisioningInitiatedFromOobe, true);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  arc_session_manager()->StartArcForTesting();
+
+  // Second start, no fetching code is expected.
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  // Completing the provisioning resets this flag.
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcProvisioningInitiatedFromOobe));
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  // |prefs::kArcProvisioningInitiatedFromOobe| flag prevents opening the
+  // Play Store.
+  EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
+
+  // Correctly stop service.
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, InitiatedFromOobeIsResetOnOptOut) {
+  // Set up the situation that terms were accepted in the previous session.
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  // Set the flag indicating that the provisioning was initiated from OOBE in
+  // the previous session.
+  prefs->SetBoolean(prefs::kArcProvisioningInitiatedFromOobe, true);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kArcProvisioningInitiatedFromOobe));
+  // Disabling ARC resets suppress state
+  arc_session_manager()->RequestDisable();
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kArcProvisioningInitiatedFromOobe));
+
+  // Correctly stop service.
+  arc_session_manager()->Shutdown();
+}
+
 TEST_F(ArcSessionManagerTest, Provisioning_Restart) {
   // Set up the situation that provisioning is successfully done in the
   // previous session.
