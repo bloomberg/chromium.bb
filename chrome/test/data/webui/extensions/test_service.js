@@ -8,6 +8,7 @@ cr.define('extensions', function() {
     constructor() {
       super([
         'addRuntimeHostPermission',
+        'getExtensionActivityLog',
         'getExtensionsInfo',
         'getExtensionSize',
         'getProfileConfiguration',
@@ -35,6 +36,9 @@ cr.define('extensions', function() {
 
       /** @type {boolean} */
       this.forceReloadItemError_ = false;
+
+      /** @type {!chrome.activityLogPrivate.ActivityResultSet|undefined} */
+      this.testActivities = undefined;
     }
 
     /**
@@ -148,6 +152,12 @@ cr.define('extensions', function() {
     updateAllExtensions() {
       this.methodCalled('updateAllExtensions');
       return Promise.resolve();
+    }
+
+    /** @override */
+    getExtensionActivityLog(id) {
+      this.methodCalled('getExtensionActivityLog', id);
+      return Promise.resolve(this.testActivities);
     }
   }
 
