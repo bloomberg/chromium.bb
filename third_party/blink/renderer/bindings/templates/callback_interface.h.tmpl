@@ -57,6 +57,21 @@ class {{exported}}{{v8_class}} final : public CallbackInterfaceBase {
   // if any, to the global error handler such as DevTools' console.
   void InvokeAndReportException({{methods[0].argument_declarations | join(', ')}});
 {% endif %}
+
+{% if interface_name == 'EventListener' %}
+  // Returns true if the callback is runnable, otherwise returns false and
+  // throws an exception. 'beforeunload' event need to have priority over pause
+  // of execution contexts.
+  enum class IgnorePause { kDontIgnore, kIgnore };
+  bool IsRunnableOrThrowException(IgnorePause);
+
+  // Performs "call a user object's operation" for '{{methods[0].name}}' without
+  // checking the runnability check, which must be done prior to this call by
+  // |IsRunnableOrThrowException|.
+  // https://heycam.github.io/webidl/#call-a-user-objects-operation
+  // This function may throw unlike InvokeAndReportException.
+  v8::Maybe<{{methods[0].cpp_type}}> InvokeWithoutRunnabilityCheck({{methods[0].argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;
+{% endif %}
 };
 
 template <>

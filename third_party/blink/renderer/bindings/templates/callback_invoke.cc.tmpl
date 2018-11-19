@@ -12,25 +12,23 @@
       return_native_value_traits_tag = tag of NativeValueTraits for return type
       arguments = dict of arguments\' info
       is_treat_non_object_as_null = True if [TreatNonObjectAsNull]
+      bypass_runnability_check = Skip IsCallbackFunctionRunnable check if True
       interface_name = interface name used for exception
       operation_name = interface name used for exception and property lookup
 #}
 {% macro callback_invoke(
     interface_or_function, invoke_or_construct,
     return_cpp_type, return_native_value_traits_tag, arguments,
-    is_treat_non_object_as_null,
+    is_treat_non_object_as_null, bypass_runnability_check,
     interface_name, operation_name) %}
+  {% if not bypass_runnability_check %}
   if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
     // of the callback function here.
     v8::HandleScope handle_scope(GetIsolate());
-    {% if interface_or_function == 'callback function' %}
-    v8::Local<v8::Object> callback_object = CallbackFunction();
-    {% else %}
     v8::Local<v8::Object> callback_object = CallbackObject();
-    {% endif %}
     CHECK(!callback_object.IsEmpty());
     v8::Context::Scope context_scope(callback_object->CreationContext());
     V8ThrowException::ThrowError(
@@ -41,6 +39,7 @@
             "The provided callback is no longer runnable."));
     return v8::Nothing<{{return_cpp_type}}>();
   }
+  {% endif %}
 
   // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
