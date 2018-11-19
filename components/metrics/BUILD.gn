@@ -431,6 +431,10 @@ source_set("unit_tests") {
     sources -= [ "child_call_stack_profile_collector_unittest.cc" ]
   }
 
+  if (is_ios) {
+    deps += [ "//ios/web/public/test" ]
+  }
+
   if (!is_ios) {
     deps += [ "//content/test:test_support" ]
   }

@@ -22,9 +22,11 @@
 #endif  // OS_CHROMEOS
 
 #if defined(OS_IOS)
-#include "base/test/scoped_task_environment.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
+using TestThreadBundle = web::TestWebThreadBundle;
 #else  // !defined(OS_IOS)
 #include "content/public/test/test_browser_thread_bundle.h"
+using TestThreadBundle = content::TestBrowserThreadBundle;
 #endif  // defined(OS_IOS)
 
 namespace metrics {
@@ -33,14 +35,7 @@ class NetworkMetricsProviderTest : public testing::Test {
  public:
  protected:
   NetworkMetricsProviderTest()
-#if defined(OS_IOS)
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO)
-#else   // !defined(OS_IOS)
-      : test_browser_thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP)
-#endif  // defined(OS_IOS)
-  {
+      : test_thread_bundle_(TestThreadBundle::IO_MAINLOOP) {
 #if defined(OS_CHROMEOS)
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
@@ -48,11 +43,7 @@ class NetworkMetricsProviderTest : public testing::Test {
   }
 
  private:
-#if defined(OS_IOS)
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-#else   // !defined(OS_IOS)
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
-#endif  // defined(OS_IOS)
+  TestThreadBundle test_thread_bundle_;
 };
 
 // Verifies that the effective connection type is correctly set.
