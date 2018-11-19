@@ -1103,7 +1103,6 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
     // TODO(crbug.com/823071): LevelDB logs are not deleted immediately.
     "File System/Origins/[0-9]*.log",
     "Service Worker/Database/[0-9]*.log",
-    "Session Storage/[0-9]*.log",
 
 #if defined(OS_CHROMEOS)
     // TODO(crbug.com/846297): Many leveldb files remain on ChromeOS. I couldn't

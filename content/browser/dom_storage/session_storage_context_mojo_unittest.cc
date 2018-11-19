@@ -908,6 +908,78 @@ TEST_F(SessionStorageContextMojoTest, GetUsage) {
   loop.Run();
 }
 
+// Tests that a SessionStorageContext still works if the database is
+// disconnected.
+TEST_F(SessionStorageContextMojoTest, MojoConnectionDisconnects) {
+  std::string namespace_id = base::GenerateGUID();
+  url::Origin origin = url::Origin::Create(GURL("http://foobar.com"));
+  auto key = StdStringToUint8Vector("key");
+  auto value = StdStringToUint8Vector("value");
+
+  std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
+  FakeLevelDBDatabase db(&test_data);
+  mojo::AssociatedBinding<leveldb::mojom::LevelDBDatabase> db_binding(&db);
+  leveldb::mojom::LevelDBDatabaseAssociatedPtr database_ptr;
+  leveldb::mojom::LevelDBDatabaseAssociatedRequest request =
+      MakeRequestAssociatedWithDedicatedPipe(&database_ptr);
+  context()->SetDatabaseForTesting(std::move(database_ptr));
+  db_binding.Bind(std::move(request));
+
+  // Put some data.
+  context()->CreateSessionNamespace(namespace_id);
+  blink::mojom::SessionStorageNamespacePtr ss_namespace;
+  context()->OpenSessionStorage(kTestProcessId, namespace_id,
+                                GetBadMessageCallback(),
+                                mojo::MakeRequest(&ss_namespace));
+  blink::mojom::StorageAreaAssociatedPtr area;
+  ss_namespace->OpenArea(origin, mojo::MakeRequest(&area));
+  EXPECT_TRUE(test::PutSync(area.get(), key, value, base::nullopt, "source"));
+  std::vector<uint8_t> result;
+
+  std::vector<blink::mojom::KeyValuePtr> data;
+  ASSERT_TRUE(test::GetAllSync(area.get(), &data));
+  EXPECT_EQ(1ul, data.size());
+
+  // Close the database connection.
+  db_binding.Close();
+  base::RunLoop().RunUntilIdle();
+
+  context()->CreateSessionNamespace(namespace_id);
+  context()->OpenSessionStorage(kTestProcessId, namespace_id,
+                                GetBadMessageCallback(),
+                                mojo::MakeRequest(&ss_namespace));
+  ss_namespace->OpenArea(origin, mojo::MakeRequest(&area));
+
+  // We can't access the data anymore.
+  ASSERT_TRUE(test::GetAllSync(area.get(), &data));
+  EXPECT_EQ(0ul, data.size());
+
+  // Check that session storage still works without a database.
+  EXPECT_TRUE(test::PutSync(area.get(), key, value, base::nullopt, "source"));
+  ASSERT_TRUE(test::GetAllSync(area.get(), &data));
+  EXPECT_EQ(1ul, data.size());
+
+  context()->DeleteStorage(origin, namespace_id, base::DoNothing());
+  ASSERT_TRUE(test::GetAllSync(area.get(), &data));
+  EXPECT_EQ(0ul, data.size());
+
+  EXPECT_TRUE(test::PutSync(area.get(), key, value, base::nullopt, "source"));
+  ASSERT_TRUE(test::GetAllSync(area.get(), &data));
+  EXPECT_EQ(1ul, data.size());
+  context()->DeleteSessionNamespace(namespace_id, true);
+  context()->ScavengeUnusedNamespaces(base::DoNothing());
+  ShutdownContext();
+
+  context()->CreateSessionNamespace(namespace_id);
+  context()->OpenSessionStorage(kTestProcessId, namespace_id,
+                                GetBadMessageCallback(),
+                                mojo::MakeRequest(&ss_namespace));
+  ss_namespace->OpenArea(origin, mojo::MakeRequest(&area));
+
+  ASSERT_TRUE(test::GetAllSync(area.get(), &data));
+  EXPECT_EQ(0ul, data.size());
+}
+
 TEST_F(SessionStorageContextMojoTest, DeleteStorage) {
   std::string namespace_id1 = base::GenerateGUID();
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
@@ -926,7 +998,7 @@ TEST_F(SessionStorageContextMojoTest, DeleteStorage) {
       leveldb_n1_o1.get(), leveldb::StringPieceToUint8Vector("key1"),
       leveldb::StringPieceToUint8Vector("value1"), base::nullopt, "source1"));
 
-  context()->DeleteStorage(origin1, namespace_id1);
+  context()->DeleteStorage(origin1, namespace_id1, base::DoNothing());
 
   std::vector<blink::mojom::KeyValuePtr> data;
   ASSERT_TRUE(test::GetAllSync(leveldb_n1_o1.get(), &data));
@@ -943,7 +1015,7 @@ TEST_F(SessionStorageContextMojoTest, DeleteStorage) {
   ShutdownContext();
 
   // This restarts the context, then deletes the storage.
-  context()->DeleteStorage(origin1, namespace_id1);
+  context()->DeleteStorage(origin1, namespace_id1, base::DoNothing());
 
   context()->CreateSessionNamespace(namespace_id1);
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,

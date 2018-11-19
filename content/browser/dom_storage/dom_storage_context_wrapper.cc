@@ -271,7 +271,8 @@ void DOMStorageContextWrapper::PerformLocalStorageCleanup(
 }
 
 void DOMStorageContextWrapper::DeleteSessionStorage(
-    const SessionStorageUsageInfo& usage_info) {
+    const SessionStorageUsageInfo& usage_info,
+    base::OnceClosure callback) {
   if (mojo_session_state_) {
     // base::Unretained is safe here, because the mojo_session_state_ won't be
     // deleted until a ShutdownAndDelete task has been ran on the
@@ -279,10 +280,11 @@ void DOMStorageContextWrapper::DeleteSessionStorage(
     // mojo_session_state_ is set to null, preventing further tasks from being
     // queued.
     mojo_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&SessionStorageContextMojo::DeleteStorage,
-                                  base::Unretained(mojo_session_state_),
-                                  url::Origin::Create(usage_info.origin),
-                                  usage_info.namespace_id));
+        FROM_HERE,
+        base::BindOnce(&SessionStorageContextMojo::DeleteStorage,
+                       base::Unretained(mojo_session_state_),
+                       url::Origin::Create(usage_info.origin),
+                       usage_info.namespace_id, std::move(callback)));
     return;
   }
   DCHECK(context_.get());
@@ -290,6 +292,26 @@ void DOMStorageContextWrapper::DeleteSessionStorage(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::BindOnce(&DOMStorageContextImpl::DeleteSessionStorage, context_,
                      usage_info));
+  std::move(callback).Run();
+}
+
+void DOMStorageContextWrapper::PerformSessionStorageCleanup(
+    base::OnceClosure callback) {
+  DCHECK(context_.get());
+  DCHECK(callback);
+  if (mojo_session_state_) {
+    // base::Unretained is safe here, because the mojo_session_state_ won't be
+    // deleted until a ShutdownAndDelete task has been ran on the
+    // mojo_task_runner_, and as soon as that task is posted,
+    // mojo_session_state_ is set to null, preventing further tasks from being
+    // queued.
+    mojo_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&SessionStorageContextMojo::PerformCleanup,
+                                  base::Unretained(mojo_session_state_),
+                                  std::move(callback)));
+    return;
+  }
+  std::move(callback).Run();
 }
 
 void DOMStorageContextWrapper::SetSaveSessionStorageOnDisk() {

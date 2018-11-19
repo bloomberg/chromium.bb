@@ -89,6 +89,11 @@ void RecordSessionStorageCachePurgedHistogram(
       break;
   }
 }
+
+void SessionStorageErrorResponse(base::OnceClosure callback,
+                                 leveldb::mojom::DatabaseError error) {
+  std::move(callback).Run();
+}
 }  // namespace
 
 SessionStorageContextMojo::SessionStorageContextMojo(
@@ -253,26 +258,49 @@ void SessionStorageContextMojo::GetStorageUsage(
 }
 
 void SessionStorageContextMojo::DeleteStorage(const url::Origin& origin,
-                                              const std::string& namespace_id) {
+                                              const std::string& namespace_id,
+                                              base::OnceClosure callback) {
   if (connection_state_ != CONNECTION_FINISHED) {
     RunWhenConnected(base::BindOnce(&SessionStorageContextMojo::DeleteStorage,
                                     weak_ptr_factory_.GetWeakPtr(), origin,
-                                    namespace_id));
+                                    namespace_id, std::move(callback)));
     return;
   }
   auto found = namespaces_.find(namespace_id);
   if (found != namespaces_.end() &&
       (found->second->IsPopulated() ||
        found->second->waiting_on_clone_population())) {
-    found->second->RemoveOriginData(origin);
+    found->second->RemoveOriginData(origin, std::move(callback));
   } else {
     // If we don't have the namespace loaded, then we can delete it all
     // using the metadata.
     std::vector<leveldb::mojom::BatchedOperationPtr> delete_operations;
     metadata_.DeleteArea(namespace_id, origin, &delete_operations);
-    database_->Write(std::move(delete_operations),
-                     base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
-                                    base::Unretained(this)));
+    if (database_) {
+      database_->Write(
+          std::move(delete_operations),
+          base::BindOnce(&SessionStorageContextMojo::OnCommitResultWithCallback,
+                         base::Unretained(this), std::move(callback)));
+    } else {
+      std::move(callback).Run();
+    }
+  }
+}
+
+void SessionStorageContextMojo::PerformCleanup(base::OnceClosure callback) {
+  if (connection_state_ != CONNECTION_FINISHED) {
+    RunWhenConnected(base::BindOnce(&SessionStorageContextMojo::PerformCleanup,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(callback)));
+    return;
+  }
+  if (database_) {
+    for (const auto& it : data_maps_)
+      it.second->storage_area()->ScheduleImmediateCommit();
+    database_->RewriteDB(
+        base::BindOnce(&SessionStorageErrorResponse, std::move(callback)));
+  } else {
+    std::move(callback).Run();
   }
 }
 
@@ -466,9 +494,11 @@ SessionStorageContextMojo::RegisterNewAreaMap(
   scoped_refptr<SessionStorageMetadata::MapData> map_entry =
       metadata_.RegisterNewMap(namespace_entry, origin, &save_operations);
 
-  database_->Write(std::move(save_operations),
-                   base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
-                                  base::Unretained(this)));
+  if (database_) {
+    database_->Write(std::move(save_operations),
+                     base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
+                                    base::Unretained(this)));
+  }
   return map_entry;
 }
 
@@ -514,6 +544,13 @@ void SessionStorageContextMojo::OnCommitResult(
   }
 }
 
+void SessionStorageContextMojo::OnCommitResultWithCallback(
+    base::OnceClosure callback,
+    leveldb::mojom::DatabaseError error) {
+  OnCommitResult(error);
+  std::move(callback).Run();
+}
+
 scoped_refptr<SessionStorageDataMap>
 SessionStorageContextMojo::MaybeGetExistingDataMapForId(
     const std::vector<uint8_t>& map_number_as_bytes) {
@@ -543,9 +580,11 @@ void SessionStorageContextMojo::RegisterShallowClonedNamespace(
   auto namespace_entry = metadata_.GetOrCreateNamespaceEntry(new_namespace_id);
   metadata_.RegisterShallowClonedNamespace(source_namespace_entry,
                                            namespace_entry, &save_operations);
-  database_->Write(std::move(save_operations),
-                   base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
-                                  base::Unretained(this)));
+  if (database_) {
+    database_->Write(std::move(save_operations),
+                     base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
+                                    base::Unretained(this)));
+  }
 
   if (found) {
     it->second->PopulateAsClone(database_.get(), namespace_entry,
@@ -577,9 +616,11 @@ void SessionStorageContextMojo::DoDatabaseDelete(
   DCHECK_EQ(connection_state_, CONNECTION_FINISHED);
   std::vector<leveldb::mojom::BatchedOperationPtr> delete_operations;
   metadata_.DeleteNamespace(namespace_id, &delete_operations);
-  database_->Write(std::move(delete_operations),
-                   base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
-                                  base::Unretained(this)));
+  if (database_) {
+    database_->Write(std::move(delete_operations),
+                     base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
+                                    base::Unretained(this)));
+  }
 }
 
 void SessionStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
@@ -673,6 +714,19 @@ void SessionStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
                      weak_ptr_factory_.GetWeakPtr(), false));
 }
 
+void SessionStorageContextMojo::OnMojoConnectionDestroyed() {
+  UMA_HISTOGRAM_BOOLEAN("SessionStorageContext.OnConnectionDestroyed", true);
+  LOG(ERROR) << "Lost connection to database";
+  for (const auto& it : data_maps_)
+    it.second->storage_area()->CancelAllPendingRequests();
+
+  for (const auto& namespace_pair : namespaces_)
+    namespace_pair.second->Reset();
+
+  DCHECK(data_maps_.empty());
+  database_.reset();
+}
+
 void SessionStorageContextMojo::OnDatabaseOpened(
     bool in_memory,
     leveldb::mojom::DatabaseError status) {
@@ -700,6 +754,9 @@ void SessionStorageContextMojo::OnDatabaseOpened(
 
   // Verify DB schema version.
   if (database_) {
+    database_.set_connection_error_handler(
+        base::BindOnce(&SessionStorageContextMojo::OnMojoConnectionDestroyed,
+                       weak_ptr_factory_.GetWeakPtr()));
     database_->Get(
         std::vector<uint8_t>(
             SessionStorageMetadata::kDatabaseVersionBytes,
