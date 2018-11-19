@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -155,6 +156,13 @@ void AlsReaderImpl::InitForTesting(const base::FilePath& ambient_light_path) {
   ReadAlsPeriodically();
 }
 
+void AlsReaderImpl::FailForTesting() {
+  OnAlsConfigCheckDone(false);
+  OnAlsEnableCheckDone(false);
+  for (int i = 0; i <= kMaxInitialAttempts; i++)
+    OnAlsPathReadAttempted("");
+}
+
 void AlsReaderImpl::OnAlsEnableCheckDone(const bool is_enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!is_enabled) {
@@ -215,6 +223,7 @@ void AlsReaderImpl::OnInitializationComplete() {
   DCHECK_NE(status_, AlsInitStatus::kInProgress);
   for (auto& observer : observers_)
     observer.OnAlsReaderInitialized(status_);
+  UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.AlsReaderStatus", status_);
 }
 
 void AlsReaderImpl::ReadAlsPeriodically() {

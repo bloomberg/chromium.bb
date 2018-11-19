@@ -11,6 +11,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -385,6 +386,9 @@ void ModellerImpl::OnSetInitialCurves(
     const base::Optional<MonotoneCubicSpline>& loaded_curve,
     bool is_personal_curve_valid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  UMA_HISTOGRAM_BOOLEAN("AutoScreenBrightness.PersonalCurveValid",
+                        is_personal_curve_valid);
 
   has_initial_personal_curve_ = is_personal_curve_valid && loaded_curve;
   DCHECK(trainer_->GetGlobalCurve() == global_curve_);

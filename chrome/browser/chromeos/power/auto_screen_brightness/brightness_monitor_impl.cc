@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -121,6 +122,10 @@ void BrightnessMonitorImpl::OnReceiveInitialBrightnessPercent(
 
 void BrightnessMonitorImpl::OnInitializationComplete() {
   DCHECK_NE(brightness_monitor_status_, Status::kInitializing);
+
+  UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.BrightnessMonitorStatus",
+                            brightness_monitor_status_);
+
   const bool success = brightness_monitor_status_ == Status::kSuccess;
   for (auto& observer : observers_)
     observer.OnBrightnessMonitorInitialized(success);
