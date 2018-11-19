@@ -14,11 +14,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(OS_MACOSX)
 #include "base/test/mock_chrome_application_mac.h"
-#else
-#include "ui/gl/test/gl_surface_test_support.h"
 #endif
 
 namespace {
@@ -31,9 +30,8 @@ class MessageCenterTestSuite : public base::TestSuite {
   void Initialize() override {
 #if defined(OS_MACOSX)
     mock_cr_app::RegisterMockCrApp();
-#else
-    gl::GLSurfaceTestSupport::InitializeOneOff();
 #endif
+    gl::GLSurfaceTestSupport::InitializeOneOff();
     base::TestSuite::Initialize();
     ui::RegisterPathProvider();
 
