@@ -713,7 +713,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         int contentType = mCategory.getContentSettingsType();
         PreferenceScreen screen = getPreferenceScreen();
 
-        // Find all preferencs on the current preference screen. Some preferences are
+        // Find all preferences on the current preference screen. Some preferences are
         // not needed for the current category and will be removed in the steps below.
         ChromeSwitchPreference binaryToggle =
                 (ChromeSwitchPreference) screen.findPreference(BINARY_TOGGLE_KEY);
@@ -724,49 +724,39 @@ public class SingleCategoryPreferences extends PreferenceFragment
         Preference explainProtectedMediaKey = screen.findPreference(EXPLAIN_PROTECTED_MEDIA_KEY);
         PreferenceGroup allowedGroup = (PreferenceGroup) screen.findPreference(ALLOWED_GROUP);
         PreferenceGroup blockedGroup = (PreferenceGroup) screen.findPreference(BLOCKED_GROUP);
-
+        boolean permissionBlockedByOs = mCategory.showPermissionBlockedMessage(getActivity());
         // For these categories, no binary, tri-state or custom toggles should be shown.
-        boolean hideAllToggles = mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
+        boolean hideMainToggles = mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
                 || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)
-                || mCategory.showPermissionBlockedMessage(getActivity());
+                || (permissionBlockedByOs
+                           && !ChromeFeatureList.isEnabled(
+                                      ChromeFeatureList.ANDROID_SITE_SETTINGS_UI));
+        boolean hideSecondaryToggles = hideMainToggles || permissionBlockedByOs;
 
-        if (hideAllToggles) {
+        if (hideMainToggles) {
             screen.removePreference(binaryToggle);
             screen.removePreference(triStateToggle);
-            screen.removePreference(thirdPartyCookies);
-            screen.removePreference(notificationsVibrate);
-            screen.removePreference(explainProtectedMediaKey);
-            screen.removePreference(allowedGroup);
-            screen.removePreference(blockedGroup);
-
-            if (mCategory.showPermissionBlockedMessage(getActivity())) {
-                // Show the link to system settings since permission is disabled.
-                ChromeBasePreference osWarning = new ChromeBasePreference(getActivity(), null);
-                ChromeBasePreference osWarningExtra = new ChromeBasePreference(getActivity(), null);
-                mCategory.configurePermissionIsOffPreferences(
-                        osWarning, osWarningExtra, getActivity(), true);
-                if (osWarning.getTitle() != null) {
-                    screen.addPreference(osWarning);
-                }
-                if (osWarningExtra.getTitle() != null) {
-                    screen.addPreference(osWarningExtra);
-                }
-            }
-
-            // Since all preferences are hidden, there's nothing to do further and we can
-            // simply return.
-            return;
-        }
-
-        // Now show and configure the binary toggle or the tri-state toggle, but not both.
-        // No early return in either case since we also need to configure the category
-        // specific toggles (e.g. third-party cookie) below.
-        if (mRequiresTriStateSetting) {
+        } else if (mRequiresTriStateSetting) {
             screen.removePreference(binaryToggle);
             configureTriStateToggle(triStateToggle, contentType);
         } else {
             screen.removePreference(triStateToggle);
             configureBinaryToggle(binaryToggle, contentType);
+        }
+
+        if (permissionBlockedByOs) {
+            maybeShowOsWarning(screen);
+        }
+
+        if (hideSecondaryToggles) {
+            screen.removePreference(thirdPartyCookies);
+            screen.removePreference(notificationsVibrate);
+            screen.removePreference(explainProtectedMediaKey);
+            screen.removePreference(allowedGroup);
+            screen.removePreference(blockedGroup);
+            // Since all preferences are hidden, there's nothing to do further and we can
+            // simply return.
+            return;
         }
 
         // Configure/hide the third-party cookie toggle, as needed.
@@ -800,6 +790,25 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
         allowedGroup.setOnPreferenceClickListener(this);
         blockedGroup.setOnPreferenceClickListener(this);
+    }
+
+    private void maybeShowOsWarning(PreferenceScreen screen) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI)
+                && isBlocked()) {
+            return;
+        }
+
+        // Show the link to system settings since permission is disabled.
+        ChromeBasePreference osWarning = new ChromeBasePreference(getActivity(), null);
+        ChromeBasePreference osWarningExtra = new ChromeBasePreference(getActivity(), null);
+        mCategory.configurePermissionIsOffPreferences(
+                osWarning, osWarningExtra, getActivity(), true);
+        if (osWarning.getTitle() != null) {
+            screen.addPreference(osWarning);
+        }
+        if (osWarningExtra.getTitle() != null) {
+            screen.addPreference(osWarningExtra);
+        }
     }
 
     private void configureTriStateToggle(

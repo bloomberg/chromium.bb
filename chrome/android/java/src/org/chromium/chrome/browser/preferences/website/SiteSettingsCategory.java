@@ -404,9 +404,14 @@ public class SiteSettingsCategory {
      * @param plural Whether it applies to one per-app permission or multiple.
      */
     protected String getMessageForEnablingOsPerAppPermission(Activity activity, boolean plural) {
-        return activity.getResources().getString(plural
-                ? R.string.android_permission_off_plural
-                : R.string.android_permission_off);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_SITE_SETTINGS_UI)) {
+            return activity.getResources().getString(plural
+                            ? R.string.android_permission_also_off_plural
+                            : R.string.android_permission_also_off);
+        } else {
+            return activity.getResources().getString(plural ? R.string.android_permission_off_plural
+                                                            : R.string.android_permission_off);
+        }
     }
 
     /**
