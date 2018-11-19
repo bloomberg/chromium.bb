@@ -1113,16 +1113,15 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoplayPolicy) {
 }
 
 // This test exercises the webview spatial navigation API
-// This test is disabled due to being flaky. http://crbug.com/884306
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_SpatialNavigationJavascriptAPI) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, SpatialNavigationJavascriptAPI) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableSpatialNavigation);
 
-  LoadAndLaunchPlatformApp("web_view/spatial_navigation_state_api",
-                           "WebViewTest.LAUNCHED");
-
   ExtensionTestMessageListener next_step_listener("TEST_STEP_PASSED", false);
   next_step_listener.set_failure_message("TEST_STEP_FAILED");
+
+  LoadAndLaunchPlatformApp("web_view/spatial_navigation_state_api",
+                           "WebViewTest.LAUNCHED");
 
   // Check that spatial navigation is initialized in the beginning
   ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
