@@ -16,13 +16,12 @@ cca.views = cca.views || {};
 
 /**
  * Creates the camera-view controller.
- * @param {cca.Router} router View router to switch views.
  * @param {cca.models.Gallery} model Model object.
  * @param {function(number)} onAspectRatio Callback to report aspect ratio.
  * @constructor
  */
-cca.views.Camera = function(router, model, onAspectRatio) {
-  cca.View.call(this, router, document.querySelector('#camera'), 'camera');
+cca.views.Camera = function(model, onAspectRatio) {
+  cca.views.View.call(this, '#camera');
 
   /**
    * Gallery model used to save taken pictures.
@@ -72,7 +71,7 @@ cca.views.Camera = function(router, model, onAspectRatio) {
    * @type {cca.views.camera.Options}
    * @private
    */
-  this.options_ = new cca.views.camera.Options(router, this.stop_.bind(this));
+  this.options_ = new cca.views.camera.Options(this.stop_.bind(this));
 
   /**
    * Record-time for the elapsed recording time.
@@ -86,7 +85,7 @@ cca.views.Camera = function(router, model, onAspectRatio) {
    * @type {cca.views.camera.GalleryButton}
    * @private
    */
-  this.galleryButton_ = new cca.views.camera.GalleryButton(router, model);
+  this.galleryButton_ = new cca.views.camera.GalleryButton(model);
 
   /**
    * Button for taking photos and recording videos.
@@ -156,7 +155,7 @@ cca.views.Camera = function(router, model, onAspectRatio) {
 cca.views.Camera.RECORD_MIMETYPE = 'video/x-matroska;codecs=avc1';
 
 cca.views.Camera.prototype = {
-  __proto__: cca.View.prototype,
+  __proto__: cca.views.View.prototype,
   get capturing() {
     return document.body.classList.contains('capturing');
   },
@@ -193,7 +192,7 @@ cca.views.Camera.prototype.prepare = function() {
 /**
  * @override
  */
-cca.views.Camera.prototype.onActivate = function() {
+cca.views.Camera.prototype.focus = function() {
   this.shutterButton_.focus();
 };
 
@@ -255,7 +254,7 @@ cca.views.Camera.prototype.updateShutterLabel_ = function() {
 /**
  * @override
  */
-cca.views.Camera.prototype.onResize = function() {
+cca.views.Camera.prototype.layout = function() {
   this.layout_.update();
 };
 
