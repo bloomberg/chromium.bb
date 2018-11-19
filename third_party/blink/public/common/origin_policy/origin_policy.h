@@ -28,12 +28,17 @@ class BLINK_COMMON_EXPORT OriginPolicy {
   };
   const std::vector<CSP>& GetContentSecurityPolicies() const { return csp_; }
 
+  const std::vector<std::string>& GetFeaturePolicies() const {
+    return features_;
+  }
+
  private:
   friend class OriginPolicyParser;
 
   OriginPolicy();
 
   std::vector<CSP> csp_;
+  std::vector<std::string> features_;
 };
 
 }  // namespace blink

@@ -1129,6 +1129,29 @@ bool DocumentLoader::ShouldClearWindowName(
       previous_security_origin);
 }
 
+// Helper function: Merge the feature policy strings from HTTP headers and the
+// origin policy (if any).
+// Headers go first, which means that the per-page headers override the
+// origin policy features.
+void MergeFeaturesFromOriginPolicy(WTF::String& feature_policy,
+                                   const String& origin_policy_string) {
+  if (origin_policy_string.IsEmpty())
+    return;
+
+  std::unique_ptr<OriginPolicy> origin_policy = OriginPolicy::From(
+      StringUTF8Adaptor(origin_policy_string).AsStringPiece());
+  if (!origin_policy)
+    return;
+
+  for (const std::string& policy : origin_policy->GetFeaturePolicies()) {
+    if (!feature_policy.IsEmpty()) {
+      feature_policy.append(',');
+    }
+    feature_policy.append(
+        WTF::String::FromUTF8(policy.data(), policy.length()));
+  }
+}
+
 void DocumentLoader::InstallNewDocument(
     const KURL& url,
     Document* owner_document,
@@ -1246,8 +1269,10 @@ void DocumentLoader::InstallNewDocument(
   // FeaturePolicy is reset in the browser process on commit, so this needs to
   // be initialized and replicated to the browser process after commit messages
   // are sent in didCommitNavigation().
-  document->ApplyFeaturePolicyFromHeader(
+  WTF::String feature_policy(
       response_.HttpHeaderField(http_names::kFeaturePolicy));
+  MergeFeaturesFromOriginPolicy(feature_policy, request_.GetOriginPolicy());
+  document->ApplyFeaturePolicyFromHeader(feature_policy);
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 }
