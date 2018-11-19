@@ -14,12 +14,13 @@
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/trees/debug_rect_history.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
+class SkCanvas;
+class SkPaint;
 class SkTypeface;
 struct SkRect;
 
@@ -30,8 +31,6 @@ class ClientResourceProvider;
 namespace cc {
 class FrameRateCounter;
 class LayerTreeFrameSink;
-class PaintCanvas;
-class PaintFlags;
 
 enum class TextAlign { kLeft, kCenter, kRight };
 
@@ -96,49 +95,50 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
   void UpdateHudContents();
-  void DrawHudContents(PaintCanvas* canvas);
-  void DrawText(PaintCanvas* canvas,
-                PaintFlags* flags,
+  void DrawHudContents(SkCanvas* canvas);
+
+  int MeasureText(SkPaint* paint, const std::string& text, int size) const;
+  void DrawText(SkCanvas* canvas,
+                SkPaint* paint,
                 const std::string& text,
                 TextAlign align,
                 int size,
                 int x,
                 int y) const;
-  void DrawText(PaintCanvas* canvas,
-                PaintFlags* flags,
+  void DrawText(SkCanvas* canvas,
+                SkPaint* paint,
                 const std::string& text,
                 TextAlign align,
                 int size,
                 const SkPoint& pos) const;
-  void DrawGraphBackground(PaintCanvas* canvas,
-                           PaintFlags* flags,
+  void DrawGraphBackground(SkCanvas* canvas,
+                           SkPaint* paint,
                            const SkRect& bounds) const;
-  void DrawGraphLines(PaintCanvas* canvas,
-                      PaintFlags* flags,
+  void DrawGraphLines(SkCanvas* canvas,
+                      SkPaint* paint,
                       const SkRect& bounds,
                       const Graph& graph) const;
 
-  SkRect DrawFPSDisplay(PaintCanvas* canvas,
+  SkRect DrawFPSDisplay(SkCanvas* canvas,
                         const FrameRateCounter* fps_counter,
                         int right,
                         int top) const;
-  SkRect DrawMemoryDisplay(PaintCanvas* canvas,
+  SkRect DrawMemoryDisplay(SkCanvas* canvas,
                            int top,
                            int right,
                            int width) const;
-  SkRect DrawGpuRasterizationStatus(PaintCanvas* canvas,
+  SkRect DrawGpuRasterizationStatus(SkCanvas* canvas,
                                     int right,
                                     int top,
                                     int width) const;
-  void DrawDebugRect(PaintCanvas* canvas,
-                     PaintFlags* flags,
+  void DrawDebugRect(SkCanvas* canvas,
+                     SkPaint* paint,
                      const DebugRect& rect,
                      SkColor stroke_color,
                      SkColor fill_color,
                      float stroke_width,
                      const std::string& label_text) const;
-  void DrawDebugRects(PaintCanvas* canvas,
-                      DebugRectHistory* debug_rect_history);
+  void DrawDebugRects(SkCanvas* canvas, DebugRectHistory* debug_rect_history);
 
   ResourcePool::InUsePoolResource in_flight_resource_;
   std::unique_ptr<ResourcePool> pool_;
@@ -158,9 +158,6 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   std::vector<DebugRect> paint_rects_;
 
   base::TimeTicks time_of_last_graph_update_;
-
-  // color space for OOPR
-  const RasterColorSpace raster_color_space_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadsUpDisplayLayerImpl);
 };
