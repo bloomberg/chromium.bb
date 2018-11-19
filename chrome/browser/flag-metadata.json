@@ -2660,6 +2660,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "omnibox-ui-one-click-unelide",
+    "owners": [ "tommycli" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "omnibox-ui-show-suggestion-favicons",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

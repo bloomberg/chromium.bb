@@ -188,6 +188,10 @@ class OmniboxViewViews : public OmniboxView,
 
   void ClearAccessibilityLabel();
 
+  // Selects the whole omnibox contents as a result of the user gesture. This
+  // may also unapply steady state elisions depending on user preferences.
+  void SelectAllForUserGesture();
+
   // Returns true if the user text was updated with the full URL (without
   // steady-state elisions).  |gesture| is the user gesture causing unelision.
   bool UnapplySteadyStateElisions(UnelisionGesture gesture);

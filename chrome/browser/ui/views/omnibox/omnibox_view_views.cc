@@ -275,15 +275,12 @@ void OmniboxViewViews::Update() {
     RevertAll();
 
     // Only select all when we have focus.  If we don't have focus, selecting
-    // all is unnecessary since the selection will change on regaining focus,
-    // and can in fact cause artifacts, e.g. if the user is on the NTP and
-    // clicks a link to navigate, causing |was_select_all| to be vacuously true
-    // for the empty omnibox, and we then select all here, leading to the
-    // trailing portion of a long URL being scrolled into view.  We could try
-    // and address cases like this, but it seems better to just not muck with
-    // things when the omnibox isn't focused to begin with.
-    if (model()->has_focus())
-      SelectAll(true);
+    // all is unnecessary since the selection will change on regaining focus.
+    if (model()->has_focus()) {
+      // Treat this select-all as resulting from a user gesture, since most
+      // URL updates result from a user gesture or navigation.
+      SelectAllForUserGesture();
+    }
   } else if (old_security_level != security_level_) {
     EmphasizeURLComponents();
   }
@@ -708,6 +705,17 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
   friendly_suggestion_text_prefix_length_ = 0;
 }
 
+void OmniboxViewViews::SelectAllForUserGesture() {
+  if (base::FeatureList::IsEnabled(omnibox::kOneClickUnelide) &&
+      UnapplySteadyStateElisions(UnelisionGesture::OTHER)) {
+    TextChanged();
+  }
+
+  // Select all in the reverse direction so as not to scroll the caret
+  // into view and shift the contents jarringly.
+  SelectAll(true);
+}
+
 bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   // Early exit if no steady state elision features are enabled.
   if (!OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled() &&
@@ -958,9 +966,7 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   // When the user has clicked and released to give us focus, select all.
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       select_all_on_mouse_release_) {
-    // Select all in the reverse direction so as not to scroll the caret
-    // into view and shift the contents jarringly.
-    SelectAll(true);
+    SelectAllForUserGesture();
   }
   select_all_on_mouse_release_ = false;
 
@@ -983,7 +989,7 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
   views::Textfield::OnGestureEvent(event);
 
   if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP)
-    SelectAll(true);
+    SelectAllForUserGesture();
 
   if (event->type() == ui::ET_GESTURE_TAP ||
       event->type() == ui::ET_GESTURE_TAP_CANCEL ||

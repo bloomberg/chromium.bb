@@ -79,6 +79,10 @@ const base::Feature kHideSteadyStateUrlPathQueryAndRef {
 #endif
 };
 
+// Feature used to undo all omnibox elisions on a single click or focus action.
+const base::Feature kOneClickUnelide{"OmniboxOneClickUnelide",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // This feature simplifies the security indiciator UI for https:// pages. The
 // exact UI treatment is dependent on the parameter 'treatment' which can have
 // the following value:
