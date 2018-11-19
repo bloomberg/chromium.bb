@@ -8,8 +8,10 @@
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,20 +32,24 @@
 @property(nonatomic, strong)
     FormInputAccessoryCoordinator* formInputAccessoryCoordinator;
 
-// Coordinator for displaying snackbars.
-@property(nonatomic, strong) SnackbarCoordinator* snackbarCoordinator;
-
 // Coordinator for the QR scanner.
 @property(nonatomic, strong) QRScannerLegacyCoordinator* qrScannerCoordinator;
+
+// Coordinator for displaying the Reading List.
+@property(nonatomic, strong) ReadingListCoordinator* readingListCoordinator;
+
+// Coordinator for displaying snackbars.
+@property(nonatomic, strong) SnackbarCoordinator* snackbarCoordinator;
 
 @end
 
 @implementation BrowserCoordinator
 @synthesize dispatcher = _dispatcher;
-// Private child coordinators
+// Child coordinators
 @synthesize formInputAccessoryCoordinator = _formInputAccessoryCoordinator;
-@synthesize snackbarCoordinator = _snackbarCoordinator;
 @synthesize qrScannerCoordinator = _qrScannerCoordinator;
+@synthesize readingListCoordinator = _readingListCoordinator;
+@synthesize snackbarCoordinator = _snackbarCoordinator;
 
 #pragma mark - ChromeCoordinator
 
@@ -53,11 +59,15 @@
   self.dispatcher = [[CommandDispatcher alloc] init];
   [self createViewController];
   [self startChildCoordinators];
+  [self.dispatcher
+      startDispatchingToTarget:self
+                   forProtocol:@protocol(BrowserCoordinatorCommands)];
   [super start];
 }
 
 - (void)stop {
   [super stop];
+  [self.dispatcher stopDispatchingToTarget:self];
   [self stopChildCoordinators];
   [self destroyViewController];
   self.dispatcher = nil;
@@ -98,13 +108,15 @@
   self.formInputAccessoryCoordinator.delegate = self;
   [self.formInputAccessoryCoordinator start];
 
-  self.snackbarCoordinator = [[SnackbarCoordinator alloc] init];
-  self.snackbarCoordinator.dispatcher = self.dispatcher;
-  [self.snackbarCoordinator start];
-
   self.qrScannerCoordinator = [[QRScannerLegacyCoordinator alloc]
       initWithBaseViewController:self.viewController];
   self.qrScannerCoordinator.dispatcher = self.dispatcher;
+
+  /* ReadingListCoordinator is created and started by a BrowserCommand */
+
+  self.snackbarCoordinator = [[SnackbarCoordinator alloc] init];
+  self.snackbarCoordinator.dispatcher = self.dispatcher;
+  [self.snackbarCoordinator start];
 }
 
 // Stops child coordinators.
@@ -112,11 +124,24 @@
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
 
-  [self.snackbarCoordinator stop];
-  self.snackbarCoordinator = nil;
-
   [self.qrScannerCoordinator stop];
   self.qrScannerCoordinator = nil;
+
+  [self.readingListCoordinator stop];
+  self.readingListCoordinator = nil;
+
+  [self.snackbarCoordinator stop];
+  self.snackbarCoordinator = nil;
+}
+
+#pragma mark - BrowserCoordinatorCommands
+
+- (void)showReadingList {
+  self.readingListCoordinator = [[ReadingListCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                    browserState:self.browserState
+                          loader:self.viewController];
+  [self.readingListCoordinator start];
 }
 
 #pragma mark - FormInputAccessoryCoordinatorDelegate

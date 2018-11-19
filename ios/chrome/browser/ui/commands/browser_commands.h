@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
@@ -19,8 +20,11 @@ class GURL;
 
 // Protocol for commands that will generally be handled by the "current tab",
 // which in practice is the BrowserViewController instance displaying the tab.
+// TODO(crbug.com/906662) : Extract BrowserCoordinatorCommands from
+// BrowserCommands.
 @protocol BrowserCommands<NSObject,
                           ActivityServiceCommands,
+                          BrowserCoordinatorCommands,
                           PageInfoCommands,
                           PopupMenuCommands,
                           QRScannerCommands,
@@ -49,9 +53,6 @@ class GURL;
 
 // Adds a page to the reading list using data in |command|.
 - (void)addToReadingList:(ReadingListAddCommand*)command;
-
-// Shows the Reading List UI.
-- (void)showReadingList;
 
 // Preloads voice search on the current BVC.
 - (void)preloadVoiceSearch;

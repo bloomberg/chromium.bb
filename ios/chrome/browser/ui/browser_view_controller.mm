@@ -175,7 +175,6 @@
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/reading_list/offline_page_native_content.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #include "ios/chrome/browser/ui/sad_tab/features.h"
@@ -478,9 +477,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Used to display the Voice Search UI.  Nil if not visible.
   scoped_refptr<VoiceSearchController> _voiceSearchController;
-
-  // Used to display the Reading List.
-  ChromeCoordinator* _readingListCoordinator;
 
   // Used to display the Find In Page UI. Nil if not visible.
   FindBarControllerIOS* _findBarController;
@@ -1780,7 +1776,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     self.typingShield = nil;
     if (_voiceSearchController)
       _voiceSearchController->SetDispatcher(nil);
-    _readingListCoordinator = nil;
     self.recentTabsCoordinator = nil;
     self.primaryToolbarCoordinator = nil;
     self.secondaryToolbarContainerCoordinator = nil;
@@ -4482,14 +4477,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (void)addToReadingList:(ReadingListAddCommand*)command {
   [self addToReadingListURL:[command URL] title:[command title]];
-}
-
-- (void)showReadingList {
-  _readingListCoordinator = [[ReadingListCoordinator alloc]
-      initWithBaseViewController:self
-                    browserState:self.browserState
-                          loader:self];
-  [_readingListCoordinator start];
 }
 
 - (void)preloadVoiceSearch {
