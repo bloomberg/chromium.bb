@@ -174,7 +174,7 @@ class SupervisedUserService : public KeyedService,
   void Shutdown() override;
 
   // SyncTypePreferenceProvider implementation:
-  syncer::ModelTypeSet GetPreferredDataTypes() const override;
+  syncer::ModelTypeSet GetForcedDataTypes() const override;
 
 #if !defined(OS_ANDROID)
   // BrowserListObserver implementation:

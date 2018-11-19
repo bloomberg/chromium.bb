@@ -984,7 +984,7 @@ void SupervisedUserService::SetExtensionsActive() {
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-syncer::ModelTypeSet SupervisedUserService::GetPreferredDataTypes() const {
+syncer::ModelTypeSet SupervisedUserService::GetForcedDataTypes() const {
   if (!ProfileIsSupervised())
     return syncer::ModelTypeSet();
 

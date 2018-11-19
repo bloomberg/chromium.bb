@@ -1423,7 +1423,7 @@ syncer::ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
   syncer::ModelTypeSet forced_types;
   for (const syncer::SyncTypePreferenceProvider* provider :
        preference_providers_) {
-    forced_types.PutAll(provider->GetPreferredDataTypes());
+    forced_types.PutAll(provider->GetForcedDataTypes());
   }
   return Intersection(forced_types, GetRegisteredDataTypes());
 }
