@@ -305,10 +305,11 @@ testcase.tabindexOpenDialogDownloads = function() {
         return remoteCall.callRemoteTestUtil(
             'selectFile', appId, ['hello.txt']);
       },
-      ['#ok-button:not([disabled])'],
-      ['ok-button', 'cancel-button', 'breadcrumb-path-0', 'search-button',
-      'view-button', 'sort-button', 'gear-button', 'directory-tree',
-      'file-list']));
+      ['#ok-button:not([disabled])'], [
+        'cancel-button', 'ok-button', 'breadcrumb-path-0', 'search-button',
+        'view-button', 'sort-button', 'gear-button', 'directory-tree',
+        'file-list'
+      ]));
 };
 
 /**
@@ -321,9 +322,10 @@ testcase.tabindexOpenDialogDrive = function() {
         return remoteCall.callRemoteTestUtil(
             'selectFile', appId, ['hello.txt']);
       },
-      ['#ok-button:not([disabled])'],
-      ['ok-button', 'cancel-button', 'search-button', 'view-button',
-       'sort-button', 'gear-button', 'directory-tree', 'file-list']));
+      ['#ok-button:not([disabled])'], [
+        'cancel-button', 'ok-button', 'search-button', 'view-button',
+        'sort-button', 'gear-button', 'directory-tree', 'file-list'
+      ]));
 };
 
 /**
@@ -335,11 +337,12 @@ testcase.tabindexSaveFileDialogDownloads = function() {
         type: 'saveFile',
         suggestedName: 'hoge.txt'  // Prevent showing a override prompt
       },
-      'downloads', BASIC_LOCAL_ENTRY_SET, null,
-      ['#ok-button:not([disabled])'],
-      ['ok-button', 'cancel-button', 'breadcrumb-path-0', 'search-button',
-      'view-button', 'sort-button', 'gear-button', 'directory-tree',
-      'file-list', 'new-folder-button', 'filename-input-textbox']));
+      'downloads', BASIC_LOCAL_ENTRY_SET, null, ['#ok-button:not([disabled])'],
+      [
+        'cancel-button', 'ok-button', 'breadcrumb-path-0', 'search-button',
+        'view-button', 'sort-button', 'gear-button', 'directory-tree',
+        'file-list', 'new-folder-button', 'filename-input-textbox'
+      ]));
 };
 
 /**
@@ -351,9 +354,9 @@ testcase.tabindexSaveFileDialogDrive = function() {
         type: 'saveFile',
         suggestedName: 'hoge.txt'  // Prevent showing a override prompt
       },
-      'drive', BASIC_DRIVE_ENTRY_SET, null,
-      ['#ok-button:not([disabled])'],
-      ['ok-button', 'cancel-button', 'search-button', 'view-button',
-       'sort-button', 'gear-button', 'directory-tree', 'file-list',
-       'new-folder-button', 'filename-input-textbox']));
+      'drive', BASIC_DRIVE_ENTRY_SET, null, ['#ok-button:not([disabled])'], [
+        'cancel-button', 'ok-button', 'search-button', 'view-button',
+        'sort-button', 'gear-button', 'directory-tree', 'file-list',
+        'new-folder-button', 'filename-input-textbox'
+      ]));
 };
