@@ -652,20 +652,6 @@ __gCrWeb.findInPage.init = function(width, height) {
 };
 
 /**
- * When the GSA app detects a zoom change, we need to update our css.
- * @param {number} width Width of page.
- * @param {number} height Height of page.
- */
-function fixZoom_(width, height) {
-  pageWidth_ = width;
-  pageHeight_ = height;
-  if (styleElement_) {
-    removeStyle_();
-    addStyle_();
-  }
-};
-
-/**
  * Enable the __gCrWeb.findInPage module.
  * Mainly just adds the style for the classes.
  */
