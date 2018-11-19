@@ -62,6 +62,11 @@ struct BLINK_COMMON_EXPORT Manifest {
     std::vector<Purpose> purpose;
   };
 
+  struct BLINK_COMMON_EXPORT ShareTargetFile {
+    base::string16 name;
+    std::vector<base::string16> accept;
+  };
+
   // Structure representing a Web Share target's query parameter keys.
   struct BLINK_COMMON_EXPORT ShareTargetParams {
     ShareTargetParams();
@@ -70,16 +75,34 @@ struct BLINK_COMMON_EXPORT Manifest {
     base::NullableString16 title;
     base::NullableString16 text;
     base::NullableString16 url;
+    std::vector<ShareTargetFile> files;
   };
 
   // Structure representing how a Web Share target handles an incoming share.
   struct BLINK_COMMON_EXPORT ShareTarget {
+    enum class Method {
+      kGet,
+      kPost,
+    };
+
+    enum class Enctype {
+      kApplication,
+      kMultipart,
+    };
+
     ShareTarget();
     ~ShareTarget();
 
     // The URL used for sharing. Query parameters are added to this comprised of
     // keys from |params| and values from the shared data.
     GURL action;
+
+    // The HTTP request method for the web share target.
+    Method method;
+
+    // The way that share data is encoded in "POST" request.
+    Enctype enctype;
+
     ShareTargetParams params;
   };
 
