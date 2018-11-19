@@ -30,31 +30,92 @@
 <script src="resources/interpolation-test.js"></script>
 <script>
 
-// Matrix
+// Matrix transforms:
+
+// 2D matrix transforms:
+//
+// [m11 m21 0 m41]   [1 0 0 Tx] [cos(R) -sin(R) 0 0] [1 K 0 0] [Sx 0  0 0]
+// [m12 m22 0 m42] = [0 1 0 Ty] [sin(R)  cos(R) 0 0] [0 1 0 0] [0  Sy 0 0]
+// [ 0   0  1  0 ]   [0 0 1 0 ] [  0       0    1 0] [0 0 1 0] [0  0  1 0]
+// [ 0   0  0  1 ]   [0 0 0 1 ] [  0       0    0 1] [0 0 0 1] [0  0  0 1]
+//
+// M = translate * rotate * skew * scale
+// See also webkit-transform-interpolation-005.html
+//
+
+const cos30 = Math.cos(Math.PI / 6);
+const sin30 = Math.sin(Math.PI / 6);
+const cos45 = Math.cos(Math.PI / 4);
+const sin45 = Math.sin(Math.PI / 4);
+const cos60 = Math.cos(Math.PI / 3);
+const sin60 = Math.sin(Math.PI / 3);
+
+// translateY(-6px) -> translateX(6px) rotate(90deg) scaleX(7)
 assertInterpolation({
   property: 'transform',
-  from: 'matrix(5, 6, 10, 7, 21, 23)',
-  to: 'matrix(8, 4, 9, 11, 24, 22)'
+  from: 'matrix(1, 0, 0, 1, 0, -6)',
+  to: 'matrix(0, 7, -1, 0, 6, 0)'
 }, [
-  {at: -1, is: 'matrix(-21.971399357258385, -10.985699678629187, -50.57889827616046, -38.946928317003575, 18, 24)'},
-  {at: 0, is: 'matrix(5, 6, 10, 7, 21, 23)'},
-  {at: 0.25, is: 'matrix(1.5045862850823934, 2.1375701058706307, 1.9887759643453702, 1.2132035030840276, 21.75, 22.75)'},
-  {at: 0.75, is: 'matrix(3.1847985591364396, 1.2803008685850275, 4.4228208119507615, 5.537010031441669, 23.25, 22.25)'},
-  {at: 1, is: 'matrix(8, 4, 9, 11, 24, 22)'},
-  {at: 2, is: 'matrix(-16.45196668627737, -19.74236002353284, -18.81066272622538, 0.5900238929654478, 27, 21)'},
+  {at: -1, is: 'matrix(0, 5, 1, 0, -6, -12)'},
+  {at: 0, is: 'matrix(1, 0, 0, 1, 0, -6)'},
+  {
+    at: 1/3,
+    is: `matrix(${3 * cos30}, ${3 * sin30}, -${sin30}, ${cos30}, 2, -4)`
+  },
+  {
+    at: 0.5,
+    is: `matrix(${4 * cos45}, ${4 * sin45}, -${sin45}, ${cos45}, 3, -3)`
+  },
+  {
+    at: 2/3,
+    is: `matrix(${5 * cos60}, ${5 * sin60}, -${sin60}, ${cos60}, 4, -2)`
+  },
+  {at: 1, is: 'matrix(0, 7, -1, 0, 6, 0)'},
+  {at: 2, is: 'matrix(-13, 0, 0, -1, 12, 6)'}
 ]);
+
+// translateX(6px) rotate(90deg) scaleX(7) -> translateY(-6px)
 assertInterpolation({
   property: 'transform',
-  from: 'matrix(43.30127018922194, 30, -17.5, 36.373066958946424, 31, 33)',
-  to: 'matrix(36, 31.17691453623979, -76.2102355330306, 22, 34, 32)'
+  from: 'matrix(0, 7, -1, 0, 6, 0)',
+  to: 'matrix(1, 0, 0, 1, 0, -6)',
 }, [
-  {at: -1, is: 'matrix(50.7191465922708, 27.5802296277601, 4.91128504689649, 17.7046464595868, 28, 34)'},
-  {at: 0, is: 'matrix(43.30127018922194, 30, -17.5, 36.373066958946424, 31, 33)'},
-  {at: 0.25, is: 'matrix(41.4579172764046, 30.4088866283282, -29.1438768223581, 36.3267603016693, 31.75, 32.75)'},
-  {at: 0.75, is: 'matrix(37.8045038027911, 30.9964317800692, -58.6633288853787, 29.3063176731403, 33.25, 32.25)'},
-  {at: 1, is: 'matrix(36, 31.17691453623979, -76.2102355330306, 22, 34, 32)'},
-  {at: 2, is: 'matrix(28.9928082708843, 31.1691829526532, -160.742351276266, -35.9984985114527, 37, 31)'},
+  {at: -1, is: 'matrix(-13, 0, 0, -1, 12, 6)'},
+  {at: 0, is: 'matrix(0, 7, -1, 0, 6, 0)'},
+   {
+    at: 1/3,
+    is: `matrix(${5 * cos60}, ${5 * sin60}, -${sin60}, ${cos60}, 4, -2)`
+  },
+  {
+    at: 0.5,
+    is: `matrix(${4 * cos45}, ${4 * sin45}, -${sin45}, ${cos45}, 3, -3)`
+  },
+  {
+    at: 2/3,
+    is: `matrix(${3 * cos30}, ${3 * sin30}, -${sin30}, ${cos30}, 2, -4)`
+  },
+  {at: 1, is: 'matrix(1, 0, 0, 1, 0, -6)'},
+  {at: 2, is: 'matrix(0, 5, 1, 0, -6, -12)'}
 ]);
+
+// scaleY(7) -> skewX(45deg) scaleX(7)
+assertInterpolation({
+  property: 'transform',
+  from: 'matrix(1, 0, 0, 7, 0, 0)',
+  to: 'matrix(7, 0, 1, 1, 0, 0)'
+}, [
+  {at: -1, is: 'matrix(-5, 0, -13, 13, 0, 0)'},
+  {at: 0, is: 'matrix(1, 0, 0, 7, 0, 0)'},
+  {at: 1/3, is: 'matrix(3, 0, 1.6667, 5, 0, 0)'},
+  {at: 0.5, is: 'matrix(4, 0, 2, 4, 0, 0)'},
+  {at: 2/3, is: 'matrix(5, 0, 2, 3, 0, 0)'},
+  {at: 1, is: `matrix(7, 0, 1, 1, 0, 0)`},
+  {at: 2, is: `matrix(13, 0, -10, -5, 0, 0)`}
+]);
+
+// 3-D matrix transforms.
+// TODO(kevers): Revisit 3D transform examples. It is difficult to infer
+// the quality of the matrix decompositions from the expected output.
 assertInterpolation({
   property: 'transform',
   from: 'none',

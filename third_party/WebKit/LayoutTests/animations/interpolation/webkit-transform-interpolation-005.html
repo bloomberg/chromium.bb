@@ -30,31 +30,59 @@
 <script src="resources/interpolation-test.js"></script>
 <script>
 
-// Matrix
+// Matrix transforms:
+
+// 2-D Matrix transforms:
+// See also transform-interpolation-005.html
+
+// none -> translateX(6px) skewX(45deg) scaleX(7) scaleY(2)
 assertInterpolation({
   property: '-webkit-transform',
-  from: 'matrix(5, 6, 10, 7, 21, 23)',
-  to: 'matrix(8, 4, 9, 11, 24, 22)'
+  from: 'none',
+  to: 'matrix(7, 0, 2, 2, 6, 0)'
 }, [
-  {at: -1, is: 'matrix(-21.971399357258385, -10.985699678629187, -50.57889827616046, -38.946928317003575, 18, 24)'},
-  {at: 0, is: 'matrix(5, 6, 10, 7, 21, 23)'},
-  {at: 0.25, is: 'matrix(1.5045862850823934, 2.1375701058706307, 1.9887759643453702, 1.2132035030840276, 21.75, 22.75)'},
-  {at: 0.75, is: 'matrix(3.1847985591364396, 1.2803008685850275, 4.4228208119507615, 5.537010031441669, 23.25, 22.25)'},
-  {at: 1, is: 'matrix(8, 4, 9, 11, 24, 22)'},
-  {at: 2, is: 'matrix(-16.45196668627737, -19.74236002353284, -18.81066272622538, 0.5900238929654478, 27, 21)'},
+  {at: -1, is: 'matrix(-5, 0, 0, 0, -6, 0)'},
+  {at: 0, is: 'matrix(1, 0, 0, 1, 0, 0)'},
+  {at: 0.25, is: 'matrix(2.5, 0, 0.31, 1.25, 1.5, 0)'},
+  {at: 0.5, is: 'matrix(4, 0, 0.75, 1.5, 3, 0)'},
+  {at: 0.75, is: 'matrix(5.5, 0, 1.31, 1.75, 4.5, 0)'},
+  {at: 1, is: 'matrix(7, 0, 2, 2, 6, 0)'},
+  {at: 2, is: 'matrix(13, 0, 6, 3, 12, 0)'}
 ]);
+
+// translateY(-6px) scale(3, 5) -> none
 assertInterpolation({
   property: '-webkit-transform',
-  from: 'matrix(43.30127018922194, 30, -17.5, 36.373066958946424, 31, 33)',
-  to: 'matrix(36, 31.17691453623979, -76.2102355330306, 22, 34, 32)'
+  from: 'matrix(3, 0, 0, 5, 0, -6)',
+  to: 'none'
 }, [
-  {at: -1, is: 'matrix(50.7191465922708, 27.5802296277601, 4.91128504689649, 17.7046464595868, 28, 34)'},
-  {at: 0, is: 'matrix(43.30127018922194, 30, -17.5, 36.373066958946424, 31, 33)'},
-  {at: 0.25, is: 'matrix(41.4579172764046, 30.4088866283282, -29.1438768223581, 36.3267603016693, 31.75, 32.75)'},
-  {at: 0.75, is: 'matrix(37.8045038027911, 30.9964317800692, -58.6633288853787, 29.3063176731403, 33.25, 32.25)'},
-  {at: 1, is: 'matrix(36, 31.17691453623979, -76.2102355330306, 22, 34, 32)'},
-  {at: 2, is: 'matrix(28.9928082708843, 31.1691829526532, -160.742351276266, -35.9984985114527, 37, 31)'},
+  {at: -1, is: 'matrix(5, 0, 0, 9, 0, -12)'},
+  {at: 0, is: 'matrix(3, 0, 0, 5, 0, -6)'},
+  {at: 0.25, is: 'matrix(2.5, 0, 0, 4, 0, -4.5)'},
+  {at: 0.5, is: 'matrix(2, 0, 0, 3, 0, -3)'},
+  {at: 0.75, is: 'matrix(1.5, 0, 0, 2, 0, -1.5)'},
+  {at: 1, is: 'matrix(1, 0, 0, 1, 0, 0)'},
+  {at: 2, is: 'matrix(-1, 0, 0, -3, 0, 6)'}
 ]);
+
+// translateY(-6px) scale(3, 5) -> translateX(6px) skewX(1) scale(7, 2)
+assertInterpolation({
+  property: '-webkit-transform',
+  from: 'matrix(3, 0, 0, 5, 0, -6)',
+  to: 'matrix(7, 0, 2, 2, 6, 0)'
+}, [
+  {at: -1, is: 'matrix(-1, 0, -8, 8, -6, -12)'},
+  {at: 0, is: 'matrix(3, 0, 0, 5, 0, -6)'},
+  {at: 0.25, is: 'matrix(4, 0, 1.06, 4.25, 1.5, -4.5)'},
+  {at: 0.5, is: 'matrix(5, 0, 1.75, 3.5, 3, -3)'},
+  {at: 0.75, is: 'matrix(6, 0, 2.06, 2.75, 4.5, -1.5)'},
+  {at: 1, is: 'matrix(7, 0, 2, 2, 6, 0)'},
+  {at: 2, is: 'matrix(11, 0, -2, -1, 12, 6)'}
+]);
+
+// 3-D matrix transforms.
+// TODO(kevers): Revisit 3D transform examples. Verbatim copies of transforms
+// in transform-interpolation-005.html.
 assertInterpolation({
   property: '-webkit-transform',
   from: 'none',
