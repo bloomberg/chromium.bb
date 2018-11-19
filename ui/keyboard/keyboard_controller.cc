@@ -276,6 +276,10 @@ void KeyboardController::DisableKeyboard() {
   if (parent_container_)
     DeactivateKeyboard();
 
+  aura::Window* keyboard_window = GetKeyboardWindow();
+  if (keyboard_window)
+    keyboard_window->RemoveObserver(this);
+
   // Return to the INITIAL state to ensure that transitions entering a state
   // is equal to transitions leaving the state.
   if (state_ != KeyboardControllerState::INITIAL)
@@ -1107,8 +1111,10 @@ void KeyboardController::UpdateInputMethodObserver() {
   ime_observer_.RemoveAll();
   ime_observer_.Add(ime);
 
-  // TODO(https://crbug.com/845780): Investigate whether this does anything.
-  OnTextInputStateChanged(ime->GetTextInputClient());
+  // Note: We used to call OnTextInputStateChanged(ime->GetTextInputClient())
+  // here, but that can trigger HideKeyboardImplicitlyBySystem() from a call to
+  // ShowKeyboard() when using mojo APIs in Chrome (SingleProcessMash) if
+  // ime->GetTextInputClient() isn't focused.
 }
 
 void KeyboardController::EnsureCaretInWorkArea(
