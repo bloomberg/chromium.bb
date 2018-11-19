@@ -355,6 +355,15 @@ void HTMLFormElement::Submit(Event* event,
     return;
   }
 
+  if (is_constructing_entry_list_) {
+    DCHECK(RuntimeEnabledFeatures::FormDataEventEnabled());
+    GetDocument().AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               "Form submission canceled because the form is "
+                               "constructing entry list"));
+    return;
+  }
+
   if (is_submitting_)
     return;
 
@@ -402,9 +411,12 @@ void HTMLFormElement::Submit(Event* event,
   }
 }
 
-void HTMLFormElement::ConstructFormDataSet(
-    HTMLFormControlElement* submit_button,
-    FormData& form_data) {
+bool HTMLFormElement::ConstructEntryList(HTMLFormControlElement* submit_button,
+                                         FormData& form_data) {
+  if (is_constructing_entry_list_) {
+    return false;
+  }
+  base::AutoReset<bool> entry_list_scope(&is_constructing_entry_list_, true);
   if (submit_button)
     submit_button->SetActivatedSubmit(true);
   for (ListedElement* control : ListedElements()) {
@@ -423,6 +435,7 @@ void HTMLFormElement::ConstructFormDataSet(
 
   if (submit_button)
     submit_button->SetActivatedSubmit(false);
+  return true;
 }
 
 void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {

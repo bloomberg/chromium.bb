@@ -99,6 +99,33 @@ test(() => {
   assert_equals(formData.get('n1'), 'v1');
 }, 'Newly created FormData contains entries added to "formData" IDL attribute of FormDataEvent.');
 
+test(() => {
+  let form = populateForm('<input name=n10 value=v10>');
+  let counter = 0;
+  form.addEventListener('formdata', e => {
+    ++counter;
+    form.submit();
+  });
+  form.submit();
+  assert_equals(counter, 1);
+  new FormData(form);
+  assert_equals(counter, 2);
+}, 'submit() in formdata event handler should be ignored');
+
+test(() => {
+  let form = populateForm('<input name=n11 value=v11>');
+  let counter = 0;
+  form.addEventListener('formdata', e => {
+    ++counter;
+    assert_throws('InvalidStateError', () => { new FormData(e.target) });
+  });
+  new FormData(form);
+  assert_equals(counter, 1);
+
+  form.submit();
+  assert_equals(counter, 2);
+}, '|new FormData()| in formdata event handler should throw');
+
 let t1 = async_test('Entries added to "formData" IDL attribute should be submitted.');
 t1.step(() => {
   let form = populateForm('<input name=n1 value=v1>');
