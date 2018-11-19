@@ -21,12 +21,12 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -47,12 +47,12 @@ namespace {
 
 class TestDelegate;
 
-// Aggregates notifications from the test delegates and breaks the message loop
+// Aggregates notifications from the test delegates and breaks the run loop
 // the test thread is waiting on once they all came in.
 class NotificationCollector
     : public base::RefCountedThreadSafe<NotificationCollector> {
  public:
-  NotificationCollector() : task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+  NotificationCollector() : task_runner_(ThreadTaskRunnerHandle::Get()) {}
 
   // Called from the file thread by the delegates.
   void OnChange(TestDelegate* delegate) {
@@ -143,7 +143,8 @@ class FilePathWatcherTest : public testing::Test {
  public:
   FilePathWatcherTest()
 #if defined(OS_POSIX)
-      : file_descriptor_watcher_(loop_.task_runner())
+      : scoped_task_environment_(
+            test::ScopedTaskEnvironment::MainThreadType::IO)
 #endif
   {
   }
@@ -204,10 +205,7 @@ class FilePathWatcherTest : public testing::Test {
 
   NotificationCollector* collector() { return collector_.get(); }
 
-  MessageLoopForIO loop_;
-#if defined(OS_POSIX)
-  FileDescriptorWatcher file_descriptor_watcher_;
-#endif
+  test::ScopedTaskEnvironment scoped_task_environment_;
 
   ScopedTempDir temp_dir_;
   scoped_refptr<NotificationCollector> collector_;

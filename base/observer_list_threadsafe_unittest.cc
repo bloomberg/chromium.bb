@@ -165,7 +165,7 @@ class AddRemoveThread : public PlatformThread::Delegate, public Foo {
 }  // namespace
 
 TEST(ObserverListThreadSafeTest, BasicTest) {
-  MessageLoop loop;
+  test::ScopedTaskEnvironment scoped_task_environment;
 
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>);
@@ -194,7 +194,7 @@ TEST(ObserverListThreadSafeTest, BasicTest) {
 }
 
 TEST(ObserverListThreadSafeTest, RemoveObserver) {
-  MessageLoop loop;
+  test::ScopedTaskEnvironment scoped_task_environment;
 
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>);
@@ -237,7 +237,7 @@ TEST(ObserverListThreadSafeTest, WithoutSequence) {
 
   {
     // Add c when there's a sequence.
-    MessageLoop loop;
+    test::ScopedTaskEnvironment scoped_task_environment;
     observer_list->AddObserver(&c);
 
     observer_list->Notify(FROM_HERE, &Foo::Observe, 10);
@@ -266,7 +266,7 @@ TEST(ObserverListThreadSafeTest, WithoutSequence) {
   observer_list->RemoveObserver(&a);
 
   // Notifying should not fail but should also be a no-op.
-  MessageLoop loop;
+  test::ScopedTaskEnvironment scoped_task_environment;
   observer_list->AddObserver(&b);
   observer_list->Notify(FROM_HERE, &Foo::Observe, 30);
   RunLoop().RunUntilIdle();
@@ -297,7 +297,7 @@ class FooRemover : public Foo {
 };
 
 TEST(ObserverListThreadSafeTest, RemoveMultipleObservers) {
-  MessageLoop loop;
+  test::ScopedTaskEnvironment scoped_task_environment;
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>);
 
@@ -320,7 +320,7 @@ TEST(ObserverListThreadSafeTest, RemoveMultipleObservers) {
 // observer threads will also trigger notifications to all observers.
 static void ThreadSafeObserverHarness(int num_threads,
                                       bool cross_thread_notifies) {
-  MessageLoop loop;
+  test::ScopedTaskEnvironment scoped_task_environment;
 
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>);
@@ -347,8 +347,8 @@ static void ThreadSafeObserverHarness(int num_threads,
   ASSERT_EQ(static_cast<size_t>(num_threads), threaded_observer.size());
   ASSERT_EQ(static_cast<size_t>(num_threads), ready.size());
 
-  // This makes sure that threaded_observer has gotten to set loop_, so that we
-  // can call Quit() below safe-ish-ly.
+  // This makes sure that threaded_observer has gotten to set
+  // scoped_task_environment_, so that we can call Quit() below safe-ish-ly.
   for (int i = 0; i < num_threads; ++i)
     ready[i]->Wait();
 
@@ -385,14 +385,14 @@ TEST(ObserverListThreadSafeTest, CrossThreadNotifications) {
   ThreadSafeObserverHarness(3, true);
 }
 
-TEST(ObserverListThreadSafeTest, OutlivesMessageLoop) {
-  MessageLoop* loop = new MessageLoop;
+TEST(ObserverListThreadSafeTest, OutlivesTaskEnvironment) {
+  Optional<test::ScopedTaskEnvironment> scoped_task_environment(in_place);
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>);
 
   Adder a(1);
   observer_list->AddObserver(&a);
-  delete loop;
+  scoped_task_environment.reset();
   // Test passes if we don't crash here.
   observer_list->Notify(FROM_HERE, &Foo::Observe, 1);
 }
@@ -528,7 +528,7 @@ TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
 
 // Same as ObserverListTest.Existing, but for ObserverListThreadSafe
 TEST(ObserverListThreadSafeTest, Existing) {
-  MessageLoop loop;
+  test::ScopedTaskEnvironment scoped_task_environment;
   scoped_refptr<ObserverListThreadSafe<Foo>> observer_list(
       new ObserverListThreadSafe<Foo>(ObserverListPolicy::EXISTING_ONLY));
   Adder a(1);

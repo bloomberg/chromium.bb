@@ -5,9 +5,9 @@
 #include "base/system/system_monitor.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/mock_devices_changed_observer.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +19,7 @@ class SystemMonitorTest : public testing::Test {
  protected:
   SystemMonitorTest() { system_monitor_.reset(new SystemMonitor); }
 
-  MessageLoop message_loop_;
+  test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<SystemMonitor> system_monitor_;
 
  private:

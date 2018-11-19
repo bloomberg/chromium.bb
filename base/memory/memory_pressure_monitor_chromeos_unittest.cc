@@ -6,9 +6,9 @@
 
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -79,7 +79,8 @@ TEST(ChromeOSMemoryPressureMonitorTest, CheckMemoryPressure) {
   if (base::SysInfo::IsRunningOnChromeOS())
     return;
 
-  base::MessageLoopForUI message_loop;
+  test::ScopedTaskEnvironment scoped_task_environment(
+      test::ScopedTaskEnvironment::MainThreadType::UI);
   std::unique_ptr<TestMemoryPressureMonitor> monitor(
       new TestMemoryPressureMonitor);
   std::unique_ptr<MemoryPressureListener> listener(
