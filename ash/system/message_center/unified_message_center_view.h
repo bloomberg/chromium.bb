@@ -19,7 +19,6 @@ class ScrollView;
 namespace ash {
 
 class MessageCenterScrollBar;
-class StackingNotificationCounterView;
 class UnifiedSystemTrayModel;
 class UnifiedSystemTrayView;
 
@@ -40,7 +39,6 @@ class StackingNotificationCounterView : public views::View {
 };
 
 // Manages scrolling of notification list.
-// TODO(tetsui): Rename to UnifiedMessageCenterView after old code is removed.
 class ASH_EXPORT UnifiedMessageCenterView
     : public views::View,
       public MessageCenterScrollBar::Observer,
@@ -60,6 +58,9 @@ class ASH_EXPORT UnifiedMessageCenterView
   // Configures MessageView to forward scroll events. Called from
   // UnifiedMessageListView.
   void ConfigureMessageView(message_center::MessageView* message_view);
+
+  // Count number of notifications that are above visible area.
+  int GetStackedNotificationCount() const;
 
   // views::View:
   void AddedToWidget() override;
@@ -92,9 +93,6 @@ class ASH_EXPORT UnifiedMessageCenterView
   // Notifies height below scroll to |parent_| so that it can update
   // TopCornerBorder.
   void NotifyHeightBelowScroll();
-
-  // Count number of notifications that are above visible area.
-  int GetStackedNotificationCount() const;
 
   UnifiedSystemTrayView* const parent_;
   StackingNotificationCounterView* const stacking_counter_;
