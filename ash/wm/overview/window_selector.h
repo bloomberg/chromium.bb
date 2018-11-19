@@ -236,6 +236,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
     return split_view_drag_indicators_.get();
   }
 
+  views::Widget* text_filter_widget() { return text_filter_widget_.get(); }
+
   int text_filter_bottom() const { return text_filter_bottom_; }
 
   EnterExitOverviewType enter_exit_overview_type() const {
