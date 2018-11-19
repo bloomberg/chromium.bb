@@ -448,6 +448,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "dcheck-is-fatal",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "debug-packed-apps",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -1204,6 +1209,11 @@
   },
   {
     "name": "enable-generic-sensor-extra-classes",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "enable-google-branded-context-menu",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
@@ -2479,6 +2489,11 @@
   },
   {
     "name": "num-raster-threads",
+    // "owners": [ "your-team" ],
+    "expiry_milestone": 76
+  },
+  {
+    "name": "oculus-vr",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
