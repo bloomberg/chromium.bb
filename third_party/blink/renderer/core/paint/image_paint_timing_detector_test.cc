@@ -231,6 +231,52 @@ TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_IgnoreTheRemoved) {
   EXPECT_EQ(LargestPaintStoredResult(), base::TimeTicks());
 }
 
+TEST_F(ImagePaintTimingDetectorTest,
+       LargestImagePaint_NodeRemovedBetweenRegistrationAndInvocation) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent">
+      <img id="target"></img>
+    </div>
+  )HTML");
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesForTest();
+
+  GetDocument().getElementById("parent")->RemoveChild(
+      GetDocument().getElementById("target"));
+
+  InvokeCallback();
+
+  ImageRecord* record;
+  record = FindLargestPaintCandidate();
+  EXPECT_FALSE(record);
+}
+
+TEST_F(ImagePaintTimingDetectorTest, LargestImagePaint_IgnoreReAttached) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="parent">
+    </div>
+  )HTML");
+  HTMLImageElement* image = HTMLImageElement::Create(GetDocument());
+  image->setAttribute("id", "target");
+  GetDocument().getElementById("parent")->AppendChild(image);
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  ImageRecord* record;
+  record = FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+
+  GetDocument().getElementById("parent")->RemoveChild(image);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  record = FindLargestPaintCandidate();
+  EXPECT_FALSE(record);
+
+  GetDocument().getElementById("parent")->AppendChild(image);
+  SetImageAndPaint("target", 5, 5);
+  UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
+  record = FindLargestPaintCandidate();
+  EXPECT_TRUE(record);
+}
+
 // This test dipicts a situation when a smaller image has loaded, but a larger
 // image is loading. When we call analyze, the result will be empty because
 // we don't know when the largest image will finish loading. We wait until
