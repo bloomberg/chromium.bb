@@ -584,7 +584,6 @@ class CONTENT_EXPORT RenderWidget
   void StopCompositor();
 
   void DoDeferredClose();
-  void NotifyOnClose();
 
   gfx::Size GetSizeForWebWidget() const;
   void ResizeWebWidget();
