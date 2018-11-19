@@ -185,19 +185,29 @@ void OnSessionStorageUsageInfo(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
+    bool perform_cleanup,
     base::OnceClosure callback,
     const std::vector<SessionStorageUsageInfo>& infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  base::OnceClosure done_callback =
+      perform_cleanup
+          ? base::BindOnce(
+                &DOMStorageContextWrapper::PerformSessionStorageCleanup,
+                dom_storage_context, std::move(callback))
+          : std::move(callback);
+
+  base::RepeatingClosure barrier =
+      base::BarrierClosure(infos.size(), std::move(done_callback));
+
   for (size_t i = 0; i < infos.size(); ++i) {
     if (!origin_matcher.is_null() &&
         !origin_matcher.Run(infos[i].origin, special_storage_policy.get())) {
+      barrier.Run();
       continue;
     }
-    dom_storage_context->DeleteSessionStorage(infos[i]);
+    dom_storage_context->DeleteSessionStorage(infos[i], barrier);
   }
-
-  std::move(callback).Run();
 }
 
 void ClearLocalStorageOnUIThread(
@@ -233,12 +243,13 @@ void ClearSessionStorageOnUIThread(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
+    bool perform_cleanup,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   dom_storage_context->GetSessionStorageUsage(base::BindOnce(
       &OnSessionStorageUsageInfo, dom_storage_context, special_storage_policy,
-      origin_matcher, std::move(callback)));
+      origin_matcher, perform_cleanup, std::move(callback)));
 }
 
 }  // namespace
@@ -1171,7 +1182,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       ClearSessionStorageOnUIThread(
           base::WrapRefCounted(dom_storage_context),
           base::WrapRefCounted(special_storage_policy), origin_matcher,
-          decrement_callback);
+          perform_cleanup, decrement_callback);
     }
   }
 

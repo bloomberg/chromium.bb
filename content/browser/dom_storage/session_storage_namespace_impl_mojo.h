@@ -133,7 +133,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // Removes data for the given origin from this namespace. If there is no data
   // map for that given origin, this does nothing. Expects that this namespace
   // is either populated or waiting for clone population.
-  void RemoveOriginData(const url::Origin& origin);
+  void RemoveOriginData(const url::Origin& origin, base::OnceClosure callback);
 
   // SessionStorageNamespace:
   // Connects the given database mojo request to the data map for the given
