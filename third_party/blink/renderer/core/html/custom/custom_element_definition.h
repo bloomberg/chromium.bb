@@ -103,6 +103,7 @@ class CORE_EXPORT CustomElementDefinition
   bool HasDefaultStyleSheets() const {
     return !default_style_sheets_.IsEmpty();
   }
+  bool DisableInternals() const { return disable_internals_; }
 
   class CORE_EXPORT ConstructionStackScope final {
     STACK_ALLOCATED();

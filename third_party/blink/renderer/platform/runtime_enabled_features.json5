@@ -399,6 +399,7 @@
     {
       // http://crbug.com/905922
       name: "ElementInternals",
+      status: "test",
     },
     {
       // https://crbug.com/879270

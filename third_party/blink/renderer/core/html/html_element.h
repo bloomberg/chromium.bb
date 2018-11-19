@@ -32,6 +32,7 @@ namespace blink {
 struct AttributeTriggers;
 class Color;
 class DocumentFragment;
+class ElementInternals;
 class ExceptionState;
 class FormAssociated;
 class HTMLFormElement;
@@ -129,6 +130,7 @@ class CORE_EXPORT HTMLElement : public Element {
 
   Element* unclosedOffsetParent();
 
+  ElementInternals* attachInternals(ExceptionState& exception_state);
   virtual FormAssociated* ToFormAssociatedOrNull() { return nullptr; };
 
  protected:

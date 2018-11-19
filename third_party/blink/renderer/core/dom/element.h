@@ -808,6 +808,8 @@ class CORE_EXPORT Element : public ContainerNode {
   // https://dom.spec.whatwg.org/#concept-element-is-value
   void SetIsValue(const AtomicString&);
   const AtomicString& IsValue() const;
+  void SetDidAttachInternals();
+  bool DidAttachInternals() const;
 
   bool ContainsFullScreenElement() const {
     return HasElementFlag(ElementFlags::kContainsFullScreenElement);
