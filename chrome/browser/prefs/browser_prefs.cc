@@ -381,6 +381,7 @@ const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
 // Deprecated 11/2018.
 const char kNetworkQualities[] = "net.network_qualities";
 const char kForceSessionSync[] = "settings.history_recorded";
+const char kOnboardDuringNUX[] = "browser.onboard_during_nux";
 
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
@@ -410,6 +411,7 @@ void RegisterProfilePrefsForMigration(
 
   registry->RegisterDictionaryPref(kNetworkQualities, PrefRegistry::LOSSY_PREF);
   registry->RegisterBooleanPref(kForceSessionSync, false);
+  registry->RegisterBooleanPref(kOnboardDuringNUX, false);
 }
 
 }  // namespace
@@ -873,4 +875,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 11/2018.
   profile_prefs->ClearPref(kNetworkQualities);
   profile_prefs->ClearPref(kForceSessionSync);
+  profile_prefs->ClearPref(kOnboardDuringNUX);
 }

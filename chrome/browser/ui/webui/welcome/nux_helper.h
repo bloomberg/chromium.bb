@@ -25,6 +25,15 @@ extern const base::FeatureParam<std::string>
 extern const base::FeatureParam<bool>
     kNuxOnboardingForceEnabledShowEmailInterstitial;
 
+// Get the group number for users who onboard in this experiment.
+// Groups are:
+//   - Specified by finch
+//   - The same for all experiments in finch
+//   - Incremented with each new version
+//   - Not reused
+//   - Cleared out when experiment ends
+int GetOnboardingGroup();
+
 bool IsNuxOnboardingEnabled(Profile* profile);
 
 base::DictionaryValue GetNuxOnboardingModules(Profile* profile);

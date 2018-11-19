@@ -470,9 +470,9 @@ void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // creation.
   registry->RegisterBooleanPref(prefs::kHasSeenWelcomePage, true);
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  // This  will be set to true for newly created profiles, and is used to
-  // indicate which users went through FRE after NUX is enabled.
-  registry->RegisterBooleanPref(prefs::kOnboardDuringNUX, false);
+  // This will be set to a group number for newly created profiles, and is used
+  // to indicate which users went through onboarding with the current group.
+  registry->RegisterIntegerPref(prefs::kNuxOnboardGroup, 0);
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 }
 
