@@ -662,7 +662,8 @@ void RenderWidget::OnClose() {
   DCHECK(content::RenderThread::Get());
   if (closing_)
     return;
-  NotifyOnClose();
+  for (auto& observer : render_frames_)
+    observer.WidgetWillClose();
   closing_ = true;
 
   // Browser correspondence is no longer needed at this point.
@@ -1604,15 +1605,7 @@ void RenderWidget::SetIsFrozen(bool is_frozen) {
 }
 
 void RenderWidget::DoDeferredClose() {
-  // Prevent compositor from setting up new IPC channels, since we know a
-  // WidgetMsg_Close is coming.
-  host_will_close_this_ = true;
   Send(new WidgetHostMsg_Close(routing_id_));
-}
-
-void RenderWidget::NotifyOnClose() {
-  for (auto& observer : render_frames_)
-    observer.WidgetWillClose();
 }
 
 void RenderWidget::CloseWidgetSoon() {
@@ -1625,9 +1618,17 @@ void RenderWidget::CloseWidgetSoon() {
     return;
   }
 
+  // Prevent compositor from setting up new IPC channels, since we know a
+  // WidgetMsg_Close is coming. We do this immediately, not in DoDeferredClose,
+  // as the caller (eg WebPagePopupImpl) may start tearing down things after
+  // calling this method, including detaching the frame from this RenderWidget.
+  // Then trying to make a LayerTreeFrameSink would crash.
+  // https://crbug.com/906340
+  host_will_close_this_ = true;
+
   // If a page calls window.close() twice, we'll end up here twice, but that's
   // OK.  It is safe to send multiple Close messages.
-
+  //
   // Ask the RenderWidgetHost to initiate close.  We could be called from deep
   // in Javascript.  If we ask the RendwerWidgetHost to close now, the window
   // could be closed before the JS finishes executing.  So instead, post a
