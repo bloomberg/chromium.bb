@@ -64,10 +64,10 @@ class WindowTransientDescendantIteratorRange {
   const WindowTransientDescendantIterator& end() const { return end_; }
 
  private:
-  // Explicit assignment operator defined because an explicit copy constructor
-  // is needed and therefore the DISALLOW_COPY_AND_ASSIGN macro cannot be used.
+  // Because the explicit copy constructor is needed, explicitly delete the
+  // assignment operator rather than using DISALLOW_COPY_AND_ASSIGN.
   WindowTransientDescendantIteratorRange& operator=(
-      const WindowTransientDescendantIteratorRange& other) = default;
+      const WindowTransientDescendantIteratorRange& other) = delete;
 
   WindowTransientDescendantIterator begin_;
   WindowTransientDescendantIterator end_;
