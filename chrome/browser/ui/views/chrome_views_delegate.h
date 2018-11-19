@@ -35,11 +35,9 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
                                ui::WindowShowState* show_state) const override;
   void NotifyAccessibilityEvent(views::View* view,
                                 ax::mojom::Event event_type) override;
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS)
   ProcessMenuAcceleratorResult ProcessAcceleratorWhileMenuShowing(
       const ui::Accelerator& accelerator) override;
-#endif
-#if defined(OS_CHROMEOS)
   views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget) override;
 #endif
