@@ -2814,7 +2814,7 @@ def CMDgetdep(parser, args):
                     dest='vars', metavar='VAR', default=[],
                     help='Gets the value of a given variable.')
   parser.add_option('-r', '--revision', action='append',
-                    dest='revisions', metavar='DEP', default=[],
+                    dest='getdep_revisions', metavar='DEP', default=[],
                     help='Gets the revision/version for the given dependency. '
                          'If it is a git dependency, dep must be a path. If it '
                          'is a CIPD dependency, dep must be of the form '
@@ -2831,12 +2831,21 @@ def CMDgetdep(parser, args):
         'DEPS file %s does not exist.' % options.deps_file)
   with open(options.deps_file) as f:
     contents = f.read()
-  local_scope = gclient_eval.Exec(contents, options.deps_file)
+  client = GClient.LoadCurrentConfig(options)
+  if client is not None:
+    builtin_vars = client.get_builtin_vars()
+  else:
+    logging.warn(
+        'Couldn\'t find a valid gclient config. Will attempt to parse the DEPS '
+        'file without support for built-in variables.')
+    builtin_vars = None
+  local_scope = gclient_eval.Exec(contents, options.deps_file,
+                                  builtin_vars=builtin_vars)
 
   for var in options.vars:
     print(gclient_eval.GetVar(local_scope, var))
 
-  for name in options.revisions:
+  for name in options.getdep_revisions:
     if ':' in name:
       name, _, package = name.partition(':')
       if not name or not package:
@@ -2856,7 +2865,7 @@ def CMDsetdep(parser, args):
                     help='Sets a variable to the given value with the format '
                          'name=value.')
   parser.add_option('-r', '--revision', action='append',
-                    dest='revisions', metavar='DEP@REV', default=[],
+                    dest='setdep_revisions', metavar='DEP@REV', default=[],
                     help='Sets the revision/version for the dependency with '
                          'the format dep@rev. If it is a git dependency, dep '
                          'must be a path and rev must be a git hash or '
@@ -2881,7 +2890,18 @@ def CMDsetdep(parser, args):
         'DEPS file %s does not exist.' % options.deps_file)
   with open(options.deps_file) as f:
     contents = f.read()
-  local_scope = gclient_eval.Exec(contents, options.deps_file)
+
+  client = GClient.LoadCurrentConfig(options)
+  if client is not None:
+    builtin_vars = client.get_builtin_vars()
+  else:
+    logging.warn(
+        'Couldn\'t find a valid gclient config. Will attempt to parse the DEPS '
+        'file without support for built-in variables.')
+    builtin_vars = None
+
+  local_scope = gclient_eval.Exec(contents, options.deps_file,
+                                  builtin_vars=builtin_vars)
 
   for var in options.vars:
     name, _, value = var.partition('=')
@@ -2893,7 +2913,7 @@ def CMDsetdep(parser, args):
     else:
       gclient_eval.AddVar(local_scope, name, value)
 
-  for revision in options.revisions:
+  for revision in options.setdep_revisions:
     name, _, value = revision.partition('@')
     if not name or not value:
       parser.error(

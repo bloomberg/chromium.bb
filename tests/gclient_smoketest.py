@@ -903,7 +903,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(fake_deps) as f:
       contents = f.read().splitlines()
 
-    self.assertEqual('', results[1])
+    self.assertEqual('', results[1], results[1])
     self.assertEqual(0, results[2])
     self.assertEqual([
           'vars = { ',
@@ -916,6 +916,57 @@ class GClientSmokeGIT(GClientSmokeBase):
           '  },',
           '  "bar": "url@new_bar",',
           '}',
+    ], contents)
+
+  def testSetDep_BuiltinVariables(self):
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    fake_deps = os.path.join(self.root_dir, 'DEPS.fake')
+    with open(fake_deps, 'w') as f:
+      f.write('\n'.join([
+          'vars = { ',
+          '  "foo_var": "foo_val",',
+          '  "foo_rev": "foo_rev",',
+          '}',
+          'deps = {',
+          '  "foo": {',
+          '    "url": "url@{foo_rev}",',
+          '  },',
+          '  "bar": "url@bar_rev",',
+          '}',
+          'hooks = [{',
+          '  "name": "uses_builtin_var",',
+          '  "pattern": ".",',
+          '  "action": ["python", "fake.py",',
+          '             "--with-android={checkout_android}"],',
+          '}]',
+      ]))
+
+    results = self.gclient([
+        'setdep', '-r', 'foo@new_foo', '-r', 'bar@new_bar',
+        '--var', 'foo_var=new_val', '--deps-file', fake_deps])
+
+    with open(fake_deps) as f:
+      contents = f.read().splitlines()
+
+    self.assertEqual('', results[1], results[1])
+    self.assertEqual(0, results[2])
+    self.assertEqual([
+          'vars = { ',
+          '  "foo_var": "new_val",',
+          '  "foo_rev": "new_foo",',
+          '}',
+          'deps = {',
+          '  "foo": {',
+          '    "url": "url@{foo_rev}",',
+          '  },',
+          '  "bar": "url@new_bar",',
+          '}',
+          'hooks = [{',
+          '  "name": "uses_builtin_var",',
+          '  "pattern": ".",',
+          '  "action": ["python", "fake.py",',
+          '             "--with-android={checkout_android}"],',
+          '}]',
     ], contents)
 
   def testGetDep(self):
@@ -932,6 +983,41 @@ class GClientSmokeGIT(GClientSmokeBase):
           '  },',
           '  "bar": "url@bar_rev",',
           '}',
+      ]))
+
+    results = self.gclient([
+        'getdep', '-r', 'foo', '-r', 'bar','--var', 'foo_var',
+        '--deps-file', fake_deps])
+
+    self.assertEqual('', results[1])
+    self.assertEqual([
+        'foo_val',
+        'foo_rev',
+        'bar_rev',
+    ], results[0].splitlines())
+    self.assertEqual(0, results[2])
+
+  def testGetDep_BuiltinVariables(self):
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    fake_deps = os.path.join(self.root_dir, 'DEPS.fake')
+    with open(fake_deps, 'w') as f:
+      f.write('\n'.join([
+          'vars = { ',
+          '  "foo_var": "foo_val",',
+          '  "foo_rev": "foo_rev",',
+          '}',
+          'deps = {',
+          '  "foo": {',
+          '    "url": "url@{foo_rev}",',
+          '  },',
+          '  "bar": "url@bar_rev",',
+          '}',
+          'hooks = [{',
+          '  "name": "uses_builtin_var",',
+          '  "pattern": ".",',
+          '  "action": ["python", "fake.py",',
+          '             "--with-android={checkout_android}"],',
+          '}]',
       ]))
 
     results = self.gclient([
