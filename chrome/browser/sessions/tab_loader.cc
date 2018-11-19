@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -26,6 +27,18 @@ using content::WebContents;
 using resource_coordinator::TabLoadTracker;
 
 namespace {
+
+void BackgroundTracingTrigger() {
+  static content::BackgroundTracingManager::TriggerHandle trigger_handle_ = -1;
+  if (trigger_handle_ == -1) {
+    trigger_handle_ =
+        content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
+            "session-restore-config");
+  }
+  content::BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+      trigger_handle_,
+      content::BackgroundTracingManager::StartedFinalizingCallback());
+}
 
 const base::TickClock* GetDefaultTickClock() {
   static base::NoDestructor<base::DefaultTickClock> default_tick_clock;
@@ -79,6 +92,10 @@ void TabLoader::RestoreTabs(const std::vector<RestoredTab>& tabs,
                             const base::TimeTicks& restore_started) {
   if (tabs.empty())
     return;
+
+  // Trigger a slow-reports and collect a session restore trace if needed.
+  BackgroundTracingTrigger();
+  TRACE_EVENT0("browser", "TabLoader::RestoreTabs");
 
   if (!shared_tab_loader_)
     shared_tab_loader_ = new TabLoader(restore_started);
@@ -172,6 +189,7 @@ void TabLoader::SetTabLoadingEnabled(bool loading_enabled) {
 void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
   DCHECK(!tabs.empty());
   ReentrancyHelper lifetime_helper(this);
+  TRACE_EVENT1("browser", "TabLoader::StartLoading", "tabs_count", tabs.size());
 
   // Create a TabLoaderDelegate which will allow OS specific behavior for tab
   // loading. This needs to be done before any calls to AddTab, as the delegate
@@ -221,6 +239,7 @@ void TabLoader::OnLoadingStateChange(WebContents* contents,
                                      LoadingState old_loading_state,
                                      LoadingState new_loading_state) {
   ReentrancyHelper lifetime_helper(this);
+  TRACE_EVENT0("browser", "TabLoader::OnLoadingStateChange");
 
   // Calls into this can come from observers that are still running even if
   // |is_loading_enabled_| is false.
@@ -263,6 +282,8 @@ void TabLoader::OnStopTracking(WebContents* web_contents,
 void TabLoader::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   ReentrancyHelper lifetime_helper(this);
+  TRACE_EVENT0("browser", "TabLoader::OnMemoryPressure");
+
   switch (memory_pressure_level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
       break;
@@ -362,6 +383,7 @@ void TabLoader::RemoveTab(WebContents* contents) {
 
 void TabLoader::MarkTabAsLoadInitiated(WebContents* contents) {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
+  TRACE_EVENT0("browser", "TabLoader::MarkTabAsLoadInitiated");
 
   // This can only be called for a tab that is waiting to be loaded so this
   // should never fail.
@@ -379,6 +401,7 @@ void TabLoader::MarkTabAsLoadInitiated(WebContents* contents) {
 
 void TabLoader::MarkTabAsLoading(WebContents* contents) {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
+  TRACE_EVENT0("browser", "TabLoader::MarkTabAsLoading");
 
   // Calls into this can come from observers that are still running even if
   // |is_loading_enabled_| is false.
@@ -413,6 +436,7 @@ void TabLoader::MarkTabAsLoading(WebContents* contents) {
 
 void TabLoader::MarkTabAsDeferred(content::WebContents* contents) {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
+  TRACE_EVENT0("browser", "TabLoader::MarkTabAsDeferred");
 
   // This can only be called for a tab that is waiting to be loaded so this
   // should never fail.
@@ -424,6 +448,7 @@ void TabLoader::MarkTabAsDeferred(content::WebContents* contents) {
 
 void TabLoader::MaybeLoadSomeTabs() {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
+  TRACE_EVENT0("browser", "TabLoader::MaybeLoadSomeTabs");
 
   if (!is_loading_enabled_ || tabs_to_load_.empty())
     return;
@@ -437,6 +462,7 @@ void TabLoader::MaybeLoadSomeTabs() {
 
 void TabLoader::ForceLoadTimerFired() {
   ReentrancyHelper lifetime_helper(this);
+  TRACE_EVENT0("browser", "TabLoader::ForceLoadTimerFired");
 
   // CheckInvariants can't be called directly as the timer is no longer
   // running at this point. However, the conditions under which the timer
@@ -468,6 +494,7 @@ void TabLoader::ForceLoadTimerFired() {
 
 void TabLoader::StopLoadingTabs() {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
+  TRACE_EVENT0("browser", "TabLoader::StopLoadingTabs");
 
   // Calls into this can come from observers that are still running even if
   // |is_loading_enabled_| is false.
@@ -508,6 +535,7 @@ content::WebContents* TabLoader::GetNextTabToLoad() {
 void TabLoader::LoadNextTab(bool due_to_timeout) {
   DCHECK(reentry_depth_ > 0);  // This can only be called internally.
   DCHECK(!tabs_to_load_.empty());
+  TRACE_EVENT0("browser", "TabLoader::LoadNextTab");
 
   // This is checked before loading every single tab to ensure that responses
   // to memory pressure are immediate.
