@@ -73,6 +73,7 @@ namespace http://www.w3.org/1999/xhtml
     property ariaValueNow
     property ariaValueText
     property assignedSlot
+    property attachInternals
     property attachShadow
     property attributeStyleMap
     property attributes

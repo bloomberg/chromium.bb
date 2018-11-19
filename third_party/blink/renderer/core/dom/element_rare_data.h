@@ -155,6 +155,8 @@ class ElementRareData : public NodeRareData {
   }
   void SetIsValue(const AtomicString& is_value) { is_value_ = is_value; }
   const AtomicString& IsValue() const { return is_value_; }
+  void SetDidAttachInternals() { did_attach_internals_ = true; }
+  bool DidAttachInternals() const { return did_attach_internals_; }
 
   AccessibleNode* GetAccessibleNode() const { return accessible_node_.Get(); }
   AccessibleNode* EnsureAccessibleNode(Element* owner_element) {
@@ -235,6 +237,7 @@ class ElementRareData : public NodeRareData {
   TraceWrapperMember<AccessibleNode> accessible_node_;
 
   WeakMember<DisplayLockContext> display_lock_context_;
+  bool did_attach_internals_ = false;
 
   explicit ElementRareData(NodeRenderingData*);
 };

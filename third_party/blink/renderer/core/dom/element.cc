@@ -2666,6 +2666,14 @@ const AtomicString& Element::IsValue() const {
   return g_null_atom;
 }
 
+void Element::SetDidAttachInternals() {
+  EnsureElementRareData().SetDidAttachInternals();
+}
+
+bool Element::DidAttachInternals() const {
+  return HasRareData() && GetElementRareData()->DidAttachInternals();
+}
+
 ShadowRoot* Element::createShadowRoot(ExceptionState& exception_state) {
   if (ShadowRoot* root = GetShadowRoot()) {
     if (root->IsUserAgent()) {

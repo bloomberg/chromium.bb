@@ -58,6 +58,10 @@ interface HTMLElement : Element {
     // https://drafts.csswg.org/cssom/#the-elementcssinlinestyle-interface
     [Affects=Nothing, SameObject, PerWorldBindings, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 
+    // Form-associated custom elements
+    // https://docs.google.com/document/d/1JO8puctCSpW-ZYGU8lF-h4FWRIDQNDVexzHoOQ2iQmY/edit?pli=1#heading=h.pjt9nhs3gu3k
+    [RuntimeEnabled=ElementInternals, RaisesException] ElementInternals attachInternals();
+
     // Non-standard APIs
     [Affects=Nothing, CEReactions, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute ([TreatNullAs=EmptyString] DOMString or TrustedScript) innerText;
     [Affects=Nothing, CEReactions, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute [TreatNullAs=EmptyString] DOMString outerText;

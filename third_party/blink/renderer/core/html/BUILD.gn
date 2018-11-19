@@ -68,6 +68,8 @@ blink_core_sources("html") {
     "custom/custom_element_upgrade_reaction.h",
     "custom/custom_element_upgrade_sorter.cc",
     "custom/custom_element_upgrade_sorter.h",
+    "custom/element_internals.cc",
+    "custom/element_internals.h",
     "custom/v0_custom_element.cc",
     "custom/v0_custom_element.h",
     "custom/v0_custom_element_async_import_microtask_queue.cc",

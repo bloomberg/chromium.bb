@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
@@ -51,6 +52,9 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
+#include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
@@ -1405,6 +1409,32 @@ void HTMLElement::OnTabIndexAttrChanged(
 void HTMLElement::OnXMLLangAttrChanged(
     const AttributeModificationParams& params) {
   Element::ParseAttribute(params);
+}
+
+ElementInternals* HTMLElement::attachInternals(
+    ExceptionState& exception_state) {
+  auto* definition =
+      CustomElement::Registry(*this)->DefinitionForName(localName());
+  if (!definition) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Unable to attach ElementInternals to non-custom elements.");
+    return nullptr;
+  }
+  if (definition->DisableInternals()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "ElementInternals is disabled by disabledFeature static field.");
+    return nullptr;
+  }
+  if (DidAttachInternals()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "ElementInternals for the specified element was already attached.");
+    return nullptr;
+  }
+  SetDidAttachInternals();
+  return MakeGarbageCollected<ElementInternals>(*this);
 }
 
 }  // namespace blink
