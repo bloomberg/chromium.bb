@@ -73,6 +73,8 @@ const char MediaRouterMetrics::kHistogramStartLocalPosition[] =
     "MediaRouter.Ui.Action.StartLocalPosition";
 const char MediaRouterMetrics::kHistogramStartLocalSessionSuccessful[] =
     "MediaRouter.Ui.Action.StartLocalSessionSuccessful";
+const char MediaRouterMetrics::kHistogramStopRoute[] =
+    "MediaRouter.Ui.Action.StopRoute";
 const char MediaRouterMetrics::kHistogramUiDeviceCount[] =
     "MediaRouter.Ui.Device.Count";
 const char MediaRouterMetrics::kHistogramUiDialogPaint[] =
@@ -196,6 +198,18 @@ void MediaRouterMetrics::RecordStartLocalSessionLatency(
 // static
 void MediaRouterMetrics::RecordStartLocalSessionSuccessful(bool success) {
   UMA_HISTOGRAM_BOOLEAN(kHistogramStartLocalSessionSuccessful, success);
+}
+
+// static
+void MediaRouterMetrics::RecordStopLocalRoute() {
+  // Local routes have the enum value 0.
+  UMA_HISTOGRAM_BOOLEAN(kHistogramStopRoute, 0);
+}
+
+// static
+void MediaRouterMetrics::RecordStopRemoteRoute() {
+  // Remote routes have the enum value 1.
+  UMA_HISTOGRAM_BOOLEAN(kHistogramStopRoute, 1);
 }
 
 // static

@@ -25,8 +25,8 @@ namespace {
 // Returns true if |issue| is associated with |ui_sink|.
 bool IssueMatches(const Issue& issue, const UIMediaSink& ui_sink) {
   return issue.info().sink_id == ui_sink.id ||
-         (!issue.info().route_id.empty() &&
-          issue.info().route_id == ui_sink.route_id);
+         (!issue.info().route_id.empty() && ui_sink.route &&
+          issue.info().route_id == ui_sink.route->media_route_id());
 }
 
 base::string16 GetSinkFriendlyName(const MediaSink& sink) {
@@ -139,7 +139,7 @@ UIMediaSink MediaRouterViewsUI::ConvertToUISink(
 
   if (route) {
     ui_sink.status_text = base::UTF8ToUTF16(route->description());
-    ui_sink.route_id = route->media_route_id();
+    ui_sink.route = *route;
     ui_sink.state = terminating_route_id_ && route->media_route_id() ==
                                                  terminating_route_id_.value()
                         ? UIMediaSinkState::DISCONNECTING

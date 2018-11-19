@@ -259,6 +259,20 @@ TEST(MediaRouterMetricsTest, RecordStartLocalSessionSuccessful) {
       MediaRouterMetrics::kHistogramStartLocalSessionSuccessful);
 }
 
+TEST(MediaRouterMetricsTest, RecordStopRoute) {
+  base::HistogramTester tester;
+  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramStopRoute, 0);
+
+  MediaRouterMetrics::RecordStopLocalRoute();
+  MediaRouterMetrics::RecordStopRemoteRoute();
+  MediaRouterMetrics::RecordStopLocalRoute();
+
+  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramStopRoute, 3);
+  EXPECT_THAT(tester.GetAllSamples(MediaRouterMetrics::kHistogramStopRoute),
+              ElementsAre(Bucket(/* Local route */ 0, 2),
+                          Bucket(/* Remote route */ 1, 1)));
+}
+
 TEST(MediaRouterMetricsTest, RecordSearchSinkOutcome) {
   TestRecordBooleanMetric(
       base::BindRepeating(&MediaRouterMetrics::RecordSearchSinkOutcome),

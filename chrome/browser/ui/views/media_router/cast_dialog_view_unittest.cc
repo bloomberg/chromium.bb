@@ -51,7 +51,8 @@ UIMediaSink CreateConnectedSink() {
   sink.id = "sink_connected";
   sink.state = UIMediaSinkState::CONNECTED;
   sink.cast_modes = {TAB_MIRROR};
-  sink.route_id = "route_id";
+  sink.route = MediaRoute("route_id", MediaSource("https://example.com"),
+                          sink.id, "", true, true);
   return sink;
 }
 
@@ -196,8 +197,8 @@ TEST_F(CastDialogViewTest, StopCasting) {
   CastDialogModel model =
       CreateModelWithSinks({CreateAvailableSink(), CreateConnectedSink()});
   InitializeDialogWithModel(model);
-
-  EXPECT_CALL(controller_, StopCasting(model.media_sinks()[1].route_id));
+  EXPECT_CALL(controller_,
+              StopCasting(model.media_sinks()[1].route->media_route_id()));
   SinkPressedAtIndex(1);
 }
 
