@@ -240,7 +240,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '69b44ee6a1269afb5c7622189de236af0c4ec2a7',
+  'dawn_revision': '391c8a9224e5bf02690722c06973af8427bdaa6b',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -572,7 +572,7 @@ deps = {
     Var('dawn_git') + '/dawn.git' + '@' +  Var('dawn_revision'),
 
   'src/third_party/glfw/src':
-    Var('chromium_git') + '/external/github.com/glfw/glfw.git@' +  '096efdf798896cff80a0b2db08d7398b703406fe',
+    Var('chromium_git') + '/external/github.com/glfw/glfw.git@' +  '2de2589f910b1a85905f425be4d32f33cec092df',
 
   'src/third_party/apache-portable-runtime/src': {
       'url': Var('chromium_git') + '/external/apache-portable-runtime.git' + '@' + 'c3f11fcd86b42922834cae91103cf068246c6bb6',
