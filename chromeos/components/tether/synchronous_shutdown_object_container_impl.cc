@@ -144,7 +144,6 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
           device_sync_client,
           secure_channel_client,
           active_host_.get(),
-          asychronous_container->ble_connection_manager(),
           master_host_scan_cache_.get(),
           device_id_tether_network_guid_map_.get())),
       hotspot_usage_duration_tracker_(
@@ -163,7 +162,6 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
           network_state_handler_,
           session_manager,
           asychronous_container->tether_host_fetcher(),
-          asychronous_container->ble_connection_manager(),
           host_scan_device_prioritizer_.get(),
           tether_host_response_recorder_.get(),
           gms_core_notifications_state_tracker,
@@ -178,7 +176,6 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
                                                   session_manager)),
       host_connection_metrics_logger_(
           std::make_unique<HostConnectionMetricsLogger>(
-              asychronous_container->ble_connection_manager(),
               active_host_.get())),
       tether_connector_(std::make_unique<TetherConnectorImpl>(
           device_sync_client,
@@ -187,7 +184,6 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
           wifi_hotspot_connector_.get(),
           active_host_.get(),
           asychronous_container->tether_host_fetcher(),
-          asychronous_container->ble_connection_manager(),
           tether_host_response_recorder_.get(),
           device_id_tether_network_guid_map_.get(),
           master_host_scan_cache_.get(),

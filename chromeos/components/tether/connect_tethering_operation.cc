@@ -40,7 +40,6 @@ ConnectTetheringOperation::Factory::NewInstance(
     cryptauth::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
-    BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required) {
   if (!factory_instance_) {
@@ -48,7 +47,7 @@ ConnectTetheringOperation::Factory::NewInstance(
   }
   return factory_instance_->BuildInstance(
       device_to_connect, device_sync_client, secure_channel_client,
-      connection_manager, tether_host_response_recorder, setup_required);
+      tether_host_response_recorder, setup_required);
 }
 
 // static
@@ -62,27 +61,24 @@ ConnectTetheringOperation::Factory::BuildInstance(
     cryptauth::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
-    BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required) {
   return base::WrapUnique(new ConnectTetheringOperation(
       device_to_connect, device_sync_client, secure_channel_client,
-      connection_manager, tether_host_response_recorder, setup_required));
+      tether_host_response_recorder, setup_required));
 }
 
 ConnectTetheringOperation::ConnectTetheringOperation(
     cryptauth::RemoteDeviceRef device_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
-    BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required)
     : MessageTransferOperation(
           cryptauth::RemoteDeviceRefList{device_to_connect},
           secure_channel::ConnectionPriority::kHigh,
           device_sync_client,
-          secure_channel_client,
-          connection_manager),
+          secure_channel_client),
       remote_device_(device_to_connect),
       tether_host_response_recorder_(tether_host_response_recorder),
       clock_(base::DefaultClock::GetInstance()),

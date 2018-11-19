@@ -32,11 +32,6 @@ class FakeAsynchronousShutdownObjectContainer
     tether_host_fetcher_ = tether_host_fetcher;
   }
 
-  void set_ble_connection_manager(
-      BleConnectionManager* ble_connection_manager) {
-    ble_connection_manager_ = ble_connection_manager;
-  }
-
   void set_disconnect_tethering_request_sender(
       DisconnectTetheringRequestSender* disconnect_tethering_request_sender) {
     disconnect_tethering_request_sender_ = disconnect_tethering_request_sender;
@@ -55,7 +50,6 @@ class FakeAsynchronousShutdownObjectContainer
   // AsynchronousShutdownObjectContainer:
   void Shutdown(const base::Closure& shutdown_complete_callback) override;
   TetherHostFetcher* tether_host_fetcher() override;
-  BleConnectionManager* ble_connection_manager() override;
   DisconnectTetheringRequestSender* disconnect_tethering_request_sender()
       override;
   NetworkConfigurationRemover* network_configuration_remover() override;
@@ -66,7 +60,6 @@ class FakeAsynchronousShutdownObjectContainer
   base::Closure shutdown_complete_callback_;
 
   TetherHostFetcher* tether_host_fetcher_ = nullptr;
-  BleConnectionManager* ble_connection_manager_ = nullptr;
   DisconnectTetheringRequestSender* disconnect_tethering_request_sender_ =
       nullptr;
   NetworkConfigurationRemover* network_configuration_remover_ = nullptr;

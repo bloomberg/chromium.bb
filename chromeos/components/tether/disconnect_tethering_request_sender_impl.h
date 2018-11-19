@@ -23,7 +23,6 @@ class SecureChannelClient;
 
 namespace tether {
 
-class BleConnectionManager;
 class TetherHostFetcher;
 
 class DisconnectTetheringRequestSenderImpl
@@ -35,7 +34,6 @@ class DisconnectTetheringRequestSenderImpl
     static std::unique_ptr<DisconnectTetheringRequestSender> NewInstance(
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
-        BleConnectionManager* ble_connection_manager,
         TetherHostFetcher* tether_host_fetcher);
 
     static void SetInstanceForTesting(Factory* factory);
@@ -44,7 +42,6 @@ class DisconnectTetheringRequestSenderImpl
     virtual std::unique_ptr<DisconnectTetheringRequestSender> BuildInstance(
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
-        BleConnectionManager* ble_connection_manager,
         TetherHostFetcher* tether_host_fetcher);
 
    private:
@@ -64,7 +61,6 @@ class DisconnectTetheringRequestSenderImpl
   DisconnectTetheringRequestSenderImpl(
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
-      BleConnectionManager* ble_connection_manager,
       TetherHostFetcher* tether_host_fetcher);
 
  private:
@@ -74,7 +70,6 @@ class DisconnectTetheringRequestSenderImpl
 
   device_sync::DeviceSyncClient* device_sync_client_;
   secure_channel::SecureChannelClient* secure_channel_client_;
-  BleConnectionManager* ble_connection_manager_;
   TetherHostFetcher* tether_host_fetcher_;
 
   int num_pending_host_fetches_ = 0;

@@ -7,7 +7,6 @@
 #include <memory>
 #include <set>
 
-#include "chromeos/chromeos_features.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/timer_factory.h"
@@ -95,8 +94,7 @@ MessageTransferOperation::MessageTransferOperation(
     const cryptauth::RemoteDeviceRefList& devices_to_connect,
     secure_channel::ConnectionPriority connection_priority,
     device_sync::DeviceSyncClient* device_sync_client,
-    secure_channel::SecureChannelClient* secure_channel_client,
-    BleConnectionManager* connection_manager)
+    secure_channel::SecureChannelClient* secure_channel_client)
     : remote_devices_(RemoveDuplicatesFromVector(devices_to_connect)),
       device_sync_client_(device_sync_client),
       secure_channel_client_(secure_channel_client),

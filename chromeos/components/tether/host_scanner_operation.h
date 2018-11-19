@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
-#include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/message_transfer_operation.h"
 #include "components/cryptauth/remote_device_ref.h"
 
@@ -45,7 +44,6 @@ class HostScannerOperation : public MessageTransferOperation {
         const cryptauth::RemoteDeviceRefList& devices_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
-        BleConnectionManager* connection_manager,
         HostScanDevicePrioritizer* host_scan_device_prioritizer,
         TetherHostResponseRecorder* tether_host_response_recorder,
         ConnectionPreserver* connection_preserver);
@@ -57,7 +55,6 @@ class HostScannerOperation : public MessageTransferOperation {
         const cryptauth::RemoteDeviceRefList& devices_to_connect,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
-        BleConnectionManager* connection_manager,
         HostScanDevicePrioritizer* host_scan_device_prioritizer,
         TetherHostResponseRecorder* tether_host_response_recorder,
         ConnectionPreserver* connection_preserver);
@@ -103,7 +100,6 @@ class HostScannerOperation : public MessageTransferOperation {
       const cryptauth::RemoteDeviceRefList& devices_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
-      BleConnectionManager* connection_manager,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
       TetherHostResponseRecorder* tether_host_response_recorder,
       ConnectionPreserver* connection_preserver);

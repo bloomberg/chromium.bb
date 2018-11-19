@@ -79,7 +79,7 @@ class DisconnectTetheringOperationTest : public testing::Test {
 
     operation_ = base::WrapUnique(new DisconnectTetheringOperation(
         test_device_, fake_device_sync_client_.get(),
-        fake_secure_channel_client_.get(), fake_ble_connection_manager_.get()));
+        fake_secure_channel_client_.get()));
 
     test_observer_ = base::WrapUnique(new TestObserver());
     operation_->AddObserver(test_observer_.get());

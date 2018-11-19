@@ -30,7 +30,6 @@ HostScannerImpl::HostScannerImpl(
     NetworkStateHandler* network_state_handler,
     session_manager::SessionManager* session_manager,
     TetherHostFetcher* tether_host_fetcher,
-    BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
     TetherHostResponseRecorder* tether_host_response_recorder,
     GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker,
@@ -44,7 +43,6 @@ HostScannerImpl::HostScannerImpl(
       network_state_handler_(network_state_handler),
       session_manager_(session_manager),
       tether_host_fetcher_(tether_host_fetcher),
-      connection_manager_(connection_manager),
       host_scan_device_prioritizer_(host_scan_device_prioritizer),
       tether_host_response_recorder_(tether_host_response_recorder),
       gms_core_notifications_state_tracker_(
@@ -106,8 +104,8 @@ void HostScannerImpl::OnTetherHostsFetched(
 
   host_scanner_operation_ = HostScannerOperation::Factory::NewInstance(
       tether_hosts, device_sync_client_, secure_channel_client_,
-      connection_manager_, host_scan_device_prioritizer_,
-      tether_host_response_recorder_, connection_preserver_);
+      host_scan_device_prioritizer_, tether_host_response_recorder_,
+      connection_preserver_);
   // Add |gms_core_notifications_state_tracker_| as the first observer. When the
   // final change event is emitted, this class will destroy
   // |host_scanner_operation_|, so |gms_core_notifications_state_tracker_| must

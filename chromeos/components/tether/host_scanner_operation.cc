@@ -85,7 +85,6 @@ HostScannerOperation::Factory::NewInstance(
     const cryptauth::RemoteDeviceRefList& devices_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
-    BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
     TetherHostResponseRecorder* tether_host_response_recorder,
     ConnectionPreserver* connection_preserver) {
@@ -94,8 +93,8 @@ HostScannerOperation::Factory::NewInstance(
   }
   return factory_instance_->BuildInstance(
       devices_to_connect, device_sync_client, secure_channel_client,
-      connection_manager, host_scan_device_prioritizer,
-      tether_host_response_recorder, connection_preserver);
+      host_scan_device_prioritizer, tether_host_response_recorder,
+      connection_preserver);
 }
 
 // static
@@ -108,14 +107,13 @@ HostScannerOperation::Factory::BuildInstance(
     const cryptauth::RemoteDeviceRefList& devices_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
-    BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
     TetherHostResponseRecorder* tether_host_response_recorder,
     ConnectionPreserver* connection_preserver) {
   return base::WrapUnique(new HostScannerOperation(
       devices_to_connect, device_sync_client, secure_channel_client,
-      connection_manager, host_scan_device_prioritizer,
-      tether_host_response_recorder, connection_preserver));
+      host_scan_device_prioritizer, tether_host_response_recorder,
+      connection_preserver));
 }
 
 HostScannerOperation::ScannedDeviceInfo::ScannedDeviceInfo(
@@ -140,7 +138,6 @@ HostScannerOperation::HostScannerOperation(
     const cryptauth::RemoteDeviceRefList& devices_to_connect,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
-    BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
     TetherHostResponseRecorder* tether_host_response_recorder,
     ConnectionPreserver* connection_preserver)
@@ -148,8 +145,7 @@ HostScannerOperation::HostScannerOperation(
           PrioritizeDevices(devices_to_connect, host_scan_device_prioritizer),
           secure_channel::ConnectionPriority::kLow,
           device_sync_client,
-          secure_channel_client,
-          connection_manager),
+          secure_channel_client),
       tether_host_response_recorder_(tether_host_response_recorder),
       connection_preserver_(connection_preserver),
       clock_(base::DefaultClock::GetInstance()),

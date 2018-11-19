@@ -138,7 +138,7 @@ class ConnectTetheringOperationTest : public testing::Test {
 
     operation_ = base::WrapUnique(new ConnectTetheringOperation(
         test_device_, fake_device_sync_client_.get(),
-        fake_secure_channel_client_.get(), fake_ble_connection_manager_.get(),
+        fake_secure_channel_client_.get(),
         mock_tether_host_response_recorder_.get(), false /* setup_required */));
     operation_->AddObserver(test_observer_.get());
 
@@ -318,7 +318,7 @@ TEST_F(ConnectTetheringOperationTest, DISABLED_TestCannotConnect) {
 TEST_F(ConnectTetheringOperationTest, DISABLED_TestOperation_SetupRequired) {
   operation_ = base::WrapUnique(new ConnectTetheringOperation(
       test_device_, fake_device_sync_client_.get(),
-      fake_secure_channel_client_.get(), fake_ble_connection_manager_.get(),
+      fake_secure_channel_client_.get(),
       mock_tether_host_response_recorder_.get(), true /* setup_required */));
   VerifyResponseTimeoutSeconds(true /* setup_required */);
 }

@@ -155,12 +155,12 @@ class HostScannerOperationTest : public testing::Test {
 
   void ConstructOperation(
       const cryptauth::RemoteDeviceRefList& remote_devices) {
-    operation_ = base::WrapUnique(new HostScannerOperation(
-        remote_devices, fake_device_sync_client_.get(),
-        fake_secure_channel_client_.get(), fake_ble_connection_manager_.get(),
-        test_host_scan_device_prioritizer_.get(),
-        mock_tether_host_response_recorder_.get(),
-        fake_connection_preserver_.get()));
+    operation_ = base::WrapUnique(
+        new HostScannerOperation(remote_devices, fake_device_sync_client_.get(),
+                                 fake_secure_channel_client_.get(),
+                                 test_host_scan_device_prioritizer_.get(),
+                                 mock_tether_host_response_recorder_.get(),
+                                 fake_connection_preserver_.get()));
     operation_->AddObserver(test_observer_.get());
 
     // Verify that the devices have been correctly prioritized.

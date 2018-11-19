@@ -68,13 +68,11 @@ class FakeConnectTetheringOperation : public ConnectTetheringOperation {
       cryptauth::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
-      BleConnectionManager* connection_manager,
       TetherHostResponseRecorder* tether_host_response_recorder,
       bool setup_required)
       : ConnectTetheringOperation(device_to_connect,
                                   device_sync_client,
                                   secure_channel_client,
-                                  connection_manager,
                                   tether_host_response_recorder,
                                   setup_required),
         setup_required_(setup_required) {}
@@ -122,13 +120,12 @@ class FakeConnectTetheringOperationFactory
       cryptauth::RemoteDeviceRef device_to_connect,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
-      BleConnectionManager* connection_manager,
       TetherHostResponseRecorder* tether_host_response_recorder,
       bool setup_required) override {
     FakeConnectTetheringOperation* operation =
         new FakeConnectTetheringOperation(
             device_to_connect, device_sync_client, secure_channel_client,
-            connection_manager, tether_host_response_recorder, setup_required);
+            tether_host_response_recorder, setup_required);
     created_operations_.push_back(operation);
     return base::WrapUnique(operation);
   }
@@ -177,7 +174,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
         std::make_unique<FakeNotificationPresenter>();
     mock_host_connection_metrics_logger_ =
         base::WrapUnique(new StrictMock<MockHostConnectionMetricsLogger>(
-            fake_ble_connection_manager_.get(), fake_active_host_.get()));
+            fake_active_host_.get()));
     fake_disconnect_tethering_request_sender_ =
         std::make_unique<FakeDisconnectTetheringRequestSender>();
     fake_wifi_hotspot_disconnector_ =
@@ -189,7 +186,6 @@ class TetherConnectorImplTest : public NetworkStateTest {
         fake_device_sync_client_.get(), fake_secure_channel_client_.get(),
         network_state_handler(), fake_wifi_hotspot_connector_.get(),
         fake_active_host_.get(), fake_tether_host_fetcher_.get(),
-        fake_ble_connection_manager_.get(),
         mock_tether_host_response_recorder_.get(),
         device_id_tether_network_guid_map_.get(), fake_host_scan_cache_.get(),
         fake_notification_presenter_.get(),
