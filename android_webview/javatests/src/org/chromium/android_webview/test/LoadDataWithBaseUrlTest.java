@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
@@ -28,8 +29,11 @@ import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.util.TestWebServer;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 
 /**
@@ -570,5 +574,85 @@ public class LoadDataWithBaseUrlTest {
         Assert.assertEquals("\"null\"",
                 mActivityTestRule.executeJavaScriptAndWaitForResult(
                         mAwContents, mContentsClient, "window.origin;"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testXhrForHttpSchemeUrl() throws Throwable {
+        Assert.assertTrue(verifyXhrForUrls("https://google.com/1", "https://google.com/2"));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    // https://crbug.com/900528
+    public void testXhrForCustomSchemeUrl() throws Throwable {
+        // TODO(dcheng): this should be fixed by https://crbug.com/900528.
+        Assert.assertFalse(verifyXhrForUrls("myscheme://mydomain/1", "myscheme://mydomain/2"));
+    }
+
+    /**
+     * Verify that XHR can be correctly run with the set base URI, regardless of its scheme.
+     *
+     * @param baseUri Base URI to start from.
+     * @param textUri The text URI to fetch the text from.
+     * @throws Throwable
+     */
+    private boolean verifyXhrForUrls(String baseUri, String textUri) throws Throwable {
+        final String successMsg = "SUCCESS";
+        final String errorMsg = "ERROR";
+        final String data = "<html><head><script type='text/javascript'>"
+                + "var xhr = new XMLHttpRequest();"
+                + "xhr.open('GET', '" + textUri + "', true);"
+                + "xhr.onload = function(e) {"
+                + "  if (xhr.readyState === 4 && xhr.status === 200) {"
+                + "    document.title = xhr.responseText;"
+                + "  } else {"
+                + "    console.log('Error status: ' + xhr.statusText);"
+                + "    document.title = '" + errorMsg + "';"
+                + "  }"
+                + "};"
+                + "xhr.onerror = function(e) {"
+                + "  console.log('Error status: ' + xhr.statusText);"
+                + "  document.title = '" + errorMsg + "';"
+                + "};"
+                + "xhr.send(null);"
+                + "</script></head></html>";
+
+        // Intercept TEXT URI request, and respond with 'SUCCESS'.
+        TestAwContentsClient client = new TestAwContentsClient() {
+            @Override
+            public AwWebResourceResponse shouldInterceptRequest(AwWebResourceRequest request) {
+                String url = request.url;
+                if (textUri.equals(url)) {
+                    return new AwWebResourceResponse(
+                            "text/plaintext", "utf-8", createInputStreamForString(successMsg));
+                } else {
+                    return super.shouldInterceptRequest(request);
+                }
+            }
+        };
+
+        // We need extra setup with the new client.
+        final AwTestContainerView testContainerView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(client);
+        AwContents awContents = testContainerView.getAwContents();
+        mActivityTestRule.getAwSettingsOnUiThread(awContents).setJavaScriptEnabled(true);
+
+        // Starting from BASE URI, load data that loads JS URI.
+        mActivityTestRule.loadDataWithBaseUrlSync(awContents, client.getOnPageFinishedHelper(),
+                data, "text/html", false, baseUri, null);
+
+        // Polling here as XHR may take extra steps to change the title.
+        AwActivityTestRule.pollInstrumentationThread(() -> {
+            String title = mActivityTestRule.getTitleOnUiThread(awContents);
+            return successMsg.equals(title) || errorMsg.equals(title);
+        });
+        return successMsg.equals(mActivityTestRule.getTitleOnUiThread(awContents));
+    }
+
+    private InputStream createInputStreamForString(String str) {
+        return new ByteArrayInputStream(str.getBytes(Charset.defaultCharset()));
     }
 }
