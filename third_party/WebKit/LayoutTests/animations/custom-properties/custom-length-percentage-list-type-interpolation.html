@@ -24,11 +24,11 @@ assertInterpolation({
   from: 'initial',
   to: '20% 200%',
 }, [
-  {at: -0.3, is: '46% calc(520px - 60%)'},
+  {at: -0.3, is: '46% calc(-60% + 520px)'},
   {at: 0, is: '40% 400px'},
-  {at: 0.5, is: '30% calc(200px + 100%)'},
+  {at: 0.5, is: '30% calc(100% + 200px)'},
   {at: 1, is: '20% 200%'},
-  {at: 1.5, is: '10% calc(-200px + 300%)'},
+  {at: 1.5, is: '10% calc(300% + -200px)'},
 ]);
 
 assertInterpolation({
@@ -36,11 +36,11 @@ assertInterpolation({
   from: 'inherit',
   to: '20px 200%',
 }, [
-  {at: -0.3, is: 'calc(-6px + 39%) calc(390px - 60%)'},
+  {at: -0.3, is: 'calc(39% + -6px) calc(-60% + 390px)'},
   {at: 0, is: '30% 300px'},
-  {at: 0.5, is: 'calc(10px + 15%) calc(150px + 100%)'},
+  {at: 0.5, is: 'calc(15% + 10px) calc(100% + 150px)'},
   {at: 1, is: '20px 200%'},
-  {at: 1.5, is: 'calc(30px - 15%) calc(-150px + 300%)'},
+  {at: 1.5, is: 'calc(-15% + 30px) calc(300% + -150px)'},
 ]);
 
 assertInterpolation({
@@ -48,11 +48,11 @@ assertInterpolation({
   from: 'unset',
   to: 'calc(100px + 120%) calc(100px + 120%)',
 }, [
-  {at: -0.3, is: 'calc(-30px + 16%) calc(490px - 36%)'},
+  {at: -0.3, is: 'calc(16% + -30px) calc(-36% + 490px)'},
   {at: 0, is: '40% 400px'},
-  {at: 0.5, is: 'calc(50px + 80%) calc(250px + 60%)'},
-  {at: 1, is: 'calc(100px + 120%) calc(100px + 120%)'},
-  {at: 1.5, is: 'calc(150px + 160%) calc(-50px + 180%)'},
+  {at: 0.5, is: 'calc(80% + 50px) calc(60% + 250px)'},
+  {at: 1, is: 'calc(120% + 100px) calc(120% + 100px)'},
+  {at: 1.5, is: 'calc(160% + 150px) calc(180% + -50px)'},
 ]);
 
 assertInterpolation({
@@ -60,11 +60,11 @@ assertInterpolation({
   from: 'calc(-10px - 10%) -100px',
   to: 'calc(10px + 10%) 100px',
 }, [
-  {at: -0.3, is: 'calc(-16px - 16%) -160px'},
-  {at: 0, is: 'calc(-10px - 10%) -100px'},
+  {at: -0.3, is: 'calc(-16% + -16px) -160px'},
+  {at: 0, is: 'calc(-10% + -10px) -100px'},
   {at: 0.5, is: '0% 0px'},
-  {at: 1, is: 'calc(10px + 10%) 100px'},
-  {at: 1.5, is: 'calc(20px + 20%) 200px'}
+  {at: 1, is: 'calc(10% + 10px) 100px'},
+  {at: 1.5, is: 'calc(20% + 20px) 200px'}
 ]);
 
 assertInterpolation({
@@ -72,11 +72,11 @@ assertInterpolation({
   from: 'calc(10em + 10%) 100em',
   to: '20em calc(200em + 200%)',
 }, [
-  {at: -0.3, is: 'calc(140px + 13%) calc(1400px - 60%)'},
-  {at: 0, is: 'calc(200px + 10%) 2000px'},
-  {at: 0.5, is: 'calc(300px + 5%) calc(3000px + 100%)'},
-  {at: 1, is: '400px calc(4000px + 200%)'},
-  {at: 1.5, is: 'calc(500px - 5%) calc(5000px + 300%)'}
+  {at: -0.3, is: 'calc(13% + 140px) calc(-60% + 1400px)'},
+  {at: 0, is: 'calc(10% + 200px) 2000px'},
+  {at: 0.5, is: 'calc(5% + 300px) calc(100% + 3000px)'},
+  {at: 1, is: '400px calc(200% + 4000px)'},
+  {at: 1.5, is: 'calc(-5% + 500px) calc(300% + 5000px)'}
 ]);
 
 assertInterpolation({
@@ -84,11 +84,11 @@ assertInterpolation({
   from: '0px',
   to: 'calc(100px + 100%)',
 }, [
-  {at: -0.3, is: 'calc(-30px - 30%)'},
+  {at: -0.3, is: 'calc(-30% + -30px)'},
   {at: 0, is: '0px'},
-  {at: 0.5, is: 'calc(50px + 50%)'},
-  {at: 1, is: 'calc(100px + 100%)'},
-  {at: 1.5, is: 'calc(150px + 150%)'}
+  {at: 0.5, is: 'calc(50% + 50px)'},
+  {at: 1, is: 'calc(100% + 100px)'},
+  {at: 1.5, is: 'calc(150% + 150px)'}
 ]);
 
 // Composition and neutralKeyframe tests assume that composite:add means

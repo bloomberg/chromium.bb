@@ -837,13 +837,13 @@ CSSCalcExpressionNode* CSSCalcValue::CreateExpressionNode(
 CSSCalcExpressionNode* CSSCalcValue::CreateExpressionNode(double pixels,
                                                           double percent) {
   return CreateExpressionNode(
-      CreateExpressionNode(CSSPrimitiveValue::Create(
-                               pixels, CSSPrimitiveValue::UnitType::kPixels),
-                           pixels == trunc(pixels)),
       CreateExpressionNode(
           CSSPrimitiveValue::Create(percent,
                                     CSSPrimitiveValue::UnitType::kPercentage),
           percent == trunc(percent)),
+      CreateExpressionNode(CSSPrimitiveValue::Create(
+                               pixels, CSSPrimitiveValue::UnitType::kPixels),
+                           pixels == trunc(pixels)),
       kCalcAdd);
 }
 

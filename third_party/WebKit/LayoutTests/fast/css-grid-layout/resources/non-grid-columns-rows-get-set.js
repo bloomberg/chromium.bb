@@ -12,9 +12,9 @@ testGridDefinitionsValues(document.getElementById("gridWithMinContent"), "min-co
 testGridDefinitionsValues(document.getElementById("gridWithMaxContent"), "max-content", "max-content");
 testGridDefinitionsValues(document.getElementById("gridWithFraction"), "1fr", "2fr");
 testGridDefinitionsValues(document.getElementById("gridWithCalc"), "150px", "75px");
-testGridDefinitionsValues(document.getElementById("gridWithCalcComplex"), "calc(150px + 50%)", "calc(75px + 65%)");
+testGridDefinitionsValues(document.getElementById("gridWithCalcComplex"), "calc(50% + 150px)", "calc(65% + 75px)");
 testGridDefinitionsValues(document.getElementById("gridWithCalcInsideMinMax"), "minmax(10%, 15px)", "minmax(20px, 50%)");
-testGridDefinitionsValues(document.getElementById("gridWithCalcComplexInsideMinMax"), "minmax(10%, calc(15px + 50%))", "minmax(calc(20px + 10%), 50%)");
+testGridDefinitionsValues(document.getElementById("gridWithCalcComplexInsideMinMax"), "minmax(10%, calc(50% + 15px))", "minmax(calc(10% + 20px), 50%)");
 testGridDefinitionsValues(document.getElementById("gridWithAutoInsideMinMax"), "minmax(auto, 20px)", "minmax(min-content, auto)");
 
 debug("");

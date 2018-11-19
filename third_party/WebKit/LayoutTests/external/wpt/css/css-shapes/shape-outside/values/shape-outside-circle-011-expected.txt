@@ -11,7 +11,7 @@ PASS circle(at calc(10in + 20px)) - computed style
 PASS circle(at calc(30%)) - computed style
 PASS circle(at calc(100%/4)) - computed style
 PASS circle(at calc(25%*3)) - computed style
-PASS circle(at calc(25%*3 - 10in)) - computed style
-FAIL circle(at calc((12.5%*6 + 10in) / 4)) - computed style assert_in_array: value "circle(at calc(240px + 18.75%) 50%)" not in array ["circle(at calc((75% + 960px) / 4) 50%)", "circle(at calc(18.75% + 240px) 50%)"]
+FAIL circle(at calc(25%*3 - 10in)) - computed style assert_in_array: value "circle(at calc(75% + -960px) 50%)" not in array ["circle(at calc(75% - 960px) 50%)", "circle(at calc(-960px + 75%) 50%)"]
+PASS circle(at calc((12.5%*6 + 10in) / 4)) - computed style
 Harness: the test ran to completion.
 

@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS Property cx value '-10px' computes to '-10px'
-PASS Property cx value '0.5em' computes to '20px'
-PASS Property cx value 'calc(10px + 0.5em)' computes to '30px'
-PASS Property cx value '40%' computes to '40%'
-FAIL Property cx value 'calc(50% + 60x)' computes to 'calc(50% + 60x)' assert_equals: expected "calc(50% + 60x)" but got "0px"
-Harness: the test ran to completion.
-

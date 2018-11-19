@@ -11,9 +11,9 @@
 <div id="calc"></div>
 <script>
 test(function() {
-    assert_equals(getComputedStyle(calc).backgroundPositionX, "calc(10px + 20%)", "background-position-x");
-    assert_equals(getComputedStyle(calc).backgroundPositionY, "calc(30px + 40%)", "background-position-y");
-    assert_equals(getComputedStyle(calc).verticalAlign, "calc(50px + 60%)", "vertical-align");
-    assert_equals(getComputedStyle(calc).flexBasis, "calc(70px + 80%)", "flex-basis");
+    assert_equals(getComputedStyle(calc).backgroundPositionX, "calc(20% + 10px)", "background-position-x");
+    assert_equals(getComputedStyle(calc).backgroundPositionY, "calc(40% + 30px)", "background-position-y");
+    assert_equals(getComputedStyle(calc).verticalAlign, "calc(60% + 50px)", "vertical-align");
+    assert_equals(getComputedStyle(calc).flexBasis, "calc(80% + 70px)", "flex-basis");
 }, "Tests getComputedStyle works with calc for various properties");
 </script>
