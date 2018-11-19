@@ -39,16 +39,13 @@ void GuardedPageAllocator::Init(size_t num_pages) {
         (num_pages_ == kGpaMaxPages) ? ~0ULL : (1ULL << num_pages_) - 1;
   }
 
-  for (size_t i = 0; i < num_pages_; i++)
-    data_[i].Init();
+  AllocateStackTraces();
 }
 
 GuardedPageAllocator::~GuardedPageAllocator() {
   if (num_pages_) {
     UnmapPages();
-
-    for (size_t i = 0; i < num_pages_; i++)
-      data_[i].Destroy();
+    DeallocateStackTraces();
   }
 }
 
@@ -83,7 +80,7 @@ void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
   void* alloc = reinterpret_cast<void*>(free_page + offset);
 
   // Initialize slot metadata.
-  data_[free_slot].RecordAllocation(size, alloc);
+  RecordAllocationInSlot(free_slot, size, alloc);
 
   return alloc;
 }
@@ -104,7 +101,7 @@ void GuardedPageAllocator::Deallocate(void* ptr) {
   }
 
   // Record deallocation stack trace/thread id.
-  data_[slot].RecordDeallocation();
+  RecordDeallocationInSlot(slot);
 
   FreeSlot(slot);
 }
@@ -218,56 +215,60 @@ size_t GuardedPageAllocator::AddrToSlot(uintptr_t addr) const {
   return slot;
 }
 
-void GuardedPageAllocator::SlotMetadata::Init() {
+void GuardedPageAllocator::AllocateStackTraces() {
   // new is not used so that we can explicitly call the constructor when we
   // want to collect a stack trace.
-  alloc.stacktrace =
-      static_cast<StackTrace*>(malloc(sizeof(*alloc.stacktrace)));
-  CHECK(alloc.stacktrace);
-  dealloc.stacktrace =
-      static_cast<StackTrace*>(malloc(sizeof(*dealloc.stacktrace)));
-  CHECK(dealloc.stacktrace);
+  for (size_t i = 0; i < num_pages_; i++) {
+    alloc_traces[i] =
+        static_cast<StackTrace*>(malloc(sizeof(*alloc_traces[i])));
+    CHECK(alloc_traces[i]);
+    dealloc_traces[i] =
+        static_cast<StackTrace*>(malloc(sizeof(*dealloc_traces[i])));
+    CHECK(dealloc_traces[i]);
+  }
 }
 
-void GuardedPageAllocator::SlotMetadata::Destroy() {
-  CHECK(alloc.stacktrace);
-  CHECK(dealloc.stacktrace);
+void GuardedPageAllocator::DeallocateStackTraces() {
+  for (size_t i = 0; i < num_pages_; i++) {
+    DestructStackTrace(i);
 
-  Reset();
-
-  free(alloc.stacktrace);
-  free(dealloc.stacktrace);
+    free(alloc_traces[i]);
+    alloc_traces[i] = nullptr;
+    free(dealloc_traces[i]);
+    dealloc_traces[i] = nullptr;
+  }
 }
 
-void GuardedPageAllocator::SlotMetadata::Reset() {
+void GuardedPageAllocator::DestructStackTrace(size_t slot) {
   // Destruct previous allocation/deallocation traces. The constructor was only
   // called if trace_addr is non-null.
-  if (alloc.trace_addr)
-    alloc.stacktrace->~StackTrace();
-  if (dealloc.trace_addr)
-    dealloc.stacktrace->~StackTrace();
+  if (data_[slot].alloc.trace_addr)
+    alloc_traces[slot]->~StackTrace();
+  if (data_[slot].dealloc.trace_addr)
+    dealloc_traces[slot]->~StackTrace();
 }
 
-void GuardedPageAllocator::SlotMetadata::RecordAllocation(size_t size,
-                                                          void* ptr) {
-  Reset();
+void GuardedPageAllocator::RecordAllocationInSlot(size_t slot,
+                                                  size_t size,
+                                                  void* ptr) {
+  data_[slot].alloc_size = size;
+  data_[slot].alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
 
-  alloc_size = size;
-  alloc_ptr = reinterpret_cast<uintptr_t>(ptr);
+  data_[slot].alloc.tid = base::PlatformThread::CurrentId();
+  new (alloc_traces[slot]) StackTrace();
+  data_[slot].alloc.trace_addr = reinterpret_cast<uintptr_t>(
+      alloc_traces[slot]->Addresses(&data_[slot].alloc.trace_len));
 
-  alloc.tid = base::PlatformThread::CurrentId();
-  new (alloc.stacktrace) StackTrace();
-  alloc.trace_addr = alloc.stacktrace->Addresses(&alloc.trace_len);
-
-  dealloc.tid = base::kInvalidThreadId;
-  dealloc.trace_addr = nullptr;
-  dealloc.trace_len = 0;
+  data_[slot].dealloc.tid = base::kInvalidThreadId;
+  data_[slot].dealloc.trace_addr = 0;
+  data_[slot].dealloc.trace_len = 0;
 }
 
-void GuardedPageAllocator::SlotMetadata::RecordDeallocation() {
-  dealloc.tid = base::PlatformThread::CurrentId();
-  new (dealloc.stacktrace) StackTrace();
-  dealloc.trace_addr = dealloc.stacktrace->Addresses(&dealloc.trace_len);
+void GuardedPageAllocator::RecordDeallocationInSlot(size_t slot) {
+  data_[slot].dealloc.tid = base::PlatformThread::CurrentId();
+  new (dealloc_traces[slot]) StackTrace();
+  data_[slot].dealloc.trace_addr = reinterpret_cast<uintptr_t>(
+      dealloc_traces[slot]->Addresses(&data_[slot].dealloc.trace_len));
 }
 
 }  // namespace internal

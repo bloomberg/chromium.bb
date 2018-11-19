@@ -82,35 +82,11 @@ class GuardedPageAllocator {
       // (De)allocation thread id or base::kInvalidThreadId if no (de)allocation
       // occurred.
       base::PlatformThreadId tid = base::kInvalidThreadId;
-
-      // Pointer to stack trace addresses or null if no (de)allocation occurred.
-      const void* const* trace_addr = nullptr;
-
+      // Address of stack trace addresses or null if no (de)allocation occurred.
+      uintptr_t trace_addr = 0;
       // Stack trace length or 0 if no (de)allocation occurred.
       size_t trace_len = 0;
-
-     private:
-      // StackTrace object for this slot, it's allocated in
-      // SlotMetadata()::Init() and only used internally, trace_addr/len should
-      // be used by external consumers of the stack trace data.
-      base::debug::StackTrace* stacktrace = nullptr;
-
-      friend struct SlotMetadata;
     };
-
-    // Allocate internal data (StackTraces) for this slot. StackTrace objects
-    // are large so we only allocate them if they're required (instead of
-    // having them be statically allocated in the SlotMetadata itself.)
-    void Init();
-
-    // Frees internal data. May only be called after Init().
-    void Destroy();
-
-    // Update slot metadata on an allocation with the given size and pointer.
-    void RecordAllocation(size_t size, void* ptr);
-
-    // Update slot metadata on a deallocation.
-    void RecordDeallocation();
 
     // Size of the allocation
     size_t alloc_size = 0;
@@ -119,11 +95,6 @@ class GuardedPageAllocator {
 
     AllocationInfo alloc;
     AllocationInfo dealloc;
-
-   private:
-    // Call destructors on (de)alloc.stacktrace if constructors for them have
-    // previously been called.
-    void Reset();
   };
 
   // Does not allocate any memory for the allocator, to finish initializing call
@@ -169,6 +140,23 @@ class GuardedPageAllocator {
   uintptr_t SlotToAddr(size_t slot) const;
   size_t AddrToSlot(uintptr_t addr) const;
 
+  // Allocate num_pages_ stack traces.
+  void AllocateStackTraces();
+
+  // Deallocate stack traces. May only be called after AllocateStackTraces().
+  void DeallocateStackTraces();
+
+  // Call the destructor on the allocation and deallocation stack traces for
+  // a given slot index if the constructors for those stack traces have been
+  // called.
+  void DestructStackTrace(size_t slot);
+
+  // Record an allocation or deallocation for a given slot index. This
+  // encapsulates the logic for updating the stack traces and metadata for a
+  // given slot.
+  void RecordAllocationInSlot(size_t slot, size_t size, void* ptr);
+  void RecordDeallocationInSlot(size_t slot);
+
   // Allocator lock that protects free_pages_.
   base::Lock lock_;
 
@@ -188,6 +176,12 @@ class GuardedPageAllocator {
 
   // Set to true if a double free has occurred.
   std::atomic<bool> double_free_detected_{false};
+
+  // StackTrace objects for every slot in AllocateStateBase::data_. We avoid
+  // statically allocating the StackTrace objects because they are large and
+  // the allocator may be initialized with num_pages_ < kGpaMaxPages.
+  base::debug::StackTrace* alloc_traces[kGpaMaxPages];
+  base::debug::StackTrace* dealloc_traces[kGpaMaxPages];
 
   // Required for a singleton to access the constructor.
   friend base::NoDestructor<GuardedPageAllocator>;
