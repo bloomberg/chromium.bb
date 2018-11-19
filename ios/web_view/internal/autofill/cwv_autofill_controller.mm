@@ -302,7 +302,7 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   }
 }
 
-- (void)removeSuggestion:(CWVAutofillSuggestion*)suggestion {
+- (BOOL)removeSuggestion:(CWVAutofillSuggestion*)suggestion {
   // Identifier is greater than 0 for Autofill suggestions.
   DCHECK_LT(0, suggestion.formSuggestion.identifier);
 
@@ -310,9 +310,9 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
       _webState, base::SysNSStringToUTF8(suggestion.frameID));
   autofill::AutofillManager* manager = [self autofillManagerForFrame:frame];
   if (!manager) {
-    return;
+    return NO;
   }
-  manager->RemoveAutofillProfileOrCreditCard(
+  return manager->RemoveAutofillProfileOrCreditCard(
       suggestion.formSuggestion.identifier);
 }
 
