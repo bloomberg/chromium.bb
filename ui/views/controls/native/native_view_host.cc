@@ -206,6 +206,11 @@ gfx::NativeCursor NativeViewHost::GetCursor(const ui::MouseEvent& event) {
   return native_wrapper_->GetCursor(event.x(), event.y());
 }
 
+void NativeViewHost::SetVisible(bool visible) {
+  native_wrapper_->SetVisible(visible);
+  View::SetVisible(visible);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHost, private:
 

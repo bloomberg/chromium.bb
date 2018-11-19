@@ -233,6 +233,13 @@ gfx::NativeCursor NativeViewHostAura::GetCursor(int x, int y) {
   return gfx::kNullCursor;
 }
 
+void NativeViewHostAura::SetVisible(bool visible) {
+  if (!visible)
+    host_->native_view()->Hide();
+  else
+    host_->native_view()->Show();
+}
+
 void NativeViewHostAura::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
