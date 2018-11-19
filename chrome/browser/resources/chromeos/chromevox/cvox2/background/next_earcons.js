@@ -36,11 +36,15 @@ NextEarcons = function() {
   /** @private {boolean} */
   this.shouldPan_ = true;
 
-  chrome.audio.getDevices(
-      {isActive: true, streamTypes: [chrome.audio.StreamType.OUTPUT]},
-      this.updateShouldPanForDevices_.bind(this));
-  chrome.audio.onDeviceListChanged.addListener(
-      this.updateShouldPanForDevices_.bind(this));
+  if (chrome.audio) {
+    chrome.audio.getDevices(
+        {isActive: true, streamTypes: [chrome.audio.StreamType.OUTPUT]},
+        this.updateShouldPanForDevices_.bind(this));
+    chrome.audio.onDeviceListChanged.addListener(
+        this.updateShouldPanForDevices_.bind(this));
+  } else {
+    this.shouldPan_ = false;
+  }
 };
 
 NextEarcons.prototype = {
