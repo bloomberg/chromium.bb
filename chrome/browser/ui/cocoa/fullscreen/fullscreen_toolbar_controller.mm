@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_animation_controller.h"
@@ -149,14 +148,6 @@
 
 - (id<FullscreenToolbarContextDelegate>)delegate {
   return delegate_;
-}
-
-+ (void)recordToolbarStyle:(FullscreenToolbarStyle)style {
-  static constexpr int kFullscreenToolbarStyleCount =
-      (int)FullscreenToolbarStyle::TOOLBAR_LAST + 1;
-
-  UMA_HISTOGRAM_ENUMERATION("OSX.Fullscreen.ToolbarStyle", style,
-                            kFullscreenToolbarStyleCount);
 }
 
 @end
