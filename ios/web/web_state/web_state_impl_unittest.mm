@@ -415,7 +415,7 @@ TEST_P(WebStateImplTest, ObserverTest) {
   // Test that DidFinishNavigation() is called.
   ASSERT_FALSE(observer->did_finish_navigation_info());
   const GURL url("http://test");
-  std::unique_ptr<web::NavigationContext> context =
+  std::unique_ptr<NavigationContextImpl> context =
       NavigationContextImpl::CreateNavigationContext(
           web_state_.get(), url, /*has_user_gesture=*/true,
           ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK,
@@ -505,22 +505,27 @@ TEST_P(WebStateImplTest, ObserverTest) {
 // Tests that placeholder navigations are not visible to WebStateObservers.
 TEST_P(WebStateImplTest, PlaceholderNavigationNotExposedToObservers) {
   TestWebStateObserver observer(web_state_.get());
-  FakeNavigationContext context;
-  context.SetUrl(
-      wk_navigation_util::CreatePlaceholderUrlForUrl(GURL("chrome://newtab")));
-
+  GURL placeholder_url =
+      wk_navigation_util::CreatePlaceholderUrlForUrl(GURL("chrome://newtab"));
+  std::unique_ptr<NavigationContextImpl> context =
+      NavigationContextImpl::CreateNavigationContext(
+          web_state_.get(), placeholder_url,
+          /*has_user_gesture=*/true,
+          ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK,
+          /*is_renderer_initiated=*/true);
+  context->SetPlaceholderNavigation(true);
   // Test that OnPageLoaded() is not called.
-  web_state_->OnPageLoaded(context.GetUrl(), true /* load_success */);
+  web_state_->OnPageLoaded(placeholder_url, /*load_success=*/true);
   EXPECT_FALSE(observer.load_page_info());
-  web_state_->OnPageLoaded(context.GetUrl(), false /* load_success */);
+  web_state_->OnPageLoaded(placeholder_url, /*load_success=*/false);
   EXPECT_FALSE(observer.load_page_info());
 
   // Test that OnNavigationStarted() is not called.
-  web_state_->OnNavigationStarted(&context);
+  web_state_->OnNavigationStarted(context.get());
   EXPECT_FALSE(observer.did_start_navigation_info());
 
   // Test that OnNavigationFinished() is not called.
-  web_state_->OnNavigationFinished(&context);
+  web_state_->OnNavigationFinished(context.get());
   EXPECT_FALSE(observer.did_finish_navigation_info());
 }
 
@@ -666,8 +671,12 @@ TEST_P(WebStateImplTest, GlobalObserverTest) {
 
   // Test that DidStartNavigation() is called.
   EXPECT_FALSE(observer->did_start_navigation_called());
-  FakeNavigationContext context;
-  web_state_->OnNavigationStarted(&context);
+  std::unique_ptr<NavigationContextImpl> context =
+      NavigationContextImpl::CreateNavigationContext(
+          web_state_.get(), GURL::EmptyGURL(), /*has_user_gesture=*/true,
+          ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK,
+          /*is_renderer_initiated=*/true);
+  web_state_->OnNavigationStarted(context.get());
   EXPECT_TRUE(observer->did_start_navigation_called());
 
   // Test that WebStateDidStartLoading() is called.
@@ -927,9 +936,13 @@ TEST_P(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
   auto observer = std::make_unique<TestWebStateObserver>(web_state_.get());
 
   // No callback if icons has not been fetched yet.
-  FakeNavigationContext context;
-  context.SetIsSameDocument(true);
-  web_state_->OnNavigationFinished(&context);
+  std::unique_ptr<NavigationContextImpl> context =
+      NavigationContextImpl::CreateNavigationContext(
+          web_state_.get(), GURL::EmptyGURL(),
+          /*has_user_gesture=*/false, ui::PageTransition::PAGE_TRANSITION_LINK,
+          /*is_renderer_initiated=*/false);
+  context->SetIsSameDocument(true);
+  web_state_->OnNavigationFinished(context.get());
   EXPECT_FALSE(observer->update_favicon_url_candidates_info());
 
   // Callback is called when icons were fetched.
@@ -942,7 +955,7 @@ TEST_P(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
 
   // Callback is now called after same-document navigation.
   observer = std::make_unique<TestWebStateObserver>(web_state_.get());
-  web_state_->OnNavigationFinished(&context);
+  web_state_->OnNavigationFinished(context.get());
   ASSERT_TRUE(observer->update_favicon_url_candidates_info());
   ASSERT_EQ(1U,
             observer->update_favicon_url_candidates_info()->candidates.size());
@@ -959,14 +972,14 @@ TEST_P(WebStateImplTest, FaviconUpdateForSameDocumentNavigations) {
 
   // Document change navigation does not call callback.
   observer = std::make_unique<TestWebStateObserver>(web_state_.get());
-  context.SetIsSameDocument(false);
-  web_state_->OnNavigationFinished(&context);
+  context->SetIsSameDocument(false);
+  web_state_->OnNavigationFinished(context.get());
   EXPECT_FALSE(observer->update_favicon_url_candidates_info());
 
   // Previous candidates were invalidated by the document change. No callback
   // if icons has not been fetched yet.
-  context.SetIsSameDocument(true);
-  web_state_->OnNavigationFinished(&context);
+  context->SetIsSameDocument(true);
+  web_state_->OnNavigationFinished(context.get());
   EXPECT_FALSE(observer->update_favicon_url_candidates_info());
 }
 

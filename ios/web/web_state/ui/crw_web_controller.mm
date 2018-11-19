@@ -472,7 +472,7 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // information about the navigation that triggered the document/URL change.
 // TODO(stuartmorgan): The code conflates URL changes and document object
 // changes; the two need to be separated and handled differently.
-- (void)webPageChangedWithContext:(const web::NavigationContext*)context;
+- (void)webPageChangedWithContext:(const web::NavigationContextImpl*)context;
 // Resets any state that is associated with a specific document object (e.g.,
 // page interaction tracking).
 - (void)resetDocumentSpecificState;
@@ -637,7 +637,8 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 - (std::unique_ptr<web::NavigationContextImpl>)
 registerLoadRequestForURL:(const GURL&)URL
    sameDocumentNavigation:(BOOL)sameDocumentNavigation
-           hasUserGesture:(BOOL)hasUserGesture;
+           hasUserGesture:(BOOL)hasUserGesture
+    placeholderNavigation:(BOOL)placeholderNavigation;
 // Prepares web controller and delegates for anticipated page change.
 // Allows several methods to invoke webWill/DidAddPendingURL on anticipated page
 // change, using the same cached request and calculated transition types.
@@ -647,7 +648,8 @@ registerLoadRequestForURL:(const GURL&)URL
                  referrer:(const web::Referrer&)referrer
                transition:(ui::PageTransition)transition
    sameDocumentNavigation:(BOOL)sameDocumentNavigation
-           hasUserGesture:(BOOL)hasUserGesture;
+           hasUserGesture:(BOOL)hasUserGesture
+    placeholderNavigation:(BOOL)placeholderNavigation;
 // Maps WKNavigationType to ui::PageTransition.
 - (ui::PageTransition)pageTransitionFromNavigationType:
     (WKNavigationType)navigationType;
@@ -1369,7 +1371,8 @@ GURL URLEscapedForHistory(const GURL& url) {
 - (std::unique_ptr<web::NavigationContextImpl>)
 registerLoadRequestForURL:(const GURL&)URL
    sameDocumentNavigation:(BOOL)sameDocumentNavigation
-           hasUserGesture:(BOOL)hasUserGesture {
+           hasUserGesture:(BOOL)hasUserGesture
+    placeholderNavigation:(BOOL)placeholderNavigation {
   // Get the navigation type from the last main frame load request, and try to
   // map that to a PageTransition.
   WKNavigationType navigationType =
@@ -1384,7 +1387,8 @@ registerLoadRequestForURL:(const GURL&)URL
                              referrer:emptyReferrer
                            transition:transition
                sameDocumentNavigation:sameDocumentNavigation
-                       hasUserGesture:(BOOL)hasUserGesture];
+                       hasUserGesture:hasUserGesture
+                placeholderNavigation:placeholderNavigation];
   context->SetWKNavigationType(navigationType);
   return context;
 }
@@ -1394,7 +1398,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
                  referrer:(const web::Referrer&)referrer
                transition:(ui::PageTransition)transition
    sameDocumentNavigation:(BOOL)sameDocumentNavigation
-           hasUserGesture:(BOOL)hasUserGesture {
+           hasUserGesture:(BOOL)hasUserGesture
+    placeholderNavigation:(BOOL)placeholderNavigation {
   // Transfer time is registered so that further transitions within the time
   // envelope are not also registered as links.
   _lastTransferTimeInSeconds = CFAbsoluteTimeGetCurrent();
@@ -1454,6 +1459,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       web::NavigationContextImpl::CreateNavigationContext(
           _webStateImpl, requestURL, hasUserGesture, transition,
           isRendererInitiated);
+  context->SetPlaceholderNavigation(placeholderNavigation);
 
   // TODO(crbug.com/676129): LegacyNavigationManagerImpl::AddPendingItem does
   // not create a pending item in case of reload. Remove this workaround once
@@ -1794,8 +1800,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // load for a provisional load failure. Rewrite the context URL to actual URL
   // so the navigation event is broadcasted.
   // TODO(crbug.com/803503) Clean up callbcks for native error.
-  if (IsPlaceholderUrl(context->GetUrl())) {
+  if (context->IsPlaceholderNavigation()) {
     context->SetUrl(item->GetURL());
+    context->SetPlaceholderNavigation(false);
   }
   [self loadNativeViewWithSuccess:NO navigationContext:context];
   _webStateImpl->SetIsLoading(false);
@@ -1848,7 +1855,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
                              referrer:referrer
                            transition:self.currentTransition
                sameDocumentNavigation:NO
-                       hasUserGesture:YES];
+                       hasUserGesture:YES
+                placeholderNavigation:NO];
   [self loadNativeViewWithSuccess:YES
                 navigationContext:navigationContext.get()];
   _loadPhase = web::PAGE_LOADED;
@@ -1870,7 +1878,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   std::unique_ptr<web::NavigationContextImpl> navigationContext =
       [self registerLoadRequestForURL:placeholderURL
                sameDocumentNavigation:NO
-                       hasUserGesture:NO];
+                       hasUserGesture:NO
+                placeholderNavigation:YES];
   [_navigationStates setContext:std::move(navigationContext)
                   forNavigation:navigation];
   return [_navigationStates contextForNavigation:navigation];
@@ -1903,7 +1912,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       std::unique_ptr<web::NavigationContextImpl> navigationContext =
           [self registerLoadRequestForURL:item->GetURL()
                    sameDocumentNavigation:NO
-                           hasUserGesture:NO];
+                           hasUserGesture:NO
+                    placeholderNavigation:NO];
       WKNavigation* navigation =
           [_webView loadHTMLString:@""
                            baseURL:net::NSURLWithGURL(item->GetURL())];
@@ -2030,7 +2040,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
                          referrer:self.currentNavItemReferrer
                        transition:ui::PageTransition::PAGE_TRANSITION_RELOAD
            sameDocumentNavigation:NO
-                   hasUserGesture:YES];
+                   hasUserGesture:YES
+            placeholderNavigation:NO];
     navigationContext->SetIsRendererInitiated(isRendererInitiated);
     _webStateImpl->OnNavigationStarted(navigationContext.get());
     [self didStartLoading];
@@ -2067,7 +2078,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
                              referrer:self.currentNavItemReferrer
                            transition:ui::PageTransition::PAGE_TRANSITION_RELOAD
                sameDocumentNavigation:NO
-                       hasUserGesture:YES];
+                       hasUserGesture:YES
+                placeholderNavigation:NO];
         [_navigationStates setContext:std::move(navigationContext)
                         forNavigation:navigation];
       } else {
@@ -2195,7 +2207,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // placeholder URLs because this may be the only opportunity to update
   // |isLoading| for native view reload.
 
-  if (context && IsWKInternalUrl(context->GetUrl()))
+  if (context && context->IsPlaceholderNavigation())
+    return;
+
+  if (context && IsRestoreSessionUrl(context->GetUrl()))
     return;
 
   if (IsRestoreSessionUrl(net::GURLWithNSURL(_webView.URL)))
@@ -2912,7 +2927,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 // TODO(stuartmorgan): This method conflates document changes and URL changes;
 // we should be distinguishing better, and be clear about the expected
 // WebDelegate and WCO callbacks in each case.
-- (void)webPageChangedWithContext:(const web::NavigationContext*)context {
+- (void)webPageChangedWithContext:(const web::NavigationContextImpl*)context {
   DCHECK_EQ(_loadPhase, web::LOAD_REQUESTED);
 
   web::Referrer referrer = [self currentReferrer];
@@ -2931,7 +2946,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self didStartLoading];
   // Do not commit pending item in the middle of loading a placeholder URL. The
   // item will be committed when the native content or webUI is displayed.
-  if (!IsPlaceholderUrl(context->GetUrl())) {
+  if (!context->IsPlaceholderNavigation()) {
     self.navigationManagerImpl->CommitPendingItem();
   }
 }
@@ -4174,7 +4189,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
                                      referrer:web::Referrer()
                                    transition:loadHTMLTransition
                        sameDocumentNavigation:NO
-                               hasUserGesture:true];
+                               hasUserGesture:YES
+                        placeholderNavigation:NO];
   }
   context->SetIsRendererInitiated(false);
   context->SetLoadingHtmlString(true);
@@ -4370,10 +4386,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
       action.navigationType == WKNavigationTypeBackForward) {
     // WKBackForwardList would have already been updated for back/forward
     // navigation. Create the pending item here to match.
-    std::unique_ptr<web::NavigationContextImpl> context = [self
-        registerLoadRequestForURL:net::GURLWithNSURL(action.request.URL)
-           sameDocumentNavigation:NO
-                   hasUserGesture:[_pendingNavigationInfo hasUserGesture]];
+    std::unique_ptr<web::NavigationContextImpl> context =
+        [self registerLoadRequestForURL:requestURL
+                 sameDocumentNavigation:NO
+                         hasUserGesture:[_pendingNavigationInfo hasUserGesture]
+                  placeholderNavigation:IsPlaceholderUrl(requestURL)];
     [_pendingNavigationInfo setPendingBackForwardContext:std::move(context)];
   }
 
@@ -4616,7 +4633,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       return;
     }
 
-    if (context->GetUrl() != webViewURL) {
+    if (context->GetUrl() != webViewURL &&
+        !context->IsPlaceholderNavigation()) {
       // Update last seen URL because it may be changed by WKWebView (f.e. by
       // performing characters escaping).
       web::NavigationItem* item = web::GetItemWithUniqueID(
@@ -4675,7 +4693,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
   std::unique_ptr<web::NavigationContextImpl> navigationContext =
       [self registerLoadRequestForURL:webViewURL
                sameDocumentNavigation:NO
-                       hasUserGesture:[_pendingNavigationInfo hasUserGesture]];
+                       hasUserGesture:[_pendingNavigationInfo hasUserGesture]
+                placeholderNavigation:IsPlaceholderUrl(webViewURL)];
   _webStateImpl->OnNavigationStarted(navigationContext.get());
   [_navigationStates setContext:std::move(navigationContext)
                   forNavigation:navigation];
@@ -4824,7 +4843,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // because redirect callback was not called.
     if (@available(iOS 12, *)) {
       // rdar://37547029 was fixed on iOS 12.
-    } else if (context && context->GetUrl() != webViewURL) {
+    } else if (context && !context->IsPlaceholderNavigation() &&
+               context->GetUrl() != webViewURL) {
       [self didReceiveRedirectForNavigation:context withURL:webViewURL];
     }
   }
@@ -4923,7 +4943,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // Do not update the HTML5 history state or states of the last committed item
   // for placeholder page because the actual navigation item will not be
   // committed until the native content or WebUI is shown.
-  if (context && !IsPlaceholderUrl(context->GetUrl()) &&
+  if (context && !context->IsPlaceholderNavigation() &&
       !context->GetUrl().SchemeIs(url::kAboutScheme)) {
     [self updateSSLStatusForCurrentNavigationItem];
     [self updateHTML5HistoryState];
@@ -5286,7 +5306,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       std::unique_ptr<web::NavigationContextImpl> newContext =
           [self registerLoadRequestForURL:webViewURL
                    sameDocumentNavigation:isSameDocumentNavigation
-                           hasUserGesture:NO];
+                           hasUserGesture:NO
+                    placeholderNavigation:IsPlaceholderUrl(webViewURL)];
       [self webPageChangedWithContext:newContext.get()];
       newContext->SetHasCommitted(!isSameDocumentNavigation);
       _webStateImpl->OnNavigationFinished(newContext.get());
@@ -5533,7 +5554,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       //   4.) Back-forward same document navigation
       newNavigationContext = [self registerLoadRequestForURL:newURL
                                       sameDocumentNavigation:YES
-                                              hasUserGesture:NO];
+                                              hasUserGesture:NO
+                                       placeholderNavigation:NO];
 
       // Use the current title for items created by same document navigations.
       auto* pendingItem = self.navigationManagerImpl->GetPendingItem();
@@ -5653,7 +5675,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
                                  referrer:self.currentNavItemReferrer
                                transition:self.currentTransition
                    sameDocumentNavigation:sameDocumentNavigation
-                           hasUserGesture:YES];
+                           hasUserGesture:YES
+                    placeholderNavigation:NO];
       WKNavigation* navigation = [self loadPOSTRequest:request];
       [_navigationStates setContext:std::move(navigationContext)
                       forNavigation:navigation];
@@ -5671,7 +5694,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
                                referrer:self.currentNavItemReferrer
                              transition:self.currentTransition
                  sameDocumentNavigation:sameDocumentNavigation
-                         hasUserGesture:YES];
+                         hasUserGesture:YES
+                  placeholderNavigation:NO];
     navigationContext->SetIsRendererInitiated(false);
     WKNavigation* navigation = [self loadRequest:request];
     [_navigationStates setContext:std::move(navigationContext)
@@ -5714,7 +5738,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
                                referrer:self.currentNavItemReferrer
                              transition:self.currentTransition
                  sameDocumentNavigation:sameDocumentNavigation
-                         hasUserGesture:YES];
+                         hasUserGesture:YES
+                  placeholderNavigation:NO];
     navigationContext->SetIsRendererInitiated(false);
     WKNavigation* navigation = nil;
     if (navigationURL == net::GURLWithNSURL([_webView URL])) {
