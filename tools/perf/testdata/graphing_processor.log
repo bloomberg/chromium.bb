@@ -47,3 +47,10 @@ RESULT artificial_graph: trace_with_one_sample= [177.0] you-nits
 RESULT artificial_graph: trace_with_one_sample_comma= [177.0,] you-nits
 RESULT artificial_graph: trace_with_three_samples= [100.0,120.0,200.0] you-nits
 RESULT artificial_graph: trace_with_three_samples_comma= [100.0,120.0,200.0,] you-nits
+
+# Artificial log output to test multiple results with the same name
+
+RESULT artificial_graph: trace_with_multiple_samples= 100 you-nits
+RESULT artificial_graph: trace_with_multiple_samples= 200 you-nits
+RESULT artificial_graph: trace_with_multiple_samples= 300 you-nits
+RESULT artificial_graph: trace_with_multiple_samples= 400 you-nits

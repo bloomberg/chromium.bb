@@ -73,11 +73,12 @@ class LegacyResultsProcessor(object):
 
     def __init__(self):
       self.important = False
-      self.value = 0.0
+      self.values = []
+      self.mean = 0.0
       self.stddev = 0.0
 
     def __str__(self):
-      result = _FormatHumanReadable(self.value)
+      result = _FormatHumanReadable(self.mean)
       if self.stddev:
         result += '+/-%s' % _FormatHumanReadable(self.stddev)
       return result
@@ -100,7 +101,7 @@ class LegacyResultsProcessor(object):
       """Returns a dictionary mapping trace names to [value, stddev]."""
       traces_dict = {}
       for name, trace in self.traces.items():
-        traces_dict[name] = [str(trace.value), str(trace.stddev)]
+        traces_dict[name] = [str(trace.mean), str(trace.stddev)]
       return traces_dict
 
 
@@ -141,37 +142,43 @@ class LegacyResultsProcessor(object):
     graph = self._graphs.get(graph_name, self.Graph())
     graph.units = (match_dict['UNITS'] or '').strip()
     trace = graph.traces.get(trace_name, self.Trace())
-    trace.value = match_dict['VALUE']
+    value = match_dict['VALUE']
     trace.important = match_dict['IMPORTANT'] or False
 
     # Compute the mean and standard deviation for a list or a histogram,
     # or the numerical value of a scalar value.
-    if trace.value.startswith('['):
+    if value.startswith('['):
       try:
-        value_list = [float(x) for x in trace.value.strip('[],').split(',')]
+        value_list = [float(x) for x in value.strip('[],').split(',')]
       except ValueError:
         # Report, but ignore, corrupted data lines. (Lines that are so badly
         # broken that they don't even match the RESULTS_REGEX won't be
         # detected.)
-        logging.warning("Bad test output: '%s'" % trace.value.strip())
+        logging.warning("Bad test output: '%s'" % value.strip())
         return
-      trace.value, trace.stddev, filedata = self._CalculateStatistics(
-          value_list, trace_name)
+      trace.values += value_list
+      trace.mean, trace.stddev, filedata = self._CalculateStatistics(
+        trace.values, trace_name)
       assert filedata is not None
       for filename in filedata:
         self._PrependLog(filename, filedata[filename])
-    elif trace.value.startswith('{'):
-      stripped = trace.value.strip('{},')
+    elif value.startswith('{'):
+      stripped = value.strip('{},')
       try:
-        trace.value, trace.stddev = [float(x) for x in stripped.split(',')]
+        trace.mean, trace.stddev = [float(x) for x in stripped.split(',')]
       except ValueError:
-        logging.warning("Bad test output: '%s'" % trace.value.strip())
+        logging.warning("Bad test output: '%s'" % value.strip())
         return
     else:
       try:
-        trace.value = float(trace.value)
+        trace.values.append(float(value))
+        trace.mean, trace.stddev, filedata = self._CalculateStatistics(
+          trace.values, trace_name)
+        assert filedata is not None
+        for filename in filedata:
+          self._PrependLog(filename, filedata[filename])
       except ValueError:
-        logging.warning("Bad test output: '%s'" % trace.value.strip())
+        logging.warning("Bad test output: '%s'" % value.strip())
         return
 
     graph.traces[trace_name] = trace
@@ -183,8 +190,14 @@ class LegacyResultsProcessor(object):
     """
     charts = {}
     for graph_name, graph in self._graphs.iteritems():
+      traces = graph.BuildTracesDict()
+
+      # Traces should contain exactly two elements: [mean, stddev].
+      for _, trace in traces.iteritems():
+        assert len(trace) == 2
+
       graph_dict = collections.OrderedDict([
-        ('traces', graph.BuildTracesDict()),
+        ('traces', traces),
         ('units', str(graph.units)),
       ])
 
