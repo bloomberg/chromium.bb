@@ -96,8 +96,10 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
  public:
   LoginErrorBubbleView(views::View* content,
                        views::View* anchor_view,
-                       aura::Window* container)
-      : LoginBaseBubbleView(anchor_view, container) {
+                       aura::Window* container,
+                       bool show_persistently)
+      : LoginBaseBubbleView(anchor_view, container),
+        show_persistently_(show_persistently) {
     set_anchor_view_insets(
         gfx::Insets(kAnchorViewErrorBubbleVerticalSpacingDp, 0));
 
@@ -125,6 +127,9 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
 
   ~LoginErrorBubbleView() override = default;
 
+  // LoginBaseBubbleView:
+  bool IsPersistent() const override { return show_persistently_; }
+
   // views::View:
   const char* GetClassName() const override { return "LoginErrorBubbleView"; }
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -132,6 +137,8 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
   }
 
  private:
+  bool show_persistently_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginErrorBubbleView);
 };
 
@@ -453,14 +460,14 @@ LoginBubble::~LoginBubble() {
 
 void LoginBubble::ShowErrorBubble(views::View* content,
                                   views::View* anchor_view,
-                                  uint32_t flags) {
+                                  bool show_persistently) {
   if (bubble_view_)
     CloseImmediately();
 
-  flags_ = flags;
   aura::Window* menu_container = Shell::GetContainer(
       Shell::GetPrimaryRootWindow(), kShellWindowId_MenuContainer);
-  bubble_view_ = new LoginErrorBubbleView(content, anchor_view, menu_container);
+  bubble_view_ = new LoginErrorBubbleView(content, anchor_view, menu_container,
+                                          show_persistently);
 
   Show();
 }
@@ -477,7 +484,6 @@ void LoginBubble::ShowUserMenu(const base::string16& username,
   if (bubble_view_)
     CloseImmediately();
 
-  flags_ = kFlagsNone;
   bubble_view_ = new LoginUserMenuView(
       this, username, email, type, is_owner, anchor_view, bubble_opener,
       show_remove_user, std::move(on_remove_user_warning_shown),
@@ -496,7 +502,6 @@ void LoginBubble::ShowTooltip(const base::string16& message,
   if (bubble_view_)
     CloseImmediately();
 
-  flags_ = kFlagsNone;
   bubble_view_ = new LoginTooltipView(message, anchor_view);
   Show();
 }
@@ -505,7 +510,6 @@ void LoginBubble::ShowSelectionMenu(LoginMenuView* menu) {
   if (bubble_view_)
     CloseImmediately();
 
-  flags_ = kFlagsNone;
   const bool had_focus =
       menu->GetBubbleOpener() && menu->GetBubbleOpener()->HasFocus();
 
@@ -579,7 +583,7 @@ void LoginBubble::OnKeyEvent(ui::KeyEvent* event) {
   if (bubble_view_->GetWidget()->IsActive())
     return;
 
-  if (!(flags_ & kFlagPersistent)) {
+  if (!bubble_view_->IsPersistent()) {
     Close();
   }
 }
@@ -603,7 +607,7 @@ void LoginBubble::OnWindowFocused(aura::Window* gained_focus,
   if (gained_focus && bubble_window->Contains(gained_focus))
     return;
 
-  if (!(flags_ & kFlagPersistent))
+  if (!bubble_view_->IsPersistent())
     Close();
 }
 
@@ -645,7 +649,7 @@ void LoginBubble::ProcessPressedEvent(const ui::LocatedEvent* event) {
       return;
   }
 
-  if (!(flags_ & kFlagPersistent))
+  if (!bubble_view_->IsPersistent())
     Close();
 }
 
@@ -694,7 +698,6 @@ void LoginBubble::Reset(bool widget_already_closing) {
     bubble_view_->GetWidget()->Close();
   is_visible_ = false;
   bubble_view_ = nullptr;
-  flags_ = kFlagsNone;
 }
 
 void LoginBubble::EnsureBubbleInScreen() {

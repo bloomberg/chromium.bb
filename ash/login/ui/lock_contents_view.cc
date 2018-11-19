@@ -697,7 +697,7 @@ void LockContentsView::OnFingerprintStateChanged(
 
     auth_error_bubble_->ShowErrorBubble(
         container, big_view->auth_user()->password_view() /*anchor_view*/,
-        LoginBubble::kFlagPersistent);
+        true /*show_persistently*/);
   }
 }
 
@@ -816,7 +816,7 @@ void LockContentsView::OnShowWarningBanner(const base::string16& message) {
   label->SetEnabledColor(SK_ColorWHITE);
   warning_banner_bubble_->ShowErrorBubble(
       label, CurrentBigUserView()->auth_user()->password_view() /*anchor_view*/,
-      LoginBubble::kFlagPersistent);
+      true /*show_persistently*/);
 }
 
 void LockContentsView::OnHideWarningBanner() {
@@ -975,7 +975,7 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
 
   detachable_base_error_bubble_->ShowErrorBubble(
       label, CurrentBigUserView()->auth_user()->password_view() /*anchor_view*/,
-      LoginBubble::kFlagPersistent);
+      true /*show_persistently*/);
 
   // Remove the focus from the password field, to make user less likely to enter
   // the password without seeing the warning about detachable base change.
@@ -1489,7 +1489,7 @@ void LockContentsView::OnBigUserChanged() {
     supervised_user_deprecation_bubble_->ShowErrorBubble(
         label,
         CurrentBigUserView()->auth_user()->password_view() /*anchor_view*/,
-        LoginBubble::kFlagPersistent);
+        true /*show_persistently*/);
   }
 
   // The new auth user might have different last used detachable base - make
@@ -1595,7 +1595,7 @@ void LockContentsView::ShowAuthErrorMessage() {
 
   auth_error_bubble_->ShowErrorBubble(
       container, big_view->auth_user()->password_view() /*anchor_view*/,
-      LoginBubble::kFlagsNone);
+      false /*show_persistently*/);
 }
 
 void LockContentsView::OnEasyUnlockIconHovered() {
