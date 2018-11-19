@@ -83,17 +83,17 @@ int TrayItemView::GetAnimationDurationMS() {
   return kTrayItemAnimationDurationMS;
 }
 
+bool TrayItemView::IsHorizontalAlignment() const {
+  return shelf_->IsHorizontalAlignment();
+}
+
 gfx::Size TrayItemView::CalculatePreferredSize() const {
   DCHECK_EQ(1, child_count());
-  gfx::Size inner_size = views::View::CalculatePreferredSize();
+  gfx::Size size = views::View::CalculatePreferredSize();
   if (image_view_) {
-    inner_size = gfx::Size(TrayConstants::GetTrayIconSize(),
-                           TrayConstants::GetTrayIconSize());
+    size = gfx::Size(kUnifiedTrayIconSize, kUnifiedTrayIconSize);
   }
-  gfx::Rect rect(inner_size);
-  if (label_)
-    rect.Inset(gfx::Insets(-kTrayImageItemPadding));
-  gfx::Size size = rect.size();
+
   if (!animation_.get() || !animation_->is_animating())
     return size;
   if (shelf_->IsHorizontalAlignment()) {

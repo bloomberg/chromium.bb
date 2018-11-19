@@ -51,6 +51,15 @@ PowerTrayView::~PowerTrayView() {
   PowerStatus::Get()->RemoveObserver(this);
 }
 
+gfx::Size PowerTrayView::CalculatePreferredSize() const {
+  // The battery icon is a lot thinner than other icons, hence the special
+  // logic.
+  gfx::Size standard_size = TrayItemView::CalculatePreferredSize();
+  if (IsHorizontalAlignment())
+    return gfx::Size(kUnifiedTrayBatteryWidth, standard_size.height());
+  return standard_size;
+}
+
 void PowerTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
   node_data->role = ax::mojom::Role::kButton;

@@ -25,6 +25,7 @@ class PowerTrayView : public TrayItemView,
   ~PowerTrayView() override;
 
   // views::View:
+  gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   bool GetTooltipText(const gfx::Point& p,

@@ -220,8 +220,7 @@ void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
     layout->AddView(vertical_label_hours_.get());
     layout->StartRow(0, kColumnId);
     layout->AddView(vertical_label_minutes_.get());
-    layout->AddPaddingRow(
-        0, kTrayImageItemPadding + kVerticalClockMinutesTopOffset);
+    layout->AddPaddingRow(0, kVerticalClockMinutesTopOffset);
   }
   Layout();
 }
