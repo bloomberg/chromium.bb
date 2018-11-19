@@ -32,6 +32,23 @@ const char kRequestRequiresUserActivation[] =
 const char kSessionNotSupported[] =
     "The specified session configuration is not supported.";
 
+/**
+ * Helper method to convert IDL options into Mojo options.
+ */
+device::mojom::blink::XRSessionOptionsPtr convertIdlOptionsToMojo(
+    const XRSessionCreationOptions* options) {
+  auto session_options = device::mojom::blink::XRSessionOptions::New();
+  if (options->hasImmersive()) {
+    session_options->immersive = options->immersive();
+  }
+  if (options->hasEnvironmentIntegration()) {
+    session_options->environment_integration =
+        options->environmentIntegration();
+  }
+
+  return session_options;
+}
+
 }  // namespace
 
 XRDevice::XRDevice(XR* xr, device::mojom::blink::XRDevicePtr device)
@@ -71,8 +88,7 @@ ScriptPromise XRDevice::supportsSession(
   ScriptPromise promise = resolver->Promise();
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
-      device::mojom::blink::XRSessionOptions::New();
-  session_options->immersive = options->immersive();
+      convertIdlOptionsToMojo(options);
 
   device_ptr_->SupportsSession(
       std::move(session_options),
@@ -154,9 +170,7 @@ ScriptPromise XRDevice::requestSession(
   ScriptPromise promise = resolver->Promise();
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
-      device::mojom::blink::XRSessionOptions::New();
-  session_options->immersive = options->immersive();
-  session_options->environment_integration = options->environmentIntegration();
+      convertIdlOptionsToMojo(options);
   session_options->has_user_activation = has_user_activation;
 
   XRPresentationContext* output_context =
