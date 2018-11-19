@@ -100,12 +100,12 @@ class PasswordFormBuilder {
 
   // Appends a disabled text-type field at the end of the form.
   void AddDisabledUsernameField() {
-    html_ += "<INPUT type=\"text\" disabled/>";
+    html_ += "<INPUT name=\"disabled field\" type=\"text\" disabled/>";
   }
 
   // Appends a disabled password-type field at the end of the form.
   void AddDisabledPasswordField() {
-    html_ += "<INPUT type=\"password\" disabled/>";
+    html_ += "<INPUT name=\"disabled field\" type=\"password\" disabled/>";
   }
 
   // Appends a hidden field at the end of the form.
@@ -346,6 +346,10 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, DisabledFieldsAreIgnored) {
   EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
 }
 
+// When not enough fields are enabled to parse the form, the result should still
+// be not null. It must contain only minimal information, so that it is not used
+// for fill on load, for example. It must contain the full FormData, so that the
+// new parser can be run as well.
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, OnlyDisabledFields) {
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddDisabledUsernameField();
@@ -355,7 +359,11 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, OnlyDisabledFields) {
 
   std::unique_ptr<PasswordForm> password_form =
       LoadHTMLAndConvertForm(html, nullptr, false);
-  ASSERT_FALSE(password_form);
+  ASSERT_TRUE(password_form);
+  EXPECT_TRUE(password_form->username_element.empty());
+  EXPECT_TRUE(password_form->password_element.empty());
+  EXPECT_TRUE(password_form->new_password_element.empty());
+  EXPECT_EQ(2u, password_form->form_data.fields.size());
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest,
