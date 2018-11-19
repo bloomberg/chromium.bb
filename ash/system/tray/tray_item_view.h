@@ -24,7 +24,7 @@ class ImageView;
 namespace ash {
 class Shelf;
 
-// Lable view which can be given a different data from the visible label.
+// Label view which can be given a different data from the visible label.
 // IME icons like "US" (US keyboard) or "あ(Google Japanese Input)" are
 // rendered as a label, but reading such text literally will not always be
 // understandable.
@@ -66,6 +66,9 @@ class ASH_EXPORT TrayItemView : public views::View,
  protected:
   // The default animation duration is 200ms. But each view can customize this.
   virtual int GetAnimationDurationMS();
+
+  // Returns whether the shelf is horizontal.
+  bool IsHorizontalAlignment() const;
 
  private:
   // Overridden from views::View.
