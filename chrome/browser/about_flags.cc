@@ -131,7 +131,6 @@
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/leveldatabase/leveldb_features.h"
-#include "third_party/libaom/av1_buildflags.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
@@ -3678,12 +3677,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableMultiMirroringDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kDisableMultiMirroring)},
 #endif  // defined(OS_CHROMEOS)
-
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-    {"enable-av1-decoder", flag_descriptions::kAv1DecoderName,
-     flag_descriptions::kAv1DecoderDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(media::kAv1Decoder)},
-#endif  // ENABLE_AV1_DECODER
 
 #if defined(OS_ANDROID)
     {"grant-notifications-to-dse",

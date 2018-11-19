@@ -69,8 +69,7 @@ static std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest(
 #endif
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(kAv1Decoder))
-    video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
+  video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif
 
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)

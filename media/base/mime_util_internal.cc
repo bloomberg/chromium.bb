@@ -281,8 +281,7 @@ void MimeUtil::AddSupportedMediaFormats() {
   const CodecSet webm_audio_codecs{OPUS, VORBIS};
   CodecSet webm_video_codecs{VP8, VP9};
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(kAv1Decoder))
-    webm_video_codecs.emplace(AV1);
+  webm_video_codecs.emplace(AV1);
 #endif
 
   CodecSet webm_codecs(webm_audio_codecs);
@@ -323,8 +322,7 @@ void MimeUtil::AddSupportedMediaFormats() {
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(kAv1Decoder))
-    mp4_video_codecs.emplace(AV1);
+  mp4_video_codecs.emplace(AV1);
 #endif
 
   CodecSet mp4_codecs(mp4_audio_codecs);
@@ -821,8 +819,7 @@ bool MimeUtil::ParseCodecHelper(const std::string& mime_type_lower_case,
   }
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(kAv1Decoder) &&
-      ParseAv1CodecId(codec_id, out_profile, out_level, out_color_space)) {
+  if (ParseAv1CodecId(codec_id, out_profile, out_level, out_color_space)) {
     out_result->codec = MimeUtil::AV1;
     return true;
   }

@@ -639,13 +639,6 @@ class MSEChangeTypeTest
     MSEPlaybackTestData file_one = std::get<0>(GetParam());
     MSEPlaybackTestData file_two = std::get<1>(GetParam());
 
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-    // AV1 media is included in the some of these tests when the decoder is
-    // enabled.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(kAv1Decoder);
-#endif
-
     // Start in 'sequence' appendMode, because some test media begin near enough
     // to time 0, resulting in gaps across the changeType boundary in buffered
     // media timeline.
@@ -1486,9 +1479,6 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_Live) {
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_WebM) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kAv1Decoder);
-
   MockMediaSource source("bear-av1.webm", 18898);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
@@ -1506,9 +1496,6 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_WebM) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_10bit_WebM) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kAv1Decoder);
-
   MockMediaSource source("bear-av1-320x180-10bit.webm", 19076);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
@@ -1873,8 +1860,6 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHi12PVP9) {
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_MP4) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kAv1Decoder);
   MockMediaSource source("bear-av1.mp4", 24355);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
@@ -1892,8 +1877,6 @@ TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_MP4) {
 }
 
 TEST_P(MSEPipelineIntegrationTest, BasicPlayback_AV1_10bit_MP4) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kAv1Decoder);
   MockMediaSource source("bear-av1-320x180-10bit.mp4", 19658);
   EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
   source.EndOfStream();
@@ -1949,8 +1932,6 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_FlacInMp4) {
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_AV1_Mp4) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kAv1Decoder);
   ASSERT_EQ(PIPELINE_OK, Start("bear-av1.mp4"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
@@ -2873,8 +2854,6 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_VP9_WebM) {
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_AV1_WebM) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(kAv1Decoder);
   ASSERT_EQ(PIPELINE_OK, Start("bear-av1.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
