@@ -12,14 +12,19 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/expiring_cache.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/host_resolver_source.h"
@@ -89,17 +94,33 @@ class NET_EXPORT HostCache {
       SOURCE_HOSTS,
     };
 
-    Entry(int error,
-          const AddressList& addresses,
-          Source source,
-          base::TimeDelta ttl);
+    template <typename T>
+    Entry(int error, T&& results, Source source, base::TimeDelta ttl)
+        : error_(error), source_(source), ttl_(ttl) {
+      DCHECK(ttl >= base::TimeDelta());
+      SetResult(std::forward<T>(results));
+    }
+
     // Use when |ttl| is unknown.
-    Entry(int error, const AddressList& addresses, Source source);
+    template <typename T>
+    Entry(int error, T&& results, Source source)
+        : error_(error),
+          source_(source),
+          ttl_(base::TimeDelta::FromSeconds(-1)) {
+      SetResult(std::forward<T>(results));
+    }
+
     Entry(Entry&& entry);
     ~Entry();
 
     int error() const { return error_; }
-    const AddressList& addresses() const { return addresses_; }
+    const base::Optional<AddressList>& addresses() const { return addresses_; }
+    const base::Optional<std::vector<std::string>>& text_records() const {
+      return text_records_;
+    }
+    const base::Optional<std::vector<HostPortPair>>& hostnames() const {
+      return hostnames_;
+    }
     Source source() const { return source_; }
     bool has_ttl() const { return ttl_ >= base::TimeDelta(); }
     base::TimeDelta ttl() const { return ttl_; }
@@ -118,10 +139,20 @@ class NET_EXPORT HostCache {
           int network_changes);
 
     Entry(int error,
-          const AddressList& addresses,
+          const base::Optional<AddressList>& addresses,
+          base::Optional<std::vector<std::string>>&& text_results,
+          base::Optional<std::vector<HostPortPair>>&& hostnames,
           Source source,
           base::TimeTicks expires,
           int network_changes);
+
+    void SetResult(AddressList addresses) { addresses_ = std::move(addresses); }
+    void SetResult(std::vector<std::string> text_records) {
+      text_records_ = std::move(text_records);
+    }
+    void SetResult(std::vector<HostPortPair> hostnames) {
+      hostnames_ = std::move(hostnames);
+    }
 
     int total_hits() const { return total_hits_; }
     int stale_hits() const { return stale_hits_; }
@@ -134,8 +165,10 @@ class NET_EXPORT HostCache {
 
     // The resolve results for this entry.
     int error_;
-    AddressList addresses_;
-    // Where addresses_ were obtained (e.g. DNS lookup, hosts file, etc).
+    base::Optional<AddressList> addresses_;
+    base::Optional<std::vector<std::string>> text_records_;
+    base::Optional<std::vector<HostPortPair>> hostnames_;
+    // Where results were obtained (e.g. DNS lookup, hosts file, etc).
     Source source_;
     // TTL obtained from the nameserver. Negative if unknown.
     base::TimeDelta ttl_;
@@ -243,13 +276,13 @@ class NET_EXPORT HostCache {
 
   Entry* LookupInternal(const Key& key);
 
-  void RecordSet(SetOutcome outcome,
-                 base::TimeTicks now,
-                 const Entry* old_entry,
-                 const Entry& new_entry,
-                 AddressListDeltaType delta);
-  void RecordUpdateStale(AddressListDeltaType delta,
-                         const EntryStaleness& stale);
+  void LogRecordSet(SetOutcome outcome,
+                    base::TimeTicks now,
+                    const Entry* old_entry,
+                    const Entry& new_entry,
+                    AddressListDeltaType delta);
+  void LogRecordUpdateStale(AddressListDeltaType delta,
+                            const EntryStaleness& stale);
   void RecordLookup(LookupOutcome outcome,
                     base::TimeTicks now,
                     const Entry* entry);
