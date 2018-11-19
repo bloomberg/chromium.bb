@@ -359,8 +359,8 @@ Output.PRESSED_STATE_MAP = {
 Output.RULES = {
   navigate: {
     'default': {
-      speak: `$name $node(activeDescendant) $value $state $restriction $role
-          $description`,
+      speak: `$name $node(activeDescendant) $value $state
+          $if($selected, @aria_selected_true) $restriction $role $description`,
       braille: ``
     },
     abstractContainer: {
