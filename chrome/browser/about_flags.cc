@@ -461,20 +461,6 @@ const FeatureEntry::Choice kNumRasterThreadsChoices[] = {
     {flag_descriptions::kNumRasterThreadsFour, switches::kNumRasterThreads,
      "4"}};
 
-const FeatureEntry::Choice kGpuRasterizationMSAASampleCountChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kGpuRasterizationMsaaSampleCountZero,
-     switches::kGpuRasterizationMSAASampleCount, "0"},
-    {flag_descriptions::kGpuRasterizationMsaaSampleCountTwo,
-     switches::kGpuRasterizationMSAASampleCount, "2"},
-    {flag_descriptions::kGpuRasterizationMsaaSampleCountFour,
-     switches::kGpuRasterizationMSAASampleCount, "4"},
-    {flag_descriptions::kGpuRasterizationMsaaSampleCountEight,
-     switches::kGpuRasterizationMSAASampleCount, "8"},
-    {flag_descriptions::kGpuRasterizationMsaaSampleCountSixteen,
-     switches::kGpuRasterizationMSAASampleCount, "16"},
-};
-
 const FeatureEntry::Choice kMHTMLGeneratorOptionChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kMhtmlSkipNostoreMain, switches::kMHTMLGeneratorOption,
@@ -1571,10 +1557,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-oop-rasterization", flag_descriptions::kOopRasterizationName,
      flag_descriptions::kOopRasterizationDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableOopRasterizationChoices)},
-    {"gpu-rasterization-msaa-sample-count",
-     flag_descriptions::kGpuRasterizationMsaaSampleCountName,
-     flag_descriptions::kGpuRasterizationMsaaSampleCountDescription, kOsAll,
-     MULTI_VALUE_TYPE(kGpuRasterizationMSAASampleCountChoices)},
     {"enable-experimental-web-platform-features",
      flag_descriptions::kExperimentalWebPlatformFeaturesName,
      flag_descriptions::kExperimentalWebPlatformFeaturesDescription, kOsAll,
