@@ -63,7 +63,7 @@ const char* kShift[] = {
     u8"\u0b95",                    // Digit1
     u8"\u0be8",                    // Digit2
     u8"\u0bcd\u0bb0",              // Digit3
-    u8"\u0bb0\u0bcd",              // Digit4
+    u8"\u20b9",                    // Digit4
     u8"\u0b9c\u0bcd\u0b9e",        // Digit5
     u8"\u0ba4\u0bcd\u0bb0",        // Digit6
     u8"\u0b95\u0bcd\u0bb7",        // Digit7
@@ -105,7 +105,7 @@ const char* kShift[] = {
     u8"\u0bb6",                    // KeyM
     u8"\u0bb7",                    // Comma
     u8"\u0bb8\u0bcd\u0bb0\u0bc0",  // Period
-    u8"",                          // Slash
+    u8"?",                         // Slash
     u8"\u0020",                    // Space
 };
 const char* kAltGr[] = {
@@ -213,7 +213,7 @@ const char* kShiftCapslock[] = {
     u8"\u0b95",                    // Digit1
     u8"\u0be8",                    // Digit2
     u8"\u0bcd\u0bb0",              // Digit3
-    u8"\u0bb0\u0bcd",              // Digit4
+    u8"\u20b9",                    // Digit4
     u8"\u0b9c\u0bcd\u0b9e",        // Digit5
     u8"\u0ba4\u0bcd\u0bb0",        // Digit6
     u8"\u0b95\u0bcd\u0bb7",        // Digit7
@@ -255,7 +255,7 @@ const char* kShiftCapslock[] = {
     u8"\u0bb6",                    // KeyM
     u8"\u0bb7",                    // Comma
     u8"\u0bb8\u0bcd\u0bb0\u0bc0",  // Period
-    u8"",                          // Slash
+    u8"?",                         // Slash
     u8"\u0020",                    // Space
 };
 const char** kKeyMap[8] = {kNormal,   kShift,        kAltGr,
