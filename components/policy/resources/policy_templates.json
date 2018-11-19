@@ -2271,11 +2271,11 @@
       'id': 358,
       'caption': '''Enable the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data''',
       'tags': ['local-data-access'],
-      'desc': '''If you enable this setting, the settings stored in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles like bookmarks, autofill data, passwords, etc. will also be written to a file stored in the Roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME">$1<ex>RoamingProfileLocation</ex></ph> policy. Enabling this policy disables cloud sync.
+      'desc': '''If you enable this setting, the settings stored in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles like bookmarks, autofill data, passwords, etc. will also be written to a file stored in the Roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME">RoamingProfileLocation</ph> policy. Enabling this policy disables cloud sync.
 
       If this policy is disabled or left not set only the regular local profiles will be used.
 
-      The <ph name="SYNC_DISABLED_POLICY_NAME">SyncDisabled</ph> policy disables all data synchronization, overriding RoamingProfileSupportEnabled.''',
+      The <ph name="SYNC_DISABLED_POLICY_NAME">SyncDisabled</ph> policy disables all data synchronization, overriding <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME">RoamingProfileSupportEnabled</ph>.''',
       'label': '''Enable the creation of roaming copies for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profile data.''',
     },
     {
@@ -2293,7 +2293,7 @@
       'tags': ['local-data-access'],
       'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing the roaming copy of the profiles.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory to store the roaming copy of the profiles if the <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME">$1<ex>RoamingProfileSupportEnabled</ex></ph> policy has been enabled. If the <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME">$1<ex>RoamingProfileSupportEnabled</ex></ph> policy is disabled or left unset the value stored in this policy is not used.
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory to store the roaming copy of the profiles if the <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME">RoamingProfileSupportEnabled</ph> policy has been enabled. If the <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME">RoamingProfileSupportEnabled</ph> policy is disabled or left unset the value stored in this policy is not used.
 
       See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
 
