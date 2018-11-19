@@ -2,6 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Namespace
+const directorytree = {};
+
+/**
+ * Returns a string to be used as an attribute value to customize the entry
+ * icon.
+ *
+ * @param {VolumeManagerCommon.RootType} rootType The root type to entry.
+ * @param {Entry|FilesAppEntry} entry
+ * @return {string} a string
+ */
+directorytree.getIconOverrides = function(rootType, entry) {
+  // Overrides per RootType and defined by fullPath.
+  const overrides = {
+    [VolumeManagerCommon.RootType.DOWNLOADS]: {
+      '/Downloads': VolumeManagerCommon.VolumeType.DOWNLOADS,
+    },
+  };
+  const root = overrides[rootType];
+  return root ? root[entry.fullPath] : null;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryTreeBase
 
@@ -86,6 +108,7 @@ DirectoryItemTreeBaseMethods.searchAndSelectByEntry = function(entry) {
   }
   return false;
 };
+
 /**
  * Records UMA for the selected entry at {@code location}. Records slightly
  * differently if the expand icon is selected and {@code expandIconSelected} is
@@ -635,7 +658,10 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
           'volume-type-for-testing', location.volumeInfo.volumeType);
     }
   } else {
-    icon.setAttribute('file-type-icon', 'folder');
+    const rootType = location.rootType || null;
+    const iconName =
+        directorytree.getIconOverrides(rootType, dirEntry) || 'folder';
+    icon.setAttribute('file-type-icon', iconName);
     item.updateSharedStatusIcon();
   }
 
@@ -734,6 +760,24 @@ EntryListItem.prototype = {
   get modelItem() {
     return this.modelItem_;
   }
+};
+
+/**
+ * Default sorting for DirectoryItem sub-dirrectories.
+ * @param {!Array<!Entry>} entries Entries to be sorted.
+ * @returns {!Array<!Entry>}
+ */
+EntryListItem.prototype.sortEntries = function(entries) {
+  if (!util.isMyFilesVolumeEnabled())
+    return DirectoryItem.prototype.sortEntries.apply(this, [entries]);
+
+  // If the root entry hasn't been resolved yet.
+  if (!this.entry)
+    return DirectoryItem.prototype.sortEntries.apply(this, [entries]);
+
+  const filter = this.fileFilter_.filter.bind(this.fileFilter_);
+  return entries.filter(filter).sort(
+      util.compareNameAndGroupBottomEntries(this.entry.getUIChildren()));
 };
 
 /**

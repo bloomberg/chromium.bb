@@ -875,8 +875,8 @@ util.collator = new Intl.Collator(
 
 /**
  * Compare by name. The 2 entries must be in same directory.
- * @param {Entry} entry1 First entry.
- * @param {Entry} entry2 Second entry.
+ * @param {Entry|FilesAppEntry} entry1 First entry.
+ * @param {Entry|FilesAppEntry} entry2 Second entry.
  * @return {number} Compare result.
  */
 util.compareName = function(entry1, entry2) {
@@ -885,12 +885,48 @@ util.compareName = function(entry1, entry2) {
 
 /**
  * Compare by path.
- * @param {Entry} entry1 First entry.
- * @param {Entry} entry2 Second entry.
+ * @param {Entry|FilesAppEntry} entry1 First entry.
+ * @param {Entry|FilesAppEntry} entry2 Second entry.
  * @return {number} Compare result.
  */
 util.comparePath = function(entry1, entry2) {
   return util.collator.compare(entry1.fullPath, entry2.fullPath);
+};
+
+/**
+ * @param {!Array<Entry|FilesAppEntry>} bottomEntries entries that should be
+ * grouped in the bottom, used for sorting Linux and Play files entries after
+ * other folders in MyFiles.
+ * return {function(Entry|FilesAppEntry, Entry|FilesAppEntry) to compare entries
+ * by name.
+ */
+util.compareNameAndGroupBottomEntries = function(bottomEntries) {
+  const childrenMap = new Map();
+  bottomEntries.forEach((entry) => {
+    childrenMap.set(entry.toURL(), entry);
+  });
+
+  /**
+   * Compare entries putting entries from |bottomEntries| in the bottom and
+   * sort by name within entries that are the same type in regards to
+   * |bottomEntries|.
+   * @param {Entry|FilesAppEntry} entry1 First entry.
+   * @param {Entry|FilesAppEntry} entry2 First entry.
+   */
+  function compare_(entry1, entry2) {
+    // Bottom entry here means Linux or Play files, which should appear after
+    // all native entries.
+    const isBottomlEntry1 = childrenMap.has(entry1.toURL()) ? 1 : 0;
+    const isBottomlEntry2 = childrenMap.has(entry2.toURL()) ? 1 : 0;
+
+    // When there are the same type, just compare by name.
+    if (isBottomlEntry1 === isBottomlEntry2)
+      return util.compareName(entry1, entry2);
+
+    return isBottomlEntry1 - isBottomlEntry2;
+  }
+
+  return compare_;
 };
 
 /**
@@ -1133,7 +1169,7 @@ util.splitExtension = function(path) {
 util.getRootTypeLabel = function(locationInfo) {
   switch (locationInfo.rootType) {
     case VolumeManagerCommon.RootType.DOWNLOADS:
-      return str('DOWNLOADS_DIRECTORY_LABEL');
+      return locationInfo.volumeInfo.label;
     case VolumeManagerCommon.RootType.DRIVE:
       return str('DRIVE_MY_DRIVE_LABEL');
     case VolumeManagerCommon.RootType.TEAM_DRIVE:
@@ -1512,4 +1548,10 @@ util.unwrapEntry = function(entry) {
     return nativeEntry;
 
   return entry;
+};
+
+/** @return {boolean} */
+util.isMyFilesVolumeEnabled = function() {
+  return loadTimeData.valueExists('MY_FILES_VOLUME_ENABLED') &&
+      loadTimeData.getBoolean('MY_FILES_VOLUME_ENABLED');
 };

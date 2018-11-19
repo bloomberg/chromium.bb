@@ -230,7 +230,8 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/downloads.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='downloads'] {
+.tree-row[selected] [volume-type-icon='downloads'],
+.tree-row[selected] [file-type-icon='downloads'] {
   background-image: -webkit-image-set(
       url(../images/volumes/downloads_active.png) 1x,
       url(../images/volumes/2x/downloads_active.png) 2x);
