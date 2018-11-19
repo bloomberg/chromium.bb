@@ -154,6 +154,10 @@ void ResourceCoordinatorTabHelper::DidFinishNavigation(
         render_frame_host->GetFrameResourceCoordinator();
     page_resource_coordinator_->AddFrame(*frame_resource_coordinator);
 
+    auto* process_resource_coordinator =
+        render_frame_host->GetProcess()->GetProcessResourceCoordinator();
+    process_resource_coordinator->AddFrame(*frame_resource_coordinator);
+
     if (navigation_handle->IsInMainFrame()) {
       if (auto* page_signal_receiver = GetPageSignalReceiver()) {
         // Update the last observed navigation ID for this WebContents.

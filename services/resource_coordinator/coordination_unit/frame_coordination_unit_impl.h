@@ -30,7 +30,6 @@ class FrameCoordinationUnitImpl
   ~FrameCoordinationUnitImpl() override;
 
   // FrameCoordinationUnit implementation.
-  void SetProcess(const CoordinationUnitID& cu_id) override;
   void AddChildFrame(const CoordinationUnitID& cu_id) override;
   void RemoveChildFrame(const CoordinationUnitID& cu_id) override;
   void SetAudibility(bool audible) override;

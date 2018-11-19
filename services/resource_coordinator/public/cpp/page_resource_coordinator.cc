@@ -58,7 +58,7 @@ void PageResourceCoordinator::OnMainFrameNavigationCommitted(
 
 void PageResourceCoordinator::AddFrame(const FrameResourceCoordinator& frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!service_ || !frame.service())
+  if (!service_)
     return;
   // We could keep the ID around ourselves, but this hop ensures that the child
   // has been created on the service-side.
@@ -69,7 +69,7 @@ void PageResourceCoordinator::AddFrame(const FrameResourceCoordinator& frame) {
 void PageResourceCoordinator::RemoveFrame(
     const FrameResourceCoordinator& frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!service_ || !frame.service())
+  if (!service_)
     return;
   frame.service()->GetID(
       base::BindOnce(&PageResourceCoordinator::RemoveFrameByID,

@@ -26,12 +26,12 @@ ProcessCoordinationUnitImpl::~ProcessCoordinationUnitImpl() {
     child_frame->RemoveProcessCoordinationUnit(this);
 }
 
-void ProcessCoordinationUnitImpl::AddFrame(
-    FrameCoordinationUnitImpl* frame_cu) {
-  const bool inserted = frame_coordination_units_.insert(frame_cu).second;
-  DCHECK(inserted);
-  if (frame_cu->lifecycle_state() == mojom::LifecycleState::kFrozen)
-    IncrementNumFrozenFrames();
+void ProcessCoordinationUnitImpl::AddFrame(const CoordinationUnitID& cu_id) {
+  DCHECK(cu_id.type == CoordinationUnitType::kFrame);
+  auto* frame_cu =
+      FrameCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
+  if (frame_cu)
+    AddFrameImpl(frame_cu);
 }
 
 void ProcessCoordinationUnitImpl::SetCPUUsage(double cpu_usage) {
@@ -56,29 +56,12 @@ void ProcessCoordinationUnitImpl::SetMainThreadTaskLoadIsLow(
 }
 
 void ProcessCoordinationUnitImpl::SetPID(base::ProcessId pid) {
-  // Either this is the initial process associated with this process CU,
-  // or it's a subsequent process. In the latter case, there must have been
-  // an exit status associated with the previous process.
-  DCHECK(process_id_ == base::kNullProcessId || exit_status_.has_value());
+  // The PID can only be set once.
+  DCHECK_EQ(process_id_, base::kNullProcessId);
 
   graph()->BeforeProcessPidChange(this, pid);
-
   process_id_ = pid;
-
-  // Clear launch time and exit status for the previous process (if any).
-  launch_time_ = base::Time();
-  exit_status_.reset();
-
-  // Also clear the measurement data (if any), as it references the previous
-  // process.
-  private_footprint_kb_ = 0;
-  cumulative_cpu_usage_ = base::TimeDelta();
-
   SetProperty(mojom::PropertyType::kPID, pid);
-}
-
-void ProcessCoordinationUnitImpl::SetProcessExitStatus(int32_t exit_status) {
-  exit_status_ = exit_status;
 }
 
 void ProcessCoordinationUnitImpl::OnRendererIsBloated() {
@@ -126,6 +109,16 @@ void ProcessCoordinationUnitImpl::OnPropertyChanged(
     int64_t value) {
   for (auto& observer : observers())
     observer.OnProcessPropertyChanged(this, property_type, value);
+}
+
+void ProcessCoordinationUnitImpl::AddFrameImpl(
+    FrameCoordinationUnitImpl* frame_cu) {
+  const bool inserted = frame_coordination_units_.insert(frame_cu).second;
+  if (inserted) {
+    frame_cu->AddProcessCoordinationUnit(this);
+    if (frame_cu->lifecycle_state() == mojom::LifecycleState::kFrozen)
+      IncrementNumFrozenFrames();
+  }
 }
 
 void ProcessCoordinationUnitImpl::RemoveFrame(
