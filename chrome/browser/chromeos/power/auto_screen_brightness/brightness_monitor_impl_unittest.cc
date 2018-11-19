@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/task/task_scheduler/task_scheduler.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -110,12 +111,31 @@ class BrightnessMonitorImplTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::HistogramTester histogram_tester_;
   std::unique_ptr<BrightnessMonitorImpl> monitor_;
   std::unique_ptr<TestObserver> test_observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrightnessMonitorImplTest);
 };
+
+TEST_F(BrightnessMonitorImplTest, ReportSuccess) {
+  SetUpBrightnessMonitor(10);
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+
+  histogram_tester_.ExpectUniqueSample(
+      "AutoScreenBrightness.BrightnessMonitorStatus",
+      static_cast<int>(BrightnessMonitor::Status::kSuccess), 1);
+}
+
+TEST_F(BrightnessMonitorImplTest, ReportDisabled) {
+  SetUpBrightnessMonitor(-1);
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+
+  histogram_tester_.ExpectUniqueSample(
+      "AutoScreenBrightness.BrightnessMonitorStatus",
+      static_cast<int>(BrightnessMonitor::Status::kDisabled), 1);
+}
 
 // PowerManagerClient is not set up to return initial brightness, hence
 // Status is kDiabled.

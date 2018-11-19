@@ -9,6 +9,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -221,6 +222,7 @@ class ModellerImplTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   content::TestBrowserThreadBundle thread_bundle_;
+  base::HistogramTester histogram_tester_;
 
   ui::UserActivityDetector user_activity_detector_;
 
@@ -351,6 +353,8 @@ TEST_F(ModellerImplTest, CurveLoadedFromProfilePath) {
 
   test_observer_->CheckStatus(true /* is_model_initialized */,
                               modeller_->GetGlobalCurveForTesting(), curve);
+  histogram_tester_.ExpectUniqueSample(
+      "AutoScreenBrightness.PersonalCurveValid", true, 1);
 }
 
 // A curve is loaded from disk, this is a personal curve. This personal curve
@@ -371,6 +375,9 @@ TEST_F(ModellerImplTest, PersonalCurveError) {
   test_observer_->CheckStatus(true /* is_model_initialized */,
                               modeller_->GetGlobalCurveForTesting(),
                               base::nullopt /* personal_curve */);
+
+  histogram_tester_.ExpectUniqueSample(
+      "AutoScreenBrightness.PersonalCurveValid", false, 1);
 }
 
 // Ambient light values are received. We check average ambient light has been

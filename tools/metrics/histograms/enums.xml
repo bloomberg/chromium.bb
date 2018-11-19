@@ -3269,6 +3269,20 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="dual source"/>
 </enum>
 
+<enum name="AutoScreenBrightnessAlsReaderStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="InProgress"/>
+  <int value="2" label="Disabled"/>
+  <int value="3" label="IncorrectConfig"/>
+  <int value="4" label="MissingPath"/>
+</enum>
+
+<enum name="AutoScreenBrightnessBrightnessMonitorStatus">
+  <int value="0" label="Initializing"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Disabled"/>
+</enum>
+
 <enum name="AutoScreenBrightnessDataError">
   <int value="0" label="kAlsValue"/>
   <int value="1" label="kBrightnessPercent"/>

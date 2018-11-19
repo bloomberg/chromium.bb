@@ -57,6 +57,9 @@ class AlsReaderImpl : public AlsReader {
   // valid.
   void InitForTesting(const base::FilePath& ambient_light_path);
 
+  // Performs all config and path-read checks in a way that will fail.
+  void FailForTesting();
+
  private:
   friend class AlsReaderImplTest;
 
