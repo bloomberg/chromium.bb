@@ -139,19 +139,18 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
     // need additional information contained only in the CollectionInfo. The
     // CollectionInfo should be an ancestor of this node.
     AXCollectionInfoData* collection_info = nullptr;
-    for (AXNodeInfoData* container = node_ptr_; container;) {
-      if (!container)
+    for (const ArcAccessibilityInfoData* container =
+             static_cast<const ArcAccessibilityInfoData*>(this);
+         container;) {
+      if (!container || !container->IsNode())
         break;
-      if (container->collection_info.get()) {
-        collection_info = container->collection_info.get();
+      if (container->IsNode() && container->GetNode()->collection_info.get()) {
+        collection_info = container->GetNode()->collection_info.get();
         break;
       }
 
-      ArcAccessibilityInfoData* container_data =
-          tree_source_->GetParent(tree_source_->GetFromId(container->id));
-      if (!container_data->IsNode())
-        break;
-      container = container_data->GetNode();
+      container =
+          tree_source_->GetParent(tree_source_->GetFromId(container->GetId()));
     }
 
     if (collection_info) {
@@ -387,6 +386,10 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
                                              local_bounds.width(),
                                              local_bounds.height());
   }
+  // TODO(katie): Try using offset_container_id to make bounds calculations
+  // more efficient. If this is the child of the root, set the
+  // offset_container_id to be the root. Otherwise, set it to the first node
+  // child of the root.
 
   // Integer properties.
   int32_t val;

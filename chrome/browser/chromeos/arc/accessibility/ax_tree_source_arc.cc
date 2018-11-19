@@ -31,7 +31,7 @@ AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
     : current_tree_serializer_(new AXTreeArcSerializer(this)),
       root_id_(-1),
       window_id_(-1),
-      focused_node_id_(-1),
+      focused_id_(-1),
       is_notification_(false),
       delegate_(delegate) {}
 
@@ -61,10 +61,30 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
       continue;
     auto it = event_data->node_data[i]->int_list_properties->find(
         AXIntListProperty::CHILD_NODE_IDS);
-    if (it != event_data->node_data[i]->int_list_properties->end()) {
-      all_children_map[event_data->node_data[i]->id] = it->second;
+    if (it == event_data->node_data[i]->int_list_properties->end())
+      continue;
+    all_children_map[event_data->node_data[i]->id] = it->second;
+    for (size_t j = 0; j < it->second.size(); ++j)
+      all_parent_map[it->second[j]] = event_data->node_data[i]->id;
+  }
+  if (event_data->window_data) {
+    for (size_t i = 0; i < event_data->window_data->size(); ++i) {
+      int32_t window_id = event_data->window_data->at(i)->window_id;
+      int32_t root_node_id = event_data->window_data->at(i)->root_node_id;
+      if (root_node_id) {
+        all_parent_map[root_node_id] = window_id;
+        all_children_map[window_id] = {root_node_id};
+      }
+      if (!event_data->window_data->at(i)->int_list_properties)
+        continue;
+      auto it = event_data->window_data->at(i)->int_list_properties->find(
+          mojom::AccessibilityWindowIntListProperty::CHILD_WINDOW_IDS);
+      if (it == event_data->window_data->at(i)->int_list_properties->end())
+        continue;
+      all_children_map[window_id].insert(all_children_map[window_id].begin(),
+                                         it->second.begin(), it->second.end());
       for (size_t j = 0; j < it->second.size(); ++j)
-        all_parent_map[it->second[j]] = event_data->node_data[i]->id;
+        all_parent_map[it->second[j]] = window_id;
     }
   }
 
@@ -103,8 +123,19 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     tree_map_[id] =
         std::make_unique<AccessibilityNodeInfoDataWrapper>(this, node);
 
-    if (tree_map_[id]->IsFocused()) {
-      focused_node_id_ = id;
+    if (tree_map_[id]->IsFocused())
+      focused_id_ = id;
+  }
+  if (event_data->window_data) {
+    for (size_t i = 0; i < event_data->window_data->size(); ++i) {
+      int32_t id = event_data->window_data->at(i)->window_id;
+      // Only map nodes in the parent_map and the root.
+      // This avoids adding other subtrees that are not interesting.
+      if (parent_map_.find(id) == parent_map_.end() && id != root_id_)
+        continue;
+      AXWindowInfoData* window = event_data->window_data->at(i).get();
+      tree_map_[id] =
+          std::make_unique<AccessibilityWindowInfoDataWrapper>(this, window);
     }
   }
 
@@ -116,6 +147,14 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     if (parent_map_.find(id) == parent_map_.end() && id != root_id_)
       continue;
     cached_computed_bounds_[id] = ComputeEnclosingBounds(tree_map_[id].get());
+  }
+  if (event_data->window_data) {
+    for (int i = event_data->window_data->size() - 1; i >= 0; --i) {
+      int32_t id = event_data->window_data->at(i)->window_id;
+      if (parent_map_.find(id) == parent_map_.end() && id != root_id_)
+        continue;
+      cached_computed_bounds_[id] = ComputeEnclosingBounds(tree_map_[id].get());
+    }
   }
 
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
@@ -147,10 +186,25 @@ void AXTreeSourceArc::NotifyActionResult(const ui::AXActionData& data,
 
 bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
   data->tree_id = tree_id();
-  if (focused_node_id_ >= 0)
-    data->focus_id = focused_node_id_;
-  else if (root_id_ >= 0)
-    data->focus_id = root_id_;
+  if (focused_id_ >= 0) {
+    data->focus_id = focused_id_;
+  } else if (root_id_ >= 0) {
+    ArcAccessibilityInfoData* root = GetRoot();
+    if (root->IsNode()) {
+      data->focus_id = root_id_;
+    } else {
+      std::vector<ArcAccessibilityInfoData*> children;
+      root->GetChildren(&children);
+      if (!children.empty()) {
+        for (size_t i = 0; i < children.size(); ++i) {
+          if (children[i]->IsNode()) {
+            data->focus_id = children[i]->GetId();
+            break;
+          }
+        }
+      }
+    }
+  }
   return true;
 }
 
@@ -261,9 +315,11 @@ void AXTreeSourceArc::SerializeNode(ArcAccessibilityInfoData* info_data,
 
   int32_t id = info_data->GetId();
   out_data->id = id;
-  // TODO(katie): this may not hold true with Windows. it's probably the root
-  // window's root node which is a kRootWebArea.
-  if (id == root_id_)
+  // If the node is the root, or if the node's parent is the root window,
+  // the role should be rootWebArea.
+  if (info_data->IsNode() && id == root_id_)
+    out_data->role = ax::mojom::Role::kRootWebArea;
+  else if (info_data->IsNode() && parent_map_.at(id) == root_id_)
     out_data->role = ax::mojom::Role::kRootWebArea;
   else
     info_data->PopulateAXRole(out_data);
@@ -275,46 +331,44 @@ const gfx::Rect AXTreeSourceArc::GetBounds(ArcAccessibilityInfoData* info_data,
                                            aura::Window* active_window) const {
   DCHECK_NE(root_id_, -1);
 
-  gfx::Rect node_bounds = info_data->GetBounds();
+  gfx::Rect info_data_bounds = info_data->GetBounds();
 
-  if (active_window && info_data->GetId() == root_id_) {
-    // Top level window returns its bounds in dip.
-    aura::Window* toplevel_window = active_window->GetToplevelWindow();
-    float scale = toplevel_window->layer()->device_scale_factor();
-
-    views::Widget* widget =
-        views::Widget::GetWidgetForNativeView(active_window);
-    DCHECK(widget);
-    DCHECK(widget->widget_delegate());
-    DCHECK(widget->widget_delegate()->GetContentsView());
-    const gfx::Rect bounds =
-        widget->widget_delegate()->GetContentsView()->GetBoundsInScreen();
-
-    // Bounds of root node is relative to its container, i.e. contents view
-    // (ShellSurfaceBase).
-    node_bounds.Offset(
-        static_cast<int>(-1.0f * scale * static_cast<float>(bounds.x())),
-        static_cast<int>(-1.0f * scale * static_cast<float>(bounds.y())));
-
-    // On Android side, content is rendered without considering height of
-    // caption bar, e.g. content is rendered at y:0 instead of y:32 where 32 is
-    // height of caption bar. Add back height of caption bar here.
-    if (widget->IsMaximized()) {
-      node_bounds.Offset(
-          0, static_cast<int>(scale *
-                              static_cast<float>(widget->non_client_view()
-                                                     ->frame_view()
-                                                     ->GetBoundsForClientView()
-                                                     .y())));
-    }
-
-    return node_bounds;
+  if (!active_window) {
+    gfx::Rect root_bounds = GetRoot()->GetBounds();
+    info_data_bounds.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
+    return info_data_bounds;
   }
 
-  // Bounds of non-root node is relative to its tree's root.
-  gfx::Rect root_bounds = GetFromId(root_id_)->GetBounds();
-  node_bounds.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
-  return node_bounds;
+  // TODO(katie): offset_container_id should work and we shouldn't have to
+  // go into this code path for each node.
+  aura::Window* toplevel_window = active_window->GetToplevelWindow();
+  float scale = toplevel_window->layer()->device_scale_factor();
+
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
+  DCHECK(widget);
+  DCHECK(widget->widget_delegate());
+  DCHECK(widget->widget_delegate()->GetContentsView());
+  const gfx::Rect bounds =
+      widget->widget_delegate()->GetContentsView()->GetBoundsInScreen();
+
+  // Bounds of root node is relative to its container, i.e. contents view
+  // (ShellSurfaceBase).
+  info_data_bounds.Offset(
+      static_cast<int>(-1.0f * scale * static_cast<float>(bounds.x())),
+      static_cast<int>(-1.0f * scale * static_cast<float>(bounds.y())));
+
+  // On Android side, content is rendered without considering height of
+  // caption bar, e.g. content is rendered at y:0 instead of y:32 where 32 is
+  // height of caption bar. Add back height of caption bar here.
+  if (widget->IsMaximized()) {
+    info_data_bounds.Offset(
+        0, static_cast<int>(scale *
+                            static_cast<float>(widget->non_client_view()
+                                                   ->frame_view()
+                                                   ->GetBoundsForClientView()
+                                                   .y())));
+  }
+  return info_data_bounds;
 }
 
 gfx::Rect AXTreeSourceArc::ComputeEnclosingBounds(
@@ -363,7 +417,7 @@ void AXTreeSourceArc::Reset() {
   cached_computed_bounds_.clear();
   current_tree_serializer_.reset(new AXTreeArcSerializer(this));
   root_id_ = -1;
-  focused_node_id_ = -1;
+  focused_id_ = -1;
   extensions::AutomationEventRouter* router =
       extensions::AutomationEventRouter::GetInstance();
   if (!router)

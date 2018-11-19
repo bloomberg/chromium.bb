@@ -62,10 +62,10 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   // TODO(katie): should these be "friended" or "protected" instead?
   ArcAccessibilityInfoData* GetRoot() const override;
   ArcAccessibilityInfoData* GetFromId(int32_t id) const override;
-  void SerializeNode(ArcAccessibilityInfoData* node,
+  void SerializeNode(ArcAccessibilityInfoData* info_data,
                      ui::AXNodeData* out_data) const override;
   ArcAccessibilityInfoData* GetParent(
-      ArcAccessibilityInfoData* node) const override;
+      ArcAccessibilityInfoData* info_data) const override;
 
   // Returns bounds of a node which can be passed to AXNodeData.location. Bounds
   // are returned in the following coordinates depending on whether it's root or
@@ -74,7 +74,7 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   // - Non-root node is relative to the root node of this tree.
   //
   // focused_window is nullptr for notification.
-  const gfx::Rect GetBounds(ArcAccessibilityInfoData* node,
+  const gfx::Rect GetBounds(ArcAccessibilityInfoData* info_data,
                             aura::Window* focused_window) const;
 
   bool is_notification() { return is_notification_; }
@@ -84,21 +84,22 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   class FocusStealer;
 
   // AXTreeSource overrides.
-  int32_t GetId(ArcAccessibilityInfoData* node) const override;
+  int32_t GetId(ArcAccessibilityInfoData* info_data) const override;
   void GetChildren(
-      ArcAccessibilityInfoData* node,
+      ArcAccessibilityInfoData* info_data,
       std::vector<ArcAccessibilityInfoData*>* out_children) const override;
-  bool IsValid(ArcAccessibilityInfoData* node) const override;
-  bool IsEqual(ArcAccessibilityInfoData* node1,
-               ArcAccessibilityInfoData* node2) const override;
+  bool IsValid(ArcAccessibilityInfoData* info_data) const override;
+  bool IsEqual(ArcAccessibilityInfoData* info_data1,
+               ArcAccessibilityInfoData* info_data2) const override;
   ArcAccessibilityInfoData* GetNull() const override;
 
-  // Computes the smallest rect that encloses all of the descendants of |node|.
-  gfx::Rect ComputeEnclosingBounds(ArcAccessibilityInfoData* node) const;
+  // Computes the smallest rect that encloses all of the descendants of
+  // |info_data|.
+  gfx::Rect ComputeEnclosingBounds(ArcAccessibilityInfoData* info_data) const;
 
-  // Helper to recursively compute bounds for |node|. Returns true if non-empty
-  // bounds were encountered.
-  void ComputeEnclosingBoundsInternal(ArcAccessibilityInfoData* node,
+  // Helper to recursively compute bounds for |info_data|. Returns true if
+  // non-empty bounds were encountered.
+  void ComputeEnclosingBoundsInternal(ArcAccessibilityInfoData* info_data,
                                       gfx::Rect& computed_bounds) const;
 
   // AXHostDelegate overrides.
@@ -115,7 +116,7 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   std::unique_ptr<AXTreeArcSerializer> current_tree_serializer_;
   int32_t root_id_;
   int32_t window_id_;
-  int32_t focused_node_id_;
+  int32_t focused_id_;
   bool is_notification_;
 
   // A delegate that handles accessibility actions on behalf of this tree. The
