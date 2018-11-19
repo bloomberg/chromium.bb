@@ -46,6 +46,9 @@ class UsbPolicyAllowedDevices {
   bool IsDeviceAllowed(const GURL& requesting_origin,
                        const GURL& embedding_origin,
                        const device::mojom::UsbDeviceInfo& device_info);
+  bool IsDeviceAllowed(const GURL& requesting_origin,
+                       const GURL& embedding_origin,
+                       const std::pair<int, int>& device_ids);
 
   const UsbDeviceIdsToUrlsMap& map() const { return usb_device_ids_to_urls_; }
 

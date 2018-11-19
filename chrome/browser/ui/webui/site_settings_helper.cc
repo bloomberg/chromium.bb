@@ -591,6 +591,12 @@ void GetChooserExceptionsFromProfile(Profile* profile,
       chooser_context->GetAllGrantedObjects();
   AllOriginObjects all_origin_objects;
   for (const auto& object : objects) {
+    // Skip policy controlled objects until they are ready to be displayed.
+    // TODO(https://crbug.com/854329): Include policy controlled objects
+    // when the UI is capable of displaying them properly as policy controlled
+    // objects.
+    if (object->source == SiteSettingSourceToString(SiteSettingSource::kPolicy))
+      continue;
     std::string name = chooser_context->GetObjectName(object->object);
     // It is safe for this structure to hold references into |objects| because
     // they are both destroyed at the end of this function.

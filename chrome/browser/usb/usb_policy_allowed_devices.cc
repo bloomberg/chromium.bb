@@ -59,14 +59,23 @@ bool UsbPolicyAllowedDevices::IsDeviceAllowed(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     const device::mojom::UsbDeviceInfo& device_info) {
+  return IsDeviceAllowed(
+      requesting_origin, embedding_origin,
+      std::make_pair(device_info.vendor_id, device_info.product_id));
+}
+
+bool UsbPolicyAllowedDevices::IsDeviceAllowed(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    const std::pair<int, int>& device_ids) {
   // Search through each set of URL pair that match the given device. The
   // keys correspond to the following URL pair sets:
   //  * (vendor_id, product_id): A set corresponding to the exact device.
   //  * (vendor_id, -1): A set corresponding to any device with |vendor_id|.
   //  * (-1, -1): A set corresponding to any device.
   const std::pair<int, int> set_keys[] = {
-      std::make_pair(device_info.vendor_id, device_info.product_id),
-      std::make_pair(device_info.vendor_id, -1), std::make_pair(-1, -1)};
+      std::make_pair(device_ids.first, device_ids.second),
+      std::make_pair(device_ids.first, -1), std::make_pair(-1, -1)};
 
   for (const auto& key : set_keys) {
     const auto entry = usb_device_ids_to_urls_.find(key);

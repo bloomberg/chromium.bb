@@ -76,12 +76,12 @@ class UsbChooserContext : public ChooserContextBase,
   void SetDeviceManagerForTesting(
       device::mojom::UsbDeviceManagerPtr fake_device_manager);
 
- private:
   // ChooserContextBase implementation.
   bool IsValidObject(const base::DictionaryValue& object) override;
   std::string GetObjectName(const base::DictionaryValue& object) override;
   void InitDeviceList(std::vector<::device::mojom::UsbDeviceInfoPtr> devices);
 
+ private:
   // device::mojom::UsbDeviceManagerClient implementation.
   void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info) override;
   void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_info) override;

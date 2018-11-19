@@ -12,20 +12,26 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/common/service_manager_connection.h"
 #include "device/usb/public/mojom/device.mojom.h"
+#include "device/usb/usb_ids.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
-const char kDeviceNameKey[] = "name";
-const char kGuidKey[] = "ephemeral-guid";
-const char kProductIdKey[] = "product-id";
-const char kSerialNumberKey[] = "serial-number";
-const char kVendorIdKey[] = "vendor-id";
+constexpr char kDeviceNameKey[] = "name";
+constexpr char kGuidKey[] = "ephemeral-guid";
+constexpr char kProductIdKey[] = "product-id";
+constexpr char kSerialNumberKey[] = "serial-number";
+constexpr char kVendorIdKey[] = "vendor-id";
+constexpr char kSourcePolicy[] = "policy";
+constexpr char kSourcePreference[] = "preference";
 
 // Reasons a permission may be closed. These are used in histograms so do not
 // remove/reorder entries. Only add at the end just before
@@ -49,6 +55,16 @@ bool CanStorePersistentEntry(const device::mojom::UsbDeviceInfo& device_info) {
   return !device_info.serial_number->empty();
 }
 
+std::pair<int, int> GetDeviceIds(const base::DictionaryValue& object) {
+  DCHECK(object.FindKeyOfType(kVendorIdKey, base::Value::Type::INTEGER));
+  int vendor_id = object.FindKey(kVendorIdKey)->GetInt();
+
+  DCHECK(object.FindKeyOfType(kProductIdKey, base::Value::Type::INTEGER));
+  int product_id = object.FindKey(kProductIdKey)->GetInt();
+
+  return std::make_pair(vendor_id, product_id);
+}
+
 std::unique_ptr<base::DictionaryValue> DeviceInfoToDictValue(
     const device::mojom::UsbDeviceInfo& device_info) {
   auto device_dict = std::make_unique<base::DictionaryValue>();
@@ -56,17 +72,56 @@ std::unique_ptr<base::DictionaryValue> DeviceInfoToDictValue(
                       device_info.product_name
                           ? base::Value(*device_info.product_name)
                           : base::Value(""));
-
-  if (!CanStorePersistentEntry(device_info)) {
-    device_dict->SetKey(kGuidKey, base::Value(device_info.guid));
-    return device_dict;
-  }
   device_dict->SetKey(kVendorIdKey, base::Value(device_info.vendor_id));
   device_dict->SetKey(kProductIdKey, base::Value(device_info.product_id));
-  device_dict->SetKey(kSerialNumberKey,
-                      device_info.serial_number
-                          ? base::Value(*device_info.serial_number)
-                          : base::Value(""));
+
+  // CanStorePersistentEntry checks if |device_info.serial_number| is not empty.
+  if (CanStorePersistentEntry(device_info)) {
+    device_dict->SetKey(kSerialNumberKey,
+                        base::Value(*device_info.serial_number));
+  } else {
+    device_dict->SetKey(kGuidKey, base::Value(device_info.guid));
+  }
+
+  return device_dict;
+}
+
+base::string16 GetDeviceNameFromIds(int vendor_id, int product_id) {
+// This is currently using the UI strings used for the chooser prompt. This is
+// fine for now since the policy allowed devices are not being displayed in
+// Site Settings yet. However, policy allowed devices can contain wildcards for
+// the IDs, so more specific UI string need to be defined.
+// TODO(https://crbug.com/854329): Add UI strings that are more specific to
+// the Site Settings UI.
+#if !defined(OS_ANDROID)
+  const char* product_name =
+      device::UsbIds::GetProductName(vendor_id, product_id);
+  if (product_name)
+    return base::UTF8ToUTF16(product_name);
+
+  const char* vendor_name = device::UsbIds::GetVendorName(vendor_id);
+  if (vendor_name) {
+    return l10n_util::GetStringFUTF16(
+        IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_NAME,
+        base::UTF8ToUTF16(vendor_name));
+  }
+#endif  // !defined(OS_ANDROID)
+  return l10n_util::GetStringFUTF16(
+      IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_ID_AND_PRODUCT_ID,
+      base::ASCIIToUTF16(base::StringPrintf("%04x", vendor_id)),
+      base::ASCIIToUTF16(base::StringPrintf("%04x", product_id)));
+}
+
+std::unique_ptr<base::DictionaryValue> DeviceIdsToDictValue(int vendor_id,
+                                                            int product_id) {
+  auto device_dict = std::make_unique<base::DictionaryValue>();
+  base::string16 device_name = GetDeviceNameFromIds(vendor_id, product_id);
+
+  device_dict->SetKey(kDeviceNameKey, base::Value(device_name));
+  device_dict->SetKey(kVendorIdKey, base::Value(vendor_id));
+  device_dict->SetKey(kProductIdKey, base::Value(product_id));
+  device_dict->SetKey(kSerialNumberKey, base::Value(std::string()));
+
   return device_dict;
 }
 
@@ -190,7 +245,49 @@ UsbChooserContext::GetAllGrantedObjects() {
       // ChooserContextBase::Object constructor will swap the object.
       auto object = DeviceInfoToDictValue(*devices_[guid]);
       objects.push_back(std::make_unique<ChooserContextBase::Object>(
-          requesting_origin, embedding_origin, object.get(), "preference",
+          requesting_origin, embedding_origin, object.get(), kSourcePreference,
+          is_incognito_));
+    }
+  }
+
+  // Iterate through the user granted objects to create a mapping of device IDs
+  // to device object for the policy granted objects to use, and remove
+  // objects that have already been granted permission by the policy.
+  std::map<std::pair<int, int>, base::Value> device_ids_to_object_map;
+  for (auto it = objects.begin(); it != objects.end();) {
+    const Object& object = **it;
+    auto device_ids = GetDeviceIds(object.object);
+    const GURL& requesting_origin = object.requesting_origin;
+    const GURL& embedding_origin = object.embedding_origin;
+
+    device_ids_to_object_map[device_ids] = object.object.Clone();
+
+    if (usb_policy_allowed_devices_->IsDeviceAllowed(
+            requesting_origin, embedding_origin, device_ids)) {
+      it = objects.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  for (const auto& allowed_devices_entry : usb_policy_allowed_devices_->map()) {
+    // The map key is a tuple of (vendor_id, product_id).
+    const int vendor_id = allowed_devices_entry.first.first;
+    const int product_id = allowed_devices_entry.first.second;
+
+    for (const auto& url_pair : allowed_devices_entry.second) {
+      std::unique_ptr<base::DictionaryValue> object;
+      auto it =
+          device_ids_to_object_map.find(std::make_pair(vendor_id, product_id));
+      if (it != device_ids_to_object_map.end()) {
+        object = base::DictionaryValue::From(
+            base::Value::ToUniquePtrValue(it->second.Clone()));
+      } else {
+        object = DeviceIdsToDictValue(vendor_id, product_id);
+      }
+
+      objects.push_back(std::make_unique<ChooserContextBase::Object>(
+          url_pair.first, url_pair.second, object.get(), kSourcePolicy,
           is_incognito_));
     }
   }
@@ -324,7 +421,7 @@ base::WeakPtr<UsbChooserContext> UsbChooserContext::AsWeakPtr() {
 bool UsbChooserContext::IsValidObject(const base::DictionaryValue& object) {
   return object.size() == 4 && object.HasKey(kDeviceNameKey) &&
          object.HasKey(kVendorIdKey) && object.HasKey(kProductIdKey) &&
-         object.HasKey(kSerialNumberKey);
+         (object.HasKey(kSerialNumberKey) || object.HasKey(kGuidKey));
 }
 
 std::string UsbChooserContext::GetObjectName(
