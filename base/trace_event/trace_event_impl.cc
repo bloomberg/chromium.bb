@@ -83,6 +83,8 @@ void TraceEvent::MoveFrom(std::unique_ptr<TraceEvent> other) {
     arg_values_[i] = other->arg_values_[i];
     convertable_values_[i] = std::move(other->convertable_values_[i]);
   }
+
+  other->Reset();
 }
 
 void TraceEvent::Initialize(
@@ -183,7 +185,20 @@ void TraceEvent::Reset() {
   // Only reset fields that won't be initialized in Initialize(), or that may
   // hold references to other objects.
   duration_ = TimeDelta::FromInternalValue(-1);
+
+  // The following pointers might point into parameter_copy_storage_ so
+  // must be reset to nullptr first.
+  for (int i = 0; i < kTraceMaxNumArgs; ++i) {
+    arg_names_[i] = nullptr;
+    arg_values_[i].as_uint = 0u;
+    arg_types_[i] = TRACE_VALUE_TYPE_UINT;
+  }
+  scope_ = nullptr;
+  name_ = nullptr;
+
+  // It is now safe to reset the storage area.
   parameter_copy_storage_.reset();
+
   for (int i = 0; i < kTraceMaxNumArgs; ++i)
     convertable_values_[i].reset();
 }
