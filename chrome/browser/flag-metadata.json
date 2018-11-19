@@ -344,8 +344,8 @@
   },
   {
     "name": "clear-old-browsing-data",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "dullweber" ],
+    "expiry_milestone": 78
   },
   {
     "name": "click-to-open-pdf",
@@ -2830,19 +2830,14 @@
     "expiry_milestone": 76
   },
   {
-    "name": "remove-navigation-history",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "reset-app-list-install-state",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
   },
   {
     "name": "rewrite-leveldb-on-deletion",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "dullweber" ],
+    "expiry_milestone": 75
   },
   {
     "name": "safe-browsing-use-local-blacklists-v2",
