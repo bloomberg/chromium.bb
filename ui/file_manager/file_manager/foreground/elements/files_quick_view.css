@@ -13,14 +13,14 @@ dialog {
   font-size: 100%;
   height: 100%;
   margin: 0;
+  opacity: 0;
   padding: 0;
   width: 100%;
-  opacity: 0;
 }
 
 dialog[open] {
   opacity: 1;
-  transition: opacity 0.2s;
+  transition: opacity 200ms;
 }
 
 dialog:focus {
@@ -48,9 +48,9 @@ paper-button:focus:not(:active) {
 }
 
 #audio-artwork {
-  height: 300px;
+  height: 100%;
   margin: 0 auto;
-  width: 300px;
+  width: 100%;
 }
 
 #mainPanel {
@@ -76,8 +76,8 @@ paper-button:focus:not(:active) {
 }
 
 :host-context(html[dir='rtl']) #contentPanel[metadata-box-active] {
-  margin-right: auto;
   margin-left: 320px;
+  margin-right: auto;
 }
 
 #metadata-button {
@@ -102,9 +102,9 @@ paper-button:focus:not(:active) {
   width: 100%;
 }
 
-#innerContentPanel[type="audio"],
-#innerContentPanel[type="image"],
-#innerContentPanel[type="video"] {
+#innerContentPanel[type='audio'],
+#innerContentPanel[type='image'],
+#innerContentPanel[type='video'] {
   align-self: center;
 }
 
@@ -176,8 +176,8 @@ iron-icon {
 }
 
 :host-context(html[dir='rtl']) #metadata-box {
-  right: auto;
   left: 0;
+  right: auto;
 }
 
 ::-webkit-scrollbar {
@@ -199,6 +199,16 @@ iron-icon {
   margin-top: 16px;
 }
 
+@media only screen and (max-width: 720px) {
+  #contentPanel[metadata-box-active] #innerContentPanel {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  #contentPanel[metadata-box-active] {
+    margin-right: 250px;
+  }
+}
+
 /* Large generic thumbnails, used when a file does not have a thumbnail. */
 [generic-thumbnail] {
   background: -webkit-image-set(
@@ -209,7 +219,7 @@ iron-icon {
   height: 88px;
 }
 
-[generic-thumbnail=".folder"] {
+[generic-thumbnail='.folder'] {
   background-image: -webkit-image-set(
       url(../images/files/ui/quick_view/filetype_folder.png) 1x,
       url(../images/files/ui/quick_view/2x/filetype_folder.png) 2x);
