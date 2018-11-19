@@ -3336,10 +3336,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUIJogTextfieldOnPopupDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentJogTextfieldOnPopup)},
 
-    {"omnibox-ui-show-suggestion-favicons",
-     flag_descriptions::kOmniboxUIShowSuggestionFaviconsName,
-     flag_descriptions::kOmniboxUIShowSuggestionFaviconsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentShowSuggestionFavicons)},
+    {"omnibox-ui-one-click-unelide",
+     flag_descriptions::kOmniboxUIOneClickUnelideName,
+     flag_descriptions::kOmniboxUIOneClickUnelideDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kOneClickUnelide)},
 
     {"omnibox-ui-max-autocomplete-matches",
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,
@@ -3348,6 +3348,11 @@ const FeatureEntry kFeatureEntries[] = {
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,
          "OmniboxUIMaxAutocompleteVariations")},
+
+    {"omnibox-ui-show-suggestion-favicons",
+     flag_descriptions::kOmniboxUIShowSuggestionFaviconsName,
+     flag_descriptions::kOmniboxUIShowSuggestionFaviconsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentShowSuggestionFavicons)},
 
     {"omnibox-ui-swap-title-and-url",
      flag_descriptions::kOmniboxUISwapTitleAndUrlName,

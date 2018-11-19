@@ -29,6 +29,7 @@ extern const base::Feature kHideFileUrlScheme;
 extern const base::Feature kHideSteadyStateUrlScheme;
 extern const base::Feature kHideSteadyStateUrlTrivialSubdomains;
 extern const base::Feature kHideSteadyStateUrlPathQueryAndRef;
+extern const base::Feature kOneClickUnelide;
 extern const base::Feature kSimplifyHttpsIndicator;
 extern const base::Feature kOmniboxRichEntitySuggestions;
 extern const base::Feature kOmniboxNewAnswerLayout;
