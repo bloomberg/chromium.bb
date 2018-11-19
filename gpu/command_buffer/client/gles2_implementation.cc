@@ -3547,7 +3547,7 @@ bool GLES2Implementation::GetActiveUniformsivHelper(GLuint program,
                                                     const GLuint* indices,
                                                     GLenum pname,
                                                     GLint* params) {
-  base::CheckedNumeric<size_t> bytes = static_cast<size_t>(count);
+  base::CheckedNumeric<uint32_t> bytes = count;
   bytes *= sizeof(GLuint);
   if (!bytes.IsValid()) {
     SetGLError(GL_INVALID_VALUE, "glGetActiveUniformsiv", "count overflow");
@@ -7345,12 +7345,13 @@ void GLES2Implementation::SetActiveURLCHROMIUM(const char* url) {
     return;
 
   last_active_url_ = url;
-  static constexpr size_t kMaxStrLen = 1024;
+  static constexpr uint32_t kMaxStrLen = 1024;
   size_t len = strlen(url);
   if (len == 0)
     return;
 
-  SetBucketContents(kResultBucketId, url, std::min(len, kMaxStrLen));
+  SetBucketContents(kResultBucketId, url,
+                    base::CheckMin(len, kMaxStrLen).ValueOrDie());
   helper_->SetActiveURLCHROMIUM(kResultBucketId);
   helper_->SetBucketSize(kResultBucketId, 0);
 }
