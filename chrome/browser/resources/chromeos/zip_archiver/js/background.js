@@ -30,6 +30,12 @@ function setupZipArchiver() {
   chrome.fileSystemProvider.onReadFileRequested.addListener(
       unpacker.app.onReadFileRequested);
 
+  // Provide a dummy onGetActionsRequested implementation to make FSP happy.
+  chrome.fileSystemProvider.onGetActionsRequested.addListener(
+      (options, success, error) => {
+        success([]);
+      });
+
   // Clean all temporary files inside the work directory, just in case the
   // extension aborted previously without removing ones.
   unpacker.app.cleanWorkDirectory();
