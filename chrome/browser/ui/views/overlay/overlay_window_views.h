@@ -65,9 +65,14 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   // Gets the bounds of the controls.
   gfx::Rect GetCloseControlsBounds();
+  gfx::Rect GetResizeHandleControlsBounds();
   gfx::Rect GetPlayPauseControlsBounds();
   gfx::Rect GetFirstCustomControlsBounds();
   gfx::Rect GetSecondCustomControlsBounds();
+
+  // Gets the proper hit test component when the hit point is on the resize
+  // handle in order to force a drag-to-resize.
+  int GetResizeHTComponent() const;
 
   views::ToggleImageButton* play_pause_controls_view_for_testing() const;
   gfx::Point close_image_position_for_testing() const;
