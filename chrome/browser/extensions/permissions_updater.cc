@@ -7,28 +7,37 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/browser/extensions/extension_management.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/permissions.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/common/cors_util.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "services/network/public/cpp/features.h"
 
 using content::RenderProcessHost;
 using extensions::permissions_api_helpers::PackPermissionSet;
@@ -84,16 +93,137 @@ PermissionsUpdater::Delegate* GetDelegate() {
   return GetDelegateWrapper().get();
 }
 
+// A helper class to watch profile lifetime.
+class PermissionsUpdaterShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static PermissionsUpdaterShutdownNotifierFactory* GetInstance() {
+    static base::NoDestructor<PermissionsUpdaterShutdownNotifierFactory>
+        factory;
+    return factory.get();
+  }
+
+ private:
+  friend class base::NoDestructor<PermissionsUpdaterShutdownNotifierFactory>;
+
+  PermissionsUpdaterShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "PermissionsUpdaterShutdownFactory") {
+    DependsOn(EventRouterFactory::GetInstance());
+    DependsOn(ExtensionSystemFactory::GetInstance());
+  }
+  ~PermissionsUpdaterShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionsUpdaterShutdownNotifierFactory);
+};
+
 }  // namespace
 
-PermissionsUpdater::PermissionsUpdater(content::BrowserContext* browser_context)
-    : browser_context_(browser_context), init_flag_(INIT_FLAG_NONE) {
+// A helper class to asynchronously dispatch the permissions updated
+// notification once origin access has been updated. This will fire the
+// event if and only if the BrowserContext is still valid.
+// This class manages its own lifetime and deletes itself when either the
+// permissions updated event is fired, or the BrowserContext is shut down
+// (whichever happens first).
+class PermissionsUpdater::NetworkPermissionsUpdateHelper {
+ public:
+  static void UpdateNetworkServicePermissions(
+      content::BrowserContext* browser_context,
+      EventType event_type,
+      scoped_refptr<const Extension> extension,
+      const PermissionSet& changed,
+      base::OnceClosure completion_callback);
+
+ private:
+  // This class manages its own lifetime.
+  NetworkPermissionsUpdateHelper(content::BrowserContext* browser_context,
+                                 base::OnceClosure dispatch_event);
+  ~NetworkPermissionsUpdateHelper();
+
+  void OnShutdown();
+  void OnOriginAccessUpdated();
+
+  base::OnceClosure dispatch_event_;
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      shutdown_subscription_;
+  base::WeakPtrFactory<NetworkPermissionsUpdateHelper> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkPermissionsUpdateHelper);
+};
+
+// static
+void PermissionsUpdater::NetworkPermissionsUpdateHelper::
+    UpdateNetworkServicePermissions(content::BrowserContext* browser_context,
+                                    EventType event_type,
+                                    scoped_refptr<const Extension> extension,
+                                    const PermissionSet& changed,
+                                    base::OnceClosure completion_callback) {
+  if (changed.effective_hosts().is_empty()) {
+    // If there is no difference in allowlist/blocklist for the extension, we
+    // can synchronously finish it without updating the CORS access list.
+    PermissionsUpdater::NotifyPermissionsUpdated(
+        browser_context, event_type, std::move(extension), changed.Clone(),
+        std::move(completion_callback));
+    return;
+  }
+
+  std::vector<network::mojom::CorsOriginPatternPtr> allow_list =
+      CreateCorsOriginAccessAllowList(*extension);
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    ExtensionsClient::Get()->AddOriginAccessPermissions(*extension, true,
+                                                        &allow_list);
+  }
+
+  NetworkPermissionsUpdateHelper* helper = new NetworkPermissionsUpdateHelper(
+      browser_context,
+      base::BindOnce(&PermissionsUpdater::NotifyPermissionsUpdated,
+                     browser_context, event_type, extension,
+                     changed.Clone(), std::move(completion_callback)));
+
+  // After an asynchronous call below, the helper will call
+  // NotifyPermissionsUpdated if the profile is still valid.
+  content::BrowserContext::SetCorsOriginAccessListsForOrigin(
+      browser_context, url::Origin::Create(extension->url()),
+      std::move(allow_list), CreateCorsOriginAccessBlockList(*extension),
+      base::BindOnce(&NetworkPermissionsUpdateHelper::OnOriginAccessUpdated,
+                     helper->weak_factory_.GetWeakPtr()));
 }
+
+PermissionsUpdater::NetworkPermissionsUpdateHelper::
+    NetworkPermissionsUpdateHelper(content::BrowserContext* browser_context,
+                                   base::OnceClosure dispatch_event)
+    : dispatch_event_(std::move(dispatch_event)),
+      shutdown_subscription_(
+          PermissionsUpdaterShutdownNotifierFactory::GetInstance()
+              ->Get(browser_context)
+              ->Subscribe(
+                  base::Bind(&NetworkPermissionsUpdateHelper::OnShutdown,
+                             base::Unretained(this)))),
+      weak_factory_(this) {}
+
+PermissionsUpdater::NetworkPermissionsUpdateHelper::
+    ~NetworkPermissionsUpdateHelper() {}
+
+void PermissionsUpdater::NetworkPermissionsUpdateHelper::OnShutdown() {
+  // The profile is shutting down. Don't dispatch the permissions updated
+  // event, and clean up the dangling references.
+  delete this;
+}
+
+void PermissionsUpdater::NetworkPermissionsUpdateHelper::
+    OnOriginAccessUpdated() {
+  // The origin access list was successfully updated; dispatch the event
+  // and clean up dangling references.
+  std::move(dispatch_event_).Run();
+  delete this;
+}
+
+PermissionsUpdater::PermissionsUpdater(content::BrowserContext* browser_context)
+    : PermissionsUpdater(browser_context, INIT_FLAG_NONE) {}
 
 PermissionsUpdater::PermissionsUpdater(content::BrowserContext* browser_context,
                                        InitFlag init_flag)
-    : browser_context_(browser_context), init_flag_(init_flag) {
-}
+    : browser_context_(browser_context), init_flag_(init_flag) {}
 
 PermissionsUpdater::~PermissionsUpdater() {}
 
@@ -105,7 +235,8 @@ void PermissionsUpdater::SetPlatformDelegate(
 
 void PermissionsUpdater::GrantOptionalPermissions(
     const Extension& extension,
-    const PermissionSet& permissions) {
+    const PermissionSet& permissions,
+    base::OnceClosure completion_callback) {
   // TODO(devlin): Ideally, we'd have this CHECK in place, but unit tests are
   // currently violating it.
   // CHECK(PermissionsParser::GetOptionalPermissions(&extension).Contains(
@@ -123,12 +254,13 @@ void PermissionsUpdater::GrantOptionalPermissions(
   constexpr int permissions_store_mask =
       kActivePermissions | kGrantedPermissions | kRuntimeGrantedPermissions;
   AddPermissionsImpl(extension, permissions, permissions_store_mask,
-                     permissions);
+                     permissions, std::move(completion_callback));
 }
 
 void PermissionsUpdater::GrantRuntimePermissions(
     const Extension& extension,
-    const PermissionSet& permissions) {
+    const PermissionSet& permissions,
+    base::OnceClosure completion_callback) {
   DCHECK(base::FeatureList::IsEnabled(
       extensions_features::kRuntimeHostPermissions));
 
@@ -161,13 +293,15 @@ void PermissionsUpdater::GrantRuntimePermissions(
   // enabled.
   constexpr int permissions_store_mask = kRuntimeGrantedPermissions;
   AddPermissionsImpl(extension, *active_permissions_to_add,
-                     permissions_store_mask, permissions);
+                     permissions_store_mask, permissions,
+                     std::move(completion_callback));
 }
 
 void PermissionsUpdater::RevokeOptionalPermissions(
     const Extension& extension,
     const PermissionSet& permissions,
-    RemoveType remove_type) {
+    RemoveType remove_type,
+    base::OnceClosure completion_callback) {
   // TODO(devlin): Ideally, we'd have this CHECK in place, but unit tests are
   // currently violating it.
   // CHECK(PermissionsParser::GetOptionalPermissions(&extension).Contains(
@@ -185,12 +319,13 @@ void PermissionsUpdater::RevokeOptionalPermissions(
     permissions_store_mask |= kGrantedPermissions | kRuntimeGrantedPermissions;
 
   RemovePermissionsImpl(extension, permissions, permissions_store_mask,
-                        permissions);
+                        permissions, std::move(completion_callback));
 }
 
 void PermissionsUpdater::RevokeRuntimePermissions(
     const Extension& extension,
-    const PermissionSet& permissions) {
+    const PermissionSet& permissions,
+    base::OnceClosure completion_callback) {
   DCHECK(base::FeatureList::IsEnabled(
       extensions_features::kRuntimeHostPermissions));
   // Similar to the process in adding permissions, we might be revoking more
@@ -239,7 +374,8 @@ void PermissionsUpdater::RevokeRuntimePermissions(
   // to the active permissions stored in prefs, they are also not removed.
   constexpr int permissions_store_mask = kRuntimeGrantedPermissions;
   RemovePermissionsImpl(extension, *active_permissions_to_remove,
-                        permissions_store_mask, permissions);
+                        permissions_store_mask, permissions,
+                        std::move(completion_callback));
 }
 
 void PermissionsUpdater::SetPolicyHostRestrictions(
@@ -249,17 +385,19 @@ void PermissionsUpdater::SetPolicyHostRestrictions(
   extension->permissions_data()->SetPolicyHostRestrictions(
       runtime_blocked_hosts, runtime_allowed_hosts);
 
-  // Send notification to the currently running renderers of the runtime block
-  // hosts settings.
-  const PermissionSet perms;
-  NotifyPermissionsUpdated(POLICY, extension, perms);
+  // Update the BrowserContext origin lists, and send notification to the
+  // currently running renderers of the runtime block hosts settings.
+  NetworkPermissionsUpdateHelper::UpdateNetworkServicePermissions(
+      browser_context_, POLICY, extension, PermissionSet(),
+      base::DoNothing::Once());
 }
 
 void PermissionsUpdater::SetUsesDefaultHostRestrictions(
     const Extension* extension) {
   extension->permissions_data()->SetUsesDefaultHostRestrictions();
-  const PermissionSet perms;
-  NotifyPermissionsUpdated(POLICY, extension, perms);
+  NetworkPermissionsUpdateHelper::UpdateNetworkServicePermissions(
+      browser_context_, POLICY, extension, PermissionSet(),
+      base::DoNothing::Once());
 }
 
 void PermissionsUpdater::SetDefaultPolicyHostRestrictions(
@@ -292,7 +430,9 @@ void PermissionsUpdater::RemovePermissionsUnsafe(
   // permissions would be re-added.
   constexpr bool update_active_prefs = true;
   SetPermissions(extension, std::move(total), update_active_prefs);
-  NotifyPermissionsUpdated(REMOVED, extension, *successfully_removed);
+  NetworkPermissionsUpdateHelper::UpdateNetworkServicePermissions(
+      browser_context_, REMOVED, extension, *successfully_removed,
+      base::DoNothing::Once());
 }
 
 std::unique_ptr<const PermissionSet>
@@ -369,7 +509,8 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
 void PermissionsUpdater::AddPermissionsForTesting(
     const Extension& extension,
     const PermissionSet& permissions) {
-  AddPermissionsImpl(extension, permissions, kNone, permissions);
+  AddPermissionsImpl(extension, permissions, kNone, permissions,
+                     base::DoNothing::Once());
 }
 
 void PermissionsUpdater::SetPermissions(
@@ -408,37 +549,22 @@ void PermissionsUpdater::SetPermissions(
   }
 }
 
-void PermissionsUpdater::DispatchEvent(
-    const std::string& extension_id,
-    events::HistogramValue histogram_value,
-    const char* event_name,
-    const PermissionSet& changed_permissions) {
-  EventRouter* event_router = EventRouter::Get(browser_context_);
-  if (!event_router)
-    return;
-
-  std::unique_ptr<base::ListValue> value(new base::ListValue());
-  std::unique_ptr<api::permissions::Permissions> permissions =
-      PackPermissionSet(changed_permissions);
-  value->Append(permissions->ToValue());
-  auto event = std::make_unique<Event>(histogram_value, event_name,
-                                       std::move(value), browser_context_);
-  event_router->DispatchEventToExtension(extension_id, std::move(event));
-}
-
+// static
 void PermissionsUpdater::NotifyPermissionsUpdated(
+    content::BrowserContext* browser_context,
     EventType event_type,
-    const Extension* extension,
-    const PermissionSet& changed) {
-  DCHECK_EQ(0, init_flag_ & INIT_FLAG_TRANSIENT);
-
-  if (changed.IsEmpty() && event_type != POLICY)
+    scoped_refptr<const Extension> extension,
+    std::unique_ptr<const PermissionSet> changed,
+    base::OnceClosure completion_callback) {
+  if (changed->IsEmpty() && event_type != POLICY) {
+    std::move(completion_callback).Run();
     return;
+  }
 
   UpdatedExtensionPermissionsInfo::Reason reason;
   events::HistogramValue histogram_value = events::UNKNOWN;
   const char* event_name = NULL;
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  Profile* profile = Profile::FromBrowserContext(browser_context);
 
   if (event_type == REMOVED) {
     reason = UpdatedExtensionPermissionsInfo::REMOVED;
@@ -455,7 +581,7 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
 
   // Notify other APIs or interested parties.
   UpdatedExtensionPermissionsInfo info =
-      UpdatedExtensionPermissionsInfo(extension, changed, reason);
+      UpdatedExtensionPermissionsInfo(extension.get(), *changed, reason);
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
       content::Source<Profile>(profile),
@@ -488,8 +614,19 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
 
   // Trigger the onAdded and onRemoved events in the extension. We explicitly
   // don't do this for policy-related events.
-  if (event_name)
-    DispatchEvent(extension->id(), histogram_value, event_name, changed);
+  EventRouter* event_router =
+      event_name ? EventRouter::Get(browser_context) : nullptr;
+  if (event_router) {
+    std::unique_ptr<base::ListValue> value(new base::ListValue());
+    std::unique_ptr<api::permissions::Permissions> permissions =
+        PackPermissionSet(*changed);
+    value->Append(permissions->ToValue());
+    auto event = std::make_unique<Event>(histogram_value, event_name,
+                                         std::move(value), browser_context);
+    event_router->DispatchEventToExtension(extension->id(), std::move(event));
+  }
+
+  std::move(completion_callback).Run();
 }
 
 // Notify the renderers that extension policy (policy_blocked_hosts) is updated
@@ -521,7 +658,8 @@ void PermissionsUpdater::AddPermissionsImpl(
     const Extension& extension,
     const PermissionSet& active_permissions_to_add,
     int permissions_store_mask,
-    const PermissionSet& prefs_permissions_to_add) {
+    const PermissionSet& prefs_permissions_to_add,
+    base::OnceClosure completion_callback) {
   std::unique_ptr<const PermissionSet> new_active = PermissionSet::CreateUnion(
       active_permissions_to_add,
       extension.permissions_data()->active_permissions());
@@ -542,14 +680,17 @@ void PermissionsUpdater::AddPermissionsImpl(
                                        prefs_permissions_to_add);
   }
 
-  NotifyPermissionsUpdated(ADDED, &extension, active_permissions_to_add);
+  NetworkPermissionsUpdateHelper::UpdateNetworkServicePermissions(
+      browser_context_, ADDED, &extension, active_permissions_to_add,
+      std::move(completion_callback));
 }
 
 void PermissionsUpdater::RemovePermissionsImpl(
     const Extension& extension,
     const PermissionSet& active_permissions_to_remove,
     int permissions_store_mask,
-    const PermissionSet& prefs_permissions_to_remove) {
+    const PermissionSet& prefs_permissions_to_remove,
+    base::OnceClosure completion_callback) {
   std::unique_ptr<const PermissionSet> new_active =
       PermissionSet::CreateDifference(
           extension.permissions_data()->active_permissions(),
@@ -571,7 +712,9 @@ void PermissionsUpdater::RemovePermissionsImpl(
                                            prefs_permissions_to_remove);
   }
 
-  NotifyPermissionsUpdated(REMOVED, &extension, active_permissions_to_remove);
+  NetworkPermissionsUpdateHelper::UpdateNetworkServicePermissions(
+      browser_context_, REMOVED, &extension, active_permissions_to_remove,
+      std::move(completion_callback));
 }
 
 }  // namespace extensions

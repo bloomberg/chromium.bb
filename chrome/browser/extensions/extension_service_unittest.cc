@@ -63,6 +63,7 @@
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
+#include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -616,9 +617,8 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
     const Extension* extension = service()->GetInstalledExtension(id);
     const PermissionSet& all_optional_permissions =
         PermissionsParser::GetOptionalPermissions(extension);
-    PermissionsUpdater perms_updater(profile());
-    perms_updater.GrantOptionalPermissions(*extension,
-                                           all_optional_permissions);
+    permissions_test_util::GrantOptionalPermissionsAndWaitForCompletion(
+        profile(), *extension, all_optional_permissions);
   }
 
   testing::AssertionResult IsBlocked(const std::string& id) {

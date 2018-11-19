@@ -303,6 +303,8 @@ static_library("test_support") {
       "../browser/extensions/browsertest_util.h",
       "../browser/extensions/extension_browsertest.cc",
       "../browser/extensions/extension_browsertest.h",
+      "../browser/extensions/permissions_test_util.cc",
+      "../browser/extensions/permissions_test_util.h",
     ]
 
     public_deps += [

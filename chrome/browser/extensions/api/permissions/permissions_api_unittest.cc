@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
+
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/test/scoped_feature_list.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/permissions_test_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/test/base/testing_profile.h"
@@ -348,8 +350,8 @@ TEST_F(PermissionsAPIUnitTest, ReRequestingWithheldOptionalPermissions) {
     PermissionSet permissions(APIPermissionSet(), ManifestPermissionSet(),
                               URLPatternSet({chromium_org_pattern}),
                               URLPatternSet());
-    PermissionsUpdater(profile()).RevokeRuntimePermissions(*extension,
-                                                           permissions);
+    permissions_test_util::RevokeRuntimePermissionsAndWaitForCompletion(
+        profile(), *extension, permissions);
   }
   EXPECT_TRUE(
       permissions_data->active_permissions().effective_hosts().is_empty());

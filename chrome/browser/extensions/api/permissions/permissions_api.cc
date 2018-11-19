@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api_helpers.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -126,10 +127,12 @@ ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
       *permissions, extension()->permissions_data()->active_permissions());
 
   PermissionsUpdater(browser_context())
-      .RevokeOptionalPermissions(*extension(), *permissions,
-                                 PermissionsUpdater::REMOVE_SOFT);
-  return RespondNow(
-      ArgumentList(api::permissions::Remove::Results::Create(true)));
+      .RevokeOptionalPermissions(
+          *extension(), *permissions, PermissionsUpdater::REMOVE_SOFT,
+          base::BindOnce(
+              &PermissionsRemoveFunction::Respond, base::RetainedRef(this),
+              ArgumentList(api::permissions::Remove::Results::Create(true))));
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 // static
@@ -237,8 +240,6 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   new_permissions = PermissionSet::CreateDifference(
       *new_permissions, *already_granted_permissions);
 
-  AddRef();  // Balanced in OnInstallPromptDone().
-
   // We don't need to show the prompt if there are no new warnings, or if
   // we're skipping the confirmation UI. COMPONENT extensions are allowed to
   // silently increase their permission level.
@@ -255,7 +256,7 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
           .empty();
   if (has_no_warnings || extension_->location() == Manifest::COMPONENT) {
     OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
-    return AlreadyResponded();
+    return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
   // Otherwise, we have to prompt the user (though we might "autoconfirm" for a
@@ -266,13 +267,14 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
       OnInstallPromptDone(ExtensionInstallPrompt::Result::ACCEPTED);
     else if (auto_confirm_for_tests == ABORT)
       OnInstallPromptDone(ExtensionInstallPrompt::Result::USER_CANCELED);
-    return AlreadyResponded();
+    return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
   install_ui_.reset(new ExtensionInstallPrompt(
       Profile::FromBrowserContext(browser_context()), native_window));
   install_ui_->ShowDialog(
-      base::Bind(&PermissionsRequestFunction::OnInstallPromptDone, this),
+      base::Bind(&PermissionsRequestFunction::OnInstallPromptDone,
+                 base::RetainedRef(this)),
       extension(), nullptr,
       std::make_unique<ExtensionInstallPrompt::Prompt>(
           ExtensionInstallPrompt::PERMISSIONS_PROMPT),
@@ -287,17 +289,46 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
 
 void PermissionsRequestFunction::OnInstallPromptDone(
     ExtensionInstallPrompt::Result result) {
-  bool granted = result == ExtensionInstallPrompt::Result::ACCEPTED;
-  if (granted) {
-    PermissionsUpdater permissions_updater(browser_context());
-    permissions_updater.GrantRuntimePermissions(*extension(),
-                                                *requested_withheld_);
-    permissions_updater.GrantOptionalPermissions(*extension(),
-                                                 *requested_optional_);
+  if (result != ExtensionInstallPrompt::Result::ACCEPTED) {
+    Respond(ArgumentList(api::permissions::Request::Results::Create(false)));
+    return;
   }
+  PermissionsUpdater permissions_updater(browser_context());
+  if (!requested_withheld_->IsEmpty()) {
+    requesting_withheld_permissions_ = true;
+    permissions_updater.GrantRuntimePermissions(
+        *extension(), *requested_withheld_,
+        base::BindOnce(&PermissionsRequestFunction::OnRuntimePermissionsGranted,
+                       base::RetainedRef(this)));
+  }
+  if (!requested_optional_->IsEmpty()) {
+    requesting_optional_permissions_ = true;
+    permissions_updater.GrantOptionalPermissions(
+        *extension(), *requested_optional_,
+        base::BindOnce(
+            &PermissionsRequestFunction::OnOptionalPermissionsGranted,
+            base::RetainedRef(this)));
+  }
+  // Grant{Runtime|Optional}Permissions calls above can finish synchronously.
+  if (!did_respond())
+    RespondIfRequestsFinished();
+}
 
-  Respond(ArgumentList(api::permissions::Request::Results::Create(granted)));
-  Release();  // Balanced in Run().
+void PermissionsRequestFunction::OnRuntimePermissionsGranted() {
+  requesting_withheld_permissions_ = false;
+  RespondIfRequestsFinished();
+}
+
+void PermissionsRequestFunction::OnOptionalPermissionsGranted() {
+  requesting_optional_permissions_ = false;
+  RespondIfRequestsFinished();
+}
+
+void PermissionsRequestFunction::RespondIfRequestsFinished() {
+  if (requesting_withheld_permissions_ || requesting_optional_permissions_)
+    return;
+
+  Respond(ArgumentList(api::permissions::Request::Results::Create(true)));
 }
 
 std::unique_ptr<const PermissionSet>
