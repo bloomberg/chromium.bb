@@ -697,7 +697,15 @@ void SplitViewController::OnPostWindowStateTypeChange(
 void SplitViewController::OnWindowActivated(ActivationReason reason,
                                             aura::Window* gained_active,
                                             aura::Window* lost_active) {
-  DCHECK(IsSplitViewModeActive());
+  // This may be called while SnapWindow is still underway because SnapWindow
+  // will end the overview start animations which will cause the overview text
+  // filter to be activated.
+  aura::Window* text_filter_widget =
+      GetWindowSelector()
+          ? GetWindowSelector()->text_filter_widget()->GetNativeWindow()
+          : nullptr;
+  DCHECK(IsSplitViewModeActive() ||
+         (text_filter_widget && text_filter_widget == gained_active));
 
   // If |gained_active| was activated as a side effect of a window disposition
   // change, do nothing. For example, when a snapped window is closed, another
