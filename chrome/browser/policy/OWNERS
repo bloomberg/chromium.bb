@@ -5,4 +5,11 @@ pastarmovj@chromium.org
 pmarko@chromium.org
 poromov@chromium.org
 
+per-file browser_dm_token_storage*=georgesak@chromium.org
+per-file browser_dm_token_storage*=rogerta@chromium.org
+per-file browser_dm_token_storage*=zmin@chromium.org
+
+per-file machine_level_user_cloud_policy*=rogerta@chromium.org
+per-file machine_level_user_cloud_policy*=zmin@chromium.org
+
 # COMPONENT: Enterprise
