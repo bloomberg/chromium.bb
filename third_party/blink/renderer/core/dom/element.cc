@@ -178,22 +178,36 @@ bool IsRootEditableElementWithCounting(const Element& element) {
   const auto* style = element.GetComputedStyle();
   if (!style)
     return is_editable;
+  auto user_modify = style->UserModify();
   const AtomicString& ce_value = element.FastGetAttribute(kContenteditableAttr);
   if (ce_value.IsNull() || DeprecatedEqualIgnoringCase(ce_value, "false")) {
-    if (style->UserModify() != EUserModify::kReadOnly)
-      UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
-    if (style->UserModify() == EUserModify::kReadWritePlaintextOnly)
+    if (user_modify == EUserModify::kReadWritePlaintextOnly) {
       UseCounter::Count(doc, WebFeature::kPlainTextEditingEffective);
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyPlainTextEffective);
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
+    } else if (user_modify == EUserModify::kReadWrite) {
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyReadWriteEffective);
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
+    }
   } else if (ce_value.IsEmpty() ||
              DeprecatedEqualIgnoringCase(ce_value, "true")) {
-    if (style->UserModify() != EUserModify::kReadWrite)
-      UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
-    if (style->UserModify() == EUserModify::kReadWritePlaintextOnly)
+    if (user_modify == EUserModify::kReadWritePlaintextOnly) {
       UseCounter::Count(doc, WebFeature::kPlainTextEditingEffective);
-  } else if (DeprecatedEqualIgnoringCase(ce_value, "plaintext-only")) {
-    if (style->UserModify() != EUserModify::kReadWritePlaintextOnly)
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyPlainTextEffective);
       UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
+    } else if (user_modify == EUserModify::kReadOnly) {
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyReadOnlyEffective);
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
+    }
+  } else if (DeprecatedEqualIgnoringCase(ce_value, "plaintext-only")) {
     UseCounter::Count(doc, WebFeature::kPlainTextEditingEffective);
+    if (user_modify == EUserModify::kReadWrite) {
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyReadWriteEffective);
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
+    } else if (user_modify == EUserModify::kReadOnly) {
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyReadOnlyEffective);
+      UseCounter::Count(doc, WebFeature::kWebKitUserModifyEffective);
+    }
   }
   return is_editable;
 }
