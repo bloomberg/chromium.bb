@@ -1519,13 +1519,22 @@ Output.prototype = {
             this.format_(node, '$name', buff, ruleStr);
             return;
           }
+
+          if (!node.firstChild)
+            return;
+
+          var root = node;
           var walker = new AutomationTreeWalker(node, Dir.FORWARD, {
             visit: AutomationPredicate.leafOrStaticText,
-            leaf: AutomationPredicate.leafOrStaticText
+            leaf: (n) => {
+              // The root might be a leaf itself, but we still want to descend
+              // into it.
+              return n != root && AutomationPredicate.leafOrStaticText(n);
+            },
+            root: (r) => r == root
           });
           var outputStrings = [];
-          while (walker.next().node &&
-                 walker.phase == AutomationTreeWalkerPhase.DESCENDANT) {
+          while (walker.next().node) {
             if (walker.node.name)
               outputStrings.push(walker.node.name);
           }
