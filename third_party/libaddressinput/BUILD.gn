@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//testing/test.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//build/config/locales.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -278,4 +279,26 @@ test("libaddressinput_unittests") {
     "//services/network:test_support",
     "//testing/gtest",
   ]
+}
+
+fuzzer_test("libaddressinput_parse_address_fields_fuzzer") {
+  sources = [
+    "fuzz/parse_address_fields_fuzzer.cc",
+  ]
+  deps = [
+    ":libaddressinput",
+    ":util",
+  ]
+  dict = "//third_party/libaddressinput/fuzz/data/require.dict"
+}
+
+fuzzer_test("libaddressinput_parse_format_rule_fuzzer") {
+  sources = [
+    "fuzz/parse_format_rule_fuzzer.cc",
+  ]
+  deps = [
+    ":libaddressinput",
+    ":util",
+  ]
+  dict = "//third_party/libaddressinput/fuzz/data/fmt.dict"
 }
