@@ -2961,6 +2961,70 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
 }
 
 // Test that we can autofill forms that dynamically change the element that
+// has been clicked on, even though there are multiple forms with identical
+// names.
+IN_PROC_BROWSER_TEST_P(
+    AutofillDynamicFormInteractiveTest,
+    DynamicFormFill_FirstElementDisappearsMultipleBadNameForms) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com",
+      "/autofill/dynamic_form_element_invalid_multiple_badname_forms.html");
+
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname_5");
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetWebContents(), "hasRefilled()", &has_refilled));
+
+  ASSERT_TRUE(has_refilled);
+  // Make sure the second form was filled correctly, and the first form was left
+  // unfilled.
+  ExpectFieldValue("firstname_1", "");
+  ExpectFieldValue("firstname_2", "");
+  ExpectFieldValue("address1_3", "");
+  ExpectFieldValue("country_4", "CA");  // default
+  ExpectFieldValue("firstname_6", "Milton");
+  ExpectFieldValue("address1_7", "4120 Freidrich Lane");
+  ExpectFieldValue("country_8", "US");
+}
+
+// Test that we can autofill forms that dynamically change the element that
+// has been clicked on, even though there are multiple forms with identical
+// names.
+IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
+                       DynamicFormFill_FirstElementDisappearsBadnameUnowned) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/dynamic_form_element_invalid_unowned_badnames.html");
+
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname_5");
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetWebContents(), "hasRefilled()", &has_refilled));
+
+  ASSERT_TRUE(has_refilled);
+  // Make sure the second form was filled correctly, and the first form was left
+  // unfilled.
+  ExpectFieldValue("firstname_1", "");
+  ExpectFieldValue("firstname_2", "");
+  ExpectFieldValue("address1_3", "");
+  ExpectFieldValue("country_4", "CA");  // default
+  ExpectFieldValue("firstname_6", "Milton");
+  ExpectFieldValue("address1_7", "4120 Freidrich Lane");
+  ExpectFieldValue("country_8", "US");
+}
+
+// Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the elements are unowned.
 IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
                        DynamicFormFill_FirstElementDisappearsUnowned) {
