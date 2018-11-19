@@ -110,7 +110,9 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.WebappCustomTabTimeSpentLogger;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 
@@ -370,6 +372,32 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         }
     }
 
+    /**
+     * @return The index of the previous navigation history entry managed by a dynamic module
+     * or -1 if there is no such entry.
+     */
+    private boolean goToModuleManagedNavigationIndex() {
+        if (mModuleActivityDelegate == null && mModuleCallback == null) return false;
+        NavigationController navigationController = getNavigationController();
+        if (navigationController == null) return false;
+
+        NavigationHistory history = navigationController.getNavigationHistory();
+        for (int i = history.getCurrentEntryIndex() - 1; i >= 0; i--) {
+            if (isModuleManagedUrl(history.getEntryAtIndex(i).getUrl())) {
+                navigationController.goToNavigationIndex(i);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Nullable
+    private NavigationController getNavigationController() {
+        WebContents webContents = getActivityTab().getWebContents();
+        return webContents == null ? null : webContents.getNavigationController();
+    }
+
     @VisibleForTesting
     void maybeInitialiseDynamicModulePostMessageHandler(PostMessageBackend backend) {
         // Only initialise the handler if the feature is enabled.
@@ -591,6 +619,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                         RecordUserAction.record("CustomTabs.CloseButtonClicked");
                         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
                             RecordUserAction.record("CustomTabs.CloseButtonClicked.DownloadsUI");
+                        }
+                        if (goToModuleManagedNavigationIndex()) {
+                            RecordUserAction.record(
+                                    "CustomTabs.CloseButtonClicked.GoToModuleManagedUrl");
+                            return;
                         }
                         recordClientConnectionStatus();
                         finishAndClose(false);
