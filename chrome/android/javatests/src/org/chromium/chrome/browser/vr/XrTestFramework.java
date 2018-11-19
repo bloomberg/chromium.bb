@@ -59,7 +59,10 @@ public abstract class XrTestFramework {
     public static final int POLL_TIMEOUT_SHORT_MS = 1000;
     public static final int POLL_TIMEOUT_LONG_MS = 10000;
 
-    public static final String[] NATIVE_URLS_OF_INTEREST = {UrlConstants.BOOKMARKS_FOLDER_URL,
+    // The "3" corresponds to the "Mobile Bookmarks" folder - omitting a particular folder
+    // automatically redirects to that folder, and not having it in the URL causes issues with the
+    // URL we expect to be loaded being different than the actual URL.
+    public static final String[] NATIVE_URLS_OF_INTEREST = {UrlConstants.BOOKMARKS_FOLDER_URL + "3",
             UrlConstants.BOOKMARKS_UNCATEGORIZED_URL, UrlConstants.BOOKMARKS_URL,
             UrlConstants.DOWNLOADS_URL, UrlConstants.NATIVE_HISTORY_URL, UrlConstants.NTP_URL,
             UrlConstants.RECENT_TABS_URL};
