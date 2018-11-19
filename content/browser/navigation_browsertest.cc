@@ -1435,12 +1435,13 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, OpenerNavigation_DownloadPolicy) {
   DownloadTestObserverInProgress observer(
       BrowserContext::GetDownloadManager(opener->GetBrowserContext()),
       1 /* wait_count */);
-  EXPECT_TRUE(ExecuteScript(
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
       popup,
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
   observer.WaitForFinished();
   histograms.ExpectUniqueSample("Navigation.DownloadPolicy",
-                                NavigationDownloadPolicy::kAllowOpener, 1);
+                                NavigationDownloadPolicy::kAllowOpenerNoGesture,
+                                1);
 }
 
 }  // namespace content
