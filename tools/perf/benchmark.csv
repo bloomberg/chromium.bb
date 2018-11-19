@@ -7,7 +7,7 @@ blink_perf.accessibility,dmazzoni@chromium.org,Blink>Accessibility,https://bit.l
 blink_perf.bindings,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",Blink>Bindings,https://bit.ly/blink-perf-benchmarks,
 blink_perf.canvas,"aaronhk@chromium.org, fserb@chromium.org",Blink>Canvas,https://bit.ly/blink-perf-benchmarks,
 blink_perf.css,"futhark@chromium.org, andruud@chromium.org",Blink>CSS,https://bit.ly/blink-perf-benchmarks,
-blink_perf.dom,"hayato@chromium.org, tkent@chromium.org, yosin@chromium.org",Blink>DOM,https://bit.ly/blink-perf-benchmarks,
+blink_perf.dom,"hayato@chromium.org, tkent@chromium.org",Blink>DOM,https://bit.ly/blink-perf-benchmarks,
 blink_perf.events,hayato@chromium.org,Blink>DOM,https://bit.ly/blink-perf-benchmarks,
 blink_perf.image_decoder,cblume@chromium.org,Internals>Images>Codecs,https://bit.ly/blink-perf-benchmarks,
 blink_perf.layout,eae@chromium.org,,https://bit.ly/blink-perf-benchmarks,
