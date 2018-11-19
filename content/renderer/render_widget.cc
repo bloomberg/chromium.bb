@@ -806,9 +806,10 @@ void RenderWidget::OnWasHidden() {
 void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
                               bool was_evicted) {
   TRACE_EVENT0("renderer", "RenderWidget::OnWasShown");
-  // TODO(crbug.com/896836): CHECK to try track down why we make a frame sink
-  // for a RenderWidget without a main frame.
-  CHECK(!is_frozen_);
+  // TODO(danakj): Nothing should happen ideally if the RenderWidget is frozen!
+  // It's not visible! However.. the RenderView needs to see it as visible in
+  // order to make the Page visible /o\ so this is hard. We need to detangle
+  // page visibility from the main widget. https://crbug.com/419087
 
   was_shown_time_ = base::TimeTicks::Now();
   // See OnWasHidden
@@ -2260,7 +2261,15 @@ void RenderWidget::SetHidden(bool hidden) {
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHidden(hidden);
 
-  layer_tree_view_->SetVisible(!is_hidden_);
+  // When the RenderWidget is frozen, visibility of the compositor is overridden
+  // to always be hidden to prevent it from using resources that are not needed.
+  // Unfortunately the main RenderWidget for a RenderView must be marked visible
+  // even if the RenderView has a proxy main frame (and the RenderWidget is
+  // frozen), in order for the RenderView to use the visibility signal from the
+  // RenderWidget. This is bad. But we don't need to show the compositor to
+  // satisfy that requirement.
+  if (!is_frozen_)
+    layer_tree_view_->SetVisible(!is_hidden_);
 }
 
 void RenderWidget::DidToggleFullscreen() {
