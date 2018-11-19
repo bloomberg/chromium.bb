@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -40,6 +41,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -99,6 +101,12 @@ GURL AppendUrlSeparator(const GURL& url) {
 bool ShouldFailRequestDueToCors(const network::ResourceRequest& request) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity)) {
+    return false;
+  }
+
+  // Currently the following logic does not work with extensions. Until it's
+  // fixed let's rely on the renderer-side check. See https://crbug.com/895999.
+  if (!base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors)) {
     return false;
   }
 
