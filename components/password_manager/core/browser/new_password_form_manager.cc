@@ -284,6 +284,30 @@ void NewPasswordFormManager::Save() {
 }
 
 void NewPasswordFormManager::Update(const PasswordForm& credentials_to_update) {
+  metrics_util::LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
+      parsed_submitted_form_->submission_event);
+  metrics_recorder_->SetSubmissionIndicatorEvent(
+      parsed_submitted_form_->submission_event);
+
+  std::unique_ptr<PasswordForm> parsed_observed_form =
+      parser_.Parse(observed_form_, FormDataParser::Mode::kFilling);
+  FormStructure form_structure(credentials_to_update.form_data);
+  votes_uploader_.UploadPasswordVote(
+      *parsed_observed_form, *parsed_submitted_form_, autofill::NEW_PASSWORD,
+      form_structure.FormSignatureAsStr());
+
+  base::string16 password_to_save = pending_credentials_.password_value;
+  bool skip_zero_click = pending_credentials_.skip_zero_click;
+  pending_credentials_ = credentials_to_update;
+  pending_credentials_.password_value = password_to_save;
+  pending_credentials_.skip_zero_click = skip_zero_click;
+  pending_credentials_.preferred = true;
+  is_new_login_ = false;
+  ProcessUpdate();
+  std::vector<PasswordForm> more_credentials_to_update =
+      FindOtherCredentialsToUpdate();
+  form_saver_->Update(pending_credentials_, best_matches_,
+                      &more_credentials_to_update, nullptr);
 }
 
 void NewPasswordFormManager::UpdateUsername(
