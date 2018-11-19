@@ -2881,7 +2881,7 @@ def CMDsetdep(parser, args):
   (options, args) = parser.parse_args(args)
   if args:
     parser.error('Unused arguments: "%s"' % '" "'.join(args))
-  if not options.revisions and not options.vars:
+  if not options.setdep_revisions and not options.vars:
     parser.error(
         'You must specify at least one variable or revision to modify.')
 
