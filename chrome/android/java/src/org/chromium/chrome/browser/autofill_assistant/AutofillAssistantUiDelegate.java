@@ -456,12 +456,12 @@ class AutofillAssistantUiDelegate {
 
     /** Called to show overlay. */
     public void showOverlay() {
-        mTouchEventFilter.setEnableFiltering(true);
+        mTouchEventFilter.setFullOverlay(true);
     }
 
     /** Called to hide overlay. */
     public void hideOverlay() {
-        mTouchEventFilter.setEnableFiltering(false);
+        mTouchEventFilter.setFullOverlay(false);
     }
 
     public void hideDetails() {
@@ -657,7 +657,7 @@ class AutofillAssistantUiDelegate {
     }
 
     public void updateTouchableArea(boolean enabled, List<RectF> boxes) {
-        mTouchEventFilter.updateTouchableArea(enabled, boxes);
+        mTouchEventFilter.setPartialOverlay(enabled, boxes);
     }
 
     /**
