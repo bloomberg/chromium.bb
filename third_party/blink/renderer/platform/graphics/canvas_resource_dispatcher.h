@@ -11,6 +11,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
@@ -110,6 +111,7 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   void ReclaimResourceInternal(const ResourceMap::iterator&);
 
   viz::mojom::blink::CompositorFrameSinkPtr sink_;
+  mojom::blink::SurfaceEmbedderPtr surface_embedder_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
   viz::mojom::blink::CompositorFrameSinkClientPtr client_ptr_;
 
@@ -127,6 +129,8 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   viz::BeginFrameAck current_begin_frame_ack_;
 
   CanvasResourceDispatcherClient* client_;
+
+  const bool enable_surface_synchronization_;
 
   base::WeakPtrFactory<CanvasResourceDispatcher> weak_ptr_factory_;
 };

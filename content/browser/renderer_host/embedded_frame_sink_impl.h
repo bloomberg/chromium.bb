@@ -44,7 +44,8 @@ class CONTENT_EXPORT EmbeddedFrameSinkImpl : public viz::HostFrameSinkClient {
   // should only ever be called once.
   void CreateCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClientPtr client,
-      viz::mojom::CompositorFrameSinkRequest request);
+      viz::mojom::CompositorFrameSinkRequest request,
+      blink::mojom::SurfaceEmbedderRequest surface_embedder_request);
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;

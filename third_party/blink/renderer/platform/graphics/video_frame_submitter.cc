@@ -10,6 +10,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/scheduler/video_frame_controller.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "media/base/video_frame.h"
@@ -37,6 +38,8 @@ VideoFrameSubmitter::VideoFrameSubmitter(
       context_provider_callback_(context_provider_callback),
       resource_provider_(std::move(resource_provider)),
       rotation_(media::VIDEO_ROTATION_0),
+      enable_surface_synchronization_(
+          features::IsSurfaceSynchronizationEnabled()),
       weak_ptr_factory_(this) {
   DETACH_FROM_THREAD(media_thread_checker_);
 }
@@ -225,7 +228,8 @@ void VideoFrameSubmitter::StartSubmitting() {
   binding_.Bind(mojo::MakeRequest(&client));
   provider->CreateCompositorFrameSink(
       frame_sink_id_, std::move(client),
-      mojo::MakeRequest(&compositor_frame_sink_));
+      mojo::MakeRequest(&compositor_frame_sink_),
+      mojo::MakeRequest(&surface_embedder_));
 
   compositor_frame_sink_.set_connection_error_handler(base::BindOnce(
       &VideoFrameSubmitter::OnContextLost, base::Unretained(this)));
@@ -248,8 +252,15 @@ bool VideoFrameSubmitter::SubmitFrame(
     frame_size = gfx::Size(frame_size.height(), frame_size.width());
   }
   if (frame_size_ != frame_size) {
-    if (!frame_size_.IsEmpty())
+    if (!frame_size_.IsEmpty()) {
       child_local_surface_id_allocator_.GenerateId();
+      if (enable_surface_synchronization_) {
+        surface_embedder_->SetLocalSurfaceId(
+            child_local_surface_id_allocator_
+                .GetCurrentLocalSurfaceIdAllocation()
+                .local_surface_id());
+      }
+    }
     frame_size_ = frame_size;
   }
 

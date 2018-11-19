@@ -26,7 +26,10 @@ EmbeddedFrameSinkImpl::EmbeddedFrameSinkImpl(
       frame_sink_id_(frame_sink_id) {
   client_.set_connection_error_handler(std::move(destroy_callback));
   host_frame_sink_manager_->RegisterFrameSinkId(
-      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kYes);
+      frame_sink_id_, this,
+      features::IsSurfaceSynchronizationEnabled()
+          ? viz::ReportFirstSurfaceActivation::kNo
+          : viz::ReportFirstSurfaceActivation::kYes);
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
                                                    "EmbeddedFrameSinkImpl");
 }
@@ -41,7 +44,8 @@ EmbeddedFrameSinkImpl::~EmbeddedFrameSinkImpl() {
 
 void EmbeddedFrameSinkImpl::CreateCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClientPtr client,
-    viz::mojom::CompositorFrameSinkRequest request) {
+    viz::mojom::CompositorFrameSinkRequest request,
+    blink::mojom::SurfaceEmbedderRequest surface_embedder_request) {
   // We might recreate the CompositorFrameSink on context loss or GPU crash.
   // Only register frame sink hierarchy the first time.
   if (!has_created_compositor_frame_sink_) {
@@ -57,6 +61,8 @@ void EmbeddedFrameSinkImpl::CreateCompositorFrameSink(
 
   host_frame_sink_manager_->CreateCompositorFrameSink(
       frame_sink_id_, std::move(request), std::move(client));
+
+  client_->BindSurfaceEmbedder(std::move(surface_embedder_request));
 
   has_created_compositor_frame_sink_ = true;
 }

@@ -172,6 +172,9 @@ class VideoFrameSubmitterTest : public testing::Test {
     // testing easier without having to worry about the first sent frame.
     submitter_->UpdateSubmissionState(true);
     submitter_->SetCompositorFrameSinkPtrForTesting(&submitter_sink);
+    mojom::blink::SurfaceEmbedderPtr embedder;
+    mojo::MakeRequest(&embedder);
+    submitter_->SetSurfaceEmbedderPtrForTesting(std::move(embedder));
     submitter_->SetSurfaceIdForTesting(
         viz::SurfaceId(
             viz::FrameSinkId(1, 1),

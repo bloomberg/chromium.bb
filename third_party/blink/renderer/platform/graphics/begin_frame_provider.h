@@ -55,6 +55,10 @@ class PLATFORM_EXPORT BeginFrameProvider
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) final {
     NOTIMPLEMENTED();
   }
+  void BindSurfaceEmbedder(
+      mojom::blink::SurfaceEmbedderRequest request) override {
+    NOTIMPLEMENTED();
+  }
 
   void ResetCompositorFrameSink();
 
