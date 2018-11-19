@@ -11,7 +11,7 @@ Did step into
 Script execution resumed.
 Script execution paused.
 Script execution resumed.
-Cursor position is: (2, 4).
+Cursor position is: (8, 15).
 
 Running: testLiveEditWithStepInWhenPausedThenStepIntoCausesCursorMove
 Script execution paused.
@@ -25,7 +25,7 @@ Script execution paused.
 Script execution resumed.
 Script execution paused.
 Script execution resumed.
-Cursor position is: (8, 4).
+Cursor position is: (7, 12).
 
 Running: testLiveEditWithoutStepInWhenPausedDoesNotCauseCursorMove
 Script execution paused.
