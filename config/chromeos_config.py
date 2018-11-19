@@ -1758,6 +1758,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
+      'hatch', # contact:yueherngl@
       'kalista', # contact:zhuohao@
   ])
 
