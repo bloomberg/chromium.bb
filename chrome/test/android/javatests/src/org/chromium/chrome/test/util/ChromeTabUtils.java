@@ -141,6 +141,19 @@ public class ChromeTabUtils {
     }
 
     /**
+     * Waits for the given tab to finish loading its current page.
+     *
+     * @param tab The tab to wait for the page loading to be complete.
+     * @param loadTrigger The trigger action that will result in a page load finished event
+     *                    to be fired (not run on the UI thread by default).
+     * @param secondsToWait The number of seconds to wait for the page to be loaded.
+     */
+    public static void waitForTabPageLoaded(final Tab tab, Runnable loadTrigger, long secondsToWait)
+            throws InterruptedException {
+        waitForTabPageLoaded(tab, null, loadTrigger, secondsToWait);
+    }
+
+    /**
      * Waits for the given tab to load the given URL, or, if the given URL is null, waits
      * for the triggered load to complete.
      *
