@@ -17,6 +17,7 @@ namespace switches {
 VIZ_COMMON_EXPORT extern const char kDeadlineToSynchronizeSurfaces[];
 VIZ_COMMON_EXPORT extern const char kEnableSurfaceSynchronization[];
 VIZ_COMMON_EXPORT extern const char kEnableVizDevTools[];
+VIZ_COMMON_EXPORT extern const char kEnableVizHitTestDebug[];
 VIZ_COMMON_EXPORT extern const char kRunAllCompositorStagesBeforeDraw[];
 VIZ_COMMON_EXPORT extern const char kUseVizHitTestSurfaceLayer[];
 VIZ_COMMON_EXPORT extern const char kDisableFrameRateLimit[];

@@ -63,6 +63,10 @@ void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id,
 }
 
 void HitTestAggregator::InsertHitTestDebugQuads(RenderPassList* render_passes) {
+  const base::flat_set<FrameSinkId>* hit_test_async_queried_debug_regions =
+      hit_test_manager_->GetHitTestAsyncQueriedDebugRegions(
+          root_frame_sink_id_);
+
   QuadList& ql = render_passes->back()->quad_list;
   ql.InsertBeforeAndInvalidateAllPointers<DebugBorderDrawQuad>(
       ql.begin(), hit_test_data_size_);
@@ -88,7 +92,11 @@ void HitTestAggregator::InsertHitTestDebugQuads(RenderPassList* render_passes) {
       return;
     }
 
-    const SkColor color = colors[parents.size() % 3];
+    SkColor color = colors[parents.size() % 3];
+    if (hit_test_async_queried_debug_regions &&
+        hit_test_async_queried_debug_regions->count(htr.frame_sink_id)) {
+      color = SK_ColorRED;
+    }
 
     parents.push(i);
     // Concatenate transformation.

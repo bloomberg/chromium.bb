@@ -55,6 +55,12 @@ bool IsSurfaceSynchronizationEnabled() {
          base::FeatureList::IsEnabled(kVizDisplayCompositor);
 }
 
+bool IsVizHitTestingDebugEnabled() {
+  return features::IsVizHitTestingEnabled() &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableVizHitTestDebug);
+}
+
 bool IsVizHitTestingDrawQuadEnabled() {
   return base::FeatureList::IsEnabled(kEnableVizHitTestDrawQuad) ||
          base::FeatureList::IsEnabled(kVizDisplayCompositor);

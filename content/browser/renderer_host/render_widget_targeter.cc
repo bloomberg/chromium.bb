@@ -8,6 +8,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "components/viz/common/features.h"
+#include "components/viz/host/host_frame_sink_manager.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/input/one_shot_timeout_monitor.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -127,6 +129,8 @@ RenderWidgetTargeter::TargetingRequest::~TargetingRequest() = default;
 
 RenderWidgetTargeter::RenderWidgetTargeter(Delegate* delegate)
     : trace_id_(base::RandUint64()),
+      is_viz_hit_testing_debug_enabled_(
+          features::IsVizHitTestingDebugEnabled()),
       delegate_(delegate),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
@@ -368,6 +372,11 @@ void RenderWidgetTargeter::FoundFrameSinkId(
   } else {
     request_in_flight_ = false;
     async_hit_test_timeout_.reset(nullptr);
+
+    if (is_viz_hit_testing_debug_enabled_ &&
+        event->GetType() == blink::WebInputEvent::Type::kMouseDown) {
+      hit_test_async_queried_debug_queue_.push_back(target->GetFrameSinkId());
+    }
   }
   auto* view = delegate_->FindViewFromFrameSinkId(frame_sink_id);
   if (!view)
@@ -412,6 +421,13 @@ void RenderWidgetTargeter::FoundTarget(
   // View will be valid but there will no longer be a RenderWidgetHostImpl.
   if (!root_view || !root_view->GetRenderWidgetHost())
     return;
+
+  if (is_viz_hit_testing_debug_enabled_ &&
+      !hit_test_async_queried_debug_queue_.empty()) {
+    GetHostFrameSinkManager()->SetHitTestAsyncQueriedDebugRegions(
+        root_view->GetRootFrameSinkId(), hit_test_async_queried_debug_queue_);
+    hit_test_async_queried_debug_queue_.clear();
+  }
 
   if (features::IsVizHitTestingSurfaceLayerEnabled() &&
       expected_frame_sink_id.is_valid()) {
