@@ -563,13 +563,11 @@ void PasswordManager::ProvisionallySavePassword(
 
 void PasswordManager::UpdateFormManagers() {
   std::vector<PasswordFormManagerInterface*> form_managers;
-  if (base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)) {
-    for (const auto& form_manager : form_managers_)
-      form_managers.push_back(form_manager.get());
-  } else {
-    for (const auto& form_manager : pending_login_managers_)
-      form_managers.push_back(form_manager.get());
-  }
+  for (const auto& form_manager : form_managers_)
+    form_managers.push_back(form_manager.get());
+
+  for (const auto& form_manager : pending_login_managers_)
+    form_managers.push_back(form_manager.get());
 
   // Get the fetchers and all the drivers.
   std::vector<FormFetcher*> fetchers;
