@@ -377,7 +377,7 @@ TEST_F(LockContentsViewKeyboardUnitTest,
   LockContentsView* contents =
       LockScreen::TestApi(LockScreen::Get()).contents_view();
   ASSERT_NE(nullptr, contents);
-  LoadUsers(9);
+  SetUserCount(9);
 
   // Users list in extra small layout should adjust its height to parent.
   ScrollableUsersListView* users_list =
@@ -399,7 +399,7 @@ TEST_F(LockContentsViewKeyboardUnitTest, AutoLayoutSmallUsersListForKeyboard) {
   LockContentsView* contents =
       LockScreen::TestApi(LockScreen::Get()).contents_view();
   ASSERT_NE(nullptr, contents);
-  LoadUsers(4);
+  SetUserCount(4);
   ScrollableUsersListView* users_list =
       LockContentsView::TestApi(contents).users_list();
 
@@ -1231,7 +1231,7 @@ TEST_F(LockContentsViewKeyboardUnitTest, SwitchPinAndVirtualKeyboard) {
 
   // Add user who can use pin authentication.
   const std::string email = "user@domain.com";
-  LoadUser(email);
+  AddUserByEmail(email);
   contents->OnPinEnabledForUserChanged(AccountId::FromUserEmail(email), true);
   LoginBigUserView* big_view =
       LockContentsView::TestApi(contents).primary_big_view();
@@ -1259,7 +1259,7 @@ TEST_F(LockContentsViewKeyboardUnitTest, SwitchUserWhileKeyboardShown) {
       LockScreen::TestApi(LockScreen::Get()).contents_view();
   ASSERT_NE(nullptr, contents);
 
-  LoadUsers(2);
+  SetUserCount(2);
 
   LoginAuthUserView::TestApi primary_user(
       LockContentsView::TestApi(contents).primary_big_view()->auth_user());
@@ -1305,7 +1305,7 @@ TEST_F(LockContentsViewKeyboardUnitTest, PinSubmitWithVirtualKeyboardShown) {
 
   // Add user who can use pin authentication.
   const std::string email = "user@domain.com";
-  LoadUser(email);
+  AddUserByEmail(email);
   contents->OnPinEnabledForUserChanged(AccountId::FromUserEmail(email), true);
   LoginBigUserView* big_view =
       LockContentsView::TestApi(contents).primary_big_view();
@@ -1799,14 +1799,13 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
   EXPECT_TRUE(HasFocusInAnyChildView(status_area));
 }
 
-class LockContentsViewPowerManagerUnitTest
-    : public LockContentsViewKeyboardUnitTest {
+class LockContentsViewPowerManagerUnitTest : public LockContentsViewUnitTest {
  public:
   void SetUp() override {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
         std::make_unique<chromeos::FakePowerManagerClient>());
 
-    LockContentsViewKeyboardUnitTest::SetUp();
+    LockContentsViewUnitTest::SetUp();
   }
 };
 
@@ -1831,9 +1830,9 @@ TEST_F(LockContentsViewPowerManagerUnitTest,
 
 // Verifies that the password box for the active user is cleared if a suspend
 // event is received.
-TEST_F(LockContentsViewKeyboardUnitTest, PasswordClearedOnSuspend) {
+TEST_F(LockContentsViewUnitTest, PasswordClearedOnSuspend) {
   ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
-  LoadUsers(1);
+  AddUsers(1);
 
   LockScreen::TestApi lock_screen = LockScreen::TestApi(LockScreen::Get());
   LockContentsView* contents = lock_screen.contents_view();
@@ -1851,9 +1850,9 @@ TEST_F(LockContentsViewKeyboardUnitTest, PasswordClearedOnSuspend) {
   EXPECT_TRUE(textfield->text().empty());
 }
 
-TEST_F(LockContentsViewKeyboardUnitTest, ArrowNavSingleUser) {
+TEST_F(LockContentsViewUnitTest, ArrowNavSingleUser) {
   ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
-  LoadUsers(1);
+  SetUserCount(1);
   LockContentsView* lock_contents =
       LockScreen::TestApi(LockScreen::Get()).contents_view();
 
@@ -1869,10 +1868,10 @@ TEST_F(LockContentsViewKeyboardUnitTest, ArrowNavSingleUser) {
   EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_big_view));
 }
 
-TEST_F(LockContentsViewKeyboardUnitTest, ArrowNavTwoUsers) {
+TEST_F(LockContentsViewUnitTest, ArrowNavTwoUsers) {
   ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
-  LoadUsers(1);
-  LoadPublicAccountUsers(1);
+  AddUsers(1);
+  AddPublicAccountUsers(1);
   LockContentsView::TestApi lock_contents = LockContentsView::TestApi(
       LockScreen::TestApi(LockScreen::Get()).contents_view());
 
@@ -1899,9 +1898,9 @@ TEST_F(LockContentsViewKeyboardUnitTest, ArrowNavTwoUsers) {
   EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
 }
 
-TEST_F(LockContentsViewKeyboardUnitTest, ArrowNavThreeUsers) {
+TEST_F(LockContentsViewUnitTest, ArrowNavThreeUsers) {
   ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
-  LoadUsers(3);
+  SetUserCount(3);
   LockContentsView::TestApi lock_contents = LockContentsView::TestApi(
       LockScreen::TestApi(LockScreen::Get()).contents_view());
 
@@ -1932,9 +1931,9 @@ TEST_F(LockContentsViewKeyboardUnitTest, ArrowNavThreeUsers) {
   EXPECT_TRUE(login_views_utils::HasFocusInAnyChildView(primary_password_view));
 }
 
-TEST_F(LockContentsViewKeyboardUnitTest, UserSwapFocusesBigView) {
+TEST_F(LockContentsViewUnitTest, UserSwapFocusesBigView) {
   ASSERT_NO_FATAL_FAILURE(ShowLoginScreen());
-  LoadUsers(3);
+  SetUserCount(3);
   LockContentsView::TestApi lock_contents = LockContentsView::TestApi(
       LockScreen::TestApi(LockScreen::Get()).contents_view());
 
