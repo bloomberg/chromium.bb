@@ -42,6 +42,10 @@ class ASH_EXPORT UnifiedMessageListView
   // after ctor.
   void Init();
 
+  // Starts Clear All animation and removes all notifications. Notifications are
+  // removed from MessageCenter at the beginning of the animation.
+  void ClearAllWithAnimation();
+
   // Get the height of the notification at the bottom. If no notification is
   // added, it returns 0.
   int GetLastNotificationHeight() const;
@@ -69,14 +73,13 @@ class ASH_EXPORT UnifiedMessageListView
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
 
-  void set_enable_animation(bool enable_animation) {
-    enable_animation_ = enable_animation;
-  }
-
  protected:
   // Virtual for testing.
   virtual message_center::MessageView* CreateMessageView(
       const message_center::Notification& notification);
+
+  // Virtual for testing.
+  virtual int GetStackedNotificationCount() const;
 
  private:
   friend class UnifiedMessageCenterViewTest;
@@ -94,11 +97,21 @@ class ASH_EXPORT UnifiedMessageListView
     SLIDE_OUT,
 
     // Moving down notifications.
-    MOVE_DOWN
+    MOVE_DOWN,
+
+    // Part 1 of Clear All animation. Removing all hidden notifications above
+    // the visible area.
+    CLEAR_ALL_STACKED,
+
+    // Part 2 of Clear All animation. Removing all visible notifications.
+    CLEAR_ALL_VISIBLE
   };
 
   MessageViewContainer* GetContainer(int index);
   const MessageViewContainer* GetContainer(int index) const;
+
+  // Returns the first removable notification from the top.
+  MessageViewContainer* GetNextRemovableNotification();
 
   // Current progress of the animation between 0.0 and 1.0. Returns 1.0 when
   // it's not animating.
@@ -120,8 +133,18 @@ class ASH_EXPORT UnifiedMessageListView
   // |final_bounds|.
   void ResetBounds();
 
+  // Interrupts clear all animation and deletes all the remaining notifications.
+  // ResetBounds() should be called after that.
+  void InterruptClearAll();
+
   // Deletes all the MessageViewContainer marked as |is_removed|.
   void DeleteRemovedNotifications();
+
+  // Starts the animation for current |state_|.
+  void StartAnimation();
+
+  // Updates the state between each Clear All animation phase.
+  void UpdateClearAllAnimation();
 
   UnifiedMessageCenterView* const message_center_view_;
   UnifiedSystemTrayModel* const model_;
@@ -130,6 +153,10 @@ class ASH_EXPORT UnifiedMessageListView
   // CollapseAllNotifications() to prevent PreferredSizeChanged() triggered
   // multiple times because of sequential SetExpanded() calls.
   bool ignore_size_change_ = false;
+
+  // If true, OnNotificationRemoved() will be ignored. Used in
+  // ClearAllWithAnimation().
+  bool ignore_notification_remove_ = false;
 
   // Manages notification closing animation. UnifiedMessageListView does not use
   // implicit animation.
@@ -144,9 +171,6 @@ class ASH_EXPORT UnifiedMessageListView
   // The final height of the UnifiedMessageListView. If not animating, it's same
   // as height().
   int ideal_height_ = 0;
-
-  // If false, disables animation on notification removal.
-  bool enable_animation_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageListView);
 };

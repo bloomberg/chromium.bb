@@ -26,6 +26,10 @@ namespace {
 
 constexpr base::TimeDelta kClosingAnimationDuration =
     base::TimeDelta::FromMilliseconds(330);
+constexpr base::TimeDelta kClearAllStackedAnimationDuration =
+    base::TimeDelta::FromMilliseconds(40);
+constexpr base::TimeDelta kClearAllVisibleAnimationDuration =
+    base::TimeDelta::FromMilliseconds(160);
 
 }  // namespace
 
@@ -101,6 +105,11 @@ class UnifiedMessageListView::MessageViewContainer
 
   void CloseSwipeControl() { message_view_->CloseSwipeControl(); }
 
+  // Returns if the notification is pinned i.e. can be removed manually.
+  bool IsPinned() const {
+    return message_view_->GetMode() == MessageView::Mode::PINNED;
+  }
+
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override {
     PreferredSizeChanged();
@@ -151,7 +160,6 @@ UnifiedMessageListView::UnifiedMessageListView(
       model_(model),
       animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   MessageCenter::Get()->AddObserver(this);
-  animation_->SetDuration(kClosingAnimationDuration);
   animation_->SetCurrentValue(1.0);
 }
 
@@ -175,6 +183,24 @@ void UnifiedMessageListView::Init() {
   }
   UpdateBorders();
   UpdateBounds();
+}
+
+void UnifiedMessageListView::ClearAllWithAnimation() {
+  if (state_ == State::CLEAR_ALL_STACKED || state_ == State::CLEAR_ALL_VISIBLE)
+    return;
+  ResetBounds();
+
+  {
+    base::AutoReset<bool> auto_reset(&ignore_notification_remove_, true);
+    message_center::MessageCenter::Get()->RemoveAllNotifications(
+        true /* by_user */,
+        message_center::MessageCenter::RemoveType::NON_PINNED);
+  }
+
+  state_ = State::CLEAR_ALL_STACKED;
+  UpdateClearAllAnimation();
+  if (state_ != State::IDLE)
+    StartAnimation();
 }
 
 int UnifiedMessageListView::GetLastNotificationHeight() const {
@@ -222,6 +248,8 @@ void UnifiedMessageListView::OnNotificationAdded(const std::string& id) {
   if (!notification)
     return;
 
+  InterruptClearAll();
+
   // Collapse all notifications before adding new one.
   CollapseAllNotifications();
 
@@ -235,6 +263,9 @@ void UnifiedMessageListView::OnNotificationAdded(const std::string& id) {
 
 void UnifiedMessageListView::OnNotificationRemoved(const std::string& id,
                                                    bool by_user) {
+  if (ignore_notification_remove_)
+    return;
+  InterruptClearAll();
   ResetBounds();
 
   for (int i = 0; i < child_count(); ++i) {
@@ -245,22 +276,18 @@ void UnifiedMessageListView::OnNotificationRemoved(const std::string& id,
     }
   }
 
-  if (!enable_animation_) {
-    ResetBounds();
-    return;
-  }
-
-  UpdateBorders();
   UpdateBounds();
 
   state_ = State::SLIDE_OUT;
-  animation_->Start();
+  StartAnimation();
 }
 
 void UnifiedMessageListView::OnNotificationUpdated(const std::string& id) {
   auto* notification = MessageCenter::Get()->FindVisibleNotificationById(id);
   if (!notification)
     return;
+
+  InterruptClearAll();
 
   for (int i = 0; i < child_count(); ++i) {
     auto* view = GetContainer(i);
@@ -292,14 +319,19 @@ void UnifiedMessageListView::AnimationEnded(const gfx::Animation* animation) {
 
   if (state_ == State::SLIDE_OUT) {
     DeleteRemovedNotifications();
-    UpdateBorders();
     UpdateBounds();
 
     state_ = State::MOVE_DOWN;
-    animation_->Start();
   } else if (state_ == State::MOVE_DOWN) {
     state_ = State::IDLE;
+  } else if (state_ == State::CLEAR_ALL_STACKED ||
+             state_ == State::CLEAR_ALL_VISIBLE) {
+    DeleteRemovedNotifications();
+    UpdateClearAllAnimation();
   }
+
+  if (state_ != State::IDLE)
+    StartAnimation();
 }
 
 void UnifiedMessageListView::AnimationProgressed(
@@ -321,6 +353,10 @@ MessageView* UnifiedMessageListView::CreateMessageView(
   return view;
 }
 
+int UnifiedMessageListView::GetStackedNotificationCount() const {
+  return message_center_view_->GetStackedNotificationCount();
+}
+
 UnifiedMessageListView::MessageViewContainer*
 UnifiedMessageListView::GetContainer(int index) {
   return const_cast<MessageViewContainer*>(
@@ -330,6 +366,16 @@ UnifiedMessageListView::GetContainer(int index) {
 const UnifiedMessageListView::MessageViewContainer*
 UnifiedMessageListView::GetContainer(int index) const {
   return static_cast<const MessageViewContainer*>(child_at(index));
+}
+
+UnifiedMessageListView::MessageViewContainer*
+UnifiedMessageListView::GetNextRemovableNotification() {
+  for (int i = 0; i < child_count(); ++i) {
+    auto* view = GetContainer(i);
+    if (!view->IsPinned())
+      return view;
+  }
+  return nullptr;
 }
 
 void UnifiedMessageListView::CollapseAllNotifications() {
@@ -365,7 +411,6 @@ void UnifiedMessageListView::UpdateBounds() {
 
 void UnifiedMessageListView::ResetBounds() {
   DeleteRemovedNotifications();
-  UpdateBorders();
   UpdateBounds();
 
   state_ = State::IDLE;
@@ -373,6 +418,19 @@ void UnifiedMessageListView::ResetBounds() {
     animation_->End();
   else
     PreferredSizeChanged();
+}
+
+void UnifiedMessageListView::InterruptClearAll() {
+  if (state_ != State::CLEAR_ALL_STACKED && state_ != State::CLEAR_ALL_VISIBLE)
+    return;
+
+  for (int i = 0; i < child_count(); ++i) {
+    auto* view = GetContainer(i);
+    if (!view->IsPinned())
+      view->set_is_removed();
+  }
+
+  DeleteRemovedNotifications();
 }
 
 void UnifiedMessageListView::DeleteRemovedNotifications() {
@@ -387,13 +445,70 @@ void UnifiedMessageListView::DeleteRemovedNotifications() {
     model_->RemoveNotificationExpanded(view->GetNotificationId());
     delete view;
   }
+
+  UpdateBorders();
+}
+
+void UnifiedMessageListView::StartAnimation() {
+  DCHECK_NE(state_, State::IDLE);
+
+  switch (state_) {
+    case State::IDLE:
+      break;
+    case State::SLIDE_OUT:
+      FALLTHROUGH;
+    case State::MOVE_DOWN:
+      animation_->SetDuration(kClosingAnimationDuration);
+      animation_->Start();
+      break;
+    case State::CLEAR_ALL_STACKED:
+      animation_->SetDuration(kClearAllStackedAnimationDuration);
+      animation_->Start();
+      break;
+    case State::CLEAR_ALL_VISIBLE:
+      animation_->SetDuration(kClearAllVisibleAnimationDuration);
+      animation_->Start();
+      break;
+  }
+}
+
+void UnifiedMessageListView::UpdateClearAllAnimation() {
+  DCHECK(state_ == State::CLEAR_ALL_STACKED ||
+         state_ == State::CLEAR_ALL_VISIBLE);
+
+  auto* view = GetNextRemovableNotification();
+  if (view)
+    view->set_is_removed();
+
+  if (state_ == State::CLEAR_ALL_STACKED) {
+    if (view && GetStackedNotificationCount() > 0) {
+      DeleteRemovedNotifications();
+      UpdateBounds();
+      start_height_ = ideal_height_;
+      PreferredSizeChanged();
+
+      state_ = State::CLEAR_ALL_STACKED;
+    } else {
+      state_ = State::CLEAR_ALL_VISIBLE;
+    }
+  }
+
+  if (state_ == State::CLEAR_ALL_VISIBLE) {
+    UpdateBounds();
+
+    if (view || start_height_ != ideal_height_)
+      state_ = State::CLEAR_ALL_VISIBLE;
+    else
+      state_ = State::IDLE;
+  }
 }
 
 double UnifiedMessageListView::GetCurrentValue() const {
-  return gfx::Tween::CalculateValue(state_ == State::SLIDE_OUT
-                                        ? gfx::Tween::EASE_IN
-                                        : gfx::Tween::FAST_OUT_SLOW_IN,
-                                    animation_->GetCurrentValue());
+  return gfx::Tween::CalculateValue(
+      state_ == State::SLIDE_OUT || state_ == State::CLEAR_ALL_VISIBLE
+          ? gfx::Tween::EASE_IN
+          : gfx::Tween::FAST_OUT_SLOW_IN,
+      animation_->GetCurrentValue());
 }
 
 }  // namespace ash
