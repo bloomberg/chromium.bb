@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
@@ -34,30 +35,45 @@ class TestConnectToDeviceOperation
       const ConnectToDeviceOperation<std::string>::ConnectionFailedCallback&
           failure_callback,
       const DeviceIdPair& device_id_pair,
-      ConnectionPriority connection_priority) {
+      ConnectionPriority connection_priority,
+      bool should_attempt_connection_synchronously) {
     auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     auto operation = base::WrapUnique(new TestConnectToDeviceOperation(
         std::move(success_callback), std::move(failure_callback),
         device_id_pair, connection_priority, test_task_runner));
-    test_task_runner->RunUntilIdle();
+
+    if (should_attempt_connection_synchronously)
+      test_task_runner->RunUntilIdle();
+
     return operation;
   }
 
   ~TestConnectToDeviceOperation() override = default;
 
+  void RunPendingTasks() { test_task_runner_->RunUntilIdle(); }
+
   bool has_attempted_connection() const { return has_attempted_connection_; }
   bool has_canceled_connection() const { return has_canceled_connection_; }
+  const base::Optional<ConnectionPriority>& current_connection_priority() {
+    return current_connection_priority_;
+  }
 
   // ConnectToDeviceOperationBase<std::string>:
   void PerformAttemptConnectionToDevice(
       ConnectionPriority connection_priority) override {
     has_attempted_connection_ = true;
+    current_connection_priority_ = connection_priority;
   }
 
-  void PerformCancellation() override { has_canceled_connection_ = true; }
+  void PerformCancellation() override {
+    has_canceled_connection_ = true;
+    current_connection_priority_.reset();
+  }
 
   void PerformUpdateConnectionPriority(
-      ConnectionPriority connection_priority) override {}
+      ConnectionPriority connection_priority) override {
+    current_connection_priority_ = connection_priority;
+  }
 
   // Make On{Successful|Failed}ConnectionAttempt() public for testing.
   using ConnectToDeviceOperation<std::string>::OnSuccessfulConnectionAttempt;
@@ -76,10 +92,13 @@ class TestConnectToDeviceOperation
                                                   std::move(failure_callback),
                                                   device_id_pair,
                                                   connection_priority,
-                                                  test_task_runner) {}
+                                                  test_task_runner),
+        test_task_runner_(test_task_runner) {}
 
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
   bool has_attempted_connection_ = false;
   bool has_canceled_connection_ = false;
+  base::Optional<ConnectionPriority> current_connection_priority_;
 };
 
 }  // namespace
@@ -91,7 +110,8 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
 
   ~SecureChannelConnectToDeviceOperationBaseTest() override = default;
 
-  void CreateOperation(ConnectionPriority connection_priority) {
+  void CreateOperation(ConnectionPriority connection_priority,
+                       bool should_attempt_connection_synchronously = true) {
     test_operation_ = TestConnectToDeviceOperation::Create(
         base::BindOnce(&SecureChannelConnectToDeviceOperationBaseTest::
                            OnSuccessfulConnectionAttempt,
@@ -99,8 +119,10 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
         base::BindRepeating(&SecureChannelConnectToDeviceOperationBaseTest::
                                 OnFailedConnectionAttempt,
                             base::Unretained(this)),
-        test_device_id_pair_, connection_priority);
-    EXPECT_TRUE(test_operation_->has_attempted_connection());
+        test_device_id_pair_, connection_priority,
+        should_attempt_connection_synchronously);
+    EXPECT_EQ(should_attempt_connection_synchronously,
+              test_operation_->has_attempted_connection());
   }
 
   TestConnectToDeviceOperation* test_operation() {
@@ -172,6 +194,39 @@ TEST_F(SecureChannelConnectToDeviceOperationBaseTest, Cancelation) {
   CreateOperation(ConnectionPriority::kLow);
   test_operation()->Cancel();
   EXPECT_TRUE(test_operation()->has_canceled_connection());
+}
+
+TEST_F(SecureChannelConnectToDeviceOperationBaseTest,
+       UpdateConnectionPriorityBeforeAttemptStarted) {
+  CreateOperation(ConnectionPriority::kLow,
+                  false /* should_attempt_connection_synchronously */);
+
+  // Update the connection priority, then run pending tasks; the pending task
+  // should start the attempt.
+  test_operation()->UpdateConnectionPriority(ConnectionPriority::kMedium);
+  EXPECT_FALSE(test_operation()->has_attempted_connection());
+  test_operation()->RunPendingTasks();
+  EXPECT_TRUE(test_operation()->has_attempted_connection());
+  EXPECT_EQ(ConnectionPriority::kMedium,
+            test_operation()->current_connection_priority());
+
+  test_operation()->Cancel();
+}
+
+TEST_F(SecureChannelConnectToDeviceOperationBaseTest,
+       CancelBeforeAttemptStarted) {
+  CreateOperation(ConnectionPriority::kLow,
+                  false /* should_attempt_connection_synchronously */);
+
+  // Update the connection priority, cancel the attempt, then run pending tasks;
+  // the pending task should try to start the attempt but should fail since the
+  // task had already been canceled.
+  test_operation()->UpdateConnectionPriority(ConnectionPriority::kMedium);
+  EXPECT_FALSE(test_operation()->has_attempted_connection());
+  test_operation()->Cancel();
+  EXPECT_FALSE(test_operation()->has_attempted_connection());
+  test_operation()->RunPendingTasks();
+  EXPECT_FALSE(test_operation()->has_attempted_connection());
 }
 
 }  // namespace secure_channel
