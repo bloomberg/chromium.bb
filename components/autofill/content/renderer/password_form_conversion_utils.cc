@@ -344,11 +344,24 @@ bool StringMatchesCVC(const base::string16& str) {
   return MatchesPattern(str, *kCardCvcReCached);
 }
 
-bool IsEnabledPasswordFieldPresent(const std::vector<FormFieldData>& fields) {
-  return std::find_if(
-             fields.begin(), fields.end(), [](const FormFieldData& field) {
-               return field.is_enabled && field.form_control_type == "password";
-             }) != fields.end();
+// Which types of password fields are present in a form?
+enum class PasswordContents {
+  kEnabled,       // At least one enabled password field.
+  kOnlyDisabled,  // At least one password field, but not enabled.
+  kNone           // No password fields present.
+};
+
+// Returns the PasswordContents reflecting the contents of |fields|.
+PasswordContents GetPasswordContents(const std::vector<FormFieldData>& fields) {
+  PasswordContents result = PasswordContents::kNone;
+  for (const FormFieldData& field : fields) {
+    if (field.form_control_type != "password")
+      continue;
+    result = PasswordContents::kOnlyDisabled;
+    if (field.is_enabled)
+      return PasswordContents::kEnabled;
+  }
+  return result;
 }
 
 // Find the first element in |username_predictions| (i.e. the most reliable
@@ -408,9 +421,21 @@ bool GetPasswordForm(
 
   const FormData& form_data = password_form->form_data;
 
-  // Early exit if no passwords to be typed into.
-  if (!IsEnabledPasswordFieldPresent(form_data.fields))
-    return false;
+  PasswordContents password_contents = GetPasswordContents(form_data.fields);
+  switch (password_contents) {
+    case PasswordContents::kEnabled:
+      // All well, continue parsing.
+      break;
+    case PasswordContents::kOnlyDisabled:
+      // The current parser gives up, but returns a fallback form so that the
+      // newer parser can try parsing as well.
+      password_form->scheme = PasswordForm::SCHEME_HTML;
+      password_form->origin = form_origin;
+      password_form->signon_realm = GetSignOnRealm(password_form->origin);
+      return true;
+    case PasswordContents::kNone:
+      return false;
+  }
 
   // Evaluate the context of the fields.
   if (base::FeatureList::IsEnabled(
