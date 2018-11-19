@@ -48,8 +48,6 @@ class PerfProvider : public chromeos::PowerManagerClient::Observer {
     PERF_COMMAND_UNSUPPORTED,
   };
 
-  typedef int64_t TimeDeltaInternalType;
-
   class CollectionParams {
    public:
     class TriggerParams {
@@ -61,10 +59,10 @@ class PerfProvider : public chromeos::PowerManagerClient::Observer {
       void set_sampling_factor(int64_t factor) { sampling_factor_ = factor; }
 
       base::TimeDelta max_collection_delay() const {
-        return base::TimeDelta::FromInternalValue(max_collection_delay_);
+        return max_collection_delay_;
       }
       void set_max_collection_delay(base::TimeDelta delay) {
-        max_collection_delay_ = delay.ToInternalValue();
+        max_collection_delay_ = delay;
       }
 
      private:
@@ -75,7 +73,7 @@ class PerfProvider : public chromeos::PowerManagerClient::Observer {
 
       // Add a random delay before collecting after the trigger.
       // The delay should be randomly selected between 0 and this value.
-      TimeDeltaInternalType max_collection_delay_;
+      base::TimeDelta max_collection_delay_;
     };
 
     CollectionParams();
@@ -85,18 +83,14 @@ class PerfProvider : public chromeos::PowerManagerClient::Observer {
                      TriggerParams resume_from_suspend,
                      TriggerParams restore_session);
 
-    base::TimeDelta collection_duration() const {
-      return base::TimeDelta::FromInternalValue(collection_duration_);
-    }
+    base::TimeDelta collection_duration() const { return collection_duration_; }
     void set_collection_duration(base::TimeDelta duration) {
-      collection_duration_ = duration.ToInternalValue();
+      collection_duration_ = duration;
     }
 
-    base::TimeDelta periodic_interval() const {
-      return base::TimeDelta::FromInternalValue(periodic_interval_);
-    }
+    base::TimeDelta periodic_interval() const { return periodic_interval_; }
     void set_periodic_interval(base::TimeDelta interval) {
-      periodic_interval_ = interval.ToInternalValue();
+      periodic_interval_ = interval;
     }
 
     const TriggerParams& resume_from_suspend() const {
@@ -114,12 +108,12 @@ class PerfProvider : public chromeos::PowerManagerClient::Observer {
 
    private:
     // Time perf is run for.
-    TimeDeltaInternalType collection_duration_;
+    base::TimeDelta collection_duration_;
 
     // For PERIODIC_COLLECTION, partition time since login into successive
     // intervals of this duration. In each interval, a random time is picked to
     // collect a profile.
-    TimeDeltaInternalType periodic_interval_;
+    base::TimeDelta periodic_interval_;
 
     // Parameters for RESUME_FROM_SUSPEND and RESTORE_SESSION collections:
     TriggerParams resume_from_suspend_;
