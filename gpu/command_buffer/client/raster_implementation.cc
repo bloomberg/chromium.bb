@@ -1368,12 +1368,13 @@ void RasterImplementation::SetActiveURLCHROMIUM(const char* url) {
     return;
 
   last_active_url_ = url;
-  static constexpr size_t kMaxStrLen = 1024;
+  static constexpr uint32_t kMaxStrLen = 1024;
   size_t len = strlen(url);
   if (len == 0)
     return;
 
-  SetBucketContents(kResultBucketId, url, std::min(len, kMaxStrLen));
+  SetBucketContents(kResultBucketId, url,
+                    base::CheckMin(len, kMaxStrLen).ValueOrDie());
   helper_->SetActiveURLCHROMIUM(kResultBucketId);
   helper_->SetBucketSize(kResultBucketId, 0);
 }

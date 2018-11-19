@@ -228,7 +228,7 @@ bool ImplementationBase::GetBucketContents(uint32_t bucket_id,
 
 void ImplementationBase::SetBucketContents(uint32_t bucket_id,
                                            const void* data,
-                                           size_t size) {
+                                           uint32_t size) {
   DCHECK(data);
   helper_->SetBucketSize(bucket_id, size);
   if (size > 0u) {
@@ -253,7 +253,9 @@ void ImplementationBase::SetBucketAsCString(uint32_t bucket_id,
   // NOTE: strings are passed NULL terminated. That means the empty
   // string will have a size of 1 and no-string will have a size of 0
   if (str) {
-    SetBucketContents(bucket_id, str, strlen(str) + 1);
+    base::CheckedNumeric<uint32_t> len = strlen(str);
+    len += 1;
+    SetBucketContents(bucket_id, str, len.ValueOrDefault(0));
   } else {
     helper_->SetBucketSize(bucket_id, 0);
   }
@@ -279,7 +281,9 @@ void ImplementationBase::SetBucketAsString(uint32_t bucket_id,
                                            const std::string& str) {
   // NOTE: strings are passed NULL terminated. That means the empty
   // string will have a size of 1 and no-string will have a size of 0
-  SetBucketContents(bucket_id, str.c_str(), str.size() + 1);
+  base::CheckedNumeric<uint32_t> len = str.size();
+  len += 1;
+  SetBucketContents(bucket_id, str.c_str(), len.ValueOrDefault(0));
 }
 
 bool ImplementationBase::GetVerifiedSyncTokenForIPC(
