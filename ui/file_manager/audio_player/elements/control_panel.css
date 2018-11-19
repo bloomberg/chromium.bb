@@ -93,6 +93,10 @@
   opacity: 0; /* This class is intended to be used as invisible spacer. */
 }
 
+paper-slider {
+  cursor: pointer;
+}
+
 .time-volume-controls > paper-slider {
   --paper-slider-active-color: rgb(66, 133, 244);
   --paper-slider-knob-color: rgb(64, 138, 241);

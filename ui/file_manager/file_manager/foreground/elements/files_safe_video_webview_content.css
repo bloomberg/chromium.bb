@@ -6,9 +6,9 @@
   bottom: 0;
   left: 0;
   margin: auto;
-  min-width: 192px;
   max-height: 100%;
   max-width: 100%;
+  min-width: 192px;
   padding: 0;
   position: absolute;
   right: 0;
@@ -28,6 +28,12 @@ img {
 
 #content[hidden] {
   display: none;
+}
+
+video::-webkit-media-controls-timeline,
+video::-webkit-media-controls-mute-button,
+video::-webkit-media-controls-play-button {
+  cursor: pointer;
 }
 
 video::-webkit-media-controls-fullscreen-button,
