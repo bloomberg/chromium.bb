@@ -30,6 +30,8 @@ namespace gfx {
 class Size;
 }
 
+namespace web_app {
+
 // Class to help download all icons (including favicons and web app manifest
 // icons) for a tab.
 class WebAppIconDownloader : public content::WebContentsObserver {
@@ -117,5 +119,7 @@ class WebAppIconDownloader : public content::WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(WebAppIconDownloader);
 };
+
+}  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_ICON_DOWNLOADER_H_

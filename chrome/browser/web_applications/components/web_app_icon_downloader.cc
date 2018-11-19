@@ -14,6 +14,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace web_app {
+
 WebAppIconDownloader::WebAppIconDownloader(
     content::WebContents* web_contents,
     const std::vector<GURL>& extra_favicon_urls,
@@ -144,3 +146,5 @@ void WebAppIconDownloader::DidUpdateFaviconURL(
   need_favicon_urls_ = false;
   FetchIcons(candidates);
 }
+
+}  // namespace web_app

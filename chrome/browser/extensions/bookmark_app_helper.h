@@ -22,7 +22,6 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
-class WebAppIconDownloader;
 struct InstallableData;
 class InstallableManager;
 class Profile;
@@ -34,6 +33,7 @@ class WebContents;
 
 namespace web_app {
 enum class ForInstallableSite;
+class WebAppIconDownloader;
 }  // namespace web_app
 
 namespace extensions {
@@ -134,7 +134,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   // Downloads icons from the given WebApplicationInfo using the given
   // WebContents.
-  std::unique_ptr<WebAppIconDownloader> web_app_icon_downloader_;
+  std::unique_ptr<web_app::WebAppIconDownloader> web_app_icon_downloader_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BookmarkAppHelperTest,

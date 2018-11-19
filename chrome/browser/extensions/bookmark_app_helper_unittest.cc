@@ -173,7 +173,7 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
 
   const Extension* extension() { return extension_; }
 
-  const WebAppIconDownloader* web_app_icon_downloader() {
+  const web_app::WebAppIconDownloader* web_app_icon_downloader() {
     return web_app_icon_downloader_.get();
   }
 

@@ -133,7 +133,7 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
 
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override {
-    web_app_icon_downloader_.reset(new WebAppIconDownloader(
+    web_app_icon_downloader_.reset(new web_app::WebAppIconDownloader(
         web_contents_.get(), urls_to_download_,
         "Extensions.BookmarkApp.Icon.HttpStatusCodeClassOnSync",
         base::BindOnce(&BookmarkAppInstaller::OnIconsDownloaded,
@@ -211,7 +211,7 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
   bool is_locally_installed_;
 
   std::unique_ptr<content::WebContents> web_contents_;
-  std::unique_ptr<WebAppIconDownloader> web_app_icon_downloader_;
+  std::unique_ptr<web_app::WebAppIconDownloader> web_app_icon_downloader_;
   std::vector<GURL> urls_to_download_;
   std::vector<web_app::BitmapAndSource> downloaded_bitmaps_;
 };
@@ -347,7 +347,7 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
 
   web_app::MergeInstallableDataIcon(data, &web_app_info_);
 
-  web_app_icon_downloader_.reset(new WebAppIconDownloader(
+  web_app_icon_downloader_.reset(new web_app::WebAppIconDownloader(
       contents_, web_app_info_icon_urls,
       "Extensions.BookmarkApp.Icon.HttpStatusCodeClassOnCreate",
       base::BindOnce(&BookmarkAppHelper::OnIconsDownloaded,
