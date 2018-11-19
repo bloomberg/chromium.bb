@@ -52,8 +52,10 @@ ConfiguratorImpl::ConfiguratorImpl(
       require_encryption_(require_encryption),
       url_source_override_(config_policy.UrlSourceOverride()),
       initial_delay_(config_policy.InitialDelay()) {
-  if (config_policy.TestRequest())
+  if (config_policy.TestRequest()) {
     extra_info_["testrequest"] = "1";
+    extra_info_["testsource"] = "dev";
+  }
 }
 
 ConfiguratorImpl::~ConfiguratorImpl() {}
