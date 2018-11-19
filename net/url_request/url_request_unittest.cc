@@ -9718,6 +9718,7 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
     d.RunUntilComplete();
 
     // The response will look like;
+    //   lookup uvw (TLS 1.3's compatibility session ID)
     //   insert abc
     //   lookup abc
     //   insert xyz
@@ -9728,20 +9729,21 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
     EXPECT_EQ(1, d.response_started_count());
     std::vector<std::string> lines = base::SplitString(
         d.data_received(), "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    ASSERT_EQ(4u, lines.size()) << d.data_received();
+    ASSERT_EQ(5u, lines.size()) << d.data_received();
 
     std::string session_id;
 
-    for (size_t i = 0; i < 2; i++) {
+    for (size_t i = 0; i < 3; i++) {
       std::vector<std::string> parts = base::SplitString(
           lines[i], "\t", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       ASSERT_EQ(2u, parts.size());
-      if (i == 0) {
+      if (i % 2 == 1) {
         EXPECT_EQ("insert", parts[0]);
         session_id = parts[1];
       } else {
         EXPECT_EQ("lookup", parts[0]);
-        EXPECT_EQ(session_id, parts[1]);
+        if (i != 0)
+          EXPECT_EQ(session_id, parts[1]);
       }
     }
   }
@@ -9749,24 +9751,32 @@ TEST_F(HTTPSRequestTest, ResumeTest) {
 
 // AssertTwoDistinctSessionsInserted checks that |session_info|, which must be
 // the result of fetching "ssl-session-cache" from the test server, indicates
-// that exactly two different sessions were inserted, with no lookups etc.
+// that exactly two different sessions were inserted, with no real lookups.
+// There will be a fake TLS 1.3 session ID lookup that can be ignored.
 static void AssertTwoDistinctSessionsInserted(const string& session_info) {
   std::vector<std::string> lines = base::SplitString(
       session_info, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  ASSERT_EQ(3u, lines.size()) << session_info;
 
+  size_t inserts = 0;
   std::string session_id;
-  for (size_t i = 0; i < 2; i++) {
+  for (size_t i = 0; i < lines.size() - 1; i++) {
     std::vector<std::string> parts = base::SplitString(
         lines[i], "\t", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     ASSERT_EQ(2u, parts.size());
-    EXPECT_EQ("insert", parts[0]);
-    if (i == 0) {
-      session_id = parts[1];
-    } else {
+    if (parts[0] == "insert") {
+      inserts++;
+      if (i == 0) {
+        session_id = parts[1];
+      } else {
+        EXPECT_NE(session_id, parts[1]);
+      }
+    } else if (parts[0] == "lookup") {
+      // The fake TLS 1.3 session ID will produce fake lookups. Check that the
+      // inserted ID was not looked up.
       EXPECT_NE(session_id, parts[1]);
     }
   }
+  ASSERT_EQ(2u, inserts) << session_info;
 }
 
 TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
@@ -9832,6 +9842,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
     d.RunUntilComplete();
 
     // The response will look like;
+    //   lookup uvw (TLS 1.3's compatibility session ID)
     //   insert abc
     //   insert xyz
     //
@@ -10003,6 +10014,7 @@ TEST_F(HTTPSSessionTest, DontResumeSessionsForInvalidCertificates) {
     d.RunUntilComplete();
 
     // The response will look like;
+    //   lookup uvw (TLS 1.3's compatibility session ID)
     //   insert abc
     //   insert xyz
     //
@@ -10011,6 +10023,7 @@ TEST_F(HTTPSSessionTest, DontResumeSessionsForInvalidCertificates) {
     //
     // If a session was presented (eg: a bug), then the response would look
     // like;
+    //   lookup uvw (TLS 1.3's compatibility session ID)
     //   insert abc
     //   lookup abc
     //   insert xyz

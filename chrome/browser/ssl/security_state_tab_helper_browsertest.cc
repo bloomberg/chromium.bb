@@ -372,7 +372,10 @@ void CheckSecureConnectionExplanation(
 
   // The description should summarize the settings.
   EXPECT_NE(std::string::npos, explanation.description.find(protocol));
-  EXPECT_NE(std::string::npos, explanation.description.find(key_exchange));
+  if (key_exchange == nullptr)
+    EXPECT_TRUE(is_tls13);
+  else
+    EXPECT_NE(std::string::npos, explanation.description.find(key_exchange));
   EXPECT_NE(std::string::npos,
             explanation.description.find(key_exchange_group));
   EXPECT_NE(std::string::npos, explanation.description.find(cipher));

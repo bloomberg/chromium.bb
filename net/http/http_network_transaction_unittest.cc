@@ -4307,6 +4307,15 @@ TEST_F(HttpNetworkTransactionTest,
       ProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
+  // When TLS 1.3 is enabled, spurious connections are made as part of the SSL
+  // version interference probes.
+  // TODO(crbug.com/906668): Correctly handle version interference probes to
+  // test TLS 1.3.
+  SSLConfig config;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  session_deps_.ssl_config_service =
+      std::make_unique<TestSSLConfigService>(config);
+
   auto auth_handler_factory = std::make_unique<HttpAuthHandlerMock::Factory>();
   auth_handler_factory->set_do_init_from_challenge(true);
 
@@ -6964,7 +6973,6 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
           "PROXY server", TRAFFIC_ANNOTATION_FOR_TESTS);
 
   SSLConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
   session_deps_.ssl_config_service =
       std::make_unique<TestSSLConfigService>(config);
 
@@ -7049,9 +7057,9 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
 
   StaticSocketDataProvider data(data_reads, data_writes);
   SSLSocketDataProvider data_ssl(ASYNC, ERR_CONNECTION_RESET);
-  data_ssl.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_3;
   StaticSocketDataProvider data2(data_reads, data_writes);
   SSLSocketDataProvider data_ssl2(ASYNC, ERR_CONNECTION_RESET);
+  data_ssl2.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_2;
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&data_ssl);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
@@ -14348,12 +14356,13 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_NoFalseStart) {
 
   // [ssl_]data3 contains the data for the third SSL handshake. When a
   // connection to a server fails during an SSL handshake,
-  // HttpNetworkTransaction will attempt to fallback to TLSv1.1 if the previous
-  // connection was attempted with TLSv1.2. This is transparent to the caller
+  // HttpNetworkTransaction will attempt to fallback to TLSv1.2 if the previous
+  // connection was attempted with TLSv1.3. This is transparent to the caller
   // of the HttpNetworkTransaction. Because this test failure is due to
   // requiring a client certificate, this fallback handshake should also
   // fail.
   SSLSocketDataProvider ssl_data3(ASYNC, ERR_SSL_PROTOCOL_ERROR);
+  ssl_data3.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_2;
   ssl_data3.cert_request_info = cert_request.get();
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data3);
   StaticSocketDataProvider data3;
