@@ -69,11 +69,9 @@ enum class KeyboardControllerState {
 
 // Provides control of the virtual keyboard, including enabling/disabling the
 // keyboard and controlling its visibility.
-class KEYBOARD_EXPORT KeyboardController
-    : public ui::InputMethodObserver,
-      public aura::WindowObserver,
-      public ui::InputMethodKeyboardController,
-      public ContainerBehavior::Delegate {
+class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
+                                           public aura::WindowObserver,
+                                           public ContainerBehavior::Delegate {
  public:
   KeyboardController();
   ~KeyboardController() override;
@@ -240,14 +238,11 @@ class KEYBOARD_EXPORT KeyboardController
   // Sets floating keyboard draggable rect.
   void SetDraggableArea(const gfx::Rect& rect);
 
-  // InputMethodKeyboardController overrides:
-  bool DisplayVirtualKeyboard() override;
-  void DismissVirtualKeyboard() override;
-  void AddObserver(
-      ui::InputMethodKeyboardControllerObserver* observer) override;
-  void RemoveObserver(
-      ui::InputMethodKeyboardControllerObserver* observer) override;
-  bool IsKeyboardVisible() override;
+  bool IsKeyboardVisible();
+
+  ui::InputMethodKeyboardController* input_method_keyboard_controller() {
+    return input_method_keyboard_controller_.get();
+  }
 
   bool keyboard_locked() const { return keyboard_locked_; }
   void set_keyboard_locked(bool lock) { keyboard_locked_ = lock; }
@@ -385,6 +380,8 @@ class KEYBOARD_EXPORT KeyboardController
   void MarkKeyboardLoadFinished();
 
   std::unique_ptr<KeyboardUI> ui_;
+  std::unique_ptr<ui::InputMethodKeyboardController>
+      input_method_keyboard_controller_;
   KeyboardLayoutDelegate* layout_delegate_ = nullptr;
   ScopedObserver<ui::InputMethod, ui::InputMethodObserver> ime_observer_;
 

@@ -1393,13 +1393,17 @@ void InputMethodManagerImpl::NotifyObserversImeExtraInputStateChange() {
 
 ui::InputMethodKeyboardController*
 InputMethodManagerImpl::GetInputMethodKeyboardController() {
+  // TODO(stevenjb/shuchen): Fix this for Mash. https://crbug.com/756059
+  if (features::IsMultiProcessMash())
+    return nullptr;
   // Callers expect a nullptr when the keyboard is disabled. See
-  // https://crbug.com/850020. TODO(stevenjb/shuchen): Fix this for Mash.
-  // https://crbug.com/756059
-  return keyboard::KeyboardController::HasInstance() &&
-                 keyboard::KeyboardController::Get()->IsEnabled()
-             ? keyboard::KeyboardController::Get()
-             : nullptr;
+  // https://crbug.com/850020.
+  if (!keyboard::KeyboardController::HasInstance() ||
+      !keyboard::KeyboardController::Get()->IsEnabled()) {
+    return nullptr;
+  }
+  return keyboard::KeyboardController::Get()
+      ->input_method_keyboard_controller();
 }
 
 void InputMethodManagerImpl::ReloadKeyboard() {
