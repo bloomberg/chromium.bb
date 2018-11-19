@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/run_loop.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
@@ -288,13 +289,17 @@ class SameThreadTaskSource : public TaskSource {
         num_tasks_(num_tasks),
         task_closure_(
             BindRepeating(&SameThreadTaskSource::TestTask, Unretained(this))),
-        task_runners_(std::move(task_runners)) {}
+        task_runners_(std::move(task_runners)) {
+    DETACH_FROM_SEQUENCE(sequence_checker_);
+  }
 
   void Start() override {
     num_tasks_in_flight_ = 1;
     num_tasks_to_post_ = num_tasks_;
     num_tasks_to_run_ = num_tasks_;
-    TestTask();
+    // Post the initial task instead of running it synchronously to ensure that
+    // all invocations happen on the same sequence.
+    PostTask(0);
   }
 
  protected:
@@ -303,6 +308,8 @@ class SameThreadTaskSource : public TaskSource {
   virtual void SignalDone() = 0;
 
   void TestTask() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
     if (--num_tasks_to_run_ == 0) {
       SignalDone();
       return;
@@ -340,6 +347,7 @@ class SameThreadTaskSource : public TaskSource {
   unsigned int num_tasks_in_flight_;
   unsigned int num_tasks_to_post_;
   unsigned int num_tasks_to_run_;
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 class CrossThreadTaskSource : public TaskSource {
