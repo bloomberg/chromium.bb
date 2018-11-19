@@ -610,33 +610,6 @@ bool IsSiteIsolationEnterprisePolicyApplicable() {
 #endif
 }
 
-bool WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished(
-    policy::ChromeBrowserPolicyConnector* connector) {
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  using RegisterResult =
-      policy::MachineLevelUserCloudPolicyController::RegisterResult;
-  switch (connector->machine_level_user_cloud_policy_controller()
-              ->WaitUntilPolicyEnrollmentFinished()) {
-    case RegisterResult::kNoEnrollmentNeeded:
-    case RegisterResult::kEnrollmentSuccessBeforeDialogDisplayed:
-      return true;
-    case RegisterResult::kEnrollmentSuccess:
-#if defined(OS_MACOSX)
-      app_controller_mac::EnterpriseStartupDialogClosed();
-#endif
-      return true;
-    case RegisterResult::kRestartDueToFailure:
-      chrome::AttemptRestart();
-      return false;
-    case RegisterResult::kQuitDueToFailure:
-      chrome::AttemptExit();
-      return false;
-  }
-#else
-  return true;
-#endif
-}
-
 // Sets up the ThreadProfiler for the browser process, runs it, and returns the
 // profiler.
 std::unique_ptr<ThreadProfiler> CreateAndStartBrowserMainThreadProfiler() {
@@ -1373,13 +1346,16 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // running.
   browser_process_->PreMainMessageLoopRun();
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   // Wait for the result of machine level user cloud policy enrollment after
   // we start the enrollment process in browser_porcess_->PreMainMessageLoopRun.
   // Abort the launch process if the enrollment is failed.
-  if (!WaitUntilMachineLevelUserCloudPolicyEnrollmentFinished(
-          browser_process_->browser_policy_connector())) {
+  if (!browser_process_->browser_policy_connector()
+           ->machine_level_user_cloud_policy_controller()
+           ->WaitUntilPolicyEnrollmentFinished()) {
     return chrome::RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED;
   }
+#endif
 
   // Record last shutdown time into a histogram.
   browser_shutdown::ReadLastShutdownInfo();

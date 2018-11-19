@@ -40,6 +40,13 @@ class MachineLevelUserCloudPolicyController {
     kQuitDueToFailure,   // The enrollment has failed or aborted, user choose to
                          // quit Chrome.
     kRestartDueToFailure,  // The enrollment has failed, user choose to restart
+    kEnrollmentFailedSilently,  // The enrollment has failed, admin choose to
+                                // ignore the error message.
+    kEnrollmentFailedSilentlyBeforeDialogDisplayed,  // The enrollment has
+                                                     // failed before dialog
+                                                     // displayed, admin choose
+                                                     // to ignore the error
+                                                     // message.
   };
 
   class Observer {
@@ -63,7 +70,7 @@ class MachineLevelUserCloudPolicyController {
   void Init(PrefService* local_state,
             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
-  RegisterResult WaitUntilPolicyEnrollmentFinished();
+  bool WaitUntilPolicyEnrollmentFinished();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

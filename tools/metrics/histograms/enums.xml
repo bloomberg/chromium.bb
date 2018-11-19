@@ -31653,6 +31653,7 @@ from previous Chrome versions.
   <int value="2" label="ClosedRelaunch"/>
   <int value="3" label="ClosedFail"/>
   <int value="4" label="ClosedAbort"/>
+  <int value="5" label="ClosedFailAndIgnore"/>
 </enum>
 
 <enum name="MachKernReturn">
