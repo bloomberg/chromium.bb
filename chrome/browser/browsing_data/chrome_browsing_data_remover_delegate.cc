@@ -53,7 +53,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
@@ -64,7 +63,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/browsing_data/core/features.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -87,13 +85,13 @@
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/sessions/core/tab_restore_service.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "components/webrtc_logging/browser/log_cleanup.h"
 #include "components/webrtc_logging/browser/text_log_list.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
@@ -121,11 +119,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(ENABLE_SESSION_SERVICE)
-#include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sessions/session_service_factory.h"
-#endif  // BUILDFLAG(ENABLE_SESSION_SERVICE)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -498,33 +491,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       prerender_manager->ClearData(
           prerender::PrerenderManager::CLEAR_PRERENDER_CONTENTS |
           prerender::PrerenderManager::CLEAR_PRERENDER_HISTORY);
-    }
-
-    // When this feature is enabled, recent tabs and sessions will be deleted
-    // by NavigationEntryRemover and not here.
-    bool is_navigation_entry_remover_enabled = base::FeatureList::IsEnabled(
-        browsing_data::features::kRemoveNavigationHistory);
-
-    // If the caller is removing history for all hosts, then clear ancillary
-    // historical information.
-    if (!is_navigation_entry_remover_enabled &&
-        filter_builder.GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
-      // We also delete the list of recently closed tabs. Since these expire,
-      // they can't be more than a day old, so we can simply clear them all.
-      sessions::TabRestoreService* tab_service =
-          TabRestoreServiceFactory::GetForProfile(profile_);
-      if (tab_service) {
-        tab_service->ClearEntries();
-        tab_service->DeleteLastSession();
-      }
-
-#if BUILDFLAG(ENABLE_SESSION_SERVICE)
-      // We also delete the last session when we delete the history.
-      SessionService* session_service =
-          SessionServiceFactory::GetForProfile(profile_);
-      if (session_service)
-        session_service->DeleteLastSession();
-#endif
     }
 
     // The saved Autofill profiles and credit cards can include the origin from

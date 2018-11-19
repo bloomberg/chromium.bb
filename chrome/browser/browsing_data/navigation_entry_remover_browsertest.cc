@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/navigation_entry_remover.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/browsing_data/core/features.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -28,8 +26,6 @@ using history::DeletionInfo;
 class NavigationEntryRemoverTest : public InProcessBrowserTest {
  protected:
   void SetUpOnMainThread() override {
-    feature_list_.InitWithFeatures(
-        {browsing_data::features::kRemoveNavigationHistory}, {});
     auto path = base::FilePath(FILE_PATH_LITERAL("browsing_data"));
     url_a_ = ui_test_utils::GetTestUrl(
         path, base::FilePath(FILE_PATH_LITERAL("a.html")));
@@ -107,8 +103,6 @@ class NavigationEntryRemoverTest : public InProcessBrowserTest {
   GURL url_d_;
   GURL about_blank_;
 
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // === Tests for helper functions ===
