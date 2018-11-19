@@ -112,10 +112,10 @@ TEST_F(TraceCategoryTest, Basic) {
   int num_test_categories_seen = 0;
   for (const TraceCategory& cat : GetAllCategories()) {
     if (strcmp(cat.name(), kMetadataName) == 0)
-      ASSERT_TRUE(CategoryRegistry::IsBuiltinCategory(&cat));
+      ASSERT_TRUE(CategoryRegistry::IsMetaCategory(&cat));
 
     if (strncmp(cat.name(), "__test_basic_", 13) == 0) {
-      ASSERT_FALSE(CategoryRegistry::IsBuiltinCategory(&cat));
+      ASSERT_FALSE(CategoryRegistry::IsMetaCategory(&cat));
       num_test_categories_seen++;
     }
   }

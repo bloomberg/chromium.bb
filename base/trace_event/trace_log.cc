@@ -562,7 +562,7 @@ void TraceLog::CreateFiltersForTraceConfig() {
 void TraceLog::GetKnownCategoryGroups(
     std::vector<std::string>* category_groups) {
   for (const auto& category : CategoryRegistry::GetAllCategories()) {
-    if (!CategoryRegistry::IsBuiltinCategory(&category))
+    if (!CategoryRegistry::IsMetaCategory(&category))
       category_groups->push_back(category.name());
   }
 }
