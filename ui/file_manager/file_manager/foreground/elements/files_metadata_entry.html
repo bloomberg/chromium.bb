@@ -28,9 +28,9 @@
       }
 
       #key {
-        -webkit-margin-end: 16px;
         color: white;
         font-weight: 500;
+        margin-inline-end: 16px;
         overflow-wrap: break-word;
         vertical-align: bottom;
         width: 96px;
@@ -66,6 +66,22 @@
       @keyframes ellipsis {
         to {
           width: 1.25em;
+        }
+      }
+
+      @media only screen and (max-width: 720px) {
+        #padding {
+          width: 12px;
+        }
+        #box {
+          width: 240px;
+        }
+        #key {
+          margin-inline-end: 8px;
+          width: 80px;
+        }
+        #value {
+          width: 140px;
         }
       }
     </style>
