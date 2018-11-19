@@ -66,6 +66,20 @@ CallStackProfileParams::Process GetProcess() {
   return CallStackProfileParams::UNKNOWN_PROCESS;
 }
 
+std::unique_ptr<base::StackSamplingProfiler::ProfileBuilder>
+CreateProfileBuilder(
+    const CallStackProfileParams& params,
+    base::OnceClosure completed_callback = base::OnceClosure()) {
+  // Enable the new profile builder half the time.
+  if (base::RandInt(0, 99) < 50) {
+    return std::make_unique<CallStackProfileBuilder>(
+        params, std::move(completed_callback));
+  }
+
+  return std::make_unique<LegacyCallStackProfileBuilder>(
+      params, std::move(completed_callback));
+}
+
 }  // namespace
 
 // The scheduler works by splitting execution time into repeated periods such
@@ -193,29 +207,16 @@ void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
 ThreadProfiler::ThreadProfiler(
     CallStackProfileParams::Thread thread,
     scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner)
-    : owning_thread_task_runner_(owning_thread_task_runner),
-      periodic_profile_params_(GetProcess(),
-                               thread,
-                               CallStackProfileParams::PERIODIC_COLLECTION),
+    : thread_(thread),
+      owning_thread_task_runner_(owning_thread_task_runner),
       weak_factory_(this) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  std::unique_ptr<base::StackSamplingProfiler::ProfileBuilder> profile_builder;
-  // Enable the new profile builder 1% of the time.
-  if (base::RandInt(0, 99) == 0) {
-    profile_builder =
-        std::make_unique<CallStackProfileBuilder>(CallStackProfileParams(
-            GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP));
-  } else {
-    profile_builder =
-        std::make_unique<LegacyCallStackProfileBuilder>(CallStackProfileParams(
-            GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP));
-  }
-
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
-      std::move(profile_builder));
+      CreateProfileBuilder(CallStackProfileParams(
+          GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP)));
 
   startup_profiler_->Start();
 
@@ -256,14 +257,14 @@ void ThreadProfiler::ScheduleNextPeriodicCollection() {
 void ThreadProfiler::StartPeriodicSamplingCollection() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // NB: Destroys the previous profiler as side effect.
-  auto profile_builder = std::make_unique<LegacyCallStackProfileBuilder>(
-      periodic_profile_params_,
-      base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
-                     owning_thread_task_runner_, weak_factory_.GetWeakPtr()));
-
   periodic_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
-      std::move(profile_builder));
+      CreateProfileBuilder(
+          CallStackProfileParams(GetProcess(), thread_,
+                                 CallStackProfileParams::PERIODIC_COLLECTION),
+          base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
+                         owning_thread_task_runner_,
+                         weak_factory_.GetWeakPtr())));
 
   periodic_profiler_->Start();
 }
