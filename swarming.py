@@ -282,7 +282,7 @@ def trigger_task_shards(swarming, task_request, shards):
 
 
 # How often to print status updates to stdout in 'collect'.
-STATUS_UPDATE_INTERVAL = 15 * 60.
+STATUS_UPDATE_INTERVAL = 5 * 60.
 
 
 class TaskState(object):
@@ -653,9 +653,13 @@ def yield_results(
               timeout=STATUS_UPDATE_INTERVAL)
         except threading_utils.TaskChannel.Timeout:
           if print_status_updates:
+            time_now = str(datetime.datetime.now())
+            _, time_now = time_now.split(' ')
             print(
+                '%s '
                 'Waiting for results from the following shards: %s' %
-                ', '.join(map(str, shards_remaining)))
+                (time_now, ', '.join(map(str, shards_remaining)))
+            )
             sys.stdout.flush()
           continue
         except Exception:
