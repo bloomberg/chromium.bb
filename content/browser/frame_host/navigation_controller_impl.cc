@@ -2496,20 +2496,6 @@ void NavigationControllerImpl::NavigateWithoutEntry(
   if (!node)
     node = delegate_->GetFrameTree()->root();
 
-  // Compute the url_to_load to check that it doesn't change through the
-  // function.
-  // TODO(clamy): Remove this once the root cause behind
-  // https://crbug.com/896028 has been found.
-  GURL url_to_load;
-  GURL virtual_url;
-  if (node->IsMainFrame()) {
-    bool reverse_on_redirect = false;
-    RewriteUrlForNavigation(params.url, browser_context_, &url_to_load,
-                            &virtual_url, &reverse_on_redirect);
-  } else {
-    url_to_load = params.url;
-  }
-
   // Compute overrides to the LoadURLParams for |override_user_agent|,
   // |should_replace_current_entry| and |has_user_gesture| that will be used
   // both in the creation of the NavigationEntry and the NavigationRequest.
@@ -2544,10 +2530,8 @@ void NavigationControllerImpl::NavigateWithoutEntry(
     entry = CreateNavigationEntryFromLoadParams(
         node, params, override_user_agent, should_replace_current_entry,
         has_user_gesture);
-    CHECK_EQ(url_to_load, entry->GetFrameEntry(node)->url());
     DiscardPendingEntry(false);
     SetPendingEntry(std::move(entry));
-    CHECK_EQ(url_to_load, pending_entry_->GetFrameEntry(node)->url());
   }
 
   // Renderer-debug URLs are sent to the renderer process immediately for
@@ -2586,7 +2570,6 @@ void NavigationControllerImpl::NavigateWithoutEntry(
   DCHECK(node->IsMainFrame() || !params.navigation_ui_data);
 
   DCHECK(pending_entry_);
-  CHECK_EQ(url_to_load, pending_entry_->GetFrameEntry(node)->url());
   std::unique_ptr<NavigationRequest> request =
       CreateNavigationRequestFromLoadParams(
           node, params, override_user_agent, should_replace_current_entry,
@@ -2734,9 +2717,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     const NavigationEntryImpl& entry,
     FrameNavigationEntry* frame_entry) {
   DCHECK_EQ(-1, GetIndexOfEntry(&entry));
-  // TODO(https://crbug.com/896028): Turn this CHECK into a DCHECK once the bug
-  // is fixed.
-  CHECK(frame_entry);
+  DCHECK(frame_entry);
 
   GURL url_to_load;
   GURL virtual_url;
@@ -2754,11 +2735,19 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     if (virtual_url.is_empty())
       virtual_url = url_to_load;
 
+    CHECK(virtual_url == entry.GetVirtualURL());
+
+    // This is a DCHECK and not a CHECK as URL rewrite has non-deterministic
+    // behavior in the field: it is possible for two calls to
+    // RewriteUrlForNavigation to return different results, leading to a
+    // different URL in the NavigationRequest and FrameEntry. This will be fixed
+    // once we remove the pending NavigationEntry, as we'll only make one call
+    // to RewriteUrlForNavigation.
+    DCHECK_EQ(url_to_load, frame_entry->url());
+
     // TODO(clamy): In order to remove the pending NavigationEntry,
     // |virtual_url| and |reverse_on_redirect| should be stored in the
     // NavigationRequest.
-    CHECK(virtual_url == entry.GetVirtualURL());
-    CHECK_EQ(url_to_load, frame_entry->url());
   } else {
     url_to_load = params.url;
     virtual_url = params.url;
