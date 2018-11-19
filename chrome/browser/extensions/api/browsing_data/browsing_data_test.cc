@@ -264,6 +264,8 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
                   content::BrowsingDataRemover::DATA_TYPE_APP_CACHE) |
         GetAsMask(data_to_remove, "cache",
                   content::BrowsingDataRemover::DATA_TYPE_CACHE) |
+        GetAsMask(data_to_remove, "cacheStorage",
+                  content::BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE) |
         GetAsMask(data_to_remove, "cookies",
                   content::BrowsingDataRemover::DATA_TYPE_COOKIES) |
         GetAsMask(data_to_remove, "downloads",
@@ -284,8 +286,6 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
                   ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS) |
         GetAsMask(data_to_remove, "serviceWorkers",
                   content::BrowsingDataRemover::DATA_TYPE_SERVICE_WORKERS) |
-        GetAsMask(data_to_remove, "cacheStorage",
-                  content::BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE) |
         GetAsMask(data_to_remove, "webSQL",
                   content::BrowsingDataRemover::DATA_TYPE_WEB_SQL) |
         GetAsMask(data_to_remove, "serverBoundCertificates",
@@ -353,6 +353,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemovalProhibited) {
 
   CheckRemovalPermitted("{\"appcache\": true}", true);
   CheckRemovalPermitted("{\"cache\": true}", true);
+  CheckRemovalPermitted("{\"cacheStorage\": true}", true);
   CheckRemovalPermitted("{\"cookies\": true}", true);
   CheckRemovalPermitted("{\"downloads\": true}", false);
   CheckRemovalPermitted("{\"fileSystems\": true}", true);
@@ -363,7 +364,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemovalProhibited) {
   CheckRemovalPermitted("{\"serverBoundCertificates\": true}", true);
   CheckRemovalPermitted("{\"passwords\": true}", true);
   CheckRemovalPermitted("{\"serviceWorkers\": true}", true);
-  CheckRemovalPermitted("{\"cacheStorage\": true}", true);
   CheckRemovalPermitted("{\"webSQL\": true}", true);
 
   // The entire removal is prohibited if any part is.
@@ -533,6 +533,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "cache", content::BrowsingDataRemover::DATA_TYPE_CACHE);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
+      "cacheStorage", content::BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE);
+  RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "cookies", content::BrowsingDataRemover::DATA_TYPE_COOKIES);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "downloads", content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS);
@@ -555,8 +557,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "serviceWorkers",
       content::BrowsingDataRemover::DATA_TYPE_SERVICE_WORKERS);
-  RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
-      "cacheStorage", content::BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "webSQL", content::BrowsingDataRemover::DATA_TYPE_WEB_SQL);
 }
@@ -624,6 +624,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, ShortcutFunctionRemovalMask) {
       content::BrowsingDataRemover::DATA_TYPE_APP_CACHE);
   RunAndCompareRemovalMask<BrowsingDataRemoveCacheFunction>(
       content::BrowsingDataRemover::DATA_TYPE_CACHE);
+  RunAndCompareRemovalMask<BrowsingDataRemoveCacheStorageFunction>(
+      content::BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE);
   RunAndCompareRemovalMask<BrowsingDataRemoveCookiesFunction>(
       content::BrowsingDataRemover::DATA_TYPE_COOKIES |
       content::BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS);
