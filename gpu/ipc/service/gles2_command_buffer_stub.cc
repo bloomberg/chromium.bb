@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/presentation_feedback_utils.h"
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
@@ -399,9 +400,7 @@ void GLES2CommandBufferStub::BufferPresented(
   SwapBufferParams params = pending_presented_params_.front();
   pending_presented_params_.pop_front();
 
-  if (params.flags & gpu::SwapBuffersFlags::kPresentationFeedback ||
-      (params.flags & gpu::SwapBuffersFlags::kVSyncParams &&
-       feedback.flags & gfx::PresentationFeedback::kVSync)) {
+  if (ShouldSendBufferPresented(params.flags, feedback.flags)) {
     Send(new GpuCommandBufferMsg_BufferPresented(route_id_, params.swap_id,
                                                  feedback));
   }
