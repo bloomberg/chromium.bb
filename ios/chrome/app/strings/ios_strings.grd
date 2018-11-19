@@ -891,6 +891,18 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_MANUAL_FALLBACK_MANAGE_ADDRESSES" desc="The title for the button in the manual fallback UI that takes the user to the addresses settings. In this screen they see all the addresses and can erase them. [30em]">
         Manage Addresses...
       </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_SHOW_ADDRESSES" desc="Label for the addresses icon in manual fallback. Read by Text To Speech" meaning="Voice Over will read this to the user followed by 'Button' when this button is focused.">
+        Addresses
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_SHOW_CREDIT_CARDS" desc="Label for the credit cards icon in manual fallback. Read by Text To Speech" meaning="Voice Over will read this to the user followed by 'Button' when this button is focused.">
+        Credit Cards
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_SHOW_KEYBOARD" desc="Label for the keyboard icon in manual fallback. Read by Text To Speech" meaning="Voice Over will read this to the user followed by 'Button' when this button is focused.">
+        Keyboard
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_SHOW_PASSWORDS" desc="Label for the password icon in manual fallback. Read by Text To Speech" meaning="Voice Over will read this to the user followed by 'Button' when this button is focused.">
+        Passwords
+      </message>
       <message name="IDS_IOS_MICROPHONE_USAGE_DESCRIPTION" desc="Specifies the reason for accessing the user's microphone while the app is in use [Length: unlimited] [iOS only].">
         This lets you search faster using your voice.
       </message>

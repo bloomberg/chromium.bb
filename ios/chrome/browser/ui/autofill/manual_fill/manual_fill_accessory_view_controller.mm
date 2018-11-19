@@ -9,6 +9,8 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -109,6 +111,7 @@ static NSTimeInterval MFAnimationDuration = 0.20;
 
 - (void)loadView {
   self.view = [[UIView alloc] init];
+  self.view.accessibilityViewIsModal = YES;
   self.view.translatesAutoresizingMaskIntoConstraints = NO;
 
   UIColor* tintColor = [self activeTintColor];
@@ -125,6 +128,8 @@ static NSTimeInterval MFAnimationDuration = 0.20;
                   forControlEvents:UIControlEventTouchUpInside];
     self.keyboardButton.accessibilityIdentifier =
         manual_fill::AccessoryKeyboardAccessibilityIdentifier;
+    self.keyboardButton.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_SHOW_KEYBOARD);
     [icons addObject:self.keyboardButton];
   }
 
@@ -139,6 +144,8 @@ static NSTimeInterval MFAnimationDuration = 0.20;
   self.passwordButton.accessibilityIdentifier =
       manual_fill::AccessoryPasswordAccessibilityIdentifier;
   self.passwordButton.hidden = self.isPasswordButtonHidden;
+  self.passwordButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_SHOW_PASSWORDS);
   [icons addObject:self.passwordButton];
 
   if (autofill::features::IsAutofillManualFallbackEnabled()) {
@@ -153,6 +160,8 @@ static NSTimeInterval MFAnimationDuration = 0.20;
     self.cardsButton.accessibilityIdentifier =
         manual_fill::AccessoryCreditCardAccessibilityIdentifier;
     self.cardsButton.hidden = self.isCreditCardButtonHidden;
+    self.cardsButton.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_SHOW_CREDIT_CARDS);
     [icons addObject:self.cardsButton];
 
     self.accountButton = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -166,6 +175,8 @@ static NSTimeInterval MFAnimationDuration = 0.20;
     self.accountButton.accessibilityIdentifier =
         manual_fill::AccessoryAddressAccessibilityIdentifier;
     self.accountButton.hidden = self.isAddressButtonHidden;
+    self.accountButton.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_SHOW_ADDRESSES);
     [icons addObject:self.accountButton];
   }
   UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:icons];
