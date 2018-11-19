@@ -153,7 +153,8 @@ int HostResolverMojo::ResolveFromCacheInternal(const RequestInfo& info,
   if (!entry)
     return net::ERR_DNS_CACHE_MISS;
 
-  *addresses = net::AddressList::CopyWithPort(entry->addresses(), info.port());
+  *addresses =
+      net::AddressList::CopyWithPort(entry->addresses().value(), info.port());
   return entry->error();
 }
 

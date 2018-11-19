@@ -1933,7 +1933,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       }
       if (entry.error() == OK && !req->parameters().is_speculative) {
         req->set_address_results(EnsurePortOnAddressList(
-            entry.addresses(), req->request_host().port()));
+            entry.addresses().value(), req->request_host().port()));
       }
       req->OnJobCompleted(this, entry.error());
 
@@ -2519,7 +2519,8 @@ bool HostResolverImpl::ServeFromCache(const Key& key,
   if (*net_error == OK) {
     if (cache_entry->has_ttl())
       RecordTTL(cache_entry->ttl());
-    *addresses = EnsurePortOnAddressList(cache_entry->addresses(), host_port);
+    *addresses =
+        EnsurePortOnAddressList(cache_entry->addresses().value(), host_port);
   }
   return true;
 }

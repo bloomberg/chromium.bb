@@ -694,8 +694,11 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   const HostCache::Entry* result1 =
       restored_cache.LookupStale(key1, now, &stale);
   EXPECT_TRUE(result1);
-  EXPECT_EQ(1u, result1->addresses().size());
-  EXPECT_EQ(address_ipv4, result1->addresses().front().address());
+  ASSERT_TRUE(result1->addresses());
+  EXPECT_FALSE(result1->text_records());
+  EXPECT_FALSE(result1->hostnames());
+  EXPECT_EQ(1u, result1->addresses().value().size());
+  EXPECT_EQ(address_ipv4, result1->addresses().value().front().address());
   EXPECT_EQ(1, stale.network_changes);
   // Time to TimeTicks conversion is fuzzy, so just check that expected and
   // actual expiration times are close.
@@ -707,9 +710,10 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   const HostCache::Entry* result2 =
       restored_cache.LookupStale(key2, now, &stale);
   EXPECT_TRUE(result2);
-  EXPECT_EQ(2u, result2->addresses().size());
-  EXPECT_EQ(address_ipv6, result2->addresses().front().address());
-  EXPECT_EQ(address_ipv4, result2->addresses().back().address());
+  ASSERT_TRUE(result2->addresses());
+  EXPECT_EQ(2u, result2->addresses().value().size());
+  EXPECT_EQ(address_ipv6, result2->addresses().value().front().address());
+  EXPECT_EQ(address_ipv4, result2->addresses().value().back().address());
   EXPECT_EQ(1, stale.network_changes);
   EXPECT_GT(base::TimeDelta::FromMilliseconds(100),
             (base::TimeDelta::FromSeconds(-3) - stale.expired_by).magnitude());
@@ -717,16 +721,75 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   // The "foobar3.com" entry is the new one, not the restored one.
   const HostCache::Entry* result3 = restored_cache.Lookup(key3, now);
   EXPECT_TRUE(result3);
-  EXPECT_EQ(1u, result3->addresses().size());
-  EXPECT_EQ(address_ipv4, result3->addresses().front().address());
+  ASSERT_TRUE(result3->addresses());
+  EXPECT_EQ(1u, result3->addresses().value().size());
+  EXPECT_EQ(address_ipv4, result3->addresses().value().front().address());
 
   // The "foobar4.com" entry is still present and usable.
   const HostCache::Entry* result4 = restored_cache.Lookup(key4, now);
   EXPECT_TRUE(result4);
-  EXPECT_EQ(1u, result4->addresses().size());
-  EXPECT_EQ(address_ipv4, result4->addresses().front().address());
+  ASSERT_TRUE(result4->addresses());
+  EXPECT_EQ(1u, result4->addresses().value().size());
+  EXPECT_EQ(address_ipv4, result4->addresses().value().front().address());
 
   EXPECT_EQ(3u, restored_cache.last_restore_size());
+}
+
+TEST(HostCacheTest, SerializeAndDeserialize_Text) {
+  base::TimeTicks now;
+
+  base::TimeDelta ttl = base::TimeDelta::FromSeconds(99);
+  std::vector<std::string> text_records({"foo", "bar"});
+  HostCache::Key key("example.com", DnsQueryType::A, 0,
+                     HostResolverSource::DNS);
+  HostCache::Entry entry(OK, text_records, HostCache::Entry::SOURCE_DNS, ttl);
+  EXPECT_TRUE(entry.text_records());
+
+  HostCache cache(kMaxCacheEntries);
+  cache.Set(key, entry, now, ttl);
+  EXPECT_EQ(1u, cache.size());
+
+  base::ListValue serialized_cache;
+  cache.GetAsListValue(&serialized_cache, false /* include_staleness */);
+  HostCache restored_cache(kMaxCacheEntries);
+  restored_cache.RestoreFromListValue(serialized_cache);
+
+  ASSERT_EQ(1u, cache.size());
+  const HostCache::Entry* result = cache.Lookup(key, now);
+  ASSERT_TRUE(result);
+  EXPECT_FALSE(result->addresses());
+  ASSERT_TRUE(result->text_records());
+  EXPECT_FALSE(result->hostnames());
+  EXPECT_EQ(text_records, result->text_records().value());
+}
+
+TEST(HostCacheTest, SerializeAndDeserialize_Hostname) {
+  base::TimeTicks now;
+
+  base::TimeDelta ttl = base::TimeDelta::FromSeconds(99);
+  std::vector<HostPortPair> hostnames(
+      {HostPortPair("example.com", 95), HostPortPair("chromium.org", 122)});
+  HostCache::Key key("example.com", DnsQueryType::A, 0,
+                     HostResolverSource::DNS);
+  HostCache::Entry entry(OK, hostnames, HostCache::Entry::SOURCE_DNS, ttl);
+  EXPECT_TRUE(entry.hostnames());
+
+  HostCache cache(kMaxCacheEntries);
+  cache.Set(key, entry, now, ttl);
+  EXPECT_EQ(1u, cache.size());
+
+  base::ListValue serialized_cache;
+  cache.GetAsListValue(&serialized_cache, false /* include_staleness */);
+  HostCache restored_cache(kMaxCacheEntries);
+  restored_cache.RestoreFromListValue(serialized_cache);
+
+  ASSERT_EQ(1u, cache.size());
+  const HostCache::Entry* result = cache.Lookup(key, now);
+  ASSERT_TRUE(result);
+  EXPECT_FALSE(result->addresses());
+  EXPECT_FALSE(result->text_records());
+  ASSERT_TRUE(result->hostnames());
+  EXPECT_EQ(hostnames, result->hostnames().value());
 }
 
 TEST(HostCacheTest, PersistenceDelegate) {

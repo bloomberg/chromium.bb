@@ -455,7 +455,8 @@ int MockHostResolverBase::ResolveFromIPLiteralOrCache(
     if (entry) {
       rv = entry->error();
       if (rv == OK)
-        *addresses = AddressList::CopyWithPort(entry->addresses(), host.port());
+        *addresses =
+            AddressList::CopyWithPort(entry->addresses().value(), host.port());
     }
   }
   return rv;
