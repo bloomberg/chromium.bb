@@ -146,6 +146,8 @@ void NotificationItemView::SetVisible(bool visible) {
 // NotificationView ////////////////////////////////////////////////////////////
 
 void NotificationView::CreateOrUpdateViews(const Notification& notification) {
+  top_view_count_ = 0;
+
   CreateOrUpdateTitleView(notification);
   CreateOrUpdateMessageView(notification);
   CreateOrUpdateProgressBarView(notification);
@@ -370,10 +372,12 @@ void NotificationView::CreateOrUpdateTitleView(
     title_view_->SetLineLimit(kMaxTitleLines);
     title_view_->SetColor(kRegularTextColor);
     title_view_->SetBorder(MakeTextBorder(padding, 3, 0));
-    top_view_->AddChildView(title_view_);
+    top_view_->AddChildViewAt(title_view_, top_view_count_);
   } else {
     title_view_->SetText(title);
   }
+
+  top_view_count_++;
 }
 
 void NotificationView::CreateOrUpdateMessageView(
@@ -396,12 +400,13 @@ void NotificationView::CreateOrUpdateMessageView(
     message_view_->SetLineHeight(kMessageLineHeight);
     message_view_->SetColor(kRegularTextColor);
     message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
-    top_view_->AddChildView(message_view_);
+    top_view_->AddChildViewAt(message_view_, top_view_count_);
   } else {
     message_view_->SetText(text);
   }
 
   message_view_->SetVisible(notification.items().empty());
+  top_view_count_++;
 }
 
 base::string16 NotificationView::FormatContextMessage(
@@ -440,10 +445,12 @@ void NotificationView::CreateOrUpdateContextMessageView(
     context_message_view_->SetLineHeight(kMessageLineHeight);
     context_message_view_->SetColor(kDimTextColor);
     context_message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
-    top_view_->AddChildView(context_message_view_);
+    top_view_->AddChildViewAt(context_message_view_, top_view_count_);
   } else {
     context_message_view_->SetText(message);
   }
+
+  top_view_count_++;
 }
 
 void NotificationView::CreateOrUpdateProgressBarView(
@@ -461,11 +468,12 @@ void NotificationView::CreateOrUpdateProgressBarView(
     progress_bar_view_ = new views::ProgressBar();
     progress_bar_view_->SetBorder(MakeProgressBarBorder(
         kProgressBarTopPadding, kProgressBarBottomPadding));
-    top_view_->AddChildView(progress_bar_view_);
+    top_view_->AddChildViewAt(progress_bar_view_, top_view_count_);
   }
 
   progress_bar_view_->SetValue(notification.progress() / 100.0);
   progress_bar_view_->SetVisible(notification.items().empty());
+  top_view_count_++;
 }
 
 void NotificationView::CreateOrUpdateListItemViews(
@@ -485,7 +493,7 @@ void NotificationView::CreateOrUpdateListItemViews(
     NotificationItemView* item_view = new NotificationItemView(items[i]);
     item_view->SetBorder(MakeTextBorder(padding, i ? 0 : 4, 0));
     item_views_.push_back(item_view);
-    top_view_->AddChildView(item_view);
+    top_view_->AddChildViewAt(item_view, top_view_count_++);
   }
 }
 

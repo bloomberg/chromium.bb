@@ -62,6 +62,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestImageSizing);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, UpdateButtonsStateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, UpdateButtonCountTest);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, UpdateViewsOrderingTest);
 
   friend class NotificationViewTest;
 
@@ -107,6 +108,10 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   std::vector<views::View*> separators_;
   std::unique_ptr<views::ImageView> small_image_view_;
   NotificationControlButtonsView* control_buttons_view_;
+
+  // Counter for view layouting, which is used during the CreateOrUpdate*
+  // phases to keep track of the view ordering. See crbug.com/901045
+  int top_view_count_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationView);
 };

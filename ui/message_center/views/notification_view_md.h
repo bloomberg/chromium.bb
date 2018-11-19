@@ -222,6 +222,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UseImageAsIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, NotificationWithoutIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, InlineSettings);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateViewsOrderingTest);
 
   friend class NotificationViewMDTest;
 
@@ -291,6 +292,10 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   CompactTitleMessageView* compact_title_message_view_ = nullptr;
   views::View* action_buttons_row_ = nullptr;
   NotificationInputContainerMD* inline_reply_ = nullptr;
+
+  // Counter for view layouting, which is used during the CreateOrUpdate*
+  // phases to keep track of the view ordering. See crbug.com/901045
+  int left_content_count_;
 
   // Views for inline settings.
   views::RadioButton* block_all_button_ = nullptr;
