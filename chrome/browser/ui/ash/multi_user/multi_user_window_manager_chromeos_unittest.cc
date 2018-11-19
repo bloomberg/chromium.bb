@@ -25,6 +25,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "ash/ws/window_lookup.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -58,13 +59,22 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager.h"
+#include "services/ws/common/util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
+#include "ui/aura/mus/window_port_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/env_test_helper.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
+#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/views/mus/mus_client.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -77,6 +87,43 @@ const char kBAccountIdString[] =
     "{\"account_type\":\"unknown\",\"email\":\"B\"}";
 const char kArrowBAccountIdString[] =
     "->{\"account_type\":\"unknown\",\"email\":\"B\"}";
+
+aura::Window* FindWindowInAshForClientWindow(aura::Window* window) {
+  if (!aura::WindowMus::Get(window))
+    return nullptr;
+
+  // Flush all messages from the WindowTreeClient to ensure the client id has
+  // been received.
+  aura::test::WaitForAllChangesToComplete();
+
+  DCHECK_EQ(window->env()->mode(), aura::Env::Mode::MUS);
+  DCHECK(views::MusClient::Exists());
+  aura::WindowTreeClient* window_tree_client =
+      views::MusClient::Get()->window_tree_client();
+  DCHECK(window_tree_client);
+
+  aura::WindowPortMus* window_port_mus = aura::WindowPortMus::Get(window);
+  if (!window_port_mus)
+    return nullptr;  // Should only happen if we're in shutdown.
+
+  // By the time we get here the id should have been determined.
+  DCHECK(window_tree_client->id().has_value());
+  ws::ClientSpecificId client_id = *(window_tree_client->id());
+
+  // Use the top-most remote window. This should correspond to the Window of
+  // the Widget (DesktopNativeWidgetAura creates two windows).
+  const ws::Id transport_id = ws::BuildTransportId(
+      client_id,
+      static_cast<ws::ClientSpecificId>(window_port_mus->server_id()));
+  return ash::window_lookup::GetWindowByClientId(transport_id);
+}
+
+void FlushWindowTreeClientMessages() {
+  if (!views::MusClient::Exists())
+    return;
+  aura::WindowTreeClientTestApi(views::MusClient::Get()->window_tree_client())
+      .FlushForTesting();
+}
 
 const content::BrowserContext* GetActiveContext() {
   const user_manager::UserManager* user_manager =
@@ -130,8 +177,14 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
  protected:
   void SwitchActiveUser(const AccountId& id) {
+    // WaitForAllChangesToComplete() does nothing in classic mode.
+    // WaitForAllChangesToComplete() is called before and after to ensure all
+    // changes have been pushed to ash before a switch, and similarly after a
+    // switch.
+    FlushWindowTreeClientMessages();
     fake_user_manager_->SwitchActiveUser(id);
     ash::MultiUserWindowManager::Get()->OnActiveUserSessionChanged(id);
+    FlushWindowTreeClientMessages();
   }
 
   // Set up the test environment for this many windows.
@@ -282,7 +335,6 @@ void MultiUserWindowManagerChromeOSTest::SetUp() {
       TestingBrowserProcess::GetGlobal()->local_state());
   ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
   AshTestBase::SetUp();
-  // This test has mixed case user ids.
   ash_test_helper()
       ->test_session_controller_client()
       ->set_use_lower_case_user_id(false);
@@ -1531,6 +1583,161 @@ TEST_F(MultiUserWindowManagerChromeOSTest, WindowBoundsAfterTabletMode) {
   SwitchActiveUser(user2);
   EXPECT_EQ(bounds, window(0)->bounds());
   EXPECT_EQ(bounds, window(1)->bounds());
+}
+
+class MultiUserWindowManagerChromeOSMashTest
+    : public MultiUserWindowManagerChromeOSTest {
+ public:
+  MultiUserWindowManagerChromeOSMashTest() = default;
+  ~MultiUserWindowManagerChromeOSMashTest() override = default;
+
+  // MultiUserWindowManagerChromeOSTest:
+  void SetUp() override {
+    original_aura_env_mode_ =
+        aura::test::EnvTestHelper().SetMode(aura::Env::Mode::MUS);
+    feature_list_.InitWithFeatures({::features::kSingleProcessMash}, {});
+    MultiUserWindowManagerChromeOSTest::SetUp();
+    // TabletModeController calls to PowerManagerClient with a callback that is
+    // run via a posted task. Run the loop now so that we know the task is
+    // processed. Without this, the task gets processed later on, interfering
+    // with this test.
+    base::RunLoop().RunUntilIdle();
+
+    // This test configures views with mus, which means it triggers some of the
+    // DCHECKs ensuring Shell's Env is used.
+    SetRunningOutsideAsh();
+
+    // Configure views backed by mus.
+    views::MusClient::InitParams mus_client_init_params;
+    mus_client_init_params.connector =
+        ash_test_helper()->GetWindowServiceConnector();
+    mus_client_init_params.create_wm_state = false;
+    mus_client_init_params.running_in_ws_process = true;
+    mus_client_ = std::make_unique<views::MusClient>(mus_client_init_params);
+  }
+  void TearDown() override {
+    mus_client_.reset();
+    MultiUserWindowManagerChromeOSTest::TearDown();
+    aura::test::EnvTestHelper().SetMode(original_aura_env_mode_);
+  }
+
+ protected:
+  std::unique_ptr<views::Widget> CreateMusWidget() {
+    std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
+    views::Widget::InitParams params;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect(0, 0, 200, 200);
+    params.native_widget =
+        mus_client_->CreateNativeWidget(params, widget.get());
+    widget->Init(params);
+    widget->Show();
+    EXPECT_EQ(aura::Env::Mode::MUS, widget->GetNativeWindow()->env()->mode());
+    // Flush all messages from the WindowTreeClient to ensure ash has finished
+    // Widget creation.
+    aura::test::WaitForAllChangesToComplete();
+    return widget;
+  }
+
+ private:
+  aura::Env::Mode original_aura_env_mode_ = aura::Env::Mode::LOCAL;
+  base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<views::MusClient> mus_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOSMashTest);
+};
+
+TEST_F(MultiUserWindowManagerChromeOSMashTest,
+       SingleProcessMashWindowOrdering) {
+  SetUpForThisManyWindows(1);
+
+  std::unique_ptr<views::Widget> widget = CreateMusWidget();
+  aura::Window* widget_window_in_ash =
+      FindWindowInAshForClientWindow(widget->GetNativeWindow()->parent());
+  ASSERT_TRUE(widget_window_in_ash);
+  EXPECT_EQ(widget_window_in_ash->parent(), window(0)->parent());
+
+  const AccountId account_id_A(AccountId::FromUserEmail("A"));
+  const AccountId account_id_B(AccountId::FromUserEmail("B"));
+  AddTestUser(account_id_A);
+  AddTestUser(account_id_B);
+  SwitchActiveUser(account_id_A);
+
+  // Set the windows owner.
+  ::wm::ActivationClient* activation_client =
+      ::wm::GetActivationClient(window(0)->GetRootWindow());
+  multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
+  multi_user_window_manager()->SetWindowOwner(widget->GetNativeWindow(),
+                                              account_id_A);
+  aura::test::WaitForAllChangesToComplete();
+
+  // Activate the windows one by one.
+  activation_client->ActivateWindow(widget_window_in_ash);
+  EXPECT_EQ(activation_client->GetActiveWindow(), widget_window_in_ash);
+  activation_client->ActivateWindow(window(0));
+  EXPECT_EQ(activation_client->GetActiveWindow(), window(0));
+
+  aura::Window::Windows mru_list =
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  EXPECT_EQ(mru_list[0], window(0));
+  EXPECT_EQ(mru_list[1], widget_window_in_ash);
+
+  SwitchActiveUser(account_id_B);
+  EXPECT_EQ(activation_client->GetActiveWindow(), nullptr);
+
+  SwitchActiveUser(account_id_A);
+  EXPECT_EQ(activation_client->GetActiveWindow(), window(0));
+
+  mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  ASSERT_EQ(2u, mru_list.size());
+  EXPECT_EQ(mru_list[0], window(0));
+  EXPECT_TRUE(widget_window_in_ash->Contains(mru_list[1]));
+
+  // Swap the activation order, and retry.
+  activation_client->ActivateWindow(window(0));
+  EXPECT_EQ(activation_client->GetActiveWindow(), window(0));
+  activation_client->ActivateWindow(widget_window_in_ash);
+  EXPECT_EQ(activation_client->GetActiveWindow(), widget_window_in_ash);
+
+  mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  EXPECT_EQ(mru_list[0], widget_window_in_ash);
+  EXPECT_EQ(mru_list[1], window(0));
+
+  SwitchActiveUser(account_id_B);
+  EXPECT_EQ(activation_client->GetActiveWindow(), nullptr);
+
+  SwitchActiveUser(account_id_A);
+  EXPECT_EQ(activation_client->GetActiveWindow(), widget_window_in_ash);
+
+  mru_list = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+  EXPECT_EQ(mru_list[0], widget_window_in_ash);
+  EXPECT_EQ(mru_list[1], window(0));
+}
+
+TEST_F(MultiUserWindowManagerChromeOSMashTest, SetWindowOwner) {
+  SetUpForThisManyWindows(1);
+
+  std::unique_ptr<views::Widget> widget = CreateMusWidget();
+  const AccountId account1(AccountId::FromUserEmail("A"));
+  const AccountId account2(AccountId::FromUserEmail("B"));
+  AddTestUser(account1);
+  AddTestUser(account2);
+  SwitchActiveUser(account1);
+
+  // Make both windows be own by |account1|.
+  multi_user_window_manager()->SetWindowOwner(window(0), account1);
+  multi_user_window_manager()->SetWindowOwner(widget->GetNativeWindow(),
+                                              account1);
+  aura::test::WaitForAllChangesToComplete();
+
+  // Switch to account2, which should hide the widget.
+  SwitchActiveUser(account2);
+  EXPECT_FALSE(widget->IsVisible());
+
+  // Show the widget for the current user, which should trigger showing it.
+  multi_user_window_manager()->ShowWindowForUser(widget->GetNativeWindow(),
+                                                 account2);
+  aura::test::WaitForAllChangesToComplete();
+  EXPECT_TRUE(widget->IsVisible());
 }
 
 }  // namespace ash

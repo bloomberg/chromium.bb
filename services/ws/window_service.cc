@@ -79,10 +79,6 @@ WindowService::~WindowService() {
   DCHECK(window_trees_.empty());
 }
 
-ClientSpecificId WindowService::GetFirstWindowTreeClientId() const {
-  return decrement_client_ids_ ? kInitialClientIdDecrement : kInitialClientId;
-}
-
 ServerWindow* WindowService::GetServerWindowForWindowCreateIfNecessary(
     aura::Window* window) {
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
@@ -129,6 +125,17 @@ bool WindowService::HasRemoteClient(const aura::Window* window) {
 bool WindowService::IsTopLevelWindow(const aura::Window* window) {
   const ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   return server_window && server_window->IsTopLevel();
+}
+
+ws::Id WindowService::GetTopLevelWindowId(aura::Window* window) {
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  if (!server_window || !server_window->IsTopLevel())
+    return kInvalidTransportId;
+
+  const ws::WindowTree* owning_tree = server_window->owning_window_tree();
+  return BuildTransportId(
+      owning_tree->client_id(),
+      owning_tree->ClientWindowIdForWindow(window).sink_id());
 }
 
 aura::Window* WindowService::GetWindowByClientId(Id transport_id) {

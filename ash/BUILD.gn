@@ -1264,6 +1264,8 @@ component("ash") {
     "ws/ash_gpu_interface_provider.h",
     "ws/ash_window_manager.cc",
     "ws/ash_window_manager.h",
+    "ws/multi_user_window_manager_bridge.cc",
+    "ws/multi_user_window_manager_bridge.h",
     "ws/window_lookup.cc",
     "ws/window_service_delegate_impl.cc",
     "ws/window_service_delegate_impl.h",

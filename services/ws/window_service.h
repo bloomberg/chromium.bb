@@ -87,9 +87,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
                 aura::Env* env = nullptr);
   ~WindowService() override;
 
-  // Returns the id of the first WindowTreeClient.
-  ClientSpecificId GetFirstWindowTreeClientId() const;
-
   // Gets the ServerWindow for |window|, creating if necessary.
   ServerWindow* GetServerWindowForWindowCreateIfNecessary(aura::Window* window);
 
@@ -112,6 +109,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   // Returns true if |window| hosts a remote client and is a toplevel window.
   static bool IsTopLevelWindow(const aura::Window* window);
+
+  // Returns the transport id for |window|. If |window| is not a top-level
+  // window, returns kInvalidTransportId.
+  ws::Id GetTopLevelWindowId(aura::Window* window);
 
   // Returns the window representing the specified id.
   aura::Window* GetWindowByClientId(Id transport_id);

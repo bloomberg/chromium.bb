@@ -15,12 +15,13 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/ws/window_service_owner.h"
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "ui/aura/client/aura_constants.h"
+#include "services/ws/window_service.h"
+#include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/views/mus/mus_client.h"
@@ -80,6 +81,35 @@ mojom::WallpaperUserInfoPtr WallpaperUserInfoForAccount(
   }
   NOTREACHED();
   return wallpaper_user_info;
+}
+
+// If |window| has a remote client, this converts it to the remote window used
+// by the delegate. This effectively undoes the mapping that
+// MultiUserWindowManagerBridge does.
+// TODO: remove this and instead notify about changes to these windows over a
+// mojom. https://crbug.com/875111.
+aura::Window* MapWindowIfNecessary(aura::Window* window) {
+  if (!ws::WindowService::HasRemoteClient(window) ||
+      !views::MusClient::Exists()) {
+    return window;
+  }
+
+  const ws::Id window_id = Shell::Get()
+                               ->window_service_owner()
+                               ->window_service()
+                               ->GetTopLevelWindowId(window);
+  if (window_id == ws::kInvalidTransportId)
+    return window;
+
+  // children[0] is used to deal with DesktopNativeWidgetAura. In particular,
+  // client code generally expects to see the first child, which corresponds to
+  // Widget::GetNativeWindow(), when using DesktopNativeWidgetAura.
+  aura::WindowMus* window_mus =
+      views::MusClient::Get()->window_tree_client()->GetWindowByServerId(
+          window_id);
+  return window_mus && !window_mus->GetWindow()->children().empty()
+             ? window_mus->GetWindow()->children()[0]
+             : window;
 }
 
 }  // namespace
@@ -154,7 +184,8 @@ MultiUserWindowManager* MultiUserWindowManager::Get() {
 }
 
 void MultiUserWindowManager::SetWindowOwner(aura::Window* window,
-                                            const AccountId& account_id) {
+                                            const AccountId& account_id,
+                                            bool show_for_current_user) {
   // Make sure the window is valid and there was no owner yet.
   DCHECK(window);
   DCHECK(account_id.is_valid());
@@ -173,7 +204,7 @@ void MultiUserWindowManager::SetWindowOwner(aura::Window* window,
 
   // Check if this window was created due to a user interaction. If it was,
   // transfer it to the current user.
-  if (window->GetProperty(aura::client::kCreatedByUserGesture))
+  if (show_for_current_user)
     window_to_entry_[window]->set_show_for_user(current_account_id_);
 
   // Add all transient children to our set of windows. Note that the function
@@ -387,8 +418,10 @@ bool MultiUserWindowManager::ShowWindowForUserIntern(
   }
 
   // Notify entry change.
-  if (delegate_)
-    delegate_->OnOwnerEntryChanged(window, account_id, minimized, teleported);
+  if (delegate_) {
+    delegate_->OnOwnerEntryChanged(MapWindowIfNecessary(window), account_id,
+                                   minimized, teleported);
+  }
   return true;
 }
 

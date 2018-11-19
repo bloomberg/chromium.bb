@@ -16,6 +16,7 @@
 #include "ash/wm/window_finder.h"
 #include "ash/wm/window_util.h"
 #include "ash/ws/ash_window_manager.h"
+#include "ash/ws/multi_user_window_manager_bridge.h"
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
@@ -230,10 +231,14 @@ WindowServiceDelegateImpl::CreateWindowManagerInterface(
     ws::WindowTree* tree,
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
-  if (name != mojom::AshWindowManager::Name_)
-    return nullptr;
+  if (name == mojom::AshWindowManager::Name_)
+    return std::make_unique<AshWindowManager>(tree, std::move(handle));
 
-  return std::make_unique<AshWindowManager>(tree, std::move(handle));
+  if (name == mojom::MultiUserWindowManager::Name_) {
+    return std::make_unique<MultiUserWindowManagerBridge>(tree,
+                                                          std::move(handle));
+  }
+  return nullptr;
 }
 
 }  // namespace ash

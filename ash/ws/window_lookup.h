@@ -20,10 +20,6 @@ namespace window_lookup {
 // Returns the aura::Window by transport id.
 ASH_EXPORT aura::Window* GetWindowByClientId(ws::Id transport_id);
 
-// Returns the id of the first WindowTreeClient. That is, the id assigned to
-// the first client that connects to the WindowService.
-ASH_EXPORT ws::ClientSpecificId GetFirstWindowTreeClientId();
-
 }  // namespace window_lookup
 }  // namespace ash
 

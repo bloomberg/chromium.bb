@@ -64,8 +64,11 @@ class ASH_EXPORT MultiUserWindowManager : public SessionObserver,
 
   // Associates a window with a particular account. This may result in hiding
   // |window|. This should *not* be called more than once with a different
-  // account.
-  void SetWindowOwner(aura::Window* window, const AccountId& account_id);
+  // account. If |show_for_current_user| is true, this sets the 'shown'
+  // account to the current account.
+  void SetWindowOwner(aura::Window* window,
+                      const AccountId& account_id,
+                      bool show_for_current_user);
 
   // Sets the 'shown' account for a window. See class description for details on
   // what the 'shown' account is. This function may trigger changing the active
