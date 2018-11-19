@@ -514,7 +514,7 @@
     Zip selection
   </message>
   <message name="IDS_FILE_BROWSER_SET_WALLPAPER_BUTTON_LABEL" desc="The context menu item to set wallpaper.">
-    Set wallpaper
+    Set as wallpaper
   </message>
   <message name="IDS_FILE_BROWSER_CREATE_FOLDER_SHORTCUT_BUTTON_LABEL" desc="Menu item label, creating a shortcut of the selected folder to the left nav.">
     Create shortcut
