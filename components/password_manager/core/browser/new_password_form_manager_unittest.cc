@@ -56,6 +56,14 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(const PasswordForm&));
 };
 
+class MockPasswordManagerClient : public StubPasswordManagerClient {
+ public:
+  MockPasswordManagerClient() = default;
+  ~MockPasswordManagerClient() override = default;
+
+  MOCK_METHOD0(UpdateFormManagers, void());
+};
+
 void CheckPendingCredentials(const PasswordForm& expected,
                              const PasswordForm& actual) {
   EXPECT_EQ(expected.signon_realm, actual.signon_realm);
@@ -279,7 +287,7 @@ class NewPasswordFormManagerTest : public testing::Test {
   PasswordForm blacklisted_match_;
   PasswordForm parsed_observed_form_;
   PasswordForm parsed_submitted_form_;
-  StubPasswordManagerClient client_;
+  MockPasswordManagerClient client_;
   MockPasswordManagerDriver driver_;
   scoped_refptr<TestMockTimeTaskRunner> task_runner_;
   // Define |fetcher_| before |form_manager_|, because the former needs to
@@ -715,6 +723,7 @@ TEST_F(NewPasswordFormManagerTest, SaveNewCredentials) {
   std::map<base::string16, const PasswordForm*> best_matches;
   EXPECT_CALL(form_saver, Save(_, _))
       .WillOnce(DoAll(SaveArg<0>(&saved_form), SaveArg<1>(&best_matches)));
+  EXPECT_CALL(client_, UpdateFormManagers());
 
   form_manager_->Save();
 
@@ -1364,6 +1373,7 @@ TEST_F(NewPasswordFormManagerTest, Update) {
   EXPECT_CALL(form_saver, Update(_, _, _, nullptr))
       .WillOnce(DoAll(SaveArg<0>(&updated_form), SaveArg<1>(&best_matches),
                       SaveArgPointee<2>(&credentials_to_update)));
+  EXPECT_CALL(client_, UpdateFormManagers());
 
   form_manager_->Update(saved_match_);
 
