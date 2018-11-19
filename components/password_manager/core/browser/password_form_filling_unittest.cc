@@ -152,28 +152,34 @@ TEST_F(PasswordFormFillingTest, Autofill) {
 TEST_F(PasswordFormFillingTest, TestFillOnLoadReported) {
   const struct {
     const char* description;
-    bool new_password_present;
+    bool new_password_name_empty;
     bool current_password_present;
     PasswordFormMetricsRecorder::FillOnLoad expected_comparison;
   } kTestCases[] = {
       {
           .description = "Fills on load",
-          .new_password_present = false,
+          .new_password_name_empty = true,
           .current_password_present = true,
           .expected_comparison = PasswordFormMetricsRecorder::FillOnLoad::kSame,
       },
       {
           .description = "Does not fill on load",
-          .new_password_present = true,
+          .new_password_name_empty = false,
           .current_password_present = false,
           .expected_comparison = PasswordFormMetricsRecorder::FillOnLoad::kSame,
       },
       {
           .description = "Did not fill on load, will fill on load",
-          .new_password_present = true,
+          .new_password_name_empty = false,
           .current_password_present = true,
           .expected_comparison =
               PasswordFormMetricsRecorder::FillOnLoad::kStartsFillingOnLoad,
+      },
+      {
+          .description = "New password field present but its name is empty",
+          .new_password_name_empty = true,
+          .current_password_present = false,
+          .expected_comparison = PasswordFormMetricsRecorder::FillOnLoad::kSame,
       },
   };
   base::test::ScopedFeatureList scoped_feature_list;
@@ -192,7 +198,7 @@ TEST_F(PasswordFormFillingTest, TestFillOnLoadReported) {
     best_matches[saved_match_.username_value] = &saved_match_;
 
     PasswordForm observed_form = observed_form_;
-    if (test_case.new_password_present)
+    if (!test_case.new_password_name_empty)
       observed_form.new_password_element = ASCIIToUTF16("New Passwd");
     if (!test_case.current_password_present)
       observed_form.password_element.clear();

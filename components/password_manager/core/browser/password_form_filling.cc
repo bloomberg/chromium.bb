@@ -167,11 +167,16 @@ void SendFillInformationToRenderer(
       base::FeatureList::IsEnabled(features::kNewPasswordFormParsing)) {
     PasswordFormMetricsRecorder::FillOnLoad fill_on_load_result =
         PasswordFormMetricsRecorder::FillOnLoad::kSame;
-    if (did_fill_on_load != will_fill_on_load) {
+    // Note: The fill on load never happens if |will_fill_on_load| is false,
+    // because PasswordAutofillAgent won't be able to locate the "current
+    // password" field to fill. So even if |did_fill_on_load| is true and
+    // |will_fill_on_load| is false, the behaviour of Chrome does not change if
+    // either of them is picked for |form_good_for_filling|. So the only
+    // interesting case to report is when |did...| is false and |will...| is
+    // true.
+    if (!did_fill_on_load && will_fill_on_load) {
       fill_on_load_result =
-          will_fill_on_load
-              ? PasswordFormMetricsRecorder::FillOnLoad::kStartsFillingOnLoad
-              : PasswordFormMetricsRecorder::FillOnLoad::kStopsFillingOnLoad;
+          PasswordFormMetricsRecorder::FillOnLoad::kStartsFillingOnLoad;
     }
     metrics_recorder->RecordFillOnLoad(fill_on_load_result);
   }

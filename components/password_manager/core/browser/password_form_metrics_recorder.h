@@ -190,15 +190,16 @@ class PasswordFormMetricsRecorder
   // the UKM PasswordForm.FillOnLoad to report which changes in behaviour this
   // causes.
   enum class FillOnLoad {
-    // The old and the new condition evaluate to the same result.
+    // No change in fill-on-load behaviour, either because the old and the new
+    // condition evaluate to the same result, or because the new condition being
+    // false breaks fill-on-load even in the case when only the old condition is
+    // checked.
     kSame,
     // The old condition prevented fill on load, the new allows it. This happens
     // for forms with both 'current-password' and 'new-password' fields.
     kStartsFillingOnLoad,
-    // The old condition allowed filling on load, the new prevents it. This
-    // corresponds to forms with neither 'current-password' nor 'new-password'
-    // fields, so it should never happen. It is included for completeness.
-    kStopsFillingOnLoad
+    // Obsolete, cannot happen.
+    kObsoleteStopsFillingOnLoad
   };
 
   // Indicator whether the user has seen a password generation popup and why.
