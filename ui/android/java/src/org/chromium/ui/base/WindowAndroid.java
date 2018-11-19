@@ -773,7 +773,7 @@ public class WindowAndroid implements AndroidPermissionDelegate {
      * Return the current window token, or null.
      */
     @CalledByNative
-    private IBinder getWindowToken() {
+    protected IBinder getWindowToken() {
         Activity activity = activityFromContext(mContextRef.get());
         if (activity == null) return null;
         Window window = activity.getWindow();
