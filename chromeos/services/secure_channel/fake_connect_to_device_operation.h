@@ -53,14 +53,14 @@ class FakeConnectToDeviceOperation
 
  private:
   // ConnectToDeviceOperation<FailureDetailType>:
-  void PerformCancellation() override {
+  void CancelInternal() override {
     canceled_ = true;
 
     if (cancel_callback_)
       std::move(cancel_callback_).Run();
   }
 
-  void PerformUpdateConnectionPriority(
+  void UpdateConnectionPriorityInternal(
       ConnectionPriority connection_priority) override {
     updated_priority_ = connection_priority;
   }
