@@ -118,26 +118,22 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
 // Test that manipulate preferred data types.
 // -----------------------------------------------------------------------------
 
-class SyncPrefsDataTypesTest : public SyncPrefsTest,
-                               public testing::WithParamInterface<bool> {
+class SyncPrefsDataTypesTest : public SyncPrefsTest {
  protected:
-  SyncPrefsDataTypesTest() : user_events_separate_pref_group_(GetParam()) {}
+  SyncPrefsDataTypesTest() {}
 
   ModelTypeSet GetPreferredDataTypes(ModelTypeSet registered_types) {
-    return sync_prefs_->GetPreferredDataTypes(registered_types,
-                                              user_events_separate_pref_group_);
+    return sync_prefs_->GetPreferredDataTypes(registered_types);
   }
 
   void SetPreferredDataTypes(ModelTypeSet registered_types,
                              ModelTypeSet preferred_types) {
-    return sync_prefs_->SetPreferredDataTypes(registered_types, preferred_types,
-                                              user_events_separate_pref_group_);
+    return sync_prefs_->SetPreferredDataTypes(registered_types,
+                                              preferred_types);
   }
-
-  const bool user_events_separate_pref_group_;
 };
 
-TEST_P(SyncPrefsDataTypesTest, Basic) {
+TEST_F(SyncPrefsDataTypesTest, Basic) {
   EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
   sync_prefs_->SetFirstSetupComplete();
   EXPECT_TRUE(sync_prefs_->IsFirstSetupComplete());
@@ -164,7 +160,7 @@ TEST_P(SyncPrefsDataTypesTest, Basic) {
   EXPECT_EQ("token", sync_prefs_->GetEncryptionBootstrapToken());
 }
 
-TEST_P(SyncPrefsDataTypesTest, DefaultTypes) {
+TEST_F(SyncPrefsDataTypesTest, DefaultTypes) {
   sync_prefs_->SetKeepEverythingSynced(false);
 
   ModelTypeSet preferred_types = GetPreferredDataTypes(UserTypes());
@@ -201,7 +197,7 @@ TEST_P(SyncPrefsDataTypesTest, DefaultTypes) {
   EXPECT_FALSE(preferred_types.Has(HISTORY_DELETE_DIRECTIVES));
 }
 
-TEST_P(SyncPrefsDataTypesTest, PreferredTypesKeepEverythingSynced) {
+TEST_F(SyncPrefsDataTypesTest, PreferredTypesKeepEverythingSynced) {
   EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
 
   const ModelTypeSet user_types = UserTypes();
@@ -215,7 +211,7 @@ TEST_P(SyncPrefsDataTypesTest, PreferredTypesKeepEverythingSynced) {
   }
 }
 
-TEST_P(SyncPrefsDataTypesTest, PreferredTypesNotKeepEverythingSynced) {
+TEST_F(SyncPrefsDataTypesTest, PreferredTypesNotKeepEverythingSynced) {
   sync_prefs_->SetKeepEverythingSynced(false);
 
   const ModelTypeSet user_types = UserTypes();
@@ -250,9 +246,7 @@ TEST_P(SyncPrefsDataTypesTest, PreferredTypesNotKeepEverythingSynced) {
       expected_preferred_types.Put(SESSIONS);
       expected_preferred_types.Put(FAVICON_IMAGES);
       expected_preferred_types.Put(FAVICON_TRACKING);
-      if (!user_events_separate_pref_group_) {
-        expected_preferred_types.Put(USER_EVENTS);
-      }
+      expected_preferred_types.Put(USER_EVENTS);
     }
     if (type == PROXY_TABS) {
       expected_preferred_types.Put(SESSIONS);
@@ -268,7 +262,7 @@ TEST_P(SyncPrefsDataTypesTest, PreferredTypesNotKeepEverythingSynced) {
 }
 
 // Device info should always be enabled.
-TEST_P(SyncPrefsDataTypesTest, DeviceInfo) {
+TEST_F(SyncPrefsDataTypesTest, DeviceInfo) {
   EXPECT_TRUE(GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
   sync_prefs_->SetKeepEverythingSynced(true);
   EXPECT_TRUE(GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
@@ -281,7 +275,7 @@ TEST_P(SyncPrefsDataTypesTest, DeviceInfo) {
 }
 
 // User Consents should always be enabled.
-TEST_P(SyncPrefsDataTypesTest, UserConsents) {
+TEST_F(SyncPrefsDataTypesTest, UserConsents) {
   EXPECT_TRUE(GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
   sync_prefs_->SetKeepEverythingSynced(true);
   EXPECT_TRUE(GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
@@ -292,10 +286,6 @@ TEST_P(SyncPrefsDataTypesTest, UserConsents) {
       /*preferred_types=*/ModelTypeSet());
   EXPECT_TRUE(GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
 }
-
-INSTANTIATE_TEST_CASE_P(,
-                        SyncPrefsDataTypesTest,
-                        ::testing::Values(false, true));
 
 }  // namespace
 

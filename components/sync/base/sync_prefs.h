@@ -116,15 +116,7 @@ class SyncPrefs : public CryptoSyncPrefs,
   // The returned set is guaranteed to be a subset of
   // |registered_types|.  Returns |registered_types| directly if
   // HasKeepEverythingSynced() is true.
-  // |user_events_separate_pref_group| is true when USER_EVENTS model type has
-  // a separate pref group instead of being bundled with the TYPED_URLS. This
-  // is used when Unified Consent is enabled.
-  //
-  // TODO(https://crbug.com/862983): |user_events_separate_pref_group| is only
-  // temporary and should removed once Unified Consent feature is is launched.
-  ModelTypeSet GetPreferredDataTypes(
-      ModelTypeSet registered_types,
-      bool user_events_separate_pref_group) const;
+  ModelTypeSet GetPreferredDataTypes(ModelTypeSet registered_types) const;
 
   // |preferred_types| should be a subset of |registered_types|.  All
   // types in |preferred_types| are marked preferred, and all types in
@@ -132,15 +124,8 @@ class SyncPrefs : public CryptoSyncPrefs,
   // Changes are still made to the prefs even if
   // HasKeepEverythingSynced() is true, but won't be visible until
   // SetKeepEverythingSynced(false) is called.
-  // |user_events_separate_pref_group| is true when USER_EVENTS model type has
-  // a separate pref group instead of being bundled with the TYPED_URLS. This
-  // is used when Unified Consent is enabled.
-  //
-  // TODO(https://crbug.com/862983): |user_events_separate_pref_group| is only
-  // temporary and should removed once Unified Consent feature is is launched.
   void SetPreferredDataTypes(ModelTypeSet registered_types,
-                             ModelTypeSet preferred_types,
-                             bool user_events_separate_pref_group);
+                             ModelTypeSet preferred_types);
 
   // Whether Sync is forced off by enterprise policy. Note that this only covers
   // one out of two types of policy, "browser" policy. The second kind, "cloud"
@@ -221,8 +206,7 @@ class SyncPrefs : public CryptoSyncPrefs,
   // (see |pref_groups_|), but as a subset of |registered_types|.
   // Exposed for testing.
   static ModelTypeSet ResolvePrefGroups(ModelTypeSet registered_types,
-                                        ModelTypeSet types,
-                                        bool user_events_separate_pref_group);
+                                        ModelTypeSet types);
 
  private:
   static void RegisterDataTypePreferredPref(

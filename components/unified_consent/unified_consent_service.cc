@@ -65,28 +65,10 @@ void RollbackHelper::DoRollbackIfPossibleAndDie(
     syncer::SyncService* sync_service) {
   DCHECK(!scoped_sync_observer_.IsObservingSources());
 
-// Warning: ugly code ahead. See https://crbug.com/885382 for background.
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  syncer::ModelTypeSet user_selectable_types_except_user_events(
-      syncer::AUTOFILL, syncer::BOOKMARKS, syncer::PASSWORDS,
-      syncer::PREFERENCES, syncer::PROXY_TABS,
-#if BUILDFLAG(ENABLE_READING_LIST)
-      syncer::READING_LIST,
-#endif
-      syncer::TYPED_URLS);
-#else
-  syncer::ModelTypeSet user_selectable_types_except_user_events =
-      syncer::UserSelectableTypes();
-  // USER_EVENTS data type doesn't have to be enabled, because it is not
-  // configurable if Unified Consent feature is disabled.
-  user_selectable_types_except_user_events.Remove(syncer::USER_EVENTS);
-#endif
-
   if (sync_service->GetUserSettings()->GetChosenDataTypes().HasAll(
-          user_selectable_types_except_user_events)) {
+          syncer::UserSelectableTypes())) {
     // As part of the migration of a profile to Unified Consent, sync everything
-    // is disabled but sync continues to be enabled for all data types except
-    // USER_EVENTS. Therefore it is desired to restore sync everything when
+    // is disabled. Therefore it is desired to restore sync everything when
     // rolling back unified consent to leave sync in the same state as the one
     // before migration.
     sync_service->GetUserSettings()->SetChosenDataTypes(
@@ -494,11 +476,10 @@ void UnifiedConsentService::UpdateSettingsForMigration() {
   pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
                             url_keyed_metrics_enabled);
 
-  // Disable the datatype user events for newly migrated users. Also set
-  // sync-everything to false, so it matches unified consent given.
+  // Set sync-everything to false, so it matches unified consent given.
   PostTaskToUpdateSyncSettings(
       /*sync_everything=*/false, /*enable_data_types=*/syncer::ModelTypeSet(),
-      /*disable_data_types=*/syncer::ModelTypeSet(syncer::USER_EVENTS));
+      /*disable_data_types=*/syncer::ModelTypeSet());
 
   SetMigrationState(MigrationState::kCompleted);
 }
@@ -534,12 +515,6 @@ void UnifiedConsentService::RecordSettingsHistogram() {
         metrics::SettingsHistogramValue::kUnifiedConsentGiven);
     metric_recorded = true;
   }
-  if (identity_manager_->HasPrimaryAccount() &&
-      sync_service_->GetUserSettings()->GetChosenDataTypes().Has(
-          syncer::USER_EVENTS)) {
-    RecordSettingsHistogramSample(metrics::SettingsHistogramValue::kUserEvents);
-    metric_recorded = true;
-  }
   metric_recorded |= RecordSettingsHistogramFromPref(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled, pref_service_,
       metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection);
@@ -562,12 +537,8 @@ void UnifiedConsentService::CheckConsentBumpEligibility() {
     return;
   }
 
-  syncer::ModelTypeSet user_types_without_user_events =
-      syncer::UserSelectableTypes();
-  user_types_without_user_events.Remove(syncer::USER_EVENTS);
-
   if (!sync_service_->GetUserSettings()->GetChosenDataTypes().HasAll(
-          user_types_without_user_events)) {
+          syncer::UserSelectableTypes())) {
     RecordConsentBumpSuppressReason(
         metrics::ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff);
   } else if (!AreAllOnByDefaultPrivacySettingsOn()) {

@@ -25,7 +25,7 @@ namespace {
 //   pref_groups_[EXTENSIONS] = { EXTENSION_SETTINGS }
 // etc.
 using PrefGroupsMap = std::map<ModelType, ModelTypeSet>;
-PrefGroupsMap ComputePrefGroups(bool user_events_separate_pref_group) {
+PrefGroupsMap ComputePrefGroups() {
   PrefGroupsMap pref_groups;
   pref_groups[APPS].Put(APP_NOTIFICATIONS);
   pref_groups[APPS].Put(APP_SETTINGS);
@@ -47,10 +47,7 @@ PrefGroupsMap ComputePrefGroups(bool user_events_separate_pref_group) {
   pref_groups[TYPED_URLS].Put(SESSIONS);
   pref_groups[TYPED_URLS].Put(FAVICON_IMAGES);
   pref_groups[TYPED_URLS].Put(FAVICON_TRACKING);
-
-  if (!user_events_separate_pref_group) {
-    pref_groups[TYPED_URLS].Put(USER_EVENTS);
-  }
+  pref_groups[TYPED_URLS].Put(USER_EVENTS);
 
   pref_groups[PROXY_TABS].Put(SESSIONS);
   pref_groups[PROXY_TABS].Put(FAVICON_IMAGES);
@@ -262,8 +259,7 @@ void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
 }
 
 ModelTypeSet SyncPrefs::GetPreferredDataTypes(
-    ModelTypeSet registered_types,
-    bool user_events_separate_pref_group) const {
+    ModelTypeSet registered_types) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced)) {
@@ -276,16 +272,13 @@ ModelTypeSet SyncPrefs::GetPreferredDataTypes(
       preferred_types.Put(type);
     }
   }
-  return ResolvePrefGroups(registered_types, preferred_types,
-                           user_events_separate_pref_group);
+  return ResolvePrefGroups(registered_types, preferred_types);
 }
 
 void SyncPrefs::SetPreferredDataTypes(ModelTypeSet registered_types,
-                                      ModelTypeSet preferred_types,
-                                      bool user_events_separate_pref_group) {
+                                      ModelTypeSet preferred_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  preferred_types = ResolvePrefGroups(registered_types, preferred_types,
-                                      user_events_separate_pref_group);
+  preferred_types = ResolvePrefGroups(registered_types, preferred_types);
   DCHECK(registered_types.HasAll(preferred_types));
   for (ModelType type : registered_types) {
     SetDataTypePreferred(type, preferred_types.Has(type));
@@ -474,13 +467,10 @@ void SyncPrefs::SetDataTypePreferred(ModelType type, bool is_preferred) {
 }
 
 // static
-ModelTypeSet SyncPrefs::ResolvePrefGroups(
-    ModelTypeSet registered_types,
-    ModelTypeSet types,
-    bool user_events_separate_pref_group) {
+ModelTypeSet SyncPrefs::ResolvePrefGroups(ModelTypeSet registered_types,
+                                          ModelTypeSet types) {
   ModelTypeSet types_with_groups = types;
-  for (const auto& pref_group :
-       ComputePrefGroups(user_events_separate_pref_group)) {
+  for (const auto& pref_group : ComputePrefGroups()) {
     if (types.Has(pref_group.first)) {
       types_with_groups.PutAll(pref_group.second);
     }

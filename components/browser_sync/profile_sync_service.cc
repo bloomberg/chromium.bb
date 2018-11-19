@@ -173,8 +173,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       sync_service_url_(
           syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
                                     init_params.channel)),
-      user_events_separate_pref_group_(
-          init_params.user_events_separate_pref_group),
       crypto_(
           base::BindRepeating(&ProfileSyncService::NotifyObservers,
                               base::Unretained(this)),
@@ -1373,8 +1371,7 @@ void ProfileSyncService::OnUserChoseDatatypes(
 
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   // Will only enable those types that are registered and preferred.
-  sync_prefs_.SetPreferredDataTypes(registered_types, chosen_types,
-                                    user_events_separate_pref_group_);
+  sync_prefs_.SetPreferredDataTypes(registered_types, chosen_types);
 
   // Now reconfigure the DTM.
   ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
@@ -1411,8 +1408,7 @@ bool ProfileSyncService::HasObserver(
 syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   syncer::ModelTypeSet preferred_types =
-      Union(sync_prefs_.GetPreferredDataTypes(GetRegisteredDataTypes(),
-                                              user_events_separate_pref_group_),
+      Union(sync_prefs_.GetPreferredDataTypes(GetRegisteredDataTypes()),
             syncer::ControlTypes());
   if (IsLocalSyncEnabled()) {
     preferred_types.Remove(syncer::APP_LIST);
