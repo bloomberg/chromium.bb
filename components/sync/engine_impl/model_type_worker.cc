@@ -392,13 +392,12 @@ void ModelTypeWorker::EncryptionAcceptedMaybeApplyUpdates() {
 }
 
 void ModelTypeWorker::ApplyPendingUpdates() {
-  if (BlockForEncryption())
+  if (!entries_pending_decryption_.empty())
     return;
+
   DVLOG(1) << ModelTypeToString(type_) << ": "
            << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
                                  pending_updates_.size());
-
-  DCHECK(entries_pending_decryption_.empty());
 
   const bool contains_duplicate_server_ids =
       ContainsDuplicateServerID(pending_updates_);
