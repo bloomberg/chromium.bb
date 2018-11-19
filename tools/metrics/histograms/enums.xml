@@ -29274,6 +29274,7 @@ from previous Chrome versions.
   <int value="-1832221649" label="disable-out-of-process-pac"/>
   <int value="-1826649921" label="ContextualSuggestionsButton:disabled"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
+  <int value="-1818947212" label="OutOfBlinkCors:disabled"/>
   <int value="-1817209284" label="PayWithGoogleV1:enabled"/>
   <int value="-1816066138" label="CastAllowAllIPs:enabled"/>
   <int value="-1812579951" label="ContentSuggestionsCategoryRanker:enabled"/>
@@ -31251,6 +31252,7 @@ from previous Chrome versions.
   <int value="1838990777" label="V8Future:enabled"/>
   <int value="1839740266" label="LocationHardReload:disabled"/>
   <int value="1842219851" label="enable-incognito-window-counter"/>
+  <int value="1843088575" label="OutOfBlinkCors:enabled"/>
   <int value="1844110073" label="enable-app-view"/>
   <int value="1845131710" label="Newblue:enabled"/>
   <int value="1847024354" label="enable-hotword-hardware"/>

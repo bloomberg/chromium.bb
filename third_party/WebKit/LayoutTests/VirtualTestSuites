@@ -474,92 +474,92 @@
   {
     "prefix": "outofblink-cors",
     "base": "external/wpt/fetch",
-    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "external/wpt/http",
-    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "external/wpt/referrer-policy",
-    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "external/wpt/service-workers",
-    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "external/wpt/xhr",
-    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "http/tests/fetch",
-    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "http/tests/navigation",
-    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "http/tests/security",
-    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors",
     "base": "http/tests/xmlhttprequest",
-    "args": ["--enable-features=OutOfBlinkCORS,ServiceWorkerServicification"]
+    "args": ["--enable-features=OutOfBlinkCors,ServiceWorkerServicification"]
   },
   {
     "prefix": "outofblink-cors-ns",
     "base": "external/wpt/fetch",
-    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
   },
   {
     "prefix": "outofblink-cors-ns",
     "base": "external/wpt/http",
-    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
   },
   {
     "prefix": "outofblink-cors-ns",
     "base": "external/wpt/referrer-policy",
-    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
   },
   {
     "prefix": "outofblink-cors-ns",
     "base": "external/wpt/service-workers",
-    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
   },
   {
     "prefix": "outofblink-cors-ns",
     "base": "external/wpt/xhr",
-    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
   },
   {
     "prefix": "outofblink-cors-ns",
     "base": "http/tests/fetch",
-    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
   },
   {
     "prefix": "outofblink-cors-ns",
     "base": "http/tests/navigation",
-    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
   },
   {
     "prefix": "outofblink-cors-ns",
     "base": "http/tests/security",
-    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
   },
   {
     "prefix": "outofblink-cors-ns",
     "base": "http/tests/xmlhttprequest",
-    "args": ["--enable-features=OutOfBlinkCORS,NetworkService"]
+    "args": ["--enable-features=OutOfBlinkCors,NetworkService"]
   },
   {
     "prefix": "presentation",
