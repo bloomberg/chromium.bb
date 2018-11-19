@@ -106,5 +106,8 @@ if (use_libfuzzer) {
     public_deps = [
       "//third_party/protobuf:protobuf_full",
     ]
+    sources = [
+      "dummy.cc",
+    ]
   }
 }
