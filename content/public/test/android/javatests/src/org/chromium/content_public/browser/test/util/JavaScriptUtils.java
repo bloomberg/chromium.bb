@@ -57,6 +57,19 @@ public class JavaScriptUtils {
     }
 
     /**
+     * Executes the given snippet of JavaScript code within the given WebContents and waits for a
+     * call to domAutomationController.send(). Returns the result from
+     * domAutomationController.send() in JSON format.
+     */
+    public static String runJavascriptWithAsyncResult(WebContents webContents, String code)
+            throws TimeoutException, InterruptedException {
+        DomAutomationController controller = new DomAutomationController();
+        controller.inject(webContents);
+        executeJavaScript(webContents, code);
+        return controller.waitForResult("No result for `" + code + "`");
+    }
+
+    /**
      * Executes the given snippet of JavaScript code but does not wait for the result.
      */
     public static void executeJavaScript(final WebContents webContents, final String code) {
