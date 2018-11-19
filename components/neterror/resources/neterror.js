@@ -159,8 +159,24 @@ var primaryControlOnLeft = true;
 primaryControlOnLeft = false;
 // </if>
 
-// TODO(crbug.com/883486): UI not yet implemented.
 function setAutoFetchState(scheduled, can_schedule) {
+  document.getElementById('cancel-save-page-button')
+      .classList.toggle(HIDDEN_CLASS, !scheduled);
+  document.getElementById('save-page-for-later-button')
+      .classList.toggle(HIDDEN_CLASS, scheduled || !can_schedule);
+}
+
+function savePageLaterClick() {
+  errorPageController.savePageForLater();
+  // savePageForLater will eventually trigger a call to setAutoFetchState() when
+  // it completes.
+}
+
+function cancelSavePageClick() {
+  errorPageController.cancelSavePage();
+  // setAutoFetchState is not called in response to cancelSavePage(), so do it
+  // now.
+  setAutoFetchState(false, true);
 }
 
 function toggleErrorInformationPopup() {
@@ -347,9 +363,12 @@ function onDocumentLoad() {
     detailsButton.classList.add('singular');
   }
 
+  var attemptAutoFetch = loadTimeData.valueExists('attemptAutoFetch') &&
+      loadTimeData.getValue('attemptAutoFetch');
+
   // Show control buttons.
   if (reloadButtonVisible || showSavedCopyButtonVisible ||
-      downloadButtonVisible) {
+      downloadButtonVisible || attemptAutoFetch) {
     controlButtonDiv.hidden = false;
 
     // Set the secondary button state in the cases of two call to actions.

@@ -118,7 +118,11 @@ OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
 
 #if defined(OS_ANDROID)
 bool IsAutoFetchFeatureEnabled() {
-  return base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage);
+  // This feature is incompatible with OfflineContentOnNetError, so don't allow
+  // both.
+  return GetOfflineContentOnNetErrorFeatureState() ==
+             OfflineContentOnNetErrorFeatureState::kDisabled &&
+         base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage);
 }
 #else   // OS_ANDROID
 bool IsAutoFetchFeatureEnabled() {
@@ -203,6 +207,14 @@ void NetErrorHelper::LaunchOfflineItem(const std::string& id,
 
 void NetErrorHelper::LaunchDownloadsPage() {
   core_->LaunchDownloadsPage();
+}
+
+void NetErrorHelper::SavePageForLater() {
+  core_->SavePageForLater();
+}
+
+void NetErrorHelper::CancelSavePage() {
+  core_->CancelSavePage();
 }
 
 content::RenderFrame* NetErrorHelper::GetRenderFrame() {

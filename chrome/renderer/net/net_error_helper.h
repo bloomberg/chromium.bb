@@ -68,6 +68,8 @@ class NetErrorHelper
   void LaunchOfflineItem(const std::string& id,
                          const std::string& name_space) override;
   void LaunchDownloadsPage() override;
+  void SavePageForLater() override;
+  void CancelSavePage() override;
 
   // SSLCertificateErrorPageController::Delegate implementation
   void SendCommand(

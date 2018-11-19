@@ -584,6 +584,23 @@ div.offline-content-suggestion {
   padding-top: 12px;
 }
 
+#cancel-save-page-button {
+  border: 1px solid var(--google-gray-300);
+  border-radius: 5px;
+  color: var(--google-gray-700);
+  padding: 16px;
+  text-align: center;
+}
+
+#save-page-for-later-button {
+  display: flex;
+  justify-content: center;
+}
+
+.hidden#save-page-for-later-button {
+  display: none;
+}
+
 /* Don't allow overflow when in a subframe. */
 html[subframe] body {
   overflow: hidden;
