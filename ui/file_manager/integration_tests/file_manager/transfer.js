@@ -109,42 +109,31 @@ function transferBetweenVolumes(transferInfo) {
   let srcContents;
   if (transferInfo.source.isTeamDrive) {
     srcContents =
-        TestEntryInfo
-            .getExpectedRows(transferInfo.source.initialEntries.filter(
-                entry => entry.type !== EntryType.TEAM_DRIVE &&
-                    entry.teamDriveName === transferInfo.source.volumeName))
-            .sort();
+        TestEntryInfo.getExpectedRows(transferInfo.source.initialEntries.filter(
+            entry => entry.type !== EntryType.TEAM_DRIVE &&
+                entry.teamDriveName === transferInfo.source.volumeName));
   } else {
     srcContents =
-        TestEntryInfo
-            .getExpectedRows(transferInfo.source.initialEntries.filter(
-                entry => entry.type !== EntryType.TEAM_DRIVE &&
-                    entry.teamDriveName === ''))
-            .sort();
+        TestEntryInfo.getExpectedRows(transferInfo.source.initialEntries.filter(
+            entry => entry.type !== EntryType.TEAM_DRIVE &&
+                entry.teamDriveName === ''));
   }
   const myDriveContent =
-      TestEntryInfo
-          .getExpectedRows(transferInfo.source.initialEntries.filter(
-              entry => entry.type !== EntryType.TEAM_DRIVE &&
-                  entry.teamDriveName === ''))
-          .sort();
+      TestEntryInfo.getExpectedRows(transferInfo.source.initialEntries.filter(
+          entry => entry.type !== EntryType.TEAM_DRIVE &&
+              entry.teamDriveName === ''));
 
   let dstContents;
   if (transferInfo.destination.isTeamDrive) {
-    dstContents =
-        TestEntryInfo
-            .getExpectedRows(transferInfo.destination.initialEntries.filter(
-                entry => entry.type !== EntryType.TEAM_DRIVE &&
-                    entry.teamDriveName ===
-                        transferInfo.destination.volumeName))
-            .sort();
+    dstContents = TestEntryInfo.getExpectedRows(
+        transferInfo.destination.initialEntries.filter(
+            entry => entry.type !== EntryType.TEAM_DRIVE &&
+                entry.teamDriveName === transferInfo.destination.volumeName));
   } else {
-    dstContents =
-        TestEntryInfo
-            .getExpectedRows(transferInfo.destination.initialEntries.filter(
-                entry => entry.type !== EntryType.TEAM_DRIVE &&
-                    entry.teamDriveName === ''))
-            .sort();
+    dstContents = TestEntryInfo.getExpectedRows(
+        transferInfo.destination.initialEntries.filter(
+            entry => entry.type !== EntryType.TEAM_DRIVE &&
+                entry.teamDriveName === ''));
   }
 
   const localFiles = BASIC_LOCAL_ENTRY_SET;

@@ -97,17 +97,14 @@ testcase.driveOpenSidebarOffline = function() {
       remoteCall.callRemoteTestUtil(
         'selectVolume', appId, ['drive_offline'], this.next);
     },
-    // Wait until the file list is updated.
+    // Check: the file list should display the offline file set.
     function(result) {
       chrome.test.assertFalse(!result);
-      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
-          then(this.next);
+      remoteCall
+          .waitForFiles(appId, TestEntryInfo.getExpectedRows(OFFLINE_ENTRY_SET))
+          .then(this.next);
     },
-    // Verify the file list.
-    function(actualFilesAfter) {
-      chrome.test.assertEq(
-          TestEntryInfo.getExpectedRows(OFFLINE_ENTRY_SET).sort(),
-          actualFilesAfter);
+    function() {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -201,39 +198,33 @@ testcase.driveClickFirstSearchResult = function() {
   var appId;
   var steps = getStepsForSearchResultsAutoComplete();
   steps.push(
-    function(id) {
-      appId = id;
-      remoteCall.callRemoteTestUtil(
-          'fakeKeyDown', appId,
-          ['#autocomplete-list', 'ArrowDown', false, false, false],
-          this.next);
-    },
-    function(result) {
-      chrome.test.assertTrue(result);
-      remoteCall.waitForElement(
-          appId,
-          ['#autocomplete-list li[selected]']).
-          then(this.next);
-    },
-    function(result) {
-      remoteCall.callRemoteTestUtil(
-          'fakeMouseDown', appId,
-          ['#autocomplete-list li[selected]'],
-          this.next);
-    },
-    function(result)
-    {
-      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
-      then(this.next);
-    },
-    function(actualFilesAfter)
-    {
-      chrome.test.assertEq(
-          TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET).sort(),
-          actualFilesAfter);
-      checkIfNoErrorsOccured(this.next);
-    }
-  );
+      function(id) {
+        appId = id;
+        remoteCall.callRemoteTestUtil(
+            'fakeKeyDown', appId,
+            ['#autocomplete-list', 'ArrowDown', false, false, false],
+            this.next);
+      },
+      function(result) {
+        chrome.test.assertTrue(!!result);
+        remoteCall.waitForElement(appId, ['#autocomplete-list li[selected]'])
+            .then(this.next);
+      },
+      function(result) {
+        remoteCall.callRemoteTestUtil(
+            'fakeMouseDown', appId, ['#autocomplete-list li[selected]'],
+            this.next);
+      },
+      function(result) {
+        chrome.test.assertTrue(!!result);
+        remoteCall
+            .waitForFiles(
+                appId, TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET))
+            .then(this.next);
+      },
+      function() {
+        checkIfNoErrorsOccured(this.next);
+      });
 
   StepsRunner.run(steps);
 };
@@ -252,18 +243,19 @@ testcase.drivePressEnterToSearch = function() {
             'fakeEvent', appId, ['#search-box cr-input', 'focus'], this.next);
       },
       function(result) {
+        chrome.test.assertTrue(!!result);
         remoteCall.callRemoteTestUtil(
             'fakeKeyDown', appId,
             ['#search-box cr-input', 'Enter', false, false, false], this.next);
       },
       function(result) {
-        remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length)
+        chrome.test.assertTrue(!!result);
+        remoteCall
+            .waitForFiles(
+                appId, TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET))
             .then(this.next);
       },
-      function(actualFilesAfter) {
-        chrome.test.assertEq(
-            TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET).sort(),
-            actualFilesAfter);
+      function() {
         checkIfNoErrorsOccured(this.next);
       });
 
