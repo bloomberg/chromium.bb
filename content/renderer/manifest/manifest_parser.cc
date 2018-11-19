@@ -15,12 +15,35 @@
 #include "base/values.h"
 #include "content/public/common/manifest_util.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
+#include "net/base/mime_util.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_css_parser.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
+
+namespace {
+
+bool IsValidMimeType(const std::string& mime_type) {
+  if (mime_type.length() > 0 && mime_type.at(0) == '.')
+    return true;
+  return net::ParseMimeTypeWithoutParameter(mime_type, nullptr, nullptr);
+}
+
+bool VerifyFiles(const std::vector<blink::Manifest::ShareTargetFile>& files) {
+  for (const blink::Manifest::ShareTargetFile& file : files) {
+    for (const base::string16& utf_accept : file.accept) {
+      std::string accept_type =
+          base::ToLowerASCII(base::UTF16ToASCII(utf_accept));
+      if (!IsValidMimeType(accept_type))
+        return false;
+    }
+  }
+  return true;
+}
+
+}  // anonymous namespace
 
 namespace content {
 
@@ -342,6 +365,122 @@ std::vector<blink::Manifest::ImageResource> ManifestParser::ParseIcons(
   return icons;
 }
 
+base::string16 ManifestParser::ParseShareTargetFileName(
+    const base::DictionaryValue& file) {
+  if (!file.HasKey("name")) {
+    AddErrorInfo("property 'name' missing.");
+    return base::string16();
+  }
+
+  base::string16 value;
+  if (!file.GetString("name", &value)) {
+    AddErrorInfo("property 'name' ignored, type string expected.");
+    return base::string16();
+  }
+  return value;
+}
+
+std::vector<base::string16> ManifestParser::ParseShareTargetFileAccept(
+    const base::DictionaryValue& dictionary) {
+  std::vector<base::string16> accept_types;
+  if (!dictionary.HasKey("accept")) {
+    return accept_types;
+  }
+
+  const base::ListValue* accept_list = nullptr;
+  if (!dictionary.GetList("accept", &accept_list)) {
+    AddErrorInfo("property 'accept' ignored, type array expected.");
+    accept_types.push_back(base::ASCIIToUTF16("invalid mimetype"));
+    return accept_types;
+  }
+
+  for (const base::Value& accept_value : accept_list->GetList())
+    accept_types.push_back(base::ASCIIToUTF16(accept_value.GetString()));
+
+  return accept_types;
+}
+
+std::vector<blink::Manifest::ShareTargetFile>
+ManifestParser::ParseShareTargetFiles(
+    const base::DictionaryValue& share_target_params) {
+  std::vector<blink::Manifest::ShareTargetFile> files;
+  if (!share_target_params.HasKey("files"))
+    return files;
+
+  const base::ListValue* file_list = nullptr;
+  if (!share_target_params.GetList("files", &file_list)) {
+    AddErrorInfo("property 'files' ignored, type array expected.");
+    return files;
+  }
+
+  for (const base::Value& file_value : file_list->GetList()) {
+    const base::DictionaryValue* file_dictionary = nullptr;
+    if (!file_value.GetAsDictionary(&file_dictionary)) {
+      AddErrorInfo("files must be a sequence of non-empty file entires.");
+      continue;
+    }
+
+    blink::Manifest::ShareTargetFile file;
+    file.name = ParseShareTargetFileName(*file_dictionary);
+    file.accept = ParseShareTargetFileAccept(*file_dictionary);
+    files.push_back(file);
+  }
+
+  return files;
+}
+
+base::Optional<blink::Manifest::ShareTarget::Method>
+ManifestParser::ParseShareTargetMethod(
+    const base::DictionaryValue& share_target_dict) {
+  if (!share_target_dict.HasKey("method")) {
+    AddErrorInfo(
+        "Method should be set to either GET or POST. It currently defaults to "
+        "GET.");
+    return base::Optional<blink::Manifest::ShareTarget::Method>(
+        blink::Manifest::ShareTarget::Method::kGet);
+  }
+
+  base::string16 value;
+  if (!share_target_dict.GetString("method", &value))
+    return base::nullopt;
+
+  std::string method = base::ToUpperASCII(base::UTF16ToASCII(value));
+  if (method == "GET")
+    return blink::Manifest::ShareTarget::Method::kGet;
+  if (method == "POST")
+    return blink::Manifest::ShareTarget::Method::kPost;
+
+  return base::nullopt;
+}
+
+base::Optional<blink::Manifest::ShareTarget::Enctype>
+ManifestParser::ParseShareTargetEnctype(
+    const base::DictionaryValue& share_target_dict) {
+  if (!share_target_dict.HasKey("enctype")) {
+    AddErrorInfo(
+        "Enctype should be set to either application/x-www-form-urlencoded or "
+        "multipart/form-data. It currently defaults to "
+        "application/x-www-form-urlencoded");
+    return base::Optional<blink::Manifest::ShareTarget::Enctype>(
+        blink::Manifest::ShareTarget::Enctype::kApplication);
+  }
+
+  base::string16 value;
+  if (!share_target_dict.GetString("enctype", &value)) {
+    return base::nullopt;
+  }
+
+  std::string enctype = base::ToLowerASCII(base::UTF16ToASCII(value));
+  if (enctype == "application/x-www-form-urlencoded")
+    return base::Optional<blink::Manifest::ShareTarget::Enctype>(
+        blink::Manifest::ShareTarget::Enctype::kApplication);
+  if (enctype == "multipart/form-data")
+    return base::Optional<blink::Manifest::ShareTarget::Enctype>(
+        blink::Manifest::ShareTarget::Enctype::kMultipart);
+
+  return base::nullopt;
+}
+
 blink::Manifest::ShareTargetParams ManifestParser::ParseShareTargetParams(
     const base::DictionaryValue& share_target_params) {
   blink::Manifest::ShareTargetParams params;
@@ -350,6 +489,7 @@ blink::Manifest::ShareTargetParams ManifestParser::ParseShareTargetParams(
   params.text = ParseString(share_target_params, "text", Trim);
   params.title = ParseString(share_target_params, "title", Trim);
   params.url = ParseString(share_target_params, "url", Trim);
+  params.files = ParseShareTargetFiles(share_target_params);
   return params;
 }
 
@@ -370,6 +510,11 @@ base::Optional<blink::Manifest::ShareTarget> ManifestParser::ParseShareTarget(
     return base::nullopt;
   }
 
+  base::Optional<blink::Manifest::ShareTarget::Method> method =
+      ParseShareTargetMethod(*share_target_dict);
+  base::Optional<blink::Manifest::ShareTarget::Enctype> enctype =
+      ParseShareTargetEnctype(*share_target_dict);
+
   const base::DictionaryValue* share_target_params_dict = nullptr;
   if (!share_target_dict->GetDictionary("params", &share_target_params_dict)) {
     AddErrorInfo(
@@ -379,6 +524,58 @@ base::Optional<blink::Manifest::ShareTarget> ManifestParser::ParseShareTarget(
   }
 
   share_target.params = ParseShareTargetParams(*share_target_params_dict);
+
+  if (method == base::nullopt) {
+    AddErrorInfo(
+        "invalid method. Allowed methods are:"
+        "GET and POST.");
+    return base::nullopt;
+  }
+
+  if (enctype == base::nullopt) {
+    AddErrorInfo(
+        "invalid enctype. Allowed enctypes are:"
+        "application/x-www-form-urlencoded and multipart/form-data.");
+    return base::nullopt;
+  }
+
+  if (method == base::Optional<blink::Manifest::ShareTarget::Method>(
+                    blink::Manifest::ShareTarget::Method::kGet)) {
+    share_target.method = blink::Manifest::ShareTarget::Method::kGet;
+  } else {
+    share_target.method = blink::Manifest::ShareTarget::Method::kPost;
+  }
+
+  if (enctype == base::Optional<blink::Manifest::ShareTarget::Enctype>(
+                     blink::Manifest::ShareTarget::Enctype::kMultipart)) {
+    share_target.enctype = blink::Manifest::ShareTarget::Enctype::kMultipart;
+  } else {
+    share_target.enctype = blink::Manifest::ShareTarget::Enctype::kApplication;
+  }
+
+  if (share_target.method == blink::Manifest::ShareTarget::Method::kGet) {
+    if (share_target.enctype ==
+        blink::Manifest::ShareTarget::Enctype::kMultipart) {
+      AddErrorInfo(
+          "invalid enctype for GET method. Only "
+          "application/x-www-form-urlencoded is allowed.");
+      return base::nullopt;
+    }
+  }
+
+  if (share_target.params.files.size() > 0) {
+    if (share_target.method != blink::Manifest::ShareTarget::Method::kPost ||
+        share_target.enctype !=
+            blink::Manifest::ShareTarget::Enctype::kMultipart) {
+      AddErrorInfo("files are only supported with multipart/form-data POST.");
+      return base::nullopt;
+    }
+  }
+
+  if (!VerifyFiles(share_target.params.files)) {
+    AddErrorInfo("invalid mime type inside files.");
+    return base::nullopt;
+  }
 
   return base::Optional<blink::Manifest::ShareTarget>(share_target);
 }

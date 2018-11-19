@@ -83,6 +83,14 @@ struct ManifestImageResource {
   array<Purpose> purpose;
 };
 
+// Structure representing a share target file.
+struct ManifestShareTargetFile {
+  mojo_base.mojom.String16? name;
+
+  // A sequence of accepted MIME types.
+  array<mojo_base.mojom.String16> accept;
+};
+
 // Structure representing a related application.
 struct ManifestRelatedApplication {
   // The platform on which the application can be found. This can be any
@@ -106,12 +114,39 @@ struct ManifestShareTargetParams {
   mojo_base.mojom.String16? title;
   mojo_base.mojom.String16? text;
   mojo_base.mojom.String16? url;
+
+  // An array of share target files, which is represented by two members:
+  // name and accept.
+  array<ManifestShareTargetFile>? files;
 };
 
 // Structure representing how a Web Share target handles an incoming share.
 struct ManifestShareTarget {
+  // This enum corresponds to HTTP methods, where kGet corresponds to GET
+  // and kPost corresponds to POST.
+  enum Method {
+    kGet,
+    kPost,
+  };
+
+  // This enum corresponds to HTTP enctype, where kApplication corresponds
+  // to application/x-www-url-encoded and kMultipart corresponds to
+  // multipart/form-data.
+  enum Enctype {
+    kApplication,
+    kMultipart,
+  };
+
   // The URL that will be opened when the share target is invoked.
   url.mojom.Url action;
+
+  // The method that specifies the HTTP request method for web share target.
+  Method method;
+
+  // The enctype that specifies how share data is encoded in a POST request.
+  // It is ignored when method is "GET".
+  Enctype enctype;
+
   ManifestShareTargetParams params;
 };
 

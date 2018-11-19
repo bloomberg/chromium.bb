@@ -137,6 +137,25 @@ bool StructTraits<blink::mojom::ManifestRelatedApplicationDataView,
   return !(out->url.is_empty() && out->id.is_null());
 }
 
+bool StructTraits<blink::mojom::ManifestShareTargetFileDataView,
+                  ::blink::Manifest::ShareTargetFile>::
+    Read(blink::mojom::ManifestShareTargetFileDataView data,
+         ::blink::Manifest::ShareTargetFile* out) {
+  TruncatedString16 name;
+  if (!data.ReadName(&name))
+    return false;
+
+  if (!name.string)
+    return false;
+
+  out->name = *std::move(name.string);
+
+  if (!data.ReadAccept(&out->accept))
+    return false;
+
+  return true;
+}
+
 bool StructTraits<blink::mojom::ManifestShareTargetParamsDataView,
                   ::blink::Manifest::ShareTargetParams>::
     Read(blink::mojom::ManifestShareTargetParamsDataView data,
@@ -154,6 +173,9 @@ bool StructTraits<blink::mojom::ManifestShareTargetParamsDataView,
     return false;
   out->url = base::NullableString16(std::move(string.string));
 
+  if (!data.ReadFiles(&out->files))
+    return false;
+
   return true;
 }
 
@@ -163,6 +185,13 @@ bool StructTraits<blink::mojom::ManifestShareTargetDataView,
          ::blink::Manifest::ShareTarget* out) {
   if (!data.ReadAction(&out->action))
     return false;
+
+  if (!data.ReadMethod(&out->method))
+    return false;
+
+  if (!data.ReadEnctype(&out->enctype))
+    return false;
+
   return data.ReadParams(&out->params);
 }
 
