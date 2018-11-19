@@ -368,9 +368,9 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
     }
   }
 
-  void OnDiskImageCreated(
-      CrostiniResult result,
-      vm_tools::concierge::DiskImageStatus status) override {
+  void OnDiskImageCreated(CrostiniResult result,
+                          vm_tools::concierge::DiskImageStatus status,
+                          int64_t disk_size_available) override {
     if (abort_on_disk_image_created_) {
       Abort();
     }

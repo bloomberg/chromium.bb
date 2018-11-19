@@ -174,9 +174,9 @@ class CrostiniManager : public KeyedService,
     virtual ~RestartObserver() {}
     virtual void OnComponentLoaded(CrostiniResult result) = 0;
     virtual void OnConciergeStarted(CrostiniResult result) = 0;
-    virtual void OnDiskImageCreated(
-        CrostiniResult result,
-        vm_tools::concierge::DiskImageStatus status) = 0;
+    virtual void OnDiskImageCreated(CrostiniResult result,
+                                    vm_tools::concierge::DiskImageStatus status,
+                                    int64_t disk_size_available) = 0;
     virtual void OnVmStarted(CrostiniResult result) = 0;
     virtual void OnContainerDownloading(int32_t download_percent) = 0;
     virtual void OnContainerCreated(CrostiniResult result) = 0;
