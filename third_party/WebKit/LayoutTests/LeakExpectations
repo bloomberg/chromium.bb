@@ -62,6 +62,34 @@ crbug.com/809609 [ Linux ] editing/pasteboard/drop-file-svg.html [ Pass Leak ]
 crbug.com/809609 [ Linux ] editing/inserting/insert_div_with_style.html [ Pass Leak ]
 
 # -----------------------------------------------------------------
+# Not revert suspected CL at lukasza@ request.  Suspecting that this is
+# an OOPIF-related issue with leak detection in the test harness, rather
+# than a real leak.
+#
+# Leaks that repro only with site-per-process:
+crbug.com/906809 external/wpt/html/browsers/the-window-object/security-window/window-security.https.html [ Pass Leak ]
+crbug.com/906809 http/tests/feature-policy/fullscreen-allowed-by-container-policy-relocate.html [ Pass Leak ]
+crbug.com/906809 http/tests/feature-policy/fullscreen-allowed-by-container-policy.html [ Pass Leak ]
+crbug.com/906809 http/tests/feature-policy/fullscreen-disabled.php [ Pass Leak ]
+crbug.com/906809 http/tests/feature-policy/fullscreen-enabledforall.php [ Pass Leak ]
+crbug.com/906809 http/tests/feature-policy/fullscreen-enabledforself.php [ Pass Leak ]
+crbug.com/906809 http/tests/html/validation-bubble-oopif.html [ Pass Leak ]
+crbug.com/906809 http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Pass Leak ]
+crbug.com/906809 http/tests/security/referrer-policy-redirect-link.html [ Pass Leak ]
+crbug.com/906809 http/tests/security/vibration/vibrate-in-cross-origin-iframe-with-user-gesture-allowed.html [ Pass Leak ]
+crbug.com/906809 http/tests/security/xss-DENIED-window-open-javascript-url-with-spaces.html [ Pass Leak ]
+crbug.com/906809 http/tests/security/xss-DENIED-window-open-javascript-url.html [ Pass Leak ]
+crbug.com/906809 virtual/outofblink-cors-ns/http/tests/security/referrer-policy-redirect-link.html [ Pass Leak ]
+crbug.com/906809 virtual/outofblink-cors-ns/http/tests/security/vibration/vibrate-in-cross-origin-iframe-with-user-gesture-allowed.html [ Pass Leak ]
+crbug.com/906809 virtual/outofblink-cors-ns/http/tests/security/xss-DENIED-window-open-javascript-url-with-spaces.html [ Pass Leak ]
+crbug.com/906809 virtual/outofblink-cors-ns/http/tests/security/xss-DENIED-window-open-javascript-url.html [ Pass Leak ]
+crbug.com/906809 virtual/outofblink-cors/http/tests/security/referrer-policy-redirect-link.html [ Pass Leak ]
+crbug.com/906809 virtual/outofblink-cors/http/tests/security/vibration/vibrate-in-cross-origin-iframe-with-user-gesture-allowed.html [ Pass Leak ]
+crbug.com/906809 virtual/outofblink-cors/http/tests/security/xss-DENIED-window-open-javascript-url-with-spaces.html [ Pass Leak ]
+crbug.com/906809 virtual/outofblink-cors/http/tests/security/xss-DENIED-window-open-javascript-url.html [ Pass Leak ]
+crbug.com/906809 virtual/user-activation-v2/http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Pass Leak ]
+
+# -----------------------------------------------------------------
 # Sheriff 2018-04-23
 # -----------------------------------------------------------------
 crbug.com/836278 [ Linux ] external/wpt/offscreen-canvas/convert-to-blob/offscreencanvas.convert.to.blob.html [ Pass Leak ]
