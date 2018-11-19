@@ -1384,9 +1384,9 @@ GLenum Texture::SetParameteri(
   switch (pname) {
     case GL_TEXTURE_MIN_LOD:
     case GL_TEXTURE_MAX_LOD:
-      {
-        GLfloat fparam = static_cast<GLfloat>(param);
-        return SetParameterf(feature_info, pname, fparam);
+    case GL_TEXTURE_MAX_ANISOTROPY_EXT: {
+      GLfloat fparam = static_cast<GLfloat>(param);
+      return SetParameterf(feature_info, pname, fparam);
       }
     case GL_TEXTURE_MIN_FILTER:
       if (!feature_info->validators()->texture_min_filter_mode.IsValid(param)) {
@@ -1442,11 +1442,6 @@ GLenum Texture::SetParameteri(
       }
       UpdateMaxLevel(param);
       break;
-    case GL_TEXTURE_MAX_ANISOTROPY_EXT:
-      if (param < 1) {
-        return GL_INVALID_VALUE;
-      }
-      break;
     case GL_TEXTURE_USAGE_ANGLE:
       if (!feature_info->validators()->texture_usage.IsValid(param)) {
         return GL_INVALID_ENUM;
@@ -1484,6 +1479,7 @@ GLenum Texture::SetParameteri(
       break;
     case GL_TEXTURE_IMMUTABLE_FORMAT:
     case GL_TEXTURE_IMMUTABLE_LEVELS:
+    case GL_REQUIRED_TEXTURE_IMAGE_UNITS_OES:
       return GL_INVALID_ENUM;
     default:
       NOTREACHED();
@@ -1497,24 +1493,9 @@ GLenum Texture::SetParameteri(
 
 GLenum Texture::SetParameterf(
     const FeatureInfo* feature_info, GLenum pname, GLfloat param) {
+  // Only handle float parameters here. Handle everything else, including error
+  // cases, in SetParameteri.
   switch (pname) {
-    case GL_TEXTURE_MIN_FILTER:
-    case GL_TEXTURE_MAG_FILTER:
-    case GL_TEXTURE_WRAP_R:
-    case GL_TEXTURE_WRAP_S:
-    case GL_TEXTURE_WRAP_T:
-    case GL_TEXTURE_COMPARE_FUNC:
-    case GL_TEXTURE_COMPARE_MODE:
-    case GL_TEXTURE_BASE_LEVEL:
-    case GL_TEXTURE_MAX_LEVEL:
-    case GL_TEXTURE_USAGE_ANGLE:
-    case GL_TEXTURE_SWIZZLE_R:
-    case GL_TEXTURE_SWIZZLE_G:
-    case GL_TEXTURE_SWIZZLE_B:
-    case GL_TEXTURE_SWIZZLE_A: {
-      GLint iparam = static_cast<GLint>(std::round(param));
-      return SetParameteri(feature_info, pname, iparam);
-    }
     case GL_TEXTURE_MIN_LOD:
       sampler_state_.min_lod = param;
       break;
@@ -1526,12 +1507,10 @@ GLenum Texture::SetParameterf(
         return GL_INVALID_VALUE;
       }
       break;
-    case GL_TEXTURE_IMMUTABLE_FORMAT:
-    case GL_TEXTURE_IMMUTABLE_LEVELS:
-      return GL_INVALID_ENUM;
-    default:
-      NOTREACHED();
-      return GL_INVALID_ENUM;
+    default: {
+      GLint iparam = static_cast<GLint>(std::round(param));
+      return SetParameteri(feature_info, pname, iparam);
+    }
   }
   return GL_NO_ERROR;
 }
