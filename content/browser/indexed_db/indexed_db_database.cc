@@ -870,7 +870,7 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
         // indexeddb value. crbug.com/682363
         IndexedDBValue copy = *value;
         changes->observations.back()->value =
-            IndexedDBCallbacks::ConvertAndEraseValue(&copy);
+            IndexedDBValue::ConvertAndEraseValue(&copy);
       }
     }
   }

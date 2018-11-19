@@ -991,6 +991,7 @@ jumbo_source_set("browser") {
     "indexed_db/indexed_db_quota_client.h",
     "indexed_db/indexed_db_reporting.cc",
     "indexed_db/indexed_db_reporting.h",
+    "indexed_db/indexed_db_return_value.cc",
     "indexed_db/indexed_db_return_value.h",
     "indexed_db/indexed_db_tombstone_sweeper.cc",
     "indexed_db/indexed_db_tombstone_sweeper.h",
