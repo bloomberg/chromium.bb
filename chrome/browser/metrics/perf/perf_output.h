@@ -26,11 +26,11 @@ class PerfOutputCall {
   // - Output from "perf record", in PerfDataProto format, OR
   // - Output from "perf stat", in PerfStatProto format, OR
   // - The empty string if there was an error.
-  using DoneCallback = base::Callback<void(const std::string& perf_stdout)>;
+  using DoneCallback = base::OnceCallback<void(const std::string& perf_stdout)>;
 
   PerfOutputCall(base::TimeDelta duration,
                  const std::vector<std::string>& perf_args,
-                 const DoneCallback& callback);
+                 DoneCallback callback);
   ~PerfOutputCall();
 
  private:
