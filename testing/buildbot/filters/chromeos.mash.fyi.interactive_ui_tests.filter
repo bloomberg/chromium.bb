@@ -34,6 +34,8 @@
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ChromeVoxNextTabRecovery/1
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ChromeVoxShiftSearch/0
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ChromeVoxShiftSearch/1
+-TestAsNormalAndGuestUser/SpokenFeedbackTest.FocusShelf/0
+-TestAsNormalAndGuestUser/SpokenFeedbackTest.FocusShelf/1
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.FocusToolbar/0
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.FocusToolbar/1
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OpenStatusTray/0
@@ -45,6 +47,7 @@
 -TabDragging/DetachToBrowserTabDragControllerTest.DetachToOwnWindowFromMaximizedWindow/1
 -TabDragging/DetachToBrowserTabDragControllerTest.DetachToOwnWindowWhileInImmersiveFullscreenMode/1
 -TabDragging/DetachToBrowserTabDragControllerTest.DoNotObserveDraggedWidgetAfterDragEnds/1
+-TabDragging/DetachToBrowserTabDragControllerTest.DragToOverviewNewWindowItem/1
 -TabDragging/DetachToBrowserTabDragControllerTest.DragToSeparateWindow/1
 -TabDragging/DetachToBrowserTabDragControllerTest.DragWithMaskedWindows/0
 -TabDragging/DetachToBrowserTabDragControllerTest.DragWithMaskedWindows/1
@@ -64,6 +67,7 @@
 -WebViewFocusInteractiveTest.FrameInGuestWontStealFocus
 
 # screen lock
+-ScreenLockerTest.TestBasic
 -ScreenLockerTest.TestShowTwice
 
 # Access of ash::Shell.

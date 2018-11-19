@@ -9,6 +9,20 @@
 
 # Unknown failure.
 -BrowserTabRestoreTest.*
+-NoBestEffortTasksTest.LoadAndPaintAboutBlank
+-NoBestEffortTasksTest.LoadAndPaintFromNetwork
+-ProcessMemoryMetricsEmitterTest.FetchDuringTrace
+-SwitchAccessPredicateTest.IsActionable
+-SwitchAccessPredicateTest.IsGroup
+-SwitchAccessPredicateTest.IsInterestingSubtree
+-SwitchAccessPredicateTest.IsSubtreeLeaf
+-SwitchAccessPredicateTest.LeafPredicate
+-SwitchAccessPredicateTest.RootPredicate
+-SwitchAccessPredicateTest.VisitPredicate
+-TrayAccessibilityLoginTestInstance/TrayAccessibilityLoginTest.ShowMenuWithShowOnLoginScreen/0
+-TrayAccessibilityLoginTestInstance/TrayAccessibilityLoginTest.ShowMenuWithShowOnLoginScreen/1
+-WebRtcGetDisplayMediaBrowserTestWithFakeUI.GetDisplayMedia/2
+-WebRtcGetDisplayMediaBrowserTestWithFakeUI.GetDisplayMediaWithConstraints/2
 
 # Volume adjustment fails.
 -WizardControllerTest.*ChromeVox
