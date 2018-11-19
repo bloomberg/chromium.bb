@@ -848,6 +848,8 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-003.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-block-sibling-003.xht [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-list-item-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-margin-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-margin-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Failure ]
@@ -2845,9 +2847,6 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.ht
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
-crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-list-item-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 crbug.com/626703 external/wpt/feature-policy/reporting/unsized-media-reporting.html [ Timeout ]
 crbug.com/626703 external/wpt/feature-policy/reporting/usb-reporting.https.html [ Timeout ]
 crbug.com/626703 virtual/unified-autoplay/external/wpt/feature-policy/reporting/payment-reporting.https.html [ Timeout ]
@@ -3698,6 +3697,7 @@ crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-
 crbug.com/792435 external/wpt/css/css-multicol/multicol-rule-004.xht [ Failure ]
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-inset-000.xht [ Failure ]
 crbug.com/792437 external/wpt/css/css-multicol/multicol-rule-outset-000.xht [ Failure ]
+crbug.com/906385 external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 crbug.com/892817 external/wpt/css/css-multicol/multicol-span-all-margin-bottom-001.xht [ Failure ]
 crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
 crbug.com/792446 external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
