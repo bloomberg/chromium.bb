@@ -62,7 +62,9 @@ public class FeedSchedulerBridge implements FeedScheduler {
 
     @Override
     public int shouldSessionRequestData(SessionManagerState sessionManagerState) {
-        assert mNativeBridge != 0;
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeBridge == 0) return SchedulerApi.RequestBehavior.UNKNOWN;
 
         @NativeRequestBehavior
         int nativeBehavior = nativeShouldSessionRequestData(mNativeBridge,

@@ -33,7 +33,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -250,7 +249,6 @@ public class FeedNewTabPageTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/888996")
     @Feature({"FeedNewTabPage"})
     public void testFeedDisabledByPolicy() throws Exception {
         final boolean pref = ThreadUtils.runOnUiThreadBlocking(
@@ -269,7 +267,6 @@ public class FeedNewTabPageTest {
         // policy as child.
         ThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
                 Pref.NTP_ARTICLES_SECTION_ENABLED, false));
-        ViewUtils.waitForStableView(rootView);
         Assert.assertNotNull(mNtp.getScrollViewForPolicy());
         Assert.assertNull(mNtp.getStream());
         Assert.assertEquals(1, rootView.getChildCount());
@@ -281,7 +278,6 @@ public class FeedNewTabPageTest {
         ViewGroup rootView2 = (ViewGroup) ntp2.getView();
 
         // Verify that NTP root view contains only the view for policy as child.
-        ViewUtils.waitForStableView(rootView2);
         Assert.assertNotNull(ntp2.getScrollViewForPolicy());
         Assert.assertNull(ntp2.getStream());
         Assert.assertEquals(1, rootView2.getChildCount());
@@ -291,7 +287,6 @@ public class FeedNewTabPageTest {
         // don't re-enable the Feed until the next restart.
         ThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
                 Pref.NTP_ARTICLES_SECTION_ENABLED, true));
-        ViewUtils.waitForStableView(rootView2);
         Assert.assertNotNull(ntp2.getScrollViewForPolicy());
         Assert.assertNull(ntp2.getStream());
         Assert.assertEquals(1, rootView2.getChildCount());
@@ -299,7 +294,6 @@ public class FeedNewTabPageTest {
 
         // Switch to the old tab. Verify the NTP root view is the view for policy.
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), mTab.getId());
-        ViewUtils.waitForStableView(rootView);
         Assert.assertNotNull(mNtp.getScrollViewForPolicy());
         Assert.assertNull(mNtp.getStream());
         Assert.assertEquals(1, rootView.getChildCount());
