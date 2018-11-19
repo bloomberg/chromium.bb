@@ -5,4 +5,4 @@
 #include "ios/chrome/browser/ui/sad_tab/features.h"
 
 const base::Feature kPresentSadTabInViewController{
-    "PresentSadTabInViewController", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PresentSadTabInViewController", base::FEATURE_ENABLED_BY_DEFAULT};
