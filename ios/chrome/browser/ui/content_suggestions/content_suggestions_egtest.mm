@@ -156,11 +156,11 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   ios::ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
 
-  // Resets the Service associated with this browserState to a service with
-  // default providers. The previous service is deleted.
+  // Resets the Service associated with this browserState to a new service with
+  // no providers. The previous service is deleted.
   IOSChromeContentSuggestionsServiceFactory::GetInstance()->SetTestingFactory(
       browserState,
-      base::BindRepeating(&CreateChromeContentSuggestionsServiceWithProviders));
+      base::BindRepeating(&CreateChromeContentSuggestionsService));
   [super tearDown];
 }
 
