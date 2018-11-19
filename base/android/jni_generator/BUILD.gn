@@ -80,6 +80,14 @@ group("jni_generator_tests") {
   ]
 }
 
+java_cpp_template("processor_args_java") {
+  package_path = "org/chromium/jni_generator"
+  sources = [
+    "ProcessorArgs.template",
+  ]
+  defines = [ "IS_JAVA_DEBUG_VALUE=$is_java_debug" ]
+}
+
 java_annotation_processor("jni_processor") {
   java_files = [ "java/src/org/chromium/jni_generator/JniProcessor.java" ]
 
@@ -93,4 +101,6 @@ java_annotation_processor("jni_processor") {
     "//third_party/auto:auto_service_java",
     "//third_party/guava:guava_java",
   ]
+
+  srcjar_deps = [ ":processor_args_java" ]
 }

@@ -249,6 +249,10 @@ if (enable_java_templates) {
         rebase_path(_jni_generator_include, _jni_output_dir),
       ]
 
+      if (!is_java_debug) {
+        args += [ "--use_proxy_hash" ]
+      }
+
       if (enable_profiling) {
         args += [ "--enable_profiling" ]
       }
@@ -435,6 +439,17 @@ if (enable_java_templates) {
         "--depfile",
         rebase_path(depfile, root_build_dir),
       ]
+
+      if (!is_java_debug) {
+        args += [ "--use_proxy_hash" ]
+      }
+
+      if (defined(invoker.exception_files)) {
+        _rebase_exception_java_files =
+            rebase_path(invoker.exception_files, root_build_dir)
+        args += [ "--no_register_java=$_rebase_exception_java_files" ]
+      }
+
       if (defined(invoker.header_output)) {
         outputs += [ invoker.header_output ]
         args += [
@@ -442,11 +457,13 @@ if (enable_java_templates) {
           rebase_path(invoker.header_output, root_build_dir),
         ]
       }
+
       if (defined(invoker.sources_blacklist)) {
         _rebase_sources_blacklist =
             rebase_path(invoker.sources_blacklist, root_build_dir)
         args += [ "--sources-blacklist=$_rebase_sources_blacklist" ]
       }
+
       if (defined(invoker.namespace)) {
         args += [ "--namespace=${invoker.namespace}" ]
       }
