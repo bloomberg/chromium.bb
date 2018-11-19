@@ -289,7 +289,7 @@
   },
   {
     "name": "automatic-password-generation",
-    // "owners": [ "your-team" ],
+    "owners": [ "ioanap", "fhorschig" ],
     "expiry_milestone": 76
   },
   {
@@ -2736,12 +2736,12 @@
   },
   {
     "name": "password-search",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "fhorschig" ],
+    "expiry_milestone": 73
   },
   {
     "name": "passwords-keyboard-accessory",
-    // "owners": [ "your-team" ],
+    "owners": [ "fhorschig" ],
     "expiry_milestone": 76
   },
   {
