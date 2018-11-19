@@ -10,6 +10,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "media/base/media_switches.h"
@@ -31,6 +32,9 @@ SurfaceLayerBridge::SurfaceLayerBridge(
       update_submission_state_callback_(
           std::move(update_submission_state_callback)),
       binding_(this),
+      surface_embedder_binding_(this),
+      enable_surface_synchronization_(
+          features::IsSurfaceSynchronizationEnabled()),
       frame_sink_id_(Platform::Current()->GenerateFrameSinkId()),
       parent_frame_sink_id_(layer_tree_view ? layer_tree_view->GetFrameSinkId()
                                             : viz::FrameSinkId()) {
@@ -57,10 +61,27 @@ void SurfaceLayerBridge::CreateSolidColorLayer() {
     observer_->RegisterContentsLayer(solid_color_layer_.get());
 }
 
+void SurfaceLayerBridge::SetLocalSurfaceId(
+    const viz::LocalSurfaceId& local_surface_id) {
+  if (!enable_surface_synchronization_) {
+    NOTREACHED();
+    return;
+  }
+  EmbedSurface(viz::SurfaceId(frame_sink_id_, local_surface_id));
+}
+
 void SurfaceLayerBridge::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
+  if (enable_surface_synchronization_) {
+    NOTREACHED();
+    return;
+  }
   DCHECK(surface_info.is_valid());
+  DCHECK_EQ(frame_sink_id_, surface_info.id().frame_sink_id());
+  EmbedSurface(surface_info.id());
+}
 
+void SurfaceLayerBridge::EmbedSurface(const viz::SurfaceId& surface_id) {
   surface_activated_ = true;
   if (solid_color_layer_) {
     if (observer_)
@@ -76,18 +97,22 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
     CreateSurfaceLayer();
   }
 
-  current_surface_id_ = surface_info.id();
+  current_surface_id_ = surface_id;
 
-  surface_layer_->SetSurfaceId(surface_info.id(),
+  surface_layer_->SetSurfaceId(surface_id,
                                cc::DeadlinePolicy::UseSpecifiedDeadline(0u));
-  surface_layer_->SetOldestAcceptableFallback(surface_info.id());
 
   if (observer_) {
     observer_->OnWebLayerUpdated();
-    observer_->OnSurfaceIdUpdated(surface_info.id());
+    observer_->OnSurfaceIdUpdated(surface_id);
   }
 
   surface_layer_->SetContentsOpaque(opaque_);
+}
+
+void SurfaceLayerBridge::BindSurfaceEmbedder(
+    mojom::blink::SurfaceEmbedderRequest request) {
+  surface_embedder_binding_.Bind(std::move(request));
 }
 
 cc::Layer* SurfaceLayerBridge::GetCcLayer() const {

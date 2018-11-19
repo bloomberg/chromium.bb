@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/renderer/platform/graphics/video_frame_resource_provider.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -90,7 +91,10 @@ class PLATFORM_EXPORT VideoFrameSubmitter
       viz::mojom::blink::CompositorFrameSinkPtr* sink) {
     compositor_frame_sink_ = std::move(*sink);
   }
-
+  void SetSurfaceEmbedderPtrForTesting(
+      mojom::blink::SurfaceEmbedderPtr embedder) {
+    surface_embedder_ = std::move(embedder);
+  }
   void SetSurfaceIdForTesting(const viz::SurfaceId&, base::TimeTicks);
 
  private:
@@ -123,6 +127,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   cc::VideoFrameProvider* video_frame_provider_ = nullptr;
   scoped_refptr<viz::ContextProvider> context_provider_;
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
+  mojom::blink::SurfaceEmbedderPtr surface_embedder_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
   WebContextProviderCallback context_provider_callback_;
   std::unique_ptr<VideoFrameResourceProvider> resource_provider_;
@@ -149,6 +154,8 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // Used to updated the LocalSurfaceId when detecting a change in video frame
   // size.
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
+
+  const bool enable_surface_synchronization_;
 
   THREAD_CHECKER(media_thread_checker_);
 

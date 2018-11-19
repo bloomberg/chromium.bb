@@ -7,12 +7,22 @@ module blink.mojom;
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
+import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 
-// Interface back to the embedder so it can be notified about surface
+// Interface from the the submitter to the embedder.
+interface SurfaceEmbedder {
+  // Called by the embedee when a new LocalSurfaceId is allocated.
+  SetLocalSurfaceId(viz.mojom.LocalSurfaceId local_surface_id);
+};
+
+// Interface from browser to the embedder so it can be notified about surface
 // activations. Closing this interface will destroy the corresponding
 // CompositorFrameSink if one exists.
 interface EmbeddedFrameSinkClient {
   OnFirstSurfaceActivation(viz.mojom.SurfaceInfo surface_info);
+  // Called when a CompositorFrameSink is created for this frame sink.
+  // Establishes a direct connection from the embedee to the embedder.
+  BindSurfaceEmbedder(SurfaceEmbedder& embedder);
 };
 
 // Provides embedded CompositorFrameSinks for the renderer. The renderer should
@@ -31,7 +41,8 @@ interface EmbeddedFrameSinkProvider {
   // calling RegisterEmbeddedFrameSink() for |frame_sink_id|.
   CreateCompositorFrameSink(viz.mojom.FrameSinkId frame_sink_id,
                             viz.mojom.CompositorFrameSinkClient client,
-                            viz.mojom.CompositorFrameSink& sink);
+                            viz.mojom.CompositorFrameSink& sink,
+                            SurfaceEmbedder& notifier);
 
   // Ceate CompositorFrameSink directly in a single call (instead of going
   // through both function above).

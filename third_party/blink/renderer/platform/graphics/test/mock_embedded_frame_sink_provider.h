@@ -29,7 +29,8 @@ class MockEmbeddedFrameSinkProvider
   void CreateCompositorFrameSink(
       const viz::FrameSinkId& frame_sink_id,
       viz::mojom::blink::CompositorFrameSinkClientPtr client,
-      viz::mojom::blink::CompositorFrameSinkRequest sink) override {
+      viz::mojom::blink::CompositorFrameSinkRequest sink,
+      mojom::blink::SurfaceEmbedderRequest surface_embedder_request) override {
     mock_compositor_frame_sink_ = std::make_unique<MockCompositorFrameSink>(
         std::move(sink),
         num_expected_set_needs_begin_frame_on_sink_construction_);
