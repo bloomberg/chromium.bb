@@ -146,10 +146,12 @@ cr-menu.chrome-menu > [checked]::before {
 .cr-dialog-buttons > button.cr-dialog-ok {
   background-color: rgb(51, 103, 214);
   color: white;
+  order: 1;
 }
 
 .cr-dialog-buttons > button.cr-dialog-cancel {
   color: rgb(100, 100, 100);
+  order: 0;
 }
 
 .cr-dialog-buttons > button.cr-dialog-cancel:hover {
