@@ -9,29 +9,23 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include <vector>
-
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-#include "test/function_equivalence_test.h"
-#include "test/register_state_check.h"
-
+#include "aom/aom_integer.h"
+#include "aom_ports/aom_timer.h"
+#include "av1/encoder/ml.h"
 #include "config/aom_config.h"
 #include "config/aom_dsp_rtcd.h"
 #include "config/av1_rtcd.h"
-
-#include "aom/aom_integer.h"
-#include "aom_ports/system_state.h"
-#include "av1/encoder/ml.h"
-
-using libaom_test::FunctionEquivalenceTest;
+#include "test/util.h"
+#include "test/register_state_check.h"
+#include "test/acm_random.h"
+#include "test/clear_system_state.h"
 
 namespace {
 typedef void (*NnPredict_Func)(const float *const input_nodes,
                                const NN_CONFIG *const nn_config,
                                float *const output);
-
-typedef libaom_test::FuncParam<NnPredict_Func> TestFuncs;
 
 typedef ::testing::tuple<const NnPredict_Func> NnPredictTestParam;
 
@@ -60,31 +54,29 @@ class NnPredictTest : public ::testing::TestWithParam<NnPredictTestParam> {
     aom_free(weights_buf);
     aom_free(bias_buf);
   }
-  void runNnPredictTest(const NN_CONFIG *const shape);
-  void runNnPredictSpeedTest(const NN_CONFIG *const shape, const int run_times);
-  void runNnPredictTest_all(const NN_CONFIG *const shapes,
+  void RunNnPredictTest(const NN_CONFIG *const shape);
+  void RunNnPredictSpeedTest(const NN_CONFIG *const shape, const int run_times);
+  void RunNnPredictTest_all(const NN_CONFIG *const shapes,
                             const int num_shapes);
-  void runNnPredictSpeedTest_all(const NN_CONFIG *const shapes,
+  void RunNnPredictSpeedTest_all(const NN_CONFIG *const shapes,
                                  const int num_shapes, const int run_times);
-  void predict_original(const float *features, const NN_CONFIG *nn_config,
-                        float *output);
 
  private:
   NnPredict_Func target_func_;
-  ACMRandom rng_;
+  libaom_test::ACMRandom rng_;
   float *weights[NN_MAX_HIDDEN_LAYERS + 1] = { 0 };
   float *bias[NN_MAX_HIDDEN_LAYERS + 1] = { 0 };
   float *weights_buf = nullptr, *bias_buf = nullptr;
 };
 
-void NnPredictTest::runNnPredictTest(const NN_CONFIG *const shape) {
-  aom_clear_system_state();
+void NnPredictTest::RunNnPredictTest(const NN_CONFIG *const shape) {
+  libaom_test::ClearSystemState();
   float inputs[NN_MAX_NODES_PER_LAYER] = { 0 };
   float outputs_test[NN_MAX_NODES_PER_LAYER] = { 0 };
   float outputs_ref[NN_MAX_NODES_PER_LAYER] = { 0 };
 
   NN_CONFIG nn_config;
-  memcpy(&nn_config, shape, sizeof(NN_CONFIG));
+  memcpy(&nn_config, shape, sizeof(nn_config));
 
   char shape_str[32] = { 0 };
   snprintf(shape_str, sizeof(shape_str), "%d", shape->num_inputs);
@@ -125,7 +117,7 @@ void NnPredictTest::runNnPredictTest(const NN_CONFIG *const shape) {
 
     av1_nn_predict_c(inputs, &nn_config, outputs_ref);
     target_func_(inputs, &nn_config, outputs_test);
-    aom_clear_system_state();
+    libaom_test::ClearSystemState();
 
     for (int node = 0; node < shape->num_outputs; node++) {
       if (outputs_ref[node] < epsilon) {
@@ -141,18 +133,17 @@ void NnPredictTest::runNnPredictTest(const NN_CONFIG *const shape) {
       }
     }
   }
-  //  printf("Network shape %s passed\n", shape_str);
 }
 
-void NnPredictTest::runNnPredictSpeedTest(const NN_CONFIG *const shape,
+void NnPredictTest::RunNnPredictSpeedTest(const NN_CONFIG *const shape,
                                           const int run_times) {
-  aom_clear_system_state();
+  libaom_test::ClearSystemState();
   float inputs[NN_MAX_NODES_PER_LAYER] = { 0 };
   float outputs_test[NN_MAX_NODES_PER_LAYER] = { 0 };
   float outputs_ref[NN_MAX_NODES_PER_LAYER] = { 0 };
 
   NN_CONFIG nn_config;
-  memcpy(&nn_config, shape, sizeof(NN_CONFIG));
+  memcpy(&nn_config, shape, sizeof(nn_config));
 
   for (int i = 0; i < NN_MAX_HIDDEN_LAYERS; i++) {
     nn_config.weights[i] = weights[i];
@@ -173,7 +164,7 @@ void NnPredictTest::runNnPredictSpeedTest(const NN_CONFIG *const shape,
     target_func_(inputs, &nn_config, outputs_test);
   }
   aom_usec_timer_mark(&timer);
-  aom_clear_system_state();
+  libaom_test::ClearSystemState();
   const double time2 = static_cast<double>(aom_usec_timer_elapsed(&timer));
 
   printf("%d", shape->num_inputs);
@@ -196,25 +187,24 @@ static const NN_CONFIG shapes[] = {
   { 9, 3, 1, { 32 }, { 0 }, { 0 } },   { 4, 4, 1, { 8 }, { 0 }, { 0 } },
 };
 
-void NnPredictTest::runNnPredictTest_all(const NN_CONFIG *const shapes,
+void NnPredictTest::RunNnPredictTest_all(const NN_CONFIG *const shapes,
                                          const int num_shapes) {
-  for (int i = 0; i < num_shapes; i++) runNnPredictTest(&shapes[i]);
+  for (int i = 0; i < num_shapes; i++) RunNnPredictTest(&shapes[i]);
 }
 
-void NnPredictTest::runNnPredictSpeedTest_all(const NN_CONFIG *const shapes,
+void NnPredictTest::RunNnPredictSpeedTest_all(const NN_CONFIG *const shapes,
                                               const int num_shapes,
                                               const int run_times) {
   for (int i = 0; i < num_shapes; i++)
-    NnPredictTest::runNnPredictSpeedTest(&shapes[i], run_times);
+    NnPredictTest::RunNnPredictSpeedTest(&shapes[i], run_times);
 }
 
 TEST_P(NnPredictTest, RandomValues) {
-  runNnPredictTest_all(shapes, sizeof(shapes) / sizeof(NN_CONFIG));
+  RunNnPredictTest_all(shapes, sizeof(shapes) / sizeof(*shapes));
 }
 
 TEST_P(NnPredictTest, DISABLED_Speed) {
-  runNnPredictSpeedTest_all(shapes, sizeof(shapes) / sizeof(NN_CONFIG),
-                            10000000);
+  RunNnPredictSpeedTest_all(shapes, sizeof(shapes) / sizeof(*shapes), 10000000);
 }
 
 #if HAVE_SSE3
