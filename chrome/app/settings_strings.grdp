@@ -752,9 +752,6 @@
   <message name="IDS_SETTINGS_CREDIT_CARD_EXPIRED" desc="The error message that is shown when user attempts to enter or save an expired card.">
     Your card is expired
   </message>
-  <message name="IDS_SETTINGS_PAYMENTS_PAGE_PRIVACY_LINK_TEXT" desc="The link text of the cross-link to the privacy settings page.">
-    To save payment methods to this device only, add them on this page, or visit <ph name="BEGIN_LINK_CHROMIUM">&lt;a target="_blank" href="$1"&gt;</ph>Privacy &amp; Security settings<ph name="END_LINK_CHROMIUM">&lt;/a&gt;</ph> and turn off the setting "Allow Chrome sign-in"
-  </message>
   <message name="IDS_SETTINGS_PASSWORDS" desc="Name for the password section and toggle">
     Manage passwords
   </message>
