@@ -78,8 +78,13 @@
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
   [super setScrollProgressForTabletOmnibox:progress];
 
-  self.view.locationBarBottomConstraint.constant =
-      [self verticalMarginForLocationBarForFullscreenProgress:1] * progress;
+  if (progress == 1) {
+    self.view.locationBarContainer.transform = CGAffineTransformIdentity;
+  } else {
+    self.view.locationBarContainer.transform = CGAffineTransformMakeTranslation(
+        0, [self verticalMarginForLocationBarForFullscreenProgress:1] *
+               (progress - 1));
+  }
   self.view.locationBarContainer.alpha = progress;
 
   // When the locationBarContainer is hidden, show the |fakeOmniboxTarget|.
