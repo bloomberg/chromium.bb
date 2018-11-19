@@ -1105,25 +1105,6 @@
             ]
         }
     ],
-    "BlockTabUnders": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BlockTabUnders"
-                    ]
-                }
-            ]
-        }
-    ],
     "BookmarkInProductHelp": [
         {
             "platforms": [
