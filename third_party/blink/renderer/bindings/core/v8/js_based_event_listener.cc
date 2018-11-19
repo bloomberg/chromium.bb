@@ -103,19 +103,14 @@ void JSBasedEventListener::Invoke(
   if (v8_context_of_event_target.IsEmpty())
     return;
 
-  if (v8_context_of_event_target != script_state_of_listener->GetContext()) {
-    // Catch exceptions thrown in the event listener if any and report them to
-    // DevTools console.
-    v8::TryCatch try_catch(isolate);
-    try_catch.SetVerbose(true);
-
-    // Check if the current context, which is set to the listener's relevant
-    // context by creating |listener_script_state_scope|, has access to the
-    // event target's relevant context before creating |js_event|. SecurityError
-    // is thrown if it doesn't have access.
-    if (!BindingSecurity::ShouldAllowAccessToCreationContext(
-            v8_context_of_event_target, event->GetWrapperTypeInfo()))
-      return;
+  // Check if the current context, which is set to the listener's relevant
+  // context by creating |listener_script_state_scope|, has access to the
+  // event target's relevant context before creating |js_event|. SecurityError
+  // is thrown if it doesn't have access.
+  if (!BindingSecurity::ShouldAllowAccessToV8Context(
+          script_state_of_listener->GetContext(), v8_context_of_event_target,
+          BindingSecurity::ErrorReportOption::kReport)) {
+    return;
   }
 
   v8::Local<v8::Value> js_event =

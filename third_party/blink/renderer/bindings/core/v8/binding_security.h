@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_BINDING_SECURITY_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/binding_security_for_platform.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
@@ -45,16 +46,18 @@ class Location;
 class Node;
 struct WrapperTypeInfo;
 
+// BindingSecurity provides utility functions that determine access permission
+// between two realms. For example, is the current Window allowed to access the
+// target window?
 class CORE_EXPORT BindingSecurity {
   STATIC_ONLY(BindingSecurity);
 
  public:
-  enum class ErrorReportOption {
-    kDoNotReport,
-    kReport,
-  };
+  using ErrorReportOption = BindingSecurityForPlatform::ErrorReportOption;
 
-  // Check if the caller (|accessingWindow|) is allowed to access the JS
+  static void Init();
+
+  // Checks if the caller (|accessing_window|) is allowed to access the JS
   // receiver object (|target|), where the receiver object is the JS object
   // for which the DOM attribute or DOM operation is being invoked (in the
   // form of receiver.domAttr or receiver.domOp()).
@@ -77,7 +80,7 @@ class CORE_EXPORT BindingSecurity {
                                   const Location* target,
                                   ErrorReportOption);
 
-  // Check if the caller (|accessingWindow|) is allowed to access the JS
+  // Checks if the caller (|accessing_window|) is allowed to access the JS
   // returned object (|target|), where the returned object is the JS object
   // which is returned as a result of invoking a DOM attribute or DOM
   // operation (in the form of
@@ -105,26 +108,36 @@ class CORE_EXPORT BindingSecurity {
                                        const Frame* target,
                                        ErrorReportOption);
 
+  // These overloads should be used only when checking a general access from
+  // one context to another context.  For access to a receiver object or
+  // returned object, you should use the above overloads.
+  static bool ShouldAllowAccessToV8Context(
+      v8::Local<v8::Context> accessing_context,
+      v8::Local<v8::Context> target_context,
+      ExceptionState&);
+  static bool ShouldAllowAccessToV8Context(
+      v8::Local<v8::Context> accessing_context,
+      v8::Local<v8::Context> target_context,
+      ErrorReportOption);
+
+  // Checks if a wrapper creation of the given wrapper type associated with
+  // |creation_context| is allowed in |accessing_context|.
+  static bool ShouldAllowWrapperCreationOrThrowException(
+      v8::Local<v8::Context> accessing_context,
+      v8::Local<v8::Context> creation_context,
+      const WrapperTypeInfo* wrapper_type_info);
+
+  // Rethrows a cross context exception, that is possibly cross origin.
+  // A SecurityError may be rethrown instead of the exception if necessary.
+  static void RethrowWrapperCreationException(
+      v8::Local<v8::Context> accessing_context,
+      v8::Local<v8::Context> creation_context,
+      const WrapperTypeInfo* wrapper_type_info,
+      v8::Local<v8::Value> cross_context_exception);
+
   static void FailedAccessCheckFor(v8::Isolate*,
                                    const WrapperTypeInfo*,
                                    v8::Local<v8::Object> holder);
-
-  // The following two functions were written to be called by
-  // V8WrapperInstantiationScope before entering and after exiting an object's
-  // creation context during wrapper creation.
-
-  // Returns true if the current context has access to creationContext, and
-  // throws a SecurityError if it doesn't have access.
-  static bool ShouldAllowAccessToCreationContext(
-      v8::Local<v8::Context> creation_context,
-      const WrapperTypeInfo*);
-
-  static void RethrowCrossContextException(
-      v8::Local<v8::Context> creation_context,
-      const WrapperTypeInfo*,
-      v8::Local<v8::Value> cross_context_exception);
-
-  static void InitWrapperCreationSecurityCheck();
 
  private:
   // Returns true if |accessingWindow| is allowed named access to |targetWindow|
