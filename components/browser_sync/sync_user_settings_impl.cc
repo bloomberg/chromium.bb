@@ -68,7 +68,7 @@ syncer::ModelTypeSet SyncUserSettingsImpl::GetChosenDataTypes() const {
 void SyncUserSettingsImpl::SetChosenDataTypes(bool sync_everything,
                                               syncer::ModelTypeSet types) {
   // TODO(crbug.com/884159): Write to prefs directly (might be tricky because it
-  // needs the registered types and the user_events_separate_pref_group flag).
+  // needs the registered types).
   service_->OnUserChoseDatatypes(sync_everything, types);
 }
 

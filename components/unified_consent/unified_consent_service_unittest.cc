@@ -469,17 +469,14 @@ TEST_F(UnifiedConsentServiceTest, Migration_UpdateSettings) {
   syncer::SyncPrefs sync_prefs(&pref_service_);
   EXPECT_TRUE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
   EXPECT_TRUE(sync_service_.IsSyncFeatureActive());
-  EXPECT_TRUE(sync_service_.GetPreferredDataTypes().Has(syncer::USER_EVENTS));
   // Url keyed data collection is off before the migration.
   EXPECT_FALSE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 
   CreateConsentService();
   EXPECT_EQ(GetMigrationState(), unified_consent::MigrationState::kCompleted);
-  // During the migration USER_EVENTS is disabled and Url keyed data collection
-  // is enabled.
+  // During the migration Url keyed data collection is enabled.
   EXPECT_FALSE(sync_service_.GetUserSettings()->IsSyncEverythingEnabled());
-  EXPECT_FALSE(sync_service_.GetPreferredDataTypes().Has(syncer::USER_EVENTS));
   EXPECT_TRUE(pref_service_.GetBoolean(
       prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 }
@@ -693,9 +690,6 @@ TEST_F(UnifiedConsentServiceTest, SettingsHistogram_UnifiedConsentGiven) {
       metrics::SettingsHistogramValue::kUnifiedConsentGiven, 1);
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kUserEvents, 1);
-  histogram_tester.ExpectBucketCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
       metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection, 1);
   histogram_tester.ExpectBucketCount(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
@@ -704,7 +698,7 @@ TEST_F(UnifiedConsentServiceTest, SettingsHistogram_UnifiedConsentGiven) {
       "UnifiedConsent.SyncAndGoogleServicesSettings",
       metrics::SettingsHistogramValue::kSpellCheck, 1);
   histogram_tester.ExpectTotalCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings", 5);
+      "UnifiedConsent.SyncAndGoogleServicesSettings", 4);
 }
 
 TEST_F(UnifiedConsentServiceTest, SettingsHistogram_NoUnifiedConsentGiven) {

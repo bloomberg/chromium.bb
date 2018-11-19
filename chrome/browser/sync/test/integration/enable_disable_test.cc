@@ -45,9 +45,8 @@ ModelTypeSet MultiGroupTypes(const ModelTypeSet& registered_types) {
   // TODO(vitaliii): Do not use such short variable names here (and possibly
   // elsewhere in the file).
   for (ModelType st : selectable_types) {
-    const ModelTypeSet grouped_types = SyncPrefs::ResolvePrefGroups(
-        registered_types, ModelTypeSet(st),
-        unified_consent::IsUnifiedConsentFeatureEnabled());
+    const ModelTypeSet grouped_types =
+        SyncPrefs::ResolvePrefGroups(registered_types, ModelTypeSet(st));
     for (ModelType gt : grouped_types) {
       if (seen.Has(gt)) {
         multi.Put(gt);
@@ -127,10 +126,9 @@ class EnableDisableSingleClientTest : public SyncTest {
   }
 
   ModelTypeSet ResolveGroup(ModelType type) {
-    return Difference(SyncPrefs::ResolvePrefGroups(
-                          registered_types_, ModelTypeSet(type),
-                          unified_consent::IsUnifiedConsentFeatureEnabled()),
-                      ProxyTypes());
+    return Difference(
+        SyncPrefs::ResolvePrefGroups(registered_types_, ModelTypeSet(type)),
+        ProxyTypes());
   }
 
   ModelTypeSet WithoutMultiTypes(const ModelTypeSet& input) {

@@ -196,8 +196,6 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
       content::GetNetworkConnectionTracker();
   init_params.debug_identifier = profile->GetDebugName();
   init_params.channel = chrome::GetChannel();
-  init_params.user_events_separate_pref_group =
-      unified_consent::IsUnifiedConsentFeatureEnabled();
 
   bool local_sync_backend_enabled = false;
 // Since the local sync backend is currently only supported on Windows don't
