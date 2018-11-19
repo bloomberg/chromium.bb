@@ -276,6 +276,12 @@ void InputRouterImpl::SetTouchActionFromMain(cc::TouchAction touch_action) {
 void InputRouterImpl::SetWhiteListedTouchAction(cc::TouchAction touch_action,
                                                 uint32_t unique_touch_event_id,
                                                 InputEventAckState state) {
+  DCHECK(!compositor_touch_action_enabled_);
+  OnSetWhiteListedTouchAction(touch_action);
+}
+
+void InputRouterImpl::OnSetWhiteListedTouchAction(
+    cc::TouchAction touch_action) {
   touch_action_filter_.OnSetWhiteListedTouchAction(touch_action);
   client_->OnSetWhiteListedTouchAction(touch_action);
   if (compositor_touch_action_enabled_) {
@@ -574,8 +580,18 @@ void InputRouterImpl::TouchEventHandled(
   // The SetTouchAction IPC occurs on a different channel so always
   // send it in the input event ack to ensure it is available at the
   // time the ACK is handled.
-  if (touch_action.has_value())
-    OnSetTouchAction(touch_action.value());
+  if (touch_action.has_value()) {
+    if (!compositor_touch_action_enabled_) {
+      OnSetTouchAction(touch_action.value());
+    } else {
+      if (source == InputEventAckSource::COMPOSITOR_THREAD)
+        OnSetWhiteListedTouchAction(touch_action.value());
+      else if (source == InputEventAckSource::MAIN_THREAD)
+        OnSetTouchAction(touch_action.value());
+      else
+        NOTREACHED();
+    }
+  }
 
   bool should_stop_timeout_monitor =
       !compositor_touch_action_enabled_ ||
