@@ -783,6 +783,17 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
     const std::string& pref_name,
     const base::Value* value) {
 #if defined(OS_CHROMEOS)
+  if (pref_name == chromeos::kSystemTimezone) {
+    std::string string_value;
+    if (!value->GetAsString(&string_value))
+      return settings_private::SetPrefResult::PREF_TYPE_MISMATCH;
+    const user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+    if (user && chromeos::system::SetSystemTimezone(user, string_value))
+      return settings_private::SetPrefResult::SUCCESS;
+    return settings_private::SetPrefResult::PREF_NOT_MODIFIABLE;
+  }
+
   chromeos::OwnerSettingsServiceChromeOS* service =
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
           profile_);
@@ -794,6 +805,11 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
     return settings_private::SetPrefResult::PREF_NOT_MODIFIABLE;
   }
 
+  // TODO(olsen): Remove this call, as per http://crbug.com/433840
+  // Note: Since kSystemTimezone (the only system setting) is already handled,
+  // we should only arrive here in two cases (of which one may be a bug):
+  // 1. User is guest, so service=nullptr. Maybe a bug to call Set in this case?
+  // 2. kStubCrosSettings is true, so service->HandlesSetting is false.
   CrosSettings::Get()->Set(pref_name, *value);
   return settings_private::SetPrefResult::SUCCESS;
 #else
