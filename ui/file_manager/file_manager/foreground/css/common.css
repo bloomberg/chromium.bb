@@ -244,7 +244,7 @@ html[dir='rtl'] .entry-name {
  }
 }
 
-.cr-dialog-frame.pulse {
+.cr-dialog-container.pulse {
   animation-duration: 180ms;
   animation-iteration-count: 1;
   animation-name: pulse;

@@ -112,7 +112,7 @@ cr.define('cr.ui.dialogs', function() {
   /** @private */
   BaseDialog.prototype.onContainerMouseDown_ = function(event) {
     if (event.target == this.container_) {
-      var classList = this.frame_.classList;
+      var classList = this.container_.classList;
       // Start 'pulse' animation.
       classList.remove('pulse');
       setTimeout(classList.add.bind(classList, 'pulse'), 0);
