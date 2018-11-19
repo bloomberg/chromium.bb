@@ -111,6 +111,8 @@ class NGInlineItemsBuilderTemplate {
   void SetIsSymbolMarker(bool b);
 
  private:
+  static bool NeedsBoxInfo();
+
   Vector<NGInlineItem>* items_;
   StringBuilder text_;
 

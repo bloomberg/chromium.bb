@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_items_builder.h"
 
+#include <type_traits>
+
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
@@ -12,6 +14,12 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
+
+// Returns true if items builder is used for other than offset mapping.
+template <typename OffsetMappingBuilder>
+bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::NeedsBoxInfo() {
+  return !std::is_same<NGOffsetMappingBuilder, OffsetMappingBuilder>::value;
+}
 
 template <typename OffsetMappingBuilder>
 NGInlineItemsBuilderTemplate<
@@ -936,6 +944,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
 
   AppendOpaque(NGInlineItem::kOpenTag, style, node);
 
+  if (!NeedsBoxInfo())
+    return;
+
   // Set |ShouldCreateBoxFragment| of the parent box if needed.
   BoxInfo* current_box =
       &boxes_.emplace_back(items_->size() - 1, items_->back());
@@ -965,7 +976,8 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::ExitInline(
 
   AppendOpaque(NGInlineItem::kCloseTag, node->Style(), node);
 
-  boxes_.pop_back();
+  if (NeedsBoxInfo())
+    boxes_.pop_back();
 
   Exit(node);
 
