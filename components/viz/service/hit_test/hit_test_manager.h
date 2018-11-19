@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_HIT_TEST_HIT_TEST_MANAGER_H_
 
 #include "base/optional.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -14,6 +15,23 @@
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 
 namespace viz {
+
+namespace {
+
+struct HitTestAsyncQueriedDebugRegion {
+  HitTestAsyncQueriedDebugRegion();
+  explicit HitTestAsyncQueriedDebugRegion(base::flat_set<FrameSinkId> regions);
+  ~HitTestAsyncQueriedDebugRegion();
+
+  HitTestAsyncQueriedDebugRegion(HitTestAsyncQueriedDebugRegion&&);
+  HitTestAsyncQueriedDebugRegion& operator=(HitTestAsyncQueriedDebugRegion&&);
+
+  base::flat_set<FrameSinkId> regions;
+  base::ElapsedTimer timer;
+};
+
+}  // namespace
+
 class LatestLocalSurfaceIdLookupDelegate;
 
 // HitTestManager manages the collection of HitTestRegionList objects
@@ -54,6 +72,12 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
 
   int64_t GetTraceId(const SurfaceId& id) const;
 
+  const base::flat_set<FrameSinkId>* GetHitTestAsyncQueriedDebugRegions(
+      const FrameSinkId& root_frame_sink_id) const;
+  void SetHitTestAsyncQueriedDebugRegions(
+      const FrameSinkId& root_frame_sink_id,
+      const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue);
+
  private:
   bool ValidateHitTestRegionList(const SurfaceId& surface_id,
                                  HitTestRegionList* hit_test_region_list);
@@ -62,6 +86,12 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
 
   std::map<SurfaceId, base::flat_map<uint64_t, HitTestRegionList>>
       hit_test_region_lists_;
+
+  // We store the async queried regions for each |root_frame_sink_id|. If viz
+  // hit-test debug is enabled, We will highlight the regions red in
+  // HitTestAggregator for 2 seconds, or until the next async queried event.
+  base::flat_map<FrameSinkId, HitTestAsyncQueriedDebugRegion>
+      hit_test_async_queried_debug_regions_;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestManager);
 };

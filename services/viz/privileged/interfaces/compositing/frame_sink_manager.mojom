@@ -129,6 +129,13 @@ interface FrameSinkManager {
   // FrameSinkId. The request will be queued up until such surface exists and is
   // reachable from the root surface.
   RequestCopyOfOutput(SurfaceId surface_id, CopyOutputRequest request);
+
+  // Marks a region as having been recently async queried. This is used by the
+  // HitTestAggregator to highlight queried regions if hit-test debugging is
+  // enabled.
+  SetHitTestAsyncQueriedDebugRegions(
+      FrameSinkId root_frame_sink_id,
+      array<FrameSinkId> hit_test_async_queried_debug_queue);
 };
 
 // The FrameSinkManagerClient interface is implemented by the Display

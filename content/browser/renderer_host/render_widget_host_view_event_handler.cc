@@ -104,15 +104,6 @@ bool NeedsInputGrab(content::RenderWidgetHostViewBase* view) {
   return view->GetWidgetType() == content::WidgetType::kPopup;
 }
 
-// Enables hit-test debug logging.
-const char kEnableVizHitTestDebug[] = "enable-viz-hit-test-debug";
-
-inline bool IsVizHitTestingDebugEnabled() {
-  return features::IsVizHitTestingEnabled() &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             kEnableVizHitTestDebug);
-}
-
 }  // namespace
 
 namespace content {
@@ -141,7 +132,7 @@ RenderWidgetHostViewEventHandler::RenderWidgetHostViewEventHandler(
       delegate_(delegate),
       window_(nullptr),
       mouse_wheel_phase_handler_(host_view),
-      debug_observer_(IsVizHitTestingDebugEnabled()
+      debug_observer_(features::IsVizHitTestingDebugEnabled()
                           ? std::make_unique<HitTestDebugKeyEventObserver>(host)
                           : nullptr) {}
 

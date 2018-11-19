@@ -13,6 +13,18 @@ namespace {
 // TODO(gklassen): Review and select appropriate sizes based on
 // telemetry / UMA.
 constexpr uint32_t kMaxRegionsPerSurface = 1024;
+
+HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion() = default;
+HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion(
+    base::flat_set<FrameSinkId> regions)
+    : regions(std::move(regions)) {}
+HitTestAsyncQueriedDebugRegion::~HitTestAsyncQueriedDebugRegion() = default;
+
+HitTestAsyncQueriedDebugRegion::HitTestAsyncQueriedDebugRegion(
+    HitTestAsyncQueriedDebugRegion&&) = default;
+HitTestAsyncQueriedDebugRegion& HitTestAsyncQueriedDebugRegion::operator=(
+    HitTestAsyncQueriedDebugRegion&&) = default;
+
 }  // namespace
 
 HitTestManager::HitTestManager(SurfaceManager* surface_manager)
@@ -100,6 +112,26 @@ const HitTestRegionList* HitTestManager::GetActiveHitTestRegionList(
 int64_t HitTestManager::GetTraceId(const SurfaceId& id) const {
   Surface* surface = surface_manager_->GetSurfaceForId(id);
   return surface->GetActiveFrame().metadata.begin_frame_ack.trace_id;
+}
+
+const base::flat_set<FrameSinkId>*
+HitTestManager::GetHitTestAsyncQueriedDebugRegions(
+    const FrameSinkId& root_frame_sink_id) const {
+  auto it = hit_test_async_queried_debug_regions_.find(root_frame_sink_id);
+  if (it == hit_test_async_queried_debug_regions_.end() ||
+      it->second.timer.Elapsed().InMilliseconds() > 2000) {
+    return nullptr;
+  }
+  return &it->second.regions;
+}
+
+void HitTestManager::SetHitTestAsyncQueriedDebugRegions(
+    const FrameSinkId& root_frame_sink_id,
+    const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue) {
+  hit_test_async_queried_debug_regions_[root_frame_sink_id] =
+      HitTestAsyncQueriedDebugRegion(base::flat_set<FrameSinkId>(
+          hit_test_async_queried_debug_queue.begin(),
+          hit_test_async_queried_debug_queue.end()));
 }
 
 bool HitTestManager::ValidateHitTestRegionList(

@@ -188,6 +188,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
                            uint32_t frame_token) override;
 
+  void SetHitTestAsyncQueriedDebugRegions(
+      const FrameSinkId& root_frame_sink_id,
+      const std::vector<FrameSinkId>& hit_test_async_queried_debug_queue);
+
  private:
   friend class HostFrameSinkManagerTestApi;
   friend class HostFrameSinkManagerTestBase;
