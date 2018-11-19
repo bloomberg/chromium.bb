@@ -192,18 +192,12 @@ class ModelTypeWorkerTest : public ::testing::Test {
     initial_state.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(model_type_));
 
-    InitializeWithState(model_type_, initial_state, UpdateResponseDataList());
+    InitializeWithState(model_type_, initial_state);
   }
 
   // Initializes with some existing data type state. Allows us to start
   // committing items right away.
   void NormalInitialize() {
-    InitializeWithPendingUpdates(UpdateResponseDataList());
-  }
-
-  // Initialize with some saved pending updates from the model thread.
-  void InitializeWithPendingUpdates(
-      const UpdateResponseDataList& initial_pending_updates) {
     ModelTypeState initial_state;
     initial_state.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(model_type_));
@@ -212,7 +206,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
     initial_state.set_initial_sync_done(true);
 
-    InitializeWithState(model_type_, initial_state, initial_pending_updates);
+    InitializeWithState(model_type_, initial_state);
 
     nudge_handler()->ClearCounters();
   }
@@ -226,14 +220,11 @@ class ModelTypeWorkerTest : public ::testing::Test {
     ModelTypeState initial_state;
     initial_state.set_initial_sync_done(true);
 
-    InitializeWithState(USER_EVENTS, initial_state, UpdateResponseDataList());
+    InitializeWithState(USER_EVENTS, initial_state);
   }
 
   // Initialize with a custom initial ModelTypeState and pending updates.
-  void InitializeWithState(
-      const ModelType type,
-      const ModelTypeState& state,
-      const UpdateResponseDataList& initial_pending_updates) {
+  void InitializeWithState(const ModelType type, const ModelTypeState& state) {
     DCHECK(!worker());
 
     // We don't get to own this object. The |worker_| keeps a unique_ptr to it.
@@ -247,7 +238,6 @@ class ModelTypeWorkerTest : public ::testing::Test {
       cryptographer_copy = std::make_unique<Cryptographer>(*cryptographer_);
     }
 
-    // TODO(maxbogue): crbug.com/529498: Inject pending updates somehow.
     worker_ = std::make_unique<ModelTypeWorker>(
         type, state, !state.initial_sync_done(), std::move(cryptographer_copy),
         PassphraseType::IMPLICIT_PASSPHRASE, &mock_nudge_handler_,
@@ -1287,71 +1277,6 @@ TEST_F(ModelTypeWorkerTest, ReceiveUndecryptableEntries) {
   EXPECT_EQ(kTag1, update.entity->specifics.preference().name());
   EXPECT_EQ(kValue1, update.entity->specifics.preference().value());
   EXPECT_EQ(GetLocalCryptographerKeyName(), update.encryption_key_name);
-}
-
-// Test decryption of pending updates saved across a restart.
-TEST_F(ModelTypeWorkerTest, RestorePendingEntries) {
-  // Create a fake pending update.
-  EntityData entity;
-  entity.client_tag_hash = GenerateTagHash(kTag1);
-  entity.id = "SomeID";
-  entity.creation_time = Time::UnixEpoch() + TimeDelta::FromSeconds(10);
-  entity.modification_time = Time::UnixEpoch() + TimeDelta::FromSeconds(11);
-  entity.non_unique_name = "encrypted";
-  entity.specifics = GenerateSpecifics(kTag1, kValue1);
-  EncryptUpdate(GetNthKeyParams(1), &(entity.specifics));
-
-  UpdateResponseData update;
-  update.entity = entity.PassToPtr();
-  update.response_version = 100;
-
-  // Inject the update during CommitQueue initialization.
-  InitializeWithPendingUpdates({update});
-
-  // Update will be undecryptable at first.
-  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
-  EXPECT_FALSE(processor()->HasUpdateResponse(kHash1));
-
-  // Update the cryptographer so it can decrypt that update.
-  AddPendingKey();
-  DecryptPendingKey();
-
-  // Verify the item gets decrypted and sent back to the model thread.
-  // TODO(maxbogue): crbug.com/529498: Uncomment when pending updates are
-  // handled by the worker again.
-  // ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
-}
-
-// Test decryption of pending updates saved across a restart. This test
-// differs from the previous one in that the restored updates can be decrypted
-// immediately after the CommitQueue is constructed.
-TEST_F(ModelTypeWorkerTest, RestoreApplicableEntries) {
-  // Update the cryptographer so it can decrypt that update.
-  AddPendingKey();
-  DecryptPendingKey();
-
-  // Create a fake pending update.
-  EntityData entity;
-  entity.client_tag_hash = GenerateTagHash(kTag1);
-  entity.id = "SomeID";
-  entity.creation_time = Time::UnixEpoch() + TimeDelta::FromSeconds(10);
-  entity.modification_time = Time::UnixEpoch() + TimeDelta::FromSeconds(11);
-  entity.non_unique_name = "encrypted";
-
-  entity.specifics = GenerateSpecifics(kTag1, kValue1);
-  EncryptUpdate(GetNthKeyParams(1), &(entity.specifics));
-
-  UpdateResponseData update;
-  update.entity = entity.PassToPtr();
-  update.response_version = 100;
-
-  // Inject the update during CommitQueue initialization.
-  InitializeWithPendingUpdates({update});
-
-  // Verify the item gets decrypted and sent back to the model thread.
-  // TODO(maxbogue): crbug.com/529498: Uncomment when pending updates are
-  // handled by the worker again.
-  // ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
 }
 
 // Verify that corrupted encrypted updates don't cause crashes.
