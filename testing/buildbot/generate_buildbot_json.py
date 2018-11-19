@@ -867,6 +867,11 @@ class BBJSONGenerator(object):
     return [
       'ANGLE GPU Win10 Release (Intel HD 630)',
       'ANGLE GPU Win10 Release (NVIDIA)',
+      'Dawn GPU Linux Release (Intel HD 630)',
+      'Dawn GPU Linux Release (NVIDIA)',
+      'Dawn GPU Mac Release (Intel)',
+      'Dawn GPU Mac Retina Release (AMD)',
+      'Dawn GPU Mac Retina Release (NVIDIA)',
       'Dawn GPU Win10 Release (Intel HD 630)',
       'Dawn GPU Win10 Release (NVIDIA)',
       'Optional Android Release (Nexus 5X)',
