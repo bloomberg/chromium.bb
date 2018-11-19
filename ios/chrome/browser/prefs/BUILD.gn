@@ -36,6 +36,7 @@ source_set("browser_prefs") {
     "//components/flags_ui",
     "//components/gcm_driver",
     "//components/handoff",
+    "//components/invalidation/impl:impl",
     "//components/language/core/browser",
     "//components/metrics",
     "//components/network_time",
