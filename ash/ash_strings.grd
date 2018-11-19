@@ -1438,7 +1438,7 @@ This file contains the strings for ash.
         Hit <ph name="KEYBOARD_SHORTCUT">$1<ex>Control-Shift-Space</ex></ph> to switch keyboard layout.
       </message>
       <message name="IDS_ASH_LOGIN_ERROR_DETACHABLE_BASE_CHANGED" desc="Text for the error dialog shown on the lock screen when a detachable base different from the base last used by the currently active user is attached.">
-        A different keyboard has been connected since you last entered your password. It may be attempting to steal your keystrokes.
+        Another keyboard has connected to this device since you last signed in. Make sure you trust this keyboard before you use it.
       </message>
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the password field of a user pod on the sign-in screen.">
         Password for <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>
