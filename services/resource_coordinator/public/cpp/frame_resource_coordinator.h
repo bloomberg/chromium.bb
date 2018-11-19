@@ -12,8 +12,6 @@
 
 namespace resource_coordinator {
 
-class ProcessResourceCoordinator;
-
 class COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP)
     FrameResourceCoordinator
     : public ResourceCoordinatorInterface<mojom::FrameCoordinationUnitPtr,
@@ -22,20 +20,15 @@ class COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP)
   FrameResourceCoordinator(service_manager::Connector* connector);
   ~FrameResourceCoordinator() override;
 
-  void SetProcess(const ProcessResourceCoordinator& process);
   void SetAudibility(bool audible);
   void OnAlertFired();
   void AddChildFrame(const FrameResourceCoordinator& child);
   void RemoveChildFrame(const FrameResourceCoordinator& child);
 
-  // Closes the connection to the service.
-  void reset() { service_.reset(); }
-
  private:
   void ConnectToService(mojom::CoordinationUnitProviderPtr& provider,
                         const CoordinationUnitID& cu_id) override;
 
-  void SetProcessByID(const CoordinationUnitID& process_id);
   void AddChildFrameByID(const CoordinationUnitID& child_id);
   void RemoveChildFrameByID(const CoordinationUnitID& child_id);
 

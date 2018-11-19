@@ -26,11 +26,13 @@ class COMPONENT_EXPORT(SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP)
   void OnProcessLaunched(const base::Process& process);
 
   void SetCPUUsage(double usage);
-  void SetProcessExitStatus(int32_t exit_status);
+  void AddFrame(const FrameResourceCoordinator& frame);
 
  private:
   void ConnectToService(mojom::CoordinationUnitProviderPtr& provider,
                         const CoordinationUnitID& cu_id) override;
+
+  void AddFrameByID(const CoordinationUnitID& cu_id);
 
   THREAD_CHECKER(thread_checker_);
 

@@ -54,9 +54,6 @@ interface FrameCoordinationUnit {
   // children.
   GetID() => (CoordinationUnitID id);
 
-  // Sets the process hosting this frame.
-  SetProcess(CoordinationUnitID id);
-
   // Add a new binding to an existing FrameCoordinationUnit.
   AddBinding(FrameCoordinationUnit& request);
   AddChildFrame(CoordinationUnitID cu_id);
@@ -109,6 +106,7 @@ interface ProcessCoordinationUnit {
 
   // Add a new binding to an existing ProcessCoordinationUnit.
   AddBinding(ProcessCoordinationUnit& request);
+  AddFrame(CoordinationUnitID cu_id);
 
   // Property signals.
   SetCPUUsage(double cpu_usage);
@@ -116,8 +114,6 @@ interface ProcessCoordinationUnit {
   SetLaunchTime(mojo_base.mojom.Time launch_time);
   SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low);
   SetPID(mojo_base.mojom.ProcessId pid);
-  // Called when the process is known to have died or to have failed to start.
-  SetProcessExitStatus(int32 exit_status);
 
   // Event signals.
 

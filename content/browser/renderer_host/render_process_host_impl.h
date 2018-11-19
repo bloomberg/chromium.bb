@@ -53,7 +53,6 @@
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
@@ -855,7 +854,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // determine if if a process should be backgrounded.
   int media_stream_count_ = 0;
 
-  resource_coordinator::ProcessResourceCoordinator
+  std::unique_ptr<resource_coordinator::ProcessResourceCoordinator>
       process_resource_coordinator_;
 
   // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend

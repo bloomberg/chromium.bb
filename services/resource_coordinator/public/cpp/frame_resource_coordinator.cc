@@ -4,8 +4,6 @@
 
 #include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 
-#include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
-
 namespace resource_coordinator {
 
 FrameResourceCoordinator::FrameResourceCoordinator(
@@ -17,15 +15,6 @@ FrameResourceCoordinator::FrameResourceCoordinator(
 }
 
 FrameResourceCoordinator::~FrameResourceCoordinator() = default;
-
-void FrameResourceCoordinator::SetProcess(
-    const ProcessResourceCoordinator& process) {
-  if (!service_ || !process.service())
-    return;
-  process.service()->GetID(
-      base::BindOnce(&FrameResourceCoordinator::SetProcessByID,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
 
 void FrameResourceCoordinator::SetAudibility(bool audible) {
   if (!service_)
@@ -42,7 +31,7 @@ void FrameResourceCoordinator::OnAlertFired() {
 void FrameResourceCoordinator::AddChildFrame(
     const FrameResourceCoordinator& child) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!service_ || !child.service())
+  if (!service_)
     return;
   // We could keep the ID around ourselves, but this hop ensures that the child
   // has been created on the service-side.
@@ -54,7 +43,7 @@ void FrameResourceCoordinator::AddChildFrame(
 void FrameResourceCoordinator::RemoveChildFrame(
     const FrameResourceCoordinator& child) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!service_ || !child.service())
+  if (!service_)
     return;
   child.service()->GetID(
       base::BindOnce(&FrameResourceCoordinator::RemoveChildFrameByID,
@@ -67,24 +56,15 @@ void FrameResourceCoordinator::ConnectToService(
   provider->CreateFrameCoordinationUnit(mojo::MakeRequest(&service_), cu_id);
 }
 
-void FrameResourceCoordinator::SetProcessByID(
-    const CoordinationUnitID& process_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(service_);
-  service_->SetProcess(process_id);
-}
-
 void FrameResourceCoordinator::AddChildFrameByID(
     const CoordinationUnitID& child_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(service_);
   service_->AddChildFrame(child_id);
 }
 
 void FrameResourceCoordinator::RemoveChildFrameByID(
     const CoordinationUnitID& child_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(service_);
   service_->RemoveChildFrame(child_id);
 }
 
