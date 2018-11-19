@@ -479,8 +479,8 @@
   },
   {
     "name": "disable-accelerated-2d-canvas",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "fserb" ],
+    "expiry_milestone": -1
   },
   {
     "name": "disable-accelerated-mjpeg-decode",
@@ -1224,8 +1224,8 @@
   },
   {
     "name": "enable-gpu-rasterization",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "enne", "vmiura", "ericrk" ],
+    "expiry_milestone": -1
   },
   {
     "name": "enable-hdr",
@@ -1524,7 +1524,7 @@
   },
   {
     "name": "enable-oop-rasterization",
-    // "owners": [ "your-team" ],
+    "owners": [ "enne", "khushalsagar" ],
     "expiry_milestone": 76
   },
   {
@@ -1756,7 +1756,7 @@
   },
   {
     "name": "enable-surfaces-for-videos",
-    // "owners": [ "your-team" ],
+    "owners": [ "enne", "lethalantidote", "mlamouri" ],
     "expiry_milestone": 76
   },
   {
@@ -1931,12 +1931,12 @@
   },
   {
     "name": "enable-viz-display-compositor",
-    // "owners": [ "your-team" ],
+    "owners": [ "fsamuel", "kylechar" ],
     "expiry_milestone": 76
   },
   {
     "name": "enable-viz-hit-test-draw-quad",
-    // "owners": [ "your-team" ],
+    "owners": [ "riajiang", "rjkroege" ],
     "expiry_milestone": 76
   },
   {
@@ -2251,8 +2251,8 @@
   },
   {
     "name": "ignore-gpu-blacklist",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "kbr", "zmo" ],
+    "expiry_milestone": -1
   },
   {
     "name": "ignore-previews-blocklist",
