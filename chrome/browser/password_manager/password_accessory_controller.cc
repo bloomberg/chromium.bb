@@ -279,7 +279,7 @@ void PasswordAccessoryController::OnOptionSelected(
     UMA_HISTOGRAM_ENUMERATION("KeyboardAccessory.AccessoryActionSelected",
                               metrics::AccessoryAction::MANAGE_PASSWORDS,
                               metrics::AccessoryAction::COUNT);
-    chrome::android::PreferencesLauncher::ShowPasswordSettings();
+    chrome::android::PreferencesLauncher::ShowPasswordSettings(web_contents_);
   }
 }
 

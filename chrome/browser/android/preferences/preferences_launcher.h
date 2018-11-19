@@ -24,7 +24,7 @@ class PreferencesLauncher {
       content::WebContents* web_contents);
 
   // Opens the password settings page.
-  static void ShowPasswordSettings();
+  static void ShowPasswordSettings(content::WebContents* web_contents);
 
  private:
   PreferencesLauncher() {}

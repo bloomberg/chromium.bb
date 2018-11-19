@@ -11,13 +11,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.preferences.autofill.AutofillPaymentMethodsFragment;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfilesFragment;
-import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.ref.WeakReference;
 
@@ -100,8 +100,12 @@ public class PreferencesLauncher {
     }
 
     @CalledByNative
-    private static void showPasswordSettings() {
-        launchSettingsPage(ContextUtils.getApplicationContext(), SavePasswordsPreferences.class);
+    private static void showPasswordSettings(WebContents webContents) {
+        WindowAndroid window = webContents.getTopLevelNativeWindow();
+        if (window == null) return;
+        WeakReference<Activity> currentActivity = window.getActivity();
+        AppHooks.get().createManagePasswordsUIProvider().showManagePasswordsUI(
+                currentActivity.get());
     }
 
     private static void showSettingSubpage(

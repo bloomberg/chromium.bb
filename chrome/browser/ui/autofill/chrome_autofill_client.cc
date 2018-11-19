@@ -530,7 +530,7 @@ void ChromeAutofillClient::ExecuteCommand(int id) {
         chrome::FindBrowserWithWebContents(web_contents()),
         chrome::kPasswordManagerSubPage);
 #else
-    chrome::android::PreferencesLauncher::ShowPasswordSettings();
+    chrome::android::PreferencesLauncher::ShowPasswordSettings(web_contents());
 #endif
   } else if (id == autofill::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
 #if defined(OS_ANDROID)

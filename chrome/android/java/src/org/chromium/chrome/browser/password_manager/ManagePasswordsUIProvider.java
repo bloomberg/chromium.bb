@@ -18,6 +18,7 @@ public class ManagePasswordsUIProvider {
      * @param activity the activity from which to launch the settings page.
      */
     public void showManagePasswordsUI(Activity activity) {
+        if (activity == null) return;
         // Launch preference activity with SavePasswordsPreferences fragment.
         PreferencesLauncher.launchSettingsPage(activity, SavePasswordsPreferences.class);
     }

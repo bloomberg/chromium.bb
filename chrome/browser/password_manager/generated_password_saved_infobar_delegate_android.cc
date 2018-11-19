@@ -8,6 +8,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/android_theme_resources.h"
+#include "chrome/browser/android/preferences/preferences_launcher.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -21,9 +23,8 @@ GeneratedPasswordSavedInfoBarDelegateAndroid::
     ~GeneratedPasswordSavedInfoBarDelegateAndroid() {}
 
 void GeneratedPasswordSavedInfoBarDelegateAndroid::OnInlineLinkClicked() {
-  GURL dashboard_link(l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK));
-  infobar()->owner()->OpenURL(dashboard_link,
-                              WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  chrome::android::PreferencesLauncher::ShowPasswordSettings(
+      InfoBarService::WebContentsFromInfoBar(infobar()));
 }
 
 GeneratedPasswordSavedInfoBarDelegateAndroid::
