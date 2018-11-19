@@ -540,6 +540,16 @@ js_library("providers_model") {
   ]
 }
 
+js_unittest("providers_model_unittest") {
+  deps = [
+    ":providers_model",
+    "//ui/file_manager/base/js:mock_chrome",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/file_manager/background/js:mock_volume_manager",
+    "//ui/webui/resources/js:load_time_data",
+  ]
+}
+
 js_library("quick_view_controller") {
   deps = [
     ":dialog_type",
@@ -674,6 +684,7 @@ js_library("webui_command_extender") {
 js_unit_tests("unit_tests") {
   deps = [
     ":file_list_model_unittest",
+    ":providers_model_unittest",
     ":thumbnail_loader_unittest",
   ]
 }
