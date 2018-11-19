@@ -381,6 +381,10 @@ static int64_t make_posix_time(const struct tm *tm)
 static void timestamp(void)
 {
     struct compile_time * const oct = &official_compile_time;
+#if 1
+    // Chromium patch: Builds should be deterministic and not embed timestamps.
+    memset(oct, 0, sizeof(official_compile_time));
+#else
     const struct tm *tp, *best_gm;
 
     time(&oct->t);
@@ -409,6 +413,7 @@ static void timestamp(void)
         oct->posix = make_posix_time(best_gm);
         oct->have_posix = true;
     }
+#endif
 }
 
 int main(int argc, char **argv)

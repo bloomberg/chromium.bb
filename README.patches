@@ -25,3 +25,19 @@ Affects:
     include/ver.h
     nasmlib/ver.c
 
+------------------------------------------------------------------
+commit e5417246fc34b430f241f055b8b9570f5d9ab2c3
+Author: Dale Curtis <dalecurtis@chromium.org>
+Date:   Mon Nov 19 13:50:47 2018 -0800
+
+    Remove uses of time(NULL) for build determism.
+
+    Removes cases suggested on the bug.
+
+    BUG=766721
+    TEST=none
+
+Affects:
+    output/outcoff.c
+    asm/nasm.c
+

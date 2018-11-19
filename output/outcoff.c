@@ -921,7 +921,8 @@ static void coff_write(void)
         i = IMAGE_FILE_MACHINE_I386;
     fwriteint16_t(i,                    ofile); /* machine type */
     fwriteint16_t(coff_nsects,               ofile); /* number of sections */
-    fwriteint32_t(time(NULL),           ofile); /* time stamp */
+    // Chromium patch: Builds should be deterministic and not embed timestamps.
+    fwriteint32_t(0,                    ofile); /* time stamp */
     fwriteint32_t(sympos,               ofile);
     fwriteint32_t(coff_nsyms + initsym,      ofile);
     fwriteint16_t(0,                    ofile); /* no optional header */
