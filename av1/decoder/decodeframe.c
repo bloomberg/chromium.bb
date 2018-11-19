@@ -704,15 +704,15 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         const RefBuffer *ref_buf =
             &cm->frame_refs[this_mbmi->ref_frame[ref] - LAST_FRAME];
 
-        pd->pre[ref].buf0 =
-            (plane == 1) ? ref_buf->buf->u_buffer : ref_buf->buf->v_buffer;
+        pd->pre[ref].buf0 = (plane == 1) ? ref_buf->buf->buf.u_buffer
+                                         : ref_buf->buf->buf.v_buffer;
         pd->pre[ref].buf =
-            pd->pre[ref].buf0 + scaled_buffer_offset(pre_x, pre_y,
-                                                     ref_buf->buf->uv_stride,
-                                                     &ref_buf->sf);
-        pd->pre[ref].width = ref_buf->buf->uv_crop_width;
-        pd->pre[ref].height = ref_buf->buf->uv_crop_height;
-        pd->pre[ref].stride = ref_buf->buf->uv_stride;
+            pd->pre[ref].buf0 +
+            scaled_buffer_offset(pre_x, pre_y, ref_buf->buf->buf.uv_stride,
+                                 &ref_buf->sf);
+        pd->pre[ref].width = ref_buf->buf->buf.uv_crop_width;
+        pd->pre[ref].height = ref_buf->buf->buf.uv_crop_height;
+        pd->pre[ref].stride = ref_buf->buf->buf.uv_stride;
 
         const struct scale_factors *const sf =
             is_intrabc ? &cm->sf_identity : &ref_buf->sf;
@@ -1065,8 +1065,8 @@ static void predict_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       RefBuffer *ref_buf = &cm->frame_refs[frame - LAST_FRAME];
 
       xd->block_refs[ref] = ref_buf;
-      av1_setup_pre_planes(xd, ref, ref_buf->buf, mi_row, mi_col, &ref_buf->sf,
-                           num_planes);
+      av1_setup_pre_planes(xd, ref, &ref_buf->buf->buf, mi_row, mi_col,
+                           &ref_buf->sf, num_planes);
     }
   }
 
@@ -2444,7 +2444,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   int has_valid_ref_frame = 0;
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
     if (aom_rb_read_bit(rb)) {
-      YV12_BUFFER_CONFIG *const buf = cm->frame_refs[i].buf;
+      YV12_BUFFER_CONFIG *const buf = &cm->frame_refs[i].buf->buf;
       width = buf->y_crop_width;
       height = buf->y_crop_height;
       cm->render_width = buf->render_width;
@@ -2476,8 +2476,8 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
     RefBuffer *const ref_frame = &cm->frame_refs[i];
     has_valid_ref_frame |=
-        valid_ref_frame_size(ref_frame->buf->y_crop_width,
-                             ref_frame->buf->y_crop_height, width, height);
+        valid_ref_frame_size(ref_frame->buf->buf.y_crop_width,
+                             ref_frame->buf->buf.y_crop_height, width, height);
   }
   if (!has_valid_ref_frame)
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
@@ -2485,8 +2485,8 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
     RefBuffer *const ref_frame = &cm->frame_refs[i];
     if (!valid_ref_frame_img_fmt(
-            ref_frame->buf->bit_depth, ref_frame->buf->subsampling_x,
-            ref_frame->buf->subsampling_y, seq_params->bit_depth,
+            ref_frame->buf->buf.bit_depth, ref_frame->buf->buf.subsampling_x,
+            ref_frame->buf->buf.subsampling_y, seq_params->bit_depth,
             seq_params->subsampling_x, seq_params->subsampling_y))
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Referenced frame has incompatible color format");
@@ -4721,7 +4721,6 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-    cm->frame_refs[i].idx = INVALID_IDX;
     cm->frame_refs[i].buf = NULL;
   }
 
@@ -4753,7 +4752,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   generate_next_ref_frame_map(pbi);
 
   // Reload the adapted CDFs from when we originally coded this keyframe
-  *cm->fc = cm->frame_contexts[existing_frame_idx];
+  *cm->fc = cm->frame_refs[existing_frame_idx].buf->frame_context;
 }
 
 static INLINE void reset_frame_buffers(AV1_COMMON *cm) {
@@ -4773,8 +4772,8 @@ static INLINE void reset_frame_buffers(AV1_COMMON *cm) {
     if (frame_bufs[i].ref_count > 0 && i != cm->new_fb_idx) {
       continue;
     }
-    frame_bufs[i].cur_frame_offset = 0;
-    av1_zero(frame_bufs[i].ref_frame_offset);
+    frame_bufs[i].order_hint = 0;
+    av1_zero(frame_bufs[i].ref_order_hints);
   }
   av1_zero_unused_internal_frame_buffers(&cm->buffer_pool->int_frame_buffers);
   unlock_buffer_pool(cm->buffer_pool);
@@ -5027,7 +5026,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
     for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-      cm->frame_refs[i].idx = INVALID_IDX;
       cm->frame_refs[i].buf = NULL;
     }
     if (pbi->need_resync) {
@@ -5062,13 +5060,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         seq_params->order_hint_info.enable_order_hint) {
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
         // Read order hint from bit stream
-        unsigned int frame_offset = aom_rb_read_literal(
+        unsigned int order_hint = aom_rb_read_literal(
             rb, seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
         // Get buffer index
         int buf_idx = cm->ref_frame_map[ref_idx];
         assert(buf_idx < FRAME_BUFFERS);
-        if (buf_idx == -1 ||
-            frame_offset != frame_bufs[buf_idx].cur_frame_offset) {
+        if (buf_idx == -1 || order_hint != frame_bufs[buf_idx].order_hint) {
           if (buf_idx >= 0) {
             lock_buffer_pool(pool);
             decrease_ref_count(buf_idx, frame_bufs, pool);
@@ -5098,7 +5095,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           set_planes_to_neutral_grey(seq_params, &frame_bufs[buf_idx].buf, 0);
 
           cm->ref_frame_map[ref_idx] = buf_idx;
-          frame_bufs[buf_idx].cur_frame_offset = frame_offset;
+          frame_bufs[buf_idx].order_hint = order_hint;
         }
       }
     }
@@ -5169,8 +5166,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                                "Inter frame requests nonexistent reference");
 
           RefBuffer *const ref_frame = &cm->frame_refs[i];
-          ref_frame->idx = idx;
-          ref_frame->buf = &frame_bufs[idx].buf;
+          ref_frame->buf = &frame_bufs[idx];
           ref_frame->map_idx = ref;
         } else {
           ref = cm->frame_refs[i].map_idx;
@@ -5212,7 +5208,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
     cm->prev_frame = get_prev_frame(cm);
     if (cm->primary_ref_frame != PRIMARY_REF_NONE &&
-        cm->frame_refs[cm->primary_ref_frame].idx < 0) {
+        cm->frame_refs[cm->primary_ref_frame].buf == NULL) {
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Reference frame containing this frame's initial "
                          "frame context is unavailable.");
@@ -5227,8 +5223,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         RefBuffer *const ref_buf = &cm->frame_refs[i];
         av1_setup_scale_factors_for_frame(
-            &ref_buf->sf, ref_buf->buf->y_crop_width,
-            ref_buf->buf->y_crop_height, cm->width, cm->height);
+            &ref_buf->sf, ref_buf->buf->buf.y_crop_width,
+            ref_buf->buf->buf.y_crop_height, cm->width, cm->height);
         if ((!av1_is_valid_scale(&ref_buf->sf)))
           aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                              "Reference frame has invalid dimensions");
@@ -5493,7 +5489,7 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
     *p_data_end = data + uncomp_hdr_size;
     if (cm->reset_decoder_state) {
       // Use the default frame context values.
-      *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+      *cm->fc = *cm->default_frame_context;
       if (!cm->fc->initialized)
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Uninitialized entropy context.");
@@ -5511,9 +5507,9 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
                          cm->seq_params.subsampling_y, num_planes);
   if (cm->primary_ref_frame == PRIMARY_REF_NONE) {
     // use the default frame context values
-    *cm->fc = cm->frame_contexts[FRAME_CONTEXT_DEFAULTS];
+    *cm->fc = *cm->default_frame_context;
   } else {
-    *cm->fc = cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
+    *cm->fc = cm->frame_refs[cm->primary_ref_frame].buf->frame_context;
   }
   if (!cm->fc->initialized)
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
@@ -5663,6 +5659,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   // Non frame parallel update frame context here.
   if (!cm->large_scale_tile) {
-    cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
+    cm->cur_frame->frame_context = *cm->fc;
   }
 }

@@ -1942,14 +1942,13 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 
     if (lf->mode_ref_delta_update) {
       const int prime_idx = cm->primary_ref_frame;
-      const int buf_idx =
-          prime_idx == PRIMARY_REF_NONE ? -1 : cm->frame_refs[prime_idx].idx;
+      const RefCntBuffer *const buf =
+          prime_idx == PRIMARY_REF_NONE ? NULL : cm->frame_refs[prime_idx].buf;
       int8_t last_ref_deltas[REF_FRAMES];
-      if (prime_idx == PRIMARY_REF_NONE || buf_idx < 0) {
+      if (prime_idx == PRIMARY_REF_NONE || buf == NULL) {
         av1_set_default_ref_deltas(last_ref_deltas);
       } else {
-        memcpy(last_ref_deltas, cm->buffer_pool->frame_bufs[buf_idx].ref_deltas,
-               REF_FRAMES);
+        memcpy(last_ref_deltas, buf->ref_deltas, REF_FRAMES);
       }
       for (i = 0; i < REF_FRAMES; i++) {
         const int delta = lf->ref_deltas[i];
@@ -1959,12 +1958,10 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
       }
 
       int8_t last_mode_deltas[MAX_MODE_LF_DELTAS];
-      if (prime_idx == PRIMARY_REF_NONE || buf_idx < 0) {
+      if (prime_idx == PRIMARY_REF_NONE || buf == NULL) {
         av1_set_default_mode_deltas(last_mode_deltas);
       } else {
-        memcpy(last_mode_deltas,
-               cm->buffer_pool->frame_bufs[buf_idx].mode_deltas,
-               MAX_MODE_LF_DELTAS);
+        memcpy(last_mode_deltas, buf->mode_deltas, MAX_MODE_LF_DELTAS);
       }
       for (i = 0; i < MAX_MODE_LF_DELTAS; i++) {
         const int delta = lf->mode_deltas[i];
@@ -2893,7 +2890,7 @@ static void check_frame_refs_short_signaling(AV1_COMP *const cpi) {
   for (int ref_idx = 0; ref_idx < INTER_REFS_PER_FRAME; ++ref_idx) {
     // Compare the buffer index between two reference frames indexed
     // respectively by the encoder and the decoder side decisions.
-    if (cm->frame_refs[ref_idx].idx != frame_refs_copy[ref_idx].idx) {
+    if (cm->frame_refs[ref_idx].buf != frame_refs_copy[ref_idx].buf) {
       cm->frame_refs_short_signaling = 0;
       break;
     }
@@ -2904,11 +2901,10 @@ static void check_frame_refs_short_signaling(AV1_COMP *const cpi) {
   printf("***frame_refs_short_signaling=%d\n", cm->frame_refs_short_signaling);
   for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     printf("enc_ref(map_idx=%d, buf_idx=%d)=%d, vs. "
-        "dec_ref(map_idx=%d, buf_idx=%d)=%d\n",
+        "dec_ref(map_idx=%d)=%d\n",
         get_ref_frame_map_idx(cpi, ref_frame),
         get_ref_frame_buf_idx(cpi, ref_frame), ref_frame,
-        cm->frame_refs[ref_frame - LAST_FRAME].map_idx,
-        cm->frame_refs[ref_frame - LAST_FRAME].idx, ref_frame);
+        cm->frame_refs[ref_frame - LAST_FRAME].map_idx, ref_frame);
   }
 #endif  // 0
 
@@ -3133,7 +3129,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
         // Write order hint to bit stream
         aom_wb_write_literal(
-            wb, frame_bufs[buf_idx].cur_frame_offset,
+            wb, frame_bufs[buf_idx].order_hint,
             seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
       }
     }

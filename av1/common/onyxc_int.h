@@ -109,7 +109,20 @@ typedef struct {
   MV_REFERENCE_FRAME ref_frame;
 } MV_REF;
 
-typedef struct {
+// FIXME(jack.haughton@argondesign.com): This enum was originally in
+// encoder/ratectrl.h, and is encoder specific. When we move to C++, this
+// should go back there and BufferPool should be templatized.
+typedef enum {
+  INTER_NORMAL = 0,
+  INTER_LOW = 1,
+  INTER_HIGH = 2,
+  GF_ARF_LOW = 3,
+  GF_ARF_STD = 4,
+  KF_STD = 5,
+  RATE_FACTOR_LEVELS = 6
+} RATE_FACTOR_LEVEL;
+
+typedef struct RefCntBuffer {
   // For a RefCntBuffer, the following are reference-holding variables:
   // - cm->ref_frame_map[]
   // - cm->new_fb_idx
@@ -123,10 +136,12 @@ typedef struct {
   // - Total 'n' of the variables / array elements above have value 'k' (that
   // is, they are pointing to buffer at index 'k').
   // Then, pool->frame_bufs[k].ref_count = n.
+  // TODO(david.turner@argondesign.com) Check whether this helpful comment is
+  // still correct after we finish restructuring
   int ref_count;
 
-  unsigned int cur_frame_offset;
-  unsigned int ref_frame_offset[INTER_REFS_PER_FRAME];
+  unsigned int order_hint;
+  unsigned int ref_order_hints[INTER_REFS_PER_FRAME];
 
   MV_REF *mvs;
   uint8_t *seg_map;
@@ -152,6 +167,9 @@ typedef struct {
 
   // 0 = ZERO_MV, MV
   int8_t mode_deltas[MAX_MODE_LF_DELTAS];
+
+  FRAME_CONTEXT frame_context;
+  RATE_FACTOR_LEVEL frame_rf_level;
 } RefCntBuffer;
 
 typedef struct BufferPool {
@@ -488,7 +506,7 @@ typedef struct AV1Common {
   MV_REFERENCE_FRAME comp_bwd_ref[BWD_REFS];
 
   FRAME_CONTEXT *fc;              /* this frame entropy */
-  FRAME_CONTEXT *frame_contexts;  // FRAME_CONTEXTS
+  FRAME_CONTEXT *default_frame_context;
   unsigned int frame_context_idx; /* Context to use/update */
   int fb_of_context_type[REF_FRAMES];
   int primary_ref_frame;
@@ -662,11 +680,10 @@ static INLINE int frame_is_sframe(const AV1_COMMON *cm) {
 
 static INLINE RefCntBuffer *get_prev_frame(const AV1_COMMON *const cm) {
   if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
-      cm->frame_refs[cm->primary_ref_frame].idx == INVALID_IDX) {
+      cm->frame_refs[cm->primary_ref_frame].buf == NULL) {
     return NULL;
   } else {
-    return &cm->buffer_pool
-                ->frame_bufs[cm->frame_refs[cm->primary_ref_frame].idx];
+    return cm->frame_refs[cm->primary_ref_frame].buf;
   }
 }
 

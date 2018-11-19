@@ -295,8 +295,8 @@ void av1_remove_common(AV1_COMMON *cm) {
 
   aom_free(cm->fc);
   cm->fc = NULL;
-  aom_free(cm->frame_contexts);
-  cm->frame_contexts = NULL;
+  aom_free(cm->default_frame_context);
+  cm->default_frame_context = NULL;
 }
 
 void av1_init_context_buffers(AV1_COMMON *cm) { cm->setup_mi(cm); }

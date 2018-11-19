@@ -90,11 +90,11 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
 
   CHECK_MEM_ERROR(cm, cm->fc,
                   (FRAME_CONTEXT *)aom_memalign(32, sizeof(*cm->fc)));
-  CHECK_MEM_ERROR(cm, cm->frame_contexts,
-                  (FRAME_CONTEXT *)aom_memalign(
-                      32, FRAME_CONTEXTS * sizeof(*cm->frame_contexts)));
+  CHECK_MEM_ERROR(
+      cm, cm->default_frame_context,
+      (FRAME_CONTEXT *)aom_memalign(32, sizeof(*cm->default_frame_context)));
   memset(cm->fc, 0, sizeof(*cm->fc));
-  memset(cm->frame_contexts, 0, FRAME_CONTEXTS * sizeof(*cm->frame_contexts));
+  memset(cm->default_frame_context, 0, sizeof(*cm->default_frame_context));
 
   pbi->need_resync = 1;
   aom_once(initialize_dec);
@@ -444,7 +444,6 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
 
     // Invalidate these references until the next frame starts.
     for (ref_index = 0; ref_index < INTER_REFS_PER_FRAME; ref_index++) {
-      cm->frame_refs[ref_index].idx = INVALID_IDX;
       cm->frame_refs[ref_index].buf = NULL;
     }
   }
@@ -468,9 +467,8 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
     // TODO(jkoleszar): Error concealment is undefined and non-normative
     // at this point, but if it becomes so, [0] may not always be the correct
     // thing to do here.
-    if (cm->frame_refs[0].idx > 0) {
-      assert(cm->frame_refs[0].buf != NULL);
-      cm->frame_refs[0].buf->corrupted = 1;
+    if (cm->frame_refs[0].buf != NULL) {
+      cm->frame_refs[0].buf->buf.corrupted = 1;
     }
   }
 

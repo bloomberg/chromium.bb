@@ -720,7 +720,6 @@ typedef struct AV1_COMP {
   int static_mb_pct;     // % forced skip mbs by segmentation
   int ref_frame_flags;
   int ext_ref_frame_flags;
-  RATE_FACTOR_LEVEL frame_rf_level[FRAME_BUFFERS];
 
   SPEED_FEATURES sf;
 

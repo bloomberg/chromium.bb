@@ -11139,13 +11139,13 @@ static int inter_mode_search_order_independent_skip(
       if (ref_frame[0] == ALTREF2_FRAME || ref_frame[1] == ALTREF2_FRAME)
         if (get_relative_dist(
                 order_hint_info,
-                cm->cur_frame->ref_frame_offset[ALTREF2_FRAME - LAST_FRAME],
+                cm->cur_frame->ref_order_hints[ALTREF2_FRAME - LAST_FRAME],
                 current_frame->order_hint) < 0)
           return 1;
       if (ref_frame[0] == BWDREF_FRAME || ref_frame[1] == BWDREF_FRAME)
         if (get_relative_dist(
                 order_hint_info,
-                cm->cur_frame->ref_frame_offset[BWDREF_FRAME - LAST_FRAME],
+                cm->cur_frame->ref_order_hints[BWDREF_FRAME - LAST_FRAME],
                 current_frame->order_hint) < 0)
           return 1;
     }
@@ -11155,16 +11155,14 @@ static int inter_mode_search_order_independent_skip(
       if (ref_frame[0] == LAST3_FRAME || ref_frame[1] == LAST3_FRAME)
         if (get_relative_dist(
                 order_hint_info,
-                cm->cur_frame->ref_frame_offset[LAST3_FRAME - LAST_FRAME],
-                cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <=
-            0)
+                cm->cur_frame->ref_order_hints[LAST3_FRAME - LAST_FRAME],
+                cm->cur_frame->ref_order_hints[GOLDEN_FRAME - LAST_FRAME]) <= 0)
           return 1;
       if (ref_frame[0] == LAST2_FRAME || ref_frame[1] == LAST2_FRAME)
         if (get_relative_dist(
                 order_hint_info,
-                cm->cur_frame->ref_frame_offset[LAST2_FRAME - LAST_FRAME],
-                cm->cur_frame->ref_frame_offset[GOLDEN_FRAME - LAST_FRAME]) <=
-            0)
+                cm->cur_frame->ref_order_hints[LAST2_FRAME - LAST_FRAME],
+                cm->cur_frame->ref_order_hints[GOLDEN_FRAME - LAST_FRAME]) <= 0)
           return 1;
     }
   }
@@ -11173,9 +11171,10 @@ static int inter_mode_search_order_independent_skip(
   if ((sf->selective_ref_frame >= 2) && comp_pred && !cpi->all_one_sided_refs) {
     unsigned int ref_offsets[2];
     for (int i = 0; i < 2; ++i) {
-      const int buf_idx = cm->frame_refs[ref_frame[i] - LAST_FRAME].idx;
-      assert(buf_idx >= 0);
-      ref_offsets[i] = cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
+      const RefCntBuffer *const buf =
+          cm->frame_refs[ref_frame[i] - LAST_FRAME].buf;
+      assert(buf != NULL);
+      ref_offsets[i] = buf->order_hint;
     }
     if ((get_relative_dist(order_hint_info, ref_offsets[0],
                            current_frame->order_hint) <= 0 &&

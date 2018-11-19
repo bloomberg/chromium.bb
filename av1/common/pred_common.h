@@ -90,16 +90,16 @@ static INLINE int av1_get_pred_context_seg_id(const MACROBLOCKD *xd) {
 static INLINE int get_comp_index_context(const AV1_COMMON *cm,
                                          const MACROBLOCKD *xd) {
   MB_MODE_INFO *mbmi = xd->mi[0];
-  int bck_idx = cm->frame_refs[mbmi->ref_frame[0] - LAST_FRAME].idx;
-  int fwd_idx = cm->frame_refs[mbmi->ref_frame[1] - LAST_FRAME].idx;
+  const RefCntBuffer *const bck_buf =
+      cm->frame_refs[mbmi->ref_frame[0] - LAST_FRAME].buf;
+  const RefCntBuffer *const fwd_buf =
+      cm->frame_refs[mbmi->ref_frame[1] - LAST_FRAME].buf;
   int bck_frame_index = 0, fwd_frame_index = 0;
-  int cur_frame_index = cm->cur_frame->cur_frame_offset;
+  int cur_frame_index = cm->cur_frame->order_hint;
 
-  if (bck_idx >= 0)
-    bck_frame_index = cm->buffer_pool->frame_bufs[bck_idx].cur_frame_offset;
+  if (bck_buf != NULL) bck_frame_index = bck_buf->order_hint;
+  if (fwd_buf != NULL) fwd_frame_index = fwd_buf->order_hint;
 
-  if (fwd_idx >= 0)
-    fwd_frame_index = cm->buffer_pool->frame_bufs[fwd_idx].cur_frame_offset;
   int fwd = abs(get_relative_dist(&cm->seq_params.order_hint_info,
                                   fwd_frame_index, cur_frame_index));
   int bck = abs(get_relative_dist(&cm->seq_params.order_hint_info,
@@ -111,14 +111,14 @@ static INLINE int get_comp_index_context(const AV1_COMMON *cm,
   int above_ctx = 0, left_ctx = 0;
   const int offset = (fwd == bck);
 
-  if (above_mi) {
+  if (above_mi != NULL) {
     if (has_second_ref(above_mi))
       above_ctx = above_mi->compound_idx;
     else if (above_mi->ref_frame[0] == ALTREF_FRAME)
       above_ctx = 1;
   }
 
-  if (left_mi) {
+  if (left_mi != NULL) {
     if (has_second_ref(left_mi))
       left_ctx = left_mi->compound_idx;
     else if (left_mi->ref_frame[0] == ALTREF_FRAME)

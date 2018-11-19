@@ -661,8 +661,6 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   int frames_to_blur_backward;
   int frames_to_blur_forward;
   RefBuffer ref_buf;
-  ref_buf.idx = INVALID_IDX;
-  ref_buf.idx = INVALID_IDX;
   ref_buf.buf = NULL;
 
   YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };

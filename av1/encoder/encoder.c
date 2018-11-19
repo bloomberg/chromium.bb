@@ -410,12 +410,12 @@ static void setup_frame(AV1_COMP *cpi) {
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
   } else {
     if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
-        cm->frame_refs[cm->primary_ref_frame].idx < 0) {
+        cm->frame_refs[cm->primary_ref_frame].buf == NULL) {
       av1_setup_past_independence(cm);
       cm->seg.update_map = 1;
       cm->seg.update_data = 1;
     } else {
-      *cm->fc = cm->frame_contexts[cm->frame_refs[cm->primary_ref_frame].idx];
+      *cm->fc = cm->frame_refs[cm->primary_ref_frame].buf->frame_context;
     }
     av1_zero(cpi->interp_filter_selected[0]);
   }
@@ -2591,11 +2591,11 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
   CHECK_MEM_ERROR(cm, cm->fc,
                   (FRAME_CONTEXT *)aom_memalign(32, sizeof(*cm->fc)));
-  CHECK_MEM_ERROR(cm, cm->frame_contexts,
-                  (FRAME_CONTEXT *)aom_memalign(
-                      32, FRAME_CONTEXTS * sizeof(*cm->frame_contexts)));
+  CHECK_MEM_ERROR(
+      cm, cm->default_frame_context,
+      (FRAME_CONTEXT *)aom_memalign(32, sizeof(*cm->default_frame_context)));
   memset(cm->fc, 0, sizeof(*cm->fc));
-  memset(cm->frame_contexts, 0, FRAME_CONTEXTS * sizeof(*cm->frame_contexts));
+  memset(cm->default_frame_context, 0, sizeof(*cm->default_frame_context));
 
   cpi->resize_state = 0;
   cpi->resize_avg_qp = 0;
@@ -4106,16 +4106,14 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
     RefBuffer *const ref_buf = &cm->frame_refs[ref_frame - LAST_FRAME];
     const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
 
-    ref_buf->idx = buf_idx;
-
     if (buf_idx != INVALID_IDX) {
-      YV12_BUFFER_CONFIG *const buf = &cm->buffer_pool->frame_bufs[buf_idx].buf;
+      RefCntBuffer *const buf = &cm->buffer_pool->frame_bufs[buf_idx];
       ref_buf->buf = buf;
-      av1_setup_scale_factors_for_frame(&ref_buf->sf, buf->y_crop_width,
-                                        buf->y_crop_height, cm->width,
+      av1_setup_scale_factors_for_frame(&ref_buf->sf, buf->buf.y_crop_width,
+                                        buf->buf.y_crop_height, cm->width,
                                         cm->height);
       if (av1_is_scaled(&ref_buf->sf))
-        aom_extend_frame_borders(buf, num_planes);
+        aom_extend_frame_borders(&buf->buf, num_planes);
     } else {
       ref_buf->buf = NULL;
     }
@@ -4583,7 +4581,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     // Base q-index may have changed, so we need to assign proper default coef
     // probs before every iteration.
     if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
-        cm->frame_refs[cm->primary_ref_frame].idx < 0) {
+        cm->frame_refs[cm->primary_ref_frame].buf == NULL) {
       av1_default_coef_probs(cm);
       av1_setup_frame_contexts(cm);
     }
@@ -4926,16 +4924,12 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
       current_frame->frame_number, current_frame->order_hint, cm->show_frame,
       cm->show_existing_frame);
   for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    const int buf_idx = cm->frame_refs[ref_frame - LAST_FRAME].idx;
-    const int ref_offset =
-        (buf_idx >= 0)
-            ? (int)cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset
-            : -1;
-    printf(
-        " %d(%c-%d-%4.2f)", ref_offset,
-        (cpi->ref_frame_flags & flag_list[ref_frame]) ? 'Y' : 'N',
-        (buf_idx >= 0) ? (int)cpi->frame_rf_level[buf_idx] : -1,
-        (buf_idx >= 0) ? rate_factor_deltas[cpi->frame_rf_level[buf_idx]] : -1);
+    RefBuffer *buf = &cm->frame_refs[ref_frame - LAST_FRAME];
+    const int ref_offset = (buf->buf) ? (int)buf->buf->order_hint : -1;
+    printf(" %d(%c-%d-%4.2f)", ref_offset,
+           (cpi->ref_frame_flags & flag_list[ref_frame]) ? 'Y' : 'N',
+           (buf->buf) ? (int)buf->buf->frame_rf_level : -1,
+           (buf->buf) ? rate_factor_deltas[buf->buf->frame_rf_level] : -1);
   }
   printf(" ]\n");
 
@@ -5080,7 +5074,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
     // Update current frame offset.
     current_frame->order_hint =
-        cm->buffer_pool->frame_bufs[cm->new_fb_idx].cur_frame_offset;
+        cm->buffer_pool->frame_bufs[cm->new_fb_idx].order_hint;
 
 #if DUMP_RECON_FRAMES == 1
     // NOTE(zoeliu): For debug - Output the filtered reconstructed video.
@@ -6795,11 +6789,11 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   if (cm->new_fb_idx == INVALID_IDX) return -1;
 
+  cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
   // Retain the RF_LEVEL for the current newly coded frame.
-  cpi->frame_rf_level[cm->new_fb_idx] =
+  cm->cur_frame->frame_rf_level =
       cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index];
 
-  cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
   cm->cur_frame->buf.buf_8bit_valid = 0;
 
   if (cpi->film_grain_table) {
@@ -6895,7 +6889,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 
   if (!cm->large_scale_tile) {
-    cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
+    cm->cur_frame->frame_context = *cm->fc;
   }
 
 #define EXT_TILE_DEBUG 0

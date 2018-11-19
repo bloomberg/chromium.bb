@@ -1068,9 +1068,16 @@ void av1_setup_frame_contexts(AV1_COMMON *cm) {
   // This function must ONLY be called when cm->fc has been initialized with
   // default probs, either by av1_setup_past_independence or after manually
   // initializing them
-  cm->frame_contexts[FRAME_CONTEXT_DEFAULTS] = *cm->fc;
+  *cm->default_frame_context = *cm->fc;
+  // TODO(jack.haughton@argondesign.com): don't think this should be necessary,
+  // but could do with fuller testing
   if (cm->large_scale_tile) {
-    for (int i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
+    for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+      if (cm->frame_refs[i].buf != NULL)
+        cm->frame_refs[i].buf->frame_context = *cm->fc;
+    }
+    for (int i = 0; i < FRAME_BUFFERS; ++i)
+      cm->buffer_pool->frame_bufs[i].frame_context = *cm->fc;
   }
 }
 
