@@ -10,6 +10,7 @@ RegisterNonMainDexNatives(). Together, these will use manual JNI registration
 to register all native methods that exist within an application."""
 
 import argparse
+import functools
 import multiprocessing
 import os
 import string
@@ -34,7 +35,11 @@ MERGEABLE_KEYS = [
 ]
 
 
-def _Generate(java_file_paths, srcjar_path, header_path=None, namespace=''):
+def _Generate(java_file_paths,
+              srcjar_path,
+              use_proxy_hash=False,
+              header_path=None,
+              namespace=''):
   """Generates files required to perform JNI registration.
 
   Generates a srcjar containing a single class, GEN_JNI, that contains all
@@ -53,34 +58,39 @@ def _Generate(java_file_paths, srcjar_path, header_path=None, namespace=''):
   # Without multiprocessing, script takes ~13 seconds for chrome_public_apk
   # on a z620. With multiprocessing, takes ~2 seconds.
   pool = multiprocessing.Pool()
-  results = [d for d in pool.imap_unordered(_DictForPath, java_file_paths) if d]
+
+  results = []
+  for d in pool.imap_unordered(
+      functools.partial(_DictForPath, use_proxy_hash=use_proxy_hash),
+      java_file_paths):
+    if d:
+      results.append(d)
   pool.close()
 
   # Sort to make output deterministic.
   results.sort(key=lambda d: d['FULL_CLASS_NAME'])
 
-  if header_path:
-    combined_dict = {}
-    for key in MERGEABLE_KEYS:
-      combined_dict[key] = ''.join(d.get(key, '') for d in results)
+  combined_dict = {}
+  for key in MERGEABLE_KEYS:
+    combined_dict[key] = ''.join(d.get(key, '') for d in results)
 
+  if header_path:
     combined_dict['HEADER_GUARD'] = \
         os.path.splitext(header_path)[0].replace('/', '_').upper() + '_'
     combined_dict['NAMESPACE'] = namespace
-
     header_content = CreateFromDict(combined_dict)
     with build_utils.AtomicOutput(header_path) as f:
       f.write(header_content)
 
   with build_utils.AtomicOutput(srcjar_path) as f:
     with zipfile.ZipFile(f, 'w') as srcjar:
-      # TODO(abenner): Write GEN_JNI.java here.
-      # build_utils.AddToZipHermetic(srcjar, 'org/chromium/base/GEN_JNI.java',
-      #     data='$CONTENT')
-      pass
+      build_utils.AddToZipHermetic(
+          srcjar,
+          'org/chromium/base/natives/GEN_JNI.java',
+          data=CreateProxyJavaFromDict(combined_dict))
 
 
-def _DictForPath(path):
+def _DictForPath(path, use_proxy_hash=False):
   with open(path) as f:
     contents = jni_generator.RemoveComments(f.read())
     if '@JniIgnoreNatives' in contents:
@@ -93,7 +103,8 @@ def _DictForPath(path):
   natives += jni_generator.NativeProxyHelpers.ExtractStaticProxyNatives(
       fully_qualified_class=fully_qualified_class,
       contents=contents,
-      ptr_type='long')
+      ptr_type='long',
+      use_hash=use_proxy_hash)
   if len(natives) == 0:
     return None
   namespace = jni_generator.ExtractJNINamespace(contents)
@@ -516,6 +527,11 @@ def main(argv):
                           default='',
                           help='Namespace to wrap the registration functions '
                           'into.')
+  arg_parser.add_argument(
+      '--use_proxy_hash',
+      action='store_true',
+      help='Enables hashing of the native declaration '
+      'for methods in an @JniNatives interface')
   args = arg_parser.parse_args(build_utils.ExpandFileArgs(argv[1:]))
   args.sources_files = build_utils.ParseGnList(args.sources_files)
 
@@ -529,6 +545,7 @@ def main(argv):
   _Generate(
       java_file_paths,
       args.srcjar_path,
+      use_proxy_hash=args.use_proxy_hash,
       header_path=args.header_path,
       namespace=args.namespace)
 
