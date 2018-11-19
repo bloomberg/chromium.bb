@@ -1431,6 +1431,11 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 // any device. To limit the effect of (2), custom large scrolling steps are
 // added to the usual scrolling actions.
 - (void)testManyPasswords {
+  if (IsIPadIdiom()) {
+    // TODO(crbug.com/906551): Enable the test on iPad once the bug is fixed.
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPad.");
+  }
+
   // Enough just to ensure filling more than one page on all devices.
   constexpr int kPasswordsCount = 15;
 
