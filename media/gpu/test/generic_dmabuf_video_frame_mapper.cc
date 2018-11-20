@@ -53,11 +53,6 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
   for (size_t i = 0; i < layout.num_planes(); i++) {
     strides[i] = layout.planes()[i].stride;
   }
-  if (layout.format() == PIXEL_FORMAT_YV12) {
-    // Swap the address of U and V planes, because the order U and V planes is
-    // reversed in YV12.
-    std::swap(plane_addrs[1], plane_addrs[2]);
-  }
   auto video_frame = VideoFrame::WrapExternalYuvData(
       layout.format(), layout.coded_size(), visible_rect, visible_rect.size(),
       strides[0], strides[1], strides[2], plane_addrs[0], plane_addrs[1],
