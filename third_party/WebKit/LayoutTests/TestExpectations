@@ -2808,8 +2808,10 @@ crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.js [ Pass 
 crbug.com/800898 external/wpt/FileAPI/url/url-with-fetch.any.worker.html [ Pass Failure ]
 crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
 crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Timeout ]
-crbug.com/800898 external/wpt/workers/worker-from-blob-url.window.html [ Timeout ]
-crbug.com/800898 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/worker-from-blob-url.window.html [ Timeout ]
+
+# These will be fixed when NetworkService gets enabled.
+crbug.com/800898 external/wpt/workers/shared-worker-from-blob-url.window.html [ Skip ]
+crbug.com/800898 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/shared-worker-from-blob-url.window.html [ Skip ]
 
 crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/sandboxed-iframe.html [ Pass Timeout ]
 crbug.com/849737 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-format.any.html [ Pass Timeout ]
@@ -3908,6 +3910,11 @@ crbug.com/835717 virtual/off-main-thread-worker-script-fetch/external/wpt/worker
 # This fails because off-the-main-thread script loading goes through different
 # loading path. Although we could remove this test. disable it for now.
 crbug.com/835717 virtual/off-main-thread-worker-script-fetch/fast/workers/chromium/worker-crash-with-invalid-location.html [ Skip ]
+# Looks like calling |URL.revokeObjectURL(blob_url)| immediately after
+# |new Worker(blob_url)| fails worker start because off-the-main-thread worker
+# script loading changes the order of url revocation and script fetch.
+# See also crbug.com/800898.
+crbug.com/835717 virtual/off-main-thread-worker-script-fetch/external/wpt/workers/dedicated-worker-from-blob-url.window.html [ Timeout ]
 
 # This fails because AllowedByNoSniff::MimeTypeAsScript() blocks the nested worker's
 # worker script, because the script url has a .html file extension.

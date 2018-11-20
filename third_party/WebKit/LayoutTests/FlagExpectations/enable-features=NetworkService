@@ -11,7 +11,7 @@ Bug(none) virtual/outofblink-cors-ns/http/tests/security/powerfulFeatureRestrict
 # Only passes with Network Servce enabled (unfortunately these expectations still
 # allow Failure or Timeout from the top-level expectations though).
 crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Pass ]
-crbug.com/800898 external/wpt/workers/worker-from-blob-url.window.html [ Pass ]
+crbug.com/800898 external/wpt/workers/shared-worker-from-blob-url.window.html [ Pass ]
 crbug.com/595993 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Pass ]
 crbug.com/862886 external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Pass ]
 crbug.com/896924 http/tests/inspector-protocol/network/interception-multiclient.js [ Pass ]

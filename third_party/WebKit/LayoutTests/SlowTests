@@ -806,7 +806,6 @@ crbug.com/874695 external/wpt/workers/semantics/multiple-workers/003.html [ Slow
 crbug.com/874695 external/wpt/workers/semantics/multiple-workers/004.html [ Slow ]
 crbug.com/874695 external/wpt/workers/semantics/multiple-workers/007.html [ Slow ]
 crbug.com/874695 external/wpt/workers/Worker_cross_origin_security_err.htm [ Slow ]
-crbug.com/874695 external/wpt/workers/worker-from-blob-url.window.html [ Slow ]
 crbug.com/874695 external/wpt/worklets/animation-worklet-referrer.https.html [ Slow ]
 crbug.com/874695 external/wpt/worklets/layout-worklet-referrer.https.html [ Slow ]
 crbug.com/874695 external/wpt/worklets/paint-worklet-referrer.https.html [ Slow ]
