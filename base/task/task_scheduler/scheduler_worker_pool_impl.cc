@@ -482,6 +482,9 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
       return nullptr;
     }
 
+    // Replace this worker if it was the last one, capacity permitting.
+    outer_->MaintainAtLeastOneIdleWorkerLockRequired();
+
     // Excess workers should not get work, until they are no longer excess (i.e.
     // max tasks increases or another worker cleans up). This ensures that if we
     // have excess workers in the pool, they get a chance to no longer be excess
@@ -843,10 +846,6 @@ bool SchedulerWorkerPoolImpl::WakeUpOneWorkerLockRequired() {
       worker->WakeUp();
     }
   }
-
-  // Ensure that there is one worker that can run tasks on top of the idle
-  // stack, capacity permitting.
-  MaintainAtLeastOneIdleWorkerLockRequired();
 
   return true;
 }
