@@ -358,6 +358,17 @@ def AddGnuWinToPath():
 
   os.environ['PATH'] = gnuwin_dir + os.pathsep + os.environ.get('PATH', '')
 
+  # find.exe, mv.exe and rm.exe are from MSYS (see crrev.com/389632). MSYS uses
+  # Cygwin under the hood, and initializing Cygwin has a race-condition when
+  # getting group and user data from the Active Directory is slow. To work
+  # around this, use a horrible hack telling it not to do that.
+  # See https://crbug.com/905289
+  etc = os.path.join(gnuwin_dir, '..', '..', 'etc')
+  EnsureDirExists(etc)
+  with open(os.path.join(etc, 'nsswitch.conf'), 'w') as f:
+    f.write('passwd: files\n')
+    f.write('group: files\n')
+
 
 win_sdk_dir = None
 dia_dll = None
