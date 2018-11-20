@@ -52,8 +52,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static const int kNoAlreadyUploadedFrame = -1;
-
   static HTMLVideoElement* Create(Document&);
 
   HTMLVideoElement(Document&);
@@ -93,7 +91,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
       cc::PaintCanvas*,
       const IntRect&,
       const cc::PaintFlags*,
-      int already_uploaded_id = kNoAlreadyUploadedFrame,
+      int already_uploaded_id = -1,
       WebMediaPlayer::VideoFrameUploadMetadata* out_metadata = nullptr) const;
 
   // Used by WebGL to do GPU-GPU texture copy if possible.
@@ -138,14 +136,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
                     GLint zoffset,
                     bool flip_y,
                     bool premultiply_alpha);
-
-  // Used by WebGL to do GPU_GPU texture sharing if possible.
-  bool PrepareVideoFrameForWebGL(
-      gpu::gles2::GLES2Interface*,
-      GLenum target,
-      GLuint texture,
-      bool already_uploaded_id,
-      WebMediaPlayer::VideoFrameUploadMetadata* out_metadata);
 
   bool ShouldDisplayPosterImage() const { return GetDisplayMode() == kPoster; }
 

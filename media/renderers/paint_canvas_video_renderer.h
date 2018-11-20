@@ -104,12 +104,6 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
       bool premultiply_alpha,
       bool flip_y);
 
-  bool PrepareVideoFrameForWebGL(const Context3D& context_3d,
-                                 gpu::gles2::GLES2Interface* gl,
-                                 const scoped_refptr<VideoFrame>& video_frame,
-                                 unsigned int target,
-                                 unsigned int texture);
-
   // Copy the CPU-side YUV contents of |video_frame| to texture |texture| in
   // context |destination_gl|.
   // |level|, |internal_format|, |type| specify target texture |texture|.
@@ -186,11 +180,6 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
                        const Context3D& context_3d);
 
   void CorrectLastImageDimensions(const SkIRect& visible_rect);
-
-  bool PrepareVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
-                         const Context3D& context_3d,
-                         unsigned int textureTarget,
-                         unsigned int texture);
 
   // Last image used to draw to the canvas.
   cc::PaintImage last_image_;

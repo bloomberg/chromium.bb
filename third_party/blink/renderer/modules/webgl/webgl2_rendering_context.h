@@ -19,7 +19,6 @@ class WebGLDebugRendererInfo;
 class WebGLLoseContext;
 class WebGLMultiview;
 class KHRParallelShaderCompile;
-class WebGLVideoTexture;
 
 class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -74,7 +73,6 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<WebGLDebugShaders> webgl_debug_shaders_;
   Member<WebGLLoseContext> webgl_lose_context_;
   Member<WebGLMultiview> webgl_multiview_;
-  Member<WebGLVideoTexture> webgl_video_texture_;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContext,

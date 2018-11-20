@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_debug_shaders.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_lose_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_multiview.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_video_texture.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 
 namespace blink {
@@ -140,7 +139,6 @@ void WebGL2RenderingContext::RegisterContextExtensions() {
   RegisterExtension<WebGLDebugShaders>(webgl_debug_shaders_);
   RegisterExtension<WebGLLoseContext>(webgl_lose_context_);
   RegisterExtension<WebGLMultiview>(webgl_multiview_, kDraftExtension);
-  RegisterExtension<WebGLVideoTexture>(webgl_video_texture_, kDraftExtension);
 }
 
 void WebGL2RenderingContext::Trace(blink::Visitor* visitor) {
@@ -159,7 +157,6 @@ void WebGL2RenderingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(webgl_debug_shaders_);
   visitor->Trace(webgl_lose_context_);
   visitor->Trace(webgl_multiview_);
-  visitor->Trace(webgl_video_texture_);
   WebGL2RenderingContextBase::Trace(visitor);
 }
 
