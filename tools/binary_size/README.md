@@ -65,6 +65,8 @@ Supports Android and Linux (although Linux
    * Map files contain some unique pieces of information compared to `nm`
       output, such as `** merge strings` entries, and some unnamed symbols
       (which although unnamed, contain the `.o` path).
+   * Generated in `is_official_build=true` builds if `generate_linker_map` is
+     true. In official builds on Android generate_linker_map is true by default.
 1. `.o` files are mapped to `.cc` files by parsing `.ninja` files.
    * This means that `.h` files are never listed as sources. No information
      about inlined symbols is gathered.

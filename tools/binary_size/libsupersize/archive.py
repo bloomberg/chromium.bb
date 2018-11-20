@@ -1507,8 +1507,8 @@ def DeduceMainPaths(args, parser):
       map_path += '.gz'
     if not os.path.exists(map_path):
       parser.error('Could not find .map(.gz)? file. Ensure you have built with '
-                   'is_official_build=true, or use --map-file to point me a '
-                   'linker map file.')
+                   'is_official_build=true and generate_linker_map=true, or '
+                   'use --map-file to point me a linker map file.')
 
   linker_name = _DetectLinkerName(map_path)
   logging.info('Linker name: %s' % linker_name)
