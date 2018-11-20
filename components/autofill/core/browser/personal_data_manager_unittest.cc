@@ -33,6 +33,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -221,6 +222,14 @@ class PersonalDataManagerTestBase {
   void ResetProfiles() {
     std::vector<AutofillProfile> empty_profiles;
     personal_data_->SetProfiles(&empty_profiles);
+  }
+
+  bool TurnOnSyncFeature() WARN_UNUSED_RESULT {
+    sync_service_.SetIsAuthenticatedAccountPrimary(true);
+    if (!sync_service_.IsSyncFeatureEnabled())
+      return false;
+    personal_data_->OnStateChanged(&sync_service_);
+    return personal_data_->IsSyncFeatureEnabled();
   }
 
   void EnableWalletCardImport() {
@@ -2116,6 +2125,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
   ///////////////////////////////////////////////////////////////////////
   const std::string kServerAddressId("server_address1");
 
+  ASSERT_TRUE(TurnOnSyncFeature());
+
   // Add two different profiles, a local and a server one.
   AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz",
@@ -2159,6 +2170,8 @@ TEST_F(PersonalDataManagerTest,
   // Setup.
   ///////////////////////////////////////////////////////////////////////
   const std::string kServerAddressId("server_address1");
+
+  ASSERT_TRUE(TurnOnSyncFeature());
 
   // Add two different profiles, a local and a server one.
   AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -5013,6 +5026,8 @@ TEST_F(PersonalDataManagerTest,
   // Setup.
   ///////////////////////////////////////////////////////////////////////
   EnableWalletCardImport();
+  ASSERT_TRUE(TurnOnSyncFeature());
+
   base::HistogramTester histogram_tester;
   const std::string kServerAddressId("server_address1");
 
@@ -5116,6 +5131,8 @@ TEST_F(PersonalDataManagerTest,
   // Setup.
   ///////////////////////////////////////////////////////////////////////
   EnableWalletCardImport();
+  ASSERT_TRUE(TurnOnSyncFeature());
+
   base::HistogramTester histogram_tester;
   const std::string kServerAddressId("server_address1");
 
@@ -5218,6 +5235,8 @@ TEST_F(PersonalDataManagerTest,
   // Setup.
   ///////////////////////////////////////////////////////////////////////
   EnableWalletCardImport();
+  ASSERT_TRUE(TurnOnSyncFeature());
+
   base::HistogramTester histogram_tester;
   const std::string kServerAddressId("server_address1");
 
@@ -5269,6 +5288,8 @@ TEST_F(
   // Setup.
   ///////////////////////////////////////////////////////////////////////
   EnableWalletCardImport();
+  ASSERT_TRUE(TurnOnSyncFeature());
+
   base::HistogramTester histogram_tester;
   const std::string kServerAddressId("server_address1");
   const std::string kServerAddressId2("server_address2");
@@ -5393,6 +5414,8 @@ TEST_F(
   // a new server card that refers to the already converted server address as
   // its billing address.
   EnableWalletCardImport();
+  ASSERT_TRUE(TurnOnSyncFeature());
+
   base::HistogramTester histogram_tester;
   const std::string kServerAddressId("server_address1");
 
@@ -5485,6 +5508,75 @@ TEST_F(
   // to the converted address.
   EXPECT_EQ(profiles[0]->guid(),
             personal_data_->GetCreditCards()[1]->billing_address_id());
+}
+
+// Tests that Wallet addresses do NOT get converted if they're stored in
+// ephemeral storage.
+TEST_F(PersonalDataManagerTest, DoNotConvertWalletAddressesInEphemeralStorage) {
+  ///////////////////////////////////////////////////////////////////////
+  // Setup.
+  ///////////////////////////////////////////////////////////////////////
+  EnableWalletCardImport();
+  ResetPersonalDataManager(USER_MODE_NORMAL,
+                           /*use_account_server_storage=*/true);
+  ASSERT_FALSE(personal_data_->IsSyncFeatureEnabled());
+
+  // Add a local profile.
+  AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz", "",
+                       "Fox", "1212 Center.", "Bld. 5", "", "", "", "", "");
+  personal_data_->AddProfile(local_profile);
+
+  // Add two server profiles: The first is unique, the second is similar to the
+  // local one but has some additional info.
+  std::vector<AutofillProfile> server_profiles;
+  server_profiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, "server_address1"));
+  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "", "",
+                       "1212 Center", "Bld. 5", "Orlando", "FL", "32801", "US",
+                       "");
+  server_profiles.back().SetRawInfo(NAME_FULL, base::ASCIIToUTF16("John Doe"));
+
+  server_profiles.push_back(
+      AutofillProfile(AutofillProfile::SERVER_PROFILE, "server_address2"));
+  test::SetProfileInfo(&server_profiles.back(), "Josephine", "Alicia", "Saenz",
+                       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
+                       "Orlando", "FL", "32801", "US", "19482937549");
+  server_profiles.back().SetRawInfo(
+      NAME_FULL, base::ASCIIToUTF16("Josephine Alicia Saenz"));
+  SetServerProfiles(server_profiles);
+
+  ASSERT_TRUE(AutofillProfileComparator(personal_data_->app_locale())
+                  .AreMergeable(local_profile, server_profiles.back()));
+
+  // Make sure everything is set up correctly.
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+  ASSERT_EQ(1U, personal_data_->GetProfiles().size());
+  ASSERT_EQ(2U, personal_data_->GetServerProfiles().size());
+
+  ///////////////////////////////////////////////////////////////////////
+  // Tested method.
+  ///////////////////////////////////////////////////////////////////////
+  // Since the wallet addresses are in ephemeral storage, they should *not* get
+  // converted to local addresses.
+  personal_data_->ConvertWalletAddressesAndUpdateWalletCards();
+
+  ///////////////////////////////////////////////////////////////////////
+  // Validation.
+  ///////////////////////////////////////////////////////////////////////
+  // Since there should be no change in data, OnPersonalDataChanged should not
+  // get called.
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
+
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+
+  // There should be no changes to the local profiles: No new one added, and no
+  // changes to the existing one (even though the second server profile contains
+  // additional information and is mergeable in principle).
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(local_profile, *personal_data_->GetProfiles()[0]);
 }
 
 TEST_F(PersonalDataManagerTest, RemoveByGUID_ResetsBillingAddress) {

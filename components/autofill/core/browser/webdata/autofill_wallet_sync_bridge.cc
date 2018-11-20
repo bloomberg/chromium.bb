@@ -64,7 +64,6 @@ std::string GetClientTagForWalletDataSpecificsId(
 void AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
     const std::string& app_locale,
     const base::RepeatingCallback<void(bool)>& active_callback,
-    bool has_persistent_storage,
     AutofillWebDataBackend* web_data_backend,
     AutofillWebDataService* web_data_service) {
   web_data_service->GetDBUserData()->SetUserData(
@@ -74,7 +73,7 @@ void AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
           std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
               syncer::AUTOFILL_WALLET_DATA,
               /*dump_stack=*/base::RepeatingClosure()),
-          has_persistent_storage, web_data_backend));
+          web_data_backend));
 }
 
 // static
@@ -88,10 +87,8 @@ syncer::ModelTypeSyncBridge* AutofillWalletSyncBridge::FromWebDataService(
 AutofillWalletSyncBridge::AutofillWalletSyncBridge(
     const base::RepeatingCallback<void(bool)>& active_callback,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
-    bool has_persistent_storage,
     AutofillWebDataBackend* web_data_backend)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      has_persistent_storage_(has_persistent_storage),
       active_callback_(active_callback),
       initial_sync_done_(false),
       web_data_backend_(web_data_backend) {
@@ -267,21 +264,13 @@ void AutofillWalletSyncBridge::SetSyncData(
 
   // Extract the Autofill types from the sync |entity_data|.
   std::vector<CreditCard> wallet_cards;
+  std::vector<AutofillProfile> wallet_addresses;
   std::vector<PaymentsCustomerData> customer_data;
-  if (has_persistent_storage_) {
-    // When in persistent storage mode, we update wallet addresses.
-    std::vector<AutofillProfile> wallet_addresses;
-    PopulateWalletTypesFromSyncData(entity_data, &wallet_cards,
-                                    &wallet_addresses, &customer_data);
-    wallet_data_changed |= SetWalletAddresses(std::move(wallet_addresses));
-  } else {
-    // When in ephemeral storage mode, we ignore wallet addresses.
-    PopulateWalletTypesFromSyncData(entity_data, &wallet_cards, nullptr,
-                                    &customer_data);
-  }
+  PopulateWalletTypesFromSyncData(entity_data, &wallet_cards, &wallet_addresses,
+                                  &customer_data);
 
-  // In both cases, we need to update wallet cards and payments customer data.
   wallet_data_changed |= SetWalletCards(std::move(wallet_cards));
+  wallet_data_changed |= SetWalletAddresses(std::move(wallet_addresses));
   wallet_data_changed |= SetPaymentsCustomerData(std::move(customer_data));
 
   if (web_data_backend_ && wallet_data_changed)

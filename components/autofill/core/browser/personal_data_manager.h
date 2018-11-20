@@ -416,6 +416,8 @@ class PersonalDataManager : public KeyedService,
       PersonalDataManagerTest,
       ConvertWalletAddressesAndUpdateWalletCards_MultipleSimilarWalletAddresses);  // NOLINT
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
+                           DoNotConvertWalletAddressesInEphemeralStorage);
+  FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            DeleteDisusedCreditCards_OncePerVersion);
   FRIEND_TEST_ALL_PREFIXES(PersonalDataManagerTest,
                            DeleteDisusedCreditCards_DoNothingWhenDisabled);
