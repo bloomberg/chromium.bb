@@ -1413,8 +1413,9 @@ void HTMLElement::OnXMLLangAttrChanged(
 
 ElementInternals* HTMLElement::attachInternals(
     ExceptionState& exception_state) {
+  CustomElementRegistry* registry = CustomElement::Registry(*this);
   auto* definition =
-      CustomElement::Registry(*this)->DefinitionForName(localName());
+      registry ? registry->DefinitionForName(localName()) : nullptr;
   if (!definition) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
