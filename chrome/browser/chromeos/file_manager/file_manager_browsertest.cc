@@ -711,8 +711,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     MyFiles, /* my_files.js */
     FilesAppBrowserTest,
     ::testing::Values(
+        // search should only be disabled if MyFiles isn't a volume.
         TestCase("hideSearchButton"),
         TestCase("directoryTreeRefresh"),
+        TestCase("directoryTreeRefresh").EnableMyFilesVolume(),
         TestCase("showMyFiles"),
         TestCase("showMyFiles").EnableMyFilesVolume(),
         TestCase("myFilesDisplaysAndOpensEntries"),
