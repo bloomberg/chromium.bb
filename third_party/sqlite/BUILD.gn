@@ -62,11 +62,6 @@ config("chromium_sqlite3_compile_options") {
     # TODO(pwnall): Figure out if exceeding this is costly.
     "SQLITE_MAX_MMAP_SIZE=268435456",
 
-    # Use a read-only memory map when mmap'ed I/O is enabled to prevent memory
-    # stompers from directly corrupting the database.
-    # TODO(pwnall): Upstream the ability to use this define.
-    "SQLITE_MMAP_READ_ONLY=1",
-
     # The default POSIX permissions for a newly created SQLite database.
     #
     # If unspecified, this defaults to 0644. All the data stored by Chrome is
