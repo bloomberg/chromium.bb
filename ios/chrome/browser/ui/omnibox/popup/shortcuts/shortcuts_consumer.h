@@ -15,8 +15,8 @@
 // Called immediately when the shortcuts are available for the first time.
 - (void)mostVisitedShortcutsAvailable:
     (NSArray<ShortcutsMostVisitedItem*>*)items;
-// Called when the favicon of a given item has changed or reloaded.
-- (void)faviconChangedForItem:(ShortcutsMostVisitedItem*)item;
+// Called when the favicon of a given URL has changed or reloaded.
+- (void)faviconChangedForURL:(const GURL&)url;
 // Called when the reading list badge count changes.
 - (void)readingListBadgeUpdatedWithCount:(NSInteger)count;
 
