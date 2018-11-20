@@ -5,13 +5,10 @@
 #include "chromeos/components/tether/asynchronous_shutdown_object_container_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "chromeos/chromeos_features.h"
-#include "chromeos/components/tether/ble_advertisement_device_queue.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender_impl.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
-#include "chromeos/services/secure_channel/ble_synchronizer.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/local_device_data_provider.h"
@@ -28,7 +25,6 @@ AsynchronousShutdownObjectContainerImpl::Factory*
 // static
 std::unique_ptr<AsynchronousShutdownObjectContainer>
 AsynchronousShutdownObjectContainerImpl::Factory::NewInstance(
-    scoped_refptr<device::BluetoothAdapter> adapter,
     cryptauth::CryptAuthService* cryptauth_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
@@ -41,7 +37,7 @@ AsynchronousShutdownObjectContainerImpl::Factory::NewInstance(
     factory_instance_ = new Factory();
 
   return factory_instance_->BuildInstance(
-      adapter, cryptauth_service, device_sync_client, secure_channel_client,
+      cryptauth_service, device_sync_client, secure_channel_client,
       tether_host_fetcher, network_state_handler,
       managed_network_configuration_handler, network_connection_handler,
       pref_service);
@@ -57,7 +53,6 @@ AsynchronousShutdownObjectContainerImpl::Factory::~Factory() = default;
 
 std::unique_ptr<AsynchronousShutdownObjectContainer>
 AsynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
-    scoped_refptr<device::BluetoothAdapter> adapter,
     cryptauth::CryptAuthService* cryptauth_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
@@ -67,7 +62,7 @@ AsynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
     NetworkConnectionHandler* network_connection_handler,
     PrefService* pref_service) {
   return base::WrapUnique(new AsynchronousShutdownObjectContainerImpl(
-      adapter, cryptauth_service, device_sync_client, secure_channel_client,
+      cryptauth_service, device_sync_client, secure_channel_client,
       tether_host_fetcher, network_state_handler,
       managed_network_configuration_handler, network_connection_handler,
       pref_service));
@@ -75,7 +70,6 @@ AsynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
 
 AsynchronousShutdownObjectContainerImpl::
     AsynchronousShutdownObjectContainerImpl(
-        scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::CryptAuthService* cryptauth_service,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
@@ -85,22 +79,10 @@ AsynchronousShutdownObjectContainerImpl::
             managed_network_configuration_handler,
         NetworkConnectionHandler* network_connection_handler,
         PrefService* pref_service)
-    : adapter_(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-                   ? nullptr
-                   : adapter),
-      tether_host_fetcher_(tether_host_fetcher),
+    : tether_host_fetcher_(tether_host_fetcher),
       local_device_data_provider_(
           std::make_unique<cryptauth::LocalDeviceDataProvider>(
               cryptauth_service)),
-      ble_advertisement_device_queue_(
-          base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-              ? nullptr
-              : std::make_unique<BleAdvertisementDeviceQueue>()),
-      ble_synchronizer_(
-          base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-              ? nullptr
-              : secure_channel::BleSynchronizer::Factory::Get()->BuildInstance(
-                    adapter)),
       disconnect_tethering_request_sender_(
           DisconnectTetheringRequestSenderImpl::Factory::NewInstance(
               device_sync_client,
@@ -170,12 +152,6 @@ void AsynchronousShutdownObjectContainerImpl::ShutdownIfPossible() {
 
 bool AsynchronousShutdownObjectContainerImpl::
     AreAsynchronousOperationsActive() {
-  // All of the asynchronous shutdown procedures depend on Bluetooth. If
-  // Bluetooth is off, there is no way to complete these tasks.
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      !adapter_->IsPowered())
-    return false;
-
   // If there are pending disconnection requests, they must be sent before the
   // component shuts down.
   if (disconnect_tethering_request_sender_->HasPendingRequests()) {
