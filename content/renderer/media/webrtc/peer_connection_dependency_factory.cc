@@ -62,6 +62,7 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/webrtc/api/create_peerconnection_factory.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/api/video_codecs/video_decoder_factory.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder_factory.h"

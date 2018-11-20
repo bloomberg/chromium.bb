@@ -34,6 +34,7 @@
 #include "third_party/webrtc/api/audio_codecs/audio_encoder_factory_template.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_decoder_opus.h"
 #include "third_party/webrtc/api/audio_codecs/opus/audio_encoder_opus.h"
+#include "third_party/webrtc/api/create_peerconnection_factory.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
 #include "third_party/webrtc/api/video_codecs/builtin_video_decoder_factory.h"
 
