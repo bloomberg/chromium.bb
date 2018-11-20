@@ -407,7 +407,12 @@ void AppListItemView::SetAsAttemptedFolderTarget(bool is_target_folder) {
 
 void AppListItemView::SetItemName(const base::string16& display_name,
                                   const base::string16& full_name) {
-  title_->SetText(display_name);
+  if (is_folder_ && display_name.empty()) {
+    title_->SetText(ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+        IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER));
+  } else {
+    title_->SetText(display_name);
+  }
 
   tooltip_text_ = display_name == full_name ? base::string16() : full_name;
 
