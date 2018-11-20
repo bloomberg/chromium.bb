@@ -3026,6 +3026,25 @@ TEST_F(SchedulerTest, InvalidateLayerTreeFrameSinkWhenCannotDraw) {
   EXPECT_FALSE(scheduler_->RedrawPending());
 }
 
+TEST_F(SchedulerTest, NeedsPrepareTilesInvalidates) {
+  // This is to test that SetNeedsPrepareTiles causes invalidates even if
+  // CanDraw is false.
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  SetUpScheduler(EXTERNAL_BFS);
+
+  scheduler_->SetCanDraw(false);
+
+  scheduler_->SetNeedsPrepareTiles();
+  EXPECT_ACTIONS("AddObserver(this)");
+  client_->Reset();
+
+  // Do not invalidate in next BeginFrame.
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame",
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
+  client_->Reset();
+}
+
 TEST_F(SchedulerTest, SetNeedsOneBeginImplFrame) {
   SetUpScheduler(EXTERNAL_BFS);
 
