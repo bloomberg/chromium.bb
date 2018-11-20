@@ -16,9 +16,11 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import org.chromium.base.JniStaticTestMocker;
 import org.chromium.base.annotations.JniStaticNatives;
 
 import java.security.MessageDigest;
@@ -297,6 +299,14 @@ public class JniProcessor extends AbstractProcessor {
      * Creates a class spec for an implementation of an @JNINatives annotated interface that will
      * wrap calls to the NativesClass which contains the actual native method declarations.
      *
+     * This class should contain:
+     * 1. Wrappers for all GEN_JNI static native methods
+     * 2. A getter that when testing is disabled, will return the native implementation and
+     * when testing is enabled, will call the mock of the native implementation.
+     * 3. A field that holds the testNatives instance for when testing is enabled
+     * 4. A TEST_HOOKS field that implements an anonymous instance of JniStaticTestMocker
+     * which will set the testNatives implementation when called in tests
+     *
      * @param name name of the wrapper class.
      * @param isPublic if true, a public modifier will be added to this native wrapper.
      * @param nativeInterface the @JNINatives annotated type that this native wrapper
@@ -305,58 +315,18 @@ public class JniProcessor extends AbstractProcessor {
      * */
     TypeSpec createNativeWrapperClassSpec(String name, boolean isPublic,
             TypeElement nativeInterface, Map<String, MethodSpec> methodMap) {
+        // The wrapper class builder.
         TypeName nativeInterfaceType = TypeName.get(nativeInterface.asType());
-
         TypeSpec.Builder builder = TypeSpec.classBuilder(name)
+                                           .addSuperinterface(nativeInterfaceType)
                                            .addModifiers(Modifier.FINAL)
-                                           .addAnnotation(createGeneratedAnnotation())
-                                           .addSuperinterface(nativeInterfaceType);
+                                           .addAnnotation(createGeneratedAnnotation());
+
         if (isPublic) {
             builder.addModifiers(Modifier.PUBLIC);
         }
 
-        // Holds the test natives target if it is set.
-        FieldSpec testTarget = FieldSpec.builder(nativeInterfaceType, "testInst")
-                                       .addModifiers(Modifier.STATIC)
-                                       .build();
-
-        ParameterSpec testNativesParam =
-                ParameterSpec.builder(nativeInterfaceType, "testNatives").build();
-
-        // Target is a field that holds an instance of some NativeInterface.
-        // Is initialized with an instance of this class.
-        FieldSpec target = FieldSpec.builder(nativeInterfaceType, "mNatives")
-                                   .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-                                   .addModifiers(Modifier.FINAL)
-                                   .initializer("new $N()", name)
-                                   .build();
-
-        builder.addField(target);
-        builder.addField(testTarget);
-
-        // Getter for target or testing instance if flag in GEN_JNI is set.
-        MethodSpec instanceGetter =
-                MethodSpec.methodBuilder("get")
-                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                        .returns(nativeInterfaceType)
-                        .beginControlFlow("if ($T.$N)", NATIVE_CLASS_NAME, NATIVE_TEST_FIELD_NAME)
-                        .addStatement("return $N", testTarget)
-                        .endControlFlow()
-                        .addStatement("return $N", target)
-                        .build();
-
-        // Sets testTarget to passed in Natives instance.
-        MethodSpec setInstanceForTesting =
-                MethodSpec.methodBuilder("setForTesting")
-                        .returns(TypeName.VOID)
-                        .addParameter(testNativesParam)
-                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                        .addStatement("$N = $N", testTarget, testNativesParam)
-                        .build();
-
-        builder.addMethod(instanceGetter);
-        builder.addMethod(setInstanceForTesting);
-
+        // Start by adding all the native method wrappers.
         for (Element enclosed : nativeInterface.getEnclosedElements()) {
             if (enclosed.getKind() != ElementKind.METHOD) {
                 printError(
@@ -376,6 +346,56 @@ public class JniProcessor extends AbstractProcessor {
             builder.addMethod(createNativeWrapperMethod(interfaceMethod, nativesMethod));
         }
 
+        // Add the testInstance field.
+        // Holds the test natives target if it is set.
+        FieldSpec testTarget = FieldSpec.builder(nativeInterfaceType, "testInstance")
+                                       .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
+                                       .build();
+        builder.addField(testTarget);
+
+        // Getter for target or testing instance if flag in GEN_JNI is set.
+        MethodSpec instanceGetter =
+                MethodSpec.methodBuilder("get")
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                        .returns(nativeInterfaceType)
+                        .beginControlFlow("if ($T.$N)", NATIVE_CLASS_NAME, NATIVE_TEST_FIELD_NAME)
+                        .addStatement("return $N", testTarget)
+                        .endControlFlow()
+                        .addStatement("return new $N()", name)
+                        .build();
+
+        builder.addMethod(instanceGetter);
+
+        // Next add TEST_HOOKS to set testInstance... should look like this:
+        // JniStaticTestMocker<ClassNameJni> TEST_HOOKS = new JniStaticTestMocker<>() {
+        //      @Override
+        //      public static setInstanceForTesting(ClassNameJni instance) {
+        //          testInstance = instance;
+        //      }
+        // }
+        MethodSpec testHookMockerMethod = MethodSpec.methodBuilder("setInstanceForTesting")
+                                                  .addModifiers(Modifier.PUBLIC)
+                                                  .addAnnotation(Override.class)
+                                                  .addParameter(nativeInterfaceType, "instance")
+                                                  .addStatement("$N = instance", testTarget)
+                                                  .build();
+
+        // Make the anonymous TEST_HOOK class.
+        ParameterizedTypeName genericMockerInterface = ParameterizedTypeName.get(
+                ClassName.get(JniStaticTestMocker.class), ClassName.get(nativeInterface));
+
+        TypeSpec testHook = TypeSpec.anonymousClassBuilder("")
+                                    .addSuperinterface(genericMockerInterface)
+                                    .addMethod(testHookMockerMethod)
+                                    .build();
+
+        FieldSpec testHookSpec =
+                FieldSpec.builder(genericMockerInterface, "TEST_HOOKS")
+                        .addModifiers(Modifier.STATIC, Modifier.PUBLIC, Modifier.FINAL)
+                        .initializer("$L", testHook.toString())
+                        .build();
+
+        builder.addField(testHookSpec);
         return builder.build();
     }
 

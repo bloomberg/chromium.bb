@@ -2904,10 +2904,11 @@ if (is_android) {
     ]
   }
 
-  java_library("jni_processor_annotations_java") {
+  java_library("jni_java") {
     supports_android = true
     java_files = [
       "android/java/src/org/chromium/base/annotations/JniStaticNatives.java",
+      "android/java/src/org/chromium/base/JniStaticTestMocker.java",
     ]
   }
 
@@ -2949,6 +2950,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/FileUtils.java",
       "android/java/src/org/chromium/base/ImportantFileWriterAndroid.java",
       "android/java/src/org/chromium/base/IntStringCallback.java",
+      "android/java/src/org/chromium/base/JniStaticTestMocker.java",
       "android/java/src/org/chromium/base/JNIUtils.java",
       "android/java/src/org/chromium/base/JavaExceptionReporter.java",
       "android/java/src/org/chromium/base/JavaHandlerThread.java",
@@ -2983,6 +2985,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/JNIAdditionalImport.java",
       "android/java/src/org/chromium/base/annotations/JNINamespace.java",
       "android/java/src/org/chromium/base/annotations/JniIgnoreNatives.java",
+      "android/java/src/org/chromium/base/annotations/JniStaticNatives.java",
       "android/java/src/org/chromium/base/annotations/MainDex.java",
       "android/java/src/org/chromium/base/annotations/NativeCall.java",
       "android/java/src/org/chromium/base/annotations/NativeClassQualifiedName.java",

@@ -23,7 +23,6 @@ android_library("jni_sample_java") {
 
   deps = [
     "//base:base_java",
-    "//base:jni_processor_annotations_java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -32,7 +31,7 @@ android_library("jni_sample_java") {
 android_library("jni_annotation_sample_java") {
   java_files = [ "java/src/org/chromium/example/jni_generator/SampleForAnnotationProcessor.java" ]
   deps = [
-    "//base:jni_processor_annotations_java",
+    "//base:base_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
@@ -96,7 +95,7 @@ java_annotation_processor("jni_processor") {
   annotation_processor_deps = [ "//third_party/auto:auto_service_processor" ]
 
   deps = [
-    "//base:jni_processor_annotations_java",
+    "//base:jni_java",
     "//third_party/android_deps:com_squareup_javapoet_java",
     "//third_party/auto:auto_service_java",
     "//third_party/guava:guava_java",
