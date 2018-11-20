@@ -33,7 +33,8 @@
           "dwrite_font_proxy",
           "field_trials",
           "font_loader",
-          "renderer"
+          "renderer",
+          "sandbox_support"
         ],
         "font_service": [ "font_service" ],
         "metrics": [ "url_keyed_metrics" ],

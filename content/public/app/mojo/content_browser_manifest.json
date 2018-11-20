@@ -82,6 +82,9 @@
           "viz.mojom.CompositingModeReporter",
           "ws.mojom.Gpu"
         ],
+        "sandbox_support": [
+          "content.mojom.SandboxSupportMac"
+        ],
         "service_manager:service_factory": [
           "service_manager.mojom.ServiceFactory"
         ]

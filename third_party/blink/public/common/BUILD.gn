@@ -112,6 +112,10 @@ source_set("headers") {
     deps += [ ":font_unique_name_table_proto" ]
   }
 
+  if (is_mac) {
+    sources += [ "sandbox_support/sandbox_support_mac.h" ]
+  }
+
   if (is_win) {
     sources += [ "dwrite_rasterizer_support/dwrite_rasterizer_support.h" ]
   }

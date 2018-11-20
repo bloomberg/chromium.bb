@@ -24,7 +24,8 @@
         "content_browser": [
           "dwrite_font_proxy",
           "field_trials",
-          "font_cache"
+          "font_cache",
+          "sandbox_support"
         ],
         "device": [
           "device:power_monitor",

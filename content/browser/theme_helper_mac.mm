@@ -4,10 +4,14 @@
 
 #include "content/browser/theme_helper_mac.h"
 
+#import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -76,20 +80,109 @@ void SendSystemColorsChangedMessage(content::mojom::Renderer* renderer) {
           [defaults stringForKey:@"AppleHighlightColor"]));
 }
 
+SkColor NSColorToSkColor(NSColor* color) {
+  NSColor* color_in_color_space =
+      [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+  if (color_in_color_space) {
+    // Use nextafter() to avoid rounding colors in a way that could be off-by-
+    // one. See https://bugs.webkit.org/show_bug.cgi?id=6129.
+    static const double kScaleFactor = nextafter(256.0, 0.0);
+    return SkColorSetARGB(
+        static_cast<int>(kScaleFactor * [color_in_color_space alphaComponent]),
+        static_cast<int>(kScaleFactor * [color_in_color_space redComponent]),
+        static_cast<int>(kScaleFactor * [color_in_color_space greenComponent]),
+        static_cast<int>(kScaleFactor * [color_in_color_space blueComponent]));
+  }
+
+  // This conversion above can fail if the NSColor in question is an
+  // NSPatternColor (as many system colors are). These colors are actually a
+  // repeating pattern not just a solid color. To work around this we simply
+  // draw a 1x1 image of the color and use that pixel's color. It might be
+  // better to use an average of the colors in the pattern instead.
+  base::scoped_nsobject<NSBitmapImageRep> offscreen_rep(
+      [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
+                                              pixelsWide:1
+                                              pixelsHigh:1
+                                           bitsPerSample:8
+                                         samplesPerPixel:4
+                                                hasAlpha:YES
+                                                isPlanar:NO
+                                          colorSpaceName:NSDeviceRGBColorSpace
+                                             bytesPerRow:4
+                                            bitsPerPixel:32]);
+
+  [NSGraphicsContext saveGraphicsState];
+  [NSGraphicsContext
+      setCurrentContext:[NSGraphicsContext
+                            graphicsContextWithBitmapImageRep:offscreen_rep]];
+  NSEraseRect(NSMakeRect(0, 0, 1, 1));
+  [color drawSwatchInRect:NSMakeRect(0, 0, 1, 1)];
+  [NSGraphicsContext restoreGraphicsState];
+
+  NSUInteger pixel[4];
+  [offscreen_rep getPixel:pixel atX:0 y:0];
+  // This recursive call will not recurse again, because the color space
+  // the second time around is NSDeviceRGBColorSpace.
+  return NSColorToSkColor([NSColor colorWithDeviceRed:pixel[0] / 255.
+                                                green:pixel[1] / 255.
+                                                 blue:pixel[2] / 255.
+                                                alpha:1.]);
+}
+
+SkColor MenuBackgroundColor() {
+  base::scoped_nsobject<NSBitmapImageRep> offscreen_rep(
+      [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
+                                              pixelsWide:1
+                                              pixelsHigh:1
+                                           bitsPerSample:8
+                                         samplesPerPixel:4
+                                                hasAlpha:YES
+                                                isPlanar:NO
+                                          colorSpaceName:NSDeviceRGBColorSpace
+                                             bytesPerRow:4
+                                            bitsPerPixel:32]);
+
+  CGContextRef context = static_cast<CGContextRef>([[NSGraphicsContext
+      graphicsContextWithBitmapImageRep:offscreen_rep] graphicsPort]);
+  CGRect rect = CGRectMake(0, 0, 1, 1);
+  HIThemeMenuDrawInfo draw_info;
+  draw_info.version = 0;
+  draw_info.menuType = kThemeMenuTypePopUp;
+  HIThemeDrawMenuBackground(&rect, &draw_info, context,
+                            kHIThemeOrientationInverted);
+
+  NSUInteger pixel[4];
+  [offscreen_rep getPixel:pixel atX:0 y:0];
+  return NSColorToSkColor([NSColor colorWithDeviceRed:pixel[0] / 255.
+                                                green:pixel[1] / 255.
+                                                 blue:pixel[2] / 255.
+                                                alpha:1.]);
+}
+
 } // namespace
 
-@interface ScrollbarPrefsObserver : NSObject
+@interface SystemThemeObserver : NSObject {
+  base::RepeatingClosure colorsChangedCallback_;
+}
 
-+ (void)registerAsObserver;
-+ (void)appearancePrefsChanged:(NSNotification*)notification;
-+ (void)behaviorPrefsChanged:(NSNotification*)notification;
-+ (void)notifyPrefsChangedWithRedraw:(BOOL)redraw;
+- (instancetype)initWithColorsChangedCallback:
+    (base::RepeatingClosure)colorsChangedCallback;
+- (void)appearancePrefsChanged:(NSNotification*)notification;
+- (void)behaviorPrefsChanged:(NSNotification*)notification;
+- (void)notifyPrefsChangedWithRedraw:(BOOL)redraw;
 
 @end
 
-@implementation ScrollbarPrefsObserver
+@implementation SystemThemeObserver
 
-+ (void)registerAsObserver {
+- (instancetype)initWithColorsChangedCallback:
+    (base::RepeatingClosure)colorsChangedCallback {
+  if (!(self = [super init])) {
+    return nil;
+  }
+
+  colorsChangedCallback_ = std::move(colorsChangedCallback);
+
   NSDistributedNotificationCenter* distributedCenter =
       [NSDistributedNotificationCenter defaultCenter];
   [distributedCenter addObserver:self
@@ -141,17 +234,26 @@ void SendSystemColorsChangedMessage(content::mojom::Renderer* renderer) {
                    name:NSSystemColorsDidChangeNotification
                  object:nil];
   }
+
+  return self;
 }
 
-+ (void)appearancePrefsChanged:(NSNotification*)notification {
+- (void)dealloc {
+  [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+- (void)appearancePrefsChanged:(NSNotification*)notification {
   [self notifyPrefsChangedWithRedraw:YES];
 }
 
-+ (void)behaviorPrefsChanged:(NSNotification*)notification {
+- (void)behaviorPrefsChanged:(NSNotification*)notification {
   [self notifyPrefsChangedWithRedraw:NO];
 }
 
-+ (void)systemColorsChanged:(NSNotification*)notification {
+- (void)systemColorsChanged:(NSNotification*)notification {
+  colorsChangedCallback_.Run();
+
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd();
        it.Advance()) {
@@ -160,7 +262,7 @@ void SendSystemColorsChangedMessage(content::mojom::Renderer* renderer) {
   }
 }
 
-+ (void)notifyPrefsChangedWithRedraw:(BOOL)redraw {
+- (void)notifyPrefsChangedWithRedraw:(BOOL)redraw {
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd();
        it.Advance()) {
@@ -190,8 +292,8 @@ namespace content {
 
 // static
 ThemeHelperMac* ThemeHelperMac::GetInstance() {
-  return base::Singleton<ThemeHelperMac,
-                         base::LeakySingletonTraits<ThemeHelperMac>>::get();
+  static ThemeHelperMac* instance = new ThemeHelperMac();
+  return instance;
 }
 
 // static
@@ -199,14 +301,112 @@ blink::ScrollerStyle ThemeHelperMac::GetPreferredScrollerStyle() {
   return static_cast<blink::ScrollerStyle>([NSScroller preferredScrollerStyle]);
 }
 
+base::ReadOnlySharedMemoryRegion
+ThemeHelperMac::DuplicateReadOnlyColorMapRegion() {
+  return read_only_color_map_.Duplicate();
+}
+
 ThemeHelperMac::ThemeHelperMac() {
-  [ScrollbarPrefsObserver registerAsObserver];
+  // Allocate a region for the SkColor value table and map it.
+  auto writable_region = base::WritableSharedMemoryRegion::Create(
+      sizeof(SkColor) * blink::kMacSystemColorIDCount);
+  writable_color_map_ = writable_region.Map();
+  // Downgrade the region to read-only after it has been mapped.
+  read_only_color_map_ = base::WritableSharedMemoryRegion::ConvertToReadOnly(
+      std::move(writable_region));
+  // Store the current color scheme into the table.
+  LoadSystemColors();
+
+  theme_observer_ = [[SystemThemeObserver alloc]
+      initWithColorsChangedCallback:base::BindRepeating(
+                                        &ThemeHelperMac::LoadSystemColors,
+                                        base::Unretained(this))];
   registrar_.Add(this,
                  NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
 }
 
 ThemeHelperMac::~ThemeHelperMac() {
+  [theme_observer_ release];
+}
+
+void ThemeHelperMac::LoadSystemColors() {
+  base::span<SkColor> values = writable_color_map_.GetMemoryAsSpan<SkColor>(
+      blink::kMacSystemColorIDCount);
+  for (size_t i = 0; i < blink::kMacSystemColorIDCount; ++i) {
+    blink::MacSystemColorID color_id = static_cast<blink::MacSystemColorID>(i);
+    switch (color_id) {
+      case blink::MacSystemColorID::kAlternateSelectedControl:
+        values[i] = NSColorToSkColor([NSColor alternateSelectedControlColor]);
+        break;
+      case blink::MacSystemColorID::kControlBackground:
+        values[i] = NSColorToSkColor([NSColor controlBackgroundColor]);
+        break;
+      case blink::MacSystemColorID::kControlDarkShadow:
+        values[i] = NSColorToSkColor([NSColor controlDarkShadowColor]);
+        break;
+      case blink::MacSystemColorID::kControlHighlight:
+        values[i] = NSColorToSkColor([NSColor controlHighlightColor]);
+        break;
+      case blink::MacSystemColorID::kControlLightHighlight:
+        values[i] = NSColorToSkColor([NSColor controlLightHighlightColor]);
+        break;
+      case blink::MacSystemColorID::kControlShadow:
+        values[i] = NSColorToSkColor([NSColor controlShadowColor]);
+        break;
+      case blink::MacSystemColorID::kControlText:
+        values[i] = NSColorToSkColor([NSColor controlTextColor]);
+        break;
+      case blink::MacSystemColorID::kDisabledControlText:
+        values[i] = NSColorToSkColor([NSColor disabledControlTextColor]);
+        break;
+      case blink::MacSystemColorID::kHeader:
+        values[i] = NSColorToSkColor([NSColor headerColor]);
+        break;
+      case blink::MacSystemColorID::kHighlight:
+        values[i] = NSColorToSkColor([NSColor highlightColor]);
+        break;
+      case blink::MacSystemColorID::kKeyboardFocusIndicator:
+        values[i] = NSColorToSkColor([NSColor keyboardFocusIndicatorColor]);
+        break;
+      case blink::MacSystemColorID::kMenuBackground:
+        values[i] = MenuBackgroundColor();
+        break;
+      case blink::MacSystemColorID::kScrollBar:
+        values[i] = NSColorToSkColor([NSColor scrollBarColor]);
+        break;
+      case blink::MacSystemColorID::kSecondarySelectedControl:
+        values[i] = NSColorToSkColor([NSColor secondarySelectedControlColor]);
+        break;
+      case blink::MacSystemColorID::kSelectedMenuItemText:
+        values[i] = NSColorToSkColor([NSColor selectedMenuItemTextColor]);
+        break;
+      case blink::MacSystemColorID::kSelectedText:
+        values[i] = NSColorToSkColor([NSColor selectedTextColor]);
+        break;
+      case blink::MacSystemColorID::kSelectedTextBackground:
+        values[i] = NSColorToSkColor([NSColor selectedTextBackgroundColor]);
+        break;
+      case blink::MacSystemColorID::kShadow:
+        values[i] = NSColorToSkColor([NSColor shadowColor]);
+        break;
+      case blink::MacSystemColorID::kText:
+        values[i] = NSColorToSkColor([NSColor textColor]);
+        break;
+      case blink::MacSystemColorID::kWindowBackground:
+        values[i] = NSColorToSkColor([NSColor windowBackgroundColor]);
+        break;
+      case blink::MacSystemColorID::kWindowFrame:
+        values[i] = NSColorToSkColor([NSColor windowFrameColor]);
+        break;
+      case blink::MacSystemColorID::kWindowFrameText:
+        values[i] = NSColorToSkColor([NSColor windowFrameTextColor]);
+        break;
+      case blink::MacSystemColorID::kCount:
+        NOTREACHED();
+        break;
+    }
+  }
 }
 
 void ThemeHelperMac::Observe(int type,

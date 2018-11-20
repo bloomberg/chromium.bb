@@ -9,8 +9,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
 #include "content/child/child_process_sandbox_support_impl_mac.h"
-#include "third_party/blink/public/platform/mac/web_sandbox_support.h"
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif defined(OS_LINUX)
 #include "base/synchronization/lock.h"
 #include "content/child/child_process_sandbox_support_impl_linux.h"
 #include "content/child/child_thread_impl.h"
@@ -27,20 +26,15 @@ struct WebFontRenderStyle;
 
 namespace content {
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX)
 
 class UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport
     : public blink::WebSandboxSupport {
  public:
-#if defined(OS_LINUX)
   explicit SandboxSupport(sk_sp<font_service::FontLoader> font_loader)
       : font_loader_(std::move(font_loader)) {}
-#endif
   ~SandboxSupport() override {}
 
-#if defined(OS_MACOSX)
-  bool LoadFont(CTFontRef srcFont, CGFontRef* out, uint32_t* fontID) override;
-#else
   void GetFallbackFontForCharacter(
       blink::WebUChar32 character,
       const char* preferred_locale,
@@ -63,10 +57,9 @@ class UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport
   // Maps unicode chars to their fallback fonts.
   std::map<int32_t, blink::OutOfProcessFont> unicode_font_families_;
   sk_sp<font_service::FontLoader> font_loader_;
-#endif  // defined(OS_MACOSX)
 };
 
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID)
+#endif  // defined(OS_LINUX)
 
 UtilityBlinkPlatformWithSandboxSupportImpl::
     UtilityBlinkPlatformWithSandboxSupportImpl(
@@ -76,7 +69,7 @@ UtilityBlinkPlatformWithSandboxSupportImpl::
   SkFontConfigInterface::SetGlobal(font_loader_);
   sandbox_support_ = std::make_unique<SandboxSupport>(font_loader_);
 #elif defined(OS_MACOSX)
-  sandbox_support_ = std::make_unique<SandboxSupport>();
+  sandbox_support_ = std::make_unique<WebSandboxSupportMac>(connector);
 #endif
 }
 
@@ -85,23 +78,14 @@ UtilityBlinkPlatformWithSandboxSupportImpl::
 
 blink::WebSandboxSupport*
 UtilityBlinkPlatformWithSandboxSupportImpl::GetSandboxSupport() {
-#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   return sandbox_support_.get();
 #else
   return nullptr;
 #endif
 }
 
-#if defined(OS_MACOSX)
-
-bool UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport::LoadFont(
-    CTFontRef src_font,
-    CGFontRef* out,
-    uint32_t* font_id) {
-  return content::LoadFont(src_font, out, font_id);
-}
-
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX)
 
 void UtilityBlinkPlatformWithSandboxSupportImpl::SandboxSupport::
     GetFallbackFontForCharacter(blink::WebUChar32 character,
