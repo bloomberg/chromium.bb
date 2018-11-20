@@ -18,12 +18,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
-#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_media_license_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
-#include "chrome/browser/browsing_data/cookies_tree_model.h"
-#include "chrome/browser/browsing_data/local_data_container.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -45,7 +40,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "jni/WebsitePreferenceBridge_jni.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "storage/browser/quota/quota_manager.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -626,102 +621,15 @@ static void JNI_WebsitePreferenceBridge_RevokeObjectPermission(
 
 namespace {
 
-class SiteDataDeleteHelper : public CookiesTreeModel::Observer {
- public:
-  SiteDataDeleteHelper(Profile* profile, const GURL& domain)
-      : profile_(profile), domain_(domain), ending_batch_processing_(false) {
+void OnCookiesReceived(network::mojom::CookieManager* cookie_manager,
+                       const GURL& domain,
+                       const std::vector<net::CanonicalCookie>& cookies) {
+  for (const auto& cookie : cookies) {
+    if (domain.DomainIs(cookie.Domain())) {
+      cookie_manager->DeleteCanonicalCookie(cookie, base::DoNothing());
+    }
   }
-
-  void Run() {
-    content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile_);
-    content::IndexedDBContext* indexed_db_context =
-        storage_partition->GetIndexedDBContext();
-    content::ServiceWorkerContext* service_worker_context =
-        storage_partition->GetServiceWorkerContext();
-    content::CacheStorageContext* cache_storage_context =
-        storage_partition->GetCacheStorageContext();
-    storage::FileSystemContext* file_system_context =
-        storage_partition->GetFileSystemContext();
-    auto container = std::make_unique<LocalDataContainer>(
-        new BrowsingDataCookieHelper(storage_partition),
-        new BrowsingDataDatabaseHelper(profile_),
-        new BrowsingDataLocalStorageHelper(profile_),
-        nullptr /* session_storage_helper */,
-        new BrowsingDataAppCacheHelper(profile_),
-        new BrowsingDataIndexedDBHelper(indexed_db_context),
-        BrowsingDataFileSystemHelper::Create(file_system_context),
-        BrowsingDataQuotaHelper::Create(profile_),
-        BrowsingDataChannelIDHelper::Create(profile_->GetRequestContext()),
-        new BrowsingDataServiceWorkerHelper(service_worker_context),
-        new BrowsingDataSharedWorkerHelper(storage_partition,
-                                           profile_->GetResourceContext()),
-        new BrowsingDataCacheStorageHelper(cache_storage_context),
-        nullptr /* flash_data_helper */,
-        BrowsingDataMediaLicenseHelper::Create(file_system_context));
-
-    cookies_tree_model_ = std::make_unique<CookiesTreeModel>(
-        std::move(container), profile_->GetExtensionSpecialStoragePolicy());
-    cookies_tree_model_->AddCookiesTreeObserver(this);
-  }
-
-  // TreeModelObserver:
-  void TreeNodesAdded(ui::TreeModel* model,
-                      ui::TreeModelNode* parent,
-                      int start,
-                      int count) override {}
-  void TreeNodesRemoved(ui::TreeModel* model,
-                        ui::TreeModelNode* parent,
-                        int start,
-                        int count) override {}
-
-  // CookiesTreeModel::Observer:
-  void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) override {
-  }
-
-  void TreeModelBeginBatch(CookiesTreeModel* model) override {
-    DCHECK(!ending_batch_processing_);  // Extra batch-start sent.
-  }
-
-  void TreeModelEndBatch(CookiesTreeModel* model) override {
-    DCHECK(!ending_batch_processing_);  // Already in end-stage.
-    ending_batch_processing_ = true;
-
-    RecursivelyFindSiteAndDelete(cookies_tree_model_->GetRoot());
-
-    // Delete this object after the current iteration of the message loop,
-    // because we are in a callback from the CookiesTreeModel, which we own,
-    // so it will be destroyed with this object.
-    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
-  }
-
-  void RecursivelyFindSiteAndDelete(CookieTreeNode* node) {
-    CookieTreeNode::DetailedInfo info = node->GetDetailedInfo();
-    for (int i = node->child_count(); i > 0; --i)
-      RecursivelyFindSiteAndDelete(node->GetChild(i - 1));
-
-    if (info.node_type == CookieTreeNode::DetailedInfo::TYPE_COOKIE &&
-        info.cookie && domain_.DomainIs(info.cookie->Domain()))
-      cookies_tree_model_->DeleteCookieNode(node);
-  }
-
- private:
-  friend class base::DeleteHelper<SiteDataDeleteHelper>;
-
-  ~SiteDataDeleteHelper() override {}
-
-  Profile* profile_;
-
-  // The domain we want to delete data for.
-  GURL domain_;
-
-  // Keeps track of when we're ready to close batch processing.
-  bool ending_batch_processing_;
-
-  std::unique_ptr<CookiesTreeModel> cookies_tree_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(SiteDataDeleteHelper);
-};
+}
 
 void OnStorageInfoReady(const ScopedJavaGlobalRef<jobject>& java_callback,
                         const storage::UsageInfoEntries& entries) {
@@ -886,10 +794,11 @@ static void JNI_WebsitePreferenceBridge_ClearCookieData(
   Profile* profile = ProfileManager::GetActiveUserProfile();
   GURL url(ConvertJavaStringToUTF8(env, jorigin));
 
-  // Deletes itself when done.
-  SiteDataDeleteHelper* site_data_deleter =
-      new SiteDataDeleteHelper(profile, url);
-  site_data_deleter->Run();
+  auto* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(profile);
+  auto* cookie_manager = storage_partition->GetCookieManagerForBrowserProcess();
+  cookie_manager->GetAllCookies(
+      base::BindOnce(&OnCookiesReceived, cookie_manager, url));
 }
 
 static void JNI_WebsitePreferenceBridge_ClearBannerData(
