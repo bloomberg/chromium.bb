@@ -30,7 +30,6 @@ class AuthenticationServiceDelegate;
 @class ChromeIdentity;
 class PrefService;
 class ProfileOAuth2TokenService;
-class SigninManager;
 class SyncSetupService;
 
 // AuthenticationService is the Chrome interface to the iOS shared
@@ -44,7 +43,6 @@ class AuthenticationService : public KeyedService,
                         SyncSetupService* sync_setup_service,
                         AccountTrackerService* account_tracker,
                         identity::IdentityManager* identity_manager,
-                        SigninManager* signin_manager,
                         browser_sync::ProfileSyncService* sync_service);
   ~AuthenticationService() override;
 
@@ -204,7 +202,6 @@ class AuthenticationService : public KeyedService,
   SyncSetupService* sync_setup_service_ = nullptr;
   AccountTrackerService* account_tracker_ = nullptr;
   identity::IdentityManager* identity_manager_ = nullptr;
-  SigninManager* signin_manager_ = nullptr;
   browser_sync::ProfileSyncService* sync_service_ = nullptr;
 
   // Whether Initialized has been called.
