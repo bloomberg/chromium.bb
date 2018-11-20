@@ -26,11 +26,4 @@ const char kSearchProviderOverrides[] = "search_provider_overrides";
 const char kSearchProviderOverridesVersion[] =
     "search_provider_overrides_version";
 
-// Integer containing the system Country ID the first time we checked the
-// template URL prepopulate data.  This is used to avoid adding a whole bunch of
-// new search engine choices if prepopulation runs when the user's Country ID
-// differs from their previous Country ID.  This pref does not exist until
-// prepopulation has been run at least once.
-const char kCountryIDAtInstall[] = "countryid_at_install";
-
 }  // namespace prefs
