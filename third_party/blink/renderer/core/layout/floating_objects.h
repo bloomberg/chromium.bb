@@ -66,22 +66,39 @@ class FloatingObject {
   LayoutBox* GetLayoutObject() const { return layout_object_; }
 
   bool IsPlaced() const { return is_placed_; }
-  void SetIsPlaced(bool placed = true) { is_placed_ = placed; }
+  void SetIsPlaced(bool placed = true) {
+    is_placed_ = placed;
+#if DCHECK_IS_ON()
+    has_geometry_ = placed;
+#endif
+  }
+
+#if DCHECK_IS_ON()
+  void SetHasGeometry() { has_geometry_ = true; }
+#endif
+
+  bool HasGeometry() const {
+#if DCHECK_IS_ON()
+    return has_geometry_;
+#else
+    return true;
+#endif
+  }
 
   LayoutUnit X() const {
-    DCHECK(IsPlaced());
+    DCHECK(HasGeometry());
     return frame_rect_.X();
   }
   LayoutUnit MaxX() const {
-    DCHECK(IsPlaced());
+    DCHECK(HasGeometry());
     return frame_rect_.MaxX();
   }
   LayoutUnit Y() const {
-    DCHECK(IsPlaced());
+    DCHECK(HasGeometry());
     return frame_rect_.Y();
   }
   LayoutUnit MaxY() const {
-    DCHECK(IsPlaced());
+    DCHECK(HasGeometry());
     return frame_rect_.MaxY();
   }
   LayoutUnit Width() const { return frame_rect_.Width(); }
@@ -105,7 +122,7 @@ class FloatingObject {
   }
 
   const LayoutRect& FrameRect() const {
-    DCHECK(IsPlaced());
+    DCHECK(HasGeometry());
     return frame_rect_;
   }
 
@@ -149,6 +166,14 @@ class FloatingObject {
   unsigned is_placed_ : 1;
   unsigned is_lowest_non_overhanging_float_in_child_ : 1;
   unsigned is_in_placed_tree_ : 1;
+
+#if DCHECK_IS_ON()
+  // If set, it's safe to read out position data for this float. For LayoutNG
+  // this will always be true, while for legacy layout, it depends on whether
+  // the float IsPlaced() or not.
+  unsigned has_geometry_ : 1;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(FloatingObject);
 };
 

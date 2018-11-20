@@ -57,7 +57,8 @@ FloatingObject::FloatingObject(LayoutBox* layout_object, Type type)
       is_lowest_non_overhanging_float_in_child_(false)
 #if DCHECK_IS_ON()
       ,
-      is_in_placed_tree_(false)
+      is_in_placed_tree_(false),
+      has_geometry_(false)
 #endif
 {
 }
@@ -79,7 +80,8 @@ FloatingObject::FloatingObject(LayoutBox* layout_object,
           is_lowest_non_overhanging_float_in_child)
 #if DCHECK_IS_ON()
       ,
-      is_in_placed_tree_(false)
+      is_in_placed_tree_(false),
+      has_geometry_(false)
 #endif
 {
 }
@@ -122,6 +124,9 @@ std::unique_ptr<FloatingObject> FloatingObject::UnsafeClone() const {
       new FloatingObject(GetLayoutObject(), GetType(), frame_rect_,
                          should_paint_, is_descendant_, false));
   clone_object->is_placed_ = is_placed_;
+#if DCHECK_IS_ON()
+  clone_object->has_geometry_ = has_geometry_;
+#endif
   return clone_object;
 }
 
@@ -511,6 +516,7 @@ inline FloatingObjectInterval FloatingObjects::IntervalForFloatingObject(
 }
 
 void FloatingObjects::AddPlacedObject(FloatingObject& floating_object) {
+  DCHECK(!layout_object_->IsLayoutNGMixin());
   DCHECK(!floating_object.IsInPlacedTree());
 
   floating_object.SetIsPlaced(true);
@@ -524,6 +530,7 @@ void FloatingObjects::AddPlacedObject(FloatingObject& floating_object) {
 }
 
 void FloatingObjects::RemovePlacedObject(FloatingObject& floating_object) {
+  DCHECK(!layout_object_->IsLayoutNGMixin());
   DCHECK(floating_object.IsPlaced());
   DCHECK(floating_object.IsInPlacedTree());
 
