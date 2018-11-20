@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import collections
 import ConfigParser
 import os
 import re
@@ -23,8 +24,8 @@ class SignerKeyMissingError(SignerKeyError):
   """Raise if key is missing from subset"""
 
 
-class SignerSubkeyMissingError(SignerKeyMissingError):
-  """Raise if a subkey is missing"""
+class SignerBuildtargetKeyMissingError(SignerKeyMissingError):
+  """Raise if a buildtarget-specific key is missing"""
 
 
 class KeyPair(object):
@@ -37,7 +38,6 @@ class KeyPair(object):
     name: name of keypair
     keydir: location of key files
     version: version of key
-    subkeys: dictionary of sub keys
     public: public key file complete path
     private: private key file complete path
     keyblock: keyblock file complete path
@@ -68,7 +68,7 @@ class KeyPair(object):
   _priv_filename_re = re.compile(
       r'(?P<name>\w+\.?\w+)(?P<ext>\.vbpri(?:vk|k2))$')
 
-  def __init__(self, name, keydir, version=1, subkeys=(),
+  def __init__(self, name, keydir, version=1,
                pub_ext=None, priv_ext='.vbprivk'):
     """Initialize KeyPair.
 
@@ -76,7 +76,6 @@ class KeyPair(object):
       name: name of key
       keydir: directory containing key files
       version: version of the key (forced to int)
-      subkeys: list of subkeys to create
       pub_ext: file extension used for public key
       priv_ext: file extension used for private key
     """
@@ -88,10 +87,6 @@ class KeyPair(object):
                      '.vbpubk' if priv_ext == '.vbprivk' else
                      '.vbpubk2')
     self._priv_ext = priv_ext
-
-    self.subkeys = {}
-    for subkey in subkeys:
-      self.AddSubkey(subkey)
 
     # Validate input parameters.
     if not self._name_re.match(name):
@@ -114,19 +109,12 @@ class KeyPair(object):
             and self.name == other.name
             and self.version == other.version
             and self.public == other.public
-            and self.private == other.private
-            and self.subkeys == other.subkeys)
+            and self.private == other.private)
 
-  def AddSubkey(self, sub_id):
-    """Add new Subkey with the given name."""
-    if sub_id in self.subkeys:
-      return
-
-    self.subkeys[sub_id] = KeyPair(self.name + '.' + sub_id,
-                                   self.keydir,
-                                   version=self.version,
-                                   pub_ext=self._pub_ext,
-                                   priv_ext=self._priv_ext)
+  def Copy(self):
+    """Return a copy of ourselves."""
+    return KeyPair(
+        self.name, self.keydir, self.version, self._pub_ext, self._priv_ext)
 
   @classmethod
   def ParsePrivateKeyFilename(cls, file_name):
@@ -143,14 +131,7 @@ class KeyPair(object):
     return cls._priv_filename_re.match(basename)
 
   def Exists(self, require_public=False, require_private=False):
-    """Returns True if ether key or subkeys exists on disk."""
-
-    if self.subkeys:
-      for sub_key in self.subkeys.values():
-        if not sub_key.Exists(require_public=require_public,
-                              require_private=require_private):
-          return False
-      return True
+    """Returns True if key exists on disk."""
 
     has_public = os.path.exists(self.public)
     has_private = os.path.exists(self.private)
@@ -162,14 +143,8 @@ class KeyPair(object):
     return has_public or has_private
 
   def KeyblockExists(self):
-    """Returns if keyblocks or subkeyblocks exist."""
-    if self.subkeys:
-      for sub_key in self.subkeys.values():
-        if not sub_key.KeyblockExists():
-          return False
-      return True
-    else:
-      return os.path.exists(self.keyblock)
+    """Returns if keyblock exist."""
+    return os.path.exists(self.keyblock)
 
   def GetSHA1sum(self):
     """Returns key's sha1sum returns.
@@ -192,17 +167,87 @@ class KeyPair(object):
 class Keyset(object):
   """Store signer keys and keyblocks (think keychain).
 
+  A Keyset is the collection of KeyPairs needed to work with a specific Build
+  Target image.
+  This includes both keys shared by the Build (self.keys):
+    - installer_kernel_data_key
+    - kernel_data_key
+    - kernel_subkey
+    - recovery
+    - recovery_kernel_data_key
+  as well as Build Target specific keys (self._buildtarget_keys):
+    - root_key
+    - firmware_data_key
+
   Attributes:
     keys: dict of keypairs, indexed on key's name
-    subkey_aliases: dict of alias to use for subkeys (i.e. loem -> board)
+    buildtarget_map: dict of buildtarget alias (e.g., 'loem1') to use for each
+        buildtarget name (e.g. 'ACME').  Keys in the table are both buildtarget
+        names and buildtarget aliases, so that
+        buildtarget_map[buildtarget_map[buildtarget_name]] works.
   """
-  def __init__(self):
+
+  # If we have a buildtarget name, it is of the form 'name\.buildtarget', so we
+  # will simply split('.') the name to get the components.
+  # If this is a unified buildtarget, then there are per-buildtarget keys, and
+  # self.buildtarget_key_prefixes will be set to this.
+  _per_buildtarget_key_names = set(('firmware_data_key', 'root_key'))
+
+  def __init__(self, key_dir=None):
+    """Initialize the Keyset from key_dir, if given.
+
+    Args:
+      key_dir: directory from which to load Keyset.  [default=None]
+
+    Note: every public key and keyblock must have an accompanying private key
+    """
     self.keys = {}
-    self.subkey_aliases = {}
+    self.key_dir = key_dir
+    self.buildtarget_map = {}
+    self._buildtarget_key_prefixes = set()
+    self._buildtarget_keys = collections.defaultdict(dict)
+    if key_dir and os.path.exists(key_dir):
+      # Get all buildtarget aliases.  The legacy code base refers to
+      # 'buildtarget' as 'loem'. We need to support the on-disk structures
+      # which have a table of 'XX = ALIAS', with the implied name 'loemXX'.
+      loem_config_filename = os.path.join(key_dir, 'loem.ini')
+      if os.path.exists(loem_config_filename):
+        logging.info("Reading loem.ini file")
+        loem_config = ConfigParser.ConfigParser()
+        if loem_config.read(loem_config_filename):
+          if loem_config.has_section('loem'):
+            self._buildtarget_key_prefixes = self._per_buildtarget_key_names
+            for idx, loem in loem_config.items('loem'):
+              alias = 'loem' + idx
+              logging.debug('Adding loem alias %s %s', loem, alias)
+              self.buildtarget_map[loem] = alias
+              # We also want loemXX to point to loemXX, since our callers tend
+              # to use both name and alias interchangably.
+              # TODO(lamontjones) evaluate whether or not we should force it to
+              # be indexed by only name, instead of both.
+              self.buildtarget_map[alias] = alias
+        else:
+          logging.warning("Error reading loem.ini file")
+
+      # TODO (chingcodes): add versions from file - needed for keygen
+
+      # Match any private key file name
+      # Ex: firmware_data_key.loem4.vbprivk, kernel_subkey.vbprivk
+      for f_name in os.listdir(key_dir):
+        match = KeyPair.ParsePrivateKeyFilename(f_name)
+        if match:
+          key_name = match.group('name')
+          if key_name not in self.keys:
+            logging.debug('Found new key %s', key_name)
+            key = KeyPair(
+                key_name, key_dir, version=1, priv_ext=match.group('ext'))
+            # AddKey will detect whether or not this is a buildtarget-specific
+            # key and do the right thing.
+            self.AddKey(key)
 
   def __eq__(self, other):
     return (isinstance(other, Keyset)
-            and self.subkey_aliases == other.subkey_aliases
+            and self.buildtarget_map == other.buildtarget_map
             and self.keys == other.keys)
 
   def Prune(self):
@@ -210,108 +255,105 @@ class Keyset(object):
     for k, key in self.keys.items():
       if not key.Exists():
         self.keys.pop(k)
+    for buildtarget, keys in self._buildtarget_keys.items():
+      for k, key in keys.items():
+        if not key.Exists():
+          self._buildtarget_keys[buildtarget].pop(k)
 
-  def AddKey(self, key, key_name=None):
-    """Add the given key to keyset, using key.name if key_name is None."""
-    key_name = key_name if key_name else key.name
+  def AddKey(self, key):
+    """Add key to Keyset.
 
-    self.keys[key_name] = key
+    Args:
+      key: The KeyPair to add.  key.name is checked to see if it is
+          buildtarget-specific, and the correct group is used.
+    """
+    if '.' in key.name:
+      key_name, buildtarget_name = key.name.split('.')
+      # Some of the legacy keyfiles have .vN.vprivk suffixes, even though they
+      # are not buildtarget keys. (They are backup keys for older versions of
+      # the key.)  Restricting the buildtarget_keys to those in
+      # _buildtarget_key_prefixes helps with that.
+      if key_name in self._buildtarget_key_prefixes:
+        logging.debug('Found buildtarget %s.%s', key_name, buildtarget_name)
+        self.AddBuildtargetKey(key_name, buildtarget_name, key)
+        return
+    self.keys[key.name] = key
 
-  def AddSubkey(self, key_name, subkey):
-    """Add subkey to key_name, using its alias if available."""
-    subkey = (self.subkey_aliases[subkey] if subkey in self.subkey_aliases
-              else subkey)
-    self.keys[key_name].AddSubkey(subkey)
+  def AddBuildtargetKey(self, key_name, buildtarget_alias, key):
+    """Attach the buildtarget-specific key to the base key."""
+    # _buildtarget_keys['loem2']['root_key'] = KeyPair('root_key.loem2', ...)
+    self._buildtarget_keys[buildtarget_alias][key_name] = key
 
   def KeyExists(self, key_name, require_public=False, require_private=False):
-    """Returns if key is in keyset and exists."""
+    """Returns if key is in Keyset and exists.
+
+    If this Keyset has buildtarget-specific keys, then buildtarget-specific keys
+    will only be found if GetBuildKeyset() has been called to get the
+    buildtarget-specific Keyset.
+    """
     return (key_name in self.keys and
             self.keys[key_name].Exists(require_public=require_public,
                                        require_private=require_private))
 
   def KeyblockExists(self, key_name):
-    """Returns if keyblock exists"""
+    """Returns if keyblock exists
+
+    If this Keyset has buildtarget-specific keys, then keyblocks for
+    buildtarget-specific keys will only be found if GetBuildKeyset() has
+    been called to get the buildtarget-specific Keyset.
+    """
     return (key_name in self.keys and
             self.keys[key_name].KeyblockExists())
 
-  def GetSubKeyset(self, subkey_name):
-    """Returns new keyset containing keys based on the subkey_name given.
+  def GetBuildtargetKeys(self, key_name):
+    """Get buildtarget-specific keys by keyname.
 
-    Keys are added based on the following rules:
-    * Keys does not have a subkey of the given name
-    * Subkey exists for the given name, or alias. Key will be indexed under
-        it's parent key's name. ex: 'firmware.loem1' -> 'firmware'
+    Args:
+      key_name: name of buildtarget-specific key.  e.g., 'root_key'
 
-    Raises SubkeyMissingError if subkey not found
+    Returns:
+      dict of buildtarget_alias: key
+    """
+    ret = {}
+    for k, v in self._buildtarget_keys.items():
+      if key_name in v:
+        ret[k] = v[key_name]
+    if key_name in self.keys:
+      ret[key_name] = self.keys[key_name]
+    return ret
+
+  def GetBuildKeyset(self, buildtarget_name):
+    """Returns new Keyset containing keys based on the buildtarget_name given.
+
+    The following keys are included:
+    * This buildtarget's buildtarget-specific keys
+    * Any non-buildtarget-specific keys.
+
+    Args:
+      buildtarget_name: either the buildtarget name (e.g., 'acme') or alias
+          (e.g., 'loem1').
+
+    Raises SignerBuildtargetKeyMissingError if subkey not found
     """
     ks = Keyset()
 
     found = False
 
     # Use alias if exists
-    subkey_alias = self.subkey_aliases.get(subkey_name, '')
+    buildtarget_alias = self.buildtarget_map.get(buildtarget_name, '')
 
-    for key_name, key in self.keys.items():
-      if subkey_alias in key.subkeys:
-        found = True
-        ks.AddKey(key.subkeys[subkey_alias], key_name=key_name)
-      elif subkey_name in key.subkeys:
-        found = True
-        ks.AddKey(key.subkeys[subkey_name], key_name=key_name)
-      else:
-        ks.AddKey(key, key_name=key_name)
+    for key in self.keys.values():
+      ks.AddKey(key)
+    for key in self._buildtarget_keys[buildtarget_alias].values():
+      found = True
+      ks.AddKey(key)
+      # Also add the key as its base name.
+      key = key.Copy()
+      key.name = key.name.split('.')[0]
+      ks.AddKey(key)
 
     if not found:
-      raise SignerSubkeyMissingError("Unable to find %s", subkey_name)
+      raise SignerBuildtargetKeyMissingError(
+          "Unable to find %s", buildtarget_name)
 
     return ks
-
-
-def KeysetFromDir(key_dir):
-  """Returns a populated keyset generated from given directory.
-
-  Note: every public key and keyblock must have an accompanying private key
-  """
-  ks = Keyset()
-
-  # Get all loem subkey mappings
-  loem_config_filename = os.path.join(key_dir, 'loem.ini')
-  if os.path.exists(loem_config_filename):
-    logging.info("Reading loem.ini file")
-    loem_config = ConfigParser.ConfigParser()
-    if loem_config.read(loem_config_filename):
-      if loem_config.has_section('loem'):
-        for loem_id in loem_config.options('loem'):
-          loem_board = loem_config.get('loem', loem_id)
-          loem_alias = 'loem' + loem_id
-          logging.debug('Adding key alias %s %s', loem_board, loem_alias)
-          ks.subkey_aliases[loem_board] = 'loem' + loem_id
-    else:
-      logging.warning("Error reading loem.ini file")
-
-  # TODO (chingcodes): add versions from file - needed for keygen
-
-  # Match any private key file name
-  # Ex: firmware_data_key.loem4.vbprivk, kernel_subkey.vbprivk
-  # All of the buildtarget specific keys use .vbprivk for the suffix.
-  keypair_re = re.compile(r'(?P<name>\w+)(\.(?P<subkey>\w+))?\.vbprivk$')
-
-  for f_name in os.listdir(key_dir):
-    key_match = keypair_re.match(f_name)
-    if key_match:
-      key_name = key_match.group('name')
-
-      if key_name not in ks.keys:
-        logging.debug('Found new key %s', key_name)
-        ks.AddKey(KeyPair(key_name, key_dir, version=1))
-
-      subkey = key_match.group('subkey')
-      if subkey:
-        logging.debug('Found subkey %s.%s', key_name, subkey)
-        ks.AddSubkey(key_name, subkey)
-
-    elif f_name == 'key_ec_efs.vbprik2':
-      ks.AddKey(KeyPair('key_ec_efs', key_dir,
-                        pub_ext='.vbpubk2', priv_ext='.vbprivk2'))
-
-  return ks

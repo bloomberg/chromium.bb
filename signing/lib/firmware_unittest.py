@@ -287,7 +287,7 @@ class TestFirmwareSigner(cros_test_lib.RunCommandTempDirTestCase):
     keyset_dir = os.path.join(self.tempdir, 'keyset')
     ks = keys_unittest.KeysetMock(keyset_dir)
     ks.CreateDummyKeys()
-    ks_subset = ks.GetSubKeyset('ACME')
+    ks_subset = ks.GetBuildKeyset('ACME')
 
     shellball_dir = os.path.join(self.tempdir, 'shellball')
     bios_path = os.path.join(shellball_dir, 'bios.bin')
@@ -515,14 +515,18 @@ class TestWriteSignerNotes(cros_test_lib.RunCommandTempDirTestCase):
   def testLoemKeys(self):
     """Test function's output with multiple loem keys."""
     recovery_key = keys.KeyPair('recovery_key', self.tempdir)
-    root_key = keys.KeyPair('root_key', self.tempdir)
-    root_key.AddSubkey('loem1')
-    root_key.AddSubkey('loem2')
-    root_key.AddSubkey('loem3')
+    root_keys = {
+        'loem%d' % idx: keys.KeyPair('root_key.loem%d' % idx, self.tempdir)
+        for idx in xrange(1, 4)}
 
-    keyset = keys.Keyset()
+    lines = ['[loem]'] + ['%d = loem%d' % (int(loem[4:]), int(loem[4:]))
+                          for loem in sorted(root_keys.keys())]
+    contents = '\n'.join(lines) + '\n'
+    osutils.WriteFile(os.path.join(self.tempdir, 'loem.ini'), contents)
+    keyset = keys.Keyset(self.tempdir)
     keyset.AddKey(recovery_key)
-    keyset.AddKey(root_key)
+    for k in root_keys.values():
+      keyset.AddKey(k)
 
     sha1sum = keys_unittest.MOCK_SHA1SUM
     expected_header = ['Signed with keyset in ' + self.tempdir,

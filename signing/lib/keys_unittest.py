@@ -46,48 +46,66 @@ class KeysetMock(keys.Keyset):
           'recovery_key',
           'root_key')
 
-  KEYS_WITH_SUBKEYS = ('firmware_data_key', 'root_key')
+  KEYS_WITH_BUILDTARGET_ALIASES = keys.Keyset._per_buildtarget_key_names
 
-  SUBKEYS = ('loem1', 'loem2', 'loem3', 'loem4')
+  BUILDTARGET_ALIASES = ('loem1', 'loem2', 'loem3', 'loem4')
 
-  ALIAS = ('ACME', 'SHINRA', 'WILE', 'COYOTE')
+  BUILDTARGET_NAMES = ('ACME', 'SHINRA', 'WILE', 'COYOTE')
 
-  def __init__(self, keydir, has_loem_ini=True):
-    super(KeysetMock, self).__init__()
+  def __init__(self, key_dir, has_loem_ini=True):
+    """Create a Keyset with buildtarget-specific keys, and populate it."""
 
-    self.keydir = keydir
-    osutils.SafeMakedirs(keydir)
+    # This will create the Keyset without buildtarget-specific keys, since that
+    # is determined by having loem.ini, and the directory does not exist yet,
+    # let alone loem.ini.
+    # We do not actually create files for the KeyPairs, since the tests care.
+    super(KeysetMock, self).__init__(key_dir)
+
+    osutils.SafeMakedirs(key_dir)
     self.has_loem_ini = has_loem_ini
 
+    # By default, we have buildtarget-specific keys.  If not, don't create them.
     if not has_loem_ini:
-      self.KEYS_WITH_SUBKEYS = ()
-      self.SUBKEYS = ()
-      self.ALIAS = ()
+      self.KEYS_WITH_BUILDTARGET_ALIASES = ()
+      self.BUILDTARGET_ALIASES = ()
+      self.BUILDTARGET_NAMES = ()
 
+    # Create KeyPairs as appropriate for the Keyset we are mocking.
     for key_name in KeysetMock.KEYS:
-      self.AddKey(keys.KeyPair(key_name, keydir))
+      if key_name not in self.KEYS_WITH_BUILDTARGET_ALIASES:
+        self.AddKey(keys.KeyPair(key_name, key_dir))
 
-    for key_name in KeysetMock.KEYS_WITH_SUBKEYS:
-      for subkey_name in KeysetMock.SUBKEYS:
-        self.AddSubkey(key_name, subkey_name)
+    for name in self.KEYS_WITH_BUILDTARGET_ALIASES:
+      for buildtarget in self.BUILDTARGET_ALIASES:
+        key = keys.KeyPair("%s.%s" % (name, buildtarget), key_dir)
+        self.AddBuildtargetKey(name, buildtarget, key)
 
-    for alias, subkey_name in zip(KeysetMock.ALIAS, KeysetMock.SUBKEYS):
-      self.subkey_aliases[alias] = subkey_name
+    for alias, buildtarget in zip(
+        self.BUILDTARGET_NAMES, self.BUILDTARGET_ALIASES):
+      self.buildtarget_map[alias] = buildtarget
+      self.buildtarget_map[buildtarget] = buildtarget
+    self.WriteIniFile()
 
+  # TODO(lamontjones): This may eventually make sense to move into
+  # keys.Keyset(), if it ever becomes the thing that creates a keyset directory.
+  # Today, we only read the keyset from the directory, we do not update it.
   def WriteIniFile(self):
     """Writes alias to file"""
     if not self.has_loem_ini:
       return
     lines = ['[loem]']
-    lines += ['%d = %s' % (i, alias)
-              for i, alias in enumerate(self.ALIAS, 1)]
+    lines += ['%d = %s' % (i, name)
+              for i, name in enumerate(self.BUILDTARGET_NAMES, 1)]
     contents = '\n'.join(lines) + '\n'
-    osutils.WriteFile(os.path.join(self.keydir, 'loem.ini'), contents)
+    osutils.WriteFile(os.path.join(self.key_dir, 'loem.ini'), contents)
 
   def CreateDummyKeys(self):
     """Creates dummy keys from stored keys."""
     for key in self.keys.values():
       CreateDummyKeys(key)
+    for loem in self._buildtarget_keys.values():
+      for key in loem.values():
+        CreateDummyKeys(key)
 
 
 class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
@@ -291,23 +309,43 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
 
   def _get_keyset(self):
     """Returns keyset with a few keys."""
-    kc = keys.Keyset()
+    kc = KeysetMock(self.tempdir, has_loem_ini=True)
 
+    # Add a few more keys for this build.
     for key_name in ['key1', 'key2', 'key3', 'key4']:
       kc.AddKey(keys.KeyPair(key_name, self.tempdir))
-
-    kc.subkey_aliases = {'board1':'loem1',
-                         'board2':'loem2'}
-
-    for subkey in kc.subkey_aliases:
-      kc.AddSubkey('key4', subkey)
 
     return kc
 
   def testInit(self):
     ks = keys.Keyset()
     self.assertIsInstance(ks.keys, dict)
-    self.assertIsInstance(ks.subkey_aliases, dict)
+    self.assertIsInstance(ks._buildtarget_keys, dict)
+    self.assertIsInstance(ks.buildtarget_map, dict)
+
+  def testInitWithEmptyDir(self):
+    """Call Keyset() with an uncreated directory."""
+    ks = keys.Keyset(self.tempdir)
+    self.assertIsInstance(ks, keys.Keyset)
+    self.assertIsInstance(ks._buildtarget_keys, dict)
+    self.assertIsInstance(ks.buildtarget_map, dict)
+
+  def testInitWithPopulatedDirectory(self):
+    """Keyset() loads a populated keyset directory correctly."""
+    ks0 = KeysetMock(self.tempdir)
+    ks0.CreateDummyKeys()
+
+    ks1 = keys.Keyset(self.tempdir)
+
+    self.assertDictEqual(ks0.keys, ks1.keys, msg='Incorrect keys')
+
+    self.assertDictEqual(ks0._buildtarget_keys, ks1._buildtarget_keys,
+                         msg='Incorrect buildtarget_keys')
+
+    self.assertDictEqual(ks0.buildtarget_map, ks1.buildtarget_map,
+                         msg='Incorrect key aliases')
+
+    self.assertEqual(ks0, ks1)
 
   def testEqSame(self):
     kc1 = self._get_keyset()
@@ -329,49 +367,60 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
     ks0.AddKey(key0)
     self.assertEqual(ks0.keys['key0'], key0)
 
-  def testAddKeyWithKeyName(self):
-    ks0 = keys.Keyset()
-    key0 = keys.KeyPair('key0', self.tempdir)
-    ks0.AddKey(key0, key_name='key0_new')
-    self.assertEqual(ks0.keys['key0_new'], key0)
-
-  def testAddSubkey(self):
+  def testAddBuildtargetKey(self):
+    k9 = keys.KeyPair('root_key.loem9', self.tempdir)
     ks0 = self._get_keyset()
-    ks0.AddSubkey('key1', 'sub1')
+    ks0.AddBuildtargetKey('root_key', 'loem9', k9)
 
-    self.assertIsInstance(ks0.keys['key1'].subkeys['sub1'], keys.KeyPair)
+    self.assertEqual(ks0._buildtarget_keys['loem9']['root_key'], k9)
 
-  def testAddSubkeyWithAlias(self):
-    ks0 = self._get_keyset()
-    ks0.subkey_aliases['sub1'] = 'loem1'
-    ks0.AddSubkey('key1', 'sub1')
-
-    self.assertIsInstance(ks0.keys['key1'].subkeys['loem1'], keys.KeyPair)
-
-  def testGetSubKeysetMissmatch(self):
+  def testGetBuildKeysetMissmatch(self):
     ks0 = self._get_keyset()
 
-    with self.assertRaises(keys.SignerSubkeyMissingError):
-      ks0.GetSubKeyset('foo')
+    with self.assertRaises(keys.SignerBuildtargetKeyMissingError):
+      ks0.GetBuildKeyset('foo')
 
-  def testGetSubKeyset(self):
+  def testGetBuildKeyset(self):
     ks0 = self._get_keyset()
-    ks1 = ks0.GetSubKeyset('loem1')
-    self.assertEqual(ks0.keys['key4'].subkeys['loem1'], ks1.keys['key4'])
+    ks1 = ks0.GetBuildKeyset('ACME')
 
-  def testGetSubKeysetWithAliases(self):
+    expected_keys = {name: k for name, k in ks0.keys.items()}
+    for name, k in ks0._buildtarget_keys[
+        ks0.buildtarget_map['ACME']].items():
+      expected_keys[k.name] = k
+      k1 = k.Copy()
+      k1.name = name
+      expected_keys[name] = k1
+    actual_keys = {name: k for name, k in ks1.keys.items()}
+    self.assertEqual(expected_keys, actual_keys)
+    self.assertEqual(ks1._buildtarget_keys, {})
+
+  def testGetBuildKeysetWithAliasSucceeds(self):
     ks0 = self._get_keyset()
-    ks1 = ks0.GetSubKeyset('board2')
-    self.assertEqual(ks0.keys['key4'].subkeys['loem2'], ks1.keys['key4'])
+    ks1 = ks0.GetBuildKeyset('loem3')
+    self.assertEqual(ks0._buildtarget_keys['loem3']['root_key'],
+                     ks1.keys['root_key.loem3'])
+    self.assertEqual('root_key', ks1.keys['root_key'].name)
+    # The rest of the fields should be equal.
+    ks1.keys['root_key'].name = 'root_key.loem3'
+    self.assertEqual(ks0._buildtarget_keys['loem3']['root_key'],
+                     ks1.keys['root_key'])
+
+  def testGetBuildKeysetWithMissingName(self):
+    ks0 = self._get_keyset()
+    with self.assertRaises(keys.SignerBuildtargetKeyMissingError):
+      ks0.GetBuildKeyset('loem99')
 
   def testPrune(self):
     ks0 = self._get_keyset()
-    key_keep = ['key1', 'key3']
+    key_keep = set(['key1', 'key3'])
 
     for key_name in key_keep:
       CreateDummyKeys(ks0.keys[key_name])
 
     ks0.Prune()
+    # Only our keepers should have survived.
+    self.assertEqual(key_keep, set([k.name for k in ks0.keys.values()]))
     for key_name, key in ks0.keys.items():
       self.assertTrue(key.Exists(), msg='All keys should exist')
       self.assertIn(key_name, key_keep,
@@ -427,61 +476,23 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
     self.assertTrue(ks0.KeyblockExists('key1'), msg="'key1' should exist")
 
 
-class testKeysetFromDir(cros_test_lib.TempDirTestCase):
-  """Test keyeset_from_dir function."""
-
-  def testEmpty(self):
-    ks = keys.KeysetFromDir(self.tempdir)
-    self.assertIsInstance(ks, keys.Keyset)
-
-  def testWithKeysetMock(self):
-    ks0 = KeysetMock(self.tempdir)
-    ks0.CreateDummyKeys()
-    ks0.WriteIniFile()
-
-    ks1 = keys.KeysetFromDir(self.tempdir)
-
-    self.assertDictEqual(ks0.keys, ks1.keys, msg='Incorrect keys')
-
-    for key in KeysetMock.KEYS_WITH_SUBKEYS:
-      self.assertDictEqual(ks0.keys[key].subkeys, ks1.keys[key].subkeys,
-                           msg='Incorrect subkeys')
-
-    self.assertDictEqual(ks0.subkey_aliases, ks1.subkey_aliases,
-                         msg='Incorrect key aliases')
-
-    self.assertEqual(ks0, ks1)
-
-
 def CreateDummyPublic(key):
-  """Create empty public key file for given key (or subkeys if exist)."""
-  if key.subkeys:
-    for subkey in key.subkeys.values():
-      CreateDummyPublic(subkey)
-  else:
-    osutils.Touch(key.public, makedirs=True)
+  """Create empty public key file for given key."""
+  osutils.Touch(key.public, makedirs=True)
 
 
 def CreateDummyPrivateKey(key):
-  """Create empty private key for given key (or subkeys if exist)."""
-  if key.subkeys:
-    for subkey in key.subkeys.values():
-      CreateDummyPrivateKey(subkey)
-  else:
-    osutils.Touch(key.private, makedirs=True)
+  """Create empty private key for given key."""
+  osutils.Touch(key.private, makedirs=True)
 
 
 def CreateDummyKeyblock(key):
-  """Create empty keyblock file for given key (or subkeys if exist)."""
-  if key.subkeys:
-    for subkey in key.subkeys.values():
-      CreateDummyKeyblock(subkey)
-  else:
-    osutils.Touch(key.keyblock, makedirs=True)
+  """Create empty keyblock file for given key."""
+  osutils.Touch(key.keyblock, makedirs=True)
 
 
 def CreateDummyKeys(key):
-  """Create empty key files for given key (or subkeys if exist)."""
+  """Create empty key files for given key (or buildtarget_keys if exist)."""
   CreateDummyPublic(key)
   CreateDummyPrivateKey(key)
   CreateDummyKeyblock(key)
