@@ -110,9 +110,9 @@ TEST_F(BoundedLabelTest, GetWrappedTextTest) {
   TEST_WRAP("123\n456\n789", "123 456 789", 301, 3);
 
   // One word per line: Ellisions should be made when necessary.
-  TEST_WRAP("123...", "123 456", 301, 1);
-  TEST_WRAP("123...", "123 456 789", 301, 1);
-  TEST_WRAP("123\n456...", "123 456 789", 301, 2);
+  TEST_WRAP("123...", "123 456", 302, 1);
+  TEST_WRAP("123...", "123 456 789", 302, 1);
+  TEST_WRAP("123\n456...", "123 456 789", 302, 2);
 
   // Two words per line: No ellision should be made when not necessary.
   TEST_WRAP("123 456", "123 456", 621, 1);
