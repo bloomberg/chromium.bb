@@ -82,10 +82,12 @@ class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyncTokenClientImpl);
 };
 
-sk_sp<SkImage> YUVGrBackendTexturesToSkImage(GrContext* gr_context,
-                                             gfx::ColorSpace video_color_space,
-                                             VideoPixelFormat video_format,
-                                             GrBackendTexture* textures) {
+sk_sp<SkImage> YUVGrBackendTexturesToSkImage(
+    GrContext* gr_context,
+    gfx::ColorSpace video_color_space,
+    VideoPixelFormat video_format,
+    GrBackendTexture* yuv_textures,
+    GrBackendTexture* result_texture = nullptr) {
   // TODO(hubbe): This should really default to rec709.
   // https://crbug.com/828599
   SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
@@ -93,34 +95,43 @@ sk_sp<SkImage> YUVGrBackendTexturesToSkImage(GrContext* gr_context,
 
   switch (video_format) {
     case PIXEL_FORMAT_NV12:
-      return SkImage::MakeFromNV12TexturesCopy(
-          gr_context, color_space, textures, kTopLeft_GrSurfaceOrigin);
+      if (result_texture) {
+        return SkImage::MakeFromNV12TexturesCopyWithExternalBackend(
+            gr_context, color_space, yuv_textures, kTopLeft_GrSurfaceOrigin,
+            result_texture[0]);
+      } else {
+        return SkImage::MakeFromNV12TexturesCopy(
+            gr_context, color_space, yuv_textures, kTopLeft_GrSurfaceOrigin);
+      }
     case PIXEL_FORMAT_I420:
-      return SkImage::MakeFromYUVTexturesCopy(gr_context, color_space, textures,
-                                              kTopLeft_GrSurfaceOrigin);
+      if (result_texture) {
+        return SkImage::MakeFromYUVTexturesCopyWithExternalBackend(
+            gr_context, color_space, yuv_textures, kTopLeft_GrSurfaceOrigin,
+            result_texture[0]);
+      } else {
+        return SkImage::MakeFromYUVTexturesCopy(
+            gr_context, color_space, yuv_textures, kTopLeft_GrSurfaceOrigin);
+      }
     default:
       NOTREACHED();
       return nullptr;
   }
 }
 
-sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
-    const VideoFrame* video_frame,
-    const Context3D& context_3d) {
-  DCHECK(video_frame->HasTextures());
-  // TODO: We should compare the DCHECK vs when UpdateLastImage calls this
-  // function. (crbug.com/674185)
-  DCHECK(video_frame->format() == PIXEL_FORMAT_I420 ||
-         video_frame->format() == PIXEL_FORMAT_NV12);
+static constexpr size_t kNumYUVPlanes = 3;
+struct YUVPlaneTextureInfo {
+  GrGLTextureInfo texture = {0, 0};
+  GLint minFilter = 0;
+  GLint magFilter = 0;
+};
+using YUVTexturesInfo = std::array<YUVPlaneTextureInfo, kNumYUVPlanes>;
+
+YUVTexturesInfo GetYUVTexturesInfo(const VideoFrame* video_frame,
+                                   const Context3D& context_3d) {
+  YUVTexturesInfo yuv_textures_info;
 
   gpu::gles2::GLES2Interface* gl = context_3d.gl;
   DCHECK(gl);
-  gfx::Size ya_tex_size = video_frame->coded_size();
-  gfx::Size uv_tex_size((ya_tex_size.width() + 1) / 2,
-                        (ya_tex_size.height() + 1) / 2);
-
-  GrGLTextureInfo source_textures[] = {{0, 0}, {0, 0}, {0, 0}};
-  GLint min_mag_filter[][2] = {{0, 0}, {0, 0}, {0, 0}};
   // TODO(bsalomon): Use GL_RGB8 once Skia supports it.
   // skbug.com/7533
   GrGLenum skia_texture_format =
@@ -134,16 +145,17 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
         << "Unsupported texture target " << std::hex << std::showbase
         << mailbox_holder.texture_target;
     gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-    source_textures[i].fID =
+    yuv_textures_info[i].texture.fID =
         gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
-    source_textures[i].fTarget = mailbox_holder.texture_target;
-    source_textures[i].fFormat = skia_texture_format;
+    yuv_textures_info[i].texture.fTarget = mailbox_holder.texture_target;
+    yuv_textures_info[i].texture.fFormat = skia_texture_format;
 
-    gl->BindTexture(mailbox_holder.texture_target, source_textures[i].fID);
+    gl->BindTexture(mailbox_holder.texture_target,
+                    yuv_textures_info[i].texture.fID);
     gl->GetTexParameteriv(mailbox_holder.texture_target, GL_TEXTURE_MIN_FILTER,
-                          &min_mag_filter[i][0]);
+                          &yuv_textures_info[i].minFilter);
     gl->GetTexParameteriv(mailbox_holder.texture_target, GL_TEXTURE_MAG_FILTER,
-                          &min_mag_filter[i][1]);
+                          &yuv_textures_info[i].magFilter);
     // TODO(dcastagna): avoid this copy once Skia supports native textures
     // with a GL_TEXTURE_RECTANGLE_ARB texture target.
     // crbug.com/505026
@@ -152,37 +164,113 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
       gl->GenTextures(1, &texture_copy);
       DCHECK(texture_copy);
       gl->BindTexture(GL_TEXTURE_2D, texture_copy);
-      gl->CopyTextureCHROMIUM(source_textures[i].fID, 0, GL_TEXTURE_2D,
-                              texture_copy, 0, GL_RGB, GL_UNSIGNED_BYTE, false,
-                              true, false);
+      gl->CopyTextureCHROMIUM(yuv_textures_info[i].texture.fID, 0,
+                              GL_TEXTURE_2D, texture_copy, 0, GL_RGB,
+                              GL_UNSIGNED_BYTE, false, true, false);
 
-      gl->DeleteTextures(1, &source_textures[i].fID);
-      source_textures[i].fID = texture_copy;
-      source_textures[i].fTarget = GL_TEXTURE_2D;
+      gl->DeleteTextures(1, &yuv_textures_info[i].texture.fID);
+      yuv_textures_info[i].texture.fID = texture_copy;
+      yuv_textures_info[i].texture.fTarget = GL_TEXTURE_2D;
     }
   }
-  GrBackendTexture textures[3] = {
+
+  return yuv_textures_info;
+}
+
+void DeleteYUVTextures(const VideoFrame* video_frame,
+                       const Context3D& context_3d,
+                       const YUVTexturesInfo& yuv_textures_info) {
+  gpu::gles2::GLES2Interface* gl = context_3d.gl;
+  DCHECK(gl);
+
+  for (size_t i = 0; i < video_frame->NumTextures(); ++i) {
+    gl->BindTexture(yuv_textures_info[i].texture.fTarget,
+                    yuv_textures_info[i].texture.fID);
+    gl->TexParameteri(yuv_textures_info[i].texture.fTarget,
+                      GL_TEXTURE_MIN_FILTER, yuv_textures_info[i].minFilter);
+    gl->TexParameteri(yuv_textures_info[i].texture.fTarget,
+                      GL_TEXTURE_MAG_FILTER, yuv_textures_info[i].magFilter);
+    gl->DeleteTextures(1, &yuv_textures_info[i].texture.fID);
+  }
+}
+
+sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
+    const VideoFrame* video_frame,
+    const Context3D& context_3d) {
+  DCHECK(video_frame->HasTextures());
+  // TODO: We should compare the DCHECK vs when UpdateLastImage calls this
+  // function. (crbug.com/674185)
+  DCHECK(video_frame->format() == PIXEL_FORMAT_I420 ||
+         video_frame->format() == PIXEL_FORMAT_NV12);
+
+  gfx::Size ya_tex_size = video_frame->coded_size();
+  gfx::Size uv_tex_size((ya_tex_size.width() + 1) / 2,
+                        (ya_tex_size.height() + 1) / 2);
+
+  YUVTexturesInfo yuv_textures_info =
+      GetYUVTexturesInfo(video_frame, context_3d);
+
+  GrBackendTexture yuv_textures[3] = {
       GrBackendTexture(ya_tex_size.width(), ya_tex_size.height(),
-                       GrMipMapped::kNo, source_textures[0]),
+                       GrMipMapped::kNo, yuv_textures_info[0].texture),
       GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(),
-                       GrMipMapped::kNo, source_textures[1]),
+                       GrMipMapped::kNo, yuv_textures_info[1].texture),
       GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(),
-                       GrMipMapped::kNo, source_textures[2]),
+                       GrMipMapped::kNo, yuv_textures_info[2].texture),
   };
 
   sk_sp<SkImage> img = YUVGrBackendTexturesToSkImage(
       context_3d.gr_context, video_frame->ColorSpace(), video_frame->format(),
-      textures);
+      yuv_textures);
 
-  for (size_t i = 0; i < video_frame->NumTextures(); ++i) {
-    gl->BindTexture(source_textures[i].fTarget, source_textures[i].fID);
-    gl->TexParameteri(source_textures[i].fTarget, GL_TEXTURE_MIN_FILTER,
-                      min_mag_filter[i][0]);
-    gl->TexParameteri(source_textures[i].fTarget, GL_TEXTURE_MAG_FILTER,
-                      min_mag_filter[i][1]);
+  DeleteYUVTextures(video_frame, context_3d, yuv_textures_info);
 
-    gl->DeleteTextures(1, &source_textures[i].fID);
-  }
+  return img;
+}
+
+sk_sp<SkImage> NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
+    const VideoFrame* video_frame,
+    const Context3D& context_3d,
+    unsigned int texture_target,
+    unsigned int texture_id) {
+  DCHECK(video_frame->HasTextures());
+  // TODO: We should compare the DCHECK vs when UpdateLastImage calls this
+  // function. (https://crbug.com/674185)
+  DCHECK(video_frame->format() == PIXEL_FORMAT_I420 ||
+         video_frame->format() == PIXEL_FORMAT_NV12);
+
+  gfx::Size ya_tex_size = video_frame->coded_size();
+  gfx::Size uv_tex_size((ya_tex_size.width() + 1) / 2,
+                        (ya_tex_size.height() + 1) / 2);
+
+  GrGLTextureInfo backend_texture{};
+
+  YUVTexturesInfo yuv_textures_info =
+      GetYUVTexturesInfo(video_frame, context_3d);
+
+  GrBackendTexture yuv_textures[3] = {
+      GrBackendTexture(ya_tex_size.width(), ya_tex_size.height(),
+                       GrMipMapped::kNo, yuv_textures_info[0].texture),
+      GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(),
+                       GrMipMapped::kNo, yuv_textures_info[1].texture),
+      GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(),
+                       GrMipMapped::kNo, yuv_textures_info[2].texture),
+  };
+  backend_texture.fID = texture_id;
+  backend_texture.fTarget = texture_target;
+  backend_texture.fFormat = GL_RGBA8;
+  GrBackendTexture result_texture[1] = {
+      GrBackendTexture(video_frame->coded_size().width(),
+                       video_frame->coded_size().height(), GrMipMapped::kNo,
+                       backend_texture),
+  };
+
+  sk_sp<SkImage> img = YUVGrBackendTexturesToSkImage(
+      context_3d.gr_context, video_frame->ColorSpace(), video_frame->format(),
+      yuv_textures, result_texture);
+
+  DeleteYUVTextures(video_frame, context_3d, yuv_textures_info);
+
   return img;
 }
 
@@ -1050,6 +1138,79 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
   return true;
 }
 
+bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
+    const Context3D& context_3d,
+    gpu::gles2::GLES2Interface* destination_gl,
+    const scoped_refptr<VideoFrame>& video_frame,
+    unsigned int target,
+    unsigned int texture) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(video_frame);
+  DCHECK(video_frame->HasTextures());
+  if (video_frame->NumTextures() == 1) {
+    if (target == GL_TEXTURE_EXTERNAL_OES) {
+      // We don't support Android now.
+      // TODO(crbug.com/776222): support Android.
+      return false;
+    }
+    // We don't support sharing single video frame texture now.
+    // TODO(crbug.com/776222): deal with single video frame texture.
+    return false;
+  }
+
+  if (!context_3d.gr_context)
+    return false;
+
+  // Take webgl video texture as 2D texture. Setting it as external render
+  // target backend for skia.
+  destination_gl->BindTexture(target, texture);
+  destination_gl->TexImage2D(target, 0, GL_RGBA,
+                             video_frame->coded_size().width(),
+                             video_frame->coded_size().height(), 0, GL_RGBA,
+                             GL_UNSIGNED_BYTE, nullptr);
+
+  gpu::gles2::GLES2Interface* source_gl = context_3d.gl;
+  gpu::MailboxHolder mailbox_holder;
+  mailbox_holder.texture_target = target;
+  destination_gl->ProduceTextureDirectCHROMIUM(texture,
+                                               mailbox_holder.mailbox.name);
+
+  destination_gl->GenUnverifiedSyncTokenCHROMIUM(
+      mailbox_holder.sync_token.GetData());
+
+  source_gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
+
+  uint32_t shared_texture =
+      source_gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
+
+  if (!PrepareVideoFrame(video_frame, context_3d, target, shared_texture)) {
+    return false;
+  }
+
+  // Warning : This approach has failed previously. The history is
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1251321.
+  // It failed to execute texture copy on mac.
+  // The possible solution is here:
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1258212
+  // make a copy of the video texture in that case so that the copy
+  // could be done in |destination_gl|.
+  source_gl->ProduceTextureDirectCHROMIUM(shared_texture,
+                                          mailbox_holder.mailbox.name);
+
+  // Wait for mailbox creation on canvas context before consuming it and
+  // copying from it on the consumer context.
+  source_gl->GenUnverifiedSyncTokenCHROMIUM(
+      mailbox_holder.sync_token.GetData());
+
+  destination_gl->WaitSyncTokenCHROMIUM(
+      mailbox_holder.sync_token.GetConstData());
+
+  SyncTokenClientImpl client(source_gl);
+  video_frame->UpdateReleaseSyncToken(&client);
+
+  return true;
+}
+
 bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     const Context3D& context_3d,
     gpu::gles2::GLES2Interface* destination_gl,
@@ -1285,6 +1446,48 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
 
   DCHECK(last_image_);
   last_image_deleting_timer_.Reset();
+  return true;
+}
+
+bool PaintCanvasVideoRenderer::PrepareVideoFrame(
+    const scoped_refptr<VideoFrame>& video_frame,
+    const Context3D& context_3d,
+    unsigned int textureTarget,
+    unsigned int texture) {
+  auto paint_image_builder =
+      cc::PaintImageBuilder::WithDefault()
+          .set_id(renderer_stable_id_)
+          .set_animation_type(cc::PaintImage::AnimationType::VIDEO)
+          .set_completion_state(cc::PaintImage::CompletionState::DONE);
+
+  // Generate a new image.
+  // Note: Skia will hold onto |video_frame| via |video_generator| only when
+  // |video_frame| is software.
+  // Holding |video_frame| longer than this call when using GPUVideoDecoder
+  // could cause problems since the pool of VideoFrames has a fixed size.
+  if (video_frame->HasTextures()) {
+    DCHECK(context_3d.gr_context);
+    DCHECK(context_3d.gl);
+    if (video_frame->NumTextures() > 1) {
+      paint_image_builder.set_image(
+          NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
+              video_frame.get(), context_3d, textureTarget, texture),
+          cc::PaintImage::GetNextContentId());
+    } else {
+      // We don't support Android now.
+      return false;
+    }
+  } else {
+    paint_image_builder.set_paint_image_generator(
+        sk_make_sp<VideoImageGenerator>(video_frame));
+  }
+  last_image_ = paint_image_builder.TakePaintImage();
+  CorrectLastImageDimensions(gfx::RectToSkIRect(video_frame->visible_rect()));
+  if (!last_image_)  // Couldn't create the SkImage.
+    return false;
+  last_id_ = video_frame->unique_id();
+  last_image_deleting_timer_.Reset();
+  DCHECK(!!last_image_);
   return true;
 }
 

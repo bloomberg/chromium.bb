@@ -339,6 +339,17 @@ class WebMediaPlayer {
     return false;
   }
 
+  // Share video frame texture to |texture|. If the sharing is impossible or
+  // fails, it returns false.
+  virtual bool PrepareVideoFrameForWebGL(
+      gpu::gles2::GLES2Interface* gl,
+      unsigned target,
+      unsigned texture,
+      int already_uploaded_id = -1,
+      WebMediaPlayer::VideoFrameUploadMetadata* out_metadata = nullptr) {
+    return false;
+  }
+
   virtual WebAudioSourceProvider* GetAudioSourceProvider() { return nullptr; }
 
   virtual void SetContentDecryptionModule(

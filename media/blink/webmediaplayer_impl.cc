@@ -1277,6 +1277,40 @@ bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
       internal_format, format, type, level, premultiply_alpha, flip_y);
 }
 
+bool WebMediaPlayerImpl::PrepareVideoFrameForWebGL(
+    gpu::gles2::GLES2Interface* gl,
+    unsigned target,
+    unsigned texture,
+    int already_uploaded_id,
+    WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT0("media", "WebMediaPlayerImpl::PrepareVideoFrameForWebGL");
+
+  // TODO(crbug.com/776222): How to deal with protected frames.
+  scoped_refptr<VideoFrame> video_frame = GetCurrentFrameFromCompositor();
+  if (!video_frame.get() || !video_frame->HasTextures()) {
+    return false;
+  }
+  if (out_metadata) {
+    // WebGL last-uploaded-frame-metadata API is enabled.
+    ComputeFrameUploadMetadata(video_frame.get(), already_uploaded_id,
+                               out_metadata);
+    if (out_metadata->skipped) {
+      // Skip uploading this frame.
+      return true;
+    }
+  }
+
+  Context3D context_3d;
+  if (context_provider_) {
+    context_3d = Context3D(context_provider_->ContextGL(),
+                           context_provider_->GrContext());
+  }
+
+  return video_renderer_.PrepareVideoFrameForWebGL(
+      context_3d, gl, video_frame.get(), target, texture);
+}
+
 // static
 void WebMediaPlayerImpl::ComputeFrameUploadMetadata(
     VideoFrame* frame,
