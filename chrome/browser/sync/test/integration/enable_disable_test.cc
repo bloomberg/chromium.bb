@@ -18,7 +18,6 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
-#include "components/unified_consent/feature.h"
 
 using base::FeatureList;
 using syncer::ModelType;

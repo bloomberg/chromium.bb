@@ -35,6 +35,7 @@
 #include "components/ukm/ukm_service.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/scoped_unified_consent.h"
+#include "components/unified_consent/unified_consent_service.h"
 #include "components/variations/service/variations_field_trial_creator.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -220,7 +221,8 @@ class UkmBrowserTestBase : public SyncTest {
  protected:
   std::unique_ptr<ProfileSyncServiceHarness> EnableSyncForProfile(
       Profile* profile) {
-    UnifiedConsentServiceFactory::GetForProfile(profile);
+    unified_consent::UnifiedConsentService* consent_service =
+        UnifiedConsentServiceFactory::GetForProfile(profile);
     browser_sync::ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
@@ -245,6 +247,11 @@ class UkmBrowserTestBase : public SyncTest {
             profile, username, "unused" /* password */,
             ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
     EXPECT_TRUE(harness->SetupSync());
+    // Opt into unified consent if possible, so url-keyed-anonymized data
+    // collection is enabled. Note: If the consent service is not available, UKM
+    // will fall back on the state of history sync.
+    if (consent_service)
+      consent_service->SetUnifiedConsentGiven(true);
     return harness;
   }
 

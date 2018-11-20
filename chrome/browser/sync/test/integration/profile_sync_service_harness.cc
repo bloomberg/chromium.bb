@@ -21,12 +21,9 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
-#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "components/sync/engine/sync_string_conversions.h"
-#include "components/unified_consent/feature.h"
-#include "components/unified_consent/unified_consent_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 
@@ -264,19 +261,8 @@ bool ProfileSyncServiceHarness::SetupSyncImpl(
   // Choose the datatypes to be synced. If all datatypes are to be synced,
   // set sync_everything to true; otherwise, set it to false.
   bool sync_everything = (synced_datatypes == syncer::UserSelectableTypes());
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // When unified consent given is set to |true|, the unified consent service
-    // enables syncing all datatypes.
-    UnifiedConsentServiceFactory::GetForProfile(profile_)
-        ->SetUnifiedConsentGiven(sync_everything);
-    if (!sync_everything) {
-      service()->GetUserSettings()->SetChosenDataTypes(sync_everything,
-                                                       synced_datatypes);
-    }
-  } else {
-    service()->GetUserSettings()->SetChosenDataTypes(sync_everything,
-                                                     synced_datatypes);
-  }
+  service()->GetUserSettings()->SetChosenDataTypes(sync_everything,
+                                                   synced_datatypes);
 
   if (encryption_passphrase.has_value()) {
     service()->GetUserSettings()->SetEncryptionPassphrase(
@@ -525,12 +511,6 @@ bool ProfileSyncServiceHarness::DisableSyncForDatatype(
     return true;
   }
 
-  // Disable unified consent first as otherwise disabling sync is not possible.
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    UnifiedConsentServiceFactory::GetForProfile(profile_)
-        ->SetUnifiedConsentGiven(false);
-  }
-
   synced_datatypes.RetainAll(syncer::UserSelectableTypes());
   synced_datatypes.Remove(datatype);
   service()->GetUserSettings()->SetChosenDataTypes(false, synced_datatypes);
@@ -560,14 +540,9 @@ bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
     return false;
   }
 
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Setting unified consent given to true will enable all sync data types.
-    UnifiedConsentServiceFactory::GetForProfile(profile_)
-        ->SetUnifiedConsentGiven(true);
-  } else {
-    service()->GetUserSettings()->SetChosenDataTypes(
-        true, syncer::UserSelectableTypes());
-  }
+  service()->GetUserSettings()->SetChosenDataTypes(
+      true, syncer::UserSelectableTypes());
+
   if (AwaitSyncSetupCompletion(/*skip_passphrase_verification=*/false)) {
     DVLOG(1) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes "
              << "on " << profile_debug_name_ << ".";
