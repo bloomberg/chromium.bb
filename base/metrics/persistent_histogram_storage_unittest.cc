@@ -50,7 +50,7 @@ class PersistentHistogramStorageTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PersistentHistogramStorageTest);
 };
 
-// TODO(chengx): Re-enable the test on OS_IOS after issue 836789 is fixed.
+// TODO(chengx): Re-enable the test on OS_IOS after crbug.com/836789 is fixed.
 // PersistentHistogramStorage is only used on OS_WIN now, so disabling this
 // test on OS_IOS is fine.
 #if !defined(OS_NACL) && !defined(OS_IOS)
