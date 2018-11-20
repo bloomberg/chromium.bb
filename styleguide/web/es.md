@@ -1,5 +1,5 @@
 <!-- Feature template markdown:
-## Header
+### Header
 
 **Usage Example:**
 
@@ -19,12 +19,12 @@ hyphen-hyphen-hyphen (change to actual hyphen)
     font-size: 16px;
   }
 
-  .doc h2[id] {
+  .doc h3[id] {
     line-height: 20px;
     font-size: 16px;
   }
 
-  .doc h2 > code {
+  .doc h3 > code {
     font-size: 16px;
     font-weight: bold;
   }
@@ -36,7 +36,7 @@ hyphen-hyphen-hyphen (change to actual hyphen)
     border-radius: 5px;
   }
 
-  .feature-container > h2 {
+  .feature-container > h3 {
     cursor: pointer;
     background-color: #c3d9ff;
     margin: 0;
@@ -44,12 +44,12 @@ hyphen-hyphen-hyphen (change to actual hyphen)
     border-radius: 5px;
   }
 
-  .feature-container > *:not(h2){
+  .feature-container > *:not(h3){
     display: none;
     padding: 0px 10px;
   }
 
-  .feature-container.open > *:not(h2){
+  .feature-container.open > *:not(h3){
     display: block;
   }
 </style>
@@ -57,7 +57,7 @@ hyphen-hyphen-hyphen (change to actual hyphen)
 <script>
 document.addEventListener('DOMContentLoaded', function(event) {
   // Move all headers and corresponding contents to an accordion container.
-  document.querySelectorAll('h2[id]').forEach(function(header) {
+  document.querySelectorAll('h3[id]').forEach(function(header) {
     const container = document.createElement('div');
     container.classList.add('feature-container');
     header.parentNode.insertBefore(container, header);
@@ -85,15 +85,6 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
 [TOC]
 
-# ES2015 Support In Chromium
-
-This is a list of [ECMAScript 6 a.k.a.
-ES2015](https://developer.mozilla.org/en-US/docs/Web/JavaScript/New_in_JavaScript/ECMAScript_6_support_in_Mozilla)
-features allowed in Chromium code.
-
-This is **not** a status list of [V8](https://developers.google.com/v8/)'s
-support for language features.
-
 > **TBD:** Do we need to differentiate per-project?
 
 > **TBD:** Cross-platform build support? As in: transpilers?
@@ -104,15 +95,24 @@ you think it should or should not be allowed, along with links to any relevant
 previous discussion. If the list arrives at some consensus, send a codereview
 to change this file accordingly, linking to your discussion thread.
 
+# ES2015 Support In Chromium
+
+This is a list of [ECMAScript 6 a.k.a.
+ES2015](https://developer.mozilla.org/en-US/docs/Web/JavaScript/New_in_JavaScript/ECMAScript_6_support_in_Mozilla)
+features allowed in Chromium code.
+
+This is **not** a status list of [V8](https://developers.google.com/v8/)'s
+support for language features.
+
 > Some descriptions and usage examples were taken from
 > [kangax](https://kangax.github.io/compat-table/es6/)
 > and [http://es6-features.org/](http://es6-features.org/)
 
-# Allowed Features
+## Allowed Features
 
 The following features are allowed in Chromium development.
 
-## => (Arrow Functions)
+### => (Arrow Functions)
 
 Arrow functions provide a concise syntax to create a function, and fix a number
 of difficulties with `this` (e.g. eliminating the need to write `const self =
@@ -148,7 +148,7 @@ window.addEventListener('scroll', (event) => {
 
 ---
 
-## Promise
+### Promise
 
 The Promise object is used for asynchronous computations. A Promise represents a
 value which may be available now, or in the future, or never.
@@ -181,7 +181,7 @@ this document.
 
 ---
 
-## Classes
+### Classes
 
 OOP-style and boilerplate-free class syntax, including inheritance, `super()`,
 static members, and getters and setters.
@@ -218,7 +218,7 @@ https://groups.google.com/a/chromium.org/d/msg/chromium-dev/S1h-0m2ohOw/jyaiMGDl
 
 ---
 
-## Map
+### Map
 
 A simple key/value map in which any value (both objects and primitive values)
 may be used as either a key or a value.
@@ -249,7 +249,7 @@ this document.
 
 ---
 
-## Set
+### Set
 
 An object that lets you store unique values of any type, whether primitive
 values or object references.
@@ -275,7 +275,7 @@ this document.
 
 ---
 
-## const (Block-Scoped Constants)
+### const (Block-Scoped Constants)
 
 Constants (also known as "immutable variables") are variables which cannot be
 re-assigned new content. Note that if the value is an object, the object itself
@@ -303,7 +303,7 @@ frobber.isFrobbing = false;  // Works.
 
 ---
 
-## let (Block-Scoped Variables)
+### let (Block-Scoped Variables)
 
 `let` declares a variable within the scope of a block, like `const`.
 This differs from `var`, which uses function-level scope.
@@ -345,7 +345,7 @@ function f() {
 
 ---
 
-## Array Static & Prototype Methods
+### Array Static & Prototype Methods
 
 **Usage Example:**
 
@@ -370,7 +370,7 @@ const a2 = Array.of(7);
 
 ---
 
-## Number Properties
+### Number Properties
 
 **Usage Example:**
 
@@ -390,7 +390,7 @@ const a2 = Array.of(7);
 
 ---
 
-## Object Static Methods
+### Object Static Methods
 
 **Usage Example:**
 
@@ -415,7 +415,7 @@ Object.is(-0, +0)  // false, btw: -0 === +0 is true
 
 ---
 
-## for...of Loops
+### for...of Loops
 
 Convenient operator to iterate over all values in an iterable collection. This
 differs from `for...in`, which iterates over all enumerable properties of an
@@ -437,7 +437,7 @@ for (const n of fibonacci) {
 
 ---
 
-## Template Literals
+### Template Literals
 
 Expression interpolation for Strings, with the ability to access raw template
 pieces.
@@ -462,17 +462,17 @@ and I am ${to - from} years old`;
 
 ---
 
-# Banned Features
+## Banned Features
 
 The following features are banned for Chromium development.
 
-# Features To Be Discussed
+## Features To Be Discussed
 
 The following features are currently disallowed. See the top of this page on
 how to propose moving a feature from this list into the allowed or banned
 sections.
 
-## Block Scope Functions
+### Block Scope Functions
 
 **Usage Example:**
 
@@ -498,7 +498,7 @@ sections.
 
 ---
 
-## Default Function Parameters
+### Default Function Parameters
 
 Initialize parameters with default values if no value or `undefined` is passed.
 
@@ -529,7 +529,7 @@ hide(document.body, false);  // Not animated.
 
 ---
 
-## Rest Parameters
+### Rest Parameters
 
 Aggregation of function arguments into one Array variable.
 
@@ -551,7 +551,7 @@ usesRestParams('a', 'b', 1, 2, 3);
 
 ---
 
-## Spread Operators
+### Spread Operators
 
 Spreading the elements from an iterable collection into individual literals as
 function parameters.
@@ -574,7 +574,7 @@ const chars = [...str];  // ['f', 'o', 'o']
 
 ---
 
-## Object Literal Extensions
+### Object Literal Extensions
 
 Convenient new ways for object property definition.
 
@@ -612,7 +612,7 @@ console.log(clearSky.clouds());  // 0
 
 ---
 
-## Binary & Octal Literals
+### Binary & Octal Literals
 
 **Usage Example:**
 
@@ -627,7 +627,7 @@ console.log(clearSky.clouds());  // 0
 
 ---
 
-## `/u` Unicode Regex Literal
+### `/u` Unicode Regex Literal
 
 **Usage Example:**
 
@@ -641,7 +641,7 @@ console.log(clearSky.clouds());  // 0
 
 ---
 
-## `\u{}` Unicode String
+### `\u{}` Unicode String
 
 **Usage Example:**
 
@@ -655,7 +655,7 @@ console.log(clearSky.clouds());  // 0
 
 ---
 
-## `/y` Regex Sticky Matching
+### `/y` Regex Sticky Matching
 
 Keep the matching position sticky between matches and this way support
 efficient parsing of arbitrarily long input strings, even with an arbitrary
@@ -676,7 +676,7 @@ result === 'yy' && re.lastIndex === 5;  // true
 
 ---
 
-## Destructuring Assignment
+### Destructuring Assignment
 
 Flexible destructuring of collections or parameters.
 
@@ -714,7 +714,7 @@ h({name: 'bar', val: 42});
 
 ---
 
-## Modules
+### Modules
 
 Support for exporting/importing values from/to modules without global
 namespace pollution.
@@ -736,7 +736,7 @@ import {getArea, width, height} from './lib/rect.js';
 
 ---
 
-## Symbol Type
+### Symbol Type
 
 Unique and immutable data type to be used as an identifier for object
 properties.
@@ -763,7 +763,7 @@ Object.getOwnPropertySymbols(obj);  // [foo, bar]
 
 ---
 
-## String Static & Prototype methods
+### String Static & Prototype methods
 
 **Usage Example:**
 
@@ -785,7 +785,7 @@ Object.getOwnPropertySymbols(obj);  // [foo, bar]
 
 ---
 
-## Iterators
+### Iterators
 
 **Usage Example:**
 
@@ -809,7 +809,7 @@ const fibonacci = {
 
 ---
 
-## Generators
+### Generators
 
 Special iterators with specified pausing points.
 
@@ -835,7 +835,7 @@ for (const i of range(0, 10, 2)) {
 
 ---
 
-## WeakMap
+### WeakMap
 
 WeakMap does not prevent garbage collection if nothing else refers to an object
 within the collection.
@@ -857,7 +857,7 @@ weakmap.has(key) && weakmap.get(key) === 123;  // true
 
 ---
 
-## WeakSet
+### WeakSet
 
 WeakSet does not prevent garbage collection if nothing else refers to an object
 within the collection.
@@ -880,7 +880,7 @@ weakset.has(obj1);  // true
 
 ---
 
-## Typed Arrays
+### Typed Arrays
 
 A lot of new typed Arrays...
 
@@ -899,7 +899,7 @@ new UInt8ClampedArray();
 
 ---
 
-## Proxy
+### Proxy
 
 Hooking into runtime-level object meta-operations.
 
@@ -931,7 +931,7 @@ keyTracker.key2;  // '2 keys created!'
 
 ---
 
-## Reflection
+### Reflection
 
 Make calls corresponding to the object meta-operations.
 
@@ -950,7 +950,7 @@ Reflect.ownKeys(obj);  // ['a', 'b', Symbol(c)]
 
 ---
 
-## Math Methods
+### Math Methods
 
 A lot of new Math methods.
 
@@ -961,6 +961,159 @@ A lot of new Math methods.
 ```
 
 **Documentation:** [link](https://tc39.github.io/ecma262/#sec-math)
+
+**Discussion Notes / Link to Thread:**
+
+---
+
+
+# ES2016 Support In Chromium
+
+This is a list of [ECMAScript 7 a.k.a.
+ES2016](https://developer.mozilla.org/en-US/docs/Web/JavaScript/New_in_JavaScript/ECMAScript_Next_support_in_Mozilla#ECMAScript_2016)
+features allowed in Chromium code.
+
+## Allowed Features
+
+The following features are allowed in Chromium development.
+
+
+## Banned Features
+
+The following features are banned for Chromium development.
+
+## Features To Be Discussed
+
+The following features are currently disallowed. See the top of this page on
+how to propose moving a feature from this list into the allowed or banned
+sections.
+
+### Array.prototype.includes()
+
+The includes() method determines whether an array includes a certain element, returning true or false as appropriate.
+
+**Usage Example:**
+
+```js
+var array1 = [1, 2, 3];
+
+console.log(array1.includes(2));
+// expected output: true
+
+var pets = ['cat', 'dog', 'bat'];
+
+console.log(pets.includes('cat'));
+// expected output: true
+
+console.log(pets.includes('at'));
+// expected output: false
+```
+
+**Documentation:** [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes)
+
+**Discussion Notes / Link to Thread:**
+
+---
+
+# ES2017 Support In Chromium
+
+This is a list of [ECMAScript 8 a.k.a.
+ES2017](https://developer.mozilla.org/en-US/docs/Web/JavaScript/New_in_JavaScript/ECMAScript_Next_support_in_Mozilla#ECMAScript_2017)
+features allowed in Chromium code.
+
+
+## Allowed Features
+
+The following features are allowed in Chromium development.
+
+### Async Functions (aka async/await)
+
+The await expression causes async function execution to pause until a Promise is resolved, that is fulfilled or rejected, and to resume execution of the async function after fulfillment. When resumed, the value of the await expression is that of the fulfilled Promise.
+
+**Usage Example:**
+
+```js
+function resolveAfter2Seconds(x) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(x);
+    }, 2000);
+  });
+}
+
+async function f1() {
+  var x = await resolveAfter2Seconds(10);
+  console.log(x); // 10
+}
+f1();
+```
+
+**Documentation:** [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/forum/?utm_medium=email&utm_source=footer#!msg/chromium-dev/KCGiv5vGeEQ/u-gl1pRGAAAJ)
+
+---
+
+## Banned Features
+
+The following features are banned for Chromium development.
+
+## Features To Be Discussed
+
+The following features are currently disallowed. See the top of this page on
+how to propose moving a feature from this list into the allowed or banned
+sections.
+
+### String.prototype.padEnd()/padStart()
+
+The padStart() and padEnd() methods pad the current string with another string (multiple times, if needed) until the resulting string reaches the given length.
+
+**Usage Example:**
+
+```js
+const str1 = '5';
+
+console.log(str1.padStart(2, '0'));
+// expected output: "05"
+
+const fullNumber = '2034399002125581';
+const last4Digits = fullNumber.slice(-4);
+const maskedNumber = last4Digits.padStart(fullNumber.length, '*');
+
+console.log(maskedNumber);
+// expected output: "************5581"
+
+```
+
+**Documentation:** [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/padStart)
+
+**Discussion Notes / Link to Thread:**
+
+---
+
+### Object.values() and Object.entries()
+
+The Object.values() method returns an array of a given object's own enumerable property values, and Object.entries() method returns an array of a given object's own enumerable property [key, value] pairs.
+
+**Usage Example:**
+
+```js
+const object1 = {
+  a: 'somestring',
+  b: 42,
+  c: false
+};
+
+console.log(Object.values(object1));
+// expected output: Array ["somestring", 42, false]
+
+const object2 = { foo: 'bar', baz: 42 };
+console.log(Object.entries(object2)[1]);
+// expected output: Array ["baz", 42]
+
+```
+
+**Documentation:** [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/values) [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries)
 
 **Discussion Notes / Link to Thread:**
 
