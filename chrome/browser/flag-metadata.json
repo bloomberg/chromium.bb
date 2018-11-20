@@ -11,9 +11,13 @@
 //   used as a primary key. The value is a string.
 //
 //   owners: the person(s) or team(s) responsible for this flag. The value is a
-//   list of strings, each of which is either an email address, or any other
-//   text, in which case it is assumed to be the username part of an
-//   @chromium.org email address. This list must be nonempty.
+//   nonempty list of strings, each of which is either:
+//
+//     - A string containing '@', which is treated as an email address;
+//     - A string beginning with '//', which is treated as a path to a file
+//       containing a list of owners for this flag (commonly an OWNERS file);
+//     - Any other string, which is treated as the username part of an
+//       @chromium.org email address;
 //
 //   expiry_milestone: the milestone after which this flag is obsolete.
 //   Specifically, after the milestone with the given number branches, this flag
