@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//testing/test.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 config("ced_config") {
   include_dirs = [ "src" ]
@@ -94,5 +95,15 @@ test("ced_unittests") {
     ":ced",
     "//testing/gtest",
     "//testing/gtest:gtest_main",
+  ]
+}
+
+fuzzer_test("compact_enc_det_fuzzer") {
+  sources = [
+    "compact_enc_det_fuzzer.cc",
+  ]
+  deps = [
+    ":ced",
+    "//base/test:test_support",
   ]
 }
