@@ -61,9 +61,8 @@ namespace {
 
 class OzonePlatformGbm : public OzonePlatform {
  public:
-  OzonePlatformGbm()
-      : using_mojo_(false), single_process_(false), weak_factory_(this) {}
-  ~OzonePlatformGbm() override {}
+  OzonePlatformGbm() = default;
+  ~OzonePlatformGbm() override = default;
 
   // OzonePlatform:
   ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
@@ -291,8 +290,8 @@ class OzonePlatformGbm : public OzonePlatform {
   }
 
  private:
-  bool using_mojo_;
-  bool single_process_;
+  bool using_mojo_ = false;
+  bool single_process_ = false;
 
   // Objects in the GPU process.
   std::unique_ptr<DrmThreadProxy> drm_thread_proxy_;
@@ -304,7 +303,7 @@ class OzonePlatformGbm : public OzonePlatform {
   // running in single process mode.
   std::vector<ozone::mojom::DeviceCursorRequest> pending_cursor_requests_;
   std::vector<ozone::mojom::DrmDeviceRequest> pending_gpu_adapter_requests_;
-  bool drm_thread_started_;
+  bool drm_thread_started_ = false;
 
   // gpu_platform_support_host_ is the IPC bridge to the GPU process while
   // host_drm_device_ is the mojo bridge to the Viz process. Only one can be in
@@ -333,7 +332,7 @@ class OzonePlatformGbm : public OzonePlatform {
   XkbEvdevCodes xkb_evdev_code_converter_;
 #endif
 
-  base::WeakPtrFactory<OzonePlatformGbm> weak_factory_;
+  base::WeakPtrFactory<OzonePlatformGbm> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformGbm);
 };
