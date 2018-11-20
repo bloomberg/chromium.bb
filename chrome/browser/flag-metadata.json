@@ -698,7 +698,7 @@
   },
   {
     "name": "enable-accessibility-object-model",
-    // "owners": [ "your-team" ],
+    "owners": [ "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -1123,7 +1123,7 @@
   },
   {
     "name": "enable-experimental-accessibility-features",
-    // "owners": [ "your-team" ],
+    "owners": [ "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 76
   },
   {
