@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string16.h"
+#include "base/syslog_logging.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "net/base/url_util.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -40,8 +42,19 @@ void HandleAllGcpwInfoFetched(
     signin_result.MergeDictionary(&fetch_result);
     if (base::JSONWriter::Write(signin_result, &json_result) &&
         !json_result.empty()) {
-      // TODO(crbug.com/887444) output to the correct pipe the JSON result of
-      // the user sign in.
+      // The caller of this Chrome process must provide a stdout handle  to
+      // which Chrome can output the results, otherwise by default the call to
+      // ::GetStdHandle(STD_OUTPUT_HANDLE) will result in an invalid or null
+      // handle if Chrome was started without providing a console.
+      HANDLE output_handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
+      if (output_handle != nullptr && output_handle != INVALID_HANDLE_VALUE) {
+        DWORD written;
+        if (!::WriteFile(output_handle, json_result.c_str(),
+                         json_result.length(), &written, nullptr)) {
+          SYSLOG(ERROR)
+              << "Failed to write result of GCPW signin to inherited handle.";
+        }
+      }
     }
   }
 
@@ -161,10 +174,14 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
   // |reauth_email| is used to pre fill in the sign in dialog with the user's
   // e-mail during a reauthorize sign in. This type of sign in is used to update
   // the user's password.
+  // |email_domain| is used to pre fill the email domain on Gaia's signin page
+  // so that the user only needs to enter their user name.
   CredentialProviderWebDialogDelegate(
       const std::string& reauth_email,
+      const std::string& email_domain,
       HandleGcpwSigninCompleteResult signin_callback)
       : reauth_email_(reauth_email),
+        email_domain_(email_domain),
         signin_callback_(std::move(signin_callback)) {}
 
   GURL GetDialogContentURL() const override {
@@ -172,10 +189,19 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
         signin_metrics::AccessPoint::ACCESS_POINT_MACHINE_LOGON;
     signin_metrics::Reason reason =
         signin_metrics::Reason::REASON_FETCH_LST_ONLY;
-    return reauth_email_.empty()
-               ? signin::GetPromoURLForDialog(access_point, reason, false)
-               : signin::GetReauthURLWithEmailForDialog(access_point, reason,
-                                                        reauth_email_);
+
+    auto base_url =
+        reauth_email_.empty()
+            ? signin::GetPromoURLForDialog(access_point, reason, false)
+            : signin::GetReauthURLWithEmailForDialog(access_point, reason,
+                                                     reauth_email_);
+
+    if (email_domain_.empty())
+      return base_url;
+
+    return net::AppendQueryParameter(
+        base_url, credential_provider::kEmailDomainSigninPromoParameter,
+        email_domain_);
   }
 
   ui::ModalType GetDialogModalType() const override {
@@ -231,7 +257,10 @@ class CredentialProviderWebDialogDelegate : public ui::WebDialogDelegate {
 
  protected:
   // E-mail used to pre-fill the e-mail field when a reauth signin is required.
-  std::string reauth_email_;
+  const std::string reauth_email_;
+
+  // Default domain used for all sign in requests.
+  const std::string email_domain_;
 
   // Callback that will be called when a valid sign in has been completed
   // through the dialog.
@@ -273,11 +302,13 @@ views::WebDialogView* ShowCredentialProviderSigninDialog(
   // page.
   std::string reauth_email =
       command_line.GetSwitchValueASCII(credential_provider::kGcpwSigninSwitch);
+  std::string email_domain =
+      command_line.GetSwitchValueASCII(credential_provider::kEmailDomainSwitch);
 
   // Delegate to handle the result of the sign in request. This will
   // delete itself eventually when it receives the OnDialogClosed call.
   auto delegate = std::make_unique<CredentialProviderWebDialogDelegate>(
-      reauth_email, std::move(signin_complete_handler));
+      reauth_email, email_domain, std::move(signin_complete_handler));
 
   // The web dialog view that will contain the web ui for the login screen.
   // This view will be automatically deleted by the widget that owns it when it

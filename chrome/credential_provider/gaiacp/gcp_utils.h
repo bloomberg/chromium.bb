@@ -53,6 +53,16 @@ enum UiExitCodes {
   kUiecEMailMissmatch,
 };
 
+// A bitfield indicating which standard handles are to be created.
+using StdHandlesToCreate = uint32_t;
+
+enum : uint32_t {
+  kStdOutput = 1 << 0,
+  kStdInput = 1 << 1,
+  kStdError = 1 << 2,
+  kAllStdHandles = kStdOutput | kStdInput | kStdError
+};
+
 // Filled in by InitializeStdHandles to return the parent side of stdin/stdout/
 // stderr pipes of the login UI process.
 struct StdParentHandles {
@@ -95,8 +105,7 @@ class ScopedStartupInfo {
 HRESULT WaitForProcess(base::win::ScopedHandle::Handle process_handle,
                        const StdParentHandles& parent_handles,
                        DWORD* exit_code,
-                       char* stdout_buffer,
-                       char* stderr_buffer,
+                       char* output_buffer,
                        int buffer_size);
 
 // Creates a restricted, batch or interactive login token for the given user.
@@ -137,6 +146,7 @@ enum class CommDirection {
   kBidirectional,
 };
 HRESULT InitializeStdHandles(CommDirection direction,
+                             StdHandlesToCreate to_create,
                              ScopedStartupInfo* startupinfo,
                              StdParentHandles* parent_handles);
 

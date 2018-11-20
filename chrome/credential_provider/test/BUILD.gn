@@ -15,6 +15,7 @@ test("gcp_unittests") {
     "com_fakes.h",
     "gcp_fakes.cc",
     "gcp_fakes.h",
+    "gcp_gls_output_unittest.cc",
     "gcp_setup_unittests.cc",
     "gcp_test_main.cc",
   ]
@@ -25,6 +26,7 @@ test("gcp_unittests") {
     "../gaiacp:version",
     "../setup:common",
     "//base",
+    "//chrome/test:credential_provider_test_utils",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -34,5 +36,13 @@ test("gcp_unittests") {
     "../eventlog:gcp_eventlog_provider",
     "../gaiacp:gaia1_0",
     "../setup:gcp_setup",
+    "//chrome",
+  ]
+
+  data = [
+    "//net/tools/testserver/",
+    "//third_party/pyftpdlib/",
+    "//third_party/pywebsocket/src/mod_pywebsocket/",
+    "//third_party/tlslite/",
   ]
 }

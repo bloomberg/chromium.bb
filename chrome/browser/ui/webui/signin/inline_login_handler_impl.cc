@@ -255,8 +255,8 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
 
   // Prime the account tracker with this combination of gaia id/display email.
   std::string account_id =
-      AccountTrackerServiceFactory::GetForProfile(profile_)
-          ->SeedAccountInfo(gaia_id_, email_);
+      AccountTrackerServiceFactory::GetForProfile(profile_)->SeedAccountInfo(
+          gaia_id_, email_);
 
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
   std::string primary_email =
@@ -324,9 +324,9 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     }
 
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required =
-        confirm_untrusted_signin_ ?
-            OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN :
-            OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
+        confirm_untrusted_signin_
+            ? OneClickSigninSyncStarter::CONFIRM_UNTRUSTED_SIGNIN
+            : OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
 
     bool start_signin = !HandleCrossAccountError(
         result.refresh_token, confirmation_required, start_mode);
@@ -421,7 +421,7 @@ void InlineSigninHelper::ConfirmEmailAction(
 }
 
 void InlineSigninHelper::OnClientOAuthFailure(
-  const GoogleServiceAuthError& error) {
+    const GoogleServiceAuthError& error) {
   if (handler_)
     handler_->HandleLoginError(error.ToString(), base::string16());
 
@@ -437,17 +437,14 @@ void InlineSigninHelper::OnClientOAuthFailure(
 }
 
 InlineLoginHandlerImpl::InlineLoginHandlerImpl()
-      : confirm_untrusted_signin_(false),
-        weak_factory_(this) {
-}
+    : confirm_untrusted_signin_(false), weak_factory_(this) {}
 
 InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}
 
 // This method is not called with webview sign in enabled.
 void InlineLoginHandlerImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!web_contents() ||
-      !navigation_handle->HasCommitted() ||
+  if (!web_contents() || !navigation_handle->HasCommitted() ||
       navigation_handle->IsErrorPage()) {
     return;
   }
@@ -465,8 +462,7 @@ void InlineLoginHandlerImpl::DidFinishNavigation(
   if (!navigation_handle->GetURL().is_empty()) {
     GURL origin(navigation_handle->GetURL().GetOrigin());
     if (navigation_handle->GetURL().spec() != url::kAboutBlankURL &&
-        origin != kGaiaExtOrigin &&
-        !gaia::IsGaiaSignonRealm(origin)) {
+        origin != kGaiaExtOrigin && !gaia::IsGaiaSignonRealm(origin)) {
       confirm_untrusted_signin_ = true;
     }
   }
@@ -487,29 +483,40 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   signin_metrics::Reason reason =
       signin::GetSigninReasonForPromoURL(current_url);
 
-    const GURL& url = GaiaUrls::GetInstance()->embedded_signin_url();
-    params.SetBoolean("isNewGaiaFlow", true);
-    params.SetString("clientId",
-                     GaiaUrls::GetInstance()->oauth2_chrome_client_id());
-    params.SetString("gaiaPath", url.path().substr(1));
-
-    std::string flow;
-    switch (reason) {
-      case signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT:
-        flow = "addaccount";
-        break;
-      case signin_metrics::Reason::REASON_REAUTHENTICATION:
-      case signin_metrics::Reason::REASON_UNLOCK:
-        flow = "reauth";
-        break;
-      case signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT:
-        flow = "enterprisefsi";
-        break;
-      default:
-        flow = "signin";
-        break;
+#if defined(OS_WIN)
+  if (reason == signin_metrics::Reason::REASON_FETCH_LST_ONLY) {
+    std::string email_domain;
+    if (net::GetValueForKeyInQuery(
+            current_url, credential_provider::kEmailDomainSigninPromoParameter,
+            &email_domain)) {
+      params.SetString("emailDomain", email_domain);
     }
-    params.SetString("flow", flow);
+  }
+#endif
+
+  const GURL& url = GaiaUrls::GetInstance()->embedded_signin_url();
+  params.SetBoolean("isNewGaiaFlow", true);
+  params.SetString("clientId",
+                   GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+  params.SetString("gaiaPath", url.path().substr(1));
+
+  std::string flow;
+  switch (reason) {
+    case signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT:
+      flow = "addaccount";
+      break;
+    case signin_metrics::Reason::REASON_REAUTHENTICATION:
+    case signin_metrics::Reason::REASON_UNLOCK:
+      flow = "reauth";
+      break;
+    case signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT:
+      flow = "enterprisefsi";
+      break;
+    default:
+      flow = "signin";
+      break;
+  }
+  params.SetString("flow", flow);
 
   content::WebContentsObserver::Observe(contents);
   LogHistogramValue(signin_metrics::HISTOGRAM_SHOWN);
@@ -629,8 +636,8 @@ InlineLoginHandlerImpl::FinishCompleteLoginParams::FinishCompleteLoginParams(
 InlineLoginHandlerImpl::FinishCompleteLoginParams::FinishCompleteLoginParams(
     const FinishCompleteLoginParams& other) = default;
 
-InlineLoginHandlerImpl::
-    FinishCompleteLoginParams::~FinishCompleteLoginParams() {}
+InlineLoginHandlerImpl::FinishCompleteLoginParams::
+    ~FinishCompleteLoginParams() {}
 
 // static
 void InlineLoginHandlerImpl::FinishCompleteLogin(
@@ -666,9 +673,9 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   bool switch_to_advanced =
       params.choose_what_to_sync &&
       (access_point != signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
-  LogHistogramValue(
-      switch_to_advanced ? signin_metrics::HISTOGRAM_WITH_ADVANCED :
-                           signin_metrics::HISTOGRAM_WITH_DEFAULTS);
+  LogHistogramValue(switch_to_advanced
+                        ? signin_metrics::HISTOGRAM_WITH_ADVANCED
+                        : signin_metrics::HISTOGRAM_WITH_DEFAULTS);
 
   CanOfferSigninType can_offer_for = CAN_OFFER_SIGNIN_FOR_ALL_ACCOUNTS;
   switch (reason) {
@@ -762,8 +769,8 @@ void InlineLoginHandlerImpl::SendLSTFetchResultsMessage(
 }
 
 Browser* InlineLoginHandlerImpl::GetDesktopBrowser() {
-  Browser* browser = chrome::FindBrowserWithWebContents(
-      web_ui()->GetWebContents());
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (!browser)
     browser = chrome::FindLastActiveWithProfile(Profile::FromWebUI(web_ui()));
   return browser;

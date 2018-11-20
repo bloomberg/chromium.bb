@@ -1,6 +1,12 @@
 include_rules = [
   "+chrome/common",
+  "+chrome/installer/launcher_support",
   "+chrome/installer/util",
   "+google_apis",
 ]
 
+specific_include_rules = {
+  "gcp_gls_output_unittest\.cc": [
+    "+chrome/browser/ui/startup/credential_provider_signin_dialog_win_test_data.h",
+  ]
+}
