@@ -94,8 +94,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
-#import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
-#import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
@@ -548,9 +546,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // A map associating webStates with their NTP coordinators.
   std::map<web::WebState*, NewTabPageCoordinator*> _ntpCoordinatorsForWebStates;
 
-  // Coordinator for presenting SKStoreProductViewController.
-  StoreKitCoordinator* _storeKitCoordinator;
-
   // Coordinator for the language selection UI.
   LanguageSelectionCoordinator* _languageSelectionCoordinator;
 
@@ -910,9 +905,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     _toolbarCoordinatorAdaptor =
         [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
     self.toolbarInterface = _toolbarCoordinatorAdaptor;
-
-    _storeKitCoordinator =
-        [[StoreKitCoordinator alloc] initWithBaseViewController:self];
 
     _languageSelectionCoordinator =
         [[LanguageSelectionCoordinator alloc] initWithBaseViewController:self];
@@ -2833,9 +2825,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   // Install the proper CRWWebController delegates.
   tab.webController.nativeProvider = self;
   tab.webController.swipeRecognizerProvider = self.sideSwipeController;
-  StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(tab.webState);
-  if (tabHelper)
-    tabHelper->SetLauncher(_storeKitCoordinator);
   tab.webState->SetDelegate(_webStateDelegate.get());
   // BrowserViewController owns the coordinator that displays the Sad Tab.
   if (!SadTabTabHelper::FromWebState(tab.webState)) {
@@ -2893,9 +2882,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   }
   tab.webController.nativeProvider = nil;
   tab.webController.swipeRecognizerProvider = nil;
-  StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(tab.webState);
-  if (tabHelper)
-    tabHelper->SetLauncher(nil);
   tab.webState->SetDelegate(nullptr);
   if (AccountConsistencyService* accountConsistencyService =
           ios::AccountConsistencyServiceFactory::GetForBrowserState(
