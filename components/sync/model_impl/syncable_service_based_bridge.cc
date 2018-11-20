@@ -612,7 +612,6 @@ SyncableServiceBasedBridge::MaybeStartSyncableService() {
 
     initial_sync_data.push_back(SyncData::CreateRemoteData(
         /*id=*/kInvalidNodeId, std::move(specifics),
-        /*last_modified_time=*/base::Time(),  // Used by legacy sessions only.
         /*client_tag_hash=*/record.first));
   }
 
@@ -674,7 +673,6 @@ SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
             FROM_HERE, SyncChange::ACTION_DELETE,
             SyncData::CreateRemoteData(
                 /*id=*/kInvalidNodeId, std::move(specifics),
-                change.data().modification_time,
                 change.data().client_tag_hash));
 
         // For tombstones, there is no actual data, which means no client tag
@@ -723,7 +721,6 @@ SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
             SyncData::CreateRemoteData(
                 /*id=*/kInvalidNodeId,
                 std::move(*persisted_entity.mutable_specifics()),
-                change.data().modification_time,
                 change.data().client_tag_hash));
 
         break;

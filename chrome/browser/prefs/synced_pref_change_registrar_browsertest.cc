@@ -58,8 +58,8 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
     pref_specifics->set_name(name);
     pref_specifics->set_value(serialized_value);
 
-    syncer::SyncData change_data = syncer::SyncData::CreateRemoteData(
-        ++next_sync_data_id_, specifics, base::Time());
+    syncer::SyncData change_data =
+        syncer::SyncData::CreateRemoteData(++next_sync_data_id_, specifics);
     syncer::SyncChange change(
         FROM_HERE, syncer::SyncChange::ACTION_UPDATE, change_data);
 

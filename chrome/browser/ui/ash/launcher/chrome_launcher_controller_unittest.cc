@@ -702,8 +702,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     sync_pb::PreferenceSpecifics* pref_one = one.mutable_preference();
     pref_one->set_name(prefs::kPinnedLauncherApps);
     pref_one->set_value(serialized);
-    init_sync_list.push_back(
-        syncer::SyncData::CreateRemoteData(1, one, base::Time()));
+    init_sync_list.push_back(syncer::SyncData::CreateRemoteData(1, one));
     StartPrefSyncService(init_sync_list);
   }
 

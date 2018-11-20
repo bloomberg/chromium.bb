@@ -60,7 +60,7 @@ CreatePrefSyncData(const std::string& name, const base::Value& value) {
   sync_pb::PreferenceSpecifics* pref = specifics.mutable_preference();
   pref->set_name(name);
   pref->set_value(serialized);
-  return syncer::SyncData::CreateRemoteData(1, specifics, base::Time());
+  return syncer::SyncData::CreateRemoteData(1, specifics);
 }
 
 }  // anonymous namespace

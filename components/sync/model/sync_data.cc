@@ -42,12 +42,8 @@ void SyncData::ImmutableSyncEntityTraits::Swap(sync_pb::SyncEntity* t1,
 
 SyncData::SyncData() : id_(kInvalidId), is_local_(false), is_valid_(false) {}
 
-SyncData::SyncData(bool is_local,
-                   int64_t id,
-                   sync_pb::SyncEntity* entity,
-                   const base::Time& remote_modification_time)
+SyncData::SyncData(bool is_local, int64_t id, sync_pb::SyncEntity* entity)
     : id_(id),
-      remote_modification_time_(remote_modification_time),
       immutable_entity_(entity),
       is_local_(is_local),
       is_valid_(true) {}
@@ -72,18 +68,17 @@ SyncData SyncData::CreateLocalData(const std::string& sync_tag,
   entity.set_client_defined_unique_tag(sync_tag);
   entity.set_non_unique_name(non_unique_title);
   entity.mutable_specifics()->CopyFrom(specifics);
-  return SyncData(/*is_local=*/true, kInvalidId, &entity, base::Time());
+  return SyncData(/*is_local=*/true, kInvalidId, &entity);
 }
 
 // Static.
 SyncData SyncData::CreateRemoteData(int64_t id,
                                     sync_pb::EntitySpecifics specifics,
-                                    base::Time modification_time,
                                     std::string client_tag_hash) {
   sync_pb::SyncEntity entity;
   *entity.mutable_specifics() = std::move(specifics);
   entity.set_client_defined_unique_tag(std::move(client_tag_hash));
-  return SyncData(/*is_local=*/false, id, &entity, modification_time);
+  return SyncData(/*is_local=*/false, id, &entity);
 }
 
 bool SyncData::IsValid() const {
@@ -151,10 +146,6 @@ SyncDataRemote::SyncDataRemote(const SyncData& sync_data)
 }
 
 SyncDataRemote::~SyncDataRemote() {}
-
-const base::Time& SyncDataRemote::GetModifiedTime() const {
-  return remote_modification_time_;
-}
 
 int64_t SyncDataRemote::GetId() const {
   DCHECK(!IsLocal());

@@ -132,8 +132,7 @@ class WifiCredentialSyncableServiceTest : public testing::Test {
         FROM_HERE, syncer::SyncChange::ACTION_ADD,
         syncer::SyncData::CreateRemoteData(
             sync_item_id,
-            MakeWifiCredentialSpecifics(ssid, security_class, passphrase),
-            base::Time()));
+            MakeWifiCredentialSpecifics(ssid, security_class, passphrase)));
   }
 
   void StartSyncing() {

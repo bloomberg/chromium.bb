@@ -117,7 +117,7 @@ syncer::SyncData CreateAppRemoteData(
     app_list->set_item_pin_ordinal(item_pin_ordinal);
 
   return syncer::SyncData::CreateRemoteData(std::hash<std::string>{}(id),
-                                            specifics, base::Time());
+                                            specifics);
 }
 
 syncer::SyncDataList CreateBadAppRemoteData(const std::string& id) {
