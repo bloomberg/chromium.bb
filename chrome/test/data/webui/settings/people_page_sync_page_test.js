@@ -74,10 +74,9 @@ cr.define('settings_people_page_sync_page', function() {
     // Tests the initial layout of the sync section and the personalize section,
     // depending on the sync state and the unified consent state.
     function testInitialLayout(
-        unifiedConsentGiven, signedIn, hasError, setupInProgress,
-        syncSectionExpanded, syncSectionDisabled, personalizeSectionExpanded) {
+        signedIn, hasError, setupInProgress, syncSectionExpanded,
+        syncSectionDisabled, personalizeSectionExpanded) {
       syncPage.unifiedConsentEnabled = true;
-      syncPage.prefs = {unified_consent_given: {value: unifiedConsentGiven}};
       syncPage.syncStatus = {
         signedIn: signedIn,
         disabled: false,
@@ -95,9 +94,7 @@ cr.define('settings_people_page_sync_page', function() {
           syncPage.$$('#personalize-section-toggle');
       const personalizeSectionExpandIcon =
           personalizeSectionToggle.querySelector('cr-expand-button');
-      const unifiedConsentToggle = syncPage.$$('#unifiedConsentToggle');
 
-      assertTrue(unifiedConsentToggle.checked == unifiedConsentGiven);
       assertTrue(syncSectionExpandIcon.expanded == syncSectionExpanded);
       assertTrue(syncSectionExpandIcon.disabled == syncSectionDisabled);
       assertTrue(
@@ -177,7 +174,6 @@ cr.define('settings_people_page_sync_page', function() {
       const ironCollapse = syncPage.$$('#sync-section');
       const otherItems = syncPage.$$('#other-sync-items');
       const syncSectionToggle = syncPage.$$('#sync-section-toggle');
-      const unifiedConsentToggle = syncPage.$$('#unifiedConsentToggle');
 
       // When unified-consent is disabled and signed in, sync-section should be
       // visible and open by default. Accordion toggle row should not be present
@@ -190,9 +186,6 @@ cr.define('settings_people_page_sync_page', function() {
       assertTrue(syncSectionToggle.hidden);
       assertFalse(otherItems.classList.contains('list-frame'));
       assertFalse(!!otherItems.querySelector('list-item'));
-
-      // The unified consent toggle should be hidden.
-      assertTrue(unifiedConsentToggle.hidden);
     });
 
     test('SyncSectionLayout_UnifiedConsentEnabled_SignedIn', function() {
@@ -200,7 +193,6 @@ cr.define('settings_people_page_sync_page', function() {
       const otherItems = syncPage.$$('#other-sync-items');
       const syncSectionToggle = syncPage.$$('#sync-section-toggle');
       const expandIcon = syncSectionToggle.querySelector('cr-expand-button');
-      const unifiedConsentToggle = syncPage.$$('#unifiedConsentToggle');
 
       // When unified-consent is enabled and signed in, sync-section should be
       // visible and open by default. Accordion toggle row should be present,
@@ -246,9 +238,6 @@ cr.define('settings_people_page_sync_page', function() {
       assertTrue(ironCollapse.opened);
       assertTrue(expandIcon.expanded);
 
-      // The unified consent toggle should be visible.
-      assertFalse(unifiedConsentToggle.hidden);
-
       // Test sync paused state.
       syncPage.syncStatus = {
         signedIn: true,
@@ -267,30 +256,6 @@ cr.define('settings_people_page_sync_page', function() {
       };
       assertFalse(ironCollapse.hidden);
     });
-
-    test(
-        'UnifiedConsentToggleNotifiesHandler_UnifiedConsentEnabled',
-        function() {
-          const unifiedConsentToggle = syncPage.$$('#unifiedConsentToggle');
-          syncPage.syncStatus = {
-            signedIn: true,
-            disabled: false,
-            hasError: false,
-            statusAction: settings.StatusAction.NO_ACTION,
-          };
-          syncPage.unifiedConsentEnabled = true;
-          Polymer.dom.flush();
-
-          assertFalse(unifiedConsentToggle.hidden);
-          assertFalse(unifiedConsentToggle.checked);
-
-          unifiedConsentToggle.click();
-
-          return browserProxy.whenCalled('unifiedConsentToggleChanged')
-              .then(toggleChecked => {
-                assertTrue(toggleChecked);
-              });
-        });
 
     test('SyncSectionLayout_UnifiedConsentEnabled_SignoutCollapse', function() {
       const ironCollapse = syncPage.$$('#sync-section');
@@ -334,7 +299,6 @@ cr.define('settings_people_page_sync_page', function() {
       const ironCollapse = syncPage.$$('#sync-section');
       const syncSectionToggle = syncPage.$$('#sync-section-toggle');
       const expandIcon = syncSectionToggle.querySelector('cr-expand-button');
-      const unifiedConsentToggle = syncPage.$$('#unifiedConsentToggle');
 
       // When unified-consent is enabled and signed out, sync-section should be
       // hidden, and the accordion toggle row should be visible not actionable.
@@ -351,15 +315,11 @@ cr.define('settings_people_page_sync_page', function() {
       assertFalse(syncSectionToggle.hasAttribute('actionable'));
       assertFalse(expandIcon.expanded);
       assertTrue(expandIcon.disabled);
-
-      // The unified consent toggle should be hidden.
-      assertTrue(unifiedConsentToggle.hidden);
     });
 
     test('SyncSectionLayout_UnifiedConsentEnabled_SyncDisabled', function() {
       const ironCollapse = syncPage.$$('#sync-section');
       const syncSectionToggle = syncPage.$$('#sync-section-toggle');
-      const unifiedConsentToggle = syncPage.$$('#unifiedConsentToggle');
 
       // When unified-consent is enabled and sync is disabled, the sync-section
       // should be hidden.
@@ -373,47 +333,10 @@ cr.define('settings_people_page_sync_page', function() {
       Polymer.dom.flush();
       assertTrue(ironCollapse.hidden);
       assertTrue(syncSectionToggle.hidden);
-
-      // The unified consent toggle should be hidden.
-      assertTrue(unifiedConsentToggle.hidden);
     });
 
-    test('InitialLayout_UnifiedConsentGiven_SignedIn', function() {
+    test('InitialLayout_UnifiedConsent_SignedIn', function() {
       testInitialLayout(
-          /*unifiedConsentGiven=*/true,
-          /*signedIn=*/true,
-          /*hasError=*/false,
-          /*setupInProgress=*/false,
-          /*syncSectionExpanded=*/false,
-          /*syncSectionDisabled=*/false,
-          /*personalizeSectionExpanded=*/false);
-    });
-
-    test('InitialLayout_UnifiedConsentGiven_SignedOut', function() {
-      testInitialLayout(
-          /*unifiedConsentGiven=*/true,
-          /*signedIn=*/false,
-          /*hasError=*/false,
-          /*setupInProgress=*/false,
-          /*syncSectionExpanded=*/false,
-          /*syncSectionDisabled=*/true,
-          /*personalizeSectionExpanded=*/false);
-    });
-
-    test('InitialLayout_UnifiedConsentGiven_SyncPaused', function() {
-      testInitialLayout(
-          /*unifiedConsentGiven=*/true,
-          /*signedIn=*/true,
-          /*hasError=*/true,
-          /*setupInProgress=*/false,
-          /*syncSectionExpanded=*/false,
-          /*syncSectionDisabled=*/true,
-          /*personalizeSectionExpanded=*/false);
-    });
-
-    test('InitialLayout_NoUnifiedConsentGiven_SignedIn', function() {
-      testInitialLayout(
-          /*unifiedConsentGiven=*/false,
           /*signedIn=*/true,
           /*hasError=*/false,
           /*setupInProgress=*/false,
@@ -422,9 +345,8 @@ cr.define('settings_people_page_sync_page', function() {
           /*personalizeSectionExpanded=*/true);
     });
 
-    test('InitialLayout_NoUnifiedConsentGiven_SignedOut', function() {
+    test('InitialLayout_UnifiedConsent_SignedOut', function() {
       testInitialLayout(
-          /*unifiedConsentGiven=*/false,
           /*signedIn=*/false,
           /*hasError=*/false,
           /*setupInProgress=*/false,
@@ -433,25 +355,13 @@ cr.define('settings_people_page_sync_page', function() {
           /*personalizeSectionExpanded=*/true);
     });
 
-    test('InitialLayout_NoUnifiedConsentGiven_SyncPaused', function() {
+    test('InitialLayout_UnifiedConsent_SyncPaused', function() {
       testInitialLayout(
-          /*unifiedConsentGiven=*/false,
           /*signedIn=*/true,
           /*hasError=*/true,
           /*setupInProgress=*/false,
           /*syncSectionExpanded=*/false,
           /*syncSectionDisabled=*/true,
-          /*personalizeSectionExpanded=*/true);
-    });
-
-    test('InitialLayout_SetupInProgress', function() {
-      testInitialLayout(
-          /*unifiedConsentGiven=*/true,
-          /*signedIn=*/true,
-          /*hasError=*/false,
-          /*setupInProgress=*/true,
-          /*syncSectionExpanded=*/true,
-          /*syncSectionDisabled=*/false,
           /*personalizeSectionExpanded=*/true);
     });
 

@@ -88,7 +88,6 @@ Polymer({
     /** @type {settings.SyncStatus} */
     syncStatus: {
       type: Object,
-      observer: 'onSyncStatusChanged_',
     },
 
     /**
@@ -143,6 +142,7 @@ Polymer({
       computed: 'computeSyncSectionDisabled_(' +
           'unifiedConsentEnabled, syncStatus.signedIn, syncStatus.disabled, ' +
           'syncStatus.hasError, syncStatus.statusAction)',
+      observer: 'onSyncSectionDisabledChanged_',
     },
 
     /** @private */
@@ -171,12 +171,6 @@ Polymer({
 
     unifiedConsentEnabled: Boolean,
   },
-
-  observers: [
-    // Depends on signedIn_ so that the sync section is updated on signin
-    // changes, even though the actual value of signedIn_ is not used.
-    'onSyncSectionOpenedShouldChange_(signedIn_, syncSectionDisabled_)',
-  ],
 
   /** @private {?settings.SyncBrowserProxy} */
   browserProxy_: null,
@@ -309,20 +303,6 @@ Polymer({
 
     window.removeEventListener('beforeunload', this.beforeunloadCallback_);
     this.beforeunloadCallback_ = null;
-  },
-
-  /**
-   * Handles the change event for the unfied consent toggle.
-   * @private
-   */
-  onUnifiedConsentToggleChange_: function() {
-    const checked = this.$$('#unifiedConsentToggle').checked;
-    this.browserProxy_.unifiedConsentToggleChanged(checked);
-
-    if (!checked) {
-      this.syncSectionOpened_ = !this.syncSectionDisabled_;
-      this.personalizeSectionOpened_ = true;
-    }
   },
 
   /**
@@ -584,27 +564,9 @@ Polymer({
     settings.navigateTo(settings.routes.BASIC);
   },
 
-  // Computes the initial layout for the sync section and the personalize
-  // section. This function only does something on its first call.
-  onSyncStatusChanged_: function() {
-    if (!!this.syncStatus && !this.collapsibleSectionsInitialized_) {
-      this.collapsibleSectionsInitialized_ = true;
-      this.personalizeSectionOpened_ =
-          !this.$$('#unifiedConsentToggle').checked ||
-          !!this.syncStatus.setupInProgress;
-      this.syncSectionOpened_ =
-          this.personalizeSectionOpened_ && !this.syncSectionDisabled_;
-    }
-  },
-
-  /**
-   * Collapses the sync section if it becomes disabled, and expands it when it's
-   * re-enabled.
-   * @private
-   */
-  onSyncSectionOpenedShouldChange_: function() {
-    this.syncSectionOpened_ =
-        !this.syncSectionDisabled_ && !this.$$('#unifiedConsentToggle').checked;
+  /** @private */
+  onSyncSectionDisabledChanged_: function() {
+    this.syncSectionOpened_ = !this.syncSectionDisabled_;
   },
 
   /**
@@ -695,15 +657,6 @@ Polymer({
   shouldShowSyncControls_: function() {
     return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
         !this.syncStatus.disabled;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowUnifiedConsentToggle_: function() {
-    return !!this.unifiedConsentEnabled && this.syncStatus !== undefined &&
-        !this.syncStatus.disabled && !!this.syncStatus.signedIn;
   },
 });
 

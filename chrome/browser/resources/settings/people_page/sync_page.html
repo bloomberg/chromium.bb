@@ -151,16 +151,6 @@
       </div>
     </template>
 
-     <!-- A change of the unified consent toggle state is automatically handled
-          in the C++ code after a change in the pref is observed. -->
-    <settings-toggle-button id="unifiedConsentToggle" class="first"
-        pref="{{prefs.unified_consent_given}}"
-        label="$i18n{syncUnifiedConsentToggleTitle}"
-        on-settings-boolean-control-change="onUnifiedConsentToggleChange_"
-        hidden="[[!shouldShowUnifiedConsentToggle_(unifiedConsentEnabled,
-                   syncStatus.disabled, syncStatus.signedIn)]]"
-        disabled="[[syncPrefs.encryptAllData]]">
-    </settings-toggle-button>
     <div class="settings-box two-line" id="sync-section-toggle"
         actionable$="[[!syncSectionDisabled_]]"
         on-click="toggleExpandButton_"
@@ -219,7 +209,7 @@
           </div>
         </template>
 
-        <div class="settings-box first" hidden="[[unifiedConsentEnabled]]">
+        <div class="settings-box first">
           <div id="syncEverythingCheckboxLabel" class="start">
             $i18n{syncEverythingCheckboxLabel}
           </div>
@@ -496,7 +486,6 @@
         <settings-personalization-options class="list-frame" prefs="{{prefs}}"
             page-visibility="[[pageVisibility]]"
             unified-consent-enabled="[[unifiedConsentEnabled]]"
-            unified-consent-given="{{prefs.unified_consent_given.value}}">
         </settings-personalization-options>
       </iron-collapse>
     </template>
