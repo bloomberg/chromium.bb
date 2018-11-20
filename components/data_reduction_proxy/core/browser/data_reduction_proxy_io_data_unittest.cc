@@ -239,6 +239,8 @@ class TestCustomProxyConfigClient
                         const net::ProxyList& bad_proxies,
                         MarkProxiesAsBadCallback callback) override {}
 
+  void ClearBadProxiesCache() override {}
+
   network::mojom::CustomProxyConfigPtr config;
 
  private:

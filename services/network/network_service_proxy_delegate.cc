@@ -212,6 +212,10 @@ void NetworkServiceProxyDelegate::MarkProxiesAsBad(
   std::move(callback).Run();
 }
 
+void NetworkServiceProxyDelegate::ClearBadProxiesCache() {
+  proxy_resolution_service_->ClearBadProxiesCache();
+}
+
 bool NetworkServiceProxyDelegate::IsInProxyConfig(
     const net::ProxyServer& proxy_server) const {
   if (!proxy_server.is_valid() || proxy_server.is_direct())

@@ -79,6 +79,10 @@ interface CustomProxyConfigClient {
   // not layered onto the proxy resolution results for subsequent requests.
   MarkProxiesAsBad(mojo_base.mojom.TimeDelta bypass_duration,
                    ProxyList bad_proxies) => ();
+
+  // Clears the list of bad proxy servers that has been cached in the proxy
+  // resolution service.
+  ClearBadProxiesCache();
 };
 
 [EnableIf=is_chromeos]
