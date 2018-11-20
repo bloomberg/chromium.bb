@@ -786,16 +786,14 @@ void GpuServiceImpl::OnBackgroundCleanup() {
 }
 
 void GpuServiceImpl::OnBackgrounded() {
-  DCHECK(io_runner_->BelongsToCurrentThread());
   if (watchdog_thread_)
     watchdog_thread_->OnBackgrounded();
 
-  main_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&GpuServiceImpl::OnBackgroundedOnMainThread, weak_ptr_));
-}
-
-void GpuServiceImpl::OnBackgroundedOnMainThread() {
+  if (io_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::OnBackgrounded, weak_ptr_));
+    return;
+  }
   gpu_channel_manager_->OnApplicationBackgrounded();
 }
 
