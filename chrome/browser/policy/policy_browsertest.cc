@@ -136,8 +136,10 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/download/public/common/download_item.h"
+#include "components/google/core/common/google_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -1032,12 +1034,14 @@ class PolicyTest : public InProcessBrowserTest {
     return GURL(expected_url);
   }
 
-  static void CheckSafeSearch(Browser* browser, bool expect_safe_search) {
+  static void CheckSafeSearch(Browser* browser,
+                              bool expect_safe_search,
+                              const std::string& url = "http://google.com/") {
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
     content::TestNavigationObserver observer(web_contents);
     LocationBar* location_bar = browser->window()->GetLocationBar();
-    ui_test_utils::SendToOmniboxAndSubmit(location_bar, "http://google.com/");
+    ui_test_utils::SendToOmniboxAndSubmit(location_bar, url);
     OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
     observer.Wait();
     EXPECT_TRUE(model->CurrentMatch(NULL).destination_url.is_valid());
@@ -1751,6 +1755,46 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceGoogleSafeSearch) {
                   google_urls_requested.end());
     }
   }
+}
+
+class PolicyTestSafeSearchRedirect : public PolicyTest {
+ public:
+  PolicyTestSafeSearchRedirect() = default;
+
+ private:
+  void SetUpOnMainThread() override {
+    // The test makes requests to google.com which we want to redirect to the
+    // test server.
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    // The production code only allows known ports (80 for http and 443 for
+    // https), but the test server runs on a random port.
+    google_util::IgnorePortNumbersForGoogleURLChecksForTesting();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // HTTPS server only serves a valid cert for localhost, so this is needed to
+    // load pages from "www.google.com" without an interstitial.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyTestSafeSearchRedirect);
+};
+
+IN_PROC_BROWSER_TEST_F(PolicyTestSafeSearchRedirect, ForceGoogleSafeSearch) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  ApplySafeSearchPolicy(nullptr,  // ForceSafeSearch
+                        std::make_unique<base::Value>(true),
+                        nullptr,   // ForceYouTubeSafetyMode
+                        nullptr);  // ForceYouTubeRestrict
+
+  GURL url = https_server.GetURL("www.google.com",
+                                 "/server-redirect?http://google.com/");
+  CheckSafeSearch(browser(), true, url.spec());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ForceYouTubeRestrict) {
