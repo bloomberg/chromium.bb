@@ -21,7 +21,7 @@
 #include "components/cryptauth/remote_device_provider_impl.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::Invoke;
@@ -60,14 +60,6 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
     scoped_feature_list_.InitAndDisableFeature(features::kMultiDeviceApi);
 
     was_shutdown_callback_invoked_ = false;
-    is_adapter_powered_ = true;
-
-    mock_adapter_ =
-        base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
-    ON_CALL(*mock_adapter_, IsPowered())
-        .WillByDefault(
-            Invoke(this, &AsynchronousShutdownObjectContainerImplTest::
-                             MockIsAdapterPowered));
 
     fake_remote_device_provider_factory_ =
         base::WrapUnique(new FakeRemoteDeviceProviderFactory());
@@ -90,8 +82,8 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
     // by the object itself; rather, they are simply passed to the constructors
     // of objects created by the container.
     container_ = base::WrapUnique(new AsynchronousShutdownObjectContainerImpl(
-        mock_adapter_, fake_cryptauth_service_.get(),
-        fake_device_sync_client_.get(), fake_secure_channel_client_.get(),
+        fake_cryptauth_service_.get(), fake_device_sync_client_.get(),
+        fake_secure_channel_client_.get(),
         fake_tether_host_fetcher_.get() /* tether_host_fetcher */,
         nullptr /* network_state_handler */,
         nullptr /* managed_network_configuration_handler */,
@@ -105,8 +97,6 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
         base::WrapUnique(fake_disconnect_tethering_request_sender_));
   }
 
-  bool MockIsAdapterPowered() { return is_adapter_powered_; }
-
   void CallShutdown() {
     container_->Shutdown(base::Bind(
         &AsynchronousShutdownObjectContainerImplTest::OnShutdownComplete,
@@ -119,7 +109,6 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
   const cryptauth::RemoteDeviceRef test_device_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::FakeSecureChannelClient>
@@ -133,7 +122,6 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
       fake_disconnect_tethering_request_sender_;
 
   bool was_shutdown_callback_invoked_;
-  bool is_adapter_powered_;
 
   std::unique_ptr<AsynchronousShutdownObjectContainerImpl> container_;
 
@@ -180,19 +168,6 @@ TEST_F(AsynchronousShutdownObjectContainerImplTest,
   fake_disconnect_tethering_request_sender_->set_has_pending_requests(false);
   fake_disconnect_tethering_request_sender_
       ->NotifyPendingDisconnectRequestsComplete();
-  EXPECT_TRUE(was_shutdown_callback_invoked_);
-}
-
-TEST_F(AsynchronousShutdownObjectContainerImplTest,
-       TestShutdown_MultipleSimultaneousAsyncShutdowns_BluetoothDisabled) {
-  fake_disconnect_tethering_request_sender_->set_has_pending_requests(true);
-  EXPECT_TRUE(fake_disconnect_tethering_request_sender_->HasPendingRequests());
-
-  // Shut off Bluetooth power. This should cause a synchronous shutdown despite
-  // the fact that there are still objects which require an asynchronous
-  // shutdown.
-  is_adapter_powered_ = false;
-  CallShutdown();
   EXPECT_TRUE(was_shutdown_callback_invoked_);
 }
 

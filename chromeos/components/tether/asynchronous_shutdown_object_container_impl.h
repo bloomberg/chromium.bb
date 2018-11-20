@@ -22,19 +22,11 @@ class CryptAuthService;
 class LocalDeviceDataProvider;
 }  // namespace cryptauth
 
-namespace device {
-class BluetoothAdapter;
-}  // namespace device
-
 namespace chromeos {
 
 class ManagedNetworkConfigurationHandler;
 class NetworkConnectionHandler;
 class NetworkStateHandler;
-
-namespace secure_channel {
-class BleSynchronizerBase;
-}  // namespace secure_channel
 
 namespace device_sync {
 class DeviceSyncClient;
@@ -46,7 +38,6 @@ class SecureChannelClient;
 
 namespace tether {
 
-class BleAdvertisementDeviceQueue;
 class NetworkConfigurationRemover;
 class TetherHostFetcher;
 class WifiHotspotDisconnector;
@@ -59,7 +50,6 @@ class AsynchronousShutdownObjectContainerImpl
   class Factory {
    public:
     static std::unique_ptr<AsynchronousShutdownObjectContainer> NewInstance(
-        scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::CryptAuthService* cryptauth_service,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
@@ -73,7 +63,6 @@ class AsynchronousShutdownObjectContainerImpl
 
    protected:
     virtual std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
-        scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::CryptAuthService* cryptauth_service,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
@@ -101,7 +90,6 @@ class AsynchronousShutdownObjectContainerImpl
 
  protected:
   AsynchronousShutdownObjectContainerImpl(
-      scoped_refptr<device::BluetoothAdapter> adapter,
       cryptauth::CryptAuthService* cryptauth_service,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
@@ -123,13 +111,10 @@ class AsynchronousShutdownObjectContainerImpl
   void SetTestDoubles(std::unique_ptr<DisconnectTetheringRequestSender>
                           disconnect_tethering_request_sender);
 
-  scoped_refptr<device::BluetoothAdapter> adapter_;
 
   TetherHostFetcher* tether_host_fetcher_;
   std::unique_ptr<cryptauth::LocalDeviceDataProvider>
       local_device_data_provider_;
-  std::unique_ptr<BleAdvertisementDeviceQueue> ble_advertisement_device_queue_;
-  std::unique_ptr<secure_channel::BleSynchronizerBase> ble_synchronizer_;
   std::unique_ptr<DisconnectTetheringRequestSender>
       disconnect_tethering_request_sender_;
   std::unique_ptr<NetworkConfigurationRemover> network_configuration_remover_;

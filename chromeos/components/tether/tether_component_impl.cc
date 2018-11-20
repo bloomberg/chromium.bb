@@ -152,7 +152,6 @@ TetherComponentImpl::TetherComponentImpl(
     session_manager::SessionManager* session_manager)
     : asynchronous_shutdown_object_container_(
           AsynchronousShutdownObjectContainerImpl::Factory::NewInstance(
-              adapter,
               cryptauth_service,
               device_sync_client,
               secure_channel_client,
