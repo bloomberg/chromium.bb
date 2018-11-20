@@ -13,10 +13,8 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,7 +33,6 @@ import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
-import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +68,6 @@ public class VrBrowserDialogTest {
             new RenderTestRule("components/test/data/permission_dialogs/render_tests");
 
     private VrBrowserTestFramework mVrBrowserTestFramework;
-    private EmbeddedTestServer mServer;
 
     @Before
     public void setUp() throws Exception {
@@ -81,13 +77,7 @@ public class VrBrowserDialogTest {
         if (!sBaseDirectory.exists() && !sBaseDirectory.isDirectory()) {
             Assert.assertTrue("Failed to make image capture directory", sBaseDirectory.mkdirs());
         }
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        if (mServer != null) {
-            mServer.stopAndDestroyServer();
-        }
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
     }
 
     private void captureScreen(String filenameBase) throws InterruptedException {
@@ -115,12 +105,9 @@ public class VrBrowserDialogTest {
             throws InterruptedException, TimeoutException {
         // Trying to grant permissions on file:// URLs ends up hitting DCHECKS, so load from a local
         // server instead.
-        if (mServer == null) {
-            mServer = EmbeddedTestServer.createAndStartServerWithPort(
-                    InstrumentationRegistry.getContext(), SERVER_PORT);
-        }
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                mServer.getURL(VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(page)),
+                mVrTestRule.getTestServer().getURL(
+                        VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(page)),
                 PAGE_LOAD_TIMEOUT_S);
 
         // Display the given permission prompt.
