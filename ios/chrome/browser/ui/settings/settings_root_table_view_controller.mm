@@ -47,6 +47,11 @@
   }
 }
 
+- (void)reloadData {
+  [self loadModel];
+  [self.tableView reloadData];
+}
+
 #pragma mark - Property
 
 - (UIBarButtonItem*)deleteButton {

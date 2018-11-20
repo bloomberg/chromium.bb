@@ -29,6 +29,10 @@
 // using shouldHideDoneButton to know if it should display the edit button.
 - (void)updateEditButton;
 
+// Reloads the table view model with |loadModel| and then reloads the
+// table view data.
+- (void)reloadData;
+
 @end
 
 // Subclasses of SettingsRootTableViewController should implement the
