@@ -381,9 +381,7 @@ body.check-select #search-button > .icon {
 }
 
 body.check-select #share-menu-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/share.png) 1x,
-      url(../images/files/ui/2x/share.png) 2x);
+  background-image: url(../images/files/ui/share.svg);
 }
 
 #delete-button > .icon {
@@ -393,9 +391,7 @@ body.check-select #share-menu-button > .icon {
 }
 
 body.check-select #delete-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/delete.png) 1x,
-      url(../images/files/ui/2x/delete.png) 2x);
+  background-image: url(../images/files/ui/delete.svg);
 }
 
 #view-button > .icon {
@@ -445,9 +441,7 @@ body.check-select #gear-button {
 }
 
 #selection-menu-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/menu.png) 1x,
-      url(../images/files/ui/2x/menu.png) 2x);
+  background-image: url(../images/files/ui/menu.svg);
 }
 
 body:not(.check-select) #selection-menu-button {
