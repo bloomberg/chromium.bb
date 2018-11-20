@@ -60,6 +60,35 @@ void BindingSecurity::Init() {
 
 namespace {
 
+void ReportOrThrowSecurityError(const LocalDOMWindow* accessing_window,
+                                const DOMWindow* target_window,
+                                ExceptionState& exception_state) {
+  if (target_window) {
+    exception_state.ThrowSecurityError(
+        target_window->SanitizedCrossDomainAccessErrorMessage(accessing_window),
+        target_window->CrossDomainAccessErrorMessage(accessing_window));
+  } else {
+    exception_state.ThrowSecurityError("Cross origin access was denied.");
+  }
+}
+
+void ReportOrThrowSecurityError(
+    const LocalDOMWindow* accessing_window,
+    const DOMWindow* target_window,
+    BindingSecurity::ErrorReportOption reporting_option) {
+  if (reporting_option == BindingSecurity::ErrorReportOption::kDoNotReport)
+    return;
+
+  if (accessing_window && target_window) {
+    accessing_window->PrintErrorMessage(
+        target_window->CrossDomainAccessErrorMessage(accessing_window));
+  } else if (accessing_window) {
+    accessing_window->PrintErrorMessage("Cross origin access was denied.");
+  } else {
+    // Nowhere to report the error.
+  }
+}
+
 bool CanAccessWindowInternal(const LocalDOMWindow* accessing_window,
                              const DOMWindow* target_window) {
   SECURITY_CHECK(!(target_window && target_window->GetFrame()) ||
@@ -101,29 +130,14 @@ bool CanAccessWindowInternal(const LocalDOMWindow* accessing_window,
   return true;
 }
 
+template <typename ExceptionStateOrErrorReportOption>
 bool CanAccessWindow(const LocalDOMWindow* accessing_window,
                      const DOMWindow* target_window,
-                     ExceptionState& exception_state) {
+                     ExceptionStateOrErrorReportOption& error_report) {
   if (CanAccessWindowInternal(accessing_window, target_window))
     return true;
 
-  if (target_window)
-    exception_state.ThrowSecurityError(
-        target_window->SanitizedCrossDomainAccessErrorMessage(accessing_window),
-        target_window->CrossDomainAccessErrorMessage(accessing_window));
-  return false;
-}
-
-bool CanAccessWindow(const LocalDOMWindow* accessing_window,
-                     const DOMWindow* target_window,
-                     BindingSecurity::ErrorReportOption reporting_option) {
-  if (CanAccessWindowInternal(accessing_window, target_window))
-    return true;
-
-  if (accessing_window && target_window &&
-      reporting_option == BindingSecurity::ErrorReportOption::kReport)
-    accessing_window->PrintErrorMessage(
-        target_window->CrossDomainAccessErrorMessage(accessing_window));
+  ReportOrThrowSecurityError(accessing_window, target_window, error_report);
   return false;
 }
 
@@ -309,6 +323,14 @@ bool ShouldAllowAccessToV8ContextInternal(
 
   // Workers and worklets do not support multiple contexts, so both of
   // |accessing_context| and |target_context| must be windows at this point.
+
+  // remote_object->CreationContext() returns the empty handle. Remote contexts
+  // are unconditionally treated as cross origin.
+  if (target_context.IsEmpty()) {
+    ReportOrThrowSecurityError(ToLocalDOMWindow(accessing_context), nullptr,
+                               error_report);
+    return false;
+  }
 
   LocalFrame* target_frame = ToLocalFrameIfNotDetached(target_context);
   // TODO(dcheng): Why doesn't this code just use DOMWindows throughout? Can't
