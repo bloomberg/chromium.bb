@@ -7,7 +7,10 @@
 #include <memory>
 
 #include "base/scoped_observer.h"
+#import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
+#import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
+#import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
@@ -40,6 +43,9 @@
 // =================================================
 // Child Coordinators, listed in alphabetical order.
 // =================================================
+
+// Coordinator for UI related to launching external apps.
+@property(nonatomic, strong) AppLauncherCoordinator* appLauncherCoordinator;
 
 // Coordinator to ask the user for the new consent.
 @property(nonatomic, strong) ConsentBumpCoordinator* consentBumpCoordinator;
@@ -75,6 +81,7 @@
 
 @synthesize dispatcher = _dispatcher;
 // Child coordinators
+@synthesize appLauncherCoordinator = _appLauncherCoordinator;
 @synthesize consentBumpCoordinator = _consentBumpCoordinator;
 @synthesize formInputAccessoryCoordinator = _formInputAccessoryCoordinator;
 @synthesize qrScannerCoordinator = _qrScannerCoordinator;
@@ -138,6 +145,9 @@
   // coordinators.
   DCHECK(self.dispatcher);
 
+  self.appLauncherCoordinator = [[AppLauncherCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+
   /* ConsentBumpCoordinator is created and started by a BrowserCommand */
 
   self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
@@ -164,6 +174,10 @@
 
 // Stops child coordinators.
 - (void)stopChildCoordinators {
+  // TODO(crbug.com/906541) : AppLauncherCoordinator is not a subclass of
+  // ChromeCoordinator, and does not have a |-stop| method.
+  self.appLauncherCoordinator = nil;
+
   [self.consentBumpCoordinator stop];
   self.consentBumpCoordinator = nil;
 
@@ -357,6 +371,10 @@
 
 // Install delegates for |webState|.
 - (void)installDelegatesForWebState:(web::WebState*)webState {
+  AppLauncherTabHelper::CreateForWebState(
+      webState, [[AppLauncherAbuseDetector alloc] init],
+      self.appLauncherCoordinator);
+
   RepostFormTabHelper::CreateForWebState(webState, self);
 }
 
