@@ -494,7 +494,7 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       bookmarks.DialogFocusManager.instance_ = dialogFocusManager;
     });
 
-    test('restores focus on dialog dismissal', function() {
+    test('restores focus on dialog dismissal', async function() {
       const focusedItem = items[0];
       focusedItem.focus();
       assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
@@ -508,17 +508,15 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       keydown(dropdown, 'Escape');
       assertFalse(dropdown.open);
 
-      return Promise
-          .all([
-            test_util.eventToPromise('close', dropdown),
-            test_util.eventToPromise('focus', focusedItem),
-          ])
-          .then(() => {
-            assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
-          });
+      await Promise.all([
+        test_util.eventToPromise('close', dropdown),
+        test_util.eventToPromise('focus', focusedItem),
+      ]);
+
+      assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
     });
 
-    test('restores focus after stacked dialogs', function() {
+    test('restores focus after stacked dialogs', async () => {
       const focusedItem = items[0];
       focusedItem.focus();
       assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
@@ -531,20 +529,15 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       const editDialog = commandManager.$.editDialog.get();
       editDialog.showEditDialog(store.data.nodes['2']);
 
-      return test_util.eventToPromise('close', dropdown)
-          .then(() => {
-            editDialog.onCancelButtonTap_();
-            assertNotEquals(
-                focusedItem, dialogFocusManager.getFocusedElement_());
+      await test_util.eventToPromise('close', dropdown);
+      editDialog.onCancelButtonTap_();
+      assertNotEquals(focusedItem, dialogFocusManager.getFocusedElement_());
 
-            return test_util.eventToPromise('close', editDialog);
-          })
-          .then(() => {
-            assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
-          });
+      await test_util.eventToPromise('close', editDialog);
+      assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
     });
 
-    test('restores focus after multiple shows of same dialog', function() {
+    test('restores focus after multiple shows of same dialog', async () => {
       let focusedItem = items[0];
       focusedItem.focus();
       assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
@@ -558,18 +551,13 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       focusedItem.focus();
       commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
 
-      return test_util.eventToPromise('close', dropdown)
-          .then(() => {
-            assertTrue(dropdown.open);
-            dropdown.close();
-            assertNotEquals(
-                focusedItem, dialogFocusManager.getFocusedElement_());
+      await test_util.eventToPromise('close', dropdown);
+      assertTrue(dropdown.open);
+      dropdown.close();
+      assertNotEquals(focusedItem, dialogFocusManager.getFocusedElement_());
 
-            return test_util.eventToPromise('close', dropdown);
-          })
-          .then(() => {
-            assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
-          });
+      await test_util.eventToPromise('close', dropdown);
+      assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
     });
   });
 

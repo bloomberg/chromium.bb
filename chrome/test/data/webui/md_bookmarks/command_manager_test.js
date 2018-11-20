@@ -616,26 +616,24 @@ suite('<bookmarks-command-manager> whole page integration', function() {
     });
   }
 
-  suiteSetup(function() {
+  suiteSetup(async function() {
     const testFolder = {
       parentId: '1',
       title: 'Test',
     };
-    return create(testFolder).then(function(testFolderNode) {
-      testFolderId = testFolderNode.id;
-      const testItem = {
-        parentId: testFolderId,
-        title: 'Test bookmark',
-        url: 'https://www.example.com/',
-      };
-      return Promise.all([
-        create(testItem),
-        create(testItem),
-      ]);
-    });
+    const testFolderNode = await create(testFolder);
+    testFolderId = testFolderNode.id;
+    const testItem = {
+      parentId: testFolderId,
+      title: 'Test bookmark',
+      url: 'https://www.example.com/',
+    };
+
+    await create(testItem);
+    await create(testItem);
   });
 
-  setup(function() {
+  setup(async function() {
     store = new bookmarks.TestStore({});
     store.replaceSingleton();
     store.setReducersEnabled(true);
@@ -645,12 +643,12 @@ suite('<bookmarks-command-manager> whole page integration', function() {
 
     commandManager = bookmarks.CommandManager.getInstance();
 
-    return promise.then(() => {
-      store.dispatch(bookmarks.actions.selectFolder(testFolderId));
-    });
+    await promise;
+
+    store.dispatch(bookmarks.actions.selectFolder(testFolderId));
   });
 
-  test('paste selects newly created items', function() {
+  test('paste selects newly created items', async function() {
     const displayedIdsBefore = bookmarks.util.getDisplayedList(store.data);
     commandManager.handle(Command.SELECT_ALL, new Set());
     commandManager.handle(Command.COPY, new Set(displayedIdsBefore));
@@ -658,20 +656,20 @@ suite('<bookmarks-command-manager> whole page integration', function() {
     store.expectAction('select-items');
     commandManager.handle(Command.PASTE, new Set());
 
-    return store.waitForAction('select-items').then(function(action) {
-      const displayedIdsAfter = bookmarks.util.getDisplayedList(store.data);
-      assertEquals(4, displayedIdsAfter.length);
+    const action = await store.waitForAction('select-items');
 
-      // The start of the list shouldn't change.
-      assertEquals(displayedIdsBefore[0], displayedIdsAfter[0]);
-      assertEquals(displayedIdsBefore[1], displayedIdsAfter[1]);
+    const displayedIdsAfter = bookmarks.util.getDisplayedList(store.data);
+    assertEquals(4, displayedIdsAfter.length);
 
-      // The two pasted items should be selected at the end of the list.
-      assertEquals(action.items[0], displayedIdsAfter[2]);
-      assertEquals(action.items[1], displayedIdsAfter[3]);
-      assertEquals(2, action.items.length);
-      assertEquals(action.anchor, displayedIdsAfter[2]);
-    });
+    // The start of the list shouldn't change.
+    assertEquals(displayedIdsBefore[0], displayedIdsAfter[0]);
+    assertEquals(displayedIdsBefore[1], displayedIdsAfter[1]);
+
+    // The two pasted items should be selected at the end of the list.
+    assertEquals(action.items[0], displayedIdsAfter[2]);
+    assertEquals(action.items[1], displayedIdsAfter[3]);
+    assertEquals(2, action.items.length);
+    assertEquals(action.anchor, displayedIdsAfter[2]);
   });
 
   suiteTeardown(function(done) {
