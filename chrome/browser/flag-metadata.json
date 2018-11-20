@@ -1213,12 +1213,12 @@
   },
   {
     "name": "enable-generic-sensor",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
+    "expiry_milestone": 72
   },
   {
     "name": "enable-generic-sensor-extra-classes",
-    // "owners": [ "your-team" ],
+    "owners": [ "reillyg@chromium.org", "raphael.kubo.da.costa@intel.com" ],
     "expiry_milestone": 76
   },
   {
@@ -2460,7 +2460,7 @@
   },
   {
     "name": "new-usb-backend",
-    // "owners": [ "your-team" ],
+    "owners": [ "reillyg@chromium.org" ],
     "expiry_milestone": 76
   },
   {
