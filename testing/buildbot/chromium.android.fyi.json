@@ -694,7 +694,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "OPM1.171019.021",
+              "device_os": "OPD3.170816.023",
               "device_type": "walleye",
               "os": "Android"
             }
