@@ -43,6 +43,11 @@ const base::Feature kEnableVirtualKeyboardUkm = {
 const base::Feature kExperimentalUi{"ExperimentalUi",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Update of the virtual keyboard settings UI as described in
+// https://crbug.com/876901.
+const base::Feature kInputMethodSettingsUiUpdate = {
+    "InputMethodSettingsUiUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows system keyboard event capture when |features::kKeyboardLockApi| is on.
 const base::Feature kSystemKeyboardLock{"SystemKeyboardLock",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
