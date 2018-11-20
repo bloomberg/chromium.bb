@@ -2178,6 +2178,9 @@ extern const char kUsbguardDescription[];
 extern const char kShillSandboxingName[];
 extern const char kShillSandboxingDescription[];
 
+extern const char kFsNosymfollowName[];
+extern const char kFsNosymfollowDescription[];
+
 extern const char kUseMashName[];
 extern const char kUseMashDescription[];
 

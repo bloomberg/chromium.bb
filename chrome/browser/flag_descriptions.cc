@@ -3620,6 +3620,13 @@ const char kShillSandboxingName[] =
 const char kShillSandboxingDescription[] =
     "Causes shill to be run as user/group 'shill', instead of 'root'.";
 
+const char kFsNosymfollowName[] =
+    "Prevent symlink traversal on user-supplied filesystems.";
+const char kFsNosymfollowDescription[] =
+    "Causes user-supplied filesystems to be mounted with the 'nosymfollow'"
+    " option, so the chromuimos LSM denies symlink traversal on the"
+    " filesystem.";
+
 const char kUseMashName[] = "Out-of-process system UI (mash)";
 const char kUseMashDescription[] =
     "Runs the mojo UI service (mus) and the ash window manager and system UI "

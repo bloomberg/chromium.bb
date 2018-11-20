@@ -49,6 +49,14 @@ void ChromeFeaturesServiceProvider::Start(
           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsFsNosymfollowEnabledMethod,
+      base::BindRepeating(
+          &ChromeFeaturesServiceProvider::IsFsNosymfollowEnabled,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeFeaturesServiceProvider::OnExported(
@@ -86,6 +94,7 @@ void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
   response_sender.Run(std::move(response));
 }
 
+// TODO(mortonm): Combine these functions below when adding any more flags.
 void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
@@ -103,6 +112,16 @@ void ChromeFeaturesServiceProvider::IsShillSandboxingEnabled(
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
   writer.AppendBool(base::FeatureList::IsEnabled(features::kShillSandboxing));
+  response_sender.Run(std::move(response));
+}
+
+void ChromeFeaturesServiceProvider::IsFsNosymfollowEnabled(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  std::unique_ptr<dbus::Response> response =
+      dbus::Response::FromMethodCall(method_call);
+  dbus::MessageWriter writer(response.get());
+  writer.AppendBool(base::FeatureList::IsEnabled(features::kFsNosymfollow));
   response_sender.Run(std::move(response));
 }
 
