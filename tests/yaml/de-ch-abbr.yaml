@@ -1,4 +1,4 @@
-table: [tables/de-eurobrl6u.dis, tables/de-de-g0.utb]
+table: [tables/de-eurobrl6u.dis, tables/de-g0.utb]
 tests:
   # Numbers
 

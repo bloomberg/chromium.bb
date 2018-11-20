@@ -10,7 +10,7 @@
 # reality a '\' is expected we have to write '\\' to make liblouis
 # happy.
 
-table: [tables/de-eurobrl6u.dis, tables/de-de-g2.ctb]
+table: [tables/de-eurobrl6u.dis, tables/de-g2.ctb]
 tests:
 - [aalmutter, AALMUTT7]
 - [aalten, AALTC]

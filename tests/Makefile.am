@@ -231,7 +231,8 @@ LOG_COMPILE = $(WINE)
 
 EXTRA_DIST = $(dist_yaml_TESTS)
 
-XFAIL_TESTS += ueb_test_data.pl
+XFAIL_TESTS += ueb_test_data.pl			\
+	yaml/de-ch-abbr.yaml
 
 TESTS =				\
 	$(program_TESTS)	\

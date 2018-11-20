@@ -1,4 +1,4 @@
-table: [tables/de-eurobrl6u.dis, tables/de-de-g2.ctb]
+table: [tables/de-eurobrl6u.dis, tables/de-g2.ctb]
 tests:
   - ["peter34@gmx.net", "'$PETER34\"@GMX.NET"]
   - ["@peter34", "'$\"@PETER34"]
@@ -12,8 +12,8 @@ tests:
   - ["www.fit4chat.ch", "'$WWW.FIT4CHAT.CH"]
 
 # FIXME: the following tables need to be added in some form or another
-table: [tables/de-eurobrl6u.dis, sbs-special.cti, tables/sbs-code.cti]
-tests:
-  # Program code
-  - ["C:/ordner/inhalt_version_1", "'$\"C:/ORDNER/INHALT\"_VERSION\"_1"]
-  - ["for(i=0;i&lt;=12; i++ { blabla }", "$$FOR(I=0;I<=12; I++ [ BLABLA ]'."]
+# table: [tables/de-eurobrl6u.dis, sbs-special.cti, tables/sbs-code.cti]
+# tests:
+#   # Program code
+#   - ["C:/ordner/inhalt_version_1", "'$\"C:/ORDNER/INHALT\"_VERSION\"_1"]
+#   - ["for(i=0;i&lt;=12; i++ { blabla }", "$$FOR(I=0;I<=12; I++ [ BLABLA ]'."]

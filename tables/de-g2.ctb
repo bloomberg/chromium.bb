@@ -1,6 +1,20 @@
-# liblouis: Swiss German Grade 0 Braille
+# liblouis: German Grade 2 Braille
 #
-#  Copyright (C) 2009 SBS Schweizerische Bibliothek für Blinde und Sehbehinderte
+# Das System der deutschen Blindenschrift (2015/2018)
+# http://www.bskdl.org/textschrift.html
+#
+# -----------
+#-name: Deutsche Kurzschrift
+#-display-name: German contracted braille
+#
+#+locale:de
+#+type:literary
+#+contraction:full
+#+grade:2
+#+translation:forward
+# ------------
+#
+#  Copyright (C) 2018 SBS Schweizerische Bibliothek für Blinde, Seh- und Lesebehinderte
 #
 #  This file is part of liblouis.
 #
@@ -19,17 +33,7 @@
 #  <http://www.gnu.org/licenses/>.
 #
 #-------------------------------------------------------------------------------
-#
-#  DEUTSCHE BASISSCHRIFT - German Grade 0 Braille - Switzerland
-#
-#  Version 11-17-09
-#  christian.waldvogel@sbszh.ch
-#
-#-------------------------------------------------------------------------------
 
 
-include de-eurobrl6u.dis
-include de-chardefs6.cti
-include de-ch-accents.cti
-include de-de-accents.cti
-include de-g0-core.uti
+include de-g0.utb
+include de-g2-core.cti

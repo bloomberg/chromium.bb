@@ -1,4 +1,4 @@
-table: [tables/de-eurobrl6u.dis, tables/de-de-g2.ctb]
+table: [tables/de-eurobrl6u.dis, tables/de-g2.ctb]
 tests:
   # Pfeilsymbole erscheinen fälschlicherweise IMMER mit Leerzeichen davor und dahinter
   - [Abgase → Umweltverschmutzung, "ABGASE ::O UMWYTV75MUTZU"]

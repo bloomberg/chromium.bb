@@ -58,26 +58,22 @@ table_files = \
 	da-dk-octobraille.dis \
 	da-lt.ctb \
 	da.tbl \
-	de-ch-accents.cti \
+	de-accents.cti \
+	de-accents-detailed.cti \
 	de-chardefs6.cti \
 	de-chardefs8.cti \
 	de-chess.ctb \
-	de-ch-g0.utb \
-	de-ch-g1.ctb \
-	de-ch-g2.ctb \
-	de_CH.tbl \
-	de-de-accents.cti \
 	de-de-comp8.ctb \
 	de-de.dis \
-	de-de-g0.utb \
-	de-de-g1.ctb \
-	de-de-g2.ctb \
-	de_DE.tbl \
 	de-eurobrl6.dis \
-	de-eurobrl6u.dis \
 	de-g0-core.uti \
+	de-g0.utb \
 	de-g1-core.cti \
+	de-g1-core-patterns.dic \
+	de-g1.ctb \
 	de-g2-core.cti \
+	de-g2-core-patterns.dic \
+	de-g2.ctb \
 	de.tbl \
 	devanagari.cti \
 	digits6DotsPlusDot6.uti \
