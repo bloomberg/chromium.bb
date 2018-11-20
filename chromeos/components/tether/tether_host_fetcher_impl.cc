@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "chromeos/chromeos_features.h"
 #include "components/cryptauth/remote_device.h"
 
 namespace chromeos {

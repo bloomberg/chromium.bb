@@ -11,11 +11,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/fake_connection_preserver.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
@@ -202,8 +200,6 @@ class HostScannerImplTest : public NetworkStateTest {
   }
 
   void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(features::kMultiDeviceApi);
-
     DBusThreadManager::Initialize();
     NetworkHandler::Initialize();
     NetworkStateTest::SetUp();
@@ -407,7 +403,6 @@ class HostScannerImplTest : public NetworkStateTest {
   const cryptauth::RemoteDeviceRefList test_devices_;
   const std::vector<HostScannerOperation::ScannedDeviceInfo>
       test_scanned_device_infos;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>

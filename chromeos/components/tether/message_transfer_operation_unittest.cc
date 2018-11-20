@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto_test_util.h"
 #include "chromeos/components/tether/timer_factory.h"

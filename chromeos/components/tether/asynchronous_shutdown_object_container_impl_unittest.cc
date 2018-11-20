@@ -8,9 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/tether_component_impl.h"
@@ -57,8 +55,6 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
       : test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1u)[0]) {}
 
   void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(features::kMultiDeviceApi);
-
     was_shutdown_callback_invoked_ = false;
 
     fake_remote_device_provider_factory_ =
@@ -107,7 +103,6 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const cryptauth::RemoteDeviceRef test_device_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;

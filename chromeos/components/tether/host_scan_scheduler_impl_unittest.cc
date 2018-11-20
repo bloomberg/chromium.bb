@@ -9,12 +9,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/fake_host_scanner.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -173,8 +171,6 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
   std::unique_ptr<HostScanSchedulerImpl> host_scan_scheduler_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(HostScanSchedulerImplTest, AttemptScanIfOffline) {
