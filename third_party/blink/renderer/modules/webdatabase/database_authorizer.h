@@ -89,9 +89,6 @@ class DatabaseAuthorizer
   int AllowFunction(const String& function_name);
   int AllowPragma(const String& pragma_name, const String& first_argument);
 
-  int AllowAttach(const String& filename);
-  int AllowDetach(const String& database_name);
-
   void Disable();
   void Enable();
   void SetPermissions(int permissions);

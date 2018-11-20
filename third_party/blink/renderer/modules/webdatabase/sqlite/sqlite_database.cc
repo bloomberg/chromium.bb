@@ -311,14 +311,13 @@ int SQLiteDatabase::AuthorizerFunction(void* user_data,
     case SQLITE_UPDATE:
       return auth->AllowUpdate(parameter1, parameter2);
     case SQLITE_ATTACH:
-      return auth->AllowAttach(parameter1);
+      return kSQLAuthDeny;
     case SQLITE_DETACH:
-      return auth->AllowDetach(parameter1);
+      return kSQLAuthDeny;
     case SQLITE_ALTER_TABLE:
       return auth->AllowAlterTable(parameter1, parameter2);
     case SQLITE_REINDEX:
       return auth->AllowReindex(parameter1);
-#if SQLITE_VERSION_NUMBER >= 3003013
     case SQLITE_ANALYZE:
       return auth->AllowAnalyze(parameter1);
     case SQLITE_CREATE_VTABLE:
@@ -327,11 +326,13 @@ int SQLiteDatabase::AuthorizerFunction(void* user_data,
       return auth->DropVTable(parameter1, parameter2);
     case SQLITE_FUNCTION:
       return auth->AllowFunction(parameter2);
-#endif
-    default:
-      NOTREACHED();
+    case SQLITE_SAVEPOINT:
+      return kSQLAuthDeny;
+    case SQLITE_RECURSIVE:
       return kSQLAuthDeny;
   }
+  NOTREACHED();
+  return kSQLAuthDeny;
 }
 
 void SQLiteDatabase::SetAuthorizer(DatabaseAuthorizer* auth) {
