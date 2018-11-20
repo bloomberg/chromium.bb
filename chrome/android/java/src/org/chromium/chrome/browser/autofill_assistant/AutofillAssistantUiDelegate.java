@@ -767,6 +767,9 @@ class AutofillAssistantUiDelegate {
                 webContents, paymentOptions, unusedTitle, supportedBasicCardNetworks);
         // Make sure we wrap content in the container.
         mBottomBarAnimations.setBottomBarHeightToWrapContent();
+        // Note: We show and hide (below) the carousel so that the margins are adjusted correctly.
+        // This is an intermediate adjustment before the UI refactoring.
+        mBottomBarAnimations.showCarousel();
         mPaymentRequest.show(mCarouselScroll, callback);
         enableProgressBarPulsing();
     }
@@ -776,6 +779,7 @@ class AutofillAssistantUiDelegate {
         mPaymentRequest.close();
         mPaymentRequest = null;
         mBottomBarAnimations.setBottomBarHeightToFixed();
+        mBottomBarAnimations.hideCarousel();
         disableProgressBarPulsing();
     }
 }
