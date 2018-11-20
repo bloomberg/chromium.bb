@@ -118,21 +118,8 @@
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_MENU_HIERARCHY_ARROW" file="mac/menu_hierarchy_arrow.png" />
       </if>
-      <if expr="toolkit_views or is_ios">
-        <if expr="is_win">
-          <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE" file="win/notification_close.png"/>
-          <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_HOVER" file="win/notification_close_hover.png"/>
-          <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_PRESSED" file="win/notification_close_pressed.png"/>
-        </if>
-        <if expr="not is_win">
-          <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE" file="common/notification_close.png"/>
-          <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_HOVER" file="common/notification_close_hover.png"/>
-          <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_PRESSED" file="common/notification_close_pressed.png"/>
-        </if>
+      <if expr="toolkit_views and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS" file="common/notification_settings.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_BUTTON_ICON" file="common/notification_settings_button.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_BUTTON_ICON_HOVER" file="common/notification_settings_button_hover.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_BUTTON_ICON_PRESSED" file="common/notification_settings_button_pressed.png"/>
       </if>
       <if expr="not is_android and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_NTP_DEFAULT_FAVICON" file="common/ntp_default_favicon.png" />

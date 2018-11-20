@@ -1817,6 +1817,8 @@ jumbo_split_static_library("ui") {
       "user_manager.h",
       "views/external_protocol_dialog.cc",
       "views/external_protocol_dialog.h",
+      "views/message_center/popups_only_ui_delegate.cc",
+      "views/message_center/popups_only_ui_delegate.h",
       "views/profiles/badged_profile_photo.cc",
       "views/profiles/badged_profile_photo.h",
       "views/profiles/dice_accounts_menu.cc",
@@ -2027,8 +2029,6 @@ jumbo_split_static_library("ui") {
       "cocoa/media_picker/desktop_media_picker_item.mm",
       "cocoa/native_window_tracker_cocoa.h",
       "cocoa/native_window_tracker_cocoa.mm",
-      "cocoa/notifications/message_center_bridge.h",
-      "cocoa/notifications/message_center_bridge.mm",
       "cocoa/nsmenuitem_additions.h",
       "cocoa/nsmenuitem_additions.mm",
       "cocoa/profiles/profile_menu_controller.h",
@@ -3035,8 +3035,6 @@ jumbo_split_static_library("ui") {
         "views/frame/browser_non_client_frame_view_factory_views.cc",
         "views/frame/desktop_browser_frame_aura.cc",
         "views/frame/desktop_browser_frame_aura.h",
-        "views/message_center/popups_only_ui_delegate.cc",
-        "views/message_center/popups_only_ui_delegate.h",
       ]
     }
   }
