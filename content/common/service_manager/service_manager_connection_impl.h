@@ -49,6 +49,8 @@ class CONTENT_EXPORT ServiceManagerConnectionImpl
   void AddServiceRequestHandlerWithPID(
       const std::string& name,
       const ServiceRequestHandlerWithPID& handler) override;
+  void SetDefaultServiceRequestHandler(
+      const DefaultServiceRequestHandler& handler) override;
 
   void OnConnectionLost();
   void GetInterface(service_manager::mojom::InterfaceProvider* provider,

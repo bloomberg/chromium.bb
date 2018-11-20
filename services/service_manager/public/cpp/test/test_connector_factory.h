@@ -111,6 +111,16 @@ class TestConnectorFactory : public mojom::ServiceControl {
     return test_instance_group_;
   }
 
+  // Normally a TestConnectorFactory will assert if asked to route a request to
+  // an unregistered service. If this is set to |true|, such requests will be
+  // silently ignored instead.
+  bool ignore_unknown_service_requests() const {
+    return ignore_unknown_service_requests_;
+  }
+  void set_ignore_unknown_service_requests(bool ignore) {
+    ignore_unknown_service_requests_ = ignore;
+  }
+
   // Normally when a service instance registered via either |RegisterInstance()|
   // or |RegisterServiceHandler()| requests termination from the Service
   // Manager, TestConnectorFactory immediately severs the service instance's
@@ -152,6 +162,7 @@ class TestConnectorFactory : public mojom::ServiceControl {
   mojo::AssociatedBindingSet<mojom::ServiceControl, std::string>
       service_control_bindings_;
 
+  bool ignore_unknown_service_requests_ = false;
   bool ignore_quit_requests_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectorFactory);

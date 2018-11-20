@@ -22,6 +22,7 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "services/network/public/mojom/cors_origin_pattern.mojom.h"
 #include "services/service_manager/public/cpp/embedded_service_info.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 #if !defined(OS_ANDROID)
@@ -41,6 +42,7 @@ class InProgressDownloadManager;
 
 namespace service_manager {
 class Connector;
+class Service;
 }
 
 namespace storage {
@@ -337,6 +339,12 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Registers per-browser-context services to be loaded in the browser process
   // by the Service Manager.
   virtual void RegisterInProcessServices(StaticServiceMap* services) {}
+
+  // Handles a service request for a service expected to run an instance per
+  // BrowserContext.
+  virtual std::unique_ptr<service_manager::Service> HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request);
 
   // Returns a unique string associated with this browser context.
   virtual const std::string& UniqueId() const;

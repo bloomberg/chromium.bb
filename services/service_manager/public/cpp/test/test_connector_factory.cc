@@ -196,10 +196,12 @@ class MultipleServiceConnector : public TestConnectorImplBase {
 class ProxiedServiceConnector : public mojom::Connector {
  public:
   ProxiedServiceConnector(
+      TestConnectorFactory* factory,
       TestConnectorFactory::NameToServiceProxyMap* proxies,
       TestConnectorFactory::NameToServiceHandlerMap* handlers,
       const base::Token& test_instance_group)
       : fake_guid_(base::Token::CreateRandom()),
+        factory_(factory),
         proxies_(proxies),
         handlers_(handlers),
         test_instance_group_(test_instance_group) {}
@@ -230,6 +232,12 @@ class ProxiedServiceConnector : public mojom::Connector {
                      mojo::ScopedMessagePipeHandle interface_pipe,
                      BindInterfaceCallback callback) override {
     auto* proxy = GetServiceProxy(service_filter.service_name());
+    if (!proxy && factory_->ignore_unknown_service_requests()) {
+      std::move(callback).Run(mojom::ConnectResult::ACCESS_DENIED,
+                              base::nullopt);
+      return;
+    }
+
     CHECK(proxy)
         << "TestConnectorFactory received a BindInterface request for an "
         << "unregistered service '" << service_filter.service_name() << "'";
@@ -271,6 +279,7 @@ class ProxiedServiceConnector : public mojom::Connector {
   }
 
   const base::Token fake_guid_;
+  TestConnectorFactory* const factory_;
   TestConnectorFactory::NameToServiceProxyMap* const proxies_;
   TestConnectorFactory::NameToServiceHandlerMap* const handlers_;
   const base::Token test_instance_group_;
@@ -284,7 +293,7 @@ class ProxiedServiceConnector : public mojom::Connector {
 TestConnectorFactory::TestConnectorFactory() {
   test_instance_group_ = base::Token::CreateRandom();
   impl_ = std::make_unique<ProxiedServiceConnector>(
-      &service_proxies_, &service_handlers_, test_instance_group_);
+      this, &service_proxies_, &service_handlers_, test_instance_group_);
 }
 
 TestConnectorFactory::TestConnectorFactory(

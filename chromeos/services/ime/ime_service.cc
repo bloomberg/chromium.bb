@@ -10,19 +10,15 @@
 
 #if BUILDFLAG(ENABLE_CROS_IME_DECODER)
 #include "chromeos/services/ime/decoder/decoder_engine.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #endif
 
 namespace chromeos {
 namespace ime {
 
-std::unique_ptr<service_manager::Service> CreateImeService() {
-  return std::make_unique<ImeService>();
-}
+ImeService::ImeService(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {}
 
-ImeService::ImeService() {}
-
-ImeService::~ImeService() {}
+ImeService::~ImeService() = default;
 
 void ImeService::OnStart() {
   binder_registry_.AddInterface<mojom::InputEngineManager>(base::BindRepeating(
@@ -33,7 +29,7 @@ void ImeService::OnStart() {
 
 #if BUILDFLAG(ENABLE_CROS_IME_DECODER)
   input_engine_ = std::make_unique<DecoderEngine>(
-      context()->connector(), base::SequencedTaskRunnerHandle::Get());
+      service_binding_.GetConnector(), base::SequencedTaskRunnerHandle::Get());
 #else
   input_engine_ = std::make_unique<InputEngine>();
 #endif

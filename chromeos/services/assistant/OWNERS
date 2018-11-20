@@ -4,6 +4,3 @@ file://chromeos/assistant/OWNERS
 
 per-file manifest.json=set noparent
 per-file manifest.json=file://ipc/SECURITY_OWNERS
-
-per-file unittest_manifest.json=set noparent
-per-file unittest_manifest.json=file://ipc/SECURITY_OWNERS

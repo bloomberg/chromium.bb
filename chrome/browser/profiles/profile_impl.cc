@@ -1170,23 +1170,6 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
   }
 
 #if defined(OS_CHROMEOS)
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  {
-    service_manager::EmbeddedServiceInfo info;
-    info.factory = base::BindRepeating([] {
-      network::NetworkConnectionTracker* network_connection_tracker =
-          content::GetNetworkConnectionTracker();
-      return std::unique_ptr<service_manager::Service>(
-          std::make_unique<chromeos::assistant::Service>(
-              network_connection_tracker));
-    });
-    info.task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::UI});
-    services->insert(
-        std::make_pair(chromeos::assistant::mojom::kServiceName, info));
-  }
-#endif
-
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     service_manager::EmbeddedServiceInfo info;
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
@@ -1231,6 +1214,21 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
       base::Bind(&ProfileImpl::CreateIdentityService, base::Unretained(this));
   services->insert(
       std::make_pair(identity::mojom::kServiceName, identity_service_info));
+}
+
+std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+#if defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  if (service_name == chromeos::assistant::mojom::kServiceName) {
+    return std::make_unique<chromeos::assistant::Service>(
+        std::move(request), content::GetNetworkConnectionTracker());
+  }
+#endif
+#endif
+
+  return nullptr;
 }
 
 std::string ProfileImpl::GetMediaDeviceIDSalt() {

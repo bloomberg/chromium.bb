@@ -69,6 +69,12 @@ class ServiceManagerConnectionImpl::IOThreadContext
     io_thread_checker_.DetachFromThread();
   }
 
+  void SetDefaultServiceRequestHandler(
+      const ServiceManagerConnection::DefaultServiceRequestHandler& handler) {
+    DCHECK(!started_);
+    default_request_handler_ = handler;
+  }
+
   // Safe to call from any thread.
   void Start(const base::Closure& stop_callback) {
     DCHECK(!started_);
@@ -312,14 +318,23 @@ class ServiceManagerConnectionImpl::IOThreadContext
     DCHECK(io_thread_checker_.CalledOnValidThread());
     auto it = request_handlers_.find(name);
     if (it == request_handlers_.end()) {
-      LOG(ERROR) << "Can't create service " << name << ". No handler found.";
-      return;
+      if (default_request_handler_) {
+        callback_task_runner_->PostTask(
+            FROM_HERE,
+            base::BindOnce(default_request_handler_, name, std::move(request)));
+      } else {
+        LOG(ERROR) << "Can't create service " << name << ". No handler found.";
+      }
+    } else {
+      it->second.Run(std::move(request), std::move(pid_receiver));
     }
-    it->second.Run(std::move(request), std::move(pid_receiver));
   }
 
   base::ThreadChecker io_thread_checker_;
   bool started_ = false;
+
+  ServiceManagerConnection::DefaultServiceRequestHandler
+      default_request_handler_;
 
   // Temporary state established on construction and consumed on the IO thread
   // once the connection is started.
@@ -473,6 +488,11 @@ void ServiceManagerConnectionImpl::AddServiceRequestHandlerWithPID(
     const std::string& name,
     const ServiceRequestHandlerWithPID& handler) {
   context_->AddServiceRequestHandlerWithPID(name, handler);
+}
+
+void ServiceManagerConnectionImpl::SetDefaultServiceRequestHandler(
+    const DefaultServiceRequestHandler& handler) {
+  context_->SetDefaultServiceRequestHandler(handler);
 }
 
 void ServiceManagerConnectionImpl::OnConnectionLost() {

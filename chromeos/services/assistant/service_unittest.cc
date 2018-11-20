@@ -17,10 +17,10 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
+#include "chromeos/services/assistant/service.h"
 #include "services/identity/public/mojom/identity_manager.mojom.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_test.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -149,119 +149,60 @@ class FakeDeviceActions : mojom::DeviceActions {
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceActions);
 };
 
-class ServiceTestClient : public service_manager::test::ServiceTestClient,
-                          public service_manager::mojom::ServiceFactory {
+class AssistantServiceTest : public testing::Test {
  public:
-  ServiceTestClient(service_manager::test::ServiceTest* test,
-                    FakeIdentityManager* fake_identity_manager,
-                    FakeAssistantManagerServiceImpl* fake_assistant_manager_ptr,
-                    base::TestMockTimeTaskRunner* mock_task_runner)
-      : service_manager::test::ServiceTestClient(test),
-        fake_identity_manager_(fake_identity_manager),
-        fake_assistant_manager_ptr_(fake_assistant_manager_ptr),
-        mock_task_runner_(mock_task_runner) {
-    registry_.AddInterface<service_manager::mojom::ServiceFactory>(
-        base::BindRepeating(&ServiceTestClient::Create,
-                            base::Unretained(this)));
-  }
-
- protected:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override {
-    registry_.BindInterface(interface_name, std::move(interface_pipe));
-  }
-
-  void CreateService(
-      service_manager::mojom::ServiceRequest request,
-      const std::string& name,
-      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-    if (name == mojom::kServiceName) {
-      auto service = std::make_unique<chromeos::assistant::Service>(
-          nullptr /* network_connection_tracker */);
-
-      auto mock_timer = std::make_unique<base::OneShotTimer>(
-          mock_task_runner_->GetMockTickClock());
-      mock_timer->SetTaskRunner(mock_task_runner_);
-      service->SetTimerForTesting(std::move(mock_timer));
-
-      service->SetIdentityManagerForTesting(
-          fake_identity_manager_->CreateInterfacePtrAndBind());
-      service->SetAssistantManagerForTesting(
-          base::WrapUnique(fake_assistant_manager_ptr_));
-
-      service_context_ = std::make_unique<service_manager::ServiceContext>(
-          std::move(service), std::move(request));
-    }
-  }
-
-  void Create(service_manager::mojom::ServiceFactoryRequest request) {
-    service_factory_bindings_.AddBinding(this, std::move(request));
-  }
-
- private:
-  service_manager::BinderRegistry registry_;
-  mojo::BindingSet<service_manager::mojom::ServiceFactory>
-      service_factory_bindings_;
-
-  FakeIdentityManager* fake_identity_manager_;
-  FakeAssistantManagerServiceImpl* fake_assistant_manager_ptr_;
-  base::TestMockTimeTaskRunner* mock_task_runner_;
-
-  std::unique_ptr<service_manager::ServiceContext> service_context_;
-  DISALLOW_COPY_AND_ASSIGN(ServiceTestClient);
-};
-
-class ServiceTest : public service_manager::test::ServiceTest {
- public:
-  ServiceTest() : service_manager::test::ServiceTest("assistant_unittests") {}
-
-  void SetUp() override {
-    service_manager::test::ServiceTest::SetUp();
-
-    GetService()->Init(fake_assistant_client_->CreateInterfacePtrAndBind(),
-                       fake_device_actions_->CreateInterfacePtrAndBind());
-    platform_service_.FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-  }
-
-  // service_manager::test::ServiceTest:
-  std::unique_ptr<service_manager::Service> CreateService() override {
-    fake_identity_manager_ = std::make_unique<FakeIdentityManager>();
-    fake_assistant_client_ = std::make_unique<FakeAssistantClient>();
-    fake_device_actions_ = std::make_unique<FakeDeviceActions>();
-    fake_assistant_manager_ptr_ = new FakeAssistantManagerServiceImpl();
-
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
+  AssistantServiceTest()
+      : connector_(test_connector_factory_.CreateConnector()) {
+    // The assistant service may attempt to connect to a number of services
+    // which are irrelevant for these tests.
+    test_connector_factory_.set_ignore_unknown_service_requests(true);
 
     auto power_manager_client =
         std::make_unique<chromeos::FakePowerManagerClient>();
     power_manager_client->SetTabletMode(
         chromeos::PowerManagerClient::TabletMode::OFF, base::TimeTicks());
     power_manager_client_ = power_manager_client.get();
+
+    auto dbus_setter = chromeos::DBusThreadManager::GetSetterForTesting();
     dbus_setter->SetPowerManagerClient(std::move(power_manager_client));
+
+    service_ = std::make_unique<Service>(
+        test_connector_factory_.RegisterInstance(mojom::kServiceName),
+        nullptr /* network_connection_tracker */);
 
     mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
         base::Time::Now(), base::TimeTicks::Now());
+    auto mock_timer = std::make_unique<base::OneShotTimer>(
+        mock_task_runner_->GetMockTickClock());
+    mock_timer->SetTaskRunner(mock_task_runner_);
+    service_->SetTimerForTesting(std::move(mock_timer));
 
-    return std::make_unique<ServiceTestClient>(this, identity_manager(),
-                                               assistant_manager_service(),
-                                               mock_task_runner());
+    service_->SetIdentityManagerForTesting(
+        fake_identity_manager_.CreateInterfacePtrAndBind());
+
+    auto fake_assistant_manager =
+        std::make_unique<FakeAssistantManagerServiceImpl>();
+    fake_assistant_manager_ = fake_assistant_manager.get();
+    service_->SetAssistantManagerForTesting(std::move(fake_assistant_manager));
   }
 
-  mojom::AssistantPlatform* GetService() {
-    if (!platform_service_)
-      connector()->BindInterface(mojom::kServiceName, &platform_service_);
-    return platform_service_.get();
+  void SetUp() override {
+    GetPlatform()->Init(fake_assistant_client_.CreateInterfacePtrAndBind(),
+                        fake_device_actions_.CreateInterfacePtrAndBind());
+    platform_.FlushForTesting();
+    base::RunLoop().RunUntilIdle();
   }
 
-  FakeIdentityManager* identity_manager() {
-    return fake_identity_manager_.get();
+  mojom::AssistantPlatform* GetPlatform() {
+    if (!platform_)
+      connector_->BindInterface(mojom::kServiceName, &platform_);
+    return platform_.get();
   }
+
+  FakeIdentityManager* identity_manager() { return &fake_identity_manager_; }
 
   FakeAssistantManagerServiceImpl* assistant_manager_service() {
-    return fake_assistant_manager_ptr_;
+    return fake_assistant_manager_;
   }
 
   chromeos::FakePowerManagerClient* power_manager_client() {
@@ -273,24 +214,27 @@ class ServiceTest : public service_manager::test::ServiceTest {
   }
 
  private:
-  mojom::AssistantPlatformPtr platform_service_;
+  base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::TestConnectorFactory test_connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
 
-  std::unique_ptr<FakeIdentityManager> fake_identity_manager_;
-  std::unique_ptr<FakeAssistantClient> fake_assistant_client_;
+  std::unique_ptr<chromeos::assistant::Service> service_;
+  mojom::AssistantPlatformPtr platform_;
 
-  std::unique_ptr<FakeDeviceActions> fake_device_actions_;
+  FakeIdentityManager fake_identity_manager_;
+  FakeAssistantClient fake_assistant_client_;
+  FakeDeviceActions fake_device_actions_;
 
-  FakeAssistantManagerServiceImpl* fake_assistant_manager_ptr_;
-
+  FakeAssistantManagerServiceImpl* fake_assistant_manager_;
   chromeos::FakePowerManagerClient* power_manager_client_;
 
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   std::unique_ptr<base::OneShotTimer> mock_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceTest);
+  DISALLOW_COPY_AND_ASSIGN(AssistantServiceTest);
 };
 
-TEST_F(ServiceTest, RefreshTokenAfterExpire) {
+TEST_F(AssistantServiceTest, RefreshTokenAfterExpire) {
   auto current_count = identity_manager()->get_access_token_count();
   mock_task_runner()->FastForwardBy(kDefaultTokenExpirationDelay / 2);
   base::RunLoop().RunUntilIdle();
@@ -305,7 +249,7 @@ TEST_F(ServiceTest, RefreshTokenAfterExpire) {
   EXPECT_EQ(identity_manager()->get_access_token_count(), ++current_count);
 }
 
-TEST_F(ServiceTest, RetryRefreshTokenAfterFailure) {
+TEST_F(AssistantServiceTest, RetryRefreshTokenAfterFailure) {
   auto current_count = identity_manager()->get_access_token_count();
   identity_manager()->SetShouldFail(true);
   mock_task_runner()->FastForwardBy(kDefaultTokenExpirationDelay);
@@ -325,7 +269,7 @@ TEST_F(ServiceTest, RetryRefreshTokenAfterFailure) {
   EXPECT_EQ(identity_manager()->get_access_token_count(), ++current_count);
 }
 
-TEST_F(ServiceTest, RetryRefreshTokenAfterDeviceWakeup) {
+TEST_F(AssistantServiceTest, RetryRefreshTokenAfterDeviceWakeup) {
   auto current_count = identity_manager()->get_access_token_count();
   power_manager_client()->SendSuspendDone();
   base::RunLoop().RunUntilIdle();
