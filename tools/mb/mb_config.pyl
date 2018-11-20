@@ -621,6 +621,8 @@
     },
 
     'tryserver.chromium.dawn': {
+      'linux-dawn-rel': 'gpu_fyi_tests_release_trybot',
+      'mac-dawn-rel': 'gpu_fyi_tests_release_trybot',
       'win-dawn-rel': 'gpu_fyi_tests_release_trybot_x86',
     },
 
