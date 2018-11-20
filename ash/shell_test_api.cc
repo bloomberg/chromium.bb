@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_button_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/ws/window_service_owner.h"
@@ -88,6 +89,7 @@ void ShellTestApi::EnableVirtualKeyboard(EnableVirtualKeyboardCallback cb) {
 
 void ShellTestApi::SnapWindowInSplitView(const std::string& client_name,
                                          ws::Id window_id,
+                                         bool left,
                                          SnapWindowInSplitViewCallback cb) {
   auto* window_service = shell_->window_service_owner()->window_service();
   aura::Window* window = nullptr;
@@ -98,14 +100,20 @@ void ShellTestApi::SnapWindowInSplitView(const std::string& client_name,
     }
   }
   DCHECK(window);
-  shell_->split_view_controller()->SnapWindow(window,
-                                              ash::SplitViewController::LEFT);
+  shell_->split_view_controller()->SnapWindow(
+      window,
+      left ? ash::SplitViewController::LEFT : ash::SplitViewController::RIGHT);
   shell_->split_view_controller()->FlushForTesting();
   std::move(cb).Run();
 }
 
 void ShellTestApi::ToggleFullscreen(ToggleFullscreenCallback cb) {
   ash::accelerators::ToggleFullscreen();
+  std::move(cb).Run();
+}
+
+void ShellTestApi::ToggleOverviewMode(ToggleOverviewModeCallback cb) {
+  shell_->window_selector_controller()->ToggleOverview();
   std::move(cb).Run();
 }
 

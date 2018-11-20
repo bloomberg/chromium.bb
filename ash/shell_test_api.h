@@ -57,8 +57,10 @@ class ShellTestApi : public mojom::ShellTestApi {
   void EnableVirtualKeyboard(EnableVirtualKeyboardCallback cb) override;
   void SnapWindowInSplitView(const std::string& client_name,
                              ws::Id window_id,
+                             bool left,
                              SnapWindowInSplitViewCallback cb) override;
   void ToggleFullscreen(ToggleFullscreenCallback cb) override;
+  void ToggleOverviewMode(ToggleOverviewModeCallback cb) override;
 
  private:
   Shell* shell_;  // not owned
