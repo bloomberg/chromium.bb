@@ -1564,16 +1564,26 @@ UChar32 LayoutText::FirstCharacterAfterWhitespaceCollapsing() const {
     String text = text_box->GetText();
     return text.length() ? text.CharacterStartingAt(0) : 0;
   }
-  // TODO(kojii): Support LayoutNG once we have NGInlineItem pointers.
+  if (const NGPaintFragment* paint_fragment = FirstInlineFragment()) {
+    const StringView text =
+        ToNGPhysicalTextFragment(paint_fragment->PhysicalFragment()).Text();
+    return text.length() ? text.CodepointAt(0) : 0;
+  }
   return 0;
 }
 
 UChar32 LayoutText::LastCharacterAfterWhitespaceCollapsing() const {
   if (InlineTextBox* text_box = LastTextBox()) {
     String text = text_box->GetText();
-    return text.length() ? text.CharacterStartingAt(text.length() - 1) : 0;
+    return text.length() ? StringView(text).CodepointAt(text.length() - 1) : 0;
   }
-  // TODO(kojii): Support LayoutNG once we have NGInlineItem pointers.
+  if (const NGPaintFragment* paint_fragment = FirstInlineFragment()) {
+    const StringView text =
+        ToNGPhysicalTextFragment(
+            paint_fragment->LastForSameLayoutObject()->PhysicalFragment())
+            .Text();
+    return text.length() ? text.CodepointAt(text.length() - 1) : 0;
+  }
   return 0;
 }
 
