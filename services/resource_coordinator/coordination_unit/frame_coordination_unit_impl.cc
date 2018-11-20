@@ -31,6 +31,16 @@ FrameCoordinationUnitImpl::~FrameCoordinationUnitImpl() {
     child_frame->RemoveParentFrame(this);
 }
 
+void FrameCoordinationUnitImpl::SetProcess(const CoordinationUnitID& cu_id) {
+  ProcessCoordinationUnitImpl* process_cu =
+      ProcessCoordinationUnitImpl::GetCoordinationUnitByID(graph_, cu_id);
+  if (!process_cu)
+    return;
+  DCHECK(!process_coordination_unit_);
+  process_coordination_unit_ = process_cu;
+  process_cu->AddFrame(this);
+}
+
 void FrameCoordinationUnitImpl::AddChildFrame(const CoordinationUnitID& cu_id) {
   DCHECK(cu_id != id());
   FrameCoordinationUnitImpl* frame_cu =
@@ -176,12 +186,6 @@ void FrameCoordinationUnitImpl::AddPageCoordinationUnit(
     PageCoordinationUnitImpl* page_coordination_unit) {
   DCHECK(!page_coordination_unit_);
   page_coordination_unit_ = page_coordination_unit;
-}
-
-void FrameCoordinationUnitImpl::AddProcessCoordinationUnit(
-    ProcessCoordinationUnitImpl* process_coordination_unit) {
-  DCHECK(!process_coordination_unit_);
-  process_coordination_unit_ = process_coordination_unit;
 }
 
 void FrameCoordinationUnitImpl::RemovePageCoordinationUnit(
