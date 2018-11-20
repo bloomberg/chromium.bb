@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_LEARNING_IMPL_RANDOM_TREE_H_
-#define MEDIA_LEARNING_IMPL_RANDOM_TREE_H_
+#ifndef MEDIA_LEARNING_IMPL_RANDOM_TREE_TRAINER_H_
+#define MEDIA_LEARNING_IMPL_RANDOM_TREE_TRAINER_H_
 
 #include <limits>
 #include <memory>
 #include <set>
-#include <vector>
 
-#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "media/learning/impl/learner.h"
+#include "media/learning/impl/training_algorithm.h"
 
 namespace media {
 namespace learning {
 
-// RandomTree decision tree classifier (doesn't handle regression currently).
+// Trains RandomTree decision tree classifier (doesn't handle regression).
 //
 // Decision trees, including RandomTree, classify instances as follows.  Each
 // non-leaf node is marked with a feature number |i|.  The value of the |i|-th
@@ -56,24 +54,15 @@ namespace learning {
 // TODO(liberato): Right now, it not-so-randomly selects from the entire set.
 // TODO(liberato): consider PRF or other simplified approximations.
 // TODO(liberato): separate Model and TrainingAlgorithm.  This is the latter.
-class COMPONENT_EXPORT(LEARNING_IMPL) RandomTree {
+class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
  public:
-  struct TreeNode {
-    // [target value] == counts
-    using TargetDistribution = std::map<TargetValue, int>;
-    virtual ~TreeNode();
-    virtual TargetDistribution* ComputeDistribution(
-        const FeatureVector& features) = 0;
-  };
+  RandomTreeTrainer();
+  ~RandomTreeTrainer();
 
-  RandomTree();
-  virtual ~RandomTree();
+  // Return a callback that can be used to train a random tree.
+  static TrainingAlgorithmCB GetTrainingAlgorithmCB();
 
-  // Train the tree.
-  void Train(const TrainingData& examples);
-
-  const TreeNode::TargetDistribution* ComputeDistributionForTesting(
-      const FeatureVector& instance);
+  std::unique_ptr<Model> Train(const TrainingData& examples);
 
  private:
   // Set of feature indices.
@@ -124,19 +113,16 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTree {
 
   // Build this node from |training_data|.  |used_set| is the set of features
   // that we already used higher in the tree.
-  std::unique_ptr<TreeNode> Build(const TrainingData& training_data,
-                                  const FeatureSet& used_set);
+  std::unique_ptr<Model> Build(const TrainingData& training_data,
+                               const FeatureSet& used_set);
 
   // Compute and return a split of |training_data| on the |index|-th feature.
   Split ConstructSplit(const TrainingData& training_data, int index);
 
-  // Root of the random tree, or null.
-  std::unique_ptr<TreeNode> root_;
-
-  DISALLOW_COPY_AND_ASSIGN(RandomTree);
+  DISALLOW_COPY_AND_ASSIGN(RandomTreeTrainer);
 };
 
 }  // namespace learning
 }  // namespace media
 
-#endif  // MEDIA_LEARNING_IMPL_RANDOM_TREE_H_
+#endif  // MEDIA_LEARNING_IMPL_RANDOM_TREE_TRAINER_H_

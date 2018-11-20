@@ -2,37 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/learning/impl/random_tree.h"
+#include "media/learning/impl/random_tree_trainer.h"
+
+#include <math.h>
+
+#include "base/bind.h"
+#include "base/logging.h"
 
 namespace media {
 namespace learning {
 
-RandomTree::TreeNode::~TreeNode() = default;
-RandomTree::Split::Split() = default;
-RandomTree::Split::Split(int index) : split_index(index) {}
-RandomTree::Split::Split(Split&& rhs) = default;
-RandomTree::Split::~Split() = default;
-RandomTree::Split& RandomTree::Split::operator=(Split&& rhs) = default;
-RandomTree::Split::BranchInfo::BranchInfo() = default;
-RandomTree::Split::BranchInfo::BranchInfo(const BranchInfo& rhs) = default;
-RandomTree::Split::BranchInfo::~BranchInfo() = default;
+// static
+TrainingAlgorithmCB RandomTreeTrainer::GetTrainingAlgorithmCB() {
+  return base::BindRepeating(
+      [](const TrainingData& training_data) -> std::unique_ptr<Model> {
+        return RandomTreeTrainer().Train(training_data);
+      });
+}
 
-struct InteriorNode : public RandomTree::TreeNode {
+RandomTreeTrainer::Split::Split() = default;
+RandomTreeTrainer::Split::Split(int index) : split_index(index) {}
+RandomTreeTrainer::Split::Split(Split&& rhs) = default;
+RandomTreeTrainer::Split::~Split() = default;
+RandomTreeTrainer::Split& RandomTreeTrainer::Split::operator=(Split&& rhs) =
+    default;
+RandomTreeTrainer::Split::BranchInfo::BranchInfo() = default;
+RandomTreeTrainer::Split::BranchInfo::BranchInfo(const BranchInfo& rhs) =
+    default;
+RandomTreeTrainer::Split::BranchInfo::~BranchInfo() = default;
+
+struct InteriorNode : public Model {
   InteriorNode(int split_index) : split_index_(split_index) {}
 
-  // TreeNode
-  TargetDistribution* ComputeDistribution(
+  // Model
+  Model::TargetDistribution PredictDistribution(
       const FeatureVector& features) override {
     auto iter = children_.find(features[split_index_]);
     // If we've never seen this feature value, then make no prediction.
     if (iter == children_.end())
-      return nullptr;
+      return TargetDistribution();
 
-    return iter->second->ComputeDistribution(features);
+    return iter->second->PredictDistribution(features);
   }
 
   // Add |child| has the node for feature value |v|.
-  void AddChild(FeatureValue v, std::unique_ptr<TreeNode> child) {
+  void AddChild(FeatureValue v, std::unique_ptr<Model> child) {
     DCHECK_EQ(children_.count(v), 0u);
     children_.emplace(v, std::move(child));
   }
@@ -40,44 +54,37 @@ struct InteriorNode : public RandomTree::TreeNode {
  private:
   // Feature value that we split on.
   int split_index_ = -1;
-  std::map<FeatureValue, std::unique_ptr<TreeNode>> children_;
+  std::map<FeatureValue, std::unique_ptr<Model>> children_;
 };
 
-struct LeafNode : public RandomTree::TreeNode {
+struct LeafNode : public Model {
   LeafNode(const TrainingData& training_data) {
     for (const TrainingExample* example : training_data)
       distribution_[example->target_value]++;
   }
 
   // TreeNode
-  TargetDistribution* ComputeDistribution(const FeatureVector&) override {
-    return &distribution_;
+  Model::TargetDistribution PredictDistribution(const FeatureVector&) override {
+    return distribution_;
   }
 
  private:
-  TargetDistribution distribution_;
+  Model::TargetDistribution distribution_;
 };
 
-RandomTree::RandomTree() = default;
+RandomTreeTrainer::RandomTreeTrainer() = default;
 
-RandomTree::~RandomTree() = default;
+RandomTreeTrainer::~RandomTreeTrainer() = default;
 
-void RandomTree::Train(const TrainingData& training_data) {
-  root_ = nullptr;
+std::unique_ptr<Model> RandomTreeTrainer::Train(
+    const TrainingData& training_data) {
   if (training_data.empty())
-    return;
+    return std::make_unique<InteriorNode>(-1);
 
-  root_ = Build(training_data, FeatureSet());
+  return Build(training_data, FeatureSet());
 }
 
-const RandomTree::TreeNode::TargetDistribution*
-RandomTree::ComputeDistributionForTesting(const FeatureVector& instance) {
-  if (!root_)
-    return nullptr;
-  return root_->ComputeDistribution(instance);
-}
-
-std::unique_ptr<RandomTree::TreeNode> RandomTree::Build(
+std::unique_ptr<Model> RandomTreeTrainer::Build(
     const TrainingData& training_data,
     const FeatureSet& used_set) {
   DCHECK(training_data.size());
@@ -86,8 +93,7 @@ std::unique_ptr<RandomTree::TreeNode> RandomTree::Build(
   Split best_potential_split;
 
   // Select the feature subset to consider at this leaf.
-  // TODO(liberato): This should select a subset, which is why it's not merged
-  // with the loop below.
+  // TODO(liberato): subset.
   FeatureSet feature_candidates;
   for (size_t i = 0; i < training_data[0]->features.size(); i++) {
     if (used_set.find(i) != used_set.end())
@@ -127,8 +133,9 @@ std::unique_ptr<RandomTree::TreeNode> RandomTree::Build(
   return node;
 }
 
-RandomTree::Split RandomTree::ConstructSplit(const TrainingData& training_data,
-                                             int index) {
+RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
+    const TrainingData& training_data,
+    int index) {
   // We should not be given a training set of size 0, since there's no need to
   // check an empty split.
   DCHECK_GT(training_data.size(), 0u);

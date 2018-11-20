@@ -7,14 +7,15 @@ component("impl") {
   visibility = [ "//media/learning/impl:unit_tests" ]
 
   sources = [
-    "learner.h",
     "learning_session_impl.cc",
     "learning_session_impl.h",
     "learning_task_controller.h",
     "learning_task_controller_impl.cc",
     "learning_task_controller_impl.h",
-    "random_tree.cc",
-    "random_tree.h",
+    "model.h",
+    "random_tree_trainer.cc",
+    "random_tree_trainer.h",
+    "training_algorithm.h",
   ]
 
   defines = [ "IS_LEARNING_IMPL_IMPL" ]
@@ -33,7 +34,7 @@ source_set("unit_tests") {
 
   sources = [
     "learning_session_impl_unittest.cc",
-    "random_tree_unittest.cc",
+    "random_tree_trainer_unittest.cc",
   ]
 
   deps = [
