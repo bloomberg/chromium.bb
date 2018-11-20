@@ -22,18 +22,7 @@ namespace {
 
 constexpr char kAccessTokenValue[] = "test_access_token_value";
 constexpr char kRefreshTokenValue[] = "test_refresh_token_value";
-constexpr char kInvalidTokenInfoResponse[] =
-    "{"
-    "  \"error\": \"invalid_token\""
-    "}";
-constexpr char kInvalidUserInfoResponse[] =
-    "{"
-    "  \"error\": \"invalid_token\""
-    "}";
-constexpr char kInvalidAccessTokenFetchResponse[] =
-    "{"
-    "  \"error\": \"invalid_token\""
-    "}";
+
 }  // namespace
 
 // Provides base functionality for the AccessTokenFetcher Tests below.  The
@@ -86,30 +75,11 @@ CredentialProviderFetcherTest::CredentialProviderFetcherTest()
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)) {
   valid_token_info_response_ =
-      "{"
-      "  \"audience\": \"blah.apps.googleusercontent.blah.com\","
-      "  \"used_id\": \"1234567890\","
-      "  \"scope\": \"all the things\","
-      "  \"expires_in\": 1800,"
-      "  \"token_type\": \"Bearer\","
-      "  \"token_handle\": \"" +
-      test_data_storage_.GetSuccessTokenHandle() +
-      "\""
-      "}";
+      test_data_storage_.GetSuccessfulTokenInfoFetchResult();
   valid_user_info_response_ =
-      "{"
-      "  \"name\": \"" +
-      test_data_storage_.GetSuccessFullName() +
-      "\""
-      "}";
+      test_data_storage_.GetSuccessfulUserInfoFetchResult();
   valid_access_token_fetch_response_ =
-      "{"
-      "  \"access_token\": \"123456789\","
-      "  \"id_token\": \"" +
-      test_data_storage_.GetSuccessMdmIdToken() +
-      "\","
-      "  \"expires_in\": 1800"
-      "}";
+      test_data_storage_.GetSuccessfulMdmTokenFetchResult();
 }
 
 CredentialProviderFetcherTest::~CredentialProviderFetcherTest() = default;
@@ -195,36 +165,44 @@ TEST_F(CredentialProviderFetcherTest,
 }
 
 TEST_F(CredentialProviderFetcherTest, InvalidAccessTokenFetch) {
-  SetFakeResponses(kInvalidAccessTokenFetchResponse, net::HTTP_OK, net::OK,
-                   valid_user_info_response_, net::HTTP_OK, net::OK,
-                   valid_token_info_response_, net::HTTP_OK, net::OK);
+  SetFakeResponses(
+      CredentialProviderSigninDialogTestDataStorage::kInvalidTokenFetchResponse,
+      net::HTTP_OK, net::OK, valid_user_info_response_, net::HTTP_OK, net::OK,
+      valid_token_info_response_, net::HTTP_OK, net::OK);
 
   RunFetcher();
   EXPECT_TRUE(fetch_result_.DictEmpty());
 }
 
 TEST_F(CredentialProviderFetcherTest, InvalidUserInfoFetch) {
-  SetFakeResponses(valid_access_token_fetch_response_, net::HTTP_OK, net::OK,
-                   kInvalidUserInfoResponse, net::HTTP_OK, net::OK,
-                   valid_token_info_response_, net::HTTP_OK, net::OK);
+  SetFakeResponses(
+      valid_access_token_fetch_response_, net::HTTP_OK, net::OK,
+      CredentialProviderSigninDialogTestDataStorage::kInvalidUserInfoResponse,
+      net::HTTP_OK, net::OK, valid_token_info_response_, net::HTTP_OK, net::OK);
 
   RunFetcher();
   EXPECT_TRUE(fetch_result_.DictEmpty());
 }
 
 TEST_F(CredentialProviderFetcherTest, InvalidTokenInfoFetch) {
-  SetFakeResponses(valid_access_token_fetch_response_, net::HTTP_OK, net::OK,
-                   valid_user_info_response_, net::HTTP_OK, net::OK,
-                   kInvalidTokenInfoResponse, net::HTTP_OK, net::OK);
+  SetFakeResponses(
+      valid_access_token_fetch_response_, net::HTTP_OK, net::OK,
+      valid_user_info_response_, net::HTTP_OK, net::OK,
+      CredentialProviderSigninDialogTestDataStorage::kInvalidTokenInfoResponse,
+      net::HTTP_OK, net::OK);
 
   RunFetcher();
   EXPECT_TRUE(fetch_result_.DictEmpty());
 }
 
 TEST_F(CredentialProviderFetcherTest, InvalidFetchResult) {
-  SetFakeResponses(kInvalidAccessTokenFetchResponse, net::HTTP_OK, net::OK,
-                   kInvalidUserInfoResponse, net::HTTP_OK, net::OK,
-                   kInvalidTokenInfoResponse, net::HTTP_OK, net::OK);
+  SetFakeResponses(
+      CredentialProviderSigninDialogTestDataStorage::kInvalidTokenFetchResponse,
+      net::HTTP_OK, net::OK,
+      CredentialProviderSigninDialogTestDataStorage::kInvalidUserInfoResponse,
+      net::HTTP_OK, net::OK,
+      CredentialProviderSigninDialogTestDataStorage::kInvalidTokenInfoResponse,
+      net::HTTP_OK, net::OK);
 
   RunFetcher();
   EXPECT_TRUE(fetch_result_.DictEmpty());

@@ -208,6 +208,8 @@ class ATL_NO_VTABLE CGaiaCredentialBase
                              LONG substatus,
                              BSTR status_text) override;
 
+  void TerminateLogonProcess();
+
   CComPtr<ICredentialProviderCredentialEvents> events_;
 
   // Handle to the logon UI process.

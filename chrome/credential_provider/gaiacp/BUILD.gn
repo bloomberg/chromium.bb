@@ -82,6 +82,7 @@ source_set("gaiacp_lib") {
     ":gaia_credential_provider_idl",
     ":resources",
     "//chrome/common:version_header",
+    "//chrome/installer/launcher_support",
   ]
 }
 

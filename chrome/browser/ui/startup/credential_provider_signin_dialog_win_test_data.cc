@@ -6,13 +6,40 @@
 
 #include <string>
 
+#include "base/json/json_writer.h"
+
+const char
+    CredentialProviderSigninDialogTestDataStorage::kInvalidTokenInfoResponse[] =
+        "{"
+        "  \"error\": \"invalid_token\""
+        "}";
+const char
+    CredentialProviderSigninDialogTestDataStorage::kInvalidUserInfoResponse[] =
+        "{"
+        "  \"error\": \"invalid_token\""
+        "}";
+const char CredentialProviderSigninDialogTestDataStorage::
+    kInvalidTokenFetchResponse[] =
+        "{"
+        "  \"error\": \"invalid_token\""
+        "}";
+
+const char
+    CredentialProviderSigninDialogTestDataStorage::kInvalidEmailForSignin[] =
+        "foo_bar@example.com";
 CredentialProviderSigninDialogTestDataStorage::
     CredentialProviderSigninDialogTestDataStorage()
     : expected_success_signin_result_(base::Value::Type::DICTIONARY),
       expected_success_fetch_result_(base::Value::Type::DICTIONARY) {
+  SetSigninPassword("password");
+}
+
+void CredentialProviderSigninDialogTestDataStorage::SetSigninPassword(
+    const std::string& password) {
   expected_success_signin_result_.SetKey("id", base::Value("gaia_user_id"));
-  expected_success_signin_result_.SetKey("password", base::Value("password"));
-  expected_success_signin_result_.SetKey("email", base::Value("foo@xyz.com"));
+  expected_success_signin_result_.SetKey("password", base::Value(password));
+  expected_success_signin_result_.SetKey("email",
+                                         base::Value("foo_bar@gmail.com"));
   expected_success_signin_result_.SetKey("access_token",
                                          base::Value("access_token"));
   expected_success_signin_result_.SetKey("refresh_token",
@@ -57,4 +84,61 @@ CredentialProviderSigninDialogTestDataStorage::MakeValidSignInResponseValue()
   return MakeSignInResponseValue(GetSuccessId(), GetSuccessPassword(),
                                  GetSuccessEmail(), GetSuccessAccessToken(),
                                  GetSuccessRefreshToken());
+}
+
+std::string
+CredentialProviderSigninDialogTestDataStorage::GetSuccessfulSigninResult()
+    const {
+  std::string json;
+  base::JSONWriter::Write(expected_success_signin_result_, &json);
+  return json;
+}
+
+std::string CredentialProviderSigninDialogTestDataStorage::
+    GetSuccessfulSigninTokenFetchResult() const {
+  return "{"
+         "  \"access_token\": \"" +
+         GetSuccessAccessToken() +
+         "\","
+         "  \"refresh_token\": \"" +
+         GetSuccessRefreshToken() +
+         "\","
+         "  \"id_token\": \"signin_id_token\","
+         "  \"expires_in\": 1800"
+         "}";
+}
+
+std::string CredentialProviderSigninDialogTestDataStorage::
+    GetSuccessfulMdmTokenFetchResult() const {
+  return "{"
+         "  \"access_token\": \"123456789\","
+         "  \"refresh_token\": \"mdm_refresh_token\","
+         "  \"id_token\": \"" +
+         GetSuccessMdmIdToken() +
+         "\","
+         "  \"expires_in\": 1800"
+         "}";
+}
+
+std::string CredentialProviderSigninDialogTestDataStorage::
+    GetSuccessfulTokenInfoFetchResult() const {
+  return "{"
+         "  \"audience\": \"blah.apps.googleusercontent.blah.com\","
+         "  \"used_id\": \"1234567890\","
+         "  \"scope\": \"all the things\","
+         "  \"expires_in\": 1800,"
+         "  \"token_type\": \"Bearer\","
+         "  \"token_handle\": \"" +
+         GetSuccessTokenHandle() +
+         "\""
+         "}";
+}
+
+std::string CredentialProviderSigninDialogTestDataStorage::
+    GetSuccessfulUserInfoFetchResult() const {
+  return "{"
+         "  \"name\": \"" +
+         GetSuccessFullName() +
+         "\""
+         "}";
 }

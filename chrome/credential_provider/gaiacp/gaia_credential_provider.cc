@@ -121,8 +121,7 @@ HRESULT CGaiaCredentialProvider::OnUserAuthenticated(IUnknown* credential,
                                                      BSTR /*username*/,
                                                      BSTR /*password*/,
                                                      BSTR sid) {
-  DCHECK(credential);
-  DCHECK(sid);
+  DCHECK(!credential || sid);
 
   // |credential| should be in the |users_|.  Find its index.
   index_ = std::numeric_limits<size_t>::max();

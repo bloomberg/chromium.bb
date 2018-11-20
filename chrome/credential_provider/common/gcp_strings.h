@@ -39,7 +39,12 @@ extern const wchar_t kDesktopFullName[];
 extern const wchar_t kRegUpdaterClientStateAppPath[];
 extern const wchar_t kRegUpdaterClientsAppPath[];
 
+// These are command line switches passed to chrome to start it as a process
+// used as a logon stub.
 extern const char kGcpwSigninSwitch[];
+extern const char kEmailDomainSwitch[];
+
+extern const char kEmailDomainSigninPromoParameter[];
 
 }  // namespace credential_provider
 

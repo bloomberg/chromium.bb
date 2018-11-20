@@ -112,10 +112,27 @@ HRESULT ScopedStartupInfo::SetStdHandles(
     return E_UNEXPECTED;
   }
 
+  // CreateProcessWithTokenW will fail if any of the std handles provided are
+  // invalid and the STARTF_USESTDHANDLES flag is set. So supply the default
+  // standard handle if no handle is given for some of the handles. This tells
+  // the process it can create its own local handles for these pipes as needed.
   info_.dwFlags |= STARTF_USESTDHANDLES;
-  info_.hStdInput = hstdin->Take();
-  info_.hStdOutput = hstdout->Take();
-  info_.hStdError = hstderr->Take();
+  if (hstdin && hstdin->IsValid()) {
+    info_.hStdInput = hstdin->Take();
+  } else {
+    info_.hStdInput = ::GetStdHandle(STD_INPUT_HANDLE);
+  }
+  if (hstdout && hstdout->IsValid()) {
+    info_.hStdOutput = hstdout->Take();
+  } else {
+    info_.hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
+  }
+  if (hstderr && hstderr->IsValid()) {
+    info_.hStdError = hstderr->Take();
+  } else {
+    info_.hStdError = ::GetStdHandle(STD_ERROR_HANDLE);
+  }
+
   return S_OK;
 }
 
@@ -123,57 +140,48 @@ void ScopedStartupInfo::Shutdown() {
   if ((info_.dwFlags & STARTF_USESTDHANDLES) == STARTF_USESTDHANDLES) {
     info_.dwFlags &= ~STARTF_USESTDHANDLES;
 
-    ::CloseHandle(info_.hStdInput);
-    ::CloseHandle(info_.hStdOutput);
-    ::CloseHandle(info_.hStdError);
+    if (info_.hStdInput != ::GetStdHandle(STD_INPUT_HANDLE))
+      ::CloseHandle(info_.hStdInput);
+    if (info_.hStdOutput != ::GetStdHandle(STD_OUTPUT_HANDLE))
+      ::CloseHandle(info_.hStdOutput);
+    if (info_.hStdError != ::GetStdHandle(STD_ERROR_HANDLE))
+      ::CloseHandle(info_.hStdError);
     info_.hStdInput = INVALID_HANDLE_VALUE;
     info_.hStdOutput = INVALID_HANDLE_VALUE;
     info_.hStdError = INVALID_HANDLE_VALUE;
   }
 }
 
-// Waits for a process to terminate while capturing its stdout and stderr to
-// the buffers |stdout_buffer| and |stderr_buffer| respectively.  Both buffers
-// are assumed to be of the size |buffer_size| and expected to be relatively
-// small.  The exit code of the process is written to |exit_code|.
+// Waits for a process to terminate while capturing output from |output_handle|
+// to the buffer |output_buffer| of size |buffer_size|. The buffer is expected
+// to be relatively small.  The exit code of the process is written to
+// |exit_code|.
 HRESULT WaitForProcess(base::win::ScopedHandle::Handle process_handle,
                        const StdParentHandles& parent_handles,
                        DWORD* exit_code,
-                       char* stdout_buffer,
-                       char* stderr_buffer,
+                       char* output_buffer,
                        int buffer_size) {
   LOGFN(INFO);
   DCHECK(exit_code);
   DCHECK_GT(buffer_size, 0);
 
-  stdout_buffer[0] = 0;
-  stderr_buffer[0] = 0;
+  output_buffer[0] = 0;
 
-  // stdio handles to wait on.  This array and count are modified by code
-  // below if errors are detected.
-  base::win::ScopedHandle::Handle handles[] = {
-      parent_handles.hstdout_read.Get(), parent_handles.hstderr_read.Get(),
-  };
-  DWORD count = base::size(handles);
+  HANDLE output_handle = parent_handles.hstdout_read.Get();
 
-  for (bool is_done = false; !is_done && count > 0;) {
-    base::win::ScopedHandle::Handle h = INVALID_HANDLE_VALUE;
+  for (bool is_done = false; !is_done;) {
     char buffer[80];
     DWORD length = base::size(buffer) - 1;
     HRESULT hr = S_OK;
 
     const DWORD kThreeMinutesInMs = 3 * 60 * 1000;
-    DWORD ret = ::WaitForMultipleObjectsEx(count, handles,
-                                           FALSE,              // wait all
-                                           kThreeMinutesInMs,  // timeout ms
-                                           TRUE);              // alertable wait
+    DWORD ret = ::WaitForSingleObject(output_handle,
+                                      kThreeMinutesInMs);  // timeout ms
     switch (ret) {
-      case WAIT_OBJECT_0:
-      case WAIT_OBJECT_0 + 1: {
+      case WAIT_OBJECT_0: {
         int index = ret - WAIT_OBJECT_0;
         LOGFN(INFO) << "WAIT_OBJECT_" << index;
-        h = handles[index];
-        if (!::ReadFile(h, buffer, length, &length, nullptr)) {
+        if (!::ReadFile(output_handle, buffer, length, &length, nullptr)) {
           hr = HRESULT_FROM_WIN32(::GetLastError());
           if (hr != HRESULT_FROM_WIN32(ERROR_BROKEN_PIPE))
             LOGFN(ERROR) << "ReadFile(" << index << ") hr=" << putHR(hr);
@@ -203,24 +211,13 @@ HRESULT WaitForProcess(base::win::ScopedHandle::Handle process_handle,
       }
     }
 
-    // Copy the read buffer to either the stdout or stderr, as apppropriate.
-    // If the pipe was broken, remove the corresponding handle from |handles|
-    // so that WaitForMultipleObjectsEx() above no longer waits for it.
-    if (h == parent_handles.hstdout_read.Get()) {
-      if (hr == HRESULT_FROM_WIN32(ERROR_BROKEN_PIPE)) {
-        LOGFN(INFO) << "Stop waiting for stdout";
-        handles[0] = handles[1];
-        --count;
-      } else {
-        strcat_s(stdout_buffer, buffer_size, buffer);
-      }
-    } else if (h == parent_handles.hstderr_read.Get()) {
-      if (hr == HRESULT_FROM_WIN32(ERROR_BROKEN_PIPE)) {
-        LOGFN(INFO) << "Stop waiting for stderr";
-        --count;
-      } else {
-        strcat_s(stderr_buffer, buffer_size, buffer);
-      }
+    // Copy the read buffer to the output buffer. If the pipe was broken,
+    // we can break our loop and wait for the process to die.
+    if (hr == HRESULT_FROM_WIN32(ERROR_BROKEN_PIPE)) {
+      LOGFN(INFO) << "Stop waiting for output buffer";
+      break;
+    } else {
+      strcat_s(output_buffer, buffer_size, buffer);
     }
   }
 
@@ -351,6 +348,7 @@ HRESULT CreatePipeForChildProcess(bool child_reads,
 }
 
 HRESULT InitializeStdHandles(CommDirection direction,
+                             StdHandlesToCreate to_create,
                              ScopedStartupInfo* startupinfo,
                              StdParentHandles* parent_handles) {
   LOGFN(INFO);
@@ -359,38 +357,45 @@ HRESULT InitializeStdHandles(CommDirection direction,
 
   base::win::ScopedHandle hstdin_read;
   base::win::ScopedHandle hstdin_write;
-  HRESULT hr = CreatePipeForChildProcess(
-      true,                                            // child reads
-      direction == CommDirection::kChildToParentOnly,  // use nul
-      &hstdin_read, &hstdin_write);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "CreatePipeForChildProcess(stdin) hr=" << putHR(hr);
-    return hr;
+  if ((to_create & kStdInput) != 0) {
+    HRESULT hr = CreatePipeForChildProcess(
+        true,                                            // child reads
+        direction == CommDirection::kChildToParentOnly,  // use nul
+        &hstdin_read, &hstdin_write);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "CreatePipeForChildProcess(stdin) hr=" << putHR(hr);
+      return hr;
+    }
   }
 
   base::win::ScopedHandle hstdout_read;
   base::win::ScopedHandle hstdout_write;
-  hr = CreatePipeForChildProcess(
-      false,                                           // child reads
-      direction == CommDirection::kParentToChildOnly,  // use nul
-      &hstdout_read, &hstdout_write);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "CreatePipeForChildProcess(stdout) hr=" << putHR(hr);
-    return hr;
+  if ((to_create & kStdOutput) != 0) {
+    HRESULT hr = CreatePipeForChildProcess(
+        false,                                           // child reads
+        direction == CommDirection::kParentToChildOnly,  // use nul
+        &hstdout_read, &hstdout_write);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "CreatePipeForChildProcess(stdout) hr=" << putHR(hr);
+      return hr;
+    }
   }
 
   base::win::ScopedHandle hstderr_read;
   base::win::ScopedHandle hstderr_write;
-  hr = CreatePipeForChildProcess(
-      false,                                           // child reads
-      direction == CommDirection::kParentToChildOnly,  // use nul
-      &hstderr_read, &hstderr_write);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "CreatePipeForChildProcess(stderr) hr=" << putHR(hr);
-    return hr;
+  if ((to_create & kStdError) != 0) {
+    HRESULT hr = CreatePipeForChildProcess(
+        false,                                           // child reads
+        direction == CommDirection::kParentToChildOnly,  // use nul
+        &hstderr_read, &hstderr_write);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "CreatePipeForChildProcess(stderr) hr=" << putHR(hr);
+      return hr;
+    }
   }
 
-  hr = startupinfo->SetStdHandles(&hstdin_read, &hstdout_write, &hstderr_write);
+  HRESULT hr =
+      startupinfo->SetStdHandles(&hstdin_read, &hstdout_write, &hstderr_write);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "startupinfo->SetStdHandles hr=" << putHR(hr);
     return hr;

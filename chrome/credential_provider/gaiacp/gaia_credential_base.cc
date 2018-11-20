@@ -10,8 +10,10 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
@@ -30,6 +32,7 @@
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
+#include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -118,18 +121,20 @@ HRESULT WaitForLoginUIAndGetResult(
   DCHECK(result);
   DCHECK(status_text);
 
-  // Buffers used to accumulate output from UI.
+  // Buffer used to accumulate output from UI.
   const int kBufferSize = 4096;
-  static char stdout_buffer[kBufferSize];
-  static char stderr_buffer[kBufferSize];
+  std::vector<char> output_buffer(kBufferSize, '\0');
+  base::ScopedClosureRunner zero_buffer_on_exit(
+      base::BindOnce(base::IgnoreResult(&RtlSecureZeroMemory),
+                     &output_buffer[0], kBufferSize));
 
   DWORD exit_code;
   HRESULT hr = WaitForProcess(uiprocinfo->procinfo.process_handle(),
                               uiprocinfo->parent_handles, &exit_code,
-                              stdout_buffer, stderr_buffer, kBufferSize);
-  // stdout contains sensitive information like the password.  Don't log it.
-  LOGFN(INFO) << "exit_code=" << exit_code
-              << " stderr: " << stderr_buffer;
+                              &output_buffer[0], kBufferSize);
+  // output_buffer contains sensitive information like the password. Don't log
+  // it.
+  LOGFN(INFO) << "exit_code=" << exit_code;
 
   // If the UI process did not complete successfully, nothing more to do.
   if (exit_code == kUiecEMailMissmatch) {
@@ -140,8 +145,8 @@ HRESULT WaitForLoginUIAndGetResult(
     return E_ABORT;
   }
 
-  std::unique_ptr<base::Value> parsed(
-      base::JSONReader::Read(stdout_buffer, base::JSON_ALLOW_TRAILING_COMMAS));
+  std::unique_ptr<base::Value> parsed(base::JSONReader::Read(
+      &output_buffer[0], base::JSON_ALLOW_TRAILING_COMMAS));
   if (!parsed || !parsed->is_dict()) {
     LOGFN(ERROR) << "Could not parse data from logon UI";
     *status_text =
@@ -310,9 +315,9 @@ HRESULT CGaiaCredentialBase::OnDllRegisterServer() {
   bool save_password = true;
   base::string16 fullname(GetStringResource(IDS_GAIA_ACCOUNT_FULLNAME));
   base::string16 comment(GetStringResource(IDS_GAIA_ACCOUNT_COMMENT));
-  hr = CreateNewUser(manager, kGaiaAccountName, password, fullname.c_str(),
-                     comment.c_str(), /*add_to_users_group=*/false,
-                     &sid_string);
+  hr =
+      CreateNewUser(manager, kGaiaAccountName, password, fullname.c_str(),
+                    comment.c_str(), /*add_to_users_group=*/false, &sid_string);
   if (hr == HRESULT_FROM_WIN32(NERR_UserExists)) {
     // If CreateNewUser() found an existing user, the password was not changed.
     // Consider this a success but don't save the newly generated password
@@ -476,45 +481,35 @@ HRESULT CGaiaCredentialBase::GetGlsCommandline(
   DCHECK(email);
   DCHECK(command_line);
 
-  // Get the application name.
-
-  base::FilePath install_path;
-  HRESULT hr = GetInstallDirectory(&install_path);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetInstallDirectory hr=" << putHR(hr);
-    return hr;
+  base::FilePath chrome_path =
+      chrome_launcher_support::GetChromePathForInstallationLevel(
+          chrome_launcher_support::SYSTEM_LEVEL_INSTALLATION, false);
+  if (chrome_path.empty()) {
+    LOGFN(ERROR) << "No path to chrome.exe could be found.";
+    return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
   }
 
-  // TODO(crbug.com/887444): Replace this with path to chrome.
-  command_line->SetProgram(
-      install_path.Append(
-          FILE_PATH_LITERAL("weblogin-win32-ia32\\weblogin.exe")));
+  command_line->SetProgram(chrome_path);
 
   LOGFN(INFO) << "App exe: " << command_line->GetProgram().value();
-
-  // Get the command line.
 
   // If an email pattern is specified, pass it to the webui.
   wchar_t email_pattern[64];
   ULONG length = base::size(email_pattern);
-  hr = GetGlobalFlag(L"ep", email_pattern, &length);
+  HRESULT hr = GetGlobalFlag(L"ep", email_pattern, &length);
   if (FAILED(hr))
     email_pattern[0] = 0;
+  if (*email_pattern)
+    command_line->AppendSwitchNative(kEmailDomainSwitch, email_pattern);
 
-  // TODO: these arguments will not be needed once the electron app is replaced
-  // with chrome.
-  std::string id = google_apis::GetOAuth2ClientID(google_apis::CLIENT_MAIN);
-  std::string secret =
-      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_MAIN);
+  command_line->AppendSwitchNative(kGcpwSigninSwitch, email);
 
-  if (wcslen(email_pattern) > 0)
-    command_line->AppendSwitchNative("pattern", email_pattern);
-
-  if (email && wcslen(email) > 0)
-    command_line->AppendSwitchNative("email", email);
-
-  command_line->AppendSwitchASCII("client-id", id);
-  command_line->AppendSwitchASCII("client-secret", secret);
+  // The gpu process will be running on an alternative desktop since it does not
+  // have access to the winlogon desktop. This mitigation is required merely to
+  // be able to start Chrome during winlogon. However, In this scenario no gpu
+  // rendering can be done to the screen, so all the gpu features need to be
+  // disabled. (crbug.com/904902)
+  command_line->AppendSwitch("disable-gpu");
 
   LOGFN(INFO) << "Command line: " << command_line->GetCommandLineString();
   return S_OK;
@@ -637,13 +632,7 @@ HRESULT CGaiaCredentialBase::SetSelected(BOOL* auto_login) {
 HRESULT CGaiaCredentialBase::SetDeselected(void) {
   LOGFN(INFO);
 
-  // Terminate login UI process if started.  This is best effort since it may
-  // have already terminated.
-  if (logon_ui_process_ != INVALID_HANDLE_VALUE) {
-    LOGFN(INFO) << "Attempting to kill logon UI process";
-    ::TerminateProcess(logon_ui_process_, kUiecKilled);
-    logon_ui_process_ = INVALID_HANDLE_VALUE;
-  }
+  TerminateLogonProcess();
 
   // Do not reset the internal state here, otherwise auto-logon will not work.
 
@@ -937,8 +926,14 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
   DCHECK(uiprocinfo);
 
   ScopedStartupInfo startupinfo(kDesktopFullName);
-  HRESULT hr = InitializeStdHandles(CommDirection::kChildToParentOnly,
-                                    &startupinfo, &uiprocinfo->parent_handles);
+
+  // Only create a stdout pipe for the logon stub process. On some machines
+  // Chrome will not startup properly when also given a stderror pipe due
+  // to access restrictions. For the purposes of the credential provider
+  // only the output of stdout matters.
+  HRESULT hr =
+      InitializeStdHandles(CommDirection::kChildToParentOnly, kStdOutput,
+                           &startupinfo, &uiprocinfo->parent_handles);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "InitializeStdHandles hr=" << putHR(hr);
     return hr;
@@ -996,8 +991,9 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(
 
   ScopedStartupInfo startupinfo;
   StdParentHandles parent_handles;
-  HRESULT hr = InitializeStdHandles(CommDirection::kParentToChildOnly,
-                                    &startupinfo, &parent_handles);
+  HRESULT hr =
+      InitializeStdHandles(CommDirection::kParentToChildOnly, kAllStdHandles,
+                           &startupinfo, &parent_handles);
   if (FAILED(hr)) {
     LOGFN(ERROR) << "InitializeStdHandles hr=" << putHR(hr);
     *status_text = AllocErrorString(IDS_INTERNAL_ERROR);
@@ -1230,6 +1226,16 @@ HRESULT CGaiaCredentialBase::Terminate() {
   return S_OK;
 }
 
+void CGaiaCredentialBase::TerminateLogonProcess() {
+  // Terminate login UI process if started.  This is best effort since it may
+  // have already terminated.
+  if (logon_ui_process_ != INVALID_HANDLE_VALUE) {
+    LOGFN(INFO) << "Attempting to kill logon UI process";
+    ::TerminateProcess(logon_ui_process_, kUiecKilled);
+    logon_ui_process_ = INVALID_HANDLE_VALUE;
+  }
+}
+
 HRESULT CGaiaCredentialBase::FinishAuthentication(BSTR username,
                                                   BSTR password,
                                                   BSTR fullname,
@@ -1257,6 +1263,12 @@ HRESULT CGaiaCredentialBase::ReportError(LONG status,
   if (status_text != nullptr)
     result_status_text_.assign(OLE2CW(status_text));
 
+  // If the user cancelled out of the logon, the process may be already
+  // terminated, but if the handle to the process is still valid the
+  // credential provider will not start a new GLS process when requested so
+  // try to terminate the logon process now and clear the handle.
+  TerminateLogonProcess();
+
   // TODO(rogerta): for some reason the error info saved by ReportError()
   // never gets used because ReportResult() is never called by winlogon.exe
   // when the logon fails.  Not sure what I'm doing wrong here.  This
@@ -1268,4 +1280,3 @@ HRESULT CGaiaCredentialBase::ReportError(LONG status,
 }
 
 }  // namespace credential_provider
-

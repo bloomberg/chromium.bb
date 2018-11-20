@@ -122,6 +122,25 @@ TEST_F(GcpProcHelperTest, ScopedStartupInfo_handles) {
   ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdError);
 }
 
+TEST_F(GcpProcHelperTest, ScopedStartupInfo_somehandles) {
+  ScopedStartupInfo info;
+  base::win::ScopedHandle shstdin;
+  base::win::ScopedHandle shstdout;
+  CreateHandle(&shstdout);
+  base::win::ScopedHandle shstderr;
+
+  // Setting handles in the info should take ownership.
+  ASSERT_EQ(S_OK, info.SetStdHandles(&shstdin, &shstdout, &shstderr));
+  ASSERT_FALSE(shstdin.IsValid());
+  ASSERT_FALSE(shstdout.IsValid());
+  ASSERT_FALSE(shstderr.IsValid());
+  ASSERT_EQ(static_cast<DWORD>(STARTF_USESTDHANDLES),
+            info.GetInfo()->dwFlags & STARTF_USESTDHANDLES);
+  ASSERT_EQ(::GetStdHandle(STD_INPUT_HANDLE), info.GetInfo()->hStdInput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, info.GetInfo()->hStdOutput);
+  ASSERT_EQ(::GetStdHandle(STD_ERROR_HANDLE), info.GetInfo()->hStdError);
+}
+
 TEST_F(GcpProcHelperTest, CreatePipeForChildProcess_ParentReads) {
   base::win::ScopedHandle reading;
   base::win::ScopedHandle writing;
@@ -191,7 +210,8 @@ TEST_F(GcpProcHelperTest, InitializeStdHandles_ParentToChild) {
   StdParentHandles parent_handles;
 
   ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kParentToChildOnly,
-                                       &startupinfo, &parent_handles));
+                                       kAllStdHandles, &startupinfo,
+                                       &parent_handles));
 
   // Check parent handles.
   ASSERT_TRUE(parent_handles.hstdin_write.IsValid());
@@ -215,7 +235,8 @@ TEST_F(GcpProcHelperTest, InitializeStdHandles_ChildToParent) {
   StdParentHandles parent_handles;
 
   ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kChildToParentOnly,
-                                       &startupinfo, &parent_handles));
+                                       kAllStdHandles, &startupinfo,
+                                       &parent_handles));
 
   // Check parent handles.
   ASSERT_FALSE(parent_handles.hstdin_write.IsValid());
@@ -238,8 +259,9 @@ TEST_F(GcpProcHelperTest, InitializeStdHandles_ParentChildBirectional) {
   ScopedStartupInfo startupinfo;
   StdParentHandles parent_handles;
 
-  ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kBidirectional,
-                                       &startupinfo, &parent_handles));
+  ASSERT_EQ(S_OK,
+            InitializeStdHandles(CommDirection::kBidirectional, kAllStdHandles,
+                                 &startupinfo, &parent_handles));
 
   // Check parent handles.
   ASSERT_TRUE(parent_handles.hstdin_write.IsValid());
@@ -260,12 +282,87 @@ TEST_F(GcpProcHelperTest, InitializeStdHandles_ParentChildBirectional) {
                        startupinfo.GetInfo()->hStdOutput));
 }
 
-TEST_F(GcpProcHelperTest, WaitForProcess) {
+TEST_F(GcpProcHelperTest, InitializeStdHandles_SomeHandlesChildToParent) {
+  ScopedStartupInfo startupinfo;
+  StdParentHandles parent_handles;
+
+  ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kChildToParentOnly,
+                                       (kStdInput | kStdOutput), &startupinfo,
+                                       &parent_handles));
+
+  // Check parent handles.
+  ASSERT_FALSE(parent_handles.hstdin_write.IsValid());
+  ASSERT_TRUE(parent_handles.hstdout_read.IsValid());
+  ASSERT_FALSE(parent_handles.hstderr_read.IsValid());
+
+  // Check child handles. stderr goes to default handle.
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_EQ(::GetStdHandle(STD_ERROR_HANDLE), startupinfo.GetInfo()->hStdError);
+
+  EXPECT_TRUE(TestPipe(parent_handles.hstdout_read.Get(),
+                       startupinfo.GetInfo()->hStdOutput));
+}
+
+TEST_F(GcpProcHelperTest, InitializeStdHandles_SomeHandlesParentToChild) {
+  ScopedStartupInfo startupinfo;
+  StdParentHandles parent_handles;
+
+  ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kParentToChildOnly,
+                                       (kStdInput | kStdOutput), &startupinfo,
+                                       &parent_handles));
+
+  // Check parent handles.
+  ASSERT_TRUE(parent_handles.hstdin_write.IsValid());
+  ASSERT_FALSE(parent_handles.hstdout_read.IsValid());
+  ASSERT_FALSE(parent_handles.hstderr_read.IsValid());
+
+  // Check child handles. stderr goes to default handle.
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_EQ(::GetStdHandle(STD_ERROR_HANDLE), startupinfo.GetInfo()->hStdError);
+
+  EXPECT_TRUE(TestPipe(startupinfo.GetInfo()->hStdInput,
+                       parent_handles.hstdin_write.Get()));
+}
+
+TEST_F(GcpProcHelperTest, InitializeStdHandles_SomeHandlesBidirectional) {
   ScopedStartupInfo startupinfo;
   StdParentHandles parent_handles;
 
   ASSERT_EQ(S_OK, InitializeStdHandles(CommDirection::kBidirectional,
-                                       &startupinfo, &parent_handles));
+                                       (kStdInput | kStdOutput), &startupinfo,
+                                       &parent_handles));
+
+  // Check parent handles.
+  ASSERT_TRUE(parent_handles.hstdin_write.IsValid());
+  ASSERT_TRUE(parent_handles.hstdout_read.IsValid());
+  ASSERT_FALSE(parent_handles.hstderr_read.IsValid());
+
+  // Check child handles. stderr goes to default handle.
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdInput);
+  ASSERT_NE(nullptr, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_NE(INVALID_HANDLE_VALUE, startupinfo.GetInfo()->hStdOutput);
+  ASSERT_EQ(::GetStdHandle(STD_ERROR_HANDLE), startupinfo.GetInfo()->hStdError);
+
+  EXPECT_TRUE(TestPipe(startupinfo.GetInfo()->hStdInput,
+                       parent_handles.hstdin_write.Get()));
+  EXPECT_TRUE(TestPipe(parent_handles.hstdout_read.Get(),
+                       startupinfo.GetInfo()->hStdOutput));
+}
+
+TEST_F(GcpProcHelperTest, WaitForProcess) {
+  ScopedStartupInfo startupinfo;
+  StdParentHandles parent_handles;
+
+  ASSERT_EQ(S_OK,
+            InitializeStdHandles(CommDirection::kBidirectional, kAllStdHandles,
+                                 &startupinfo, &parent_handles));
   base::LaunchOptions options;
   options.inherit_mode = base::LaunchOptions::Inherit::kAll;
   options.stdin_handle = startupinfo.GetInfo()->hStdInput;
@@ -297,9 +394,8 @@ TEST_F(GcpProcHelperTest, WaitForProcess) {
 
   DWORD exit_code;
   char output_buffer[kBufferSize];
-  char error_buffer[kBufferSize];
   EXPECT_EQ(S_OK, WaitForProcess(process.Handle(), parent_handles, &exit_code,
-                                 output_buffer, error_buffer, kBufferSize));
+                                 output_buffer, kBufferSize));
   EXPECT_EQ(0u, exit_code);
   StripCrLf(output_buffer);
   EXPECT_STREQ(input_buffer, output_buffer);

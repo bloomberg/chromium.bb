@@ -45,5 +45,8 @@ const wchar_t kRegUpdaterClientsAppPath[] =
 // Chrome is being opened to show the credential provider logon page.  This
 // page is always shown in incognito mode.
 const char kGcpwSigninSwitch[] = "gcpw-signin";
+const char kEmailDomainSwitch[] = "email-domain";
+
+const char kEmailDomainSigninPromoParameter[] = "emailDomain";
 
 }  // namespace credential_provider

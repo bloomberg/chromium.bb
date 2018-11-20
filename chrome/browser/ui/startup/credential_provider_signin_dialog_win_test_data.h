@@ -29,6 +29,8 @@ class CredentialProviderSigninDialogTestDataStorage {
       const std::string& refresh_token = std::string());
   base::Value MakeValidSignInResponseValue() const;
 
+  void SetSigninPassword(const std::string& password);
+
   std::string GetSuccessId() const {
     return expected_success_signin_result_.FindKey("id")->GetString();
   }
@@ -73,6 +75,17 @@ class CredentialProviderSigninDialogTestDataStorage {
   bool EqualsSccessfulFetchResult(const base::Value& result_value) const {
     return EqualsEncodedValue(expected_success_fetch_result(), result_value);
   }
+
+  std::string GetSuccessfulSigninResult() const;
+  std::string GetSuccessfulSigninTokenFetchResult() const;
+  std::string GetSuccessfulMdmTokenFetchResult() const;
+  std::string GetSuccessfulTokenInfoFetchResult() const;
+  std::string GetSuccessfulUserInfoFetchResult() const;
+
+  static const char kInvalidTokenInfoResponse[];
+  static const char kInvalidUserInfoResponse[];
+  static const char kInvalidTokenFetchResponse[];
+  static const char kInvalidEmailForSignin[];
 
  private:
   bool EqualsEncodedValue(const base::Value& success_value,
