@@ -89,7 +89,7 @@ class WebSocketChannelImpl::BlobLoader final
   void DidStartLoading() override {}
   void DidReceiveData() override {}
   void DidFinishLoading() override;
-  void DidFail(file_error::ErrorCode) override;
+  void DidFail(FileErrorCode) override;
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(channel_); }
 
@@ -140,8 +140,7 @@ void WebSocketChannelImpl::BlobLoader::DidFinishLoading() {
   loader_ = nullptr;
 }
 
-void WebSocketChannelImpl::BlobLoader::DidFail(
-    file_error::ErrorCode error_code) {
+void WebSocketChannelImpl::BlobLoader::DidFail(FileErrorCode error_code) {
   channel_->DidFailLoadingBlob(error_code);
   loader_ = nullptr;
 }
@@ -767,10 +766,9 @@ void WebSocketChannelImpl::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
   ProcessSendQueue();
 }
 
-void WebSocketChannelImpl::DidFailLoadingBlob(
-    file_error::ErrorCode error_code) {
+void WebSocketChannelImpl::DidFailLoadingBlob(FileErrorCode error_code) {
   blob_loader_.Clear();
-  if (error_code == file_error::ErrorCode::kAbortErr) {
+  if (error_code == FileErrorCode::kAbortErr) {
     // The error is caused by cancel().
     return;
   }

@@ -52,7 +52,7 @@ class IDBRequestLoader : public FileReaderLoaderClient {
   void DidStartLoading() override;
   void DidReceiveDataForClient(const char* data, unsigned data_length) override;
   void DidFinishLoading() override;
-  void DidFail(file_error::ErrorCode) override;
+  void DidFail(FileErrorCode) override;
 
  private:
   // Starts unwrapping the next wrapped IDBValue.

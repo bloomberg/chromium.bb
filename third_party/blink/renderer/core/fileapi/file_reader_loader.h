@@ -97,7 +97,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   // After OnCalculatedSize() is called: Returns the size of the resource.
   base::Optional<uint64_t> TotalBytes() const { return total_bytes_; }
 
-  file_error::ErrorCode GetErrorCode() const { return error_code_; }
+  FileErrorCode GetErrorCode() const { return error_code_; }
 
   int32_t GetNetError() const { return net_error_; }
 
@@ -128,7 +128,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   };
 
   void Cleanup();
-  void Failed(file_error::ErrorCode, FailureType type);
+  void Failed(FileErrorCode, FailureType type);
 
   void OnStartLoading(uint64_t total_bytes);
   void OnReceivedData(const char* data, unsigned data_length);
@@ -172,7 +172,7 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
   int64_t memory_usage_reported_to_v8_ = 0;
 
   int32_t net_error_ = 0;  // net::OK
-  file_error::ErrorCode error_code_ = file_error::ErrorCode::kOK;
+  FileErrorCode error_code_ = FileErrorCode::kOK;
 
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
   mojo::SimpleWatcher handle_watcher_;

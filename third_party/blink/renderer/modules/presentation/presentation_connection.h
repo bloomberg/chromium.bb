@@ -22,12 +22,9 @@ class AtomicString;
 
 namespace blink {
 
-namespace file_error {
-enum class ErrorCode;
-}
-
 class DOMArrayBuffer;
 class DOMArrayBufferView;
+enum class FileErrorCode;
 class PresentationController;
 class PresentationReceiver;
 class PresentationRequest;
@@ -134,7 +131,7 @@ class PresentationConnection : public EventTargetWithInlineData,
 
   // Callbacks invoked from BlobLoader.
   void DidFinishLoadingBlob(DOMArrayBuffer*);
-  void DidFailLoadingBlob(file_error::ErrorCode);
+  void DidFailLoadingBlob(FileErrorCode);
 
   void SendMessageToTargetConnection(
       mojom::blink::PresentationConnectionMessagePtr);

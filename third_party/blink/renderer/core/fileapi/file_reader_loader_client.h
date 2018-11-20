@@ -36,9 +36,7 @@
 
 namespace blink {
 
-namespace file_error {
-enum class ErrorCode;
-}
+enum class FileErrorCode;
 
 class CORE_EXPORT FileReaderLoaderClient {
  public:
@@ -54,7 +52,7 @@ class CORE_EXPORT FileReaderLoaderClient {
     NOTREACHED();
   }
   virtual void DidFinishLoading() = 0;
-  virtual void DidFail(file_error::ErrorCode) = 0;
+  virtual void DidFail(FileErrorCode) = 0;
 };
 
 }  // namespace blink

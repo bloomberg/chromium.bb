@@ -145,7 +145,7 @@ class ImageBitmapFactories final
     void DidStartLoading() override {}
     void DidReceiveData() override {}
     void DidFinishLoading() override;
-    void DidFail(file_error::ErrorCode) override;
+    void DidFail(FileErrorCode) override;
 
     std::unique_ptr<FileReaderLoader> loader_;
     Member<ImageBitmapFactories> factory_;

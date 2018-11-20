@@ -186,7 +186,7 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
 
   void DidFinishLoading() override { Done(raw_data_); }
 
-  void DidFail(file_error::ErrorCode) override { Done(nullptr); }
+  void DidFail(FileErrorCode) override { Done(nullptr); }
 
  private:
   void Done(scoped_refptr<SharedBuffer> output) {
