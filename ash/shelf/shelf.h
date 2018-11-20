@@ -59,6 +59,11 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
     return shelf_layout_manager_;
   }
 
+  // Returns true if the shelf is visible. Shelf can be visible in 1)
+  // SHELF_VISIBLE or 2) SHELF_AUTO_HIDE but in SHELF_AUTO_HIDE_SHOWN. See
+  // details in ShelfLayoutManager::IsVisible.
+  bool IsVisible() const;
+
   ShelfWidget* shelf_widget() { return shelf_widget_.get(); }
 
   // Returns the window showing the shelf.
