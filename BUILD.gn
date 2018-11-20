@@ -784,6 +784,16 @@ group("gn_all") {
   }
 }
 
+if ((is_linux || is_win) && enable_remoting && !use_ozone) {
+  # This group is used for network annotation check test.
+  group("shipped_binaries") {
+    deps = [
+      "//chrome:chrome",
+      "//remoting/host:host",
+    ]
+  }
+}
+
 if (is_fuchsia) {
   # TODO(https://crbug.com/731217): This can't practically be in //v8 without
   # duplicating all the Fuchsia running infrastructure there.
