@@ -1029,14 +1029,15 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
     // For constrained quality dont allow Q less than the cq level
     if (oxcf->rc_mode == AOM_CQ) {
       if (q < cq_level) q = cq_level;
+
+      active_best_quality = get_gf_active_quality(rc, q, bit_depth);
+
+      // Constrained quality use slightly lower active best.
+      active_best_quality = active_best_quality * 15 / 16;
+
 #if USE_SYMM_MULTI_LAYER && MULTI_LVL_BOOST_VBR_CQ
       if (gf_group->update_type[gf_group->index] == ARF_UPDATE ||
           (is_intrl_arf_boost && !cpi->new_bwdref_update_rule)) {
-#endif  // USE_SYMM_MULTI_LAYER && MULTI_LVL_BOOST_VBR_CQ
-        active_best_quality = get_gf_active_quality(rc, q, bit_depth);
-
-        // Constrained quality use slightly lower active best.
-        active_best_quality = active_best_quality * 15 / 16;
 #if REDUCE_LAST_ALT_BOOST
         if (gf_group->update_type[gf_group->index] == ARF_UPDATE) {
           const int min_boost = get_gf_high_motion_quality(q, bit_depth);
@@ -1044,10 +1045,10 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
 
           active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
         }
-#endif
+#endif  // REDUCE_LAST_ALT_BOOST
         *arf_q = active_best_quality;
-#if USE_SYMM_MULTI_LAYER && MULTI_LVL_BOOST_VBR_CQ
-      } else {
+      } else if (cpi->new_bwdref_update_rule && is_intrl_arf_boost) {
+        assert(rc->arf_q >= 0);  // Ensure it is set to a valid value.
         active_best_quality = rc->arf_q;
         int this_height = gf_group->pyramid_level[gf_group->index];
         while (this_height < gf_group->pyramid_height) {
@@ -1070,6 +1071,7 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
           active_best_quality = min_boost - (int)(boost * rc->arf_boost_factor);
 #endif
         } else {
+          assert(rc->arf_q >= 0);  // Ensure it is set to a valid value.
           active_best_quality = rc->arf_q;
         }
 #if USE_SYMM_MULTI_LAYER
@@ -1213,7 +1215,7 @@ int av1_rc_pick_q_and_bounds(AV1_COMP *cpi, int width, int height,
     assert(cpi->oxcf.pass == 2 && "invalid encode pass");
 
     GF_GROUP *gf_group = &cpi->twopass.gf_group;
-    int arf_q = 0;
+    int arf_q = -1;  // Initialize to invalid value, for sanity check later.
 
     q = rc_pick_q_and_bounds_two_pass(cpi, width, height, bottom_index,
                                       top_index, &arf_q);
