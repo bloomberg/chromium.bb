@@ -11,7 +11,6 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 
 import android.graphics.PointF;
 import android.os.SystemClock;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -31,7 +30,6 @@ import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -93,11 +91,10 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     public void testPaymentRequest() throws InterruptedException {
         // We can't request payment on file:// URLs, so use a local server.
-        EmbeddedTestServer server =
-                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                server.getURL(VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                        "test_payment_request")),
+                mVrTestRule.getTestServer().getURL(
+                        VrBrowserTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                                "test_payment_request")),
                 PAGE_LOAD_TIMEOUT_S);
         // Set up an observer so we'll know if the payment request is shown.
         AtomicBoolean requestShown = new AtomicBoolean(false);
@@ -124,7 +121,6 @@ public class VrBrowserNativeUiTest {
         Assert.assertTrue("Payment request caused VR exit",
                 VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
         mVrBrowserTestFramework.endTest();
-        server.stopAndDestroyServer();
     }
 
     /**
