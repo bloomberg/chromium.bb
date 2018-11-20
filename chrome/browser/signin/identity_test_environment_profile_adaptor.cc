@@ -36,16 +36,12 @@ std::unique_ptr<TestingProfile> IdentityTestEnvironmentProfileAdaptor::
 // static
 std::unique_ptr<TestingProfile>
 IdentityTestEnvironmentProfileAdaptor::CreateProfileForIdentityTestEnvironment(
-    const TestingProfile::TestingFactories& input_factories,
-    std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs) {
+    const TestingProfile::TestingFactories& input_factories) {
   TestingProfile::Builder builder;
 
   for (auto& input_factory : input_factories) {
     builder.AddTestingFactory(input_factory.first, input_factory.second);
   }
-
-  if (prefs)
-    builder.SetPrefService(std::move(prefs));
 
   return CreateProfileForIdentityTestEnvironment(builder);
 }

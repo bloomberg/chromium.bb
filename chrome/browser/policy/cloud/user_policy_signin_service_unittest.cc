@@ -172,13 +172,18 @@ class UserPolicySigninServiceTest : public testing::Test {
     UserCloudPolicyManagerFactory::GetInstance()->RegisterTestingFactory(
         base::BindRepeating(&BuildCloudPolicyManager));
 
-    TestingProfile::TestingFactories factories = {
-        {AccountFetcherServiceFactory::GetInstance(),
-         base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests)},
-        {ChromeSigninClientFactory::GetInstance(),
-         base::BindRepeating(&signin::BuildTestSigninClient)}};
+    TestingProfile::Builder builder;
+    builder.SetPrefService(
+        std::unique_ptr<sync_preferences::PrefServiceSyncable>(
+            std::move(prefs)));
+    builder.AddTestingFactory(
+        AccountFetcherServiceFactory::GetInstance(),
+        base::BindRepeating(&FakeAccountFetcherServiceBuilder::BuildForTests));
+    builder.AddTestingFactory(
+        ChromeSigninClientFactory::GetInstance(),
+        base::BindRepeating(&signin::BuildTestSigninClient));
     profile_ = IdentityTestEnvironmentProfileAdaptor::
-        CreateProfileForIdentityTestEnvironment(factories, std::move(prefs));
+        CreateProfileForIdentityTestEnvironment(builder);
 
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
