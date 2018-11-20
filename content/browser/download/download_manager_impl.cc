@@ -1064,6 +1064,7 @@ void DownloadManagerImpl::PostInitialization(
     }
     in_progress_downloads_.clear();
 
+    in_progress_manager_->OnAllInprogressDownloadsLoaded();
     for (auto& observer : observers_)
       observer.OnManagerInitialized();
 }

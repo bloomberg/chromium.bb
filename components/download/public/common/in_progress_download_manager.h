@@ -138,6 +138,11 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   virtual std::vector<std::unique_ptr<download::DownloadItemImpl>>
   TakeInProgressDownloads();
 
+  // Called when all the DownloadItem is loaded.
+  // TODO(qinmin): remove this once features::kDownloadDBForNewDownloads is
+  // enabled by default.
+  void OnAllInprogressDownloadsLoaded();
+
   void set_file_factory(std::unique_ptr<DownloadFileFactory> file_factory) {
     file_factory_ = std::move(file_factory);
   }
@@ -195,6 +200,13 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
 
   // Cache for DownloadDB.
   std::unique_ptr<DownloadDBCache> download_db_cache_;
+
+  using DownloadEntryMap = std::map<std::string, DownloadEntry>;
+  // DownloadEntries to provide persistent information when creating download
+  // item.
+  // TODO(qinmin): remove this once features::kDownloadDBForNewDownloads is
+  // enabled by default.
+  DownloadEntryMap download_entries_;
 
   // listens to information about in-progress download items.
   std::unique_ptr<DownloadItem::Observer> in_progress_download_observer_;

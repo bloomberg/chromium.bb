@@ -262,9 +262,9 @@ base::Optional<DownloadEntry> InProgressDownloadManager::GetInProgressEntry(
     DownloadItemImpl* download) {
   if (!download)
     return base::Optional<DownloadEntry>();
+  if (base::ContainsKey(download_entries_, download->GetGuid()))
+    return download_entries_[download->GetGuid()];
 
-  return CreateDownloadEntryFromDownloadDBEntry(
-      download_db_cache_->RetrieveEntry(download->GetGuid()));
   return base::Optional<DownloadEntry>();
 }
 
@@ -350,14 +350,9 @@ void InProgressDownloadManager::StartDownloadWithItem(
   if (info->is_new_download && !should_persist_new_download)
     non_persistent_download_guids_.insert(download->GetGuid());
   // If the download is not persisted, don't notify |download_db_cache_|.
-  if (non_persistent_download_guids_.find(download->GetGuid()) ==
-      non_persistent_download_guids_.end()) {
-    base::Optional<DownloadDBEntry> entry_opt =
-        download_db_cache_->RetrieveEntry(download->GetGuid());
-    if (!entry_opt.has_value()) {
-      download_db_cache_->AddOrReplaceEntry(
-          CreateDownloadDBEntryFromItem(*download));
-    }
+  if (!base::ContainsKey(non_persistent_download_guids_, download->GetGuid())) {
+    download_db_cache_->AddOrReplaceEntry(
+        CreateDownloadDBEntryFromItem(*download));
     download->RemoveObserver(download_db_cache_.get());
     download->AddObserver(download_db_cache_.get());
   }
@@ -386,9 +381,12 @@ void InProgressDownloadManager::StartDownloadWithItem(
 void InProgressDownloadManager::OnInitialized(
     bool success,
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
-  // Destroy the in-progress cache as it is no longer needed on success.
-  if (base::FeatureList::IsEnabled(features::kDownloadDBForNewDownloads)) {
-    for (const auto& entry : *entries) {
+  for (const auto& entry : *entries) {
+    base::Optional<DownloadEntry> download_entry =
+        CreateDownloadEntryFromDownloadDBEntry(entry);
+    if (download_entry)
+      download_entries_[download_entry->guid] = download_entry.value();
+    if (base::FeatureList::IsEnabled(features::kDownloadDBForNewDownloads)) {
       auto item = CreateDownloadItemImpl(this, entry);
       if (!item)
         continue;
@@ -396,6 +394,8 @@ void InProgressDownloadManager::OnInitialized(
       in_progress_downloads_.emplace_back(std::move(item));
     }
   }
+  if (base::FeatureList::IsEnabled(features::kDownloadDBForNewDownloads))
+    OnAllInprogressDownloadsLoaded();
   is_initialized_ = true;
   for (auto& callback : on_initialized_callbacks_)
     std::move(*callback).Run();
@@ -425,6 +425,10 @@ void InProgressDownloadManager::NotifyWhenInitialized(
 std::vector<std::unique_ptr<download::DownloadItemImpl>>
 InProgressDownloadManager::TakeInProgressDownloads() {
   return std::move(in_progress_downloads_);
+}
+
+void InProgressDownloadManager::OnAllInprogressDownloadsLoaded() {
+  download_entries_.clear();
 }
 
 }  // namespace download
