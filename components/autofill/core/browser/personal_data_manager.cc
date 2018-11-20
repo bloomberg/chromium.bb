@@ -2474,6 +2474,12 @@ bool PersonalDataManager::ConvertWalletAddressesToLocalProfiles(
     std::vector<AutofillProfile>* local_profiles,
     std::unordered_map<std::string, AutofillProfile*>* server_id_profiles_map,
     std::unordered_map<std::string, std::string>* guids_merge_map) {
+  // If the full Sync feature isn't enabled, then do NOT convert any Wallet
+  // addresses to local ones.
+  if (!IsSyncFeatureEnabled()) {
+    return false;
+  }
+
   bool has_converted_addresses = false;
   for (std::unique_ptr<AutofillProfile>& wallet_address : server_profiles_) {
     // Add the profile to the map.
