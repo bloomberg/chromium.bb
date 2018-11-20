@@ -57,6 +57,11 @@ const char* const kScrollIntoViewScript =
     node.scrollIntoViewIfNeeded();
   })";
 
+const char* const kScrollIntoViewIfNeededScript =
+    R"(function(node) {
+    node.scrollIntoViewIfNeeded();
+  })";
+
 const char* const kScrollByScript =
     R"(window.scrollBy(%f * window.visualViewport.width,
                        %f * window.visualViewport.height))";
@@ -208,15 +213,17 @@ void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
   // Return the center of the element.
   const std::vector<double>* content_box = result->GetModel()->GetContent();
   DCHECK_EQ(content_box->size(), 8u);
-  int x = round((round((*content_box)[0]) + round((*content_box)[2])) * 0.5);
-  int y = round((round((*content_box)[3]) + round((*content_box)[5])) * 0.5);
+  int new_point_x =
+      round((round((*content_box)[0]) + round((*content_box)[2])) * 0.5);
+  int new_point_y =
+      round((round((*content_box)[3]) + round((*content_box)[5])) * 0.5);
 
   // Wait for at least three rounds (~600ms =
   // 3*kPeriodicBoxModelCheckInterval) for visual state update callback since
   // it might take longer time to return or never return if no updates.
   DCHECK(kPeriodicBoxModelCheckRounds > 2 &&
          kPeriodicBoxModelCheckRounds >= remaining_rounds);
-  if (x == point_x && y == point_y &&
+  if (new_point_x == point_x && new_point_y == point_y &&
       (visual_state_updated_ ||
        remaining_rounds + 2 < kPeriodicBoxModelCheckRounds)) {
     // Note that there is still a chance that the element's position has been
@@ -225,7 +232,7 @@ void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
     // click or tap event after stable for kPeriodicBoxModelCheckInterval. In
     // addition, checking again after issuing click or tap event doesn't help
     // since the change may be expected.
-    OnResult(x, y);
+    OnResult(new_point_x, new_point_y);
     return;
   }
 
@@ -234,12 +241,54 @@ void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
     return;
   }
 
+  // Scroll the element into view again if it was moved out of view.
+  // Check 'point_x' amd 'point_y' are greater or equal than zero to escape the
+  // first round.
+  if (point_x >= 0 && point_y >= 0) {
+    std::vector<std::unique_ptr<runtime::CallArgument>> argument;
+    argument.emplace_back(
+        runtime::CallArgument::Builder().SetObjectId(object_id).Build());
+    devtools_client->GetRuntime()->CallFunctionOn(
+        runtime::CallFunctionOnParams::Builder()
+            .SetObjectId(object_id)
+            .SetArguments(std::move(argument))
+            .SetFunctionDeclaration(std::string(kScrollIntoViewIfNeededScript))
+            .SetReturnByValue(true)
+            .Build(),
+        base::BindOnce(&WebController::ElementPositionGetter::OnScrollIntoView,
+                       weak_ptr_factory_.GetWeakPtr(), devtools_client,
+                       object_id, new_point_x, new_point_y, remaining_rounds));
+    return;
+  }
+
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &WebController::ElementPositionGetter::GetAndWaitBoxModelStable,
-          weak_ptr_factory_.GetWeakPtr(), devtools_client, object_id, x, y,
-          --remaining_rounds),
+          weak_ptr_factory_.GetWeakPtr(), devtools_client, object_id,
+          new_point_x, new_point_y, --remaining_rounds),
+      kPeriodicBoxModelCheckInterval);
+}
+
+void WebController::ElementPositionGetter::OnScrollIntoView(
+    DevtoolsClient* devtools_client,
+    std::string object_id,
+    int point_x,
+    int point_y,
+    int remaining_rounds,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  if (!result || result->HasExceptionDetails()) {
+    DLOG(ERROR) << "Failed to scroll the element.";
+    OnResult(-1, -1);
+    return;
+  }
+
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(
+          &WebController::ElementPositionGetter::GetAndWaitBoxModelStable,
+          weak_ptr_factory_.GetWeakPtr(), devtools_client, object_id, point_x,
+          point_y, --remaining_rounds),
       kPeriodicBoxModelCheckInterval);
 }
 
