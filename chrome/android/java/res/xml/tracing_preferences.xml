@@ -4,7 +4,21 @@
      found in the LICENSE file. -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- TODO(eseckler): Add configuration options for categories and tracing mode. -->
+    <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.developer.TracingCategoriesPreferences"
+        android:key="default_categories"
+        android:title="@string/prefs_tracing_default_categories_title"
+        android:order="0"/>
+    <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.developer.TracingCategoriesPreferences"
+        android:key="non_default_categories"
+        android:title="@string/prefs_tracing_non_default_categories_title"
+        android:order="1"/>
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+        android:key="mode"
+        android:title="@string/prefs_tracing_mode_title"
+        android:persistent="false"
+        android:order="2"/>
     <org.chromium.chrome.browser.preferences.ButtonPreference
         android:key="start_recording"/>
     <org.chromium.chrome.browser.preferences.TextMessagePreference

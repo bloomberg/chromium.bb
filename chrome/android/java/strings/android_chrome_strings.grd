@@ -1415,6 +1415,30 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_PREFS_TRACING_ACTIVE_SUMMARY" translateable="false" desc="The summary of a text preference shown when a Chrome trace is being recorded.">
         A trace is being recorded. Use the notification to stop and share the result.
       </message>
+      <message name="IDS_PREFS_TRACING_DEFAULT_CATEGORIES_TITLE" translateable="false" desc="Title of a preference for selecting the enabled default tracing categories.">
+        Default categories
+      </message>
+      <message name="IDS_PREFS_TRACING_NON_DEFAULT_CATEGORIES_TITLE" translateable="false" desc="Title of a preference for selecting the enabled disabled-by-default tracing categories.">
+        Disabled-by-default categories
+      </message>
+      <message name="IDS_PREFS_TRACING_CATEGORIES_SUMMARY" translateable="false" desc="The summary of a preference for selecting the enabled categories.">
+        <ph name="NUM_ENABLED_CATEGORIES">%1$d<ex>3</ex></ph> out of <ph name="NUM_TOTAL_CATEGORIES">%2$d<ex>20</ex></ph> enabled
+      </message>
+      <message name="IDS_PREFS_TRACING_CATEGORY_SELECTION_TITLE" translateable="false" desc="Title for the trace category selection preferences page. [CHAR-LIMIT=32]">
+        Select categories
+      </message>
+      <message name="IDS_PREFS_TRACING_MODE_TITLE" translateable="false" desc="Title of a preference for changing the tracing mode.">
+        Tracing mode
+      </message>
+      <message name="IDS_PREFS_TRACING_MODE_RECORD_UNTIL_FULL" translateable="false" desc="Title for the tracing mode entry that records data until the buffer is full.">
+        Record until full
+      </message>
+      <message name="IDS_PREFS_TRACING_MODE_RECORD_AS_MUCH_AS_POSSIBLE" translateable="false" desc="Title for the tracing mode entry that records as much data as possible.">
+        Record until full (large buffer)
+      </message>
+      <message name="IDS_PREFS_TRACING_MODE_RECORD_CONTINUOUSLY" translateable="false" desc="Title for the tracing mode entry that records data continuously into a ring buffer.">
+        Record continuously
+      </message>
 
       <!-- Tracing notifications (not translated, since part of developer preferences) -->
       <message name="IDS_TRACING_NOTIFICATIONS_DISABLED" translateable="false" desc="Message of a toast shown when tracing could not be started because the Chrome app's notifications are disabled.">
