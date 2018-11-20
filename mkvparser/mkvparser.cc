@@ -5312,7 +5312,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   const long long stop = pos + s.size;
 
   Colour* colour = NULL;
-  Projection* projection = NULL;
+  std::unique_ptr<Projection> projection_ptr;
 
   while (pos < stop) {
     long long id, size;
@@ -5364,8 +5364,12 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
       if (!Colour::Parse(pReader, pos, size, &colour))
         return E_FILE_FORMAT_INVALID;
     } else if (id == libwebm::kMkvProjection) {
-      if (!Projection::Parse(pReader, pos, size, &projection))
+      Projection* projection = NULL;
+      if (!Projection::Parse(pReader, pos, size, &projection)) {
         return E_FILE_FORMAT_INVALID;
+      } else {
+        projection_ptr.reset(projection);
+      }
     } else if (id == libwebm::kMkvColourSpace) {
       const long status = UnserializeString(pReader, pos, size, colour_space);
       if (status < 0)
@@ -5402,7 +5406,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   pTrack->m_rate = rate;
   pTrack->m_colour = colour;
   pTrack->m_colour_space = colour_space;
-  pTrack->m_projection = projection;
+  pTrack->m_projection = projection_ptr.release();
 
   pResult = pTrack;
   return 0;  // success
