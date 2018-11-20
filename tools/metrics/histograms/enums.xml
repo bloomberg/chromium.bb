@@ -26061,6 +26061,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Has access"/>
 </enum>
 
+<enum name="InitiatorAccess2">
+  <int value="0" label="Initiator absent"/>
+  <int value="1" label="Initiator opaque"/>
+  <int value="2" label="No access"/>
+  <int value="3" label="Has access"/>
+</enum>
+
 <enum name="InjectedAdType">
   <int value="0" label="Invalid"/>
   <int value="1" label="IFrame"/>
