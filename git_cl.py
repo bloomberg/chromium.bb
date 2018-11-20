@@ -5664,13 +5664,13 @@ def CMDformat(parser, args):
   # Similar code to above, but using yapf on .py files rather than clang-format
   # on C/C++ files
   if opts.python and python_diff_files:
-    yapf_tool = gclient_utils.FindExecutable('yapf')
-    if yapf_tool is None:
-      DieWithError('yapf not found in PATH')
+    depot_tools_path = os.path.dirname(os.path.abspath(__file__))
+    yapf_tool = os.path.join(depot_tools_path, 'yapf')
+    if sys.platform.startswith('win'):
+      yapf_tool += '.bat'
 
     # If we couldn't find a yapf file we'll default to the chromium style
     # specified in depot_tools.
-    depot_tools_path = os.path.dirname(os.path.abspath(__file__))
     chromium_default_yapf_style = os.path.join(depot_tools_path,
                                                YAPF_CONFIG_FILENAME)
 
