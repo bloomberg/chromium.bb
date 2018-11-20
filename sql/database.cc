@@ -1612,9 +1612,17 @@ bool Database::OpenInternal(const std::string& file_name,
   // Custom memory-mapping VFS which reads pages using regular I/O on first hit.
   sqlite3_vfs* vfs = VFSWrapper();
   const char* vfs_name = (vfs ? vfs->zName : nullptr);
-  int err =
-      sqlite3_open_v2(file_name.c_str(), &db_,
-                      SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs_name);
+
+  // The flags are documented at https://www.sqlite.org/c3ref/open.html.
+  //
+  // Chrome uses SQLITE_OPEN_PRIVATECACHE because SQLite is used by many
+  // disparate features with their own databases, and having separate page
+  // caches makes it easier to reason about each feature's performance in
+  // isolation.
+  int err = sqlite3_open_v2(
+      file_name.c_str(), &db_,
+      SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_PRIVATECACHE,
+      vfs_name);
   if (err != SQLITE_OK) {
     // Extended error codes cannot be enabled until a handle is
     // available, fetch manually.
