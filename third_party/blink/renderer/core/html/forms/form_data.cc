@@ -91,8 +91,11 @@ FormData::FormData() : encoding_(UTF8Encoding()) {}
 
 FormData* FormData::Create(HTMLFormElement* form,
                            ExceptionState& exception_state) {
-  DCHECK(form);
   auto* form_data = new FormData();
+  // TODO(tkent): Null check should be unnecessary.  We should remove
+  // LegacyInterfaceTypeChecking from form_data.idl.  crbug.com/561338
+  if (!form)
+    return form_data;
   if (!form->ConstructEntryList(nullptr, *form_data)) {
     DCHECK(RuntimeEnabledFeatures::FormDataEventEnabled());
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
