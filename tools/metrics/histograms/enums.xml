@@ -34998,17 +34998,22 @@ Called by update_net_error_codes.py.-->
     An error page was shown with at least a &quot;Download Page Later&quot;
     button on it and the user pressed that button.
   </int>
-  <int value="24" label="Offline Suggestions Shown">
-    An error page was shown with at least one offline content suggestion.
+  <int value="24" label="Offline Suggestions List Shown">
+    A list containing at least one item of offline content suggestions was shown
+    in the expanded/shown state.
   </int>
-  <int value="25" label="Offline Suggestion Clicked">
-    The user pressed a button to open an offline content suggestion.
+  <int value="25" label="Offline Suggestion List Item Clicked">
+    An item from the offline content suggestions list was clicked.
   </int>
   <int value="26" label="Downloads Page Button Clicked">
-    The user pressed a button to open the downloads page.
+    A link that opens the downloads page was clicked.
   </int>
   <int value="27" label="Offline Content Summary Shown">
-    A summary of available offline content was presented.
+    A summary of available offline content was shown.
+  </int>
+  <int value="28" label="Offline Suggestions List Shown Collapsed">
+    A list containing at least one item of offline content suggestions was shown
+    in the collapsed/hidden state.
   </int>
 </enum>
 

@@ -70,6 +70,7 @@ class NetErrorHelper
   void LaunchDownloadsPage() override;
   void SavePageForLater() override;
   void CancelSavePage() override;
+  void ListVisibilityChanged(bool is_visible) override;
 
   // SSLCertificateErrorPageController::Delegate implementation
   void SendCommand(
@@ -141,6 +142,7 @@ class NetErrorHelper
   void DownloadPageLater() override;
   void SetIsShowingDownloadButton(bool show) override;
   void OfflineContentAvailable(
+      bool list_visible_by_prefs,
       const std::string& offline_content_json) override;
   void OfflineContentSummaryAvailable(
       const std::string& offline_content_summary_json) override;

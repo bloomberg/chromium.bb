@@ -217,6 +217,10 @@ void NetErrorHelper::CancelSavePage() {
   core_->CancelSavePage();
 }
 
+void NetErrorHelper::ListVisibilityChanged(bool is_visible) {
+  core_->ListVisibilityChanged(is_visible);
+}
+
 content::RenderFrame* NetErrorHelper::GetRenderFrame() {
   return render_frame();
 }
@@ -552,11 +556,14 @@ void NetErrorHelper::SetIsShowingDownloadButton(bool show) {
 }
 
 void NetErrorHelper::OfflineContentAvailable(
+    bool list_visible_by_prefs,
     const std::string& offline_content_json) {
 #if defined(OS_ANDROID)
   if (!offline_content_json.empty()) {
-    render_frame()->ExecuteJavaScript(base::UTF8ToUTF16(base::StrCat(
-        {"offlineContentAvailable(", offline_content_json, ");"})));
+    std::string isShownParam(list_visible_by_prefs ? "true" : "false");
+    render_frame()->ExecuteJavaScript(base::UTF8ToUTF16(
+        base::StrCat({"offlineContentAvailable(", isShownParam, ", ",
+                      offline_content_json, ");"})));
   }
 #endif
 }

@@ -63,10 +63,22 @@
           </div>
         </div>
         <div id="offline-content-list" hidden>
-          <div class="offline-content-list-title" jsselect="offlineContentList"
-              jscontent="title"></div>
+          <div id="offline-content-list-visibility-card"
+              onclick="toggleOfflineContentListVisibility(true)">
+            <div id="offline-content-list-title"
+                jsselect="offlineContentList" jscontent="title">
+            </div>
+            <div>
+              <div id="offline-content-list-show-text"
+                  jsselect="offlineContentList" jscontent="showText">
+              </div>
+              <div id="offline-content-list-hide-text"
+                  jsselect="offlineContentList" jscontent="hideText">
+              </div>
+            </div>
+          </div>
           <div id="offline-content-suggestions"></div>
-          <div class="offline-content-list-action">
+          <div id="offline-content-list-action">
             <a class="link-button" onclick="launchDownloadsPage()"
                 jsselect="offlineContentList" jscontent="actionText">
             </a>

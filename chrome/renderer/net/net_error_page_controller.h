@@ -49,6 +49,10 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
     // feature.
     virtual void CancelSavePage() = 0;
 
+    // Called to signal the user tapped the button to change the visibility of
+    // the offline content list.
+    virtual void ListVisibilityChanged(bool is_visible) = 0;
+
    protected:
     Delegate();
     virtual ~Delegate();
@@ -99,6 +103,7 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
   void LaunchDownloadsPage();
   void SavePageForLater();
   void CancelSavePage();
+  void ListVisibilityChanged(bool is_visible);
 
   // gin::WrappableBase
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
