@@ -3,7 +3,7 @@
 // of the review process and to clean up flags that have become obsolete or
 // unused. For more details, see:
 //
-//    https://sites.google.com/a/chromium.org/dev/flag-ownership
+//    https://sites.google.com/a/chromium.org/dev/developers/contributing-code/flag-ownership
 //
 // This file is a list of json objects; each object contains these keys:
 //
