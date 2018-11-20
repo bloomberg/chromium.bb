@@ -22,6 +22,9 @@
 
 ### Table Metadata
 
+#-name: Dansk fuldskrift 6-punkt
+#-display-name: Danish 6-dot uncontracted braille
+
 #+locale: da
 #+type: literary
 #+contraction: no
@@ -100,7 +103,7 @@ include da-dk-6miscChars.cti
 
 # Litdigits
 include litdigits6Dots.uti
-
+midendnumericmodechars /,.:^
 undefined 26
 
 ### Braille indicators and special characters
@@ -137,13 +140,10 @@ endemphword underline 56
 
 capsletter 46
 begcapsword 456
-endcapsword 68 # Used during back-translation to stop overflow of capsword
+endcapsword 6
 multind 6-46 letsign capsletter
 multind 46-6 capsletter letsign
 multind 6-456 letsign begcapsword
-multind 68-6-46 endcapsword letsign capsletter
-multind 68-6-456 endcapsword letsign begcapsword
-multind 68-6 endcapsword letsign
 
 numsign 3456
 multind 6-3456 letsign numsign
@@ -201,15 +201,15 @@ nofor correct "~\\456/" "|"
 ### Pass 1 - Forward and backward
 
 # Punctuations, math and numbers
-midnum , 2
-midnum . 3
+#midnum , 2
+#midnum . 3
 #midnum - 36
 endnum - 36
-midnum / 34
-midnum : 25
+#midnum / 34
+#midnum : 25
 
 midnum ^ 45-346
-midnum \x00d7 45-3-3456
+midnum \x00d7 45-3
 
 # Punctuation
 prepunc " 2356
@@ -270,55 +270,10 @@ nofor context `@36-36~ "-"
 noback pass2 @467 @45-6
 noback pass2 @4568 @45-456
 
-# Show endcapsword as dot 6 (letsign)
-noback pass2 @68 @6
-
 noback pass2 @6-46-5 @46-5 # no letsign before cap letters with accent
 noback pass2 @6-46 @46-6 # Ensure correct order
 
  ### Pass 2 - backward
-
-# Insert letsign between number (with extra punctuation) and capsletter sign
-nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@46 @68-6
-nofor pass2 @3456$l.$Spm$l.@3[]@46 @68-6
-nofor pass2 @3456$l.$Spm$Spm[]@46 @68-6
-nofor pass2 @3456$l.$Spm[]@46 @68-6
-
-# Insert letsign between number (with extra punctuation) and capsword sign
-nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@34$l.@34[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@36$l.@36[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@3[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@34[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@36[]@456 @6
-nofor pass2 @3456$l.$Spm$Spm[]@456 @6
-nofor pass2 @3456$l.$Spm[]@456 @6
-nofor pass2 @3456$l.[]@456 @6
-
-# Place endcaps in connection to all the following Braille patterns:
-nofor pass2 $l[@45-3] @45-3-68
-nofor pass2 $l[@468] @468-68
-nofor pass2 $l[@6] @68-6 # Must come before letsign
-nofor pass2 $l[@36] @36-68
-nofor pass2 $l[@34] @34-68
-nofor pass2 $l[@2356] @2356-68
-nofor pass2 $l[@45-36] @45-36-68
-nofor pass2 $l[@4-356] @4-356-68
-nofor pass2 $l[@245-356] @245-356-68
-nofor pass2 $l[@4] @4-68
-nofor pass2 $l[@235] @235-68
-nofor pass2 $l[@45-1] @45-1-68
-nofor pass2 $l[@236] @236-68
-nofor pass2 $l[@356-356] @356-356-68
-nofor pass2 $l[@356] @356-68
-nofor pass2 $l[@3] @3-68
-nofor pass2 $l[@2] @2-68
-nofor pass2 $l[@26] @26-68
-nofor pass2 $l[@25] @25-68
-nofor pass2 $l[@12346] @12346-68
-
-nofor pass2 $l[]@46 @68-6
-#nofor pass2 $a[]@456 @6
 
 ### Pass 3 - forward translation
 

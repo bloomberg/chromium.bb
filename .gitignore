@@ -39,6 +39,9 @@ TAGS
 .cproject
 .project
 
+# Netbeans
+/nbproject/
+
 # /build-aux/
 /build-aux/ar-lib
 /build-aux/compile
@@ -190,9 +193,7 @@ TAGS
 /tests/lastworditalafter
 /tests/letterDefTest
 /tests/logging
-/tests/outpos
 /tests/pass0_typebuf
-/tests/pass1Only
 /tests/pass2
 /tests/pass2_inpos
 /tests/present_progressive
@@ -203,8 +204,12 @@ TAGS
 /tests/typeform
 /tests/typeform_for_emphclass
 /tests/uplow_with_unicode
-/tests/yaml/*.log
-/tests/yaml/*.trs
+
+# /tests/braille-specs/
+/tests/braille-specs/Makefile
+/tests/braille-specs/Makefile.in
+/tests/braille-specs/*.log
+/tests/braille-specs/*.trs
 
 # /tests/yaml/
 /tests/yaml/Makefile
@@ -309,6 +314,16 @@ output.txt
 # /windows/utils
 /windows/utils/Makefile
 /windows/utils/Makefile.in
+
+# /extra/generate-display-names
+
+/extra/generate-display-names/.go-packages/
+/extra/generate-display-names/.libs/
+/extra/generate-display-names/displayLanguage.a
+/extra/generate-display-names/displayLanguage.h
+/extra/generate-display-names/generate
+/extra/generate-display-names/generate.o
+/extra/generate-display-names/generate.log
 
 # stuff for local development
 local/

@@ -87,10 +87,10 @@ typedef struct intCharTupple {
 /**
  * Mapping between braille dot and textual representation as used in dots operands
  */
-const static intCharTupple dotMapping[] = {
+static const intCharTupple dotMapping[] = {
 	{ B1, '1' }, { B2, '2' }, { B3, '3' }, { B4, '4' }, { B5, '5' }, { B6, '6' },
 	{ B7, '7' }, { B8, '8' }, { B9, '9' }, { B10, 'A' }, { B11, 'B' }, { B12, 'C' },
-	{ B13, 'D' }, { B14, 'E' }, { B15, 'F' }, 0,
+	{ B13, 'D' }, { B14, 'E' }, { B15, 'F' }, { 0, 0 },
 };
 
 /* HASHNUM must be prime */
@@ -135,6 +135,7 @@ typedef enum {
 	CTC_EndOfInput = 0x8000000,  // only used by pattern matcher
 	CTC_EmpMatch = 0x10000000,   // only used in TranslationTableRule->before and
 								 // TranslationTableRule->after
+	CTC_MidEndNumericMode = 0x20000000,
 } TranslationTableCharacterAttribute;
 
 typedef enum {
@@ -242,6 +243,7 @@ typedef enum { /* Op codes */
 	CTO_NoLetsignAfter,
 	CTO_NumberSign,
 	CTO_NumericModeChars,
+	CTO_MidEndNumericModeChars,
 	CTO_NumericNoContractChars,
 	CTO_SeqDelimiter,
 	CTO_SeqBeforeChars,
@@ -549,13 +551,14 @@ typedef enum {
 	alloc_typebuf,
 	alloc_wordBuffer,
 	alloc_emphasisBuffer,
-	alloc_transNoteBuffer,
 	alloc_destSpacing,
-	alloc_passbuf1,
-	alloc_passbuf2,
-	alloc_srcMapping,
-	alloc_prevSrcMapping
+	alloc_passbuf,
+	alloc_posMapping1,
+	alloc_posMapping2,
+	alloc_posMapping3
 } AllocBuf;
+
+#define MAXPASSBUF 3
 
 typedef enum {
 	capsRule = 0,
@@ -582,6 +585,20 @@ typedef enum {
 	endWordOffset = 7,
 	lenPhraseOffset = 8
 } EmphCodeOffset;
+
+/* Grouping the begin, end, word and symbol bits and using the type of
+ * a single bit group for representing the emphasis classes allows us
+ * to do simple bit operations. */
+
+typedef struct {
+	unsigned int begin : 16;
+	unsigned int end : 16;
+	unsigned int word : 16;
+	unsigned int symbol : 16;
+} EmphasisInfo;
+
+/* An emphasis class is a bit field that contains a single "1" */
+typedef unsigned int EmphasisClass;
 
 typedef enum { noEncoding, bigEndian, littleEndian, ascii8 } EncodingType;
 
@@ -644,7 +661,7 @@ _lou_getCharFromDots(widechar d);
  * TODO: move to utils.c
  */
 void *EXPORT_CALL
-_lou_allocMem(AllocBuf buffer, int srcmax, int destmax);
+_lou_allocMem(AllocBuf buffer, int index, int srcmax, int destmax);
 
 /**
  * Hash function for character strings

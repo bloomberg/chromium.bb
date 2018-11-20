@@ -46,8 +46,6 @@ punctuation - 36			hyphen-minus								002D
 punctuation . 256				point												002E
 math / 34								solidus											002F
 
-include digits6Dots.uti
-
 punctuation : 25				colon								x003A
 punctuation ; 23				semicolon						x003B
 punctuation < 126				less-than sign			x003C
@@ -76,6 +74,8 @@ uplow Uu 34									letter U *** Different from other langs ***
 uplow Vv 2456								letter V *** Different from other langs ***
 uplow Zz 345								letter Z *** Different from other langs ***
 include latinLetterDef6Dots.uti
+include digits6Dots.uti # Must come after letters.
+include litdigits6Dots.uti # Must come after letters.
 
 punctuation [ 6-2356		left square bracket		x005B
 sign \\ 3456-1256				reverse solidus				x005C

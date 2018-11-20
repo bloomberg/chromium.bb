@@ -1,3 +1,5 @@
+#-display-name: Bulgarian computer braille
+
 #+locale:bg
 #+type:computer
 #+dots:8

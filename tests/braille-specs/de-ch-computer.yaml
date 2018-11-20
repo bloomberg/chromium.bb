@@ -1,0 +1,23 @@
+display: de-eurobrl6u.dis
+table:
+  locale: de
+  grade: 2
+  __assert-match: de-g2.ctb 
+tests:
+  - ["peter34@gmx.net", "'$PETER34\"@GMX.NET"]
+  - ["@peter34", "'$\"@PETER34"]
+  - ["www.sbs.ch", "'$WWW.SBS.CH"]
+  - ["www.e-text.ch", "'$WWW.E-TEXT.CH"]
+  - ["http://www.google-test.ch/test?=:;+%#$", "'$HTTP://WWW.GOOGLE-TEST.CH/TEST?=:;+%#$$"]
+  - ["mailto:info@sbs.ch", "'$MAILTO:INFO\"@SBS.CH"]
+  - ["meier_alex@ubs.com", "'$MEIER\"_ALEX\"@UBS.COM"]
+
+  # Pt. 6 (Apo) nach Zahl vor A-J innerhalb A (URLs)
+  - ["www.fit4chat.ch", "'$WWW.FIT4CHAT.CH"]
+
+# FIXME: the following tables need to be added in some form or another
+# table: [tables/de-eurobrl6u.dis, sbs-special.cti, tables/sbs-code.cti]
+# tests:
+#   # Program code
+#   - ["C:/ordner/inhalt_version_1", "'$\"C:/ORDNER/INHALT\"_VERSION\"_1"]
+#   - ["for(i=0;i&lt;=12; i++ { blabla }", "$$FOR(I=0;I<=12; I++ [ BLABLA ]'."]

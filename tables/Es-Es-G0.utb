@@ -33,7 +33,9 @@ space \x000D 0          # cr
 space \X00A0 0          # Espacio de no separación
 
 # all except 0 are the same, so define 0 here to take higher presidence
+# Also define ó (lowercase o acute) not to clash with the definition of 0 in original include.
 digit 0 34678				cero
+uplow \x00d3\x00f3 3467,346     o con acento
 include digits6DotsPlusDot6.uti
 
 include latinLetterDef8Dots.uti
@@ -42,7 +44,6 @@ uplow \x00c7\x00e7 1234678,123468		c cedilla
 uplow \x00c1\x00e1 123567,12356     a con acento
 uplow \x00c9\x00e9 23467,2346		e con acento
 uplow \x00cd\x00ed 347,34     i con acento
-uplow \x00d3\x00f3 3467,346     o con acento
 uplow \x00da\x00fa 234567,23456     u con acento
 uplow \x00c0\x00e0 1235678,123568		a grave
 uplow \x00c8\x00e8 234678,23468			e grave

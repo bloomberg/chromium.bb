@@ -371,6 +371,9 @@ postpunc	\x037E	26
 
 include digits6Dots.uti
 
+numsign 3456
+include litdigits6Dots.uti
+
 ####################
 # Greek Diphthongs #
 ####################
@@ -410,7 +413,6 @@ always \x03C5\x1F77	5-12456	# υί Upsilon Iota
 
 capsletter	46
 begcapsword 46-46
-numsign 3456
 
 ####################
 # English Alphabet #

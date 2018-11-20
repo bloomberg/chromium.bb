@@ -1,5 +1,23 @@
 # liblouis: Portuguese Grade 1 Braille Table
 #
+# -----------
+#-display-name: Portuguese uncontracted braille
+#
+#+locale:pt
+#+type:literary
+#+contraction:no
+#+grade:1
+#
+# TODO: Please correct the metadata above. It is not meant to be
+# accurate nor complete. It hasn't been verified by the table
+# author yet. It is merely an attempt by the liblouis maintainers
+# to get some sensible initial values in place.
+#
+# TODO: Please add a reference to official documentation about
+# the implemented braille code. Preferably submit the documents
+# to https://github.com/liblouis/braille-specs.
+# -----------
+#
 #  Copyright (C) 2004-2008 ViewPlus Technologies, Inc. www.viewplus.com
 #  Copyright (C) 2004-2006 JJB Software, Inc. www.jjb-software.com
 #  Copyright (C) 2012 Mesar Hameed <mesar.hameed@gmail.com>
@@ -46,7 +64,6 @@ punctuation , 2					coma							44
 punctuation - 36				hyphen-minus			45
 punctuation . 3					point							46
 math / 6-2							solidus						47
-include digits6Dots.uti
 punctuation : 25			colon					58		x003A
 punctuation ;	23			semicolon			59		x003B
 math < 246													60		x003C
@@ -55,7 +72,9 @@ math > 135													62		x003E
 punctuation ? 26										63		x003F
 sign @ 156						commercial at	64		x0040
 
-include latinLetterDef6Dots.uti
+include latinLetterDef6Dots.uti 
+include digits6Dots.uti # Must come after letters.
+include litdigits6Dots.uti # Must come after letters.
 
 punctuation [ 12356-3		left square bracket			x005B
 sign \\ 5-3							reverse solidus					x005C

@@ -1,3 +1,5 @@
+#-display-name: Lithuanian 8-dot braille
+
 #+locale:lt
 #+type:literary
 #+dots:8

@@ -1,3 +1,5 @@
+#-display-name: Telugu braille
+
 #+locale:te
 #+type:literary
 #+grade:1

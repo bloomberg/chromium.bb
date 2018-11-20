@@ -724,6 +724,15 @@ always tízzel 2345-34-126-1236
 always topázzal 2345-135-1234-4-126-1236
 always vaszillal 1236-1-156-24-123-1236
 always végtelennel 1236-15-1245-2345-15-123-15-1345-1236
+always gonddal 1245-145-1236
+always gyorssal 1456-234-1236
+always röviddel 1235-145-1236
+always teljessel 2345-234-1236
+always minddel 134-145-1236
+always szabaddal 156-145-1236
+always árral 4-1235-1236
+word lomban =
+noback pass2 @134-15-1456-1456-15-123 @134-15-1456-1236
 
 #Special number suffixes related rules
 endnum A 6-1
@@ -802,7 +811,6 @@ always növel =
 always szaval 156-1-1236-1-123
 always széjjel 156-16-245-245-15-123
 word reggel =
-word árral =
 always harmadannyi 125-1-1235-134-1-145-1-1246-1246-24
 always huszadannyi 125-136-156-1-145-1-1246-1246-24
 always százannyi 156-4-126-1-1246-1246-24
@@ -884,6 +892,11 @@ word rához 1235-4-125-135-126
 word reához 1235-15-4-125-135-126
 word széthoz 156-16-2345-125-135-126
 word visszahoz 1236-24-156-156-1-125-135-126
+always érvel 16-1235-1236-15-123
+always amelyik 1-134-15-456-24-13
+always amelynek 1-134-15-456-1345-15-13
+always amelyre 1-134-15-456-1235-15
+always nyelvel 1246-15-123-1236-15-123
 always éjjel =
 always jászboldogház 245-4-156-12-135-123-145-135-1245-125-4-126
 always zalaboldog 126-1-123-1-12-135-123-145-135-1245

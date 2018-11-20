@@ -1,3 +1,5 @@
+#-display-name: Gujarati braille
+
 #+locale:gu
 #+type:literary
 #+grade:1

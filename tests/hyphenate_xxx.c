@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   hyphens[1] = '0';
   hyphens[2] = '0';
 
-  ret = check_hyphenation(tables, word, hyphens);
+  ret = check_hyphenation_pos(tables, word, hyphens);
   assert(hyphens[3] == '\0');
   assert(hyphens[4] == '\0');
   free(hyphens);

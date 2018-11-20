@@ -23,6 +23,9 @@
 
 ### Table Metadata
 
+#-name: Dansk forkortet 6-punkt
+#-display-name: Danish 6-dot fully contracted braille
+
 #+locale: da
 #+type: literary
 #+contraction: full
@@ -650,45 +653,6 @@ nocross te 1256
 
 # Numsign/"ve", special case when back-translating
 noback nocross ve 3456
-
-# combinations to handle Danish regression rules
-nocross dend 1456-12345
-nocross end 15-12345
-nocross gend 12456-12345
-nocross gen 1245-126
-nocross ger 1245-156
-nocross get 1245-346
-nocross hven 2456-126
-nocross hver 2456-156
-nocross hvet 2456-346
-nocross hve 2456-15
-nocross mend 146-12345
-nocross men 134-126
-nocross mer 134-156
-nocross met 134-346
-nocross nden 1345-12346
-nocross nder 1345-23456
-nocross ndet 1345-2346
-nocross nend 1246-12345
-nocross nen 1345-126
-nocross ner 1345-156
-nocross net 1345-346
-nocross rend 12356-12345
-nocross ren 1235-126
-nocross rer 1235-156
-nocross ret 1235-346
-nocross sten 1356-126
-nocross ster 1356-156
-nocross stet 1356-346
-nocross ste 1356-15
-nocross tend 1256-12345
-nocross ten 2345-126
-nocross ter 2345-156
-nocross tet 2345-346
-nocross vend 3456-12345
-nocross ven 1236-126
-nocross ver 1236-156
-nocross vet 1236-346
 
 # Additional words containing "hvor"
 # these are made explicit in 6-dots to handle / better

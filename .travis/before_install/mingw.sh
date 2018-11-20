@@ -1,4 +1,4 @@
-sudo apt-get install -y mingw32 mingw-w64 libc6-dev-i386 jq
+sudo apt-get install -y mingw32 mingw-w64 libc6-dev-i386 jq texinfo
 mkdir -p $HOME/src &&
 cd $_ &&
 curl -L https://github.com/yaml/libyaml/tarball/0.1.4 | tar zx &&

@@ -1,3 +1,5 @@
+#-display-name: Tamil computer braille
+
 #+locale:ta
 #+type:computer
 #+dots:8

@@ -189,6 +189,9 @@ sign          \x00b9 178                    ¹ SUPERSCRIPT ONE
 hyphen        \x002d 36                     - HYPHEN-MINUS
 decpoint      \x002c 2                      , DECIMAL SEPARATOR
 
+sign          \xfffd 7                      � REPLACEMENT CHARACTER
+undefined            7                      Replacement dots for characters not defined in this table
+
 
 ###
 ### ATTIC (commented out definitions)

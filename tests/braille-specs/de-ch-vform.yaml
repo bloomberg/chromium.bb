@@ -1,0 +1,31 @@
+display: de-eurobrl6u.dis
+table:
+  locale: de
+  grade: 2
+  __assert-match: de-g2.ctb 
+tests:
+  - ["Sie", "$S"]
+  - ["SIE", "$S"]
+  - ["Euerem", "$27["]
+  - ["EUEREM", "$27["]
+
+table:
+  locale: de
+  grade: 1
+  __assert-match: de-g1.ctb 
+tests:
+  - ["Sie", "$S0"]
+  - ["SIE", "$S0"]
+  - ["Euerem", "$2EREM"]
+  - ["EUEREM", "$2EREM"]
+
+table:
+  locale: de
+  grade: 0
+  __assert-match: de-g0.utb 
+tests:
+  - ["Sie", "$SIE"]
+  - ["SIE", "$SIE"]
+  - ["Euerem", "$EUEREM"]
+  - ["EUEREM", "$EUEREM"]
+

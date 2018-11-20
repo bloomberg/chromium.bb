@@ -31,6 +31,11 @@ loadTable(const char *tableList) {
 }
 
 extern int
+hyphenationEnabled() {
+	return table->hyphenStatesArray;
+}
+
+extern int
 isLetter(widechar c) {
 	static unsigned long int hash;
 	static TranslationTableOffset offset;
@@ -75,7 +80,6 @@ toDotPattern(widechar *braille, char *pattern) {
 
 extern int
 printRule(TranslationTableRule *rule, widechar *rule_string) {
-	int k, l;
 	switch (rule->opcode) {
 	case CTO_Context:
 	case CTO_Correct:
@@ -85,17 +89,18 @@ printRule(TranslationTableRule *rule, widechar *rule_string) {
 	case CTO_Pass3:
 	case CTO_Pass4:
 		return 0;
-	default:
-		l = 0;
+	default: {
+		int l = 0;
 		const char *opcode = _lou_findOpcodeName(rule->opcode);
-		for (k = 0; k < strlen(opcode); k++) rule_string[l++] = opcode[k];
+		for (size_t k = 0; k < strlen(opcode); k++) rule_string[l++] = opcode[k];
 		rule_string[l++] = ' ';
-		for (k = 0; k < rule->charslen; k++) rule_string[l++] = rule->charsdots[k];
+		for (int k = 0; k < rule->charslen; k++) rule_string[l++] = rule->charsdots[k];
 		rule_string[l++] = ' ';
-		for (k = 0; k < rule->dotslen; k++)
+		for (int k = 0; k < rule->dotslen; k++)
 			rule_string[l++] = _lou_getCharFromDots(rule->charsdots[rule->charslen + k]);
 		rule_string[l++] = '\0';
 		return 1;
+	}
 	}
 }
 
@@ -111,8 +116,8 @@ printRule(TranslationTableRule *rule, widechar *rule_string) {
 #endif
 
 static int
-find_matching_rules(
-		widechar *text, int text_len, widechar *braille, int braille_len, char *data) {
+find_matching_rules(widechar *text, int text_len, widechar *braille, int braille_len,
+		char *data, int clear_data) {
 	unsigned long int hash;
 	TranslationTableOffset offset;
 	TranslationTableRule *rule;
@@ -122,7 +127,7 @@ find_matching_rules(
 #if DEBUG
 	static int initial_text_len = 0;
 	int debug_indent = 0;
-	if (initial_text_len == 0) {
+	if (data[-1] == '^') {
 		initial_text_len = text_len;
 		for (k = 0; k < text_len; k++) printf("%c", text[k]);
 		printf(" <=> ");
@@ -134,7 +139,6 @@ find_matching_rules(
 
 	/* finish */
 	if (text_len == 0 && braille_len == 0) {
-		if (data[-1] != '1') return 0;
 		data[-1] = '$';
 		return 1;
 	}
@@ -142,6 +146,13 @@ find_matching_rules(
 	/* save data */
 	data_save = (char *)malloc(text_len * sizeof(char));
 	memcpy(data_save, data, text_len);
+
+	for (k = 0; k < text_len; k++)
+		if (data[k] == ')')
+			data[k] = '>';
+		else if (clear_data)
+			data[k] = '-';
+	debug("%s", data);
 
 	/* iterate over rules */
 	for (hash_len = 2; hash_len >= 1; hash_len--) {
@@ -183,15 +194,28 @@ find_matching_rules(
 			case CTO_WholeWord:
 				if (data[-1] == '^' && rule->charslen == text_len) break;
 				goto next_rule;
-			case CTO_BegWord:
+			case CTO_SuffixableWord:
 				if (data[-1] == '^') break;
 				goto next_rule;
-			case CTO_EndWord:
+			case CTO_PrefixableWord:
 				if (rule->charslen == text_len) break;
 				goto next_rule;
+			case CTO_BegWord:
+				if (data[-1] == '^' && rule->charslen < text_len) break;
+				goto next_rule;
+			case CTO_BegMidWord:
+				if (rule->charslen < text_len) break;
+				goto next_rule;
+			case CTO_MidWord:
+				if (data[-1] != '^' && rule->charslen < text_len) break;
+				goto next_rule;
+			case CTO_MidEndWord:
+				if (data[-1] != '^') break;
+				goto next_rule;
+			case CTO_EndWord:
+				if (data[-1] != '^' && rule->charslen == text_len) break;
+				goto next_rule;
 			case CTO_NoCross:
-				for (k = 0; k < rule->charslen - 1; k++)
-					if (data[k + 1] == '>') goto next_rule;
 				break;
 			case CTO_Letter:
 			case CTO_UpperCase:
@@ -208,13 +232,24 @@ find_matching_rules(
 
 			/* inhibit rule */
 			if (rule->dotslen > braille_len ||
-					rule->charslen == text_len && rule->dotslen < braille_len ||
-					rule->dotslen == braille_len && rule->charslen < text_len)
+					(rule->charslen == text_len && rule->dotslen < braille_len) ||
+					(rule->dotslen == braille_len && rule->charslen < text_len))
 				goto inhibit;
 			for (k = 0; k < rule->dotslen; k++)
 				if (_lou_getCharFromDots(rule->charsdots[rule->charslen + k]) !=
 						braille[k])
 					goto inhibit;
+
+			/* don't let this rule be inhibited by an earlier rule */
+			int inhibit_all = 0;
+			if (rule->opcode == CTO_NoCross)
+				for (k = 0; k < rule->charslen - 1; k++)
+					if (data[k + 1] == '>') {
+						if (data[-1] == 'x')
+							inhibit_all = 1;
+						else
+							goto next_rule;
+					}
 
 			/* fill data */
 			switch (rule->opcode) {
@@ -223,71 +258,35 @@ find_matching_rules(
 			default:
 				k = 0;
 				while (k < rule->charslen - 1) {
-					if (data[k + 1] == '>' || data[k + 1] == '|') {
+					if (data[k + 1] == '>') {
 						data[k++] = '1';
 						memset(&data[k], '-', text_len - k);
-						break;
-					} else if (data[k] == 's')
-						data[k++] = '0';
-					else
+					} else
 						data[k++] = 'x';
 				}
 			}
-			if (data[rule->charslen] == '>' || data[rule->charslen] == '|') {
+			if (data[rule->charslen] == '>' || data[rule->charslen] == ')') {
 				data[rule->charslen - 1] = '1';
 				memset(&data[rule->charslen], '-', text_len - rule->charslen);
-			} else if (data[rule->charslen - 1] == '|')
-				data[rule->charslen - 1] = '0';
-			else
+			} else
 				data[rule->charslen - 1] = 'x';
 			debug("%s", data);
 
 			/* recur */
-			switch (data[rule->charslen - 1]) {
-			case 'x':
-				data[rule->charslen - 1] = '0';
-				debug("%s", data);
-				if (find_matching_rules(&text[rule->charslen], text_len - rule->charslen,
-							&braille[rule->dotslen], braille_len - rule->dotslen,
-							&data[rule->charslen])) {
-					char *data_tmp = (char *)malloc(
-							(text_len - rule->charslen + 1) * sizeof(char));
-					memcpy(data_tmp, &data[rule->charslen - 1],
-							text_len - rule->charslen + 1);
-					data[rule->charslen - 1] = '1';
-					debug("%s", data);
-					memset(&data[rule->charslen], '-', text_len - rule->charslen);
-					if (find_matching_rules(&text[rule->charslen],
-								text_len - rule->charslen, &braille[rule->dotslen],
-								braille_len - rule->dotslen, &data[rule->charslen]) &&
-							memcmp(&data_tmp[1], &data[rule->charslen],
-									text_len - rule->charslen) == 0)
-						data[rule->charslen - 1] = 'x';
-					else
-						memcpy(&data[rule->charslen - 1], data_tmp,
-								text_len - rule->charslen + 1);
-					debug("%s", data);
-					free(data_tmp);
-					goto success;
-				} else {
-					data[rule->charslen - 1] = '1';
-					memset(&data[rule->charslen], '-', text_len - rule->charslen);
-					debug("%s", data);
-				}
-			case '0':
-			case '1':
-				if (find_matching_rules(&text[rule->charslen], text_len - rule->charslen,
-							&braille[rule->dotslen], braille_len - rule->dotslen,
-							&data[rule->charslen]))
-					goto success;
-			}
+			if (find_matching_rules(&text[rule->charslen], text_len - rule->charslen,
+						&braille[rule->dotslen], braille_len - rule->dotslen,
+						&data[rule->charslen], inhibit_all))
+				goto success;
 
 		inhibit:
 			debug("** rule inhibited **");
 			switch (rule->opcode) {
 			case CTO_NoCross:
 				if (rule->charslen < 2) goto abort;
-				data[rule->charslen - 1] = '>';
+				/* inhibited by earlier rule */
+				for (k = 0; k < rule->charslen - 1; k++)
+					if (data[k + 1] == '>' && data[-1] != 'x') goto next_rule;
+				data[rule->charslen - 1] = ')';
 				debug("%s", data);
 				goto next_rule;
 			default:
@@ -296,10 +295,13 @@ find_matching_rules(
 
 		success:
 			/* fill data (deferred) */
+			if (inhibit_all) data[-1] = '1';
 			switch (rule->opcode) {
 			case CTO_NoCross:
 				memset(data, '0', rule->charslen - 1);
 				debug("%s", data);
+			default:
+				break;
 			}
 			free(data_save);
 			return 1;
@@ -317,6 +319,48 @@ abort:
 	return 0;
 }
 
+/*
+ * - begin with all -
+ * - set cursor position right before the word
+ * - put a ^
+ * - match rules
+ *   - when a rule has been selected
+ *     - if the braille does not match: try inhibiting the rule
+ *       - if it's a nocross rule (longer than a single character)
+ *         - if there's a > within or right after the rule and there's no x right before
+ *           the rule
+ *           - already inhibited
+ *         - else: put a ) at the position right after the rule
+ *       - else: abort this match
+ *     - else (the braille does match)
+ *       - if it's a nocross rule
+ *         - if there's a > within or right after the rule
+ *           - if there's a x at the position right before the rule
+ *             - put a 1 at that position
+ *             - reset all >
+ *           - else
+ *             - continue with next matched rule
+ *         - put a 0 at each position within the rule
+ *       - else
+ *         - for each position within the rule
+ *           - if there's a > at the next position
+ *             - put a 1
+ *             - reset all >
+ *           - else put a x
+ *       - move cursor to the position right after the rule
+ *       - put a $ if we're at the end of the word
+ *       - change all ) to >
+ *       - else if there's a > or a ) at the next position
+ *         - put a 1
+ *         - reset all >
+ *         - match rules at the new cursor position
+ *           - if match was aborted
+ *             - revert changes
+ *             - try inhibiting the last rule
+ *             - go back to the position before the rule
+ *             - continue with next matched rule
+ *       - else put a x
+ */
 extern int
 suggestChunks(widechar *text, widechar *braille, char *hyphen_string) {
 	int text_len, braille_len;
@@ -328,7 +372,8 @@ suggestChunks(widechar *text, widechar *braille, char *hyphen_string) {
 	hyphen_string[0] = '^';
 	hyphen_string[text_len + 1] = '\0';
 	memset(&hyphen_string[1], '-', text_len);
-	return find_matching_rules(text, text_len, braille, braille_len, &hyphen_string[1]);
+	return find_matching_rules(
+			text, text_len, braille, braille_len, &hyphen_string[1], 0);
 }
 
 extern void
@@ -339,7 +384,7 @@ findRelevantRules(widechar *text, widechar **rules_str) {
 	TranslationTableCharacter *character;
 	TranslationTableRule *rule;
 	TranslationTableRule **rules;
-	int hash_len, k, l, m, n;
+	int hash_len, k, m, n;
 	for (text_len = 0; text[text_len]; text_len++)
 		;
 	for (rules_len = 0; rules_str[rules_len]; rules_len++)
@@ -375,7 +420,12 @@ findRelevantRules(widechar *text, widechar **rules_str) {
 				switch (rule->opcode) {
 				case CTO_Always:
 				case CTO_WholeWord:
+				case CTO_SuffixableWord:
+				case CTO_PrefixableWord:
 				case CTO_BegWord:
+				case CTO_BegMidWord:
+				case CTO_MidWord:
+				case CTO_MidEndWord:
 				case CTO_EndWord:
 				case CTO_NoCross:
 					break;

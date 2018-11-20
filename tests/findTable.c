@@ -20,6 +20,7 @@ main(int argc, char **argv)
 {
   int success = 0;
   char * match;
+  char ** matches;
   const char * tables[] = {"tests/tablesWithMetadata/foo","tests/tablesWithMetadata/bar",NULL};
   lou_setLogLevel(LOG_DEBUG);
   lou_indexTables(tables);
@@ -27,7 +28,9 @@ main(int argc, char **argv)
   success |= (!match || (strstr(match, "tablesWithMetadata/foo") == NULL));
   match = lou_findTable("language:en");
   success |= (!match || (strstr(match, "tablesWithMetadata/bar") == NULL));
-
+  matches = lou_findTables("language:en");
+  success |= (!matches || !matches[0] || (strstr(matches[0], "tablesWithMetadata/bar") == NULL));
+  success |= (!matches || !matches[0] || !matches[1] || (strstr(matches[1], "tablesWithMetadata/foo") == NULL));
   lou_free();
   return success;
 }

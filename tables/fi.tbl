@@ -1,3 +1,5 @@
+#-display-name: Finnish computer braille
+
 #+locale:fi
 #+type:computer
 #+dots:8

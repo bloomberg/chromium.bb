@@ -1,5 +1,5 @@
 /* A C macro for declaring that specific function parameters are not used.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published
@@ -12,7 +12,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* _GL_UNUSED_PARAMETER is a marker that can be appended to function parameter
    declarations for parameters that are not used.  This helps to reduce

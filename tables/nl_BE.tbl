@@ -1,3 +1,5 @@
+#-display-name: Dutch braille as used in Belgium
+
 #+locale:nl-BE
 #+type:literary
 #+contraction:no

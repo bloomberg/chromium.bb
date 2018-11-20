@@ -22,10 +22,12 @@
 
 ### Table Metadata
 
+#-display-name: Danish 6-dot partially contracted braille
+
 #+locale: da
 #+type: literary
-# #+contraction: partial
-# #+grade: 1.5
+#+contraction: partial
+#+grade: 1.5
 #+dots: 6
 #+direction: both
 
@@ -125,6 +127,7 @@ include da-dk-6miscChars.cti
 
 # Litdigits
 include litdigits6Dots.uti
+midendnumericmodechars /,.:^
 
 undefined 26
 
@@ -161,13 +164,10 @@ endemphword underline 56
 
 capsletter 46
 begcapsword 456
-endcapsword 68 # Used during back-translation to stop overflow of capsword
+endcapsword 6
 multind 6-46 letsign capsletter
 multind 46-6 capsletter letsign
 multind 6-456 letsign begcapsword
-multind 68-6-46 endcapsword letsign capsletter
-multind 68-6-456 endcapsword letsign begcapsword
-multind 68-6 endcapsword letsign
 
 numsign 3456
 multind 6-3456 letsign numsign
@@ -225,17 +225,17 @@ nofor correct "~\\456/" "|"
 ### Pass 1 - Forward and backward
 
 # Punctuations, math and numbers
-midnum , 2
-midnum . 3
+#midnum , 2
+#midnum . 3
 #midnum - 36
 endnum - 36
-midnum / 34
-midnum : 25
+#midnum / 34
+#midnum : 25
 nofor midnum ^ 346
 nofor midnum ^ 45-346
 
 midnum ^ 45-346
-midnum \x00d7 45-3-3456
+midnum \x00d7 45-3
 
 # various back rules for math signs etc.
 nofor midnum % 0-245-356-0-3456
@@ -277,7 +277,6 @@ always ) 6-356
 
 # extra back rules for ")"
 nofor after punctuation always ) 356
-nofor after punctuation always ) 68-356
 nofor always \x00b0 4-356
 nofor always ') 4-6-356
 nofor always ") 2356-356
@@ -366,29 +365,17 @@ word være 345
 
 # Common combinations of one word contractions with slash
 word af/på 356-34-1234
-word af/på 356-34-68-1234
 word du/i 145-34-24
-word du/i 145-34-68-24
 word eller/og 15-34-14
-word eller/og 15-34-68-14
 word fra/til 235-34-2345
-word fra/til 235-34-68-2345
 word han/hun 13456-34-136
-word han/hun 13456-34-68-136
 word hun/han 136-34-13456
-word hun/han 136-34-68-13456
 word i/du 24-34-145
-word i/du 24-34-68-145
 word og/eller 14-34-15
-word og/eller 14-34-68-15
 word over/under 1346-34-12345
-word over/under 1346-34-68-12345
 word på/af 1234-34-356
-word på/af 1234-34-68-356
 word til/fra 2345-34-235
-word til/fra 2345-34-68-235
 word under/over 12345-34-1346
-word under/over 12345-34-68-1346
 
 # no backtrans of ^1 and `2. use contractions
 nofor always eta 346-1
@@ -547,9 +534,6 @@ noback pass2 @13467 @6-1346
 noback pass2 @13567 @6-1356
 noback pass2 @12567 @6-1256
 
-# Show endcapsword as dot 6 (letsign)
-noback pass2 @68 @6
-
 noback pass2 @6-46-5 @46-5 # no letsign before cap letters with accent
 noback pass2 _$D[@6-46-6] *
 noback pass2 _$D[@6-46] *
@@ -559,46 +543,21 @@ noback pass2 @6-46 @46-6 # Ensure correct order
  ### Pass 2 - backward
 
 # Insert letsign between number (with extra punctuation) and capsletter sign
-nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@46 @68-6
-nofor pass2 @3456$l.$Spm$l.@3[]@46 @68-6
-nofor pass2 @3456$l.$Spm$Spm[]@46 @68-6
-nofor pass2 @3456$l.$Spm[]@46 @68-6
+#nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@46 @6
+#nofor pass2 @3456$l.$Spm$l.@3[]@46 @6
+#nofor pass2 @3456$l.$Spm$Spm[]@46 @6
+#nofor pass2 @3456$l.$Spm[]@46 @6
 
-# Insert letsign between number (with extra punctuation) and capsword sign
-nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@34$l.@34[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@36$l.@36[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@3[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@34[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@36[]@456 @6
-nofor pass2 @3456$l.$Spm$Spm[]@456 @6
-nofor pass2 @3456$l.$Spm[]@456 @6
-nofor pass2 @3456$l.[]@456 @6
-
-# Place endcaps in connection to all the following Braille patterns:
-nofor pass2 $l[@45-3] @45-3-68
-nofor pass2 $l[@468] @468-68
-nofor pass2 $l[@6] @68-6 # Must come before letsign
-nofor pass2 $l[@36] @36-68
-nofor pass2 $l[@34] @34-68
-nofor pass2 $l[@2356] @2356-68
-nofor pass2 $l[@45-36] @45-36-68
-nofor pass2 $l[@4-356] @4-356-68
-nofor pass2 $l[@245-356] @245-356-68
-nofor pass2 $l[@4] @4-68
-nofor pass2 $l[@235] @235-68
-nofor pass2 $l[@45-1] @45-1-68
-nofor pass2 $l[@236] @236-68
-nofor pass2 $l[@356-356] @356-356-68
-nofor pass2 $l[@356] @356-68
-nofor pass2 $l[@3] @3-68
-nofor pass2 $l[@2] @2-68
-nofor pass2 $l[@26] @26-68
-nofor pass2 $l[@25] @25-68
-nofor pass2 $l[@12346] @12346-68
-
-nofor pass2 $l[]@46 @68-6
-#nofor pass2 $a[]@456 @6
+## Insert letsign between number (with extra punctuation) and capsword sign
+#nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@456 @6
+#nofor pass2 @3456$l.$Spm$l.@34$l.@34[]@456 @6
+#nofor pass2 @3456$l.$Spm$l.@36$l.@36[]@456 @6
+#nofor pass2 @3456$l.$Spm$l.@3[]@456 @6
+#nofor pass2 @3456$l.$Spm$l.@34[]@456 @6
+#nofor pass2 @3456$l.$Spm$l.@36[]@456 @6
+#nofor pass2 @3456$l.$Spm$Spm[]@456 @6
+#nofor pass2 @3456$l.$Spm[]@456 @6
+#nofor pass2 @3456$l.[]@456 @6
 
 ### Pass 3 - forward translation
 
@@ -612,7 +571,7 @@ nofor pass2 $l[]@46 @68-6
 nofor pass3 @6-12345 @6-123457
 nofor pass3 @6-2456 @6-24567
 nofor pass3 @6-1346 @6-13467
-nofor pass3 @6-1356 @6-13567
+nofor pass3 @6-1356 @13567
 nofor pass3 @6-1256 @6-12567
 
 # save ~ and |  before inserting extra letsigns and endcapsword in pass 2.

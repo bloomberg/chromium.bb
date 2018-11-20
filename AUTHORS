@@ -31,28 +31,32 @@ Boyer did a step back in 2014:
 
 Considerable coding was done by:
 
+  Bue Vester-Andersen <bue@vester-andersen.dk>
+  Dave Mielke <dave@mielke.cc>
   Davy Kager <mail@davykager.nl>
   Eitan Isaacson <eitan@ascender.com>
   James Teh <jamie@jantrid.net>
   Michael Curran <mick@kulgan.net>
   Michael Whapples <mwhapples@aim.com>
   Mike Gray <mgray@aph.org>
-  Dave Mielke <dave@mielke.cc>
+  Reiner Dolp <hallo@reinerdolp.com>
 
 Patches were provided by:
 
+  Arend Arends <arend.arends@hccnet.nl>
+  Chris Brannon
   Jeremy Roman <jbroman@google.com>
-  Milan Zamazal <pdm@brailcom.org>
-  Peter Nilsson Lundblad <plundblad@google.com>
-  Timothy Lee <timothy.ty.lee@gmail.com>
-  Vincent Untz <vuntz@gnome.org>
-  Volker Bijewitz <v.bijewitz@baum.de>
-  Simon Aittamaa, Index Braille <simon.aittamaa@indexbraille.com>
   Ken Perry <kperry@aph.org>
   Martin Michlmayr <tbm@cyrius.com>
-  Arend Arends <arend.arends@hccnet.nl>
-  Victor Montalvao vicmont@microsoft.com
-  Bue Vester-Andersen <bue@vester-andersen.dk>
+  Matt Wenn
+  Mike Gorse
+  Milan Zamazal <pdm@brailcom.org>
+  Peter Nilsson Lundblad <plundblad@google.com>
+  Simon Aittamaa, Index Braille <simon.aittamaa@indexbraille.com>
+  Timothy Lee <timothy.ty.lee@gmail.com>
+  Victor Montalvão vicmont@microsoft.com
+  Vincent Untz <vuntz@gnome.org>
+  Volker Bijewitz <v.bijewitz@baum.de>
 
 BRLTTY AUTHORS
 
@@ -89,17 +93,19 @@ Other contributors:
 
 TABLE CONTRIBUTORS
 
-  Amar Usama <ammar.usama@nlb.no>
   Aaron Cannon <cannona@fireantproductions.com>
   Abdolamir Banisaeid <saedjan@gmail.com>
   Adi Kushnir <adikushnir@gmail.com>
   Alex Ho
   Ammar Usama <ammar.usama@nlb.no>
-  André-Abush Clause <clause.andreabush@gmail.com>
+  André-Abush Clause <dev@andreabc.net>
+  Anthony Tibbs
+  Ashoka Bandula Weerawardhana
   Birkir Gunnarsson <birkir@midstod.is>
   Brailcom, o.p.s. <technik@brailcom.cz>
   Branislav Mamojka <mamojka@unss.sk>
   Bue Vester-Andersen <bue@vester-andersen.dk>
+  Bo-Cheng Jhan <school510587@yahoo.com.tw>
   Carles Sadurní Anguita <www.transcriptor.net>
   Carlos Ferreira <cferreira9886@gmail.com>
   Caterina Avoledo <catery81@yahoo.it>
@@ -113,12 +119,19 @@ TABLE CONTRIBUTORS
   Dinakar T.D. <td.dinkar@gmail.com>
   Dinesh Kaushal<dineshkaushal@hotmail.com>
   Dipendra Manocha <d@saksham.org>
+  Erez Kugler <erez@gaash.com> from TSR GAASH <www.tsr-gaash.co.il>
   Eric Yip
   Frédéric Schwebel
   Greg Kearney <gkearney@gmail.com>
+  Halim Sahin <halim.sahin@web.de>
+  Hammer Attila <hammera@pickup.hu>, <hammer.attila@infoalap.hu> from IT Foundation for the Visually Impaired in Hungary
+  Hans Schou <chlor@schou.dk>
+  Harri Pasanen <harri@mpaja.com>
   Henri Apperloo <h.apperloo@cbb.nl> from CBB <www.cbb.nl>
-  International league of Blind Esperantists (LIBE) <libe.narzan.com>
+  Him Prasad Gautam
   Igor B. Poretsky <poretsky@mlbox.ru>
+  International league of Blind Esperantists (LIBE) <libe.narzan.com>
+  Jake Kyle from Compass Braille <jake@compassbraille.org>
   James Bowden <james.bowden@rnib.org.uk> from Royal National Institute of Blind People (RNIB)
   Jan Halousek <merit@login.cz> from MERIT
   Jan Hegr <hegrjan@gmail.com>
@@ -129,23 +142,23 @@ TABLE CONTRIBUTORS
   Juan Carlos Buño Suárez <quetzatl@eresmas.net>
   Jukka Eerikäinen <jukka.eerikainen@celia.fi> from Celia <www.celia.fi>
   Jürgen Dengo <jyrgen.dengo@gmail.com>
-  Halim Sahin <halim.sahin@web.de>
-  Hammer Attila <hammera@pickup.hu>, <hammer.attila@infoalap.hu> from IT Foundation for the Visually Impaired in Hungary
-  Hans Schou <chlor@schou.dk>
-  Harri Pasanen <harri@mpaja.com>
-  Him Prasad Gautam
+  KM Yuen
   Kaifang Bao baokaifang@gmail.com from RejoinTech
   Karol Pecyna <HarpoDeveloper@gmail.com> from Harpo <http://int.harpo.com.pl>
   Keny Yuen
-  KM Yuen
+  Kevin Derome
   Knut Arne Bjørndal <bob+liblouis@cakebox.net>
   Lars Bjørndal <lars@handytech.no>, <lars@lamasti.net>
+  Luis Lorente Barajas (ONCE-CIDAT)
   Leon Ungier <Leon.Ungier@ViewPlus.com> from ViewPlus Technologies, Inc. <www.viewplus.com>
   Leona Holloway <Leona.Holloway@visionaustralia.org> from Vision Australia
+  Leonard de Ruijter from Babbage B.V. <www.babbage.com>
+  Ludovic Oger <oger.ludovic@gmail.com>
   Mateja Jenčič
   Michel Such <michel.such@free.fr>
   Mike Sivill <mike.sivill@viewplustechnologies.com> from ViewPlus Technologies, Inc.
   Mohammed R. Ramadan <mramadan@nattiq.com>
+  Mohammadreza Rashad <mohammadreza5712@gmail.com>
   Monk Jeremiah from Visoki Dečani <visokidecani@gmail.com>
   Neil Soiffer <NeilS@dessci.com>
   Nicolas Pitre <nico@cam.org>
@@ -154,18 +167,25 @@ TABLE CONTRIBUTORS
   Paul Wood <paulw.torchtrust@gmail.com>
   Peter Engström <peter.engstrom@indexbraille.com> from Index Braille
   Peter Vágner <pvdeejay@gmail.com>
+  Rimas Kudelis <rq@akl.lt>
+  Ronan McGuirk <ronan.p.mcguirk@gmail.com>
+  Roshanson <736781877@qq.com>
   Rui Batista <ruiandrebatista@gmail.com>
   Rui Fontes <rui.fontes@tiflotecnia.com>
   Rumiana Kamenska <rkamenska@gmail.com>
   Samuel Thibault <samuel.thibault@ens-lyon.org>
   Sébastien Sablé <sable@users.sourceforge.net>
+  Sergiy Moskalets (www.trosti.com.ua)
   Simone Dal Maso <simone.dalmaso@juvox.it>
   Sreeja Parameswaran <sreeja.param@gmail.com>
   Stefan Moisei <vortex37@gmail.com>
+  Sukil Etxenike <sukiletxe@yahoo.es>
+  Sunian Loomee <ghito@qq.com>
   Tamru E. Belay <tamru@sympatico.ca>, <g.braille@sympatico.ca> from Adaptive Technology Center for the Blind (ATCB)
   Tom Johnston <Tom.Johnston@accessibilityconsulting.co.uk>
   Tsengel Maidar tsengel@digitalsunngo.org
   Yuemei Sun from ViewPlus Technologies, Inc.
+  Zlatko Sobočan <zlatko.sobocan@tifloglobus.hr>
   Zvonimir Stanecic <zvonimirek222@yandex.com>
   <Aliminator83@gmail.com>
   <eric@integra-belgium.com>

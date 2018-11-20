@@ -1,3 +1,5 @@
+#-display-name: Hindi braille
+
 #+locale:hi
 #+type:literary
 #+grade:1

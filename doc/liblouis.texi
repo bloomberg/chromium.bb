@@ -129,6 +129,7 @@ How to Write Translation Tables
 * Swap Opcodes::
 * The Context and Multipass Opcodes::
 * The correct Opcode::
+* The match Opcode::
 * Miscellaneous Opcodes::
 
 Emphasis Opcodes
@@ -202,7 +203,7 @@ and in Windows it is a DLL. For installation instructions see the
 README file. Please report bugs and oddities to the mailing list,
 @email{liblouis-liblouisxml@@freelists.org}
 
-This documentation is derived from Chapter 7 of the BRLTTY manual, but
+This documentation is derived from the BRLTTY manual, but
 it has been extensively rewritten to cover new features.
 
 @section Who is this manual for
@@ -243,7 +244,7 @@ for, license information and include tables you need for your table.
 Following this, you'll write various translation rules and lastly you
 write special rules to handle certain situations.
 
-@cindex opcode
+@cindex Opcode
 A translation rule is composed of at least three parts: the opcode
 (translation command), character(s) and braille dots. An opcode is a
 command you give to a machine or a program to perform something on
@@ -282,6 +283,7 @@ program in which you can test your work.
 * Swap Opcodes::
 * The Context and Multipass Opcodes::
 * The correct Opcode::
+* The match Opcode::
 * Miscellaneous Opcodes::
 @end menu
 
@@ -321,7 +323,7 @@ Contraction tables may be 8-bit ASCII files, UTF-8, 16-bit big-endian
 Unicode files or 16-bit little-endian Unicode files. Blank lines are
 ignored. Any leading and trailing whitespace (any number of blanks
 and/or tabs) is ignored. Lines which begin with a number sign or hatch
-mark (@samp{#}) are ignored, i.e. they are comments. If the number
+mark (@samp{#}) are ignored, i.e.@: they are comments. If the number
 sign is not the first non-blank character in the line, it is treated
 as an ordinary character. If the first non-blank character is
 less-than (@samp{<}) the line is also treated as a comment. This makes
@@ -353,7 +355,7 @@ always world 456-2456 A word and the dot pattern of its contraction
 Most opcodes have both a "characters" operand and a "dots" operand,
 though some have only one and a few have other types.
 
-@cindex characters operand
+@cindex Characters operand
 The characters operand consists of any combination of characters and
 escape sequences proceeded and followed by whitespace. Escape
 sequences are used to represent difficult characters. They begin with
@@ -392,18 +394,18 @@ Full 32-bit value.
 
 @end table
 
-@cindex dots operand
+@cindex Dots operand
 The dots operand is a braille dot pattern. The real braille dots, 1
 through 8, must be specified with their standard numbers.
 
-@cindex virtual dots
+@cindex Virtual dots
 @anchor{virtual dots}
 liblouis recognizes @emph{virtual dots}, which are used for special
 purposes, such as distinguishing accent marks. There are seven virtual
 dots. They are specified by the number 9 and the letters @samp{a}
 through @samp{f}.
 
-@cindex multi-cell dot pattern
+@cindex Multi-cell dot pattern
 For a multi-cell dot pattern, the cell specifications must be
 separated from one another by a dash (@samp{-}). For example, the
 contraction for the English word @samp{lord} (the letter @samp{l}
@@ -552,21 +554,11 @@ punctuation . 46 dot pattern for period in NAB computer braille
 @end example
 
 @opcode{digit, character dots}
-Associates a digit with a dot pattern to be used in computer Braille
-and defines the character as a digit. For example:
+Associates a digit with a dot pattern and defines the character as a
+digit. For example:
 
 @example
 digit 0 356 NAB computer braille
-@end example
-
-@opcode{litdigit, digit dots}
-Associates a digit with the dot pattern which should be used to
-represent it in literary Braille, usually with number sign before the
-whole number. For example:
-
-@example
-litdigit 0 245
-litdigit 1 1
 @end example
 
 @opcode{uplow, characters dots [@comma{}dots]}
@@ -620,6 +612,15 @@ attributes uppercase and letter. @code{lowercase} and @code{uppercase}
 should be used when a letter has only one case. Otherwise use the
 @opcoderef{uplow}.
 
+@opcode{litdigit, digit dots}
+Associates a digit with the dot pattern which should be used to
+represent it in literary texts. For example:
+
+@example
+litdigit 0 245
+litdigit 1 1
+@end example
+
 @opcode{sign, character dots}
 Associates a character with a dot pattern and defines both as a sign.
 This opcode should be used for things like at sign (@samp{@@}),
@@ -661,7 +662,15 @@ capsletter 6
 
 @opcode{begcapsword, dots}
 The dot pattern which begins a block of capital letters at the
-beginning or within a word. For example:
+beginning or within a word. The block is automatically terminated
+by any character that is not a capital letter, e.g. small letters,
+punctuation, numbers etc.
+
+Apart from capital letters, you can define a list of characters that
+can appear within a word in capitals without terminating the block.
+Do this by using the @opcoderef{capsmodechars} opcode.
+
+Example:
 
 @example
 begcapsword 6-6
@@ -669,19 +678,43 @@ begcapsword 6-6
 
 @opcode{endcapsword, dots}
 The dot pattern which ends a block of capital letters within a word.
+It is used in cases where the block is not terminated automatically
+by a word boundary, a number or punctuation. A common case is when
+an uppercase block is followed directly by a lowercase letter.
+
 For example:
 
 @example
 endcapsword 6-3
 @end example
 
-@opcode{begcaps, dots}
-The dot pattern which begins a block of capital letters defined by the
-provided @code{typeform} without regard for any other rules. For
-example:
+@opcode{capsmodechars, characters}
+
+Normally, any character other than a capital letter will cancel the
+@opcoderef{begcapsword} indicator. However, by using the
+@code{capsmodechars} opcode, you can specify a list of characters
+that are legal within a capitalized word. In some Braille codes,
+this might be the case for the hyphen character, @samp{-}.
+
+Example:
 
 @example
-begcaps 6-6
+capsmodechars -
+@end example
+
+@opcode{begcaps, dots}
+The dot pattern which begins a block of capital letters defined by the
+provided @code{typeform} without regard for any other rules.
+This construct is sometimes also called a capsphrase. It is used
+in some Braille codes to mark a whole phrase or sentence as capital
+letters. The block can contain capital letters as well as
+none-alphabetic characters, punctuation, numbers etc. The
+block is terminated when a small letter is encountered or at the end of the input string.
+
+Example:
+
+@example
+begcaps 6-6-6
 @end example
 
 @opcode{endcaps, dots}
@@ -742,10 +775,59 @@ similar to the @opcoderef{letsign}.
 @opcode{numsign, dots}
 The translator inserts this indicator before numbers made up of digits
 defined with the @opcoderef{litdigit} to show that they are a number
-and not letters or some other symbols. For example:
+and not letters or some other symbols. A number is terminated when a
+space, a letter or any other none-@opcoderef{litdigit} character is
+encountered.
+
+You can define characters or strings to be part of a number by using
+the @opcoderef{midnum} opcode, the @opcoderef{numericmodechars} opcode
+or the @opcoderef{midendnumericmodechars} opcode.
+
+Example:
 
 @example
 numsign 3456
+@end example
+
+@opcode{numericnocontchars, characters}
+
+This opcode specifies the characters that require a
+@opcoderef{nocontractsign} if they appear after a number with no
+intervening space, e.g. @samp{1a} or @samp{2-B}.
+
+These characters will typically be the letters a-j, which usually
+constitute the literary digits (see @opcoderef{litdigit}). However,
+in some Braille codes, all letters fall in this category.
+
+Example:
+
+@example
+numericnocontchars abcdefghij
+@end example
+
+@opcode{numericmodechars, characters}
+
+@opcode{midendnumericmodechars, characters}
+
+Any of these characters can appear within a number without terminating
+the effect of the number sign (@pxref{numsign
+opcode,numsign,@code{numsign}}). In other words, they don't cancel
+numeric mode.
+
+The difference between the two opcodes is that
+@opcoderef{numericmodechars} characters can appear anywhere in a
+number whereas @opcoderef{midendnumericmodechars} characters can
+appear only in the middle or at the end of a number. Like
+@code{midendnumericmodechars}, @code{numericmodechars} characters keep
+numeric mode active, but in addition they activate numeric mode
+immediately when at least one digit follows, and the number sign will
+precede the @code{numericmodechars} character in this case.
+
+Example:
+
+@example
+numericmodechars .,
+midendnumericmodechars -/
 @end example
 
 @end table
@@ -756,7 +838,7 @@ numsign 3456
 In many braille systems emphasis such as bold, italics or underline is
 indicated using special dot patterns that mark the start and often
 also the end. For some languages these braille indicators differ
-depending on the context, i.e. here is an separate indicator for an
+depending on the context, i.e.@: here is an separate indicator for an
 emphasized word and another one for an emphasized phrase. To
 accommodate for all these usage scenarios liblouis provides a number of
 opcodes for various contexts.
@@ -853,7 +935,7 @@ emphletter italic 46-25
 @subsubsection Word
 
 Many languages have special indicators for emphasized words. Usually
-they start at the beginning of the word and and implicitly, i.e.
+they start at the beginning of the word and and implicitly, i.e.@:
 without a closing indicator at the end of the word. There are also use
 cases where the emphasis starts in the middle of the word and an
 explicit closing indicator is required.
@@ -977,9 +1059,10 @@ require special treatment.
 
 @table @code
 @opcode{decpoint, character dots}
+
 This opcode defines the decimal point. It is useful if your Braille
 code requires the decimal separator to show as a dot pattern different
-from the normal representation of this character, i.e. period or
+from the normal representation of this character, i.e.@: period or
 comma. In addition, it allows the notation @samp{.001} to be
 translated correctly. This notation is common in some languages
 instead of @samp{0.001} (no leading 0). When you use the
@@ -1046,9 +1129,10 @@ The dots operand defines the braille representation for the characters
 operand. It may also be specified as an equals sign (@samp{=}). This
 means that the the default representation for each character
 (@pxref{Character-Definition Opcodes}) within the sequence is to be
-used. Note however that the @samp{=} shortcut for dot patterns is
-deprecated. Dot patterns should be written out. Otherwise
-back-translation may not be correct.
+used. Note however that the @samp{=} shortcut for dot patterns has a
+known bug@footnote{See
+@url{https://github.com/liblouis/liblouis/issues/500#issuecomment-365753137}.}
+that might cause problems when back-translating.
 
 In what follows the word @samp{characters} means a sequence of one or
 more consecutive letters between spaces and/or punctuation marks.
@@ -1403,12 +1487,11 @@ over the string to be translated. The number after the word
 multipass opcodes are given, only the first translation pass is made.
 The @code{context} opcode is basically a multipass opcode for the
 first pass. It differs slightly from the multipass opcodes per se.
-When back-translating, the passes are performed in the reverse order, i.e.
-@code{pass4}, @code{pass3}, @code{pass2}, @code{context}.
-Each of these opcodes must be prefixed by either
-the @opcoderef{noback} or the @opcoderef{nofor}.
-The format of all these opcodes is @code{opcode test action}.
-The specific opcodes are invoked as follows:
+When back-translating, the passes are performed in the reverse order,
+i.e.@: @code{pass4}, @code{pass3}, @code{pass2}, @code{context}. Each
+of these opcodes must be prefixed by either the @opcoderef{noback} or
+the @opcoderef{nofor}. The format of all these opcodes is @code{opcode
+test action}. The specific opcodes are invoked as follows:
 
 @table @code
 @anchor{context opcode}
@@ -1491,6 +1574,30 @@ Name: the name of a grouping pair. The left brace indicates that the
 first (or left) member of the pair is to be used in matching. If this
 is between replacement brackets it must be the only item. This is also
 valid in the action part.
+
+The brace actions, @code{@{name} and @code{@}name}, refer to named
+groupings. A grouping is created with the @opcoderef{grouping} and
+contains exactly two characters which represent the opening character
+and the matching closing character for a character grouping. The first
+operand is the grouping name, the second is the two (opening and
+closing) characters, and the third is the two dot patterns separated
+by a comma.
+
+Let's say that you'd like to define the opening and closing
+parentheses via multipass rules, and that you'd like to use dots
+123478 for the opening parenthesis and dots 145678 for the closing
+parenthesis. One way to do so is like this:
+
+@example
+grouping parentheses () 123478,145678
+noback correct @{parentheses @{parentheses
+noback correct @}parentheses @}parentheses
+@end example
+
+The references within the test part of the multipass rule match
+against the characters (the second operand) of the grouping rule, and
+the references within the action part replace with the dot patterns
+(the third operand) of the grouping.
 
 @item  @} (right brace)
 Name: the name of a grouping pair. The right brace indicates that the
@@ -1619,7 +1726,7 @@ pre-translation pass to remove them. The errors and their corrections
 are specified by the @code{correct} opcode. If there are no
 @code{correct} opcodes in a table, the pre-translation pass is not used.
 If any back-translation corrections have been specified then they are
-applied in a post-translation (i.e. the very last) pass.
+applied in a post-translation (i.e.@: the very last) pass.
 
 Note that like the @opcoderef{context} and multi-pass opcodes, the
 @code{correct} opcode must be preceded by @opcoderef{noback} or
@@ -1641,6 +1748,141 @@ noback correct "\s?" "?" drop space before question mark
 @end example
 
 @end table
+
+@node The match Opcode
+@section The match Opcode
+
+The match opcode is similar the multipass opcodes and can be seen as
+the more low-level and powerful cousin to the @opcoderef{context}.
+
+@strong{Note:} For historical reasons despite being fairly similar in
+syntax and functionality both the @opcoderef{context} and the
+@opcoderef{match} exist and are in use in modern braille tables. But
+in the future they might be merged under some common opcode. For that
+reason consider the match opcode @emph{somewhat experimental}.
+
+@table @code
+@opcode{match, pre-pattern characters post-pattern dots}
+
+This opcode allows for matching a string of characters via @emph{pre}
+and @emph{post patterns}. The patterns are specified using an
+expression syntax somewhat like regular expressions (@pxref{pattern
+expression syntax}). A single hyphen (@samp{-}) by itself means no
+pattern is specified.
+
+The following will replace @samp{xyz} with the dots
+@samp{1346-13456-1356} when it appears in the string @samp{abxyzcd}.
+
+@example
+match ab xyz cd 1346-13456-1356
+@end example
+
+The following will replace @samp{ONE} with @samp{3456-1} when it
+starts the input and is followed by @samp{:}
+
+@example
+match ^ ONE : 3456-1
+@end example
+@end table
+
+@anchor{pattern expression syntax}
+The @code{pre-pattern} and the @code{post-pattern} can contain
+any of the following expressions:
+
+@table @samp
+@item [ ]
+Expression can be any of the characters between the brackets. If only
+one character present then the brackets are not needed unless it is a
+special character, in which it should be escaped with the backslash.
+
+@item .
+Expression can be any character.
+
+@item %[ ]
+Expression is a character with the attributes listed between the
+brackets. If only one character is present then the brackets are not
+needed. The set of attributes are specified as follows:
+
+@table @samp
+@item _
+space
+@item #
+digit
+@item a
+letter
+@item u
+uppercase
+@item l
+lowercase
+@item .
+punctuation
+@item $
+sign
+@end table
+
+@item ^
+Match at the end of input processing (or beginning depending of the
+direction pre or post).
+
+@item $
+Same as @samp{^}.
+@end table
+
+For example the following will replace @samp{bb} with the dots @samp{23} when it
+is between letters.
+
+@example
+match %a bb %a 23
+@end example
+
+The following will replace @samp{con} with the dots @samp{25} when it
+is preceded by a space or beginning of input, and followed by an
+@samp{s} and then any letter.
+
+@example
+match %[^_] con s%a 25
+@end example
+
+Similar to regular expressions the pattern expressions can contain
+grouping, quantifiers and even negation:
+
+@table @samp
+@item ( )
+Expressions between parentheses are grouped together as one
+expression.
+
+@item !
+The following expression is negated.
+
+@item ?
+The previous expression must match zero or one times.
+
+@item *
+The previous expression must match zero or more times.
+
+@item +
+The previous expression must match one or more times.
+
+@item |
+Either the previous or the following expressions must match.
+@end table
+
+For example the following will replace @samp{ing} with the dots
+@samp{346} when it is @emph{not} preceded by a space or beginning of
+input. What follows after the @samp{ing} does not matter, hence the
+@samp{-}.
+
+@example
+match !%[^_] ing - 346
+@end example
+
+The following will replace @samp{con} with the dots @samp{25} when it
+is preceded by a space, or beginning of input; then followed by a
+@samp{c} that is followed by any character but @samp{h}.
+
+@example
+match %[^_] con c!h 25
+@end example
 
 @node Miscellaneous Opcodes
 @section Miscellaneous Opcodes
@@ -1712,16 +1954,83 @@ opcode.
 @node Notes on Back-Translation
 @chapter Notes on Back-Translation
 
+@anchor{General Notes}
+@section General Notes
+
+Back-translation refers to the process of translating backwards,
+i.e.@: from Braille to text. For many years, Liblouis was mainly
+concerned with forward translation, and so were most of the authors of
+the translation tables. Today however, Liblouis is being used
+extensively in conjunction with screen reading programs like NVDA and
+JAWS for Windows as well as Braille note-takers like BrailleSense from
+HIMS and BrailleNote from HumanWare. So when writing a translation
+table for Liblouis, it is indeed relevant to consider how the table
+will work when used for back-translation, if anything special must be
+done, or if you want to write separate tables for forward translation
+and back-translation.
+
+Back-translation is generally harder to do in a computer program than
+forward translation. Ideally, any text could be translated to Braille
+and then translated back to text giving exactly the same result as the
+original. However, many Braille codes omit a lot of information and
+leaves it to the reader to fill in the missing bits. An example of this
+is letters with accents. In languages where accents are uncommon, e.g.
+English, Accented letters are usually just marked with a Braille
+indicator stating that there is an accent, but not which accent, even
+though this may be crucial to the meaning of the word or the sentence.
+Another example of this is when not all capital letters are marked in
+the Braille code, but only the "important" capital letters. A third
+example is when a Braille character serves as both a punctuation sign,
+a math sign, and perhaps even as a contraction, and the Braille code
+then leaves it up to the reader to use his/her knowledge of the context
+to decide the meaning of the Braille character.
+
+In some cases, you may need to bend the rules of the Braille code if it
+is important to create Braille that can be properly back-translated.
+This may include marking all capital letters instead of just the
+"important" ones, or perhaps marking a Braille character with an
+indicator stating that this character should in fact be interpreted as
+a math sign and not a punctuation or Braille contraction. In some
+cases, the best solution may be to create two separate sets of tables
+for forward translation: One set for Braille that must be
+back-translatable (for use with screen readers and note-takers), and
+another for good and nice literary Braille (for embossing).
+But no matter how you bend the Braille code, the back-translation
+process may not be perfect.
+
+@anchor{Back-translation with Liblouis}
+@section Back-translation with Liblouis
+
 Back-translation is carried out by the function
 @code{lou_backTranslateString}. Its calling sequence is described in
-@ref{Programming with liblouis}. Tables containing no
-@opcoderef{context}, @opcoderef{correct} or multipass opcodes can be
-used for both forward and backward translation. If these opcodes are
-needed different tables will be required.
-@code{lou_backTranslateString} first performs @code{pass4}, if
+@ref{Programming with liblouis}. @code{lou_backTranslateString} first
+performs @code{pass4}, if
 present, then @code{pass3}, then @code{pass2}, then the
 backtranslation, then corrections. Note that this is exactly the
 inverse of forward translation.
+
+Most opcodes can be preceded by @opcoderef{noback} or @opcoderef{nofor},
+and the @code{correct}, @code{context} and multi-pass opcodes must be
+preceded with either @code{noback} or @code{nofor}. So in most cases,
+it will be perfectly possible to make one table for translation in both
+directions, although a separate table for forward and backward
+translation might be more readable in some cases.
+
+Most of the opcodes associated with pass 1 have two operands, a
+character operand to the left and a dots operand to the right. During
+forward translation, these operands are used to replace the characters
+with the dot pattern according to the conditions of the opcode. The
+opcode works from left to right. When back-translating, these opcodes
+work the opposite way. The dot patterns are replaced by the text. The
+opcodes work from right to left.
+
+On the other hand, the @code{correct}, @code{context} and multi-pass
+opcodes have a test part to the left and an action part to the right.
+These opcodes work from left to right in both translation directions.
+The test is performed, and if true, the action is executed, i.e.@:
+replacing, inserting or deleting characters or dots. This is why a
+translation direction always has to be specified with these opcodes
+using @code{noback} or @code{nofor}.
 
 @node Table Metadata
 @chapter Table Metadata
@@ -1822,7 +2131,7 @@ Print the version number, then exit successfully.
 Most test programs let you specify one or multiple tables to use.
 These tables are usually found in standard locations in the file
 system or local to where the command is executed. @xref{How tables are
-found} for a description on how the tables are located.
+found}, for a description on how the tables are located.
 
 @menu
 * lou_debug::
@@ -2150,7 +2459,8 @@ You will see a few lines telling you how to use the program.
 This program tests a liblouis table against a corpus of known good
 Braille translations defined in YAML format. For a description of the
 format refer to @ref{YAML Tests}. The program returns 0 if all tests
-pass or 1 if any of the tests fail. Invoke it as follows:
+pass or 1 if any of the tests fail. If @code{libyaml} is not installed
+the program will simply skip all tests. Invoke it as follows:
 
 @example
 lou_checkyaml YAML_TEST_FILE
@@ -2183,7 +2493,7 @@ where you define the table that is to be tested and any number of
 words or phrases to translate together with their respective expected
 translation.
 
-The YAML tests are data driven, i.e. you give the test data, a string
+The YAML tests are data driven, i.e.@: you give the test data, a string
 to translate and the expected output. The data is in a standard format
 namely YAML. If you have @file{libyaml} installed they will
 automatically be invoked as part of the standard @command{make check}
@@ -2197,6 +2507,12 @@ format that allows for an easy and compact way to define tests.
 A YAML file first defines which tables are to be used for the tests.
 Then it optionally defines flags such as the @samp{testmode}. Finally
 all the tests are defined.
+
+You can repeat the cycle as many times as you like (tables, optional
+flags, tests). You can also define several rounds of tests for any
+table, with or without the optional flags. Just remember that the
+flags are reset to their default values each time you start a new
+round of tests or load a new set of tables.
 
 Let's just look at a simple example how tests could be defined:
 
@@ -2236,31 +2552,61 @@ tests:
   - [Good bye,  ⠠⠛⠕⠕⠙ ⠃⠽⠑]
 @end example
 
-The three basic components of a test file are as follows:
+The four basic components of a test file are as follows:
 
 @table @samp
-@item tables
-A list containing table names, which the tests should be run against.
-This is usually just one table, but for some situations more than one
-table can be required.
-
-To test the @file{en-ueb-g1.ctb} table using unicode braille you could
-use the following definition:
+@item table
+A list containing table files, which the tests should be run against.
+This is usually just one file, but for some situations more than one
+file can be required. For example:
 
 @example
-table: [unicode.dis, en-ueb-g1.ctb]
+table: [hu-hu-g1.ctb, hyph_hu_HU.dic]
 @end example
 
-If you wanted to test the @file{eo-g1.ctb} table using brf notation
-then you would use the following definition:
+It is also possible to specify a table inline. @ref{Inline definition
+of tables} below explains how to do this.
+
+A third way to specify a table is by its metadata. A table query,
+which is essentially as list of ``features'', is matched against the
+@ref{Table Metadata,table metadata} defined inside the tables
+contained in @env{LOUIS_TABLEPATH}. Only the best match is used for
+the test.
+
+The syntax of the query is a variation of the @ref{Query
+Syntax,syntax} used for the @ref{lou_findTable,@code{lou_findTable}}
+function:
 
 @example
-table: [en-us-brf.dis, eo-g1.ctb]
+table:
+  locale: fr
+  grade: 1
+@end example
+
+@item display
+A display table, which should be used to encode braille in the
+test. This item is optional. If it is present it should be the first
+item of the file. If it is not present, the braille encoding of each
+test is determined by the table that is being tested.
+
+The next example shows how to test the @file{en-ueb-g1.ctb} table
+using ASCII notation (as defined in @file{en-ueb-g1.ctb} itself):
+
+@example
+table: [en-ueb-g1.ctb]
+@end example
+
+If you wanted to test the @file{en-ueb-g1.ctb} table using Unicode dot
+patterns then you would use the following definition:
+
+@example
+display: unicode.dis
+table: [en-ueb-g1.ctb]
 @end example
 
 @item flags
 The flags that apply for all tests in this file. At the moment only
-the @samp{testmode} flag is supported. It can have three possible
+the @samp{testmode} flag is supported. It can have four possible
 values:
 
 @table @samp
@@ -2268,6 +2614,8 @@ values:
 This indicates that the tests are for forward translation
 @item backward
 This indicates that the tests are for backward translation
+@item bothDirections
+This indicates that the tests are for both forward and backward translation.
 @item hyphenate
 This indicates that the tests are for hyphenation
 @end table
@@ -2344,27 +2692,84 @@ for emphasis are @samp{italic}, @samp{underline}, @samp{bold},
         underline: '    +'
 @end example
 
-@item cursorPos
-A list of cursor positions for each input position. Useful when
+@item inputPos
+A list of 0-based input positions, one for each output position.
+Useful when simulating screen reader interaction, to debug contraction
+and cursor behavior as in the following example. Note that all
+positions in this and the following examples start at 0. Also note
+that in these examples the additional options are not passed using the
+``flow style'' notation.
+
+@example
+  -
+    - went
+    - ⠺⠢⠞
+    - inputPos: [0,1,3]
+@end example
+
+@item outputPos
+A list of 0-based output positions, one for each input position. Useful when
 simulating screen reader interaction, to debug contraction and cursor
-behavior as in the following example from the @file{en-GB-g2.ctb}
-test. Also note that in this example the additional options are not
-passed in using the ``flow style'' notation.
+behavior as in the following example.
+
+@example
+  -
+    - went
+    - ⠺⠢⠞
+    - outputPos: [0,1,1,2]
+@end example
+
+@item cursorPos
+The cursor position for the given translation and optionally an
+expected cursor position where the cursor is supposed to be after the
+translation. Useful when simulating screen reader interaction, to
+debug contraction and cursor behavior:
+
+The cursor position can take two forms: You can either specify a
+single number or alternatively you can give a tuple of two numbers.
+
+@table @asis
+
+@item single number (e.g. @samp{4})
+When you simply want to specify the cursor position for the given
+translation you pass a number as in the following example:
 
 @example
   -
     - you went to
     - ⠽ ⠺⠑⠝⠞ ⠞⠕
     - mode: [compbrlAtCursor]
-      cursorPos: [0,1,2,3,4,5,6,7,8,9,10]
+      cursorPos: 4
 @end example
+
+@item a tuple (e.g. @samp{[4,2]})
+When you expect the cursor to be in a particular position after the
+translation and you want to check this then pass a tuple of cursor
+positions as in the following example:
+
+@example
+  -
+    - you went to
+    - ⠽ ⠺⠑⠝⠞ ⠞⠕
+    - mode: [compbrlAtCursor]
+      cursorPos: [4,2]
+@end example
+@end table
 
 @item mode
 A list of translation modes that should be used for this test. If not
 defined defaults to 0. Valid mode values are @samp{noContractions},
-@samp{compbrlAtCursor}, @samp{dotsIO}, @samp{comp8Dots},
-@samp{pass1Only}, @samp{compbrlLeftCursor},
+@samp{compbrlAtCursor}, @samp{dotsIO}, @samp{compbrlLeftCursor},
 @samp{ucBrl}, @samp{noUndefinedDots} or @samp{partialTrans}.
+
+For a description of the various translation mode flags, please see
+the function @ref{lou_translateString}.
+
+@item maxOutputLength
+Define a maximum length of the output. This can be used to test the
+behavior of liblouis in the face of a limited output buffer, for
+example the length of the refreshable braille display.
+
 @end table
 
 @end table
@@ -2407,6 +2812,39 @@ tests:
   - [..., ...]
 @end example
 
+If you specify flags for the tests, remember that the flags are reset
+to their default values when you specify a new table.
+
+@subsection Multiple test sections for each table
+You can specify several sections of tests for each table, with or
+without the optional flags. This is useful e.g. if you want to have
+various tests for both forward and backward translation for the same
+set of tables, especially if you are defining the table as part of
+the yaml file (see next section). This feature is also useful if you
+simply want to devide your tests into multiple sections for better
+overview. All flags are reset to their default values when you start
+a new test section.
+
+Thus, a yaml file might look as follows:
+
+@example
+table: ...
+tests:
+  - [..., ...]
+  - [..., ...]
+
+# Some more tests
+  tests:
+  - [..., ...]
+  - [..., ...]
+
+# Some tests for back-translation - same table
+flags: @{testmode: backward@}
+  - [..., ...]
+  - [..., ...]
+@end example
+
+@anchor{Inline definition of tables}
 @subsection Inline definition of tables
 When testing very specific opcode combinations it is sometimes tedious
 to create specific test tables just for that. Hence the YAML tests
@@ -2519,11 +2957,11 @@ following definition is included in @file{liblouis.h}. It is correct
 for computers with at least 32-bit processors.
 
 @example
-#define widechar unsigned short int
+typedef unsigned short int widechar
 @end example
 
 To make liblouis handle 32-bit Unicode simply remove the word
-@code{short} in the above @code{define}. This will cause the translate and
+@code{short} in the above @code{typedef}. This will cause the translate and
 back-translate functions to expect input in 32-bit form and to deliver
 their output in this form. The input to the compiler (tables) is
 unaffected except that two new escape sequences for 20-bit and 32-bit
@@ -2681,7 +3119,7 @@ translation table.
 
 @anchor{translation-tables}
 The @code{tableList} parameter points to a list of translation tables
-separated by commas. @xref{How tables are found} for a description on
+separated by commas. @xref{How tables are found}, for a description on
 how the tables are located in the file system. If only one table is
 given, no comma should be used after it. It is these tables which
 control just how the translation is made, whether in Grade 2, Grade 1,
@@ -2725,12 +3163,70 @@ is also of the same length as the string pointed to by @code{*inbuf}.
 If this parameter is @code{NULL}, no spacing information is computed.
 
 The @code{mode} parameter specifies how the translation should be
-done. The valid values of mode are listed in @file{liblouis.h}. They
+done. The valid values of mode are defined in @file{liblouis.h}. They
 are all powers of 2, so that a combined mode can be specified by
 adding up different values.
 
-The function returns 1 if no errors were encountered and 0 if a
-complete translation could not be done.
+Note that the @code{mode} parameter is an integer, not a pointer to
+an integer.
+
+A combination of the following mode flags can be used with the
+@code{lou_translateString} function:
+
+@table @code
+@item compbrlAtCursor
+If this bit is set in the @code{mode} parameter the space-bounded
+characters containing the cursor will be translated in computer
+braille.
+
+@item compbrlLeftCursor
+If this bit is set, only the characters to the left of the cursor will
+be in computer braille. This bit overrides @code{compbrlAtCursor}.
+
+@item dotsIO
+When this bit is set, during forward translation, Liblouis will produce
+output as dot patterns. During back-translation Liblouis accepts input
+as dot patterns. Note that the produced dot patterns are affected if
+you have any @opcoderef{display} defined in any of your tables.
+
+@item ucBrl
+The @code{ucBrl} (Unicode Braille) bit is used by the functions
+@code{lou_charToDots} and @code{lou_translate}. It causes the dot
+patterns to be Unicode Braille rather than the liblouis representation.
+Note that you will not notice any change when setting @code{ucBrl}
+unless @code{dotsIO} is also set. @code{lou_dotsToChar} and
+@code{lou_backTranslate} recognize Unicode braille automatically.
+
+@item partialTrans
+This flag specifies that back-translation input should be treated as an
+incomplete word. Rules that apply only for complete words or at the end
+of a word will not take effect. This is intended to be used when
+translating input typed on a braille keyboard to provide a rough idea
+to the user of the characters they are typing before the word is
+complete.
+
+@item noUndefinedDots
+Setting this bit disables the output of dot numbers when
+back-translating undefined Braille patterns. When back translating
+input from a braille keyboard cell by cell, it is desirable to output
+characters as soon as they are produced. Similarly, when back
+translating contracted braille, it is desirable to provide a "guess" to
+the user of the characters they typed. To achieve this, liblouis needs
+to have the ability to produce no text when indicators (which don't
+produce a character by themselves) are not followed by another cell.
+This works automatically for indicators liblouis knows about such as
+capital sign, number sign, etc., but it does not work for indicators
+which are not (and cannot be) specifically defined as indicators. For
+example, in UEB, dots 4 5 6 alone produces the text "\456/". Setting
+the noUndefinedDots mode suppresses this dot number output.
+
+@end table
+
+The function returns 1 if no errors were encountered@footnote{When the
+output buffer is not big enough, @code{lou_translateString} returns a
+partial translation that is more or less accurate up until the
+returned @code{inlen}/@code{outlen}, and treats it as a successful
+translation, i.e.@: also returns 1.} and 0 otherwise.
 
 @node lou_translate
 @section lou_translate
@@ -2763,22 +3259,10 @@ position in @code{inbuf} corresponding to each position in
 the position of the cursor in the input. On return, it will contain
 the cursor position in the output. Any parameter after @code{outlen}
 may be @code{NULL}. In this case, the actions corresponding to it will
-not be carried out. The @code{mode} parameter, however, must be
-present and must be an integer, not a pointer to an integer. If the
-@code{compbrlAtCursor} bit is set in the @code{mode} parameter the
-space-bounded characters containing the cursor will be translated in
-computer braille. If the @code{compbrlLeftCursor} bit is set only the
-characters to the left of the cursor will be in computer braille. This
-bit overrides @code{compbrlAtCursor}. When the @code{dotsIO} bit is
-set, during translation, produce output as dot patterns. During
-back-translation accept input as dot patterns. Note that the produced
-dot patterns are affected if you have any @opcoderef{display} defined
-in any of your tables. The @code{ucBrl} (Unicode Braille) bit is used
-by @code{lou_charToDots} and @code{lou_translate}. It causes the dot
-patterns to be Unicode Braille rather than the liblouis
-representation. Note that you will not notice any change when setting
-@code{ucBrl} unless @code{dotsIO} is also set. @code{lou_dotsToChar}
-and @code{lou_backTranslate} recognize Unicode braille automatically.
+not be carried out.
+
+For a description of all other parameters, please see
+@ref{lou_translateString}.
 
 @node lou_backTranslateString
 @section lou_backTranslateString
@@ -2926,6 +3410,8 @@ consisting of characters according to the specifications in
 @code{outbuf}. The dot patterns in @code{inbuf} can be in either 
 liblouis format or Unicode braille. The function returns 1 on success 
 and 0 on failure.
+
+Note that the @code{mode} parameter has no effect and is deprecated.
 
 @node lou_charToDots
 @section lou_charToDots
@@ -3267,7 +3753,7 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  tablelist fileName printindex deprecatedopcode setDataPath
 @c  LocalWords:  getDataPath MathML suboperands logEnd liblouisutdml whitespace
 @c  LocalWords:  xhhhh yhhhhh zhhhhhhhh OpenOffice documentencoding
-@c  LocalWords:  YAML JSON logLevels nocontractsign OSX DLL env
+@c  LocalWords:  YAML JSON logLevels nocontractsign OSX DLL env NVDA
 @c  LocalWords:  MERCHANTABILITY registerLogCallback setLogLevel brf
 @c  LocalWords:  cindex chardefs xhtml pxref dec multi hyph dic Aa al
 @c  LocalWords:  mrow mfrac emphclass transnote subsubsection begemph
@@ -3280,4 +3766,5 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  abc doctest inString enum cp outbufbuf logcallback fprint
 @c  LocalWords:  lbu EOF heckTable fn ispell getTypeformForEmphClass
 @c  LocalWords:  indexTables begcapsword endcapsword typeforms
-@c  LocalWords:  endemphphraseopcode emphClass
+@c  LocalWords:  endemphphraseopcode emphClass BrailleSense HumanWare
+@c  LocalWords:  BrailleNote refreshable

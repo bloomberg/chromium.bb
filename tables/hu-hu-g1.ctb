@@ -71,6 +71,7 @@ endnum . 3
 always • 6-35
 # literary forms of the decimal digits
 include litdigits6Dots.uti
+midendnumericmodechars ,:.-
 
 #Special letter replacements
 always cs 146	General need replacing cs letters with a combined dot combination
@@ -96,6 +97,10 @@ always zzs 345-345	General need replacing zs letters with a combined dot combina
 #Special punctuation simbols
 prepunc " 236	Opening quotation simbol
 postpunc " 356	Closing quotation simbol
+prepunc « 236
+postpunc » 356
+prepunc » 236
+postpunc « 356
 always " 236	Need this rule to present one left quotation mark if the user firsttyping the " character
 prepunc ( 2346	Opening left parenthese
 postpunc ) 1356	Closing right parenthese
@@ -144,4 +149,5 @@ always ä 5-1
 noback context $l$p["–"] @36-36
 noback context $l["–"] @36-36
 noback always \\_ 6 letter sign before Roman page numbers
+noback pass2 @3456-356 @356-3456
 undefined 26

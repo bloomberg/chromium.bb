@@ -12,6 +12,7 @@ nodist_liblouisinclude_HEADERS = \
 lib_LTLIBRARIES = liblouis.la
 
 AM_CPPFLAGS = 						\
+	$(WARN_CFLAGS)					\
 	-DTABLESDIR=\""$(datadir)"/liblouis/tables\"	\
 	-I$(top_srcdir)/gnulib				\
 	-I$(top_builddir)/gnulib
