@@ -11650,6 +11650,45 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileOmniboxShortcutsOpenBookmarks">
+  <owner>stkhapugin@chromium.org</owner>
+  <description>
+    The user clicked the Bookmarks shortcut in Omnibox popup shortcuts. iOS
+    only.
+  </description>
+</action>
+
+<action name="MobileOmniboxShortcutsOpenHistory">
+  <owner>stkhapugin@chromium.org</owner>
+  <description>
+    The user clicked the History shortcut in Omnibox popup shortcuts. iOS only.
+  </description>
+</action>
+
+<action name="MobileOmniboxShortcutsOpenMostVisitedItem">
+  <owner>stkhapugin@chromium.org</owner>
+  <description>
+    The user clicked one of the Most Visited tiles in Omnibox popup shortcuts.
+    iOS only.
+  </description>
+</action>
+
+<action name="MobileOmniboxShortcutsOpenReadingList">
+  <owner>stkhapugin@chromium.org</owner>
+  <description>
+    The user clicked the Reading List shortcut in Omnibox popup shortcuts. iOS
+    only.
+  </description>
+</action>
+
+<action name="MobileOmniboxShortcutsOpenRecentTabs">
+  <owner>stkhapugin@chromium.org</owner>
+  <description>
+    The user clicked the Recent Tabs shortcut in Omnibox popup shortcuts. iOS
+    only.
+  </description>
+</action>
+
 <action name="MobileOmniboxUse">
   <owner>mpearson@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
