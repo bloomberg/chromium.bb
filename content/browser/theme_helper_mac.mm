@@ -24,6 +24,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/common/content_switches.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 using content::RenderProcessHost;
 using content::RenderProcessHostImpl;
@@ -111,13 +112,14 @@ SkColor NSColorToSkColor(NSColor* color) {
                                              bytesPerRow:4
                                             bitsPerPixel:32]);
 
-  [NSGraphicsContext saveGraphicsState];
-  [NSGraphicsContext
-      setCurrentContext:[NSGraphicsContext
-                            graphicsContextWithBitmapImageRep:offscreen_rep]];
-  NSEraseRect(NSMakeRect(0, 0, 1, 1));
-  [color drawSwatchInRect:NSMakeRect(0, 0, 1, 1)];
-  [NSGraphicsContext restoreGraphicsState];
+  {
+    gfx::ScopedNSGraphicsContextSaveGState gstate;
+    [NSGraphicsContext
+        setCurrentContext:[NSGraphicsContext
+                              graphicsContextWithBitmapImageRep:offscreen_rep]];
+    [color set];
+    NSRectFill(NSMakeRect(0, 0, 1, 1));
+  }
 
   NSUInteger pixel[4];
   [offscreen_rep getPixel:pixel atX:0 y:0];
