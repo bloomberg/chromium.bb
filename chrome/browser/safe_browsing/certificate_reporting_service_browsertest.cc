@@ -5,7 +5,6 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -55,10 +54,6 @@ const char* kFailedReportHistogram = "SSL.CertificateErrorReportFailure";
 void CleanUpOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::URLRequestFilter::GetInstance()->ClearHandlers();
-}
-
-bool AreCommittedInterstitialsEnabled() {
-  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
 }
 
 }  // namespace
@@ -173,14 +168,15 @@ class CertificateReportingServiceBrowserTest
     TabStripModel* tab_strip_model = browser()->tab_strip_model();
     content::WebContents* contents = tab_strip_model->GetActiveWebContents();
     ui_test_utils::NavigateToURL(browser(), kCertErrorURL);
-    // When committed interstitials are enabled, no interstitial attaches; once
-    // a navigation commits, the error page is present.
-    if (!AreCommittedInterstitialsEnabled())
+    // When GetParam() is true, committed interstitials are enabled. In this
+    // case, no interstitial attaches; once a navigation commits, the error page
+    // is present.
+    if (!GetParam())
       content::WaitForInterstitialAttach(contents);
 
     // Navigate away from the interstitial to trigger report upload.
     ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-    if (!AreCommittedInterstitialsEnabled())
+    if (!GetParam())
       content::WaitForInterstitialDetach(contents);
   }
 

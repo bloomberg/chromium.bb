@@ -17,7 +17,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -774,10 +773,6 @@ class MockPasswordProtectionService
   }
 };
 
-bool AreCommittedInterstitialsEnabled() {
-  return base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials);
-}
-
 }  // namespace
 
 class PolicyTest : public InProcessBrowserTest {
@@ -1125,7 +1120,7 @@ class SSLPolicyTestCommittedInterstitials
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PolicyTest::SetUpCommandLine(command_line);
-    if (GetParam()) {
+    if (AreCommittedInterstitialsEnabled()) {
       scoped_feature_list_.InitAndEnableFeature(
           features::kSSLCommittedInterstitials);
     }
@@ -1136,6 +1131,8 @@ class SSLPolicyTestCommittedInterstitials
   }
 
  protected:
+  bool AreCommittedInterstitialsEnabled() const { return GetParam(); }
+
   bool IsShowingInterstitial(content::WebContents* tab) {
     if (AreCommittedInterstitialsEnabled()) {
       security_interstitials::SecurityInterstitialTabHelper* helper =
@@ -4687,29 +4684,15 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
 
   ui_test_utils::NavigateToURL(browser(), https_server_ok.GetURL("/"));
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
   // The page should initially be blocked.
-  content::RenderFrameHost* main_frame;
-  if (AreCommittedInterstitialsEnabled()) {
-    security_interstitials::SecurityInterstitialTabHelper* helper =
-        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-            web_contents);
-    ASSERT_TRUE(helper);
-    ASSERT_TRUE(
-        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
-    main_frame = web_contents->GetMainFrame();
-  } else {
-    const content::InterstitialPage* interstitial =
-        content::InterstitialPage::GetInterstitialPage(web_contents);
-    ASSERT_TRUE(interstitial);
-    main_frame = interstitial->GetMainFrame();
-  }
-  ASSERT_TRUE(content::WaitForRenderFrameReady(main_frame));
-  EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
-      main_frame, "proceed-link"));
+  const content::InterstitialPage* interstitial =
+      content::InterstitialPage::GetInterstitialPage(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(interstitial);
+  ASSERT_TRUE(content::WaitForRenderFrameReady(interstitial->GetMainFrame()));
 
+  EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
+      interstitial->GetMainFrame(), "proceed-link"));
   EXPECT_NE(base::UTF8ToUTF16("OK"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 
@@ -4732,15 +4715,9 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
                                https_server_ok.GetURL("/simple.html"));
 
   // There should be no interstitial after the page loads.
-  // With committed interstitials enabled, we don't have an interstitial page to
-  // check against, so we only check that the title is the correct one after
-  // navigating away.
-  if (!AreCommittedInterstitialsEnabled()) {
-    const content::InterstitialPage* interstitial =
-        content::InterstitialPage::GetInterstitialPage(
-            browser()->tab_strip_model()->GetActiveWebContents());
-    ASSERT_FALSE(interstitial);
-  }
+  interstitial = content::InterstitialPage::GetInterstitialPage(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_FALSE(interstitial);
 
   EXPECT_EQ(base::UTF8ToUTF16("OK"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
