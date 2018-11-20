@@ -245,7 +245,7 @@ as required builders.
 
 * [linux-chromeos-compile-dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-chromeos-compile-dbg) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-chromeos-compile-dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-chromeos-compile-dbg))
 
-  * Experimental percentage: 50
+  * Experimental percentage: 100
 
 * [linux-dcheck-off-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-dcheck-off-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-dcheck-off-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-dcheck-off-rel))
 
