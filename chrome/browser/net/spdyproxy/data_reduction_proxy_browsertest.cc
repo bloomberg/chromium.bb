@@ -438,6 +438,23 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
 }
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
+                       BadProxiesResetWhenDisabled) {
+  SetHeader("bypass=100");
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("http://does.not.resolve/echoheader?Chrome-Proxy"));
+  EXPECT_THAT(GetBody(), kSecondaryResponse);
+
+  // Disabling and enabling DRP should clear the bypass.
+  EnableDataSaver(false);
+  EnableDataSaver(true);
+
+  SetHeader("");
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("http://does.not.resolve/echoheader?Chrome-Proxy"));
+  EXPECT_THAT(GetBody(), kPrimaryResponse);
+}
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        NoProxyUsedWhenBlockOnceHeaderSent) {
   net::EmbeddedTestServer test_server;
   test_server.RegisterRequestHandler(

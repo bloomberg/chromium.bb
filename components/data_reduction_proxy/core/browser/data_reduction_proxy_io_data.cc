@@ -252,8 +252,10 @@ void DataReductionProxyIOData::SetProxyPrefs(bool enabled, bool at_startup) {
 
   // If Data Saver is disabled, reset data reduction proxy state.
   if (!enabled) {
-    // TODO(crbug.com/721403): Make DRP work with network service.
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      if (proxy_config_client_)
+        proxy_config_client_->ClearBadProxiesCache();
+    } else {
       net::ProxyResolutionService* proxy_resolution_service =
           url_request_context_getter_->GetURLRequestContext()
               ->proxy_resolution_service();

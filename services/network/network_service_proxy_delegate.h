@@ -78,6 +78,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceProxyDelegate
   void MarkProxiesAsBad(base::TimeDelta bypass_duration,
                         const net::ProxyList& bad_proxies,
                         MarkProxiesAsBadCallback callback) override;
+  void ClearBadProxiesCache() override;
 
   mojom::CustomProxyConfigPtr proxy_config_;
   mojo::Binding<mojom::CustomProxyConfigClient> binding_;
