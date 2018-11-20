@@ -312,7 +312,8 @@ class SelectFileDialogExtensionBrowserTest
     listener_->WaitForCalled();
 
     // Dialog no longer believes it is running.
-    ASSERT_FALSE(dialog_->IsRunning(owning_window));
+    if (owning_window)
+      ASSERT_FALSE(dialog_->IsRunning(owning_window));
   }
 
   base::ScopedTempDir tmp_dir_;
@@ -545,3 +546,20 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, FileInputElement) {
   // Wait for file dialog's "ready" message.
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
+                       OpenDialogWithoutOwningWindow) {
+  // Open the file dialog with no |owning_window|.
+  ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
+                                     base::FilePath(),
+                                     nullptr /* owning_window */, ""));
+
+  // Click the "Cancel" button.
+  CloseDialog(DIALOG_BTN_CANCEL, nullptr /* owning_window */);
+
+  // Listener should have been informed of the cancellation.
+  ASSERT_TRUE(listener_->canceled());
+  ASSERT_EQ(this, listener_->params());
+}
+#endif
