@@ -6,14 +6,17 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/services/filesystem/public/interfaces/directory.mojom.h"
 #include "components/services/filesystem/public/interfaces/file_system.mojom.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/leveldb/leveldb_service_unittests_catalog_source.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/test/test_service.h"
+#include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_features.h"
 
 namespace leveldb {
@@ -131,27 +134,24 @@ void LevelDBSyncOpenInMemory(mojom::LevelDBService* leveldb,
   run_loop.Run();
 }
 
-class LevelDBServiceTest : public service_manager::test::ServiceTest {
+class LevelDBServiceTest : public testing::Test {
  public:
-  LevelDBServiceTest() : ServiceTest("leveldb_service_unittests") {}
-  ~LevelDBServiceTest() override {}
+  LevelDBServiceTest()
+      : test_service_manager_(test::CreateTestCatalog()),
+        test_service_(test_service_manager_.RegisterTestInstance(
+            "leveldb_service_unittests")) {}
+  ~LevelDBServiceTest() override = default;
 
  protected:
-  // Overridden from mojo::test::ApplicationTestBase:
+  service_manager::Connector* connector() { return test_service_.connector(); }
+
   void SetUp() override {
     // TODO(dullweber): This doesn't seem to work. The reason is probably that
     // the LevelDB service is a separate executable here. How should we set
     // features that affect a service?
     feature_list_.InitAndEnableFeature(leveldb::kLevelDBRewriteFeature);
-    ServiceTest::SetUp();
     connector()->BindInterface("filesystem", &files_);
     connector()->BindInterface("leveldb", &leveldb_);
-  }
-
-  void TearDown() override {
-    leveldb_.reset();
-    files_.reset();
-    ServiceTest::TearDown();
   }
 
   // Note: This has an out parameter rather than returning the |DirectoryPtr|,
@@ -167,6 +167,10 @@ class LevelDBServiceTest : public service_manager::test::ServiceTest {
   mojom::LevelDBServicePtr& leveldb() { return leveldb_; }
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::TestServiceManager test_service_manager_;
+  service_manager::TestService test_service_;
+
   base::test::ScopedFeatureList feature_list_;
   filesystem::mojom::FileSystemPtr files_;
   mojom::LevelDBServicePtr leveldb_;

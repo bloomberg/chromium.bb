@@ -26,9 +26,11 @@ namespace ash {
 namespace shell {
 namespace {
 
-std::unique_ptr<service_manager::Service> CreateQuickLaunch() {
+std::unique_ptr<service_manager::Service> CreateQuickLaunch(
+    service_manager::mojom::ServiceRequest request) {
   logging::SetLogPrefix("quick");
-  return std::make_unique<quick_launch::QuickLaunchApplication>();
+  return std::make_unique<quick_launch::QuickLaunchApplication>(
+      std::move(request));
 }
 
 std::unique_ptr<service_manager::Service> CreateShortcutViewer() {
@@ -55,11 +57,6 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
   void RegisterServices(StaticServiceMap* services) override {
     {
       service_manager::EmbeddedServiceInfo info;
-      info.factory = base::BindRepeating(&CreateQuickLaunch);
-      (*services)[quick_launch::mojom::kServiceName] = info;
-    }
-    {
-      service_manager::EmbeddedServiceInfo info;
       info.factory = base::BindRepeating(&CreateShortcutViewer);
       (*services)[shortcut_viewer::mojom::kServiceName] = info;
     }
@@ -73,6 +70,15 @@ class ShellContentUtilityClient : public content::ContentUtilityClient {
       info.factory = base::BindRepeating(&CreateTestImeDriver);
       (*services)[test_ime_driver::mojom::kServiceName] = info;
     }
+  }
+
+  std::unique_ptr<service_manager::Service> HandleServiceRequest(
+      const std::string& service_name,
+      service_manager::mojom::ServiceRequest request) override {
+    if (service_name == quick_launch::mojom::kServiceName)
+      return CreateQuickLaunch(std::move(request));
+
+    return nullptr;
   }
 
  private:

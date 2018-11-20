@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
@@ -36,14 +35,13 @@ const char kUserDataDir[] = "user-data-dir";
 
 }  // namespace
 
-FileSystemApp::FileSystemApp() : lock_table_(new LockTable) {
+FileSystemApp::FileSystemApp(service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)), lock_table_(new LockTable) {
   registry_.AddInterface<mojom::FileSystem>(
       base::Bind(&FileSystemApp::Create, base::Unretained(this)));
 }
 
-FileSystemApp::~FileSystemApp() {}
-
-void FileSystemApp::OnStart() {}
+FileSystemApp::~FileSystemApp() = default;
 
 void FileSystemApp::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,

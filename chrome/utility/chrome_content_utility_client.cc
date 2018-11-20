@@ -331,9 +331,12 @@ ChromeContentUtilityClient::HandleServiceRequest(
 #if defined(OS_CHROMEOS)
   if (service_name == chromeos::ime::mojom::kServiceName)
     return std::make_unique<chromeos::ime::ImeService>(std::move(request));
-#endif
 
+  return mash_service_factory_->HandleServiceRequest(service_name,
+                                                     std::move(request));
+#else
   return nullptr;
+#endif
 }
 
 void ChromeContentUtilityClient::RegisterNetworkBinders(

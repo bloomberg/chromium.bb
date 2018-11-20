@@ -67,12 +67,13 @@ void ServiceBinding::OnConnectionError() {
 void ServiceBinding::OnStart(const Identity& identity,
                              OnStartCallback callback) {
   identity_ = identity;
-  service_->OnStart();
 
   if (!pending_connector_request_.is_pending())
     connector_ = Connector::Create(&pending_connector_request_);
   std::move(callback).Run(std::move(pending_connector_request_),
                           mojo::MakeRequest(&service_control_));
+
+  service_->OnStart();
 
   // Execute any prior |RequestClose()| request on the service's behalf.
   if (request_closure_on_start_)

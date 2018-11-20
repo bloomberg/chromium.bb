@@ -2,15 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/services/font/font_loader_test.h"
-
 #include <utility>
 
+#include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
+#include "components/services/font/font_service_unittests_catalog_source.h"
+#include "components/services/font/public/cpp/font_loader.h"
 #include "components/services/font/public/interfaces/constants.mojom.h"
 #include "components/services/font/public/interfaces/font_service.mojom.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/test/test_service.h"
+#include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -19,7 +24,9 @@
 #include "ppapi/c/private/pp_private_font_charset.h"  // nogncheck
 #endif
 
+namespace font_service {
 namespace {
+
 bool IsInTestFontDirectory(const char* path) {
   const char kTestFontsDir[] = "test_fonts";
   return std::string(path).find(kTestFontsDir) != std::string::npos;
@@ -49,18 +56,28 @@ std::string GetPostscriptNameFromFile(base::File& font_file) {
 }
 #endif
 
+class FontLoaderTest : public testing::Test {
+ public:
+  FontLoaderTest()
+      : test_service_manager_(test::CreateTestCatalog()),
+        test_service_(test_service_manager_.RegisterTestInstance(
+            "font_service_unittests")),
+        font_loader_(test_service_.connector()) {}
+  ~FontLoaderTest() override = default;
+
+ protected:
+  FontLoader* font_loader() { return &font_loader_; }
+
+ private:
+  base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::TestServiceManager test_service_manager_;
+  service_manager::TestService test_service_;
+  FontLoader font_loader_;
+
+  DISALLOW_COPY_AND_ASSIGN(FontLoaderTest);
+};
+
 }  // namespace
-
-namespace font_service {
-
-FontLoaderTest::FontLoaderTest() : ServiceTest("font_service_unittests") {}
-
-FontLoaderTest::~FontLoaderTest() {}
-
-void FontLoaderTest::SetUp() {
-  ServiceTest::SetUp();
-  font_loader_ = std::make_unique<FontLoader>(connector());
-}
 
 TEST_F(FontLoaderTest, BasicMatchingTest) {
   SkFontStyle styles[] = {

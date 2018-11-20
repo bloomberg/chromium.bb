@@ -974,9 +974,6 @@ class ServiceManager::IdentityToInstanceMap {
   DISALLOW_COPY_AND_ASSIGN(IdentityToInstanceMap);
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// ServiceManager, public:
-
 ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
                                    service_process_launcher_factory,
                                std::unique_ptr<base::Value> catalog_contents,

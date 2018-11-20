@@ -9,41 +9,21 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/services/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/service_test.h"
+#include "services/service_manager/public/cpp/test/test_service.h"
+#include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace filesystem {
 
-template <typename... Args>
-void IgnoreAllArgs(Args&&... args) {}
-
-template <typename... Args>
-void DoCaptures(Args*... out_args, Args... in_args) {
-  IgnoreAllArgs((*out_args = std::move(in_args))...);
-}
-
-template <typename T1>
-base::Callback<void(T1)> Capture(T1* t1) {
-  return base::Bind(&DoCaptures<T1>, t1);
-}
-
-template <typename T1, typename T2>
-base::Callback<void(T1, T2)> Capture(T1* t1, T2* t2) {
-  return base::Bind(&DoCaptures<T1, T2>, t1, t2);
-}
-
-template <typename T1, typename T2, typename T3>
-base::Callback<void(T1, T2, T3)> Capture(T1* t1, T2* t2, T3* t3) {
-  return base::Bind(&DoCaptures<T1, T2, T3>, t1, t2, t3);
-}
-
-class FilesTestBase : public service_manager::test::ServiceTest {
+class FilesTestBase : public testing::Test {
  public:
   FilesTestBase();
   ~FilesTestBase() override;
 
-  // Overridden from service_manager::test::ServiceTest:
+  // testing::Test:
   void SetUp() override;
 
  protected:
@@ -51,9 +31,13 @@ class FilesTestBase : public service_manager::test::ServiceTest {
   // since |ASSERT_...()| doesn't work with return values.
   void GetTemporaryRoot(mojom::DirectoryPtr* directory);
 
+  service_manager::Connector* connector() { return test_service_.connector(); }
   mojom::FileSystemPtr& files() { return files_; }
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
+  service_manager::TestServiceManager test_service_manager_;
+  service_manager::TestService test_service_;
   mojom::FileSystemPtr files_;
 
   DISALLOW_COPY_AND_ASSIGN(FilesTestBase);
