@@ -83,30 +83,6 @@ enum class PopupItemLayoutType {
                          // side with two line display.
 };
 
-// By default, this returns kLeadingIcon for passwords and kTrailingIcon for all
-// other contexts. When a study parameter is present for
-// kAutofillDropdownLayoutExperiment, this will return the layout type which
-// corresponds to that parameter.
-PopupItemLayoutType GetLayoutType(int frontend_id) {
-  switch (GetForcedPopupLayoutState()) {
-    case ForcedPopupLayoutState::kLeadingIcon:
-      return PopupItemLayoutType::kLeadingIcon;
-    case ForcedPopupLayoutState::kTrailingIcon:
-      return PopupItemLayoutType::kTrailingIcon;
-    case ForcedPopupLayoutState::kTwoLinesLeadingIcon:
-      return PopupItemLayoutType::kTwoLinesLeadingIcon;
-    case ForcedPopupLayoutState::kDefault:
-      switch (frontend_id) {
-        case autofill::PopupItemId::POPUP_ITEM_ID_USERNAME_ENTRY:
-        case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ENTRY:
-        case autofill::PopupItemId::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY:
-          return PopupItemLayoutType::kLeadingIcon;
-        default:
-          return PopupItemLayoutType::kTrailingIcon;
-      }
-  }
-}
-
 // Container view that holds one child view and limits its width to the
 // specified maximum.
 class ConstrainedWidthView : public views::View {
@@ -152,26 +128,21 @@ class AutofillPopupItemView : public AutofillPopupRowView {
  protected:
   AutofillPopupItemView(AutofillPopupViewNativeViews* popup_view,
                         int line_number,
+                        int frontend_id,
                         int extra_height = 0)
       : AutofillPopupRowView(popup_view, line_number),
-        layout_type_(GetLayoutType(popup_view_->controller()
-                                       ->GetSuggestionAt(line_number_)
-                                       .frontend_id)),
-        extra_height_(extra_height) {}
-
-  AutofillPopupItemView(AutofillPopupViewNativeViews* popup_view,
-                        int line_number,
-                        PopupItemLayoutType override_layout_type,
-                        int extra_height = 0)
-      : AutofillPopupRowView(popup_view, line_number),
-        layout_type_(override_layout_type),
+        frontend_id_(frontend_id),
         extra_height_(extra_height) {}
 
   // AutofillPopupRowView:
   void CreateContent() override;
   void RefreshStyle() override;
 
-  PopupItemLayoutType layout_type() const { return layout_type_; }
+  int frontend_id() const { return frontend_id_; }
+
+  // Returns the appropriate PopupItemLayoutType to be used when creating
+  // content.
+  virtual PopupItemLayoutType GetLayoutType() const = 0;
   virtual int GetPrimaryTextStyle() = 0;
   virtual views::View* CreateValueLabel();
   // Creates an optional label below the value.
@@ -197,7 +168,7 @@ class AutofillPopupItemView : public AutofillPopupRowView {
                          bool resize,
                          views::BoxLayout* layout);
 
-  const PopupItemLayoutType layout_type_;
+  const int frontend_id_;
   const int extra_height_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupItemView);
@@ -211,11 +182,13 @@ class AutofillPopupSuggestionView : public AutofillPopupItemView {
 
   static AutofillPopupSuggestionView* Create(
       AutofillPopupViewNativeViews* popup_view,
-      int line_number);
+      int line_number,
+      int frontend_id);
 
  protected:
   // AutofillPopupItemView:
   std::unique_ptr<views::Background> CreateBackground() override;
+  PopupItemLayoutType GetLayoutType() const override;
   int GetPrimaryTextStyle() override;
   bool ShouldUseCustomFontWeightForPrimaryInfo(
       gfx::Font::Weight* font_weight) const override;
@@ -223,7 +196,8 @@ class AutofillPopupSuggestionView : public AutofillPopupItemView {
   views::View* CreateDescriptionLabel() override;
 
   AutofillPopupSuggestionView(AutofillPopupViewNativeViews* popup_view,
-                              int line_number);
+                              int line_number,
+                              int frontend_id);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupSuggestionView);
 };
@@ -235,7 +209,8 @@ class PasswordPopupSuggestionView : public AutofillPopupSuggestionView {
 
   static PasswordPopupSuggestionView* Create(
       AutofillPopupViewNativeViews* popup_view,
-      int line_number);
+      int line_number,
+      int frontend_id);
 
  protected:
   // AutofillPopupItemView:
@@ -247,7 +222,8 @@ class PasswordPopupSuggestionView : public AutofillPopupSuggestionView {
 
  private:
   PasswordPopupSuggestionView(AutofillPopupViewNativeViews* popup_view,
-                              int line_number);
+                              int line_number,
+                              int frontend_id);
   base::string16 origin_;
   base::string16 masked_password_;
 
@@ -262,10 +238,12 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
 
   static AutofillPopupFooterView* Create(
       AutofillPopupViewNativeViews* popup_view,
-      int line_number);
+      int line_number,
+      int frontend_id);
 
  protected:
   // AutofillPopupItemView:
+  PopupItemLayoutType GetLayoutType() const override;
   void CreateContent() override;
   std::unique_ptr<views::Background> CreateBackground() override;
   int GetPrimaryTextStyle() override;
@@ -274,7 +252,8 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
 
  private:
   AutofillPopupFooterView(AutofillPopupViewNativeViews* popup_view,
-                          int line_number);
+                          int line_number,
+                          int frontend_id);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupFooterView);
 };
@@ -363,7 +342,9 @@ void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                               is_selected_);
 
-  // Compute set size and position in set, which must not include separators.
+  // Compute set size and position in set, by checking the frontend_id of each
+  // row, summing the number of non-separator rows, and subtracting the number
+  // of separators found before this row from its |pos_in_set|.
   int set_size = 0;
   int pos_in_set = line_number_ + 1;
   for (int i = 0; i < controller->GetLineCount(); ++i) {
@@ -412,8 +393,8 @@ void AutofillPopupItemView::CreateContent() {
       controller->layout_model().GetIconImage(line_number_);
 
   if (!icon.isNull() &&
-      (layout_type_ == PopupItemLayoutType::kLeadingIcon ||
-       layout_type_ == PopupItemLayoutType::kTwoLinesLeadingIcon)) {
+      (GetLayoutType() == PopupItemLayoutType::kLeadingIcon ||
+       GetLayoutType() == PopupItemLayoutType::kTwoLinesLeadingIcon)) {
     AddIcon(icon);
     AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
                       /*resize=*/false, layout_manager);
@@ -451,7 +432,7 @@ void AutofillPopupItemView::CreateContent() {
   if (description_label)
     AddChildView(description_label);
 
-  if (!icon.isNull() && layout_type_ == PopupItemLayoutType::kTrailingIcon) {
+  if (!icon.isNull() && GetLayoutType() == PopupItemLayoutType::kTrailingIcon) {
     AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
                       /*resize=*/false, layout_manager);
     AddIcon(icon);
@@ -536,9 +517,10 @@ void AutofillPopupItemView::AddSpacerWithSize(int spacer_width,
 // static
 AutofillPopupSuggestionView* AutofillPopupSuggestionView::Create(
     AutofillPopupViewNativeViews* popup_view,
-    int line_number) {
+    int line_number,
+    int frontend_id) {
   AutofillPopupSuggestionView* result =
-      new AutofillPopupSuggestionView(popup_view, line_number);
+      new AutofillPopupSuggestionView(popup_view, line_number, frontend_id);
   result->Init();
   return result;
 }
@@ -548,6 +530,30 @@ AutofillPopupSuggestionView::CreateBackground() {
   return views::CreateSolidBackground(
       is_selected_ ? AutofillPopupBaseView::kSelectedBackgroundColor
                    : AutofillPopupBaseView::kBackgroundColor);
+}
+
+// By default, this returns kLeadingIcon for passwords and kTrailingIcon for all
+// other contexts. When a study parameter is present for
+// kAutofillDropdownLayoutExperiment, this will return the layout type which
+// corresponds to that parameter.
+PopupItemLayoutType AutofillPopupSuggestionView::GetLayoutType() const {
+  switch (GetForcedPopupLayoutState()) {
+    case ForcedPopupLayoutState::kLeadingIcon:
+      return PopupItemLayoutType::kLeadingIcon;
+    case ForcedPopupLayoutState::kTrailingIcon:
+      return PopupItemLayoutType::kTrailingIcon;
+    case ForcedPopupLayoutState::kTwoLinesLeadingIcon:
+      return PopupItemLayoutType::kTwoLinesLeadingIcon;
+    case ForcedPopupLayoutState::kDefault:
+      switch (frontend_id()) {
+        case autofill::PopupItemId::POPUP_ITEM_ID_USERNAME_ENTRY:
+        case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ENTRY:
+        case autofill::PopupItemId::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY:
+          return PopupItemLayoutType::kLeadingIcon;
+        default:
+          return PopupItemLayoutType::kTrailingIcon;
+      }
+  }
 }
 
 int AutofillPopupSuggestionView::GetPrimaryTextStyle() {
@@ -572,14 +578,15 @@ bool AutofillPopupSuggestionView::ShouldUseCustomFontWeightForPrimaryInfo(
 
 AutofillPopupSuggestionView::AutofillPopupSuggestionView(
     AutofillPopupViewNativeViews* popup_view,
-    int line_number)
-    : AutofillPopupItemView(popup_view, line_number) {
+    int line_number,
+    int frontend_id)
+    : AutofillPopupItemView(popup_view, line_number, frontend_id) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
 views::View* AutofillPopupSuggestionView::CreateDescriptionLabel() {
   // When two-line display is enabled, don't display the description.
-  if (layout_type() == PopupItemLayoutType::kTwoLinesLeadingIcon)
+  if (GetLayoutType() == PopupItemLayoutType::kTwoLinesLeadingIcon)
     return nullptr;
   return AutofillPopupItemView::CreateDescriptionLabel();
 }
@@ -587,7 +594,7 @@ views::View* AutofillPopupSuggestionView::CreateDescriptionLabel() {
 views::View* AutofillPopupSuggestionView::CreateSubtextLabel() {
   // When two-line display is disabled, use the default behavior for the popup
   // item.
-  if (layout_type() != PopupItemLayoutType::kTwoLinesLeadingIcon)
+  if (GetLayoutType() != PopupItemLayoutType::kTwoLinesLeadingIcon)
     return AutofillPopupItemView::CreateSubtextLabel();
 
   base::string16 label_text =
@@ -605,9 +612,10 @@ views::View* AutofillPopupSuggestionView::CreateSubtextLabel() {
 
 PasswordPopupSuggestionView* PasswordPopupSuggestionView::Create(
     AutofillPopupViewNativeViews* popup_view,
-    int line_number) {
+    int line_number,
+    int frontend_id) {
   PasswordPopupSuggestionView* result =
-      new PasswordPopupSuggestionView(popup_view, line_number);
+      new PasswordPopupSuggestionView(popup_view, line_number, frontend_id);
   result->Init();
   return result;
 }
@@ -622,7 +630,7 @@ views::View* PasswordPopupSuggestionView::CreateSubtextLabel() {
   if (!origin_.empty()) {
     // Always use the origin if it's available.
     text_to_use = origin_;
-  } else if (layout_type() == PopupItemLayoutType::kTwoLinesLeadingIcon) {
+  } else if (GetLayoutType() == PopupItemLayoutType::kTwoLinesLeadingIcon) {
     // In the two-line layout only, the masked password can be used.
     text_to_use = masked_password_;
   }
@@ -639,7 +647,7 @@ views::View* PasswordPopupSuggestionView::CreateDescriptionLabel() {
   // When no origin text is available, the two-line layout will use the masked
   // password in the subtext label, so it should not be reused here.
   if ((origin_.empty() &&
-       layout_type() == PopupItemLayoutType::kTwoLinesLeadingIcon) ||
+       GetLayoutType() == PopupItemLayoutType::kTwoLinesLeadingIcon) ||
       masked_password_.empty()) {
     return nullptr;
   }
@@ -656,8 +664,9 @@ bool PasswordPopupSuggestionView::ShouldUseCustomFontWeightForPrimaryInfo(
 
 PasswordPopupSuggestionView::PasswordPopupSuggestionView(
     AutofillPopupViewNativeViews* popup_view,
-    int line_number)
-    : AutofillPopupSuggestionView(popup_view, line_number) {
+    int line_number,
+    int frontend_id)
+    : AutofillPopupSuggestionView(popup_view, line_number, frontend_id) {
   origin_ = popup_view_->controller()->GetElidedLabelAt(line_number_);
   masked_password_ =
       popup_view_->controller()->GetSuggestionAt(line_number_).additional_label;
@@ -668,11 +677,22 @@ PasswordPopupSuggestionView::PasswordPopupSuggestionView(
 // static
 AutofillPopupFooterView* AutofillPopupFooterView::Create(
     AutofillPopupViewNativeViews* popup_view,
-    int line_number) {
+    int line_number,
+    int frontend_id) {
   AutofillPopupFooterView* result =
-      new AutofillPopupFooterView(popup_view, line_number);
+      new AutofillPopupFooterView(popup_view, line_number, frontend_id);
   result->Init();
   return result;
+}
+
+// Returns kTrailingIcon for all contexts except the Show Account Cards prompt,
+// when kLeadingIcon is returned. Unlike non-footer rows, footer rows are never
+// changed by layout experiments.
+PopupItemLayoutType AutofillPopupFooterView::GetLayoutType() const {
+  return frontend_id() ==
+                 autofill::PopupItemId::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS
+             ? PopupItemLayoutType::kLeadingIcon
+             : PopupItemLayoutType::kTrailingIcon;
 }
 
 void AutofillPopupFooterView::CreateContent() {
@@ -702,10 +722,11 @@ bool AutofillPopupFooterView::ShouldUseCustomFontWeightForPrimaryInfo(
 
 AutofillPopupFooterView::AutofillPopupFooterView(
     AutofillPopupViewNativeViews* popup_view,
-    int line_number)
+    int line_number,
+    int frontend_id)
     : AutofillPopupItemView(popup_view,
                             line_number,
-                            PopupItemLayoutType::kTrailingIcon,
+                            frontend_id,
                             AutofillPopupBaseView::GetCornerRadius()) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
@@ -849,6 +870,8 @@ void AutofillPopupRowView::Init() {
   RefreshStyle();
 }
 
+/************** AutofillPopupViewNativeViews **************/
+
 AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
     AutofillPopupController* controller,
     views::Widget* parent_widget)
@@ -908,12 +931,14 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   // Process and add all the suggestions which are in the primary container.
   // Stop once the first footer item is found, or there are no more items.
   while (line_number < controller_->GetLineCount()) {
-    switch (controller_->GetSuggestionAt(line_number).frontend_id) {
+    int frontend_id = controller_->GetSuggestionAt(line_number).frontend_id;
+    switch (frontend_id) {
       case autofill::PopupItemId::POPUP_ITEM_ID_CLEAR_FORM:
       case autofill::PopupItemId::POPUP_ITEM_ID_AUTOFILL_OPTIONS:
       case autofill::PopupItemId::POPUP_ITEM_ID_SCAN_CREDIT_CARD:
       case autofill::PopupItemId::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
       case autofill::PopupItemId::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
+      case autofill::PopupItemId::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS:
         // This is a footer, so this suggestion will be processed later. Don't
         // increment |line_number|, or else it will be skipped when adding
         // footer rows below.
@@ -931,11 +956,13 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 
       case autofill::PopupItemId::POPUP_ITEM_ID_USERNAME_ENTRY:
       case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ENTRY:
-        rows_.push_back(PasswordPopupSuggestionView::Create(this, line_number));
+        rows_.push_back(PasswordPopupSuggestionView::Create(this, line_number,
+                                                            frontend_id));
         break;
 
       default:
-        rows_.push_back(AutofillPopupSuggestionView::Create(this, line_number));
+        rows_.push_back(AutofillPopupSuggestionView::Create(this, line_number,
+                                                            frontend_id));
     }
 
     if (has_footer)
@@ -979,7 +1006,9 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
     while (line_number < controller_->GetLineCount()) {
-      rows_.push_back(AutofillPopupFooterView::Create(this, line_number));
+      rows_.push_back(AutofillPopupFooterView::Create(
+          this, line_number,
+          controller_->GetSuggestionAt(line_number).frontend_id));
       footer_container->AddChildView(rows_.back());
       line_number++;
     }
