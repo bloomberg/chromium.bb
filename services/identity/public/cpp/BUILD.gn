@@ -8,6 +8,8 @@ source_set("cpp") {
     "access_token_fetcher.h",
     "access_token_info.cc",
     "access_token_info.h",
+    "accounts_mutator.cc",
+    "accounts_mutator.h",
     "identity_manager.cc",
     "identity_manager.h",
     "primary_account_access_token_fetcher.cc",

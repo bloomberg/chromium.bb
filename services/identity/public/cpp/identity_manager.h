@@ -13,6 +13,7 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/accounts_mutator.h"
 #include "services/identity/public/cpp/scope_set.h"
 
 #if !defined(OS_CHROMEOS)
@@ -259,6 +260,10 @@ class IdentityManager : public SigninManagerBase::Observer,
   // null.
   PrimaryAccountMutator* GetPrimaryAccountMutator();
 
+  // Returns pointer to the object used to seed accounts and mutate state of
+  // accounts' refresh tokens. Guaranteed to be non-null.
+  AccountsMutator* GetAccountsMutator();
+
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -365,6 +370,10 @@ class IdentityManager : public SigninManagerBase::Observer,
   // PrimaryAccountMutator instance. May be null if mutation of the primary
   // account state is not supported on the current platform.
   std::unique_ptr<PrimaryAccountMutator> primary_account_mutator_;
+
+  // AccountsMutator instance. Guaranteed to be non-null, as this
+  // functionality is supported on all platforms.
+  AccountsMutator accounts_mutator_;
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.
