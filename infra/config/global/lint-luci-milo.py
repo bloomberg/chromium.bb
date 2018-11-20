@@ -24,13 +24,19 @@ def compare_builders(name, main_builders, sub_builders):
   # are consistent with the builders on that subwaterfall's main page.
   # For example, checks that the builders on the "chromium.win" section
   # are the same as on the dedicated standalone chromium.win waterfall.
-  main_names = [', '.join(builder.name) for builder in main_builders]
-  sub_names = [', '.join(builder.name) for builder in sub_builders]
+  def to_list(builders):
+    desc_list = []
+    for builder in builders:
+      desc_list.append('name: ' + ', '.join(builder.name))
+      desc_list.append('short_name: ' + builder.short_name)
+    return desc_list
+  main_desc = to_list(main_builders)
+  sub_desc = to_list(sub_builders)
 
-  if main_names != sub_names:
-    print ('bot name lists different between main waterfall ' +
+  if main_desc != sub_desc:
+    print ('bot lists different between main waterfall ' +
            'and stand-alone %s waterfall:' % name)
-    print '\n'.join(difflib.unified_diff(main_names, sub_names,
+    print '\n'.join(difflib.unified_diff(main_desc, sub_desc,
                                          fromfile='main', tofile=name,
                                          lineterm=''))
     print
