@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.media.router.cast;
+package org.chromium.chrome.browser.media.router;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,7 +13,6 @@ import java.util.Iterator;
 
 /**
  * Utilities for comparing JSON objects and strings.
- * TODO(zqzhang): Move the class to somewhere more generic.
  */
 public class JSONTestUtils {
     private static final String TAG = "MediaRouter";
@@ -36,6 +35,7 @@ public class JSONTestUtils {
         return true;
     }
 
+    /** Returns whether two JSON arrays are equal. */
     public static boolean isJSONArrayEqual(JSONArray expected, JSONArray actual) {
         try {
             if (expected.length() != actual.length()) return false;
@@ -48,6 +48,7 @@ public class JSONTestUtils {
         return true;
     }
 
+    /** Returns whether two JSON objects are equal. */
     public static boolean isJSONObjectEqual(Object expected, Object actual) {
         if (expected == null && actual == null) return true;
         if (expected == null || actual == null) return false;
@@ -74,7 +75,8 @@ public class JSONTestUtils {
         }
     }
 
-    static class JSONObjectLike implements ArgumentMatcher<JSONObject> {
+    /** Matcher to determine whether a JSON object is equal to the expected one. */
+    public static class JSONObjectLike implements ArgumentMatcher<JSONObject> {
         private final JSONObject mExpected;
 
         public JSONObjectLike(JSONObject expected) {
@@ -92,7 +94,8 @@ public class JSONTestUtils {
         }
     }
 
-    static class JSONStringLike implements ArgumentMatcher<String> {
+    /** Matcher to determine whether a JSON string is equal to the expected one. */
+    public static class JSONStringLike implements ArgumentMatcher<String> {
         private JSONObject mExpected;
 
         public JSONStringLike(JSONObject expected) {
