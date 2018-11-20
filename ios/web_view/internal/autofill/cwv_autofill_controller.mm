@@ -202,6 +202,7 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                                                       : nonPasswordSuggestions);
     }
   };
+
   // Fetch password suggestion first.
   [_passwordController
       fetchSuggestionsForFormWithName:formName
@@ -213,6 +214,7 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                       passwordSuggestions = suggestions;
                       resultHandler();
                     }];
+
   [self fetchNonPasswordSuggestionsForFormWithName:formName
                                    fieldIdentifier:fieldIdentifier
                                          fieldType:fieldType

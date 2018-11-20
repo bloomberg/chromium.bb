@@ -23,6 +23,15 @@
 @property(nonatomic, assign, getter=isCreditCardAutofillEnabled)
     BOOL creditCardAutofillEnabled;
 
+// Whether or not CWVWebView allows saving passwords for autofill. Defaults to
+// |YES|. When it is NO, it doesn't ask if you want to save passwords but will
+// continue to fill passwords.
+//
+// TODO(crbug.com/905221): Preference should also control autofill behavior for
+// the passwords.
+@property(nonatomic, assign, getter=isPasswordAutofillEnabled)
+    BOOL passwordAutofillEnabled;
+
 @end
 
 #endif  // IOS_WEB_VIEW_PUBLIC_CWV_PREFERENCES_AUTOFILL_H_
