@@ -9,7 +9,6 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/gfx_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(USE_OZONE)
@@ -43,8 +42,6 @@ void CompositorTestSuite::Initialize() {
   params.single_process = true;
   OzonePlatform::InitializeForUI(params);
 #endif
-
-  gfx::RegisterPathProvider();
 
 #if defined(OS_WIN)
   display::win::SetDefaultDeviceScaleFactor(1.0f);

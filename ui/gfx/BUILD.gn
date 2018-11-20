@@ -86,8 +86,6 @@ jumbo_component("gfx") {
     "font_render_params_win.cc",
     "gdi_util.cc",
     "gdi_util.h",
-    "gfx_paths.cc",
-    "gfx_paths.h",
     "half_float.cc",
     "half_float.h",
     "icon_util.cc",

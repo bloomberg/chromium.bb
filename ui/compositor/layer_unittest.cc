@@ -57,7 +57,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font_list.h"
-#include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/skia_util.h"
 
@@ -134,17 +133,20 @@ class LayerWithRealCompositorTest : public testing::Test {
   LayerWithRealCompositorTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {
-    if (base::PathService::Get(gfx::DIR_TEST_DATA, &test_data_directory_)) {
-      test_data_directory_ = test_data_directory_.AppendASCII("compositor");
-    } else {
-      LOG(ERROR) << "Could not open test data directory.";
-    }
     gfx::FontList::SetDefaultFontDescription("Arial, Times New Roman, 15px");
   }
   ~LayerWithRealCompositorTest() override {}
 
   // Overridden from testing::Test:
   void SetUp() override {
+    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir_));
+    test_data_dir_ = test_data_dir_.Append(FILE_PATH_LITERAL("ui"))
+                         .Append(FILE_PATH_LITERAL("gfx"))
+                         .Append(FILE_PATH_LITERAL("test"))
+                         .Append(FILE_PATH_LITERAL("data"))
+                         .Append(FILE_PATH_LITERAL("compositor"));
+    ASSERT_TRUE(base::PathExists(test_data_dir_));
+
     bool enable_pixel_output = true;
     ui::ContextFactory* context_factory = nullptr;
     ui::ContextFactoryPrivate* context_factory_private = nullptr;
@@ -245,9 +247,7 @@ class LayerWithRealCompositorTest : public testing::Test {
         gfx::Rect(0, 0, layer->bounds().width(), layer->bounds().height()));
   }
 
-  const base::FilePath& test_data_directory() const {
-    return test_data_directory_;
-  }
+  const base::FilePath& test_data_dir() const { return test_data_dir_; }
 
  private:
   class ReadbackHolder : public base::RefCountedThreadSafe<ReadbackHolder> {
@@ -279,7 +279,7 @@ class LayerWithRealCompositorTest : public testing::Test {
   std::unique_ptr<TestCompositorHost> compositor_host_;
 
   // The root directory for test files.
-  base::FilePath test_data_directory_;
+  base::FilePath test_data_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithRealCompositorTest);
 };
@@ -1526,10 +1526,8 @@ TEST_F(LayerWithRealCompositorTest, ModifyHierarchy) {
   std::unique_ptr<Layer> l12(
       CreateColorLayer(SK_ColorBLUE, gfx::Rect(10, 10, 25, 25)));
 
-  base::FilePath ref_img1 =
-      test_data_directory().AppendASCII("ModifyHierarchy1.png");
-  base::FilePath ref_img2 =
-      test_data_directory().AppendASCII("ModifyHierarchy2.png");
+  base::FilePath ref_img1 = test_data_dir().AppendASCII("ModifyHierarchy1.png");
+  base::FilePath ref_img2 = test_data_dir().AppendASCII("ModifyHierarchy2.png");
   SkBitmap bitmap;
 
   l0->Add(l11.get());
@@ -1594,8 +1592,7 @@ TEST_F(LayerWithRealCompositorTest, CanvasDrawFadedString) {
   ReadPixels(&bitmap);
   ASSERT_FALSE(bitmap.empty());
 
-  base::FilePath ref_img =
-      test_data_directory().AppendASCII("string_faded.png");
+  base::FilePath ref_img = test_data_dir().AppendASCII("string_faded.png");
   // WritePNGFile(bitmap, ref_img, true);
 
   float percentage_pixels_large_error = 8.0f;  // 200px / (50*50)
@@ -1628,7 +1625,7 @@ TEST_F(LayerWithRealCompositorTest, Opacity) {
   std::unique_ptr<Layer> l11(
       CreateColorLayer(SK_ColorGREEN, gfx::Rect(0, 0, 25, 25)));
 
-  base::FilePath ref_img = test_data_directory().AppendASCII("Opacity.png");
+  base::FilePath ref_img = test_data_dir().AppendASCII("Opacity.png");
 
   l11->SetOpacity(0.75);
   l0->Add(l11.get());

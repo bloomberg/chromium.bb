@@ -15,15 +15,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/icon_util_unittests_resource.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
 
 namespace {
 
-static const char kSmallIconName[] = "icon_util/16_X_16_icon.ico";
-static const char kLargeIconName[] = "icon_util/128_X_128_icon.ico";
+static const char kSmallIconName[] = "16_X_16_icon.ico";
+static const char kLargeIconName[] = "128_X_128_icon.ico";
 static const char kTempIconFilename[] = "temp_test_icon.ico";
 
 }  // namespace
@@ -33,9 +32,14 @@ class IconUtilTest : public testing::Test {
   using ScopedHICON = base::win::ScopedHICON;
 
   void SetUp() override {
-    gfx::RegisterPathProvider();
-    ASSERT_TRUE(
-        base::PathService::Get(gfx::DIR_TEST_DATA, &test_data_directory_));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir_));
+    test_data_dir_ = test_data_dir_.Append(FILE_PATH_LITERAL("ui"))
+                         .Append(FILE_PATH_LITERAL("gfx"))
+                         .Append(FILE_PATH_LITERAL("test"))
+                         .Append(FILE_PATH_LITERAL("data"))
+                         .Append(FILE_PATH_LITERAL("icon_util"));
+    ASSERT_TRUE(base::PathExists(test_data_dir_));
+
     ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
   }
 
@@ -74,7 +78,7 @@ class IconUtilTest : public testing::Test {
 
  protected:
   // The root directory for test files. This should be treated as read-only.
-  base::FilePath test_data_directory_;
+  base::FilePath test_data_dir_;
 
   // Directory for creating files by this test.
   base::ScopedTempDir temp_directory_;
@@ -145,8 +149,7 @@ void IconUtilTest::CheckAllIconSizes(const base::FilePath& icon_filename,
 // The following test case makes sure IconUtil::SkBitmapFromHICON fails
 // gracefully when called with invalid input parameters.
 TEST_F(IconUtilTest, TestIconToBitmapInvalidParameters) {
-  base::FilePath icon_filename =
-      test_data_directory_.AppendASCII(kSmallIconName);
+  base::FilePath icon_filename = test_data_dir_.AppendASCII(kSmallIconName);
   gfx::Size icon_size(kSmallIconWidth, kSmallIconHeight);
   ScopedHICON icon(
       LoadIconFromFile(icon_filename, icon_size.width(), icon_size.height()));
@@ -270,8 +273,8 @@ TEST_F(IconUtilTest, TestCreateIconFileEmptyImageFamily) {
 // This test case makes sure that when we load an icon from disk and convert
 // the HICON into a bitmap, the bitmap has the expected format and dimensions.
 TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
-  base::FilePath small_icon_filename = test_data_directory_.AppendASCII(
-      kSmallIconName);
+  base::FilePath small_icon_filename =
+      test_data_dir_.AppendASCII(kSmallIconName);
   gfx::Size small_icon_size(kSmallIconWidth, kSmallIconHeight);
   ScopedHICON small_icon(LoadIconFromFile(
       small_icon_filename, small_icon_size.width(), small_icon_size.height()));
@@ -283,8 +286,8 @@ TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
   EXPECT_EQ(bitmap.height(), small_icon_size.height());
   EXPECT_EQ(bitmap.colorType(), kN32_SkColorType);
 
-  base::FilePath large_icon_filename = test_data_directory_.AppendASCII(
-      kLargeIconName);
+  base::FilePath large_icon_filename =
+      test_data_dir_.AppendASCII(kLargeIconName);
   gfx::Size large_icon_size(kLargeIconWidth, kLargeIconHeight);
   ScopedHICON large_icon(LoadIconFromFile(
       large_icon_filename, large_icon_size.width(), large_icon_size.height()));
