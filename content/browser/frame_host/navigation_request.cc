@@ -302,16 +302,24 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           : base::Optional<url::Origin>(
                 frame_tree_node->frame_tree()->root()->current_origin());
 
+  auto navigation_params = mojom::BeginNavigationParams::New(
+      extra_headers, net::LOAD_NORMAL, false /* skip_service_worker */,
+      blink::mojom::RequestContextType::LOCATION,
+      blink::WebMixedContentContextType::kBlockable, is_form_submission,
+      GURL() /* searchable_form_url */,
+      std::string() /* searchable_form_encoding */, initiator,
+      GURL() /* client_side_redirect_url */,
+      base::nullopt /* devtools_initiator_info */);
+
+  // Shift-Reload forces bypassing caches and service workers.
+  if (common_params.navigation_type ==
+      FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE) {
+    navigation_params->load_flags |= net::LOAD_BYPASS_CACHE;
+    navigation_params->skip_service_worker = true;
+  }
+
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node, common_params,
-      mojom::BeginNavigationParams::New(
-          extra_headers, net::LOAD_NORMAL, false /* skip_service_worker */,
-          blink::mojom::RequestContextType::LOCATION,
-          blink::WebMixedContentContextType::kBlockable, is_form_submission,
-          GURL() /* searchable_form_url */,
-          std::string() /* searchable_form_encoding */, initiator,
-          GURL() /* client_side_redirect_url */,
-          base::nullopt /* devtools_initiator_info */),
+      frame_tree_node, common_params, std::move(navigation_params),
       request_params, browser_initiated, false /* from_begin_navigation */,
       &frame_entry, &entry, std::move(navigation_ui_data), nullptr, nullptr));
   navigation_request->blob_url_loader_factory_ =
