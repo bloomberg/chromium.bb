@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -60,6 +61,7 @@ public class CastWebContentsActivity extends Activity {
     // Set at creation. Handles destroying SurfaceHelper.
     private final Controller<CastWebContentsSurfaceHelper> mSurfaceHelperState = new Controller<>();
 
+    @Nullable
     private CastWebContentsSurfaceHelper mSurfaceHelper;
 
     {
@@ -97,7 +99,7 @@ public class CastWebContentsActivity extends Activity {
         mSurfaceHelperState.subscribe((CastWebContentsSurfaceHelper surfaceHelper) -> {
             mSurfaceHelper = surfaceHelper;
             return () -> {
-                mSurfaceHelper.onDestroy();
+                surfaceHelper.onDestroy();
                 mSurfaceHelper = null;
             };
         });
@@ -246,7 +248,9 @@ public class CastWebContentsActivity extends Activity {
                     || keyCode == KeyEvent.KEYCODE_MEDIA_STOP
                     || keyCode == KeyEvent.KEYCODE_MEDIA_NEXT
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PREVIOUS) {
-                CastWebContentsComponent.onKeyDown(mSurfaceHelper.getSessionId(), keyCode);
+                if (mSurfaceHelper != null) {
+                    CastWebContentsComponent.onKeyDown(mSurfaceHelper.getSessionId(), keyCode);
+                }
                 return true;
             }
         }
@@ -269,7 +273,7 @@ public class CastWebContentsActivity extends Activity {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (mSurfaceHelper.isTouchInputEnabled()) {
+        if (mSurfaceHelper != null && mSurfaceHelper.isTouchInputEnabled()) {
             return super.dispatchTouchEvent(ev);
         } else {
             return false;
