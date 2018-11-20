@@ -109,13 +109,7 @@ NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
   }
 
   // If LoadLibraryExW API/flags are unavailable or API call fails, try
-  // LoadLibraryW API.
-  // TODO(chengx): Currently, if LoadLibraryExW API call fails, LoadLibraryW is
-  // still tried. We should strictly prefer the LoadLibraryExW over the
-  // LoadLibraryW if LoadLibraryW is statistically showing no extra benefits. If
-  // UMA metric shows that FAIL_AND_FAIL is the primary failure mode and/or
-  // FAIL_AND_SUCCESS is close to zero, we should remove this fallback.
-  // (http://crbug.com/701944)
+  // LoadLibraryW API. From UMA, this fallback is necessary for many users.
 
   // Switch the current directory to the library directory as the library
   // may have dependencies on DLLs in this directory.
@@ -128,7 +122,6 @@ NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
       restore_directory = true;
     }
   }
-
   module = ::LoadLibraryW(library_path.value().c_str());
 
   // GetLastError() needs to be called immediately after LoadLibraryW call.
