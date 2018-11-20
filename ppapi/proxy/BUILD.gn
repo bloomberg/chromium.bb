@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//build/config/nacl/config.gni")
 
 config("proxy_implementation") {
   defines = [ "PPAPI_PROXY_IMPLEMENTATION" ]
 }
 
-component("proxy") {
+jumbo_component("proxy") {
   output_name = "ppapi_proxy"
 
   sources = [
@@ -365,7 +366,7 @@ source_set("ipc_sources") {
   }
 }
 
-static_library("test_support") {
+jumbo_static_library("test_support") {
   testonly = true
 
   sources = [
