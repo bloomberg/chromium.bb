@@ -7,6 +7,7 @@ package org.chromium.chromecast.shell;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
+import android.support.annotation.ColorInt;
 import android.widget.FrameLayout;
 
 import org.chromium.chromecast.base.Observer;
@@ -17,23 +18,23 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
-class CastWebContentsView {
+class CastWebContentsScopes {
     public static Observer<WebContents> onLayoutActivity(
-            Activity activity, FrameLayout layout, int backgroundColor) {
+            Activity activity, FrameLayout layout, @ColorInt int backgroundColor) {
         layout.setBackgroundColor(backgroundColor);
         WindowAndroid window = new ActivityWindowAndroid(activity);
         return onLayoutInternal(activity, layout, window, backgroundColor);
     }
 
     public static Observer<WebContents> onLayoutFragment(
-            Activity activity, FrameLayout layout, int backgroundColor) {
+            Activity activity, FrameLayout layout, @ColorInt int backgroundColor) {
         layout.setBackgroundColor(backgroundColor);
         WindowAndroid window = new WindowAndroid(activity);
         return onLayoutInternal(activity, layout, window, backgroundColor);
     }
 
-    private static Observer<WebContents> onLayoutInternal(
-            Activity activity, FrameLayout layout, WindowAndroid window, int backgroundColor) {
+    private static Observer<WebContents> onLayoutInternal(Activity activity, FrameLayout layout,
+            WindowAndroid window, @ColorInt int backgroundColor) {
         return (WebContents webContents) -> {
             ContentViewRenderView contentViewRenderView = new ContentViewRenderView(activity) {
                 @Override

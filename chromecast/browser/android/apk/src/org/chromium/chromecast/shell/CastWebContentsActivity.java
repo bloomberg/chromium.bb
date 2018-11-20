@@ -87,7 +87,7 @@ public class CastWebContentsActivity extends Activity {
             setContentView(R.layout.cast_web_contents_activity);
 
             mSurfaceHelperState.set(new CastWebContentsSurfaceHelper(this /* hostActivity */,
-                    CastWebContentsView.onLayoutActivity(this,
+                    CastWebContentsScopes.onLayoutActivity(this,
                             (FrameLayout) findViewById(R.id.web_contents_container),
                             CastSwitches.getSwitchValueColor(
                                     CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK)),
