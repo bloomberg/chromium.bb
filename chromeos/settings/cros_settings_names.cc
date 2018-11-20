@@ -197,6 +197,27 @@ const char kRebootOnShutdown[] = "cros.device.reboot_on_shutdown";
 // size in bytes.
 const char kExtensionCacheSize[] = "cros.device.extension_cache_size";
 
+// A dictionary pref that sets the display resolution.
+// Pref format:
+// {
+//   "external_width": int,
+//   "external_height": int,
+//   "external_use_native": bool,
+//   "external_scale_percentage": int,
+//   "internal_scale_percentage": int,
+//   "recommended": bool
+// }
+const char kDeviceDisplayResolution[] = "cros.device_display_resolution";
+const char kDeviceDisplayResolutionKeyExternalWidth[] = "external_width";
+const char kDeviceDisplayResolutionKeyExternalHeight[] = "external_height";
+const char kDeviceDisplayResolutionKeyExternalScale[] =
+    "external_scale_percentage";
+const char kDeviceDisplayResolutionKeyExternalUseNative[] =
+    "external_use_native";
+const char kDeviceDisplayResolutionKeyInternalScale[] =
+    "internal_scale_percentage";
+const char kDeviceDisplayResolutionKeyRecommended[] = "recommended";
+
 // An integer pref that sets the display rotation at startup to a certain
 // value, overriding the user value:
 // 0 = 0 degrees rotation

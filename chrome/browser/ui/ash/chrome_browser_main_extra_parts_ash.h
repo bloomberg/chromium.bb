@@ -20,7 +20,7 @@ class NetworkPortalNotificationController;
 }
 
 namespace policy {
-class DisplayRotationDefaultHandler;
+class DisplaySettingsHandler;
 }
 
 namespace ui {
@@ -120,8 +120,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<CastConfigClientMediaRouter> cast_config_client_media_router_;
   std::unique_ptr<LoginScreenClient> login_screen_client_;
   std::unique_ptr<MediaClient> media_client_;
-  std::unique_ptr<policy::DisplayRotationDefaultHandler>
-      display_rotation_handler_;
+  std::unique_ptr<policy::DisplaySettingsHandler> display_settings_handler_;
 
   // Initialized in PostBrowserStart in all configs:
   std::unique_ptr<DataPromoNotification> data_promo_notification_;

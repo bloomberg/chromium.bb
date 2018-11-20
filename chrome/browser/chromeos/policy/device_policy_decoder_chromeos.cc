@@ -849,10 +849,21 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   if (policy.has_display_rotation_default()) {
     const em::DisplayRotationDefaultProto& container(
         policy.display_rotation_default());
-    policies->Set(key::kDisplayRotationDefault, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                  DecodeIntegerValue(container.display_rotation_default()),
-                  nullptr);
+    if (container.has_display_rotation_default()) {
+      policies->Set(key::kDisplayRotationDefault, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    DecodeIntegerValue(container.display_rotation_default()),
+                    nullptr);
+    }
+  }
+
+  if (policy.has_device_display_resolution()) {
+    const em::DeviceDisplayResolutionProto& container(
+        policy.device_display_resolution());
+    if (container.has_device_display_resolution()) {
+      SetJsonDevicePolicy(key::kDeviceDisplayResolution,
+                          container.device_display_resolution(), policies);
+    }
   }
 
   if (policy.has_usb_detachable_whitelist()) {

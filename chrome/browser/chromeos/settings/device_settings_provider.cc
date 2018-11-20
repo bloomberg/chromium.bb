@@ -83,6 +83,7 @@ const char* const kKnownSettings[] = {
     kDeviceQuirksDownloadEnabled,
     kDeviceUnaffiliatedCrostiniAllowed,
     kDeviceWallpaperImage,
+    kDeviceDisplayResolution,
     kDisplayRotationDefault,
     kExtensionCacheSize,
     kHeartbeatEnabled,
@@ -582,6 +583,19 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     new_values_cache->SetInteger(
         kDisplayRotationDefault,
         policy.display_rotation_default().display_rotation_default());
+  }
+
+  if (policy.has_device_display_resolution() &&
+      policy.device_display_resolution().has_device_display_resolution()) {
+    SetJsonDeviceSetting(
+        kDeviceDisplayResolution, policy::key::kDeviceDisplayResolution,
+        policy.device_display_resolution().device_display_resolution(),
+        new_values_cache);
+  } else {
+    // Set empty value if policy is missing, to make sure that webui
+    // will receive setting update.
+    new_values_cache->SetValue(kDeviceDisplayResolution,
+                               std::make_unique<base::DictionaryValue>());
   }
 
   if (policy.has_allow_bluetooth() &&
