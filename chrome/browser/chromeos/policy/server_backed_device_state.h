@@ -9,34 +9,43 @@ namespace policy {
 
 // Dictionary key constants for prefs::kServerBackedDeviceState.
 extern const char kDeviceStateManagementDomain[];
-extern const char kDeviceStateRestoreMode[];
+extern const char kDeviceStateMode[];
 extern const char kDeviceStateDisabledMessage[];
 
 // String constants used to persist the restorative action in the
-// kDeviceStateRestoreMode dictionary entry.
+// kDeviceStateMode dictionary entry.
 extern const char kDeviceStateRestoreModeReEnrollmentRequested[];
 extern const char kDeviceStateRestoreModeReEnrollmentEnforced[];
 extern const char kDeviceStateRestoreModeDisabled[];
 extern const char kDeviceStateRestoreModeReEnrollmentZeroTouch[];
+// The following constants are for an initial action but we do still use
+// the same dictionary entry.
+extern const char kDeviceStateInitialModeEnrollmentEnforced[];
+extern const char kDeviceStateInitialModeEnrollmentZeroTouch[];
 
-// Restorative action to take after device reset.
-enum RestoreMode {
+// Mode that a device needs to start in.
+enum DeviceStateMode {
   // No state restoration.
   RESTORE_MODE_NONE = 0,
-  // Enterprise enrollment requested, but user may skip.
+  // Enterprise re-enrollment requested, but user may skip.
   RESTORE_MODE_REENROLLMENT_REQUESTED = 1,
-  // Enterprise enrollment is enforced and cannot be skipped.
+  // Enterprise re-enrollment is enforced and cannot be skipped.
   RESTORE_MODE_REENROLLMENT_ENFORCED = 2,
   // The device has been disabled by its owner. The device will show a warning
   // screen and prevent the user from proceeding further.
   RESTORE_MODE_DISABLED = 3,
-  // Enterprise enrollment is enforced using Zero-Touch and cannot be skipped.
+  // Enterprise re-enrollment is enforced using Zero-Touch and cannot be
+  // skipped.
   RESTORE_MODE_REENROLLMENT_ZERO_TOUCH = 4,
+  // Enterprise initial enrollment is enforced and cannot be skipped.
+  INITIAL_MODE_ENROLLMENT_ENFORCED = 5,
+  // Enterprise initial enrollment is enforced and cannot be skipped.
+  INITIAL_MODE_ENROLLMENT_ZERO_TOUCH = 6,
 };
 
-// Parses the contents of the kDeviceStateRestoreMode dictionary entry and
-// returns it as a RestoreMode.
-RestoreMode GetRestoreMode();
+// Parses the contents of the kDeviceStateMode dictionary entry and
+// returns it as a DeviceStateMode.
+DeviceStateMode GetDeviceStateMode();
 
 }  // namespace policy
 

@@ -98,7 +98,7 @@ message DeviceRegisterRequest {
     // user to skip.
     FLAVOR_ENROLLMENT_LOCAL_ADVERTISED = 3;
     // Device state downloaded from the server during OOBE indicates that
-    // (re-)enrollment is mandatory.
+    // re-enrollment is mandatory.
     FLAVOR_ENROLLMENT_SERVER_FORCED = 4;
     // Device state downloaded from the server during OOBE indicates that the
     // device should prompt for (re-)enrollment, but the user is allowed to
@@ -115,7 +115,7 @@ message DeviceRegisterRequest {
     // Forced attestation-based enrollment (cannot fallback to another flavor).
     FLAVOR_ENROLLMENT_ATTESTATION_LOCAL_FORCED = 9;
     // Device state downloaded from the server during OOBE indicates that
-    // (re-)enrollment is mandatory and should be attestation-based.
+    // re-enrollment is mandatory and should be attestation-based.
     FLAVOR_ENROLLMENT_ATTESTATION_SERVER_FORCED = 10;
     // Device state downloaded from the server indicated that re-enrollment is
     // mandatory, but it failed and we are doing a fallback to manual
@@ -123,6 +123,16 @@ message DeviceRegisterRequest {
     FLAVOR_ENROLLMENT_ATTESTATION_MANUAL_FALLBACK = 11;
     // Enrollment triggered by USB pre-configuration
     FLAVOR_ENROLLMENT_ATTESTATION_USB_ENROLLMENT = 12;
+    // Device state downloaded from the server during OOBE indicates that
+    // initial enrollment is mandatory.
+    FLAVOR_ENROLLMENT_INITIAL_SERVER_FORCED = 13;
+    // Device state downloaded from the server during OOBE indicates that
+    // initial enrollment is mandatory and should be attestation-based.
+    FLAVOR_ENROLLMENT_ATTESTATION_INITIAL_SERVER_FORCED = 14;
+    // Device state downloaded from the server indicated that initial enrollment
+    // is mandatory, but it failed and we are doing a fallback to manual
+    // enrollment.
+    FLAVOR_ENROLLMENT_ATTESTATION_INITIAL_MANUAL_FALLBACK = 15;
   };
 
   // Indicates the registration flavor. This is passed to the server FYI when

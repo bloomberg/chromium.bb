@@ -145,13 +145,15 @@ void EnrollmentScreen::SetParameters(
 
 void EnrollmentScreen::SetConfig() {
   config_ = enrollment_config_;
-  if (current_auth_ == AUTH_OAUTH &&
-      enrollment_config_.mode ==
-          policy::EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED) {
-    config_.mode = policy::EnrollmentConfig::MODE_ATTESTATION_MANUAL_FALLBACK;
+  if (current_auth_ == AUTH_OAUTH && config_.is_mode_attestation_server()) {
+    config_.mode =
+        config_.mode ==
+                policy::EnrollmentConfig::MODE_ATTESTATION_INITIAL_SERVER_FORCED
+            ? policy::EnrollmentConfig::MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK
+            : policy::EnrollmentConfig::MODE_ATTESTATION_MANUAL_FALLBACK;
   } else if (current_auth_ == AUTH_ATTESTATION &&
              !enrollment_config_.is_mode_attestation()) {
-    config_.mode = enrollment_config_.is_attestation_forced()
+    config_.mode = config_.is_attestation_forced()
                        ? policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED
                        : policy::EnrollmentConfig::MODE_ATTESTATION;
   }

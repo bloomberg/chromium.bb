@@ -11,12 +11,18 @@ namespace {
 
 const char* const kMetricEnrollment = "Enterprise.Enrollment";
 const char* const kMetricEnrollmentForced = "Enterprise.EnrollmentForced";
+const char* const kMetricEnrollmentForcedInitial =
+    "Enterprise.EnrollmentForcedInitial";
 const char* const kMetricEnrollmentAttestationBased =
     "Enterprise.EnrollmentAttestationBased";
 const char* const kMetricEnrollmentForcedAttestationBased =
     "Enterprise.EnrollmentForcedAttestationBased";
+const char* const kMetricEnrollmentForcedInitialAttestationBased =
+    "Enterprise.EnrollmentForcedInitialAttestationBased";
 const char* const kMetricEnrollmentForcedManualFallback =
     "Enterprise.EnrollmentForcedManualFallback";
+const char* const kMetricEnrollmentForcedInitialManualFallback =
+    "Enterprise.EnrollmentForcedInitialManualFallback";
 const char* const kMetricEnrollmentRecovery = "Enterprise.EnrollmentRecovery";
 
 }  // namespace
@@ -40,12 +46,23 @@ void EnrollmentUMA(policy::MetricEnrollment sample,
     case policy::EnrollmentConfig::MODE_SERVER_FORCED:
       base::UmaHistogramSparse(kMetricEnrollmentForced, sample);
       break;
+    case policy::EnrollmentConfig::MODE_INITIAL_SERVER_FORCED:
+      base::UmaHistogramEnumeration(kMetricEnrollmentForcedInitial, sample);
+      break;
     case policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED:
     case policy::EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED:
       base::UmaHistogramSparse(kMetricEnrollmentForcedAttestationBased, sample);
       break;
+    case policy::EnrollmentConfig::MODE_ATTESTATION_INITIAL_SERVER_FORCED:
+      base::UmaHistogramEnumeration(
+          kMetricEnrollmentForcedInitialAttestationBased, sample);
+      break;
     case policy::EnrollmentConfig::MODE_ATTESTATION_MANUAL_FALLBACK:
       base::UmaHistogramSparse(kMetricEnrollmentForcedManualFallback, sample);
+      break;
+    case policy::EnrollmentConfig::MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK:
+      base::UmaHistogramEnumeration(
+          kMetricEnrollmentForcedInitialManualFallback, sample);
       break;
     case policy::EnrollmentConfig::MODE_RECOVERY:
     case policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK:

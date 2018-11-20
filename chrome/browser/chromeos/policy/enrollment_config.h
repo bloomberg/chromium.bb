@@ -44,16 +44,24 @@ struct EnrollmentConfig {
     // Server-backed-state-triggered attestation-based enrollment, user can't
     // skip.
     MODE_ATTESTATION_SERVER_FORCED,
-    // Forced enrollment triggered as a fallback to attestation enrollment,
+    // Forced enrollment triggered as a fallback to attestation re-enrollment,
     // user can't skip.
     MODE_ATTESTATION_MANUAL_FALLBACK,
-
     // Enrollment for offline demo mode with locally stored policy data.
     MODE_OFFLINE_DEMO,
     // Flow that happens when already enrolled device undergoes version
     // rollback. Enrollment information is preserved during rollback, but
     // some steps have to be repeated as stateful partition was wiped.
     MODE_ENROLLED_ROLLBACK,
+    // Server-backed-state-triggered forced initial enrollment, user can't
+    // skip.
+    MODE_INITIAL_SERVER_FORCED,
+    // Server-backed-state-triggered attestation-based initial enrollment,
+    // user can't skip.
+    MODE_ATTESTATION_INITIAL_SERVER_FORCED,
+    // Forced enrollment triggered as a fallback to attestation initial
+    // enrollment, user can't skip.
+    MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK,
   };
 
   // An enumeration of authentication mechanisms that can be used for
@@ -85,12 +93,18 @@ struct EnrollmentConfig {
   // Whether interactive enrollment should be triggered.
   bool should_enroll_interactively() const { return mode != MODE_NONE; }
 
+  // Whether we fell back into manual enrollment.
+  bool is_manual_fallback() const {
+    return mode == MODE_ATTESTATION_MANUAL_FALLBACK ||
+           mode == MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK;
+  }
+
   // Whether enrollment is forced. The user can't skip the enrollment step
   // during OOBE if this returns true.
   bool is_forced() const {
     return mode == MODE_LOCAL_FORCED || mode == MODE_SERVER_FORCED ||
-           mode == MODE_RECOVERY || is_attestation_forced() ||
-           mode == MODE_ATTESTATION_MANUAL_FALLBACK;
+           mode == MODE_INITIAL_SERVER_FORCED || mode == MODE_RECOVERY ||
+           is_attestation_forced() || is_manual_fallback();
   }
 
   // Whether attestation-based enrollment is forced. The user can't skip
@@ -99,10 +113,16 @@ struct EnrollmentConfig {
     return auth_mechanism == AUTH_MECHANISM_ATTESTATION;
   }
 
+  // Whether this configuration is in attestation mode per server request.
+  bool is_mode_attestation_server() const {
+    return mode == MODE_ATTESTATION_SERVER_FORCED ||
+           mode == MODE_ATTESTATION_INITIAL_SERVER_FORCED;
+  }
+
   // Whether this configuration is in attestation mode.
   bool is_mode_attestation() const {
     return mode == MODE_ATTESTATION || mode == MODE_ATTESTATION_LOCAL_FORCED ||
-           mode == MODE_ATTESTATION_SERVER_FORCED;
+           is_mode_attestation_server();
   }
 
   // Whether this configuration is in OAuth mode.

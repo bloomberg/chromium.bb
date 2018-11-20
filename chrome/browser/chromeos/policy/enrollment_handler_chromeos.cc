@@ -85,6 +85,14 @@ em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
           FLAVOR_ENROLLMENT_ATTESTATION_MANUAL_FALLBACK;
     case EnrollmentConfig::MODE_ENROLLED_ROLLBACK:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_RECOVERY;
+    case EnrollmentConfig::MODE_INITIAL_SERVER_FORCED:
+      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_INITIAL_SERVER_FORCED;
+    case EnrollmentConfig::MODE_ATTESTATION_INITIAL_SERVER_FORCED:
+      return em::DeviceRegisterRequest::
+          FLAVOR_ENROLLMENT_ATTESTATION_INITIAL_SERVER_FORCED;
+    case EnrollmentConfig::MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK:
+      return em::DeviceRegisterRequest::
+          FLAVOR_ENROLLMENT_ATTESTATION_INITIAL_MANUAL_FALLBACK;
   }
 
   NOTREACHED() << "Bad enrollment mode: " << mode;
