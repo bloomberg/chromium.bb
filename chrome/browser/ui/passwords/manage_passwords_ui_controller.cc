@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller_impl.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/tab_dialogs.h"
@@ -450,17 +451,13 @@ void ManagePasswordsUIController::ChooseCredential(
 }
 
 void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
-  chrome::ShowSettingsSubPage(
-      chrome::FindBrowserWithWebContents(web_contents()),
-      chrome::kPasswordManagerSubPage);
+  NavigateToManagePasswordsPage(
+      chrome::FindBrowserWithWebContents(web_contents()));
 }
 
 void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard() {
-  GURL dashboard_link(l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK));
-  NavigateParams params(chrome::FindBrowserWithWebContents(web_contents()),
-                        dashboard_link, ui::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  Navigate(&params);
+  NavigateToGooglePasswordManager(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
 }
 
 void ManagePasswordsUIController::EnableSync(const AccountInfo& account,

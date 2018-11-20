@@ -23,6 +23,7 @@ enum class PasswordTitleType {
   UPDATE_PASSWORD,  // update plain password
 };
 
+class Browser;
 class Profile;
 
 // The desired width and height in pixels for an account avatar.
@@ -71,5 +72,13 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form);
 // Check if |profile| syncing the Auto sign-in settings (by checking that user
 // syncs the PRIORITY_PREFERENCE). The view appearance might depend on it.
 bool IsSyncingAutosignSetting(Profile* profile);
+
+// Navigates to the Google Password Manager, i.e. passwords.google.com.
+void NavigateToGooglePasswordManager(Profile* profile);
+
+// Navigates to either the Google Password Manager or the Chrome Password
+// Settings page, depending on the user's password syncing state and whether the
+// corresponding feature flag is enabled.
+void NavigateToManagePasswordsPage(Browser* browser);
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_VIEW_UTILS_H_
