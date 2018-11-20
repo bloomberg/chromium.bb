@@ -326,6 +326,15 @@ Browser::CreateParams::CreateParams(Type type,
                                     bool user_gesture)
     : type(type), profile(profile), user_gesture(user_gesture) {}
 
+Browser::CreateParams::CreateParams(Type type,
+                                    Profile* profile,
+                                    bool user_gesture,
+                                    bool in_tab_dragging)
+    : type(type),
+      profile(profile),
+      user_gesture(user_gesture),
+      in_tab_dragging(in_tab_dragging) {}
+
 Browser::CreateParams::CreateParams(const CreateParams& other) = default;
 
 // static
@@ -490,6 +499,11 @@ Browser::Browser(const CreateParams& params)
       new ExclusiveAccessManager(window_->GetExclusiveAccessContext()));
 
   BrowserList::AddBrowser(this);
+
+  // SetIsInTabDragging() will set the fast resize bit for the web contents.
+  // It will be reset after the drag ends.
+  if (params.in_tab_dragging)
+    SetIsInTabDragging(true);
 }
 
 Browser::~Browser() {
@@ -750,6 +764,10 @@ bool Browser::RunUnloadListenerBeforeClosing(
   if (IsFastTabUnloadEnabled())
     return fast_unload_controller_->RunUnloadEventsHelper(web_contents);
   return unload_controller_->RunUnloadEventsHelper(web_contents);
+}
+
+void Browser::SetIsInTabDragging(bool is_in_tab_dragging) {
+  window_->TabDraggingStatusChanged(is_in_tab_dragging);
 }
 
 void Browser::OnWindowClosing() {
