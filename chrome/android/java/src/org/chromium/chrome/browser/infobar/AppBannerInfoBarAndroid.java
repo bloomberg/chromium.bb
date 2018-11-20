@@ -13,11 +13,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.banners.AppData;
-import org.chromium.chrome.browser.banners.InstallerDelegate;
 import org.chromium.chrome.browser.widget.DualControlLayout;
 
 /**
@@ -34,7 +34,6 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
 
     // Data for native app installs.
     private final AppData mAppData;
-    private @InstallerDelegate.InstallState int mInstallState;
 
     // Data for web app installs.
     private final String mAppUrl;
@@ -45,7 +44,6 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
         mAppTitle = appTitle;
         mAppData = data;
         mAppUrl = null;
-        mInstallState = InstallerDelegate.InstallState.NOT_INSTALLED;
     }
 
     // Banner for web apps.
@@ -54,7 +52,6 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
         mAppTitle = appTitle;
         mAppData = null;
         mAppUrl = url;
-        mInstallState = InstallerDelegate.InstallState.NOT_INSTALLED;
     }
 
     @Override
@@ -115,45 +112,23 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
         }
     }
 
-    @Override
-    public void onButtonClicked(boolean isPrimaryButton) {
-        if (isPrimaryButton && mInstallState == InstallerDelegate.InstallState.INSTALLING) {
-            setControlsEnabled(true);
-            updateButton();
-            return;
-        }
-        super.onButtonClicked(isPrimaryButton);
-    }
-
-    @CalledByNative
-    public void onInstallStateChanged(int newState) {
-        setControlsEnabled(true);
-        mInstallState = newState;
-        updateButton();
-    }
-
     private void updateButton() {
         if (mButton == null || mAppData == null) return;
 
         String text;
         String accessibilityText = null;
-        boolean enabled = true;
         Context context = getContext();
-        if (mInstallState == InstallerDelegate.InstallState.NOT_INSTALLED) {
+        if (PackageUtils.isPackageInstalled(context, mAppData.packageName())) {
+            text = context.getString(R.string.app_banner_open);
+        } else {
             text = mAppData.installButtonText();
             accessibilityText = context.getString(
                     R.string.app_banner_view_native_app_install_accessibility, text);
-        } else if (mInstallState == InstallerDelegate.InstallState.INSTALLING) {
-            text = context.getString(R.string.app_banner_installing);
-            mButton.announceForAccessibility(text);
-            enabled = false;
-        } else {
-            text = context.getString(R.string.app_banner_open);
         }
 
         mButton.setText(text);
         mButton.setContentDescription(accessibilityText);
-        mButton.setEnabled(enabled);
+        mButton.setEnabled(true);
     }
 
     @Override

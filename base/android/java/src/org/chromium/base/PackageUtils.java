@@ -31,6 +31,22 @@ public class PackageUtils {
         return versionCode;
     }
 
+    /**
+     * Checks if the app has been installed on the system.
+     * @return true if the PackageManager reports that the app is installed, false otherwise.
+     * @param context Any context.
+     * @param packageName Name of the package to check.
+     */
+    public static boolean isPackageInstalled(Context context, String packageName) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            pm.getPackageInfo(packageName, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+        return true;
+    }
+
     private PackageUtils() {
         // Hide constructor
     }

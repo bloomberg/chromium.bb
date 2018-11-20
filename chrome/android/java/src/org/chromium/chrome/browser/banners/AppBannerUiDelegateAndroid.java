@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.banners;
 
+import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.Looper;
 
+import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
@@ -18,14 +22,11 @@ import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
  * is created by and owned by the native AppBannerUiDelegate.
  */
 @JNINamespace("banners")
-@JNIAdditionalImport(InstallerDelegate.class)
-public class AppBannerUiDelegateAndroid
-        implements AddToHomescreenDialog.Delegate, InstallerDelegate.Observer {
+public class AppBannerUiDelegateAndroid implements AddToHomescreenDialog.Delegate {
+    private static final String TAG = "AppBannerUi";
+
     /** Pointer to the native AppBannerUiDelegateAndroid. */
     private long mNativePointer;
-
-    /** Delegate which does the actual monitoring of an in-progress installation. */
-    private InstallerDelegate mInstallerDelegate;
 
     private Tab mTab;
 
@@ -61,29 +62,7 @@ public class AppBannerUiDelegateAndroid
         }
 
         mDialog = null;
-        mInstallerDelegate = null;
         mAddedToHomescreen = false;
-    }
-
-    @Override
-    public void onInstallIntentCompleted(InstallerDelegate delegate, boolean isInstalling) {
-        // Do nothing.
-    }
-
-    @Override
-    public void onInstallFinished(InstallerDelegate delegate, boolean success) {
-        // Do nothing.
-    }
-
-    @Override
-    public void onApplicationStateChanged(InstallerDelegate delegate, int newState) {
-        // Do nothing.
-    }
-
-    /** Creates the installer delegate with the specified observer. */
-    @CalledByNative
-    public void createInstallerDelegate(InstallerDelegate.Observer observer) {
-        mInstallerDelegate = new InstallerDelegate(Looper.getMainLooper(), observer);
     }
 
     @CalledByNative
@@ -93,17 +72,29 @@ public class AppBannerUiDelegateAndroid
 
     @CalledByNative
     private void destroy() {
-        if (mInstallerDelegate != null) {
-            mInstallerDelegate.destroy();
-        }
-        mInstallerDelegate = null;
         mNativePointer = 0;
         mAddedToHomescreen = false;
     }
 
     @CalledByNative
-    private boolean installOrOpenNativeApp(AppData appData, String referrer) {
-        return mInstallerDelegate.installOrOpenNativeApp(mTab, appData, referrer);
+    private boolean installOrOpenNativeApp(AppData appData) {
+        Context context = ContextUtils.getApplicationContext();
+        Intent launchIntent;
+        if (PackageUtils.isPackageInstalled(context, appData.packageName())) {
+            launchIntent =
+                    context.getPackageManager().getLaunchIntentForPackage(appData.packageName());
+        } else {
+            launchIntent = appData.installIntent();
+        }
+        if (launchIntent != null && mTab.getActivity() != null) {
+            try {
+                mTab.getActivity().startActivity(launchIntent);
+            } catch (ActivityNotFoundException e) {
+                Log.e(TAG, "Failed to install or open app : %s!", appData.packageName(), e);
+                return false;
+            }
+        }
+        return true;
     }
 
     @CalledByNative
@@ -113,7 +104,6 @@ public class AppBannerUiDelegateAndroid
 
     @CalledByNative
     private boolean showNativeAppDialog(String title, Bitmap iconBitmap, AppData appData) {
-        createInstallerDelegate(this);
         mDialog = new AddToHomescreenDialog(mTab.getActivity(), this);
         mDialog.show();
         mDialog.onUserTitleAvailable(title, appData.installButtonText(), appData.rating());
@@ -128,11 +118,6 @@ public class AppBannerUiDelegateAndroid
         mDialog.onUserTitleAvailable(title, url, true /* isWebapp */);
         mDialog.onIconAvailable(iconBitmap);
         return true;
-    }
-
-    @CalledByNative
-    private int determineInstallState(String packageName) {
-        return mInstallerDelegate.determineInstallState(packageName);
     }
 
     @CalledByNative

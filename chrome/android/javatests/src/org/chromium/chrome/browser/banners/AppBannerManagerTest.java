@@ -11,7 +11,6 @@ import android.app.Instrumentation.ActivityResult;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.support.test.InstrumentationRegistry;
@@ -29,9 +28,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
@@ -190,7 +187,6 @@ public class AppBannerManagerTest {
     @Before
     public void setUp() throws Exception {
         AppBannerManager.setIsSupported(true);
-        InstallerDelegate.setPackageManagerForTesting(mPackageManager);
         ShortcutHelper.setDelegateForTests(new ShortcutHelper.Delegate() {
             @Override
             public void addShortcutToHomescreen(String title, Bitmap icon, Intent shortcutIntent) {
@@ -280,11 +276,6 @@ public class AppBannerManagerTest {
 
     private void runFullNativeInstallPathway(
             String url, String expectedReferrer, String expectedTitle) throws Exception {
-        // Say that the package isn't installed.
-        Mockito.when(mPackageManager.getPackageInfo(
-                             ArgumentMatchers.anyString(), ArgumentMatchers.anyInt()))
-                .thenThrow(new PackageManager.NameNotFoundException());
-
         // Visit a site that requests a banner.
         Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
         resetEngagementForUrl(url, 0);
@@ -314,39 +305,10 @@ public class AppBannerManagerTest {
         InstrumentationRegistry.getInstrumentation().addMonitor(activityMonitor);
         TouchCommon.singleClickView(button);
 
-        // Wait for the infobar to register that the app is installing.
-        final String installingText = InstrumentationRegistry.getTargetContext().getString(
-                R.string.app_banner_installing);
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return InstrumentationRegistry.getInstrumentation().checkMonitorHit(
-                               activityMonitor, 1)
-                        && TextUtils.equals(button.getText(), installingText);
-            }
-        });
-
         // If we expect an update of the page title via JavaScript, wait until the change happens.
         if (expectedTitle != null) {
             new TabTitleObserver(tab, expectedTitle).waitForTitleUpdate(3);
         }
-
-        // Say that the package is installed.  Infobar should say that the app is ready to open.
-        Mockito.reset(mPackageManager);
-        PackageInfo info = new PackageInfo();
-        info.packageName = NATIVE_APP_PACKAGE;
-        Mockito.when(mPackageManager.getPackageInfo(
-                             ArgumentMatchers.anyString(), ArgumentMatchers.anyInt()))
-                .thenReturn(info);
-
-        final String openText =
-                InstrumentationRegistry.getTargetContext().getString(R.string.app_banner_open);
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return TextUtils.equals(button.getText(), openText);
-            }
-        });
     }
 
     private void triggerWebAppBanner(ChromeActivityTestRule<? extends ChromeActivity> rule,
@@ -561,9 +523,10 @@ public class AppBannerManagerTest {
                         "call_stashed_prompt_on_click_verify_appinstalled"),
                 NATIVE_APP_BLANK_REFERRER, true);
 
-        // The appinstalled event should fire (and cause the title to change).
-        new TabTitleObserver(mTabbedActivityTestRule.getActivity().getActivityTab(),
-                "Got appinstalled: listener, attr")
+        // The userChoice promise should resolve (and cause the title to change). appinstalled is
+        // not fired for native apps
+        new TabTitleObserver(
+                mTabbedActivityTestRule.getActivity().getActivityTab(), "Got userChoice: accepted")
                 .waitForTitleUpdate(3);
     }
 
@@ -731,8 +694,8 @@ public class AppBannerManagerTest {
     public void testFullNativeInstallPathwayFromUrl() throws Exception {
         runFullNativeInstallPathway(
                 WebappTestPage.getNonServiceWorkerUrlWithManifestAndAction(
-                        mTestServer, NATIVE_APP_MANIFEST_WITH_URL, "verify_appinstalled"),
-                NATIVE_APP_REFERRER, "Got appinstalled: listener, attr");
+                        mTestServer, NATIVE_APP_MANIFEST_WITH_URL, "call_prompt_delayed"),
+                NATIVE_APP_REFERRER, "Got userChoice: accepted");
     }
 
     @Test

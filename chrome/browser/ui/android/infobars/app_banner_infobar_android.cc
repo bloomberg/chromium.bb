@@ -54,12 +54,6 @@ AppBannerInfoBarAndroid::CreateRenderInfoBar(JNIEnv* env) {
   return infobar;
 }
 
-void AppBannerInfoBarAndroid::OnInstallStateChanged(int new_state) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AppBannerInfoBarAndroid_onInstallStateChanged(env, java_infobar_,
-                                                     new_state);
-}
-
 banners::AppBannerInfoBarDelegateAndroid*
 AppBannerInfoBarAndroid::GetDelegate() {
   return static_cast<banners::AppBannerInfoBarDelegateAndroid*>(delegate());
