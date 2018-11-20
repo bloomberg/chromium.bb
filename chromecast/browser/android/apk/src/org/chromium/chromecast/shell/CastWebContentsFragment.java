@@ -87,8 +87,8 @@ public class CastWebContentsFragment extends Fragment {
             return;
         }
 
-        mSurfaceHelper = new CastWebContentsSurfaceHelper(getActivity(), /* hostActivity */
-                CastWebContentsView.onLayoutFragment(getActivity(),
+        mSurfaceHelper = new CastWebContentsSurfaceHelper(/* hostActivity= */ getActivity(),
+                CastWebContentsScopes.onLayoutFragment(getActivity(),
                         (FrameLayout) getView().findViewById(R.id.web_contents_container),
                         CastSwitches.getSwitchValueColor(
                                 CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK)),
