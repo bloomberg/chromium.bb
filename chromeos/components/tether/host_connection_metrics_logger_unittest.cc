@@ -7,9 +7,7 @@
 #include <memory>
 
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -116,8 +114,6 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
 
   base::HistogramTester histogram_tester_;
   base::SimpleTestClock test_clock_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostConnectionMetricsLoggerTest);

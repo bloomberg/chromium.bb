@@ -7,9 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/disconnect_tethering_operation.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
@@ -103,8 +101,6 @@ class DisconnectTetheringRequestSenderTest : public testing::Test {
   ~DisconnectTetheringRequestSenderTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(features::kMultiDeviceApi);
-
     fake_device_sync_client_ =
         std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_secure_channel_client_ =
@@ -187,7 +183,6 @@ class DisconnectTetheringRequestSenderTest : public testing::Test {
   }
 
   const cryptauth::RemoteDeviceRefList test_devices_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>
