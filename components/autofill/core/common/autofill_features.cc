@@ -67,7 +67,7 @@ const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS{
 
 // Controls whether Autofill attemps to fill dynamically changing forms.
 const base::Feature kAutofillDynamicForms{"AutofillDynamicForms",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the server credit cards are saved only in the ephemeral
 // account-based storage, instead of the persistent local storage.
