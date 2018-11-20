@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -32,6 +33,7 @@ import org.chromium.chrome.browser.vr.util.PermissionUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -126,10 +128,16 @@ public class WebXrVrTabTest {
     }
 
     private void testPermissionsInOtherTabImpl(boolean incognito) throws InterruptedException {
+        EmbeddedTestServer server = mTestRule.getTestServer();
+        boolean teardownServer = false;
+        if (server == null) {
+            server = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+            teardownServer = true;
+        }
+
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                mTestRule.getTestServer().getURL(
-                        WebXrVrTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                                "generic_webxr_permission_page")),
+                server.getURL(WebXrVrTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                        "generic_webxr_permission_page")),
                 PAGE_LOAD_TIMEOUT_S);
         // Be sure to store the stream we're given so that the permission is actually in use, as
         // otherwise the toast doesn't show up since another tab isn't actually using the
@@ -157,5 +165,9 @@ public class WebXrVrTabTest {
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail(mTestRule.getWebContents());
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */, () -> {});
+
+        if (teardownServer) {
+            server.stopAndDestroyServer();
+        }
     }
 }

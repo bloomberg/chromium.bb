@@ -13,6 +13,7 @@ import android.support.test.InstrumentationRegistry;
 import android.view.ViewGroup;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
@@ -26,6 +27,8 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
+import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.EmbeddedTestServerRule;
 
 /**
  * Custom {@link ChromeActivityTestRule} for tests using {@link WebappActivity}.
@@ -70,8 +73,16 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
             + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
             + "AAAAAAAAAOA3AvAAAdln8YgAAAAASUVORK5CYII=";
 
+    @Rule
+    private EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
+
     public WebappActivityTestRule() {
         super(WebappActivity0.class);
+    }
+
+    @Override
+    public EmbeddedTestServer getTestServer() {
+        return mTestServerRule.getServer();
     }
 
     /**
@@ -140,7 +151,8 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
             }
         };
 
-        return super.apply(webappTestRuleStatement, description);
+        Statement testServerStatement = mTestServerRule.apply(webappTestRuleStatement, description);
+        return super.apply(testServerStatement, description);
     }
 
     /**

@@ -8,8 +8,10 @@ import static org.chromium.chrome.browser.vr.WebXrArTestFramework.PAGE_LOAD_TIME
 import static org.chromium.chrome.browser.vr.WebXrArTestFramework.POLL_TIMEOUT_LONG_MS;
 
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,6 +30,7 @@ import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -49,6 +52,9 @@ public class WebXrArSessionTest {
 
     private ChromeActivityTestRule mTestRule;
     private WebXrArTestFramework mWebXrArTestFramework;
+    private EmbeddedTestServer mServer;
+
+    private boolean mShouldCreateServer;
 
     public WebXrArSessionTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
@@ -58,6 +64,21 @@ public class WebXrArSessionTest {
     @Before
     public void setUp() throws Exception {
         mWebXrArTestFramework = new WebXrArTestFramework(mTestRule);
+        // WebappActivityTestRule automatically creates a test server, and creating multiple causes
+        // it to crash hitting a DCHECK. So, only handle the server ourselves if whatever test rule
+        // we're using doesn't create one itself.
+        mServer = mTestRule.getTestServer();
+        if (mServer == null) {
+            mShouldCreateServer = true;
+            mServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        }
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        if (mServer != null && mShouldCreateServer) {
+            mServer.stopAndDestroyServer();
+        }
     }
 
     /**
@@ -68,9 +89,8 @@ public class WebXrArSessionTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testArRequestSessionSucceeds() throws InterruptedException {
         mWebXrArTestFramework.loadUrlAndAwaitInitialization(
-                mTestRule.getTestServer().getURL(
-                        WebXrArTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                                "test_ar_request_session_succeeds")),
+                mServer.getURL(WebXrArTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                        "test_ar_request_session_succeeds")),
                 PAGE_LOAD_TIMEOUT_S);
         mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
         mWebXrArTestFramework.assertNoJavaScriptErrors();
@@ -85,9 +105,8 @@ public class WebXrArSessionTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testRepeatedArSessionsSucceed() throws InterruptedException {
         mWebXrArTestFramework.loadUrlAndAwaitInitialization(
-                mTestRule.getTestServer().getURL(
-                        WebXrArTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                                "test_ar_request_session_succeeds")),
+                mServer.getURL(WebXrArTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                        "test_ar_request_session_succeeds")),
                 PAGE_LOAD_TIMEOUT_S);
         for (int i = 0; i < 2; i++) {
             mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
@@ -105,9 +124,8 @@ public class WebXrArSessionTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testRepeatedArSessionsOnlyPromptPermissionsOnce() throws InterruptedException {
         mWebXrArTestFramework.loadUrlAndAwaitInitialization(
-                mTestRule.getTestServer().getURL(
-                        WebXrArTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                                "test_ar_request_session_succeeds")),
+                mServer.getURL(WebXrArTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                        "test_ar_request_session_succeeds")),
                 PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("First AR session request did not trigger permission prompt",
                 mWebXrArTestFramework.permissionRequestWouldTriggerPrompt("camera"));
