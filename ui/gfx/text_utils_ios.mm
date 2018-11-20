@@ -10,7 +10,6 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "ui/gfx/font_list.h"
-#include "ui/gfx/ios/NSString+CrStringDrawing.h"
 
 namespace gfx {
 
@@ -25,7 +24,8 @@ float GetStringWidthF(const base::string16& text,
                       Typesetter typesetter) {
   NSString* ns_text = base::SysUTF16ToNSString(text);
   NativeFont native_font = font_list.GetPrimaryFont().GetNativeFont();
-  return [ns_text cr_sizeWithFont:native_font].width;
+  NSDictionary* attributes = @{NSFontAttributeName : native_font};
+  return [ns_text sizeWithAttributes:attributes].width;
 }
 
 }  // namespace gfx
