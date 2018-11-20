@@ -1057,8 +1057,8 @@ GURL CrostiniManager::GenerateVshInCroshUrl(
                          CryptohomeIdForProfile(profile).c_str()),
       false);
 
-  std::vector<base::StringPiece> pieces = {
-      vsh_crosh, vm_name_param, container_name_param, owner_id_param};
+  std::vector<std::string> pieces = {vsh_crosh, vm_name_param,
+                                     container_name_param, owner_id_param};
   if (!terminal_args.empty()) {
     // Separates the command args from the args we are passing into the
     // terminal to be executed.
