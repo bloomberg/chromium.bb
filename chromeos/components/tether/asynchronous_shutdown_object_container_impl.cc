@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/ble_advertisement_device_queue.h"
-#include "chromeos/components/tether/ble_connection_metrics_logger.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender_impl.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
@@ -102,10 +101,6 @@ AsynchronousShutdownObjectContainerImpl::
               ? nullptr
               : secure_channel::BleSynchronizer::Factory::Get()->BuildInstance(
                     adapter)),
-      ble_connection_metrics_logger_(
-          base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-              ? nullptr
-              : std::make_unique<BleConnectionMetricsLogger>()),
       disconnect_tethering_request_sender_(
           DisconnectTetheringRequestSenderImpl::Factory::NewInstance(
               device_sync_client,

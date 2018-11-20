@@ -47,7 +47,6 @@ class SecureChannelClient;
 namespace tether {
 
 class BleAdvertisementDeviceQueue;
-class BleConnectionMetricsLogger;
 class NetworkConfigurationRemover;
 class TetherHostFetcher;
 class WifiHotspotDisconnector;
@@ -131,7 +130,6 @@ class AsynchronousShutdownObjectContainerImpl
       local_device_data_provider_;
   std::unique_ptr<BleAdvertisementDeviceQueue> ble_advertisement_device_queue_;
   std::unique_ptr<secure_channel::BleSynchronizerBase> ble_synchronizer_;
-  std::unique_ptr<BleConnectionMetricsLogger> ble_connection_metrics_logger_;
   std::unique_ptr<DisconnectTetheringRequestSender>
       disconnect_tethering_request_sender_;
   std::unique_ptr<NetworkConfigurationRemover> network_configuration_remover_;
