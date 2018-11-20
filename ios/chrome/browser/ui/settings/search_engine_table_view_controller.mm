@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/search_engine_settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/search_engine_table_view_controller.h"
 
 #include <memory>
 
@@ -14,11 +14,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -45,11 +43,10 @@ const char kUmaSelectDefaultSearchEngine[] =
 
 }  // namespace
 
-@interface SearchEngineSettingsCollectionViewController ()<
-    SearchEngineObserving>
+@interface SearchEngineTableViewController ()<SearchEngineObserving>
 @end
 
-@implementation SearchEngineSettingsCollectionViewController {
+@implementation SearchEngineTableViewController {
   TemplateURLService* _templateURLService;  // weak
   std::unique_ptr<SearchEngineObserverBridge> _observer;
   // Prevent unnecessary notifications when we write to the setting.
@@ -67,9 +64,9 @@ const char kUmaSelectDefaultSearchEngine[] =
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
-      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
+      [super initWithTableViewStyle:UITableViewStyleGrouped
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     _templateURLService =
         ios::TemplateURLServiceFactory::GetForBrowserState(browserState);
@@ -77,17 +74,23 @@ const char kUmaSelectDefaultSearchEngine[] =
         std::make_unique<SearchEngineObserverBridge>(self, _templateURLService);
     _templateURLService->Load();
     [self setTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_ENGINE_SETTING_TITLE)];
-    [self setCollectionViewAccessibilityIdentifier:@"Search Engine"];
-    // TODO(crbug.com/764578): -loadModel should not be called from
-    // initializer. A possible fix is to move this call to -viewDidLoad.
-    [self loadModel];
   }
   return self;
 }
 
+#pragma mark - UIViewController
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
+  [self loadModel];
+}
+
+#pragma mark - ChromeTableViewController
+
 - (void)loadModel {
   [super loadModel];
-  CollectionViewModel* model = self.collectionViewModel;
+  TableViewModel* model = self.tableViewModel;
   [self loadSearchEngines];
 
   // Add prior search engines.
@@ -95,11 +98,12 @@ const char kUmaSelectDefaultSearchEngine[] =
     [model addSectionWithIdentifier:SectionIdentifierPriorSearchEngines];
 
     for (TemplateURL* url : _priorSearchEngines) {
-      SettingsTextItem* engine = [[SettingsTextItem alloc]
+      TableViewDetailTextItem* engine = [[TableViewDetailTextItem alloc]
           initWithType:ItemTypePriorSearchEnginesEngine];
-      [engine setText:base::SysUTF16ToNSString(url->short_name())];
+      engine.text = base::SysUTF16ToNSString(url->short_name());
+      engine.detailText = base::SysUTF16ToNSString(url->keyword());
       if (url == _templateURLService->GetDefaultSearchProvider()) {
-        [engine setAccessoryType:MDCCollectionViewCellAccessoryCheckmark];
+        [engine setAccessoryType:UITableViewCellAccessoryCheckmark];
       }
       [model addItem:engine
           toSectionWithIdentifier:SectionIdentifierPriorSearchEngines];
@@ -110,20 +114,21 @@ const char kUmaSelectDefaultSearchEngine[] =
   if (_customSearchEngines.size() > 0) {
     [model addSectionWithIdentifier:SectionIdentifierCustomSearchEngines];
 
-    SettingsTextItem* header = [[SettingsTextItem alloc]
-        initWithType:ItemTypeCustomSearchEnginesEngineHeader];
+    TableViewTextHeaderFooterItem* header =
+        [[TableViewTextHeaderFooterItem alloc]
+            initWithType:ItemTypeCustomSearchEnginesEngineHeader];
     header.text = l10n_util::GetNSString(
         IDS_IOS_SEARCH_ENGINE_SETTING_CUSTOM_SECTION_HEADER);
-    header.textColor = [[MDCPalette greyPalette] tint500];
     [model setHeader:header
         forSectionWithIdentifier:SectionIdentifierCustomSearchEngines];
 
     for (TemplateURL* url : _customSearchEngines) {
-      SettingsTextItem* engine = [[SettingsTextItem alloc]
+      TableViewDetailTextItem* engine = [[TableViewDetailTextItem alloc]
           initWithType:ItemTypeCustomSearchEnginesEngine];
-      [engine setText:base::SysUTF16ToNSString(url->short_name())];
+      engine.text = base::SysUTF16ToNSString(url->short_name());
+      engine.detailText = base::SysUTF16ToNSString(url->keyword());
       if (url == _templateURLService->GetDefaultSearchProvider()) {
-        [engine setAccessoryType:MDCCollectionViewCellAccessoryCheckmark];
+        [engine setAccessoryType:UITableViewCellAccessoryCheckmark];
       }
       [model addItem:engine
           toSectionWithIdentifier:SectionIdentifierCustomSearchEngines];
@@ -131,25 +136,24 @@ const char kUmaSelectDefaultSearchEngine[] =
   }
 }
 
-#pragma mark UICollectionViewDelegate
+#pragma mark UITableViewDelegate
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-  CollectionViewModel* model = self.collectionViewModel;
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didSelectRowAtIndexPath:indexPath];
+  TableViewModel* model = self.tableViewModel;
 
   // Only handle taps on search engine items.
-  CollectionViewItem* selectedItem = [model itemAtIndexPath:indexPath];
+  TableViewItem* selectedItem = [model itemAtIndexPath:indexPath];
   if (selectedItem.type != ItemTypePriorSearchEnginesEngine &&
       selectedItem.type != ItemTypeCustomSearchEnginesEngine) {
     return;
   }
 
   // Do nothing if the tapped engine was already the default.
-  SettingsTextItem* selectedTextItem =
-      base::mac::ObjCCastStrict<SettingsTextItem>(selectedItem);
-  if (selectedTextItem.accessoryType ==
-      MDCCollectionViewCellAccessoryCheckmark) {
+  TableViewDetailTextItem* selectedTextItem =
+      base::mac::ObjCCastStrict<TableViewDetailTextItem>(selectedItem);
+  if (selectedTextItem.accessoryType == UITableViewCellAccessoryCheckmark) {
     return;
   }
 
@@ -158,42 +162,42 @@ const char kUmaSelectDefaultSearchEngine[] =
   // Iterate through the engines and remove the checkmark from any that have it.
   if ([model
           hasSectionForSectionIdentifier:SectionIdentifierPriorSearchEngines]) {
-    for (CollectionViewItem* item in
+    for (TableViewItem* item in
          [model itemsInSectionWithIdentifier:
                     SectionIdentifierPriorSearchEngines]) {
       if (item.type != ItemTypePriorSearchEnginesEngine) {
         continue;
       }
-      SettingsTextItem* textItem =
-          base::mac::ObjCCastStrict<SettingsTextItem>(item);
-      if (textItem.accessoryType == MDCCollectionViewCellAccessoryCheckmark) {
-        textItem.accessoryType = MDCCollectionViewCellAccessoryNone;
+      TableViewDetailTextItem* textItem =
+          base::mac::ObjCCastStrict<TableViewDetailTextItem>(item);
+      if (textItem.accessoryType == UITableViewCellAccessoryCheckmark) {
+        textItem.accessoryType = UITableViewCellAccessoryNone;
         [modifiedItems addObject:textItem];
       }
     }
   }
   if ([model hasSectionForSectionIdentifier:
                  SectionIdentifierCustomSearchEngines]) {
-    for (CollectionViewItem* item in
+    for (TableViewItem* item in
          [model itemsInSectionWithIdentifier:
                     SectionIdentifierCustomSearchEngines]) {
       if (item.type != ItemTypeCustomSearchEnginesEngine) {
         continue;
       }
-      SettingsTextItem* textItem =
-          base::mac::ObjCCastStrict<SettingsTextItem>(item);
-      if (textItem.accessoryType == MDCCollectionViewCellAccessoryCheckmark) {
-        textItem.accessoryType = MDCCollectionViewCellAccessoryNone;
+      TableViewDetailTextItem* textItem =
+          base::mac::ObjCCastStrict<TableViewDetailTextItem>(item);
+      if (textItem.accessoryType == UITableViewCellAccessoryCheckmark) {
+        textItem.accessoryType = UITableViewCellAccessoryNone;
         [modifiedItems addObject:textItem];
       }
     }
   }
 
   // Show the checkmark on the new default engine.
-  SettingsTextItem* newDefaultEngine =
-      base::mac::ObjCCastStrict<SettingsTextItem>(
+  TableViewDetailTextItem* newDefaultEngine =
+      base::mac::ObjCCastStrict<TableViewDetailTextItem>(
           [model itemAtIndexPath:indexPath]);
-  newDefaultEngine.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
+  newDefaultEngine.accessoryType = UITableViewCellAccessoryCheckmark;
   [modifiedItems addObject:newDefaultEngine];
 
   // Set the new engine as the default.
@@ -205,6 +209,7 @@ const char kUmaSelectDefaultSearchEngine[] =
               [model indexInItemTypeForIndexPath:indexPath]];
 
   [self reconfigureCellsForItems:modifiedItems];
+  [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 #pragma mark Internal methods
