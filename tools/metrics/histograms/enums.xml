@@ -39464,6 +39464,21 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="From Android"/>
 </enum>
 
+<enum name="PasswordManagerHttpCredentialType">
+  <summary>
+    This enum records the type of a given HTTP credential. Depending on its
+    username and the password, an HTTP credential can have no matching, an
+    equivalent or a conflicting HTTPS credentials. Also the corresponding
+    website can be served with or without HSTS enabled.
+  </summary>
+  <int value="0" label="Conflicting HTTPS, HSTS disabled"/>
+  <int value="1" label="Conflicting HTTPS, HSTS enabled"/>
+  <int value="2" label="Equivalent HTTPS, HSTS disabled"/>
+  <int value="3" label="Equivalent HTTPS, HSTS enabled"/>
+  <int value="4" label="No Matching HTTPS, HSTS disabled"/>
+  <int value="5" label="No Matching HTTPS, HSTS enabled"/>
+</enum>
+
 <enum name="PasswordManagerOfferedAndroidCredentials">
   <int value="0" label="None from Android"/>
   <int value="1" label="1+ from Android"/>

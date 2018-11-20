@@ -62,7 +62,7 @@ void HttpCredentialCleaner::OnGetPasswordStoreResults(
   }
 
   // This is needed in case of empty |results|.
-  ReportMetrics();
+  SetPrefIfDone();
 }
 
 void HttpCredentialCleaner::OnHSTSQueryResult(
@@ -71,7 +71,7 @@ void HttpCredentialCleaner::OnHSTSQueryResult(
     HSTSResult hsts_result) {
   ++processed_results_;
   base::ScopedClosureRunner report(base::BindOnce(
-      &HttpCredentialCleaner::ReportMetrics, base::Unretained(this)));
+      &HttpCredentialCleaner::SetPrefIfDone, base::Unretained(this)));
 
   if (hsts_result == HSTSResult::kError)
     return;
@@ -81,7 +81,10 @@ void HttpCredentialCleaner::OnHSTSQueryResult(
   auto user_it = https_credentials_map_.find(key);
   if (user_it == https_credentials_map_.end()) {
     // Credentials are not migrated yet.
-    ++https_credential_not_found_[is_hsts];
+    base::UmaHistogramEnumeration(
+        "PasswordManager.HttpCredentials",
+        is_hsts ? HttpCredentialType::kHasNoMatchingHttpsWithHsts
+                : HttpCredentialType::kHasNoMatchingHttpsWithoutHsts);
     if (is_hsts) {
       // Migrate credentials to HTTPS, by moving them.
       store_->AddLogin(
@@ -94,40 +97,25 @@ void HttpCredentialCleaner::OnHSTSQueryResult(
   if (base::ContainsKey(user_it->second, form->password_value)) {
     // The password store contains the same credentials (signon_realm, scheme,
     // username and password) on HTTPS version of the form.
-    ++same_password_[is_hsts];
+    base::UmaHistogramEnumeration(
+        "PasswordManager.HttpCredentials",
+        is_hsts ? HttpCredentialType::kHasEquivalentHttpsWithHsts
+                : HttpCredentialType::kHasEquivalentHttpsWithoutHsts);
     if (is_hsts) {
       // This HTTP credential is no more used.
       store_->RemoveLogin(*form);
     }
   } else {
-    ++different_password_[is_hsts];
+    base::UmaHistogramEnumeration(
+        "PasswordManager.HttpCredentials",
+        is_hsts ? HttpCredentialType::kHasConflictingHttpsWithHsts
+                : HttpCredentialType::kHasConflictingHttpsWithoutHsts);
   }
 }
 
-void HttpCredentialCleaner::ReportMetrics() {
-  // The metrics have to be recorded after all requests are done.
+void HttpCredentialCleaner::SetPrefIfDone() {
   if (processed_results_ != total_http_credentials_)
     return;
-
-  for (bool is_hsts_enabled : {false, true}) {
-    std::string suffix = (is_hsts_enabled ? std::string("WithHSTSEnabled")
-                                          : std::string("HSTSNotEnabled"));
-
-    base::UmaHistogramCounts1000(
-        "PasswordManager.HttpCredentialsWithEquivalentHttpsCredential." +
-            suffix,
-        same_password_[is_hsts_enabled]);
-
-    base::UmaHistogramCounts1000(
-        "PasswordManager.HttpCredentialsWithConflictingHttpsCredential." +
-            suffix,
-        different_password_[is_hsts_enabled]);
-
-    base::UmaHistogramCounts1000(
-        "PasswordManager.HttpCredentialsWithoutMatchingHttpsCredential." +
-            suffix,
-        https_credential_not_found_[is_hsts_enabled]);
-  }
 
   prefs_->SetDouble(prefs::kLastTimeObsoleteHttpCredentialsRemoved,
                     base::Time::Now().ToDoubleT());
