@@ -15,7 +15,6 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 import android.graphics.PointF;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.view.MotionEvent;
@@ -52,7 +51,6 @@ import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TouchCommon;
-import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -738,15 +736,10 @@ public class WebXrVrInputTest {
     private void testAppButtonLongPressDisplaysPermissionsImpl() throws InterruptedException {
         // Note that we need to pass in the WebContents to use throughout this because automatically
         // using the first tab's WebContents doesn't work in Incognito.
-        EmbeddedTestServer server = mTestRule.getTestServer();
-        boolean teardownServer = false;
-        if (server == null) {
-            server = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-            teardownServer = true;
-        }
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                server.getURL(WebXrVrTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                        "generic_webxr_permission_page")),
+                mTestRule.getTestServer().getURL(
+                        WebXrVrTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                                "generic_webxr_permission_page")),
                 PAGE_LOAD_TIMEOUT_S);
         WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
                 POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
@@ -785,9 +778,6 @@ public class WebXrVrInputTest {
                 UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */, () -> {});
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, false /* visible */, () -> {});
-        if (teardownServer) {
-            server.stopAndDestroyServer();
-        }
     }
 
     /**
@@ -825,16 +815,10 @@ public class WebXrVrInputTest {
     private void testInSessionPermissionRequestsImpl() throws InterruptedException {
         // Note that we need to pass in the WebContents to use throughout this because automatically
         // using the first tab's WebContents doesn't work in Incognito.
-        EmbeddedTestServer server = mTestRule.getTestServer();
-        boolean teardownServer = false;
-        if (server == null) {
-            server = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-            teardownServer = true;
-        }
-
         mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                server.getURL(WebXrVrTestFramework.getEmbeddedServerPathForHtmlTestFile(
-                        "generic_webxr_permission_page")),
+                mTestRule.getTestServer().getURL(
+                        WebXrVrTestFramework.getEmbeddedServerPathForHtmlTestFile(
+                                "generic_webxr_permission_page")),
                 PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail(mTestRule.getWebContents());
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
@@ -861,9 +845,5 @@ public class WebXrVrInputTest {
                         .runJavaScriptOrFail("lastPermissionRequestSucceeded",
                                 POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents())
                         .equals("true"));
-
-        if (teardownServer) {
-            server.stopAndDestroyServer();
-        }
     }
 }

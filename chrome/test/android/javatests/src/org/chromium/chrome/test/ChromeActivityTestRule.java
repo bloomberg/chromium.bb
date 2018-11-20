@@ -19,6 +19,7 @@ import android.text.TextUtils;
 import android.view.Menu;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
@@ -60,6 +61,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.RenderProcessLimit;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.PageTransition;
 
@@ -92,6 +94,9 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     private T mSetActivity;
     private String mCurrentTestName;
 
+    @Rule
+    private EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
+
     public ChromeActivityTestRule(Class<T> activityClass) {
         this(activityClass, false);
     }
@@ -104,7 +109,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     @Override
     public Statement apply(final Statement base, Description description) {
         mCurrentTestName = description.getMethodName();
-        final Statement superBase = super.apply(new Statement() {
+        Statement chromeActivityStatement = new Statement() {
             @Override
             public void evaluate() throws Throwable {
                 mDefaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
@@ -123,8 +128,9 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
                 base.evaluate();
             }
-        }, description);
-        return superBase;
+        };
+        Statement testServerStatement = mTestServerRule.apply(chromeActivityStatement, description);
+        return super.apply(testServerStatement, description);
     }
 
     /**
@@ -651,7 +657,14 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
      * Gets the ChromeActivityTestRule's EmbeddedTestServer instance if it has one.
      */
     public EmbeddedTestServer getTestServer() {
-        return null;
+        return mTestServerRule.getServer();
+    }
+
+    /**
+     * Gets the underlying EmbeddedTestServerRule for getTestServer().
+     */
+    public EmbeddedTestServerRule getEmbeddedTestServerRule() {
+        return mTestServerRule;
     }
 
     /**
