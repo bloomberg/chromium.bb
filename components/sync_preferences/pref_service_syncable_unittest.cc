@@ -124,9 +124,8 @@ class PrefServiceSyncableTest : public testing::Test {
     sync_pb::PreferenceSpecifics* pref_one = entity.mutable_preference();
     pref_one->set_name(name);
     pref_one->set_value(serialized);
-    return syncer::SyncChange(
-        FROM_HERE, type,
-        syncer::SyncData::CreateRemoteData(id, entity, base::Time()));
+    return syncer::SyncChange(FROM_HERE, type,
+                              syncer::SyncData::CreateRemoteData(id, entity));
   }
 
   void AddToRemoteDataList(const std::string& name,
@@ -139,8 +138,8 @@ class PrefServiceSyncableTest : public testing::Test {
     sync_pb::PreferenceSpecifics* pref_one = one.mutable_preference();
     pref_one->set_name(name);
     pref_one->set_value(serialized);
-    out->push_back(SyncData::CreateRemoteData(++next_pref_remote_sync_node_id_,
-                                              one, base::Time()));
+    out->push_back(
+        SyncData::CreateRemoteData(++next_pref_remote_sync_node_id_, one));
   }
 
   void InitWithSyncDataTakeOutput(const syncer::SyncDataList& initial_data,
@@ -372,9 +371,8 @@ class PrefServiceSyncableMergeTest : public testing::Test {
     sync_pb::PreferenceSpecifics* pref_one = entity.mutable_preference();
     pref_one->set_name(name);
     pref_one->set_value(serialized);
-    return syncer::SyncChange(
-        FROM_HERE, type,
-        syncer::SyncData::CreateRemoteData(id, entity, base::Time()));
+    return syncer::SyncChange(FROM_HERE, type,
+                              syncer::SyncData::CreateRemoteData(id, entity));
   }
 
   void AddToRemoteDataList(const std::string& name,
@@ -387,8 +385,8 @@ class PrefServiceSyncableMergeTest : public testing::Test {
     sync_pb::PreferenceSpecifics* pref_one = one.mutable_preference();
     pref_one->set_name(name);
     pref_one->set_value(serialized);
-    out->push_back(SyncData::CreateRemoteData(++next_pref_remote_sync_node_id_,
-                                              one, base::Time()));
+    out->push_back(
+        SyncData::CreateRemoteData(++next_pref_remote_sync_node_id_, one));
   }
 
   void InitWithSyncDataTakeOutput(const syncer::SyncDataList& initial_data,

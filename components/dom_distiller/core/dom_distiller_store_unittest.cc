@@ -148,8 +148,7 @@ class DomDistillerStoreTest : public testing::Test {
  protected:
   SyncData CreateSyncData(const ArticleEntry& entry) {
     EntitySpecifics specifics = SpecificsFromEntry(entry);
-    return SyncData::CreateRemoteData(next_sync_id_++, specifics,
-                                      Time::UnixEpoch());
+    return SyncData::CreateRemoteData(next_sync_id_++, specifics);
   }
 
   SyncDataList SyncDataFromEntryMap(const EntryMap& model) {

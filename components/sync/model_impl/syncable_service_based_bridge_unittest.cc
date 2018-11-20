@@ -719,7 +719,6 @@ TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
   change_list.push_back(SyncChange(
       FROM_HERE, SyncChange::ACTION_DELETE,
       SyncData::CreateRemoteData(/*id=*/1, specifics,
-                                 /*last_modified_time=*/base::Time::Now(),
                                  /*client_tag_hash=*/kClientTagHash)));
 
   sync_change_processor->ProcessSyncChanges(FROM_HERE, change_list);
@@ -755,7 +754,6 @@ TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
   change_list.push_back(SyncChange(
       FROM_HERE, SyncChange::ACTION_DELETE,
       SyncData::CreateRemoteData(/*id=*/1, specifics,
-                                 /*last_modified_time=*/base::Time::Now(),
                                  /*client_tag_hash=*/kClientTagHash)));
 
   sync_change_processor->ProcessSyncChanges(FROM_HERE, change_list);
