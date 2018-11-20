@@ -1139,17 +1139,6 @@ void WallpaperController::ShowUserWallpaper(
 
   const AccountId account_id = current_user_->account_id;
   const bool is_ephemeral = current_user_->is_ephemeral;
-  // Guest user or regular user in ephemeral mode.
-  if ((is_ephemeral && current_user_->has_gaia_account) ||
-      current_user_->type == user_manager::USER_TYPE_GUEST) {
-    if (!InitializeUserWallpaperInfo(account_id, is_ephemeral))
-      return;
-    SetDefaultWallpaperImpl(account_id, current_user_->type,
-                            /*show_wallpaper=*/true);
-    VLOG(1) << "User is ephemeral. Fallback to default wallpaper.";
-    return;
-  }
-
   WallpaperInfo info;
   if (!GetUserWallpaperInfo(account_id, &info, is_ephemeral)) {
     if (!InitializeUserWallpaperInfo(account_id, is_ephemeral))
@@ -1157,14 +1146,20 @@ void WallpaperController::ShowUserWallpaper(
     GetUserWallpaperInfo(account_id, &info, is_ephemeral);
   }
 
+  // For ephemeral users, the cache is the only place to access their wallpaper
+  // because it is not saved to disk. If the image doesn't exist in cache, it
+  // means the user's wallpaper type is default (i.e. the user never sets their
+  // own wallpaper), and it's a bug if it's not.
+  //
+  // For regular users, the image will be read from disk if the cache is not
+  // hit (e.g. when the first time the wallpaper is shown on login screen).
   gfx::ImageSkia user_wallpaper;
   if (GetWallpaperFromCache(account_id, &user_wallpaper)) {
     ShowWallpaperImage(user_wallpaper, info, /*preview_mode=*/false);
     return;
   }
 
-  if (info.location.empty()) {
-    // Uses default wallpaper when file is empty.
+  if (info.type == DEFAULT) {
     SetDefaultWallpaperImpl(account_id, current_user_->type,
                             /*show_wallpaper=*/true);
     return;
