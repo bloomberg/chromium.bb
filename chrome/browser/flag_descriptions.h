@@ -1127,9 +1127,6 @@ extern const char kSyncUSSAutofillWalletDataDescription[];
 extern const char kSysInternalsName[];
 extern const char kSysInternalsDescription[];
 
-extern const char kTabModalJsDialogName[];
-extern const char kTabModalJsDialogDescription[];
-
 extern const char kTabsInCbdName[];
 extern const char kTabsInCbdDescription[];
 

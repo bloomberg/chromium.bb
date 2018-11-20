@@ -47,17 +47,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Test suite for displaying and functioning of JavaScript tab modal dialogs. Some of the tests
- * are identical to ModalDialogTest.java and some are for tab-modal features.
+ * Test suite for displaying and functioning of tab modal JavaScript alert, confirm and prompt.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.
-Add({"enable-features=TabModalJsDialog", ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class JavascriptTabModalDialogTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
-    private static final String TAG = "JsTabModalDialogTest";
     private static final String EMPTY_PAGE = UrlUtils.encodeHtmlDataUri(
             "<html><title>Modal Dialog Test</title><p>Testcase.</p></title></html>");
     private static final String OTHER_PAGE = UrlUtils.encodeHtmlDataUri(
@@ -193,6 +190,9 @@ public class JavascriptTabModalDialogTest {
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         assertScrollViewFocusabilityInAlertDialog(
                 "alert(new Array(200).join('Long message!'));", true);
+
+        // Reset to portrait mode.
+        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
     private void assertScrollViewFocusabilityInAlertDialog(

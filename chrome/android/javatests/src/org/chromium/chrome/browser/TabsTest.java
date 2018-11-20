@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
-import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.os.Build;
@@ -50,6 +49,8 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirectio
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
+import org.chromium.chrome.browser.jsdialog.JavascriptTabModalDialog;
+import org.chromium.chrome.browser.modaldialog.ModalDialogView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -205,7 +206,6 @@ public class TabsTest {
     @Test
     @MediumTest
     @RetryOnFailure
-    @CommandLineFlags.Add("disable-features=TabModalJsDialog")
     public void testAlertDialogDoesNotChangeActiveModel() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.newIncognitoTabFromMenu();
@@ -217,27 +217,26 @@ public class TabsTest {
                         + "})()",
                 null));
 
-        final AtomicReference<JavascriptAppModalDialog> dialog =
-                new AtomicReference<>();
+        final AtomicReference<JavascriptTabModalDialog> dialog = new AtomicReference<>();
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                dialog.set(JavascriptAppModalDialog.getCurrentDialogForTest());
+                dialog.set(getCurrentAlertDialog());
 
                 return dialog.get() != null;
             }
         });
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> dialog.get().onClick(null, DialogInterface.BUTTON_POSITIVE));
+                () -> dialog.get().onClick(ModalDialogView.ButtonType.POSITIVE));
 
         dialog.set(null);
 
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return JavascriptAppModalDialog.getCurrentDialogForTest() == null;
+                return getCurrentAlertDialog() == null;
             }
         });
 
@@ -1973,5 +1972,14 @@ public class TabsTest {
             });
             pageLoadedCallbacks[i].waitForCallback(0);
         }
+    }
+
+    private JavascriptTabModalDialog getCurrentAlertDialog() {
+        return (JavascriptTabModalDialog) ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            ModalDialogView dialogView = mActivityTestRule.getActivity()
+                                                 .getModalDialogManager()
+                                                 .getCurrentDialogForTest();
+            return dialogView != null ? dialogView.getController() : null;
+        });
     }
 }

@@ -177,6 +177,15 @@ public class ModalDialogView implements View.OnClickListener {
         mNegativeButton.setOnClickListener(this);
         updateContentVisibility();
         updateButtonVisibility();
+
+        // If the scroll view can not be scrolled, make the scroll view not focusable so that the
+        // focusing behavior for hardware keyboard is less confusing.
+        // See https://codereview.chromium.org/2939883002.
+        mScrollView.addOnLayoutChangeListener(
+                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    boolean isScrollable = v.canScrollVertically(-1) || v.canScrollVertically(1);
+                    v.setFocusable(isScrollable);
+                });
     }
 
     @Override
