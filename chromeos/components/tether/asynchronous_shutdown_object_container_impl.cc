@@ -8,7 +8,6 @@
 #include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/ble_advertisement_device_queue.h"
 #include "chromeos/components/tether/ble_connection_metrics_logger.h"
-#include "chromeos/components/tether/ble_scanner_impl.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender_impl.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
@@ -103,13 +102,6 @@ AsynchronousShutdownObjectContainerImpl::
               ? nullptr
               : secure_channel::BleSynchronizer::Factory::Get()->BuildInstance(
                     adapter)),
-      ble_scanner_(
-          base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-              ? nullptr
-              : BleScannerImpl::Factory::NewInstance(adapter,
-                                                     nullptr,
-                                                     ble_synchronizer_.get(),
-                                                     tether_host_fetcher_)),
       ble_connection_metrics_logger_(
           base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
               ? nullptr
@@ -130,10 +122,6 @@ AsynchronousShutdownObjectContainerImpl::
 
 AsynchronousShutdownObjectContainerImpl::
     ~AsynchronousShutdownObjectContainerImpl() {
-  disconnect_tethering_request_sender_->RemoveObserver(this);
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    ble_scanner_->RemoveObserver(this);
-  }
 }
 
 void AsynchronousShutdownObjectContainerImpl::Shutdown(
@@ -144,9 +132,6 @@ void AsynchronousShutdownObjectContainerImpl::Shutdown(
   // The objects below require asynchronous shutdowns, so start observering
   // these objects. Once they notify observers that they are finished shutting
   // down, the asynchronous shutdown will complete.
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    ble_scanner_->AddObserver(this);
-  }
   disconnect_tethering_request_sender_->AddObserver(this);
 
   ShutdownIfPossible();
@@ -177,20 +162,12 @@ void AsynchronousShutdownObjectContainerImpl::
   ShutdownIfPossible();
 }
 
-void AsynchronousShutdownObjectContainerImpl::OnDiscoverySessionStateChanged(
-    bool discovery_session_active) {
-  ShutdownIfPossible();
-}
-
 void AsynchronousShutdownObjectContainerImpl::ShutdownIfPossible() {
   DCHECK(!shutdown_complete_callback_.is_null());
 
   if (AreAsynchronousOperationsActive())
     return;
 
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    ble_scanner_->RemoveObserver(this);
-  }
   disconnect_tethering_request_sender_->RemoveObserver(this);
 
   shutdown_complete_callback_.Run();
@@ -210,23 +187,12 @@ bool AsynchronousShutdownObjectContainerImpl::
     return true;
   }
 
-  // The BLE scanner must shut down completely before the component shuts down.
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      ble_scanner_->ShouldDiscoverySessionBeActive() !=
-          ble_scanner_->IsDiscoverySessionActive()) {
-    return true;
-  }
-
   return false;
 }
 
 void AsynchronousShutdownObjectContainerImpl::SetTestDoubles(
-    std::unique_ptr<BleScanner> ble_scanner,
     std::unique_ptr<DisconnectTetheringRequestSender>
         disconnect_tethering_request_sender) {
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    ble_scanner_ = std::move(ble_scanner);
-  }
   disconnect_tethering_request_sender_ =
       std::move(disconnect_tethering_request_sender);
 }
