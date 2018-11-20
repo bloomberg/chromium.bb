@@ -11,8 +11,6 @@ document.write(`
     <command id="share" label="Share"></command>
     <command id="manage-in-drive" i18n-values="Manage in Drive"></command>
     <command id="toggle-pinned" label="Toggle pinned"></command>
-    <command id="create-folder-shortcut" label="Create folder shortcut">
-    </command>
     <command id="remove-folder-shortcut" label="Remove folder shortcut">
     </command>
 

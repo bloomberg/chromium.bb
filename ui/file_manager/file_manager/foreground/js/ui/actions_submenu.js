@@ -79,19 +79,6 @@ ActionsSubmenu.prototype.setActionsModel = function(actionsModel) {
   util.queryDecoratedElement('#manage-in-drive', cr.ui.Command)
       .canExecuteChange();
 
-  // Managing shortcuts is shown just before custom actions.
-  var createFolderShortcutAction = remainingActions[
-      ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT];
-  if (createFolderShortcutAction) {
-    var menuItem = this.addMenuItem_({});
-    menuItem.command = '#create-folder-shortcut';
-    delete remainingActions[
-      ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT
-    ];
-  }
-  util.queryDecoratedElement(
-      '#create-folder-shortcut', cr.ui.Command).canExecuteChange();
-
   // Removing shortcuts is not rendered in the submenu to keep the previous
   // behavior. Shortcuts can be removed in the left nav using the roots menu.
   // TODO(mtomasz): Consider rendering the menu item here for consistency.
