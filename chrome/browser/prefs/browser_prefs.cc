@@ -382,6 +382,9 @@ const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
 const char kNetworkQualities[] = "net.network_qualities";
 const char kForceSessionSync[] = "settings.history_recorded";
 const char kOnboardDuringNUX[] = "browser.onboard_during_nux";
+// This pref is particularly large, taking up 15+% of the prefs file, so should
+// perhaps be kept around longer than the others.
+const char kHttpServerProperties[] = "net.http_server_properties";
 
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
@@ -412,6 +415,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterDictionaryPref(kNetworkQualities, PrefRegistry::LOSSY_PREF);
   registry->RegisterBooleanPref(kForceSessionSync, false);
   registry->RegisterBooleanPref(kOnboardDuringNUX, false);
+  registry->RegisterDictionaryPref(kHttpServerProperties,
+                                   PrefRegistry::LOSSY_PREF);
 }
 
 }  // namespace
@@ -876,4 +881,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kNetworkQualities);
   profile_prefs->ClearPref(kForceSessionSync);
   profile_prefs->ClearPref(kOnboardDuringNUX);
+  profile_prefs->ClearPref(kHttpServerProperties);
 }
