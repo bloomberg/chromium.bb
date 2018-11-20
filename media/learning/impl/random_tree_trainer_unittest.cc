@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/learning/impl/random_tree.h"
+#include "media/learning/impl/random_tree_trainer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -11,13 +11,15 @@ namespace learning {
 
 class RandomTreeTest : public testing::Test {
  public:
-  RandomTree tree_;
+  RandomTreeTrainer trainer_;
 };
 
 TEST_F(RandomTreeTest, EmptyTrainingDataWorks) {
   TrainingData empty;
-  tree_.Train(empty);
-  EXPECT_EQ(tree_.ComputeDistributionForTesting(FeatureVector()), nullptr);
+  std::unique_ptr<Model> model = trainer_.Train(empty);
+  EXPECT_NE(model.get(), nullptr);
+  EXPECT_EQ(model->PredictDistribution(FeatureVector()),
+            Model::TargetDistribution());
 }
 
 TEST_F(RandomTreeTest, UniformTrainingDataWorks) {
@@ -27,34 +29,49 @@ TEST_F(RandomTreeTest, UniformTrainingDataWorks) {
   const int n_examples = 10;
   for (int i = 0; i < n_examples; i++)
     training_data.push_back(&example);
-  tree_.Train(training_data);
+  std::unique_ptr<Model> model = trainer_.Train(training_data);
 
   // The tree should produce a distribution for one value (our target), which
   // has |n_examples| counts.
-  const RandomTree::TreeNode::TargetDistribution* distribution =
-      tree_.ComputeDistributionForTesting(example.features);
-  EXPECT_NE(distribution, nullptr);
-  EXPECT_EQ(distribution->size(), 1u);
-  EXPECT_EQ(distribution->find(example.target_value)->second, n_examples);
+  Model::TargetDistribution distribution =
+      model->PredictDistribution(example.features);
+  EXPECT_EQ(distribution.size(), 1u);
+  EXPECT_EQ(distribution.find(example.target_value)->second, n_examples);
+}
+
+TEST_F(RandomTreeTest, UniformTrainingDataWorksWithCallback) {
+  TrainingExample example({FeatureValue(123), FeatureValue(456)},
+                          TargetValue(789));
+  TrainingData training_data;
+  const int n_examples = 10;
+  for (int i = 0; i < n_examples; i++)
+    training_data.push_back(&example);
+
+  std::unique_ptr<Model> model =
+      RandomTreeTrainer::GetTrainingAlgorithmCB().Run(training_data);
+
+  Model::TargetDistribution distribution =
+      model->PredictDistribution(example.features);
+  EXPECT_EQ(distribution.size(), 1u);
+  EXPECT_EQ(distribution.find(example.target_value)->second, n_examples);
 }
 
 TEST_F(RandomTreeTest, SimpleSeparableTrainingData) {
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(456)}, TargetValue(2));
   TrainingData training_data({&example_1, &example_2});
-  tree_.Train(training_data);
+  std::unique_ptr<Model> model = trainer_.Train(training_data);
 
   // Each value should have a distribution with one target value with one count.
-  const RandomTree::TreeNode::TargetDistribution* distribution =
-      tree_.ComputeDistributionForTesting(example_1.features);
-  EXPECT_NE(distribution, nullptr);
-  EXPECT_EQ(distribution->size(), 1u);
-  EXPECT_EQ(distribution->find(example_1.target_value)->second, 1);
+  Model::TargetDistribution distribution =
+      model->PredictDistribution(example_1.features);
+  EXPECT_NE(model.get(), nullptr);
+  EXPECT_EQ(distribution.size(), 1u);
+  EXPECT_EQ(distribution.find(example_1.target_value)->second, 1);
 
-  distribution = tree_.ComputeDistributionForTesting(example_2.features);
-  EXPECT_NE(distribution, nullptr);
-  EXPECT_EQ(distribution->size(), 1u);
-  EXPECT_EQ(distribution->find(example_2.target_value)->second, 1);
+  distribution = model->PredictDistribution(example_2.features);
+  EXPECT_EQ(distribution.size(), 1u);
+  EXPECT_EQ(distribution.find(example_2.target_value)->second, 1);
 }
 
 TEST_F(RandomTreeTest, ComplexSeparableTrainingData) {
@@ -82,15 +99,15 @@ TEST_F(RandomTreeTest, ComplexSeparableTrainingData) {
     training_data.push_back(&example);
   }
 
-  tree_.Train(training_data);
+  std::unique_ptr<Model> model = trainer_.Train(training_data);
+  EXPECT_NE(model.get(), nullptr);
 
   // Each example should have a distribution by itself, with two counts.
   for (const TrainingExample* example : training_data) {
-    const RandomTree::TreeNode::TargetDistribution* distribution =
-        tree_.ComputeDistributionForTesting(example->features);
-    EXPECT_NE(distribution, nullptr);
-    EXPECT_EQ(distribution->size(), 1u);
-    EXPECT_EQ(distribution->find(example->target_value)->second, 2);
+    Model::TargetDistribution distribution =
+        model->PredictDistribution(example->features);
+    EXPECT_EQ(distribution.size(), 1u);
+    EXPECT_EQ(distribution.find(example->target_value)->second, 2);
   }
 }
 
@@ -98,21 +115,20 @@ TEST_F(RandomTreeTest, UnseparableTrainingData) {
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(123)}, TargetValue(2));
   TrainingData training_data({&example_1, &example_2});
-  tree_.Train(training_data);
+  std::unique_ptr<Model> model = trainer_.Train(training_data);
+  EXPECT_NE(model.get(), nullptr);
 
   // Each value should have a distribution with two targets with one count each.
-  const RandomTree::TreeNode::TargetDistribution* distribution =
-      tree_.ComputeDistributionForTesting(example_1.features);
-  EXPECT_NE(distribution, nullptr);
-  EXPECT_EQ(distribution->size(), 2u);
-  EXPECT_EQ(distribution->find(example_1.target_value)->second, 1);
-  EXPECT_EQ(distribution->find(example_2.target_value)->second, 1);
+  Model::TargetDistribution distribution =
+      model->PredictDistribution(example_1.features);
+  EXPECT_EQ(distribution.size(), 2u);
+  EXPECT_EQ(distribution.find(example_1.target_value)->second, 1);
+  EXPECT_EQ(distribution.find(example_2.target_value)->second, 1);
 
-  distribution = tree_.ComputeDistributionForTesting(example_2.features);
-  EXPECT_NE(distribution, nullptr);
-  EXPECT_EQ(distribution->size(), 2u);
-  EXPECT_EQ(distribution->find(example_1.target_value)->second, 1);
-  EXPECT_EQ(distribution->find(example_2.target_value)->second, 1);
+  distribution = model->PredictDistribution(example_2.features);
+  EXPECT_EQ(distribution.size(), 2u);
+  EXPECT_EQ(distribution.find(example_1.target_value)->second, 1);
+  EXPECT_EQ(distribution.find(example_2.target_value)->second, 1);
 }
 
 }  // namespace learning
