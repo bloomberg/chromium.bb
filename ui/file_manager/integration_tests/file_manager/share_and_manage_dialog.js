@@ -117,18 +117,20 @@ function manageWithDriveExpectBrowserURL(path, url, teamDrive = undefined) {
     // Navigate to the specified team drive if one is specified.
     function(results) {
       appId = results.windowId;
-      if (!teamDrive) {
+      if (teamDrive === undefined) {
         this.next();
         return;
       }
       remoteCall
           .navigateWithDirectoryTree(
-              appId, `/team_drives/${teamDrive}`, 'Team Drives', 'drive')
+              appId,
+              teamDrive === '' ? '/team_drives' : `/team_drives/${teamDrive}`,
+              'Team Drives', 'drive')
           .then(this.next);
     },
     // Wait for the file list to update if we navigated.
     function() {
-      if (!teamDrive) {
+      if (teamDrive === undefined) {
         this.next();
         return;
       }
@@ -348,4 +350,12 @@ testcase.manageHostedFileTeamDrive = function() {
   const URL = 'https://document_alternate_link/teamDriveAHostedDoc';
   manageWithDriveExpectBrowserURL(
       'teamDriveAHostedDoc.gdoc', URL, 'Team Drive A');
+};
+
+/**
+ * Tests managing a team drive.
+ */
+testcase.manageTeamDrive = function() {
+  const URL = 'https://folder_alternate_link/Team%20Drive%20A';
+  manageWithDriveExpectBrowserURL('Team Drive A', URL, '');
 };
