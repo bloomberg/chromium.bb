@@ -11,7 +11,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/chromeos_features.h"
-#include "chromeos/components/tether/fake_ble_advertiser.h"
 #include "chromeos/components/tether/fake_ble_scanner.h"
 #include "chromeos/components/tether/fake_disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
@@ -100,15 +99,12 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
         nullptr /* network_connection_handler */,
         test_pref_service_.get() /* pref_service */));
 
-    fake_ble_advertiser_ = new FakeBleAdvertiser(
-        false /* automatically_update_active_advertisements */);
     fake_ble_scanner_ =
         new FakeBleScanner(false /* automatically_update_discovery_session */);
     fake_disconnect_tethering_request_sender_ =
         new FakeDisconnectTetheringRequestSender();
 
     container_->SetTestDoubles(
-        base::WrapUnique(fake_ble_advertiser_),
         base::WrapUnique(fake_ble_scanner_),
         base::WrapUnique(fake_disconnect_tethering_request_sender_));
   }
@@ -137,7 +133,6 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
       test_pref_service_;
   std::unique_ptr<FakeRemoteDeviceProviderFactory>
       fake_remote_device_provider_factory_;
-  FakeBleAdvertiser* fake_ble_advertiser_;
   FakeBleScanner* fake_ble_scanner_;
   FakeDisconnectTetheringRequestSender*
       fake_disconnect_tethering_request_sender_;
@@ -154,23 +149,6 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
 TEST_F(AsynchronousShutdownObjectContainerImplTest,
        TestShutdown_NoAsyncShutdown) {
   CallShutdown();
-  EXPECT_TRUE(was_shutdown_callback_invoked_);
-}
-
-TEST_F(AsynchronousShutdownObjectContainerImplTest,
-       TestShutdown_AsyncBleAdvertiserShutdown) {
-  fake_ble_advertiser_->set_are_advertisements_registered(true);
-  EXPECT_TRUE(fake_ble_advertiser_->AreAdvertisementsRegistered());
-
-  // Start the shutdown; it should not yet succeed since there are still
-  // registered advertisements.
-  CallShutdown();
-  EXPECT_FALSE(was_shutdown_callback_invoked_);
-
-  // Now, remove these advertisements; this should cause the shutdown to
-  // complete.
-  fake_ble_advertiser_->set_are_advertisements_registered(false);
-  fake_ble_advertiser_->NotifyAllAdvertisementsUnregistered();
   EXPECT_TRUE(was_shutdown_callback_invoked_);
 }
 
@@ -213,9 +191,6 @@ TEST_F(AsynchronousShutdownObjectContainerImplTest,
 
 TEST_F(AsynchronousShutdownObjectContainerImplTest,
        TestShutdown_MultipleSimultaneousAsyncShutdowns) {
-  fake_ble_advertiser_->set_are_advertisements_registered(true);
-  EXPECT_TRUE(fake_ble_advertiser_->AreAdvertisementsRegistered());
-
   fake_ble_scanner_->set_is_discovery_session_active(true);
   EXPECT_FALSE(fake_ble_scanner_->ShouldDiscoverySessionBeActive());
   EXPECT_TRUE(fake_ble_scanner_->IsDiscoverySessionActive());
@@ -226,13 +201,6 @@ TEST_F(AsynchronousShutdownObjectContainerImplTest,
   // Start the shutdown; it should not yet succeed since there are pending
   // requests.
   CallShutdown();
-  EXPECT_FALSE(was_shutdown_callback_invoked_);
-
-  // Now, remove the advertisements; this should not cause the shutdown to
-  // complete since there is still an active discovery session and pending
-  // requests.
-  fake_ble_advertiser_->set_are_advertisements_registered(false);
-  fake_ble_advertiser_->NotifyAllAdvertisementsUnregistered();
   EXPECT_FALSE(was_shutdown_callback_invoked_);
 
   // Now, remove the discovery session; this should not cause the shutdown to
@@ -252,9 +220,6 @@ TEST_F(AsynchronousShutdownObjectContainerImplTest,
 
 TEST_F(AsynchronousShutdownObjectContainerImplTest,
        TestShutdown_MultipleSimultaneousAsyncShutdowns_BluetoothDisabled) {
-  fake_ble_advertiser_->set_are_advertisements_registered(true);
-  EXPECT_TRUE(fake_ble_advertiser_->AreAdvertisementsRegistered());
-
   fake_ble_scanner_->set_is_discovery_session_active(true);
   EXPECT_FALSE(fake_ble_scanner_->ShouldDiscoverySessionBeActive());
   EXPECT_TRUE(fake_ble_scanner_->IsDiscoverySessionActive());
