@@ -877,35 +877,40 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
 
   bool complete_read = true;
   if (consumer_handle_.is_valid()) {
-    // Limit sniffing to the first net::kMaxBytesToSniff.
-    size_t data_length = pending_write_buffer_offset_;
-    if (data_length > net::kMaxBytesToSniff)
-      data_length = net::kMaxBytesToSniff;
-    base::StringPiece data(pending_write_->buffer(), data_length);
+    // |pending_write_| may be null if the job self-aborts due to a suspend;
+    // this will have |consumer_handle_| valid when the loader is paused.
+    if (pending_write_) {
+      // Limit sniffing to the first net::kMaxBytesToSniff.
+      size_t data_length = pending_write_buffer_offset_;
+      if (data_length > net::kMaxBytesToSniff)
+        data_length = net::kMaxBytesToSniff;
 
-    if (is_more_mime_sniffing_needed_) {
-      const std::string& type_hint = response_->head.mime_type;
-      std::string new_type;
-      is_more_mime_sniffing_needed_ = !net::SniffMimeType(
-          data.data(), data.size(), url_request_->url(), type_hint,
-          net::ForceSniffFileUrlsForHtml::kDisabled, &new_type);
-      // SniffMimeType() returns false if there is not enough data to determine
-      // the mime type. However, even if it returns false, it returns a new type
-      // that is probably better than the current one.
-      response_->head.mime_type.assign(new_type);
-      response_->head.did_mime_sniff = true;
-    }
+      base::StringPiece data(pending_write_->buffer(), data_length);
 
-    if (is_more_corb_sniffing_needed_) {
-      corb_analyzer_->SniffResponseBody(data, new_data_offset);
-      if (corb_analyzer_->ShouldBlock()) {
-        corb_analyzer_->LogBlockedResponse();
-        is_more_corb_sniffing_needed_ = false;
-        if (BlockResponseForCorb() == kWillCancelRequest)
-          return;
-      } else if (corb_analyzer_->ShouldAllow()) {
-        corb_analyzer_->LogAllowedResponse();
-        is_more_corb_sniffing_needed_ = false;
+      if (is_more_mime_sniffing_needed_) {
+        const std::string& type_hint = response_->head.mime_type;
+        std::string new_type;
+        is_more_mime_sniffing_needed_ = !net::SniffMimeType(
+            data.data(), data.size(), url_request_->url(), type_hint,
+            net::ForceSniffFileUrlsForHtml::kDisabled, &new_type);
+        // SniffMimeType() returns false if there is not enough data to
+        // determine the mime type. However, even if it returns false, it
+        // returns a new type that is probably better than the current one.
+        response_->head.mime_type.assign(new_type);
+        response_->head.did_mime_sniff = true;
+      }
+
+      if (is_more_corb_sniffing_needed_) {
+        corb_analyzer_->SniffResponseBody(data, new_data_offset);
+        if (corb_analyzer_->ShouldBlock()) {
+          corb_analyzer_->LogBlockedResponse();
+          is_more_corb_sniffing_needed_ = false;
+          if (BlockResponseForCorb() == kWillCancelRequest)
+            return;
+        } else if (corb_analyzer_->ShouldAllow()) {
+          corb_analyzer_->LogAllowedResponse();
+          is_more_corb_sniffing_needed_ = false;
+        }
       }
     }
 

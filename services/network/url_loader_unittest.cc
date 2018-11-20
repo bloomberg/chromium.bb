@@ -277,9 +277,11 @@ class URLRequestSimulatedCacheJob : public net::URLRequestJob {
   URLRequestSimulatedCacheJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      scoped_refptr<net::IOBuffer>* simulated_cache_dest)
+      scoped_refptr<net::IOBuffer>* simulated_cache_dest,
+      bool use_text_plain)
       : URLRequestJob(request, network_delegate),
         simulated_cache_dest_(simulated_cache_dest),
+        use_text_plain_(use_text_plain),
         weak_factory_(this) {}
 
   // net::URLRequestJob implementation:
@@ -287,6 +289,15 @@ class URLRequestSimulatedCacheJob : public net::URLRequestJob {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&URLRequestSimulatedCacheJob::StartAsync,
                                   weak_factory_.GetWeakPtr()));
+  }
+
+  void GetResponseInfo(net::HttpResponseInfo* info) override {
+    if (!use_text_plain_)
+      return URLRequestJob::GetResponseInfo(info);
+    if (!info->headers) {
+      info->headers = net::HttpResponseHeaders::TryToCreate(
+          "HTTP/1.1 200 OK\r\nContent-Type: text/plain");
+    }
   }
 
   int ReadRawData(net::IOBuffer* buf, int buf_size) override {
@@ -307,6 +318,7 @@ class URLRequestSimulatedCacheJob : public net::URLRequestJob {
   void StartAsync() { NotifyHeadersComplete(); }
 
   scoped_refptr<net::IOBuffer>* simulated_cache_dest_;
+  bool use_text_plain_;
   base::WeakPtrFactory<URLRequestSimulatedCacheJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestSimulatedCacheJob);
@@ -315,18 +327,21 @@ class URLRequestSimulatedCacheJob : public net::URLRequestJob {
 class SimulatedCacheInterceptor : public net::URLRequestInterceptor {
  public:
   explicit SimulatedCacheInterceptor(
-      scoped_refptr<net::IOBuffer>* simulated_cache_dest)
-      : simulated_cache_dest_(simulated_cache_dest) {}
+      scoped_refptr<net::IOBuffer>* simulated_cache_dest,
+      bool use_text_plain)
+      : simulated_cache_dest_(simulated_cache_dest),
+        use_text_plain_(use_text_plain) {}
 
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
-    return new URLRequestSimulatedCacheJob(request, network_delegate,
-                                           simulated_cache_dest_);
+    return new URLRequestSimulatedCacheJob(
+        request, network_delegate, simulated_cache_dest_, use_text_plain_);
   }
 
  private:
   scoped_refptr<net::IOBuffer>* simulated_cache_dest_;
+  bool use_text_plain_;
   DISALLOW_COPY_AND_ASSIGN(SimulatedCacheInterceptor);
 };
 
@@ -2019,6 +2034,52 @@ TEST_F(URLLoaderTest, EnterSuspendModeWhileNoPendingRead) {
   unowned_power_monitor_source->Resume();
 }
 
+// This tests the case where suspend mode is entered when a job is trying to do
+// mime detection, but is paused and therefore does not have a pending read to
+// provide partial data.
+TEST_F(URLLoaderTest, EnterSuspendModePaused) {
+  GURL url("http://www.example.com");
+  scoped_refptr<net::IOBuffer> simulated_cache_dest;
+  // Using SimulatedCacheInterceptor here since it marks the read pending,
+  // which avoids races between various events.
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      url, std::make_unique<SimulatedCacheInterceptor>(
+               &simulated_cache_dest, true /* use_text_plain */));
+
+  std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
+      std::make_unique<TestPowerMonitorSource>();
+  TestPowerMonitorSource* unowned_power_monitor_source =
+      power_monitor_source.get();
+  base::PowerMonitor power_monitor(std::move(power_monitor_source));
+
+  ResourceRequest request = CreateResourceRequest("GET", url);
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionSniffMimeType, request,
+      false, client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      &params, 0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+
+  url_loader->PauseReadingBodyFromNet();
+  base::RunLoop().RunUntilIdle();
+
+  unowned_power_monitor_source->Suspend();
+
+  client()->RunUntilComplete();
+  EXPECT_EQ(net::ERR_ABORTED, client()->completion_status().error_code);
+  delete_run_loop.Run();
+
+  unowned_power_monitor_source->Resume();
+}
+
 TEST_F(URLLoaderTest, EnterSuspendDiskCacheWriteQueued) {
   // Test to make sure that fetch abort on suspend doesn't yank out the backing
   // for IOBuffer for an issued disk_cache Write.
@@ -2026,7 +2087,8 @@ TEST_F(URLLoaderTest, EnterSuspendDiskCacheWriteQueued) {
   GURL url("http://www.example.com");
   scoped_refptr<net::IOBuffer> simulated_cache_dest;
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, std::make_unique<SimulatedCacheInterceptor>(&simulated_cache_dest));
+      url, std::make_unique<SimulatedCacheInterceptor>(
+               &simulated_cache_dest, false /* use_text_plain */));
 
   std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
       std::make_unique<TestPowerMonitorSource>();
