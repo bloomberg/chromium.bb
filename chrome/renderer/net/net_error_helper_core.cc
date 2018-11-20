@@ -1142,3 +1142,9 @@ void NetErrorHelperCore::CancelSavePage() {
   page_auto_fetcher_helper_->CancelSchedule();
 #endif
 }
+
+void NetErrorHelperCore::ListVisibilityChanged(bool is_visible) {
+#if defined(OS_ANDROID)
+  available_content_helper_.ListVisibilityChanged(is_visible);
+#endif
+}

@@ -1107,6 +1107,12 @@ void LocalizedError::GetStrings(
             {"offlineContentList", "actionText"},
             base::Value(l10n_util::GetStringUTF16(
                 IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_OPEN_ALL_BUTTON)));
+        error_strings->SetPath(
+            {"offlineContentList", "showText"},
+            base::Value(l10n_util::GetStringUTF16(IDS_SHOW)));
+        error_strings->SetPath(
+            {"offlineContentList", "hideText"},
+            base::Value(l10n_util::GetStringUTF16(IDS_HIDE)));
         break;
       case OfflineContentOnNetErrorFeatureState::kEnabledSummary:
         error_strings->SetString("suggestedOfflineContentPresentationMode",

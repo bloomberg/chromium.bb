@@ -176,12 +176,6 @@ CHAR-LIMIT guidelines:
       <message name="IDS_TEXT_OFF" desc="Text indicating that an option is turned off. [CHAR-LIMIT=20]">
         Off
       </message>
-      <message name="IDS_SHOW" desc="Generic label to show content for a feature. [CHAR-LIMIT=20]">
-        Show
-      </message>
-      <message name="IDS_HIDE" desc="Generic label to hide content for a feature. [CHAR-LIMIT=20]">
-        Hide
-      </message>
       <message name="IDS_LEARN_MORE" desc="Generic label for menu item to learn more about a feature. [CHAR-LIMIT=32]">
         Learn more
       </message>

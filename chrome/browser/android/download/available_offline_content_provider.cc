@@ -14,10 +14,13 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/offline_items_collection/core/offline_item_state.h"
+#include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/base/l10n/time_format.h"
 
@@ -191,14 +194,14 @@ chrome::mojom::AvailableOfflineContentPtr CreateAvailableOfflineContent(
 }  // namespace
 
 AvailableOfflineContentProvider::AvailableOfflineContentProvider(
-    content::BrowserContext* browser_context)
-    : browser_context_(browser_context), weak_ptr_factory_(this) {}
+    Profile* profile)
+    : profile_(profile), weak_ptr_factory_(this) {}
 
 AvailableOfflineContentProvider::~AvailableOfflineContentProvider() = default;
 
 void AvailableOfflineContentProvider::Summarize(SummarizeCallback callback) {
   offline_items_collection::OfflineContentAggregator* aggregator =
-      OfflineContentAggregatorFactory::GetForBrowserContext(browser_context_);
+      OfflineContentAggregatorFactory::GetForBrowserContext(profile_);
   aggregator->GetAllItems(
       base::BindOnce(&AvailableOfflineContentProvider::SummarizeFinalize,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -206,16 +209,16 @@ void AvailableOfflineContentProvider::Summarize(SummarizeCallback callback) {
 
 void AvailableOfflineContentProvider::List(ListCallback callback) {
   if (!base::FeatureList::IsEnabled(features::kNewNetErrorPageUI)) {
-    std::move(callback).Run({});
+    std::move(callback).Run(true, {});
     return;
   }
   offline_items_collection::OfflineContentAggregator* aggregator =
-      OfflineContentAggregatorFactory::GetForBrowserContext(browser_context_);
+      OfflineContentAggregatorFactory::GetForBrowserContext(profile_);
   aggregator->GetAllItems(
       base::BindOnce(&AvailableOfflineContentProvider::ListFinalize,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      // aggregator is a keyed service, and is alive as long as
-                     // browser_context_, which outlives this.
+                     // profile_, which outlives this.
                      base::Unretained(aggregator)));
 }
 
@@ -223,7 +226,7 @@ void AvailableOfflineContentProvider::LaunchItem(
     const std::string& item_id,
     const std::string& name_space) {
   offline_items_collection::OfflineContentAggregator* aggregator =
-      OfflineContentAggregatorFactory::GetForBrowserContext(browser_context_);
+      OfflineContentAggregatorFactory::GetForBrowserContext(profile_);
   aggregator->OpenItem(
       offline_items_collection::LaunchLocation::NET_ERROR_SUGGESTION,
       offline_items_collection::ContentId(name_space, item_id));
@@ -235,14 +238,20 @@ void AvailableOfflineContentProvider::LaunchDownloadsPage(
       open_prefetched_articles_tab);
 }
 
+void AvailableOfflineContentProvider::ListVisibilityChanged(bool is_visible) {
+  profile_->GetPrefs()->SetBoolean(ntp_snippets::prefs::kArticlesListVisible,
+                                   is_visible);
+}
+
+// static
 void AvailableOfflineContentProvider::Create(
-    content::BrowserContext* browser_context,
+    Profile* profile,
     chrome::mojom::AvailableOfflineContentProviderRequest request) {
   // Strong bindings remain as long as the pipe is error free. The renderer is
-  // on the other side of the pipe, and the browser_context outlives the
-  // RenderProcessHost, so the browser_context will outlive the Mojo pipe.
+  // on the other side of the pipe, and the profile outlives the
+  // RenderProcessHost, so the profile will outlive the Mojo pipe.
   mojo::MakeStrongBinding(
-      std::make_unique<AvailableOfflineContentProvider>(browser_context),
+      std::make_unique<AvailableOfflineContentProvider>(profile),
       std::move(request));
 }
 
@@ -304,8 +313,12 @@ void AvailableOfflineContentProvider::ListFinalize(
   for (const OfflineItem& item : selected)
     selected_ids.push_back(item.id);
 
+  bool list_visible_by_prefs = profile_->GetPrefs()->GetBoolean(
+      ntp_snippets::prefs::kArticlesListVisible);
+
   auto complete = [](AvailableOfflineContentProvider::ListCallback callback,
                      std::vector<OfflineItem> selected,
+                     bool list_visible_by_prefs,
                      std::vector<GURL> thumbnail_data_uris) {
     // Translate OfflineItem to AvailableOfflineContentPtr.
     std::vector<chrome::mojom::AvailableOfflineContentPtr> result;
@@ -313,12 +326,14 @@ void AvailableOfflineContentProvider::ListFinalize(
       result.push_back(
           CreateAvailableOfflineContent(selected[i], thumbnail_data_uris[i]));
     }
-    std::move(callback).Run(std::move(result));
+
+    std::move(callback).Run(list_visible_by_prefs, std::move(result));
   };
 
   ThumbnailFetch::Start(
       aggregator, selected_ids,
-      base::BindOnce(complete, std::move(callback), std::move(selected)));
+      base::BindOnce(complete, std::move(callback), std::move(selected),
+                     list_visible_by_prefs));
 }
 
 }  // namespace android

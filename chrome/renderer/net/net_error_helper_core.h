@@ -125,6 +125,7 @@ class NetErrorHelperCore {
 
     // Signals that offline content is available.
     virtual void OfflineContentAvailable(
+        bool list_visible_by_prefs,
         const std::string& offline_content_json) = 0;
 
     // Signals that offline content summary is available.
@@ -250,6 +251,10 @@ class NetErrorHelperCore {
 
   void CancelSavePage();
   void SavePageForLater();
+
+  // Signals the user changed the visibility of the offline content list in the
+  // dino page.
+  void ListVisibilityChanged(bool is_visible);
 
  private:
   struct ErrorPageInfo;

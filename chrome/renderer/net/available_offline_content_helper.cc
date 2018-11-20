@@ -84,10 +84,9 @@ void AvailableOfflineContentHelper::Reset() {
 }
 
 void AvailableOfflineContentHelper::FetchAvailableContent(
-    base::OnceCallback<void(const std::string& offline_content_json)>
-        callback) {
+    AvailableContentCallback callback) {
   if (!BindProvider()) {
-    std::move(callback).Run({});
+    std::move(callback).Run(true, {});
     return;
   }
   provider_->List(
@@ -95,9 +94,7 @@ void AvailableOfflineContentHelper::FetchAvailableContent(
                      base::Unretained(this), std::move(callback)));
 }
 
-void AvailableOfflineContentHelper::FetchSummary(
-    base::OnceCallback<void(const std::string& content_summary_json)>
-        callback) {
+void AvailableOfflineContentHelper::FetchSummary(SummaryCallback callback) {
   if (!BindProvider()) {
     std::move(callback).Run({});
     return;
@@ -139,8 +136,15 @@ void AvailableOfflineContentHelper::LaunchDownloadsPage() {
   provider_->LaunchDownloadsPage(has_prefetched_content_);
 }
 
+void AvailableOfflineContentHelper::ListVisibilityChanged(bool is_visible) {
+  if (!BindProvider())
+    return;
+  provider_->ListVisibilityChanged(is_visible);
+}
+
 void AvailableOfflineContentHelper::AvailableContentReceived(
-    base::OnceCallback<void(const std::string& offline_content_json)> callback,
+    AvailableContentCallback callback,
+    bool list_visible_by_prefs,
     std::vector<AvailableOfflineContentPtr> content) {
   has_prefetched_content_ = false;
   fetched_content_ = std::move(content);
@@ -153,11 +157,15 @@ void AvailableOfflineContentHelper::AvailableContentReceived(
                               AvailableContentType::kPrefetchedPage;
 
     RecordSuggestionPresented(fetched_content_);
-    RecordEvent(error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN);
+    if (list_visible_by_prefs)
+      RecordEvent(error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN);
+    else
+      RecordEvent(
+          error_page::NETWORK_ERROR_PAGE_OFFLINE_SUGGESTIONS_SHOWN_COLLAPSED);
     base::JSONWriter::Write(AvailableContentListToValue(fetched_content_),
                             &json);
   }
-  std::move(callback).Run(json);
+  std::move(callback).Run(list_visible_by_prefs, json);
   // We don't need to retain the thumbnail here, so free up some memory.
   for (const AvailableOfflineContentPtr& item : fetched_content_) {
     item->thumbnail_data_uri = GURL();
@@ -165,7 +173,7 @@ void AvailableOfflineContentHelper::AvailableContentReceived(
 }
 
 void AvailableOfflineContentHelper::SummaryReceived(
-    base::OnceCallback<void(const std::string& content_summary_json)> callback,
+    SummaryCallback callback,
     chrome::mojom::AvailableOfflineContentSummaryPtr summary) {
   has_prefetched_content_ = false;
   if (summary->total_items == 0) {

@@ -271,7 +271,7 @@ function getSuggestedContentDiv(item, index) {
 // unsafe and must be securely handled to be presented on the dino page. Images
 // have already been safely re-encoded but textual content -- like title and
 // attribution -- must be properly handled here.
-function offlineContentAvailable(suggestions) {
+function offlineContentAvailable(isShown, suggestions) {
   if (!suggestions || !loadTimeData.valueExists('offlineContentList'))
     return;
 
@@ -294,7 +294,22 @@ function offlineContentAvailable(suggestions) {
   var contentListElement = document.getElementById('offline-content-list');
   if (document.dir == 'rtl')
     contentListElement.classList.add('is-rtl');
+  // The list is configured as shown by default. Hide if needed.
+  if (!isShown)
+    toggleOfflineContentListVisibility(false);
   contentListElement.hidden = false;
+}
+
+function toggleOfflineContentListVisibility(updatePref) {
+  if (!loadTimeData.valueExists('offlineContentList'))
+    return;
+
+  var contentListElement = document.getElementById('offline-content-list');
+  var isVisible = !contentListElement.classList.toggle('list-hidden');
+
+  if (updatePref && window.errorPageController) {
+    errorPageController.listVisibilityChanged(isVisible);
+  }
 }
 
 function onDocumentLoad() {

@@ -67,7 +67,7 @@ interface AvailableOfflineContentProvider {
   // Returns some available pieces of content from downloads. If not there's not
   // enough available content deemed interesting, the returned array will be
   // empty.
-  List() => (array<AvailableOfflineContent> out);
+  List() => (bool list_visible_by_prefs, array<AvailableOfflineContent> out);
   // Returns a summary of available offline content. If not there's not enough
   // available content deemed interesting, the returned summary will be empty.
   Summarize() => (AvailableOfflineContentSummary out);
@@ -75,4 +75,7 @@ interface AvailableOfflineContentProvider {
   LaunchItem(string item_id, string name_space);
   // Opens the downloads page to view all offline content.
   LaunchDownloadsPage(bool open_prefetched_articles_tab);
+  // Communicates to the browser the user changed the visibility of the
+  // offline content list.
+  ListVisibilityChanged(bool is_visible);
 };

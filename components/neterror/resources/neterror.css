@@ -343,14 +343,46 @@ a {
   opacity: 0;
 }
 
-.offline-content-list-title {
-  color: rgb(95, 99, 104);
+#offline-content-list-visibility-card {
+  border: 1px solid white;
+  border-radius: 8px;
+  display: flex;
   font-size: .8em;
+  justify-content: space-between;
   line-height: 1;
-  margin-bottom: .8em;
 }
 
-#offline-content-suggestions {
+#offline-content-list.list-hidden #offline-content-list-visibility-card {
+  border-color: rgb(218, 220, 224);
+}
+
+#offline-content-list-visibility-card > div {
+  padding: 1em;
+}
+
+#offline-content-list-title {
+  color: var(--google-gray-700);
+}
+
+#offline-content-list-show-text, #offline-content-list-hide-text {
+  color: rgb(66, 133, 244);
+}
+
+/* Hides "hide" text div, the offline content list itself and the action button
+ * to show the downloads home when the offline content list is collapsed/hidden.
+ */
+#offline-content-list.list-hidden #offline-content-suggestions,
+#offline-content-list.list-hidden #offline-content-list-action,
+#offline-content-list.list-hidden #offline-content-list-hide-text {
+  display: none;
+}
+
+/* Hides the "show" div when the offline content list is expanded/shown. */
+#offline-content-list:not(.list-hidden) #offline-content-list-show-text {
+  display: none;
+}
+
+#offline-content-list {
   margin-inline-start: -5%;
   width: 110%;
 }
@@ -358,21 +390,15 @@ a {
 /* The selectors below adjust the "overflow" of the suggestion cards contents
  * based on the same screen size based strategy used for the main frame, which
  * is applied by the `interstitial-wrapper` class. */
-@media (max-width: 700px) {
-  #offline-content-suggestions {
-    margin-inline-start: -5%;
-    width: 110%;
-  }
-}
 @media (max-width: 420px)  {
-  #offline-content-suggestions {
+  #offline-content-list {
     margin-inline-start: -2.5%;
     width: 105%;
   }
 }
 @media (max-width: 420px) and (orientation: portrait),
        (max-height: 560px) {
-  #offline-content-suggestions {
+  #offline-content-list {
     margin-inline-start: -12px;
     width: calc(100% + 24px);
   }
@@ -390,14 +416,14 @@ a {
 
 #offline-content-list:not(.is-rtl) .suggestion-with-image
 .offline-content-suggestion-visual > img {
-  border-bottom-right-radius: 8px;
-  border-top-right-radius: 8px;
+  border-bottom-right-radius: 7px;
+  border-top-right-radius: 7px;
 }
 
 #offline-content-list.is-rtl .suggestion-with-image
 .offline-content-suggestion-visual > img {
-  border-bottom-left-radius: 8px;
-  border-top-left-radius: 8px;
+  border-bottom-left-radius: 7px;
+  border-top-left-radius: 7px;
 }
 
 .suggestion-with-icon .offline-content-suggestion-visual {
@@ -460,10 +486,8 @@ a {
 
 div.offline-content-suggestion {
   align-items: stretch;
-  border-color: rgb(218, 220, 224);
+  border: 1px solid rgb(218, 220, 224);
   border-radius: 8px;
-  border-style: solid;
-  border-width: 1px;
   display: flex;
   justify-content: space-between;
   margin-bottom: .8em;
@@ -540,15 +564,13 @@ div.offline-content-suggestion {
   width: 1.4em;
 }
 
-.offline-content-list-action {
+#offline-content-list-action {
   text-align: center;
 }
 
 #offline-content-summary {
-  border-color: rgb(241, 243, 244);
+  border: 1px solid rgb(241, 243, 244);
   border-radius: 12px;
-  border-style: solid;
-  border-width: 1px;
   padding: 12px;
   text-align: center;
 }
