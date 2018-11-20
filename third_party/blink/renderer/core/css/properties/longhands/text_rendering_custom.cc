@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* TextRendering::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -18,5 +18,5 @@ const CSSValue* TextRendering::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetFontDescription().TextRendering());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

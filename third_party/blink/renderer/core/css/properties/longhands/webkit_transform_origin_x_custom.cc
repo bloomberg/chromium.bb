@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitTransformOriginX::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -20,5 +20,5 @@ const CSSValue* WebkitTransformOriginX::ParseSingleValue(
       range, context.Mode());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

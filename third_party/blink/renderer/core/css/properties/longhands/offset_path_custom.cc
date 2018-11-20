@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* OffsetPath::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -28,5 +28,5 @@ const CSSValue* OffsetPath::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(CSSValueNone);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/border_top_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BorderTopStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* BorderTopStyle::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.BorderTopStyle());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

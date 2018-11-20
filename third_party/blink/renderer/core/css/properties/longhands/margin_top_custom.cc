@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* MarginTop::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -44,5 +44,5 @@ const CSSValue* MarginTop::CSSValueFromComputedStyleInternal(
   return ZoomAdjustedPixelValue(ToLayoutBox(layout_object)->MarginTop(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

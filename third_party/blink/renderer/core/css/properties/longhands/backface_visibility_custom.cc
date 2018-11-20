@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/backface_visibility.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BackfaceVisibility::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -19,5 +19,5 @@ const CSSValue* BackfaceVisibility::CSSValueFromComputedStyleInternal(
           : CSSValueVisible);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

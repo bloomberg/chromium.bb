@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/webkit_ruby_position.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitRubyPosition::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* WebkitRubyPosition::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetRubyPosition());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

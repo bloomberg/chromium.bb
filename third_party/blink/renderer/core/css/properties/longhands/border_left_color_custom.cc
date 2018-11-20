@@ -15,7 +15,7 @@ class CSSParserContext;
 class CSSParserLocalContext;
 class CSSParserTokenRange;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BorderLeftColor::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -47,5 +47,5 @@ const CSSValue* BorderLeftColor::CSSValueFromComputedStyleInternal(
                                    style, style.BorderLeftColor());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

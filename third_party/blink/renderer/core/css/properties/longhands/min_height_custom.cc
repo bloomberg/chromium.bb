@@ -13,7 +13,7 @@ namespace blink {
 
 class CSSParserLocalContext;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* MinHeight::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -35,5 +35,5 @@ const CSSValue* MinHeight::CSSValueFromComputedStyleInternal(
                                                              style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitBorderImage::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -35,5 +35,5 @@ void WebkitBorderImage::ApplyValue(StyleResolverState& state,
   state.Style()->SetBorderImage(image);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/webkit_line_break.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitLineBreak::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* WebkitLineBreak::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetLineBreak());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool BorderImage::ParseShorthand(
     bool important,
@@ -76,5 +76,5 @@ const CSSValue* BorderImage::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForNinePieceImage(style.BorderImage(), style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

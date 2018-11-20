@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Display::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
@@ -92,5 +92,5 @@ void Display::ApplyValue(StyleResolverState& state,
   state.Style()->SetDisplayLayoutCustomName(layout_function_value.GetName());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

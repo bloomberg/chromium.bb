@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool GridArea::ParseShorthand(
     bool important,
@@ -91,5 +91,5 @@ const CSSValue* GridArea::CSSValueFromComputedStyleInternal(
                                                     allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

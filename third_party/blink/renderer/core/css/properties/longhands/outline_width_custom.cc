@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* OutlineWidth::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -29,5 +29,5 @@ const CSSValue* OutlineWidth::CSSValueFromComputedStyleInternal(
   return ZoomAdjustedPixelValue(style.OutlineWidth(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

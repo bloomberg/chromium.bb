@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 using namespace css_property_parser_helpers;
 
@@ -47,5 +47,5 @@ const CSSValue* ShapeOutside::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForShape(style, style.ShapeOutside());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

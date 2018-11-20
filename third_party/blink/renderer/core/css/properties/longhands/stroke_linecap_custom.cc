@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/stroke_linecap.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* StrokeLinecap::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* StrokeLinecap::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(svg_style.CapStyle());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

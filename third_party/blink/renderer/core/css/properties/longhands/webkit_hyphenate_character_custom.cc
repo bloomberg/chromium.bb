@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitHyphenateCharacter::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -31,5 +31,5 @@ const CSSValue* WebkitHyphenateCharacter::CSSValueFromComputedStyleInternal(
   return CSSStringValue::Create(style.HyphenationString());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -12,7 +12,7 @@ namespace blink {
 
 class CSSParserLocalContext;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BorderImageSource::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -44,5 +44,5 @@ void BorderImageSource::ApplyValue(StyleResolverState& state,
       state.GetStyleImage(CSSPropertyBorderImageSource, value));
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

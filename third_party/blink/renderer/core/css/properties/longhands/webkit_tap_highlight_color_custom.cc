@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitTapHighlightColor::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -37,5 +37,5 @@ const CSSValue* WebkitTapHighlightColor::CSSValueFromComputedStyleInternal(
       style, style.TapHighlightColor());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

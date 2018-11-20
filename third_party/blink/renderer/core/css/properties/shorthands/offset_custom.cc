@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Offset::ParseShorthand(
     bool important,
@@ -138,5 +138,5 @@ const CSSValue* Offset::CSSValueFromComputedStyleInternal(
                                             allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

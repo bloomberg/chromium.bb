@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/image_rendering.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ImageRendering::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* ImageRendering::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.ImageRendering());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/platform/geometry/length.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FlexGrow::ParseSingleValue(CSSParserTokenRange& range,
                                            const CSSParserContext&,
@@ -28,5 +28,5 @@ const CSSValue* FlexGrow::CSSValueFromComputedStyleInternal(
                                    CSSPrimitiveValue::UnitType::kNumber);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

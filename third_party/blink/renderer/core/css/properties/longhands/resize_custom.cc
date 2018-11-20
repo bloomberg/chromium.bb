@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Resize::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -37,5 +37,5 @@ void Resize::ApplyValue(StyleResolverState& state,
   state.Style()->SetResize(r);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

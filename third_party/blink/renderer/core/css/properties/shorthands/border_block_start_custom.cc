@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool BorderBlockStart::ParseShorthand(
     bool important,
@@ -20,5 +20,5 @@ bool BorderBlockStart::ParseShorthand(
       borderBlockStartShorthand(), important, context, range, properties);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* MaxWidth::ParseSingleValue(CSSParserTokenRange& range,
                                            const CSSParserContext& context,
@@ -30,5 +30,5 @@ const CSSValue* MaxWidth::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(max_width, style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

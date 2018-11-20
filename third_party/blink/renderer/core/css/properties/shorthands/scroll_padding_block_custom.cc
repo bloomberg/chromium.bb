@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool ScrollPaddingBlock::ParseShorthand(
     bool important,
@@ -33,5 +33,5 @@ const CSSValue* ScrollPaddingBlock::CSSValueFromComputedStyleInternal(
       allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

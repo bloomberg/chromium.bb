@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FlexBasis::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -32,5 +32,5 @@ const CSSValue* FlexBasis::CSSValueFromComputedStyleInternal(
                                                              style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

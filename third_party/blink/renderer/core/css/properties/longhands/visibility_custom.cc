@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/visibility.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Visibility::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* Visibility::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.Visibility());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* GridAutoFlow::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -69,5 +69,5 @@ const CSSValue* GridAutoFlow::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Flex::ParseShorthand(bool important,
                           CSSParserTokenRange& range,
@@ -106,5 +106,5 @@ const CSSValue* Flex::CSSValueFromComputedStyleInternal(
       flexShorthand(), style, layout_object, styled_node, allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ScrollPaddingTop::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -30,5 +30,5 @@ const CSSValue* ScrollPaddingTop::CSSValueFromComputedStyleInternal(
       style.ScrollPaddingTop(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

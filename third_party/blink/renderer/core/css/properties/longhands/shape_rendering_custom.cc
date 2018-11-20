@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/shape_rendering.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ShapeRendering::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* ShapeRendering::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(svg_style.ShapeRendering());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

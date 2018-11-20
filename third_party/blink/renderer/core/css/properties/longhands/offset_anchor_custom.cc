@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 using namespace css_property_parser_helpers;
 
@@ -36,5 +36,5 @@ const CSSValue* OffsetAnchor::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForPosition(style.OffsetAnchor(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

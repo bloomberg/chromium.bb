@@ -39,7 +39,7 @@ CSSValueList* ConsumeImplicitAutoFlow(CSSParserTokenRange& range,
 }
 
 }  // namespace
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Grid::ParseShorthand(bool important,
                           CSSParserTokenRange& range,
@@ -203,5 +203,5 @@ const CSSValue* Grid::CSSValueFromComputedStyleInternal(
       gridShorthand(), style, layout_object, styled_node, allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

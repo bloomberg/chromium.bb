@@ -379,6 +379,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/style/computed_style.h'],
+        'allowed': [
+            'css_longhand::.+',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/inspector/inspector_memory_agent.cc'],
         'allowed': [
             'base::ModuleCache',

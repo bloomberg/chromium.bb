@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Rx::ParseSingleValue(CSSParserTokenRange& range,
                                      const CSSParserContext& context,
@@ -29,5 +29,5 @@ const CSSValue* Rx::CSSValueFromComputedStyleInternal(
                                                              style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

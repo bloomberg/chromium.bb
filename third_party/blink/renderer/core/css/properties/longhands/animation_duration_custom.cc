@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/platform/geometry/length.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* AnimationDuration::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -37,5 +37,5 @@ const CSSValue* AnimationDuration::InitialValue() const {
   return value;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FontSizeAdjust::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -36,5 +36,5 @@ const CSSValue* FontSizeAdjust::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(CSSValueNone);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -13,7 +13,7 @@ namespace blink {
 
 class CSSParserLocalContext;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitTextStrokeColor::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -42,5 +42,5 @@ const CSSValue* WebkitTextStrokeColor::CSSValueFromComputedStyleInternal(
                                                       style.TextStrokeColor());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

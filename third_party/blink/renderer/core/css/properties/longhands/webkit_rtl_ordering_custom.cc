@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/webkit_rtl_ordering.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitRtlOrdering::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -18,5 +18,5 @@ const CSSValue* WebkitRtlOrdering::CSSValueFromComputedStyleInternal(
                                         : CSSValueLogical);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

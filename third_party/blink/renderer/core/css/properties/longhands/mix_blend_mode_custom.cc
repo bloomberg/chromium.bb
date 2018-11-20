@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/mix_blend_mode.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* MixBlendMode::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* MixBlendMode::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetBlendMode());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

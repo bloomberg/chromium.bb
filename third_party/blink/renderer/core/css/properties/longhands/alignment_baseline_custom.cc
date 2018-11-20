@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/alignment_baseline.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* AlignmentBaseline::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* AlignmentBaseline::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(svg_style.AlignmentBaseline());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

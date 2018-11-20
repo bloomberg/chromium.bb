@@ -13,7 +13,7 @@ namespace blink {
 
 class CSSParserLocalContext;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 // [ over | under ] && [ right | left ]?
 // If [ right | left ] is omitted, it defaults to right.
@@ -92,5 +92,5 @@ const CSSValue* WebkitTextEmphasisPosition::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/border_right_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BorderRightStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* BorderRightStyle::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.BorderRightStyle());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BorderBottomWidth::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -26,5 +26,5 @@ const CSSValue* BorderBottomWidth::CSSValueFromComputedStyleInternal(
   return ZoomAdjustedPixelValue(style.BorderBottomWidth(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

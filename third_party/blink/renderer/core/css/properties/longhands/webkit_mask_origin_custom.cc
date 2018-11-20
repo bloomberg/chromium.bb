@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitMaskOrigin::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -36,5 +36,5 @@ const CSSValue* WebkitMaskOrigin::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

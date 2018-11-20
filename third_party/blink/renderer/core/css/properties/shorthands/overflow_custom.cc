@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Overflow::ParseShorthand(
     bool important,
@@ -76,5 +76,5 @@ const CSSValue* Overflow::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

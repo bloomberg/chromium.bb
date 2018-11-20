@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Page::ParseSingleValue(CSSParserTokenRange& range,
                                        const CSSParserContext& context,
@@ -17,5 +17,5 @@ const CSSValue* Page::ParseSingleValue(CSSParserTokenRange& range,
   return css_property_parser_helpers::ConsumeCustomIdent(range, context);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

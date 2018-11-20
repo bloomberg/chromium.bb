@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool BorderSpacing::ParseShorthand(
     bool important,
@@ -56,5 +56,5 @@ const CSSValue* BorderSpacing::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink
