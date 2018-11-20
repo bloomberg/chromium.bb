@@ -57,48 +57,31 @@ class MojoConnectionDelegateImpl : public DriveFsHost::MojoConnectionDelegate {
 
 }  // namespace
 
-std::unique_ptr<OAuth2MintTokenFlow> DriveFsHost::Delegate::CreateMintTokenFlow(
-    OAuth2MintTokenFlow::Delegate* delegate,
-    const std::string& client_id,
-    const std::string& app_id,
-    const std::vector<std::string>& scopes) {
-  return std::make_unique<OAuth2MintTokenFlow>(
-      delegate, OAuth2MintTokenFlow::Parameters{
-                    app_id, client_id, scopes, kIdentityConsumerId,
-                    OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE});
-}
-
 std::unique_ptr<DriveFsHost::MojoConnectionDelegate>
 DriveFsHost::Delegate::CreateMojoConnectionDelegate() {
   return std::make_unique<MojoConnectionDelegateImpl>();
 }
 
-class DriveFsHost::AccountTokenDelegate : public OAuth2MintTokenFlow::Delegate {
+class DriveFsHost::AccountTokenDelegate {
  public:
   explicit AccountTokenDelegate(DriveFsHost* host) : host_(host) {}
-  ~AccountTokenDelegate() override = default;
 
   void GetAccessToken(bool use_cached,
                       const std::string& client_id,
                       const std::string& app_id,
-                      const std::vector<std::string>& scopes,
                       mojom::DriveFsDelegate::GetAccessTokenCallback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     if (get_access_token_callback_) {
       std::move(callback).Run(mojom::AccessTokenStatus::kTransientError, "");
       return;
     }
-    DCHECK(!mint_token_flow_);
     const std::string& token =
-        MaybeGetCachedToken(use_cached, client_id, app_id, scopes);
+        MaybeGetCachedToken(use_cached, client_id, app_id);
     if (!token.empty()) {
       std::move(callback).Run(mojom::AccessTokenStatus::kSuccess, token);
       return;
     }
     get_access_token_callback_ = std::move(callback);
-    mint_token_flow_ =
-        host_->delegate_->CreateMintTokenFlow(this, client_id, app_id, scopes);
-    DCHECK(mint_token_flow_);
     GetIdentityManager().GetPrimaryAccountWhenAvailable(base::BindOnce(
         &AccountTokenDelegate::AccountReady, base::Unretained(this)));
   }
@@ -107,8 +90,8 @@ class DriveFsHost::AccountTokenDelegate : public OAuth2MintTokenFlow::Delegate {
   void AccountReady(const AccountInfo& info,
                     const identity::AccountState& state) {
     GetIdentityManager().GetAccessToken(
-        host_->delegate_->GetAccountId().GetUserEmail(), {},
-        kIdentityConsumerId,
+        host_->delegate_->GetAccountId().GetUserEmail(),
+        {"https://www.googleapis.com/auth/drive"}, kIdentityConsumerId,
         base::BindOnce(&AccountTokenDelegate::GotChromeAccessToken,
                        base::Unretained(this)));
   }
@@ -118,38 +101,21 @@ class DriveFsHost::AccountTokenDelegate : public OAuth2MintTokenFlow::Delegate {
                             const GoogleServiceAuthError& error) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
     if (!access_token) {
-      OnMintTokenFailure(error);
+      std::move(get_access_token_callback_)
+          .Run(error.IsPersistentError()
+                   ? mojom::AccessTokenStatus::kAuthError
+                   : mojom::AccessTokenStatus::kTransientError,
+               "");
       return;
     }
-    mint_token_flow_->Start(host_->delegate_->GetURLLoaderFactory(),
-                            *access_token);
-  }
-
-  // OAuth2MintTokenFlow::Delegate:
-  void OnMintTokenSuccess(const std::string& access_token,
-                          int time_to_live) override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    UpdateCachedToken(access_token, base::TimeDelta::FromSeconds(time_to_live));
+    UpdateCachedToken(*access_token, expiration_time);
     std::move(get_access_token_callback_)
-        .Run(mojom::AccessTokenStatus::kSuccess, access_token);
-    mint_token_flow_.reset();
+        .Run(mojom::AccessTokenStatus::kSuccess, *access_token);
   }
 
-  void OnMintTokenFailure(const GoogleServiceAuthError& error) override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    std::move(get_access_token_callback_)
-        .Run(error.IsPersistentError()
-                 ? mojom::AccessTokenStatus::kAuthError
-                 : mojom::AccessTokenStatus::kTransientError,
-             "");
-    mint_token_flow_.reset();
-  }
-
-  const std::string& MaybeGetCachedToken(
-      bool use_cached,
-      const std::string& client_id,
-      const std::string& app_id,
-      const std::vector<std::string>& scopes) {
+  const std::string& MaybeGetCachedToken(bool use_cached,
+                                         const std::string& client_id,
+                                         const std::string& app_id) {
     // Return value from cache at most once per mount.
     if (!use_cached || host_->clock_->Now() >= last_token_expiry_) {
       last_token_.clear();
@@ -157,9 +123,9 @@ class DriveFsHost::AccountTokenDelegate : public OAuth2MintTokenFlow::Delegate {
     return last_token_;
   }
 
-  void UpdateCachedToken(const std::string& token, const base::TimeDelta& ttl) {
+  void UpdateCachedToken(const std::string& token, const base::Time& expiry) {
     last_token_ = token;
-    last_token_expiry_ = host_->clock_->Now() + ttl;
+    last_token_expiry_ = expiry;
   }
 
   identity::mojom::IdentityManager& GetIdentityManager() {
@@ -180,9 +146,6 @@ class DriveFsHost::AccountTokenDelegate : public OAuth2MintTokenFlow::Delegate {
   // Pending callback for an in-flight GetAccessToken request.
   mojom::DriveFsDelegate::GetAccessTokenCallback get_access_token_callback_;
 
-  // The mint token flow, if one is in flight.
-  std::unique_ptr<OAuth2MintTokenFlow> mint_token_flow_;
-
   std::string last_token_;
   base::Time last_token_expiry_;
 
@@ -193,7 +156,6 @@ class DriveFsHost::AccountTokenDelegate : public OAuth2MintTokenFlow::Delegate {
 // should be shared between mounts.
 class DriveFsHost::MountState
     : public mojom::DriveFsDelegate,
-      public OAuth2MintTokenFlow::Delegate,
       public chromeos::disks::DiskMountManager::Observer,
       public drive::DriveNotificationObserver {
  public:
@@ -308,9 +270,8 @@ class DriveFsHost::MountState
                       const std::vector<std::string>& scopes,
                       GetAccessTokenCallback callback) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    host_->account_token_delegate_->GetAccessToken(!token_fetch_attempted_,
-                                                   client_id, app_id, scopes,
-                                                   std::move(callback));
+    host_->account_token_delegate_->GetAccessToken(
+        !token_fetch_attempted_, client_id, app_id, std::move(callback));
     token_fetch_attempted_ = true;
   }
 
