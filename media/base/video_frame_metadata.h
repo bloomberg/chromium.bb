@@ -111,8 +111,12 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // notified about its promotability to an overlay.
     WANTS_PROMOTION_HINT,
 
-    // Windows only: this video has protected content.
+    // This video frame comes from protected content.
     PROTECTED_VIDEO,
+
+    // Windows only: this video frame is protected by hardware. This option is
+    // valid if PROTECTED_VIDEO is also set to true.
+    HW_PROTECTED,
 
     // Whether this frame was decoded in a power efficient way.
     POWER_EFFICIENT,

@@ -175,7 +175,8 @@ bool StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad>::Read(
       !data.ReadUvTexCoordRect(&quad->uv_tex_coord_rect) ||
       !data.ReadYaTexSize(&quad->ya_tex_size) ||
       !data.ReadUvTexSize(&quad->uv_tex_size) ||
-      !data.ReadVideoColorSpace(&quad->video_color_space)) {
+      !data.ReadVideoColorSpace(&quad->video_color_space) ||
+      !data.ReadProtectedVideoType(&quad->protected_video_type)) {
     return false;
   }
   quad->resources.ids[viz::YUVVideoDrawQuad::kYPlaneResourceIdIndex] =
@@ -199,7 +200,6 @@ bool StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad>::Read(
     return false;
   }
   quad->require_overlay = data.require_overlay();
-  quad->is_protected_video = data.is_protected_video();
   return true;
 }
 

@@ -479,8 +479,15 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
           frame_resources_.size() > 3 ? frame_resources_[3].id : 0,
           frame->ColorSpace(), frame_resource_offset_,
           frame_resource_multiplier_, frame_bits_per_channel_);
-      yuv_video_quad->is_protected_video =
-          frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO);
+      if (frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO)) {
+        if (frame->metadata()->IsTrue(VideoFrameMetadata::HW_PROTECTED)) {
+          yuv_video_quad->protected_video_type =
+              ui::ProtectedVideoType::kHardwareProtected;
+        } else {
+          yuv_video_quad->protected_video_type =
+              ui::ProtectedVideoType::kSoftwareProtected;
+        }
+      }
 
       for (viz::ResourceId resource_id : yuv_video_quad->resources) {
         resource_provider_->ValidateResource(resource_id);

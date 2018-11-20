@@ -14,6 +14,7 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 
 namespace viz {
 
@@ -71,7 +72,7 @@ class VIZ_COMMON_EXPORT YUVVideoDrawQuad : public DrawQuad {
               float multiplier,
               uint32_t bits_per_channel,
               bool require_overlay,
-              bool is_protected_video);
+              ui::ProtectedVideoType protected_video_type);
 
   gfx::RectF ya_tex_coord_rect;
   gfx::RectF uv_tex_coord_rect;
@@ -83,7 +84,7 @@ class VIZ_COMMON_EXPORT YUVVideoDrawQuad : public DrawQuad {
   // TODO(hubbe): Move to ResourceProvider::ScopedSamplerGL.
   gfx::ColorSpace video_color_space;
   bool require_overlay = false;
-  bool is_protected_video = false;
+  ui::ProtectedVideoType protected_video_type = ui::ProtectedVideoType::kClear;
 
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
 

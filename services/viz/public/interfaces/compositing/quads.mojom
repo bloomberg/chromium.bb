@@ -84,6 +84,12 @@ struct TileQuadState {
   bool force_anti_aliasing_off;
 };
 
+enum ProtectedVideoState {
+  kClear,
+  kSoftwareProtected,
+  kHardwareProtected,
+};
+
 struct YUVVideoQuadState {
   gfx.mojom.RectF ya_tex_coord_rect;
   gfx.mojom.RectF uv_tex_coord_rect;
@@ -98,7 +104,7 @@ struct YUVVideoQuadState {
   uint32 bits_per_channel;
   gfx.mojom.ColorSpace video_color_space;
   bool require_overlay;
-  bool is_protected_video;
+  ProtectedVideoState protected_video_type;
 };
 
 union DrawQuadState {
