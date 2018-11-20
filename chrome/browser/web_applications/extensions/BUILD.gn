@@ -12,8 +12,6 @@ source_set("extensions") {
     "bookmark_app_installation_task.h",
     "bookmark_app_installer.cc",
     "bookmark_app_installer.h",
-    "bookmark_app_shortcut_installation_task.cc",
-    "bookmark_app_shortcut_installation_task.h",
     "bookmark_app_util.cc",
     "bookmark_app_util.h",
     "pending_bookmark_app_manager.cc",
