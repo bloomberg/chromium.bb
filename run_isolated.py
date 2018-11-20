@@ -1423,7 +1423,7 @@ def main(args):
   except (
       cipd.Error,
       local_caching.NamedCacheError,
-      local_caching.NotFoundError) as ex:
+      local_caching.NoMoreSpace) as ex:
     print >> sys.stderr, ex.message
     return 1
 
