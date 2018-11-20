@@ -1242,6 +1242,12 @@ FileTransferController.prototype.setDropTarget_ =
     return;
   }
 
+  if (this.selectionHandler_.selection.entries.find(element => {
+        return util.isSameEntry(element, destinationEntry);
+      })) {
+    return;
+  }
+
   // Add accept class if the domElement can accept the drag.
   domElement.classList.add('accepts');
   this.destinationEntry_ = destinationEntry;
