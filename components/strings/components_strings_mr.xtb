@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{आणि 1 आणखी वेब पृष्ठ}one{आणि # आणखी वेब पृष्‍ठ}other{आणि # आणखी वेब पेज}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947"><ph name="CREDIT_CARD" /> चा CVV टाका. तुम्ही निश्चित केल्यावर तुमच्या Google पेमेंट खात्यामधील कार्डाचे तपशील या साइटसोबत शेअर केले जातील.</translation>
 <translation id="4923417429809017348">हे पृष्ठ अज्ञात भाषेतून <ph name="LANGUAGE_LANGUAGE" /> मध्ये अनुवादित करण्यात आले</translation>
 <translation id="4923459931733593730">पेमेंट</translation>
 <translation id="4926049483395192435">निर्दिष्‍ट केले जाणे आवश्‍यक आहे.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">प्रांत</translation>
 <translation id="5098332213681597508">हे नाव तुमच्या Google खात्यावरून आहे.</translation>
 <translation id="5115563688576182185">(64-बिट)</translation>
-<translation id="5121084798328133320">तुम्ही निश्चित केल्यानंतर, तुमच्या Google पेमेंट खात्यावरील कार्ड तपशील या साइटसोबत शेअर केले जातील.</translation>
 <translation id="5128122789703661928">हे नाव असलेले सेशन हटवण्यासाठी वैध नाही.</translation>
 <translation id="5135404736266831032">पत्ते व्यवस्थापित करा...</translation>
 <translation id="5141240743006678641">तुमच्या Google क्रेडेंशियलसह सिंक केलेले पासवर्ड एंक्रिप्ट करा</translation>
@@ -1148,7 +1146,6 @@
 <translation id="8932102934695377596">तुमचे घड्याळ मागे आहे</translation>
 <translation id="893332455753468063">नाव जोडा</translation>
 <translation id="8938939909778640821">स्वीकारलेली क्रेडिट आणि प्रीपेड कार्डे</translation>
-<translation id="8952525071319348207">तुमच्या कार्डाचे तपशील अपडेट करण्यासाठी <ph name="CREDIT_CARD" /> कार्डची मुदत संपण्याची तारीख आणि CVC टाका. तुम्ही निश्चित केल्यावर, तुमच्या Google पेमेंट खात्यावरील कार्डाचे तपशील या साइटसोबत शेअर केले जातील.</translation>
 <translation id="8957210676456822347">बंद पोर्टल प्राधिकृतता</translation>
 <translation id="8971063699422889582">सर्व्हरचे सर्टिफिकेट एक्स्पायर झाले आहे.</translation>
 <translation id="8975012916872825179">फोन नंबर, ईमेल अॅड्रेस आणि शिपिंग पत्ते यांसारखी माहिती समाविष्ट आहे</translation>

@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Tunjukkan tetapan penyegerakan</translation>
 <translation id="1124772482545689468">Pengguna</translation>
 <translation id="1125550662859510761">Kelihatan seperti <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Asal)</translation>
-<translation id="1127216846847548354">Pengaktifan suara</translation>
 <translation id="1128109161498068552">Jangan benarkan mana-mana tapak menggunakan mesej eksklusif sistem untuk mengakses peranti MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Edit enjin carian</translation>
@@ -1644,7 +1643,6 @@
 <translation id="3495660573538963482">Tetapan Google Assistant</translation>
 <translation id="3496213124478423963">Zum Keluar</translation>
 <translation id="3505030558724226696">Batalkan akses peranti</translation>
-<translation id="3506093155988721483">Gunakan pertuturan dan bukannya papan kekunci apabila anda memulakan Assistant</translation>
 <translation id="3507421388498836150">Kebenaran Semasa untuk "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507547268929739059">Alih keluar Apl Linux untuk Chromebook</translation>
 <translation id="3507888235492474624">Imbas semula peranti Bluetooth</translation>
@@ -2062,7 +2060,6 @@
 <translation id="4100733287846229632">Ruang peranti terlalu rendah</translation>
 <translation id="4103091233824664032">Masukkan kata laluan anda untuk mengkonfigurasi kunci skrin dan log masuk</translation>
 <translation id="4104163789986725820">E&amp;ksport...</translation>
-<translation id="4105563239298244027">Dapatkan 1 TB percuma dengan Google Drive</translation>
 <translation id="4107048419833779140">Kenal pasti dan keluarkan peranti storan</translation>
 <translation id="4109135793348361820">Alihkan tetingkap ke <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Semak imbas web dalam mod kontras tinggi</translation>
@@ -5338,7 +5335,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9214520840402538427">Alamak! Pemulaan sifat masa pemasangan telah tamat masa. Sila hubungi wakil sokongan anda.</translation>
 <translation id="9214695392875603905">Kek cawan</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" ditambah</translation>
-<translation id="9215934040295798075">Tetapkan kertas dinding</translation>
 <translation id="9218430445555521422">Tetapkan sebagai lalai</translation>
 <translation id="9219103736887031265">Imej</translation>
 <translation id="9220525904950070496">Alih keluar akaun</translation>

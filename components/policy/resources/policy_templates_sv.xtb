@@ -2195,11 +2195,6 @@
 <translation id="6689792153960219308">Rapportera maskinvarustatus</translation>
 <translation id="6698632841807204978">Aktivera utskrift i svartvitt</translation>
 <translation id="6699880231565102694">Aktivera tvåfaktorsautentisering för fjärråtkomstvärdar</translation>
-<translation id="6724842112053619797">Om du aktiverar den här inställningen skrivs även inställningar för <ph name="PRODUCT_NAME" />-profiler (exempelvis bokmärken, autofylluppgifter och lösenord) till en fil som lagras i användarprofilmappen för roaming eller en plats som anges av administratören i principen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Molnsynkronisering inaktiveras när principen aktiveras.
-
-      Om den här principen är inaktiverad eller utan värde används endast vanliga lokala profiler.
-
-      Principen <ph name="SYNC_DISABLED_POLICY_NAME" /> inaktiverar all synkronisering av data och åsidosätter RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrera bort webbplatser på toppnivå (men inte inbäddade iframe) med barnförbjudet innehåll</translation>
 <translation id="6734521799274931721">Styr om Network File Share är tillgängligt i Chrome OS</translation>
 <translation id="6735701345096330595">Aktivera alltid språk för stavningskontroll</translation>

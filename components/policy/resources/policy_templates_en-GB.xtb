@@ -2190,11 +2190,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="6689792153960219308">Report hardware status</translation>
 <translation id="6698632841807204978">Enable monochrome printing</translation>
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
-<translation id="6724842112053619797">If you enable this setting, the settings stored in <ph name="PRODUCT_NAME" /> profiles like bookmarks, auto-fill data, passwords, etc. will also be written to a file stored in the roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> policy. Enabling this policy disables cloud sync.
-
-      If this policy is disabled or left not set, only the regular local profiles will be used.
-
-      The <ph name="SYNC_DISABLED_POLICY_NAME" /> policy disables all data synchronisation, overriding RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filter top-level sites (but not embedded iframes) for adult content</translation>
 <translation id="6734521799274931721">Controls Network File Shares for ChromeOS availability</translation>
 <translation id="6735701345096330595">Force enable spellcheck languages</translation>

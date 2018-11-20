@@ -75,6 +75,7 @@
 <translation id="1339601241726513588">Enrolment domain:</translation>
 <translation id="1340482604681802745">Pickup address</translation>
 <translation id="1348198688976932919">The site ahead contains dangerous apps</translation>
+<translation id="1348779747280417563">Confirm name</translation>
 <translation id="1374468813861204354">suggestions</translation>
 <translation id="1375198122581997741">About Version</translation>
 <translation id="1376836354785490390">Show Less</translation>
@@ -456,6 +457,7 @@
 <translation id="3949601375789751990">Your browsing history appears here</translation>
 <translation id="3950820424414687140">Sign in</translation>
 <translation id="3963721102035795474">Reader Mode</translation>
+<translation id="3963837677003247395">Continue manually?</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{None}=1{From 1 site }other{From # sites }}</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> is blocked</translation>
@@ -584,7 +586,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{and 1 more web page}other{and # more web pages}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Enter the CVC for <ph name="CREDIT_CARD" />. After you confirm, card details from your Google Payments account will be shared with this site.</translation>
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Payment</translation>
 <translation id="4926049483395192435">Must be specified.</translation>
@@ -616,7 +617,6 @@
 <translation id="5095208057601539847">Province</translation>
 <translation id="5098332213681597508">This name is from your Google account.</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
-<translation id="5121084798328133320">After you confirm, card details from your Google Payments account will be shared with this site.</translation>
 <translation id="5128122789703661928">The session with this name is not valid for deletion.</translation>
 <translation id="5135404736266831032">Manage addresses...</translation>
 <translation id="5141240743006678641">Encrypt synced passwords with your Google credentials</translation>
@@ -813,6 +813,7 @@
 <translation id="6569060085658103619">You're viewing an extension page</translation>
 <translation id="6596325263575161958">Encryption options</translation>
 <translation id="6604181099783169992">Motion or light sensors</translation>
+<translation id="6607617806003952240">I cannot help anymore, please continue manually.</translation>
 <translation id="6624427990725312378">Contact Info</translation>
 <translation id="6626291197371920147">Add valid card number</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
@@ -856,6 +857,7 @@
 <translation id="6950684638814147129">Error while parsing JSON value: <ph name="ERROR" /></translation>
 <translation id="6957624206566198865">Open page in a new Private tab</translation>
 <translation id="6957887021205513506">The server's certificate appears to be a forgery.</translation>
+<translation id="6964255747740675745">Network configuration failed to be parsed (invalid JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Device</translation>
 <translation id="6970216967273061347">District</translation>
@@ -1147,13 +1149,14 @@ Additional details:
 <translation id="8932102934695377596">Your clock is behind</translation>
 <translation id="893332455753468063">Add Name</translation>
 <translation id="8938939909778640821">Accepted credit and prepaid cards</translation>
-<translation id="8952525071319348207">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /> to update your card details. After you confirm, card details from your Google Payments account will be shared with this site.</translation>
 <translation id="8957210676456822347">Captive Portal Authorisation</translation>
+<translation id="8968766641738584599">Save card</translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8975012916872825179">Includes information such as phone numbers, email addresses and delivery addresses</translation>
 <translation id="8978053250194585037">Google Safe Browsing recently <ph name="BEGIN_LINK" />detected phishing<ph name="END_LINK" /> on <ph name="SITE" />. Phishing sites pretend to be other websites to trick you.</translation>
 <translation id="8983003182662520383">Payment methods and addresses using Google Pay</translation>
 <translation id="8987927404178983737">Month</translation>
+<translation id="8988408250700415532">Something went wrong. You can finish your order on the website.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">The site ahead contains harmful programs</translation>
 <translation id="8997023839087525404">The server presented a certificate that was not publicly disclosed using the Certificate Transparency policy. This is a requirement for some certificates, to ensure that they are trustworthy and protect against attackers.</translation>

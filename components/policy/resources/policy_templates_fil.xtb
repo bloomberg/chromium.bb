@@ -2185,11 +2185,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6689792153960219308">Iulat ang status ng hardware</translation>
 <translation id="6698632841807204978">I-enable ang monochrome na pag-print</translation>
 <translation id="6699880231565102694">Paganahin ang pagpapatotoong may dalawang salik para sa mga host ng malayuang pag-access</translation>
-<translation id="6724842112053619797">Kung ie-enable mo ang setting na ito, ang mga setting na naka-store sa mga profile sa <ph name="PRODUCT_NAME" /> tulad ng mga bookmark, data ng autofill, mga password, atbp. ay ira-write din sa isang file na naka-store sa folder ng profile ng user ng Roaming o sa isang lokasyong tinukoy ng Administrator sa pamamagitan ng patakarang <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Madi-disable ang pag-sync sa cloud kapag na-enable ang patakarang ito.
-
-      Kung idi-disable ang patakarang ito o kaya ay hahayaang hindi nakatakda, ang mga regular na lokal na profile lang ang gagamitin.
-
-      Dini-disable ng patakarang <ph name="SYNC_DISABLED_POLICY_NAME" /> ang lahat ng pag-synchronize ng data, na nag-o-override sa RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Mag-filter ng mga nangungunang site (ngunit hindi mga naka-embed na iframe) para sa pang-adult na content</translation>
 <translation id="6734521799274931721">Kumokontrol sa Mga File Share sa Network para sa availability ng ChromeOS</translation>
 <translation id="6735701345096330595">Puwersahang ine-enable ang mga wika ng spellcheck</translation>

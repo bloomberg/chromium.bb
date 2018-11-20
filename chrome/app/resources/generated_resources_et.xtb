@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Kuva sünkroonimisseaded</translation>
 <translation id="1124772482545689468">Kasutaja</translation>
 <translation id="1125550662859510761">Näib kui <ph name="WIDTH" /> × <ph name="HEIGHT" /> (loomulik eraldusvõime)</translation>
-<translation id="1127216846847548354">Häälega aktiveerimine</translation>
 <translation id="1128109161498068552">Ära luba ühelgi saidil kasutada süsteemi eksklusiivseid sõnumeid MIDI-seadmetele juurdepääsu saamiseks</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Otsingumootori muutmine</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">Google'i assistendi seaded</translation>
 <translation id="3496213124478423963">Vähenda</translation>
 <translation id="3505030558724226696">Tühista juurdepääs seadmele</translation>
-<translation id="3506093155988721483">Kasuta assistendi käivitamisel klaviatuuri asemel häält</translation>
 <translation id="3507421388498836150">Laiendi „<ph name="EXTENSION_NAME" />” praegused õigused</translation>
 <translation id="3507547268929739059">Linuxi rakenduste eemaldamine Chromebookist</translation>
 <translation id="3507888235492474624">Otsi Bluetoothi seadmeid uuesti</translation>
@@ -2061,7 +2059,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4100733287846229632">Seadmes on kriitiliselt vähe kettaruumi</translation>
 <translation id="4103091233824664032">Ekraaniluku seadistamiseks ja sisselogimiseks sisestage parool</translation>
 <translation id="4104163789986725820">&amp;Ekspordi...</translation>
-<translation id="4105563239298244027">Saate Google Drive'is tasuta 1 TB vaba ruumi</translation>
 <translation id="4107048419833779140">Salvestusseadmete tuvastamine ja väljutamine</translation>
 <translation id="4109135793348361820">Teisalda aken kasutaja <ph name="USER_NAME" /> töölauale (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Sirvige veebi suure kontrastsusega režiimis</translation>
@@ -5337,7 +5334,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="9214520840402538427">Installimisaja atribuutide lähtestamisel ilmnes ajalõpp. Võtke ühendust tugiteenuse esindajaga.</translation>
 <translation id="9214695392875603905">Keeks</translation>
 <translation id="9215293857209265904">Lisati „<ph name="EXTENSION_NAME" />”</translation>
-<translation id="9215934040295798075">Taustapildi määramine</translation>
 <translation id="9218430445555521422">Seadista vaikebrauseriks</translation>
 <translation id="9219103736887031265">Pildid</translation>
 <translation id="9220525904950070496">Konto eemaldamine</translation>

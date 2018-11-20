@@ -2121,11 +2121,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6689792153960219308">Comunicar o estado do hardware</translation>
 <translation id="6698632841807204978">Ativar impressão monocromática</translation>
 <translation id="6699880231565102694">Ativar a autenticação de dois fatores para anfitriões de acesso remoto</translation>
-<translation id="6724842112053619797">Se ativar esta definição, as definições armazenadas nos perfis do <ph name="PRODUCT_NAME" />, tais como marcadores, dados de preenchimento automático, palavras-passe, etc., também são escritas num ficheiro armazenado na pasta do perfil de utilizador Roaming ou numa localização especificada pelo gestor através da política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se ativar esta política, desativa a sincronização na nuvem.
-
-      Se esta política estiver desativada ou não estiver definida, apenas são utilizados os perfis locais normais.
-
-      A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados e substitui a política RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrar sites de nível superior (mas não iFrames incorporados) com conteúdo para adultos</translation>
 <translation id="6734521799274931721">Controla a disponibilidade das Partilhas de ficheiros na rede para o Chrome OS</translation>
 <translation id="6735701345096330595">Forçar a ativação de idiomas com verificação ortográfica</translation>

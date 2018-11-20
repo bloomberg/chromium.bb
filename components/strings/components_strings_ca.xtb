@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{i 1 pàgina web més}other{i # pàgines web més}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Introdueix el CVC de la targeta <ph name="CREDIT_CARD" />. Un cop confirmada, els detalls de la targeta del compte de pagaments de Google es compartirà amb aquest lloc web.</translation>
 <translation id="4923417429809017348">Aquesta pàgina s'ha traduït des d'un idioma desconegut a: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Pagament</translation>
 <translation id="4926049483395192435">S'ha d'especificar.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Província</translation>
 <translation id="5098332213681597508">Aquest nom prové del teu Compte de Google.</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
-<translation id="5121084798328133320">Un cop confirmada, els detalls de la targeta del teu compte de pagaments de Google es compartiran amb aquest lloc web.</translation>
 <translation id="5128122789703661928">La sessió amb aquest nom no es pot suprimir.</translation>
 <translation id="5135404736266831032">Gestiona les adreces...</translation>
 <translation id="5141240743006678641">Encripta contrasenyes sincronitzades amb les vostres credencials de Google</translation>
@@ -1147,7 +1145,6 @@ Detalls addicionals:
 <translation id="8932102934695377596">El rellotge està endarrerit</translation>
 <translation id="893332455753468063">Afegeix un nom</translation>
 <translation id="8938939909778640821">Targetes de crèdit i de prepagament acceptades</translation>
-<translation id="8952525071319348207">Introdueix la data de caducitat i el CVC de la targeta <ph name="CREDIT_CARD" /> per actualitzar-ne els detalls. Un cop confirmada, els detalls de la targeta del compte de pagaments de Google es compartiran amb aquest lloc web.</translation>
 <translation id="8957210676456822347">Autorització de portals captius</translation>
 <translation id="8971063699422889582">El certificat del servidor ha caducat.</translation>
 <translation id="8975012916872825179">Inclou informació com ara números de telèfon, adreces electròniques i adreces d'enviament</translation>

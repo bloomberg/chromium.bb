@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{na ukurasa 1 zaidi wa wavuti}other{na kurasa # zaidi za wavuti}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Weka CVC ya <ph name="CREDIT_CARD" />. Baada ya kuthibitisha, maelezo ya kadi kutoka akaunti yako ya malipo ya Google yatashirikiwa na tovuti hii.</translation>
 <translation id="4923417429809017348">Ukurasa huu umetafsiriwa kutoka katika lugha ambayo haijulikani hadi <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Malipo</translation>
 <translation id="4926049483395192435">Sharti ibainishwe.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Mkoa</translation>
 <translation id="5098332213681597508">Jina hili linatoka kwenye Akaunti yako ya Google.</translation>
 <translation id="5115563688576182185">(biti 64)</translation>
-<translation id="5121084798328133320">Baada ya kuthibitisha, maelezo ya kadi kutoka akaunti yako ya malipo ya Google yatashirikiwa na tovuti hii.</translation>
 <translation id="5128122789703661928">Huruhusiwi kufuta kipindi kilicho na jina hili.</translation>
 <translation id="5135404736266831032">Dhibiti anwani...</translation>
 <translation id="5141240743006678641">Simba kwa njia fiche manenosiri yaliyosawazishwa ukitumia stakabadhi zako za Google</translation>
@@ -1144,7 +1142,6 @@
 <translation id="8932102934695377596">Saa yako iko nyuma</translation>
 <translation id="893332455753468063">Ongeza Jina</translation>
 <translation id="8938939909778640821">Kadi za mikopo na za kulipia awali zinazokubaliwa</translation>
-<translation id="8952525071319348207">Ili usasishe maelezo ya kadi yako, weka tarehe ya mwisho wa matumizi na CVC ya <ph name="CREDIT_CARD" />. Baada ya kuthibitisha, maelezo ya kadi kutoka akaunti yako ya malipo ya Google yatashirikiwa na tovuti hii.</translation>
 <translation id="8957210676456822347">Uidhinishaji wa Ukurasa wa Wavuti</translation>
 <translation id="8971063699422889582">Cheti cha seva kimechina.</translation>
 <translation id="8975012916872825179">Hujumuisha maelezo kama nambari za simu, anwani za barua pepe na anwani za mahali bidhaa zitakapopelekwa</translation>

@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Открыть настройки синхронизации</translation>
 <translation id="1124772482545689468">Пользователь</translation>
 <translation id="1125550662859510761">Выглядит как <ph name="WIDTH" /> x <ph name="HEIGHT" /> (аппаратное разрешение)</translation>
-<translation id="1127216846847548354">Активация голосом</translation>
 <translation id="1128109161498068552">Запретить сайтам доступ к устройствам MIDI с помощью системных сообщений</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Изменить поисковую систему</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">Настройки Google Ассистента</translation>
 <translation id="3496213124478423963">Уменьшить</translation>
 <translation id="3505030558724226696">Запретить доступ к устройствам</translation>
-<translation id="3506093155988721483">Запускайте Ассистента с помощью голоса вместо клавиатуры</translation>
 <translation id="3507421388498836150">Текущие разрешения расширения "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507547268929739059">Удалить приложения Linux с устройства Chromebook</translation>
 <translation id="3507888235492474624">Повторите поиск устройств Bluetooth</translation>
@@ -2061,7 +2059,6 @@
 <translation id="4100733287846229632">На устройстве почти нет свободного места</translation>
 <translation id="4103091233824664032">Чтобы настроить блокировку экрана и параметры входа, введите пароль.</translation>
 <translation id="4104163789986725820">Э&amp;кспорт...</translation>
-<translation id="4105563239298244027">1 ТБ пространства в Google Диске бесплатно</translation>
 <translation id="4107048419833779140">Идентификация и извлечение запоминающих устройств</translation>
 <translation id="4109135793348361820">Перенести окно на рабочий стол пользователя <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Просматривайте веб-страницы в режиме высокой контрастности.</translation>
@@ -5335,7 +5332,6 @@
 <translation id="9214520840402538427">К сожалению, срок инициализации для атрибутов времени установки истек. Обратитесь в службу поддержки.</translation>
 <translation id="9214695392875603905">Кекс</translation>
 <translation id="9215293857209265904">Добавлено расширение или приложение: <ph name="EXTENSION_NAME" /></translation>
-<translation id="9215934040295798075">Выбрать обои</translation>
 <translation id="9218430445555521422">Сделать браузером по умолчанию</translation>
 <translation id="9219103736887031265">Картинки</translation>
 <translation id="9220525904950070496">Удалить аккаунт</translation>

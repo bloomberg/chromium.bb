@@ -581,7 +581,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{和另外 1 个网页}other{和另外 # 个网页}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">请输入 <ph name="CREDIT_CARD" /> 的银行卡验证码 (CVC)。在您确认之后，您的 Google Payments 帐号中的信用卡详细信息将会共享给该网站。</translation>
 <translation id="4923417429809017348">翻译服务器已将此网页从某种未知语言翻译成了<ph name="LANGUAGE_LANGUAGE" />。</translation>
 <translation id="4923459931733593730">付款</translation>
 <translation id="4926049483395192435">必须指定。</translation>
@@ -613,7 +612,6 @@
 <translation id="5095208057601539847">省</translation>
 <translation id="5098332213681597508">此名称来自您的 Google 帐号。</translation>
 <translation id="5115563688576182185">（64 位）</translation>
-<translation id="5121084798328133320">在您确认之后，您的 Google Payments 帐号中的信用卡详细信息将会共享给该网站。</translation>
 <translation id="5128122789703661928">无法删除此会话，因为它的名称无效。</translation>
 <translation id="5135404736266831032">管理地址…</translation>
 <translation id="5141240743006678641">使用您的 Google 凭据加密已同步的密码</translation>
@@ -1144,7 +1142,6 @@
 <translation id="8932102934695377596">您的时钟慢了</translation>
 <translation id="893332455753468063">添加名称</translation>
 <translation id="8938939909778640821">接受的信用卡和预付卡</translation>
-<translation id="8952525071319348207">请输入 <ph name="CREDIT_CARD" /> 的失效日期和银行卡验证码 (CVC)，以更新您的信用卡详细信息。在您确认之后，您的 Google Payments 帐号中的信用卡详细信息将会共享给该网站。</translation>
 <translation id="8957210676456822347">强制门户授权</translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
 <translation id="8975012916872825179">包括电话号码、电子邮件地址和送货地址等信息</translation>

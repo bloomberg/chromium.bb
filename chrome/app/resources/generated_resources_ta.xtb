@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">ஒத்திசைவு அமைப்புகளைக் காட்டு</translation>
 <translation id="1124772482545689468">பயனர்</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (இயல்பு) போல் தெரிகிறது</translation>
-<translation id="1127216846847548354">குரல் மூலம் இயக்குதல்</translation>
 <translation id="1128109161498068552">MIDI சாதனங்களை அணுக, அமைப்புக்கேற்ற செய்திகளைப் பயன்படுத்துவதற்கு எந்தத் தளங்களையும் அனுமதிக்க வேண்டாம்</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">தேடல் இன்ஜினை மாற்று</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">Google அசிஸ்டண்ட் அமைப்புகள்</translation>
 <translation id="3496213124478423963">சிறிதாக்கு</translation>
 <translation id="3505030558724226696">சாதன அணுகலை ரத்துசெய்</translation>
-<translation id="3506093155988721483">உங்கள் அசிஸ்டண்ட்டைத் தொடங்கும்போது, கீபோர்டுக்குப் பதிலாகப் பேச்சைப் பயன்படுத்தவும்</translation>
 <translation id="3507421388498836150">"<ph name="EXTENSION_NAME" />" இன் தற்போதைய அனுமதிகள்</translation>
 <translation id="3507547268929739059">Chromebook இல் Linux பயன்பாடுகளை அகற்று</translation>
 <translation id="3507888235492474624">புளூடூத் சாதனங்களை மீண்டும் ஸ்கேன் செய்யும்</translation>
@@ -2061,7 +2059,6 @@
 <translation id="4100733287846229632">சாதனத்தில் இடம் மிகவும் குறைவாக உள்ளது</translation>
 <translation id="4103091233824664032">திரைப் பூட்டை உள்ளமைத்து உள்நுழைய, கடவுச்சொல்லை உள்ளிடவும்</translation>
 <translation id="4104163789986725820">ஏற்று&amp;மதி...</translation>
-<translation id="4105563239298244027">Google இயக்ககம் மூலம் 1 டெ.பை. இலவசமாகப் பெறுக</translation>
 <translation id="4107048419833779140">சேமிப்பகச் சாதனங்களைக் கண்டறிந்து, வெளியேற்றுதல்</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) க்குச் சாளரத்தை நகர்த்து</translation>
 <translation id="4110895898888439383">அதிக ஒளி மாறுபாட்டுப் பயன்முறையில் இணையத்தில் உலாவுதல்</translation>
@@ -5339,7 +5336,6 @@
 <translation id="9214520840402538427">அச்சச்சோ! நிறுவல் நேர பண்புக்கூறுகளின் தொடக்க நேரம் முடிந்தது. உங்கள் ஆதரவு பிரதிநிதியைத் தொடர்புகொள்ளவும்.</translation>
 <translation id="9214695392875603905">கப்கேக்</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" சேர்க்கப்பட்டது</translation>
-<translation id="9215934040295798075">வால்பேப்பரை அமை</translation>
 <translation id="9218430445555521422">இயல்பாக அமை</translation>
 <translation id="9219103736887031265">படங்கள்</translation>
 <translation id="9220525904950070496">கணக்கை அகற்றுக</translation>

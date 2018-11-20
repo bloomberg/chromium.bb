@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">동기화 설정 표시</translation>
 <translation id="1124772482545689468">사용자</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" />x<ph name="HEIGHT" />(기본)처럼 보입니다.</translation>
-<translation id="1127216846847548354">음성 활성화</translation>
 <translation id="1128109161498068552">사이트에서 시스템 전용 메시지를 사용하여 MIDI 기기에 액세스하도록 허용하지 않음</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">검색 엔진 수정</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">Google 어시스턴트 설정</translation>
 <translation id="3496213124478423963">축소</translation>
 <translation id="3505030558724226696">기기 액세스 취소</translation>
-<translation id="3506093155988721483">어시스턴트를 시작할 때 키보드 대신 음성을 사용합니다.</translation>
 <translation id="3507421388498836150">'<ph name="EXTENSION_NAME" />'의 현재 권한</translation>
 <translation id="3507547268929739059">Chromebook용 Linux 앱 삭제</translation>
 <translation id="3507888235492474624">블루투스 기기 다시 검색</translation>
@@ -2059,7 +2057,6 @@
 <translation id="4100733287846229632">기기 저장 공간 매우 부족</translation>
 <translation id="4103091233824664032">비밀번호를 입력하여 화면 잠금을 설정하고 로그인하세요.</translation>
 <translation id="4104163789986725820">내보내기(&amp;X)...</translation>
-<translation id="4105563239298244027">Google 드라이브에서 1TB를 무료로 사용하세요.</translation>
 <translation id="4107048419833779140">외부 저장장치 식별 및 제거</translation>
 <translation id="4109135793348361820">창을 <ph name="USER_NAME" />(<ph name="USER_EMAIL" />)님에게로 이동</translation>
 <translation id="4110895898888439383">고대비 모드로 웹 탐색</translation>
@@ -5334,7 +5331,6 @@
 <translation id="9214520840402538427">설치 시간 속성의 시작 시간이 초과되었습니다. 지원 담당자에게 문의하시기 바랍니다.</translation>
 <translation id="9214695392875603905">컵케이크</translation>
 <translation id="9215293857209265904">'<ph name="EXTENSION_NAME" />'이(가) 추가됨</translation>
-<translation id="9215934040295798075">배경화면 설정</translation>
 <translation id="9218430445555521422">기본 브라우저로 설정</translation>
 <translation id="9219103736887031265">이미지</translation>
 <translation id="9220525904950070496">계정 삭제</translation>

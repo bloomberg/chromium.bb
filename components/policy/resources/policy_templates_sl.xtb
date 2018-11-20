@@ -2192,11 +2192,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6689792153960219308">Poročanje o stanju strojne opreme</translation>
 <translation id="6698632841807204978">Omogočanje enobarvnega tiskanja</translation>
 <translation id="6699880231565102694">Omogočanje preverjanja pristnosti v dveh korakih za gostitelje oddaljenega dostopa</translation>
-<translation id="6724842112053619797">Če omogočite to nastavitev, se podatki, shranjeni v profilih izdelka <ph name="PRODUCT_NAME" />, kot so zaznamki, podatki samodejnega izpolnjevanja, gesla in drugi podatki, prav tako zapišejo v datoteko, shranjeno v mapo uporabniškega profila za gostovanje ali na lokacijo, ki jo določi skrbnik s pravilnikom <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Če omogočite ta pravilnik, onemogočite sinhronizacijo z oblakom.
-
-      Če je ta pravilnik onemogočen ali ni nastavljen, se uporabijo samo lokalni profili.
-
-      Pravilnik <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogoči vso sinhronizacijo podatkov in preglasi pravilnik RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtriranje vrhnjih spletnih mest (vendar ne vdelanih elementov iframe) zaradi izločanja  vsebine za odrasle</translation>
 <translation id="6734521799274931721">Nadzira razpoložljivost omrežnih naprav za skupno rabo datotek v okolju OS Chrome</translation>
 <translation id="6735701345096330595">Vsiljeno preverjanje črkovanja jezikov</translation>

@@ -2088,11 +2088,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6689792153960219308">Informa de l'estat del maquinari</translation>
 <translation id="6698632841807204978">Permet la impressió monocroma</translation>
 <translation id="6699880231565102694">Activació de l'autenticació de dos factors per als amfitrions d'accés remot</translation>
-<translation id="6724842112053619797">Si actives aquesta opció de configuració, les opcions de configuració emmagatzemades als perfils que hi ha a <ph name="PRODUCT_NAME" />, com ara les adreces d'interès, les dades d'Emplenament automàtic o les contrasenyes, entre d'altres, també s'introduiran en un fitxer emmagatzemat a la carpeta Itinerància del perfil de l'usuari o a la ubicació especificada per l'administrador a la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. En activar aquesta política, es desactiva la sincronització en núvol.
-
-      Si aquesta política es desactiva o no es defineix, només s'utilitzaran els perfils locals habituals.
-
-      La política <ph name="SYNC_DISABLED_POLICY_NAME" /> desactiva la sincronització de totes les dades i substitueix RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtra els llocs web de nivell superior amb contingut per a adults (però no els iframes inserits)</translation>
 <translation id="6734521799274931721">Controla si la funció Fitxers compartits de la xarxa estarà disponible per a Chrome OS</translation>
 <translation id="6735701345096330595">Força l'activació del corrector ortogràfic d'idiomes</translation>

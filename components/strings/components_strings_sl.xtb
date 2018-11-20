@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{in še 1 spletna stran}one{in še # spletna stran}two{in še # spletni strani}few{in še # spletne strani}other{in še # spletnih strani}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Vnesite CVC za <ph name="CREDIT_CARD" />. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kreditni kartici iz računa za Google Payments.</translation>
 <translation id="4923417429809017348">Stran je bila iz neznanega jezika prevedena v jezik »<ph name="LANGUAGE_LANGUAGE" />«</translation>
 <translation id="4923459931733593730">Plačilo</translation>
 <translation id="4926049483395192435">Vrednost mora biti določena.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Provinca</translation>
 <translation id="5098332213681597508">To ime je iz vašega Google Računa.</translation>
 <translation id="5115563688576182185">(64-bitno)</translation>
-<translation id="5121084798328133320">Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kreditni kartici iz računa za Google Payments.</translation>
 <translation id="5128122789703661928">Seja s tem imenom ni veljavna za izbris.</translation>
 <translation id="5135404736266831032">Upravljanje naslovov ...</translation>
 <translation id="5141240743006678641">Šifrirajte sinhronizirana gesla s poverilnicami za Google</translation>
@@ -1147,7 +1145,6 @@ Dodatne podrobnosti:
 <translation id="8932102934695377596">Ura zaostaja</translation>
 <translation id="893332455753468063">Dodajanje imena</translation>
 <translation id="8938939909778640821">Sprejete kreditne in predplačniške kartice</translation>
-<translation id="8952525071319348207">Vnesite datum poteka in CVC za <ph name="CREDIT_CARD" />, da posodobite podatke o kartici. Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kreditni kartici iz računa za Google Payments.</translation>
 <translation id="8957210676456822347">Odobritev prestreznega portala</translation>
 <translation id="8971063699422889582">Potrdilo strežnika je poteklo.</translation>
 <translation id="8975012916872825179">Vključuje podatke, kot so telefonske številke, e-poštni naslovi in naslovi za pošiljanje</translation>

@@ -2110,11 +2110,6 @@
 <translation id="6689792153960219308">ハードウェア ステータスを報告する</translation>
 <translation id="6698632841807204978">白黒印刷を有効にする</translation>
 <translation id="6699880231565102694">リモート アクセス ホストの 2 段階認証プロセスを有効にする</translation>
-<translation id="6724842112053619797">この設定を有効にした場合は、<ph name="PRODUCT_NAME" /> プロフィールに保存されている設定（ブックマーク、自動入力データ、パスワードなど）が、「ローミング」ユーザー プロフィール フォルダまたは管理者が <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> ポリシーで指定した場所に保存されるファイルにも書き込まれます。このポリシーを有効にすると、クラウド同期は無効になります。
-
-      このポリシーを無効にするか未設定のままにした場合は、通常のローカル プロフィールのみが使用されます。
-
-      <ph name="SYNC_DISABLED_POLICY_NAME" /> ポリシーが設定されている場合は、すべてのデータ同期が無効になります。この設定は、RoamingProfileSupportEnabled ポリシーの設定よりも優先されます。</translation>
 <translation id="6731757988219967594">アダルト コンテンツに基づいて最上位サイト（埋め込み iframe 以外）を除外する</translation>
 <translation id="6734521799274931721">Chrome OS でネットワーク ファイル共有を使用できるかどうかの設定</translation>
 <translation id="6735701345096330595">言語のスペルチェックを強制的に有効にする</translation>

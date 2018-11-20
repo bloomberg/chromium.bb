@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{і ще 1 веб-сторінка}one{і ще # веб-сторінка}few{і ще # веб-сторінки}many{і ще # веб-сторінок}other{і ще # веб-сторінки}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Введіть код CVC картки <ph name="CREDIT_CARD" />. Щойно ви підтвердите дані картки з облікового запису Google Payments, цей сайт отримає доступ до них.</translation>
 <translation id="4923417429809017348">Цю сторінку перекладено з невідомої мови оригіналу такою мовою: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Оплата</translation>
 <translation id="4926049483395192435">Потрібно вказати.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Провінція чи область</translation>
 <translation id="5098332213681597508">Це ім’я з вашого облікового запису Google.</translation>
 <translation id="5115563688576182185">(64-розрядна версія)</translation>
-<translation id="5121084798328133320">Щойно ви підтвердите дані картки з облікового запису Google Payments, цей сайт отримає доступ до них.</translation>
 <translation id="5128122789703661928">Сеанс із цією назвою не можна видалити.</translation>
 <translation id="5135404736266831032">Керувати адресами…</translation>
 <translation id="5141240743006678641">Шифрувати синхронізовані паролі за допомогою облікових даних Google</translation>
@@ -1148,7 +1146,6 @@
 <translation id="8932102934695377596">Ваш годинник запізнюється</translation>
 <translation id="893332455753468063">Додайте ім’я</translation>
 <translation id="8938939909778640821">Прийнятні кредитні та передплачені картки</translation>
-<translation id="8952525071319348207">Введіть термін дії та код CVC картки <ph name="CREDIT_CARD" />, щоб оновити її дані. Щойно ви підтвердите дані картки з облікового запису Google Payments, цей сайт отримає доступ до них.</translation>
 <translation id="8957210676456822347">Авторизація приєднаного порталу</translation>
 <translation id="8971063699422889582">Термін дії сертифіката сервера завершився.</translation>
 <translation id="8975012916872825179">Номери телефонів, електронні адреси, адреси доставки тощо</translation>

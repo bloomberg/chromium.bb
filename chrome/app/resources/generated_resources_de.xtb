@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Synchronisierungseinstellungen anzeigen</translation>
 <translation id="1124772482545689468">Nutzer</translation>
 <translation id="1125550662859510761">Auflösung <ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativ)</translation>
-<translation id="1127216846847548354">Sprachaktivierung</translation>
 <translation id="1128109161498068552">Websites nicht gestatten, mittels systemexklusiver Meldungen auf MIDI-Geräte zuzugreifen</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Suchmaschine bearbeiten</translation>
@@ -1638,7 +1637,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3495660573538963482">Google Assistant-Einstellungen</translation>
 <translation id="3496213124478423963">Verkleinern</translation>
 <translation id="3505030558724226696">Gerätezugriff aufheben</translation>
-<translation id="3506093155988721483">Spracheingabe anstelle der Tastatur verwenden, wenn Assistant gestartet wird</translation>
 <translation id="3507421388498836150">Aktuelle Berechtigungen für "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507547268929739059">Linux-Apps für Chromebook entfernen</translation>
 <translation id="3507888235492474624">Noch einmal nach Bluetooth-Geräten suchen</translation>
@@ -2056,7 +2054,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4100733287846229632">Speicherplatz auf Gerät äußerst niedrig</translation>
 <translation id="4103091233824664032">Passwort eingeben, um Displaysperre und Log-in zu konfigurieren</translation>
 <translation id="4104163789986725820">E&amp;xportieren...</translation>
-<translation id="4105563239298244027">Nutzen Sie 1 TB kostenlosen Speicher bei Google Drive.</translation>
 <translation id="4107048419833779140">Speichergeräte ermitteln und auswerfen</translation>
 <translation id="4109135793348361820">Fenster zu <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) verschieben</translation>
 <translation id="4110895898888439383">Das Web in Modus mit hohem Kontrast durchsuchen</translation>
@@ -5332,7 +5329,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9214520840402538427">Hoppla! Bei der Initialisierung der Installationszeit-Attribute ist eine Zeitüberschreitung aufgetreten. Bitte wenden Sie sich an Ihren Support-Mitarbeiter.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" hinzugefügt</translation>
-<translation id="9215934040295798075">Hintergrund festlegen</translation>
 <translation id="9218430445555521422">Als Standardbrowser festlegen</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="9220525904950070496">Konto entfernen</translation>

@@ -45,6 +45,7 @@
 <translation id="1275718070701477396">Επιλεγμένο</translation>
 <translation id="1286609444451033486">Πατήστε τα πλήκτρα Αναζήτηση+Space για εναλλαγή.</translation>
 <translation id="1291286136605998134">Κουμπί εναλλαγής</translation>
+<translation id="1303806948938513162">Πατήστε με τέσσερα δάκτυλα για εισαγωγή στα μενού ChromeVox</translation>
 <translation id="1319608975892113573">Δεν υπάρχει προηγούμενη ενότητα σε παράθεση.</translation>
 <translation id="1321576897702511272">Απόκρυψη βοήθειας ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> από <ph name="TOTAL" /></translation>
@@ -239,6 +240,7 @@
 <translation id="3046838483509668188">Επιλογές ChromeVox</translation>
 <translation id="3047143736589213134">Πειραματική αντιστοίχιση πλήκτρων</translation>
 <translation id="3060756054951570867">Το μενού <ph name="TITLE" /> άνοιξε</translation>
+<translation id="3060880924447482063">Σύρετε προς τα αριστερά ή προς τα δεξιά για μετακίνηση ανά στοιχείο</translation>
 <translation id="3070245424257836917">Σύρετε τρία δάκτυλα προς τα πάνω</translation>
 <translation id="3078345202707391975">Επικεφαλίδα επόμενου επιπέδου 2</translation>
 <translation id="3078740164268491126">πίνακας</translation>
@@ -332,6 +334,7 @@
 <translation id="3389259863310851658">Προηγούμενο πεδίο φόρμας</translation>
 <translation id="3390225400784126843">Επόμενο διαφορετικό στοιχείο.</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, στοιχείο μενού</translation>
+<translation id="3393605254399152980">Σύρετε ένα δάκτυλο για να ακούσετε τι αγγίζετε</translation>
 <translation id="3406283310380167331">Εμφάνιση λίστας φορμών</translation>
 <translation id="3423495725743882470">σειρά $1 στήλη $2</translation>
 <translation id="3457000393508828486">Έχει πατηθεί μερικώς</translation>
@@ -347,6 +350,7 @@
 <translation id="3497063866483065785">{COUNT,plural, =1{λατινικό ερωτηματικό}other{# λατινικά ερωτηματικά}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{σύμβολο προσθήκης}other{# σύμβολα προσθήκης}}</translation>
 <translation id="352577523970648069">Ένα πεδίο κειμένου με δυνατότητα επεξεργασίας</translation>
+<translation id="3549680091535286226">Πατήστε με δύο δάκτυλα για να διακόψετε προσωρινά την ομιλία</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, το πλαίσιο ελέγχου δεν είναι επιλεγμένο</translation>
 <translation id="3589661172894441357">Γλωσσάρι</translation>
 <translation id="3599054940393788245">Εκτός του math</translation>
@@ -411,6 +415,7 @@
 <translation id="4166192625054637755">Λήξη δείκτη</translation>
 <translation id="4173994908659439270">Δεν υπάρχει επόμενο πεδίο με δυνατότητα επεξεργασίας.</translation>
 <translation id="4176463684765177261">Απενεργοποιημένη</translation>
+<translation id="4187322598335821254">Σύρετε προς τα επάνω ή προς τα κάτω για μετακίνηση ανά γραμμή</translation>
 <translation id="4188530942454211480">Προηγούμενη πρόταση</translation>
 <translation id="4191918948604314587">Ένα κουμπί</translation>
 <translation id="419265409837491189">Μετάβαση στην προηγούμενη στήλη</translation>
@@ -709,6 +714,7 @@
 <translation id="6583174818554398774">Μετακίνηση στο επόμενο επίπεδο ευαισθησίας</translation>
 <translation id="6587021927234520429">Δεν υπάρχει επόμενη επικεφαλίδα επιπέδου 4.</translation>
 <translation id="6601344353291556895">Ενεργοποίηση περιγραφών verbose.</translation>
+<translation id="6609828810966525877">Εξερευνήστε περισσότερες κινήσεις στη λειτουργία εκμάθησης και στο Κέντρο βοήθειας Chromebook</translation>
 <translation id="6615602925644411249">Εύρεση στη σελίδα.</translation>
 <translation id="6628427060004938651">Τμήμα</translation>
 <translation id="6633350132811819843">Δεν υπάρχει επόμενος πίνακας.</translation>
@@ -761,6 +767,7 @@
 Για μετακίνηση προς τα εμπρός μεταξύ των ανοικτών καρτελών, χρησιμοποιήστε τον συνδυασμό Control+Tab.
 Για άνοιγμα του μενού του προγράμματος περιήγησης Chrome, πατήστε Alt+F.</translation>
 <translation id="7086377898680121060">Αύξηση φωτεινότητας</translation>
+<translation id="7088743565397416204">Πατήστε δύο φορές για να ενεργοποιήσετε το εστιασμένο στοιχείο</translation>
 <translation id="7095834689119144465">Επεξεργασία κειμένου μόνο για αριθμούς</translation>
 <translation id="7096001299300236431">Προηγούμενο μέσο</translation>
 <translation id="7116595520562830928">πολλές γραμμές</translation>
@@ -816,6 +823,7 @@
 <translation id="7491962110804786152">καρτέλα</translation>
 <translation id="7492049978501397201">Έγινε εισαγωγή διαλόγου</translation>
 <translation id="7518543783849163354">Για προσωρινή διακοπή της εκφώνησης του ChromeVox, πατήστε το πλήκτρο Control.</translation>
+<translation id="7521682724501952239">Μπορείτε να χρησιμοποιήσετε το ChromeVox με την οθόνη αφής.</translation>
 <translation id="7532613204005497612">Ιούνιος</translation>
 <translation id="7552432549459840808">Χρήσιμες συντομεύσεις Chrome</translation>
 <translation id="7579911500627256166">κουκκίδα <ph name="DOT" /></translation>

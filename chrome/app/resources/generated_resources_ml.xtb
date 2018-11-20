@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">സമന്വയ ക്രമീകരണം കാണിക്കുക</translation>
 <translation id="1124772482545689468">ഉപയോക്താവ്</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (നേറ്റീവ്) പോലെ തോന്നുന്നു</translation>
-<translation id="1127216846847548354">വോയിസ് ആക്‌റ്റിവേഷൻ</translation>
 <translation id="1128109161498068552">MIDI ഉപകരണങ്ങൾ ആക്‌സസ്സുചെയ്യുന്നതിന് സിസ്റ്റം എക്‌സ്‌ക്ലൂസീവ് സന്ദേശങ്ങൾ ഉപയോഗിക്കുന്നതിന് ഒരു സൈറ്റിനെയും അനുവദിക്കരുത്.</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">തിരയൽ എഞ്ചിൻ എഡിറ്റ് ചെയ്യുക</translation>
@@ -1640,7 +1639,6 @@
 <translation id="3495660573538963482">Google അസിസ്‌റ്റന്റ് ക്രമീകരണം</translation>
 <translation id="3496213124478423963">സൂം ഔട്ട്</translation>
 <translation id="3505030558724226696">ഉപകരണ ആക്‌സസ്സ് റദ്ദാക്കുക</translation>
-<translation id="3506093155988721483">അസി‌സ്‌റ്റന്റ് ആരംഭിക്കുമ്പോൾ കീ‌ബോർഡ് ഉപയോഗിക്കുന്നതിന് പകരം സംസാരിക്കുക</translation>
 <translation id="3507421388498836150">"<ph name="EXTENSION_NAME" />" എന്നതിനായുള്ള നിലവിലെ അനുമതികൾ</translation>
 <translation id="3507547268929739059">Chromebook-നായുള്ള Linux ആപ്പുകൾ നീക്കം ചെയ്യുക</translation>
 <translation id="3507888235492474624">Bluetooth ഉപകരണങ്ങൾ വീണ്ടും സ്‌കാൻ ചെയ്യുക</translation>
@@ -2057,7 +2055,6 @@
 <translation id="4100733287846229632">ഉപകരണത്തിൽ ഇടം വളരെ കുറവാണ്</translation>
 <translation id="4103091233824664032">സ്‌ക്രീൻ ലോക്കും സൈൻ-ഇന്നും കോൺഫിഗർ ചെയ്യാൻ നിങ്ങളുടെ പാസ്‌വേഡ് നൽകുക</translation>
 <translation id="4104163789986725820">കയ&amp;റ്റുമതി ചെയ്യുക...</translation>
-<translation id="4105563239298244027">Google ഡ്രൈവിൽ 1 TB  സൗജന്യമായി നേടുക</translation>
 <translation id="4107048419833779140">സ്‌റ്റോറേജ് ​​ഉപകരണം തിരിച്ചറിഞ്ഞ് ഒഴിവാക്കുക</translation>
 <translation id="4109135793348361820">വിൻഡോ <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) എന്നതിലേക്ക് നീക്കുക</translation>
 <translation id="4110895898888439383">ഉയർന്ന ദൃശ്യതീവ്രതാ മോഡിൽ വെബ് ബ്രൗസ് ചെയ്യുക</translation>
@@ -5334,7 +5331,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="9214520840402538427">ക്ഷമിക്കണം!  ഇൻസ്റ്റാളേഷൻ സമയ-ആട്രിബ്യൂട്ടുകളുടെ സമാരംഭിക്കൽ കാലഹരണപ്പെട്ടു.  നിങ്ങളുടെ പിന്തുണ പ്രതിനിധിയെ ബന്ധപ്പെടുക.</translation>
 <translation id="9214695392875603905">കപ്പ്‌കേക്ക്</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" ചേർത്തു</translation>
-<translation id="9215934040295798075">വാൾപേപ്പർ സജ്ജമാക്കുക</translation>
 <translation id="9218430445555521422">സ്ഥിരസ്ഥിതിയാക്കുക</translation>
 <translation id="9219103736887031265">ചിത്രങ്ങൾ‌</translation>
 <translation id="9220525904950070496">അക്കൗണ്ട് നീക്കംചെയ്യൽ</translation>

@@ -2156,11 +2156,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6689792153960219308">Rapportér maskinvarestatus</translation>
 <translation id="6698632841807204978">Slå på utskrift i svart/hvitt</translation>
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
-<translation id="6724842112053619797">Hvis du slår på denne innstillingen, blir innstillingene som er lagret i <ph name="PRODUCT_NAME" />-profiler (for eksempel bokmerker, autofylldata, passord også videre), også skrevet til en fil som lagres i mappen for roaming-brukerprofilen, eller på et sted som bestemmes av administratoren via regelen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Når du slår på denne regelen, deaktiveres skysynkronisering.
-
-      Hvis denne regelen er slått av eller ikke er angitt, blir bare de vanlige, lokale profilene brukt.
-
-      <ph name="SYNC_DISABLED_POLICY_NAME" />-regelen deaktiverer all datasynkronisering og overstyrer RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrer toppnivånettsteder (men ikke innebygde iframe-elementer) for seksuelt innhold</translation>
 <translation id="6734521799274931721">Kontrollerer tilgjengeligheten for delte nettverksressurser for ChromeOS</translation>
 <translation id="6735701345096330595">Tving aktivering av språk med stavekontroll</translation>

@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ja veel 1 veebileht}other{ja veel # veebilehte}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Sisestage krediitkaardi <ph name="CREDIT_CARD" /> CVC. Pärast kinnitamist jagatakse teie Google Paymentsi konto kaardi üksikasju selle saidiga.</translation>
 <translation id="4923417429809017348">Leht on tõlgitud teadmata keelest <ph name="LANGUAGE_LANGUAGE" /> keelde</translation>
 <translation id="4923459931733593730">Makse</translation>
 <translation id="4926049483395192435">Tuleb määrata.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Provints</translation>
 <translation id="5098332213681597508">Nimi pärineb teie Google'i kontolt.</translation>
 <translation id="5115563688576182185">(64-bitine)</translation>
-<translation id="5121084798328133320">Pärast kinnitamist jagatakse teie Google Paymentsi konto kaardi üksikasju selle saidiga.</translation>
 <translation id="5128122789703661928">Selle nimega seanssi ei saa kustutada.</translation>
 <translation id="5135404736266831032">Halda aadresse …</translation>
 <translation id="5141240743006678641">Krüpteerige sünkroonitud paroolid oma Google'i mandaadiga</translation>
@@ -1147,7 +1145,6 @@ Lisateave:
 <translation id="8932102934695377596">Teie kell on taga</translation>
 <translation id="893332455753468063">Nime lisamine</translation>
 <translation id="8938939909778640821">Aktsepteeritavad ettemakstud ja krediitkaardid</translation>
-<translation id="8952525071319348207">Kaardi üksikasjade värskendamiseks sisestage krediitkaardi <ph name="CREDIT_CARD" /> aegumiskuupäev ja CVC. Kui selle kinnitate, jagatakse teie Google Paymentsi konto kaardi üksikasju selle saidiga.</translation>
 <translation id="8957210676456822347">Kontrollportaali volitamine</translation>
 <translation id="8971063699422889582">Serveri sertifikaat on aegunud.</translation>
 <translation id="8975012916872825179">Hõlmab näiteks telefoninumbreid, e-posti ja postiaadresse</translation>

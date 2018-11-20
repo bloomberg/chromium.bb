@@ -2174,11 +2174,6 @@
 <translation id="6689792153960219308">የሃርድዌር ሁኔታን ሪፓርት ያድርጉ</translation>
 <translation id="6698632841807204978">የሞኖክሮም ህትመትን ያንቁ</translation>
 <translation id="6699880231565102694">ባለሁለት ክፍል ማረጋገጫ ለሩቅ መዳረሻ አስተናጋጆችን ያንቁ</translation>
-<translation id="6724842112053619797">ይህን ቅንብር ካነቁት እንደ ዕልባቶች፣ የራስ-ሙላ ውሂብ፣ የይለፍ ቃላት፣ ወዘተ ያሉ በ<ph name="PRODUCT_NAME" /> መገለጫዎች ውስጥ የተከማቹት ቅንብሮች እንዲሁም በተንዣባቢ የተጠቃሚ መገለጫ አቃፊ ውስጥ ባለ የተከማቸ ፋይል ወይም በ<ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> መመሪያ በኩል በአስተዳዳሪው በተገለጸ ቦታ ላይ ይጻፋሉ። ይህን መመሪያ ማንቃት  የደመና ስምረትን ያሰናከላል።
-
-      ይህ መመሪያ ከተሰናከለ ወይም ካልተዋቀረ መደበኛዎቹ አካባቢያዊ መገለጫዎች ብቻ ናቸው ጥቅም ላይ የሚውሉት።
-
-      የ<ph name="SYNC_DISABLED_POLICY_NAME" /> መመሪያ RoamingProfileSupportEnabledን በመሻር ሁሉንም የውሂብ ስምረት ያሰናክላል።</translation>
 <translation id="6731757988219967594">ለዐዋቂ ይዘት ከፍተኛ ደረጃ ጣቢያዎችን (ሆኖንም ግን ያልተካተቱ iframes) አጣራ</translation>
 <translation id="6734521799274931721">የአውታረ መረብ ፋይል ማጋሪያዎችን ለChromeOS ተገኝነትን ይቆጣጠራል</translation>
 <translation id="6735701345096330595">የፊደል ማረሚያ ቋንቋዎችን በግዳጅ ያንቁ</translation>

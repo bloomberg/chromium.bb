@@ -2103,11 +2103,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6689792153960219308">Rapportér hardwarestatus</translation>
 <translation id="6698632841807204978">Aktivér udskrivning i sort/hvid</translation>
 <translation id="6699880231565102694">Aktivér godkendelse med to faktorer for værter med fjernadgang</translation>
-<translation id="6724842112053619797">Hvis du aktiverer denne indstilling, skrives indstillingerne, der er gemt i <ph name="PRODUCT_NAME" />-profiler, f.eks. bogmærker, autofylddata og adgangskoder, også i en fil, der er gemt i roamingmappen for brugerprofilen eller et andet sted som angivet af administratoren via <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />-politikken. Når du aktiverer denne politik, deaktiveres synkronisering i skyen.
-
-      Hvis denne politik deaktiveres eller ikke angives, er det kun de almindelige lokale profiler, der bruges.
-
-      Politikken <ph name="SYNC_DISABLED_POLICY_NAME" /> deaktiverer al datasynkronisering og tilsidesætter RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrér voksenindhold fra på websites på øverste niveau (men ikke integrerede iframes)</translation>
 <translation id="6734521799274931721">Styrer tilgængelighed af fildeling via netværk for Chrome OS</translation>
 <translation id="6735701345096330595">Gennemtving aktivering af stavekontrol af sprog</translation>

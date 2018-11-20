@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{và thêm 1 trang web}other{và thêm # trang web}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Hãy nhập CVC cho <ph name="CREDIT_CARD" />. Sau khi bạn xác nhận, thông tin chi tiết thẻ từ tài khoản thanh toán Google của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="4923417429809017348">Trang này đã được dịch từ một ngôn ngữ không xác định sang <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Thanh toán</translation>
 <translation id="4926049483395192435">Phải được chỉ định.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Tỉnh/thành phố</translation>
 <translation id="5098332213681597508">Tên này lấy từ Tài khoản Google của bạn.</translation>
 <translation id="5115563688576182185">(64 bit)</translation>
-<translation id="5121084798328133320">Sau khi bạn xác nhận, thông tin chi tiết thẻ từ tài khoản thanh toán Google của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="5128122789703661928">Không thể xóa phiên do tên phiên không hợp lệ.</translation>
 <translation id="5135404736266831032">Quản lý địa chỉ...</translation>
 <translation id="5141240743006678641">Mã hóa mật khẩu đã đồng bộ hóa với thông tin đăng nhập Google của bạn</translation>
@@ -1148,7 +1146,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8932102934695377596">Đồng hồ của bạn chạy chậm</translation>
 <translation id="893332455753468063">Thêm tên</translation>
 <translation id="8938939909778640821">Thẻ tín dụng và thẻ trả trước được chấp nhận</translation>
-<translation id="8952525071319348207">Hãy nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /> để cập nhật thông tin chi tiết thẻ của bạn. Sau khi bạn xác nhận, thông tin chi tiết thẻ từ tài khoản thanh toán Google sẽ được chia sẻ với trang web này.</translation>
 <translation id="8957210676456822347">Ủy quyền cổng bị khóa</translation>
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>
 <translation id="8975012916872825179">Bao gồm các thông tin như số điện thoại, địa chỉ email và địa chỉ giao hàng</translation>
