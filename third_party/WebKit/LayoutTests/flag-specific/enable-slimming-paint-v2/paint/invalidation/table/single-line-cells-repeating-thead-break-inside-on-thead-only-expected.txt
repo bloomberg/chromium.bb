@@ -20,6 +20,11 @@
           "object": "InlineTextBox 'Col 1'",
           "rect": [10, 74, 836, 19],
           "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'Col 1'",
+          "rect": [10, 74, 836, 19],
+          "reason": "style change"
         }
       ]
     },

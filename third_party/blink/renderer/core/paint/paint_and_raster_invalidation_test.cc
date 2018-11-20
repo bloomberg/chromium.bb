@@ -833,21 +833,10 @@ TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
   // Scroll target into view.
   GetDocument().domWindow()->scrollTo(0, 4000);
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // TODO(crbug.com/792577): SPv2's cull rect for view scrolling contents is
-    // too small, causing this result.
-    EXPECT_THAT(
-        GetRasterInvalidationTracking()->Invalidations(),
-        UnorderedElementsAre(RasterInvalidationInfo{
-            target->EnclosingLayer(), target->EnclosingLayer()->DebugName(),
-            IntRect(0, 4000, 100, 100),
-            PaintInvalidationReason::kChunkAppeared}));
-  } else {
-    EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
-                UnorderedElementsAre(RasterInvalidationInfo{
-                    target, target->DebugName(), IntRect(0, 4000, 100, 100),
-                    PaintInvalidationReason::kForTesting}));
-  }
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  target, target->DebugName(), IntRect(0, 4000, 100, 100),
+                  PaintInvalidationReason::kForTesting}));
   EXPECT_EQ(PaintInvalidationReason::kNone,
             target->FullPaintInvalidationReason());
   EXPECT_FALSE(target->ShouldDelayFullPaintInvalidation());

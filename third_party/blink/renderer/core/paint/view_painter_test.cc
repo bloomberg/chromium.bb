@@ -23,11 +23,6 @@ INSTANTIATE_PAINT_TEST_CASE_P(ViewPainterTest);
 
 void ViewPainterTest::RunFixedBackgroundTest(
     bool prefer_compositing_to_lcd_text) {
-  // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
-  // small.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
-
   if (prefer_compositing_to_lcd_text) {
     Settings* settings = GetDocument().GetFrame()->GetSettings();
     settings->SetPreferCompositingToLCDTextEnabled(true);
@@ -52,40 +47,71 @@ void ViewPainterTest::RunFixedBackgroundTest(
   layout_viewport->SetScrollOffset(scroll_offset, kUserScroll);
   frame_view->UpdateAllLifecyclePhases();
 
-  CompositedLayerMapping* clm =
-      GetLayoutView().Layer()->GetCompositedLayerMapping();
-
-  // If we prefer compositing to LCD text, the fixed background should go in a
-  // different layer from the scrolling content; otherwise, it should go in the
-  // same layer (i.e., the scrolling contents layer).
-  GraphicsLayer* layer_for_background;
-  if (prefer_compositing_to_lcd_text) {
-    layer_for_background = clm->MainGraphicsLayer();
+  const DisplayItem* background_display_item = nullptr;
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    const auto& display_items = RootPaintController().GetDisplayItemList();
+    if (prefer_compositing_to_lcd_text) {
+      EXPECT_THAT(
+          display_items,
+          ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType),
+                      IsSameId(&GetLayoutView(), DisplayItem::kScrollHitTest),
+                      IsSameId(GetDocument().body()->GetLayoutObject(),
+                               kBackgroundType)));
+      background_display_item = &display_items[0];
+    } else {
+      EXPECT_THAT(
+          display_items,
+          ElementsAre(IsSameId(&GetLayoutView(), DisplayItem::kScrollHitTest),
+                      IsSameId(&ViewScrollingBackgroundClient(),
+                               kDocumentBackgroundType),
+                      IsSameId(GetDocument().body()->GetLayoutObject(),
+                               kBackgroundType)));
+      background_display_item = &display_items[1];
+    }
   } else {
-    layer_for_background = clm->ScrollingContentsLayer();
+    // If we prefer compositing to LCD text, the fixed background should go in a
+    // different layer from the scrolling content; otherwise, it should go in
+    // the same layer (i.e., the scrolling contents layer).
+    if (prefer_compositing_to_lcd_text) {
+      const auto& display_items = GetLayoutView()
+                                      .Layer()
+                                      ->GraphicsLayerBacking(&GetLayoutView())
+                                      ->GetPaintController()
+                                      .GetDisplayItemList();
+      EXPECT_THAT(
+          display_items,
+          ElementsAre(IsSameId(&GetLayoutView(), kDocumentBackgroundType)));
+      background_display_item = &display_items[0];
+    } else {
+      const auto& display_items = RootPaintController().GetDisplayItemList();
+      EXPECT_THAT(display_items,
+                  ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                       kDocumentBackgroundType),
+                              IsSameId(GetDocument().body()->GetLayoutObject(),
+                                       kBackgroundType)));
+      background_display_item = &display_items[0];
+    }
   }
-  const DisplayItemList& display_items =
-      layer_for_background->GetPaintController().GetDisplayItemList();
-  const DisplayItem& background = display_items[0];
-  EXPECT_EQ(background.GetType(), kDocumentBackgroundType);
-  const DisplayItemClient* expected_client;
-  if (!prefer_compositing_to_lcd_text)
-    expected_client = &ViewScrollingBackgroundClient();
-  else
-    expected_client = &GetLayoutView();
-  EXPECT_EQ(&background.Client(), expected_client);
 
   sk_sp<const PaintRecord> record =
-      static_cast<const DrawingDisplayItem&>(background).GetPaintRecord();
+      static_cast<const DrawingDisplayItem*>(background_display_item)
+          ->GetPaintRecord();
   ASSERT_EQ(record->size(), 2u);
   cc::PaintOpBuffer::Iterator it(record.get());
   ASSERT_EQ((*++it)->GetType(), cc::PaintOpType::DrawRect);
 
-  // This is the dest_rect_ calculated by BackgroundImageGeometry.  For a fixed
+  // This is the dest_rect_ calculated by BackgroundImageGeometry. For a fixed
   // background in scrolling contents layer, its location is the scroll offset.
   SkRect rect = static_cast<const cc::DrawRectOp*>(*it)->rect;
-  ASSERT_EQ(prefer_compositing_to_lcd_text ? ScrollOffset() : scroll_offset,
-            ScrollOffset(rect.fLeft, rect.fTop));
+  if (prefer_compositing_to_lcd_text) {
+    EXPECT_EQ(SkRect::MakeXYWH(0, 0, 800, 600), rect);
+  } else if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_EQ(SkRect::MakeXYWH(0, 0, 800, 600), rect);
+  } else {
+    EXPECT_EQ(SkRect::MakeXYWH(scroll_offset.Width(), scroll_offset.Height(),
+                               800, 600),
+              rect);
+  }
 }
 
 TEST_P(ViewPainterTest, DocumentFixedBackgroundLowDPI) {
@@ -97,27 +123,41 @@ TEST_P(ViewPainterTest, DocumentFixedBackgroundHighDPI) {
 }
 
 TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
-  // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
-  // small.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    return;
+  SetBodyInnerHTML(R"HTML(
+    <style>::-webkit-scrollbar { display: none }</style>
+    <div style='height: 5000px'></div>
+  )HTML");
 
-  SetBodyInnerHTML("<div style='height: 5000px'></div>");
-
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
-                                   kDocumentBackgroundType)));
-
-  const auto& chunks = RootPaintController().PaintChunks();
-  EXPECT_EQ(1u, chunks.size());
-  const auto& chunk = chunks[0];
-  EXPECT_EQ(&ViewScrollingBackgroundClient(), &chunk.id.client);
-
-  const auto& tree_state = chunk.properties;
-  EXPECT_EQ(&EffectPaintPropertyNode::Root(), tree_state.Effect());
-  const auto* properties = GetLayoutView().FirstFragment().PaintProperties();
-  EXPECT_EQ(properties->ScrollTranslation(), tree_state.Transform());
-  EXPECT_EQ(properties->OverflowClip(), tree_state.Clip());
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_THAT(
+        RootPaintController().GetDisplayItemList(),
+        ElementsAre(IsSameId(&GetLayoutView(), DisplayItem::kScrollHitTest),
+                    IsSameId(&ViewScrollingBackgroundClient(),
+                             kDocumentBackgroundType)));
+    EXPECT_THAT(
+        RootPaintController().PaintChunks(),
+        ElementsAre(
+            IsPaintChunk(
+                0, 1,
+                PaintChunk::Id(*GetLayoutView().Layer(),
+                               DisplayItem::kLayerChunkBackground),
+                GetLayoutView().FirstFragment().LocalBorderBoxProperties()),
+            IsPaintChunk(
+                1, 2,
+                PaintChunk::Id(ViewScrollingBackgroundClient(),
+                               kDocumentBackgroundType),
+                GetLayoutView().FirstFragment().ContentsProperties())));
+  } else {
+    EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+                ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
+                                     kDocumentBackgroundType)));
+    EXPECT_THAT(RootPaintController().PaintChunks(),
+                ElementsAre(IsPaintChunk(
+                    0, 1,
+                    PaintChunk::Id(ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
+                    GetLayoutView().FirstFragment().ContentsProperties())));
+  }
 }
 
 class ViewPainterTestWithPaintTouchAction
