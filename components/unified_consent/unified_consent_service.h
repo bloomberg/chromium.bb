@@ -94,25 +94,6 @@ class UnifiedConsentService : public KeyedService,
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
 
-  // Updates the sync settings if sync isn't disabled and the sync engine is
-  // initialized.
-  // When |sync_everything| is false:
-  //  - All sync data types in |enable_data_types| will be enabled.
-  //  - All sync data types in |disable_data_types| will be disabled.
-  //  - All data types in neither of the two sets will remain in the same state.
-  // When |sync_everything| is true, |enable_data_types| and
-  // |disable_data_types| will be ignored.
-  void UpdateSyncSettingsIfPossible(
-      bool sync_everything,
-      syncer::ModelTypeSet enable_data_types = syncer::ModelTypeSet(),
-      syncer::ModelTypeSet disable_data_types = syncer::ModelTypeSet());
-
-  // Posts a task to call |UpdateSyncSettingsIfPossible|.
-  void PostTaskToUpdateSyncSettings(
-      bool sync_everything,
-      syncer::ModelTypeSet enable_data_types = syncer::ModelTypeSet(),
-      syncer::ModelTypeSet disable_data_types = syncer::ModelTypeSet());
-
   // Called when |prefs::kUnifiedConsentGiven| pref value changes.
   // When set to true, it enables syncing of all data types and it enables all
   // non-personalized services. Otherwise it does nothing.
@@ -152,8 +133,6 @@ class UnifiedConsentService : public KeyedService,
   syncer::SyncService* sync_service_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-
-  base::WeakPtrFactory<UnifiedConsentService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedConsentService);
 };

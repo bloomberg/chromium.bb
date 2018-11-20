@@ -13,11 +13,6 @@ namespace prefs {
 const char kAllUnifiedConsentServicesWereEnabled[] =
     "unified_consent.all_services_were_enabled";
 
-// Boolean indicating whether the user had everything synced before migrating to
-// unified consent.
-const char kHadEverythingSyncedBeforeMigration[] =
-    "unified_consent.had_everything_synced_before_migration";
-
 // Boolean indicating whether all criteria is met for the consent bump to be
 // shown.
 const char kShouldShowUnifiedConsentBump[] =
