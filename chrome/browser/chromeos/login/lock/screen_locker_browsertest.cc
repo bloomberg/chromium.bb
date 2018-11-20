@@ -6,42 +6,30 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/login/auth/key.h"
-#include "chromeos/login/auth/stub_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/views/widget/widget.h"
-
-using testing::_;
-using testing::AnyNumber;
-using testing::Return;
 
 namespace chromeos {
 namespace {
@@ -77,7 +65,7 @@ class Waiter : public content::NotificationObserver {
       run_loop.Run();
     }
     // Make sure all pending tasks are executed.
-    content::RunAllPendingInMessageLoop();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -93,10 +81,8 @@ class Waiter : public content::NotificationObserver {
 
 class ScreenLockerTest : public InProcessBrowserTest {
  public:
-  ScreenLockerTest() : fake_session_manager_client_(NULL) {}
-
- protected:
-  FakeSessionManagerClient* fake_session_manager_client_;
+  ScreenLockerTest() = default;
+  ~ScreenLockerTest() override = default;
 
   void LockScreen(ScreenLockerTester* tester) {
     ScreenLocker::Show();
@@ -106,19 +92,19 @@ class ScreenLockerTest : public InProcessBrowserTest {
     if (!tester->IsLocked())
       lock_state_observer.Wait();
     EXPECT_TRUE(tester->IsLocked());
+    EXPECT_EQ(session_manager::SessionState::LOCKED,
+              session_manager::SessionManager::Get()->session_state());
   }
 
-  // Verifies if LockScreenDismissed() was called once.
-  bool VerifyLockScreenDismissed() {
-    return 1 == fake_session_manager_client_
-                    ->notify_lock_screen_dismissed_call_count();
+  FakeSessionManagerClient* session_manager_client() {
+    return fake_session_manager_client_;
   }
 
+  // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
   }
 
- private:
   void SetUpInProcessBrowserTestFixture() override {
     fake_session_manager_client_ = new FakeSessionManagerClient;
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
@@ -128,36 +114,17 @@ class ScreenLockerTest : public InProcessBrowserTest {
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   }
 
+ private:
+  FakeSessionManagerClient* fake_session_manager_client_ = nullptr;
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerTest);
 };
 
-class WebUiScreenLockerTest : public ScreenLockerTest {
- public:
-  WebUiScreenLockerTest() = default;
-  ~WebUiScreenLockerTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ScreenLockerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kShowWebUiLock);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebUiScreenLockerTest);
-};
-
-IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBadThenGoodPassword) {
   // Show lock screen and wait until it is shown.
   std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
-  content::WindowedNotificationObserver lock_state_observer(
-      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::NotificationService::AllSources());
-  ScreenLocker::Show();
-  if (!tester->IsLocked())
-    lock_state_observer.Wait();
-  EXPECT_EQ(session_manager::SessionState::LOCKED,
-            session_manager::SessionManager::Get()->session_state());
+  LockScreen(tester.get());
 
   // Inject fake authentication credentials.
   UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
@@ -176,66 +143,23 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   tester->EnterPassword(user_manager::StubAccountId(), "pass");
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(tester->IsLocked());
-  EXPECT_EQ(
-      1, fake_session_manager_client_->notify_lock_screen_shown_call_count());
+  EXPECT_EQ(1, session_manager_client()->notify_lock_screen_shown_call_count());
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             session_manager::SessionManager::Get()->session_state());
-  EXPECT_TRUE(VerifyLockScreenDismissed());
-}
-
-IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestBasic) {
-  // WebUiScreenLockerTest fails with Mash because of unexpected window
-  // structure. Fortunately we will deprecate the WebUI-based screen locker
-  // soon, so it is okay to skip it.  See https://crbug.com/888779
-  if (features::IsUsingWindowService())
-    return;
-  ScreenLocker::Show();
-  std::unique_ptr<ScreenLockerTester> tester = ScreenLockerTester::Create();
-  content::WindowedNotificationObserver lock_state_observer(
-      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-      content::NotificationService::AllSources());
-  if (!tester->IsLocked())
-    lock_state_observer.Wait();
-  EXPECT_EQ(session_manager::SessionState::LOCKED,
-            session_manager::SessionManager::Get()->session_state());
-
-  UserContext user_context(user_manager::UserType::USER_TYPE_REGULAR,
-                           user_manager::StubAccountId());
-  user_context.SetKey(Key("pass"));
-  tester->InjectStubUserContext(user_context);
-  EXPECT_TRUE(tester->IsLocked());
-  tester->EnterPassword(user_manager::StubAccountId(), "fail");
-  content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(tester->IsLocked());
-  tester->EnterPassword(user_manager::StubAccountId(), "pass");
-  content::RunAllPendingInMessageLoop();
-  // Successful authentication clears the lock screen and tells the
-  // SessionManager to announce this over DBus.
-  EXPECT_FALSE(tester->IsLocked());
   EXPECT_EQ(
-      1, fake_session_manager_client_->notify_lock_screen_shown_call_count());
-  EXPECT_EQ(session_manager::SessionState::ACTIVE,
-            session_manager::SessionManager::Get()->session_state());
-
-  EXPECT_TRUE(VerifyLockScreenDismissed());
+      1, session_manager_client()->notify_lock_screen_dismissed_call_count());
 }
 
 // Makes sure Chrome doesn't crash if we lock the screen during an add-user
 // flow. Regression test for crbug.com/467111.
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, LockScreenWhileAddingUser) {
   UserAddingScreen::Get()->Start();
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   ScreenLocker::HandleShowLockScreenRequest();
 }
 
-// Flaky on Linux Chromium OS ASan LSan (https://crbug.com/889782)
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_TestFullscreenExit DISABLED_TestFullscreenExit
-#else
-#define MAYBE_TestFullscreenExit TestFullscreenExit
-#endif
 // Test how locking the screen affects an active fullscreen window.
-IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, MAYBE_TestFullscreenExit) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   // WebUiScreenLockerTest fails with Mash because of unexpected window
   // structure. Fortunately we will deprecate the WebUI-based screen locker
   // soon, so it is okay to skip it.  See https://crbug.com/888779
@@ -273,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, MAYBE_TestFullscreenExit) {
   user_context.SetKey(Key("pass"));
   tester->InjectStubUserContext(user_context);
   tester->EnterPassword(user_manager::StubAccountId(), "pass");
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(tester->IsLocked());
   {
     Waiter waiter(browser());
@@ -314,14 +238,12 @@ IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, MAYBE_TestFullscreenExit) {
   }
 
   tester->EnterPassword(user_manager::StubAccountId(), "pass");
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(tester->IsLocked());
 
+  EXPECT_EQ(2, session_manager_client()->notify_lock_screen_shown_call_count());
   EXPECT_EQ(
-      2, fake_session_manager_client_->notify_lock_screen_shown_call_count());
-  EXPECT_EQ(
-      2,
-      fake_session_manager_client_->notify_lock_screen_dismissed_call_count());
+      2, session_manager_client()->notify_lock_screen_dismissed_call_count());
 }
 
 IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
@@ -331,14 +253,14 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestShowTwice) {
   // Calling Show again simply send LockCompleted signal.
   ScreenLocker::Show();
   EXPECT_TRUE(tester->IsLocked());
-  EXPECT_EQ(
-      2, fake_session_manager_client_->notify_lock_screen_shown_call_count());
+  EXPECT_EQ(2, session_manager_client()->notify_lock_screen_shown_call_count());
 
   // Close the locker to match expectations.
   ScreenLocker::Hide();
-  content::RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(tester->IsLocked());
-  EXPECT_TRUE(VerifyLockScreenDismissed());
+  EXPECT_EQ(
+      1, session_manager_client()->notify_lock_screen_dismissed_call_count());
 }
 
 }  // namespace chromeos
