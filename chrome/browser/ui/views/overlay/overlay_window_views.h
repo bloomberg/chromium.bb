@@ -74,6 +74,10 @@ class OverlayWindowViews : public content::OverlayWindow,
   // handle in order to force a drag-to-resize.
   int GetResizeHTComponent() const;
 
+  // Returns true if the controls (e.g. close button, play/pause button) are
+  // visible.
+  bool AreControlsVisible() const;
+
   views::ToggleImageButton* play_pause_controls_view_for_testing() const;
   gfx::Point close_image_position_for_testing() const;
   gfx::Point resize_handle_position_for_testing() const;
