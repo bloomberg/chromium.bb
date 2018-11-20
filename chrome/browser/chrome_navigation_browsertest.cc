@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -111,9 +112,13 @@ class DidStartNavigationObserver : public content::WebContentsObserver {
 // Test to verify that navigations are not deleting the transient
 // NavigationEntry when showing an interstitial page and the old renderer
 // process is trying to navigate. See https://crbug.com/600046.
+// With committed interstitials, interstitials are no longer transient
+// navigations, so this test does not apply.
 IN_PROC_BROWSER_TEST_F(
     ChromeNavigationBrowserTest,
     MAYBE_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial) {
+  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials))
+    return;
   StartServerWithExpiredCert();
 
   GURL setup_url =
