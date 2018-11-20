@@ -55,7 +55,6 @@ class WifiHotspotDisconnector;
 // Concrete AsynchronousShutdownObjectContainer implementation.
 class AsynchronousShutdownObjectContainerImpl
     : public AsynchronousShutdownObjectContainer,
-      public BleAdvertiser::Observer,
       public BleScanner::Observer,
       public DisconnectTetheringRequestSender::Observer {
  public:
@@ -114,9 +113,6 @@ class AsynchronousShutdownObjectContainerImpl
       NetworkConnectionHandler* network_connection_handler,
       PrefService* pref_service);
 
-  // BleAdvertiser::Observer:
-  void OnAllAdvertisementsUnregistered() override;
-
   // BleScanner::Observer:
   void OnDiscoverySessionStateChanged(bool discovery_session_active) override;
 
@@ -129,8 +125,7 @@ class AsynchronousShutdownObjectContainerImpl
   void ShutdownIfPossible();
   bool AreAsynchronousOperationsActive();
 
-  void SetTestDoubles(std::unique_ptr<BleAdvertiser> ble_advertiser,
-                      std::unique_ptr<BleScanner> ble_scanner,
+  void SetTestDoubles(std::unique_ptr<BleScanner> ble_scanner,
                       std::unique_ptr<DisconnectTetheringRequestSender>
                           disconnect_tethering_request_sender);
 
@@ -141,7 +136,6 @@ class AsynchronousShutdownObjectContainerImpl
       local_device_data_provider_;
   std::unique_ptr<BleAdvertisementDeviceQueue> ble_advertisement_device_queue_;
   std::unique_ptr<secure_channel::BleSynchronizerBase> ble_synchronizer_;
-  std::unique_ptr<BleAdvertiser> ble_advertiser_;
   std::unique_ptr<BleScanner> ble_scanner_;
   std::unique_ptr<BleConnectionMetricsLogger> ble_connection_metrics_logger_;
   std::unique_ptr<DisconnectTetheringRequestSender>
