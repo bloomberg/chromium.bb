@@ -238,8 +238,6 @@ class AutofillAssistantUiDelegate {
                                  .findViewById(R.id.autofill_assistant);
         // TODO(crbug.com/806868): Set hint text on overlay.
         mTouchEventFilter = (TouchEventFilter) mFullContainer.findViewById(R.id.touch_event_filter);
-        mTouchEventFilter.init(client, activity.getFullscreenManager(),
-                activity.getActivityTab().getWebContents());
         mBottomBar = mFullContainer.findViewById(R.id.bottombar);
         mBottomBar.findViewById(R.id.close_button)
                 .setOnClickListener(unusedView -> mClient.onDismiss());
@@ -403,6 +401,8 @@ class AutofillAssistantUiDelegate {
 
     public void show() {
         if (mFullContainer.getVisibility() != View.VISIBLE) {
+            mTouchEventFilter.init(mClient, mActivity.getFullscreenManager(),
+                    mActivity.getActivityTab().getWebContents());
             mFullContainer.setVisibility(View.VISIBLE);
 
             // Set the initial progress. It is OK to make multiple calls to this method as it will
@@ -412,6 +412,7 @@ class AutofillAssistantUiDelegate {
     }
 
     public void hide() {
+        mTouchEventFilter.deInit();
         mFullContainer.setVisibility(View.GONE);
     }
 

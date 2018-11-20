@@ -66,6 +66,7 @@ public class TouchEventFilter
 
     private Client mClient;
     private ChromeFullscreenManager mFullscreenManager;
+    private GestureListenerManager mGestureListenerManager;
     private final List<RectF> mTouchableArea = new ArrayList<>();
     private final Paint mGrayOut;
     private final Paint mClear;
@@ -174,7 +175,20 @@ public class TouchEventFilter
         mClient = client;
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
-        GestureListenerManager.fromWebContents(webContents).addListener(this);
+        mGestureListenerManager = GestureListenerManager.fromWebContents(webContents);
+        mGestureListenerManager.addListener(this);
+    }
+
+    public void deInit() {
+        mClient = null;
+        if (mFullscreenManager != null) {
+            mFullscreenManager.removeListener(this);
+            mFullscreenManager = null;
+        }
+        if (mGestureListenerManager != null) {
+            mGestureListenerManager.removeListener(this);
+            mGestureListenerManager = null;
+        }
     }
 
     /** Sets the color to be used for unusable areas. */
