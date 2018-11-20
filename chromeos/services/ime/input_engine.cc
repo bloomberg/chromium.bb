@@ -5,6 +5,7 @@
 #include "chromeos/services/ime/input_engine.h"
 
 #include "base/json/json_reader.h"
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -152,8 +153,10 @@ std::string InputEngine::Process(const std::string& message,
   response_str += (res.key_handled ? "true" : "false");
   std::vector<std::string> ops;
   if (!res.commit_text.empty()) {
-    ops.push_back("{\"method\":\"commitText\",\"arguments\":[\"" +
-                  res.commit_text + "\"]}");
+    std::string commit_text;
+    base::EscapeJSONString(res.commit_text, false, &commit_text);
+    ops.push_back("{\"method\":\"commitText\",\"arguments\":[\"" + commit_text +
+                  "\"]}");
   }
   // Need to add the setComposition operation to the result when the key is
   // handled and commit_text and composition_text are both empty.
@@ -161,8 +164,10 @@ std::string InputEngine::Process(const std::string& message,
   // composition.
   if (!res.composition_text.empty() ||
       (res.key_handled && res.commit_text.empty())) {
+    std::string composition_text;
+    base::EscapeJSONString(res.composition_text, false, &composition_text);
     ops.push_back("{\"method\":\"setComposition\",\"arguments\":[\"" +
-                  res.composition_text + "\"]}");
+                  composition_text + "\"]}");
   }
   if (ops.empty()) {
     response_str += "}";
