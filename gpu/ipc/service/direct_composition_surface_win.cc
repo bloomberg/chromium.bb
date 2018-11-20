@@ -1253,6 +1253,14 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     ui::ProtectedVideoType protected_video_type) {
   TRACE_EVENT0("gpu", "DCLayerTree::SwapChainPresenter::ReallocateSwapChain");
 
+  // TODO(sunnyps): Remove after debugging NV12 create swap chain failure.
+  bool swap_chain_resized =
+      swap_chain_ && (swap_chain_size_ != swap_chain_size);
+  bool swap_chain_toggled_yuv =
+      swap_chain_ && (is_yuv_swapchain_ != use_yuv_swap_chain);
+  base::debug::Alias(&swap_chain_resized);
+  base::debug::Alias(&swap_chain_toggled_yuv);
+
   ReleaseSwapChainResources();
 
   DCHECK(!swap_chain_size.IsEmpty());
@@ -1287,10 +1295,11 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
   if (protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
     desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
 
+  // The composition surface handle is only used to create YUV swap chains since
+  // CreateSwapChainForComposition can't do that.
   HANDLE handle;
   if (!CreateSurfaceHandleHelper(&handle))
     return false;
-
   swap_chain_handle_.Set(handle);
 
   if (is_yuv_swapchain_ != use_yuv_swap_chain) {
@@ -1304,10 +1313,15 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
   const std::string kSwapChainCreationResultUmaPrefix =
       "GPU.DirectComposition.SwapChainCreationResult.";
   is_yuv_swapchain_ = false;
-  // The composition surface handle isn't actually used, but
-  // CreateSwapChainForComposition can't create YUV swapchains.
+
+  // TODO(sunnyps): Remove after debugging NV12 create swap chain failure.
+  HRESULT hr = S_OK;
+  VisualInfo visual_info = visual_info_;
+  base::debug::Alias(&hr);
+  base::debug::Alias(&desc);
+  base::debug::Alias(&visual_info);
   if (use_yuv_swap_chain) {
-    HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
+    hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.GetAddressOf());
     is_yuv_swapchain_ = SUCCEEDED(hr);
@@ -1317,13 +1331,6 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
                               SUCCEEDED(hr));
     if (FAILED(hr)) {
       // TODO(sunnyps): Remove after debugging NV12 create swap chain failure.
-      OverlayFormat format = g_overlay_format_used;
-      DXGI_FORMAT dxgi_format = g_overlay_dxgi_format_used;
-      base::debug::Alias(&format);
-      base::debug::Alias(&dxgi_format);
-      base::debug::Alias(&hr);
-      base::debug::Alias(&swap_chain_size);
-      base::debug::Alias(&protected_video_type);
       base::debug::DumpWithoutCrashing();
 
       DLOG(ERROR) << "Failed to create "
