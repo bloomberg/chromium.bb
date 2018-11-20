@@ -53,5 +53,6 @@ public class BrowsingModeBottomToolbarModel extends PropertyModel {
         super(Y_OFFSET, ANDROID_VIEW_VISIBLE, COMPOSITED_VIEW_VISIBLE, LAYOUT_MANAGER,
                 TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, TOOLBAR_SWIPE_HANDLER, IS_VISIBLE,
                 PRIMARY_COLOR);
+        set(IS_VISIBLE, true);
     }
 }
