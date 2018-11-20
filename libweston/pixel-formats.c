@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <drm_fourcc.h>
+#include <wayland-client-protocol.h>
 
 #include "helpers.h"
 #include "wayland-util.h"
@@ -374,6 +375,17 @@ static const struct pixel_format_info pixel_format_table[] = {
 		.chroma_order = ORDER_VU,
 	},
 };
+
+WL_EXPORT const struct pixel_format_info *
+pixel_format_get_info_shm(uint32_t format)
+{
+	if (format == WL_SHM_FORMAT_XRGB8888)
+		return pixel_format_get_info(DRM_FORMAT_XRGB8888);
+	else if (format == WL_SHM_FORMAT_ARGB8888)
+		return pixel_format_get_info(DRM_FORMAT_ARGB8888);
+	else
+		return pixel_format_get_info(format);
+}
 
 WL_EXPORT const struct pixel_format_info *
 pixel_format_get_info(uint32_t format)

@@ -116,6 +116,19 @@ const struct pixel_format_info *
 pixel_format_get_info(uint32_t format);
 
 /**
+ * Get pixel format information for a SHM format code
+ *
+ * Given a SHM format code, return a DRM pixel format info structure describing
+ * the properties of that format.
+ *
+ * @param format SHM format code to get info for.
+ * @returns A pixel format structure (must not be freed), or NULL if the
+ *          format could not be found.
+ */
+const struct pixel_format_info *
+pixel_format_get_info_shm(uint32_t format);
+
+/**
  * Get pixel format information for a named DRM format
  *
  * Given a DRM format name, return a pixel format info structure describing
