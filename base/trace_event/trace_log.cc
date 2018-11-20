@@ -409,13 +409,15 @@ TraceLog::TraceLog()
 TraceLog::~TraceLog() = default;
 
 void TraceLog::InitializeThreadLocalEventBufferIfSupported() {
-  // A ThreadLocalEventBuffer needs the message loop
+  // A ThreadLocalEventBuffer needs the message loop with a task runner
   // - to know when the thread exits;
   // - to handle the final flush.
-  // For a thread without a message loop or the message loop may be blocked, the
-  // trace events will be added into the main buffer directly.
-  if (thread_blocks_message_loop_.Get() || !MessageLoopCurrent::IsSet())
+  // For a thread without a message loop or if the message loop may be blocked,
+  // the trace events will be added into the main buffer directly.
+  if (thread_blocks_message_loop_.Get() || !MessageLoopCurrent::IsSet() ||
+      !ThreadTaskRunnerHandle::IsSet()) {
     return;
+  }
   HEAP_PROFILER_SCOPED_IGNORE;
   auto* thread_local_event_buffer = thread_local_event_buffer_.Get();
   if (thread_local_event_buffer &&
