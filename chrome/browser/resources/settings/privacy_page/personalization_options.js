@@ -130,9 +130,10 @@ Polymer({
    * @private
    */
   showSpellCheckControl_: function() {
-    return !!this.prefs.spellcheck &&
-        /** @type {!Array<string>} */
-        (this.prefs.spellcheck.dictionaries.value).length > 0;
+    return !this.unifiedConsentEnabled ||
+        (!!this.prefs.spellcheck &&
+         /** @type {!Array<string>} */
+         (this.prefs.spellcheck.dictionaries.value).length > 0);
   },
 });
 })();
