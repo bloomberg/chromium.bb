@@ -4479,6 +4479,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAllowRemoteContextForNotifications)},
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+    {"ash-enable-pip-rounded-corners",
+     flag_descriptions::kAshEnablePipRoundedCornersName,
+     flag_descriptions::kAshEnablePipRoundedCornersDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kPipRoundedCorners)},
+#endif  // defined(OS_CHROMEOS)
 };
 
 class FlagsStateSingleton {

@@ -1897,6 +1897,9 @@ extern const char kAshEnableMirroredScreenDescription[];
 extern const char kAshEnablePersistentWindowBoundsName[];
 extern const char kAshEnablePersistentWindowBoundsDescription[];
 
+extern const char kAshEnablePipRoundedCornersName[];
+extern const char kAshEnablePipRoundedCornersDescription[];
+
 extern const char kAshEnableTrilinearFilteringName[];
 extern const char kAshEnableTrilinearFilteringDescription[];
 
