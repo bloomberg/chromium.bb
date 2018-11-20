@@ -30,6 +30,8 @@
 
 #include <math.h>
 
+#include "base/debug/stack_trace.h"
+
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
@@ -132,22 +134,52 @@ AXObject* AXNodeObject::ActiveDescendant() {
   return ax_descendant;
 }
 
-bool AXNodeObject::ComputeAccessibilityIsIgnored(
-    IgnoredReasons* ignored_reasons) const {
-#if DCHECK_IS_ON()
-  // Double-check that an AXObject is never accessed before
-  // it's been initialized.
-  DCHECK(initialized_);
-#endif
+bool HasAriaAttribute(Element* element) {
+  if (!element)
+    return false;
 
+  AttributeCollection attributes = element->AttributesWithoutUpdate();
+  for (const Attribute& attr : attributes) {
+    // Attributes cache their uppercase names.
+    if (attr.GetName().LocalNameUpper().StartsWith("ARIA-"))
+      return true;
+  }
+
+  return false;
+}
+
+AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
+    IgnoredReasons* ignored_reasons) const {
   // If this element is within a parent that cannot have children, it should not
   // be exposed.
   if (IsDescendantOfLeafNode()) {
     if (ignored_reasons)
       ignored_reasons->push_back(
           IgnoredReason(kAXAncestorIsLeafNode, LeafNodeAncestor()));
-    return true;
+    return kIgnoreObject;
   }
+
+  if (RoleValue() == ax::mojom::Role::kIgnored) {
+    if (ignored_reasons)
+      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
+    return kIgnoreObject;
+  }
+
+  if (HasInheritedPresentationalRole()) {
+    if (ignored_reasons) {
+      const AXObject* inherits_from = InheritsPresentationalRoleFrom();
+      if (inherits_from == this) {
+        ignored_reasons->push_back(IgnoredReason(kAXPresentational));
+      } else {
+        ignored_reasons->push_back(
+            IgnoredReason(kAXInheritsPresentation, inherits_from));
+      }
+    }
+    return kIgnoreObject;
+  }
+
+  if (IsTableLikeRole() || IsTableRowLikeRole() || IsTableCellLikeRole())
+    return kIncludeObject;
 
   // Ignore labels that are already referenced by a control.
   AXObject* control_object = CorrespondingControlForLabelElement();
@@ -163,24 +195,140 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
 
       ignored_reasons->push_back(IgnoredReason(kAXLabelFor, control_object));
     }
-    return true;
+    return kIgnoreObject;
+  }
+
+  if (CanSetFocusAttribute() && GetNode() && !IsHTMLBodyElement(GetNode()))
+    return kIncludeObject;
+
+  if (IsLink() || IsInPageLinkTarget())
+    return kIncludeObject;
+
+  // A click handler might be placed on an otherwise ignored non-empty block
+  // element, e.g. a div. We shouldn't ignore such elements because if an AT
+  // sees the |ax::mojom::DefaultActionVerb::kClickAncestor|, it will look for
+  // the clickable ancestor and it expects to find one.
+  if (IsClickable())
+    return kIncludeObject;
+
+  if (IsHeading() || IsLandmarkRelated())
+    return kIncludeObject;
+
+  // Header and footer tags may also be exposed as landmark roles but not
+  // always.
+  if (GetNode() &&
+      (GetNode()->HasTagName(kHeaderTag) || GetNode()->HasTagName(kFooterTag)))
+    return kIncludeObject;
+
+  // All controls are accessible.
+  if (IsControl())
+    return kIncludeObject;
+
+  // Anything with an explicit ARIA role should be included.
+  if (AriaRoleAttribute() != ax::mojom::Role::kUnknown)
+    return kIncludeObject;
+
+  // Don't ignore labels, because they serve as TitleUIElements.
+  Node* node = GetNode();
+  if (IsHTMLLabelElement(node))
+    return kIncludeObject;
+
+  // Anything that is content editable should not be ignored.
+  // However, one cannot just call node->hasEditableStyle() since that will ask
+  // if its parents are also editable. Only the top level content editable
+  // region should be exposed.
+  if (HasContentEditableAttributeSet())
+    return kIncludeObject;
+
+  static const std::set<ax::mojom::Role> always_included_computed_roles = {
+      ax::mojom::Role::kAbbr,
+      ax::mojom::Role::kBlockquote,
+      ax::mojom::Role::kContentDeletion,
+      ax::mojom::Role::kContentInsertion,
+      ax::mojom::Role::kDetails,
+      ax::mojom::Role::kDialog,
+      ax::mojom::Role::kFigcaption,
+      ax::mojom::Role::kFigure,
+      ax::mojom::Role::kListItem,
+      ax::mojom::Role::kMark,
+      ax::mojom::Role::kMath,
+      ax::mojom::Role::kMeter,
+      ax::mojom::Role::kProgressIndicator,
+      ax::mojom::Role::kRuby,
+      ax::mojom::Role::kSplitter,
+      ax::mojom::Role::kTime,
+  };
+
+  if (always_included_computed_roles.find(RoleValue()) !=
+      always_included_computed_roles.end())
+    return kIncludeObject;
+
+  // If this element has aria attributes on it, it should not be ignored.
+  if (HasGlobalARIAAttribute())
+    return kIncludeObject;
+
+  if (IsImage())
+    return kIncludeObject;
+
+  // Using the title or accessibility description (so we
+  // check if there's some kind of accessible name for the element)
+  // to decide an element's visibility is not as definitive as
+  // previous checks, so this should remain as one of the last.
+  //
+  // These checks are simplified in the interest of execution speed;
+  // for example, any element having an alt attribute will make it
+  // not ignored, rather than just images.
+  if (HasAriaAttribute(GetElement()) || !GetAttribute(kAltAttr).IsEmpty() ||
+      !GetAttribute(kTitleAttr).IsEmpty())
+    return kIncludeObject;
+
+  // <span> tags are inline tags and not meant to convey information if they
+  // have no other ARIA information on them. If we don't ignore them, they may
+  // emit signals expected to come from their parent.
+  if (node && IsHTMLSpanElement(node)) {
+    if (ignored_reasons)
+      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
+    return kIgnoreObject;
+  }
+
+  return kDefaultBehavior;
+}
+
+bool AXNodeObject::ComputeAccessibilityIsIgnored(
+    IgnoredReasons* ignored_reasons) const {
+#if DCHECK_IS_ON()
+  // Double-check that an AXObject is never accessed before
+  // it's been initialized.
+  DCHECK(initialized_);
+#endif
+  if (GetLayoutObject()) {
+    if (role_ == ax::mojom::Role::kUnknown) {
+      if (ignored_reasons)
+        ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
+      return true;
+    }
+    return false;
   }
 
   Element* element = GetNode()->IsElementNode() ? ToElement(GetNode())
                                                 : GetNode()->parentElement();
-  if (!GetLayoutObject() && (!element || !element->IsInCanvasSubtree()) &&
-      !AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden)) {
-    if (ignored_reasons)
-      ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
+  if (!element)
     return true;
+
+  if (element->IsInCanvasSubtree())
+    return ShouldIncludeBasedOnSemantics(ignored_reasons) == kIgnoreObject;
+
+  if (AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden))
+    return false;
+
+  if (element->HasDisplayContentsStyle()) {
+    if (ShouldIncludeBasedOnSemantics(ignored_reasons) == kIncludeObject)
+      return false;
   }
 
-  if (role_ == ax::mojom::Role::kUnknown) {
-    if (ignored_reasons)
-      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
-    return true;
-  }
-  return false;
+  if (ignored_reasons)
+    ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
+  return true;
 }
 
 static bool IsListElement(Node* node) {
@@ -2099,9 +2247,12 @@ void AXNodeObject::GetRelativeBounds(AXObject** out_container,
     }
   }
 
-  // If it's in a canvas but doesn't have an explicit rect, get the bounding
-  // rect of its children.
-  if (GetNode()->parentElement()->IsInCanvasSubtree()) {
+  Element* element = GetElement();
+  // If it's in a canvas but doesn't have an explicit rect, or has display:
+  // contents set, get the bounding rect of its children.
+  if ((GetNode()->parentElement() &&
+       GetNode()->parentElement()->IsInCanvasSubtree()) ||
+      (element && element->HasDisplayContentsStyle())) {
     Vector<FloatRect> rects;
     for (Node& child : NodeTraversal::ChildrenOf(*GetNode())) {
       if (child.IsHTMLElement()) {
