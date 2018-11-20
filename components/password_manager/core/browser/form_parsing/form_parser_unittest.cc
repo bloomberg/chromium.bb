@@ -1358,7 +1358,7 @@ TEST(FormParserTest, CVC) {
           "Name of 'verification_type' matches the CVC pattern.",
           {
               {.role = ElementRole::USERNAME, .form_control_type = "text"},
-              {.form_control_type = "text", .name = "verification_type"},
+              {.form_control_type = "password", .name = "verification_type"},
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password"},
           },
