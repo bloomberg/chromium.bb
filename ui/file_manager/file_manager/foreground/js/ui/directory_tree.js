@@ -659,9 +659,12 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
     }
   } else {
     const rootType = location.rootType || null;
-    const iconName =
-        directorytree.getIconOverrides(rootType, dirEntry) || 'folder';
-    icon.setAttribute('file-type-icon', iconName);
+    const iconOverride = directorytree.getIconOverrides(rootType, dirEntry);
+    // Add Downloads icon as volume so current test code passes with
+    // MyFilesVolume flag enabled and disabled.
+    if (iconOverride)
+      icon.setAttribute('volume-type-icon', iconOverride);
+    icon.setAttribute('file-type-icon', iconOverride || 'folder');
     item.updateSharedStatusIcon();
   }
 
