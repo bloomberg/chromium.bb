@@ -441,21 +441,24 @@ bool NewPasswordFormManager::SetSubmittedFormIfIsManaged(
 }
 
 void NewPasswordFormManager::ProcessServerPredictions(
-    const std::vector<FormStructure*>& predictions) {
+    const std::map<FormSignature, FormPredictions>& predictions) {
   FormSignature observed_form_signature =
       CalculateFormSignature(observed_form_);
-  for (const FormStructure* form_predictions : predictions) {
-    if (form_predictions->form_signature() != observed_form_signature)
-      continue;
-    ReportTimeBetweenStoreAndServerUMA();
-    parser_.set_predictions(ConvertToFormPredictions(*form_predictions));
-    Fill();
-    break;
-  }
+  auto it = predictions.find(observed_form_signature);
+  if (it == predictions.end())
+    return;
+
+  ReportTimeBetweenStoreAndServerUMA();
+  parser_.set_predictions(it->second);
+  Fill();
 }
 
 void NewPasswordFormManager::Fill() {
   waiting_for_server_predictions_ = false;
+
+  if (form_fetcher_->GetState() == FormFetcher::State::WAITING)
+    return;
+
   if (autofills_left_ <= 0)
     return;
   autofills_left_--;

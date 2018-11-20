@@ -607,6 +607,7 @@ void PasswordManager::DropFormManagers() {
   owned_submitted_form_manager_.reset();
   provisional_save_manager_.reset();
   all_visible_forms_.clear();
+  predictions_.clear();
 }
 
 bool PasswordManager::IsPasswordFieldDetectedOnPage() {
@@ -644,6 +645,7 @@ void PasswordManager::DidNavigateMainFrame() {
   }
 
   form_managers_.clear();
+  predictions_.clear();
 }
 
 void PasswordManager::OnPasswordFormSubmitted(
@@ -883,6 +885,7 @@ void PasswordManager::CreateFormManagers(
         new_form->form_data, nullptr,
         std::make_unique<FormSaverImpl>(client_->GetPasswordStore())));
     form_managers_.back()->set_old_parsing_result(*new_form);
+    form_managers_.back()->ProcessServerPredictions(predictions_);
   }
 }
 
@@ -1238,8 +1241,10 @@ void PasswordManager::ProcessAutofillPredictions(
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kNewPasswordFormParsing)) {
+    for (const autofill::FormStructure* form : forms)
+      predictions_[form->form_signature()] = ConvertToFormPredictions(*form);
     for (auto& manager : form_managers_)
-      manager->ProcessServerPredictions(forms);
+      manager->ProcessServerPredictions(predictions_);
   }
 
   // Leave only forms that contain fields that are useful for password manager.
