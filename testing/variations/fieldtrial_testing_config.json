@@ -2529,21 +2529,6 @@
             ]
         }
     ],
-    "JavaScriptTabModalDialogs": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "TabModalJsDialog"
-                    ]
-                }
-            ]
-        }
-    ],
     "LegacySymantecPKI": [
         {
             "platforms": [

@@ -8,24 +8,10 @@
      need (alerts, confirms and prompts). After inflating this layout, we
      remove the widgets that aren't needed for the current dialog type.
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.chromium.chrome.browser.jsdialog.JavascriptDialogCustomView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/AlertDialogContent"
     android:orientation="vertical">
-
-    <ScrollView
-        android:id="@+id/js_modal_dialog_scroll_view"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <TextView
-            android:id="@+id/js_modal_dialog_message"
-            style="@style/TextAppearance.AppCompat.Subhead"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start" />
-
-    </ScrollView>
 
     <org.chromium.chrome.browser.widget.AlertDialogEditText
         android:id="@+id/js_modal_dialog_prompt"
@@ -44,4 +30,4 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="@string/suppress_js_modal_dialogs" />
 
-</LinearLayout>
+</org.chromium.chrome.browser.jsdialog.JavascriptDialogCustomView>

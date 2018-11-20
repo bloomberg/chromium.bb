@@ -2057,10 +2057,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kHomepageTile)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
-    {"enable-tab-modal-js-dialog-android",
-     flag_descriptions::kTabModalJsDialogName,
-     flag_descriptions::kTabModalJsDialogDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTabModalJsDialog)},
     {"enable-modal-permission-dialog-view",
      flag_descriptions::kModalPermissionDialogViewName,
      flag_descriptions::kModalPermissionDialogViewDescription, kOsAndroid,

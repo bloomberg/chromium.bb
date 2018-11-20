@@ -279,8 +279,8 @@ void TabWebContentsDelegateAndroid::FindMatchRectsReply(
 content::JavaScriptDialogManager*
 TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     WebContents* source) {
-  if (base::FeatureList::IsEnabled(chrome::android::kTabModalJsDialog) ||
-      vr::VrTabHelper::IsInVr(source)) {
+  // For VR, we use app modal since the dialog view will cover the location bar.
+  if (!vr::VrTabHelper::IsInVr(source)) {
     return JavaScriptDialogTabHelper::FromWebContents(source);
   }
   return app_modal::JavaScriptDialogManager::GetInstance();

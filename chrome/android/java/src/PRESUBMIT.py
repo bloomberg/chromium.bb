@@ -67,8 +67,6 @@ def _CheckAlertDialogBuilder(input_api, output_api):
   blacklist = (
       'chrome/android/java/src/org/chromium/chrome/browser/init/'
           'InvalidStartupDialog.java',
-      'chrome/android/java/src/org/chromium/chrome/browser/'
-          'JavascriptAppModalDialog.java',
       'chrome/android/java/src/org/chromium/chrome/browser/dom_distiller/'
           'DomDistillerUIUtils.java',
       'chrome/android/java/src/org/chromium/chrome/browser/signin/'
