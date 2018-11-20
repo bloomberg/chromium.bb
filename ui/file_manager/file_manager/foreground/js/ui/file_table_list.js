@@ -460,6 +460,7 @@ filelist.handleKeyDown = function(e) {
   // Ctrl/Meta+A
   if (sm.multiple && e.keyCode == 65 &&
       (cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey)) {
+    sm.setCheckSelectMode(true);
     sm.selectAll();
     e.preventDefault();
     return;
