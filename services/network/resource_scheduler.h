@@ -148,23 +148,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   bool head_priority_requests_delayable() const {
     return head_priority_requests_delayable_;
   }
-  bool yielding_scheduler_enabled() const {
-    return yielding_scheduler_enabled_;
-  }
-  int max_requests_before_yielding() const {
-    return max_requests_before_yielding_;
-  }
-  base::TimeDelta yield_time() const { return yield_time_; }
   base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
 
   // Testing setters
-  void SetMaxRequestsBeforeYieldingForTesting(
-      int max_requests_before_yielding) {
-    max_requests_before_yielding_ = max_requests_before_yielding;
-  }
-  void SetYieldTimeForTesting(base::TimeDelta yield_time) {
-    yield_time_ = yield_time;
-  }
   void SetTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner) {
     task_runner_ = std::move(sequenced_task_runner);
@@ -229,12 +215,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   // True if requests to servers that support priorities (e.g., H2/QUIC) can
   // be delayed while the parser is in head.
   bool head_priority_requests_delayable_;
-
-  // True if the scheduler should yield between several successive calls to
-  // start resource requests.
-  bool yielding_scheduler_enabled_;
-  int max_requests_before_yielding_;
-  base::TimeDelta yield_time_;
 
   ResourceSchedulerParamsManager resource_scheduler_params_manager_;
 
