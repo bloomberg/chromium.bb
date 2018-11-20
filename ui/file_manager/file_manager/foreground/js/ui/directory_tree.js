@@ -991,7 +991,13 @@ VolumeItem.prototype.setupEjectButton_ = function(rowElement) {
   ejectButton.addEventListener('mouseup', (event) => {
     event.stopPropagation();
   });
+  ejectButton.addEventListener('up', (event) => {
+    event.stopPropagation();
+  });
   ejectButton.addEventListener('mousedown', (event) => {
+    event.stopPropagation();
+  });
+  ejectButton.addEventListener('down', (event) => {
     event.stopPropagation();
   });
   ejectButton.className = 'root-eject';
