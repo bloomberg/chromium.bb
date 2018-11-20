@@ -23601,6 +23601,27 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Timeout"/>
 </enum>
 
+<enum name="GestureEventFilterResults">
+  <int value="0"
+      label="GestureScrollBegin allowed by main thread touch action"/>
+  <int value="1"
+      label="GestureScrollBegin allowed by compositor thread touch action"/>
+  <int value="2"
+      label="GestureScrollBegin filtered by main thread touch action"/>
+  <int value="3"
+      label="GestureScrollBegin filtered by compositor thread touch action"/>
+  <int value="4" label="GestureScrollBegin deferred"/>
+  <int value="5"
+      label="GestureScrollUpdate allowed by main thread touch action"/>
+  <int value="6"
+      label="GestureScrollUpdate allowed by compositor thread touch action"/>
+  <int value="7"
+      label="GestureScrollUpdate filtered by main thread touch action"/>
+  <int value="8"
+      label="GestureScrollUpdate filtered by compositor thread touch action"/>
+  <int value="9" label="GestureScrollUpdate deferred"/>
+</enum>
+
 <enum name="GestureMergeState">
   <int value="0" label="Neither token had a gesture"/>
   <int value="1" label="Only the old token had a gesture"/>
