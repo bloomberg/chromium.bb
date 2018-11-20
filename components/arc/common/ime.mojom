@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 11
+// Next MinVersion: 12
 
 module arc.mojom;
 
@@ -24,6 +24,15 @@ enum TextInputType {
   DATETIME,
 };
 
+// Maps to ui::TextInputFlags in ui/base/ime/text_input_flags.h.
+// Some flags are still missing here because they're not yet supported in ARC++
+// IME.
+const int32 TEXT_INPUT_FLAG_NONE = 0;
+const int32 TEXT_INPUT_FLAG_AUTOCAPITALIZE_NONE = 64;         // 1 << 6
+const int32 TEXT_INPUT_FLAG_AUTOCAPITALIZE_CHARACTERS = 128;  // 1 << 7
+const int32 TEXT_INPUT_FLAG_AUTOCAPITALIZE_WORDS = 256;       // 1 << 8
+const int32 TEXT_INPUT_FLAG_AUTOCAPITALIZE_SENTENCES = 512;   // 1 << 9
+
 // Represents a single segment of text currently composed by IME.
 struct CompositionSegment {
   // Start offset of the segment in UTF-16 index.
@@ -37,9 +46,11 @@ struct CompositionSegment {
 // Next method ID: 6
 interface ImeHost {
   // Notifies Chrome that the text input focus is changed.
+  // Each bit of the bitmask |flags| corresponds to TEXT_INPUT_FLAG_*.
   OnTextInputTypeChanged@0(
       TextInputType type,
-      [MinVersion=10] bool is_personalized_learning_allowed);
+      [MinVersion=10] bool is_personalized_learning_allowed,
+      [MinVersion=11] int32 flags);
 
   // Notifies Chrome that the cursor poisition has changed.
   //

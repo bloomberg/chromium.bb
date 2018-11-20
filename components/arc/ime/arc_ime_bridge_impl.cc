@@ -13,6 +13,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -33,6 +34,17 @@ std::vector<mojom::CompositionSegmentPtr> ConvertSegments(
     segments.push_back(std::move(segment));
   }
   return segments;
+}
+
+// Converts mojom::TEXT_INPUT_FLAG_* to ui::TextInputFlags.
+int ConvertTextInputFlags(int32_t flags) {
+  if (flags & mojom::TEXT_INPUT_FLAG_AUTOCAPITALIZE_NONE)
+    return ui::TextInputFlags::TEXT_INPUT_FLAG_AUTOCAPITALIZE_NONE;
+  if (flags & mojom::TEXT_INPUT_FLAG_AUTOCAPITALIZE_CHARACTERS)
+    return ui::TextInputFlags::TEXT_INPUT_FLAG_AUTOCAPITALIZE_CHARACTERS;
+  if (flags & mojom::TEXT_INPUT_FLAG_AUTOCAPITALIZE_WORDS)
+    return ui::TextInputFlags::TEXT_INPUT_FLAG_AUTOCAPITALIZE_WORDS;
+  return ui::TextInputFlags::TEXT_INPUT_FLAG_NONE;
 }
 
 }  // namespace
@@ -99,8 +111,10 @@ void ArcImeBridgeImpl::SendOnKeyboardAppearanceChanging(
 
 void ArcImeBridgeImpl::OnTextInputTypeChanged(
     ui::TextInputType type,
-    bool is_personalized_learning_allowed) {
-  delegate_->OnTextInputTypeChanged(type, is_personalized_learning_allowed);
+    bool is_personalized_learning_allowed,
+    int32_t flags) {
+  delegate_->OnTextInputTypeChanged(type, is_personalized_learning_allowed,
+                                    ConvertTextInputFlags(flags));
 }
 
 void ArcImeBridgeImpl::OnCursorRectChanged(const gfx::Rect& rect,
