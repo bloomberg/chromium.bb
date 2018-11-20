@@ -273,17 +273,14 @@ wl_resource_queue_event(struct wl_resource *resource, uint32_t opcode, ...)
 	wl_resource_queue_event_array(resource, opcode, args);
 }
 
-WL_EXPORT void
-wl_resource_post_error(struct wl_resource *resource,
-		       uint32_t code, const char *msg, ...)
+static void
+wl_resource_post_error_vargs(struct wl_resource *resource,
+			     uint32_t code, const char *msg, va_list argp)
 {
 	struct wl_client *client = resource->client;
 	char buffer[128];
-	va_list ap;
 
-	va_start(ap, msg);
-	vsnprintf(buffer, sizeof buffer, msg, ap);
-	va_end(ap);
+	vsnprintf(buffer, sizeof buffer, msg, argp);
 
 	/*
 	 * When a client aborts, its resources are destroyed in id order,
@@ -298,6 +295,18 @@ wl_resource_post_error(struct wl_resource *resource,
 	wl_resource_post_event(client->display_resource,
 			       WL_DISPLAY_ERROR, resource, code, buffer);
 	client->error = 1;
+
+}
+
+WL_EXPORT void
+wl_resource_post_error(struct wl_resource *resource,
+		       uint32_t code, const char *msg, ...)
+{
+	va_list ap;
+
+	va_start(ap, msg);
+	wl_resource_post_error_vargs(resource, code, msg, ap);
+	va_end(ap);
 }
 
 static void
