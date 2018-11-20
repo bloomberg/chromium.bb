@@ -32,6 +32,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadMetrics.DownloadOpenSource;
+import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -107,20 +108,6 @@ public class DownloadManagerService
     public static final long UNKNOWN_BYTES_RECEIVED = -1;
     private static final String PREF_IS_DOWNLOAD_HOME_ENABLED =
             "org.chromium.chrome.browser.download.IS_DOWNLOAD_HOME_ENABLED";
-
-    // Values for the histogram MobileDownloadResumptionCount.
-    @IntDef({UmaDownloadResumption.MANUAL_PAUSE, UmaDownloadResumption.BROWSER_KILLED,
-            UmaDownloadResumption.CLICKED, UmaDownloadResumption.FAILED,
-            UmaDownloadResumption.AUTO_STARTED})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface UmaDownloadResumption {
-        int MANUAL_PAUSE = 0;
-        int BROWSER_KILLED = 1;
-        int CLICKED = 2;
-        int FAILED = 3;
-        int AUTO_STARTED = 4;
-        int NUM_ENTRIES = 5;
-    }
 
     // Set will be more expensive to initialize, so use an ArrayList here.
     private static final List<String> MIME_TYPES_TO_OPEN = new ArrayList<String>(Arrays.asList(
@@ -498,7 +485,8 @@ public class DownloadManagerService
             case DownloadStatus.IN_PROGRESS:
                 if (info.isPaused()) {
                     mDownloadNotifier.notifyDownloadPaused(info);
-                    recordDownloadResumption(UmaDownloadResumption.MANUAL_PAUSE);
+                    DownloadNotificationUmaHelper.recordDownloadResumptionHistogram(
+                            UmaDownloadResumption.MANUAL_PAUSE);
                 } else {
                     mDownloadNotifier.notifyDownloadProgress(
                             info, progress.mStartTimeInMillis, progress.mCanDownloadWhileMetered);
@@ -973,14 +961,15 @@ public class DownloadManagerService
         }
         int uma =
                 hasUserGesture ? UmaDownloadResumption.CLICKED : UmaDownloadResumption.AUTO_STARTED;
-        recordDownloadResumption(uma);
+        DownloadNotificationUmaHelper.recordDownloadResumptionHistogram(uma);
         if (progress == null) {
             assert !item.getDownloadInfo().isPaused();
             // If the download was not resumed before, the browser must have been killed while the
             // download is active.
             if (!sFirstSeenDownloadIds.contains(item.getId())) {
                 sFirstSeenDownloadIds.add(item.getId());
-                recordDownloadResumption(UmaDownloadResumption.BROWSER_KILLED);
+                DownloadNotificationUmaHelper.recordDownloadResumptionHistogram(
+                        UmaDownloadResumption.BROWSER_KILLED);
             }
             updateDownloadProgress(item, DownloadStatus.IN_PROGRESS);
             progress = mDownloadProgressMap.get(item.getId());
@@ -1140,7 +1129,8 @@ public class DownloadManagerService
                                                        .setFailState(FailState.CANNOT_DOWNLOAD)
                                                        .build());
         removeDownloadProgress(downloadGuid);
-        recordDownloadResumption(UmaDownloadResumption.FAILED);
+        DownloadNotificationUmaHelper.recordDownloadResumptionHistogram(
+                UmaDownloadResumption.FAILED);
         recordDownloadFinishedUMA(DownloadStatus.FAILED, downloadGuid, 0);
     }
 
@@ -1175,15 +1165,6 @@ public class DownloadManagerService
             Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
             tracker.notifyEvent(EventConstants.DOWNLOAD_COMPLETED);
         }
-    }
-
-    /**
-     * Helper method to record the download resumption UMA.
-     * @param type UMA type to be recorded.
-     */
-    private void recordDownloadResumption(@UmaDownloadResumption int type) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "MobileDownload.DownloadResumption", type, UmaDownloadResumption.NUM_ENTRIES);
     }
 
     /**

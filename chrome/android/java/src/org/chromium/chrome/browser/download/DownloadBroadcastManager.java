@@ -31,9 +31,11 @@ import com.google.ipc.invalidation.util.Preconditions;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -43,6 +45,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.PendingState;
+import org.chromium.content_public.browser.BrowserStartupController;
 
 /**
  * Class that spins up native when an interaction with a notification happens and passes the
@@ -170,12 +173,20 @@ public class DownloadBroadcastManager extends Service {
      */
     @VisibleForTesting
     void loadNativeAndPropagateInteraction(final Intent intent) {
+        final boolean browserStarted =
+                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                        .isStartupSuccessfullyCompleted();
         final BrowserParts parts = new EmptyBrowserParts() {
             @Override
             public void finishNativeInitialization() {
                 // Delay the stop of the service by WAIT_TIME_MS after native library is loaded.
                 mHandler.postDelayed(mStopSelfRunnable, WAIT_TIME_MS);
 
+                if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
+                    DownloadNotificationUmaHelper.recordDownloadResumptionHistogram(browserStarted
+                                    ? UmaDownloadResumption.BROWSER_RUNNING
+                                    : UmaDownloadResumption.BROWSER_NOT_RUNNING);
+                }
                 propagateInteraction(intent);
             }
 

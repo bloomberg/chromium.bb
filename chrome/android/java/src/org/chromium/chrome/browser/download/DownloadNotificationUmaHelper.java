@@ -74,6 +74,23 @@ public final class DownloadNotificationUmaHelper {
         int NUM_ENTRIES = 5;
     }
 
+    // Values for the histogram MobileDownloadResumptionCount.
+    @IntDef({UmaDownloadResumption.MANUAL_PAUSE, UmaDownloadResumption.BROWSER_KILLED,
+            UmaDownloadResumption.CLICKED, UmaDownloadResumption.FAILED,
+            UmaDownloadResumption.AUTO_STARTED, UmaDownloadResumption.BROWSER_RUNNING,
+            UmaDownloadResumption.BROWSER_NOT_RUNNING})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UmaDownloadResumption {
+        int MANUAL_PAUSE = 0;
+        int BROWSER_KILLED = 1;
+        int CLICKED = 2;
+        int FAILED = 3;
+        int AUTO_STARTED = 4;
+        int BROWSER_RUNNING = 5;
+        int BROWSER_NOT_RUNNING = 6;
+        int NUM_ENTRIES = 7;
+    }
+
     /**
      * Records an instance where a user interacts with a notification (clicks on, pauses, etc).
      * @param action Notification interaction that was taken (ie. pause, resume).
@@ -163,5 +180,14 @@ public final class DownloadNotificationUmaHelper {
                     "Android.OfflineItems.StateAtCancel.OfflinePages", state,
                     StateAtCancel.NUM_ENTRIES);
         }
+    }
+
+    /**
+     * Helper method to record the download resumption UMA.
+     * @param type UMA type to be recorded.
+     */
+    static void recordDownloadResumptionHistogram(@UmaDownloadResumption int type) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "MobileDownload.DownloadResumption", type, UmaDownloadResumption.NUM_ENTRIES);
     }
 }
