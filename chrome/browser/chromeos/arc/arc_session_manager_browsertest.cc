@@ -26,10 +26,7 @@
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
-#include "chrome/browser/signin/fake_signin_manager_builder.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
@@ -45,20 +42,18 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request_test_job.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace {
 
-constexpr char kRefreshToken[] = "fake-refresh-token";
 // Set managed auth token for Android managed accounts.
 constexpr char kManagedAuthToken[] = "managed-auth-token";
 // Set unmanaged auth token for other Android unmanaged accounts.
@@ -147,25 +142,14 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     TestingProfile::Builder profile_builder;
     profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestArcProfile"));
     profile_builder.SetProfileName(kFakeUserName);
-    profile_builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeProfileOAuth2TokenService));
-    profile_builder.AddTestingFactory(
-        SigninManagerFactory::GetInstance(),
-        base::BindRepeating(&BuildFakeSigninManagerForTesting));
-    profile_ = profile_builder.Build();
+    profile_ = IdentityTestEnvironmentProfileAdaptor::
+        CreateProfileForIdentityTestEnvironment(profile_builder);
+
+    identity_test_environment_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_.get());
 
     // Seed account info properly.
-    const std::string account_id_str =
-        AccountTrackerServiceFactory::GetForProfile(profile_.get())
-            ->SeedAccountInfo(kFakeGaiaId, kFakeUserName);
-    token_service_ = static_cast<FakeProfileOAuth2TokenService*>(
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile()));
-    FakeSigninManagerForTesting* fake_signin_manager =
-        static_cast<FakeSigninManagerForTesting*>(
-            SigninManagerFactory::GetForProfile(profile()));
-    fake_signin_manager->SignIn(account_id_str);
-    token_service_->UpdateCredentials(account_id_str, kRefreshToken);
+    identity_test_env()->MakePrimaryAccountAvailable(kFakeUserName);
 
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
@@ -195,6 +179,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     // instance in fixture, once), but it should be no op.
     // TODO(hidehiko): Think about a way to test the code cleanly.
     ArcServiceLauncher::Get()->Shutdown();
+    identity_test_environment_adaptor_.reset();
     profile_.reset();
     base::RunLoop().RunUntilIdle();
     user_manager_enabler_.reset();
@@ -219,22 +204,25 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
 
   Profile* profile() { return profile_.get(); }
 
-  FakeProfileOAuth2TokenService* token_service() { return token_service_; }
+  identity::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_environment_adaptor_->identity_test_env();
+  }
 
  private:
   std::unique_ptr<policy::LocalPolicyTestServer> test_server_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_environment_adaptor_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;
-  FakeProfileOAuth2TokenService* token_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ConsumerAccount) {
   EnableArc();
-  token_service()->IssueTokenForAllPendingRequests(kUnmanagedAuthToken,
-                                                   base::Time::Max());
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      kUnmanagedAuthToken, base::Time::Max());
   ASSERT_EQ(ArcSessionManager::State::ACTIVE,
             ArcSessionManager::Get()->state());
 }
@@ -258,8 +246,8 @@ IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedChromeAccount) {
 
 IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ManagedAndroidAccount) {
   EnableArc();
-  token_service()->IssueTokenForAllPendingRequests(kManagedAuthToken,
-                                                   base::Time::Max());
+  identity_test_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+      kManagedAuthToken, base::Time::Max());
   ArcPlayStoreDisabledWaiter().Wait();
   EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
 }
