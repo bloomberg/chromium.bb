@@ -172,6 +172,7 @@ FrameImpl::~FrameImpl() {
   if (window_tree_host_) {
     aura::client::SetFocusClient(root_window(), nullptr);
     wm::SetActivationClient(root_window(), nullptr);
+    root_window()->RemovePreTargetHandler(focus_controller_.get());
     web_contents_->ClosePage();
     window_tree_host_->Hide();
     window_tree_host_->compositor()->SetVisible(false);
