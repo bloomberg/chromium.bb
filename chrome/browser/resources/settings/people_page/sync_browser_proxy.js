@@ -218,13 +218,6 @@ cr.define('settings', function() {
      * Opens the Google Activity Controls url in a new tab.
      */
     openActivityControlsUrl() {}
-
-    /**
-     * Function to invoke when the unified consent toggle state changes, to
-     * notify the C++ layer.
-     * @param {boolean} toggleChecked
-     */
-    unifiedConsentToggleChanged(toggleChecked) {}
   }
 
   /**
@@ -316,11 +309,6 @@ cr.define('settings', function() {
     openActivityControlsUrl() {
       chrome.metricsPrivate.recordUserAction(
           'Signin_AccountSettings_GoogleActivityControlsClicked');
-    }
-
-    /** @override */
-    unifiedConsentToggleChanged(toggleChecked) {
-      chrome.send('UnifiedConsentToggleChanged', [toggleChecked]);
     }
   }
 

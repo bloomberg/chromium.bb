@@ -52,8 +52,6 @@ Polymer({
 
     unifiedConsentEnabled: Boolean,
 
-    unifiedConsentGiven: Boolean,
-
     // <if expr="_google_chrome and not chromeos">
     // TODO(dbeam): make a virtual.* pref namespace and set/get this normally
     // (but handled differently in C++).

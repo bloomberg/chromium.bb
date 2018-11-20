@@ -266,10 +266,6 @@ void PeopleHandler::RegisterMessages() {
       "SyncSetupManageOtherPeople",
       base::BindRepeating(&PeopleHandler::HandleManageOtherPeople,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "UnifiedConsentToggleChanged",
-      base::BindRepeating(&PeopleHandler::OnUnifiedConsentToggleChanged,
-                          base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "AttemptUserExit",
@@ -839,15 +835,6 @@ void PeopleHandler::HandleManageOtherPeople(const base::ListValue* /* args */) {
   UserManager::Show(base::FilePath(),
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
 #endif  // !defined(OS_CHROMEOS)
-}
-
-void PeopleHandler::OnUnifiedConsentToggleChanged(const base::ListValue* args) {
-  bool is_toggle_checked = args->GetList()[0].GetBool();
-  if (!is_toggle_checked) {
-    unified_consent::metrics::RecordUnifiedConsentRevoked(
-        unified_consent::metrics::UnifiedConsentRevokeReason::
-            kUserDisabledSettingsToggle);
-  }
 }
 
 void PeopleHandler::CloseSyncSetup() {

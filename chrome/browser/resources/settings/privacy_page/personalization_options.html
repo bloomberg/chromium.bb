@@ -25,46 +25,39 @@
     <settings-toggle-button hidden="[[!pageVisibility.searchPrediction]]"
         pref="{{prefs.search.suggest_enabled}}"
         label="$i18n{searchSuggestPref}"
-        sub-label="$i18n{searchSuggestPrefDesc}"
-        disabled="[[unifiedConsentGiven]]">
+        sub-label="$i18n{searchSuggestPrefDesc}">
     </settings-toggle-button>
     <settings-toggle-button hidden="[[!pageVisibility.networkPrediction]]"
         pref="{{prefs.net.network_prediction_options}}"
         label="$i18n{networkPredictionEnabled}"
         sub-label="$i18n{networkPredictionEnabledDesc}"
-        numeric-unchecked-value="[[networkPredictionEnum_.NEVER]]"
-        disabled="[[unifiedConsentGiven]]">
+        numeric-unchecked-value="[[networkPredictionEnum_.NEVER]]">
     </settings-toggle-button>
     <settings-toggle-button pref="{{prefs.alternate_error_pages.enabled}}"
         label="$i18n{linkDoctorPref}"
-        sub-label="$i18n{linkDoctorPrefDesc}"
-        disabled="[[unifiedConsentGiven]]">
+        sub-label="$i18n{linkDoctorPrefDesc}">
     </settings-toggle-button>
     <settings-toggle-button pref="{{prefs.safebrowsing.enabled}}"
         label="$i18n{safeBrowsingEnableProtection}"
-        sub-label="$i18n{safeBrowsingEnableProtectionDesc}"
-        disabled="[[unifiedConsentGiven]]">
+        sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
     </settings-toggle-button>
     <settings-toggle-button
         pref="{{prefs.safebrowsing.scout_reporting_enabled}}"
         label="$i18n{safeBrowsingEnableExtendedReporting}"
-        sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}"
-        disabled="[[unifiedConsentGiven]]">
+        sub-label="$i18n{safeBrowsingEnableExtendedReportingDesc}">
     </settings-toggle-button>
 <if expr="_google_chrome">
 <if expr="chromeos">
     <settings-toggle-button pref="{{prefs.cros.metrics.reportingEnabled}}"
         label="$i18n{enableLogging}"
-        sub-label="$i18n{enableLoggingDesc}"
-        disabled="[[unifiedConsentGiven]]">
+        sub-label="$i18n{enableLoggingDesc}">
     </settings-toggle-button>
 </if><!-- chromeos -->
 <if expr="not chromeos">
     <settings-toggle-button id="metricsReportingControl"
         pref="[[metricsReportingPref_]]" label="$i18n{enableLogging}"
         sub-label="$i18n{enableLoggingDesc}" no-set-pref
-        on-settings-boolean-control-change="onMetricsReportingChange_"
-        disabled="[[unifiedConsentGiven]]">
+        on-settings-boolean-control-change="onMetricsReportingChange_">
       <template is="dom-if" if="[[showRestart_]]" restamp>
         <paper-button on-click="onRestartTap_" id="restart"
             slot="more-actions">
@@ -78,8 +71,7 @@
       <settings-toggle-button
           pref="{{prefs.url_keyed_anonymized_data_collection.enabled}}"
           label="$i18n{urlKeyedAnonymizedDataCollection}"
-          sub-label="$i18n{urlKeyedAnonymizedDataCollectionDesc}"
-          disabled="[[unifiedConsentGiven]]">
+          sub-label="$i18n{urlKeyedAnonymizedDataCollectionDesc}">
       </settings-toggle-button>
     </template>
 <if expr="_google_chrome">
@@ -87,7 +79,6 @@
         pref="{{prefs.spellcheck.use_spelling_service}}"
         label="$i18n{spellingPref}"
         sub-label="$i18n{spellingDescription}"
-        disabled="[[unifiedConsentGiven]]"
         hidden="[[!showSpellCheckControl_(prefs.spellcheck.dictionaries)]]">
     </settings-toggle-button>
 </if><!-- _google_chrome -->
