@@ -2709,7 +2709,9 @@ void AXNodeObject::SelectedOptions(AXObjectVector& options) const {
   if (IsHTMLSelectElement(GetNode())) {
     HTMLSelectElement* select = ToHTMLSelectElement(GetNode());
     for (auto* const option : *select->selectedOptions()) {
-      options.push_back(AXObjectCache().GetOrCreate(option));
+      AXObject* ax_option = AXObjectCache().GetOrCreate(option);
+      if (ax_option)
+        options.push_back(ax_option);
     }
     return;
   }
