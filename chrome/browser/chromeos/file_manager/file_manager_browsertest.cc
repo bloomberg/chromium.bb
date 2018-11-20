@@ -556,7 +556,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("shareHostedFileTeamDrive"),
                       TestCase("manageHostedFileTeamDrive"),
                       TestCase("manageFileTeamDrive"),
-                      TestCase("manageDirectoryTeamDrive")));
+                      TestCase("manageDirectoryTeamDrive"),
+                      TestCase("manageTeamDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     SuggestAppDialog, /* suggest_app_dialog.js */

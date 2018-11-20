@@ -983,21 +983,11 @@ class DriveFsTestVolume : public DriveTestVolume {
     const base::FilePath target_path = GetTargetPathForTestEntry(entry);
 
     entries_.insert(std::make_pair(target_path, entry));
-    fake_drivefs_helper_->fake_drivefs().SetMetadata(
-        GetRelativeDrivePathForTestEntry(entry), entry.mime_type,
-        base::FilePath(entry.target_path).BaseName().value(), entry.pinned,
-        entry.shared_option == AddEntriesMessage::SharedOption::SHARED ||
-            entry.shared_option ==
-                AddEntriesMessage::SharedOption::SHARED_WITH_ME,
-        {entry.capabilities.can_share, entry.capabilities.can_copy,
-         entry.capabilities.can_delete, entry.capabilities.can_rename,
-         entry.capabilities.can_add_children},
-        {entry.folder_feature.is_machine_root,
-         entry.folder_feature.is_arbitrary_sync_folder,
-         entry.folder_feature.is_external_media});
-
+    auto relative_path = GetRelativeDrivePathForTestEntry(entry);
+    auto original_name = relative_path.BaseName();
     switch (entry.type) {
       case AddEntriesMessage::FILE: {
+        original_name = base::FilePath(entry.target_path).BaseName();
         if (entry.source_file_name.empty()) {
           ASSERT_EQ(0, base::WriteFile(target_path, "", 0));
           break;
@@ -1023,6 +1013,17 @@ class DriveFsTestVolume : public DriveTestVolume {
             << "Failed to create a computer: " << target_path.value();
         break;
     }
+    fake_drivefs_helper_->fake_drivefs().SetMetadata(
+        relative_path, entry.mime_type, original_name.value(), entry.pinned,
+        entry.shared_option == AddEntriesMessage::SharedOption::SHARED ||
+            entry.shared_option ==
+                AddEntriesMessage::SharedOption::SHARED_WITH_ME,
+        {entry.capabilities.can_share, entry.capabilities.can_copy,
+         entry.capabilities.can_delete, entry.capabilities.can_rename,
+         entry.capabilities.can_add_children},
+        {entry.folder_feature.is_machine_root,
+         entry.folder_feature.is_arbitrary_sync_folder,
+         entry.folder_feature.is_external_media});
 
     ASSERT_TRUE(UpdateModifiedTime(entry));
   }
