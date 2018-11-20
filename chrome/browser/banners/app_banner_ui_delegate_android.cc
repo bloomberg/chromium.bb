@@ -47,11 +47,10 @@ std::unique_ptr<AppBannerUiDelegateAndroid> AppBannerUiDelegateAndroid::Create(
     const base::string16& app_title,
     const base::android::ScopedJavaLocalRef<jobject>& native_app_data,
     const SkBitmap& icon,
-    const std::string& native_app_package_name,
-    const std::string& referrer) {
+    const std::string& native_app_package_name) {
   return std::unique_ptr<AppBannerUiDelegateAndroid>(
       new AppBannerUiDelegateAndroid(weak_manager, app_title, native_app_data,
-                                     icon, native_app_package_name, referrer));
+                                     icon, native_app_package_name));
 }
 
 AppBannerUiDelegateAndroid::~AppBannerUiDelegateAndroid() {
@@ -84,14 +83,6 @@ AppBannerUiDelegateAndroid::GetJavaObject() {
 const base::android::ScopedJavaLocalRef<jobject>
 AppBannerUiDelegateAndroid::GetNativeAppData() const {
   return base::android::ScopedJavaLocalRef<jobject>(native_app_data_);
-}
-
-int AppBannerUiDelegateAndroid::GetInstallState() const {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jstring> jpackage_name(
-      base::android::ConvertUTF8ToJavaString(env, package_name_));
-  return Java_AppBannerUiDelegateAndroid_determineInstallState(
-      env, java_delegate_, jpackage_name);
 }
 
 const SkBitmap& AppBannerUiDelegateAndroid::GetPrimaryIcon() const {
@@ -270,27 +261,17 @@ AppBannerUiDelegateAndroid::AppBannerUiDelegateAndroid(
     const base::string16& app_title,
     const base::android::ScopedJavaLocalRef<jobject>& native_app_data,
     const SkBitmap& icon,
-    const std::string& native_app_package_name,
-    const std::string& referrer)
+    const std::string& native_app_package_name)
     : weak_manager_(weak_manager),
       app_title_(app_title),
       native_app_data_(native_app_data),
       primary_icon_(icon),
       package_name_(native_app_package_name),
-      referrer_(referrer),
       type_(AppType::NATIVE),
       has_user_interaction_(false) {
   DCHECK(!native_app_data_.is_null());
   DCHECK(!package_name_.empty());
   CreateJavaDelegate();
-}
-
-void AppBannerUiDelegateAndroid::CreateInstallerDelegate(
-    base::android::ScopedJavaLocalRef<jobject> jobserver) {
-  DCHECK(!java_delegate_.is_null());
-
-  Java_AppBannerUiDelegateAndroid_createInstallerDelegate(
-      base::android::AttachCurrentThread(), java_delegate_, jobserver);
 }
 
 void AppBannerUiDelegateAndroid::CreateJavaDelegate() {
@@ -306,11 +287,8 @@ bool AppBannerUiDelegateAndroid::InstallOrOpenNativeApp() {
   TrackUserResponse(USER_RESPONSE_NATIVE_APP_ACCEPTED);
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  base::android::ScopedJavaLocalRef<jstring> jreferrer(
-      base::android::ConvertUTF8ToJavaString(env, referrer_));
-
   bool was_opened = Java_AppBannerUiDelegateAndroid_installOrOpenNativeApp(
-      env, java_delegate_, native_app_data_, jreferrer);
+      env, java_delegate_, native_app_data_);
 
   if (was_opened)
     TrackDismissEvent(DISMISS_EVENT_APP_OPEN);
@@ -351,13 +329,13 @@ void AppBannerUiDelegateAndroid::SendBannerAccepted() {
   weak_manager_->SendBannerAccepted();
 
   // Send the appinstalled event and perform install time logging. Note that
-  // this is fired *before* the installation actually takes place (which can be
-  // a significant amount of time later, especially if using WebAPKs).
+  // this is only done for webapps as native apps just intent to the Play store.
+  // Also this event is fired *before* the installation actually takes place
+  // (which can be a significant amount of time later, especially if using
+  // WebAPKs).
   // TODO(mgiuca): Fire the event *after* the installation is completed.
-  bool is_native = IsForNativeApp();
-  weak_manager_->OnInstall(is_native, is_native
-                                          ? blink::kWebDisplayModeUndefined
-                                          : shortcut_info_->display);
+  if (!IsForNativeApp())
+    weak_manager_->OnInstall(/*is_native=*/false, shortcut_info_->display);
 }
 
 }  // namespace banners

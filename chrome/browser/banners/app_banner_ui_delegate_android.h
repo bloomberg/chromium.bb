@@ -52,8 +52,7 @@ class AppBannerUiDelegateAndroid {
       const base::string16& app_title,
       const base::android::ScopedJavaLocalRef<jobject>& native_app_data,
       const SkBitmap& icon,
-      const std::string& native_app_package_name,
-      const std::string& referrer);
+      const std::string& native_app_package_name);
 
   ~AppBannerUiDelegateAndroid();
 
@@ -61,15 +60,9 @@ class AppBannerUiDelegateAndroid {
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
   const base::android::ScopedJavaLocalRef<jobject> GetNativeAppData() const;
 
-  int GetInstallState() const;
   const SkBitmap& GetPrimaryIcon() const;
   AppType GetType() const;
   const GURL& GetWebAppUrl() const;
-
-  // Creates the Java-side InstallerDelegate, passing |jobserver| to receive
-  // progress updates on the installation of a native app.
-  void CreateInstallerDelegate(
-      base::android::ScopedJavaLocalRef<jobject> jobserver);
 
   // Called through the JNI to add the app described by this class to home
   // screen.
@@ -127,8 +120,7 @@ class AppBannerUiDelegateAndroid {
       const base::string16& app_title,
       const base::android::ScopedJavaLocalRef<jobject>& native_app_data,
       const SkBitmap& icon,
-      const std::string& native_app_package_name,
-      const std::string& referrer);
+      const std::string& native_app_package_name);
 
   bool IsForNativeApp() const { return GetType() == AppType::NATIVE; }
 
@@ -154,7 +146,6 @@ class AppBannerUiDelegateAndroid {
   const SkBitmap badge_icon_;
 
   std::string package_name_;
-  std::string referrer_;
 
   AppType type_;
   WebappInstallSource install_source_;

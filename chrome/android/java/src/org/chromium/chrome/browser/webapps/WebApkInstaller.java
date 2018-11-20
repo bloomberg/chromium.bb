@@ -4,15 +4,14 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.banners.InstallerDelegate;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -149,8 +148,7 @@ public class WebApkInstaller {
     }
 
     private boolean isWebApkInstalled(String packageName) {
-        PackageManager packageManager = ContextUtils.getApplicationContext().getPackageManager();
-        return InstallerDelegate.isInstalled(packageManager, packageName);
+        return PackageUtils.isPackageInstalled(ContextUtils.getApplicationContext(), packageName);
     }
 
     private native void nativeOnInstallFinished(

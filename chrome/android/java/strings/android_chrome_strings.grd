@@ -2177,9 +2177,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- App banner strings -->
-      <message name="IDS_APP_BANNER_INSTALLING" desc="Button text indicating that an application is being installed. [CHAR-LIMIT=25]">
-        Installing…
-      </message>
       <message name="IDS_APP_BANNER_OPEN" desc="Text that indicates that clicking on the button will launch an application. [CHAR-LIMIT=25]">
         Open
       </message>

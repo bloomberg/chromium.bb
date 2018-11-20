@@ -4707,7 +4707,6 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/historyreport/HistoryReportJniBridge.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/AdsBlockedInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/AppBannerInfoBarAndroid.java",
-      "../android/java/src/org/chromium/chrome/browser/infobar/AppBannerInfoBarDelegateAndroid.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/AutofillCreditCardFillingInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/AutofillSaveCardInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/ConfirmInfoBar.java",
