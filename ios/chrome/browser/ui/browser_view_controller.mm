@@ -51,8 +51,6 @@
 #include "components/signin/ios/browser/active_state_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/app/tests_hook.h"
-#import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
-#import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -111,7 +109,6 @@
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #import "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
@@ -560,9 +557,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for the PassKit UI presentation.
   PassKitCoordinator* _passKitCoordinator;
 
-  // Coordinator for UI related to launching external apps.
-  AppLauncherCoordinator* _appLauncherCoordinator;
-
   // Fake status bar view used to blend the toolbar into the status bar.
   UIView* _fakeStatusBarView;
 
@@ -938,9 +932,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
         initWithBaseViewController:_browserContainerCoordinator.viewController];
     _downloadManagerCoordinator.presenter =
         [[VerticalAnimationContainer alloc] init];
-
-    _appLauncherCoordinator =
-        [[AppLauncherCoordinator alloc] initWithBaseViewController:self];
 
     _javaScriptDialogPresenter.reset(
         new JavaScriptDialogPresenterImpl(_dialogPresenter));
@@ -2854,9 +2845,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   NetExportTabHelper::CreateForWebState(tab.webState, self);
   CaptivePortalDetectorTabHelper::CreateForWebState(tab.webState, self);
   PassKitTabHelper::CreateForWebState(tab.webState, _passKitCoordinator);
-  AppLauncherTabHelper::CreateForWebState(
-      tab.webState, [[AppLauncherAbuseDetector alloc] init],
-      _appLauncherCoordinator);
 
   // DownloadManagerTabHelper cannot function without delegate.
   DCHECK(_downloadManagerCoordinator);

@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
 
 // A coordinator that handles UI related to launching apps.
+// TODO(crbug.com/906541) : Convert to ChromeCoordinator subclass.
 @interface AppLauncherCoordinator : NSObject<AppLauncherTabHelperDelegate>
 
 // Initializes the coordinator with the |baseViewController|, from which to
