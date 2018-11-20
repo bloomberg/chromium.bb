@@ -27,7 +27,10 @@ namespace password_manager {
 
 namespace {
 
-enum class HttpCredentialType { kNoMatching, kEquivalent, kConflicting };
+// The order of the enumerations needs to the reflect the order of the
+// corresponding entries in the HttpCredentialCleaner::HttpCredentialType
+// enumeration.
+enum class HttpCredentialType { kConflicting, kEquivalent, kNoMatching };
 
 struct TestCase {
   bool is_hsts_enabled;
@@ -210,29 +213,11 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   cleaner.StartCleaning(&observer);
   scoped_task_environment.RunUntilIdle();
 
-  std::vector<Histogram> histograms_to_test;
-  for (bool test_hsts_enabled : {true, false}) {
-    std::string suffix =
-        (test_hsts_enabled ? "WithHSTSEnabled" : "HSTSNotEnabled");
-    histograms_to_test.push_back(
-        {test_hsts_enabled, HttpCredentialType::kNoMatching,
-         "PasswordManager.HttpCredentialsWithoutMatchingHttpsCredential." +
-             suffix});
-    histograms_to_test.push_back(
-        {test_hsts_enabled, HttpCredentialType::kEquivalent,
-         "PasswordManager.HttpCredentialsWithEquivalentHttpsCredential." +
-             suffix});
-    histograms_to_test.push_back(
-        {test_hsts_enabled, HttpCredentialType::kConflicting,
-         "PasswordManager.HttpCredentialsWithConflictingHttpsCredential." +
-             suffix});
-  }
-  for (const auto& histogram : histograms_to_test) {
-    int sample =
-        static_cast<int>(histogram.test_type == test.expected &&
-                         histogram.test_hsts_enabled == test.is_hsts_enabled);
-    histogram_tester.ExpectUniqueSample(histogram.histogram_name, sample, 1);
-  }
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.HttpCredentials",
+      static_cast<HttpCredentialCleaner::HttpCredentialType>(
+          static_cast<int>(test.expected) * 2 + test.is_hsts_enabled),
+      1);
 
   const TestPasswordStore::PasswordMap current_store =
       store_->stored_passwords();
