@@ -763,7 +763,7 @@
   },
   {
     "name": "enable-arc-cups-api",
-    // "owners": [ "your-team" ],
+    "owners": [ "luum", "skau" ],
     "expiry_milestone": 76
   },
   {
