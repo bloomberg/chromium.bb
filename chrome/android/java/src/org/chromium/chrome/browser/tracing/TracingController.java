@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tracing;
 
 import android.content.Context;
 import android.support.annotation.IntDef;
+import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -13,6 +14,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.developer.TracingPreferences;
 import org.chromium.content_public.browser.TracingControllerAndroid;
 import org.chromium.ui.widget.Toast;
 
@@ -194,9 +196,9 @@ public class TracingController {
     private void startNativeTrace() {
         assert mState == State.STARTING;
 
-        // TODO(eseckler): Support configuring these.
-        String categories = "*";
-        String options = "record-until-full";
+        // TODO(eseckler): TracingControllerAndroid currently doesn't support a json trace config.
+        String categories = TextUtils.join(",", TracingPreferences.getEnabledCategories());
+        String options = TracingPreferences.getSelectedTracingMode();
 
         if (!mNativeController.startTracing(
                     mTracingTempFile.getPath(), false, categories, options, true)) {

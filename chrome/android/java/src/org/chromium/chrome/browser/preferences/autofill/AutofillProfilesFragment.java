@@ -34,8 +34,7 @@ public class AutofillProfilesFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        PreferenceUtils.addPreferencesFromResource(
-                this, R.xml.autofill_and_payments_preference_fragment_screen);
+        PreferenceUtils.addPreferencesFromResource(this, R.xml.blank_preference_fragment_screen);
         getActivity().setTitle(R.string.autofill_addresses_settings_title);
     }
 
