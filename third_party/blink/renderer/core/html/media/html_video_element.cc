@@ -443,18 +443,6 @@ bool HTMLVideoElement::TexImageImpl(
       xoffset, yoffset, zoffset, flip_y, premultiply_alpha);
 }
 
-bool HTMLVideoElement::PrepareVideoFrameForWebGL(
-    gpu::gles2::GLES2Interface* gl,
-    GLenum target,
-    GLuint texture,
-    bool already_uploaded_id,
-    WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) {
-  if (!GetWebMediaPlayer())
-    return false;
-  return GetWebMediaPlayer()->PrepareVideoFrameForWebGL(
-      gl, target, texture, already_uploaded_id, out_metadata);
-}
-
 bool HTMLVideoElement::HasAvailableVideoFrame() const {
   if (!GetWebMediaPlayer())
     return false;

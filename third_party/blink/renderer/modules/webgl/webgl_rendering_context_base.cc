@@ -90,8 +90,6 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_uniform_location.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_oes.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_video_texture.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_video_texture_enum.h"
 #include "third_party/blink/renderer/modules/xr/xr_device.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
@@ -1868,39 +1866,12 @@ void WebGLRenderingContextBase::bindTexture(GLenum target,
     texture_units_[active_texture_unit_].texture2d_array_binding_ = texture;
   } else if (IsWebGL2OrHigher() && target == GL_TEXTURE_3D) {
     texture_units_[active_texture_unit_].texture3d_binding_ = texture;
-  } else if (target == GL_TEXTURE_VIDEO_IMAGE_WEBGL) {
-    if (!ExtensionEnabled(kWebGLVideoTextureName)) {
-      SynthesizeGLError(
-          GL_INVALID_VALUE, "bindTexture",
-          "unhandled type, WEBGL_video_texture extension not enabled");
-      return;
-    }
-    texture_units_[active_texture_unit_].texture_video_image_binding_ = texture;
   } else {
     SynthesizeGLError(GL_INVALID_ENUM, "bindTexture", "invalid target");
     return;
   }
 
-  // We use TEXTURE_EXTERNAL_OES to implement video texture on Android platform
-  if (target == GL_TEXTURE_VIDEO_IMAGE_WEBGL) {
-#if defined(OS_ANDROID)
-    ContextGL()->BindTexture(GL_TEXTURE_EXTERNAL_OES, ObjectOrZero(texture));
-#else
-    ContextGL()->BindTexture(GL_TEXTURE_2D, ObjectOrZero(texture));
-    if (texture && !texture->GetTarget()) {
-      ContextGL()->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                                 GL_LINEAR);
-      ContextGL()->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                                 GL_LINEAR);
-      ContextGL()->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-                                 GL_CLAMP_TO_EDGE);
-      ContextGL()->TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-                                 GL_CLAMP_TO_EDGE);
-    }
-#endif  // defined OS_ANDROID
-  } else {
-    ContextGL()->BindTexture(target, ObjectOrZero(texture));
-  }
+  ContextGL()->BindTexture(target, ObjectOrZero(texture));
   if (texture) {
     texture->SetTarget(target);
     one_plus_max_non_default_texture_unit_ =
@@ -3764,16 +3735,6 @@ ScriptValue WebGLRenderingContextBase::getUniform(
             break;
           case GL_SAMPLER_2D:
           case GL_SAMPLER_CUBE:
-            base_type = GL_INT;
-            length = 1;
-            break;
-          case GL_SAMPLER_VIDEO_IMAGE_WEBGL:
-            if (!ExtensionEnabled(kWebGLVideoTextureName)) {
-              SynthesizeGLError(
-                  GL_INVALID_VALUE, "getUniform",
-                  "unhandled type, WEBGL_video_texture extension not enabled");
-              return ScriptValue::CreateNull(script_state);
-            }
             base_type = GL_INT;
             length = 1;
             break;
@@ -5751,15 +5712,6 @@ void WebGLRenderingContextBase::TexParameter(GLenum target,
     return;
   switch (pname) {
     case GL_TEXTURE_MIN_FILTER:
-      if (target == GL_TEXTURE_VIDEO_IMAGE_WEBGL) {
-        if ((is_float && paramf != GL_NEAREST && paramf != GL_LINEAR) ||
-            (!is_float && parami != GL_NEAREST && parami != GL_LINEAR)) {
-          SynthesizeGLError(GL_INVALID_ENUM, "texParameter",
-                            "invalid parameter name");
-          return;
-        }
-      }
-      break;
     case GL_TEXTURE_MAG_FILTER:
       break;
     case GL_TEXTURE_WRAP_R:
@@ -5777,15 +5729,6 @@ void WebGLRenderingContextBase::TexParameter(GLenum target,
            parami != GL_MIRRORED_REPEAT && parami != GL_REPEAT)) {
         SynthesizeGLError(GL_INVALID_ENUM, "texParameter", "invalid parameter");
         return;
-      }
-
-      if (target == GL_TEXTURE_VIDEO_IMAGE_WEBGL) {
-        if ((is_float && paramf != GL_CLAMP_TO_EDGE) ||
-            (!is_float && parami != GL_CLAMP_TO_EDGE)) {
-          SynthesizeGLError(GL_INVALID_ENUM, "texParameter",
-                            "invalid parameter");
-          return;
-        }
       }
       break;
     case GL_TEXTURE_MAX_ANISOTROPY_EXT:  // EXT_texture_filter_anisotropic
@@ -6876,15 +6819,6 @@ WebGLTexture* WebGLRenderingContextBase::ValidateTextureBinding(
       }
       tex = texture_units_[active_texture_unit_].texture2d_array_binding_.Get();
       break;
-    case GL_TEXTURE_VIDEO_IMAGE_WEBGL:
-      if (!ExtensionEnabled(kWebGLVideoTextureName)) {
-        SynthesizeGLError(GL_INVALID_ENUM, function_name,
-                          "invalid texture target");
-        return nullptr;
-      }
-      tex = texture_units_[active_texture_unit_]
-                .texture_video_image_binding_.Get();
-      break;
     default:
       SynthesizeGLError(GL_INVALID_ENUM, function_name,
                         "invalid texture target");
@@ -7100,8 +7034,6 @@ GLint WebGLRenderingContextBase::GetMaxTextureLevelForTarget(GLenum target) {
     case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
     case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
       return max_cube_map_texture_level_;
-    case GL_TEXTURE_VIDEO_IMAGE_WEBGL:
-      return 1;
   }
   return 0;
 }
@@ -7139,7 +7071,6 @@ bool WebGLRenderingContextBase::ValidateTexFuncDimensions(
 
   switch (target) {
     case GL_TEXTURE_2D:
-    case GL_TEXTURE_VIDEO_IMAGE_WEBGL:
       if (width > (max_texture_size_ >> level) ||
           height > (max_texture_size_ >> level)) {
         SynthesizeGLError(GL_INVALID_VALUE, function_name,
@@ -8044,7 +7975,6 @@ void WebGLRenderingContextBase::TextureUnitState::Trace(
   visitor->Trace(texture_cube_map_binding_);
   visitor->Trace(texture3d_binding_);
   visitor->Trace(texture2d_array_binding_);
-  visitor->Trace(texture_video_image_binding_);
 }
 
 void WebGLRenderingContextBase::Trace(blink::Visitor* visitor) {
