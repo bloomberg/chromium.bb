@@ -64,9 +64,6 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
     return nodes.IsEmpty() ? nullptr : nodes.back().Get();
   }
 
-  Node* AssignedNodeNextTo(const Node&) const;
-  Node* AssignedNodePreviousTo(const Node&) const;
-
   void AppendAssignedNode(Node&);
 
   const HeapVector<Member<Node>> FlattenedAssignedNodes();

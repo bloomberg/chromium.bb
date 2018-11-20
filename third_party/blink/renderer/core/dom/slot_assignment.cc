@@ -269,10 +269,7 @@ void SlotAssignment::RecalcAssignment() {
     if (slot) {
       slot->AppendAssignedNode(child);
     } else {
-      // TODO(crbug.com/906494) Clear child's flat_tree_node_data here, which
-      // should be useful for shortcut in flat tree traversal later; we can skip
-      // hashmap lookup (node->slot) there if we know the node doesn't have
-      // an assigned slot.
+      child.ClearFlatTreeNodeData();
       child.LazyReattachIfAttached();
     }
   }

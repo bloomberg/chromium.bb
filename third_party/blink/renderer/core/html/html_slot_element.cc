@@ -204,12 +204,14 @@ void HTMLSlotElement::UpdateFlatTreeNodeDataForAssignedNodes() {
     flat_tree_node_data.SetAssignedSlot(this);
     flat_tree_node_data.SetPreviousInAssignedNodes(previous);
     if (previous) {
-      previous->GetFlatTreeNodeData().SetNextInAssignedNodes(current);
+      DCHECK(previous->GetFlatTreeNodeData());
+      previous->GetFlatTreeNodeData()->SetNextInAssignedNodes(current);
     }
     previous = current;
   }
   if (previous) {
-    previous->GetFlatTreeNodeData().SetNextInAssignedNodes(nullptr);
+    DCHECK(previous->GetFlatTreeNodeData());
+    previous->GetFlatTreeNodeData()->SetNextInAssignedNodes(nullptr);
   }
 }
 
@@ -235,20 +237,6 @@ void HTMLSlotElement::DispatchSlotChangeEvent() {
   Event* event = Event::CreateBubble(event_type_names::kSlotchange);
   event->SetTarget(this);
   DispatchScopedEvent(*event);
-}
-
-Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
-  DCHECK(SupportsAssignment());
-  ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-  DCHECK(assigned_nodes_.Contains(node));
-  return node.GetFlatTreeNodeData().NextInAssignedNodes();
-}
-
-Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
-  DCHECK(SupportsAssignment());
-  ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-  DCHECK(assigned_nodes_.Contains(node));
-  return node.GetFlatTreeNodeData().PreviousInAssignedNodes();
 }
 
 AtomicString HTMLSlotElement::GetName() const {

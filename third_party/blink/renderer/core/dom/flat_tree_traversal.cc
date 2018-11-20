@@ -27,6 +27,8 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_node_data.h"
+#include "third_party/blink/renderer/core/dom/slot_assignment.h"
 #include "third_party/blink/renderer/core/html/html_shadow_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 
@@ -114,14 +116,28 @@ Node* FlatTreeTraversal::TraverseSiblings(const Node& node,
 Node* FlatTreeTraversal::TraverseSiblingsForV1HostChild(
     const Node& node,
     TraversalDirection direction) {
-  // TODO(crbug.com/906494): Use flat_tree_node_data::assigned_slot to avoid
-  // hashmap lookup
-  HTMLSlotElement* slot = node.AssignedSlot();
-  if (!slot)
+  ShadowRoot* shadow_root = node.ParentElementShadowRoot();
+  DCHECK(shadow_root);
+  if (!shadow_root->HasSlotAssignment()) {
+    // The shadow root doesn't have any slot.
     return nullptr;
-  return direction == kTraversalDirectionForward
-             ? slot->AssignedNodeNextTo(node)
-             : slot->AssignedNodePreviousTo(node);
+  }
+  shadow_root->GetSlotAssignment().RecalcAssignment();
+
+  FlatTreeNodeData* flat_tree_node_data = node.GetFlatTreeNodeData();
+  if (!flat_tree_node_data) {
+    // This node has never been assigned to any slot.
+    return nullptr;
+  }
+  if (flat_tree_node_data->AssignedSlot()) {
+    return direction == kTraversalDirectionForward
+               ? flat_tree_node_data->NextInAssignedNodes()
+               : flat_tree_node_data->PreviousInAssignedNodes();
+  }
+  // This node is not assigned to any slot.
+  DCHECK(!flat_tree_node_data->NextInAssignedNodes());
+  DCHECK(!flat_tree_node_data->PreviousInAssignedNodes());
+  return nullptr;
 }
 
 Node* FlatTreeTraversal::TraverseSiblingsForV0Distribution(
