@@ -25,13 +25,13 @@ const int kPipDismissSlop = 8;
 const float kPipDismissFraction = 0.5f;
 // TODO(edcourtney): Consider varying the animation duration based on how far
 // the pip window has to move.
-const int kPipSnapToEdgeAnimationDurationMs = 50;
+const int kPipSnapToEdgeAnimationDurationMs = 150;
 // Threshold for considering drag-moving a PIP window to fling in the
 // direction of movement in GestureEvent velocity units.
-const int kPipMovementFlingThresholdSquared = 3000 * 3000;
+const int kPipMovementFlingThresholdSquared = 1000 * 1000;
 // Threshold for considering a swipe off the side of the screen a dismissal
 // even if less than |kPipDismissFraction| of the PIP window is off-screen.
-const int kPipSwipeToDismissFlingThresholdSquared = 2000 * 2000;
+const int kPipSwipeToDismissFlingThresholdSquared = 800 * 800;
 
 bool IsAtTopOrBottomEdge(const gfx::Rect& bounds, const gfx::Rect& area) {
   return (bounds.y() < area.y() + kPipDismissSlop && bounds.y() >= area.y()) ||
