@@ -1940,6 +1940,8 @@ jumbo_source_set("browser") {
     sources += [
       "gpu/ca_transaction_gpu_coordinator.cc",
       "gpu/ca_transaction_gpu_coordinator.h",
+      "sandbox_support_mac_impl.h",
+      "sandbox_support_mac_impl.mm",
       "web_contents/web_contents_ns_view_bridge.h",
       "web_contents/web_contents_ns_view_bridge.mm",
     ]

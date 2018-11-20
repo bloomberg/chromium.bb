@@ -12,11 +12,27 @@
 #include "base/strings/sys_string_conversions.h"
 #include "content/common/mac/font_loader.h"
 #include "content/public/child/child_thread.h"
+#include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
-bool LoadFont(CTFontRef font, CGFontRef* out, uint32_t* font_id) {
+WebSandboxSupportMac::WebSandboxSupportMac(
+    service_manager::Connector* connector) {
+  connector->BindInterface(content::mojom::kBrowserServiceName,
+                           mojo::MakeRequest(&sandbox_support_));
+  sandbox_support_->GetSystemColors(base::BindOnce(
+      &WebSandboxSupportMac::OnGotSystemColors, base::Unretained(this)));
+}
+
+WebSandboxSupportMac::~WebSandboxSupportMac() = default;
+
+// TODO(rsesek): Move font loading off the content.mojom.FontLoaderMac
+// interface and onto the SandboxSupportMac interface.
+bool WebSandboxSupportMac::LoadFont(CTFontRef font,
+                                    CGFontRef* out,
+                                    uint32_t* font_id) {
   base::ScopedCFTypeRef<CFStringRef> name_ref(CTFontCopyPostScriptName(font));
   base::string16 font_name = SysCFStringRefToUTF16(name_ref);
   float font_point_size = CTFontGetSize(font);
@@ -40,6 +56,21 @@ bool LoadFont(CTFontRef font, CGFontRef* out, uint32_t* font_id) {
   // already activated, don't reactivate it here - https://crbug.com/72727 .
   return FontLoader::CGFontRefFromBuffer(
       std::move(font_data), static_cast<uint32_t>(font_data_size), out);
+}
+
+SkColor WebSandboxSupportMac::GetSystemColor(blink::MacSystemColorID color_id) {
+  if (!color_map_.IsValid()) {
+    DLOG(ERROR) << "GetSystemColor does not have a valid color_map_";
+    return SK_ColorMAGENTA;
+  }
+  base::span<const SkColor> color_map =
+      color_map_.GetMemoryAsSpan<SkColor>(blink::kMacSystemColorIDCount);
+  return color_map[static_cast<size_t>(color_id)];
+}
+
+void WebSandboxSupportMac::OnGotSystemColors(
+    base::ReadOnlySharedMemoryRegion region) {
+  color_map_ = region.Map();
 }
 
 }  // namespace content

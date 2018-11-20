@@ -548,6 +548,7 @@ mojom("mojo_bindings") {
     sources += [
       "font_loader_mac.mojom",
       "render_widget_host_ns_view.mojom",
+      "sandbox_support_mac.mojom",
     ]
   }
 

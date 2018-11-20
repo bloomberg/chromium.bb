@@ -112,7 +112,6 @@
 #if defined(OS_MACOSX)
 #include "content/child/child_process_sandbox_support_impl_mac.h"
 #include "content/common/mac/font_loader.h"
-#include "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -194,21 +193,14 @@ gpu::ContextType ToGpuContextType(blink::Platform::ContextType type) {
 
 //------------------------------------------------------------------------------
 
-#if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
+#if defined(OS_LINUX)
 class RendererBlinkPlatformImpl::SandboxSupport
     : public blink::WebSandboxSupport {
  public:
-#if defined(OS_LINUX)
   explicit SandboxSupport(sk_sp<font_service::FontLoader> font_loader)
       : font_loader_(std::move(font_loader)) {}
-#endif
   ~SandboxSupport() override {}
 
-#if defined(OS_MACOSX)
-  bool LoadFont(CTFontRef src_font,
-                CGFontRef* container,
-                uint32_t* font_id) override;
-#elif defined(OS_LINUX)
   void GetFallbackFontForCharacter(
       blink::WebUChar32 character,
       const char* preferred_locale,
@@ -230,9 +222,8 @@ class RendererBlinkPlatformImpl::SandboxSupport
   base::Lock unicode_font_families_mutex_;
   std::map<int32_t, blink::OutOfProcessFont> unicode_font_families_;
   sk_sp<font_service::FontLoader> font_loader_;
-#endif
 };
-#endif  // !defined(OS_ANDROID) && !defined(OS_WIN)
+#endif  // defined(OS_LINUX)
 
 //------------------------------------------------------------------------------
 
@@ -265,10 +256,10 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     connector_ = service_manager::Connector::Create(&request);
   }
 
-#if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   if (g_sandbox_enabled && sandboxEnabled()) {
 #if defined(OS_MACOSX)
-    sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport());
+    sandbox_support_.reset(new WebSandboxSupportMac(connector_.get()));
 #else
     sandbox_support_.reset(
         new RendererBlinkPlatformImpl::SandboxSupport(font_loader_));
@@ -294,7 +285,7 @@ RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
 }
 
 void RendererBlinkPlatformImpl::Shutdown() {
-#if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   // SandboxSupport contains a map of OutOfProcessFont objects, which hold
   // WebStrings and WebVectors, which become invalidated when blink is shut
   // down. Hence, we need to clear that map now, just before blink::shutdown()
@@ -388,11 +379,11 @@ blink::BlameContext* RendererBlinkPlatformImpl::GetTopLevelBlameContext() {
 }
 
 blink::WebSandboxSupport* RendererBlinkPlatformImpl::GetSandboxSupport() {
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_FUCHSIA)
-  // These platforms do not require sandbox support.
-  return NULL;
-#else
+#if defined(OS_LINUX) || defined(OS_MACOSX)
   return sandbox_support_.get();
+#else
+  // These platforms do not require sandbox support.
+  return nullptr;
 #endif
 }
 
@@ -569,15 +560,7 @@ WebString RendererBlinkPlatformImpl::FileSystemCreateOriginIdentifier(
 
 //------------------------------------------------------------------------------
 
-#if defined(OS_MACOSX)
-
-bool RendererBlinkPlatformImpl::SandboxSupport::LoadFont(CTFontRef src_font,
-                                                         CGFontRef* out,
-                                                         uint32_t* font_id) {
-  return content::LoadFont(src_font, out, font_id);
-}
-
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#if defined(OS_LINUX)
 
 void RendererBlinkPlatformImpl::SandboxSupport::GetFallbackFontForCharacter(
     blink::WebUChar32 character,
