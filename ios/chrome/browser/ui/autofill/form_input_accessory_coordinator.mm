@@ -120,10 +120,13 @@
           new autofill::PersonalDataManagerObserverBridge(self));
       personalDataManager->AddObserver(_personalDataManagerObserver.get());
 
+      // TODO:(crbug.com/845472) Add earl grey test to verify the credit card
+      // button is hidden when local cards are saved and then
+      // kAutofillCreditCardEnabled is changed to disabled.
       _manualFillAccessoryViewController.creditCardButtonHidden =
-          personalDataManager->GetCreditCardsToSuggest(true).empty();
+          personalDataManager->GetCreditCards().empty();
 
-      _manualFillAccessoryViewController.creditCardButtonHidden =
+      _manualFillAccessoryViewController.addressButtonHidden =
           personalDataManager->GetProfilesToSuggest().empty();
     } else {
       _manualFillAccessoryViewController.creditCardButtonHidden = YES;
@@ -270,7 +273,7 @@
   DCHECK(personalDataManager);
 
   self.manualFillAccessoryViewController.creditCardButtonHidden =
-      personalDataManager->GetCreditCardsToSuggest(true).empty();
+      personalDataManager->GetCreditCards().empty();
 
   self.manualFillAccessoryViewController.addressButtonHidden =
       personalDataManager->GetProfilesToSuggest().empty();
