@@ -8,7 +8,6 @@ import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.os.Handler;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
@@ -312,7 +311,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     private void notifySignInAllowedChanged() {
-        new Handler().post(() -> {
+        ThreadUtils.postOnUiThread(() -> {
             for (SignInAllowedObserver observer : mSignInAllowedObservers) {
                 observer.onSignInAllowedChanged();
             }
@@ -671,7 +670,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         assert mSignOutState != null;
 
         if (mSignOutState.callback != null) {
-            new Handler().post(mSignOutState.callback);
+            ThreadUtils.postOnUiThread(mSignOutState.callback);
         }
         mSignOutState = null;
 
