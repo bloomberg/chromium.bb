@@ -70,8 +70,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadDBCache
   std::unique_ptr<DownloadDB> download_db_;
 
   using DownloadDBEntryMap = std::map<std::string, DownloadDBEntry>;
-  // All in progress downloads stored in |download_db_|.
-  DownloadDBEntryMap entries_;
+  // Entries that are currently being updated will be cached to reduce disk
+  // writing.
+  DownloadDBEntryMap cached_entries_;
 
   // GUIDs of updated entries.
   std::set<std::string> updated_guids_;
