@@ -970,6 +970,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', ('nvidia', 0x1cb3)], bug=780706)
     self.Flaky('conformance2/rendering/canvas-resizing-with-pbo-bound.html',
         ['linux', 'nvidia'], bug=906846)
+    self.Flaky('conformance2/rendering/blitframebuffer-test.html',
+        ['linux', 'nvidia'], bug=906889)
 
     # Linux NVIDIA Quadro P400, OpenGL backend
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
