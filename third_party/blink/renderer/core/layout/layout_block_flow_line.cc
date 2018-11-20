@@ -1606,9 +1606,6 @@ void LayoutBlockFlow::ComputeInlinePreferredLogicalWidths(
   LayoutUnit inline_min;
 
   const ComputedStyle& style_to_use = StyleRef();
-  LayoutBlock* containing_block = ContainingBlock();
-  LayoutUnit cw =
-      containing_block ? containing_block->ContentLogicalWidth() : LayoutUnit();
 
   // If we are at the start of a line, we want to ignore all white-space.
   // Also strip spaces if we previously had text that ended in a trailing space.
@@ -1633,7 +1630,9 @@ void LayoutBlockFlow::ComputeInlinePreferredLogicalWidths(
   // Signals the text indent was more negative than the min preferred width
   bool has_remaining_negative_text_indent = false;
 
-  LayoutUnit text_indent = MinimumValueForLength(style_to_use.TextIndent(), cw);
+  // Always resolve percentages to 0 when calculating preferred logical widths.
+  LayoutUnit text_indent =
+      MinimumValueForLength(style_to_use.TextIndent(), LayoutUnit());
   LayoutObject* prev_float = nullptr;
   bool is_prev_child_inline_flow = false;
   bool should_break_line_after_text = false;

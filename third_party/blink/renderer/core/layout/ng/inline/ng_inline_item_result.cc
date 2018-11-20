@@ -26,25 +26,10 @@ NGInlineItemResult::NGInlineItemResult(const NGInlineItem* item,
 
 void NGLineInfo::SetLineStyle(const NGInlineNode& node,
                               const NGInlineItemsData& items_data,
-                              const NGConstraintSpace& constraint_space,
-                              bool is_first_line,
-                              bool use_first_line_style,
-                              bool is_after_forced_break) {
+                              bool use_first_line_style) {
   use_first_line_style_ = use_first_line_style;
   items_data_ = &items_data;
   line_style_ = node.GetLayoutBox()->Style(use_first_line_style_);
-
-  if (line_style_->ShouldUseTextIndent(is_first_line, is_after_forced_break)) {
-    // TODO(kojii): ComputeMinMaxSize does not know parent constraint
-    // space that we cannot compute percent for text-indent.
-    const Length& length = line_style_->TextIndent();
-    LayoutUnit maximum_value;
-    if (length.IsPercentOrCalc())
-      maximum_value = constraint_space.AvailableSize().inline_size;
-    text_indent_ = MinimumValueForLength(length, maximum_value);
-  } else {
-    text_indent_ = LayoutUnit();
-  }
 }
 
 #if DCHECK_IS_ON()
