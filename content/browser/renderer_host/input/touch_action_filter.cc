@@ -48,6 +48,62 @@ void ReportGestureEventFiltered(bool event_filtered) {
   UMA_HISTOGRAM_BOOLEAN("TouchAction.GestureEventFiltered", event_filtered);
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GestureEventFilterResults {
+  kGSBAllowedByMain = 0,
+  kGSBAllowedByCC = 1,
+  kGSBFilteredByMain = 2,
+  kGSBFilteredByCC = 3,
+  kGSBDeferred = 4,
+  kGSUAllowedByMain = 5,
+  kGSUAllowedByCC = 6,
+  kGSUFilteredByMain = 7,
+  kGSUFilteredByCC = 8,
+  kGSUDeferred = 9,
+  kFilterResultsCount = 10,
+  kMaxValue = kFilterResultsCount
+};
+
+void ReportGestureEventFilterResults(bool is_gesture_scroll_begin,
+                                     bool active_touch_action_known,
+                                     FilterGestureEventResult result) {
+  GestureEventFilterResults report_type;
+  if (is_gesture_scroll_begin) {
+    if (result == FilterGestureEventResult::kFilterGestureEventAllowed) {
+      if (active_touch_action_known)
+        report_type = GestureEventFilterResults::kGSBAllowedByMain;
+      else
+        report_type = GestureEventFilterResults::kGSBAllowedByCC;
+    } else if (result ==
+               FilterGestureEventResult::kFilterGestureEventFiltered) {
+      if (active_touch_action_known)
+        report_type = GestureEventFilterResults::kGSBFilteredByMain;
+      else
+        report_type = GestureEventFilterResults::kGSBFilteredByCC;
+    } else {
+      report_type = GestureEventFilterResults::kGSBDeferred;
+    }
+  } else {
+    if (result == FilterGestureEventResult::kFilterGestureEventAllowed) {
+      if (active_touch_action_known)
+        report_type = GestureEventFilterResults::kGSUAllowedByMain;
+      else
+        report_type = GestureEventFilterResults::kGSUAllowedByCC;
+    } else if (result ==
+               FilterGestureEventResult::kFilterGestureEventFiltered) {
+      if (active_touch_action_known)
+        report_type = GestureEventFilterResults::kGSUFilteredByMain;
+      else
+        report_type = GestureEventFilterResults::kGSUFilteredByCC;
+    } else {
+      report_type = GestureEventFilterResults::kGSUDeferred;
+    }
+  }
+  UMA_HISTOGRAM_ENUMERATION("TouchAction.GestureEventFilterResults",
+                            report_type, GestureEventFilterResults::kMaxValue);
+}
+
 }  // namespace
 
 TouchActionFilter::TouchActionFilter()
@@ -69,8 +125,16 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     return FilterGestureEventResult::kFilterGestureEventDelayed;
   }
 
-  if (compositor_touch_action_enabled_ && has_deferred_events_)
+  if (compositor_touch_action_enabled_ && has_deferred_events_) {
+    WebInputEvent::Type type = gesture_event->GetType();
+    if (type == WebInputEvent::kGestureScrollBegin ||
+        type == WebInputEvent::kGestureScrollUpdate) {
+      ReportGestureEventFilterResults(
+          type == WebInputEvent::kGestureScrollBegin, false,
+          FilterGestureEventResult::kFilterGestureEventDelayed);
+    }
     return FilterGestureEventResult::kFilterGestureEventDelayed;
+  }
 
   base::Optional<cc::TouchAction> touch_action =
       active_touch_action_.has_value() ? active_touch_action_
@@ -101,17 +165,27 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       DCHECK(touch_action.has_value());
       drop_scroll_events_ =
           ShouldSuppressScrolling(*gesture_event, touch_action.value());
-      if (!drop_scroll_events_)
-        return FilterGestureEventResult::kFilterGestureEventAllowed;
-      if (active_touch_action_.has_value())
-        return FilterGestureEventResult::kFilterGestureEventFiltered;
-      has_deferred_events_ = true;
-      return FilterGestureEventResult::kFilterGestureEventDelayed;
+      FilterGestureEventResult res;
+      if (!drop_scroll_events_) {
+        res = FilterGestureEventResult::kFilterGestureEventAllowed;
+      } else if (active_touch_action_.has_value()) {
+        res = FilterGestureEventResult::kFilterGestureEventFiltered;
+      } else {
+        has_deferred_events_ = true;
+        res = FilterGestureEventResult::kFilterGestureEventDelayed;
+      }
+      ReportGestureEventFilterResults(true, active_touch_action_.has_value(),
+                                      res);
+      return res;
     }
 
     case WebInputEvent::kGestureScrollUpdate: {
-      if (drop_scroll_events_)
+      if (drop_scroll_events_) {
+        ReportGestureEventFilterResults(
+            false, active_touch_action_.has_value(),
+            FilterGestureEventResult::kFilterGestureEventFiltered);
         return FilterGestureEventResult::kFilterGestureEventFiltered;
+      }
 
       if (!compositor_touch_action_enabled_)
         gesture_sequence_.append("U");
@@ -135,6 +209,9 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
             !active_touch_action_.has_value() &&
             gesture_event->data.scroll_update.delta_y != 0) {
           has_deferred_events_ = true;
+          ReportGestureEventFilterResults(
+              false, active_touch_action_.has_value(),
+              FilterGestureEventResult::kFilterGestureEventDelayed);
           return FilterGestureEventResult::kFilterGestureEventDelayed;
         }
         gesture_event->data.scroll_update.delta_y = 0;
@@ -144,11 +221,17 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
             !active_touch_action_.has_value() &&
             gesture_event->data.scroll_update.delta_x != 0) {
           has_deferred_events_ = true;
+          ReportGestureEventFilterResults(
+              false, active_touch_action_.has_value(),
+              FilterGestureEventResult::kFilterGestureEventDelayed);
           return FilterGestureEventResult::kFilterGestureEventDelayed;
         }
         gesture_event->data.scroll_update.delta_x = 0;
         gesture_event->data.scroll_update.velocity_x = 0;
       }
+      ReportGestureEventFilterResults(
+          false, active_touch_action_.has_value(),
+          FilterGestureEventResult::kFilterGestureEventAllowed);
       break;
     }
 
