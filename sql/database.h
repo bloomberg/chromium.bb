@@ -376,18 +376,22 @@ class SQL_EXPORT Database {
   // keeping commonly-used ones around for future use is important for
   // performance.
   //
+  // The SQL_FROM_HERE macro is the recommended way of generating a StatementID.
+  // Code that generates custom IDs must ensure that a StatementID is never used
+  // for different SQL statements. Failing to meet this requirement results in
+  // incorrect behavior, and should be caught by a DCHECK.
+  //
+  // The SQL statement passed in |sql| must match the SQL statement reported
+  // back by SQLite. Mismatches are caught by a DCHECK, so any code that has
+  // automated test coverage or that was manually tested on a DCHECK build will
+  // not exhibit this problem. Mismatches generally imply that the statement
+  // passed in has extra whitespace or comments surrounding it, which waste
+  // storage and CPU cycles.
+  //
   // If the |sql| has an error, an invalid, inert StatementRef is returned (and
   // the code will crash in debug). The caller must deal with this eventuality,
   // either by checking validity of the |sql| before calling, by correctly
   // handling the return of an inert statement, or both.
-  //
-  // The StatementID and the SQL must always correspond to one-another. The
-  // ID is the lookup into the cache, so crazy things will happen if you use
-  // different SQL with the same ID.
-  //
-  // You will normally use the SQL_FROM_HERE macro to generate a statement
-  // ID associated with the current line of code. This gives uniqueness without
-  // you having to manage unique names. See StatementID above for more.
   //
   // Example:
   //   sql::Statement stmt(database_.GetCachedStatement(

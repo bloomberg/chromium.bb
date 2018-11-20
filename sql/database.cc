@@ -1384,13 +1384,11 @@ scoped_refptr<Database::StatementRef> Database::GetCachedStatement(
     const char* sql) {
   auto it = statement_cache_.find(id);
   if (it != statement_cache_.end()) {
-    // Statement is in the cache. It should still be active. We're the only
-    // one invalidating cached statements, and we remove them from the cache
+    // Statement is in the cache. It should still be valid. We're the only
+    // entity invalidating cached statements, and we remove them from the cache
     // when we do that.
     DCHECK(it->second->is_valid());
-    DCHECK_EQ(base::TrimWhitespaceASCII(sql, base::TRIM_ALL),
-              base::TrimWhitespaceASCII(sqlite3_sql(it->second->stmt()),
-                                        base::TRIM_ALL))
+    DCHECK_EQ(std::string(sqlite3_sql(it->second->stmt())), std::string(sql))
         << "GetCachedStatement used with same ID but different SQL";
 
     // Reset the statement so it can be reused.
@@ -1399,8 +1397,11 @@ scoped_refptr<Database::StatementRef> Database::GetCachedStatement(
   }
 
   scoped_refptr<StatementRef> statement = GetUniqueStatement(sql);
-  if (statement->is_valid())
+  if (statement->is_valid()) {
     statement_cache_[id] = statement;  // Only cache valid statements.
+    DCHECK_EQ(std::string(sqlite3_sql(statement->stmt())), std::string(sql))
+        << "Input SQL does not match SQLite's normalized version";
+  }
   return statement;
 }
 
