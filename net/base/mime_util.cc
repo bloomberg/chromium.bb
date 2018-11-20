@@ -449,10 +449,12 @@ bool MimeUtil::ParseMimeTypeWithoutParameter(
     std::string* top_level_type,
     std::string* subtype) const {
   std::vector<std::string> components = base::SplitString(
-      type_string, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (components.size() != 2 ||
-      !HttpUtil::IsToken(components[0]) ||
-      !HttpUtil::IsToken(components[1]))
+      type_string, "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (components.size() != 2)
+    return false;
+  TrimWhitespaceASCII(components[0], base::TRIM_LEADING, &components[0]);
+  TrimWhitespaceASCII(components[1], base::TRIM_TRAILING, &components[1]);
+  if (!HttpUtil::IsToken(components[0]) || !HttpUtil::IsToken(components[1]))
     return false;
 
   if (top_level_type)

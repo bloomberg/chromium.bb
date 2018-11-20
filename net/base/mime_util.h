@@ -66,6 +66,9 @@ NET_EXPORT bool MatchesMimeType(const std::string& mime_type_pattern,
 //
 // If |top_level_type| is non-NULL, sets it to parsed top-level type string.
 // If |subtype| is non-NULL, sets it to parsed subtype string.
+//
+// This function strips leading and trailing whitespace from the MIME type.
+// TODO: investigate if we should strip strictly HTTP whitespace.
 NET_EXPORT bool ParseMimeTypeWithoutParameter(const std::string& type_string,
                                               std::string* top_level_type,
                                               std::string* subtype);
