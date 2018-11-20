@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/default_clock.h"
 #include "chromeos/services/secure_channel/ble_advertiser.h"
 #include "chromeos/services/secure_channel/ble_connection_manager.h"
 #include "chromeos/services/secure_channel/ble_scanner.h"
@@ -51,7 +52,8 @@ class BleConnectionManagerImpl : public BleConnectionManager,
     virtual std::unique_ptr<BleConnectionManager> BuildInstance(
         scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
         BleServiceDataHelper* ble_service_data_helper,
-        TimerFactory* timer_factory);
+        TimerFactory* timer_factory,
+        base::Clock* clock = base::DefaultClock::GetInstance());
 
    private:
     static Factory* test_factory_;
@@ -60,10 +62,35 @@ class BleConnectionManagerImpl : public BleConnectionManager,
   ~BleConnectionManagerImpl() override;
 
  private:
+  class ConnectionAttemptTimestamps {
+   public:
+    ConnectionAttemptTimestamps(ConnectionRole connection_role,
+                                base::Clock* clock);
+    ~ConnectionAttemptTimestamps();
+
+    void RecordAdvertisementReceived();
+    void RecordGattConnectionEstablished();
+    void RecordChannelAuthenticated();
+
+    // Resets the connection attempt metrics by resetting the "start
+    // scan" timestamp and resetting the other timestamps.
+    void Reset();
+
+   private:
+    const ConnectionRole connection_role_;
+    base::Clock* clock_;
+
+    base::Time start_scan_timestamp_;
+    base::Time advertisement_received_timestamp_;
+    base::Time gatt_connection_timestamp_;
+    base::Time authentication_timestamp_;
+  };
+
   BleConnectionManagerImpl(
       scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
       BleServiceDataHelper* ble_service_data_helper,
-      TimerFactory* timer_factory);
+      TimerFactory* timer_factory,
+      base::Clock* clock);
 
   // BleConnectionManager:
   void PerformAttemptBleInitiatorConnection(
@@ -145,8 +172,20 @@ class BleConnectionManagerImpl : public BleConnectionManager,
       const std::string& remote_device_id,
       ConnectionRole connection_role);
 
+  // Starts tracking a connection attempt's duration. If a connection to
+  // |remote_device_id| is already in progress, this function is a no-op.
+  void StartConnectionAttemptTimerMetricsIfNecessary(
+      const std::string& remote_device_id,
+      ConnectionRole connection_role);
+
+  // Removes tracking for a connection attempt's duration if there are no
+  // remaining requests for the connection.
+  void RemoveConnectionAttemptTimerMetricsIfNecessary(
+      const std::string& remote_device_id);
+
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   BleServiceDataHelper* ble_service_data_helper_;
+  base::Clock* clock_;
 
   std::unique_ptr<BleSynchronizerBase> ble_synchronizer_;
   std::unique_ptr<BleAdvertiser> ble_advertiser_;
@@ -157,6 +196,8 @@ class BleConnectionManagerImpl : public BleConnectionManager,
       std::pair<std::unique_ptr<cryptauth::SecureChannel>, ConnectionRole>;
   base::flat_map<std::string, SecureChannelWithRole>
       remote_device_id_to_secure_channel_map_;
+  base::flat_map<std::string, std::unique_ptr<ConnectionAttemptTimestamps>>
+      remote_device_id_to_timestamps_map_;
   base::Optional<std::string> notifying_remote_device_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BleConnectionManagerImpl);

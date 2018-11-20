@@ -13,7 +13,9 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/simple_test_clock.h"
 #include "chromeos/services/secure_channel/authenticated_channel_impl.h"
 #include "chromeos/services/secure_channel/ble_advertiser_impl.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
@@ -46,6 +48,13 @@ namespace secure_channel {
 namespace {
 
 const size_t kNumTestDevices = 5;
+
+constexpr base::TimeDelta kScanToAdvertisementTime =
+    base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kAdvertisementToConnectionTime =
+    base::TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kConnectionToAuthenticationTime =
+    base::TimeDelta::FromSeconds(1);
 
 class FakeBleSynchronizerFactory : public BleSynchronizer::Factory {
  public:
@@ -336,6 +345,9 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
     fake_timer_factory_ = std::make_unique<FakeTimerFactory>();
 
+    test_clock_ = std::make_unique<base::SimpleTestClock>();
+    test_clock_->SetNow(base::Time::UnixEpoch());
+
     fake_ble_synchronizer_factory_ =
         std::make_unique<FakeBleSynchronizerFactory>(mock_adapter_);
     BleSynchronizer::Factory::SetFactoryForTesting(
@@ -375,7 +387,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
     manager_ = BleConnectionManagerImpl::Factory::Get()->BuildInstance(
         mock_adapter_, fake_ble_service_data_helper_.get(),
-        fake_timer_factory_.get());
+        fake_timer_factory_.get(), test_clock_.get());
   }
 
   void TearDown() override {
@@ -647,10 +659,13 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
     size_t num_success_callbacks_before_call = successful_connections_.size();
 
+    test_clock()->Advance(kAdvertisementToConnectionTime);
     fake_secure_channel->ChangeStatus(
         cryptauth::SecureChannel::Status::CONNECTED);
     fake_secure_channel->ChangeStatus(
         cryptauth::SecureChannel::Status::AUTHENTICATING);
+
+    test_clock()->Advance(kConnectionToAuthenticationTime);
     fake_secure_channel->ChangeStatus(
         cryptauth::SecureChannel::Status::AUTHENTICATED);
 
@@ -689,6 +704,10 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   const cryptauth::RemoteDeviceRefList& test_devices() { return test_devices_; }
+
+  base::SimpleTestClock* test_clock() { return test_clock_.get(); }
+
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
  private:
   void OnConnectionSuccess(
@@ -815,6 +834,8 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
 
   const cryptauth::RemoteDeviceRefList test_devices_;
 
+  base::HistogramTester histogram_tester_;
+
   base::flat_map<
       std::string,
       base::flat_set<
@@ -842,6 +863,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
   scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<FakeBleServiceDataHelper> fake_ble_service_data_helper_;
   std::unique_ptr<FakeTimerFactory> fake_timer_factory_;
+  std::unique_ptr<base::SimpleTestClock> test_clock_;
 
   std::unique_ptr<BleConnectionManager> manager_;
 
@@ -1275,6 +1297,41 @@ TEST_F(SecureChannelBleConnectionManagerImplTest,
   CancelBleInitiatorConnectionAttempt(pair);
 
   EXPECT_TRUE(WasChannelHandledByDisconnector(fake_secure_channel));
+}
+
+TEST_F(SecureChannelBleConnectionManagerImplTest, ConnectionTimestamps) {
+  DeviceIdPair pair(test_devices()[1].GetDeviceId(),
+                    test_devices()[0].GetDeviceId());
+
+  AttemptBleListenerConnection(pair, ConnectionPriority::kLow,
+                               true /* expected_to_add_request */);
+
+  test_clock()->Advance(kScanToAdvertisementTime);
+
+  cryptauth::FakeSecureChannel* fake_secure_channel =
+      SimulateConnectionEstablished(test_devices()[1],
+                                    ConnectionRole::kListenerRole);
+
+  SimulateSecureChannelAuthentication(
+      pair.remote_device_id(), fake_secure_channel,
+      true /* created_via_background_advertisement */);
+
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "StartScanToReceiveAdvertisementDuration.Background",
+      kScanToAdvertisementTime, 1);
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "ReceiveAdvertisementToConnectionDuration.Background",
+      kAdvertisementToConnectionTime, 1);
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "StartScanToConnectionDuration.Background",
+      kScanToAdvertisementTime + kAdvertisementToConnectionTime, 1);
+  histogram_tester()->ExpectTimeBucketCount(
+      "MultiDevice.SecureChannel.BLE.Performance."
+      "ConnectionToAuthenticationDuration.Background",
+      kConnectionToAuthenticationTime, 1);
 }
 
 }  // namespace secure_channel

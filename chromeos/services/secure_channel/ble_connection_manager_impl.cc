@@ -4,6 +4,8 @@
 
 #include "chromeos/services/secure_channel/ble_connection_manager_impl.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -15,6 +17,7 @@
 #include "chromeos/services/secure_channel/ble_listener_failure_type.h"
 #include "chromeos/services/secure_channel/ble_scanner_impl.h"
 #include "chromeos/services/secure_channel/ble_synchronizer.h"
+#include "chromeos/services/secure_channel/latency_metrics_logger.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_disconnector_impl.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
@@ -73,17 +76,93 @@ std::unique_ptr<BleConnectionManager>
 BleConnectionManagerImpl::Factory::BuildInstance(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
     BleServiceDataHelper* ble_service_data_helper,
-    TimerFactory* timer_factory) {
+    TimerFactory* timer_factory,
+    base::Clock* clock) {
   return base::WrapUnique(new BleConnectionManagerImpl(
-      bluetooth_adapter, ble_service_data_helper, timer_factory));
+      bluetooth_adapter, ble_service_data_helper, timer_factory, clock));
+}
+
+BleConnectionManagerImpl::ConnectionAttemptTimestamps::
+    ConnectionAttemptTimestamps(ConnectionRole connection_role,
+                                base::Clock* clock)
+    : connection_role_(connection_role),
+      clock_(clock),
+      start_scan_timestamp_(clock_->Now()) {}
+
+BleConnectionManagerImpl::ConnectionAttemptTimestamps::
+    ~ConnectionAttemptTimestamps() = default;
+
+void BleConnectionManagerImpl::ConnectionAttemptTimestamps::
+    RecordAdvertisementReceived() {
+  DCHECK(!start_scan_timestamp_.is_null());
+
+  if (!advertisement_received_timestamp_.is_null())
+    return;
+  advertisement_received_timestamp_ = clock_->Now();
+
+  if (connection_role_ == ConnectionRole::kListenerRole) {
+    LogLatencyMetric(
+        "MultiDevice.SecureChannel.BLE.Performance."
+        "StartScanToReceiveAdvertisementDuration.Background",
+        advertisement_received_timestamp_ - start_scan_timestamp_);
+  }
+}
+
+void BleConnectionManagerImpl::ConnectionAttemptTimestamps::
+    RecordGattConnectionEstablished() {
+  DCHECK(!start_scan_timestamp_.is_null());
+  DCHECK(!advertisement_received_timestamp_.is_null());
+
+  if (!gatt_connection_timestamp_.is_null())
+    return;
+  gatt_connection_timestamp_ = clock_->Now();
+
+  if (connection_role_ == ConnectionRole::kListenerRole) {
+    LogLatencyMetric(
+        "MultiDevice.SecureChannel.BLE.Performance."
+        "ReceiveAdvertisementToConnectionDuration.Background",
+        gatt_connection_timestamp_ - advertisement_received_timestamp_);
+    LogLatencyMetric(
+        "MultiDevice.SecureChannel.BLE.Performance."
+        "StartScanToConnectionDuration.Background",
+        gatt_connection_timestamp_ - start_scan_timestamp_);
+  }
+}
+
+void BleConnectionManagerImpl::ConnectionAttemptTimestamps::
+    RecordChannelAuthenticated() {
+  DCHECK(!start_scan_timestamp_.is_null());
+  DCHECK(!advertisement_received_timestamp_.is_null());
+  DCHECK(!gatt_connection_timestamp_.is_null());
+
+  if (!authentication_timestamp_.is_null())
+    return;
+  authentication_timestamp_ = clock_->Now();
+
+  if (connection_role_ == ConnectionRole::kListenerRole) {
+    LogLatencyMetric(
+        "MultiDevice.SecureChannel.BLE.Performance."
+        "ConnectionToAuthenticationDuration.Background",
+        clock_->Now() - gatt_connection_timestamp_);
+  }
+}
+
+void BleConnectionManagerImpl::ConnectionAttemptTimestamps::Reset() {
+  start_scan_timestamp_ = clock_->Now();
+
+  advertisement_received_timestamp_ = base::Time();
+  gatt_connection_timestamp_ = base::Time();
+  authentication_timestamp_ = base::Time();
 }
 
 BleConnectionManagerImpl::BleConnectionManagerImpl(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
     BleServiceDataHelper* ble_service_data_helper,
-    TimerFactory* timer_factory)
+    TimerFactory* timer_factory,
+    base::Clock* clock)
     : bluetooth_adapter_(bluetooth_adapter),
       ble_service_data_helper_(ble_service_data_helper),
+      clock_(clock),
       ble_synchronizer_(
           BleSynchronizer::Factory::Get()->BuildInstance(bluetooth_adapter)),
       ble_advertiser_(BleAdvertiserImpl::Factory::Get()->BuildInstance(
@@ -107,6 +186,9 @@ void BleConnectionManagerImpl::PerformAttemptBleInitiatorConnection(
   if (DoesAuthenticatingChannelExist(device_id_pair.remote_device_id()))
     return;
 
+  StartConnectionAttemptTimerMetricsIfNecessary(
+      device_id_pair.remote_device_id(), ConnectionRole::kInitiatorRole);
+
   ble_advertiser_->AddAdvertisementRequest(device_id_pair, connection_priority);
   ble_scanner_->AddScanFilter(
       BleScanner::ScanFilter(device_id_pair, ConnectionRole::kInitiatorRole));
@@ -124,6 +206,9 @@ void BleConnectionManagerImpl::PerformUpdateBleInitiatorConnectionPriority(
 
 void BleConnectionManagerImpl::PerformCancelBleInitiatorConnectionAttempt(
     const DeviceIdPair& device_id_pair) {
+  RemoveConnectionAttemptTimerMetricsIfNecessary(
+      device_id_pair.remote_device_id());
+
   if (DoesAuthenticatingChannelExist(device_id_pair.remote_device_id())) {
     // Check to see if we are removing the final request for an active channel;
     // if so, that channel needs to be disconnected.
@@ -147,6 +232,9 @@ void BleConnectionManagerImpl::PerformAttemptBleListenerConnection(
   if (DoesAuthenticatingChannelExist(device_id_pair.remote_device_id()))
     return;
 
+  StartConnectionAttemptTimerMetricsIfNecessary(
+      device_id_pair.remote_device_id(), ConnectionRole::kListenerRole);
+
   ble_scanner_->AddScanFilter(
       BleScanner::ScanFilter(device_id_pair, ConnectionRole::kListenerRole));
 }
@@ -159,6 +247,9 @@ void BleConnectionManagerImpl::PerformUpdateBleListenerConnectionPriority(
 
 void BleConnectionManagerImpl::PerformCancelBleListenerConnectionAttempt(
     const DeviceIdPair& device_id_pair) {
+  RemoveConnectionAttemptTimerMetricsIfNecessary(
+      device_id_pair.remote_device_id());
+
   if (DoesAuthenticatingChannelExist(device_id_pair.remote_device_id())) {
     // Check to see if we are removing the final request for an active channel;
     // if so, that channel needs to be disconnected.
@@ -196,6 +287,9 @@ void BleConnectionManagerImpl::OnReceivedAdvertisement(
     cryptauth::RemoteDeviceRef remote_device,
     device::BluetoothDevice* bluetooth_device,
     ConnectionRole connection_role) {
+  remote_device_id_to_timestamps_map_[remote_device.GetDeviceId()]
+      ->RecordAdvertisementReceived();
+
   // Create a connection to the device.
   std::unique_ptr<cryptauth::Connection> connection =
       cryptauth::weave::BluetoothLowEnergyWeaveClientConnection::Factory::
@@ -224,6 +318,11 @@ void BleConnectionManagerImpl::OnSecureChannelStatusChanged(
     return;
   }
 
+  if (new_status == cryptauth::SecureChannel::Status::CONNECTED) {
+    remote_device_id_to_timestamps_map_[remote_device_id]
+        ->RecordGattConnectionEstablished();
+  }
+
   if (new_status == cryptauth::SecureChannel::Status::AUTHENTICATED) {
     HandleChannelAuthenticated(remote_device_id);
     return;
@@ -246,8 +345,7 @@ void BleConnectionManagerImpl::SetAuthenticatingChannel(
   // connections to the same device can interfere with each other.
   PauseConnectionAttemptsToDevice(remote_device_id);
 
-  if (base::ContainsKey(remote_device_id_to_secure_channel_map_,
-                        remote_device_id)) {
+  if (DoesAuthenticatingChannelExist(remote_device_id)) {
     PA_LOG(ERROR) << "BleConnectionManager::OnReceivedAdvertisement(): A new "
                   << "channel was created, one already exists for the same "
                   << "remote device ID. ID: "
@@ -310,10 +408,8 @@ void BleConnectionManagerImpl::ProcessPotentialLingeringChannel(
     const std::string& remote_device_id) {
   // If there was no authenticating SecureChannel associated with
   // |remote_device_id|, return early.
-  if (!base::ContainsKey(remote_device_id_to_secure_channel_map_,
-                         remote_device_id)) {
+  if (!DoesAuthenticatingChannelExist(remote_device_id))
     return;
-  }
 
   // If there is at least one active request, the channel should remain active.
   if (!GetDetailsForRemoteDevice(remote_device_id).empty())
@@ -352,6 +448,10 @@ std::string BleConnectionManagerImpl::GetRemoteDeviceIdForSecureChannel(
 void BleConnectionManagerImpl::HandleSecureChannelDisconnection(
     const std::string& remote_device_id,
     bool was_authenticating) {
+  // Since the channel has disconnected, the timestamps used to track the
+  // connection's latency should be reset and started anew.
+  remote_device_id_to_timestamps_map_[remote_device_id]->Reset();
+
   for (const auto& details : GetDetailsForRemoteDevice(remote_device_id)) {
     switch (details.connection_role()) {
       // Initiator role devices are notified of authentication errors as well as
@@ -374,7 +474,7 @@ void BleConnectionManagerImpl::HandleSecureChannelDisconnection(
     }
   }
 
-  // Stop observer the disconnected channel and remove it from the map.
+  // Stop observing the disconnected channel and remove it from the map.
   remote_device_id_to_secure_channel_map_[remote_device_id]
       .first->RemoveObserver(this);
   remote_device_id_to_secure_channel_map_.erase(remote_device_id);
@@ -388,6 +488,10 @@ void BleConnectionManagerImpl::HandleSecureChannelDisconnection(
 
 void BleConnectionManagerImpl::HandleChannelAuthenticated(
     const std::string& remote_device_id) {
+  remote_device_id_to_timestamps_map_[remote_device_id]
+      ->RecordChannelAuthenticated();
+  remote_device_id_to_timestamps_map_.erase(remote_device_id);
+
   // Extract the map value and remove the entry from the map.
   SecureChannelWithRole channel_with_role =
       std::move(remote_device_id_to_secure_channel_map_[remote_device_id]);
@@ -443,6 +547,28 @@ ConnectionAttemptDetails BleConnectionManagerImpl::ChooseChannelRecipient(
   return ConnectionAttemptDetails(std::string(), std::string(),
                                   ConnectionMedium::kBluetoothLowEnergy,
                                   ConnectionRole::kInitiatorRole);
+}
+
+void BleConnectionManagerImpl::StartConnectionAttemptTimerMetricsIfNecessary(
+    const std::string& remote_device_id,
+    ConnectionRole connection_role) {
+  // If an entry already exists, there is nothing to do. This is expected if
+  // more than one client is attempting a connection to the same device.
+  if (base::ContainsKey(remote_device_id_to_timestamps_map_, remote_device_id))
+    return;
+
+  remote_device_id_to_timestamps_map_[remote_device_id] =
+      std::make_unique<ConnectionAttemptTimestamps>(connection_role, clock_);
+}
+
+void BleConnectionManagerImpl::RemoveConnectionAttemptTimerMetricsIfNecessary(
+    const std::string& remote_device_id) {
+  // If there is at least one active request, latency metrics should continue
+  // tracking the connection attempt.
+  if (!GetDetailsForRemoteDevice(remote_device_id).empty())
+    return;
+
+  remote_device_id_to_timestamps_map_.erase(remote_device_id);
 }
 
 }  // namespace secure_channel
