@@ -36,6 +36,7 @@ source_set("search_engines") {
   ]
   deps = [
     "//base",
+    "//components/country_codes",
     "//components/favicon/ios",
     "//components/google/core/browser",
     "//components/history/core/browser",

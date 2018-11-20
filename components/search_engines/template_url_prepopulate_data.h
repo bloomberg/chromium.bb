@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "components/search_engines/search_engine_type.h"
 
 class GURL;
@@ -69,14 +68,6 @@ std::unique_ptr<TemplateURLData> GetPrepopulatedDefaultSearch(
 // Like the above, but takes a GURL which is expected to represent a search URL.
 // This may be called on any thread.
 SearchEngineType GetEngineType(const GURL& url);
-
-// Returns the identifier for the user current country. Used to update the list
-// of search engines when user switches device region settings. For use on iOS
-// only.
-// TODO(ios): Once user can customize search engines ( http://crbug.com/153047 )
-// this declaration should be removed and the definition in the .cc file be
-// moved back to the anonymous namespace.
-int GetCurrentCountryID();
 
 }  // namespace TemplateURLPrepopulateData
 
