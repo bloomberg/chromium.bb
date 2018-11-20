@@ -420,7 +420,8 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   // Used to emulate display change when run in a desktop environment instead
   // of on a device.
-  void AddRemoveDisplay();
+  void AddRemoveDisplay(
+      ManagedDisplayInfo::ManagedDisplayModeList display_modes = {});
   void ToggleDisplayScaleFactor();
 
 // SoftwareMirroringController override:

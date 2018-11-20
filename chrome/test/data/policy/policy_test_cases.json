@@ -3427,6 +3427,20 @@
     "test_policy": { "DisplayRotationDefault": 1 }
   },
 
+  "DeviceDisplayResolution": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": {
+      "DeviceDisplayResolution": {
+        "external_width": 1920,
+        "external_height": 1080,
+        "external_scale_percentage": 100,
+        "internal_scale_percentage": 50,
+        "recommended": true
+      }
+    }
+  },
+
   "ChromeOsReleaseChannel": {
   },
 

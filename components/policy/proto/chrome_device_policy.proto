@@ -761,6 +761,13 @@ message DisplayRotationDefaultProto {
   optional Rotation display_rotation_default = 1;
 }
 
+// This setting is configured by the device policy DeviceDisplayResolution.
+// If |device_display_resolution| contains a value, then it's treated as a JSON
+// object that uses the schema defined for DeviceDisplayResolution policy.
+message DeviceDisplayResolutionProto {
+  optional string device_display_resolution = 1;
+}
+
 // Settings that control whether to allow Chrome to be pinned to a specific
 // version according to the auto-launched kiosk app’s requirement.
 message AllowKioskAppControlChromeVersionProto {
@@ -1178,4 +1185,5 @@ message ChromeDeviceSettingsProto {
       device_unaffiliated_crostini_allowed = 72;
   optional DeviceWiFiFastTransitionEnabledProto
       device_wifi_fast_transition_enabled = 73;
+  optional DeviceDisplayResolutionProto device_display_resolution = 74;
 }

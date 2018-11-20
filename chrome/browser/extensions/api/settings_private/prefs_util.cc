@@ -506,6 +506,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageXkbAutoRepeatInterval] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[chromeos::kDeviceDisplayResolution] =
+      settings_api::PrefType::PREF_TYPE_DICTIONARY;
+  (*s_whitelist)[chromeos::kDisplayRotationDefault] =
+      settings_api::PrefType::PREF_TYPE_DICTIONARY;
 
   // Native Printing settings.
   (*s_whitelist)[::prefs::kUserNativePrintersAllowed] =

@@ -1366,7 +1366,8 @@ void DisplayManager::SetMirrorMode(
   ReconfigureDisplays();
 }
 
-void DisplayManager::AddRemoveDisplay() {
+void DisplayManager::AddRemoveDisplay(
+    ManagedDisplayInfo::ManagedDisplayModeList display_modes) {
   DCHECK(!active_display_list_.empty());
 
   DisplayInfoList new_display_info_list;
@@ -1377,13 +1378,33 @@ void DisplayManager::AddRemoveDisplay() {
   new_display_info_list.push_back(first_display);
   // Add if there is only one display connected.
   if (num_connected_displays() == 1) {
+    gfx::Rect host_bounds = first_display.bounds_in_native();
+    if (display_modes.empty()) {
+      display_modes.emplace_back(
+          gfx::Size(600 /* width */, host_bounds.height()),
+          60.0, /* refresh_rate */
+          false /* is_interlaced */, true /* native */);
+    }
+
+    // Find native display mode (or just the first one if there is no
+    // mode marked as native) and create a display with this mode as a default
+    const ManagedDisplayMode* native_display_mode = &(display_modes[0]);
+    for (const ManagedDisplayMode& display_mode : display_modes) {
+      if (display_mode.native()) {
+        native_display_mode = &display_mode;
+        break;
+      }
+    }
+
     const int kVerticalOffsetPx = 100;
     // Layout the 2nd display below the primary as with the real device.
-    gfx::Rect host_bounds = first_display.bounds_in_native();
-    new_display_info_list.push_back(
-        ManagedDisplayInfo::CreateFromSpec(base::StringPrintf(
-            "%d+%d-600x%d", host_bounds.x(),
-            host_bounds.bottom() + kVerticalOffsetPx, host_bounds.height())));
+    ManagedDisplayInfo display = ManagedDisplayInfo::CreateFromSpec(
+        base::StringPrintf("%d+%d-%dx%d", host_bounds.x(),
+                           host_bounds.bottom() + kVerticalOffsetPx,
+                           native_display_mode->size().width(),
+                           native_display_mode->size().height()));
+    display.SetManagedDisplayModes(std::move(display_modes));
+    new_display_info_list.push_back(std::move(display));
   }
   num_connected_displays_ = new_display_info_list.size();
   ClearMirroringSourceAndDestination();

@@ -13833,6 +13833,62 @@
 
       For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode''',
     },
+    {
+      'name': 'DeviceDisplayResolution',
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'external_width': { 'type': 'integer', 'minimum': 1 },
+          'external_height': { 'type': 'integer', 'minimum': 1 },
+          'external_scale_percentage': { 'type': 'integer', 'minimum': 1 },
+          'external_use_native': { 'type': 'boolean' },
+          'internal_scale_percentage': { 'type': 'integer', 'minimum': 1 },
+          'recommended': { 'type': 'boolean' }
+        }
+      },
+      'supported_on': [ 'chrome_os:72-' ],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'device_only': True,
+      'example_value': {
+        'external_width': 1920,
+        'external_height': 1080,
+        'external_use_native': False,
+        'external_scale_percentage': 100,
+        'internal_scale_percentage': 150,
+        'recommended': True
+      },
+      'id': 502,
+      'caption': '''Set display resolution and scale factor''',
+      'tags': [],
+      'desc': '''When this policy is set, resolution and scale factor of each
+      display are set to the specified values. External display settings are
+      applied to all connected external displays.
+
+      Values of "external_width" and "external_height" should be specified in
+      pixels. Values of "external_scale_percentage" and
+      "internal_scale_percentage" should be specified in percents.
+
+      If "external_use_native" is set to true, policy will ignore values of
+      "external_height" and "external_width" and set resolution of the external
+      displays to their native resolution.
+
+      If "external_use_native" is false or not provided and either
+      "external_height" or "external_width" is not provided, policy doesn't
+      affect the external display settings. If specified resolution or
+      scale factor is not supported by some display, policy is not applied to
+      that display.
+
+      If "recommended" flag is set to true, users may change resolution and
+      scale factor of any display via the settings page after logging in, but
+      their settings will be overriden by the policy value at the next reboot.
+      If "recommended" flag is set to false or not set, users can't change the
+      display settings.''',
+    }
   ],
 
   'messages': {
@@ -13974,5 +14030,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  501
+  'highest_id_currently_used':  502
 }

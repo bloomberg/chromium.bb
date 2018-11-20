@@ -18,7 +18,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
+#include "chrome/browser/chromeos/policy/display_resolution_handler.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
+#include "chrome/browser/chromeos/policy/display_settings_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
@@ -252,10 +254,15 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   login_screen_client_ = std::make_unique<LoginScreenClient>();
   media_client_ = std::make_unique<MediaClient>();
 
-  // Instantiate DisplayRotationDefaultHandler after CrosSettings has been
+  // Instantiate DisplaySettingsHandler after CrosSettings has been
   // initialized.
-  display_rotation_handler_ =
-      std::make_unique<policy::DisplayRotationDefaultHandler>();
+  display_settings_handler_ =
+      std::make_unique<policy::DisplaySettingsHandler>();
+  display_settings_handler_->RegisterHandler(
+      std::make_unique<policy::DisplayResolutionHandler>());
+  display_settings_handler_->RegisterHandler(
+      std::make_unique<policy::DisplayRotationDefaultHandler>());
+  display_settings_handler_->Start();
 
   // Do not create a NetworkPortalNotificationController for tests since the
   // NetworkPortalDetector instance may be replaced.
@@ -304,7 +311,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 
   // Initialized in PostProfileInit:
   network_portal_notification_controller_.reset();
-  display_rotation_handler_.reset();
+  display_settings_handler_.reset();
   media_client_.reset();
   login_screen_client_.reset();
   cast_config_client_media_router_.reset();
