@@ -1104,6 +1104,14 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
     ancestor->SetChildNeedsStyleRecalc();
     if (ancestor->NeedsStyleRecalc())
       break;
+    // If we reach a locked ancestor, we should abort since the ancestor marking
+    // will be done when the lock is committed.
+    if (RuntimeEnabledFeatures::DisplayLockingEnabled()) {
+      if (ancestor->IsElementNode() &&
+          ToElement(ancestor)->StyleRecalcBlockedByDisplayLock()) {
+        break;
+      }
+    }
   }
   if (!isConnected())
     return;
@@ -1111,6 +1119,23 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   // early return here is a performance optimization.
   if (parent_dirty)
     return;
+
+  // If we're in a locked subtree, then we should not update the style recalc
+  // roots. These would be updated when we commit the lock.
+  // TODO(vmpstr): There's currently no easy way to determine whether we're in a
+  // locked subtree other than navigating up the ancestor chain. We can probably
+  // do better and only do this walk if there is in fact a lock somewhere in the
+  // document.
+  if (RuntimeEnabledFeatures::DisplayLockingEnabled()) {
+    for (auto* ancestor_copy = ancestor; ancestor_copy;
+         ancestor_copy = ancestor_copy->ParentOrShadowHostNode()) {
+      if (ancestor_copy->IsElementNode() &&
+          ToElement(ancestor_copy)->StyleRecalcBlockedByDisplayLock()) {
+        return;
+      }
+    }
+  }
+
   GetDocument().GetStyleEngine().UpdateStyleRecalcRoot(ancestor, this);
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }

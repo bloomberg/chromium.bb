@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
+
 #include "third_party/blink/renderer/bindings/core/v8/v8_display_lock_callback.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_suspended_handle.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -65,6 +66,8 @@ class CORE_EXPORT DisplayLockScopedLogger {
   const char* LifecycleUpdateStateToString(
       DisplayLockContext::LifecycleUpdateState state) {
     switch (state) {
+      case DisplayLockContext::kNeedsStyle:
+        return "kNeedsStyle";
       case DisplayLockContext::kNeedsLayout:
         return "kNeedsLayout";
       case DisplayLockContext::kNeedsPrePaint:
@@ -283,9 +286,24 @@ void DisplayLockContext::NotifyConnectedMayHaveChanged() {
     state_ = kDisconnected;
 }
 
-bool DisplayLockContext::ShouldLayout() const {
+bool DisplayLockContext::ShouldStyle() const {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
   return state_ >= kCommitting;
+}
+
+void DisplayLockContext::DidStyle() {
+  SCOPED_LOGGER(__PRETTY_FUNCTION__);
+  if (state_ != kCommitting)
+    return;
+
+  if (lifecycle_update_state_ <= kNeedsStyle)
+    lifecycle_update_state_ = kNeedsLayout;
+}
+
+bool DisplayLockContext::ShouldLayout() const {
+  SCOPED_LOGGER(__PRETTY_FUNCTION__);
+  return std::tie(state_, lifecycle_update_state_) >=
+         std::tuple<State, LifecycleUpdateState>(kCommitting, kNeedsLayout);
 }
 
 void DisplayLockContext::DidLayout() {
@@ -299,7 +317,8 @@ void DisplayLockContext::DidLayout() {
 
 bool DisplayLockContext::ShouldPrePaint() const {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  return state_ >= kCommitting && lifecycle_update_state_ >= kNeedsPrePaint;
+  return std::tie(state_, lifecycle_update_state_) >=
+         std::tuple<State, LifecycleUpdateState>(kCommitting, kNeedsPrePaint);
 }
 
 void DisplayLockContext::DidPrePaint() {
@@ -307,13 +326,17 @@ void DisplayLockContext::DidPrePaint() {
   if (state_ != kCommitting)
     return;
 
+  // Since we should be under containment, we should have a layer. If we don't,
+  // then paint might not happen and we'll never resolve.
+  DCHECK(element_->GetLayoutObject()->HasLayer());
   if (lifecycle_update_state_ <= kNeedsPrePaint)
     lifecycle_update_state_ = kNeedsPaint;
 }
 
 bool DisplayLockContext::ShouldPaint() const {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  return state_ >= kCommitting && lifecycle_update_state_ >= kNeedsPaint;
+  return std::tie(state_, lifecycle_update_state_) >=
+         std::tuple<State, LifecycleUpdateState>(kCommitting, kNeedsPaint);
 }
 
 void DisplayLockContext::DidPaint() {
@@ -344,12 +367,23 @@ void DisplayLockContext::FinishResolution() {
 void DisplayLockContext::StartCommit() {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
   state_ = kCommitting;
-  lifecycle_update_state_ = kNeedsLayout;
+  lifecycle_update_state_ = kNeedsStyle;
+
+  // Ensure that we can reach this element for style if needed.
+  if (element_->NeedsStyleRecalc() || element_->ChildNeedsStyleRecalc())
+    element_->MarkAncestorsWithChildNeedsStyleRecalc();
+  else
+    DidStyle();
+
+  // Also ensure we reach it for layout.
+  // TODO(vmpstr): This should just mark the ancestor chain if needed.
   element_->GetLayoutObject()->SetNeedsLayout(
       LayoutInvalidationReason::kDisplayLockCommitting);
   if (auto* parent = element_->GetLayoutObject()->Parent()) {
     parent->SetNeedsLayout(LayoutInvalidationReason::kDisplayLockCommitting);
   }
+
+  // Schedule an animation to perform the lifecycle phases.
   element_->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
       element_->GetDocument().GetFrame());
   DCHECK(element_->GetLayoutObject());

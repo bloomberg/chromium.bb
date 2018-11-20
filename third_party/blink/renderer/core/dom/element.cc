@@ -2208,6 +2208,11 @@ void Element::RecalcStyleForTraversalRootAncestor() {
 void Element::RecalcStyle(StyleRecalcChange change) {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().Lifecycle().InDetach());
+
+  if (StyleRecalcBlockedByDisplayLock())
+    return;
+  NotifyDisplayLockDidRecalcStyle();
+
   // If we are re-attaching in a Shadow DOM v0 tree, we recalc down to the
   // distributed nodes to propagate kReattach down the flat tree (See
   // V0InsertionPoint::DidRecalcStyle). That means we may have a shadow-
@@ -3557,6 +3562,8 @@ ScriptPromise Element::acquireDisplayLock(ScriptState* script_state,
 }
 
 DisplayLockContext* Element::GetDisplayLockContext() const {
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+    return nullptr;
   return HasRareData() ? GetElementRareData()->GetDisplayLockContext()
                        : nullptr;
 }
@@ -5092,6 +5099,16 @@ const NamesMap* Element::PartNamesMap() const {
   return RuntimeEnabledFeatures::CSSPartPseudoElementEnabled() && HasRareData()
              ? GetElementRareData()->PartNamesMap()
              : nullptr;
+}
+
+bool Element::StyleRecalcBlockedByDisplayLock() const {
+  auto* context = GetDisplayLockContext();
+  return context && !context->ShouldStyle();
+}
+
+void Element::NotifyDisplayLockDidRecalcStyle() {
+  if (auto* context = GetDisplayLockContext())
+    context->DidStyle();
 }
 
 }  // namespace blink

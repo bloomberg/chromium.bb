@@ -466,6 +466,9 @@ class CORE_EXPORT Node : public EventTarget {
   void SetNeedsStyleRecalc(StyleChangeType, const StyleChangeReasonForTracing&);
   void ClearNeedsStyleRecalc();
 
+  // Propagates a dirty bit breadcrumb for this element up the ancestor chain.
+  void MarkAncestorsWithChildNeedsStyleRecalc();
+
   bool NeedsReattachLayoutTree() const {
     return GetFlag(kNeedsReattachLayoutTree);
   }
@@ -1003,7 +1006,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   void SetTreeScope(TreeScope* scope) { tree_scope_ = scope; }
 
-  void MarkAncestorsWithChildNeedsStyleRecalc();
   static void MarkAncestorsWithChildNeedsStyleRecalc(Node* child) {
     child->MarkAncestorsWithChildNeedsStyleRecalc();
   }

@@ -2145,24 +2145,33 @@ void Document::PropagateStyleToViewport() {
 
 #if DCHECK_IS_ON()
 static void AssertLayoutTreeUpdated(Node& root) {
-  for (Node& node : NodeTraversal::InclusiveDescendantsOf(root)) {
-    DCHECK(!node.NeedsStyleRecalc());
-    DCHECK(!node.ChildNeedsStyleRecalc());
-    DCHECK(!node.NeedsReattachLayoutTree());
-    DCHECK(!node.ChildNeedsReattachLayoutTree());
-    DCHECK(!node.ChildNeedsDistributionRecalc());
-    DCHECK(!node.NeedsStyleInvalidation());
-    DCHECK(!node.ChildNeedsStyleInvalidation());
-    DCHECK(!node.GetForceReattachLayoutTree());
+  Node* node = &root;
+  while (node) {
+    if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+        node->IsElementNode() &&
+        ToElement(node)->StyleRecalcBlockedByDisplayLock()) {
+      node = NodeTraversal::NextSkippingChildren(*node);
+      continue;
+    }
+
+    DCHECK(!node->NeedsStyleRecalc());
+    DCHECK(!node->ChildNeedsStyleRecalc());
+    DCHECK(!node->NeedsReattachLayoutTree());
+    DCHECK(!node->ChildNeedsReattachLayoutTree());
+    DCHECK(!node->ChildNeedsDistributionRecalc());
+    DCHECK(!node->NeedsStyleInvalidation());
+    DCHECK(!node->ChildNeedsStyleInvalidation());
+    DCHECK(!node->GetForceReattachLayoutTree());
     // Make sure there is no node which has a LayoutObject, but doesn't have a
     // parent in a flat tree. If there is such a node, we forgot to detach the
     // node. DocumentNode is only an exception.
-    DCHECK((node.IsDocumentNode() || !node.GetLayoutObject() ||
-            FlatTreeTraversal::Parent(node)))
-        << node;
+    DCHECK((node->IsDocumentNode() || !node->GetLayoutObject() ||
+            FlatTreeTraversal::Parent(*node)))
+        << *node;
 
-    if (ShadowRoot* shadow_root = node.GetShadowRoot())
+    if (ShadowRoot* shadow_root = node->GetShadowRoot())
       AssertLayoutTreeUpdated(*shadow_root);
+    node = NodeTraversal::Next(*node);
   }
 }
 #endif
