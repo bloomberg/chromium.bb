@@ -130,7 +130,8 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // until we update our call-sites (typically these are for API changes).
 //
 // Remove these as we update our sites.
-//
+
+#define SK_LEGACY_PLATFORM_MATRIX_PROCS
 
 // Workaround for poor anisotropic mipmap quality,
 // pending Skia ripmap support.
