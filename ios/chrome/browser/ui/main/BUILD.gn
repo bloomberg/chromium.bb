@@ -26,6 +26,7 @@ source_set("main") {
     "//ios/chrome/browser/device_sharing",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:serialisation",
+    "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/tabs:tabs_internal",
     "//ios/chrome/browser/ui/alert_coordinator",

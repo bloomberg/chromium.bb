@@ -254,7 +254,6 @@ source_set("test_support") {
     "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:test_support",
-    "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/sync:test_support",
     "//ios/chrome/browser/ui/collection_view:test_support",

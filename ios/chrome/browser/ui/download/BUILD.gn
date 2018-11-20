@@ -54,7 +54,10 @@ source_set("download") {
     "//ui/base",
     "//ui/gfx",
   ]
-  libs = [ "UIKit.framework" ]
+  libs = [
+    "StoreKit.framework",
+    "UIKit.framework",
+  ]
 }
 
 source_set("unit_tests") {
@@ -75,7 +78,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/download:test_support",
     "//ios/chrome/browser/infobars",
-    "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/browser/web_state_list:test_support",
@@ -89,6 +91,12 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/ocmock:ocmock",
     "//ui/base",
+  ]
+  libs = [
+    "MobileCoreServices.framework",
+    "PassKit.framework",
+    "StoreKit.framework",
+    "UIKit.framework",
   ]
 }
 

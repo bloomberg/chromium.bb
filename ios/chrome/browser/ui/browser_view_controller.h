@@ -6,7 +6,6 @@
 #define IOS_CHROME_BROWSER_UI_BROWSER_VIEW_CONTROLLER_H_
 
 #import <MessageUI/MessageUI.h>
-#import <StoreKit/StoreKit.h>
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"

@@ -9,6 +9,8 @@
 #include "base/scoped_observer.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
+#import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
+#import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
@@ -70,6 +72,9 @@
 // Coordinator for displaying snackbars.
 @property(nonatomic, strong) SnackbarCoordinator* snackbarCoordinator;
 
+// Coordinator for presenting SKStoreProductViewController.
+@property(nonatomic, strong) StoreKitCoordinator* storeKitCoordinator;
+
 @end
 
 @implementation BrowserCoordinator {
@@ -89,6 +94,7 @@
 @synthesize recentTabsCoordinator = _recentTabsCoordinator;
 @synthesize repostFormCoordinator = _repostFormCoordinator;
 @synthesize snackbarCoordinator = _snackbarCoordinator;
+@synthesize storeKitCoordinator = _storeKitCoordinator;
 
 #pragma mark - ChromeCoordinator
 
@@ -170,6 +176,9 @@
   self.snackbarCoordinator = [[SnackbarCoordinator alloc] init];
   self.snackbarCoordinator.dispatcher = self.dispatcher;
   [self.snackbarCoordinator start];
+
+  self.storeKitCoordinator = [[StoreKitCoordinator alloc]
+      initWithBaseViewController:self.viewController];
 }
 
 // Stops child coordinators.
@@ -198,6 +207,9 @@
 
   [self.snackbarCoordinator stop];
   self.snackbarCoordinator = nil;
+
+  [self.storeKitCoordinator stop];
+  self.storeKitCoordinator = nil;
 }
 
 #pragma mark - BrowserCoordinatorCommands
@@ -376,10 +388,18 @@
       self.appLauncherCoordinator);
 
   RepostFormTabHelper::CreateForWebState(webState, self);
+
+  if (StoreKitTabHelper::FromWebState(webState)) {
+    StoreKitTabHelper::FromWebState(webState)->SetLauncher(
+        self.storeKitCoordinator);
+  }
 }
 
 // Uninstalls delegates for |webState|.
 - (void)uninstallDelegatesForWebState:(web::WebState*)webState {
+  if (StoreKitTabHelper::FromWebState(webState)) {
+    StoreKitTabHelper::FromWebState(webState)->SetLauncher(nil);
+  }
 }
 
 @end
