@@ -319,14 +319,6 @@ int DatabaseAuthorizer::AllowPragma(const String&, const String&) {
   return security_enabled_ ? kSQLAuthDeny : kSQLAuthAllow;
 }
 
-int DatabaseAuthorizer::AllowAttach(const String&) {
-  return security_enabled_ ? kSQLAuthDeny : kSQLAuthAllow;
-}
-
-int DatabaseAuthorizer::AllowDetach(const String&) {
-  return security_enabled_ ? kSQLAuthDeny : kSQLAuthAllow;
-}
-
 int DatabaseAuthorizer::AllowFunction(const String& function_name) {
   if (security_enabled_ && !WhitelistedFunctions().Contains(function_name))
     return kSQLAuthDeny;
