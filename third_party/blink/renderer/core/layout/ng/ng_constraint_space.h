@@ -564,7 +564,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
     bool MaySkipLayout(const RareData& other) const {
       return margin_strut == other.margin_strut &&
-             bfc_offset == other.bfc_offset &&
+             bfc_offset.line_offset == other.bfc_offset.line_offset &&
              floats_bfc_block_offset == other.floats_bfc_block_offset &&
              clearance_offset == other.clearance_offset &&
              fragmentainer_block_size == other.fragmentainer_block_size &&
