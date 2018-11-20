@@ -87,7 +87,6 @@ def main():
 
   prefixes = {
       '--renderer-cmd-prefix',
-      '--gpu-launcher',
       '--plugin-launcher',
       '--ppapi-plugin-launcher',
       '--utility-cmd-prefix',
