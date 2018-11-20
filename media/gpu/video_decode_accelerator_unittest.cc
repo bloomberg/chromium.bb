@@ -1160,7 +1160,7 @@ CreateAndInitializeVideoFrameValidator(
       prefix_output_yuv = GetTestDataFile(filepath);
     }
   }
-#if defined(USE_VAAPI)
+#if BUILDFLAG(USE_VAAPI)
   bool linear = false;
 #else
   bool linear = true;
