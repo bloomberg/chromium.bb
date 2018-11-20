@@ -19,34 +19,81 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "url/origin.h"
 
 namespace {
-const char kDigitalAssetLinksBaseURL[] =
-    "https://digitalassetlinks.googleapis.com";
-const char kDigitalAssetLinksCheckAPI[] = "/v1/assetlinks:check?";
-const char kTargetOriginParam[] = "source.web.site";
-const char kSourcePackageNameParam[] = "target.androidApp.packageName";
-const char kSourceFingerprintParam[] =
-    "target.androidApp.certificate.sha256Fingerprint";
-const char kRelationshipParam[] = "relation";
 
-GURL GetUrlForCheckingRelationship(const std::string& web_domain,
-                                   const std::string& package_name,
-                                   const std::string& fingerprint,
-                                   const std::string& relationship) {
-  GURL request_url =
-      GURL(kDigitalAssetLinksBaseURL).Resolve(kDigitalAssetLinksCheckAPI);
-  request_url =
-      net::AppendQueryParameter(request_url, kTargetOriginParam, web_domain);
-  request_url = net::AppendQueryParameter(request_url, kSourcePackageNameParam,
-                                          package_name);
-  request_url = net::AppendQueryParameter(request_url, kSourceFingerprintParam,
-                                          fingerprint);
-  request_url =
-      net::AppendQueryParameter(request_url, kRelationshipParam, relationship);
-  DCHECK(request_url.is_valid());
-  return request_url;
+// Location on a website where the asset links file can be found, see
+// https://developers.google.com/digital-asset-links/v1/getting-started.
+const char kAssetLinksAbsolutePath[] = ".well-known/assetlinks.json";
+
+GURL GetUrlForAssetLinks(const url::Origin& origin) {
+  return origin.GetURL().Resolve(kAssetLinksAbsolutePath);
 }
+
+// An example, well formed asset links file for reference:
+//  [{
+//    "relation": ["delegate_permission/common.handle_all_urls"],
+//    "target": {
+//      "namespace": "android_app",
+//      "package_name": "com.peter.trustedpetersactivity",
+//      "sha256_cert_fingerprints": [
+//        "FA:2A:03: ... :9D"
+//      ]
+//    }
+//  }, {
+//    "relation": ["delegate_permission/common.handle_all_urls"],
+//    "target": {
+//      "namespace": "android_app",
+//      "package_name": "com.example.firstapp",
+//      "sha256_cert_fingerprints": [
+//        "64:2F:D4: ... :C1"
+//      ]
+//    }
+//  }]
+
+bool StatementHasMatchingRelationship(const base::Value& statement,
+                                      const std::string& target_relation) {
+  const base::Value* relations =
+      statement.FindKeyOfType("relation", base::Value::Type::LIST);
+
+  if (!relations)
+    return false;
+
+  for (const auto& relation : relations->GetList()) {
+    if (relation.is_string() && relation.GetString() == target_relation)
+      return true;
+  }
+
+  return false;
+}
+
+bool StatementHasMatchingPackage(const base::Value& statement,
+                                 const std::string& target_package) {
+  const base::Value* package = statement.FindPathOfType(
+      {"target", "package_name"}, base::Value::Type::STRING);
+
+  return package && package->GetString() == target_package;
+}
+
+bool StatementHasMatchingFingerprint(const base::Value& statement,
+                                     const std::string& target_fingerprint) {
+  const base::Value* fingerprints = statement.FindPathOfType(
+      {"target", "sha256_cert_fingerprints"}, base::Value::Type::LIST);
+
+  if (!fingerprints)
+    return false;
+
+  for (const auto& fingerprint : fingerprints->GetList()) {
+    if (fingerprint.is_string() &&
+        fingerprint.GetString() == target_fingerprint) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 namespace digital_asset_links {
@@ -60,6 +107,9 @@ DigitalAssetLinksHandler::DigitalAssetLinksHandler(
 DigitalAssetLinksHandler::~DigitalAssetLinksHandler() = default;
 
 void DigitalAssetLinksHandler::OnURLLoadComplete(
+    const std::string& package,
+    const std::string& fingerprint,
+    const std::string& relationship,
     std::unique_ptr<std::string> response_body) {
   int response_code = -1;
   if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
@@ -84,7 +134,8 @@ void DigitalAssetLinksHandler::OnURLLoadComplete(
       /* connector=*/nullptr,  // Connector is unused on Android.
       *response_body,
       base::Bind(&DigitalAssetLinksHandler::OnJSONParseSucceeded,
-                 weak_ptr_factory_.GetWeakPtr()),
+                 weak_ptr_factory_.GetWeakPtr(), package, fingerprint,
+                 relationship),
       base::Bind(&DigitalAssetLinksHandler::OnJSONParseFailed,
                  weak_ptr_factory_.GetWeakPtr()));
 
@@ -92,13 +143,26 @@ void DigitalAssetLinksHandler::OnURLLoadComplete(
 }
 
 void DigitalAssetLinksHandler::OnJSONParseSucceeded(
-    std::unique_ptr<base::Value> result) {
-  base::Value* success = result->FindKeyOfType(
-      kDigitalAssetLinksCheckResponseKeyLinked, base::Value::Type::BOOLEAN);
+    const std::string& package,
+    const std::string& fingerprint,
+    const std::string& relationship,
+    std::unique_ptr<base::Value> statement_list) {
+  if (!statement_list->is_list()) {
+    std::move(callback_).Run(RelationshipCheckResult::FAILURE);
+    return;
+  }
 
-  std::move(callback_).Run(success && success->GetBool()
-      ? RelationshipCheckResult::SUCCESS
-      : RelationshipCheckResult::FAILURE);
+  for (const auto& statement : statement_list->GetList()) {
+    if (statement.is_dict() &&
+        StatementHasMatchingRelationship(statement, relationship) &&
+        StatementHasMatchingPackage(statement, package) &&
+        StatementHasMatchingFingerprint(statement, fingerprint)) {
+      std::move(callback_).Run(RelationshipCheckResult::SUCCESS);
+      return;
+    }
+  }
+
+  std::move(callback_).Run(RelationshipCheckResult::FAILURE);
 }
 
 void DigitalAssetLinksHandler::OnJSONParseFailed(
@@ -113,11 +177,11 @@ void DigitalAssetLinksHandler::OnJSONParseFailed(
 bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
     RelationshipCheckResultCallback callback,
     const std::string& web_domain,
-    const std::string& package_name,
+    const std::string& package,
     const std::string& fingerprint,
     const std::string& relationship) {
-  GURL request_url = GetUrlForCheckingRelationship(web_domain, package_name,
-                                                   fingerprint, relationship);
+  // TODO(peconn): Propegate the use of url::Origin backwards to clients.
+  GURL request_url = GetUrlForAssetLinks(url::Origin::Create(GURL(web_domain)));
 
   if (!request_url.is_valid())
     return false;
@@ -159,7 +223,8 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       shared_url_loader_factory_.get(),
       base::BindOnce(&DigitalAssetLinksHandler::OnURLLoadComplete,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), package, fingerprint,
+                     relationship));
 
   return true;
 }
