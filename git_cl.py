@@ -725,33 +725,33 @@ def _ComputeDiffLineRanges(files, upstream_commit):
   return line_diffs
 
 
-def _FindYapfConfigFile(fpath,
-                        yapf_config_cache,
-                        top_dir=None,
-                        default_style=None):
+def _FindYapfConfigFile(fpath, yapf_config_cache, top_dir=None):
   """Checks if a yapf file is in any parent directory of fpath until top_dir.
 
-  Recursively checks parent directories to find yapf file
-  and if no yapf file is found returns default_style.
-  Uses yapf_config_cache as a cache for previously found files.
+  Recursively checks parent directories to find yapf file and if no yapf file
+  is found returns None. Uses yapf_config_cache as a cache for
+  previously found configs.
   """
+  fpath = os.path.abspath(fpath)
   # Return result if we've already computed it.
   if fpath in yapf_config_cache:
     return yapf_config_cache[fpath]
 
-  # Check if there is a style file in the current directory.
-  yapf_file = os.path.join(fpath, YAPF_CONFIG_FILENAME)
-  dirname = os.path.dirname(fpath)
-  if os.path.isfile(yapf_file):
-    ret = yapf_file
-  elif fpath == top_dir or dirname == fpath:
-    # If we're at the top level directory, or if we're at root
-    # use the chromium default yapf style.
-    ret = default_style
+  parent_dir = os.path.dirname(fpath)
+  if os.path.isfile(fpath):
+    ret = _FindYapfConfigFile(parent_dir, yapf_config_cache, top_dir)
   else:
-    # Otherwise recurse on the current directory.
-    ret = _FindYapfConfigFile(dirname, yapf_config_cache, top_dir,
-                              default_style)
+    # Otherwise fpath is a directory
+    yapf_file = os.path.join(fpath, YAPF_CONFIG_FILENAME)
+    if os.path.isfile(yapf_file):
+      ret = yapf_file
+    elif fpath == top_dir or parent_dir == fpath:
+      # If we're at the top level directory, or if we're at root
+      # there is no provided style.
+      ret = None
+    else:
+      # Otherwise recurse on the current directory.
+      ret = _FindYapfConfigFile(parent_dir, yapf_config_cache, top_dir)
   yapf_config_cache[fpath] = ret
   return ret
 
@@ -5569,8 +5569,20 @@ def CMDformat(parser, args):
                     help='Reformat the full content of all touched files')
   parser.add_option('--dry-run', action='store_true',
                     help='Don\'t modify any file on disk.')
-  parser.add_option('--python', action='store_true',
-                    help='Format python code with yapf (experimental).')
+  parser.add_option(
+      '--python',
+      action='store_true',
+      default=None,
+      help='Enables python formatting on all python files.')
+  parser.add_option(
+      '--no-python',
+      action='store_true',
+      dest='python',
+      help='Disables python formatting on all python files. '
+      'Takes precedence over --python. '
+      'If neither --python or --no-python are set, python '
+      'files that have a .style.yapf file in an ancestor '
+      'directory will be formatted.')
   parser.add_option('--js', action='store_true',
                     help='Format javascript code with clang-format.')
   parser.add_option('--diff', action='store_true',
@@ -5663,7 +5675,8 @@ def CMDformat(parser, args):
 
   # Similar code to above, but using yapf on .py files rather than clang-format
   # on C/C++ files
-  if opts.python and python_diff_files:
+  py_explicitly_disabled = opts.python is not None and not opts.python
+  if python_diff_files and not py_explicitly_disabled:
     depot_tools_path = os.path.dirname(os.path.abspath(__file__))
     yapf_tool = os.path.join(depot_tools_path, 'yapf')
     if sys.platform.startswith('win'):
@@ -5673,21 +5686,34 @@ def CMDformat(parser, args):
     # specified in depot_tools.
     chromium_default_yapf_style = os.path.join(depot_tools_path,
                                                YAPF_CONFIG_FILENAME)
-
-    # Note: yapf still seems to fix indentation of the entire file
-    # even if line ranges are specified.
-    # See https://github.com/google/yapf/issues/499
-    if not opts.full:
-      py_line_diffs = _ComputeDiffLineRanges(python_diff_files, upstream_commit)
-
     # Used for caching.
     yapf_configs = {}
     for f in python_diff_files:
       # Find the yapf style config for the current file, defaults to depot
       # tools default.
-      yapf_config = _FindYapfConfigFile(
-          os.path.abspath(f), yapf_configs, top_dir,
-          chromium_default_yapf_style)
+      _FindYapfConfigFile(f, yapf_configs, top_dir)
+
+    # Turn on python formatting by default if a yapf config is specified.
+    # This breaks in the case of this repo though since the specified
+    # style file is also the global default.
+    if opts.python is None:
+      filtered_py_files = []
+      for f in python_diff_files:
+        if _FindYapfConfigFile(f, yapf_configs, top_dir) is not None:
+          filtered_py_files.append(f)
+    else:
+      filtered_py_files = python_diff_files
+
+    # Note: yapf still seems to fix indentation of the entire file
+    # even if line ranges are specified.
+    # See https://github.com/google/yapf/issues/499
+    if not opts.full and filtered_py_files:
+      py_line_diffs = _ComputeDiffLineRanges(filtered_py_files, upstream_commit)
+
+    for f in filtered_py_files:
+      yapf_config = _FindYapfConfigFile(f, yapf_configs, top_dir)
+      if yapf_config is None:
+        yapf_config = chromium_default_yapf_style
 
       cmd = [yapf_tool, '--style', yapf_config, f]
 
