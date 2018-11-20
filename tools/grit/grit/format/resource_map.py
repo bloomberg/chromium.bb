@@ -144,4 +144,9 @@ def _GetItemName(item):
 
 
 def _GetItemPath(item):
-  return item.GetInputPath().replace("\\", "/")
+  path = item.GetInputPath().replace("\\", "/")
+  # resource_maps don't currently work with variables. See crbug.com/899437
+  # for why you might not need this, and if you still think you need it then
+  # comment 17 has a patch for how to make it work.
+  assert '$' not in path, 'see comment above'
+  return path
