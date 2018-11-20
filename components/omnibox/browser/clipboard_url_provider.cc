@@ -88,8 +88,8 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
   AutocompleteMatch match(this, 800, false, AutocompleteMatchType::CLIPBOARD);
   match.destination_url = url;
   // Because the user did not type a related input to get this clipboard
-  // suggestion, preserve the path and subdomain so the user has extra context.
-  auto format_types = AutocompleteMatch::GetFormatTypes(false, true, true);
+  // suggestion, preserve the subdomain so the user has extra context.
+  auto format_types = AutocompleteMatch::GetFormatTypes(false, true);
   match.contents.assign(url_formatter::FormatUrl(
       url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
   AutocompleteMatch::ClassifyLocationInString(

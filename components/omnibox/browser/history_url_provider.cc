@@ -780,8 +780,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
 
         AutocompleteMatch::GetMatchComponents(
             row_url, {{match.input_location, prefixed_input.length()}},
-            &match.match_in_scheme, &match.match_in_subdomain,
-            &match.match_after_host);
+            &match.match_in_scheme, &match.match_in_subdomain);
 
         params->matches.push_back(std::move(match));
       }
@@ -1272,7 +1271,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   const auto format_types = AutocompleteMatch::GetFormatTypes(
       params.input.parts().scheme.len > 0 || !params.trim_http ||
           history_match.match_in_scheme,
-      history_match.match_in_subdomain, history_match.match_after_host);
+      history_match.match_in_subdomain);
   match.contents = url_formatter::FormatUrlWithOffsets(
       info.url(), format_types, net::UnescapeRule::SPACES, nullptr, nullptr,
       &offsets);
