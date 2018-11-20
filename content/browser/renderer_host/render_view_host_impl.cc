@@ -248,16 +248,13 @@ RenderViewHostImpl::RenderViewHostImpl(
   if (!is_active_)
     GetWidget()->UpdatePriority();
 
-  if (ResourceDispatcherHostImpl::Get()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ResourceDispatcherHostImpl::OnRenderViewHostCreated,
-            base::Unretained(ResourceDispatcherHostImpl::Get()),
-            GetProcess()->GetID(), GetRoutingID(),
-            base::RetainedRef(
-                GetProcess()->GetStoragePartition()->GetURLRequestContext())));
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          &ResourceDispatcherHostImpl::OnRenderViewHostCreated,
+          GetProcess()->GetID(), GetRoutingID(),
+          base::RetainedRef(
+              GetProcess()->GetStoragePartition()->GetURLRequestContext())));
 
   close_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderViewHostImpl::ClosePageTimeout, weak_factory_.GetWeakPtr())));
@@ -266,13 +263,10 @@ RenderViewHostImpl::RenderViewHostImpl(
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
-  if (ResourceDispatcherHostImpl::Get()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
-                       base::Unretained(ResourceDispatcherHostImpl::Get()),
-                       GetProcess()->GetID(), GetRoutingID()));
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
+                     GetProcess()->GetID(), GetRoutingID()));
 
   // Detach the routing ID as the object is going away.
   GetProcess()->RemoveRoute(GetRoutingID());
@@ -734,14 +728,10 @@ void RenderViewHostImpl::DirectoryEnumerationFinished(
 }
 
 void RenderViewHostImpl::RenderWidgetWillSetIsLoading(bool is_loading) {
-  if (ResourceDispatcherHostImpl::Get()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading,
-            base::Unretained(ResourceDispatcherHostImpl::Get()),
-            GetProcess()->GetID(), GetRoutingID(), is_loading));
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading,
+                     GetProcess()->GetID(), GetRoutingID(), is_loading));
 }
 
 bool RenderViewHostImpl::SuddenTerminationAllowed() const {
