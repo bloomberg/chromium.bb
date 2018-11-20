@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/scroll_snap_stop.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ScrollSnapStop::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* ScrollSnapStop::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.ScrollSnapStop());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -71,7 +71,7 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args,
 }
 
 }  // namespace
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Content::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
@@ -212,5 +212,5 @@ void Content::ApplyValue(StyleResolverState& state,
   state.Style()->SetContent(first_content);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

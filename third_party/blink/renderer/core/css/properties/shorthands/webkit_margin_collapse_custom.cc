@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool WebkitMarginCollapse::ParseShorthand(
     bool important,
@@ -51,5 +51,5 @@ bool WebkitMarginCollapse::ParseShorthand(
   return true;
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

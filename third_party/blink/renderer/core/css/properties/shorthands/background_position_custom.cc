@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool BackgroundPosition::ParseShorthand(
     bool important,
@@ -50,5 +50,5 @@ const CSSValue* BackgroundPosition::CSSValueFromComputedStyleInternal(
       *this, style, &style.BackgroundLayers());
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

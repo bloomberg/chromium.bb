@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/column_rule_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ColumnRuleStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* ColumnRuleStyle::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.ColumnRuleStyle());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

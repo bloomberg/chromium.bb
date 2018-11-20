@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/core/style/grid_area.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* GridTemplateAreas::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -109,5 +109,5 @@ void GridTemplateAreas::ApplyValue(StyleResolverState& state,
       grid_template_areas_value.ColumnCount());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

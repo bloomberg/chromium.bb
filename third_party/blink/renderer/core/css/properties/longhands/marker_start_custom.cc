@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* MarkerStart::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -32,5 +32,5 @@ const CSSValue* MarkerStart::CSSValueFromComputedStyleInternal(
       svg_style.MarkerStartResource());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

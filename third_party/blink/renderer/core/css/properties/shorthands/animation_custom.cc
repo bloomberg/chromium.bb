@@ -52,7 +52,7 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
 }
 
 }  // namespace
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Animation::ParseShorthand(
     bool important,
@@ -137,5 +137,5 @@ const CSSValue* Animation::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ScrollSnapAlign::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -42,5 +42,5 @@ const CSSValue* ScrollSnapAlign::CSSValueFromComputedStyleInternal(
                                                      style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

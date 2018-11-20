@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool BackgroundRepeat::ParseShorthand(
     bool important,
@@ -55,5 +55,5 @@ const CSSValue* BackgroundRepeat::CSSValueFromComputedStyleInternal(
       &style.BackgroundLayers());
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

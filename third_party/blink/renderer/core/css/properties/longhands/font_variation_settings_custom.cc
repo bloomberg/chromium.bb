@@ -42,7 +42,7 @@ cssvalue::CSSFontVariationValue* ConsumeFontVariationTag(
 }
 
 }  // namespace
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FontVariationSettings::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -82,5 +82,5 @@ const CSSValue* FontVariationSettings::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

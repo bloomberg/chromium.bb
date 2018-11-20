@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 static CSSValue* ConsumePageSize(CSSParserTokenRange& range) {
   return css_property_parser_helpers::ConsumeIdent<
@@ -147,5 +147,5 @@ void Size::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
   state.Style()->SetPageSize(size);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

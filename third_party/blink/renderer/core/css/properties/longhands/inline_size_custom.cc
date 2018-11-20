@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* InlineSize::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -23,5 +23,5 @@ bool InlineSize::IsLayoutDependent(const ComputedStyle* style,
   return layout_object && layout_object->IsBox();
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

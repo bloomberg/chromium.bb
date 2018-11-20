@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BackgroundColor::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -57,5 +57,5 @@ const CSSValue* BackgroundColor::CSSValueFromComputedStyleInternal(
                                    style, style.BackgroundColor());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

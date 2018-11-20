@@ -11,7 +11,7 @@ namespace blink {
 
 class CSSParserLocalContext;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* FillOpacity::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -30,5 +30,5 @@ const CSSValue* FillOpacity::CSSValueFromComputedStyleInternal(
                                    CSSPrimitiveValue::UnitType::kNumber);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

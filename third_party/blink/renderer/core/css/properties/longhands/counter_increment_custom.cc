@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const int kCounterIncrementDefaultValue = 1;
 
@@ -30,5 +30,5 @@ const CSSValue* CounterIncrement::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForCounterDirectives(style, true);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

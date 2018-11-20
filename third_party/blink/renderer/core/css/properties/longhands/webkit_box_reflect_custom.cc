@@ -43,7 +43,7 @@ CSSValue* ConsumeReflect(CSSParserTokenRange& range,
 }
 
 }  // namespace
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* WebkitBoxReflect::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -61,5 +61,5 @@ const CSSValue* WebkitBoxReflect::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForReflection(style.BoxReflect(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

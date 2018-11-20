@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/hyphens.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Hyphens::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* Hyphens::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetHyphens());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/pointer_events.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* PointerEvents::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* PointerEvents::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.PointerEvents());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

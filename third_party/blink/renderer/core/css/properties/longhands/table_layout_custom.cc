@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/table_layout.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* TableLayout::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* TableLayout::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.TableLayout());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

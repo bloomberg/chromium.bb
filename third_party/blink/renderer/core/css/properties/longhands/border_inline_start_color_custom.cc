@@ -12,7 +12,7 @@ namespace blink {
 
 class CSSParserLocalContext;
 
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* BorderInlineStartColor::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -21,5 +21,5 @@ const CSSValue* BorderInlineStartColor::ParseSingleValue(
   return css_property_parser_helpers::ConsumeColor(range, context.Mode());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

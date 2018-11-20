@@ -23,7 +23,7 @@ CSSValue* ConsumeClipComponent(CSSParserTokenRange& range,
 }
 
 }  // namespace
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Clip::ParseSingleValue(CSSParserTokenRange& range,
                                        const CSSParserContext& context,
@@ -79,5 +79,5 @@ const CSSValue* Clip::CSSValueFromComputedStyleInternal(
                               CSSQuadValue::kSerializeAsRect);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

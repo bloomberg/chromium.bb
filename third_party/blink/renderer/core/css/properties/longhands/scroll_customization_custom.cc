@@ -32,7 +32,7 @@ static bool ConsumePan(CSSParserTokenRange& range,
 }
 
 }  // namespace
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* ScrollCustomization::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -69,5 +69,5 @@ const CSSValue* ScrollCustomization::CSSValueFromComputedStyleInternal(
       style.ScrollCustomization());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* OutlineStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -41,5 +41,5 @@ void OutlineStyle::ApplyValue(StyleResolverState& state,
   state.Style()->SetOutlineStyle(identifier_value.ConvertTo<EBorderStyle>());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

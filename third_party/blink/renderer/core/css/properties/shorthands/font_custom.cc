@@ -225,7 +225,7 @@ bool ConsumeFont(bool important,
 }
 
 }  // namespace
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Font::ParseShorthand(bool important,
                           CSSParserTokenRange& range,
@@ -247,5 +247,5 @@ const CSSValue* Font::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForFont(style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

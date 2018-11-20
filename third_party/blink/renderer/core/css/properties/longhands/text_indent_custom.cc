@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* TextIndent::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -122,5 +122,5 @@ void TextIndent::ApplyValue(StyleResolverState& state,
   state.Style()->SetTextIndentType(text_indent_type_value);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

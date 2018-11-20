@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/isolation.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Isolation::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* Isolation::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.Isolation());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Gap::ParseShorthand(bool important,
                          CSSParserTokenRange& range,
@@ -46,5 +46,5 @@ const CSSValue* Gap::CSSValueFromComputedStyleInternal(
       gapShorthand(), style, layout_object, styled_node, allow_visited_style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

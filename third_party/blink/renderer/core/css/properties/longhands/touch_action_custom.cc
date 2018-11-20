@@ -33,7 +33,7 @@ static bool ConsumePan(CSSParserTokenRange& range,
 }
 
 }  // namespace
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* TouchAction::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -74,5 +74,5 @@ const CSSValue* TouchAction::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::TouchActionFlagsToCSSValue(style.GetTouchAction());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

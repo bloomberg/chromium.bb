@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool PageBreakInside::ParseShorthand(
     bool important,
@@ -40,5 +40,5 @@ const CSSValue* PageBreakInside::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForPageBreakInside(style.BreakInside());
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

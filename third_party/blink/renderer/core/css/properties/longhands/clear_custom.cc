@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/clear.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* Clear::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -16,5 +16,5 @@ const CSSValue* Clear::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.Clear());
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

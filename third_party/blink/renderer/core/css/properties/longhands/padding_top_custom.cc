@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSLonghand {
+namespace css_longhand {
 
 const CSSValue* PaddingTop::ParseSingleValue(
     CSSParserTokenRange& range,
@@ -44,5 +44,5 @@ const CSSValue* PaddingTop::CSSValueFromComputedStyleInternal(
       ToLayoutBox(layout_object)->ComputedCSSPaddingTop(), style);
 }
 
-}  // namespace CSSLonghand
+}  // namespace css_longhand
 }  // namespace blink

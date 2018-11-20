@@ -37,7 +37,7 @@ CSSValue* ConsumeTransitionValue(CSSPropertyID property,
 }
 
 }  // namespace
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool Transition::ParseShorthand(
     bool important,
@@ -114,5 +114,5 @@ const CSSValue* Transition::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink

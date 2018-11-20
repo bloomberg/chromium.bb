@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
-namespace CSSShorthand {
+namespace css_shorthand {
 
 bool WebkitMaskBoxImage::ParseShorthand(
     bool important,
@@ -71,5 +71,5 @@ const CSSValue* WebkitMaskBoxImage::CSSValueFromComputedStyleInternal(
                                                     style);
 }
 
-}  // namespace CSSShorthand
+}  // namespace css_shorthand
 }  // namespace blink
