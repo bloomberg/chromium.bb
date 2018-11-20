@@ -147,10 +147,8 @@ using unified_consent::prefs::kUnifiedConsentGiven;
 // Tests that "Activity and Interactions" switch should be disabled when the
 // "History" sync is off.
 - (void)testActivityAndInteractionsDisabledWithHistoryDisabled {
-// TODO(crbug.com/906680): Re-enable this test when it's fixed.
-#if TARGET_IPHONE_SIMULATOR
+  // TODO(crbug.com/906680): Re-enable this test when it's fixed.
   EARL_GREY_TEST_DISABLED(@"Test disabled on simulators.");
-#endif
 
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   [self resetUnifiedConsent];
