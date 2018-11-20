@@ -34,6 +34,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kWritableFilesAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kJankTracking;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCUnifiedPlanByDefault;
+BLINK_COMMON_EXPORT extern const base::Feature kWasmCodeCache;
 
 BLINK_COMMON_EXPORT extern const char
     kAutofillPreviewStyleExperimentBgColorParameterName[];

@@ -107,6 +107,12 @@ const base::Feature kJankTracking{"JankTracking",
 const base::Feature kRTCUnifiedPlanByDefault{"RTCUnifiedPlanByDefault",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the site isolated Wasm code cache that is keyed on the resource URL
+// and the origin lock of the renderer that is requesting the resource. When
+// this flag is enabled, content/GeneratedCodeCache handles code cache requests.
+const base::Feature kWasmCodeCache = {"WasmCodeCache",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kAutofillPreviewStyleExperimentBgColorParameterName[] = "bg_color";
 
 const char kAutofillPreviewStyleExperimentColorParameterName[] = "color";

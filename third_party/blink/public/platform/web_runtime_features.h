@@ -91,6 +91,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableBloatedRendererDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableCacheInlineScriptCode(bool);
   BLINK_PLATFORM_EXPORT static void EnableIsolatedCodeCache(bool);
+  BLINK_PLATFORM_EXPORT static void EnableWasmCodeCache(bool);
   BLINK_PLATFORM_EXPORT static void EnableCanvas2dImageChromium(bool);
   BLINK_PLATFORM_EXPORT static void EnableCSSHexAlphaColor(bool);
   BLINK_PLATFORM_EXPORT static void EnableCSSFragmentIdentifiers(bool);

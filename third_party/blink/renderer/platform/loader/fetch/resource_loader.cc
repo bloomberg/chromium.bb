@@ -327,6 +327,9 @@ void ResourceLoader::Trace(blink::Visitor* visitor) {
 bool ResourceLoader::ShouldFetchCodeCache() {
   if (!RuntimeEnabledFeatures::IsolatedCodeCacheEnabled())
     return false;
+  if (resource_->GetType() == ResourceType::kRaw &&
+      !RuntimeEnabledFeatures::WasmCodeCacheEnabled())
+    return false;
 
   // TODO(crbug.com/867347): Enable fetching of code caches on non-main threads
   // once code cache has its own mojo interface. Currently it is using
