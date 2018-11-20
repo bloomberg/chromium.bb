@@ -40,14 +40,11 @@
 
 namespace blink {
 
-namespace file_error {
-enum class ErrorCode;
-}
-
 class Blob;
 class DOMException;
 class ExceptionState;
 class ExecutionContext;
+enum class FileErrorCode;
 
 class FileWriter final : public EventTargetWithInlineData,
                          public FileWriterBase,
@@ -119,7 +116,7 @@ class FileWriter final : public EventTargetWithInlineData,
 
   void FireEvent(const AtomicString& type);
 
-  void SetError(file_error::ErrorCode, ExceptionState&);
+  void SetError(FileErrorCode, ExceptionState&);
 
   void Dispose();
 

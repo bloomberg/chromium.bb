@@ -395,7 +395,7 @@ class CachedResponseFileReaderLoaderClient final
     dispose();
   }
 
-  void DidFail(file_error::ErrorCode error) override {
+  void DidFail(FileErrorCode error) override {
     callback_->sendFailure(ProtocolResponse::Error(String::Format(
         "Unable to read the cached response, error code: %d", error)));
     dispose();

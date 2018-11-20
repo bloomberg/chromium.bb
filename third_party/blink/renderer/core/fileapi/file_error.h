@@ -40,9 +40,7 @@ namespace blink {
 class DOMException;
 class ExceptionState;
 
-namespace file_error {
-
-enum class ErrorCode {
+enum class FileErrorCode {
   kOK = 0,
   kNotFoundErr = 1,
   kSecurityErr = 2,
@@ -58,6 +56,8 @@ enum class ErrorCode {
   kPathExistsErr = 12,
 };
 
+namespace file_error {
+
 CORE_EXPORT extern const char kAbortErrorMessage[];
 CORE_EXPORT extern const char kEncodingErrorMessage[];
 CORE_EXPORT extern const char kInvalidStateErrorMessage[];
@@ -71,12 +71,12 @@ CORE_EXPORT extern const char kSyntaxErrorMessage[];
 CORE_EXPORT extern const char kTypeMismatchErrorMessage[];
 
 CORE_EXPORT void ThrowDOMException(ExceptionState&,
-                                   ErrorCode,
+                                   FileErrorCode,
                                    String message = String());
 CORE_EXPORT void ThrowDOMException(ExceptionState& exception_state,
                                    base::File::Error error,
                                    String message = String());
-CORE_EXPORT DOMException* CreateDOMException(ErrorCode);
+CORE_EXPORT DOMException* CreateDOMException(FileErrorCode);
 CORE_EXPORT DOMException* CreateDOMException(base::File::Error);
 
 }  // namespace file_error

@@ -84,11 +84,11 @@ void FileWriter::write(Blob* data, ExceptionState& exception_state) {
   DCHECK(data);
   DCHECK_EQ(truncate_length_, -1);
   if (ready_state_ == kWriting) {
-    SetError(file_error::ErrorCode::kInvalidStateErr, exception_state);
+    SetError(FileErrorCode::kInvalidStateErr, exception_state);
     return;
   }
   if (recursion_depth_ > kMaxRecursionDepth) {
-    SetError(file_error::ErrorCode::kSecurityErr, exception_state);
+    SetError(FileErrorCode::kSecurityErr, exception_state);
     return;
   }
 
@@ -112,7 +112,7 @@ void FileWriter::seek(long long position, ExceptionState& exception_state) {
   if (!GetExecutionContext())
     return;
   if (ready_state_ == kWriting) {
-    SetError(file_error::ErrorCode::kInvalidStateErr, exception_state);
+    SetError(FileErrorCode::kInvalidStateErr, exception_state);
     return;
   }
 
@@ -126,11 +126,11 @@ void FileWriter::truncate(long long position, ExceptionState& exception_state) {
     return;
   DCHECK_EQ(truncate_length_, -1);
   if (ready_state_ == kWriting || position < 0) {
-    SetError(file_error::ErrorCode::kInvalidStateErr, exception_state);
+    SetError(FileErrorCode::kInvalidStateErr, exception_state);
     return;
   }
   if (recursion_depth_ > kMaxRecursionDepth) {
-    SetError(file_error::ErrorCode::kSecurityErr, exception_state);
+    SetError(FileErrorCode::kSecurityErr, exception_state);
     return;
   }
 
@@ -318,9 +318,9 @@ void FileWriter::FireEvent(const AtomicString& type) {
   DCHECK_GE(recursion_depth_, 0);
 }
 
-void FileWriter::SetError(file_error::ErrorCode error_code,
+void FileWriter::SetError(FileErrorCode error_code,
                           ExceptionState& exception_state) {
-  DCHECK_NE(error_code, file_error::ErrorCode::kOK);
+  DCHECK_NE(error_code, FileErrorCode::kOK);
   file_error::ThrowDOMException(exception_state, error_code);
   error_ = file_error::CreateDOMException(error_code);
 }

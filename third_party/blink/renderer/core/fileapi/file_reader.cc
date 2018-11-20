@@ -338,7 +338,7 @@ void FileReader::abort() {
   base::AutoReset<bool> firing_events(&still_firing_events_, true);
 
   // Setting error implicitly makes |result| return null.
-  error_ = file_error::CreateDOMException(file_error::ErrorCode::kAbortErr);
+  error_ = file_error::CreateDOMException(FileErrorCode::kAbortErr);
 
   // Unregister the reader.
   ThrottlingController::FinishReaderType final_step =
@@ -432,7 +432,7 @@ void FileReader::DidFinishLoading() {
   ThrottlingController::FinishReader(GetExecutionContext(), this, final_step);
 }
 
-void FileReader::DidFail(file_error::ErrorCode error_code) {
+void FileReader::DidFail(FileErrorCode error_code) {
   if (loading_state_ == kLoadingStateAborted)
     return;
 

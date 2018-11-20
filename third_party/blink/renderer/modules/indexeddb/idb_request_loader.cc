@@ -106,7 +106,7 @@ void IDBRequestLoader::DidFinishLoading() {
   StartNextValue();
 }
 
-void IDBRequestLoader::DidFail(file_error::ErrorCode) {
+void IDBRequestLoader::DidFail(FileErrorCode) {
 #if DCHECK_IS_ON()
   DCHECK(started_)
       << "FileReaderLoader called DidFail() before it was Start()ed";

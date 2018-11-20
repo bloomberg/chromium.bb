@@ -54,11 +54,8 @@
 
 namespace blink {
 
-namespace file_error {
-enum class ErrorCode;
-}
-
 class BaseFetchContext;
+enum class FileErrorCode;
 class WebSocketChannelClient;
 class WebSocketHandshakeThrottle;
 
@@ -180,7 +177,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
 
   // Methods for BlobLoader.
   void DidFinishLoadingBlob(DOMArrayBuffer*);
-  void DidFailLoadingBlob(file_error::ErrorCode);
+  void DidFailLoadingBlob(FileErrorCode);
 
   void TearDownFailedConnection();
   bool ShouldDisallowConnection(const KURL&);
