@@ -1692,7 +1692,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kip',
       'kukui',
       'lakitu',
-      'lakitu-gpu',
       'lakitu-st',
       'leon',
       'link',
@@ -1769,6 +1768,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'gonzo', # contact:icoolidge@
       'guado', # contact:egemih@
       'guado-accelerator', # contact:perley@ (crbug.com/748635)
+      'lakitu-gpu', # contact:gmeinke@ (crbug.com/907222)
       'lasilla-ground', # contact:jemele@
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
