@@ -514,9 +514,6 @@ bool AXLayoutObject::IsSelectedFromFocus() const {
 
 AXObjectInclusion AXLayoutObject::DefaultObjectInclusion(
     IgnoredReasons* ignored_reasons) const {
-  // The following cases can apply to any element that's a subclass of
-  // AXLayoutObject.
-
   if (!layout_object_) {
     if (ignored_reasons)
       ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
@@ -535,20 +532,6 @@ AXObjectInclusion AXLayoutObject::DefaultObjectInclusion(
   }
 
   return AXObject::DefaultObjectInclusion(ignored_reasons);
-}
-
-bool HasAriaAttribute(Element* element) {
-  if (!element)
-    return false;
-
-  AttributeCollection attributes = element->AttributesWithoutUpdate();
-  for (const Attribute& attr : attributes) {
-    // Attributes cache their uppercase names.
-    if (attr.GetName().LocalNameUpper().StartsWith("ARIA-"))
-      return true;
-  }
-
-  return false;
 }
 
 static bool HasLineBox(const LayoutBlockFlow& block_flow) {
@@ -590,55 +573,39 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   DCHECK(initialized_);
 #endif
 
-  if (!layout_object_)
-    return true;
-
-  // Check first if any of the common reasons cause this element to be ignored.
-  // Then process other use cases that need to be applied to all the various
-  // roles that AXLayoutObjects take on.
-  AXObjectInclusion decision = DefaultObjectInclusion(ignored_reasons);
-  if (decision == kIncludeObject)
-    return false;
-  if (decision == kIgnoreObject)
-    return true;
-
-  if (layout_object_->IsAnonymousBlock() && !IsEditable())
-    return true;
-
-  // Ignore continuations, since those are essentially duplicate copies
-  // of inline nodes with blocks inside.
-  if (layout_object_->IsElementContinuation())
-    return true;
-
-  // If this element is within a parent that cannot have children, it should not
-  // be exposed.
-  if (IsDescendantOfLeafNode()) {
+  if (!layout_object_) {
     if (ignored_reasons)
-      ignored_reasons->push_back(
-          IgnoredReason(kAXAncestorIsLeafNode, LeafNodeAncestor()));
+      ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
     return true;
   }
 
-  if (RoleValue() == ax::mojom::Role::kIgnored) {
+  // Check first if any of the common reasons cause this element to be ignored.
+  AXObjectInclusion defaultInclusion = DefaultObjectInclusion(ignored_reasons);
+  if (defaultInclusion == kIncludeObject)
+    return false;
+  if (defaultInclusion == kIgnoreObject)
+    return true;
+
+  AXObjectInclusion semanticInclusion =
+      ShouldIncludeBasedOnSemantics(ignored_reasons);
+  if (semanticInclusion == kIncludeObject)
+    return false;
+  if (semanticInclusion == kIgnoreObject)
+    return true;
+
+  if (layout_object_->IsAnonymousBlock() && !IsEditable()) {
     if (ignored_reasons)
       ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
     return true;
   }
 
-  if (HasInheritedPresentationalRole()) {
-    if (ignored_reasons) {
-      const AXObject* inherits_from = InheritsPresentationalRoleFrom();
-      if (inherits_from == this)
-        ignored_reasons->push_back(IgnoredReason(kAXPresentational));
-      else
-        ignored_reasons->push_back(
-            IgnoredReason(kAXInheritsPresentation, inherits_from));
-    }
+  // Ignore continuations, since those are essentially duplicate copies
+  // of inline nodes with blocks inside.
+  if (layout_object_->IsElementContinuation()) {
+    if (ignored_reasons)
+      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
     return true;
   }
-
-  if (IsTableLikeRole() || IsTableRowLikeRole() || IsTableCellLikeRole())
-    return false;
 
   // A LayoutEmbeddedContent is an iframe element or embedded object element or
   // something like that. We don't want to ignore those.
@@ -660,145 +627,11 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return false;
   }
 
-  // Find out if this element is inside of a label element.  If so, it may be
-  // ignored because it's the label for a checkbox or radio button.
-  AXObject* control_object = CorrespondingControlForLabelElement();
-  if (control_object && control_object->IsCheckboxOrRadio() &&
-      control_object->NameFromLabelElement()) {
-    if (ignored_reasons) {
-      HTMLLabelElement* label = LabelElementContainer();
-      if (label && label != GetNode()) {
-        AXObject* label_ax_object = AXObjectCache().GetOrCreate(label);
-        ignored_reasons->push_back(
-            IgnoredReason(kAXLabelContainer, label_ax_object));
-      }
-
-      ignored_reasons->push_back(IgnoredReason(kAXLabelFor, control_object));
-    }
-    return true;
-  }
-
-  if (layout_object_->IsBR())
-    return false;
-
-  if (CanSetFocusAttribute() && GetNode() && !IsHTMLBodyElement(GetNode()))
-    return false;
-
-  if (IsLink())
-    return false;
-
-  if (IsInPageLinkTarget())
-    return false;
-
-  // A click handler might be placed on an otherwise ignored non-empty block
-  // element, e.g. a div. We shouldn't ignore such elements because if an AT
-  // sees the |ax::mojom::DefaultActionVerb::kClickAncestor|, it will look for
-  // the clickable ancestor and it expects to find one.
-  if (IsClickable())
-    return false;
-
-  if (layout_object_->IsText()) {
-    if (CanIgnoreTextAsEmpty()) {
-      if (ignored_reasons)
-        ignored_reasons->push_back(IgnoredReason(kAXEmptyText));
-      return true;
-    }
-    return false;
-  }
-
-  if (IsHeading())
-    return false;
-
-  if (IsLandmarkRelated())
-    return false;
-
-  // Header and footer tags may also be exposed as landmark roles but not
-  // always.
-  if (GetNode() &&
-      (GetNode()->HasTagName(kHeaderTag) || GetNode()->HasTagName(kFooterTag)))
-    return false;
-
-  // all controls are accessible
-  if (IsControl())
-    return false;
-
-  if (AriaRoleAttribute() != ax::mojom::Role::kUnknown)
-    return false;
-
-  // don't ignore labels, because they serve as TitleUIElements
-  Node* node = layout_object_->GetNode();
-  if (IsHTMLLabelElement(node))
-    return false;
-
-  // Anything that is content editable should not be ignored.
-  // However, one cannot just call node->hasEditableStyle() since that will ask
-  // if its parents are also editable. Only the top level content editable
-  // region should be exposed.
-  if (HasContentEditableAttributeSet())
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kAbbr)
-    return false;
-
-  // List items play an important role in defining the structure of lists. They
-  // should not be ignored.
-  if (RoleValue() == ax::mojom::Role::kListItem)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kBlockquote)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kDialog)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kFigcaption)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kFigure)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kContentDeletion)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kContentInsertion)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kDetails)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kMark)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kMath)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kMeter)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kRuby)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kSplitter)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kTime)
-    return false;
-
-  if (RoleValue() == ax::mojom::Role::kProgressIndicator)
-    return false;
-
-  // if this element has aria attributes on it, it should not be ignored.
-  if (HasGlobalARIAAttribute())
-    return false;
-
-  if (IsImage())
-    return false;
-
   if (IsCanvas()) {
     if (CanvasHasFallbackContent())
       return false;
 
-    const auto* canvas = ToLayoutHTMLCanvasOrNull(layout_object_);
+    const auto* canvas = ToLayoutHTMLCanvasOrNull(GetLayoutObject());
     if (canvas &&
         (canvas->Size().Height() <= 1 || canvas->Size().Width() <= 1)) {
       if (ignored_reasons)
@@ -810,29 +643,20 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     // to decide.
   }
 
+  if (layout_object_->IsBR())
+    return false;
+
+  if (layout_object_->IsText()) {
+    if (CanIgnoreTextAsEmpty()) {
+      if (ignored_reasons)
+        ignored_reasons->push_back(IgnoredReason(kAXEmptyText));
+      return true;
+    }
+    return false;
+  }
+
   if (IsWebArea() || layout_object_->IsListMarkerIncludingNG())
     return false;
-
-  // Using the title or accessibility description (so we
-  // check if there's some kind of accessible name for the element)
-  // to decide an element's visibility is not as definitive as
-  // previous checks, so this should remain as one of the last.
-  //
-  // These checks are simplified in the interest of execution speed;
-  // for example, any element having an alt attribute will make it
-  // not ignored, rather than just images.
-  if (HasAriaAttribute(GetElement()) || !GetAttribute(kAltAttr).IsEmpty() ||
-      !GetAttribute(kTitleAttr).IsEmpty())
-    return false;
-
-  // <span> tags are inline tags and not meant to convey information if they
-  // have no other ARIA information on them. If we don't ignore them, they may
-  // emit signals expected to come from their parent.
-  if (IsHTMLSpanElement(node)) {
-    if (ignored_reasons)
-      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
-    return true;
-  }
 
   // Positioned elements and scrollable containers are important for
   // determining bounding boxes.
