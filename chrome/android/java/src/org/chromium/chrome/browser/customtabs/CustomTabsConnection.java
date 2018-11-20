@@ -1445,7 +1445,7 @@ public class CustomTabsConnection {
         if (extras != null) extrasIntent.putExtras(extras);
         if (IntentHandler.getExtraHeadersFromIntent(extrasIntent) != null) return;
 
-        Tab tab = Tab.createDetached(new CustomTabDelegateFactory(false, false, null));
+        Tab tab = Tab.createDetached(CustomTabDelegateFactory.createDummy());
         HiddenTabObserver observer = new HiddenTabObserver(this);
         tab.addObserver(observer);
 

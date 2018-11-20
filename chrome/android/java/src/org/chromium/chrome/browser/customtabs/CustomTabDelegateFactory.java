@@ -192,6 +192,7 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
 
     private final boolean mShouldHideBrowserControls;
     private final boolean mIsOpenedByChrome;
+    private final boolean mShouldAllowAppBanners;
     private final BrowserControlsVisibilityDelegate mBrowserStateVisibilityDelegate;
 
     private ExternalNavigationDelegateImpl mNavigationDelegate;
@@ -200,14 +201,24 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     /**
      * @param shouldHideBrowserControls Whether or not the browser controls may auto-hide.
      * @param isOpenedByChrome Whether the CustomTab was originally opened by Chrome.
+     * @param shouldAllowAppBanners Whether app install banners can be shown.
      * @param visibilityDelegate The delegate that handles browser control visibility associated
      *                           with browser actions (as opposed to tab state).
      */
     public CustomTabDelegateFactory(boolean shouldHideBrowserControls, boolean isOpenedByChrome,
-            BrowserControlsVisibilityDelegate visibilityDelegate) {
+            boolean shouldAllowAppBanners, BrowserControlsVisibilityDelegate visibilityDelegate) {
         mShouldHideBrowserControls = shouldHideBrowserControls;
         mIsOpenedByChrome = isOpenedByChrome;
+        mShouldAllowAppBanners = shouldAllowAppBanners;
         mBrowserStateVisibilityDelegate = visibilityDelegate;
+    }
+
+    /**
+     * Creates a basic/empty CustomTabDelegateFactory for use when creating a hidden tab. It will
+     * be replaced when the hidden Tab becomes shown.
+     */
+    static CustomTabDelegateFactory createDummy() {
+        return new CustomTabDelegateFactory(false, false, false, null);
     }
 
     @Override
@@ -245,6 +256,11 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
         return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
                 ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
+    }
+
+    @Override
+    public boolean canShowAppBanners(Tab tab) {
+        return mShouldAllowAppBanners;
     }
 
     /**
