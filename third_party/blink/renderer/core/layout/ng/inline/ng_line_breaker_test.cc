@@ -211,6 +211,29 @@ TEST_F(NGLineBreakerTest, OverflowMargin) {
   EXPECT_EQ("789", ToString(lines[2], node));
 }
 
+TEST_F(NGLineBreakerTest, OverflowAfterSpacesAcrossElements) {
+  LoadAhem();
+  NGInlineNode node = CreateInlineNode(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    div {
+      font: 10px/1 Ahem;
+      white-space: pre-wrap;
+      width: 10ch;
+      word-wrap: break-word;
+    }
+    </style>
+    <div id=container><span>12345 </span> 1234567890123</div>
+  )HTML");
+
+  Vector<NGInlineItemResults> lines;
+  lines = BreakLines(node, LayoutUnit(100));
+  EXPECT_EQ(3u, lines.size());
+  EXPECT_EQ("12345  ", ToString(lines[0], node));
+  EXPECT_EQ("1234567890", ToString(lines[1], node));
+  EXPECT_EQ("123", ToString(lines[2], node));
+}
+
 // Tests when the last word in a node wraps, and another node continues.
 TEST_F(NGLineBreakerTest, WrapLastWord) {
   LoadAhem();

@@ -316,9 +316,15 @@ void NGLineBreaker::HandleText(const NGInlineItem& item) {
   DCHECK(item.TextShapeResult());
 
   // If we're trailing, only trailing spaces can be included in this line.
-  if (state_ == LineBreakState::kTrailing &&
-      CanBreakAfterLast(*item_results_)) {
-    return HandleTrailingSpaces(item);
+  if (state_ == LineBreakState::kTrailing) {
+    if (CanBreakAfterLast(*item_results_))
+      return HandleTrailingSpaces(item);
+    // When a run of preserved spaces are across items, |CanBreakAfterLast| is
+    // false for between spaces. But we still need to handle them as trailing
+    // spaces.
+    const String& text = Text();
+    if (offset_ < text.length() && text[offset_] == kSpaceCharacter)
+      return HandleTrailingSpaces(item);
   }
 
   // Skip leading collapsible spaces.
