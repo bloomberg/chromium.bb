@@ -28,6 +28,8 @@ struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
 
   // Any ports being transferred as part of this message.
   std::vector<MessagePortChannel> ports;
+  // Channels used by transferred WHATWG streams (eg. ReadableStream).
+  std::vector<MessagePortChannel> stream_channels;
   // The contents of any ArrayBuffers being transferred as part of this message.
   std::vector<mojom::SerializedArrayBufferContentsPtr>
       array_buffer_contents_array;

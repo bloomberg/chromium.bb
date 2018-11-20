@@ -67,6 +67,7 @@ enum SerializationTag {
   kOffscreenCanvasTransferTag = 'H',  // index, width, height, id:uint32_t ->
                                       // OffscreenCanvas. For OffscreenCanvas
                                       // transfer
+  kReadableStreamTransferTag = 'r',   // index:uint32_t
   kDOMPointTag = 'Q',                 // x:Double, y:Double, z:Double, w:Double
   kDOMPointReadOnlyTag = 'W',         // x:Double, y:Double, z:Double, w:Double
   kDOMRectTag = 'E',          // x:Double, y:Double, width:Double, height:Double

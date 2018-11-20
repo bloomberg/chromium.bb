@@ -25,8 +25,10 @@
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 
 namespace blink {
@@ -168,8 +170,17 @@ v8::Local<v8::Value> V8ScriptValueDeserializer::Deserialize() {
 }
 
 void V8ScriptValueDeserializer::Transfer() {
-  // Thre's nothing to transfer if the deserializer was not given an unpacked
-  // value.
+  if (RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+    // TODO(ricea): Make ExtendableMessageEvent store an
+    // UnpackedSerializedScriptValue like MessageEvent does, and then this
+    // special case won't be necessary.
+    transferred_stream_ports_ = MessagePort::EntanglePorts(
+        *ExecutionContext::From(script_state_),
+        serialized_script_value_->GetStreamChannels());
+  }
+
+  // There's nothing else to transfer if the deserializer was not given an
+  // unpacked value.
   if (!unpacked_value_)
     return;
 
@@ -206,7 +217,8 @@ bool V8ScriptValueDeserializer::ReadUTF8String(String* string) {
 }
 
 ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
-    SerializationTag tag) {
+    SerializationTag tag,
+    ExceptionState& exception_state) {
   switch (tag) {
     case kBlobTag: {
       if (Version() < 3)
@@ -499,6 +511,18 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       canvas->SetFrameSinkId(client_id, sink_id);
       return canvas;
     }
+    case kReadableStreamTransferTag: {
+      if (!RuntimeEnabledFeatures::TransferableStreamsEnabled())
+        return nullptr;
+      uint32_t index = 0;
+      if (!ReadUint32(&index) || !transferred_stream_ports_ ||
+          index >= transferred_stream_ports_->size()) {
+        return nullptr;
+      }
+      return ReadableStream::Deserialize(
+          script_state_, (*transferred_stream_ports_)[index].Get(),
+          exception_state);
+    }
     default:
       break;
   }
@@ -601,8 +625,11 @@ v8::MaybeLocal<v8::Object> V8ScriptValueDeserializer::ReadHostObject(
                                  nullptr, nullptr);
   ScriptWrappable* wrappable = nullptr;
   SerializationTag tag = kVersionTag;
-  if (ReadTag(&tag))
-    wrappable = ReadDOMObject(tag);
+  if (ReadTag(&tag)) {
+    wrappable = ReadDOMObject(tag, exception_state);
+    if (exception_state.HadException())
+      return v8::MaybeLocal<v8::Object>();
+  }
   if (!wrappable) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                       "Unable to deserialize cloned data.");

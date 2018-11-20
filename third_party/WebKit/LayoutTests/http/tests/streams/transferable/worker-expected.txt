@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 5: Uncaught TypeError: Failed to execute 'postMessage' on 'DedicatedWorkerGlobalScope': Value at index 0 does not have a transferable type.
+This is a testharness.js-based test.
+FAIL worker.postMessage should be able to transfer a ReadableStream Failed to execute 'postMessage' on 'Worker': Value at index 0 does not have a transferable type.
+FAIL postMessage in a worker should be able to transfer a ReadableStream promise_test: Unhandled rejection with value: "error in worker"
+Harness: the test ran to completion.
+

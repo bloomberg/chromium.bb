@@ -65,19 +65,24 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
     Read(blink::mojom::blink::TransferableMessage::DataView data,
          blink::BlinkTransferableMessage* out) {
   Vector<mojo::ScopedMessagePipeHandle> ports;
+  Vector<mojo::ScopedMessagePipeHandle> stream_channels;
   blink::SerializedScriptValue::ArrayBufferContentsArray
       array_buffer_contents_array;
   Vector<SkBitmap> sk_bitmaps;
   if (!data.ReadMessage(static_cast<blink::BlinkCloneableMessage*>(out)) ||
       !data.ReadArrayBufferContentsArray(&array_buffer_contents_array) ||
       !data.ReadImageBitmapContentsArray(&sk_bitmaps) ||
-      !data.ReadPorts(&ports) || !data.ReadUserActivation(&out->user_activation)) {
+      !data.ReadPorts(&ports) || !data.ReadStreamChannels(&stream_channels) ||
+      !data.ReadUserActivation(&out->user_activation)) {
     return false;
   }
 
   out->ports.ReserveInitialCapacity(ports.size());
   out->ports.AppendRange(std::make_move_iterator(ports.begin()),
                          std::make_move_iterator(ports.end()));
+  out->message->GetStreamChannels().AppendRange(
+      std::make_move_iterator(stream_channels.begin()),
+      std::make_move_iterator(stream_channels.end()));
   out->has_user_gesture = data.has_user_gesture();
 
   out->message->SetArrayBufferContentsArray(

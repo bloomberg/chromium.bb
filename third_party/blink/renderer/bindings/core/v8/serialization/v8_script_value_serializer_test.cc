@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_message_port.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_mojo_handle.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_offscreen_canvas.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
@@ -1838,6 +1840,32 @@ TEST(V8ScriptValueSerializerTest, DecodeWithInefficientVersionEnvelope) {
       V8ScriptValueDeserializer(scope.GetScriptState(), std::move(input))
           .Deserialize()
           ->IsTrue());
+}
+
+// Sanity check for transferring ReadableStreams. This is mostly tested via
+// layout tests.
+TEST(V8ScriptValueSerializerTest, RoundTripReadableStream) {
+  ScopedTransferableStreamsForTest enable_transferable_streams(true);
+
+  V8TestingScope scope;
+  auto* isolate = scope.GetIsolate();
+  auto* script_state = scope.GetScriptState();
+
+  auto* rs = ReadableStream::Create(script_state, ASSERT_NO_EXCEPTION);
+  v8::Local<v8::Value> wrapper = ToV8(rs, script_state);
+  Vector<ScriptValue> transferable_array = {ScriptValue(script_state, wrapper)};
+  Transferables transferables;
+  ASSERT_TRUE(SerializedScriptValue::ExtractTransferables(
+      isolate, transferable_array, transferables, ASSERT_NO_EXCEPTION));
+  v8::Local<v8::Value> result =
+      RoundTrip(wrapper, scope, &ASSERT_NO_EXCEPTION, &transferables);
+  EXPECT_TRUE(result->IsObject());
+  ASSERT_TRUE(V8ReadableStream::hasInstance(result, isolate));
+  ReadableStream* transferred =
+      V8ReadableStream::ToImpl(result.As<v8::Object>());
+  EXPECT_NE(rs, transferred);
+  EXPECT_TRUE(rs->locked(script_state, ASSERT_NO_EXCEPTION));
+  EXPECT_FALSE(transferred->locked(script_state, ASSERT_NO_EXCEPTION));
 }
 
 }  // namespace

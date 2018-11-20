@@ -18,6 +18,7 @@
 namespace blink {
 
 class DOMRectReadOnly;
+class ExceptionState;
 class File;
 class UnpackedSerializedScriptValue;
 
@@ -46,7 +47,7 @@ class CORE_EXPORT V8ScriptValueDeserializer
   v8::Local<v8::Value> Deserialize();
 
  protected:
-  virtual ScriptWrappable* ReadDOMObject(SerializationTag);
+  virtual ScriptWrappable* ReadDOMObject(SerializationTag, ExceptionState&);
 
   ScriptState* GetScriptState() const { return script_state_; }
 
@@ -112,6 +113,8 @@ class CORE_EXPORT V8ScriptValueDeserializer
 
   // Message ports which were transferred in.
   const MessagePortArray* transferred_message_ports_ = nullptr;
+
+  Member<MessagePortArray> transferred_stream_ports_;
 
   // Blob info for blobs stored by index.
   const WebBlobInfoArray* blob_info_array_ = nullptr;
