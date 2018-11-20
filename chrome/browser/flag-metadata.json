@@ -1313,8 +1313,8 @@
   },
   {
     "name": "enable-layout-ng",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "layout-dev@chromium.org" ],
+    "expiry_milestone": 80
   },
   {
     "name": "enable-lazy-frame-loading",
