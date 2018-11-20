@@ -809,9 +809,13 @@ drivefs::mojom::QueryParameters::QuerySource SearchDriveFs(
     base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback) {
   drive::DriveIntegrationService* const integration_service =
       drive::util::GetIntegrationServiceByProfile(function->GetProfile());
+  auto on_response = base::BindOnce(&OnSearchDriveFs, std::move(function),
+                                    filter_dirs, std::move(callback));
   return integration_service->GetDriveFsHost()->PerformSearch(
-      std::move(query), base::BindOnce(&OnSearchDriveFs, std::move(function),
-                                       filter_dirs, std::move(callback)));
+      std::move(query),
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(on_response), drive::FileError::FILE_ERROR_ABORT,
+          base::Optional<std::vector<drivefs::mojom::QueryItemPtr>>()));
 }
 
 void UmaEmitSearchOutcome(
