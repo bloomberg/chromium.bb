@@ -219,12 +219,10 @@ template <typename Type,
           typename DifferentiatingType = Type>
 class Singleton {
  private:
-  // Classes using the Singleton<T> pattern should declare a GetInstance()
-  // method and call Singleton::get() from within that.
-  friend Type* Type::GetInstance();
-  // Classes may also declare a GetInstanceIfExists() method to invoke
-  // Singleton::GetIfExists().
-  friend Type* Type::GetInstanceIfExists();
+  // A class T using the Singleton<T> pattern should declare a GetInstance()
+  // method and call Singleton::get() from within that. T may also declare a
+  // GetInstanceIfExists() method to invoke Singleton::GetIfExists().
+  friend Type;
 
   // This class is safe to be constructed and copy-constructed since it has no
   // member.
