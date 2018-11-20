@@ -124,6 +124,8 @@ class BASE_EXPORT SequenceManagerImpl
                        const char* function_name_crash_key) override;
   const MetricRecordingSettings& GetMetricRecordingSettings() const override;
   size_t GetPendingTaskCountForTesting() const override;
+  scoped_refptr<TaskQueue> CreateTaskQueue(
+      const TaskQueue::Spec& spec) override;
 
   // SequencedTaskSource implementation:
   Optional<PendingTask> TakeTask() override;

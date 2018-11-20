@@ -108,7 +108,7 @@ class BaseSequenceManagerPerfTestDelegate : public PerfTestDelegate {
 
   scoped_refptr<TaskRunner> CreateTaskRunner() override {
     scoped_refptr<TestTaskQueue> task_queue =
-        manager_->CreateTaskQueue<TestTaskQueue>(
+        manager_->CreateTaskQueueWithType<TestTaskQueue>(
             TaskQueue::Spec("test").SetTimeDomain(time_domain_.get()));
     owned_task_queues_.push_back(task_queue);
     return task_queue->task_runner();
@@ -176,7 +176,7 @@ class SequenceManagerWithMessagePumpPerfTestDelegate
     // ThreadControllerWithMessagePumpImpl doesn't provide a default task
     // runner.
     scoped_refptr<TaskQueue> default_task_queue =
-        GetManager()->template CreateTaskQueue<TestTaskQueue>(
+        GetManager()->template CreateTaskQueueWithType<TestTaskQueue>(
             TaskQueue::Spec("default"));
     GetManager()->SetDefaultTaskRunner(default_task_queue->task_runner());
   }

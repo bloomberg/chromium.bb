@@ -70,7 +70,7 @@ class SequenceManagerTestBase : public testing::TestWithParam<TestType> {
 
   scoped_refptr<TestTaskQueue> CreateTaskQueue(
       TaskQueue::Spec spec = TaskQueue::Spec("test")) {
-    return manager_->CreateTaskQueue<TestTaskQueue>(spec);
+    return manager_->CreateTaskQueueWithType<TestTaskQueue>(spec);
   }
 
   void CreateTaskQueues(size_t num_queues) {
@@ -186,8 +186,8 @@ class SequenceManagerTestWithMessageLoop : public SequenceManagerTestBase {
             std::make_unique<MessagePumpDefault>(), &mock_clock_));
     // ThreadControllerWithMessagePumpImpl doesn't provide
     // a default task runner.
-    default_task_queue_ =
-        manager_->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("default"));
+    default_task_queue_ = manager_->CreateTaskQueueWithType<TestTaskQueue>(
+        TaskQueue::Spec("default"));
     manager_->SetDefaultTaskRunner(default_task_queue_->task_runner());
   }
 
@@ -3535,7 +3535,8 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
   EXPECT_TRUE(static_cast<SequenceManagerImpl*>(manager.get())
                   ->IsBoundToCurrentThread());
   scoped_refptr<TaskQueue> default_task_queue =
-      manager->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("default"));
+      manager->CreateTaskQueueWithType<TestTaskQueue>(
+          TaskQueue::Spec("default"));
   EXPECT_THAT(default_task_queue.get(), testing::NotNull());
 
   std::unique_ptr<MessageLoop> message_loop(new MessageLoop());
@@ -3883,6 +3884,15 @@ TEST_P(SequenceManagerTestWithMessageLoop, GetMessagePump) {
       EXPECT_THAT(manager_->GetMessagePump(), testing::NotNull());
       break;
   }
+}
+
+TEST_P(SequenceManagerTest, CreateTaskQueue) {
+  scoped_refptr<TaskQueue> task_queue =
+      manager_->CreateTaskQueue(TaskQueue::Spec("test"));
+  EXPECT_THAT(task_queue.get(), testing::NotNull());
+
+  task_queue->task_runner()->PostTask(FROM_HERE, BindOnce(&NopTask));
+  EXPECT_EQ(1u, manager_->GetPendingTaskCountForTesting());
 }
 
 TEST_P(SequenceManagerTest, ThreadName) {

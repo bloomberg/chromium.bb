@@ -228,7 +228,7 @@ scoped_refptr<sequence_manager::TaskQueue> MessageLoop::CreateDefaultTaskQueue(
       static_cast<sequence_manager::internal::SequenceManagerImpl*>(
           backend_.get());
   scoped_refptr<sequence_manager::TaskQueue> default_task_queue =
-      manager->CreateTaskQueue<sequence_manager::TaskQueue>(
+      manager->CreateTaskQueueWithType<sequence_manager::TaskQueue>(
           sequence_manager::TaskQueue::Spec("default_tq"));
   manager->SetTaskRunner(default_task_queue->task_runner());
   return default_task_queue;

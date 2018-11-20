@@ -876,6 +876,11 @@ size_t SequenceManagerImpl::GetPendingTaskCountForTesting() const {
   return total;
 }
 
+scoped_refptr<TaskQueue> SequenceManagerImpl::CreateTaskQueue(
+    const TaskQueue::Spec& spec) {
+  return WrapRefCounted(new TaskQueue(CreateTaskQueueImpl(spec), spec));
+}
+
 void SequenceManagerImpl::AddDestructionObserver(
     MessageLoopCurrent::DestructionObserver* destruction_observer) {
   main_thread_only().destruction_observers.AddObserver(destruction_observer);

@@ -56,7 +56,7 @@ scoped_refptr<TaskQueue> MainThreadSchedulerHelper::ControlTaskQueue() {
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerHelper::NewTaskQueue(
     const MainThreadTaskQueue::QueueCreationParams& params) {
   scoped_refptr<MainThreadTaskQueue> task_queue =
-      sequence_manager_->CreateTaskQueue<MainThreadTaskQueue>(
+      sequence_manager_->CreateTaskQueueWithType<MainThreadTaskQueue>(
           params.spec, params, main_thread_scheduler_);
   if (params.fixed_priority)
     task_queue->SetQueuePriority(params.fixed_priority.value());
