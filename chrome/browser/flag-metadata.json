@@ -2846,7 +2846,7 @@
   },
   {
     "name": "safe-browsing-use-local-blacklists-v2",
-    // "owners": [ "your-team" ],
+    "owners": [ "vakh" ],
     "expiry_milestone": 76
   },
   {
