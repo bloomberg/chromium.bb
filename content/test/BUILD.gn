@@ -1974,7 +1974,6 @@ test("content_unittests") {
   ]
 
   data_deps = [
-    "//components/services/filesystem:filesystem",
     "//testing/buildbot/filters:content_unittests_filters",
     "//third_party/mesa_headers",
   ]

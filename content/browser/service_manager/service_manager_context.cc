@@ -412,6 +412,20 @@ std::unique_ptr<service_manager::Service> CreateVideoCaptureService(
   return std::make_unique<video_capture::ServiceImpl>(std::move(request));
 }
 
+#if defined(OS_LINUX)
+void CreateFontService(service_manager::mojom::ServiceRequest request) {
+  // The font service owns itself here, deleting on self-termination.
+  auto service =
+      std::make_unique<font_service::FontServiceApp>(std::move(request));
+  auto* raw_service = service.get();
+  raw_service->set_termination_closure(base::BindOnce(
+      [](std::unique_ptr<font_service::FontServiceApp> service) {
+        // Nothing to do but let |service| go out of scope.
+      },
+      std::move(service)));
+}
+#endif  // defined(OS_LINUX)
+
 }  // namespace
 
 // State which lives on the IO thread and drives the ServiceManager.
@@ -698,16 +712,16 @@ ServiceManagerContext::ServiceManagerContext(
       base::BindRepeating(&base::ASCIIToUTF16, "Data Decoder Service");
 
 #if defined(OS_LINUX)
-  {
-    service_manager::EmbeddedServiceInfo font_service_info;
-    font_service_info.factory =
-        base::BindRepeating(font_service::FontServiceApp::CreateService);
-    font_service_info.task_runner = base::CreateSequencedTaskRunnerWithTraits(
-        base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
-                          base::TaskPriority::USER_BLOCKING}));
-    packaged_services_connection_->AddEmbeddedService(
-        font_service::mojom::kServiceName, font_service_info);
-  }
+  packaged_services_connection_->AddServiceRequestHandler(
+      font_service::mojom::kServiceName,
+      base::BindRepeating([](service_manager::mojom::ServiceRequest request) {
+        auto task_runner =
+            base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits(
+                {base::MayBlock(), base::WithBaseSyncPrimitives(),
+                 base::TaskPriority::USER_BLOCKING}));
+        task_runner->PostTask(FROM_HERE, base::BindOnce(&CreateFontService,
+                                                        std::move(request)));
+      }));
 #endif
 
   bool network_service_enabled =

@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 #include "skia/ext/skia_utils_base.h"
 
 namespace font_service {
@@ -20,10 +21,8 @@ namespace font_service {
 class FontServiceApp : public service_manager::Service,
                        public mojom::FontService {
  public:
-  FontServiceApp();
+  explicit FontServiceApp(service_manager::mojom::ServiceRequest request);
   ~FontServiceApp() override;
-
-  static std::unique_ptr<service_manager::Service> CreateService();
 
   void CreateSelf(mojom::FontServiceRequest request);
 
@@ -61,6 +60,7 @@ class FontServiceApp : public service_manager::Service,
                              MatchFontWithFallbackCallback callback) override;
   int FindOrAddPath(const SkString& path);
 
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::FontService> bindings_;
 

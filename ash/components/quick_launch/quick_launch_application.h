@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
 
 namespace views {
 class AuraInit;
@@ -20,7 +21,8 @@ namespace quick_launch {
 
 class QuickLaunchApplication : public service_manager::Service {
  public:
-  QuickLaunchApplication();
+  explicit QuickLaunchApplication(
+      service_manager::mojom::ServiceRequest request);
   ~QuickLaunchApplication() override;
 
   void Quit();
@@ -33,6 +35,8 @@ class QuickLaunchApplication : public service_manager::Service {
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
+
+  service_manager::ServiceBinding service_binding_;
 
   views::Widget* window_ = nullptr;
 
