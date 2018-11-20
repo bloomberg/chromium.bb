@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
 
 #include <memory>
 
@@ -20,7 +20,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
@@ -36,11 +36,10 @@ namespace {
 
 NSString* const kSpdyProxyEnabled = @"SpdyProxyEnabled";
 
-class PrivacyCollectionViewControllerTest
-    : public CollectionViewControllerTest {
+class PrivacyTableViewControllerTest : public ChromeTableViewControllerTest {
  protected:
   void SetUp() override {
-    CollectionViewControllerTest::SetUp();
+    ChromeTableViewControllerTest::SetUp();
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.SetPrefService(CreatePrefService());
     chrome_browser_state_ = test_cbs_builder.Build();
@@ -65,7 +64,7 @@ class PrivacyCollectionViewControllerTest
       [[NSUserDefaults standardUserDefaults]
           removeObjectForKey:kSpdyProxyEnabled];
     }
-    CollectionViewControllerTest::TearDown();
+    ChromeTableViewControllerTest::TearDown();
   }
 
   // Makes a PrefService to be used by the test.
@@ -77,8 +76,8 @@ class PrivacyCollectionViewControllerTest
     return factory.CreateSyncable(registry.get());
   }
 
-  CollectionViewController* InstantiateController() override {
-    return [[PrivacyCollectionViewController alloc]
+  ChromeTableViewController* InstantiateController() override {
+    return [[PrivacyTableViewController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
@@ -88,52 +87,42 @@ class PrivacyCollectionViewControllerTest
   NSString* initialValueForSpdyProxyEnabled_;
 };
 
-// Tests PrivacyCollectionViewController is set up with all appropriate items
+// Tests PrivacyTableViewController is set up with all appropriate items
 // and sections.
-TEST_F(PrivacyCollectionViewControllerTest, TestModel) {
+TEST_F(PrivacyTableViewControllerTest, TestModel) {
   CheckController();
-  EXPECT_EQ(5, NumberOfSections());
+  EXPECT_EQ(4, NumberOfSections());
 
-  int sectionIndex = 0;
-  EXPECT_EQ(1, NumberOfItemsInSection(sectionIndex));
-  CheckSectionHeaderWithId(IDS_IOS_OPTIONS_CONTINUITY_LABEL, sectionIndex);
+  // Sections[0].
+  EXPECT_EQ(1, NumberOfItemsInSection(0));
+  CheckSectionHeaderWithId(IDS_IOS_OPTIONS_CONTINUITY_LABEL, 0);
   NSString* handoffSubtitle = chrome_browser_state_->GetPrefs()->GetBoolean(
                                   prefs::kIosHandoffToOtherDevices)
                                   ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                   : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  CheckTextCellTitleAndSubtitle(
+  CheckTextCellTextAndDetailText(
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ENABLE_HANDOFF_TO_OTHER_DEVICES),
-      handoffSubtitle, sectionIndex, 0);
+      handoffSubtitle, 0, 0);
 
-  ++sectionIndex;
-  NSInteger expectedRows = 2;
-
-  EXPECT_EQ(expectedRows, NumberOfItemsInSection(sectionIndex));
-
-  CheckSectionHeaderWithId(IDS_IOS_OPTIONS_WEB_SERVICES_LABEL, sectionIndex);
-  int row = 0;
-
-  CheckSwitchCellStateAndTitleWithId(
-      YES, IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS, sectionIndex, row++);
-
+  // Sections[1].
+  EXPECT_EQ(2, NumberOfItemsInSection(1));
+  CheckSectionHeaderWithId(IDS_IOS_OPTIONS_WEB_SERVICES_LABEL, 1);
+  CheckSwitchCellStateAndTextWithId(YES, IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS,
+                                    1, 0);
   CheckDetailItemTextWithIds(IDS_IOS_OPTIONS_SEND_USAGE_DATA,
-                             IDS_IOS_OPTIONS_DATA_USAGE_NEVER, sectionIndex,
-                             row++);
+                             IDS_IOS_OPTIONS_DATA_USAGE_NEVER, 1, 1);
+  CheckSectionFooterWithId(IDS_IOS_OPTIONS_PRIVACY_FOOTER, 1);
 
-  sectionIndex++;
-  EXPECT_EQ(1, NumberOfItemsInSection(sectionIndex));
-  CheckSectionFooterWithId(IDS_IOS_OPTIONS_PRIVACY_FOOTER, sectionIndex);
+  // Sections[2].
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
+  CheckSwitchCellStateAndText(
+      NO, l10n_util::GetNSString(IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL), 2,
+      0);
 
-  sectionIndex++;
-  EXPECT_EQ(1, NumberOfItemsInSection(sectionIndex));
-  CheckSwitchCellStateAndTitle(
-      NO, l10n_util::GetNSString(IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL),
-      sectionIndex, 0);
-
-  sectionIndex++;
-  EXPECT_EQ(1, NumberOfItemsInSection(sectionIndex));
-  CheckTextCellTitle(l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE),
-                     sectionIndex, 0);
+  // Sections[3].
+  EXPECT_EQ(1, NumberOfItemsInSection(3));
+  CheckTextCellText(l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE),
+                    3, 0);
 }
 
 }  // namespace

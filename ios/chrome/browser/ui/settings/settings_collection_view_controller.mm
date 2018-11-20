@@ -54,7 +54,7 @@
 #import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/material_cell_catalog_view_controller.h"
-#import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/search_engine_settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
@@ -875,7 +875,7 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
           initWithPrefs:_browserState->GetPrefs()];
       break;
     case ItemTypePrivacy:
-      controller = [[PrivacyCollectionViewController alloc]
+      controller = [[PrivacyTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
     case ItemTypeContentSettings:

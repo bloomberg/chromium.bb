@@ -52,12 +52,12 @@ class ChromeTableViewControllerTest : public BlockCleanupTest {
   // Verifies that the title matches the l10n string for |expected_title_id|.
   void CheckTitleWithId(int expected_title_id);
 
-  // Verifies that the section title at |section| matches the |expected_title|.
-  void CheckSectionHeader(NSString* expected_title, int section);
+  // Verifies that the section header at |section| matches the |expected_text|.
+  void CheckSectionHeader(NSString* expected_text, int section);
 
-  // Verifies that the section title at |section| matches the l10n string for
-  // |expected_title_id|.
-  void CheckSectionHeaderWithId(int expected_title_id, int section);
+  // Verifies that the section header at |section| matches the l10n string for
+  // |expected_text_id|.
+  void CheckSectionHeaderWithId(int expected_text_id, int section);
 
   // Verifies that the section footer at |section| matches the |expected_text|.
   void CheckSectionFooter(NSString* expected_text, int section);
