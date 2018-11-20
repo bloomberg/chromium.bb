@@ -125,6 +125,7 @@ config("runtime_library") {
               root_build_dir)
     }
     cflags_cc += [
+      "-nostdinc++",
       "-isystem" + libcxx_include_path,
       "-isystem" + libcxxabi_include_path,
     ]
