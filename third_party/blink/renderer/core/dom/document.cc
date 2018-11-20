@@ -2542,6 +2542,10 @@ void Document::ClearFocusedElementTimerFired(TimerBase*) {
 // lets us get reasonable answers. The long term solution to this problem is
 // to instead suspend JavaScript execution.
 void Document::UpdateStyleAndLayoutTreeIgnorePendingStylesheets() {
+  if (RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled()) {
+    UpdateStyleAndLayoutTree();
+    return;
+  }
   if (Lifecycle().LifecyclePostponed())
     return;
   // See comment for equivalent CHECK in Document::UpdateStyleAndLayoutTree.
@@ -2583,7 +2587,8 @@ void Document::UpdateStyleAndLayoutIgnorePendingStylesheets(
   LocalFrameView* local_view = View();
   if (local_view)
     local_view->WillStartForcedLayout();
-  UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  if (!RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled())
+    UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
   UpdateStyleAndLayout();
 
   if (local_view) {

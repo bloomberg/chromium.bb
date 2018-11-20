@@ -407,10 +407,6 @@ bool ComputedStyle::operator==(const ComputedStyle& o) const {
   return InheritedEqual(o) && NonInheritedEqual(o);
 }
 
-bool ComputedStyle::IsStyleAvailable() const {
-  return this != StyleResolver::StyleNotYetAvailable();
-}
-
 const ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
   if (!cached_pseudo_styles_ || !cached_pseudo_styles_->size())
     return nullptr;

@@ -128,11 +128,6 @@ class CORE_EXPORT StyleResolver final
   void SetResizedForViewportUnits();
   void ClearResizedForViewportUnits();
 
-  // Exposed for ComputedStyle::IsStyleAvailable().
-  static ComputedStyle* StyleNotYetAvailable() {
-    return style_not_yet_available_;
-  }
-
   void SetRuleUsageTracker(StyleRuleUsageTracker*);
   void UpdateMediaType();
 
@@ -281,8 +276,6 @@ class CORE_EXPORT StyleResolver final
   bool HasAuthorBorder(const StyleResolverState&);
   Document& GetDocument() const { return *document_; }
   bool WasViewportResized() const { return was_viewport_resized_; }
-
-  static ComputedStyle* style_not_yet_available_;
 
   MatchedPropertiesCache matched_properties_cache_;
   Member<Document> document_;
