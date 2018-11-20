@@ -31,14 +31,13 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
 
   ChromeAuthenticatorRequestDelegate delegate(main_rfh());
 
-  auto* const address_list =
-      delegate.GetPreviouslyPairedFidoBleDeviceAddresses();
+  auto* const address_list = delegate.GetPreviouslyPairedFidoBleDeviceIds();
   ASSERT_TRUE(address_list);
   EXPECT_TRUE(address_list->empty());
 
   delegate.AddFidoBleDeviceToPairedList(kTestPairedDeviceAddress);
   const auto* updated_address_list =
-      delegate.GetPreviouslyPairedFidoBleDeviceAddresses();
+      delegate.GetPreviouslyPairedFidoBleDeviceIds();
   ASSERT_TRUE(updated_address_list);
   ASSERT_EQ(1u, updated_address_list->GetSize());
 
@@ -48,13 +47,13 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
 
   delegate.AddFidoBleDeviceToPairedList(kTestPairedDeviceAddress);
   const auto* address_list_with_duplicate_address_added =
-      delegate.GetPreviouslyPairedFidoBleDeviceAddresses();
+      delegate.GetPreviouslyPairedFidoBleDeviceIds();
   ASSERT_TRUE(address_list_with_duplicate_address_added);
   EXPECT_EQ(1u, address_list_with_duplicate_address_added->GetSize());
 
   delegate.AddFidoBleDeviceToPairedList(kTestPairedDeviceAddress2);
   const auto* address_list_with_two_addresses =
-      delegate.GetPreviouslyPairedFidoBleDeviceAddresses();
+      delegate.GetPreviouslyPairedFidoBleDeviceIds();
   ASSERT_TRUE(address_list_with_two_addresses);
 
   ASSERT_EQ(2u, address_list_with_two_addresses->GetSize());

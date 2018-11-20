@@ -150,6 +150,10 @@ void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
   transient_dialog_model_holder_->SetBluetoothAdapterPowerOnCallback(
       bluetooth_adapter_power_on_callback);
   transient_dialog_model_holder_->SetBlePairingCallback(ble_pairing_callback);
+  transient_dialog_model_holder_->SetBleDevicePairedCallback(
+      base::BindRepeating(
+          &ChromeAuthenticatorRequestDelegate::AddFidoBleDeviceToPairedList,
+          weak_ptr_factory_.GetWeakPtr()));
 
   weak_dialog_model_ = transient_dialog_model_holder_.get();
   weak_dialog_model_->AddObserver(this);
@@ -258,6 +262,22 @@ void ChromeAuthenticatorRequestDelegate::UpdateLastTransportUsed(
       Profile::FromBrowserContext(browser_context())->GetPrefs();
   prefs->SetString(kWebAuthnLastTransportUsedPrefName,
                    device::ToString(transport));
+
+  if (!weak_dialog_model_)
+    return;
+
+  // We already invoke AddFidoBleDeviceToPairedList() on
+  // AuthenticatorRequestDialogModel::OnPairingSuccess(). We invoke the function
+  // here once more to take into account the case when user pairs Bluetooth
+  // authenticator separately via system OS rather than using Chrome WebAuthn
+  // UI. AddFidoBleDeviceToPairedList() handles the case when duplicate
+  // authenticator id is being stored.
+  const auto& selected_bluetooth_authenticator_id =
+      weak_dialog_model_->selected_authenticator_id();
+  if (transport == device::FidoTransportProtocol::kBluetoothLowEnergy &&
+      selected_bluetooth_authenticator_id) {
+    AddFidoBleDeviceToPairedList(*selected_bluetooth_authenticator_id);
+  }
 }
 
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
@@ -272,7 +292,8 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     return;
 
   DCHECK(weak_dialog_model_);
-  weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed());
+  weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed(),
+                                GetPreviouslyPairedFidoBleDeviceIds());
 
   DCHECK(transient_dialog_model_holder_);
   ShowAuthenticatorRequestDialog(
@@ -283,17 +304,18 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
 
 bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(
     const device::FidoAuthenticator& authenticator) {
-  // TODO(hongjunchoi): Change this so that requests for BLE authenticators
-  // are not dispatched immediately if WebAuthN UI is enabled.
   if (!IsWebAuthnUiEnabled())
     return false;
-
   // On macOS, a native dialog is shown for the Touch ID authenticator
   // immediately after dispatch to that authenticator. This dialog must not
   // be triggered before Chrome's WebAuthn UI has advanced accordingly.
-  return authenticator.AuthenticatorTransport() &&
-         *authenticator.AuthenticatorTransport() ==
-             device::FidoTransportProtocol::kInternal;
+  // Also, connection to Bluetooth authenticators should not be established
+  // before user explicitly chooses to use a BLE device as it can trigger
+  // OS native pairing UI.
+  const auto& transport = authenticator.AuthenticatorTransport();
+  return transport &&
+         (*transport == device::FidoTransportProtocol::kInternal ||
+          *transport == device::FidoTransportProtocol::kBluetoothLowEnergy);
 }
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
@@ -358,19 +380,21 @@ void ChromeAuthenticatorRequestDelegate::OnCancelRequest() {
 }
 
 void ChromeAuthenticatorRequestDelegate::AddFidoBleDeviceToPairedList(
-    std::string device_address) {
+    std::string ble_authenticator_id) {
   ListPrefUpdate update(
       Profile::FromBrowserContext(browser_context())->GetPrefs(),
       kWebAuthnBlePairedMacAddressesPrefName);
   bool already_contains_address = std::any_of(
-      update->begin(), update->end(), [&device_address](const auto& value) {
-        return value.is_string() && value.GetString() == device_address;
+      update->begin(), update->end(),
+      [&ble_authenticator_id](const auto& value) {
+        return value.is_string() && value.GetString() == ble_authenticator_id;
       });
 
   if (already_contains_address)
     return;
 
-  update->Append(std::make_unique<base::Value>(std::move(device_address)));
+  update->Append(
+      std::make_unique<base::Value>(std::move(ble_authenticator_id)));
 }
 
 base::Optional<device::FidoTransportProtocol>
@@ -382,7 +406,7 @@ ChromeAuthenticatorRequestDelegate::GetLastTransportUsed() const {
 }
 
 const base::ListValue*
-ChromeAuthenticatorRequestDelegate::GetPreviouslyPairedFidoBleDeviceAddresses()
+ChromeAuthenticatorRequestDelegate::GetPreviouslyPairedFidoBleDeviceIds()
     const {
   PrefService* prefs =
       Profile::FromBrowserContext(browser_context())->GetPrefs();

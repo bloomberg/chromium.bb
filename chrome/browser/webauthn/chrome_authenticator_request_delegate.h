@@ -103,9 +103,9 @@ class ChromeAuthenticatorRequestDelegate
   void OnModelDestroyed() override;
   void OnCancelRequest() override;
 
-  void AddFidoBleDeviceToPairedList(std::string device_address);
+  void AddFidoBleDeviceToPairedList(std::string ble_authenticator_id);
   base::Optional<device::FidoTransportProtocol> GetLastTransportUsed() const;
-  const base::ListValue* GetPreviouslyPairedFidoBleDeviceAddresses() const;
+  const base::ListValue* GetPreviouslyPairedFidoBleDeviceIds() const;
   bool IsWebAuthnUiEnabled() const;
 
   content::RenderFrameHost* const render_frame_host_;

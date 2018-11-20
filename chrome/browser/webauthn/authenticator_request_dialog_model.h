@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 #include "chrome/browser/webauthn/authenticator_reference.h"
 #include "chrome/browser/webauthn/authenticator_transport.h"
 #include "chrome/browser/webauthn/observable_authenticator_list.h"
@@ -31,6 +32,7 @@ class AuthenticatorRequestDialogModel {
  public:
   using RequestCallback = device::FidoRequestHandlerBase::RequestCallback;
   using BlePairingCallback = device::FidoRequestHandlerBase::BlePairingCallback;
+  using BleDevicePairedCallback = base::RepeatingCallback<void(std::string)>;
   using TransportAvailabilityInfo =
       device::FidoRequestHandlerBase::TransportAvailabilityInfo;
 
@@ -128,8 +130,7 @@ class AuthenticatorRequestDialogModel {
     return transport_availability()->is_ble_powered;
   }
 
-  const std::string& selected_authenticator_id() const {
-    DCHECK_EQ(Step::kBlePinEntry, current_step());
+  const base::Optional<std::string>& selected_authenticator_id() const {
     return selected_authenticator_id_;
   }
 
@@ -139,7 +140,8 @@ class AuthenticatorRequestDialogModel {
   // Valid action when at step: kNotStarted.
   void StartFlow(
       TransportAvailabilityInfo transport_availability,
-      base::Optional<device::FidoTransportProtocol> last_used_transport);
+      base::Optional<device::FidoTransportProtocol> last_used_transport,
+      const base::ListValue* previously_paired_bluetooth_device_list);
 
   // Starts the UX flow. Tries to figure out the most likely transport to be
   // used, and starts the guided flow for that transport; or shows the manual
@@ -155,7 +157,9 @@ class AuthenticatorRequestDialogModel {
   // Valid action when at step: kNotStarted, kWelcomeScreen,
   // kTransportSelection, and steps where the other transports menu is shown,
   // namely, kUsbInsertAndActivate, kTouchId, kBleActivate, kCableActivate.
-  void StartGuidedFlowForTransport(AuthenticatorTransport transport);
+  void StartGuidedFlowForTransport(
+      AuthenticatorTransport transport,
+      bool pair_with_new_device_for_bluetooth_low_energy = false);
 
   // Ensures that the Bluetooth adapter is powered before proceeding to |step|.
   //  -- If the adapter is powered, advanced directly to |step|.
@@ -198,7 +202,7 @@ class AuthenticatorRequestDialogModel {
   // Dispatches WebAuthN request to successfully paired Bluetooth authenticator.
   //
   // Valid action when at step: kBleVerifying.
-  void OnPairingSuccess(base::StringPiece authenticator_id);
+  void OnPairingSuccess();
 
   // Returns to Bluetooth device selection modal.
   //
@@ -259,6 +263,9 @@ class AuthenticatorRequestDialogModel {
   void SetBluetoothAdapterPowerOnCallback(
       base::RepeatingClosure bluetooth_adapter_power_on_callback);
 
+  void SetBleDevicePairedCallback(
+      BleDevicePairedCallback ble_device_paired_callback);
+
   void UpdateAuthenticatorReferenceId(base::StringPiece old_authenticator_id,
                                       std::string new_authenticator_id);
   void AddAuthenticator(const device::FidoAuthenticator& authenticator);
@@ -290,6 +297,11 @@ class AuthenticatorRequestDialogModel {
   // kBlePowerOnAutomatic.
   base::Optional<Step> next_step_once_ble_powered_;
 
+  // Determines whether Bluetooth device selection UI and pin pairing UI should
+  // be shown. We proceed directly to Step::kBleVerifying if the user has paired
+  // with a bluetooth authenticator previously.
+  bool previously_paired_with_bluetooth_authenticator_ = false;
+
   base::ObserverList<Observer>::Unchecked observers_;
 
   // These fields are only filled out when the UX flow is started.
@@ -304,11 +316,12 @@ class AuthenticatorRequestDialogModel {
 
   // Represents the id of the Bluetooth authenticator that the user is trying to
   // connect to or conduct WebAuthN request to via the WebAuthN UI.
-  std::string selected_authenticator_id_;
+  base::Optional<std::string> selected_authenticator_id_;
 
   RequestCallback request_callback_;
   BlePairingCallback ble_pairing_callback_;
   base::RepeatingClosure bluetooth_adapter_power_on_callback_;
+  BleDevicePairedCallback ble_device_paired_callback_;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_;
 
