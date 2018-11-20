@@ -4,6 +4,10 @@
 
 #import "ios/chrome/browser/ui/main/browser_coordinator.h"
 
+#include <memory>
+
+#include "base/scoped_observer.h"
+#import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/consent_bump/consent_bump_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory_coordinator.h"
@@ -16,13 +20,19 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
+#import "ios/chrome/browser/web/repost_form_tab_helper.h"
+#import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
+#include "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface BrowserCoordinator ()<ConsentBumpCoordinatorDelegate,
-                                 FormInputAccessoryCoordinatorDelegate>
+                                 FormInputAccessoryCoordinatorDelegate,
+                                 RepostFormTabHelperDelegate,
+                                 WebStateListObserving>
 
 // Handles command dispatching.
 @property(nonatomic, strong) CommandDispatcher* dispatcher;
@@ -48,12 +58,21 @@
 // Coordinator for Recent Tabs.
 @property(nonatomic, strong) RecentTabsCoordinator* recentTabsCoordinator;
 
+// Coordinator for displaying Repost Form dialog.
+@property(nonatomic, strong) RepostFormCoordinator* repostFormCoordinator;
+
 // Coordinator for displaying snackbars.
 @property(nonatomic, strong) SnackbarCoordinator* snackbarCoordinator;
 
 @end
 
-@implementation BrowserCoordinator
+@implementation BrowserCoordinator {
+  // Observers for WebStateList.
+  std::unique_ptr<WebStateListObserverBridge> _webStateListObserverBridge;
+  std::unique_ptr<ScopedObserver<WebStateList, WebStateListObserver>>
+      _scopedWebStateListObserver;
+}
+
 @synthesize dispatcher = _dispatcher;
 // Child coordinators
 @synthesize consentBumpCoordinator = _consentBumpCoordinator;
@@ -61,6 +80,7 @@
 @synthesize qrScannerCoordinator = _qrScannerCoordinator;
 @synthesize readingListCoordinator = _readingListCoordinator;
 @synthesize recentTabsCoordinator = _recentTabsCoordinator;
+@synthesize repostFormCoordinator = _repostFormCoordinator;
 @synthesize snackbarCoordinator = _snackbarCoordinator;
 
 #pragma mark - ChromeCoordinator
@@ -74,11 +94,15 @@
   [self.dispatcher
       startDispatchingToTarget:self
                    forProtocol:@protocol(BrowserCoordinatorCommands)];
+  [self installDelegatesForAllWebStates];
+  [self addWebStateListObserver];
   [super start];
 }
 
 - (void)stop {
   [super stop];
+  [self removeWebStateListObserver];
+  [self uninstallDelegatesForAllWebStates];
   [self.dispatcher stopDispatchingToTarget:self];
   [self stopChildCoordinators];
   [self destroyViewController];
@@ -92,7 +116,7 @@
   BrowserViewControllerDependencyFactory* factory =
       [[BrowserViewControllerDependencyFactory alloc]
           initWithBrowserState:self.browserState
-                  webStateList:[self.tabModel webStateList]];
+                  webStateList:self.tabModel.webStateList];
   _viewController = [[BrowserViewController alloc]
                 initWithTabModel:self.tabModel
                     browserState:self.browserState
@@ -131,6 +155,8 @@
 
   /* RecentTabsCoordinator is created and started by a BrowserCommand */
 
+  /* RepostFormCoordinator is created and started by a delegate method */
+
   self.snackbarCoordinator = [[SnackbarCoordinator alloc] init];
   self.snackbarCoordinator.dispatcher = self.dispatcher;
   [self.snackbarCoordinator start];
@@ -152,6 +178,9 @@
 
   [self.recentTabsCoordinator stop];
   self.recentTabsCoordinator = nil;
+
+  [self.repostFormCoordinator stop];
+  self.repostFormCoordinator = nil;
 
   [self.snackbarCoordinator stop];
   self.snackbarCoordinator = nil;
@@ -243,6 +272,96 @@
 - (void)openCreditCardSettings {
   [self.applicationCommandHandler
       showCreditCardSettingsFromViewController:self.viewController];
+}
+
+#pragma mark - RepostFormTabHelperDelegate
+
+- (void)repostFormTabHelper:(RepostFormTabHelper*)helper
+    presentRepostFormDialogForWebState:(web::WebState*)webState
+                         dialogAtPoint:(CGPoint)location
+                     completionHandler:(void (^)(BOOL))completion {
+  self.repostFormCoordinator = [[RepostFormCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                  dialogLocation:location
+                        webState:webState
+               completionHandler:completion];
+  [self.repostFormCoordinator start];
+}
+
+- (void)repostFormTabHelperDismissRepostFormDialog:
+    (RepostFormTabHelper*)helper {
+  [self.repostFormCoordinator stop];
+  self.repostFormCoordinator = nil;
+}
+
+// TODO(crbug.com/906525) : Move WebStateListObserving out of
+// BrowserCoordinator.
+#pragma mark - WebStateListObserving
+
+- (void)webStateList:(WebStateList*)webStateList
+    didInsertWebState:(web::WebState*)webState
+              atIndex:(int)index
+           activating:(BOOL)activating {
+  [self installDelegatesForWebState:webState];
+}
+
+- (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)index {
+  [self uninstallDelegatesForWebState:oldWebState];
+  [self installDelegatesForWebState:newWebState];
+}
+
+- (void)webStateList:(WebStateList*)webStateList
+    didDetachWebState:(web::WebState*)webState
+              atIndex:(int)index {
+  [self uninstallDelegatesForWebState:webState];
+}
+
+// TODO(crbug.com/906525) : Move out of BrowserCoordinator along with
+// WebStateListObserving.
+#pragma mark - Private WebState management methods
+
+// Adds observer for WebStateList.
+- (void)addWebStateListObserver {
+  _webStateListObserverBridge =
+      std::make_unique<WebStateListObserverBridge>(self);
+  _scopedWebStateListObserver =
+      std::make_unique<ScopedObserver<WebStateList, WebStateListObserver>>(
+          _webStateListObserverBridge.get());
+  _scopedWebStateListObserver->Add(self.tabModel.webStateList);
+}
+
+// Removes observer for WebStateList.
+- (void)removeWebStateListObserver {
+  _scopedWebStateListObserver.reset();
+  _webStateListObserverBridge.reset();
+}
+
+// Installs delegates for each WebState in WebStateList.
+- (void)installDelegatesForAllWebStates {
+  for (int i = 0; i < self.tabModel.webStateList->count(); i++) {
+    web::WebState* webState = self.tabModel.webStateList->GetWebStateAt(i);
+    [self installDelegatesForWebState:webState];
+  }
+}
+
+// Uninstalls delegates for each WebState in WebStateList.
+- (void)uninstallDelegatesForAllWebStates {
+  for (int i = 0; i < self.tabModel.webStateList->count(); i++) {
+    web::WebState* webState = self.tabModel.webStateList->GetWebStateAt(i);
+    [self uninstallDelegatesForWebState:webState];
+  }
+}
+
+// Install delegates for |webState|.
+- (void)installDelegatesForWebState:(web::WebState*)webState {
+  RepostFormTabHelper::CreateForWebState(webState, self);
+}
+
+// Uninstalls delegates for |webState|.
+- (void)uninstallDelegatesForWebState:(web::WebState*)webState {
 }
 
 @end
