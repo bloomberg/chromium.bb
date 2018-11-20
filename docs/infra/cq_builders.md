@@ -119,6 +119,16 @@ builder.
     * [`//third_party/WebKit/LayoutTests/FlagExpectations/enable-blink-gen-property-trees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/WebKit/LayoutTests/FlagExpectations/enable-blink-gen-property-trees)
     * [`//third_party/WebKit/LayoutTests/flag-specific/enable-blink-gen-property-trees/.+`](https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/flag-specific/enable-blink-gen-property-trees/)
 
+* [linux-blink-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux-blink-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux-blink-rel))
+
+  Path regular expressions:
+    * [`//cc/.+`](https://cs.chromium.org/chromium/src/cc/)
+    * [`//third_party/WebKit/LayoutTests/FlagExpectations/(enable-slimming-paint-v2|enable-blink-gen-property-trees)`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/WebKit/LayoutTests/FlagExpectations/(enable-slimming-paint-v2|enable-blink-gen-property-trees))
+    * [`//third_party/WebKit/LayoutTests/flag-specific/(enable-slimming-paint-v2|enable-blink-gen-property-trees)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/WebKit/LayoutTests/flag-specific/(enable-slimming-paint-v2|enable-blink-gen-property-trees)/)
+    * [`//third_party/blink/renderer/core/layout/compositing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/compositing/)
+    * [`//third_party/blink/renderer/core/(svg|paint)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/renderer/core/(svg|paint)/)
+    * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
+
 * [linux_chromium_dbg_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_dbg_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_chromium_dbg_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_chromium_dbg_ng))
 
   Path regular expressions:
@@ -191,16 +201,6 @@ builder.
     * [`//third_party/blink/renderer/modules/xr/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/xr/)
     * [`//third_party/blink/renderer/platform/graphics/gpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/gpu/)
     * [`//ui/gl/.+`](https://cs.chromium.org/chromium/src/ui/gl/)
-
-* [linux_trusty_blink_rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_trusty_blink_rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_trusty_blink_rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_trusty_blink_rel))
-
-  Path regular expressions:
-    * [`//cc/.+`](https://cs.chromium.org/chromium/src/cc/)
-    * [`//third_party/WebKit/LayoutTests/FlagExpectations/(enable-slimming-paint-v2|enable-blink-gen-property-trees)`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/WebKit/LayoutTests/FlagExpectations/(enable-slimming-paint-v2|enable-blink-gen-property-trees))
-    * [`//third_party/WebKit/LayoutTests/flag-specific/(enable-slimming-paint-v2|enable-blink-gen-property-trees)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/WebKit/LayoutTests/flag-specific/(enable-slimming-paint-v2|enable-blink-gen-property-trees)/)
-    * [`//third_party/blink/renderer/core/layout/compositing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/compositing/)
-    * [`//third_party/blink/renderer/core/(svg|paint)/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/renderer/core/(svg|paint)/)
-    * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
 
 * [android_compile_x64_dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android_compile_x64_dbg) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+android_compile_x64_dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+android_compile_x64_dbg))
 

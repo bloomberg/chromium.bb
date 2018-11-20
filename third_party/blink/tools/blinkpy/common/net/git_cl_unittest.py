@@ -39,7 +39,7 @@ class GitCLTest(unittest.TestCase):
         self.assertEqual(host.executive.calls, [['git', 'cl', 'issue']])
 
     def test_trigger_try_jobs_with_list(self):
-        # When no bucket is specified, master.tryserver.blink is used by
+        # When no bucket is specified, luci.chromium.try is used by
         # default. Besides, `git cl try` invocations are grouped by buckets.
         host = MockHost()
         git_cl = GitCL(host, auth_refresh_token_json='token.json')
