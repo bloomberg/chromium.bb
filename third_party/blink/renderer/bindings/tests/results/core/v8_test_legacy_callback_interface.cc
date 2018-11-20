@@ -96,7 +96,15 @@ V8TestLegacyCallbackInterface* V8TestLegacyCallbackInterface::CreateOrNull(v8::L
 }
 
 v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* callback_this_value, Node* node) {
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+  ScriptState* callback_relevant_script_state =
+      CallbackRelevantScriptStateOrThrowException(
+          "TestLegacyCallbackInterface",
+          "acceptNode");
+  if (!callback_relevant_script_state) {
+    return v8::Nothing<uint16_t>();
+  }
+
+  if (!IsCallbackFunctionRunnable(callback_relevant_script_state,
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
@@ -116,7 +124,7 @@ v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* c
 
   // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
-      CallbackRelevantScriptState());
+      callback_relevant_script_state);
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
@@ -131,7 +139,7 @@ v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* c
     // step 9.2.2. If getResult is an abrupt completion, set completion to
     //   getResult and jump to the step labeled return.
     v8::Local<v8::Value> value;
-    if (!CallbackObject()->Get(CallbackRelevantScriptState()->GetContext(),
+    if (!CallbackObject()->Get(callback_relevant_script_state->GetContext(),
                                V8String(GetIsolate(), "acceptNode"))
         .ToLocal(&value)) {
       return v8::Nothing<uint16_t>();
@@ -161,7 +169,7 @@ v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* c
     // step 2. If thisArg was not given, let thisArg be undefined.
     this_arg = v8::Undefined(GetIsolate());
   } else {
-    this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
+    this_arg = ToV8(callback_this_value, callback_relevant_script_state);
   }
 
   // step: Let esArgs be the result of converting args to an ECMAScript
@@ -169,7 +177,7 @@ v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* c
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
-      CallbackRelevantScriptState()->GetContext()->Global();
+      callback_relevant_script_state->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
   v8::Local<v8::Value> v8_node = ToV8(node, argument_creation_context, GetIsolate());
   constexpr int argc = 1;
@@ -180,7 +188,7 @@ v8::Maybe<uint16_t> V8TestLegacyCallbackInterface::acceptNode(ScriptWrappable* c
   // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
-          ExecutionContext::From(CallbackRelevantScriptState()),
+          ExecutionContext::From(callback_relevant_script_state),
           this_arg,
           argc,
           argv,
