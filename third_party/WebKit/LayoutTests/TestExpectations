@@ -4099,6 +4099,11 @@ crbug.com/765116 virtual/outofblink-cors-ns/external/wpt/xhr/responsexml-documen
 # changed with BlinkGenPropertyTrees. Until that launches, this test will fail.
 crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Failure ]
 
+# Clip and Clip-path order with filtering is currently incorrect. This is being fixed with BlinkGenPropertyTrees.
+crbug.com/907175 external/wpt/css/css-masking/clip/clip-filter-order.html [ Failure ]
+crbug.com/907175 external/wpt/css/css-masking/clip-path/clip-path-filter-order.html [ Failure ]
+crbug.com/907175 external/wpt/svg/rendering/order/clip-path-filter-order.svg [ Failure ]
+
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Failure Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Failure Timeout ]
 crbug.com/716320 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-messagechannel-success.html [ Failure Timeout ]

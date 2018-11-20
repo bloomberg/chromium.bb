@@ -117,6 +117,9 @@ crbug.com/865039 compositing/masks/mask-with-added-filters.html [ Pass ]
 crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pass ]
 crbug.com/400829 media/video-object-fit.html [ Pass ]
 crbug.com/400829 compositing/composited-canvas-with-overflowing-object-fit.html [ Pass ]
+crbug.com/907175 external/wpt/css/css-masking/clip/clip-filter-order.html [ Pass ]
+crbug.com/907175 external/wpt/css/css-masking/clip-path/clip-path-filter-order.html [ Pass ]
+crbug.com/907175 external/wpt/svg/rendering/order/clip-path-filter-order.svg [ Pass ]
 
 # These tests are no longer applicable with layer list mode.
 # Move to NeverFixTests later.
