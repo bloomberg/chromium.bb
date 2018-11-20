@@ -68,7 +68,7 @@ message AutofillQueryResponse {
       // Signature identifying the field that is the same as in the request.
       optional fixed32 field_signature = 1;
       // The predicted field type.
-      optional int32 primary_type_prediction = 2;
+      optional fixed32 primary_type_prediction = 2;
       // Detailed list of all possible predictions (including
       // |primary_type_prediction| as the first item).
       repeated FieldPrediction predictions = 3;

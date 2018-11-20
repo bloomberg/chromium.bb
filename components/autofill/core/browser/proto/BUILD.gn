@@ -14,3 +14,13 @@ fuzzable_proto_library("proto") {
     "strike_data.proto",
   ]
 }
+
+static_library("legacy_proto_bridge") {
+  sources = [
+    "legacy_proto_bridge.cc",
+    "legacy_proto_bridge.h",
+  ]
+  deps = [
+    ":proto",
+  ]
+}
