@@ -2115,7 +2115,7 @@
   },
   {
     "name": "enforce-tls13-downgrade",
-    // "owners": [ "your-team" ],
+    "owners": [ "davidben", "svaldez" ],
     "expiry_milestone": 76
   },
   {
@@ -3050,7 +3050,7 @@
   },
   {
     "name": "tls13-variant",
-    // "owners": [ "your-team" ],
+    "owners": [ "davidben", "svaldez" ],
     "expiry_milestone": 76
   },
   {
