@@ -48,9 +48,9 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;
   void StartMetalayerInteraction(const gfx::Rect& region) override;
+  void StartTextInteraction(const std::string& query, bool allow_tts) override;
   void StartVoiceInteraction() override;
   void StopActiveInteraction(bool cancel_conversation) override;
-  void SendTextQuery(const std::string& query) override;
   void AddAssistantInteractionSubscriber(
       mojom::AssistantInteractionSubscriberPtr subscriber) override;
   void AddAssistantNotificationSubscriber(

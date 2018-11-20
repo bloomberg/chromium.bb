@@ -344,11 +344,15 @@ void AssistantManagerServiceImpl::StartMetalayerInteraction(
                      /*assistant_tree=*/nullptr));
 }
 
-void AssistantManagerServiceImpl::SendTextQuery(const std::string& query) {
+void AssistantManagerServiceImpl::StartTextInteraction(const std::string& query,
+                                                       bool allow_tts) {
   assistant_client::VoicelessOptions options;
   options.is_user_initiated = true;
-  options.modality =
-      assistant_client::VoicelessOptions::Modality::TYPING_MODALITY;
+
+  if (!allow_tts) {
+    options.modality =
+        assistant_client::VoicelessOptions::Modality::TYPING_MODALITY;
+  }
 
   std::string interaction = CreateTextQueryInteraction(query);
   assistant_manager_internal_->SendVoicelessInteraction(

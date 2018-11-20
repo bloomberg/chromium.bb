@@ -23,6 +23,12 @@ interface Assistant {
   // |AssistantInteractionSubscriber| interface to registered subscribers.
   StartMetalayerInteraction(gfx.mojom.Rect region);
 
+  // Starts a new Assistant text interaction. If |allow_tts| is true, the
+  // result will contain TTS. Otherwise TTS will not be present in the
+  // generated server response. Results will be returned through registered
+  // |AssistantInteractionSubscriber|.
+  StartTextInteraction(string query, bool allow_tts);
+
   // Starts a new Assistant voice interaction.
   StartVoiceInteraction();
 
@@ -30,10 +36,6 @@ interface Assistant {
   // |cancel_conversation|. If there is no active interaction, this method
   // is a no-op.
   StopActiveInteraction(bool cancel_conversation);
-
-  // Send text query to assistant. Result will be returned through registered
-  // |AssistantInteractionSubscriber|.
-  SendTextQuery(string query);
 
   // Registers assistant interaction event subscriber. Subscribers'
   // implementation is responsible for selecting events of interest.

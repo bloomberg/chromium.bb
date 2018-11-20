@@ -116,7 +116,7 @@ class AssistantInteractionController
 
   void StartMetalayerInteraction(const gfx::Rect& region);
   void StartScreenContextInteraction();
-  void StartTextInteraction(const std::string text);
+  void StartTextInteraction(const std::string text, bool allow_tts);
   void StartVoiceInteraction();
   void StopActiveInteraction(bool cancel_conversation);
 

@@ -120,7 +120,7 @@ void AssistantInteractionController::OnDeepLinkReceived(
   }
 
   assistant_controller_->ui_controller()->ShowUi(AssistantSource::kDeepLink);
-  StartTextInteraction(query.value());
+  StartTextInteraction(query.value(), /*allow_tts=*/false);
 }
 
 void AssistantInteractionController::OnUiModeChanged(AssistantUiMode ui_mode) {
@@ -369,7 +369,13 @@ void AssistantInteractionController::OnSuggestionChipPressed(
   }
 
   // Otherwise, we will submit a simple text query using the suggestion text.
-  StartTextInteraction(suggestion->text);
+  // Note that a text query originating from a suggestion chip will carry
+  // forward the allowance/forbiddance of TTS from the previous response. This
+  // is because suggestion chips pressed after a voice query should continue to
+  // return TTS, as really the text interaction is just a continuation of the
+  // user's preceding voice interaction.
+  StartTextInteraction(suggestion->text, /*allow_tts=*/model_.response() &&
+                                             model_.response()->has_tts());
 }
 
 void AssistantInteractionController::OnSuggestionsResponse(
@@ -497,7 +503,7 @@ void AssistantInteractionController::OnDialogPlateButtonPressed(
 void AssistantInteractionController::OnDialogPlateContentsCommitted(
     const std::string& text) {
   DCHECK(!text.empty());
-  StartTextInteraction(text);
+  StartTextInteraction(text, /*allow_tts=*/false);
 }
 
 bool AssistantInteractionController::HasUnprocessedPendingResponse() {
@@ -581,12 +587,13 @@ void AssistantInteractionController::StartScreenContextInteraction() {
 }
 
 void AssistantInteractionController::StartTextInteraction(
-    const std::string text) {
+    const std::string text,
+    bool allow_tts) {
   StopActiveInteraction(false);
 
   model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(text));
 
-  assistant_->SendTextQuery(text);
+  assistant_->StartTextInteraction(text, allow_tts);
 }
 
 void AssistantInteractionController::StartVoiceInteraction() {
