@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_node_data.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/get_root_node_options.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -1254,10 +1255,15 @@ FlatTreeNodeData& Node::EnsureFlatTreeNodeData() {
   return EnsureRareData().EnsureFlatTreeNodeData();
 }
 
-FlatTreeNodeData& Node::GetFlatTreeNodeData() const {
-  DCHECK(HasRareData());
-  DCHECK(RareData()->GetFlatTreeNodeData());
-  return *RareData()->GetFlatTreeNodeData();
+FlatTreeNodeData* Node::GetFlatTreeNodeData() const {
+  if (!HasRareData())
+    return nullptr;
+  return RareData()->GetFlatTreeNodeData();
+}
+
+void Node::ClearFlatTreeNodeData() {
+  if (FlatTreeNodeData* data = GetFlatTreeNodeData())
+    data->Clear();
 }
 
 bool Node::IsDescendantOf(const Node* other) const {

@@ -777,9 +777,9 @@ class CORE_EXPORT Node : public EventTarget {
   NodeListsNodeData* NodeLists();
   void ClearNodeLists();
 
-  // EnsureFlatTreeNodeData() must be called beforehand
-  FlatTreeNodeData& GetFlatTreeNodeData() const;
+  FlatTreeNodeData* GetFlatTreeNodeData() const;
   FlatTreeNodeData& EnsureFlatTreeNodeData();
+  void ClearFlatTreeNodeData();
 
   virtual bool WillRespondToMouseMoveEvents();
   virtual bool WillRespondToMouseClickEvents();

@@ -127,6 +127,8 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
     return *slot_assignment_;
   }
 
+  bool HasSlotAssignment() { return slot_assignment_; }
+
   HTMLSlotElement* AssignedSlotFor(const Node&);
   void DidAddSlot(HTMLSlotElement&);
   void DidChangeHostChildSlotName(const AtomicString& old_value,

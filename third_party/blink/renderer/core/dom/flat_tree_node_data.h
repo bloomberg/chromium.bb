@@ -16,6 +16,11 @@ class HTMLSlotElement;
 class FlatTreeNodeData final : public GarbageCollected<FlatTreeNodeData> {
  public:
   FlatTreeNodeData() {}
+  void Clear() {
+    assigned_slot_ = nullptr;
+    previous_in_assigned_nodes_ = nullptr;
+    next_in_assigned_nodes_ = nullptr;
+  }
   void Trace(Visitor*);
 
  private:
@@ -32,6 +37,7 @@ class FlatTreeNodeData final : public GarbageCollected<FlatTreeNodeData> {
   Node* PreviousInAssignedNodes() { return previous_in_assigned_nodes_; }
   Node* NextInAssignedNodes() { return next_in_assigned_nodes_; }
 
+  friend class FlatTreeTraversal;
   friend class HTMLSlotElement;
 
   WeakMember<HTMLSlotElement> assigned_slot_;
