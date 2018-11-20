@@ -65,6 +65,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/navigation_interception/android/java/src"/>
     <classpathentry kind="src" path="components/ntp_tiles/android/java/src"/>
     <classpathentry kind="src" path="components/offline_items_collection/core/android/java/src"/>
+    <classpathentry kind="src" path="components/omnibox/browser/android/java/src"/>
     <classpathentry kind="src" path="components/payments/content/android/java/src"/>
     <classpathentry kind="src" path="components/policy/android/java/src"/>
     <classpathentry kind="src" path="components/policy/android/javatests/src"/>
@@ -267,6 +268,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="out/Debug/lib.java/components/invalidation/impl/java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/invalidation/impl/proto_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/navigation_interception/android/navigation_interception_java.jar"/>
+    <classpathentry kind="lib" path="out/Debug/lib.java/components/omnibox/browser/browser_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/policy/android/policy_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/payments/content/payment_request_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/precache/android/precache_java.jar"/>

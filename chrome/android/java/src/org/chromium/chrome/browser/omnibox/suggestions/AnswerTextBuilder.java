@@ -18,6 +18,8 @@ import android.util.Log;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.components.omnibox.AnswerTextType;
+import org.chromium.components.omnibox.SuggestionAnswer;
 
 import java.util.List;
 
@@ -27,28 +29,6 @@ import java.util.List;
  */
 class AnswerTextBuilder {
     private static final String TAG = "AnswerTextBuilder";
-
-    // Types, sizes and colors specified at http://goto.google.com/ais_api.
-    // Deprecated: ANSWERS_ANSWER_TEXT_TYPE = 1;
-    // Deprecated: ANSWERS_HEADLINE_TEXT_TYPE = 2;
-    private static final int ANSWERS_TOP_ALIGNED_TEXT_TYPE = 3;
-    // Deprecated: ANSWERS_DESCRIPTION_TEXT_TYPE = 4;
-    private static final int ANSWERS_DESCRIPTION_TEXT_NEGATIVE_TYPE = 5;
-    private static final int ANSWERS_DESCRIPTION_TEXT_POSITIVE_TYPE = 6;
-    // Deprecated: ANSWERS_MORE_INFO_TEXT_TYPE = 7;
-    private static final int ANSWERS_SUGGESTION_TEXT_TYPE = 8;
-    // Deprecated: ANSWERS_SUGGESTION_TEXT_POSITIVE_TYPE = 9;
-    // Deprecated: ANSWERS_SUGGESTION_TEXT_NEGATIVE_TYPE = 10;
-    // Deprecated: ANSWERS_SUGGESTION_LINK_COLOR_TYPE = 11;
-    // Deprecated: ANSWERS_STATUS_TEXT_TYPE = 12;
-    private static final int ANSWERS_PERSONALIZED_SUGGESTION_TEXT_TYPE = 13;
-    // Deprecated: ANSWERS_IMMERSIVE_DESCRIPTION_TEXT = 14;
-    // Deprecated: ANSWERS_DATE_TEXT = 15;
-    // Deprecated: ANSWERS_PREVIEW_TEXT = 16;
-    private static final int ANSWERS_ANSWER_TEXT_MEDIUM_TYPE = 17;
-    private static final int ANSWERS_ANSWER_TEXT_LARGE_TYPE = 18;
-    private static final int ANSWERS_SECONDARY_TEXT_SMALL_TYPE = 19;
-    private static final int ANSWERS_SECONDARY_TEXT_MEDIUM_TYPE = 20;
 
     private static final int ANSWERS_TOP_ALIGNED_TEXT_SIZE_SP = 12;
     private static final int ANSWERS_DESCRIPTION_TEXT_NEGATIVE_SIZE_SP = 16;
@@ -156,7 +136,7 @@ class AnswerTextBuilder {
         ForegroundColorSpan colorSpan = new ForegroundColorSpan(getAnswerTextColor(type));
         builder.setSpan(colorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        if (type == ANSWERS_TOP_ALIGNED_TEXT_TYPE) {
+        if (type == AnswerTextType.TOP_ALIGNED) {
             TopAlignedSpan topAlignedSpan =
                     new TopAlignedSpan(ANSWERS_TOP_ALIGNED_TEXT_SIZE_SP, maxTextHeightSp, density);
             builder.setSpan(topAlignedSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -168,25 +148,25 @@ class AnswerTextBuilder {
      *
      * @param type The answer type as specified at http://goto.google.com/ais_api.
      */
-    private static int getAnswerTextSizeSp(int type) {
+    private static int getAnswerTextSizeSp(@AnswerTextType int type) {
         switch (type) {
-            case ANSWERS_TOP_ALIGNED_TEXT_TYPE:
+            case AnswerTextType.TOP_ALIGNED:
                 return ANSWERS_TOP_ALIGNED_TEXT_SIZE_SP;
-            case ANSWERS_DESCRIPTION_TEXT_NEGATIVE_TYPE:
+            case AnswerTextType.DESCRIPTION_NEGATIVE:
                 return ANSWERS_DESCRIPTION_TEXT_NEGATIVE_SIZE_SP;
-            case ANSWERS_DESCRIPTION_TEXT_POSITIVE_TYPE:
+            case AnswerTextType.DESCRIPTION_POSITIVE:
                 return ANSWERS_DESCRIPTION_TEXT_POSITIVE_SIZE_SP;
-            case ANSWERS_SUGGESTION_TEXT_TYPE:
+            case AnswerTextType.SUGGESTION:
                 return ANSWERS_SUGGESTION_TEXT_SIZE_SP;
-            case ANSWERS_PERSONALIZED_SUGGESTION_TEXT_TYPE:
+            case AnswerTextType.PERSONALIZED_SUGGESTION:
                 return ANSWERS_PERSONALIZED_SUGGESTION_TEXT_SIZE_SP;
-            case ANSWERS_ANSWER_TEXT_MEDIUM_TYPE:
+            case AnswerTextType.ANSWER_TEXT_MEDIUM:
                 return ANSWERS_ANSWER_TEXT_MEDIUM_SIZE_SP;
-            case ANSWERS_ANSWER_TEXT_LARGE_TYPE:
+            case AnswerTextType.ANSWER_TEXT_LARGE:
                 return ANSWERS_ANSWER_TEXT_LARGE_SIZE_SP;
-            case ANSWERS_SECONDARY_TEXT_SMALL_TYPE:
+            case AnswerTextType.SUGGESTION_SECONDARY_TEXT_SMALL:
                 return ANSWERS_SECONDARY_TEXT_SMALL_SIZE_SP;
-            case ANSWERS_SECONDARY_TEXT_MEDIUM_TYPE:
+            case AnswerTextType.SUGGESTION_SECONDARY_TEXT_MEDIUM:
                 return ANSWERS_SECONDARY_TEXT_MEDIUM_SIZE_SP;
             default:
                 Log.w(TAG, "Unknown answer type: " + type);
@@ -199,28 +179,28 @@ class AnswerTextBuilder {
      *
      * @param type The answer type as specified at http://goto.google.com/ais_api.
      */
-    private static int getAnswerTextColor(int type) {
+    private static int getAnswerTextColor(@AnswerTextType int type) {
         Resources resources = ContextUtils.getApplicationContext().getResources();
         switch (type) {
-            case ANSWERS_DESCRIPTION_TEXT_NEGATIVE_TYPE:
+            case AnswerTextType.DESCRIPTION_NEGATIVE:
                 return ApiCompatibilityUtils.getColor(
                         resources, R.color.answers_description_text_negative);
 
-            case ANSWERS_DESCRIPTION_TEXT_POSITIVE_TYPE:
+            case AnswerTextType.DESCRIPTION_POSITIVE:
                 return ApiCompatibilityUtils.getColor(
                         resources, R.color.answers_description_text_positive);
 
-            case ANSWERS_SUGGESTION_TEXT_TYPE:
+            case AnswerTextType.SUGGESTION:
                 return ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text);
 
-            case ANSWERS_PERSONALIZED_SUGGESTION_TEXT_TYPE:
+            case AnswerTextType.PERSONALIZED_SUGGESTION:
                 return ApiCompatibilityUtils.getColor(resources, R.color.url_emphasis_default_text);
 
-            case ANSWERS_TOP_ALIGNED_TEXT_TYPE:
-            case ANSWERS_ANSWER_TEXT_MEDIUM_TYPE:
-            case ANSWERS_ANSWER_TEXT_LARGE_TYPE:
-            case ANSWERS_SECONDARY_TEXT_SMALL_TYPE:
-            case ANSWERS_SECONDARY_TEXT_MEDIUM_TYPE:
+            case AnswerTextType.TOP_ALIGNED:
+            case AnswerTextType.ANSWER_TEXT_MEDIUM:
+            case AnswerTextType.ANSWER_TEXT_LARGE:
+            case AnswerTextType.SUGGESTION_SECONDARY_TEXT_SMALL:
+            case AnswerTextType.SUGGESTION_SECONDARY_TEXT_MEDIUM:
                 return ApiCompatibilityUtils.getColor(resources, R.color.answers_answer_text);
 
             default:

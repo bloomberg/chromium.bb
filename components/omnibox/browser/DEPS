@@ -24,6 +24,7 @@ include_rules = [
   "+components/variations",
   "+components/vector_icons",
   "+extensions/common/constants.h",
+  "+jni",
   "+net",
   "+services/network/public/cpp",
   "+services/network/test",

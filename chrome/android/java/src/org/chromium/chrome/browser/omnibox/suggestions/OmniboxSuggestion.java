@@ -6,11 +6,13 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.support.v4.util.ObjectsCompat;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
+import org.chromium.components.omnibox.SuggestionAnswer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,8 @@ public class OmniboxSuggestion {
     private static final String KEY_PREFIX_ZERO_SUGGEST_NATIVE_TYPE = "zero_suggest_native_type";
     private static final String KEY_PREFIX_ZERO_SUGGEST_IS_SEARCH_TYPE = "zero_suggest_is_search";
     private static final String KEY_PREFIX_ZERO_SUGGEST_ANSWER_TEXT = "zero_suggest_answer_text";
-    private static final String KEY_PREFIX_ZERO_SUGGEST_ANSWER_TYPE = "zero_suggest_answer_type";
+    // Deprecated:
+    // private static final String KEY_PREFIX_ZERO_SUGGEST_ANSWER_TYPE = "zero_suggest_answer_type";
     private static final String KEY_PREFIX_ZERO_SUGGEST_IS_DELETABLE = "zero_suggest_is_deletable";
     private static final String KEY_PREFIX_ZERO_SUGGEST_IS_STARRED = "zero_suggest_is_starred";
 
@@ -60,8 +63,6 @@ public class OmniboxSuggestion {
     private final List<MatchClassification> mDisplayTextClassifications;
     private final String mDescription;
     private final List<MatchClassification> mDescriptionClassifications;
-    private final String mAnswerContents;
-    private final String mAnswerType;
     private final SuggestionAnswer mAnswer;
     private final String mFillIntoEdit;
     private final String mUrl;
@@ -73,8 +74,8 @@ public class OmniboxSuggestion {
     public OmniboxSuggestion(int nativeType, boolean isSearchType, int relevance, int transition,
             String displayText, List<MatchClassification> displayTextClassifications,
             String description, List<MatchClassification> descriptionClassifications,
-            String answerContents, String answerType, String fillIntoEdit, String url,
-            boolean isStarred, boolean isDeletable) {
+            SuggestionAnswer answer, String fillIntoEdit, String url, boolean isStarred,
+            boolean isDeletable) {
         mType = nativeType;
         mIsSearchType = isSearchType;
         mRelevance = relevance;
@@ -83,20 +84,11 @@ public class OmniboxSuggestion {
         mDisplayTextClassifications = displayTextClassifications;
         mDescription = description;
         mDescriptionClassifications = descriptionClassifications;
-        mAnswerContents = answerContents;
-        mAnswerType = answerType;
+        mAnswer = answer;
         mFillIntoEdit = TextUtils.isEmpty(fillIntoEdit) ? displayText : fillIntoEdit;
         mUrl = url;
         mIsStarred = isStarred;
         mIsDeletable = isDeletable;
-
-        if (!TextUtils.isEmpty(mAnswerContents)) {
-            // If any errors are encountered parsing the answer contents, this will return null and
-            // hasAnswer will return false, just as if there were no answer contents at all.
-            mAnswer = SuggestionAnswer.parseAnswerContents(mAnswerContents);
-        } else {
-            mAnswer = null;
-        }
     }
 
     public int getType() {
@@ -121,14 +113,6 @@ public class OmniboxSuggestion {
 
     public List<MatchClassification> getDescriptionClassifications() {
         return mDescriptionClassifications;
-    }
-
-    public String getAnswerContents() {
-        return mAnswerContents;
-    }
-
-    public String getAnswerType() {
-        return mAnswerType;
     }
 
     public SuggestionAnswer getAnswer() {
@@ -181,9 +165,7 @@ public class OmniboxSuggestion {
     public int hashCode() {
         int hash = 37 * mType + mDisplayText.hashCode() + mFillIntoEdit.hashCode()
                 + (mIsStarred ? 1 : 0) + (mIsDeletable ? 1 : 0);
-        if (mAnswerContents != null) {
-            hash = hash + mAnswerContents.hashCode();
-        }
+        if (mAnswer != null) hash = hash + mAnswer.hashCode();
         return hash;
     }
 
@@ -194,13 +176,10 @@ public class OmniboxSuggestion {
         }
 
         OmniboxSuggestion suggestion = (OmniboxSuggestion) obj;
-
-        boolean answersAreEqual = (mAnswerContents == null && suggestion.mAnswerContents == null)
-                || (mAnswerContents != null && suggestion.mAnswerContents != null
-                           && mAnswerContents.equals(suggestion.mAnswerContents));
         return mType == suggestion.mType && mFillIntoEdit.equals(suggestion.mFillIntoEdit)
-                && mDisplayText.equals(suggestion.mDisplayText) && answersAreEqual
-                && mIsStarred == suggestion.mIsStarred && mIsDeletable == suggestion.mIsDeletable;
+                && mDisplayText.equals(suggestion.mDisplayText)
+                && mIsStarred == suggestion.mIsStarred && mIsDeletable == suggestion.mIsDeletable
+                && ObjectsCompat.equals(mAnswer, suggestion.mAnswer);
     }
 
     /**
@@ -213,13 +192,12 @@ public class OmniboxSuggestion {
         editor.putInt(KEY_ZERO_SUGGEST_LIST_SIZE, suggestions.size()).apply();
         for (int i = 0; i < suggestions.size(); i++) {
             OmniboxSuggestion suggestion = suggestions.get(i);
+            if (suggestion.mAnswer != null) continue;
+
             editor.putString(KEY_PREFIX_ZERO_SUGGEST_URL + i, suggestion.getUrl())
                     .putString(
                             KEY_PREFIX_ZERO_SUGGEST_DISPLAY_TEST + i, suggestion.getDisplayText())
                     .putString(KEY_PREFIX_ZERO_SUGGEST_DESCRIPTION + i, suggestion.getDescription())
-                    .putString(
-                            KEY_PREFIX_ZERO_SUGGEST_ANSWER_TEXT + i, suggestion.getAnswerContents())
-                    .putString(KEY_PREFIX_ZERO_SUGGEST_ANSWER_TYPE + i, suggestion.getAnswerType())
                     .putInt(KEY_PREFIX_ZERO_SUGGEST_NATIVE_TYPE + i, suggestion.getType())
                     .putBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_SEARCH_TYPE + i,
                             !suggestion.isUrlSuggestion())
@@ -241,11 +219,16 @@ public class OmniboxSuggestion {
             List<MatchClassification> classifications = new ArrayList<>();
             classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
             for (int i = 0; i < size; i++) {
+                // TODO(tedchoc): Answers in suggest were previously cached, but that could lead to
+                //                stale or misleading answers for cases like weather.  Ignore any
+                //                previously cached answers for several releases while any previous
+                //                results are cycled through.
+                String answerText = prefs.getString(KEY_PREFIX_ZERO_SUGGEST_ANSWER_TEXT + i, "");
+                if (!TextUtils.isEmpty(answerText)) continue;
+
                 String url = prefs.getString(KEY_PREFIX_ZERO_SUGGEST_URL + i, "");
                 String displayText = prefs.getString(KEY_PREFIX_ZERO_SUGGEST_DISPLAY_TEST + i, "");
                 String description = prefs.getString(KEY_PREFIX_ZERO_SUGGEST_DESCRIPTION + i, "");
-                String answerText = prefs.getString(KEY_PREFIX_ZERO_SUGGEST_ANSWER_TEXT + i, "");
-                String answerType = prefs.getString(KEY_PREFIX_ZERO_SUGGEST_ANSWER_TYPE + i, "");
                 int nativeType = prefs.getInt(KEY_PREFIX_ZERO_SUGGEST_NATIVE_TYPE + i, -1);
                 boolean isSearchType =
                         prefs.getBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_SEARCH_TYPE, true);
@@ -253,8 +236,8 @@ public class OmniboxSuggestion {
                 boolean isDeletable =
                         prefs.getBoolean(KEY_PREFIX_ZERO_SUGGEST_IS_DELETABLE + i, false);
                 OmniboxSuggestion suggestion = new OmniboxSuggestion(nativeType, !isSearchType, 0,
-                        0, displayText, classifications, description, classifications, answerText,
-                        answerType, "", url, isStarred, isDeletable);
+                        0, displayText, classifications, description, classifications, null, "",
+                        url, isStarred, isDeletable);
                 suggestions.add(suggestion);
             }
         }
