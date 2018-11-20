@@ -27,15 +27,7 @@ const char* V8TreatNonObjectAsNullVoidFunction::NameInHeapSnapshot() const {
 }
 
 v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(ScriptWrappable* callback_this_value) {
-  ScriptState* callback_relevant_script_state =
-      CallbackRelevantScriptStateOrThrowException(
-          "TreatNonObjectAsNullVoidFunction",
-          "invoke");
-  if (!callback_relevant_script_state) {
-    return v8::Nothing<void>();
-  }
-
-  if (!IsCallbackFunctionRunnable(callback_relevant_script_state,
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
@@ -55,7 +47,7 @@ v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(ScriptWrappable* call
 
   // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
-      callback_relevant_script_state);
+      CallbackRelevantScriptState());
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
@@ -72,7 +64,7 @@ v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(ScriptWrappable* call
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;
-  this_arg = ToV8(callback_this_value, callback_relevant_script_state);
+  this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
 
   // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
@@ -85,7 +77,7 @@ v8::Maybe<void> V8TreatNonObjectAsNullVoidFunction::Invoke(ScriptWrappable* call
   // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
-          ExecutionContext::From(callback_relevant_script_state),
+          ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
           argc,
           argv,

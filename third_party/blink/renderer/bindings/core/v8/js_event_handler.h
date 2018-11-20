@@ -71,13 +71,8 @@ class CORE_EXPORT JSEventHandler : public JSBasedEventListener {
   ScriptState* GetScriptState() const override {
     return event_handler_->CallbackRelevantScriptState();
   }
-  ScriptState* GetScriptStateOrReportError(
-      const char* operation) const override {
-    return event_handler_->CallbackRelevantScriptStateOrReportError(
-        "EventHandler", operation);
-  }
   DOMWrapperWorld& GetWorld() const override {
-    return event_handler_->GetWorld();
+    return event_handler_->CallbackRelevantScriptState()->World();
   }
 
   // Initializes |event_handler_| with |listener|. This method must be used only

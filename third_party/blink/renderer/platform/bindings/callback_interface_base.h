@@ -49,33 +49,13 @@ class PLATFORM_EXPORT CallbackInterfaceBase
     return callback_object_.NewLocal(GetIsolate());
   }
 
-  v8::Isolate* GetIsolate() { return incumbent_script_state_->GetIsolate(); }
-
-  // Returns the ScriptState of the relevant realm of the callback object.
-  //
-  // NOTE: This function must be used only when it's pretty sure that the
-  // callcack object is the same origin-domain. Otherwise,
-  // |CallbackRelevantScriptStateOrReportError| or
-  // |CallbackRelevantScriptStateOrThrowException| must be used instead.
-  ScriptState* CallbackRelevantScriptState() {
-    DCHECK(callback_relevant_script_state_);
-    return callback_relevant_script_state_;
+  v8::Isolate* GetIsolate() {
+    return callback_relevant_script_state_->GetIsolate();
   }
 
-  // Returns the ScriptState of the relevant realm of the callback object iff
-  // the callback is the same origin-domain. Otherwise, reports an error and
-  // returns nullptr.
-  ScriptState* CallbackRelevantScriptStateOrReportError(const char* interface,
-                                                        const char* operation);
-
-  // Returns the ScriptState of the relevant realm of the callback object iff
-  // the callback is the same origin-domain. Otherwise, throws an exception and
-  // returns nullptr.
-  ScriptState* CallbackRelevantScriptStateOrThrowException(
-      const char* interface,
-      const char* operation);
-
-  DOMWrapperWorld& GetWorld() const { return incumbent_script_state_->World(); }
+  ScriptState* CallbackRelevantScriptState() {
+    return callback_relevant_script_state_;
+  }
 
   // NodeIteratorBase counts the invocation of those which are callable and
   // those which are not.
