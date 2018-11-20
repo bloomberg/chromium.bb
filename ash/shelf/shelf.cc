@@ -95,6 +95,10 @@ void Shelf::DestroyShelfWidget() {
   shelf_widget_.reset();
 }
 
+bool Shelf::IsVisible() const {
+  return shelf_layout_manager_->IsVisible();
+}
+
 aura::Window* Shelf::GetWindow() {
   return shelf_widget_->GetNativeWindow();
 }

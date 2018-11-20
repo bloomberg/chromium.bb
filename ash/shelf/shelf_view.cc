@@ -2130,8 +2130,12 @@ void ShelfView::OnMenuClosed(views::View* source) {
 
   shelf_menu_model_adapter_.reset();
 
-  // Auto-hide or alignment might have changed, but only for this shelf.
-  shelf_->UpdateVisibilityState();
+  const bool is_in_drag = item && ShelfButtonIsInDrag(item->type, source);
+  // Update the shelf visibility since auto-hide or alignment might have
+  // changes, but don't update if shelf item is being dragged. Since shelf
+  // should be kept as visible during shelf item drag even menu is closed.
+  if (!is_in_drag)
+    shelf_->UpdateVisibilityState();
 }
 
 void ShelfView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {

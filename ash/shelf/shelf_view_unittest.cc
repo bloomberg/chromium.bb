@@ -2085,6 +2085,64 @@ TEST_F(ShelfViewTest, ShelfDragViewAndContextMenu) {
   EXPECT_FALSE(shelf_view_->drag_view());
 }
 
+// Tests that shelf items in always shown shelf can be dragged through gesture
+// events after context menu is shown.
+TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAlwaysShownShelf) {
+  ASSERT_EQ(SHELF_VISIBLE, GetPrimaryShelf()->GetVisibilityState());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const ShelfID first_app_id = AddAppShortcut();
+  const ShelfID second_app_id = AddAppShortcut();
+  const int last_index = model_->items().size() - 1;
+  ASSERT_TRUE(last_index >= 0);
+
+  const gfx::Point start = GetButtonCenter(first_app_id);
+  // Drag the app long enough to ensure the drag can be triggered.
+  const gfx::Point end(start.x() + 100, start.y());
+  generator->set_current_location(start);
+
+  // Add |STATE_DRAGGING| state to emulate the gesture drag after context menu
+  // is shown.
+  GetButtonByID(first_app_id)->AddState(ShelfButton::STATE_DRAGGING);
+  generator->GestureScrollSequence(start, end,
+                                   base::TimeDelta::FromMilliseconds(100), 3);
+
+  // |first_add_id| has been moved to the end of the items in the shelf.
+  EXPECT_EQ(first_app_id, model_->items()[last_index].id);
+}
+
+// Tests that shelf items in AUTO_HIDE_SHOWN shelf can be dragged through
+// gesture events after context menu is shown.
+TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAutoHideShelf) {
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const ShelfID first_app_id = AddAppShortcut();
+  const ShelfID second_app_id = AddAppShortcut();
+  const int last_index = model_->items().size() - 1;
+
+  Shelf* shelf = GetPrimaryShelf();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  widget->Show();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  shelf->shelf_widget()->GetFocusCycler()->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  const gfx::Point start = GetButtonCenter(first_app_id);
+  // Drag the app long enough to ensure the drag can be triggered.
+  const gfx::Point end = gfx::Point(start.x() + 100, start.y());
+  generator->set_current_location(start);
+
+  // Add |STATE_DRAGGING| state to emulate the gesture drag after context menu
+  // is shown.
+  GetButtonByID(first_app_id)->AddState(ShelfButton::STATE_DRAGGING);
+  generator->GestureScrollSequence(start, end,
+                                   base::TimeDelta::FromMilliseconds(100), 3);
+
+  // |first_add_id| has been moved to the end of the items in the shelf.
+  EXPECT_EQ(first_app_id, model_->items()[last_index].id);
+}
+
 struct TouchableAppContextMenuTestParams {
   TouchableAppContextMenuTestParams(bool enable_touchable_app_context_menu,
                                     bool context_menu)
