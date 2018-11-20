@@ -42,8 +42,6 @@ class BLINK_PLATFORM_EXPORT WebCoalescedInputEvent {
   std::vector<const WebInputEvent*> GetPredictedEventsPointers() const;
 
  private:
-  // TODO(hans): Remove this once clang-cl knows to not inline dtors that
-  // call operator(), https://crbug.com/691714
   struct BLINK_PLATFORM_EXPORT WebInputEventDeleter {
     void operator()(blink::WebInputEvent*) const;
   };
