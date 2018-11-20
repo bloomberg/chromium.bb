@@ -418,6 +418,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kVpnConfigAllowed] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[arc::prefs::kAlwaysOnVpnPackage] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[arc::prefs::kAlwaysOnVpnLockdown] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Timezone settings.
   (*s_whitelist)[chromeos::kSystemTimezone] =

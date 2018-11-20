@@ -1174,6 +1174,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MENU_FORGET},
       {"networkAllowDataRoaming",
        IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING},
+      {"networkAlwaysOnVpn", IDS_SETTINGS_INTERNET_NETWORK_ALWAYS_ON_VPN},
       {"networkAutoConnect", IDS_SETTINGS_INTERNET_NETWORK_AUTO_CONNECT},
       {"networkButtonActivate", IDS_SETTINGS_INTERNET_BUTTON_ACTIVATE},
       {"networkButtonConfigure", IDS_SETTINGS_INTERNET_BUTTON_CONFIGURE},
