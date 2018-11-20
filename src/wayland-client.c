@@ -185,6 +185,9 @@ display_protocol_error(struct wl_display *display, uint32_t code,
 		case WL_DISPLAY_ERROR_NO_MEMORY:
 			err = ENOMEM;
 			break;
+		case WL_DISPLAY_ERROR_IMPLEMENTATION:
+			err = EPROTO;
+			break;
 		default:
 			err = EFAULT;
 		}

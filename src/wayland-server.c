@@ -650,6 +650,30 @@ wl_client_post_no_memory(struct wl_client *client)
 			       WL_DISPLAY_ERROR_NO_MEMORY, "no memory");
 }
 
+/** Report an internal server error
+ *
+ * \param client The client object
+ * \param msg A printf-style format string
+ * \param ... Format string arguments
+ *
+ * Report an unspecified internal implementation error and disconnect
+ * the client.
+ *
+ * \memberof wl_client
+ */
+WL_EXPORT void
+wl_client_post_implementation_error(struct wl_client *client,
+				    char const *msg, ...)
+{
+	va_list ap;
+
+	va_start(ap, msg);
+	wl_resource_post_error_vargs(client->display_resource,
+				     WL_DISPLAY_ERROR_IMPLEMENTATION,
+				     msg, ap);
+	va_end(ap);
+}
+
 WL_EXPORT void
 wl_resource_post_no_memory(struct wl_resource *resource)
 {

@@ -325,6 +325,10 @@ void
 wl_client_post_no_memory(struct wl_client *client);
 
 void
+wl_client_post_implementation_error(struct wl_client *client,
+                                    const char* msg, ...) WL_PRINTF(2,3);
+
+void
 wl_client_add_resource_created_listener(struct wl_client *client,
                                         struct wl_listener *listener);
 

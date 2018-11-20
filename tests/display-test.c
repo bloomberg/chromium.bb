@@ -420,6 +420,46 @@ TEST(post_nomem_tst)
 }
 
 static void
+post_implementation_error_main(void)
+{
+	struct client *c = client_connect();
+	struct wl_seat *seat = client_get_seat(c);
+	uint32_t object_id, protocol_error;
+	const struct wl_interface *interface;
+
+	assert(stop_display(c, 1) == -1);
+	int err = wl_display_get_error(c->wl_display);
+	fprintf(stderr, "Err is %i\n", err);
+	assert(err == EPROTO);
+	protocol_error = wl_display_get_protocol_error(c->wl_display,
+						       &interface,
+						       &object_id);
+	assert(protocol_error == WL_DISPLAY_ERROR_IMPLEMENTATION);
+	assert(interface == &wl_display_interface);
+
+	wl_proxy_destroy((struct wl_proxy *) seat);
+	client_disconnect_nocheck(c);
+}
+
+TEST(post_internal_error_tst)
+{
+	struct display *d = display_create();
+	struct client_info *cl;
+
+	wl_global_create(d->wl_display, &wl_seat_interface,
+			 1, d, bind_seat);
+
+	cl = client_create_noarg(d, post_implementation_error_main);
+	display_run(d);
+
+	wl_client_post_implementation_error(cl->wl_client, "Error %i", 20);
+
+	display_resume(d);
+
+	display_destroy(d);
+}
+
+static void
 register_reading(struct wl_display *display)
 {
 	while(wl_display_prepare_read(display) != 0 && errno == EAGAIN)

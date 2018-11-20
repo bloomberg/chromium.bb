@@ -94,6 +94,8 @@
 	     summary="method doesn't exist on the specified interface"/>
       <entry name="no_memory" value="2"
 	     summary="server is out of memory"/>
+      <entry name="implementation" value="3"
+	     summary="implementation error in compositor"/>
     </enum>
 
     <event name="delete_id">
