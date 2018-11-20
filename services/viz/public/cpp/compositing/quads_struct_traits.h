@@ -31,6 +31,39 @@ viz::DrawQuad* AllocateAndConstruct(
     viz::QuadList* list);
 
 template <>
+struct EnumTraits<viz::mojom::ProtectedVideoState, ui::ProtectedVideoType> {
+  static viz::mojom::ProtectedVideoState ToMojom(ui::ProtectedVideoType input) {
+    switch (input) {
+      case ui::ProtectedVideoType::kClear:
+        return viz::mojom::ProtectedVideoState::kClear;
+      case ui::ProtectedVideoType::kHardwareProtected:
+        return viz::mojom::ProtectedVideoState::kHardwareProtected;
+      case ui::ProtectedVideoType::kSoftwareProtected:
+        return viz::mojom::ProtectedVideoState::kSoftwareProtected;
+    }
+    NOTREACHED();
+    return viz::mojom::ProtectedVideoState::kClear;
+  }
+
+  static bool FromMojom(viz::mojom::ProtectedVideoState input,
+                        ui::ProtectedVideoType* out) {
+    switch (input) {
+      case viz::mojom::ProtectedVideoState::kClear:
+        *out = ui::ProtectedVideoType::kClear;
+        return true;
+      case viz::mojom::ProtectedVideoState::kHardwareProtected:
+        *out = ui::ProtectedVideoType::kHardwareProtected;
+        return true;
+      case viz::mojom::ProtectedVideoState::kSoftwareProtected:
+        *out = ui::ProtectedVideoType::kSoftwareProtected;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
+template <>
 struct UnionTraits<viz::mojom::DrawQuadStateDataView, viz::DrawQuad> {
   static viz::mojom::DrawQuadStateDataView::Tag GetTag(
       const viz::DrawQuad& quad) {
@@ -449,12 +482,12 @@ struct StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad> {
         viz::YUVVideoDrawQuad::MaterialCast(&input);
     return quad->require_overlay;
   }
-  static bool is_protected_video(const viz::DrawQuad& input) {
+  static ui::ProtectedVideoType protected_video_type(
+      const viz::DrawQuad& input) {
     const viz::YUVVideoDrawQuad* quad =
         viz::YUVVideoDrawQuad::MaterialCast(&input);
-    return quad->is_protected_video;
+    return quad->protected_video_type;
   }
-
   static bool Read(viz::mojom::YUVVideoQuadStateDataView data,
                    viz::DrawQuad* out);
 };

@@ -67,7 +67,7 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               float multiplier,
                               uint32_t bits_per_channel,
                               bool require_overlay,
-                              bool is_protected_video) {
+                              ui::ProtectedVideoType protected_video_type) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
                    visible_rect, needs_blending);
   this->ya_tex_coord_rect = ya_tex_coord_rect;
@@ -84,7 +84,7 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->resource_multiplier = multiplier;
   this->bits_per_channel = bits_per_channel;
   this->require_overlay = require_overlay;
-  this->is_protected_video = is_protected_video;
+  this->protected_video_type = protected_video_type;
 }
 
 const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(const DrawQuad* quad) {
@@ -107,7 +107,8 @@ void YUVVideoDrawQuad::ExtendValue(
   value->SetInteger("a_plane_resource_id",
                     resources.ids[kAPlaneResourceIdIndex]);
   value->SetBoolean("require_overlay", require_overlay);
-  value->SetBoolean("is_protected_video", is_protected_video);
+  value->SetInteger("protected_video_type",
+                    static_cast<int>(protected_video_type));
 }
 
 }  // namespace viz
