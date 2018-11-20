@@ -488,15 +488,16 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
   EXPECT_EQ(views::Button::STATE_NORMAL,
             notification_view()->action_buttons_[1]->state());
 
-  ui::test::EventGenerator generator(
-      GetRootWindow(notification_view()->GetWidget()));
-
   // Now construct a mouse move event 1 pixel inside the boundary of the action
   // button.
   gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToTarget(notification_view()->action_buttons_[0],
-                                    notification_view(), &cursor_location);
-  generator.MoveMouseTo(cursor_location);
+  views::View::ConvertPointToScreen(notification_view()->action_buttons_[0],
+                                    &cursor_location);
+  ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
+                      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  ui::EventDispatchDetails details =
+      views::test::WidgetTest::GetEventSink(widget())->OnEventFromSource(&move);
+  EXPECT_FALSE(details.dispatcher_destroyed);
 
   EXPECT_EQ(views::Button::STATE_HOVERED,
             notification_view()->action_buttons_[0]->state());
@@ -513,8 +514,9 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
   // Now construct a mouse move event 1 pixel outside the boundary of the
   // widget.
   cursor_location = gfx::Point(-1, -1);
-  views::View::ConvertPointToScreen(notification_view(), &cursor_location);
-  generator.MoveMouseTo(cursor_location);
+  move = ui::MouseEvent(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  widget()->OnMouseEvent(&move);
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
             notification_view()->action_buttons_[0]->state());
@@ -534,23 +536,25 @@ TEST_F(NotificationViewTest, SettingsButtonTest) {
   EXPECT_TRUE(NULL != GetSettingsButton());
   EXPECT_EQ(views::Button::STATE_NORMAL, GetSettingsButton()->state());
 
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
-
   // Now construct a mouse move event 1 pixel inside the boundary of the action
   // button.
   gfx::Point cursor_location(1, 1);
-  views::View::ConvertPointToTarget(GetSettingsButton(), notification_view(),
-                                    &cursor_location);
-  generator.MoveMouseTo(cursor_location);
+  views::View::ConvertPointToScreen(GetSettingsButton(), &cursor_location);
+  ui::MouseEvent move(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
+                      ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  widget()->OnMouseEvent(&move);
+  ui::EventDispatchDetails details =
+      views::test::WidgetTest::GetEventSink(widget())->OnEventFromSource(&move);
+  EXPECT_FALSE(details.dispatcher_destroyed);
 
   EXPECT_EQ(views::Button::STATE_HOVERED, GetSettingsButton()->state());
 
   // Now construct a mouse move event 1 pixel outside the boundary of the
   // widget.
   cursor_location = gfx::Point(-1, -1);
-  views::View::ConvertPointToTarget(GetSettingsButton(), notification_view(),
-                                    &cursor_location);
-  generator.MoveMouseTo(cursor_location);
+  move = ui::MouseEvent(ui::ET_MOUSE_MOVED, cursor_location, cursor_location,
+                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
+  widget()->OnMouseEvent(&move);
 
   EXPECT_EQ(views::Button::STATE_NORMAL, GetSettingsButton()->state());
 }
@@ -643,14 +647,7 @@ TEST_F(NotificationViewTest, FormatContextMessageTest) {
   EXPECT_TRUE(result_utf8.find("hello") == std::string::npos);
 }
 
-// Synthetic scroll events are not supported on Mac in the views
-// test framework.
-#if defined(OS_MACOSX)
-#define MAYBE_SlideOut DISABLED_SlideOut
-#else
-#define MAYBE_SlideOut SlideOut
-#endif
-TEST_F(NotificationViewTest, MAYBE_SlideOut) {
+TEST_F(NotificationViewTest, SlideOut) {
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
@@ -673,12 +670,7 @@ TEST_F(NotificationViewTest, MAYBE_SlideOut) {
   EXPECT_TRUE(IsRemovedAfterIdle(notification_id));
 }
 
-#if defined(OS_MACOSX)
-#define MAYBE_SlideOutNested DISABLED_SlideOutNested
-#else
-#define MAYBE_SlideOutNested SlideOutNested
-#endif
-TEST_F(NotificationViewTest, MAYBE_SlideOutNested) {
+TEST_F(NotificationViewTest, SlideOutNested) {
   ui::ScopedAnimationDurationScaleMode zero_duration_scope(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 

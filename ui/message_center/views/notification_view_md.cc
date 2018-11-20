@@ -437,7 +437,6 @@ bool NotificationInputContainerMD::HandleKeyEvent(views::Textfield* sender,
       event.key_code() == ui::VKEY_RETURN) {
     delegate_->OnNotificationInputSubmit(
         textfield_->GetProperty(kTextfieldIndexKey), textfield_->text());
-    textfield_->SetText(base::string16());
     return true;
   }
   return event.type() == ui::ET_KEY_RELEASED;
@@ -749,6 +748,8 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   }
 
   if (sender == settings_done_button_) {
+    if (block_all_button_->checked())
+      MessageCenter::Get()->DisableNotification(id);
     ToggleInlineSettings(event);
     return;
   }
@@ -1212,9 +1213,6 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
     return;
 
   bool inline_settings_visible = !settings_row_->visible();
-
-  if (!inline_settings_visible && block_all_button_->checked())
-    MessageCenter::Get()->DisableNotification(notification_id());
 
   settings_row_->SetVisible(inline_settings_visible);
   content_row_->SetVisible(!inline_settings_visible);
