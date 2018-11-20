@@ -57,10 +57,7 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
 
 class EncodedDataHelper {
  public:
-  // TODO(dstaessens@) Remove this constructor once the VDA tests are migrated.
   EncodedDataHelper(const std::string& encoded_data, VideoCodecProfile profile);
-  EncodedDataHelper(const std::vector<uint8_t>& stream,
-                    VideoCodecProfile profile);
   ~EncodedDataHelper();
 
   // Compute and return the next fragment to be sent to the decoder, starting
