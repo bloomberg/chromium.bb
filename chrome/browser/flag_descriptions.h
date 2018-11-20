@@ -843,9 +843,6 @@ extern const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription[];
 extern const char kOmniboxUIOneClickUnelideName[];
 extern const char kOmniboxUIOneClickUnelideDescription[];
 
-extern const char kOmniboxUIJogTextfieldOnPopupName[];
-extern const char kOmniboxUIJogTextfieldOnPopupDescription[];
-
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 

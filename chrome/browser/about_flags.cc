@@ -3320,11 +3320,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription,
      kOsAll, FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlPathQueryAndRef)},
 
-    {"omnibox-ui-jog-textfield-on-popup",
-     flag_descriptions::kOmniboxUIJogTextfieldOnPopupName,
-     flag_descriptions::kOmniboxUIJogTextfieldOnPopupDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentJogTextfieldOnPopup)},
-
     {"omnibox-ui-one-click-unelide",
      flag_descriptions::kOmniboxUIOneClickUnelideName,
      flag_descriptions::kOmniboxUIOneClickUnelideDescription, kOsAll,

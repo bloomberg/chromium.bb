@@ -73,7 +73,6 @@ class LocationIconView : public IconLabelBubbleView {
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   SkColor GetTextColor() const override;
   bool ShouldShowSeparator() const override;
-  bool ShouldShowExtraEndSpace() const override;
   bool ShowBubble(const ui::Event& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool IsBubbleShowing() const override;
