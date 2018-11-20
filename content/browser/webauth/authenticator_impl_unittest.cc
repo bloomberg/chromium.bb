@@ -769,6 +769,46 @@ TEST_F(AuthenticatorImplTest, CryptotokenBypass) {
   }
 }
 
+// Requests originating from cryptotoken should only target U2F devices.
+TEST_F(AuthenticatorImplTest, CryptoTokenU2fOnly) {
+  EnableFeature(device::kWebAuthProxyCryptotoken);
+  constexpr char kCryptotokenOrigin[] =
+      "chrome-extension://kmendfapggjehodndflmmgagdbamhnfd";
+  TestServiceManagerContext smc;
+  SimulateNavigation(GURL(kTestOrigin1));
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
+
+  // TODO(martinkr): ScopedVirtualFidoDevice does not offer devices that
+  // support both U2F and CTAP yet; we should test those.
+  for (const bool u2f_authenticator : {true, false}) {
+    SCOPED_TRACE(u2f_authenticator ? "U2F" : "CTAP");
+    OverrideLastCommittedOrigin(main_rfh(),
+                                url::Origin::Create(GURL(kCryptotokenOrigin)));
+
+    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+    scoped_virtual_device.SetSupportedProtocol(
+        u2f_authenticator ? device::ProtocolVersion::kU2f
+                          : device::ProtocolVersion::kCtap);
+
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+
+    base::RunLoop().RunUntilIdle();
+    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ((u2f_authenticator ? AuthenticatorStatus::SUCCESS
+                                 : AuthenticatorStatus::NOT_ALLOWED_ERROR),
+              callback_receiver.status());
+  }
+}
+
 // Verify that a credential registered with U2F can be used via webauthn.
 TEST_F(AuthenticatorImplTest, AppIdExtension) {
   SimulateNavigation(GURL(kTestOrigin1));

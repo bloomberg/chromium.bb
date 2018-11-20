@@ -666,10 +666,12 @@ void AuthenticatorImpl::MakeCredential(
                 options->authenticator_selection)
           : device::AuthenticatorSelectionCriteria();
 
+  auto ctap_request = CreateCtapMakeCredentialRequest(
+      client_data_json_, options, individual_attestation);
+  ctap_request.set_is_u2f_only(OriginIsCryptoTokenExtension(caller_origin));
+
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
-      connector_, transports_,
-      CreateCtapMakeCredentialRequest(client_data_json_, options,
-                                      individual_attestation),
+      connector_, transports_, std::move(ctap_request),
       std::move(authenticator_selection_criteria),
       base::BindOnce(&AuthenticatorImpl::OnRegisterResponse,
                      weak_factory_.GetWeakPtr()));
@@ -777,7 +779,6 @@ void AuthenticatorImpl::GetAssertion(
   auto ctap_request =
       CreateCtapGetAssertionRequest(client_data_json_, std::move(options),
                                     alternative_application_parameter_);
-
   auto opt_platform_authenticator_info =
       CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
           ctap_request);

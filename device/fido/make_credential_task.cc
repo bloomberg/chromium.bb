@@ -25,10 +25,11 @@ namespace {
 // is not required and the device supports U2F protocol.
 // TODO(hongjunchoi): Remove this once ClientPin command is implemented.
 // See: https://crbug.com/870892
-bool IsClientPinOptionCompatible(const FidoDevice* device,
-                                 const CtapMakeCredentialRequest& request) {
+bool ShouldUseU2fBecauseCtapRequiresClientPin(
+    const FidoDevice* device,
+    const CtapMakeCredentialRequest& request) {
   if (request.user_verification() == UserVerificationRequirement::kRequired)
-    return true;
+    return false;
 
   DCHECK(device && device->device_info());
   bool client_pin_set =
@@ -36,7 +37,7 @@ bool IsClientPinOptionCompatible(const FidoDevice* device,
       AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet;
   bool supports_u2f = base::ContainsKey(device->device_info()->versions(),
                                         ProtocolVersion::kU2f);
-  return !client_pin_set || !supports_u2f;
+  return client_pin_set && supports_u2f;
 }
 
 }  // namespace
@@ -55,7 +56,8 @@ MakeCredentialTask::~MakeCredentialTask() = default;
 void MakeCredentialTask::StartTask() {
   if (base::FeatureList::IsEnabled(kNewCtap2Device) &&
       device()->supported_protocol() == ProtocolVersion::kCtap &&
-      IsClientPinOptionCompatible(device(), request_parameter_)) {
+      !request_parameter_.is_u2f_only() &&
+      !ShouldUseU2fBecauseCtapRequiresClientPin(device(), request_parameter_)) {
     MakeCredential();
   } else {
     device()->set_supported_protocol(ProtocolVersion::kU2f);
