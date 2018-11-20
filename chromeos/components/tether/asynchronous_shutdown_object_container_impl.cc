@@ -10,7 +10,6 @@
 #include "chromeos/components/tether/ble_advertiser_impl.h"
 #include "chromeos/components/tether/ble_connection_metrics_logger.h"
 #include "chromeos/components/tether/ble_scanner_impl.h"
-#include "chromeos/components/tether/ble_service_data_helper_impl.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender_impl.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
@@ -96,13 +95,6 @@ AsynchronousShutdownObjectContainerImpl::
       local_device_data_provider_(
           std::make_unique<cryptauth::LocalDeviceDataProvider>(
               cryptauth_service)),
-      ble_service_data_helper_(
-          base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-              ? nullptr
-              : BleServiceDataHelperImpl::Factory::Get()->BuildInstance(
-                    tether_host_fetcher_,
-                    local_device_data_provider_.get(),
-                    device_sync_client)),
       ble_advertisement_device_queue_(
           base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
               ? nullptr
@@ -116,16 +108,15 @@ AsynchronousShutdownObjectContainerImpl::
           base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
               ? nullptr
               : BleAdvertiserImpl::Factory::NewInstance(
-                    ble_service_data_helper_.get(),
+                    nullptr,
                     ble_synchronizer_.get())),
       ble_scanner_(
           base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
               ? nullptr
-              : BleScannerImpl::Factory::NewInstance(
-                    adapter,
-                    ble_service_data_helper_.get(),
-                    ble_synchronizer_.get(),
-                    tether_host_fetcher_)),
+              : BleScannerImpl::Factory::NewInstance(adapter,
+                                                     nullptr,
+                                                     ble_synchronizer_.get(),
+                                                     tether_host_fetcher_)),
       ble_connection_metrics_logger_(
           base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
               ? nullptr
@@ -142,8 +133,7 @@ AsynchronousShutdownObjectContainerImpl::
           network_connection_handler,
           network_state_handler,
           pref_service,
-          network_configuration_remover_.get())) {
-}
+          network_configuration_remover_.get())) {}
 
 AsynchronousShutdownObjectContainerImpl::
     ~AsynchronousShutdownObjectContainerImpl() {
