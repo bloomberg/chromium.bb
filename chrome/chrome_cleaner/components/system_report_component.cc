@@ -32,7 +32,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/win/registry.h"
@@ -698,9 +698,8 @@ void ReportInstalledExtensions(JsonParserAPI* json_parser) {
   DCHECK(json_parser);
   // TODO(proberge): Temporarily allowing syncing to avoid crashes in debug
   // mode. This isn't catastrophic since the cleanup tool doesn't have a UI and
-  // the system report is collected at the end of the process. We also assert
-  // blocking is allowed here since it will block the thread.
-  base::AssertBlockingAllowedDeprecated();
+  // the system report is collected at the end of the process.
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_sync;
 
   ReportForcelistExtensions();
