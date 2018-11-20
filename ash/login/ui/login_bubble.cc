@@ -240,8 +240,12 @@ class LoginUserMenuView : public LoginBaseBubbleView,
       username_label_->SetMaxLines(1);
       container->AddChildView(username_label_);
       add_space(container, kBubbleBetweenChildSpacingDp);
-      container->AddChildView(CreateLabel(
-          email, SkColorSetA(SK_ColorWHITE, kSubMessageColorAlpha)));
+      views::Label* email_label =
+          CreateLabel(email, SkColorSetA(SK_ColorWHITE, kSubMessageColorAlpha));
+      // Do not change these two lines for the same reasons as above.
+      email_label->SetMultiLine(true);
+      email_label->SetMaxLines(1);
+      container->AddChildView(email_label);
     }
 
     // Remove user.
