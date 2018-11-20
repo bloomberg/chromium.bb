@@ -28,15 +28,7 @@ const char* V8VoidCallbackFunctionEnumArg::NameInHeapSnapshot() const {
 }
 
 v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_this_value, const String& arg) {
-  ScriptState* callback_relevant_script_state =
-      CallbackRelevantScriptStateOrThrowException(
-          "VoidCallbackFunctionEnumArg",
-          "invoke");
-  if (!callback_relevant_script_state) {
-    return v8::Nothing<void>();
-  }
-
-  if (!IsCallbackFunctionRunnable(callback_relevant_script_state,
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
@@ -56,7 +48,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
 
   // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
-      callback_relevant_script_state);
+      CallbackRelevantScriptState());
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
@@ -70,7 +62,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;
-  this_arg = ToV8(callback_this_value, callback_relevant_script_state);
+  this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
 
   // Enum values provided by Blink must be valid, otherwise typo.
 #if DCHECK_IS_ON()
@@ -97,7 +89,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
-      callback_relevant_script_state->GetContext()->Global();
+      CallbackRelevantScriptState()->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
   v8::Local<v8::Value> v8_arg = V8String(GetIsolate(), arg);
   constexpr int argc = 1;
@@ -108,7 +100,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
   // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
-          ExecutionContext::From(callback_relevant_script_state),
+          ExecutionContext::From(CallbackRelevantScriptState()),
           this_arg,
           argc,
           argv,

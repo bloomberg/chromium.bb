@@ -73,15 +73,7 @@ class CORE_EXPORT JSBasedEventListener : public EventListener {
  protected:
   explicit JSBasedEventListener(ListenerType);
   virtual v8::Isolate* GetIsolate() const = 0;
-  // Returns the ScriptState of the relevant realm of the callback object.
-  // Must be used only when it's sure that the callback object is the same
-  // origin-domain.
   virtual ScriptState* GetScriptState() const = 0;
-  // Returns the ScriptState of the relevant realm of the callback object iff
-  // the callback is the same origin-domain. Otherwise, reports the error and
-  // returns nullptr.
-  virtual ScriptState* GetScriptStateOrReportError(
-      const char* operation) const = 0;
   virtual DOMWrapperWorld& GetWorld() const = 0;
 
  private:
