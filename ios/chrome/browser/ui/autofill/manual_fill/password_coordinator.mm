@@ -101,7 +101,6 @@ presentationControllerForPresentedViewController:(UIViewController*)presented
       [[TableViewPresentationController alloc]
           initWithPresentedViewController:presented
                  presentingViewController:presenting];
-  presentationController.position = TablePresentationPositionLeading;
   return presentationController;
 }
 
@@ -118,7 +117,6 @@ animationControllerForPresentedController:(UIViewController*)presented
 
   TableViewAnimator* animator = [[TableViewAnimator alloc] init];
   animator.presenting = YES;
-  animator.direction = TableAnimatorDirectionFromLeading;
   return animator;
 }
 
