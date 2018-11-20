@@ -3722,15 +3722,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         <message name="IDS_AR_MODULE_TITLE" desc="Title of the Augmented Reality (AR) dynamic feature module. Used, for instance, in the text of dialogs confirming to download the module.">
           AR
         </message>
-        <message name="IDS_AR_MODULE_INSTALL_START_TEXT" desc="Text shown on a toast when Chrome starts to download the AR dynamic feature module.">
-          Installing AR module...
-        </message>
-        <message name="IDS_AR_MODULE_INSTALL_SUCCESS_TEXT" desc="Text shown on a toast when Chrome successfully installed the AR dynamic feature module.">
-          Installed AR module
-        </message>
-        <message name="IDS_AR_MODULE_INSTALL_FAILURE_TEXT" desc="Text shown on a toast when Chrome failed to install the AR dynamic feature module.">
-          Failed to install AR module
-        </message>
       </if>
 
       <!-- Custom Context Menu Informations -->

@@ -27,11 +27,7 @@ class ArCoreJavaUtils {
   void RequestInstallSupportedArCore(
       base::android::ScopedJavaLocalRef<jobject> j_tab_android);
 
-  // Methods called from the Java side.
-  void OnRequestInstallArModuleResult(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      bool success);
+  // Method called from the Java side
   void OnRequestInstallSupportedArCoreCanceled(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

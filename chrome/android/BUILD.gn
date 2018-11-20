@@ -263,7 +263,6 @@ android_library("chrome_java") {
     "//components/language/android:language_bridge_java",
     "//components/location/android:location_java",
     "//components/minidump_uploader:minidump_uploader_java",
-    "//components/module_installer/android:module_installer_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/offline_items_collection/core:core_java",
     "//components/payments/content/android:java",

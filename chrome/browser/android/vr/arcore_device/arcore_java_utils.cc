@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/vr/arcore_device/arcore_java_utils.h"
 
-#include "base/android/jni_string.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_device.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_shim.h"
 #include "jni/ArCoreJavaUtils_jni.h"
@@ -24,11 +23,7 @@ bool ArCoreJavaUtils::EnsureLoaded() {
   if (!Java_ArCoreJavaUtils_shouldLoadArCoreSdk(env))
     return false;
 
-  // TODO(crbug.com/884780): Allow loading the ArCore shim by name instead of by
-  // absolute path.
-  ScopedJavaLocalRef<jstring> java_path =
-      Java_ArCoreJavaUtils_getArCoreShimLibraryPath(env);
-  return LoadArCoreSdk(base::android::ConvertJavaStringToUTF8(env, java_path));
+  return LoadArCoreSdk();
 }
 
 ArCoreJavaUtils::ArCoreJavaUtils(device::ArCoreDevice* arcore_device)
@@ -57,13 +52,12 @@ void ArCoreJavaUtils::OnRequestInstallSupportedArCoreCanceled(
 }
 
 bool ArCoreJavaUtils::ShouldRequestInstallArModule() {
-  return Java_ArCoreJavaUtils_shouldRequestInstallArModule(
-      AttachCurrentThread(), j_arcore_java_utils_);
+  // TODO(crbug.com/863068): Check whether AR module is already installed.
+  return false;
 }
 
 void ArCoreJavaUtils::RequestInstallArModule() {
-  Java_ArCoreJavaUtils_requestInstallArModule(AttachCurrentThread(),
-                                              j_arcore_java_utils_);
+  // TODO(crbug.com/863068): On-demand install AR module.
 }
 
 bool ArCoreJavaUtils::ShouldRequestInstallSupportedArCore() {
@@ -78,13 +72,6 @@ void ArCoreJavaUtils::RequestInstallSupportedArCore(
   JNIEnv* env = AttachCurrentThread();
   Java_ArCoreJavaUtils_requestInstallSupportedArCore(env, j_arcore_java_utils_,
                                                      j_tab_android);
-}
-
-void ArCoreJavaUtils::OnRequestInstallArModuleResult(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    bool success) {
-  arcore_device_->OnRequestInstallArModuleResult(success);
 }
 
 }  // namespace vr
