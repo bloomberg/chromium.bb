@@ -14,8 +14,6 @@ component("libgtkui") {
     "app_indicator_icon.h",
     "app_indicator_icon_menu.cc",
     "app_indicator_icon_menu.h",
-    "chrome_gtk_menu_subclasses.cc",
-    "chrome_gtk_menu_subclasses.h",
     "gtk_background_painter.cc",
     "gtk_background_painter.h",
     "gtk_event_loop.cc",
