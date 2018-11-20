@@ -59,11 +59,6 @@ void FakeBluetoothInstance::OnBondStateChanged(
     mojom::BluetoothAddressPtr remote_addr,
     mojom::BluetoothBondState state) {}
 
-void FakeBluetoothInstance::OnAclStateChanged(
-    mojom::BluetoothStatus status,
-    mojom::BluetoothAddressPtr remote_addr,
-    mojom::BluetoothAclState state) {}
-
 void FakeBluetoothInstance::OnLEDeviceFoundForN(
     mojom::BluetoothAddressPtr addr,
     int32_t rssi,
