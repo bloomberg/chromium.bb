@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "components/autofill/core/browser/field_types.h"s
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -22,12 +21,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::FormData;
-using autofill::FormSignature;
 using autofill::FormStructure;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
-using autofill::ServerFieldType;
 using base::ASCIIToUTF16;
 using base::TestMockTimeTaskRunner;
 using testing::_;
@@ -65,21 +62,6 @@ void CheckPendingCredentials(const PasswordForm& expected,
   EXPECT_EQ(expected.password_element, actual.password_element);
   EXPECT_EQ(expected.blacklisted_by_user, actual.blacklisted_by_user);
   EXPECT_EQ(expected.form_data, actual.form_data);
-}
-
-// Create predictions for |form| using field predictions |field_predictions|.
-std::map<FormSignature, FormPredictions> CreatePredictions(
-    const FormData& form,
-    std::vector<std::pair<int, ServerFieldType>> field_predictions) {
-  FormPredictions predictions;
-  for (const auto& index_prediction : field_predictions) {
-    uint32_t renderer_id =
-        form.fields[index_prediction.first].unique_renderer_id;
-    ServerFieldType server_type = index_prediction.second;
-    predictions[renderer_id] = PasswordFieldPrediction{.type = server_type};
-  }
-  FormSignature form_signature = CalculateFormSignature(form);
-  return {{form_signature, predictions}};
 }
 
 class MockFormSaver : public StubFormSaver {
@@ -377,8 +359,9 @@ TEST_F(NewPasswordFormManagerTest, ServerPredictionsWithinDelay) {
   fetcher_->SetNonFederated({&saved_match_}, 0u);
   Mock::VerifyAndClearExpectations(&driver_);
 
-  std::map<FormSignature, FormPredictions> predictions = CreatePredictions(
-      observed_form_, {std::make_pair(2, autofill::PASSWORD)});
+  FormStructure form_structure(observed_form_);
+  form_structure.field(2)->set_server_type(autofill::PASSWORD);
+  std::vector<FormStructure*> predictions{&form_structure};
 
   // Expect filling without delay on receiving server predictions.
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(1);
@@ -398,8 +381,9 @@ TEST_F(NewPasswordFormManagerTest, ServerPredictionsAfterDelay) {
   task_runner_->FastForwardUntilNoTasksRemain();
   Mock::VerifyAndClearExpectations(&driver_);
 
-  std::map<FormSignature, FormPredictions> predictions = CreatePredictions(
-      observed_form_, {std::make_pair(2, autofill::PASSWORD)});
+  FormStructure form_structure(observed_form_);
+  form_structure.field(2)->set_server_type(autofill::PASSWORD);
+  std::vector<FormStructure*> predictions{&form_structure};
 
   // Expect filling on receiving server predictions because it was less than
   // kMaxTimesAutofill attempts to fill.
@@ -416,9 +400,9 @@ TEST_F(NewPasswordFormManagerTest, ServerPredictionsBeforeFetcher) {
   // |form_manager| is waiting for server-side predictions.
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
   CreateFormManager(observed_form_);
-
-  std::map<FormSignature, FormPredictions> predictions = CreatePredictions(
-      observed_form_, {std::make_pair(2, autofill::PASSWORD)});
+  FormStructure form_structure(observed_form_);
+  form_structure.field(2)->set_server_type(autofill::PASSWORD);
+  std::vector<FormStructure*> predictions{&form_structure};
   form_manager_->ProcessServerPredictions(predictions);
   Mock::VerifyAndClearExpectations(&driver_);
 

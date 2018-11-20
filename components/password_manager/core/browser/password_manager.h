@@ -18,8 +18,6 @@
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "components/autofill/core/common/signatures_util.h"
-#include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
 #include "components/password_manager/core/browser/login_model.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -339,9 +337,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   // the recorded forms matches the login form from the previous page
   // (to see if the login was a failure), and clears the vector.
   std::vector<autofill::PasswordForm> all_visible_forms_;
-
-  // Server predictions for the forms on the page.
-  std::map<autofill::FormSignature, FormPredictions> predictions_;
 
   // The user-visible URL from the last time a password was provisionally saved.
   GURL main_frame_url_;
