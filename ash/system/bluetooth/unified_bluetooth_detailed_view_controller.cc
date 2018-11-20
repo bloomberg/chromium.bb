@@ -56,15 +56,19 @@ UnifiedBluetoothDetailedViewController::UnifiedBluetoothDetailedViewController(
     UnifiedSystemTrayController* tray_controller)
     : detailed_view_delegate_(
           std::make_unique<UnifiedDetailedViewDelegate>(tray_controller)) {
-  Shell::Get()->system_tray_notifier()->AddBluetoothObserver(this);
+  Shell::Get()->tray_bluetooth_helper()->AddObserver(this);
 }
 
 UnifiedBluetoothDetailedViewController::
     ~UnifiedBluetoothDetailedViewController() {
-  Shell::Get()->system_tray_notifier()->RemoveBluetoothObserver(this);
   // Stop discovering bluetooth devices when exiting BT detailed view.
   TrayBluetoothHelper* helper = Shell::Get()->tray_bluetooth_helper();
-  if (helper && helper->HasBluetoothDiscoverySession()) {
+  if (!helper)
+    return;
+
+  helper->RemoveObserver(this);
+
+  if (helper->HasBluetoothDiscoverySession()) {
     helper->StopBluetoothDiscovering();
   }
 }

@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/i18n/number_formatting.h"
@@ -22,11 +21,13 @@ namespace ash {
 BluetoothFeaturePodController::BluetoothFeaturePodController(
     UnifiedSystemTrayController* tray_controller)
     : tray_controller_(tray_controller) {
-  Shell::Get()->system_tray_notifier()->AddBluetoothObserver(this);
+  Shell::Get()->tray_bluetooth_helper()->AddObserver(this);
 }
 
 BluetoothFeaturePodController::~BluetoothFeaturePodController() {
-  Shell::Get()->system_tray_notifier()->RemoveBluetoothObserver(this);
+  auto* helper = Shell::Get()->tray_bluetooth_helper();
+  if (helper)
+    helper->RemoveObserver(this);
 }
 
 FeaturePodButton* BluetoothFeaturePodController::CreateButton() {

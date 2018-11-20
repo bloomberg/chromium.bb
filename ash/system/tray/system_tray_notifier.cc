@@ -4,7 +4,6 @@
 
 #include "ash/system/tray/system_tray_notifier.h"
 
-#include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/network/network_observer.h"
 #include "ash/system/screen_security/screen_capture_observer.h"
@@ -17,29 +16,6 @@ namespace ash {
 SystemTrayNotifier::SystemTrayNotifier() = default;
 
 SystemTrayNotifier::~SystemTrayNotifier() = default;
-
-void SystemTrayNotifier::AddBluetoothObserver(BluetoothObserver* observer) {
-  bluetooth_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveBluetoothObserver(BluetoothObserver* observer) {
-  bluetooth_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyBluetoothSystemStateChanged() {
-  for (auto& observer : bluetooth_observers_)
-    observer.OnBluetoothSystemStateChanged();
-}
-
-void SystemTrayNotifier::NotifyBluetoothScanStateChanged() {
-  for (auto& observer : bluetooth_observers_)
-    observer.OnBluetoothScanStateChanged();
-}
-
-void SystemTrayNotifier::NotifyBluetoothDeviceListChanged() {
-  for (auto& observer : bluetooth_observers_)
-    observer.OnBluetoothDeviceListChanged();
-}
 
 void SystemTrayNotifier::AddIMEObserver(IMEObserver* observer) {
   ime_observers_.AddObserver(observer);

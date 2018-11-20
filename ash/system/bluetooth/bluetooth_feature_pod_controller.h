@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_BLUETOOTH_BLUETOOTH_FEATURE_POD_CONTROLLER_H_
 #define ASH_SYSTEM_BLUETOOTH_BLUETOOTH_FEATURE_POD_CONTROLLER_H_
 
-#include "ash/system/bluetooth/bluetooth_observer.h"
+#include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -16,7 +16,7 @@ class UnifiedSystemTrayController;
 
 // Controller of a feature pod button of bluetooth.
 class BluetoothFeaturePodController : public FeaturePodControllerBase,
-                                      public BluetoothObserver {
+                                      public TrayBluetoothHelper::Observer {
  public:
   BluetoothFeaturePodController(UnifiedSystemTrayController* tray_controller);
   ~BluetoothFeaturePodController() override;
