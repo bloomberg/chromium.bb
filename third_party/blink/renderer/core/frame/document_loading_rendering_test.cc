@@ -422,13 +422,11 @@ TEST_F(DocumentLoadingRenderingTest,
   // Import loader isn't finish, shoudn't paint.
   EXPECT_FALSE(GetDocument().IsRenderingReady());
 
-  // If ignoringPendingStylesheets==true, element should get non-empty rect.
+  // Pending imports should not block layout
   Element* element = GetDocument().getElementById("test");
   DOMRect* rect = element->getBoundingClientRect();
   EXPECT_TRUE(rect->width() > 0.f);
   EXPECT_TRUE(rect->height() > 0.f);
-
-  // After reset ignoringPendingStylesheets, we should block rendering again.
   EXPECT_FALSE(GetDocument().IsRenderingReady());
 
   import_resource.Write("div { color: red; }");

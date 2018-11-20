@@ -91,7 +91,10 @@ class CORE_EXPORT StyleEngine final
 
    public:
     IgnoringPendingStylesheet(StyleEngine& engine)
-        : scope_(&engine.ignore_pending_stylesheets_, true) {}
+        : scope_(&engine.ignore_pending_stylesheets_,
+                 !RuntimeEnabledFeatures::CSSInBodyDoesNotBlockPaintEnabled()) {
+    }
+
    private:
     base::AutoReset<bool> scope_;
   };

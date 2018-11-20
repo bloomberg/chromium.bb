@@ -2246,8 +2246,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasAppearance() const { return Appearance() != kNoControlPart; }
 
   // Other utility functions.
-  bool IsStyleAvailable() const;
-
   bool RequireTransformOrigin(ApplyTransformOrigin apply_origin,
                               ApplyMotionPath) const;
 

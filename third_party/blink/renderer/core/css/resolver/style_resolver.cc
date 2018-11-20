@@ -118,8 +118,6 @@ void SetAnimationUpdateIfNeeded(StyleResolverState& state, Element& element) {
 
 using namespace html_names;
 
-ComputedStyle* StyleResolver::style_not_yet_available_;
-
 static CSSPropertyValueSet* LeftToRightDeclaration() {
   DEFINE_STATIC_LOCAL(Persistent<MutableCSSPropertyValueSet>,
                       left_to_right_decl,
@@ -687,24 +685,6 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
     RuleMatchingBehavior matching_behavior) {
   DCHECK(GetDocument().GetFrame());
   DCHECK(GetDocument().GetSettings());
-
-  // Once an element has a layout object or non-layout style, we don't try to
-  // destroy it, since that means it could be rendering already and we cannot
-  // arbitrarily change its style during loading.
-  if (!GetDocument().IsRenderingReady() && !element->GetLayoutObject() &&
-      !element->NonLayoutObjectComputedStyle()) {
-    if (!style_not_yet_available_) {
-      auto style = ComputedStyle::Create();
-      style->AddRef();
-      style_not_yet_available_ = style.get();
-      style_not_yet_available_->SetDisplay(EDisplay::kNone);
-      style_not_yet_available_->GetFont().Update(
-          GetDocument().GetStyleEngine().GetFontSelector());
-    }
-
-    GetDocument().SetHasNodesWithPlaceholderStyle();
-    return style_not_yet_available_;
-  }
 
   GetDocument().GetStyleEngine().IncStyleForElementCount();
   INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(), elements_styled,
