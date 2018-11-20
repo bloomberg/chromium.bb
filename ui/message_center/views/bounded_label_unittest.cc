@@ -8,11 +8,16 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 
 namespace message_center {
 
@@ -101,6 +106,13 @@ class BoundedLabelTest : public views::ViewsTestBase {
 /* Elision tests **************************************************************/
 
 TEST_F(BoundedLabelTest, GetWrappedTextTest) {
+#if defined(OS_MACOSX)
+  // Skip this test on macOS 10.10, which has slightly different font metrics
+  // than the other OSes we support.
+  if (base::mac::IsOS10_10())
+    return;
+#endif
+
   // One word per line: No ellision should be made when not necessary.
   TEST_WRAP("123", "123", 301, 1);
   TEST_WRAP("123", "123", 301, 2);
