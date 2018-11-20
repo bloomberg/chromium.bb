@@ -203,9 +203,18 @@ js_library("thumbnail_model") {
   ]
 }
 
+js_unittest("thumbnail_model_unittest") {
+  deps = [
+    ":thumbnail_model",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
+}
+
 js_unit_tests("unit_tests") {
   deps = [
     ":image_orientation_unittest",
+    ":thumbnail_model_unittest",
   ]
 }
 
