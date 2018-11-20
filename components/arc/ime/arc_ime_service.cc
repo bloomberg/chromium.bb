@@ -19,6 +19,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -140,6 +141,7 @@ ArcImeService::ArcImeService(content::BrowserContext* context,
     : ime_bridge_(new ArcImeBridgeImpl(this, bridge_service)),
       arc_window_delegate_(new ArcWindowDelegateImpl(this)),
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
+      ime_flags_(ui::TEXT_INPUT_FLAG_NONE),
       is_personalized_learning_allowed_(false),
       has_composition_text_(false) {
   if (aura::Env::HasInstance())
@@ -260,13 +262,16 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
 
 void ArcImeService::OnTextInputTypeChanged(
     ui::TextInputType type,
-    bool is_personalized_learning_allowed) {
+    bool is_personalized_learning_allowed,
+    int flags) {
   if (ime_type_ == type &&
-      is_personalized_learning_allowed_ == is_personalized_learning_allowed) {
+      is_personalized_learning_allowed_ == is_personalized_learning_allowed &&
+      ime_flags_ == flags) {
     return;
   }
   ime_type_ = type;
   is_personalized_learning_allowed_ = is_personalized_learning_allowed;
+  ime_flags_ = flags;
 
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
@@ -471,7 +476,7 @@ void ArcImeService::ExtendSelectionAndDelete(size_t before, size_t after) {
 }
 
 int ArcImeService::GetTextInputFlags() const {
-  return ui::TEXT_INPUT_FLAG_NONE;
+  return ime_flags_;
 }
 
 bool ArcImeService::CanComposeInline() const {

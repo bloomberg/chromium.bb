@@ -29,9 +29,9 @@ class ArcImeBridge {
   // Received IPCs are deserialized and passed to this delegate.
   class Delegate {
    public:
-    virtual void OnTextInputTypeChanged(
-        ui::TextInputType type,
-        bool is_personalized_learning_allowed) = 0;
+    virtual void OnTextInputTypeChanged(ui::TextInputType type,
+                                        bool is_personalized_learning_allowed,
+                                        int flags) = 0;
     virtual void OnCursorRectChanged(const gfx::Rect& rect,
                                      bool is_screen_cooridnates) = 0;
     virtual void OnCancelComposition() = 0;
