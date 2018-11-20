@@ -95,6 +95,7 @@ class TestBrowserWindow : public BrowserWindow {
   void FocusToolbar() override {}
   ToolbarActionsBar* GetToolbarActionsBar() override;
   void ToolbarSizeChanged(bool is_animating) override {}
+  void TabDraggingStatusChanged(bool is_dragging) override {}
   void FocusAppMenu() override {}
   void FocusBookmarksToolbar() override {}
   void FocusInactivePopupForAccessibility() override {}

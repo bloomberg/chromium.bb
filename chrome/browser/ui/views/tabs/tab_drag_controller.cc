@@ -455,6 +455,12 @@ bool TabDragController::IsActive() {
   return g_tab_drag_controller && g_tab_drag_controller->active();
 }
 
+// static
+TabStrip* TabDragController::GetSourceTabStrip() {
+  return g_tab_drag_controller ? g_tab_drag_controller->source_tabstrip_
+                               : nullptr;
+}
+
 void TabDragController::SetMoveBehavior(MoveBehavior behavior) {
   if (started_drag())
     return;
@@ -1885,7 +1891,9 @@ Browser* TabDragController::CreateBrowserForDrag(
 
   Profile* profile =
       Profile::FromBrowserContext(drag_data_[0].contents->GetBrowserContext());
-  Browser::CreateParams create_params(Browser::TYPE_TABBED, profile, true);
+  Browser::CreateParams create_params(Browser::TYPE_TABBED, profile,
+                                      /*user_gesture=*/true,
+                                      /*in_tab_dragging=*/true);
   create_params.initial_bounds = new_bounds;
   Browser* browser = new Browser(create_params);
   is_dragging_new_browser_ = true;

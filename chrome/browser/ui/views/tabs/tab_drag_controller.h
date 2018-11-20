@@ -104,6 +104,9 @@ class TabDragController : public views::WidgetObserver,
   // Returns true if there is a drag underway.
   static bool IsActive();
 
+  // Returns the pointer of |source_tabstrip_|.
+  static TabStrip* GetSourceTabStrip();
+
   // Sets the move behavior. Has no effect if started_drag() is true.
   void SetMoveBehavior(MoveBehavior behavior);
   MoveBehavior move_behavior() const { return move_behavior_; }

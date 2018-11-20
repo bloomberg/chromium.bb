@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/chrome_switches.h"
@@ -71,6 +72,19 @@ bool DetermineTabStripLayoutStacked(PrefService* prefs, bool* adjust_layout) {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceStackedTabStripLayout);
 #endif
+}
+
+// Gets the source browser view during a tab dragging. Returns nullptr if there
+// is none.
+BrowserView* GetSourceBrowserViewInTabDragging() {
+  TabStrip* source_tabstrip = TabDragController::GetSourceTabStrip();
+  if (source_tabstrip) {
+    gfx::NativeWindow source_window =
+        source_tabstrip->GetWidget()->GetNativeWindow();
+    if (source_window)
+      return BrowserView::GetBrowserViewForNativeWindow(source_window);
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -380,10 +394,25 @@ void BrowserTabStripController::OnStartedDraggingTabs() {
         browser_view_->immersive_mode_controller()->GetRevealedLock(
             ImmersiveModeController::ANIMATE_REVEAL_NO));
   }
+
+  browser_view_->TabDraggingStatusChanged(/*is_dragging=*/true);
+  // We also use fast resize for the source browser window as the source browser
+  // window may also change bounds during dragging.
+  BrowserView* source_browser_view = GetSourceBrowserViewInTabDragging();
+  if (source_browser_view && source_browser_view != browser_view_)
+    source_browser_view->TabDraggingStatusChanged(/*is_dragging=*/true);
 }
 
 void BrowserTabStripController::OnStoppedDraggingTabs() {
   immersive_reveal_lock_.reset();
+
+  BrowserView* source_browser_view = GetSourceBrowserViewInTabDragging();
+  // Only reset the source window's fast resize bit after the entire drag
+  // ends.
+  if (browser_view_ != source_browser_view)
+    browser_view_->TabDraggingStatusChanged(/*is_dragging=*/false);
+  if (source_browser_view && !TabDragController::IsActive())
+    source_browser_view->TabDraggingStatusChanged(/*is_dragging=*/false);
 }
 
 bool BrowserTabStripController::IsFrameCondensed() const {

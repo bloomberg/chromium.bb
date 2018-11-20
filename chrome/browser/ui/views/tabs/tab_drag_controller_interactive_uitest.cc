@@ -49,6 +49,7 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -3014,6 +3015,75 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   // be merged into the target tabstrip.
   ASSERT_FALSE(TabDragController::IsActive());
   EXPECT_EQ(2u, browser_list->size());
+}
+
+namespace {
+
+// Returns true if the web contents that's accociated with |browser| is using
+// fast resize.
+bool WebContentsIsFastResized(Browser* browser) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  ContentsWebView* contents_web_view =
+      static_cast<ContentsWebView*>(browser_view->GetContentsView());
+  return contents_web_view->holder()->fast_resize();
+}
+
+void FastResizeDuringDraggingStep2(DetachToBrowserTabDragControllerTest* test,
+                                   TabStrip* not_attached_tab_strip,
+                                   TabStrip* target_tab_strip) {
+  // There should be three browser windows, incluing the newly created one for
+  // the dragged tab.
+  EXPECT_EQ(3u, test->browser_list->size());
+
+  // Get this new created window for the drag. It should have fast resize set.
+  Browser* new_browser = test->browser_list->get(2);
+  EXPECT_TRUE(WebContentsIsFastResized(new_browser));
+  // The source window should also have fast resize set.
+  EXPECT_TRUE(WebContentsIsFastResized(test->browser()));
+
+  // Now drag to target_tab_strip.
+  gfx::Point target_point(target_tab_strip->width() / 2,
+                          target_tab_strip->height() / 2);
+  views::View::ConvertPointToScreen(target_tab_strip, &target_point);
+  ASSERT_TRUE(test->DragInputTo(target_point));
+
+  if (test->input_source() == INPUT_SOURCE_TOUCH)
+    ASSERT_TRUE(test->ReleaseInput());
+  else
+    ASSERT_TRUE(test->ReleaseMouseAsync());
+}
+
+}  // namespace
+
+// Tests that we use fast resize to resize the web contents of the dragged
+// window and the source window during tab dragging process, and don't use fast
+// resize after tab dragging ends.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       FastResizeDuringDragging) {
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  // Add another tab to browser().
+  AddTabAndResetBrowser(browser());
+
+  // Create another browser.
+  Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
+  TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+  EXPECT_EQ(2u, browser_list->size());
+
+  EXPECT_FALSE(WebContentsIsFastResized(browser()));
+  EXPECT_FALSE(WebContentsIsFastResized(browser2));
+
+  // Move to the first tab and drag it enough so that it detaches, but not
+  // enough that it attaches to browser2.
+  gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
+  ASSERT_TRUE(PressInput(tab_0_center));
+  ASSERT_TRUE(DragInputToNotifyWhenDone(
+      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      base::BindOnce(&FastResizeDuringDraggingStep2, this, tab_strip,
+                     tab_strip2)));
+  QuitWhenNotDragging();
+
+  EXPECT_FALSE(WebContentsIsFastResized(browser()));
+  EXPECT_FALSE(WebContentsIsFastResized(browser2));
 }
 
 #endif  // OS_CHROMEOS
