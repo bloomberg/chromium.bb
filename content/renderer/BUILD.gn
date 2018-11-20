@@ -691,6 +691,7 @@ target(link_target_type, "renderer") {
     "//third_party/libyuv",
     "//third_party/opus",
     "//third_party/sqlite",
+    "//third_party/webrtc/api:create_peerconnection_factory",
     "//third_party/webrtc/api:libjingle_logging_api",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
     "//third_party/webrtc/api:rtc_stats_api",
