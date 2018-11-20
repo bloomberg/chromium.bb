@@ -79,8 +79,8 @@
   },
   {
     "name": "allow-remote-context-for-notifications",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "pshmakov", "peter" ],
+    "expiry_milestone": 74
   },
   {
     "name": "allow-sxg-certs-without-extension",
@@ -339,12 +339,12 @@
   },
   {
     "name": "cct-module-cache",
-    // "owners": [ "your-team" ],
+    "owners": [ "mvanouwerkerk" ],
     "expiry_milestone": 76
   },
   {
     "name": "cct-module-post-message",
-    // "owners": [ "your-team" ],
+    "owners": [ "mvanouwerkerk" ],
     "expiry_milestone": 76
   },
   {
@@ -739,8 +739,8 @@
   },
   {
     "name": "enable-app-notification-status-messaging",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "knollr", "peter" ],
+    "expiry_milestone": 74
   },
   {
     "name": "enable-app-shortcut-search",
@@ -1364,7 +1364,7 @@
   },
   {
     "name": "enable-message-center-new-style-notification",
-    // "owners": [ "your-team" ],
+    "owners": [ "knollr", "peter" ],
     "expiry_milestone": 76
   },
   {
@@ -1399,7 +1399,7 @@
   },
   {
     "name": "enable-native-notifications",
-    // "owners": [ "your-team" ],
+    "owners": [ "peter", "finnur" ],
     "expiry_milestone": 76
   },
   {
@@ -1414,13 +1414,13 @@
   },
   {
     "name": "enable-new-contacts-picker",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "finnur", "peter" ],
+    "expiry_milestone": 74
   },
   {
     "name": "enable-new-photo-picker",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "finnur", "peter" ],
+    "expiry_milestone": 72
   },
   {
     "name": "enable-new-print-preview",
