@@ -15,7 +15,6 @@
 
 namespace blink {
 
-class NGConstraintSpace;
 class NGInlineItem;
 class NGInlineNode;
 
@@ -132,10 +131,7 @@ class CORE_EXPORT NGLineInfo {
   }
   void SetLineStyle(const NGInlineNode&,
                     const NGInlineItemsData&,
-                    const NGConstraintSpace&,
-                    bool is_first_formatted_line,
-                    bool use_first_line_style,
-                    bool is_after_forced_break);
+                    bool use_first_line_style);
 
   // Use ::first-line style if true.
   // https://drafts.csswg.org/css-pseudo/#selectordef-first-line
@@ -159,6 +155,7 @@ class CORE_EXPORT NGLineInfo {
   NGInlineItemResults* MutableResults() { return &results_; }
   const NGInlineItemResults& Results() const { return results_; }
 
+  void SetTextIndent(LayoutUnit indent) { text_indent_ = indent; }
   LayoutUnit TextIndent() const { return text_indent_; }
 
   NGBfcOffset BfcOffset() const { return bfc_offset_; }

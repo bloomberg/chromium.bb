@@ -158,9 +158,20 @@ void NGLineBreaker::PrepareNextLine() {
   }
 
   line_info_->SetStartOffset(offset_);
-  line_info_->SetLineStyle(node_, items_data_, constraint_space_,
-                           is_first_formatted_line_, use_first_line_style_,
-                           previous_line_had_forced_break_);
+  line_info_->SetLineStyle(node_, items_data_, use_first_line_style_);
+
+  DCHECK(!line_info_->TextIndent());
+  if (line_info_->LineStyle().ShouldUseTextIndent(
+          is_first_formatted_line_, previous_line_had_forced_break_)) {
+    const Length& length = line_info_->LineStyle().TextIndent();
+    LayoutUnit maximum_value;
+    // Ignore percentages (resolve to 0) when calculating min/max intrinsic
+    // sizes.
+    if (length.IsPercentOrCalc() && mode_ == NGLineBreakerMode::kContent)
+      maximum_value = constraint_space_.AvailableSize().inline_size;
+    line_info_->SetTextIndent(MinimumValueForLength(length, maximum_value));
+  }
+
   // Set the initial style of this line from the break token. Example:
   //   <p>...<span>....</span></p>
   // When the line wraps in <span>, the 2nd line needs to start with the style
