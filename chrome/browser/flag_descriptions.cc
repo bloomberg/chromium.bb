@@ -1371,14 +1371,6 @@ const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription[] =
     "In the omnibox, hide the path, query and ref from steady state displayed "
     "URLs. Hidden portions are restored during editing.";
 
-const char kOmniboxUIJogTextfieldOnPopupName[] =
-    "Omnibox UI Jog Textfield on Popup";
-const char kOmniboxUIJogTextfieldOnPopupDescription[] =
-    "In the Omnibox, jog the textfield to align with the dropdown suggestions "
-    "text when the popup is opened. When this feature is disabled, the "
-    "textfield is always aligned with the suggestions text, and a separator "
-    "fills the gap. If Material Refresh is disabled, this has no effect.";
-
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
 

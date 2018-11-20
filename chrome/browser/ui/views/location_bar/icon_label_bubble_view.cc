@@ -185,10 +185,6 @@ bool IconLabelBubbleView::ShouldShowSeparator() const {
   return ShouldShowLabel();
 }
 
-bool IconLabelBubbleView::ShouldShowExtraEndSpace() const {
-  return false;
-}
-
 double IconLabelBubbleView::WidthMultiplier() const {
   if (!slide_animation_.is_animating() && !is_animation_paused_)
     return 1.0;
@@ -455,15 +451,13 @@ int IconLabelBubbleView::GetSlideDurationTime() const {
 }
 
 int IconLabelBubbleView::GetWidthBetweenIconAndSeparator() const {
-  return ShouldShowSeparator() || ShouldShowExtraEndSpace()
-             ? kIconLabelBubbleSpaceBesideSeparator
-             : 0;
+  return ShouldShowSeparator() ? kIconLabelBubbleSpaceBesideSeparator : 0;
 }
 
 int IconLabelBubbleView::GetEndPaddingWithSeparator() const {
   int end_padding = ShouldShowSeparator() ? kIconLabelBubbleSpaceBesideSeparator
                                           : GetInsets().right();
-  if (ShouldShowSeparator() || ShouldShowExtraEndSpace())
+  if (ShouldShowSeparator())
     end_padding += kIconLabelBubbleSeparatorWidth;
   return end_padding;
 }

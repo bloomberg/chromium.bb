@@ -58,20 +58,7 @@ SkColor LocationIconView::GetTextColor() const {
 }
 
 bool LocationIconView::ShouldShowSeparator() const {
-  if (ShouldShowLabel())
-    return true;
-
-  if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled())
-    return false;
-
-  return !delegate_->IsEditingOrEmpty();
-}
-
-bool LocationIconView::ShouldShowExtraEndSpace() const {
-  if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled())
-    return false;
-
-  return delegate_->IsEditingOrEmpty();
+  return ShouldShowLabel();
 }
 
 bool LocationIconView::ShowBubble(const ui::Event& event) {

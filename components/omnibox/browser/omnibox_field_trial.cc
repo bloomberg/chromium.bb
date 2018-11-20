@@ -201,14 +201,6 @@ const base::Feature kUIExperimentMaxAutocompleteMatches{
 const base::Feature kQueryInOmnibox{"QueryInOmnibox",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to jog the Omnibox textfield to align with the dropdown
-// suggestions text when the popup is opened. When this feature is disabled, the
-// textfield is always aligned with the suggestions text, and a separator fills
-// the gap.
-const base::Feature kUIExperimentJogTextfieldOnPopup{
-    "OmniboxUIExperimentJogTextfieldOnPopup",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Feature used for showing the URL suggestion favicons as a UI experiment,
 // currently only used on desktop platforms.
 const base::Feature kUIExperimentShowSuggestionFavicons{
@@ -804,11 +796,6 @@ OmniboxFieldTrial::GetPedalSuggestionMode() {
     return PedalSuggestionMode::NONE;
   }
   return omnibox::pedal_suggestion_mode.Get();
-}
-
-bool OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled() {
-  return base::FeatureList::IsEnabled(
-      omnibox::kUIExperimentJogTextfieldOnPopup);
 }
 
 bool OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled() {

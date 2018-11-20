@@ -2654,11 +2654,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-ui-jog-textfield-on-popup",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "omnibox-ui-max-autocomplete-matches",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

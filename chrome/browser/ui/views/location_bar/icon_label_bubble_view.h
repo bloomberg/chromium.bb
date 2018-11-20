@@ -109,12 +109,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Returns true when the separator should be visible.
   virtual bool ShouldShowSeparator() const;
 
-  // Returns true when additional padding equal to
-  // GetWidthBetweenIconAndSeparator() should be added to the end of the view.
-  // This is useful in the case where it's required to layout subsequent views
-  // in the same position regardless of whether the separator is shown or not.
-  virtual bool ShouldShowExtraEndSpace() const;
-
   // Returns a multiplier used to calculate the actual width of the view based
   // on its desired width.  This ranges from 0 for a zero-width view to 1 for a
   // full-width view and can be used to animate the width of the view.
