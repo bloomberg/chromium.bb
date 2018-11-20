@@ -170,6 +170,10 @@ void ArcScreenCaptureBridge::TestModeAcceptPermission(
   pending_permissions_map_.erase(found);
   // The dialog will be closed when 'found' goes out of scope and is
   // destructed and the dialog within it is destructed.
+
+  // If we're auto-sharing the screen in test mode, we don't want to record
+  // the cursor, so turn it off.
+  ash::Shell::Get()->cursor_manager()->HideCursor();
 }
 
 void ArcScreenCaptureBridge::OpenSession(
