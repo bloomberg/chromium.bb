@@ -141,7 +141,8 @@ class FakeBleConnectionManagerFactory
   std::unique_ptr<BleConnectionManager> BuildInstance(
       scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
       BleServiceDataHelper* ble_service_data_helper,
-      TimerFactory* timer_factory) override {
+      TimerFactory* timer_factory,
+      base::Clock* clock) override {
     EXPECT_FALSE(instance_);
     EXPECT_EQ(expected_bluetooth_adapter_, bluetooth_adapter.get());
     EXPECT_EQ(fake_ble_service_data_helper_factory_->instance(),
