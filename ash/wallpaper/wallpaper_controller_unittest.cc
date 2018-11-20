@@ -2425,6 +2425,50 @@ TEST_F(WallpaperControllerTest, OnFirstWallpaperShown) {
   controller_->RemoveObserver(&observer);
 }
 
+// Although ephemeral users' custom wallpapers are not saved to disk, they
+// should be kept within the user session. Test for https://crbug.com/825237.
+TEST_F(WallpaperControllerTest, ShowWallpaperForEphemeralUser) {
+  auto initialize_ephemeral_user = [&](const AccountId& account_id) {
+    mojom::WallpaperUserInfoPtr wallpaper_user_info =
+        InitializeUser(account_id);
+    wallpaper_user_info->is_ephemeral = true;
+    return wallpaper_user_info;
+  };
+
+  SimulateUserLogin(kUser1);
+  // The user doesn't have wallpaper cache in the beginning.
+  gfx::ImageSkia cached_wallpaper;
+  EXPECT_FALSE(
+      controller_->GetWallpaperFromCache(account_id_1, &cached_wallpaper));
+  base::FilePath path;
+  EXPECT_FALSE(controller_->GetPathFromCache(account_id_1, &path));
+
+  controller_->SetCustomWallpaper(
+      initialize_ephemeral_user(account_id_1), wallpaper_files_id_1,
+      file_name_1, WALLPAPER_LAYOUT_CENTER,
+      CreateImage(640, 480, kWallpaperColor), /*preview_mode=*/false);
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(CUSTOMIZED, controller_->GetWallpaperType());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+
+  // The custom wallpaper is cached.
+  EXPECT_TRUE(
+      controller_->GetWallpaperFromCache(account_id_1, &cached_wallpaper));
+  EXPECT_EQ(
+      kWallpaperColor,
+      cached_wallpaper.GetRepresentation(1.0f).GetBitmap().getColor(0, 0));
+  EXPECT_TRUE(controller_->GetPathFromCache(account_id_1, &path));
+
+  // Calling |ShowUserWallpaper| will continue showing the custom wallpaper
+  // instead of reverting to the default.
+  controller_->ShowUserWallpaper(initialize_ephemeral_user(account_id_1));
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(0, GetWallpaperCount());
+  EXPECT_EQ(CUSTOMIZED, controller_->GetWallpaperType());
+  EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
+}
+
 // A test wallpaper controller client class.
 class TestWallpaperControllerClient : public mojom::WallpaperControllerClient {
  public:
