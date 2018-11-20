@@ -1442,7 +1442,6 @@
         },
       },
       'Mac10.13 Tests': {
-        # TODO(crbug.com/853356): Switch this to 10.13.
         # TODO(kbr): if the Swarming dimensions were explicitly specified for
         # all jobs then this wouldn't be needed.
         'swarming': {
@@ -1453,6 +1452,16 @@
             },
           ],
           'shards': 12,
+          # TODO(crbug.com/853356): Switch this fully to 10.13.
+          # Starting with a 20 minute expiration for now, we will reduce this
+          # later.
+          'optional_dimensions': {
+            1200: [
+              {
+                'os': 'Mac-10.13',
+              }
+            ],
+          },
         },
       },
       'Mac10.13 Tests (dbg)': {
