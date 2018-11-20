@@ -3205,7 +3205,7 @@
   },
   {
     "name": "user-activation-v2",
-    // "owners": [ "your-team" ],
+    "owners": [ "mustaq@chromium.org" ],
     "expiry_milestone": 76
   },
   {
