@@ -60,6 +60,9 @@ class PaintOpPerfTest : public testing::Test {
           test_options_provider.max_texture_bytes());
       serializer.Serialize(&buffer, nullptr, preamble);
       bytes_written = serializer.written();
+
+      // Force client paint cache entries to be written every time.
+      test_options_provider.client_paint_cache()->PurgeAll();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
     CHECK_GT(bytes_written, 0u);
@@ -81,6 +84,7 @@ class PaintOpPerfTest : public testing::Test {
             to_read, remaining_read_bytes, deserialized_data_.get(),
             sizeof(LargestPaintOp), &bytes_read,
             test_options_provider.deserialize_options());
+        CHECK(deserialized_op);
         deserialized_op->DestroyThis();
 
         DCHECK_GE(remaining_read_bytes, bytes_read);
