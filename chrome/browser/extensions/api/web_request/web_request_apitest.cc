@@ -813,7 +813,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
   EXPECT_TRUE(listener_app.WaitUntilSatisfied());
   EXPECT_TRUE(listener_extension.WaitUntilSatisfied());
 
-  // Load a page, a content script will ping us when it is ready.
+  // Load a page, a content script from "webrequest_extensions/extension" will
+  // ping us when it is ready.
   ExtensionTestMessageListener listener_pageready("contentscript_ready", true);
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
           "/extensions/test_file.html?match_webrequest_test"));
@@ -845,8 +846,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
   listener_main2.Reply("");
   EXPECT_TRUE(listener_result.WaitUntilSatisfied());
 
-  // The extension frame does run in the extension's process.
-  EXPECT_EQ("Intercepted requests: ?contentscript", listener_result.message());
+  // The extension frame does run in the extension's process. Any requests made
+  // by it should not be visible to other extensions, since they won't have
+  // access to the request initiator.
+  EXPECT_EQ("Did not intercept any requests.", listener_result.message());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
@@ -1594,9 +1597,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   }
 }
 
-// Test that initiator is only included as part of event details when the
-// extension has a permission matching the initiator.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MinimumAccessInitiator) {
+// Test that extensions need host permissions to both the request url and
+// initiator to intercept a request.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, InitiatorAccessRequired) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   ExtensionTestMessageListener listener("ready", false);
@@ -1615,9 +1618,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MinimumAccessInitiator) {
     std::string expected_initiator;
   } testcases[] = {{"example.com", "example.com", "example.com"},
                    {"example2.com", "example3.com", "example2.com"},
-                   {"no-permission.com", "example4.com", ""}};
+                   // No access to the initiator.
+                   {"no-permission.com", "example4.com", ""},
+                   // No access to the request url.
+                   {"example.com", "no-permission.com", ""}};
 
   int port = embedded_test_server()->port();
+
+  int expected_requests_intercepted_count = 0;
   for (const auto& testcase : testcases) {
     SCOPED_TRACE(testcase.navigate_before_start + ":" + testcase.xhr_domain +
                  ":" + testcase.expected_initiator);
@@ -1628,11 +1636,25 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MinimumAccessInitiator) {
                                                 "/extensions/body1.html"));
     PerformXhrInFrame(web_contents->GetMainFrame(), testcase.xhr_domain, port,
                       "extensions/api_test/webrequest/xhr/data.json");
-    EXPECT_TRUE(initiator_listener.WaitUntilSatisfied());
+
+    // Ensure that the extension wasn't able to intercept the request if it
+    // didn't have permission to the initiator or the request url.
+    if (!testcase.expected_initiator.empty())
+      ++expected_requests_intercepted_count;
+
+    // Run a script in the extensions background page to ensure that we have
+    // received the initiator message from the extension.
+    ASSERT_EQ(
+        std::to_string(expected_requests_intercepted_count),
+        ExecuteScriptInBackgroundPage(extension->id(),
+                                      "window.domAutomationController.send("
+                                      "requestsIntercepted.toString());"));
+
     if (testcase.expected_initiator.empty()) {
-      ASSERT_EQ("NO_INITIATOR", initiator_listener.message());
+      EXPECT_FALSE(initiator_listener.was_satisfied());
     } else {
-      ASSERT_EQ(
+      ASSERT_TRUE(initiator_listener.was_satisfied());
+      EXPECT_EQ(
           "http://" + testcase.expected_initiator + ":" + std::to_string(port),
           initiator_listener.message());
     }

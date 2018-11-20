@@ -162,6 +162,9 @@ std::unique_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(
   }
 
   // Only listeners with a permission for the initiator should recieve it.
+  // TODO(karandeepb): This probably shouldn't be needed anymore since we
+  // require the extension to have access to the initiator to intercept a
+  // request.
   if (extension_info_map && initiator_) {
     int tab_id = -1;
     dict_.GetInteger(keys::kTabIdKey, &tab_id);

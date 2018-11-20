@@ -1,9 +1,10 @@
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "webRequest" permission in the <a
   href="manifest">extension manifest</a> to use the web request
-API, along with <a href="declare_permissions">host permissions</a>
-for any hosts whose network requests you want to access. If you want to
-use the web request API in a blocking fashion, you need to request
+API, along with the necessary
+<a href="declare_permissions">host permissions</a>. To intercept a request, the
+extension needs to have access to both the requested URL and its initiator. If
+you want to use the web request API in a blocking fashion, you need to request
 the "webRequestBlocking" permission in addition.
 For example:</p>
 <pre data-filename="manifest.json">
@@ -155,6 +156,12 @@ webRequest model. Note that the API does <b>not intercept</b>:
   <li>WebSocket closing connection.</li>
 </ul>
 Redirects are <b>not supported</b> for WebSocket requests.
+</p>
+
+<p>
+<span class="availability">Starting from Chrome 72</span>, an extension will be
+able to intercept a request only if it has host permissions to both the
+requested URL and the request initiator.
 </p>
 
 <h2 id="concepts">Concepts</h2>
