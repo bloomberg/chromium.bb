@@ -8,6 +8,7 @@ import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/net_log.mojom";
@@ -81,7 +82,12 @@ interface NetworkServiceClient {
   // called.
   // 2. The request is aborted, net::URLRequest::CancelWithError() needs to be
   // called.
-  OnCertificateRequested(uint32 process_id,
+  //
+  // |window_id| or else |process_id| and |routing_id| indicates
+  // the frame making the request, see
+  // network::ResourceRequest::fetch_window_id.
+  OnCertificateRequested(mojo_base.mojom.UnguessableToken? window_id,
+                         uint32 process_id,
                          uint32 routing_id,
                          uint32 request_id,
                          network.mojom.SSLCertRequestInfo cert_info) => (

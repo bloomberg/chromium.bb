@@ -80,6 +80,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
       NavigationLoaderInterceptor::FallbackCallback fallback_callback,
       Delegate* delegate,
       const network::ResourceRequest& tentative_resource_request,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
 
   ~ServiceWorkerNavigationLoader() override;
@@ -177,6 +178,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   Delegate* delegate_ = nullptr;
 
   network::ResourceRequest resource_request_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
   std::unique_ptr<StreamWaiter> stream_waiter_;

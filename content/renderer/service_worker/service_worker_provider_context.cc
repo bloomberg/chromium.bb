@@ -173,6 +173,12 @@ const std::string& ServiceWorkerProviderContext::client_id() const {
   return state_for_client_->client_id;
 }
 
+const base::UnguessableToken&
+ServiceWorkerProviderContext::fetch_request_window_id() const {
+  DCHECK(state_for_client_);
+  return state_for_client_->fetch_request_window_id;
+}
+
 void ServiceWorkerProviderContext::SetWebServiceWorkerProvider(
     base::WeakPtr<WebServiceWorkerProviderImpl> provider) {
   DCHECK(state_for_client_);
@@ -280,6 +286,9 @@ void ServiceWorkerProviderContext::SetController(
   DCHECK(state->client_id.empty() ||
          state->client_id == controller_info->client_id);
   state->client_id = controller_info->client_id;
+
+  if (controller_info->fetch_request_window_id)
+    state->fetch_request_window_id = *controller_info->fetch_request_window_id;
 
   DCHECK((controller_info->mode ==
               blink::mojom::ControllerServiceWorkerMode::kNoController &&

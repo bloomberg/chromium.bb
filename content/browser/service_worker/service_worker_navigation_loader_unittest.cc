@@ -504,7 +504,7 @@ class ServiceWorkerNavigationLoaderTest
         base::BindOnce(&ReceiveRequestHandler, &handler),
         base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
                        base::Unretained(this)),
-        this, *request,
+        this, *request, nullptr,
         base::WrapRefCounted<URLLoaderFactoryGetter>(
             helper_->context()->loader_factory_getter()));
     loader_->ForwardToServiceWorker();
@@ -1026,7 +1026,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackToNetwork) {
       base::BindOnce(&ReceiveRequestHandler, &handler),
       base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
                      base::Unretained(this)),
-      this, request,
+      this, request, nullptr,
       base::WrapRefCounted<URLLoaderFactoryGetter>(
           helper_->context()->loader_factory_getter()));
   // Ask the loader to fallback to network. In production code,
@@ -1130,7 +1130,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterFallbackToNetwork) {
       base::BindOnce(&ReceiveRequestHandler, &handler),
       base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
                      base::Unretained(this)),
-      this, request,
+      this, request, nullptr,
       base::WrapRefCounted<URLLoaderFactoryGetter>(
           helper_->context()->loader_factory_getter()));
   base::WeakPtr<ServiceWorkerNavigationLoader> loader_weakptr =

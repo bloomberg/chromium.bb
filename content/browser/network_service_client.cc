@@ -6,6 +6,7 @@
 
 #include "base/optional.h"
 #include "base/task/post_task.h"
+#include "base/unguessable_token.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -13,6 +14,7 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/ssl_private_key_impl.h"
+#include "content/browser/web_contents/web_contents_getter_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -307,6 +309,38 @@ void HandleFileUploadRequest(
                                                   std::move(files)));
 }
 
+base::RepeatingCallback<WebContents*(void)> GetWebContentsFromRegistry(
+    const base::UnguessableToken& window_id) {
+  return WebContentsGetterRegistry::GetInstance()->Get(window_id);
+}
+
+void OnCertificateRequestedContinuation(
+    uint32_t process_id,
+    uint32_t routing_id,
+    uint32_t request_id,
+    const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
+    network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
+        callback,
+    base::RepeatingCallback<WebContents*(void)> web_contents_getter) {
+  if (!web_contents_getter) {
+    web_contents_getter =
+        process_id != network::mojom::kBrowserProcessId
+            ? base::BindRepeating(WebContentsImpl::FromRenderFrameHostID,
+                                  process_id, routing_id)
+            : base::BindRepeating(WebContents::FromFrameTreeNodeId, routing_id);
+  }
+  if (!web_contents_getter.Run()) {
+    network::mojom::SSLPrivateKeyPtr ssl_private_key;
+    mojo::MakeRequest(&ssl_private_key);
+    std::move(callback).Run(nullptr, std::vector<uint16_t>(),
+                            std::move(ssl_private_key),
+                            true /* cancel_certificate_selection */);
+    return;
+  }
+  new SSLClientAuthDelegate(std::move(callback), std::move(web_contents_getter),
+                            cert_info);  // deletes self
+}
+
 }  // namespace
 
 NetworkServiceClient::NetworkServiceClient(
@@ -360,26 +394,27 @@ void NetworkServiceClient::OnAuthRequired(
 }
 
 void NetworkServiceClient::OnCertificateRequested(
+    const base::Optional<base::UnguessableToken>& window_id,
     uint32_t process_id,
     uint32_t routing_id,
     uint32_t request_id,
     const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
     network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
         callback) {
-  base::Callback<WebContents*(void)> web_contents_getter =
-      process_id ? base::Bind(WebContentsImpl::FromRenderFrameHostID,
-                              process_id, routing_id)
-                 : base::Bind(WebContents::FromFrameTreeNodeId, routing_id);
-  if (!web_contents_getter.Run()) {
-    network::mojom::SSLPrivateKeyPtr ssl_private_key;
-    mojo::MakeRequest(&ssl_private_key);
-    std::move(callback).Run(nullptr, std::vector<uint16_t>(),
-                            std::move(ssl_private_key),
-                            true /* cancel_certificate_selection */);
+  base::RepeatingCallback<WebContents*(void)> web_contents_getter;
+
+  // Use |window_id| if it's provided.
+  if (window_id) {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&GetWebContentsFromRegistry, *window_id),
+        base::BindOnce(&OnCertificateRequestedContinuation, process_id,
+                       routing_id, request_id, cert_info, std::move(callback)));
     return;
   }
-  new SSLClientAuthDelegate(std::move(callback), std::move(web_contents_getter),
-                            cert_info);  // deletes self
+
+  OnCertificateRequestedContinuation(process_id, routing_id, request_id,
+                                     cert_info, std::move(callback), {});
 }
 
 void NetworkServiceClient::OnSSLCertificateError(

@@ -323,6 +323,7 @@ URLLoader::URLLoader(
       first_auth_attempt_(true),
       custom_proxy_pre_cache_headers_(request.custom_proxy_pre_cache_headers),
       custom_proxy_post_cache_headers_(request.custom_proxy_post_cache_headers),
+      fetch_window_id_(request.fetch_window_id),
       weak_ptr_factory_(this) {
   DCHECK(delete_callback_);
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
@@ -639,10 +640,19 @@ void URLLoader::OnCertificateRequested(net::URLRequest* unused,
     return;
   }
 
-  network_service_client_->OnCertificateRequested(
-      factory_params_->process_id, render_frame_id_, request_id_, cert_info,
-      base::BindOnce(&URLLoader::OnCertificateRequestedResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (fetch_window_id_) {
+    network_service_client_->OnCertificateRequested(
+        fetch_window_id_, -1 /* process_id */, -1 /* routing_id */, request_id_,
+        cert_info,
+        base::BindOnce(&URLLoader::OnCertificateRequestedResponse,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    network_service_client_->OnCertificateRequested(
+        base::nullopt /* window_id */, factory_params_->process_id,
+        render_frame_id_, request_id_, cert_info,
+        base::BindOnce(&URLLoader::OnCertificateRequestedResponse,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void URLLoader::OnSSLCertificateError(net::URLRequest* request,

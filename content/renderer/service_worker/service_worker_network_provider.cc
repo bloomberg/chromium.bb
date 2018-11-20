@@ -78,6 +78,14 @@ class WebServiceWorkerNetworkProviderForFrame
             blink::mojom::ControllerServiceWorkerMode::kNoController) {
       request.SetSkipServiceWorker(true);
     }
+
+    // Inject this frame's fetch window id into the request. This is really only
+    // needed for subresource requests in S13nServiceWorker. For main resource
+    // requests or non-S13nSW case, the browser process sets the id on the
+    // request when dispatching the fetch event to the service worker. But it
+    // doesn't hurt to set it always.
+    if (provider_->context())
+      request.SetFetchWindowId(provider_->context()->fetch_request_window_id());
   }
 
   int ProviderID() const override { return provider_->provider_id(); }

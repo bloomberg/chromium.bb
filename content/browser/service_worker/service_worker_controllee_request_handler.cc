@@ -243,10 +243,10 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
 
   // It's for original request (A) or redirect case (B-a or B-b).
   auto job = std::make_unique<ServiceWorkerURLRequestJob>(
-      request, network_delegate, provider_host_->client_uuid(),
-      blob_storage_context_, resource_context, request_mode_, credentials_mode_,
-      redirect_mode_, integrity_, keepalive_, resource_type_,
-      request_context_type_, frame_type_, body_, this);
+      request, network_delegate, provider_host_, blob_storage_context_,
+      resource_context, request_mode_, credentials_mode_, redirect_mode_,
+      integrity_, keepalive_, resource_type_, request_context_type_,
+      frame_type_, body_, this);
   url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(job->GetWeakPtr());
 
   resource_context_ = resource_context;
@@ -310,7 +310,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(
       std::make_unique<ServiceWorkerNavigationLoader>(
           std::move(callback), std::move(fallback_callback), this,
-          tentative_resource_request,
+          tentative_resource_request, provider_host_,
           base::WrapRefCounted(context_->loader_factory_getter())));
 
   resource_context_ = resource_context;
@@ -354,6 +354,10 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   controller_info->endpoint =
       provider_host_->GetControllerServiceWorkerPtr().PassInterface();
   controller_info->client_id = provider_host_->client_uuid();
+  if (provider_host_->fetch_request_window_id()) {
+    controller_info->fetch_request_window_id =
+        base::make_optional(provider_host_->fetch_request_window_id());
+  }
   base::WeakPtr<ServiceWorkerObjectHost> object_host =
       provider_host_->GetOrCreateServiceWorkerObjectHost(
           provider_host_->controller());

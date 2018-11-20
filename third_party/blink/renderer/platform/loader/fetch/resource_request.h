@@ -395,6 +395,15 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetUkmSourceId(int64_t ukm_source_id) { ukm_source_id_ = ukm_source_id; }
   int64_t GetUkmSourceId() const { return ukm_source_id_; }
 
+  // https://fetch.spec.whatwg.org/#concept-request-window
+  // See network::ResourceRequest::fetch_window_id for details.
+  void SetFetchWindowId(const base::UnguessableToken& id) {
+    fetch_window_id_ = id;
+  }
+  const base::UnguessableToken& GetFetchWindowId() const {
+    return fetch_window_id_;
+  }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -469,6 +478,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   String requested_with_;
 
   int64_t ukm_source_id_;
+
+  base::UnguessableToken fetch_window_id_;
 };
 
 }  // namespace blink

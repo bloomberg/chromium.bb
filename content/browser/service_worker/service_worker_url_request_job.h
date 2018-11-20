@@ -77,7 +77,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   ServiceWorkerURLRequestJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      const std::string& client_id,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       const ResourceContext* resource_context,
       network::mojom::FetchRequestMode request_mode,
@@ -310,6 +310,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   // Used when response type is FORWARD_TO_SERVICE_WORKER.
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   std::string client_id_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   const ResourceContext* resource_context_;

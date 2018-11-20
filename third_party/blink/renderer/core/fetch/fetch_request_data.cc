@@ -61,6 +61,7 @@ FetchRequestData* FetchRequestData::Create(
       static_cast<ResourceLoadPriority>(web_request.Priority()));
   request->SetKeepalive(web_request.Keepalive());
   request->SetIsHistoryNavigation(web_request.IsHistoryNavigation());
+  request->SetWindowId(web_request.GetWindowId());
   return request;
 }
 
@@ -85,6 +86,7 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   request->importance_ = importance_;
   request->keepalive_ = keepalive_;
   request->is_history_navigation_ = is_history_navigation_;
+  request->window_id_ = window_id_;
   return request;
 }
 

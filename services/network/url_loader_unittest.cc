@@ -2152,6 +2152,7 @@ class MockNetworkServiceClient : public mojom::NetworkServiceClient {
   }
 
   void OnCertificateRequested(
+      const base::Optional<base::UnguessableToken>& window_id,
       uint32_t process_id,
       uint32_t routing_id,
       uint32_t request_id,
