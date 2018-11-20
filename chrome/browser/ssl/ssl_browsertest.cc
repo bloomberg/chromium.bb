@@ -1034,7 +1034,7 @@ class SSLUITest : public SSLUITestBase,
   }
 
   SSLBlockingPage* GetSSLBlockingPage(WebContents* tab) override {
-    if (AreCommittedInterstitialsEnabled()) {
+    if (IsCommittedInterstitialTest()) {
       security_interstitials::SecurityInterstitialTabHelper* helper =
           security_interstitials::SecurityInterstitialTabHelper::
               FromWebContents(tab);
@@ -1048,7 +1048,7 @@ class SSLUITest : public SSLUITestBase,
   }
 
   BadClockBlockingPage* GetBadClockBlockingPage(WebContents* tab) override {
-    if (AreCommittedInterstitialsEnabled()) {
+    if (IsCommittedInterstitialTest()) {
       security_interstitials::SecurityInterstitialTabHelper* helper =
           security_interstitials::SecurityInterstitialTabHelper::
               FromWebContents(tab);
@@ -1064,7 +1064,7 @@ class SSLUITest : public SSLUITestBase,
   bool IsCommittedInterstitialTest() const { return GetParam(); }
 
   void DontProceedThroughInterstitial(WebContents* tab) override {
-    if (AreCommittedInterstitialsEnabled()) {
+    if (IsCommittedInterstitialTest()) {
       content::TestNavigationObserver nav_observer(tab, 1);
       SendInterstitialCommand(tab, security_interstitials::CMD_DONT_PROCEED);
       nav_observer.Wait();
@@ -1076,7 +1076,7 @@ class SSLUITest : public SSLUITestBase,
   void SendInterstitialCommand(
       WebContents* tab,
       security_interstitials::SecurityInterstitialCommand command) override {
-    if (AreCommittedInterstitialsEnabled()) {
+    if (IsCommittedInterstitialTest()) {
       std::string javascript;
       switch (command) {
         case security_interstitials::CMD_DONT_PROCEED: {
@@ -1754,7 +1754,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   content::WaitForLoadStop(tab);
 
-  if (!AreCommittedInterstitialsEnabled()) {
+  if (!IsCommittedInterstitialTest()) {
     // Make sure we haven't changed the previous RFH.  Prevents regression of
     // http://crbug.com/82667. This is only applicable to pre-committed
     // interstitials. With committed interstitials, the interstitial is a
@@ -1788,7 +1788,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSExpiredCertAndGoBackViaMenu) {
   // committed interstitials enabled, this triggers a navigation.
   content::TestNavigationObserver nav_observer(tab);
   tab->GetController().GoToOffset(-1);
-  if (AreCommittedInterstitialsEnabled())
+  if (IsCommittedInterstitialTest())
     nav_observer.Wait();
 
   // We should be back at the original good page.
@@ -1813,7 +1813,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSExpiredCertGoBackUsingCommand) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  AuthState::SHOWING_INTERSTITIAL);
 
-  if (AreCommittedInterstitialsEnabled()) {
+  if (IsCommittedInterstitialTest()) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&tab->GetController()));
@@ -1833,8 +1833,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSExpiredCertGoBackUsingCommand) {
 // interstitials wipe out forward history like other committed navigations and
 // committed error pages.
 IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestHTTPSExpiredCertAndGoForward) {
-  if (AreCommittedInterstitialsEnabled())
-    return;
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
@@ -3284,13 +3282,13 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestCloseTabWithUnsafePopup) {
   Browser* popup_browser = chrome::FindBrowserWithProfile(browser()->profile());
   WebContents* popup = popup_browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_NE(popup, tab1);
-  if (AreCommittedInterstitialsEnabled())
+  if (IsCommittedInterstitialTest())
     nav_observer.Wait();
   WaitForInterstitial(popup);
   // Since the popup is showing an interstitial, it shouldn't have a last
   // committed entry (except when committed interstitials are enabled, in which
   // case an interstitial is a committed entry).
-  if (!AreCommittedInterstitialsEnabled()) {
+  if (!IsCommittedInterstitialTest()) {
     EXPECT_FALSE(popup->GetController().GetLastCommittedEntry());
   }
   ASSERT_TRUE(popup->GetController().GetVisibleEntry());
@@ -7394,7 +7392,7 @@ IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, ManySubresources) {
 // Checks that SimpleURLLoader, which uses services/network/url_loader.cc, goes
 // through the new NetworkServiceClient interface to deliver cert error
 // notifications to the browser which then overrides the certificate error.
-IN_PROC_BROWSER_TEST_P(SSLUITest, SimpleURLLoaderCertError) {
+IN_PROC_BROWSER_TEST_F(SSLUITestBase, SimpleURLLoaderCertError) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_NO_FATAL_FAILURE(SetUpUnsafeContentsWithUserException(
       "/ssl/page_with_unsafe_contents.html"));
@@ -8069,7 +8067,7 @@ IN_PROC_BROWSER_TEST_P(RecurrentInterstitialBrowserTest,
     // Proceed through the interstitial and observe that the histogram is
     // recorded correctly.
     content::TestNavigationObserver nav_observer(tab, 1);
-    if (AreCommittedInterstitialsEnabled()) {
+    if (IsCommittedInterstitialTest()) {
       ASSERT_TRUE(content::ExecuteScript(
           tab, "window.certificateErrorPageController.proceed();"));
     } else {

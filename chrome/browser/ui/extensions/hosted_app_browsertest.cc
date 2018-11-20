@@ -47,7 +47,6 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/interstitial_page.h"
@@ -126,28 +125,14 @@ void NavigateToURLAndWait(Browser* browser,
   if (!proceed_through_interstitial)
     return;
 
+  content::InterstitialPage* interstitial = web_contents->GetInterstitialPage();
   {
     // Need a second TestNavigationObserver; the above one is spent.
     content::TestNavigationObserver observer(
         web_contents, content::MessageLoopRunner::QuitMode::DEFERRED);
-    if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-      security_interstitials::SecurityInterstitialTabHelper* helper =
-          security_interstitials::SecurityInterstitialTabHelper::
-              FromWebContents(
-                  browser->tab_strip_model()->GetActiveWebContents());
-      ASSERT_TRUE(
-          helper &&
-          helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
-      std::string javascript =
-          "window.certificateErrorPageController.proceed();";
-      ASSERT_TRUE(content::ExecuteScript(web_contents, javascript));
-    } else {
-      content::InterstitialPage* interstitial =
-          web_contents->GetInterstitialPage();
-      ASSERT_TRUE(interstitial);
-      interstitial->GetDelegateForTesting()->CommandReceived(
-          base::IntToString(security_interstitials::CMD_PROCEED));
-    }
+    ASSERT_TRUE(interstitial);
+    interstitial->GetDelegateForTesting()->CommandReceived(
+        base::IntToString(security_interstitials::CMD_PROCEED));
     observer.Wait();
   }
 }
@@ -798,19 +783,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarDangerous) {
 
     // There should be no interstitial shown because we previously proceeded
     // through it.
-    if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-      security_interstitials::SecurityInterstitialTabHelper* helper =
-          security_interstitials::SecurityInterstitialTabHelper::
-              FromWebContents(
-                  browser()->tab_strip_model()->GetActiveWebContents());
-      ASSERT_FALSE(
-          helper &&
-          helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
-    } else {
-      ASSERT_FALSE(app_browser_->tab_strip_model()
-                       ->GetActiveWebContents()
-                       ->GetInterstitialPage());
-    }
+    ASSERT_FALSE(app_browser_->tab_strip_model()
+                     ->GetActiveWebContents()
+                     ->GetInterstitialPage());
     proceed_through_interstitial = false;
   }
 
