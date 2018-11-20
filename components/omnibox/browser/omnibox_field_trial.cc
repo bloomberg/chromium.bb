@@ -201,12 +201,6 @@ const base::Feature kUIExperimentMaxAutocompleteMatches{
 const base::Feature kQueryInOmnibox{"QueryInOmnibox",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used for showing the URL suggestion favicons as a UI experiment,
-// currently only used on desktop platforms.
-const base::Feature kUIExperimentShowSuggestionFavicons{
-    "OmniboxUIExperimentShowSuggestionFavicons",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Feature used to always swap the title and URL.
 const base::Feature kUIExperimentSwapTitleAndUrl{
     "OmniboxUIExperimentSwapTitleAndUrl",
@@ -806,12 +800,6 @@ bool OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled() {
 bool OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled() {
   return base::FeatureList::IsEnabled(
              omnibox::kHideSteadyStateUrlTrivialSubdomains) ||
-         base::FeatureList::IsEnabled(features::kExperimentalUi);
-}
-
-bool OmniboxFieldTrial::IsShowSuggestionFaviconsEnabled() {
-  return base::FeatureList::IsEnabled(
-             omnibox::kUIExperimentShowSuggestionFavicons) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 

@@ -2664,11 +2664,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-ui-show-suggestion-favicons",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "omnibox-ui-swap-title-and-url",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

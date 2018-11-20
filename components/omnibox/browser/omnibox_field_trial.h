@@ -45,7 +45,6 @@ extern const base::Feature kZeroSuggestSwapTitleAndUrl;
 extern const base::Feature kDisplayTitleForCurrentUrl;
 extern const base::Feature kQueryInOmnibox;
 extern const base::Feature kUIExperimentMaxAutocompleteMatches;
-extern const base::Feature kUIExperimentShowSuggestionFavicons;
 extern const base::Feature kUIExperimentSwapTitleAndUrl;
 extern const base::Feature kUIExperimentVerticalMargin;
 extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
@@ -453,10 +452,6 @@ class OmniboxFieldTrial {
   // Returns true if either the steady-state elision flag for trivial
   // subdomains or the #upcoming-ui-features flag is enabled.
   static bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
-
-  // Returns true if either the show suggestion favicons flag or the
-  // #upcoming-ui-features flag is enabled.
-  static bool IsShowSuggestionFaviconsEnabled();
 
   // Returns true if the experimental keyword mode is enabled.
   static bool IsExperimentalKeywordModeEnabled();
