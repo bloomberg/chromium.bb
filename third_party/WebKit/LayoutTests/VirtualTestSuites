@@ -924,6 +924,11 @@
   },
   {
     "prefix": "not-site-per-process",
+    "base": "http/tests/inspector-protocol/network/navigation-blocking-xorigin-iframe.js",
+    "args": ["--disable-site-isolation-trials"]
+  },
+  {
+    "prefix": "not-site-per-process",
     "base": "http/tests/inspector-protocol/request-mixed-content-status-blockable.js",
     "args": ["--disable-site-isolation-trials"]
   },
