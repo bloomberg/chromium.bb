@@ -559,6 +559,12 @@ java_prebuilt("com_google_dagger_dagger_compiler_java") {
   ]
 }
 
+java_prebuilt("com_google_protobuf_protobuf_lite_java") {
+  jar_path = "libs/com_google_protobuf_protobuf_lite/protobuf-lite-3.0.1.jar"
+  output_name = "com_google_protobuf_protobuf_lite"
+  supports_android = true
+}
+
 java_prebuilt("com_squareup_javapoet_java") {
   jar_path = "libs/com_squareup_javapoet/javapoet-1.11.0.jar"
   output_name = "com_squareup_javapoet"
