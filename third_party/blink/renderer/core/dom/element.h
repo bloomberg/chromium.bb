@@ -892,6 +892,8 @@ class CORE_EXPORT Element : public ContainerNode {
   ScriptPromise acquireDisplayLock(ScriptState*, V8DisplayLockCallback*);
   DisplayLockContext* GetDisplayLockContext() const;
 
+  bool StyleRecalcBlockedByDisplayLock() const;
+
  protected:
   Element(const QualifiedName& tag_name, Document*, ConstructionType);
 
@@ -1101,6 +1103,8 @@ class CORE_EXPORT Element : public ContainerNode {
   void DetachAllAttrNodesFromElement();
   void DetachAttrNodeFromElementWithValue(Attr*, const AtomicString& value);
   void DetachAttrNodeAtIndex(Attr*, wtf_size_t index);
+
+  void NotifyDisplayLockDidRecalcStyle();
 
   Member<ElementData> element_data_;
 };

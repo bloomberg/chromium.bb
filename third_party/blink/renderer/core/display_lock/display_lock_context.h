@@ -37,6 +37,7 @@ class CORE_EXPORT DisplayLockContext final
   };
 
   enum LifecycleUpdateState {
+    kNeedsStyle,
     kNeedsLayout,
     kNeedsPrePaint,
     kNeedsPaint,
@@ -83,6 +84,8 @@ class CORE_EXPORT DisplayLockContext final
   Element* lockedElement() const;
 
   // Lifecycle observation / state functions.
+  bool ShouldStyle() const;
+  void DidStyle();
   bool ShouldLayout() const;
   void DidLayout();
   bool ShouldPrePaint() const;
