@@ -60,11 +60,13 @@ void ResourceLoadingHintsWebContentsObserver::DidFinishNavigation(
   }
 
   DCHECK(previews::params::IsResourceLoadingHintsEnabled());
-  SendResourceLoadingHints(navigation_handle);
+  SendResourceLoadingHints(navigation_handle,
+                           previews_user_data->is_redirect());
 }
 
 void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
-    content::NavigationHandle* navigation_handle) const {
+    content::NavigationHandle* navigation_handle,
+    bool is_redirect) const {
   // Hints should be sent only after the renderer frame has committed.
   DCHECK(navigation_handle->HasCommitted());
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -82,6 +84,11 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
 
   UMA_HISTOGRAM_BOOLEAN(
       "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", !hints.empty());
+  if (is_redirect) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect",
+        !hints.empty());
+  }
 
   if (hints.empty())
     return;

@@ -33,6 +33,10 @@ class PreviewsUserData {
     navigation_ect_ = navigation_ect;
   }
 
+  // Whether the navigation was redirected from the original URL.
+  bool is_redirect() const { return is_redirect_; }
+  void set_is_redirect(bool is_redirect) { is_redirect_ = is_redirect; }
+
   // Returns the data savings inflation percent to use for this navigation
   // instead of the default if it is not 0.
   int data_savings_inflation_percent() const {
@@ -113,6 +117,9 @@ class PreviewsUserData {
   // to compare to the preview's triggering ect threshold.
   net::EffectiveConnectionType navigation_ect_ =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+
+  // The navigation was redirected from the original URL.
+  bool is_redirect_ = false;
 
   // A previews data savings inflation percent for the navigation if not 0.
   int data_savings_inflation_percent_ = 0;
