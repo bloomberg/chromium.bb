@@ -527,8 +527,12 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     private CustomTabDelegateFactory createCustomTabDelegateFactory() {
+        // Don't show an app install banner for the user of a Trusted Web Activity - they've already
+        // got an app installed!
+        // TODO(peconn): Look into allowing the banner again if the user leaves the Trusted origin.
+        boolean allowAppBanners = !mIntentDataProvider.isTrustedWebActivity();
         return new CustomTabDelegateFactory(mIntentDataProvider.shouldEnableUrlBarHiding(),
-                mIntentDataProvider.isOpenedByChrome(),
+                mIntentDataProvider.isOpenedByChrome(), allowAppBanners,
                 getComponent().resolveControlsVisibilityDelegate());
     }
 
