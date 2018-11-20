@@ -528,24 +528,6 @@ util.AppCache.cleanup_ = function(map) {
 };
 
 /**
- * Returns true if the board of the device matches the given prefix. Caution:
- * There are cases in which the name of one board is a prefix for a different
- * (only slightly related) board: E.g. daisy and daisy-spring, peach-pi and
- * peach-pit, and maybe others. See also base::GetLsbReleaseBoard().
- * @param {string} boardPrefix The board prefix to match against. (ex.
- *     "x86-mario". Prefix is used as the actual board name comes with suffix
- *     like "x86-mario-something".
- * @return {boolean} True if the board of the device matches the given prefix.
- */
-util.boardIs = function(boardPrefix) {
-  // The board name should be lower-cased, but making it case-insensitive for
-  // backward compatibility just in case.
-  var board = str('CHROMEOS_RELEASE_BOARD');
-  var pattern = new RegExp('^' + boardPrefix, 'i');
-  return board.match(pattern) != null;
-};
-
-/**
  * Adds an isFocused method to the current window object.
  */
 util.addIsFocusedMethod = function() {

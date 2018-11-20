@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
-#include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/open_with_browser.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -166,8 +165,6 @@ void AddStringsForDrive(base::DictionaryValue* dict) {
   SET_STRING("DRIVE_WELCOME_TITLE", IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE);
   SET_STRING("DRIVE_WELCOME_TITLE_ALTERNATIVE",
              IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE_ALTERNATIVE);
-  SET_STRING("DRIVE_WELCOME_TITLE_ALTERNATIVE_1TB",
-             IDS_FILE_BROWSER_DRIVE_WELCOME_TITLE_ALTERNATIVE_1TB);
   SET_STRING("SYNC_DELETE_WITHOUT_PERMISSION_ERROR",
              IDS_FILE_BROWSER_SYNC_DELETE_WITHOUT_PERMISSION_ERROR);
   SET_STRING("SYNC_FILE_NAME", IDS_FILE_BROWSER_SYNC_FILE_NAME);
@@ -852,8 +849,6 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean(
       "MY_FILES_VOLUME_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume));
-  dict->SetString("CHROMEOS_RELEASE_BOARD",
-                  base::SysInfo::GetLsbReleaseBoard());
   dict->SetString(
       "DOWNLOADS_LOW_SPACE_WARNING_HELP_URL",
       base::StringPrintf(kHelpURLFormat, kDownloadsLowSpaceWarningHelpNumber));

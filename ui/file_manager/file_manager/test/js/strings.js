@@ -9,7 +9,6 @@ loadTimeData.data = $GRDP;
 
 // Extend with additional fields not found in grdp files.
 Object.setPrototypeOf(loadTimeData.data_, {
-  'CHROMEOS_RELEASE_BOARD': 'unknown',
   'CROSTINI_FILES_ENABLED': true,
   'DRIVE_FS_ENABLED': false,
   'GOOGLE_DRIVE_REDEEM_URL': 'http://www.google.com/intl/en/chrome/devices' +

@@ -240,8 +240,6 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
   var more;
   if (this.usePromoWelcomeBanner_) {
     var welcomeTitle = str('DRIVE_WELCOME_TITLE_ALTERNATIVE');
-    if (util.boardIs('link'))
-      welcomeTitle = str('DRIVE_WELCOME_TITLE_ALTERNATIVE_1TB');
     title.textContent = welcomeTitle;
     more = util.createChild(links, '', 'a');
     more.href = str('GOOGLE_DRIVE_REDEEM_URL');
@@ -388,14 +386,8 @@ Banners.prototype.checkSpaceAndMaybeShowWelcomeBanner_ = function() {
       this.usePromoWelcomeBanner_ = false;
     }
 
-    // Choose the offer basing on the board name. The default one is 100 GB.
     var offerSize = 100;  // In GB.
     var offerServiceId = 'drive.cros.echo.1';
-
-    if (util.boardIs('link')) {
-      offerSize = 1024;  // 1 TB.
-      offerServiceId = 'drive.cros.echo.2';
-    }
 
     // Perform asynchronous tasks in parallel.
     var group = new AsyncUtil.Group();
