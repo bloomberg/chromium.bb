@@ -26,6 +26,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/translate/core/common/translate_constants.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -918,6 +919,37 @@ TEST_F(TranslateManagerTest, CanManuallyTranslate_TranslatableURL) {
   ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
       .WillByDefault(Return(true));
   EXPECT_TRUE(translate_manager_->CanManuallyTranslate());
+}
+
+TEST_F(TranslateManagerTest, CanManuallyTranslate_EmptySourceLanguage) {
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
+  network_notifier_.SimulateOnline();
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+
+  translate_manager_->GetLanguageState().LanguageDetermined("", true);
+
+  EXPECT_FALSE(translate_manager_->CanManuallyTranslate());
+}
+
+TEST_F(TranslateManagerTest, CanManuallyTranslate_UndefinedSourceLanguage) {
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
+  network_notifier_.SimulateOnline();
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+
+  translate_manager_->GetLanguageState().LanguageDetermined(
+      translate::kUnknownLanguageCode, true);
+
+  EXPECT_FALSE(translate_manager_->CanManuallyTranslate());
 }
 
 }  // namespace testing

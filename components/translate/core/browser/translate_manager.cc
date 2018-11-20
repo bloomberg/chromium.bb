@@ -321,23 +321,33 @@ std::string TranslateManager::GetManualTargetLanguage(
 }
 
 bool TranslateManager::CanManuallyTranslate() {
+  if (!base::FeatureList::IsEnabled(translate::kTranslateUI) ||
+      net::NetworkChangeNotifier::IsOffline() ||
+      (!ignore_missing_key_for_testing_ &&
+       !::google_apis::HasAPIKeyConfigured()))
+    return false;
+
+  // MHTML pages currently cannot be translated (crbug.com/217945).
+  if (translate_driver_->GetContentsMimeType() == "multipart/related" ||
+      !translate_client_->IsTranslatableURL(
+          translate_driver_->GetVisibleURL()) ||
+      !language_state_.page_needs_translation())
+    return false;
+
+  const std::string source_language = language_state_.original_language();
+  if (source_language.empty() ||
+      source_language == translate::kUnknownLanguageCode)
+    return false;
+
   std::unique_ptr<TranslatePrefs> translate_prefs(
       translate_client_->GetTranslatePrefs());
-  const std::string source_code = TranslateDownloadManager::GetLanguageCode(
-      language_state_.original_language());
   const std::string target_lang = GetManualTargetLanguage(
-      source_code, language_state_, translate_prefs.get(), language_model_);
+      TranslateDownloadManager::GetLanguageCode(source_language),
+      language_state_, translate_prefs.get(), language_model_);
+  if (target_lang.empty())
+    return false;
 
-  return language_state_.page_needs_translation() &&
-         base::FeatureList::IsEnabled(translate::kTranslateUI) &&
-         !net::NetworkChangeNotifier::IsOffline() &&
-         (ignore_missing_key_for_testing_ ||
-          ::google_apis::HasAPIKeyConfigured()) &&
-         // MHTML pages currently cannot be translated (crbug.com/217945).
-         translate_driver_->GetContentsMimeType() != "multipart/related" &&
-         translate_client_->IsTranslatableURL(
-             translate_driver_->GetVisibleURL()) &&
-         !target_lang.empty();
+  return true;
 }
 
 void TranslateManager::InitiateManualTranslation() {
