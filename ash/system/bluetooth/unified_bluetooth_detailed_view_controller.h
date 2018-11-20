@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "base/macros.h"
@@ -23,8 +22,9 @@ class DetailedViewDelegate;
 class UnifiedSystemTrayController;
 
 // Controller of Bluetooth detailed view in UnifiedSystemTray.
-class UnifiedBluetoothDetailedViewController : public DetailedViewController,
-                                               public BluetoothObserver {
+class UnifiedBluetoothDetailedViewController
+    : public DetailedViewController,
+      public TrayBluetoothHelper::Observer {
  public:
   explicit UnifiedBluetoothDetailedViewController(
       UnifiedSystemTrayController* tray_controller);

@@ -663,7 +663,6 @@ component("ash") {
     "system/bluetooth/bluetooth_feature_pod_controller.h",
     "system/bluetooth/bluetooth_notification_controller.cc",
     "system/bluetooth/bluetooth_notification_controller.h",
-    "system/bluetooth/bluetooth_observer.h",
     "system/bluetooth/bluetooth_power_controller.cc",
     "system/bluetooth/bluetooth_power_controller.h",
     "system/bluetooth/tray_bluetooth_helper.cc",

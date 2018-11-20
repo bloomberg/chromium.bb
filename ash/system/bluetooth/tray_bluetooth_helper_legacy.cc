@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/user_metrics.h"
@@ -34,10 +33,6 @@ void BluetoothSetDiscoveringError() {
 
 void BluetoothDeviceConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {}
-
-ash::SystemTrayNotifier* GetSystemTrayNotifier() {
-  return Shell::Get()->system_tray_notifier();
-}
 
 BluetoothDeviceInfo GetBluetoothDeviceInfo(device::BluetoothDevice* device) {
   BluetoothDeviceInfo info;
@@ -165,34 +160,34 @@ bool TrayBluetoothHelperLegacy::HasBluetoothDiscoverySession() {
 void TrayBluetoothHelperLegacy::AdapterPresentChanged(
     device::BluetoothAdapter* adapter,
     bool present) {
-  GetSystemTrayNotifier()->NotifyBluetoothSystemStateChanged();
+  NotifyBluetoothSystemStateChanged();
 }
 
 void TrayBluetoothHelperLegacy::AdapterPoweredChanged(
     device::BluetoothAdapter* adapter,
     bool powered) {
-  GetSystemTrayNotifier()->NotifyBluetoothSystemStateChanged();
+  NotifyBluetoothSystemStateChanged();
 }
 
 void TrayBluetoothHelperLegacy::AdapterDiscoveringChanged(
     device::BluetoothAdapter* adapter,
     bool discovering) {
-  GetSystemTrayNotifier()->NotifyBluetoothScanStateChanged();
+  NotifyBluetoothScanStateChanged();
 }
 
 void TrayBluetoothHelperLegacy::DeviceAdded(device::BluetoothAdapter* adapter,
                                             device::BluetoothDevice* device) {
-  GetSystemTrayNotifier()->NotifyBluetoothDeviceListChanged();
+  NotifyBluetoothDeviceListChanged();
 }
 
 void TrayBluetoothHelperLegacy::DeviceChanged(device::BluetoothAdapter* adapter,
                                               device::BluetoothDevice* device) {
-  GetSystemTrayNotifier()->NotifyBluetoothDeviceListChanged();
+  NotifyBluetoothDeviceListChanged();
 }
 
 void TrayBluetoothHelperLegacy::DeviceRemoved(device::BluetoothAdapter* adapter,
                                               device::BluetoothDevice* device) {
-  GetSystemTrayNotifier()->NotifyBluetoothDeviceListChanged();
+  NotifyBluetoothDeviceListChanged();
 }
 
 void TrayBluetoothHelperLegacy::OnStartDiscoverySession(
@@ -204,7 +199,7 @@ void TrayBluetoothHelperLegacy::OnStartDiscoverySession(
     return;
   VLOG(1) << "Claiming new Bluetooth device discovery session.";
   discovery_session_ = std::move(discovery_session);
-  GetSystemTrayNotifier()->NotifyBluetoothScanStateChanged();
+  NotifyBluetoothScanStateChanged();
 }
 
 }  // namespace ash
