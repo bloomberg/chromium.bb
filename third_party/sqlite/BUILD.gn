@@ -28,21 +28,11 @@ config("chromium_sqlite3_compile_options") {
     "SQLITE_DISABLE_FTS4_DEFERRED",
     "SQLITE_ENABLE_ICU",
 
-    # Enables memory tracking needed to release unused memory.
-    #
-    # Needed for sqlite3_release_memory() and its variants to work. Without this
-    # option, the interfaces exist, but the methods are no-ops.
-    "SQLITE_ENABLE_MEMORY_MANAGEMENT",
-
     # Defaults the secure_delete pragma to 1.
     #
     # This causes SQLite to overwrite all deleted information with zeroes,
     # trading additional I/O for better privacy guarantees.
     "SQLITE_SECURE_DELETE",
-
-    # Custom flag to tweak pcache pools.
-    # TODO(pwnall): This shouldn't use faux-SQLite naming.
-    "SQLITE_SEPARATE_CACHE_POOLS",
 
     # TODO(pwnall): SQLite adds mutexes to protect structures which cross
     # threads. In theory Chrome should be able to turn this to "2" which
