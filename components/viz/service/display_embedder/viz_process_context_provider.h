@@ -47,7 +47,7 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
       public base::trace_event::MemoryDumpProvider {
  public:
   VizProcessContextProvider(
-      scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+      gpu::CommandBufferTaskExecutor* task_executor,
       gpu::SurfaceHandle surface_handle,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
@@ -84,7 +84,7 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
   ~VizProcessContextProvider() override;
 
   void InitializeContext(
-      scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
+      gpu::CommandBufferTaskExecutor* task_executor,
       gpu::SurfaceHandle surface_handle,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,

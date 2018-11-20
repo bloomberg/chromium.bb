@@ -235,11 +235,11 @@ class InProcessCommandBuffer::SharedImageInterface
 };
 
 InProcessCommandBuffer::InProcessCommandBuffer(
-    scoped_refptr<CommandBufferTaskExecutor> task_executer)
+    CommandBufferTaskExecutor* task_executor)
     : command_buffer_id_(NextCommandBufferId()),
       flush_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
-      task_executor_(std::move(task_executer)),
+      task_executor_(task_executor),
       fence_sync_wait_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED),
       client_thread_weak_ptr_factory_(this),
@@ -301,8 +301,7 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
     gpu::raster::GrShaderCache* gr_shader_cache,
     GpuProcessActivityFlags* activity_flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  DCHECK(!share_group ||
-         task_executor_.get() == share_group->task_executor_.get());
+  DCHECK(!share_group || task_executor_ == share_group->task_executor_);
   TRACE_EVENT0("gpu", "InProcessCommandBuffer::Initialize")
 
   gpu_memory_buffer_manager_ = gpu_memory_buffer_manager;
