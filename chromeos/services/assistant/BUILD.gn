@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 import("//chromeos/assistant/assistant.gni")
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
 assert(is_chromeos)
@@ -115,7 +113,7 @@ source_set("tests") {
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -131,17 +129,6 @@ source_set("tests") {
 
     deps += [ "//libassistant/shared/public" ]
   }
-}
-
-service_manifest("unittest_manifest") {
-  name = "assistant_unittests"
-  source = "unittest_manifest.json"
-  packaged_services = [ ":manifest" ]
-}
-
-catalog("tests_catalog") {
-  testonly = true
-  embedded_services = [ ":unittest_manifest" ]
 }
 
 static_library("test_support") {

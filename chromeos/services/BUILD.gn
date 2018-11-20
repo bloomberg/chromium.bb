@@ -5,8 +5,6 @@
 import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//chromeos/services/ime/public/features.gni")
-import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
 
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
@@ -32,28 +30,13 @@ source_set("unit_tests") {
 # Use this target for adding new service tests. To add a unit test to this
 # target, create a "tests" source_set in your service and add it as a dependency
 # here.
-#
-# If your unit tests use the ServiceTest framework, you must also include
-# corresponding catalog entries in the "chromeos_services_unittests_catalog"
-# target below.
-service_test("chromeos_services_unittests") {
+test("chromeos_services_unittests") {
   deps = [
     "//chromeos/services/ime:services_unittests",
+    "//mojo/core/test:run_all_unittests",
   ]
 
   if (enable_cros_assistant) {
     deps += [ "//chromeos/services/assistant:tests" ]
-  }
-
-  catalog = ":chromeos_services_unittests_catalog"
-}
-
-catalog("chromeos_services_unittests_catalog") {
-  testonly = true
-
-  catalog_deps = [ "//chromeos/services/ime:tests_catalog" ]
-
-  if (enable_cros_assistant) {
-    catalog_deps += [ "//chromeos/services/assistant:tests_catalog" ]
   }
 }

@@ -52,8 +52,10 @@ constexpr base::TimeDelta kMaxTokenRefreshDelay =
 
 }  // namespace
 
-Service::Service(network::NetworkConnectionTracker* network_connection_tracker)
-    : platform_binding_(this),
+Service::Service(service_manager::mojom::ServiceRequest request,
+                 network::NetworkConnectionTracker* network_connection_tracker)
+    : service_binding_(this, std::move(request)),
+      platform_binding_(this),
       session_observer_binding_(this),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -211,14 +213,14 @@ void Service::Init(mojom::ClientPtr client,
                    mojom::DeviceActionsPtr device_actions) {
   client_ = std::move(client);
   device_actions_ = std::move(device_actions);
-  assistant_state_.Init(context()->connector());
+  assistant_state_.Init(service_binding_.GetConnector());
   assistant_state_.AddObserver(this);
   RequestAccessToken();
 }
 
 identity::mojom::IdentityManager* Service::GetIdentityManager() {
   if (!identity_manager_) {
-    context()->connector()->BindInterface(
+    service_binding_.GetConnector()->BindInterface(
         identity::mojom::kServiceName, mojo::MakeRequest(&identity_manager_));
   }
   return identity_manager_.get();
@@ -273,15 +275,15 @@ void Service::RetryRefreshToken() {
 void Service::CreateAssistantManagerService() {
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   device::mojom::BatteryMonitorPtr battery_monitor;
-  context()->connector()->BindInterface(device::mojom::kServiceName,
-                                        mojo::MakeRequest(&battery_monitor));
+  service_binding_.GetConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&battery_monitor));
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-      context()->connector(), std::move(battery_monitor), this,
+      service_binding_.GetConnector(), std::move(battery_monitor), this,
       network_connection_tracker_);
 
   // Bind to Assistant controller in ash.
-  context()->connector()->BindInterface(ash::mojom::kServiceName,
-                                        &assistant_controller_);
+  service_binding_.GetConnector()->BindInterface(ash::mojom::kServiceName,
+                                                 &assistant_controller_);
   assistant_settings_manager_ =
       assistant_manager_service_.get()->GetAssistantSettingsManager();
 #else
@@ -322,8 +324,8 @@ void Service::StopAssistantManagerService() {
 
 void Service::AddAshSessionObserver() {
   ash::mojom::SessionControllerPtr session_controller;
-  context()->connector()->BindInterface(ash::mojom::kServiceName,
-                                        &session_controller);
+  service_binding_.GetConnector()->BindInterface(ash::mojom::kServiceName,
+                                                 &session_controller);
   ash::mojom::SessionActivationObserverPtr observer;
   session_observer_binding_.Bind(mojo::MakeRequest(&observer));
   session_controller->AddSessionActivationObserverForAccountId(

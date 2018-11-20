@@ -125,6 +125,14 @@ class CONTENT_EXPORT ServiceManagerConnection {
   virtual void AddServiceRequestHandlerWithPID(
       const std::string& name,
       const ServiceRequestHandlerWithPID& handler) = 0;
+
+  // Sets a request handler to use if no registered handlers were interested in
+  // an incoming service request. Must be called before |Start()|.
+  using DefaultServiceRequestHandler =
+      base::RepeatingCallback<void(const std::string& service_name,
+                                   service_manager::mojom::ServiceRequest)>;
+  virtual void SetDefaultServiceRequestHandler(
+      const DefaultServiceRequestHandler& handler) = 0;
 };
 
 }  // namespace content

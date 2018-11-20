@@ -300,13 +300,6 @@ void ChromeContentUtilityClient::RegisterServices(
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Figure out why we have to do this when not using mash.
   mash_service_factory_->RegisterOutOfProcessServices(services);
-
-  {
-    service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory =
-        base::BindRepeating(&chromeos::ime::CreateImeService);
-    services->emplace(chromeos::ime::mojom::kServiceName, service_info);
-  }
 #endif
 
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
@@ -333,6 +326,11 @@ ChromeContentUtilityClient::HandleServiceRequest(
 #if !defined(OS_ANDROID)
   if (service_name == patch::mojom::kServiceName)
     return std::make_unique<patch::PatchService>(std::move(request));
+#endif
+
+#if defined(OS_CHROMEOS)
+  if (service_name == chromeos::ime::mojom::kServiceName)
+    return std::make_unique<chromeos::ime::ImeService>(std::move(request));
 #endif
 
   return nullptr;

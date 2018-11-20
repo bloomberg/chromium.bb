@@ -28,6 +28,8 @@
 #include "services/identity/public/mojom/identity_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/service_binding.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 class GoogleServiceAuthError;
 
@@ -51,8 +53,8 @@ class Service : public service_manager::Service,
                 public mojom::AssistantPlatform,
                 public ash::DefaultVoiceInteractionObserver {
  public:
-  explicit Service(
-      network::NetworkConnectionTracker* network_connection_tracker);
+  Service(service_manager::mojom::ServiceRequest request,
+          network::NetworkConnectionTracker* network_connection_tracker);
   ~Service() override;
 
   mojom::Client* client() { return client_.get(); }
@@ -123,6 +125,7 @@ class Service : public service_manager::Service,
 
   void UpdateListeningState();
 
+  service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
 
   mojo::BindingSet<mojom::Assistant> bindings_;
