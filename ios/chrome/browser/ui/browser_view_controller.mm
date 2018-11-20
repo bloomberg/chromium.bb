@@ -111,7 +111,6 @@
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #import "ios/chrome/browser/ui/background_generator.h"
@@ -220,7 +219,6 @@
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #include "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
-#import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #include "ios/chrome/browser/web/web_state_printer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -426,7 +424,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     PageInfoPresentation,
                                     PasswordControllerDelegate,
                                     PreloadControllerDelegate,
-                                    RepostFormTabHelperDelegate,
                                     SadTabCoordinatorDelegate,
                                     SideSwipeControllerDelegate,
                                     SnapshotGeneratorDelegate,
@@ -533,9 +530,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Coordinator for Page Info UI.
   PageInfoLegacyCoordinator* _pageInfoCoordinator;
-
-  // Coordinator for displaying Repost Form dialog.
-  RepostFormCoordinator* _repostFormCoordinator;
 
   ToolbarCoordinatorAdaptor* _toolbarCoordinatorAdaptor;
 
@@ -2857,7 +2851,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     SadTabTabHelper::CreateForWebState(tab.webState, _sadTabCoordinator);
   }
   PrintTabHelper::CreateForWebState(tab.webState, self);
-  RepostFormTabHelper::CreateForWebState(tab.webState, self);
   NetExportTabHelper::CreateForWebState(tab.webState, self);
   CaptivePortalDetectorTabHelper::CreateForWebState(tab.webState, self);
   PassKitTabHelper::CreateForWebState(tab.webState, _passKitCoordinator);
@@ -5264,25 +5257,6 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 - (void)printWebState:(web::WebState*)webState {
   if (webState == self.tabModel.currentTab.webState)
     [self.dispatcher printTab];
-}
-
-#pragma mark - RepostFormTabHelperDelegate
-
-- (void)repostFormTabHelper:(RepostFormTabHelper*)helper
-    presentRepostFormDialogForWebState:(web::WebState*)webState
-                         dialogAtPoint:(CGPoint)location
-                     completionHandler:(void (^)(BOOL))completion {
-  _repostFormCoordinator =
-      [[RepostFormCoordinator alloc] initWithBaseViewController:self
-                                                 dialogLocation:location
-                                                       webState:webState
-                                              completionHandler:completion];
-  [_repostFormCoordinator start];
-}
-
-- (void)repostFormTabHelperDismissRepostFormDialog:
-    (RepostFormTabHelper*)helper {
-  _repostFormCoordinator = nil;
 }
 
 #pragma mark - TabStripPresentation
