@@ -552,13 +552,13 @@ void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
 
   if (ShouldDoFRECheck(command_line, fre_requirement_)) {
     // FRE has precedence over Initial Enrollment.
-    VLOG(1) << "Proceeding with FRE";
+    VLOG(1) << "Proceeding with FRE check";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kFRE;
     return;
   }
 
   if (ShouldDoInitialEnrollmentCheck()) {
-    VLOG(1) << "Proceeding with Initial Enrollment";
+    VLOG(1) << "Proceeding with Initial Enrollment check";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kInitialEnrollment;
     return;
   }

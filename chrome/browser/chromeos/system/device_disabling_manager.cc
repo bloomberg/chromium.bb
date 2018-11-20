@@ -89,7 +89,7 @@ void DeviceDisablingManager::CacheDisabledMessageAndNotify(
 
 void DeviceDisablingManager::CheckWhetherDeviceDisabledDuringOOBE(
     const DeviceDisabledCheckCallback& callback) {
-  if (policy::GetRestoreMode() != policy::RESTORE_MODE_DISABLED ||
+  if (policy::GetDeviceStateMode() != policy::RESTORE_MODE_DISABLED ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDeviceDisabling)) {
     // Indicate that the device is not disabled if it is not marked as such in

@@ -1116,7 +1116,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   EXPECT_EQ(GetErrorScreen(),
             WizardController::default_controller()->current_screen());
   base::DictionaryValue device_state;
-  device_state.SetString(policy::kDeviceStateRestoreMode,
+  device_state.SetString(policy::kDeviceStateMode,
                          policy::kDeviceStateRestoreModeDisabled);
   device_state.SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
@@ -1219,7 +1219,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   }
 
   base::DictionaryValue device_state;
-  device_state.SetString(policy::kDeviceStateRestoreMode,
+  device_state.SetString(policy::kDeviceStateMode,
                          policy::kDeviceStateRestoreModeReEnrollmentEnforced);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);
@@ -1311,7 +1311,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     EXPECT_EQ("none", JSExecuteStringExpression(guest_session_link_display));
 
     base::DictionaryValue device_state;
-    device_state.SetString(policy::kDeviceStateRestoreMode,
+    device_state.SetString(policy::kDeviceStateMode,
                            policy::kDeviceStateRestoreModeReEnrollmentEnforced);
     g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                           device_state);
@@ -1448,7 +1448,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_EQ(GetErrorScreen(),
             WizardController::default_controller()->current_screen());
   base::DictionaryValue device_state;
-  device_state.SetString(policy::kDeviceStateRestoreMode,
+  device_state.SetString(policy::kDeviceStateMode,
                          policy::kDeviceStateRestoreModeReEnrollmentEnforced);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);
@@ -1539,7 +1539,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_EQ("block", JSExecuteStringExpression(guest_session_link_display));
 
   base::DictionaryValue device_state;
-  device_state.SetString(policy::kDeviceStateRestoreMode,
+  device_state.SetString(policy::kDeviceStateMode,
                          policy::kDeviceStateRestoreModeReEnrollmentEnforced);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);
@@ -1770,7 +1770,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
       system::kRlzEmbargoEndDateKey,
       GenerateEmbargoEndDate(-1 /* days_offset */));
   base::DictionaryValue device_state;
-  device_state.SetString(policy::kDeviceStateRestoreMode,
+  device_state.SetString(policy::kDeviceStateMode,
                          policy::kDeviceStateRestoreModeReEnrollmentEnforced);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);
@@ -2498,7 +2498,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
   EXPECT_EQ(GetErrorScreen(),
             WizardController::default_controller()->current_screen());
   base::DictionaryValue device_state;
-  device_state.SetString(policy::kDeviceStateRestoreMode,
+  device_state.SetString(policy::kDeviceStateMode,
                          policy::kDeviceStateRestoreModeDisabled);
   device_state.SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,

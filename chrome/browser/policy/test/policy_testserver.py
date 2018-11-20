@@ -468,7 +468,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     # TODO(drcrash): Check the certificate itself.
     if req.certificate_type != dm.CertificateBasedDeviceRegistrationData.\
         ENTERPRISE_ENROLLMENT_CERTIFICATE:
-      return(403, 'Invalid registration certificate type')
+      return(403, 'Invalid certificate type for registration')
 
     return self.RegisterDeviceAndSendResponse(req.device_register_request, None)
 
