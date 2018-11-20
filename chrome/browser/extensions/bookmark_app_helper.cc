@@ -369,6 +369,7 @@ void BookmarkAppHelper::Create(const CreateBookmarkAppCallback& callback) {
       params.check_eligibility = true;
       params.valid_primary_icon = true;
       params.valid_manifest = true;
+      params.check_webapp_manifest_display = false;
       // Do not wait for a service worker if it doesn't exist.
       params.has_worker = !bypass_service_worker_check_;
       installable_manager_->GetData(
