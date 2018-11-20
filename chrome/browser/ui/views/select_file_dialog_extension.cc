@@ -157,8 +157,6 @@ void FindRuntimeContext(gfx::NativeWindow owner_window,
   if (!*web_contents)
     *web_contents = GetLoginWebContents();
 #endif
-
-  CHECK(*web_contents);
 }
 
 }  // namespace
@@ -353,17 +351,17 @@ void SelectFileDialogExtension::SelectFileImpl(
   // The web contents to associate the dialog with.
   content::WebContents* web_contents = NULL;
   FindRuntimeContext(owner_window, &base_window, &web_contents);
-  CHECK(web_contents);
-  profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  CHECK(profile_);
+  if (web_contents)
+    profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
 #if defined(OS_CHROMEOS)
-  // Handle the case when |web_contents| is associated with Default profile.
-  if (chromeos::ProfileHelper::IsSigninProfile(profile_)) {
+  // Handle the cases where |web_contents| is not available or |web_contents| is
+  // associated with Default profile.
+  if (!web_contents || chromeos::ProfileHelper::IsSigninProfile(profile_))
     profile_ = ProfileManager::GetActiveUserProfile();
-    CHECK(profile_);
-  }
 #endif
+
+  DCHECK(profile_);
 
   // Check if we have another dialog opened for the contents. It's unlikely, but
   // possible. In such situation, discard this request.
