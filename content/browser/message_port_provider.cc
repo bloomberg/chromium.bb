@@ -76,12 +76,10 @@ void MessagePortProvider::PostMessageToFrame(
     const base::android::JavaParamRef<jstring>& target_origin,
     const base::android::JavaParamRef<jstring>& data,
     const base::android::JavaParamRef<jobjectArray>& ports) {
-  PostMessageToFrameInternal(
-      web_contents,
-      ToString16(env, source_origin),
-      ToString16(env, target_origin),
-      ToString16(env, data),
-      AppWebMessagePort::UnwrapJavaArray(env, ports));
+  PostMessageToFrameInternal(web_contents, ToString16(env, source_origin),
+                             ToString16(env, target_origin),
+                             ToString16(env, data),
+                             AppWebMessagePort::UnwrapJavaArray(env, ports));
 }
 #endif
 

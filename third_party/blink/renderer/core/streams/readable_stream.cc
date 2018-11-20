@@ -459,6 +459,10 @@ void ReadableStream::Serialize(ScriptState* script_state,
 ReadableStream* ReadableStream::Deserialize(ScriptState* script_state,
                                             MessagePort* port,
                                             ExceptionState& exception_state) {
+  // We need to execute V8 Extras JavaScript to create the new ReadableStream.
+  // We will not run author code.
+  v8::Isolate::AllowJavascriptExecutionScope allow_js(
+      script_state->GetIsolate());
   ScriptValue internal_stream = ReadableStreamOperations::Deserialize(
       script_state, port, exception_state);
   if (exception_state.HadException())

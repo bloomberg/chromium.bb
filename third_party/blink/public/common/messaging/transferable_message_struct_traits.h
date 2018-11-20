@@ -26,6 +26,11 @@ struct BLINK_COMMON_EXPORT
     return blink::MessagePortChannel::ReleaseHandles(input.ports);
   }
 
+  static std::vector<mojo::ScopedMessagePipeHandle> stream_channels(
+      blink::TransferableMessage& input) {
+    return blink::MessagePortChannel::ReleaseHandles(input.stream_channels);
+  }
+
   static std::vector<blink::mojom::SerializedArrayBufferContentsPtr>
   array_buffer_contents_array(blink::TransferableMessage& input) {
     return std::move(input.array_buffer_contents_array);

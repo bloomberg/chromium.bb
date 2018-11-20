@@ -21,11 +21,12 @@
 namespace blink {
 
 ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
-    SerializationTag tag) {
+    SerializationTag tag,
+    ExceptionState& exception_state) {
   // Give the core/ implementation a chance to try first.
   // If it didn't recognize the kind of wrapper, try the modules types.
   if (ScriptWrappable* wrappable =
-          V8ScriptValueDeserializer::ReadDOMObject(tag))
+          V8ScriptValueDeserializer::ReadDOMObject(tag, exception_state))
     return wrappable;
 
   switch (tag) {

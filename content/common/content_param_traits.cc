@@ -211,6 +211,7 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, p->data.stack_trace_debugger_id_first);
   WriteParam(m, p->data.stack_trace_debugger_id_second);
   WriteParam(m, p->data.ports);
+  WriteParam(m, p->data.stream_channels);
   WriteParam(m, p->data.has_user_gesture);
   WriteParam(m, !!p->data.user_activation);
   if (p->data.user_activation) {
@@ -241,6 +242,7 @@ bool ParamTraits<
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_first) ||
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_second) ||
       !ReadParam(m, iter, &(*r)->data.ports) ||
+      !ReadParam(m, iter, &(*r)->data.stream_channels) ||
       !ReadParam(m, iter, &(*r)->data.has_user_gesture) ||
       !ReadParam(m, iter, &has_activation)) {
     return false;

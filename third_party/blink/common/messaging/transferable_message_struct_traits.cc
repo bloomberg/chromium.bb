@@ -14,15 +14,18 @@ bool StructTraits<blink::mojom::TransferableMessage::DataView,
     Read(blink::mojom::TransferableMessage::DataView data,
          blink::TransferableMessage* out) {
   std::vector<mojo::ScopedMessagePipeHandle> ports;
+  std::vector<mojo::ScopedMessagePipeHandle> stream_channels;
   if (!data.ReadMessage(static_cast<blink::CloneableMessage*>(out)) ||
       !data.ReadArrayBufferContentsArray(&out->array_buffer_contents_array) ||
       !data.ReadImageBitmapContentsArray(&out->image_bitmap_contents_array) ||
-      !data.ReadPorts(&ports) ||
+      !data.ReadPorts(&ports) || !data.ReadStreamChannels(&stream_channels) ||
       !data.ReadUserActivation(&out->user_activation)) {
     return false;
   }
 
   out->ports = blink::MessagePortChannel::CreateFromHandles(std::move(ports));
+  out->stream_channels =
+      blink::MessagePortChannel::CreateFromHandles(std::move(stream_channels));
   out->has_user_gesture = data.has_user_gesture();
   return true;
 }

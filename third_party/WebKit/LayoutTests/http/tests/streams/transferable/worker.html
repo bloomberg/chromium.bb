@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/helpers.js"></script>
+<script>
+'use strict';
+
+promise_test(t => {
+  const orig = createOriginalReadableStream();
+  const w = new Worker('resources/receiving-worker.js');
+  t.add_cleanup(() => {
+    w.terminate();
+  });
+  const promise = new Promise((resolve, reject) => {
+    checkTestResults(w).then(resolve, reject);
+    w.onerror = () => reject('error in worker');
+  });
+  w.postMessage(orig, [orig]);
+  assert_true(orig.locked, 'the original stream should be locked');
+  return promise;
+}, 'worker.postMessage should be able to transfer a ReadableStream');
+
+promise_test(t => {
+  const w = new Worker('resources/sending-worker.js');
+  t.add_cleanup(() => {
+    w.terminate();
+  });
+  return new Promise((resolve, reject) => {
+    testMessageEvent(w).then(resolve, reject);
+    w.onerror = () => reject('error in worker');
+  });
+}, 'postMessage in a worker should be able to transfer a ReadableStream');
+
+</script>

@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_message_port.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_mojo_handle.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_offscreen_canvas.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shared_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
@@ -33,8 +34,10 @@
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_base.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -163,6 +166,13 @@ void V8ScriptValueSerializer::FinalizeTransfer(
         isolate, transferables_->offscreen_canvases, exception_state);
     if (exception_state.HadException())
       return;
+
+    if (RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+      serialized_script_value_->TransferReadableStreams(
+          script_state_, transferables_->readable_streams, exception_state);
+      if (exception_state.HadException())
+        return;
+    }
   }
 }
 
@@ -450,6 +460,30 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint64(canvas->PlaceholderCanvasId());
     WriteUint32(canvas->ClientId());
     WriteUint32(canvas->SinkId());
+    return true;
+  }
+  if (wrapper_type_info == &V8ReadableStream::wrapperTypeInfo &&
+      RuntimeEnabledFeatures::TransferableStreamsEnabled()) {
+    ReadableStream* stream = wrappable->ToImpl<ReadableStream>();
+    size_t index = kNotFound;
+    if (transferables_)
+      index = transferables_->readable_streams.Find(stream);
+    if (index == kNotFound) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
+                                        "A ReadableStream could not be cloned "
+                                        "because it was not transferred.");
+      return false;
+    }
+    if (stream->IsLocked(script_state_, exception_state).value_or(true)) {
+      if (exception_state.HadException())
+        return false;
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kDataCloneError,
+          "A ReadableStream could not be cloned because it was locked");
+      return false;
+    }
+    WriteTag(kReadableStreamTransferTag);
+    WriteUint32(static_cast<uint32_t>(index));
     return true;
   }
   return false;

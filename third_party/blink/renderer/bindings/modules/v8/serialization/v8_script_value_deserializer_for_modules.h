@@ -33,7 +33,7 @@ class MODULES_EXPORT V8ScriptValueDeserializerForModules final
       : V8ScriptValueDeserializer(script_state, std::move(value), options) {}
 
  protected:
-  ScriptWrappable* ReadDOMObject(SerializationTag) override;
+  ScriptWrappable* ReadDOMObject(SerializationTag, ExceptionState&) override;
 
  private:
   bool ReadOneByte(uint8_t* byte) {
