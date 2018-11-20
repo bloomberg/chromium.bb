@@ -13,7 +13,6 @@ import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 
 import java.util.Arrays;
@@ -42,10 +41,7 @@ public class ModuleInstaller {
 
     /** Needs to be called before trying to access a module. */
     public static void init() {
-        // SplitCompat.install may copy modules into Chrome's internal folder or clean them up.
-        try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
-            SplitCompat.install(ContextUtils.getApplicationContext());
-        }
+        SplitCompat.install(ContextUtils.getApplicationContext());
     }
 
     /**
