@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -14,12 +14,13 @@
 
 namespace {
 
-using AutofillEditItemTest = PlatformTest;
+using LegacyAutofillEditItemTest = PlatformTest;
 
 // Tests that the label and text field are set properly after a call to
 // |configureCell:|.
-TEST_F(AutofillEditItemTest, ConfigureCell) {
-  AutofillEditItem* item = [[AutofillEditItem alloc] initWithType:0];
+TEST_F(LegacyAutofillEditItemTest, ConfigureCell) {
+  LegacyAutofillEditItem* item =
+      [[LegacyAutofillEditItem alloc] initWithType:0];
   NSString* name = @"Name";
   NSString* value = @"Value";
   BOOL enabled = NO;
@@ -29,9 +30,9 @@ TEST_F(AutofillEditItemTest, ConfigureCell) {
   item.textFieldEnabled = enabled;
 
   id cell = [[[item cellClass] alloc] init];
-  ASSERT_TRUE([cell isMemberOfClass:[AutofillEditCell class]]);
+  ASSERT_TRUE([cell isMemberOfClass:[LegacyAutofillEditCell class]]);
 
-  AutofillEditCell* autofillEditCell = cell;
+  LegacyAutofillEditCell* autofillEditCell = cell;
   EXPECT_EQ(0U, autofillEditCell.textLabel.text.length);
   EXPECT_EQ(0U, autofillEditCell.textField.text.length);
   EXPECT_TRUE(autofillEditCell.textField.enabled);

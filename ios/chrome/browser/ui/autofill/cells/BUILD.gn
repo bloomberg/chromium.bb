@@ -4,10 +4,10 @@
 
 source_set("cells") {
   sources = [
-    "autofill_edit_item.h",
-    "autofill_edit_item.mm",
     "cvc_item.h",
     "cvc_item.mm",
+    "legacy_autofill_edit_item.h",
+    "legacy_autofill_edit_item.mm",
     "status_item.h",
     "status_item.mm",
   ]
@@ -36,8 +36,8 @@ source_set("cells") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "autofill_edit_item_unittest.mm",
     "cvc_item_unittest.mm",
+    "legacy_autofill_edit_item_unittest.mm",
     "status_item_unittest.mm",
   ]
 

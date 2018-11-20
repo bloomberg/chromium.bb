@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
-#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -149,8 +149,9 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
     for (NSInteger itemIndex = 0; itemIndex < itemCount; ++itemIndex) {
       NSIndexPath* path =
           [NSIndexPath indexPathForItem:itemIndex inSection:section];
-      AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
-          [model itemAtIndexPath:path]);
+      LegacyAutofillEditItem* item =
+          base::mac::ObjCCastStrict<LegacyAutofillEditItem>(
+              [model itemAtIndexPath:path]);
       autofill::ServerFieldType serverFieldType =
           AutofillTypeFromAutofillUIType(item.autofillUIType);
       if (item.autofillUIType == AutofillUITypeProfileHomeAddressCountry) {
@@ -183,8 +184,8 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   [model addSectionWithIdentifier:SectionIdentifierFields];
   for (size_t i = 0; i < base::size(kFieldsToDisplay); ++i) {
     const AutofillFieldDisplayInfo& field = kFieldsToDisplay[i];
-    AutofillEditItem* item =
-        [[AutofillEditItem alloc] initWithType:ItemTypeField];
+    LegacyAutofillEditItem* item =
+        [[LegacyAutofillEditItem alloc] initWithType:ItemTypeField];
     item.cellStyle = CollectionViewCellStyle::kUIKit;
     item.textFieldName = l10n_util::GetNSString(field.displayStringID);
     item.textFieldValue = base::SysUTF16ToNSString(_autofillProfile.GetInfo(
@@ -220,8 +221,8 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   UICollectionViewCell* cell =
       [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
 
-  AutofillEditCell* textFieldCell =
-      base::mac::ObjCCastStrict<AutofillEditCell>(cell);
+  LegacyAutofillEditCell* textFieldCell =
+      base::mac::ObjCCastStrict<LegacyAutofillEditCell>(cell);
   textFieldCell.accessibilityIdentifier = textFieldCell.textLabel.text;
   textFieldCell.textField.delegate = self;
   return textFieldCell;
@@ -234,8 +235,8 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   if (self.editor.editing) {
     UICollectionViewCell* cell =
         [self.collectionView cellForItemAtIndexPath:indexPath];
-    AutofillEditCell* textFieldCell =
-        base::mac::ObjCCastStrict<AutofillEditCell>(cell);
+    LegacyAutofillEditCell* textFieldCell =
+        base::mac::ObjCCastStrict<LegacyAutofillEditCell>(cell);
     [textFieldCell.textField becomeFirstResponder];
   }
   return [super collectionView:collectionView

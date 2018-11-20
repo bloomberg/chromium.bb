@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_CELLS_AUTOFILL_EDIT_ITEM_H_
-#define IOS_CHROME_BROWSER_UI_AUTOFILL_CELLS_AUTOFILL_EDIT_ITEM_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_CELLS_LEGACY_AUTOFILL_EDIT_ITEM_H_
+#define IOS_CHROME_BROWSER_UI_AUTOFILL_CELLS_LEGACY_AUTOFILL_EDIT_ITEM_H_
 
 #import <UIKit/UIKit.h>
 
@@ -12,9 +12,9 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
-// Item to represent and configure an AutofillEditItem. It features a label and
-// a text field.
-@interface AutofillEditItem : CollectionViewItem
+// Item to represent and configure an LegacyAutofillEditItem. It features a
+// label and a text field.
+@interface LegacyAutofillEditItem : CollectionViewItem
 
 // TODO(crbug.com/891299) remove when all collection and table views are fixed
 // for dynamic types.
@@ -59,9 +59,9 @@
 
 @end
 
-// AutofillEditCell implements an MDCCollectionViewCell subclass containing a
-// label and a text field.
-@interface AutofillEditCell : MDCCollectionViewCell
+// LegacyAutofillEditCell implements an MDCCollectionViewCell subclass
+// containing a label and a text field.
+@interface LegacyAutofillEditCell : MDCCollectionViewCell
 
 // Label at the leading edge of the cell. It displays the item's textFieldName.
 @property(nonatomic, strong) UILabel* textLabel;
@@ -75,4 +75,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_CELLS_AUTOFILL_EDIT_ITEM_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_CELLS_LEGACY_AUTOFILL_EDIT_ITEM_H_
