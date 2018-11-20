@@ -26,6 +26,10 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/firstpass.h"
 
+#if CONFIG_REDUCED_ENCODER_BORDER
+#include "common/tools_common.h"
+#endif  // CONFIG_REDUCED_ENCODER_BORDER
+
 #define MAG_SIZE (4)
 #define MAX_NUM_ENHANCEMENT_LAYERS 3
 
