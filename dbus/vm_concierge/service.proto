@@ -425,3 +425,97 @@ message ContainerSshKeysResponse {
   // unique for each container.
   string container_private_key = 5;
 }
+
+// Request to vm_concierge to attach a USB device to a VM.
+message AttachUsbDeviceRequest {
+  // Name of the VM to attach the USB device to.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+
+  // The USB bus the USB device is connected to. This value should fit
+  // in a uint8_t.
+  uint32 bus_number = 3;
+
+  // The port number of the USB device on the bus. This value should
+  // fit in a uint8_t.
+  uint32 port_number = 4;
+
+  // Vendor ID of the USB device. This value should fit in a uint16_t.
+  uint32 vendor_id = 5;
+
+  // Produce ID of the USB device. This value should fit in a
+  // uint16_t.
+  uint32 product_id = 6;
+}
+
+// Response sent back by vm_concierge after it receives an
+// AttachUsbDeviceRequest call.
+message AttachUsbDeviceResponse {
+  // Was the USB device successfully attached?
+  bool success = 1;
+
+  // The USB port number that was allocated to the USB device on the guest.
+  uint32 guest_port = 2;
+
+  // The reason for the failure, if there was one.
+  string reason = 3;
+}
+
+// Request sent to remove a USB device from a VM.
+message DetachUsbDeviceRequest {
+  // The name of the VM.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+
+  // The USB port the device is attached to on the guest. This value
+  // should fit in a uint8_t.
+  uint32 guest_port = 3;
+}
+
+// Response sent back by vm_concierge after it receives a
+// DetachUsbDeviceRequest call.
+message DetachUsbDeviceResponse {
+  // Was the USB device successfully detached?
+  bool success = 1;
+
+  // The reason for the failure, if there was one.
+  string reason = 2;
+}
+
+// Request sent to get a list of all USB devices attached to a guest VM.
+message ListUsbDeviceRequest {
+  // The name of the VM.
+  string vm_name = 1;
+
+  // The owner of the VM.
+  string owner_id = 2;
+}
+
+// A description of a single USB device.
+message UsbDeviceMessage {
+  // The port it's attached to.
+  uint32 guest_port = 1;
+
+  // The vendor ID of the device.
+  uint32 vendor_id = 2;
+
+  // The product ID of the device.
+  uint32 product_id = 3;
+
+  // The name of the device.
+  string device_name = 4;
+}
+
+// Response sent back by vm_concierge after it receives a
+// ListUsbDeviceRequest call.
+message ListUsbDeviceResponse {
+  // Did the request succeed?
+  bool success = 1;
+
+  // List of USB device descriptors, one for each attached USB device.
+  repeated UsbDeviceMessage usb_devices = 2;
+}
