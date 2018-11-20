@@ -1585,3 +1585,129 @@ Status ExecuteTakeHeapSnapshot(Session* session,
                                Timeout* timeout) {
   return web_view->TakeHeapSnapshot(value);
 }
+
+// TODO(johnchen): There is no public method in Chrome or ChromeDesktopImpl to
+// get both size and position in one call. What we're doing now is kind of
+// wasteful, since both GetWindowPosition and GetWindowSize end up getting both
+// position and size, and then discard one of the two pieces.
+Status ExecuteGetWindowRect(Session* session,
+                            WebView* web_view,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value,
+                            Timeout* timeout) {
+  int x, y;
+  int width, height;
+
+  Status status = session->chrome->GetWindowPosition(session->window, &x, &y);
+  if (status.IsError())
+    return status;
+  status = session->chrome->GetWindowSize(session->window, &width, &height);
+
+  if (status.IsError())
+    return status;
+
+  base::DictionaryValue rect;
+  rect.SetInteger("x", x);
+  rect.SetInteger("y", y);
+  rect.SetInteger("width", width);
+  rect.SetInteger("height", height);
+  value->reset(rect.DeepCopy());
+  return Status(kOk);
+}
+
+Status ExecuteSetWindowRect(Session* session,
+                            WebView* web_view,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value,
+                            Timeout* timeout) {
+  const double max_range = 2147483647; // 2^31 - 1
+  const double min_range = -2147483648; // -2^31
+  const base::Value* temp;
+  double width = 0;
+  double height = 0;
+  double x = 0;
+  double y = 0;
+
+  bool has_x = params.Get("x", &temp) && !temp->is_none();
+  if (has_x) {
+    if (!temp->GetAsDouble(&x))
+      return Status(kInvalidArgument, "'x' must be a number");
+    if (x > max_range || x < min_range)
+      return Status(kInvalidArgument, "'x' out of range");
+  }
+  bool has_y = params.Get("y", &temp) && !temp->is_none();
+  if (has_y) {
+    if (!temp->GetAsDouble(&y))
+      return Status(kInvalidArgument, "'y' must be a number");
+    if (y > max_range || y < min_range )
+      return Status(kInvalidArgument, "'y' out of range");
+  }
+  bool has_width = params.Get("width", &temp) && !temp->is_none();
+  if (has_width) {
+    if (!temp->GetAsDouble(&width))
+      return Status(kInvalidArgument, "'width' must be a number");
+    if (width > max_range || width < 0 )
+      return Status(kInvalidArgument, "'width' out of range");
+  }
+  bool has_height = params.Get("height", &temp) && !temp->is_none();
+  if (has_height) {
+    if (!temp->GetAsDouble(&height))
+      return Status(kInvalidArgument, "'height' must be a number");
+    if (height > max_range || height < 0 )
+      return Status(kInvalidArgument, "'height' out of range");
+  }
+
+  // to pass to the set window rect command
+  base::DictionaryValue rect_params;
+  // only set position if both x and y are given
+  if (has_x && has_y) {
+    rect_params.SetInteger("x", static_cast<int>(x));
+    rect_params.SetInteger("y", static_cast<int>(y));
+  }  // only set size if both height and width are given
+  if (has_width && has_height) {
+    rect_params.SetInteger("width", static_cast<int>(width));
+    rect_params.SetInteger("height", static_cast<int>(height));
+  }
+  Status status = session->chrome->SetWindowRect(session->window, rect_params);
+  if (status.IsError())
+    return status;
+
+  // return the current window rect
+  return ExecuteGetWindowRect(session, web_view, params, value, timeout);
+}
+
+Status ExecuteMaximizeWindow(Session* session,
+                             WebView* web_view,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout) {
+  Status status = session->chrome->MaximizeWindow(session->window);
+  if (status.IsError())
+    return status;
+
+  return ExecuteGetWindowRect(session, web_view, params, value, timeout);
+}
+
+Status ExecuteMinimizeWindow(Session* session,
+                             WebView* web_view,
+                             const base::DictionaryValue& params,
+                             std::unique_ptr<base::Value>* value,
+                             Timeout* timeout) {
+  Status status = session->chrome->MinimizeWindow(session->window);
+  if (status.IsError())
+    return status;
+
+  return ExecuteGetWindowRect(session, web_view, params, value, timeout);
+}
+
+Status ExecuteFullScreenWindow(Session* session,
+                               WebView* web_view,
+                               const base::DictionaryValue& params,
+                               std::unique_ptr<base::Value>* value,
+                               Timeout* timeout) {
+  Status status = session->chrome->FullScreenWindow(session->window);
+  if (status.IsError())
+    return status;
+
+  return ExecuteGetWindowRect(session, web_view, params, value, timeout);
+}
