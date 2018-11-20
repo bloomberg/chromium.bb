@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/base/cast_features.h"
 #include "chromecast/browser/cast_touch_device_manager.h"
+#include "chromecast/graphics/cast_display_util.h"
 #include "chromecast/graphics/cast_screen.h"
 #include "chromecast/public/graphics_properties_shlib.h"
 #include "ui/display/types/display_snapshot.h"
@@ -66,17 +67,6 @@ display::Display::Rotation GetRotationFromCommandLine() {
     return display::Display::ROTATE_270;
   else
     return display::Display::ROTATE_0;
-}
-
-float GetDeviceScaleFactor(gfx::Size display_resolution) {
-  // TODO(spang): Look into tightening up the allowed scale factors here
-  // rather than allowing all scales >= 1.f
-  int smaller_dimension =
-      std::min(display_resolution.width(), display_resolution.height());
-  float ratio = smaller_dimension / 720.f;
-  if (ratio < 1.f)
-    return 1.f;
-  return ratio;
 }
 
 gfx::Rect GetScreenBounds(const gfx::Size& size_in_pixels,
