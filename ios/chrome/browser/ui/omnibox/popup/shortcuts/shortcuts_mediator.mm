@@ -95,7 +95,7 @@ initWithLargeIconService:(favicon::LargeIconService*)largeIconService
       fetchFaviconAttributesForURL:item.URL
                         completion:^(FaviconAttributes* attributes) {
                           item.attributes = attributes;
-                          [weakSelf.consumer faviconChangedForItem:item];
+                          [weakSelf.consumer faviconChangedForURL:item.URL];
                         }];
 }
 
