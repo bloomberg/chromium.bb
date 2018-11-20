@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/ui/libgtkui/chrome_gtk_menu_subclasses.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
 #include "ui/gfx/color_palette.h"
