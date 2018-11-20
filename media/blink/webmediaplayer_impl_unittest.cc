@@ -1524,6 +1524,50 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
       .Times(0);
 }
 
+// Tests delegate methods are called with the appropriate play/pause button
+// state when Picture-in-Picture is triggered and video duration is infinity.
+TEST_F(WebMediaPlayerImplTest,
+       PictureInPictureTriggerWithInfiniteDurationCallback) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitFromCommandLine(kUseSurfaceLayerForVideo.name, "");
+
+  InitializeWebMediaPlayerImpl();
+  SetDuration(kInfiniteDuration);
+
+  EXPECT_CALL(*surface_layer_bridge_ptr_, CreateSurfaceLayer());
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetSurfaceId())
+      .WillRepeatedly(ReturnRef(surface_id_));
+  EXPECT_CALL(*surface_layer_bridge_ptr_, GetLocalSurfaceIdAllocationTime())
+      .WillRepeatedly(Return(base::TimeTicks()));
+  EXPECT_CALL(*compositor_, EnableSubmission(_, _, _, _, false, _));
+  EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
+
+  PipelineMetadata metadata;
+  metadata.has_video = true;
+  OnMetadata(metadata);
+
+  EXPECT_CALL(client_, DisplayType())
+      .WillRepeatedly(
+          Return(blink::WebMediaPlayer::DisplayType::kPictureInPicture));
+  EXPECT_CALL(delegate_,
+              DidPictureInPictureSurfaceChange(
+                  delegate_.player_id(), surface_id_, GetNaturalSize(), false))
+      .Times(2);
+
+  wmpi_->OnSurfaceIdUpdated(surface_id_);
+
+  EXPECT_CALL(delegate_,
+              DidPictureInPictureModeStart(delegate_.player_id(), surface_id_,
+                                           GetNaturalSize(), _, false));
+
+  wmpi_->EnterPictureInPicture(base::DoNothing());
+  wmpi_->OnSurfaceIdUpdated(surface_id_);
+
+  // Updating SurfaceId should NOT exit Picture-in-Picture.
+  EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id(), _))
+      .Times(0);
+}
+
 class WebMediaPlayerImplBackgroundBehaviorTest
     : public WebMediaPlayerImplTest,
       public ::testing::WithParamInterface<
