@@ -175,13 +175,7 @@ TEST_F(ResourceBundleTest, DelegateGetPathForResourcePack) {
   resource_bundle->AddDataPackFromPath(pack_path, pack_scale_factor);
 }
 
-#if defined(OS_LINUX)
-// Fails consistently on Linux: crbug.com/161902
-#define MAYBE_DelegateGetPathForLocalePack DISABLED_DelegateGetPathForLocalePack
-#else
-#define MAYBE_DelegateGetPathForLocalePack DelegateGetPathForLocalePack
-#endif
-TEST_F(ResourceBundleTest, MAYBE_DelegateGetPathForLocalePack) {
+TEST_F(ResourceBundleTest, DelegateGetPathForLocalePack) {
   MockResourceBundleDelegate delegate;
   ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
