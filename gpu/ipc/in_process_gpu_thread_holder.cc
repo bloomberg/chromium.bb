@@ -48,8 +48,7 @@ GpuFeatureInfo* InProcessGpuThreadHolder::GetGpuFeatureInfo() {
   return &gpu_feature_info_;
 }
 
-scoped_refptr<CommandBufferTaskExecutor>
-InProcessGpuThreadHolder::GetTaskExecutor() {
+CommandBufferTaskExecutor* InProcessGpuThreadHolder::GetTaskExecutor() {
   if (!task_executor_) {
     base::WaitableEvent completion;
     task_runner()->PostTask(
@@ -58,7 +57,7 @@ InProcessGpuThreadHolder::GetTaskExecutor() {
                        base::Unretained(this), &completion));
     completion.Wait();
   }
-  return task_executor_;
+  return task_executor_.get();
 }
 
 void InProcessGpuThreadHolder::InitializeOnGpuThread(
@@ -66,7 +65,7 @@ void InProcessGpuThreadHolder::InitializeOnGpuThread(
   sync_point_manager_ = std::make_unique<SyncPointManager>();
   scheduler_ =
       std::make_unique<Scheduler>(task_runner(), sync_point_manager_.get());
-  task_executor_ = base::MakeRefCounted<GpuInProcessThreadService>(
+  task_executor_ = std::make_unique<GpuInProcessThreadService>(
       task_runner(), scheduler_.get(), sync_point_manager_.get(), nullptr,
       nullptr, gl::GLSurfaceFormat(), gpu_feature_info_, gpu_preferences_);
 

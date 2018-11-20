@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/framebuffer_completeness_cache.h"
@@ -39,8 +38,7 @@ class ProgramCache;
 
 // Provides accessors for GPU service objects and the serializer interface to
 // the GPU thread used by InProcessCommandBuffer.
-class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
-    : public base::RefCountedThreadSafe<CommandBufferTaskExecutor> {
+class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor {
  public:
   // Represents a single task execution sequence. Tasks posted to a sequence are
   // run in order. Tasks across sequences should be synchronized using sync
@@ -76,6 +74,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
                             MailboxManager* mailbox_manager,
                             scoped_refptr<gl::GLShareGroup> share_group,
                             gl::GLSurfaceFormat share_group_surface_format);
+  virtual ~CommandBufferTaskExecutor();
 
   // Always use virtualized GL contexts if this returns true.
   virtual bool ForceVirtualizedGLContexts() const = 0;
@@ -125,11 +124,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor
   scoped_refptr<gl::GLShareGroup> share_group();
   gles2::Outputter* outputter();
   gles2::ProgramCache* program_cache();
-
- protected:
-  friend class base::RefCountedThreadSafe<CommandBufferTaskExecutor>;
-
-  virtual ~CommandBufferTaskExecutor();
 
  private:
   const GpuPreferences gpu_preferences_;

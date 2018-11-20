@@ -46,6 +46,8 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
  public:
   static DeferredGpuCommandService* GetInstance();
 
+  ~DeferredGpuCommandService() override;
+
   // gpu::CommandBufferTaskExecutor implementation.
   bool ForceVirtualizedGLContexts() const override;
   bool ShouldCreateMemoryTracker() const override;
@@ -66,9 +68,6 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
   // PerformIdleWork(is_idle = true), which does not run any newly scheduled
   // idle tasks during the idle run.
   void PerformAllIdleWork();
-
- protected:
-  ~DeferredGpuCommandService() override;
 
  private:
   friend class ScopedAllowGL;
