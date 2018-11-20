@@ -157,17 +157,6 @@ class FakeFidoTask : public FidoTask {
   base::WeakPtrFactory<FakeFidoTask> weak_factory_;
 };
 
-class FakeFidoAuthenticator : public FidoDeviceAuthenticator {
- public:
-  explicit FakeFidoAuthenticator(std::unique_ptr<FidoDevice> device)
-      : FidoDeviceAuthenticator(std::move(device)) {}
-
-  void RunFakeTask(FakeTaskCallback callback) {
-    SetTaskForTesting(
-        std::make_unique<FakeFidoTask>(device(), std::move(callback)));
-  }
-};
-
 class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
  public:
   FakeFidoRequestHandler(service_manager::Connector* connector,
@@ -185,10 +174,18 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
   ~FakeFidoRequestHandler() override = default;
 
   void DispatchRequest(FidoAuthenticator* authenticator) override {
-    static_cast<FakeFidoAuthenticator*>(authenticator)
-        ->RunFakeTask(
-            base::BindOnce(&FakeFidoRequestHandler::OnAuthenticatorResponse,
-                           weak_factory_.GetWeakPtr(), authenticator));
+    // FidoRequestHandlerTest uses ScopedFakeDiscovery to inject mock devices
+    // that get wrapped in a FidoDeviceAuthenticator, so we can safely cast
+    // here.
+    auto* device_authenticator =
+        static_cast<FidoDeviceAuthenticator*>(authenticator);
+    // Instead of sending a real CTAP request, send an empty byte array. Note
+    // that during discovery, the device already has received a GetInfo command
+    // at this point.
+    device_authenticator->SetTaskForTesting(std::make_unique<FakeFidoTask>(
+        device_authenticator->device(),
+        base::BindOnce(&FakeFidoRequestHandler::OnAuthenticatorResponse,
+                       weak_factory_.GetWeakPtr(), authenticator)));
   }
 
  private:
@@ -507,7 +504,7 @@ TEST_F(FidoRequestHandlerTest, TestSetPlatformAuthenticator) {
                                       CreateFakeSuccessDeviceResponse());
   device->SetDeviceTransport(FidoTransportProtocol::kInternal);
   auto authenticator =
-      std::make_unique<FakeFidoAuthenticator>(std::move(device));
+      std::make_unique<FidoDeviceAuthenticator>(std::move(device));
 
   TestTransportAvailabilityObserver observer;
   auto request_handler = std::make_unique<FakeFidoRequestHandler>(
@@ -543,7 +540,7 @@ TEST_F(FidoRequestHandlerTest,
                                       CreateFakeSuccessDeviceResponse());
   device->SetDeviceTransport(FidoTransportProtocol::kInternal);
   auto authenticator =
-      std::make_unique<FakeFidoAuthenticator>(std::move(device));
+      std::make_unique<FidoDeviceAuthenticator>(std::move(device));
 
   TestTransportAvailabilityObserver observer;
   auto request_handler = std::make_unique<FakeFidoRequestHandler>(
