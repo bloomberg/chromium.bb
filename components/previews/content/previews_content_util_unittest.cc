@@ -142,12 +142,14 @@ TEST_F(PreviewsContentUtilTest,
             previews::DetermineAllowedClientPreviewsState(
                 &user_data, GURL("http://www.google.com"), is_reload,
                 is_redirect, is_data_saver_user, enabled_previews_decider()));
+  EXPECT_FALSE(user_data.is_redirect());
   user_data.set_allowed_previews_state(content::OFFLINE_PAGE_ON);
   is_redirect = true;
   EXPECT_EQ(content::OFFLINE_PAGE_ON,
             previews::DetermineAllowedClientPreviewsState(
                 &user_data, GURL("http://www.google.com"), is_reload,
                 is_redirect, is_data_saver_user, enabled_previews_decider()));
+  EXPECT_TRUE(user_data.is_redirect());
   user_data.set_allowed_previews_state(content::PREVIEWS_OFF);
   EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
             previews::DetermineAllowedClientPreviewsState(

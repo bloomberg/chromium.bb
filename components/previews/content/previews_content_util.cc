@@ -40,6 +40,8 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   // Previews URLLoader will not receive an updated PreviewsState, so the state
   // should stay consistent throughout the navigation.
   if (is_redirect) {
+    // Record that the navigation was redirected.
+    previews_data->set_is_redirect(true);
     // Keep the same OFFLINE previews bit as the original URL.
     previews_state |=
         (previews_data->allowed_previews_state() & content::OFFLINE_PAGE_ON);
