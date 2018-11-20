@@ -4,8 +4,12 @@
 
 // Run a cast v2 mirroring session for 15 seconds.
 
+console.log('Starting eval of performance.js...');
+
 chrome.test.runTests([
   function sendTestPatterns() {
+    console.log('Starting sendTestPatterns()...');
+
     const kMaxFrameRate = 30;
     const kCallbackTimeoutMillis = 10000;
     const kTestRunTimeMillis = 15000;
@@ -51,7 +55,9 @@ chrome.test.runTests([
           }
         }
       };
+      console.log('About to call chrome.tabCapture.capture()...');
       chrome.tabCapture.capture(captureOptions, captureStream => {
+        console.log('chrome.tabCapture.capture() callback is running...');
         clearTimeout(timeoutId);
         if (captureStream) {
           console.log('Started tab capture.');
@@ -69,16 +75,19 @@ chrome.test.runTests([
     // Then, start Cast Streaming and wait up to kCallbackTimeoutMillis for it
     // to start.
     const startStreamingPromise = startCapturePromise.then(captureStream => {
+      console.log('Starting streaming...');
       return new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => {
           reject(Error(
             'chrome.cast.streaming.session.create() did not call back'));
         }, kCallbackTimeoutMillis);
 
+        console.log('Creating cast streaming session...');
         chrome.cast.streaming.session.create(
             captureStream.getAudioTracks()[0],
             captureStream.getVideoTracks()[0],
             (audioId, videoId, udpId) => {
+          console.log('Cast streaming session create callback is running...');
           clearTimeout(timeoutId);
 
           try {
@@ -114,6 +123,7 @@ chrome.test.runTests([
         console.log(`Running test for ${kTestRunTimeMillis} ms.`);
         setTimeout(resolve, kTestRunTimeMillis);
       }).then(() => {
+        console.log('Stopping cast streaming...');
         rtpStream.stop(audioId);
         rtpStream.stop(videoId);
         rtpStream.destroy(audioId);
@@ -121,6 +131,7 @@ chrome.test.runTests([
 
         chrome.cast.streaming.udpTransport.destroy(udpId);
 
+        console.log('Stopping tab capture (MediaStreamTracks)...');
         const tracks = captureStream.getTracks();
         for (let i = 0; i < tracks.length; ++i) {
           tracks[i].stop();
@@ -131,7 +142,9 @@ chrome.test.runTests([
     // If all of the above completed without error, the test run has succeeded.
     // Otherwise, flag that the test has failed with the cause.
     doneTestingPromise.then(() => {
+      console.log('About to chrome.test.succeed()...');
       chrome.test.succeed();
+      console.log('Did chrome.test.succeed()...');
     }).catch(error => {
       if (typeof error === 'object' &&
           ('stack' in error || 'message' in error)) {
@@ -140,5 +153,9 @@ chrome.test.runTests([
         chrome.test.fail(String(error));
       }
     });
+
+    console.log('Completed sendTestPatterns(). (Waiting for promises...)');
   }
 ]);
+
+console.log('Completed eval of performance.js.');
