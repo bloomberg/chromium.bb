@@ -51,8 +51,9 @@ class IdleTimeEstimatorTest : public testing::Test {
         nullptr, task_environment_.GetMainThreadTaskRunner(),
         task_environment_.GetMockTickClock());
     compositor_task_queue_ =
-        manager_->CreateTaskQueue<base::sequence_manager::TestTaskQueue>(
-            base::sequence_manager::TaskQueue::Spec("test_tq"));
+        manager_
+            ->CreateTaskQueueWithType<base::sequence_manager::TestTaskQueue>(
+                base::sequence_manager::TaskQueue::Spec("test_tq"));
     estimator_.reset(new IdleTimeEstimatorForTest(
         compositor_task_queue_, task_environment_.GetMockTickClock(), 10, 50));
   }

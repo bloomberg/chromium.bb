@@ -56,7 +56,7 @@ ThreadManager::ThreadManager(TimeTicks initial_time,
 
   TaskQueue::Spec spec = TaskQueue::Spec("default_task_queue");
   task_queues_.emplace_back(std::make_unique<TaskQueueWithVoters>(
-      manager_->CreateTaskQueue<TestTaskQueue>(spec)));
+      manager_->CreateTaskQueueWithType<TestTaskQueue>(spec)));
 }
 
 ThreadManager::~ThreadManager() = default;
@@ -155,7 +155,7 @@ void ThreadManager::ExecuteCreateTaskQueueAction(
   {
     AutoLock lock(lock_);
     task_queues_.emplace_back(std::make_unique<TaskQueueWithVoters>(
-        manager_->CreateTaskQueue<TestTaskQueue>(spec)));
+        manager_->CreateTaskQueueWithType<TestTaskQueue>(spec)));
     chosen_task_queue = task_queues_.back()->queue.get();
   }
   chosen_task_queue->SetQueuePriority(

@@ -140,11 +140,18 @@ class SequenceManager {
   // Must be called on the main thread.
   // TODO(scheduler-dev): SequenceManager should not create TaskQueues.
   template <typename TaskQueueType, typename... Args>
-  scoped_refptr<TaskQueueType> CreateTaskQueue(const TaskQueue::Spec& spec,
-                                               Args&&... args) {
+  scoped_refptr<TaskQueueType> CreateTaskQueueWithType(
+      const TaskQueue::Spec& spec,
+      Args&&... args) {
     return WrapRefCounted(new TaskQueueType(CreateTaskQueueImpl(spec), spec,
                                             std::forward<Args>(args)...));
   }
+
+  // Creates a vanilla TaskQueue rather than a user type derived from it. This
+  // should be used if you don't wish to sub class TaskQueue.
+  // Must be called on the main thread.
+  virtual scoped_refptr<TaskQueue> CreateTaskQueue(
+      const TaskQueue::Spec& spec) = 0;
 
   // Returns true iff this SequenceManager has no immediate work to do
   // (tasks with unexpired delay are fine, tasks with zero delay and
