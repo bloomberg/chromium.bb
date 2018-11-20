@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />،‏ <ph name="TYPE_2" />،‏ <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ و ۱ صفحه وب دیگر}one{ و # صفحه وب دیگر}other{ و # صفحه وب دیگر}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">‏CVC را برای <ph name="CREDIT_CARD" /> وارد کنید. بعد از تأیید، جزئیات کارت از حساب پرداخت‌های Google با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="4923417429809017348">این صفحه از یک زبان ناشناس به <ph name="LANGUAGE_LANGUAGE" /> ترجمه شده است.</translation>
 <translation id="4923459931733593730">پرداخت</translation>
 <translation id="4926049483395192435">باید مشخص شود.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">استان</translation>
 <translation id="5098332213681597508">‏این نام از حساب Google شما گرفته شده است.</translation>
 <translation id="5115563688576182185">(۶۴ بیت)</translation>
-<translation id="5121084798328133320">‏بعد از تأیید، جزئیات کارت از حساب «پرداخت‌های Google» با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="5128122789703661928">جلسه‌ای با این نام، برای حذف معتبر نیست.</translation>
 <translation id="5135404736266831032">مدیریت نشانی‌ها…</translation>
 <translation id="5141240743006678641">‏رمزگذاری گذرواژه‌های همگام‌سازی شده با اطلاعات کاربری Google شما</translation>
@@ -1147,7 +1145,6 @@
 <translation id="8932102934695377596">ساعت شما عقب است</translation>
 <translation id="893332455753468063">افزودن نام</translation>
 <translation id="8938939909778640821">کارت‌های اعتباری و پیش‌پرداخت قابل‌قبول</translation>
-<translation id="8952525071319348207">‏برای به‌روزرسانی جزئیات کارتتان، تاریخ انقضا و CVC کارت <ph name="CREDIT_CARD" /> را وارد کنید. بعد از تأیید، جزئیات کارت از حساب «پرداخت‌های Google» با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="8957210676456822347">مجوز پورتال محدود</translation>
 <translation id="8971063699422889582">گواهی سرور منقضی شده است.</translation>
 <translation id="8975012916872825179">شامل اطلاعاتی مانند شماره تلفن، نشانی ایمیل و نشانی تحویل کالا می‌شود</translation>

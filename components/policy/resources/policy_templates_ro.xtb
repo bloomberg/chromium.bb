@@ -2113,11 +2113,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="6689792153960219308">Raportează starea hardware-ului</translation>
 <translation id="6698632841807204978">Activează printarea monocromă</translation>
 <translation id="6699880231565102694">Activați autentificarea cu doi factori pentru gazdele de acces la distanță</translation>
-<translation id="6724842112053619797">Dacă activezi această setare, setările stocate în profilurile <ph name="PRODUCT_NAME" />, cum ar fi marcajele, datele de completare automată, parolele etc. vor fi scrise și într-un fișier stocat în dosarul profilului de utilizator pentru Roaming sau într-o locație specificată de administrator prin politica <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Dacă activezi această politică, se dezactivează sincronizarea în cloud.
-
-      Dacă această politică este dezactivată sau nu este configurată, se vor folosi numai profilurile locale obișnuite.
-
-      Politica <ph name="SYNC_DISABLED_POLICY_NAME" /> dezactivează integral sincronizarea datelor, ignorând RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrează conținutul pentru adulți de pe site-urile de nivel superior (nu și pentru cadrele iframe încorporate)</translation>
 <translation id="6734521799274931721">Controlează funcția Dispozitive de stocare în rețea pentru disponibilitatea sistemului de operare Chrome</translation>
 <translation id="6735701345096330595">Forțează activarea verificării ortografice pentru limbi</translation>

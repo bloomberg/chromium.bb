@@ -2203,11 +2203,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6689792153960219308">Envoyer des rapports sur l'état du matériel</translation>
 <translation id="6698632841807204978">Activer l'impression monochrome</translation>
 <translation id="6699880231565102694">Activer l'authentification forte pour les hôtes d'accès à distance</translation>
-<translation id="6724842112053619797">Si vous activez cette option, les paramètres stockés dans les profils <ph name="PRODUCT_NAME" />, comme les favoris, les données de saisie automatique et les mots de passe, sont également enregistrés dans un fichier stocké dans le dossier des profils utilisateur itinérants ou à un emplacement défini par l'administrateur tel que spécifié dans la règle <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. L'activation de cette règle entraîne la désactivation de la synchronisation cloud.
-
-      Si cette règle est désactivée ou si elle n'est pas configurée, seuls les profils locaux standards sont utilisés.
-
-      La règle <ph name="SYNC_DISABLED_POLICY_NAME" /> entraîne la désactivation de la synchronisation des données, remplaçant ainsi RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrer les sites de premier niveau (mais pas les iFrame intégrés) présentant des contenus réservés aux adultes</translation>
 <translation id="6734521799274931721">Vérifie la disponibilité de la fonctionnalité Partages de fichiers en réseau pour Chrome OS</translation>
 <translation id="6735701345096330595">Forcer l'activation des langues de la vérification orthographique</translation>

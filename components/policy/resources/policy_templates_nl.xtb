@@ -2191,11 +2191,6 @@
 <translation id="6689792153960219308">De hardwarestatus melden</translation>
 <translation id="6698632841807204978">Monochroom afdrukken inschakelen</translation>
 <translation id="6699880231565102694">Authenticatie in twee stappen inschakelen voor hosts voor externe toegang</translation>
-<translation id="6724842112053619797">Als je deze instelling inschakelt, worden de instellingen die zijn opgeslagen in <ph name="PRODUCT_NAME" />-profielen (zoals bladwijzers, gegevens voor automatisch aanvullen, wachtwoorden, enzovoort), ook geschreven naar een bestand dat is opgeslagen in de map voor roaming-gebruikersprofielen of op een locatie die de beheerder heeft opgegeven via het beleid <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Als je dit beleid inschakelt, wordt cloud-synchronisatie uitgeschakeld.
-
-      Als dit beleid is uitgeschakeld of niet wordt ingesteld, worden alleen de gewone lokale profielen gebruikt.
-
-      Met het beleid <ph name="SYNC_DISABLED_POLICY_NAME" /> wordt alle gegevenssynchronisatie uitgeschakeld (RoamingProfileSupportEnabled wordt overschreven).</translation>
 <translation id="6731757988219967594">Sites op hoofdniveau (maar geen ingesloten iframes) filteren op content voor volwassenen</translation>
 <translation id="6734521799274931721">Beheert netwerkfileshares voor Chrome OS-beschikbaarheid</translation>
 <translation id="6735701345096330595">Inschakelen van spellingcontrole voor talen afdwingen</translation>

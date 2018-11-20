@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">সিঙ্ক সেটিংস দেখুন</translation>
 <translation id="1124772482545689468">ব্যবহারকারী</translation>
 <translation id="1125550662859510761">মনে হচ্ছে <ph name="WIDTH" /> x <ph name="HEIGHT" /> (স্থানীয়)</translation>
-<translation id="1127216846847548354">ভয়েসের মাধ্যমে চালু করা</translation>
 <translation id="1128109161498068552">কোনো সাইটকে MIDI ডিভাইসগুলি অ্যাক্সেস করার জন্য সিস্টেমের বিশিষ্ট বার্তাগুলি ব্যবহার করার মঞ্জুরি দেবেন না</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">সার্চ ইঞ্জিন সম্পাদনা করুন</translation>
@@ -615,7 +614,7 @@
 <translation id="1880905663253319515">শংসাপত্র মুছবেন "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">সাইটগুলিকে প্রোটোকলের জন্য ডিফল্ট পরিচালক হতে জিজ্ঞাসা করার অনুমতি দেয় (প্রস্তাবিত)</translation>
 <translation id="1887442540531652736">সাইন-ইন করার সময় সমস্যা হয়েছে</translation>
-<translation id="1887597546629269384">আবার "Hey Google" বলুন</translation>
+<translation id="1887597546629269384">আবার "হ্যালো Google" বলুন</translation>
 <translation id="1887850431809612466">হার্ডওয়্যার পুনর্বিবেচনাগুলি</translation>
 <translation id="1889984860246851556">প্রক্সি সেটিংস খুলুন</translation>
 <translation id="1890674179660343635">&lt;span&gt;আইডি: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -1640,7 +1639,6 @@
 <translation id="3495660573538963482">Google সহায়ক সেটিংস</translation>
 <translation id="3496213124478423963">জুম কমান</translation>
 <translation id="3505030558724226696">ডিভাইসের অ্যাক্সেস প্রত্যাহার করুন</translation>
-<translation id="3506093155988721483">আপনার অ্যাসিস্ট্যান্ট চালু করার সময় কীবোর্ডের পরিবর্তে স্পিচ ব্যবহার করুন</translation>
 <translation id="3507421388498836150">"<ph name="EXTENSION_NAME" />" এর জন্য বর্তমান অনুমতিগুলি</translation>
 <translation id="3507547268929739059">Chromebook থেকে Linux অ্যাপ সরিয়ে দিন</translation>
 <translation id="3507888235492474624">ব্লুটুথ ডিভাইস আবার স্ক্যান করুন</translation>
@@ -2057,7 +2055,6 @@
 <translation id="4100733287846229632">ডিভাইসের স্থান আশংকাজনকভাবে কম</translation>
 <translation id="4103091233824664032">স্ক্রিন লক এবং সাইন-ইন কনফিগার করার জন্য আপনার পাসওয়ার্ড লিখুন</translation>
 <translation id="4104163789986725820">র&amp;প্তানি...</translation>
-<translation id="4105563239298244027">Google ড্রাইভের সাথে বিনামূল্যে ১ TB পান</translation>
 <translation id="4107048419833779140">স্টোরেজ ডিভাইসগুলি শনাক্ত করে সরিয়ে দিন</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) এ উইন্ডো সরান</translation>
 <translation id="4110895898888439383">উচ্চ কনট্রাস্ট মোডে ওয়েব ব্রাউজ করুন</translation>
@@ -2285,7 +2282,7 @@
 <translation id="4524832533047962394">অপারেটিং সিস্টেমের এই ভার্সনটি প্রদত্ত নথিভুক্তকরণের মোড সমর্থন করে না। আপনি সর্বাধুনিক ভার্সনটি চালাচ্ছেন কিনা দেখুন।</translation>
 <translation id="4525382759303819021">Play স্টোর অ্যাপ সম্পর্কে লেটেস্ট আপডেট ও প্রস্তাবনা পান</translation>
 <translation id="4530494379350999373">উৎস</translation>
-<translation id="4533846798469727141">এখন "Hey Google" বলুন</translation>
+<translation id="4533846798469727141">এখন "হ্যালো Google" বলুন</translation>
 <translation id="4533985347672295764">CPU সময়</translation>
 <translation id="4534661889221639075">আবার চেষ্টা করুন।</translation>
 <translation id="4535127706710932914">ডিফল্ট প্রোফাইল</translation>
@@ -3810,7 +3807,7 @@
 <translation id="6840184929775541289">একটি শংসাপত্র কর্তৃপক্ষ নয়</translation>
 <translation id="6840313690797192085">$১ PB</translation>
 <translation id="6841186874966388268">ত্রুটিগুলি</translation>
-<translation id="6843423766595476978">Ok Google সেট হয়ে গেছে</translation>
+<translation id="6843423766595476978">হ্যালো Google ব্যবহারের জন্য প্রস্তুত</translation>
 <translation id="6845038076637626672">সর্বাধিক খুলুন</translation>
 <translation id="685040365210406336">কোনও পরিবর্তন করবেন না</translation>
 <translation id="6851497530878285708">অ্যাপ সক্ষম করা হয়েছে</translation>
@@ -4735,7 +4732,7 @@
 <translation id="8249296373107784235">বাতিল</translation>
 <translation id="8249672078237421304">আপনি যে ভাষাতে পড়েন সেই ভাষাতে না থাকা পৃষ্ঠাগুলি অনুবাদ করার প্রস্তাব দিন</translation>
 <translation id="8251578425305135684">থাম্বনেল সরানো হয়েছে৷</translation>
-<translation id="8252569384384439529">আপলোড হচ্ছে...</translation>
+<translation id="8252569384384439529">আপলোড হচ্ছে…</translation>
 <translation id="8253198102038551905">নেটওয়ার্কের প্রোপাটিজ পেতে '+'-এ ক্লিক করুন</translation>
 <translation id="825483282309623688">আপনার ডেটা পুনরুদ্ধার করতে, আপনার একটি ইন্টারনেট সংযোগ প্রয়োজন।</translation>
 <translation id="8256319818471787266">স্পার্কি</translation>
@@ -5332,7 +5329,6 @@
 <translation id="9214520840402538427">ওহো! প্রারম্ভিক ইনস্টলেশন-সময়ের বৈশিষ্ট্যাবলীর সময় ফুরিয়েছে৷ দয়া করে আপনার সহায়ক প্রতিনিধির সঙ্গে যোগাযোগ করুন৷</translation>
 <translation id="9214695392875603905">কাপ কেক</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" জোড়া হয়েছে</translation>
-<translation id="9215934040295798075">ওয়ালপেপার সেট করুন</translation>
 <translation id="9218430445555521422">ডিফল্ট হিসেবে সেট করুন</translation>
 <translation id="9219103736887031265">ছবিগুলি</translation>
 <translation id="9220525904950070496">অ্যাকাউন্ট সরান</translation>

@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{మరియు మరో 1 వెబ్ పేజీ}other{మరియు మరో # వెబ్ పేజీలు}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947"><ph name="CREDIT_CARD" /> కార్డ్ CVCని నమోదు చేయండి. మీరు నిర్ధారించిన తర్వాత, మీ Google చెల్లింపుల ఖాతా నుండి కార్డ్ వివరాలు ఈ సైట్‌తో షేర్ చేయబడతాయి.</translation>
 <translation id="4923417429809017348">ఈ పేజీ తెలియని భాష నుండి <ph name="LANGUAGE_LANGUAGE" />కు అనువదించబడింది</translation>
 <translation id="4923459931733593730">చెల్లింపు</translation>
 <translation id="4926049483395192435">ఖచ్చితంగా పేర్కొనాలి.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">ప్రావిన్స్</translation>
 <translation id="5098332213681597508">ఇది మీ Google ఖాతాలో ఉన్న పేరు</translation>
 <translation id="5115563688576182185">(64-బిట్)</translation>
-<translation id="5121084798328133320">మీరు నిర్ధారించిన తర్వాత, మీ Google చెల్లింపుల ఖాతా నుండి కార్డ్ వివరాలు ఈ సైట్‌తో షేర్ చేయబడతాయి.</translation>
 <translation id="5128122789703661928">ఈ పేరు కలిగిన సెషన్‌ని తొలగించలేరు.</translation>
 <translation id="5135404736266831032">చిరునామాలను నిర్వహించండి...</translation>
 <translation id="5141240743006678641">మీ Google ఆధారాలతో సమకాలీకరించబడిన పాస్‌వర్డ్‌లను ఎన్‌క్రిప్ట్ చేయండి</translation>
@@ -988,7 +986,7 @@
 <translation id="7758069387465995638">ఫైర్‌వాల్ లేదా యాంటీవైరస్ సాఫ్ట్‌వేర్ కనెక్షన్‌ను బ్లాక్ చేసి ఉండవచ్చు.</translation>
 <translation id="7759163816903619567">ప్రదర్శన డొమైన్:</translation>
 <translation id="7761701407923456692">సర్వర్ సర్టిఫికెట్ URLతో సరిపోలలేదు.</translation>
-<translation id="7763386264682878361">చెల్లింపు మానిఫెస్ట్ అన్వయ నియమం</translation>
+<translation id="7763386264682878361">చెల్లింపు మానిఫెస్ట్ పార్స‌ర్‌</translation>
 <translation id="7764225426217299476">చిరునామాను జోడించు</translation>
 <translation id="777702478322588152">అధికారిక నివాసం</translation>
 <translation id="7791543448312431591">జోడించు</translation>
@@ -1063,7 +1061,7 @@
 <translation id="8267698848189296333"><ph name="USERNAME" />గా సైన్ ఇన్ చేస్తోంది</translation>
 <translation id="8286036467436129157">సైన్ ఇన్ చేయండి</translation>
 <translation id="8288807391153049143">సర్టిఫికేట్‌ని చూపు</translation>
-<translation id="8289355894181816810">మీకు దీని గురించి ఖచ్చితంగా తెలియకుంటే మీ నెట్‌వర్క్ నిర్వాహకుని సంప్రదించండి.</translation>
+<translation id="8289355894181816810">మీకు దీని గురించి ఖచ్చితంగా తెలియకుంటే మీ నెట్‌వర్క్ నిర్వాహకుడిని సంప్రదించండి.</translation>
 <translation id="8293206222192510085">బుక్‌మార్క్‌ను జోడించండి</translation>
 <translation id="8294431847097064396">మూలం</translation>
 <translation id="8298115750975731693">మీరు ఉపయోగిస్తున్న Wi-Fi (<ph name="WIFI_NAME" />)కి మీరు <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ని సందర్శించడం అవసరం.</translation>
@@ -1147,7 +1145,6 @@
 <translation id="8932102934695377596">మీ గడియారం సమయం గతంలో ఉంది</translation>
 <translation id="893332455753468063">పేరుని జోడించండి</translation>
 <translation id="8938939909778640821">ఆమోదించబడిన క్రెడిట్ మరియు ప్రీపెయిడ్ కార్డ్‌లు</translation>
-<translation id="8952525071319348207">మీ కార్డ్ వివరాలను అప్‌డేట్ చేయడానికి <ph name="CREDIT_CARD" /> కార్డ్ గడువు ముగింపు తేదీ మరియు CVCని నమోదు చేయండి. మీరు నిర్ధారించిన తర్వాత, మీ Google చెల్లింపుల ఖాతా నుండి కార్డ్ వివరాలు ఈ సైట్‌తో షేర్ చేయబడతాయి.</translation>
 <translation id="8957210676456822347">క్యాప్టివ్ పోర్టల్ ప్రామాణీకరణ</translation>
 <translation id="8971063699422889582">సర్వర్ యొక్క ప్రమాణపత్రం గడువు ముగిసింది.</translation>
 <translation id="8975012916872825179">ఫోన్ నంబర్‌లు, ఇమెయిల్ చిరునామాలు మరియు బట్వాడా చిరునామాలు లాంటి సమాచారం ఉంటుంది</translation>

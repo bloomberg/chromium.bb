@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">同期設定を表示</translation>
 <translation id="1124772482545689468">ユーザー</translation>
 <translation id="1125550662859510761">表示上のサイズ: <ph name="WIDTH" />x<ph name="HEIGHT" />（ネイティブ）</translation>
-<translation id="1127216846847548354">音声認識</translation>
 <translation id="1128109161498068552">システム エクスクルーシブ メッセージを使用して MIDI デバイスにアクセスすることをサイトに許可しない</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">検索エンジンの編集</translation>
@@ -775,7 +774,7 @@
 <translation id="2144536955299248197">証明書ビューア: <ph name="CERTIFICATE_NAME" /></translation>
 <translation id="2148219725039824548">共有フォルダのマウントエラー。指定された共有フォルダがネットワークで見つかりませんでした。</translation>
 <translation id="2148756636027685713">フォーマットが完了しました</translation>
-<translation id="2148892889047469596">タブをキャストしています</translation>
+<translation id="2148892889047469596">タブをキャスト</translation>
 <translation id="2149850907588596975">パスワードとフォーム</translation>
 <translation id="2150139952286079145">送信先の検索</translation>
 <translation id="2150661552845026580">「<ph name="EXTENSION_NAME" />」を追加しますか？</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">Google アシスタントの設定</translation>
 <translation id="3496213124478423963">縮小</translation>
 <translation id="3505030558724226696">デバイスのアクセスを取り消す</translation>
-<translation id="3506093155988721483">キーボードの代わりに音声入力でアシスタントを起動する</translation>
 <translation id="3507421388498836150">「<ph name="EXTENSION_NAME" />」の現在の権限</translation>
 <translation id="3507547268929739059">Chromebook から Linux アプリを削除する</translation>
 <translation id="3507888235492474624">Bluetooth デバイスを再スキャン</translation>
@@ -2061,7 +2059,6 @@
 <translation id="4100733287846229632">端末の空き領域が非常に少なくなっています</translation>
 <translation id="4103091233824664032">画面ロックとログインを設定するにはパスワードを入力します</translation>
 <translation id="4104163789986725820">エクスポート(&amp;X)</translation>
-<translation id="4105563239298244027">Google ドライブは 1TB まで無料</translation>
 <translation id="4107048419833779140">ストレージ デバイスの認識と取り外し</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" />（<ph name="USER_EMAIL" />）にウィンドウを移動</translation>
 <translation id="4110895898888439383">ハイ コントラスト モードでウェブをブラウジングする</translation>
@@ -3794,7 +3791,7 @@
 <translation id="6812841287760418429">変更を保持</translation>
 <translation id="6817174620439930047">サイトがシステム エクスクルーシブ メッセージを使用して MIDI デバイスにアクセスする際に確認する（推奨）</translation>
 <translation id="6820687829547641339">gzip で圧縮された tar アーカイブ</translation>
-<translation id="682123305478866682">デスクトップをキャストしています</translation>
+<translation id="682123305478866682">デスクトップをキャスト</translation>
 <translation id="6823506025919456619">デバイスを見るには Chrome にログインする必要があります</translation>
 <translation id="6824564591481349393">メール アドレスをコピー(&amp;E)</translation>
 <translation id="6825184156888454064">名前順</translation>
@@ -5337,7 +5334,6 @@
 <translation id="9214520840402538427">installation-time 属性の初期化がタイムアウトしました。サポート担当者にお問い合わせください。</translation>
 <translation id="9214695392875603905">カップケーキ</translation>
 <translation id="9215293857209265904">「<ph name="EXTENSION_NAME" />」が追加されました</translation>
-<translation id="9215934040295798075">壁紙を設定</translation>
 <translation id="9218430445555521422">デフォルトとして設定</translation>
 <translation id="9219103736887031265">画像</translation>
 <translation id="9220525904950070496">アカウントを削除</translation>

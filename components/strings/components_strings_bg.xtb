@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{и още 1 уеб страница}other{и още # уеб страници}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Въведете кода за проверка за <ph name="CREDIT_CARD" />. След като потвърдите картата си, данните за нея от профила ви в Google Payments ще бъдат споделени с този сайт.</translation>
 <translation id="4923417429809017348">Тази страница е преведена от непознат език на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Плащане</translation>
 <translation id="4926049483395192435">Трябва да се посочи.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Провинция</translation>
 <translation id="5098332213681597508">Това име е от профила ви в Google.</translation>
 <translation id="5115563688576182185">(64 бита)</translation>
-<translation id="5121084798328133320">След като потвърдите картата си, данните за нея от профила ви в Google Payments ще бъдат споделени с този сайт.</translation>
 <translation id="5128122789703661928">Сесията с това име не е валидна за изтриване.</translation>
 <translation id="5135404736266831032">Управление на адресите...</translation>
 <translation id="5141240743006678641">Синхронизираните пароли да се шифроват с идентификационните ви данни за Google</translation>
@@ -1147,7 +1145,6 @@
 <translation id="8932102934695377596">Часовникът ви е назад</translation>
 <translation id="893332455753468063">Добавяне на име</translation>
 <translation id="8938939909778640821">Приемани кредитни и предплатени карти</translation>
-<translation id="8952525071319348207">Въведете датата на валидност и кода за проверка за <ph name="CREDIT_CARD" />, за да актуализирате данните за картата си. След като я потвърдите, данните за нея от профила ви в Google Payments ще бъдат споделени с този сайт.</translation>
 <translation id="8957210676456822347">Упълномощаване в портал за удостоверяване</translation>
 <translation id="8971063699422889582">Сертификатът на сървъра е с изтекла валидност.</translation>
 <translation id="8975012916872825179">Включва информация като телефонни номера, имейл адреси и адреси за доставка</translation>

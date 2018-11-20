@@ -2110,11 +2110,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6689792153960219308">Hardverállapot jelentése</translation>
 <translation id="6698632841807204978">Monokróm nyomtatás engedélyezése</translation>
 <translation id="6699880231565102694">A kétlépcsős azonosítás engedélyezése távoli hozzáférésű gazdagépekhez</translation>
-<translation id="6724842112053619797">Ha engedélyezi ezt a beállítást, a rendszer a(z) <ph name="PRODUCT_NAME" />-profilokban tárolt beállításokat (például könyvjelzők, automatikus kitöltési adatok, jelszavak stb.) a Barangoló felhasználói profil mappájában, illetve a rendszergazda által, a(z) <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> házirendnek megfelelően megadott helyen tárolt fájlba is beírja. A házirend engedélyezésével letiltja a felhőalapú szinkronizálást.
-
-      Ha a házirend le van tiltva, vagy ha nincs beállítva, a rendszer kizárólag a normál helyi profilokat használja.
-
-      A(z) <ph name="SYNC_DISABLED_POLICY_NAME" /> házirend letilt minden adatszinkronizálást, felülbírálva a RoamingProfileSupportEnabled házirendet.</translation>
 <translation id="6731757988219967594">Legfelső szintű (de nem iframe keretekbe beágyazott) webhelyek szűrése felnőtteknek szóló tartalmak szerint</translation>
 <translation id="6734521799274931721">A ChromeOS rendelkezésre állására vonatkozó hálózati fájlmegosztásokat szabályozza</translation>
 <translation id="6735701345096330595">A helyesírás-ellenőrzéshez használt nyelvek engedélyezésének kényszerítése</translation>

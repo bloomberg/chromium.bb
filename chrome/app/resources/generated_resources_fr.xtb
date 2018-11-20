@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Afficher les paramètres de synchronisation</translation>
 <translation id="1124772482545689468">Utilisateur</translation>
 <translation id="1125550662859510761">La résolution est de <ph name="WIDTH" /> x <ph name="HEIGHT" /> (native)</translation>
-<translation id="1127216846847548354">Activation des commandes vocales</translation>
 <translation id="1128109161498068552">N'autoriser aucun site à utiliser des messages spécifiques au système pour accéder aux appareils MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Modifier le moteur de recherche</translation>
@@ -616,7 +615,7 @@
 <translation id="1880905663253319515">Supprimer le certificat "<ph name="CERTIFICATE_NAME" />" ?</translation>
 <translation id="1886996562706621347">Permettre aux sites de demander l'autorisation de devenir gestionnaires par défaut des protocoles (recommandé)</translation>
 <translation id="1887442540531652736">Erreur de connexion</translation>
-<translation id="1887597546629269384">Dites à nouveau "Dis Google"</translation>
+<translation id="1887597546629269384">Dites à nouveau "Ok Google"</translation>
 <translation id="1887850431809612466">Version du matériel</translation>
 <translation id="1889984860246851556">Ouvrir les paramètres de proxy</translation>
 <translation id="1890674179660343635">&lt;span&gt;Identifiant&lt;/span&gt; : <ph name="EXTENSION_ID" /></translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">Paramètres de l'Assistant Google</translation>
 <translation id="3496213124478423963">Zoom arrière</translation>
 <translation id="3505030558724226696">Retirer les droits d'accès aux appareils</translation>
-<translation id="3506093155988721483">Utiliser la saisie vocale au lieu du clavier pour démarrer l'Assistant</translation>
 <translation id="3507421388498836150">Autorisations actuelles pour <ph name="EXTENSION_NAME" /></translation>
 <translation id="3507547268929739059">Supprimer les applications Linux pour Chromebook</translation>
 <translation id="3507888235492474624">Relancer la recherche d'appareils Bluetooth</translation>
@@ -2061,7 +2059,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4100733287846229632">Très peu d'espace disponible sur l'appareil</translation>
 <translation id="4103091233824664032">Saisissez votre mot de passe pour configurer le verrouillage de l'écran et la connexion</translation>
 <translation id="4104163789986725820">E&amp;xporter...</translation>
-<translation id="4105563239298244027">Profitez d'un téraoctet d'espace de stockage gratuit grâce à Google Drive</translation>
 <translation id="4107048419833779140">Identifier et exclure des périphériques de stockage</translation>
 <translation id="4109135793348361820">Déplacer la fenêtre vers <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Parcourir le Web en mode Contraste élevé</translation>
@@ -2289,7 +2286,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4524832533047962394">Le mode d'enregistrement proposé n'est pas compatible avec cette version du système d'exploitation. Vérifiez que vous utilisez bien la version la plus récente.</translation>
 <translation id="4525382759303819021">Obtenir les dernières actualités et recommandations concernant les applications Play Store</translation>
 <translation id="4530494379350999373">Origine</translation>
-<translation id="4533846798469727141">Maintenant, dites "Dis Google"</translation>
+<translation id="4533846798469727141">Maintenant, dites "OK Google"</translation>
 <translation id="4533985347672295764">Temps CPU</translation>
 <translation id="4534661889221639075">Réessayez.</translation>
 <translation id="4535127706710932914">Profil par défaut</translation>
@@ -5337,7 +5334,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9214520840402538427">Petit problème… Le délai alloué à l'initialisation des attributs de temps d'installation a expiré. Veuillez contacter le service d'assistance.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" ajoutée</translation>
-<translation id="9215934040295798075">Définir le fond d'écran</translation>
 <translation id="9218430445555521422">Définir comme navigateur par défaut</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="9220525904950070496">Supprimer le compte</translation>

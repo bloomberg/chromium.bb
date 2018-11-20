@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{och en till webbsida}other{och # till webbsidor}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Ange CVC-koden för <ph name="CREDIT_CARD" />. När du bekräftar delas kortuppgifter från Google Paymens-betalningskonto med webbplatsen.</translation>
 <translation id="4923417429809017348">Sidan har översatts från ett okänt språk till <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Betalning</translation>
 <translation id="4926049483395192435">Värdet måste anges.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Provins</translation>
 <translation id="5098332213681597508">Det här namnet har hämtats från Google-kontot.</translation>
 <translation id="5115563688576182185">(64 bitar)</translation>
-<translation id="5121084798328133320">När du bekräftar delas kortuppgifter från Google Payments-konto med webbplatsen.</translation>
 <translation id="5128122789703661928">Sessionen med det här namnet går inte att radera.</translation>
 <translation id="5135404736266831032">Hantera adresser …</translation>
 <translation id="5141240743006678641">Kryptera synkroniserade lösenord med dina inloggningsuppgifter för Google</translation>
@@ -1148,7 +1146,6 @@ Mer information:
 <translation id="8932102934695377596">Klockan går efter</translation>
 <translation id="893332455753468063">Lägg till namn</translation>
 <translation id="8938939909778640821">Godkända kreditkort och förbetalda kort</translation>
-<translation id="8952525071319348207">Uppdatera kortinformationen genom att ange utgångsdatumet och CVC-koden för <ph name="CREDIT_CARD" />. När du bekräftar delas kortuppgifter från Google Payments-konto med webbplatsen.</translation>
 <translation id="8957210676456822347">Auktorisering av infångstportal</translation>
 <translation id="8971063699422889582">Servercertifikatet har gått ut.</translation>
 <translation id="8975012916872825179">Gäller uppgifter som telefonnummer, e-postadresser och leveransadresser</translation>

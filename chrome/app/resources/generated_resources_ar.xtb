@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">عرض إعدادات المزامنة</translation>
 <translation id="1124772482545689468">المستخدم</translation>
 <translation id="1125550662859510761">‏تبدو كـ <ph name="WIDTH" /> x <ph name="HEIGHT" /> (أصلية)</translation>
-<translation id="1127216846847548354">تفعيل الصوت</translation>
 <translation id="1128109161498068552">‏عدم السماح لأي موقع باستخدام الرسائل الحصرية في النظام للدخول إلى أجهزة MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">تعديل محرّك البحث</translation>
@@ -1305,7 +1304,7 @@
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (الإضافة متوفرة)</translation>
 <translation id="2961695502793809356">انقر للانتقال إلى الأمام واضغط لمشاهدة السجل</translation>
 <translation id="2963151496262057773">المكوّن الإضافي التالي غير مستجيب: <ph name="PLUGIN_NAME" />‏، هل تريد إيقافه؟</translation>
-<translation id="2966937470348689686">‏إدارة التفضيلات في Android</translation>
+<translation id="2966937470348689686">‏إدارة إعدادات Android المفضّلة</translation>
 <translation id="2972557485845626008">البرامج الثابتة</translation>
 <translation id="2972581237482394796">إعا&amp;دة</translation>
 <translation id="2972642118232180842">تشغيل المحتوى المهم فقط (موصى به)</translation>
@@ -1641,7 +1640,6 @@
 <translation id="3495660573538963482">‏إعدادات مساعد Google</translation>
 <translation id="3496213124478423963">تصغير</translation>
 <translation id="3505030558724226696">إبطال الوصول إلى الجهاز</translation>
-<translation id="3506093155988721483">‏استخدام الكلام بدلاً من لوحة المفاتيح عند بدء "مساعد Google"</translation>
 <translation id="3507421388498836150">الأذونات الحالية لـ "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507547268929739059">‏إزالة تطبيقات Linux لـ Chromebook</translation>
 <translation id="3507888235492474624">إعادة فحص أجهزة البلوتوث</translation>
@@ -2056,7 +2054,6 @@
 <translation id="4100733287846229632">المساحة على الجهاز منخفضة للغاية</translation>
 <translation id="4103091233824664032">يُرجى إدخال كلمة مرورك لتهيئة قفل الشاشة وتسجيل الدخول</translation>
 <translation id="4104163789986725820">ت&amp;صدير...</translation>
-<translation id="4105563239298244027">‏احصل على 1 تيرابايت مجانًا مع Google Drive</translation>
 <translation id="4107048419833779140">تحديد أجهزة التخزين وإخراجها</translation>
 <translation id="4109135793348361820">نقل النافذة إلى <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">تصفُّح الويب في وضع التباين العالي</translation>
@@ -5332,7 +5329,6 @@
 <translation id="9214520840402538427">عفوًا!  لقد انتهت مهلة بدء تشغيل سمات وقت التثبيت. يُرجى الاتصال بممثل الدعم.</translation>
 <translation id="9214695392875603905">كب كيك</translation>
 <translation id="9215293857209265904">تمت إضافة "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="9215934040295798075">تعيين خلفية</translation>
 <translation id="9218430445555521422">تعيين كافتراضي</translation>
 <translation id="9219103736887031265">صور</translation>
 <translation id="9220525904950070496">إزالة الحساب</translation>

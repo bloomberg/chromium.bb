@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />، <ph name="TYPE_2" />، <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{وصفحة ويب واحدة إضافية}zero{و# صفحة ويب إضافية}two{وصفحتا ويب (#) إضافيتان}few{و# صفحات ويب إضافية}many{و# صفحة ويب إضافية}other{و# صفحة ويب إضافية}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">‏أدخل رمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" />. وبعد التأكيد، ستتم مشاركة تفاصيل البطاقة من حساب دفعات Google مع هذا الموقع.</translation>
 <translation id="4923417429809017348">تمت ترجمة هذه الصفحة من لغة غير معروفة إلى اللغة <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">الدفع</translation>
 <translation id="4926049483395192435">يجب تحديدها.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">الإقليم</translation>
 <translation id="5098332213681597508">‏هذا الاسم من حسابك على Google.</translation>
 <translation id="5115563688576182185">(64 بت)</translation>
-<translation id="5121084798328133320">‏بعد التأكيد، ستتم مشاركة تفاصيل البطاقة من حساب دفعات Google مع هذا الموقع.</translation>
 <translation id="5128122789703661928">الجلسة التي تحمل هذا الاسم غير صالحة للحذف.</translation>
 <translation id="5135404736266831032">إدارة العناوين...</translation>
 <translation id="5141240743006678641">‏تشفير كلمات المرور المتزامنة باستخدام بيانات اعتماد Google</translation>
@@ -1148,7 +1146,6 @@
 <translation id="8932102934695377596">توقيت ساعتك متأخر عن الوقت الحالي</translation>
 <translation id="893332455753468063">إضافة اسم</translation>
 <translation id="8938939909778640821">بطاقات الائتمان وبطاقات الدفع المسبق المقبولة</translation>
-<translation id="8952525071319348207">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /> لتحديث تفاصيل بطاقتك. وبعد التأكيد، ستتم مشاركة تفاصيل البطاقة من حساب دفعات Google مع هذا الموقع.</translation>
 <translation id="8957210676456822347">تفويض المدخل المقيد</translation>
 <translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>
 <translation id="8975012916872825179">يتضمن معلومات مثل أرقام الهواتف وعناوين البريد الإلكتروني وعناوين الشحن.</translation>

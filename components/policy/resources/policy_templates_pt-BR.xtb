@@ -2102,11 +2102,6 @@
 <translation id="6689792153960219308">Informar status de hardware</translation>
 <translation id="6698632841807204978">Ativar impressão monocromática</translation>
 <translation id="6699880231565102694">Ativar autenticação de dois fatores para hosts de acesso remoto</translation>
-<translation id="6724842112053619797">Se você ativar esta configuração, as definições armazenadas nos perfis do <ph name="PRODUCT_NAME" />, como favoritos, dados de preenchimento automático, senhas, entre outros, serão gravadas em um arquivo armazenado na pasta Perfil de usuário de roaming ou em um local especificado pelo administrador por meio da política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. A ativação dessa política desativa a sincronização em nuvem.
-
-      Se essa política for desativada ou não for configurada, apenas os perfis locais normais serão usados.
-
-      A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados por meio da modificação de RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrar sites de nível superior (exceto iframes incorporados) com conteúdo adulto</translation>
 <translation id="6734521799274931721">Controla o compartilhamento de arquivos de rede para disponibilidade do Chrome OS</translation>
 <translation id="6735701345096330595">Forçar a ativação da correção ortográfica de idiomas</translation>

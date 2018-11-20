@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> และ <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{และหน้าเว็บอีก 1 หน้า}other{และหน้าเว็บอีก # หน้า}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">ป้อน CVC สำหรับ <ph name="CREDIT_CARD" /> เมื่อยืนยันแล้ว ระบบจะแชร์รายละเอียดของบัตรจากบัญชี Google Payments กับเว็บไซต์นี้</translation>
 <translation id="4923417429809017348">หน้านี้แปลจากภาษาที่ไม่รู้จักเป็นภาษา <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">การชำระเงิน</translation>
 <translation id="4926049483395192435">ต้องระบุ</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">จังหวัด</translation>
 <translation id="5098332213681597508">ชื่อนี้มาจากบัญชี Google ของคุณ</translation>
 <translation id="5115563688576182185">(64 บิต)</translation>
-<translation id="5121084798328133320">เมื่อยืนยันแล้ว ระบบจะแชร์รายละเอียดของบัตรจากบัญชี Google Payments กับเว็บไซต์นี้</translation>
 <translation id="5128122789703661928">ลบเซสชันที่ใช้ชื่อนี้ไม่ได้</translation>
 <translation id="5135404736266831032">จัดการที่อยู่...</translation>
 <translation id="5141240743006678641">เข้ารหัสผ่านที่ซิงค์ด้วยข้อมูลรับรอง Google ของคุณ</translation>
@@ -1148,7 +1146,6 @@
 <translation id="8932102934695377596">นาฬิกาช้าเกินไป</translation>
 <translation id="893332455753468063">เพิ่มชื่อ</translation>
 <translation id="8938939909778640821">บัตรเครดิตและบัตรเติมเงินที่ยอมรับ</translation>
-<translation id="8952525071319348207">ป้อนวันที่หมดอายุและ CVC สำหรับ <ph name="CREDIT_CARD" /> เพื่ออัปเดตรายละเอียดของบัตร เมื่อยืนยันแล้ว ระบบจะแชร์รายละเอียดของบัตรจากบัญชี Google Payments กับเว็บไซต์นี้</translation>
 <translation id="8957210676456822347">การให้สิทธิ์แคปทีฟพอร์ทัล</translation>
 <translation id="8971063699422889582">ใบรับรองของเซิร์ฟเวอร์หมดอายุแล้ว</translation>
 <translation id="8975012916872825179">รวมข้อมูล เช่น หมายเลขโทรศัพท์ ที่อยู่อีเมล และที่อยู่สำหรับจัดส่ง</translation>

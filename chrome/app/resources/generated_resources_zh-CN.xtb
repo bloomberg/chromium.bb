@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">显示同步设置</translation>
 <translation id="1124772482545689468">用户</translation>
 <translation id="1125550662859510761">有效分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" />（原生）</translation>
-<translation id="1127216846847548354">启动语音操作</translation>
 <translation id="1128109161498068552">禁止任何网站使用系统专有消息访问 MIDI 设备</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">修改搜索引擎</translation>
@@ -1636,7 +1635,6 @@
 <translation id="3495660573538963482">Google 助理设置</translation>
 <translation id="3496213124478423963">缩小</translation>
 <translation id="3505030558724226696">撤消对设备的访问权限</translation>
-<translation id="3506093155988721483">使用语音（而非键盘）启动 Google 助理</translation>
 <translation id="3507421388498836150">“<ph name="EXTENSION_NAME" />”目前拥有的权限</translation>
 <translation id="3507547268929739059">从 Chromebook 中移除 Linux 应用</translation>
 <translation id="3507888235492474624">重新扫描蓝牙设备</translation>
@@ -2053,7 +2051,6 @@
 <translation id="4100733287846229632">设备存储空间严重不足</translation>
 <translation id="4103091233824664032">需输入您的密码，才能配置屏幕锁定和登录</translation>
 <translation id="4104163789986725820">导出(&amp;X)...</translation>
-<translation id="4105563239298244027">获取 1 TB 免费的 Google 云端硬盘存储空间</translation>
 <translation id="4107048419833779140">识别并弹出存储设备</translation>
 <translation id="4109135793348361820">将窗口移至<ph name="USER_NAME" />(<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">以高反差模式浏览网页</translation>
@@ -5320,7 +5317,6 @@
 <translation id="9214520840402538427">糟糕！安装时间属性的初始化已过期，请与您的支持代表联系。</translation>
 <translation id="9214695392875603905">纸杯蛋糕</translation>
 <translation id="9215293857209265904">已添加“<ph name="EXTENSION_NAME" />”</translation>
-<translation id="9215934040295798075">设置壁纸</translation>
 <translation id="9218430445555521422">设为默认浏览器</translation>
 <translation id="9219103736887031265">图片</translation>
 <translation id="9220525904950070496">移除帐号</translation>

@@ -2106,11 +2106,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6689792153960219308">Informar estado de hardware</translation>
 <translation id="6698632841807204978">Habilitar la impresión monocromática</translation>
 <translation id="6699880231565102694">Habilitar autenticación de dos factores para los hosts de acceso remoto.</translation>
-<translation id="6724842112053619797">Si habilitas esta configuración, los datos almacenados en los perfiles de <ph name="PRODUCT_NAME" />, como los favoritos, los datos de Autocompletar, las contraseñas, etc. también se guardarán en un archivo almacenado en la carpeta de perfil del usuario Roaming o una ubicación que el administrador especifique mediante la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Si habilitas esta política, se inhabilita la sincronización en la nube.
-
-      Si esta política se inhabilita o no se establece, solo se usarán los perfiles locales comunes.
-
-      La política <ph name="SYNC_DISABLED_POLICY_NAME" /> inhabilita la sincronización de todos los datos y anula la política RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Aplicar filtros de contenido para adultos a los sitios principales (pero no a los iframes incorporados)</translation>
 <translation id="6734521799274931721">Controlar la disponibilidad de "Network File Shares" para el Sistema operativo Chrome</translation>
 <translation id="6735701345096330595">Habilitar la corrección ortográfica de idiomas</translation>

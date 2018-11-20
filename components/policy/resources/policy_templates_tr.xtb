@@ -2170,11 +2170,6 @@ politikayı geçersiz kılamaz.
 <translation id="6689792153960219308">Donanım durumunu bildir</translation>
 <translation id="6698632841807204978">Tek renk yazdırmayı etkinleştir</translation>
 <translation id="6699880231565102694">Uzaktan erişim ana makineleri için iki öğeli kimlik doğrulamayı etkinleştir</translation>
-<translation id="6724842112053619797">Bu ayarı etkinleştirirseniz <ph name="PRODUCT_NAME" /> profillerinde depolanan yer işaretleri, otomatik doldurma verileri, şifreler gibi ayarlar Dolaşım kullanıcı profili klasöründe veya Yönetici tarafından <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> politikası aracılığıyla belirlenen bir konumda depolanan bir dosyaya daha yazılır. Bu politikanın etkinleştirilmesi halinde bulut senkronizasyonu devre dışı bırakılır.
-
-      Bu politika devre dışı bırakılırsa veya ayarlanmazsa yalnızca normal yerel profiller kullanılır.
-
-      <ph name="SYNC_DISABLED_POLICY_NAME" /> politikası, RoamingProfileSupportEnabled'ı geçersiz kılarak tüm veri senkronizasyonunu devre dışı bırakır.</translation>
 <translation id="6731757988219967594">Üst düzey siteleri (ancak yerleştirilmiş iframe'leri değil) yetişkinlere yönelik içerik için filtrele</translation>
 <translation id="6734521799274931721">ChromeOS için Ağ Üzerinde Dosya Paylaşımı'nın kullanılabilirliğini kontrol eder</translation>
 <translation id="6735701345096330595">Yazım denetimi dillerini etkinleştirmeye zorla</translation>

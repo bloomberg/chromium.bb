@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">แสดงการตั้งค่าการซิงค์</translation>
 <translation id="1124772482545689468">ผู้ใช้</translation>
 <translation id="1125550662859510761">ดูเหมือน <ph name="WIDTH" /> x <ph name="HEIGHT" /> (ค่าดั้งเดิม)</translation>
-<translation id="1127216846847548354">การเปิดใช้งานด้วยเสียง</translation>
 <translation id="1128109161498068552">ไม่อนุญาตให้ไซต์ใดๆ ใช้ข้อความเฉพาะของระบบในการเข้าถึงอุปกรณ์ MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">แก้ไขเครื่องมือค้นหา</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">การตั้งค่า Google Assistant</translation>
 <translation id="3496213124478423963">ย่อ</translation>
 <translation id="3505030558724226696">เพิกถอนสิทธิ์การเข้าถึงอุปกรณ์</translation>
-<translation id="3506093155988721483">ใช้เสียงแทนแป้นพิมพ์เมื่อเริ่มใช้งาน Assistant</translation>
 <translation id="3507421388498836150">สิทธิ์ปัจจุบันสำหรับ "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507547268929739059">นำแอป Linux สำหรับ Chromebook ออก</translation>
 <translation id="3507888235492474624">สแกนหาอุปกรณ์บลูทูธอีกครั้ง</translation>
@@ -2061,7 +2059,6 @@
 <translation id="4100733287846229632">พื้นที่ดิสก์เกือบเต็มแล้ว</translation>
 <translation id="4103091233824664032">ป้อนรหัสผ่านเพื่อกำหนดค่าการล็อกหน้าจอและการลงชื่อเข้าใช้</translation>
 <translation id="4104163789986725820">ส่ง&amp;ออก</translation>
-<translation id="4105563239298244027">รับ 1 TB ฟรีๆ ด้วย Google ไดรฟ์</translation>
 <translation id="4107048419833779140">ระบุและยกเลิกการต่อเชื่อมอุปกรณ์จัดเก็บข้อมูล</translation>
 <translation id="4109135793348361820">ย้ายหน้าต่างไปยัง <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">ท่องเว็บในโหมดคอนทราสต์สูง</translation>
@@ -5336,7 +5333,6 @@
 <translation id="9214520840402538427">อ๊ะ! การเริ่มแอตทริบิวต์เวลาการติดตั้งได้หมดเวลาแล้ว โปรดติดต่อตัวแทนการสนับสนุึนของคุณ</translation>
 <translation id="9214695392875603905">คัปเค้ก</translation>
 <translation id="9215293857209265904">เพิ่ม "<ph name="EXTENSION_NAME" />" แล้ว</translation>
-<translation id="9215934040295798075">ตั้งค่าวอลเปเปอร์</translation>
 <translation id="9218430445555521422">ตั้งเป็นค่าเริ่มต้น</translation>
 <translation id="9219103736887031265">ภาพ</translation>
 <translation id="9220525904950070496">ลบบัญชี</translation>

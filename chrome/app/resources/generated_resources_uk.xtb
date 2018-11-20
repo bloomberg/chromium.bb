@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Показати налаштування синхронізації</translation>
 <translation id="1124772482545689468">Користувач</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" />x<ph name="HEIGHT" /> (оригінальна)</translation>
-<translation id="1127216846847548354">Активація голосом</translation>
 <translation id="1128109161498068552">Заборонити всім сайтам використовувати виняткові повідомлення системи, щоб отримувати доступ до пристроїв MIDI</translation>
 <translation id="1128128132059598906">EAP – TTLS</translation>
 <translation id="1128591060186966949">Змінити пошукову систему</translation>
@@ -1306,7 +1305,7 @@
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (розширення встановлено)</translation>
 <translation id="2961695502793809356">Натисніть, щоб перейти далі; утримуйте, щоб переглянути історію</translation>
 <translation id="2963151496262057773">Плагін <ph name="PLUGIN_NAME" /> не відповідає. Зупинити?</translation>
-<translation id="2966937470348689686">Керуйте налаштуваннями Android</translation>
+<translation id="2966937470348689686">Змінити налаштування Android</translation>
 <translation id="2972557485845626008">Мікропрограма</translation>
 <translation id="2972581237482394796">&amp;Повторити</translation>
 <translation id="2972642118232180842">Запускати лише важливий вміст (рекомендовано)</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">Налаштування Google Асистента</translation>
 <translation id="3496213124478423963">Зменшити</translation>
 <translation id="3505030558724226696">Скасувати доступ до пристрою</translation>
-<translation id="3506093155988721483">Запускайте Асистент за допомогою голосу, а не клавіатури</translation>
 <translation id="3507421388498836150">Поточні дозволи розширення <ph name="EXTENSION_NAME" /></translation>
 <translation id="3507547268929739059">Видалити додатки Linux для Chromebook</translation>
 <translation id="3507888235492474624">Шукати пристрої Bluetooth знову</translation>
@@ -2061,7 +2059,6 @@
 <translation id="4100733287846229632">На пристрої дуже мало вільного місця</translation>
 <translation id="4103091233824664032">Введіть пароль, щоб налаштувати блокування екрана та вхід</translation>
 <translation id="4104163789986725820">Е&amp;кспортувати...</translation>
-<translation id="4105563239298244027">Отримайте безкоштовно 1 ТБ на Диску Google</translation>
 <translation id="4107048419833779140">Виявляти й вилучати пристрої пам’яті</translation>
 <translation id="4109135793348361820">Перемістити вікно на робочий стіл користувача <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Переглядати сторінки в режимі високого контрасту</translation>
@@ -3718,7 +3715,7 @@
 <translation id="6686817083349815241">Зберегти пароль</translation>
 <translation id="6690659332373509948">Неможливо проаналізувати файл: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Виберіть, якого контрольованого користувача додати на цей пристрій.</translation>
-<translation id="6691331417640343772">Керувати синхронізованими даними на інформаційній панелі Google</translation>
+<translation id="6691331417640343772">Керувати синхронізованими даними в Особистому кабінеті Google</translation>
 <translation id="6691936601825168937">&amp;Переслати</translation>
 <translation id="6697492270171225480">Показувати пропозиції схожих сторінок, коли не вдається знайти сторінку</translation>
 <translation id="6698810901424468597">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1" /> і <ph name="WEBSITE_2" /></translation>
@@ -5336,7 +5333,6 @@
 <translation id="9214520840402538427">На жаль, ініціалізація атрибутів часу встановлення минула. Зв’яжіться з представником служби підтримки.</translation>
 <translation id="9214695392875603905">Кекс</translation>
 <translation id="9215293857209265904">Додано розширення "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="9215934040295798075">Вибрати фоновий малюнок</translation>
 <translation id="9218430445555521422">Установити за умовчанням</translation>
 <translation id="9219103736887031265">Зображення</translation>
 <translation id="9220525904950070496">Видалення облікового запису</translation>

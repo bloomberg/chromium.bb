@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{e mais 1 página Web}other{e mais # páginas Web}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Introduza o Código de Segurança/CVC de <ph name="CREDIT_CARD" />. Depois de confirmar, os detalhes do cartão da conta do Google Payments são partilhados com este site.</translation>
 <translation id="4923417429809017348">Esta página foi traduzida de um idioma desconhecido para <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Pagamento</translation>
 <translation id="4926049483395192435">Tem de ser especificado.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Província</translation>
 <translation id="5098332213681597508">Este nome é proveniente da sua Conta Google.</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
-<translation id="5121084798328133320">Depois de confirmar, os detalhes do cartão da conta do Google Payments são partilhados com este site.</translation>
 <translation id="5128122789703661928">A sessão com este nome não é válida para eliminação.</translation>
 <translation id="5135404736266831032">Gerir endereços…</translation>
 <translation id="5141240743006678641">Encriptar palavras-passe sincronizadas com as credenciais Google</translation>
@@ -1147,7 +1145,6 @@ Detalhes adicionais:
 <translation id="8932102934695377596">O seu relógio está atrasado</translation>
 <translation id="893332455753468063">Adicionar nome</translation>
 <translation id="8938939909778640821">Cartões de crédito e pré-pagos admitidos</translation>
-<translation id="8952525071319348207">Introduza a data de validade e o Código de Segurança/CVC de <ph name="CREDIT_CARD" /> para atualizar os detalhes do cartão. Depois de confirmar, os detalhes do cartão da conta do Google Payments são partilhados com este site.</translation>
 <translation id="8957210676456822347">Autorização de portal cativo</translation>
 <translation id="8971063699422889582">O certificado do servidor expirou.</translation>
 <translation id="8975012916872825179">Inclui informações como números de telefone, endereços de email e moradas para envio</translation>

@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">顯示同步處理設定</translation>
 <translation id="1124772482545689468">使用者</translation>
 <translation id="1125550662859510761">螢幕解析度：<ph name="WIDTH" /> x <ph name="HEIGHT" /> (原生)</translation>
-<translation id="1127216846847548354">啟動語音操作</translation>
 <translation id="1128109161498068552">禁止任何網站使用系統專用訊息存取 MIDI 裝置</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">編輯搜尋引擎</translation>
@@ -1642,7 +1641,6 @@
 <translation id="3495660573538963482">Google 助理設定</translation>
 <translation id="3496213124478423963">縮小</translation>
 <translation id="3505030558724226696">撤銷裝置存取權</translation>
-<translation id="3506093155988721483">啟動 Google 助理時使用語音操作代替鍵盤操作</translation>
 <translation id="3507421388498836150">「<ph name="EXTENSION_NAME" />」目前擁有的權限</translation>
 <translation id="3507547268929739059">移除 Chromebook 的 Linux 應用程式</translation>
 <translation id="3507888235492474624">重新掃描藍牙裝置</translation>
@@ -2059,7 +2057,6 @@
 <translation id="4100733287846229632">裝置空間嚴重不足</translation>
 <translation id="4103091233824664032">如要設定螢幕鎖定和登入，請輸入你的密碼</translation>
 <translation id="4104163789986725820">匯出(&amp;X)...</translation>
-<translation id="4105563239298244027">取得 1 TB 的免費 Google 雲端硬碟空間</translation>
 <translation id="4107048419833779140">識別並退出儲存裝置</translation>
 <translation id="4109135793348361820">將視窗傳送給 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">以高對比模式瀏覽網路</translation>
@@ -5332,7 +5329,6 @@
 <translation id="9214520840402538427">糟糕！系統嘗試初始設定安裝時間 (installation-time) 屬性，但是動作已逾時。請洽詢你的支援代表。</translation>
 <translation id="9214695392875603905">杯子蛋糕</translation>
 <translation id="9215293857209265904">已新增「<ph name="EXTENSION_NAME" />」</translation>
-<translation id="9215934040295798075">設定桌布</translation>
 <translation id="9218430445555521422">設定為預設瀏覽器</translation>
 <translation id="9219103736887031265">圖片</translation>
 <translation id="9220525904950070496">移除帳戶</translation>

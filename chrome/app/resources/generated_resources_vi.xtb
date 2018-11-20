@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Hiển thị mục cài đặt đồng bộ hóa</translation>
 <translation id="1124772482545689468">Người dùng</translation>
 <translation id="1125550662859510761">Có vẻ như là <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Gốc)</translation>
-<translation id="1127216846847548354">Kích hoạt giọng nói</translation>
 <translation id="1128109161498068552">Không cho phép bất cứ trang web nào sử dụng thông báo dành riêng cho hệ thống để truy cập thiết bị MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Chỉnh sửa công cụ tìm kiếm</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">Cài đặt Trợ lý Google</translation>
 <translation id="3496213124478423963">Thu Nhỏ</translation>
 <translation id="3505030558724226696">Thu hồi quyền truy cập thiết bị</translation>
-<translation id="3506093155988721483">Sử dụng giọng nói thay vì bàn phím khi bạn khởi động Trợ lý</translation>
 <translation id="3507421388498836150">Quyền hiện tại cho "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507547268929739059">Xóa ứng dụng Linux cho Chromebook</translation>
 <translation id="3507888235492474624">Quét lại các thiết bị Bluetooth</translation>
@@ -2061,7 +2059,6 @@
 <translation id="4100733287846229632">Dung lượng của thiết bị quá thấp</translation>
 <translation id="4103091233824664032">Nhập mật khẩu để định cấu hình khóa màn hình rồi đăng nhập</translation>
 <translation id="4104163789986725820">X&amp;uất...</translation>
-<translation id="4105563239298244027">Nhận 1 TB miễn phí với Google Drive</translation>
 <translation id="4107048419833779140">Nhận dạng và ngắt kết nối thiết bị lưu trữ</translation>
 <translation id="4109135793348361820">Di chuyển cửa sổ đến <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Duyệt web trong chế độ tương phản cao</translation>
@@ -5336,7 +5333,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9214520840402538427">Rất tiếc! Việc chạy thuộc tính thời gian cài đặt đã hết thời gian. Vui lòng liên hệ với người đại diện hỗ trợ của bạn.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">Đã thêm "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="9215934040295798075">Đặt hình nền</translation>
 <translation id="9218430445555521422">Đặt làm mặc định</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>
 <translation id="9220525904950070496">Xóa tài khoản</translation>

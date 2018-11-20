@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{et 1 autre page Web}one{et # autre page Web}other{et # autres pages Web}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Saisissez le code CVC de la carte <ph name="CREDIT_CARD" />. Une fois la validation terminée, les informations relatives à la carte de votre compte Google Payments seront partagées avec ce site.</translation>
 <translation id="4923417429809017348">Cette page rédigée dans une langue non identifiée a été traduite en <ph name="LANGUAGE_LANGUAGE" />.</translation>
 <translation id="4923459931733593730">Paiement</translation>
 <translation id="4926049483395192435">Doit être spécifié.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Province</translation>
 <translation id="5098332213681597508">Ce nom provient de votre compte Google.</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
-<translation id="5121084798328133320">Une fois la validation terminée, les informations relatives à la carte de votre compte Google Payments seront partagées avec ce site.</translation>
 <translation id="5128122789703661928">Impossible de supprimer la session qui porte ce nom.</translation>
 <translation id="5135404736266831032">Gérer les adresses…</translation>
 <translation id="5141240743006678641">Chiffrer les mots de passe synchronisés avec vos informations de connexion Google</translation>
@@ -1147,7 +1145,6 @@ Informations supplémentaires :
 <translation id="8932102934695377596">Votre horloge est en retard</translation>
 <translation id="893332455753468063">Ajouter un nom</translation>
 <translation id="8938939909778640821">Cartes de crédit et cartes prépayées acceptées</translation>
-<translation id="8952525071319348207">Saisissez la date d'expiration et le code CVC de la carte <ph name="CREDIT_CARD" /> pour mettre à jour les informations relatives à celle-ci. Une fois la validation effectuée, les informations relatives à la carte de votre compte Google Payments seront partagées avec ce site.</translation>
 <translation id="8957210676456822347">Autorisation du portail captif</translation>
 <translation id="8971063699422889582">Le certificat du serveur a expiré.</translation>
 <translation id="8975012916872825179">Y compris les numéros de téléphone, les adresses e-mail et les adresses de livraison</translation>

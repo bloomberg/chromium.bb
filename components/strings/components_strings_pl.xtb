@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{i jeszcze 1 strona}few{i jeszcze # strony}many{i jeszcze # stron}other{i jeszcze # strony}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Wpisz kod CVC karty <ph name="CREDIT_CARD" />. Po potwierdzeniu szczegółowe dane karty z Twojego konta Google Payments zostaną udostępnione tej stronie.</translation>
 <translation id="4923417429809017348">Ta strona została przetłumaczona z nieznanego języka na język <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Płatność</translation>
 <translation id="4926049483395192435">Musi być określona.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Prowincja</translation>
 <translation id="5098332213681597508">Ta nazwa pochodzi z Twojego konta Google.</translation>
 <translation id="5115563688576182185">(64-bitowa)</translation>
-<translation id="5121084798328133320">Po potwierdzeniu szczegółowe dane karty z Twojego konta Google Payments zostaną udostępnione tej stronie.</translation>
 <translation id="5128122789703661928">Nie możesz usunąć tej sesji, bo jej nazwa jest nieprawidłowa.</translation>
 <translation id="5135404736266831032">Zarządzaj adresami…</translation>
 <translation id="5141240743006678641">Szyfruj synchronizowane hasła za pomocą danych logowania Google</translation>
@@ -1147,7 +1145,6 @@ Dodatkowe informacje:
 <translation id="8932102934695377596">Twój zegar się spóźnia</translation>
 <translation id="893332455753468063">Dodaj imię i nazwisko lub nazwę firmy</translation>
 <translation id="8938939909778640821">Akceptowane karty kredytowe i przedpłacone</translation>
-<translation id="8952525071319348207">Wpisz datę ważności i kod CVC karty <ph name="CREDIT_CARD" />, by zaktualizować jej szczegółowe dane. Po potwierdzeniu dane karty z konta Google Payments zostaną udostępnione tej stronie.</translation>
 <translation id="8957210676456822347">Autoryzacja portalu przechwytującego</translation>
 <translation id="8971063699422889582">Ważność certyfikatu serwera wygasła.</translation>
 <translation id="8975012916872825179">Obejmuje numery telefonów, adresy e-mail i adresy dostawy</translation>

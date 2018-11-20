@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Näytä synkronointiasetukset</translation>
 <translation id="1124772482545689468">Käyttäjä</translation>
 <translation id="1125550662859510761">Näyttää olevan <ph name="WIDTH" /> x <ph name="HEIGHT" /> (natiivi)</translation>
-<translation id="1127216846847548354">Aktivointi puhumalla</translation>
 <translation id="1128109161498068552">Älä anna sivustojen käyttää MIDI-laitteita järjestelmän omien viestien avulla</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Muokkaa hakukonetta</translation>
@@ -1644,7 +1643,6 @@
 <translation id="3495660573538963482">Google Assistantin asetukset</translation>
 <translation id="3496213124478423963">Loitonna</translation>
 <translation id="3505030558724226696">Peruuta laitteen käyttöoikeus</translation>
-<translation id="3506093155988721483">Käynnistä Assistant näppäimistön sijaan puhumalla</translation>
 <translation id="3507421388498836150">Laajennuksen <ph name="EXTENSION_NAME" /> nykyiset käyttöoikeudet</translation>
 <translation id="3507547268929739059">Poista Linux-sovellukset Chromebookista</translation>
 <translation id="3507888235492474624">Hae Bluetooth-laitteet uudelleen</translation>
@@ -2059,7 +2057,6 @@
 <translation id="4100733287846229632">Laitteen tallennustila on erittäin vähissä</translation>
 <translation id="4103091233824664032">Syötä salasanasi määrittääksesi näytön lukituksen ja sisäänkirjautumisen.</translation>
 <translation id="4104163789986725820">V&amp;ie...</translation>
-<translation id="4105563239298244027">1 Tt ilmaista tallennustilaa Google Drivessa</translation>
 <translation id="4107048419833779140">Tunnistaa ja poistaa tallennuslaitteet</translation>
 <translation id="4109135793348361820">Siirrä ikkuna käyttäjälle <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Selaa internetiä Suuri kontrasti ‑tilassa</translation>
@@ -5335,7 +5332,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9214520840402538427">Hups! Asennus-aika-attribuuttien alustaminen on aikakatkaistu. Ota yhteyttä tukipalveluun.</translation>
 <translation id="9214695392875603905">Kuppikakku</translation>
 <translation id="9215293857209265904"><ph name="EXTENSION_NAME" /> lisätty</translation>
-<translation id="9215934040295798075">Aseta taustakuva</translation>
 <translation id="9218430445555521422">Aseta oletusselaimeksi</translation>
 <translation id="9219103736887031265">Kuvat</translation>
 <translation id="9220525904950070496">Poista tili</translation>

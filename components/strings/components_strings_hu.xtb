@@ -582,7 +582,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> és <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{és egy további weboldal}other{és # további weboldal}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Adja meg a(z) <ph name="CREDIT_CARD" /> kártya CVC-kódját. A megerősítést követően a böngésző megosztja majd az Ön Google Payments-fiókjából származó kártyaadatokat ezzel a webhellyel.</translation>
 <translation id="4923417429809017348">Ezt az oldalt lefordították egy ismeretlen nyelvről <ph name="LANGUAGE_LANGUAGE" /> nyelvre</translation>
 <translation id="4923459931733593730">Fizetés</translation>
 <translation id="4926049483395192435">Meg kell határozni.</translation>
@@ -614,7 +613,6 @@
 <translation id="5095208057601539847">Tartomány</translation>
 <translation id="5098332213681597508">Ez a név a Google-fiókjából származik.</translation>
 <translation id="5115563688576182185">(64 bites)</translation>
-<translation id="5121084798328133320">A megerősítést követően a böngésző megosztja az Ön Google Payments-fiókjából származó kártyaadatokat ezzel a webhellyel.</translation>
 <translation id="5128122789703661928">Ez a munkamenetnév nem érvényes, ezért nem törölhető.</translation>
 <translation id="5135404736266831032">Címek kezelése…</translation>
 <translation id="5141240743006678641">A szinkronizált jelszavak titkosítása a Google hitelesítési adataival</translation>
@@ -1146,7 +1144,6 @@ További részletek:
 <translation id="8932102934695377596">Késik az órája</translation>
 <translation id="893332455753468063">Név hozzáadása</translation>
 <translation id="8938939909778640821">Elfogadott hitel- és feltöltőkártyák</translation>
-<translation id="8952525071319348207">A(z) <ph name="CREDIT_CARD" /> kártyához tartozó CVC-kód lejárati dátumának megadásával frissítheti a kártyaadatokat. A megerősítést követően a böngésző megosztja az Ön Google Payments-fiókjából származó kártyaadatokat ezzel a webbhellyel.</translation>
 <translation id="8957210676456822347">Hitelesítés hitelesítési portállal</translation>
 <translation id="8971063699422889582">A szerver tanúsítványa lejárt.</translation>
 <translation id="8975012916872825179">Olyan adatokat tartalmaz, mint a telefonszámok, az e-mail-címek és a szállítási címek</translation>

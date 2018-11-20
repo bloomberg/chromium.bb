@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">सिंक सेटिंग्ज दाखवा</translation>
 <translation id="1124772482545689468">वापरकर्ता</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (नेटिव्ह) सारखे दिसते</translation>
-<translation id="1127216846847548354">व्हॉइस अॅक्टिव्हेशन</translation>
 <translation id="1128109161498068552">MIDI डिव्हाइसवर प्रवेश करण्यासाठी सिस्टम विशेष संदेश वापरण्याकरिता कोणत्याही साइटला अनुमती देऊ नका</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">शोध इंजिन संपादित करा</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">Google साहाय्यक सेटिंग्ज</translation>
 <translation id="3496213124478423963">झूम कमी करा</translation>
 <translation id="3505030558724226696">डिव्‍हाइस प्रवेश रद्द करा</translation>
-<translation id="3506093155988721483">तुम्ही तुमचा असिस्टंट सुरू केल्यावर कीबोर्डऐवजी स्पीच वापरा</translation>
 <translation id="3507421388498836150">"<ph name="EXTENSION_NAME" />" साठी वर्तमान परवानग्या</translation>
 <translation id="3507547268929739059">Chromebook साठी Linux अॅप्स काढून टाका</translation>
 <translation id="3507888235492474624">ब्ल्यूटूथ डिव्हाइस पुन्हा स्कॅन करा</translation>
@@ -2060,7 +2058,6 @@
 <translation id="4100733287846229632">डिव्हाइस वरील स्थान खूप कमी आहे</translation>
 <translation id="4103091233824664032">स्क्रीन लॉक कॉन्फिगर करण्यासाठी तुमचा पासवर्ड एंटर करा आणि साइन इन करा</translation>
 <translation id="4104163789986725820">नि&amp;र्यात करा...</translation>
-<translation id="4105563239298244027">Google ड्राइव्हसह 1 TB विनामूल्य मिळवा</translation>
 <translation id="4107048419833779140">स्टोरेज डिव्हाइस ओळखा आणि बाहेर काढा</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) वर विंडो हलवा</translation>
 <translation id="4110895898888439383">उच्च कॉन्ट्रास्ट मोडमध्ये वेब ब्राउझ करा</translation>
@@ -5335,7 +5332,6 @@
 <translation id="9214520840402538427">अरेरे! स्थापना-वेळ विशेषतांचा प्रारंभ कालबाह्य झाला. कृपया आपल्या समर्थन प्रतिनिधीशी संपर्क साधा.</translation>
 <translation id="9214695392875603905">कपकेक</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" जोडले</translation>
-<translation id="9215934040295798075">वॉलपेपर सेट करा</translation>
 <translation id="9218430445555521422">डीफॉल्ट म्हणून सेट करा</translation>
 <translation id="9219103736887031265">इमेज</translation>
 <translation id="9220525904950070496">खाते काढून टाका</translation>

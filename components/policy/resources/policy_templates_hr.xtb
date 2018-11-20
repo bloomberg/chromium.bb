@@ -2102,11 +2102,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6689792153960219308">Izvješćivanje o statusu hardvera</translation>
 <translation id="6698632841807204978">Omogući jednobojni ispis</translation>
 <translation id="6699880231565102694">Omogući autentifikaciju s dva čimbenika za hostove daljinskog pristupa</translation>
-<translation id="6724842112053619797">Ako omogućite tu postavku, postavke pohranjene u <ph name="PRODUCT_NAME" /> profilima kao što su oznake, podaci za automatsko popunjavanje, zaporke itd. također će se bilježiti u datoteku pohranjenu u mapu korisničkog profila na Roamingu ili na lokaciju koju je odredio administrator pomoću pravila <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Omogućivanjem tog pravila onemogućuje se sinkronizacija u oblaku.
-
-      Ako se to pravilo onemogući ili ne postavi, upotrebljavat će se samo uobičajeni lokalni profili.
-
-      Pravilo <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogućuje svu sinkronizaciju podataka nadjačavajući RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtriraj vršne web-lokacije (ali ne ugrađene iframeove) na temelju sadržaja za odrasle</translation>
 <translation id="6734521799274931721">Određuje dostupnost mrežnog dijeljenja datoteka za OS Chrome</translation>
 <translation id="6735701345096330595">Nametni omogućivanje provjere pravopisa za jezike</translation>

@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ve 1 web sayfası daha}other{ve # web sayfası daha}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947"><ph name="CREDIT_CARD" /> numaralı kartın CVC kodunu girin. Onayladığınızda Google Payments hesabınızdaki kart bilgileriniz bu siteyle paylaşılır.</translation>
 <translation id="4923417429809017348">Bu sayfa, bilinmeyen bir dilden <ph name="LANGUAGE_LANGUAGE" /> diline çevrildi</translation>
 <translation id="4923459931733593730">Ödeme</translation>
 <translation id="4926049483395192435">Belirtilmelidir.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Bölge</translation>
 <translation id="5098332213681597508">Bu ad Google Hesabınızdan gelmektedir.</translation>
 <translation id="5115563688576182185">(64 bit)</translation>
-<translation id="5121084798328133320">Onayladığınızda Google Payments hesabınızdaki kart bilgileriniz bu siteyle paylaşılır.</translation>
 <translation id="5128122789703661928">Silmek üzere gönderilen bu oturum adı geçerli değil.</translation>
 <translation id="5135404736266831032">Adresleri yönet...</translation>
 <translation id="5141240743006678641">Senkronize edilen şifreleri Google kimlik bilgilerinizle şifreleyin</translation>
@@ -1148,7 +1146,6 @@ Ek ayrıntılar:
 <translation id="8932102934695377596">Saatiniz geri</translation>
 <translation id="893332455753468063">Ad Ekleyin</translation>
 <translation id="8938939909778640821">Kabul edilen kredi kartları ve ön ödemeli kartlar</translation>
-<translation id="8952525071319348207">Kart bilgilerinizi güncellemek için <ph name="CREDIT_CARD" /> numaralı karta ilişkin son kullanma tarihini ve CVC kodunu girin. Onayladığınızda Googe Payments hesabınızdaki kart bilgileriniz bu siteyle paylaşılır.</translation>
 <translation id="8957210676456822347">Giriş Portalı Yetkilendirmesi</translation>
 <translation id="8971063699422889582">Sunucu sertifikasının süresi doldu.</translation>
 <translation id="8975012916872825179">Telefon numaraları, e-posta adresleri ve gönderim adresleri gibi bilgileri içerir</translation>

@@ -2141,11 +2141,6 @@ Pokud bude tato zásada ponechána nenastavená nebo bude seznam prázdný, bude
 <translation id="6689792153960219308">Nahlásit stav hardwaru</translation>
 <translation id="6698632841807204978">Povolit monochromatický tisk</translation>
 <translation id="6699880231565102694">Povolit dvoufázové ověření pro hostitele vzdáleného přístupu</translation>
-<translation id="6724842112053619797">Pokud zapnete toto nastavení, budou nastavení uložená v profilech <ph name="PRODUCT_NAME" /> (např. záložky, data automatického vyplňování nebo hesla) zapsána také do souboru uloženého ve složce cestovního uživatelského profilu nebo v umístění, které definuje administrátor prostřednictvím zásady <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Aktivací této zásady deaktivujete cloudovou synchronizaci.
-
-      Pokud je tato zásada zakázána nebo není nastavena, budou se používat pouze běžné místní profily.
-
-      Zásada <ph name="SYNC_DISABLED_POLICY_NAME" /> zakáže veškerou synchronizaci dat a tím zásadu RoamingProfileSupportEnabled přepíše.</translation>
 <translation id="6731757988219967594">Filtrovat weby nejvyšší úrovně (ale nikoliv vložené prvky iframe) s obsahem pouze pro dospělé</translation>
 <translation id="6734521799274931721">Ovládá dostupnost sdílených síťových složek pro Chrome OS</translation>
 <translation id="6735701345096330595">Vynutit povolení jazyků kontroly pravopisu</translation>

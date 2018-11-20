@@ -583,7 +583,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{un vēl 1 tīmekļa lapa}zero{un vēl # tīmekļa lapas}one{un vēl # tīmekļa lapa}other{un vēl # tīmekļa lapas}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Ievadiet kredītkartes <ph name="CREDIT_CARD" /> CVC kodu. Pēc apstiprināšanas kartes informācija no Google maksājumu konta tiks kopīgota ar šo vietni.</translation>
 <translation id="4923417429809017348">Šī lapa ir tulkota no nezināmas valodas valodā: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Maksājums</translation>
 <translation id="4926049483395192435">Jābūt norādītai.</translation>
@@ -615,7 +614,6 @@
 <translation id="5095208057601539847">Province</translation>
 <translation id="5098332213681597508">Šis vārds ir iegūts no jūsu Google konta.</translation>
 <translation id="5115563688576182185">(64 bitu)</translation>
-<translation id="5121084798328133320">Pēc apstiprināšanas kartes informācija no Google maksājumu konta tiks kopīgota ar šo vietni.</translation>
 <translation id="5128122789703661928">Sesija ar šādu nosaukumu nav dzēšama.</translation>
 <translation id="5135404736266831032">Pārvaldīt adreses...</translation>
 <translation id="5141240743006678641">Šifrēt sinhronizētās paroles, izmantojot Google akreditācijas datus</translation>
@@ -1147,7 +1145,6 @@ Papildu informācija:
 <translation id="8932102934695377596">Norādītais laiks ir pārāk tālu pagātnē</translation>
 <translation id="893332455753468063">Vārda pievienošana</translation>
 <translation id="8938939909778640821">Atbalstītās kredītkartes un priekšapmaksas kartes</translation>
-<translation id="8952525071319348207">Lai atjauninātu kartes informāciju, ievadiet kredītkartes <ph name="CREDIT_CARD" /> derīguma termiņu un CVC kodu. Pēc apstiprināšanas kartes informācija no Google maksājumu konta tiks kopīgota ar šo vietni.</translation>
 <translation id="8957210676456822347">Caurlaides lapas autorizācija</translation>
 <translation id="8971063699422889582">Servera sertifikātam ir beidzies derīguma termiņš.</translation>
 <translation id="8975012916872825179">Iekļauta tāda informācija kā tālruņa numuri, e-pasta un piegādes adreses</translation>

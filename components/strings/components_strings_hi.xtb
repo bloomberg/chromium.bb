@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{1 और वेब पेज}one{# और वेब पेज}other{# और वेब पेज}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947"><ph name="CREDIT_CARD" /> का कार्ड वेरीफ़िकेशन कोड (सीवीसी) डालें. आपकी ओर से पुष्टि होने के बाद, आपके Google Payments खाते में मौजूद कार्ड के विवरण इस साइट से शेयर किए जाएंगे.</translation>
 <translation id="4923417429809017348">इस पेज का एक अज्ञात भाषा से <ph name="LANGUAGE_LANGUAGE" /> में अनुवाद किया गया है</translation>
 <translation id="4923459931733593730">भुगतान</translation>
 <translation id="4926049483395192435">निर्दिष्ट किया जाना चाहिए.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">प्रांत</translation>
 <translation id="5098332213681597508">यह नाम आपके Google खाते से संबंधित है.</translation>
 <translation id="5115563688576182185">(64-बिट)</translation>
-<translation id="5121084798328133320">आपकी ओर से पुष्टि होने के बाद, आपके Google Payments खाते में मौजूद कार्ड के विवरण इस साइट से शेयर किए जाएंगे.</translation>
 <translation id="5128122789703661928">इस नाम वाला सीज़न मिटाने के लिए मान्य नहीं है.</translation>
 <translation id="5135404736266831032">पते प्रबंधित करें...</translation>
 <translation id="5141240743006678641">समन्वयित पासवर्ड अपने Google प्रमाणिकता के साथ एन्क्रिप्ट करें</translation>
@@ -1148,7 +1146,6 @@
 <translation id="8932102934695377596">आपकी घड़ी पीछे है</translation>
 <translation id="893332455753468063">नाम जोड़ें</translation>
 <translation id="8938939909778640821">स्वीकृत क्रेडिट और प्रीपेड कार्ड</translation>
-<translation id="8952525071319348207">अपने कार्ड के विवरण अपडेट करने के लिए <ph name="CREDIT_CARD" /> के खत्म होने की तारीख और कार्ड वेरीफ़िकेशन कोड (सीवीसी) डालें. आपकी ओर से पुष्टि होने के बाद, आपके Google Payments खाते में मौजूद कार्ड के विवरण इस साइट से शेयर किए जाएंगे.</translation>
 <translation id="8957210676456822347">कैप्‍टिव पोर्टल प्राधिकरण</translation>
 <translation id="8971063699422889582">सर्वर के प्रमाणपत्र की समय-सीमा समाप्त हो चुकी है.</translation>
 <translation id="8975012916872825179">फ़ोन नंबर, ईमेल पते और शिपिंग पते जैसी जानकारी शामिल है</translation>

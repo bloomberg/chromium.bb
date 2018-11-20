@@ -581,7 +581,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{e un'altra pagina web}other{e altre # pagine web}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Inserisci il codice CVC della carta <ph name="CREDIT_CARD" />. Dopo essere stati confermati, i dati della carta del tuo account Google Payments saranno condivisi con questo sito.</translation>
 <translation id="4923417429809017348">Questa pagina è stata tradotta da una lingua sconosciuta in <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Pagamento</translation>
 <translation id="4926049483395192435">Deve essere specificato.</translation>
@@ -613,7 +612,6 @@
 <translation id="5095208057601539847">Provincia</translation>
 <translation id="5098332213681597508">Questo nome proviene dal tuo account Google.</translation>
 <translation id="5115563688576182185">(a 64 bit)</translation>
-<translation id="5121084798328133320">Dopo essere stati confermati, i dati della carta del tuo account Google Payments saranno condivisi con questo sito.</translation>
 <translation id="5128122789703661928">Impossibile eliminare la sessione perché il nome specificato non è valido.</translation>
 <translation id="5135404736266831032">Gestisci indirizzi…</translation>
 <translation id="5141240743006678641">Cripta le password sincronizzate con le tue credenziali Google</translation>
@@ -1143,7 +1141,6 @@ Ulteriori dettagli:
 <translation id="8932102934695377596">L'orologio è indietro</translation>
 <translation id="893332455753468063">Aggiungi nome</translation>
 <translation id="8938939909778640821">Carte di credito e prepagate accettate</translation>
-<translation id="8952525071319348207">Inserisci la data di scadenza e il codice CVC della carta <ph name="CREDIT_CARD" /> per aggiornare i relativi dettagli. Dopo essere stati confermati, i dati della carta del tuo account Google Payments saranno condivisi con questo sito.</translation>
 <translation id="8957210676456822347">Autorizzazione Captive Portal</translation>
 <translation id="8971063699422889582">Il certificato del server è scaduto.</translation>
 <translation id="8975012916872825179">Include informazioni come numeri di telefono, indirizzi email e indirizzi di spedizione</translation>

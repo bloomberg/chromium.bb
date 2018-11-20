@@ -2173,11 +2173,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6689792153960219308">Ziņošana par aparatūras statusu</translation>
 <translation id="6698632841807204978">Iespējot vienkrāsaino drukāšanu</translation>
 <translation id="6699880231565102694">Divu faktoru autentifikācijas iespējošana attālās piekļuves saimniekdatoriem</translation>
-<translation id="6724842112053619797">Ja iespējosiet šo iestatījumu, <ph name="PRODUCT_NAME" /> profilos saglabātie iestatījumi, piemēram, grāmatzīmes, automātiskās aizpildes dati, paroles, tiks saglabāti arī failā, kas tiks glabāts viesabonēšanas lietotāju profilu mapē vai vietā, ko norādījis administrators, izmantojot politiku “<ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />”. Iespējojot šo politiku, tiek atspējota sinhronizācija mākonī.
-
-      Ja šī politika ir atspējota vai nav iestatīta, tiks izmantoti tikai parastie lokālie profili.
-
-      Politika “<ph name="SYNC_DISABLED_POLICY_NAME" />” atspējo visu datu sinhronizāciju, ignorējot politiku “RoamingProfileSupportEnabled”.</translation>
 <translation id="6731757988219967594">Filtrēt augšējā līmeņa vietnes ar pieaugušajiem paredzētu saturu (bet ne iegultos iFrame tagus)</translation>
 <translation id="6734521799274931721">Kontrolē tīkla failu kopīgošanas ierīces Chrome OS pieejamībai</translation>
 <translation id="6735701345096330595">Iespējo pareizrakstības pārbaudes valodas piespiedu kārtā</translation>

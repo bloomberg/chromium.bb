@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">הצגת הגדרות סינכרון</translation>
 <translation id="1124772482545689468">משתמש</translation>
 <translation id="1125550662859510761">‏נראה כמו <ph name="WIDTH" /> x <ph name="HEIGHT" /> (במקור)</translation>
-<translation id="1127216846847548354">הפעלה קולית</translation>
 <translation id="1128109161498068552">‏אל תאפשר לאף אתר להשתמש בהודעות בלעדיות של המערכת כדי לגשת למכשירי MIDI.</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">עריכת מנוע חיפוש</translation>
@@ -1640,7 +1639,6 @@
 <translation id="3495660573538963482">‏ההגדרות של Google Assistant</translation>
 <translation id="3496213124478423963">התרחק</translation>
 <translation id="3505030558724226696">בטל גישה למכשירים</translation>
-<translation id="3506093155988721483">‏שימוש בדיבור במקום במקלדת כשמפעילים את ה-Assistant</translation>
 <translation id="3507421388498836150">הרשאות נוכחיות של "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507547268929739059">‏הסרת אפליקציות Linux מה-Chromebook</translation>
 <translation id="3507888235492474624">‏סריקה חוזרת לאיתור מכשירי Bluetooth</translation>
@@ -2058,7 +2056,6 @@
 <translation id="4100733287846229632">שטח האחסון במכשיר כמעט נגמר</translation>
 <translation id="4103091233824664032">צריך להזין את הסיסמה כדי להגדיר את נעילת המסך ואת הכניסה</translation>
 <translation id="4104163789986725820">יי&amp;צא...</translation>
-<translation id="4105563239298244027">‏קבל ‎1TB בחינם עם Google Drive</translation>
 <translation id="4107048419833779140">לזהות ולהוציא התקני אחסון</translation>
 <translation id="4109135793348361820">העבר חלון אל <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">גלישה באינטרנט במצב ניגודיות גבוהה</translation>
@@ -2286,7 +2283,7 @@
 <translation id="4524832533047962394">מצב ההרשמה שסופק לא נתמך על ידי הגרסה הזו של מערכת ההפעלה. כדאי לוודא שמשתמשים בגרסה החדשה ביותר.</translation>
 <translation id="4525382759303819021">‏קבלת העדכונים האחרונים והמלצות לגבי אפליקציות מחנות Play</translation>
 <translation id="4530494379350999373">מקור</translation>
-<translation id="4533846798469727141">‏עכשיו צריך לומר "Hey Google"</translation>
+<translation id="4533846798469727141">‏עכשיו אומרים "Hey Google"</translation>
 <translation id="4533985347672295764">‏זמן CPU (יחידת עיבוד מרכזית)</translation>
 <translation id="4534661889221639075">יש לנסות שוב.</translation>
 <translation id="4535127706710932914">פרופיל ברירת מחדל</translation>
@@ -5331,7 +5328,6 @@
 <translation id="9214520840402538427">אופס!  תם הזמן הקצוב לאתחול של מאפייני זמן ההתקנה. פנה אל נציג התמיכה שלך.</translation>
 <translation id="9214695392875603905">קאפקייק</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" נוסף</translation>
-<translation id="9215934040295798075">הגדר טפט</translation>
 <translation id="9218430445555521422">הגדר כברירת מחדל</translation>
 <translation id="9219103736887031265">תמונות</translation>
 <translation id="9220525904950070496">הסר חשבון</translation>

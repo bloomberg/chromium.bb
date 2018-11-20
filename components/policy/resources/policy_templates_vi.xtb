@@ -2188,11 +2188,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6689792153960219308">Báo cáo trạng thái phần cứng</translation>
 <translation id="6698632841807204978">Bật chế độ in đen trắng</translation>
 <translation id="6699880231565102694">Bật xác thực hai bước cho máy chủ truy cập từ xa</translation>
-<translation id="6724842112053619797">Nếu bạn bật cài đặt này, thì các cài đặt được lưu trữ trong cấu hình của <ph name="PRODUCT_NAME" /> như dấu trang, dữ liệu tự động điền, mật khẩu, v.v. cũng sẽ được ghi vào một tệp được lưu trữ trong thư mục cấu hình Người dùng chuyển vùng hoặc một vị trí do Quản trị viên chỉ định thông qua chính sách <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Việc bật chính sách này sẽ tắt đồng bộ hóa trên đám mây.
-
-      Nếu chính sách này bị tắt hoặc chưa được đặt thì chỉ các cấu hình cục bộ thông thường mới được sử dụng.
-
-      Chính sách <ph name="SYNC_DISABLED_POLICY_NAME" /> sẽ tắt tất cả đồng bộ hóa dữ liệu, ghi đè RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Lọc các trang web cấp cao nhất (không phải iframe được nhúng) có nội dung người lớn</translation>
 <translation id="6734521799274931721">Kiểm soát khả năng sử dụng của ứng dụng Chia sẻ tệp trong mạng trên Chrome OS</translation>
 <translation id="6735701345096330595">Buộc bật tính năng kiểm tra chính tả ngôn ngữ</translation>

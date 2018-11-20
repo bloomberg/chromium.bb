@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Mostra la configuració de sincronització</translation>
 <translation id="1124772482545689468">Usuari</translation>
 <translation id="1125550662859510761">Resolució: <ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativa)</translation>
-<translation id="1127216846847548354">Activació de la veu</translation>
 <translation id="1128109161498068552">No permetis que cap lloc utilitzi els missatges exclusius del sistema per accedir als dispositius MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Edita el motor de cerca</translation>
@@ -1640,7 +1639,6 @@
 <translation id="3495660573538963482">Configuració de l'Assistent de Google</translation>
 <translation id="3496213124478423963">Redueix</translation>
 <translation id="3505030558724226696">Revoca l'accés als dispositius</translation>
-<translation id="3506093155988721483">Utilitza la veu en lloc del teclat quan iniciïs l'Assistent</translation>
 <translation id="3507421388498836150">Permisos actuals de l'extensió <ph name="EXTENSION_NAME" /></translation>
 <translation id="3507547268929739059">Suprimeix les aplicacions per a Linux de Chromebook</translation>
 <translation id="3507888235492474624">Torna a cercar dispositius Bluetooth</translation>
@@ -2057,7 +2055,6 @@
 <translation id="4100733287846229632">Queda molt poc espai al dispositiu</translation>
 <translation id="4103091233824664032">Introdueix la contrasenya per configurar el bloqueig de pantalla i l'inici de sessió</translation>
 <translation id="4104163789986725820">E&amp;xporta...</translation>
-<translation id="4105563239298244027">Obteniu 1 TB gratis amb Google Drive</translation>
 <translation id="4107048419833779140">Identifica i expulsa els dispositius d'emmagatzematge</translation>
 <translation id="4109135793348361820">Mou la finestra a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Navega per Internet en mode d'alt contrast</translation>
@@ -5332,7 +5329,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9214520840402538427">La inicialització dels atributs en temps d'instal·lació ha esgotat el temps d'espera. Contacteu amb el representant d'assistència.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">S'ha afegit "<ph name="EXTENSION_NAME" />"</translation>
-<translation id="9215934040295798075">Estableix fons de pantalla</translation>
 <translation id="9218430445555521422">Estableix com a predeterminat</translation>
 <translation id="9219103736887031265">Imatges</translation>
 <translation id="9220525904950070496">Suprimir el compte</translation>

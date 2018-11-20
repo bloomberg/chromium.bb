@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{og 1 nettside til}other{og # nettsider til}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Skriv inn CVC-koden for <ph name="CREDIT_CARD" />. Etter at du har bekreftet, deles kortopplysningene fra Google Payments-kontoen med dette nettstedet.</translation>
 <translation id="4923417429809017348">Denne siden er oversatt til <ph name="LANGUAGE_LANGUAGE" /> fra et ukjent språk</translation>
 <translation id="4923459931733593730">Betaling</translation>
 <translation id="4926049483395192435">Må angis.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Provins</translation>
 <translation id="5098332213681597508">Dette navnet er fra Google-kontoen din.</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
-<translation id="5121084798328133320">Etter at du har bekreftet, deles kortopplysningene fra Google Payments-kontoen med dette nettstedet.</translation>
 <translation id="5128122789703661928">Økten med dette navnet er ikke gyldig for sletting.</translation>
 <translation id="5135404736266831032">Adminstrer adresser…</translation>
 <translation id="5141240743006678641">Kryptér synkroniserte passord med Google-legitimasjonen din</translation>
@@ -1146,7 +1144,6 @@ Mer informasjon:
 <translation id="8932102934695377596">Klokken går for sent</translation>
 <translation id="893332455753468063">Legg til navn</translation>
 <translation id="8938939909778640821">Godkjente kredittkort og forhåndsbetalte kort</translation>
-<translation id="8952525071319348207">Skriv inn utløpsdatoen og CVC-koden for <ph name="CREDIT_CARD" /> for å oppdatere kortinformasjonen din. Når du bekrefter, deles kortopplysningene fra Google Payments-kontoen med dette nettstedet.</translation>
 <translation id="8957210676456822347">Captive Portal-autorisasjon</translation>
 <translation id="8971063699422889582">Tjenerens sertifikat er utløpt.</translation>
 <translation id="8975012916872825179">Inkluderer informasjon som telefonnumre, e-postadresser og leveringsadresser</translation>

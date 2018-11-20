@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Tampilkan setelan sinkronisasi</translation>
 <translation id="1124772482545689468">Pengguna</translation>
 <translation id="1125550662859510761">Sepertinya <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Asli)</translation>
-<translation id="1127216846847548354">Aktivasi suara</translation>
 <translation id="1128109161498068552">Jangan izinkan situs apa pun untuk menggunakan pesan eksklusif sistem untuk mengakses perangkat MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Edit mesin telusur</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">Setelan Asisten Google</translation>
 <translation id="3496213124478423963">Perkecil</translation>
 <translation id="3505030558724226696">Mencabut akses perangkat</translation>
-<translation id="3506093155988721483">Gunakan ucapan, bukan keyboard, untuk memulai Asisten</translation>
 <translation id="3507421388498836150">Izin Saat Ini untuk "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507547268929739059">Hapus Aplikasi Linux untuk Chromebook</translation>
 <translation id="3507888235492474624">Memindai ulang perangkat Bluetooth</translation>
@@ -2061,7 +2059,6 @@
 <translation id="4100733287846229632">Ruang perangkat hampir habis</translation>
 <translation id="4103091233824664032">Masukkan sandi Anda untuk mengonfigurasi kunci layar dan login</translation>
 <translation id="4104163789986725820">E&amp;kspor...</translation>
-<translation id="4105563239298244027">Dapatkan gratis 1 TB dengan Google Drive</translation>
 <translation id="4107048419833779140">Identifikasi dan keluarkan perangkat penyimpanan</translation>
 <translation id="4109135793348361820">Pindahkan jendela ke <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Akses web dalam mode kontras tinggi</translation>
@@ -5336,7 +5333,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9214520840402538427">Uups!  Waktu pemulaian atribut waktu pemasangan telah habis.  Hubungi perwakilan dukungan Anda.</translation>
 <translation id="9214695392875603905">Kue mangkok</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" ditambahkan</translation>
-<translation id="9215934040295798075">Setel wallpaper</translation>
 <translation id="9218430445555521422">Setel sebagai default</translation>
 <translation id="9219103736887031265">Gambar</translation>
 <translation id="9220525904950070496">Hapus akun</translation>

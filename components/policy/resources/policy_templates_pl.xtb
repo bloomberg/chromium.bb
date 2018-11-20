@@ -2116,11 +2116,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="6689792153960219308">Raportuj stan sprzętu</translation>
 <translation id="6698632841807204978">Włącz drukowanie monochromatyczne</translation>
 <translation id="6699880231565102694">Włącz uwierzytelnianie dwuskładnikowe dla hostów zdalnego dostępu</translation>
-<translation id="6724842112053619797">Jeśli włączysz to ustawienie, ustawienia zapisane w profilach <ph name="PRODUCT_NAME" />, takie jak zakładki, dane autouzupełniania, hasła itp., będą też zapisywane w folderze profilu przenośnego (Roaming) użytkownika lub w lokalizacji ustawionej przez administratora w zasadzie <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Włączenie tej zasady wyłącza synchronizację z chmurą.
-
-      Jeśli nie włączysz tej zasady lub jej nie skonfigurujesz, używane będą tylko zwykłe profile lokalne.
-
-      Zasada <ph name="SYNC_DISABLED_POLICY_NAME" /> powoduje wyłączenie wszystkich synchronizacji danych i zastępuje zasadę RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtruj witryny najwyższego poziomu (ale nie osadzone elementy iframe) pod kątem treści dla dorosłych</translation>
 <translation id="6734521799274931721">Określa dostępność sieciowych udziałów plików w Chrome OS</translation>
 <translation id="6735701345096330595">Wymuś włączenie sprawdzania pisowni</translation>

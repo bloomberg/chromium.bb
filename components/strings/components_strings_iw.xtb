@@ -588,7 +588,6 @@ Del</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ועוד דף אינטרנט אחד}two{ועוד # דפי אינטרנט}many{ועוד # דפי אינטרנט}other{ועוד # דפי אינטרנט}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">‏צריך להזין את קוד האימות של <ph name="CREDIT_CARD" />. אחרי שנקבל ממך אישור, נשתף עם האתר הזה את פרטי הכרטיס מחשבון תשלומי Google.</translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">תשלום</translation>
 <translation id="4926049483395192435">יש לציין ערך זה.</translation>
@@ -620,7 +619,6 @@ Del</translation>
 <translation id="5095208057601539847">פרובינציה</translation>
 <translation id="5098332213681597508">‏השם הזה הוא מחשבון Google שלך.</translation>
 <translation id="5115563688576182185">(64 סיביות)</translation>
-<translation id="5121084798328133320">‏אחרי שנקבל ממך אישור, נשתף עם האתר הזה את פרטי הכרטיס מחשבון תשלומי Google.</translation>
 <translation id="5128122789703661928">שם ההפעלה למחיקה אינו חוקי.</translation>
 <translation id="5135404736266831032">ניהול כתובות...</translation>
 <translation id="5141240743006678641">‏הצפן סיסמאות מסונכרנות באמצעות פרטי הכניסה שלך ל-Google</translation>
@@ -735,7 +733,7 @@ Del</translation>
 <translation id="5922853866070715753">עוד רגע מסיימים</translation>
 <translation id="5932224571077948991">באתר מוצגות מודעות מפריעות או מטעות</translation>
 <translation id="5939518447894949180">אפס</translation>
-<translation id="5946937721014915347">פותח את <ph name="SITE_NAME" />…</translation>
+<translation id="5946937721014915347">פתיחה של <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">אי אפשר להירשם באמצעות חשבון פרטי (יש רישיון משויך זמין).</translation>
 <translation id="5966151627327109289">הפעולה מוציאה אותך מרוב האתרים. ייתכן שלא תהיה לך יותר גישה לתוכן מוגן מ-<ph name="SITE" /> ומאתרים אחרים.</translation>
 <translation id="5967592137238574583">עריכת הפרטים ליצירת קשר</translation>
@@ -1153,7 +1151,6 @@ Del</translation>
 <translation id="8932102934695377596">השעון שלך מאחר</translation>
 <translation id="893332455753468063">הוספת שם</translation>
 <translation id="8938939909778640821">כרטיסי אשראי וכרטיסים משולמים מראש שהסוחר מקבל</translation>
-<translation id="8952525071319348207">‏כדי לעדכן את פרטי הכרטיס שלך, צריך להזין את תאריך התפוגה וקוד האימות של <ph name="CREDIT_CARD" />. אחרי שנקבל ממך אישור, נשתף עם האתר הזה את פרטי הכרטיס מחשבון תשלומי Google.</translation>
 <translation id="8957210676456822347">הרשאת פורטל חובה</translation>
 <translation id="8971063699422889582">פג תוקפו של אישור השרת.</translation>
 <translation id="8975012916872825179">כולל מידע כמו מספרי טלפון, כתובות אימייל וכתובות למשלוח</translation>

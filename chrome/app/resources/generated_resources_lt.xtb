@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Rodyti sinchronizavimo nustatymus</translation>
 <translation id="1124772482545689468">Naudotojas</translation>
 <translation id="1125550662859510761">Atrodo kaip <ph name="WIDTH" /> × <ph name="HEIGHT" /> (savasis)</translation>
-<translation id="1127216846847548354">Balso aktyvinimas</translation>
 <translation id="1128109161498068552">Neleisti jokioms svetainėms naudoti sistemos išskirtinių pranešimų MIDI įrenginiams pasiekti</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Paieškos variklio redagavimas</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">„Google“ padėjėjo nustatymai</translation>
 <translation id="3496213124478423963">Tolinti</translation>
 <translation id="3505030558724226696">Panaikinti įrenginio prieigą</translation>
-<translation id="3506093155988721483">Paleidus Padėjėją vietoje klaviatūros naudoti kalbą</translation>
 <translation id="3507421388498836150">Dabartiniai „<ph name="EXTENSION_NAME" />“ leidimai</translation>
 <translation id="3507547268929739059">Pašalinti „Linux“ programas iš „Chromebook“</translation>
 <translation id="3507888235492474624">Pakartotinai nuskaityti ieškant „Bluetooth“ įrenginių</translation>
@@ -2061,7 +2059,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4100733287846229632">Labai mažai vietos įrenginyje</translation>
 <translation id="4103091233824664032">Įveskite slaptažodį ir konfigūruokite ekrano užraktą bei prisijungimą</translation>
 <translation id="4104163789986725820">Eksportuoti...</translation>
-<translation id="4105563239298244027">Gaukite 1 TB nemokamai naudodami „Google“ diską</translation>
 <translation id="4107048419833779140">Identifikuoti ir pašalinti saugyklos įrenginius</translation>
 <translation id="4109135793348361820">Perkelti langą <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Žiniatinklio naršymas didelio kontrasto režimu</translation>
@@ -5337,7 +5334,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="9214520840402538427">Oi! Diegimo trukmės atributų iniciacijos laikas baigėsi. Susisiekite su palaikymo komandos atstovu.</translation>
 <translation id="9214695392875603905">Keksinis pyragaitis</translation>
 <translation id="9215293857209265904">Pridėtas „<ph name="EXTENSION_NAME" />“</translation>
-<translation id="9215934040295798075">Nustatyti ekrano foną</translation>
 <translation id="9218430445555521422">Nustatyti kaip numatytąją</translation>
 <translation id="9219103736887031265">Vaizdai</translation>
 <translation id="9220525904950070496">Pašalinti paskyrą</translation>

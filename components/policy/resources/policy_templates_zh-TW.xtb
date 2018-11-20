@@ -2098,11 +2098,6 @@
 <translation id="6689792153960219308">回報硬體狀態</translation>
 <translation id="6698632841807204978">啟用單色列印</translation>
 <translation id="6699880231565102694">為遠端存取主機啟用雙重驗證機制</translation>
-<translation id="6724842112053619797">如果啟用這項設定，系統會將儲存在 <ph name="PRODUCT_NAME" /> 設定檔中的設定 (例如書籤、自動填入資料、密碼等) 一併寫入儲存在漫遊使用者設定檔資料夾中的檔案，或是管理員透過 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 政策指定的位置。啟用這項政策時，雲端同步處理功能會遭到停用：
-
-      如果停用或未設定這項政策，系統只會使用一般本機設定檔。
-
-      <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策會停用所有資料同步處理功能，並覆寫 RoamingProfileSupportEnabled。</translation>
 <translation id="6731757988219967594">針對成人內容篩選頂層網站 (但不篩選嵌入的 iframe)</translation>
 <translation id="6734521799274931721">控管是否允許在 Chrome 作業系統使用網路檔案共用功能</translation>
 <translation id="6735701345096330595">強制執行拼字檢查的語言</translation>

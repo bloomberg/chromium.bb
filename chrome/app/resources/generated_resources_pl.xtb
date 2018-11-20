@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Pokaż ustawienia synchronizacji</translation>
 <translation id="1124772482545689468">Użytkownik</translation>
 <translation id="1125550662859510761">Wygląda na <ph name="WIDTH" /> × <ph name="HEIGHT" /> (natywna)</translation>
-<translation id="1127216846847548354">Aktywacja głosu</translation>
 <translation id="1128109161498068552">Nie zezwalaj żadnym witrynom na używanie wiadomości zarezerwowanych dla systemu w celu uzyskania dostępu do urządzeń MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Edytuj wyszukiwarkę</translation>
@@ -1643,7 +1642,6 @@
 <translation id="3495660573538963482">Ustawienia Asystenta Google</translation>
 <translation id="3496213124478423963">Pomniejsz</translation>
 <translation id="3505030558724226696">Anuluj dostęp do urządzeń</translation>
-<translation id="3506093155988721483">Używaj mowy zamiast klawiatury po uruchomieniu Asystenta</translation>
 <translation id="3507421388498836150">Obecne uprawnienia rozszerzenia „<ph name="EXTENSION_NAME" />”</translation>
 <translation id="3507547268929739059">Usuń aplikacje na Linuksa z Chromebooka</translation>
 <translation id="3507888235492474624">Skanuj ponownie w poszukiwaniu urządzeń Bluetooth</translation>
@@ -2061,7 +2059,6 @@
 <translation id="4100733287846229632">Na urządzeniu już prawie nie ma miejsca</translation>
 <translation id="4103091233824664032">Wpisz hasło, by skonfigurować blokadę ekranu i logowanie</translation>
 <translation id="4104163789986725820">E&amp;ksportuj</translation>
-<translation id="4105563239298244027">Uzyskaj 1 TB miejsca na Dysku Google za darmo</translation>
 <translation id="4107048419833779140">Rozpoznawanie i wysuwanie urządzeń pamięci</translation>
 <translation id="4109135793348361820">Przesuń okno do: <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Przeglądaj strony w trybie dużego kontrastu</translation>
@@ -5337,7 +5334,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="9214520840402538427">Upłynął limit czasu inicjowania atrybutów instalacyjnych. Skontaktuj się z przedstawicielem obsługi klienta.</translation>
 <translation id="9214695392875603905">Babeczka</translation>
 <translation id="9215293857209265904">Dodano „<ph name="EXTENSION_NAME" />”</translation>
-<translation id="9215934040295798075">Ustaw tapetę</translation>
 <translation id="9218430445555521422">Ustaw jako domyślną</translation>
 <translation id="9219103736887031265">Grafika</translation>
 <translation id="9220525904950070496">Usuń konto</translation>

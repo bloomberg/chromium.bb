@@ -2176,11 +2176,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6689792153960219308">Nahlásiť stav hardvéru</translation>
 <translation id="6698632841807204978">Povoliť monochromatickú tlač</translation>
 <translation id="6699880231565102694">Povolenie dvojfázového overenia totožnosti pre hostiteľov vzdialeného prístupu</translation>
-<translation id="6724842112053619797">Ak povolíte toto nastavenie, nastavenia uložené v profiloch <ph name="PRODUCT_NAME" /> (napr. záložky, údaje automatického dopĺňania, heslá atď.) sa zapíšu tiež do súboru uloženého v priečinku roamingového používateľského profilu alebo v umiestnení špecifikovanom správcom prostredníctvom pravidla <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Povolenie tohto pravidla vypne synchronizáciu s cloudom.
-
-      Ak je toto pravidlo zakázané alebo nie je nastavené, budú sa používať iba miestne profily.
-
-      Pravidlo <ph name="SYNC_DISABLED_POLICY_NAME" /> vypne synchronizáciu všetkých údajov a prepíše pravidlo RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrovať weby najvyššej úrovne (ale nie vložené prvky iframe) podľa obsahu pre dospelých</translation>
 <translation id="6734521799274931721">Riadi dostupnosť zdieľaných súborov v sieti pre Chrome OS</translation>
 <translation id="6735701345096330595">Vynútiť povolenie jazykov kontroly pravopisu</translation>

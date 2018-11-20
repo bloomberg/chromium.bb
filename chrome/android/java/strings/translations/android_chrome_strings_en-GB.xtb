@@ -186,7 +186,6 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2325181368089033281"><ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /> can be customised by you or your parents at any time. Google may use content on sites that you visit, as well as browsing activity and interactions, to personalise Chrome and Google services such as Translate, Search and ads.</translation>
 <translation id="2328985652426384049">Can’t sign in</translation>
 <translation id="2342981853652716282">Sign in to Chrome to get your bookmarks, passwords and more on all your devices.</translation>
-<translation id="2343328333327081434">Installing…</translation>
 <translation id="2349710944427398404">Total data used by Chrome, including accounts, bookmarks and saved settings</translation>
 <translation id="2351097562818989364">Your translate settings have been reset.</translation>
 <translation id="2359808026110333948">Continue</translation>
@@ -221,6 +220,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
 <translation id="2586657967955657006">Clipboard</translation>
 <translation id="2587052924345400782">Newer version is available</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2610239185026711824">Suggest password</translation>
 <translation id="2612676031748830579">Card number</translation>
 <translation id="2621115761605608342">Allow JavaScript for a specific site.</translation>
 <translation id="2625189173221582860">Password copied</translation>
@@ -709,6 +709,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6378173571450987352">Details: Sorted by amount of data used</translation>
 <translation id="6383961787135158834">Clear Site Storage…</translation>
 <translation id="6388207532828177975">Clear &amp; reset</translation>
+<translation id="6393156038355142111">Suggest strong password</translation>
 <translation id="6393863479814692971">Chrome needs permission to access your camera and microphone for this site.</translation>
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6404511346730675251">Edit bookmark</translation>
@@ -890,6 +891,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="773466115871691567">Always translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Protects you and your device from dangerous sites</translation>
+<translation id="7759822418208302953">Auto-fill Assistant stopping</translation>
 <translation id="7762668264895820836">SD Card <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7765158879357617694">Move</translation>

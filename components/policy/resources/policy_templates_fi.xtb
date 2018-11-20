@@ -2113,11 +2113,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6689792153960219308">Laitteiston tilan raportointi</translation>
 <translation id="6698632841807204978">Mustavalkotulostuksen käyttöönotto</translation>
 <translation id="6699880231565102694">Ota kahden tekijän todennus käyttöön etäisännille</translation>
-<translation id="6724842112053619797">Jos tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> ‑profiileihin tallennetut tiedot, esim. kirjanmerkit, automaattisen täytön tiedot ja salasanat, tallennetaan myös roaming-käyttäjän profiilitiedostoon tai järjestelmänvalvojan <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />-käytännössä määrittämään sijaintiin. Pilvisynkronointi poistetaan käytöstä, kun tämä käytäntö on käytössä.
-
-      Jos tämä käytäntö ei ole käytössä tai sitä ei ole määritetty, vain paikallisia profiileja käytetään.
-
-      <ph name="SYNC_DISABLED_POLICY_NAME" /> poistaa kaiken tietojen synkronoinnin käytöstä ja ohittaa RoamingProfileSupportEnabled-käytännön .</translation>
 <translation id="6731757988219967594">Suodata vain aikuisille suunnattua sisältöä (mutta ei upotettua sisältöä) ylimmän tason sivustoilta</translation>
 <translation id="6734521799274931721">Määrittää, onko Verkkotiedostojen jakaminen käytettävissä Chrome-käyttöjärjestelmässä</translation>
 <translation id="6735701345096330595">Pakota oikeinkirjoituksen tarkistuskielten käyttöönotto</translation>

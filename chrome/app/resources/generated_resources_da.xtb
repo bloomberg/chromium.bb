@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Vis indstillinger for synkronisering</translation>
 <translation id="1124772482545689468">Bruger</translation>
 <translation id="1125550662859510761">Ligner <ph name="WIDTH" /> x <ph name="HEIGHT" /> (oprindelig)</translation>
-<translation id="1127216846847548354">Stemmeaktivering</translation>
 <translation id="1128109161498068552">Tillad ikke, at websites bruger interne systemmeddelelser til at få adgang til MIDI-enheder</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Rediger søgemaskine</translation>
@@ -1641,7 +1640,6 @@
 <translation id="3495660573538963482">Indstillinger for Google Assistent</translation>
 <translation id="3496213124478423963">Zoom ud</translation>
 <translation id="3505030558724226696">Tilbagekald adgang til enhed</translation>
-<translation id="3506093155988721483">Brug tale i stedet for tastatur, når du starter Google-assistenten</translation>
 <translation id="3507421388498836150">Nuværende tilladelser for "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="3507547268929739059">Fjern Linux-apps til Chromebook</translation>
 <translation id="3507888235492474624">Søg efter Bluetooth-enheder igen</translation>
@@ -2059,7 +2057,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4100733287846229632">Der er næsten ikke mere plads på enheden</translation>
 <translation id="4103091233824664032">Angiv din adgangskode for at konfigurere skærmlås og login</translation>
 <translation id="4104163789986725820">E&amp;ksporter...</translation>
-<translation id="4105563239298244027">Få 1 TB gratis plads med Google Drev</translation>
 <translation id="4107048419833779140">Identificer og fjern lagerenheder</translation>
 <translation id="4109135793348361820">Flyt vindue til <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Brug internettet i tilstanden Stor kontrast</translation>
@@ -5335,7 +5332,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9214520840402538427">Ups! Initialiseringen af ​​installationstidens attributter har fået timeout. Kontakt en supportmedarbejder.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" er tilføjet</translation>
-<translation id="9215934040295798075">Vælg baggrund</translation>
 <translation id="9218430445555521422">Indstil som standard</translation>
 <translation id="9219103736887031265">Billeder</translation>
 <translation id="9220525904950070496">Fjern konto</translation>

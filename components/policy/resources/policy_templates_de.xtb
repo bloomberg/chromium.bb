@@ -2104,11 +2104,6 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
 <translation id="6689792153960219308">Hardwarestatus senden</translation>
 <translation id="6698632841807204978">Schwarz-Weiß-Druck aktivieren</translation>
 <translation id="6699880231565102694">Zwei-Faktor-Authentifizierung für Remotezugriff-Hosts aktivieren</translation>
-<translation id="6724842112053619797">Wenn Sie diese Einstellung aktivieren, werden die in <ph name="PRODUCT_NAME" />-Profilen gespeicherten Einstellungen, etwa Lesezeichen, AutoFill-Daten und Passwörter, zusätzlich in eine Datei geschrieben, die sich im Roaming-Nutzerprofilordner oder an einem vom Administrator über die Richtlinie <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> festgelegten Ort befindet. Durch die Aktivierung dieser Richtlinie wird die Cloudsynchronisierung deaktiviert.
-
-      Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, kommen nur die regulären lokalen Profile zum Einsatz.
-
-      Durch die Richtlinie <ph name="SYNC_DISABLED_POLICY_NAME" /> wird die gesamte Datensynchronisierung deaktiviert und somit RoamingProfileSupportEnabled überschrieben.</translation>
 <translation id="6731757988219967594">Websites auf oberster Ebene (aber nicht eingebettete iFrames) mit Inhalten nur für Erwachsene filtern</translation>
 <translation id="6734521799274931721">Steuert die Verfügbarkeit von Netzwerkfreigaben unter Chrome OS</translation>
 <translation id="6735701345096330595">Aktivierung von Sprachen für die Rechtschreibprüfung erzwingen</translation>

@@ -91,7 +91,6 @@
 <translation id="1123187597739372905">Mostrar ajustes de sincronización</translation>
 <translation id="1124772482545689468">Usuario</translation>
 <translation id="1125550662859510761">Resolución de <ph name="WIDTH" />x<ph name="HEIGHT" /> (nativa)</translation>
-<translation id="1127216846847548354">Activación por voz</translation>
 <translation id="1128109161498068552">No permitir que ningún sitio utilice mensajes exclusivos del sistema para acceder a los dispositivos MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Editar motor de búsqueda</translation>
@@ -1641,7 +1640,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3495660573538963482">Configuración del Asistente de Google</translation>
 <translation id="3496213124478423963">Alejar</translation>
 <translation id="3505030558724226696">Revocar acceso al dispositivo</translation>
-<translation id="3506093155988721483">Usar la voz en lugar del teclado al iniciar el Asistente</translation>
 <translation id="3507421388498836150">Permisos actuales para <ph name="EXTENSION_NAME" /></translation>
 <translation id="3507547268929739059">Eliminar aplicaciones de Linux del Chromebook</translation>
 <translation id="3507888235492474624">Volver a buscar dispositivos Bluetooth</translation>
@@ -2058,7 +2056,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4100733287846229632">Queda muy poco espacio en el dispositivo</translation>
 <translation id="4103091233824664032">Introduce tu contraseña para configurar el bloqueo de pantalla y el inicio de sesión</translation>
 <translation id="4104163789986725820">E&amp;xportar...</translation>
-<translation id="4105563239298244027">Consigue 1 TB gratis con Google Drive</translation>
 <translation id="4107048419833779140">Identificar y expulsar dispositivos de almacenamiento</translation>
 <translation id="4109135793348361820">Mover ventana a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110895898888439383">Navega por la Web con el modo de contraste alto</translation>
@@ -5333,7 +5330,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9214520840402538427">¡Vaya! Se ha agotado el tiempo de la inicialización de los atributos de tiempo de instalación. Ponte en contacto con el representante del servicio de asistencia.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" añadida</translation>
-<translation id="9215934040295798075">Establecer fondo de pantalla</translation>
 <translation id="9218430445555521422">Establecer como predeterminado</translation>
 <translation id="9219103736887031265">Imágenes</translation>
 <translation id="9220525904950070496">Quitar cuenta</translation>

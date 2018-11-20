@@ -398,7 +398,7 @@
 <translation id="4058278702844053247">מתבצעת טעינת דף</translation>
 <translation id="4065205963140826639">נסה להקיש על מקש החיפוש ועל החץ ימינה כדי למצוא את לחצן 'הבא'. לאחר מכן הקש על מקש החיפוש ומקש הרווח כדי ללחוץ עליו.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{טילדה (~)}two{# סימני טילדה (~)}many{# סימני טילדה (~)}other{# סימני טילדה (~)}}</translation>
-<translation id="4086311032171418648">יוצא ממצב למידה.</translation>
+<translation id="4086311032171418648">יציאה ממצב למידה.</translation>
 <translation id="409334809956508737">האובייקט הקודם</translation>
 <translation id="4099274309791143834">כולל תפריט משנה</translation>
 <translation id="4101527861445851766">תיבת סימון שסומנה</translation>
@@ -501,7 +501,7 @@
 <translation id="4877261390094455813">הזן שאילתת חיפוש.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">קישור פנימי</translation>
-<translation id="4915087353619183190">‏מפעיל מצב למידה. הקשה על מקש במקלדת qwerty, מקש ברייל בתצוגה הניתנת לרענון או ביצוע תנועת מגע יציגו את הפעולה המבוצעת. כדי לצאת יש להקיש על Control יחד עם W, או על מקש Esc.</translation>
+<translation id="4915087353619183190">‏הפעלה של מצב למידה. הקשה על מקש במקלדת qwerty, מקש ברייל בתצוגה הניתנת לרענון או ביצוע תנועת מגע יציגו את הפעולה המבוצעת. כדי לצאת יש להקיש על Control יחד עם W, או על מקש Esc.</translation>
 <translation id="492295894462528572">פתח דבר</translation>
 <translation id="495170559598752135">פעולות</translation>
 <translation id="4953585991029886728">ערוך טקסט</translation>

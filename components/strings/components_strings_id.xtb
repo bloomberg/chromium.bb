@@ -584,7 +584,6 @@
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{dan 1 halaman web lainnya}other{dan # halaman web lainnya}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
-<translation id="4919958102839282947">Masukkan CVC untuk <ph name="CREDIT_CARD" />. Setelah mengonfirmasi, detail kartu dari akun Pembayaran Google Anda akan dibagikan dengan situs ini.</translation>
 <translation id="4923417429809017348">Halaman ini telah diterjemahkan dari bahasa yang tidak diketahui ke bahasa <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Pembayaran</translation>
 <translation id="4926049483395192435">Harus ditentukan.</translation>
@@ -616,7 +615,6 @@
 <translation id="5095208057601539847">Provinsi</translation>
 <translation id="5098332213681597508">Nama ini dari Akun Google Anda.</translation>
 <translation id="5115563688576182185">(64 bit)</translation>
-<translation id="5121084798328133320">Setelah mengonfirmasi, detail kartu dari akun Pembayaran Google Anda akan dibagikan dengan situs ini.</translation>
 <translation id="5128122789703661928">Sesi dengan nama ini tidak valid untuk dihapus.</translation>
 <translation id="5135404736266831032">Kelola alamat...</translation>
 <translation id="5141240743006678641">Enkripsikan sandi yang disinkronkan dengan kredensial Google Anda</translation>
@@ -1143,7 +1141,6 @@
 <translation id="8932102934695377596">Setelan waktu Anda terlalu lambat</translation>
 <translation id="893332455753468063">Tambahkan Nama</translation>
 <translation id="8938939909778640821">Kartu kredit dan prabayar yang diterima</translation>
-<translation id="8952525071319348207">Masukkan tanggal habis masa berlaku dan CVC untuk <ph name="CREDIT_CARD" /> guna mengupdate detail kartu. Setelah mengonfirmasi, detail kartu dari akun Pembayaran Google Anda akan dibagikan dengan situs ini.</translation>
 <translation id="8957210676456822347">Otorisasi Portal Tawanan</translation>
 <translation id="8971063699422889582">Sertifikat server telah kedaluwarsa.</translation>
 <translation id="8975012916872825179">Termasuk informasi seperti nomor telepon, alamat email, dan alamat pengiriman</translation>
