@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/omnibox/popup/shortcuts/shortcuts_view_controller.h"
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_most_visited_tile_view.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_shortcut_tile_view.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_constants.h"
@@ -227,6 +229,8 @@ const NSInteger kCollectionShortcutSection = 1;
         self.displayedMostVisitedItems[indexPath.item];
     DCHECK(item);
     [self.commandHandler openMostVisitedItem:item];
+    base::RecordAction(
+        base::UserMetricsAction("MobileOmniboxShortcutsOpenMostVisitedItem"));
   }
 
   if (indexPath.section == kCollectionShortcutSection) {
@@ -234,15 +238,23 @@ const NSInteger kCollectionShortcutSection = 1;
     switch (type) {
       case NTPCollectionShortcutTypeBookmark:
         [self.commandHandler openBookmarks];
+        base::RecordAction(
+            base::UserMetricsAction("MobileOmniboxShortcutsOpenBookmarks"));
         break;
       case NTPCollectionShortcutTypeRecentTabs:
         [self.commandHandler openRecentTabs];
+        base::RecordAction(
+            base::UserMetricsAction("MobileOmniboxShortcutsOpenRecentTabs"));
         break;
       case NTPCollectionShortcutTypeReadingList:
         [self.commandHandler openReadingList];
+        base::RecordAction(
+            base::UserMetricsAction("MobileOmniboxShortcutsOpenReadingList"));
         break;
       case NTPCollectionShortcutTypeHistory:
         [self.commandHandler openHistory];
+        base::RecordAction(
+            base::UserMetricsAction("MobileOmniboxShortcutsOpenHistory"));
         break;
     }
   }
