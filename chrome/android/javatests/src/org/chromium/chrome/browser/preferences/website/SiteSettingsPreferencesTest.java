@@ -284,7 +284,7 @@ public class SiteSettingsPreferencesTest {
                 PreferenceScreen preferenceScreen = preferenceFragment.getPreferenceScreen();
                 int preferenceCount = preferenceScreen.getPreferenceCount();
 
-                ArrayList<String> actualKeys = new ArrayList<String>();
+                ArrayList<String> actualKeys = new ArrayList<>();
                 for (int index = 0; index < preferenceCount; index++) {
                     Preference preference = preferenceScreen.getPreference(index);
                     String key = preference.getKey();
@@ -368,6 +368,36 @@ public class SiteSettingsPreferencesTest {
         Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         // Load the page again and ensure the cookie remains unset.
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+    }
+
+    /**
+     * Set a cookie and check that it is removed when a site is cleared.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testClearCookies() throws Exception {
+        final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
+
+        mActivityTestRule.loadUrl(url);
+        Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+        mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
+        Assert.assertEquals(
+                "\"Foo=Bar\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
+
+        WebsiteAddress address = WebsiteAddress.create(url);
+        Website website = new Website(address, address);
+        final Preferences preferenceActivity = startSingleWebsitePreferences(website);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            SingleWebsitePreferences websitePreferences =
+                    (SingleWebsitePreferences) preferenceActivity.getFragmentForTest();
+            websitePreferences.resetSite();
+        });
+        preferenceActivity.finish();
+
+        // Load the page again and ensure the cookie is gone.
         mActivityTestRule.loadUrl(url);
         Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
     }
@@ -696,11 +726,7 @@ public class SiteSettingsPreferencesTest {
     }
 
     private int getTabCount() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount();
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
     }
 }
