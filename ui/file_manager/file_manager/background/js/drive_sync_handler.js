@@ -82,6 +82,8 @@ function DriveSyncHandler(progressCenter) {
       this.onNotificationButtonClicked_.bind(this));
   chrome.fileManagerPrivate.onPreferencesChanged.addListener(
       this.onPreferencesChanged_.bind(this));
+  chrome.fileManagerPrivate.onDriveConnectionStatusChanged.addListener(
+      this.onDriveConnectionStatusChanged_.bind(this));
 
   // Set initial values.
   this.onPreferencesChanged_();
@@ -283,4 +285,23 @@ DriveSyncHandler.prototype.onPreferencesChanged_ = function() {
   chrome.fileManagerPrivate.getPreferences(function(pref) {
     this.cellularDisabled_ = pref.cellularDisabled;
   }.bind(this));
+};
+
+/**
+ * Handles connection state change.
+ * @private
+ */
+DriveSyncHandler.prototype.onDriveConnectionStatusChanged_ = function() {
+  chrome.fileManagerPrivate.getDriveConnectionState((state) => {
+    // If offline, hide any sync progress notifications. When online again, the
+    // Drive sync client may retry syncing and trigger onFileTransfersUpdated
+    // events, causing it to be shown again.
+    if (state.type == 'offline' && state.reason == 'no_network' &&
+        this.syncing_) {
+      this.syncing_ = false;
+      this.item_.state = ProgressItemState.CANCELED;
+      this.progressCenter_.updateItem(this.item_);
+      this.dispatchEvent(new Event(DriveSyncHandler.COMPLETED_EVENT));
+    }
+  });
 };

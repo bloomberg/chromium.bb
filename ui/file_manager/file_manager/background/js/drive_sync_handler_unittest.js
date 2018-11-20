@@ -42,8 +42,22 @@ chrome.fileManagerPrivate = {
     },
     listener_: null
   },
+  onDriveConnectionStatusChanged: {
+    addListener: function(callback) {
+      chrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_ =
+          callback;
+    },
+    removeListener: function() {
+      chrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_ = null;
+    },
+    listener_: null
+  },
   getPreferences: function() {},
   setPreferences: function() {},
+
+  getDriveConnectionState: function(callback) {
+    callback({type: 'offline', reason: 'no_network'});
+  },
 };
 
 /**
@@ -121,4 +135,30 @@ function testErrorDedupe() {
 
   // Check that this created second item.
   assertEquals(1, Object.keys(progressCenter.items).length);
+}
+
+// Test offline.
+function testOffline() {
+  // Start a transfer.
+  chrome.fileManagerPrivate.onFileTransfersUpdated.listener_({
+    fileUrl: 'name',
+    transferState: 'in_progress',
+    processed: 50.0,
+    total: 100.0,
+    numTotalJobs: 1,
+    hideWhenZeroJobs: true,
+  });
+
+  // Check that this created one item.
+  assertEquals(1, Object.keys(progressCenter.items).length);
+  assertEquals(
+      ProgressItemState.PROGRESSING, progressCenter.items['drive-sync'].state);
+  assertTrue(handler.syncing);
+
+  chrome.fileManagerPrivate.onDriveConnectionStatusChanged.listener_();
+
+  assertEquals(1, Object.keys(progressCenter.items).length);
+  assertEquals(
+      ProgressItemState.CANCELED, progressCenter.items['drive-sync'].state);
+  assertFalse(handler.syncing);
 }
