@@ -52,6 +52,7 @@ class IncludeNode(base.Node):
             'relativepath': 'false',
             'use_base_dir': 'true',
             'skip_minify': 'false',
+            'skip_in_resource_map': 'false',
            }
 
   def GetInputPath(self):
@@ -119,7 +120,8 @@ class IncludeNode(base.Node):
          allow_external_script=allow_external_script)
 
   def IsResourceMapSource(self):
-    return True
+    skip = self.attrs.get('skip_in_resource_map', 'false') == 'true'
+    return not skip
 
   @staticmethod
   def Construct(parent, name, type, file, translateable=True,
