@@ -252,7 +252,7 @@
 <translation id="5496819745535887422">మీ నిర్వాహకుడు మీ పరికరాన్ని ఉపసంహరిస్తున్నారు. పరికరం మళ్లీ ప్రారంభించినప్పుడు మొత్తం డేటా తొలగించబడుతుంది.</translation>
 <translation id="553675580533261935">సెషన్ నుండి నిష్క్రమిస్తోంది</translation>
 <translation id="5537725057119320332">Cast</translation>
-<translation id="5548285847212963613">"<ph name="EXTENSION_NAME" />" పొడిగింపు ఈ నెట్‌వర్క్‌కు కనెక్ట్ చేయడంలో సహాయపడగలదు.</translation>
+<translation id="5548285847212963613">ఈ నెట్‌వర్క్‌కు కనెక్ట్ చేయడంలో ఎక్స్‌టెన్షన్ "<ph name="EXTENSION_NAME" />" సహాయపడగలదు.</translation>
 <translation id="554893713779400387">డిక్టేషన్‌ని టోగుల్ చేయి</translation>
 <translation id="5554214597676791969">తిరిగి సైన్ ఇన్ చేయడానికి, మీ పాస్‌వర్డ్‌ని నమోదు చేయండి</translation>
 <translation id="5571066253365925590">Bluetooth ప్రారంభించబడింది</translation>
@@ -366,7 +366,7 @@
 <translation id="743058460480092004">కెమెరా మరియు మైక్రోఫోన్ ఉపయోగంలో ఉన్నాయి.</translation>
 <translation id="7497767806359279797">భాషను మరియు కీబోర్డ్‌ను ఎంచుకోండి</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
-<translation id="7526573455193969409">నెట్‌వర్క్ పర్యవేక్షించబడవచ్చు</translation>
+<translation id="7526573455193969409">నెట్‌వ‌ర్క్‌పై ప‌ర్య‌వేక్ష‌ణ ఉండ‌వ‌చ్చు</translation>
 <translation id="7536035074519304529">IP చిరునామా: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">నిద్రపోయే సమయం</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />కి మద్దతివ్వదు. రిజల్యూషన్ <ph name="FALLBACK_RESOLUTION" />కి మార్చబడింది</translation>
@@ -399,7 +399,7 @@
 <translation id="7977927628060636163">మొబైల్ నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
 <translation id="7982789257301363584">నెట్‌వర్క్</translation>
 <translation id="7994370417837006925">బహుళ సైన్-ఇన్</translation>
-<translation id="8000066093800657092">ఏ నెట్‌వర్క్ లేదు</translation>
+<translation id="8000066093800657092">నెట్‌వర్క్ లేదు</translation>
 <translation id="8029241286966751120">పూర్తి స్క్రీన్ మాగ్నిఫైయర్ ప్రారంభించబడింది. దాన్ని టోగుల్ ఆఫ్ చేయడానికి మళ్లీ Ctrl+Search+Mని నొక్కండి.</translation>
 <translation id="8030169304546394654">డిస్‌కనెక్ట్ చెయ్యబడింది</translation>
 <translation id="8054466585765276473">బ్యాటరీ సమయాన్ని లెక్కిస్తోంది.</translation>

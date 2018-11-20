@@ -1333,7 +1333,7 @@
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (розширення встановлено)</translation>
 <translation id="2961695502793809356">Натисніть, щоб перейти далі; утримуйте, щоб переглянути історію</translation>
 <translation id="2963151496262057773">Плагін <ph name="PLUGIN_NAME" /> не відповідає. Зупинити?</translation>
-<translation id="2966937470348689686">Керуйте налаштуваннями Android</translation>
+<translation id="2966937470348689686">Змінити налаштування Android</translation>
 <translation id="2971213274238188218">зменшити яскравість</translation>
 <translation id="2972557485845626008">Мікропрограма</translation>
 <translation id="2972581237482394796">&amp;Повторити</translation>
@@ -3816,7 +3816,7 @@
 <translation id="6686817083349815241">Зберегти пароль</translation>
 <translation id="6690659332373509948">Неможливо проаналізувати файл: <ph name="FILE_NAME" /></translation>
 <translation id="6690751852586194791">Виберіть, якого контрольованого користувача додати на цей пристрій.</translation>
-<translation id="6691331417640343772">Керувати синхронізованими даними на інформаційній панелі Google</translation>
+<translation id="6691331417640343772">Керувати синхронізованими даними в Особистому кабінеті Google</translation>
 <translation id="6691936601825168937">&amp;Переслати</translation>
 <translation id="6697492270171225480">Показувати пропозиції схожих сторінок, коли не вдається знайти сторінку</translation>
 <translation id="6698810901424468597">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1" /> і <ph name="WEBSITE_2" /></translation>

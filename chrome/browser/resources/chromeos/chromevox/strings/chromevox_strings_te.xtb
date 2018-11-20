@@ -52,7 +52,7 @@
 <translation id="1342835525016946179">కథనం</translation>
 <translation id="1346748346194534595">కుడి</translation>
 <translation id="135978014023467274">మీరు ChromeVox 63కు అప్‌డేట్ అయ్యారు!</translation>
-<translation id="136718599399906424">తదుపరి పట్టిక అడ్డు వరుస</translation>
+<translation id="136718599399906424">తర్వాత పట్టిక అడ్డు వరుస</translation>
 <translation id="1377925789329510816">ఇది చివరి ముఖ్యశీర్షిక. మొదటి ముఖ్యశీర్షికకు సర్దుబాటు చేసేందుకు, శోధన+H నొక్కండి లేదా ఈ పేజీలోని రెండవ ముఖ్యశీర్షికకు వెళ్లేందుకు, శోధన+Shift+Hను నొక్కండి.</translation>
 <translation id="1383876407941801731">శోధించు</translation>
 <translation id="1385214448885562192">ఆమోదించడానికి enterని లేదా రద్దు చేయడానికి escapeని, తదుపరి దాని కోసం క్రిందికి మరియు మునుపటి దాని కోసం పైకి నొక్కండి.</translation>
@@ -613,7 +613,7 @@
 <translation id="5703716265115423771">వాల్యూమ్ తగ్గిస్తుంది</translation>
 <translation id="5709192780268610569">పెద్ద వివరణ లేదు</translation>
 <translation id="5712244464475377681">popbtn</translation>
-<translation id="5712338278108304766">తదుపరి పట్టిక నిలువు వరుస</translation>
+<translation id="5712338278108304766">తర్వాత పట్టిక నిలువు వరుస</translation>
 <translation id="571866080859340309">విశ్లేషణ సమూహాలు</translation>
 <translation id="5728409797179002635">పట్టిక కనుగొనబడలేదు.</translation>
 <translation id="5729047866208036762">గణితాన్ని అన్వేషించడానికి పైకి, కిందకు, ఎడమకు లేదా కుడి చిహ్నాల కీలను నొక్కండి.</translation>
@@ -707,7 +707,7 @@
 <translation id="6601344353291556895">విశదీకృత వివరణలను ప్రారంభించండి.</translation>
 <translation id="6615602925644411249">పేజీలో కనుగొనండి.</translation>
 <translation id="6628427060004938651">భాగం</translation>
-<translation id="6633350132811819843">తదుపరి పట్టిక లేదు.</translation>
+<translation id="6633350132811819843">తర్వాత పట్టిక లేదు.</translation>
 <translation id="6637586476836377253">log</translation>
 <translation id="6657128831881431364">ప్రోగ్రెస్ పట్టీ</translation>
 <translation id="6659594942844771486">టాబ్</translation>
@@ -797,7 +797,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="7362871137496673139">మునుపటి స్థాయి 2 శీర్షిక లేదు.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ఆంపర్సండ్ గుర్తు}other{# ఆంపర్సండ్ గుర్తులు}}</translation>
 <translation id="737396357417333429">clk</translation>
-<translation id="7374104575779636480">పట్టిక నుండి నిష్క్రమిస్తున్నారు.</translation>
+<translation id="7374104575779636480">పట్టికను వ‌దిలిపెడుతున్నారు.</translation>
 <translation id="7392145451309930991">వచన సరిపోలిక ప్రారంభం</translation>
 <translation id="739763518212184081">మునుపటి పంక్తి</translation>
 <translation id="7400575256015741911">అక్షరదోషం కనుగొనబడింది</translation>
@@ -821,7 +821,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="7609363189280667021">బ్రెయిలీ శీర్షికలను టోగుల్ చేయండి</translation>
 <translation id="761303759119251275">సహకారి</translation>
 <translation id="762020119231868829">ప్రస్తుతం ప్లే అవుతున్న అన్ని మీడియా విడ్జెట్‌లను పాజ్ చేస్తుంది</translation>
-<translation id="7625690649919402823">తదుపరి పట్టిక</translation>
+<translation id="7625690649919402823">తర్వాత పట్టిక</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), గ్రేడ్ <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">మునుపటి స్థాయి 3 శీర్షిక లేదు.</translation>
 <translation id="7647456547678091388">చిట్కా</translation>

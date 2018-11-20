@@ -998,7 +998,7 @@
 <translation id="7758069387465995638">ఫైర్‌వాల్ లేదా యాంటీవైరస్ సాఫ్ట్‌వేర్ కనెక్షన్‌ను బ్లాక్ చేసి ఉండవచ్చు.</translation>
 <translation id="7759163816903619567">ప్రదర్శన డొమైన్:</translation>
 <translation id="7761701407923456692">సర్వర్ సర్టిఫికెట్ URLతో సరిపోలలేదు.</translation>
-<translation id="7763386264682878361">చెల్లింపు మానిఫెస్ట్ అన్వయ నియమం</translation>
+<translation id="7763386264682878361">చెల్లింపు మానిఫెస్ట్ పార్స‌ర్‌</translation>
 <translation id="7764225426217299476">చిరునామాను జోడించు</translation>
 <translation id="777702478322588152">అధికారిక నివాసం</translation>
 <translation id="7791543448312431591">జోడించు</translation>
@@ -1072,7 +1072,7 @@
 <translation id="8267698848189296333"><ph name="USERNAME" />గా సైన్ ఇన్ చేస్తోంది</translation>
 <translation id="8286036467436129157">సైన్ ఇన్ చేయండి</translation>
 <translation id="8288807391153049143">సర్టిఫికేట్‌ని చూపు</translation>
-<translation id="8289355894181816810">మీకు దీని గురించి ఖచ్చితంగా తెలియకుంటే మీ నెట్‌వర్క్ నిర్వాహకుని సంప్రదించండి.</translation>
+<translation id="8289355894181816810">మీకు దీని గురించి ఖచ్చితంగా తెలియకుంటే మీ నెట్‌వర్క్ నిర్వాహకుడిని సంప్రదించండి.</translation>
 <translation id="8293206222192510085">బుక్‌మార్క్‌ను జోడించండి</translation>
 <translation id="8294431847097064396">మూలం</translation>
 <translation id="8298115750975731693">మీరు ఉపయోగిస్తున్న Wi-Fi (<ph name="WIFI_NAME" />)కి మీరు <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ని సందర్శించడం అవసరం.</translation>
@@ -1149,7 +1149,7 @@
 <translation id="8866481888320382733">విధాన సెట్టింగ్‌లను అన్వయించడంలో లోపం</translation>
 <translation id="8870413625673593573">ఇటీవల మూసివేసినవి</translation>
 <translation id="8874824191258364635">చెల్లుబాటు అయ్యే కార్డ్ నంబర్‌ను నమోదు చేయండి</translation>
-<translation id="8876793034577346603">నెట్‌వర్క్ కాన్ఫిగరేషన్ అన్వయించబడటంలో విఫలమైంది.</translation>
+<translation id="8876793034577346603">నెట్‌వర్క్ కాన్ఫిగరేషన్ అన్వయించడంలో విఫలమైంది.</translation>
 <translation id="8891727572606052622">చెల్లని ప్రాక్సీ మోడ్.</translation>
 <translation id="8892964541482452187">ట్యాబ్ స్విచ్ బటన్, ఈ ట్యాబ్‌కి మారడానికి ఎంటర్‌ని నొక్కండి</translation>
 <translation id="8903921497873541725">దగ్గరికి జూమ్ చేయి</translation>
