@@ -968,6 +968,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/transformfeedback/' +
         'random_separate_triangles.html',
         ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('conformance2/rendering/canvas-resizing-with-pbo-bound.html',
+        ['linux', 'nvidia'], bug=906846)
 
     # Linux NVIDIA Quadro P400, OpenGL backend
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
