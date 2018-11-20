@@ -403,9 +403,11 @@ class CommandBufferSetup {
     if (translator)
       translator->AddRef();
 #endif
-    decoder_->Destroy(true);
+    bool context_lost =
+        decoder_->WasContextLost() || !decoder_->CheckResetStatus();
+    decoder_->Destroy(!context_lost);
     decoder_.reset();
-    if (recreate_context_) {
+    if (recreate_context_ || context_lost) {
       context_->ReleaseCurrent(nullptr);
       context_ = nullptr;
     }
