@@ -104,14 +104,13 @@ suiteSetup(function() {
        * @param {string} name
        * @return {!Promise<!Action>}
        */
-      waitForAction(name) {
+      async waitForAction(name) {
         assertTrue(
             this.resolverMap_.has(name),
             'Must call expectAction before each call to waitForAction');
-        return this.resolverMap_.get(name).promise.then((action) => {
-          this.resolverMap_.delete(name);
-          return action;
-        });
+        const action = await this.resolverMap_.get(name).promise;
+        this.resolverMap_.delete(name);
+        return action;
       }
     }
 

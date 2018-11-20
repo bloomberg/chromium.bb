@@ -24,44 +24,31 @@ suite('Bookmarks policies', function() {
     replaceBody(app);
   });
 
-  test('incognito availability updates when changed', function() {
+  test('incognito availability updates when changed', async function() {
     const commandManager = bookmarks.CommandManager.getInstance();
     // Incognito is disabled during testGenPreamble(). Wait for the front-end to
     // load the config.
-    return store.waitForAction('set-incognito-availability')
-        .then(action => {
-          assertEquals(
-              IncognitoAvailability.DISABLED,
-              store.data.prefs.incognitoAvailability);
-          assertFalse(commandManager.canExecute(
-              Command.OPEN_INCOGNITO, new Set(['11'])));
+    const action = await store.waitForAction('set-incognito-availability');
+    assertEquals(
+        IncognitoAvailability.DISABLED, store.data.prefs.incognitoAvailability);
+    assertFalse(
+        commandManager.canExecute(Command.OPEN_INCOGNITO, new Set(['11'])));
 
-          return cr.sendWithPromise(
-              'testSetIncognito', IncognitoAvailability.ENABLED);
-        })
-        .then(() => {
-          assertEquals(
-              IncognitoAvailability.ENABLED,
-              store.data.prefs.incognitoAvailability);
-          assertTrue(commandManager.canExecute(
-              Command.OPEN_INCOGNITO, new Set(['11'])));
-        });
+    await cr.sendWithPromise('testSetIncognito', IncognitoAvailability.ENABLED);
+    assertEquals(
+        IncognitoAvailability.ENABLED, store.data.prefs.incognitoAvailability);
+    assertTrue(
+        commandManager.canExecute(Command.OPEN_INCOGNITO, new Set(['11'])));
   });
 
-  test('canEdit updates when changed', function() {
+  test('canEdit updates when changed', async function() {
     const commandManager = bookmarks.CommandManager.getInstance();
-    return store.waitForAction('set-can-edit')
-        .then(action => {
-          assertFalse(store.data.prefs.canEdit);
-          assertFalse(
-              commandManager.canExecute(Command.DELETE, new Set(['11'])));
+    let action = await store.waitForAction('set-can-edit');
+    assertFalse(store.data.prefs.canEdit);
+    assertFalse(commandManager.canExecute(Command.DELETE, new Set(['11'])));
 
-          return cr.sendWithPromise('testSetCanEdit', true);
-        })
-        .then(() => {
-          assertTrue(store.data.prefs.canEdit);
-          assertTrue(
-              commandManager.canExecute(Command.DELETE, new Set(['11'])));
-        });
+    await cr.sendWithPromise('testSetCanEdit', true);
+    assertTrue(store.data.prefs.canEdit);
+    assertTrue(commandManager.canExecute(Command.DELETE, new Set(['11'])));
   });
 });

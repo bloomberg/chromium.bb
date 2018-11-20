@@ -69,25 +69,24 @@ suite('<bookmarks-app>', function() {
     assertEquals(sidebarWidth, app.$.sidebar.style.width);
   });
 
-  test('focus ring hides and restores', function() {
-    return PolymerTest.flushTasks().then(() => {
-      const list = app.$$('bookmarks-list');
-      const item = list.root.querySelectorAll('bookmarks-item')[0];
-      const getFocusAttribute = () =>
-          app.getAttribute(bookmarks.HIDE_FOCUS_RING_ATTRIBUTE);
+  test('focus ring hides and restores', async function() {
+    await PolymerTest.flushTasks();
+    const list = app.$$('bookmarks-list');
+    const item = list.root.querySelectorAll('bookmarks-item')[0];
+    const getFocusAttribute = () =>
+        app.getAttribute(bookmarks.HIDE_FOCUS_RING_ATTRIBUTE);
 
-      assertEquals(null, getFocusAttribute());
+    assertEquals(null, getFocusAttribute());
 
-      MockInteractions.tap(item);
-      assertEquals('', getFocusAttribute());
+    MockInteractions.tap(item);
+    assertEquals('', getFocusAttribute());
 
-      MockInteractions.keyDownOn(item, 16, [], 'Shift');
-      assertEquals('', getFocusAttribute());
+    MockInteractions.keyDownOn(item, 16, [], 'Shift');
+    assertEquals('', getFocusAttribute());
 
-      // This event is also captured by the bookmarks-list and propagation is
-      // stopped. Regardless, it should clear the focus first.
-      MockInteractions.keyDownOn(item, 40, [], 'ArrowDown');
-      assertEquals(null, getFocusAttribute());
-    });
+    // This event is also captured by the bookmarks-list and propagation is
+    // stopped. Regardless, it should clear the focus first.
+    MockInteractions.keyDownOn(item, 40, [], 'ArrowDown');
+    assertEquals(null, getFocusAttribute());
   });
 });
