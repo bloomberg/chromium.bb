@@ -3031,6 +3031,17 @@
       "features": [
         "disable_aimagereader"
       ]
+    },
+    {
+      "id": 283,
+      "cr_bugs": [893177],
+      "description": "Some drivers can't recover after OUT_OF_MEM and context lost",
+      "os": {
+        "type": "linux"
+      },
+      "features": [
+        "exit_on_context_lost"
+      ]
     }
   ]
 }
