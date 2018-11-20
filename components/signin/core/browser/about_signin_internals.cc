@@ -29,6 +29,7 @@
 #include "components/signin/core/browser/signin_switches.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/base/backoff_entry.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace {
 
@@ -188,12 +189,14 @@ std::string GetAccountConsistencyDescription(
 AboutSigninInternals::AboutSigninInternals(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker,
+    identity::IdentityManager* identity_manager,
     SigninManagerBase* signin_manager,
     SigninErrorController* signin_error_controller,
     GaiaCookieManagerService* cookie_manager_service,
     signin::AccountConsistencyMethod account_consistency)
     : token_service_(token_service),
       account_tracker_(account_tracker),
+      identity_manager_(identity_manager),
       signin_manager_(signin_manager),
       client_(nullptr),
       signin_error_controller_(signin_error_controller),
@@ -308,7 +311,8 @@ void AboutSigninInternals::Initialize(SigninClient* client) {
   RefreshSigninPrefs();
 
   signin_error_controller_->AddObserver(this);
-  signin_manager_->AddObserver(this);
+  identity_manager_->AddObserver(this);
+  identity_manager_->AddDiagnosticsObserver(this);
   signin_manager_->AddSigninDiagnosticsObserver(this);
   token_service_->AddObserver(this);
   token_service_->AddDiagnosticsObserver(this);
@@ -317,7 +321,8 @@ void AboutSigninInternals::Initialize(SigninClient* client) {
 
 void AboutSigninInternals::Shutdown() {
   signin_error_controller_->RemoveObserver(this);
-  signin_manager_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
+  identity_manager_->RemoveDiagnosticsObserver(this);
   signin_manager_->RemoveSigninDiagnosticsObserver(this);
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
@@ -329,7 +334,7 @@ void AboutSigninInternals::NotifyObservers() {
     return;
 
   std::unique_ptr<base::DictionaryValue> signin_status_value =
-      signin_status_.ToValue(account_tracker_, signin_manager_,
+      signin_status_.ToValue(account_tracker_, identity_manager_,
                              signin_error_controller_, token_service_,
                              cookie_manager_service_, client_,
                              account_consistency_);
@@ -340,14 +345,14 @@ void AboutSigninInternals::NotifyObservers() {
 
 std::unique_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
   return signin_status_.ToValue(
-      account_tracker_, signin_manager_, signin_error_controller_,
+      account_tracker_, identity_manager_, signin_error_controller_,
       token_service_, cookie_manager_service_, client_, account_consistency_);
 }
 
 void AboutSigninInternals::OnAccessTokenRequested(
     const std::string& account_id,
     const std::string& consumer_id,
-    const OAuth2TokenService::ScopeSet& scopes) {
+    const identity::ScopeSet& scopes) {
   TokenInfo* token = signin_status_.FindToken(account_id, consumer_id, scopes);
   if (token) {
     *token = TokenInfo(consumer_id, scopes);
@@ -440,18 +445,18 @@ void AboutSigninInternals::OnErrorChanged() {
   NotifyObservers();
 }
 
-void AboutSigninInternals::GoogleSigninFailed(
+void AboutSigninInternals::OnPrimaryAccountSigninFailed(
     const GoogleServiceAuthError& error) {
   NotifyObservers();
 }
 
-void AboutSigninInternals::GoogleSigninSucceeded(const std::string& account_id,
-                                                 const std::string& username) {
+void AboutSigninInternals::OnPrimaryAccountSet(
+    const AccountInfo& primary_account_info) {
   NotifyObservers();
 }
 
-void AboutSigninInternals::GoogleSignedOut(const std::string& account_id,
-                                           const std::string& username) {
+void AboutSigninInternals::OnPrimaryAccountCleared(
+    const AccountInfo& primary_account_info) {
   NotifyObservers();
 }
 
@@ -589,7 +594,7 @@ void AboutSigninInternals::SigninStatus::AddRefreshTokenEvent(
 std::unique_ptr<base::DictionaryValue>
 AboutSigninInternals::SigninStatus::ToValue(
     AccountTrackerService* account_tracker,
-    SigninManagerBase* signin_manager,
+    identity::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
     ProfileOAuth2TokenService* token_service,
     GaiaCookieManagerService* cookie_manager_service,
@@ -605,15 +610,16 @@ AboutSigninInternals::SigninStatus::ToValue(
                   signin_client->GetProductVersion());
   AddSectionEntry(basic_info, "Account Consistency",
                   GetAccountConsistencyDescription(account_consistency));
-  AddSectionEntry(basic_info, "Signin Status",
-      signin_manager->IsAuthenticated() ? "Signed In" : "Not Signed In");
+  AddSectionEntry(
+      basic_info, "Signin Status",
+      identity_manager->HasPrimaryAccount() ? "Signed In" : "Not Signed In");
   OAuth2TokenServiceDelegate::LoadCredentialsState load_tokens_state =
       token_service->GetDelegate()->load_credentials_state();
   AddSectionEntry(basic_info, "TokenService Load Status",
                   TokenServiceLoadCredentialsStateToLabel(load_tokens_state));
 
-  if (signin_manager->IsAuthenticated()) {
-    std::string account_id = signin_manager->GetAuthenticatedAccountId();
+  if (identity_manager->HasPrimaryAccount()) {
+    std::string account_id = identity_manager->GetPrimaryAccountId();
     AddSectionEntry(basic_info,
                     SigninStatusFieldToLabel(signin_internals_util::ACCOUNT_ID),
                     account_id);
@@ -622,7 +628,7 @@ AboutSigninInternals::SigninStatus::ToValue(
                     account_tracker->GetAccountInfo(account_id).gaia);
     AddSectionEntry(basic_info,
                     SigninStatusFieldToLabel(signin_internals_util::USERNAME),
-                    signin_manager->GetAuthenticatedAccountInfo().email);
+                    identity_manager->GetPrimaryAccountInfo().email);
     if (signin_error_controller->HasError()) {
       const std::string error_account_id =
           signin_error_controller->error_account_id();
