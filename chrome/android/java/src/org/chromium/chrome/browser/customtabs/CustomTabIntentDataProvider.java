@@ -134,12 +134,10 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_MANAGED_URLS_REGEX";
 
     /** The APK package to load the module from. */
-    @VisibleForTesting
     /* package */ static final String EXTRA_MODULE_PACKAGE_NAME =
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_PACKAGE_NAME";
 
     /** The class name of the module entry point. */
-    @VisibleForTesting
     /* package */ static final String EXTRA_MODULE_CLASS_NAME =
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_CLASS_NAME";
 
