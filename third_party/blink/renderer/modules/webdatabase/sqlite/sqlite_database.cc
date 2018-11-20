@@ -47,9 +47,6 @@ SQLiteDatabase::SQLiteDatabase()
     : db_(nullptr),
       page_size_(-1),
       transaction_in_progress_(false),
-#if DCHECK_IS_ON()
-      sharable_(false),
-#endif
       opening_thread_(0),
       open_error_(SQLITE_ERROR),
       open_error_message_(),
