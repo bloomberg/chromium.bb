@@ -2232,6 +2232,13 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperIncognitoTest,
 // TODO(estark): add console messages for the |kMarkHttpAsParameterWarning|
 // configuration of |kMarkHttpAsFeature| and update this test accordingly.
 // https://crbug.com/802921
+#if defined(OS_WIN)
+#define MAYBE_ConsoleMessageNotPrintedForAbortedNavigation \
+  DISABLED_ConsoleMessageNotPrintedForAbortedNavigation
+#else
+#define MAYBE_ConsoleMessageNotPrintedForAbortedNavigation \
+  ConsoleMessageNotPrintedForAbortedNavigation
+#endif
 IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperIncognitoTest,
                        ConsoleMessageNotPrintedForAbortedNavigation) {
   base::test::ScopedFeatureList scoped_feature_list;
