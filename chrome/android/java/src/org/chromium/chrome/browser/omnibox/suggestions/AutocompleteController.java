@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.Vo
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.omnibox.SuggestionAnswer;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -293,8 +294,8 @@ public class AutocompleteController {
             int relevance, int transition, String contents, int[] contentClassificationOffsets,
             int[] contentClassificationStyles, String description,
             int[] descriptionClassificationOffsets, int[] descriptionClassificationStyles,
-            String answerContents, String answerType, String fillIntoEdit, String url,
-            boolean isStarred, boolean isDeletable) {
+            SuggestionAnswer answer, String fillIntoEdit, String url, boolean isStarred,
+            boolean isDeletable) {
         assert contentClassificationOffsets.length == contentClassificationStyles.length;
         List<MatchClassification> contentClassifications = new ArrayList<>();
         for (int i = 0; i < contentClassificationOffsets.length; i++) {
@@ -310,8 +311,8 @@ public class AutocompleteController {
         }
 
         return new OmniboxSuggestion(nativeType, isSearchType, relevance, transition, contents,
-                contentClassifications, description, descriptionClassifications, answerContents,
-                answerType, fillIntoEdit, url, isStarred, isDeletable);
+                contentClassifications, description, descriptionClassifications, answer,
+                fillIntoEdit, url, isStarred, isDeletable);
     }
 
     /**

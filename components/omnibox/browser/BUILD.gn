@@ -235,19 +235,39 @@ jumbo_static_library("browser") {
   if ((!is_android || enable_vr) && !is_ios) {
     deps += [ ":vector_icons" ]
   }
+
+  if (is_android) {
+    deps += [ ":jni_headers" ]
+  }
 }
 
 if (is_android) {
-  java_cpp_enum("autocomplete_match_javagen") {
+  android_library("browser_java") {
+    java_files = [
+      "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
+    ]
+
+    deps = [
+      "//base:base_java",
+      "//third_party/android_deps:android_support_compat_java",
+    ]
+
+    srcjar_deps = [ ":browser_java_enums_srcjar" ]
+  }
+
+  java_cpp_enum("browser_java_enums_srcjar") {
     sources = [
       "autocomplete_match.h",
+      "autocomplete_match_type.h",
+      "suggestion_answer.h",
     ]
   }
 
-  java_cpp_enum("autocomplete_match_type_javagen") {
+  generate_jni("jni_headers") {
     sources = [
-      "autocomplete_match_type.h",
+      "android/java/src/org/chromium/components/omnibox/SuggestionAnswer.java",
     ]
+    jni_package = "components/omnibox/browser"
   }
 }
 

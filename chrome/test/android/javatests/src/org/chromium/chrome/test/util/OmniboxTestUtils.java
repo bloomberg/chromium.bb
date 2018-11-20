@@ -76,9 +76,8 @@ public class OmniboxTestUtils {
                 int type, String text, String url) {
             List<MatchClassification> classifications = new ArrayList<>();
             classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
-            mSuggestions.add(new OmniboxSuggestion(
-                    type, false, 0, 0, text, classifications, null, classifications,
-                    null, null, "", url, false, false));
+            mSuggestions.add(new OmniboxSuggestion(type, false, 0, 0, text, classifications, null,
+                    classifications, null, "", url, false, false));
             return this;
         }
 

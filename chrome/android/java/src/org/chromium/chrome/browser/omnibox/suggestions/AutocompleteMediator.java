@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionViewProperties.
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionViewProperties.SuggestionTextContainer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
+import org.chromium.components.omnibox.SuggestionAnswer;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;

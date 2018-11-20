@@ -40,8 +40,8 @@ public class VoiceSuggestionProviderTest {
         List<MatchClassification> classifications = new ArrayList<>();
         classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
         return new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST, true, 0, 1, text,
-                classifications, null, classifications, null, null, "", "http://www.google.com",
-                false, false);
+                classifications, null, classifications, null, "", "http://www.google.com", false,
+                false);
     }
 
     private static List<OmniboxSuggestion> createDummySuggestions(String... texts) {
