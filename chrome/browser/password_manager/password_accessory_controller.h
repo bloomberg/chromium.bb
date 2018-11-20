@@ -7,232 +7,134 @@
 
 #include <map>
 #include <memory>
-#include <utility>
-#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/password_manager/password_accessory_view_interface.h"
-#include "components/autofill/core/browser/accessory_sheet_data.h"
 #include "components/autofill/core/common/filling_status.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "components/favicon_base/favicon_types.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 namespace autofill {
 struct PasswordForm;
 }  // namespace autofill
 
-namespace favicon {
-class FaviconService;
-}
-
 namespace password_manager {
 class PasswordManagerDriver;
 }  // namespace password_manager
 
-class PasswordGenerationDialogViewInterface;
-
-// The controller for the view located below the keyboard accessory.
-// Upon creation, it creates (and owns) a corresponding PasswordAccessoryView.
-// This view will be provided with data and will notify this controller about
-// interactions (like requesting to fill a password suggestions).
+// Interface for password-specific keyboard accessory controller between the
+// ManualFillingController and PasswordManagerClient.
 //
-// Create it for a WebContents instance by calling:
-//     PasswordAccessoryController::CreateForWebContents(web_contents);
-// After that, it's attached to the |web_contents| instance and can be retrieved
-// by calling:
-//     PasswordAccessoryController::FromWebContents(web_contents);
-// Any further calls to |CreateForWebContents| will be a noop.
-//
-// TODO(fhorschig): This class currently only supports credentials originating
-// from the main frame. Supporting iframes is intended: https://crbug.com/854150
+// There is a single instance per WebContents that can be accessed by calling:
+//     PasswordAccessoryController::GetOrCreate(web_contents);
+// On the first call, an instance is attached to |web_contents|, so it can be
+// returned by subsequent calls.
 class PasswordAccessoryController
-    : public content::WebContentsUserData<PasswordAccessoryController> {
+    : public base::SupportsWeakPtr<PasswordAccessoryController> {
  public:
-  using CreateDialogFactory = base::RepeatingCallback<std::unique_ptr<
-      PasswordGenerationDialogViewInterface>(PasswordAccessoryController*)>;
-  ~PasswordAccessoryController() override;
+  PasswordAccessoryController() = default;
+  virtual ~PasswordAccessoryController() = default;
+
+  // Returns true if the accessory controller may exist for |web_contents|.
+  // Otherwise (e.g. if VR is enabled), it returns false.
+  static bool AllowedForWebContents(content::WebContents* web_contents);
+
+  // Returns a reference to the unique PasswordAccessoryController associated
+  // with |web_contents|. A new instance is created if the first time this
+  // function is called. Only valid to be called if
+  // |PasswordAccessoryController::AllowedForWebContents(web_contents)|.
+  static PasswordAccessoryController* GetOrCreate(
+      content::WebContents* web_contents);
+
+  // Returns a reference to the unique PasswordAccessoryController associated
+  // with |web_contents|. Returns null if no such instance exists.
+  static PasswordAccessoryController* GetIfExisting(
+      content::WebContents* web_contents);
 
   // -----------------------------
   // Methods called by the client:
   // -----------------------------
 
-  // Returns true, if the accessory controller may exist for |web_contents|.
-  // Otherwise (e.g. if VR is enabled), it returns false.
-  static bool AllowedForWebContents(content::WebContents* web_contents);
-
   // Saves credentials for an origin so that they can be used in the sheet.
-  void SavePasswordsForOrigin(
+  virtual void SavePasswordsForOrigin(
       const std::map<base::string16, const autofill::PasswordForm*>&
           best_matches,
-      const url::Origin& origin);
+      const url::Origin& origin) = 0;
 
   // Notifies the view that automatic password generation status changed.
-  void OnAutomaticGenerationStatusChanged(
+  virtual void OnAutomaticGenerationStatusChanged(
       bool available,
       const base::Optional<
           autofill::password_generation::PasswordGenerationUIData>& ui_data,
-      const base::WeakPtr<password_manager::PasswordManagerDriver>& driver);
+      const base::WeakPtr<password_manager::PasswordManagerDriver>& driver) = 0;
 
   // Completes a filling attempt by recording metrics, giving feedback to the
   // user and dismissing the accessory sheet.
-  void OnFilledIntoFocusedField(autofill::FillingStatus status);
+  virtual void OnFilledIntoFocusedField(autofill::FillingStatus status) = 0;
 
   // Makes sure, that all shown suggestions are appropriate for the currently
   // focused field and for fields that lost the focus. If a field lost focus,
   // |is_fillable| will be false.
-  void RefreshSuggestionsForField(const url::Origin& origin,
-                                  bool is_fillable,
-                                  bool is_password_field);
+  virtual void RefreshSuggestionsForField(const url::Origin& origin,
+                                          bool is_fillable,
+                                          bool is_password_field) = 0;
 
   // Reacts to a navigation on the main frame, e.g. by clearing caches.
-  void DidNavigateMainFrame();
+  virtual void DidNavigateMainFrame() = 0;
 
   // Requests to show the accessory bar. The accessory will only be shown
   // when the keyboard becomes visible.
-  void ShowWhenKeyboardIsVisible();
+  virtual void ShowWhenKeyboardIsVisible() = 0;
 
   // Requests to hide the accessory. This hides both the accessory sheet
   // (if open) and the accessory bar.
-  void Hide();
+  virtual void Hide() = 0;
 
   // --------------------------
   // Methods called by UI code:
   // --------------------------
 
-  // Uses the give |favicon_service| to get an icon for the currently focused
-  // frame. The given callback is called with an image unless an icon for a new
-  // origin was called. In the latter case, the callback is dropped.
+  // Gets an icon for the currently focused frame and passes it to
+  // |icon_callback|. The callback is invoked with an image unless an icon for
+  // a new origin was called. In the latter case, the callback is dropped.
   // The callback is called with an |IsEmpty()| image if there is no favicon.
-  void GetFavicon(int desired_size_in_pixel,
-                  base::OnceCallback<void(const gfx::Image&)> icon_callback);
+  virtual void GetFavicon(
+      int desired_size_in_pixel,
+      base::OnceCallback<void(const gfx::Image&)> icon_callback) = 0;
 
-  // Called by the UI code to request that |textToFill| is to be filled into the
-  // currently focused field.
-  void OnFillingTriggered(bool is_password, const base::string16& textToFill);
+  // Called by the UI code to request that |text_to_fill| is to be filled into
+  // the currently focused field.
+  virtual void OnFillingTriggered(bool is_password,
+                                  const base::string16& text_to_fill) = 0;
 
-  // Called by the UI code because a user triggered the |selectedOption|.
-  void OnOptionSelected(const base::string16& selectedOption) const;
+  // Called by the UI code because a user triggered the |selected_option|,
+  // such as "Manage passwords..."
+  // TODO(crbug.com/905669): Replace the string param with an enum to indicate
+  // the selected option.
+  virtual void OnOptionSelected(
+      const base::string16& selected_option) const = 0;
 
   // Called by the UI code to signal that the user requested password
   // generation. This should prompt a modal dialog with the generated password.
-  void OnGenerationRequested();
+  virtual void OnGenerationRequested() = 0;
 
   // Called from the modal dialog if the user accepted the generated password.
-  void GeneratedPasswordAccepted(const base::string16& password);
+  virtual void GeneratedPasswordAccepted(const base::string16& password) = 0;
 
   // Called from the modal dialog if the user rejected the generated password.
-  void GeneratedPasswordRejected();
+  virtual void GeneratedPasswordRejected() = 0;
 
   // -----------------
   // Member accessors:
   // -----------------
 
-  // The web page view containing the focused field.
-  gfx::NativeView container_view() const;
-
-  gfx::NativeWindow native_window() const;
-
-  // Like |CreateForWebContents|, it creates the controller and attaches it to
-  // the given |web_contents|. Additionally, it allows inject a fake/mock view.
-  static void CreateForWebContentsForTesting(
-      content::WebContents* web_contents,
-      std::unique_ptr<PasswordAccessoryViewInterface> test_view,
-      CreateDialogFactory create_dialog_callback,
-      favicon::FaviconService* favicon_service);
-
-#if defined(UNIT_TEST)
-  // Returns the held view for testing.
-  PasswordAccessoryViewInterface* view() const { return view_.get(); }
-#endif  // defined(UNIT_TEST)
+  virtual gfx::NativeWindow native_window() const = 0;
 
  private:
-  // Data including the form and field for which generation was requested,
-  // their signatures and the maximum password size.
-  struct GenerationElementData;
-
-  // Data for a credential pair that is transformed into a suggestion.
-  struct SuggestionElementData;
-
-  // Data allowing to cache favicons and favicon-related requests.
-  struct FaviconRequestData;
-
-  // Required for construction via |CreateForWebContents|:
-  explicit PasswordAccessoryController(content::WebContents* contents);
-  friend class content::WebContentsUserData<PasswordAccessoryController>;
-
-  // Constructor that allows to inject a mock or fake view.
-  PasswordAccessoryController(
-      content::WebContents* web_contents,
-      std::unique_ptr<PasswordAccessoryViewInterface> view,
-      CreateDialogFactory create_dialog_callback,
-      favicon::FaviconService* favicon_service);
-
-  // Creates the view items based on the given |suggestions|.
-  // If |is_password_field| is false, password suggestions won't be interactive.
-  static autofill::AccessorySheetData CreateAccessorySheetData(
-      const url::Origin& origin,
-      const std::vector<SuggestionElementData>& suggestions,
-      bool is_password_field);
-
-  // Handles a favicon response requested by |GetFavicon| and calls the waiting
-  // last_icon_callback_ with a (possibly empty) icon bitmap.
-  void OnImageFetched(
-      url::Origin origin,
-      const favicon_base::FaviconRawBitmapResult& bitmap_results);
-
-  // Contains the last set of credentials by origin.
-  std::map<url::Origin, std::vector<SuggestionElementData>> origin_suggestions_;
-
-  // The tab for which this class is scoped.
-  content::WebContents* web_contents_;
-
-  // Data for the generation element used to generate the password.
-  std::unique_ptr<GenerationElementData> generation_element_data_;
-
-  // The origin of the currently focused frame. It's used to ensure that
-  // favicons are not displayed across origins.
-  url::Origin current_origin_;
-
-  // TODO(fhorschig): Find a way to use unordered_map with origin keys.
-  // A cache for all favicons that were requested. This includes all iframes
-  // for which the accessory was displayed.
-  std::map<url::Origin, FaviconRequestData> icons_request_data_;
-
-  // Used to track a requested favicon. If the set of suggestion changes, this
-  // object aborts the request. Upon destruction, requests are cancelled, too.
-  base::CancelableTaskTracker favicon_tracker_;
-
-  // Password manager driver for the target frame used for password generation.
-  base::WeakPtr<password_manager::PasswordManagerDriver> target_frame_driver_;
-
-  // Modal dialog view meant to display the generated password.
-  std::unique_ptr<PasswordGenerationDialogViewInterface> dialog_view_;
-
-  // Remembers whether the last focused field was a password field. That way,
-  // the reconstructed elements have the correct type.
-  bool last_focused_field_was_for_passwords_ = false;
-
-  // Hold the native instance of the view. Must be last declared and initialized
-  // member so the view can be created in the constructor with a fully set up
-  // controller instance.
-  std::unique_ptr<PasswordAccessoryViewInterface> view_;
-
-  // Creation callback for the modal dialog view meant to facilitate testing.
-  CreateDialogFactory create_dialog_factory_;
-
-  // The favicon service used to make retrieve icons for a given origin.
-  favicon::FaviconService* favicon_service_;
-
-  base::WeakPtrFactory<PasswordAccessoryController> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(PasswordAccessoryController);
 };
 

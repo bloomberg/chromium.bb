@@ -17,7 +17,7 @@ class PasswordGenerationDialogViewInterface {
   virtual void Show(base::string16& password) = 0;
 
  private:
-  friend class PasswordAccessoryController;
+  friend class PasswordAccessoryControllerImpl;
   // Factory function used to create a concrete instance of this view.
   static std::unique_ptr<PasswordGenerationDialogViewInterface> Create(
       PasswordAccessoryController* controller);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_ACCESSORY_VIEW_INTERFACE_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_ACCESSORY_VIEW_INTERFACE_H_
+#ifndef CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_VIEW_INTERFACE_H_
+#define CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_VIEW_INTERFACE_H_
 
 #include <memory>
 #include <vector>
@@ -12,16 +12,16 @@
 #include "build/build_config.h"
 #include "url/gurl.h"
 
-class PasswordAccessoryController;
+class ManualFillingController;
 
 namespace autofill {
 class AccessorySheetData;
 }  // namespace autofill
 
 // The interface for creating and controlling a view for the password accessory.
-// The view gets data from a given |PasswordAccessoryController| and forwards
+// The view gets data from a given |ManualFillingController| and forwards
 // any request (like filling a suggestion) back to the controller.
-class PasswordAccessoryViewInterface {
+class ManualFillingViewInterface {
  public:
   // Defines which item types exist.
   // TODO(crbug.com/902425): Remove this once AccessorySheetData is used on the
@@ -50,7 +50,7 @@ class PasswordAccessoryViewInterface {
     TOP_DIVIDER = 6,
   };
 
-  virtual ~PasswordAccessoryViewInterface() = default;
+  virtual ~ManualFillingViewInterface() = default;
 
   // Called with data that should replace the data currently shown on the
   // accessory sheet.
@@ -73,10 +73,10 @@ class PasswordAccessoryViewInterface {
   virtual void Hide() = 0;
 
  private:
-  friend class PasswordAccessoryController;
+  friend class ManualFillingControllerImpl;
   // Factory function used to create a concrete instance of this view.
-  static std::unique_ptr<PasswordAccessoryViewInterface> Create(
-      PasswordAccessoryController* controller);
+  static std::unique_ptr<ManualFillingViewInterface> Create(
+      ManualFillingController* controller);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_ACCESSORY_VIEW_INTERFACE_H_
+#endif  // CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_VIEW_INTERFACE_H_
