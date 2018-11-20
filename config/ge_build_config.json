@@ -2179,6 +2179,7 @@
           "name": "phaser360",
           "test_suites": [
             "bvt-inline",
+            "bvt-installer",
             "bvt-arc",
             "bvt-cq",
             "bvt-perbuild"
