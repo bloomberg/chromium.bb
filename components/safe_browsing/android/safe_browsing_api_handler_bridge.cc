@@ -124,13 +124,16 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
           callback_id));
 
   if (result_status != RESULT_STATUS_SUCCESS) {
-    CHECK(callback);              // Remove after fixing crbug.com/889972
-    CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
-
     if (result_status == RESULT_STATUS_TIMEOUT) {
+      CHECK(callback);              // Remove after fixing crbug.com/889972
+      CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
+
       ReportUmaResult(UMA_STATUS_TIMEOUT);
       VLOG(1) << "Safe browsing API call timed-out";
     } else {
+      CHECK(callback);              // Remove after fixing crbug.com/889972
+      CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
+
       DCHECK_EQ(result_status, RESULT_STATUS_INTERNAL_ERROR);
       ReportUmaResult(UMA_STATUS_INTERNAL_ERROR);
     }
