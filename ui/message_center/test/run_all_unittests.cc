@@ -16,10 +16,6 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
-#if defined(OS_MACOSX)
-#include "base/test/mock_chrome_application_mac.h"
-#endif
-
 namespace {
 
 class MessageCenterTestSuite : public base::TestSuite {
@@ -28,9 +24,6 @@ class MessageCenterTestSuite : public base::TestSuite {
 
  protected:
   void Initialize() override {
-#if defined(OS_MACOSX)
-    mock_cr_app::RegisterMockCrApp();
-#endif
     gl::GLSurfaceTestSupport::InitializeOneOff();
     base::TestSuite::Initialize();
     ui::RegisterPathProvider();

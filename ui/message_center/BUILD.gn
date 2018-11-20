@@ -62,14 +62,6 @@ jumbo_component("message_center") {
       "//build/config/compiler:no_size_t_to_int_warning",
     ]
     sources = [
-      "cocoa/notification_controller.h",
-      "cocoa/notification_controller.mm",
-      "cocoa/opaque_views.h",
-      "cocoa/opaque_views.mm",
-      "cocoa/popup_collection.h",
-      "cocoa/popup_collection.mm",
-      "cocoa/popup_controller.h",
-      "cocoa/popup_controller.mm",
       "lock_screen/empty_lock_screen_controller.cc",
       "lock_screen/empty_lock_screen_controller.h",
       "lock_screen/lock_screen_controller.h",
@@ -100,13 +92,6 @@ jumbo_component("message_center") {
       deps += [
         "//ui/aura",
         "//ui/wm/public",
-      ]
-    }
-
-    if (is_mac) {
-      libs = [
-        "AppKit.framework",
-        "Foundation.framework",
       ]
     }
 
@@ -193,9 +178,6 @@ if (enable_message_center) {
 
   test("message_center_unittests") {
     sources = [
-      "cocoa/notification_controller_unittest.mm",
-      "cocoa/popup_collection_unittest.mm",
-      "cocoa/popup_controller_unittest.mm",
       "lock_screen/fake_lock_screen_controller.cc",
       "lock_screen/fake_lock_screen_controller.h",
       "message_center_impl_unittest.cc",
@@ -240,10 +222,6 @@ if (enable_message_center) {
         "//mojo/core/embedder",
         "//ui/message_center/public/mojo:test_interfaces",
       ]
-    }
-
-    if (is_mac) {
-      deps += [ "//ui/gfx:test_support" ]
     }
 
     if (toolkit_views) {
