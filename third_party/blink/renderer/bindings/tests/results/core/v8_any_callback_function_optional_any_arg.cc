@@ -28,7 +28,15 @@ const char* V8AnyCallbackFunctionOptionalAnyArg::NameInHeapSnapshot() const {
 }
 
 v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Invoke(ScriptWrappable* callback_this_value, ScriptValue optionalAnyArg) {
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+  ScriptState* callback_relevant_script_state =
+      CallbackRelevantScriptStateOrThrowException(
+          "AnyCallbackFunctionOptionalAnyArg",
+          "invoke");
+  if (!callback_relevant_script_state) {
+    return v8::Nothing<ScriptValue>();
+  }
+
+  if (!IsCallbackFunctionRunnable(callback_relevant_script_state,
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
@@ -48,7 +56,7 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Invoke(ScriptWrappab
 
   // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
-      CallbackRelevantScriptState());
+      callback_relevant_script_state);
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
@@ -62,14 +70,14 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Invoke(ScriptWrappab
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;
-  this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
+  this_arg = ToV8(callback_this_value, callback_relevant_script_state);
 
   // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
-      CallbackRelevantScriptState()->GetContext()->Global();
+      callback_relevant_script_state->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
   v8::Local<v8::Value> v8_optionalAnyArg = optionalAnyArg.V8Value();
   constexpr int argc = 1;
@@ -80,7 +88,7 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Invoke(ScriptWrappab
   // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
-          ExecutionContext::From(CallbackRelevantScriptState()),
+          ExecutionContext::From(callback_relevant_script_state),
           this_arg,
           argc,
           argv,
@@ -108,7 +116,15 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Invoke(ScriptWrappab
 }
 
 v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Construct(ScriptValue optionalAnyArg) {
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+  ScriptState* callback_relevant_script_state =
+      CallbackRelevantScriptStateOrThrowException(
+          "AnyCallbackFunctionOptionalAnyArg",
+          "construct");
+  if (!callback_relevant_script_state) {
+    return v8::Nothing<ScriptValue>();
+  }
+
+  if (!IsCallbackFunctionRunnable(callback_relevant_script_state,
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
@@ -128,7 +144,7 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Construct(ScriptValu
 
   // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
-      CallbackRelevantScriptState());
+      callback_relevant_script_state);
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
@@ -161,7 +177,7 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Construct(ScriptValu
   //   completion value representing the thrown exception and jump to the step
   //   labeled return.
   v8::Local<v8::Object> argument_creation_context =
-      CallbackRelevantScriptState()->GetContext()->Global();
+      callback_relevant_script_state->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
   v8::Local<v8::Value> v8_optionalAnyArg = optionalAnyArg.V8Value();
   constexpr int argc = 1;
@@ -172,7 +188,7 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionOptionalAnyArg::Construct(ScriptValu
   if (!V8ScriptRunner::CallAsConstructor(
           GetIsolate(),
           function,
-          ExecutionContext::From(CallbackRelevantScriptState()),
+          ExecutionContext::From(callback_relevant_script_state),
           argc,
           argv).ToLocal(&call_result)) {
     // step 11. If callResult is an abrupt completion, set completion to

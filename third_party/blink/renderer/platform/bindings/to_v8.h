@@ -46,10 +46,11 @@ inline v8::Local<v8::Value> ToV8(CallbackFunctionBase* callback,
                                  v8::Isolate* isolate) {
   // |creation_context| is intentionally ignored. Callback functions are not
   // wrappers nor clonable. ToV8 on a callback function must be used only when
-  // it's the same origin-domain in the same world.
-  DCHECK(!callback || (callback->CallbackRelevantScriptState()->GetContext() ==
-                       creation_context->CreationContext()));
-  return callback ? callback->CallbackFunction().As<v8::Value>()
+  // it's in the same world.
+  DCHECK(!callback ||
+         (&callback->GetWorld() ==
+          &ScriptState::From(creation_context->CreationContext())->World()));
+  return callback ? callback->CallbackObject().As<v8::Value>()
                   : v8::Null(isolate).As<v8::Value>();
 }
 
