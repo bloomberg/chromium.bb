@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -98,6 +99,7 @@ public class NotificationIntentInterceptorTest {
      */
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky on Kitkat, crbug.com/906843")
     public void testContentIntentInterception() {
         // Send notification.
         NotificationManager notificationManager =
