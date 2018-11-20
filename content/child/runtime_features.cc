@@ -436,6 +436,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableIsolatedCodeCache(
       base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
+  WebRuntimeFeatures::EnableWasmCodeCache(
+      base::FeatureList::IsEnabled(blink::features::kWasmCodeCache));
 
   if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
     WebRuntimeFeatures::EnableSignedHTTPExchange(true);

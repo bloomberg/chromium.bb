@@ -1279,6 +1279,10 @@
       status: "experimental",
     },
     {
+      name: "WasmCodeCache",
+      status: "experimental",
+    },
+    {
       name: "WebAnimationsAPI",
       status: "experimental",
       implied_by: ['AnimationWorklet']
