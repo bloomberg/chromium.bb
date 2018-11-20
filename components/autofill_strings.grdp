@@ -348,7 +348,7 @@
       Enter the expiration date and CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>
     </message>
     <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS" desc="Text explaining what the user should do in the card unmasking dialog.">
-      After you confirm, card details from your Google Payments account will be shared with this site.
+      After you confirm, card details from your Google Account will be shared with this site.
     </message>
     <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_LOCAL_CARD" desc="Text explaining what the user should do in the card unmasking dialog.  Appears specifically for local cards already stored on the device.">
       Once you confirm, your card details will be shared with this site.
@@ -362,13 +362,13 @@
       Confirm Card
     </message>
     <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS" desc="Text explaining what the user should do in the card unmasking dialog.">
-      Enter the CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>. After you confirm, card details from your Google Payments account will be shared with this site.
+      Enter the CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>. After you confirm, card details from your Google Account will be shared with this site.
     </message>
     <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_LOCAL_CARD" desc="Text explaining what the user should do in the card unmasking dialog.  Appears specifically for local cards already stored on the device.">
       Enter the CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph>. Once you confirm, your card details will be shared with this site.
     </message>
     <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED" desc="Text explaining what the user should do in the card unmasking dialog to update an expired card.">
-      Enter the expiration date and CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph> to update your card details. After you confirm, card details from your Google Payments account will be shared with this site.
+      Enter the expiration date and CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph> to update your card details. After you confirm, card details from your Google Account will be shared with this site.
     </message>
     <message name="IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_LOCAL_CARD" desc="Text explaining what the user should do in the card unmasking dialog to update an expired card.  Appears specifically for local cards already stored on the device.">
       Enter the expiration date and CVC for <ph name="CREDIT_CARD">$1<ex>Visa - 5679</ex></ph> to update your card details. Once you confirm, your card details will be shared with this site.
