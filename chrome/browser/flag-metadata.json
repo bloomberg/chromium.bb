@@ -929,7 +929,7 @@
   },
   {
     "name": "enable-chromeos-account-manager",
-    // "owners": [ "your-team" ],
+    "owners": [ "sinhak@chromium.org" ],
     "expiry_milestone": 76
   },
   {
