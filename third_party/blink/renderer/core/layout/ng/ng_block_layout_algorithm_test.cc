@@ -1108,14 +1108,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
           ->MutableSet();
   ASSERT_EQ(2UL, floating_objects.size());
   auto left_floating_object = floating_objects.TakeFirst();
-  ASSERT_TRUE(left_floating_object->IsPlaced());
   // 80 = float_inline_offset(25) + accumulative offset of empty blocks(35 + 20)
   EXPECT_THAT(left_floating_object->X(), LayoutUnit(15));
   // 10 = left float's margin
   EXPECT_THAT(left_floating_object->Y(), LayoutUnit());
 
   auto right_floating_object = floating_objects.TakeFirst();
-  ASSERT_TRUE(right_floating_object->IsPlaced());
   // 150 = float_inline_offset(25) +
   //       right float offset(125)
   EXPECT_THAT(right_floating_object->X(), LayoutUnit(140));

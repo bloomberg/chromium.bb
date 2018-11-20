@@ -710,7 +710,6 @@ void NGBlockNode::CopyChildFragmentPosition(
   if (IsFloatFragment(fragment) && containing_block->IsLayoutBlockFlow()) {
     FloatingObject* floating_object =
         ToLayoutBlockFlow(containing_block)->InsertFloatingObject(*layout_box);
-    floating_object->SetIsInPlacedTree(false);
     floating_object->SetShouldPaint(!layout_box->HasSelfPaintingLayer());
     LayoutUnit horizontal_margin_edge_offset = horizontal_offset;
     if (has_flipped_x_axis)
@@ -720,8 +719,15 @@ void NGBlockNode::CopyChildFragmentPosition(
     floating_object->SetX(horizontal_margin_edge_offset);
     floating_object->SetY(fragment_offset.top + additional_offset.top -
                           layout_box->MarginTop());
-    floating_object->SetIsPlaced(true);
-    floating_object->SetIsInPlacedTree(true);
+#if DCHECK_IS_ON()
+    // Being "placed" is a legacy thing. Make sure the flags remain unset in NG.
+    DCHECK(!floating_object->IsPlaced());
+    DCHECK(!floating_object->IsInPlacedTree());
+
+    // Set this flag to tell the float machinery that it's safe to read out
+    // position data.
+    floating_object->SetHasGeometry();
+#endif
   }
 }
 
