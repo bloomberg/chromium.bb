@@ -11,6 +11,7 @@
 #include "base/system/sys_info.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -837,9 +838,11 @@ TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoMode) {
 }
 
 TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoModeWithPlayStore) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(chromeos::switches::kShowPlayInDemoMode,
+                                    true /* enabled */);
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->InitFromArgv(
-      {"", "--arc-availability=installed", "--show-play-in-demo-mode"});
+  command_line->InitFromArgv({"", "--arc-availability=installed"});
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kOnline);
   ScopedLogIn login(GetFakeUserManager(),
