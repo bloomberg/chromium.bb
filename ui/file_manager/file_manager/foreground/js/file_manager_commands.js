@@ -774,6 +774,7 @@ CommandHandler.COMMANDS_['select-all'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   execute: function(event, fileManager) {
+    fileManager.directoryModel.getFileListSelection().setCheckSelectMode(true);
     fileManager.directoryModel.getFileListSelection().selectAll();
   },
   /**

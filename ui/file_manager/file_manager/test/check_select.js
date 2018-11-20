@@ -48,3 +48,56 @@ checkselect.testCancelCheckSelectModeAfterAction = (done) => {
         done();
       });
 };
+
+checkselect.testCheckSelectModeAfterSelectAllOneFile = (done) => {
+  const gearMenu = document.querySelector('#gear-menu');
+  const cancel = document.querySelector('#cancel-selection-button-wrapper');
+  const selectAll =
+      '#gear-menu:not([hidden]) #gear-menu-select-all:not([hidden])';
+
+  // Load a single file.
+  test.setupAndWaitUntilReady([test.ENTRIES.hello])
+      .then(() => {
+        // Click gear menu, ensure 'Select all' is shown.
+        assertTrue(test.fakeMouseClick('#gear-button'));
+        return test.waitForElement(selectAll);
+      })
+      .then(result => {
+        // Click 'Select all', gear menu now replaced with file context menu.
+        assertTrue(test.fakeMouseClick('#gear-menu-select-all'));
+        return test.repeatUntil(() => {
+          return getComputedStyle(gearMenu).opacity == 0 &&
+              getComputedStyle(cancel).display == 'block' ||
+              test.pending('waiting for check select mode');
+        });
+      })
+      .then(result => {
+        // Cancel selection, ensure no items selected.
+        assertTrue(test.fakeMouseClick('#cancel-selection-button'));
+        return test.repeatUntil(() => {
+          return document.querySelectorAll('#file-list li[selected]').length ==
+              0 ||
+              test.pending('waiting for no files selected');
+        });
+      })
+      .then(result => {
+        // 'Ctrl+a' to select all.
+        assertTrue(test.fakeKeyDown('#file-list', 'a', true, false, false));
+        return test.repeatUntil(() => {
+          return getComputedStyle(cancel).display == 'block' ||
+              test.pending('waiting for check select mode');
+        });
+      })
+      .then(result => {
+        // Cancel selection, ensure no items selected.
+        assertTrue(test.fakeMouseClick('#cancel-selection-button'));
+        return test.repeatUntil(() => {
+          return document.querySelectorAll('#file-list li[selected]').length ==
+              0 ||
+              test.pending('waiting for no files selected');
+        });
+      })
+      .then(result => {
+        done();
+      });
+};
