@@ -20,6 +20,11 @@
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/identity_manager.h"
+
+namespace identity {
+class IdentityManager;
+}
 
 class AccountTrackerService;
 class PrefRegistrySimple;
@@ -38,8 +43,9 @@ class AboutSigninInternals
       public OAuth2TokenService::Observer,
       public OAuth2TokenService::DiagnosticsObserver,
       public GaiaCookieManagerService::Observer,
-      SigninManagerBase::Observer,
-      SigninErrorController::Observer {
+      SigninErrorController::Observer,
+      identity::IdentityManager::Observer,
+      identity::IdentityManager::DiagnosticsObserver {
  public:
   class Observer {
    public:
@@ -53,6 +59,7 @@ class AboutSigninInternals
 
   AboutSigninInternals(ProfileOAuth2TokenService* token_service,
                        AccountTrackerService* account_tracker,
+                       identity::IdentityManager* identity_manager,
                        SigninManagerBase* signin_manager,
                        SigninErrorController* signin_error_controller,
                        GaiaCookieManagerService* cookie_manager_service,
@@ -181,7 +188,7 @@ class AboutSigninInternals
     //  }
     std::unique_ptr<base::DictionaryValue> ToValue(
         AccountTrackerService* account_tracker,
-        SigninManagerBase* signin_manager,
+        identity::IdentityManager* identity_manager,
         SigninErrorController* signin_error_controller,
         ProfileOAuth2TokenService* token_service,
         GaiaCookieManagerService* cookie_manager_service_,
@@ -194,11 +201,12 @@ class AboutSigninInternals
       const signin_internals_util::TimedSigninStatusField& field,
       const std::string& value) override;
 
+  // IdentityMager::DiagnosticsObserver implementations.
+  void OnAccessTokenRequested(const std::string& account_id,
+                              const std::string& consumer_id,
+                              const identity::ScopeSet& scopes) override;
+
   // OAuth2TokenService::DiagnosticsObserver implementations.
-  void OnAccessTokenRequested(
-      const std::string& account_id,
-      const std::string& consumer_id,
-      const OAuth2TokenService::ScopeSet& scopes) override;
   void OnFetchAccessTokenComplete(const std::string& account_id,
                                   const std::string& consumer_id,
                                   const OAuth2TokenService::ScopeSet& scopes,
@@ -217,12 +225,12 @@ class AboutSigninInternals
   void OnRefreshTokensLoaded() override;
   void OnEndBatchChanges() override;
 
-  // SigninManagerBase::Observer implementations.
-  void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                               const std::string& username) override;
+  // IdentityManager::Observer implementations.
+  void OnPrimaryAccountSigninFailed(
+      const GoogleServiceAuthError& error) override;
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& primary_account_info) override;
 
   void NotifyObservers();
 
@@ -234,6 +242,9 @@ class AboutSigninInternals
 
   // Weak pointer to the account tracker.
   AccountTrackerService* account_tracker_;
+
+  // Weak pointer to the identity manager.
+  identity::IdentityManager* identity_manager_;
 
   // Weak pointer to the signin manager.
   SigninManagerBase* signin_manager_;

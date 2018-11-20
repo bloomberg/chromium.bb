@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #include "ios/chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
@@ -28,6 +29,7 @@ AboutSigninInternalsFactory::AboutSigninInternalsFactory()
   DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
   DependsOn(SigninErrorControllerFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
@@ -56,6 +58,7 @@ AboutSigninInternalsFactory::BuildServiceInstanceFor(
       ProfileOAuth2TokenServiceFactory::GetForBrowserState(
           chrome_browser_state),
       AccountTrackerServiceFactory::GetForBrowserState(chrome_browser_state),
+      IdentityManagerFactory::GetForBrowserState(chrome_browser_state),
       SigninManagerFactory::GetForBrowserState(chrome_browser_state),
       SigninErrorControllerFactory::GetForBrowserState(chrome_browser_state),
       GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),
