@@ -528,6 +528,7 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   }
 
   pixel_aspect_ratio_ = config.GetPixelAspectRatio();
+  is_video_encrypted_ = config.is_encrypted();
 
   if (status == cdm::kDeferredInitialization) {
     DVLOG(1) << "Deferred initialization in " << __func__;
@@ -606,6 +607,11 @@ void CdmAdapter::DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,
     DLOG(ERROR) << __func__ << ": TransformToVideoFrame failed.";
     video_decode_cb.Run(Decryptor::kError, nullptr);
     return;
+  }
+
+  if (is_video_encrypted_) {
+    decoded_frame->metadata()->SetBoolean(VideoFrameMetadata::PROTECTED_VIDEO,
+                                          true);
   }
 
   video_decode_cb.Run(Decryptor::kSuccess, decoded_frame);
