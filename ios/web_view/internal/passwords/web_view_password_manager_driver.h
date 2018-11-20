@@ -67,7 +67,7 @@ class WebViewPasswordManagerDriver
   bool IsMainFrame() const override;
 
  private:
-  id<CWVPasswordManagerDriverDelegate> delegate_;  // (weak)
+  __weak id<CWVPasswordManagerDriverDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewPasswordManagerDriver);
 };

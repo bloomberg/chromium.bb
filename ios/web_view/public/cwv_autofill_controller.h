@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 CWV_EXPORT
 // Exposes features that allow autofilling html forms. May include autofilling
-// of single fields, address forms, or credit card forms.
+// of single fields, address forms, credit card forms, or password forms.
 @interface CWVAutofillController : NSObject
 
 // Delegate to receive autofill callbacks.
