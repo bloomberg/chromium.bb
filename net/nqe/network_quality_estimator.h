@@ -567,11 +567,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Buffer that holds RTT observations with different observation categories.
   // The entries in |rtt_ms_observations_| are in the same order as the
-  // entries in the nqe::internal:ObservationCategory enum.  Size of
-  // |rtt_ms_observations_| is nqe::internal::OBSERVATION_CATEGORY_COUNT.
+  // entries in the nqe::internal:ObservationCategory enum.
   // Each observation buffer in |rtt_ms_observations_| stores RTT observations
   // in milliseconds. Within a buffer, the observations are sorted by timestamp.
-  std::vector<ObservationBuffer> rtt_ms_observations_;
+  ObservationBuffer
+      rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_COUNT];
 
   // Time when the transaction for the last main frame request was started.
   base::TimeTicks last_main_frame_request_;

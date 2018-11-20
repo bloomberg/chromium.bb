@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -230,6 +231,22 @@ NetworkQualityEstimator::NetworkQualityEstimator(
           tick_clock_,
           params_->weight_multiplier_per_second(),
           params_->weight_multiplier_per_signal_strength_level()),
+      rtt_ms_observations_{
+          ObservationBuffer(
+              params_.get(),
+              tick_clock_,
+              params_->weight_multiplier_per_second(),
+              params_->weight_multiplier_per_signal_strength_level()),
+          ObservationBuffer(
+              params_.get(),
+              tick_clock_,
+              params_->weight_multiplier_per_second(),
+              params_->weight_multiplier_per_signal_strength_level()),
+          ObservationBuffer(
+              params_.get(),
+              tick_clock_,
+              params_->weight_multiplier_per_second(),
+              params_->weight_multiplier_per_signal_strength_level())},
       effective_connection_type_at_last_main_frame_(
           EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       effective_connection_type_recomputation_interval_(
@@ -246,12 +263,8 @@ NetworkQualityEstimator::NetworkQualityEstimator(
           net::NetLogSourceType::NETWORK_QUALITY_ESTIMATOR)),
       event_creator_(net_log_),
       weak_ptr_factory_(this) {
-  rtt_ms_observations_.reserve(nqe::internal::OBSERVATION_CATEGORY_COUNT);
-  for (int i = 0; i < nqe::internal::OBSERVATION_CATEGORY_COUNT; ++i) {
-    rtt_ms_observations_.push_back(ObservationBuffer(
-        params_.get(), tick_clock_, params_->weight_multiplier_per_second(),
-        params_->weight_multiplier_per_signal_strength_level()));
-  }
+  DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_COUNT,
+            base::size(rtt_ms_observations_));
 
   network_quality_store_.reset(new nqe::internal::NetworkQualityStore());
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
@@ -695,6 +708,8 @@ bool NetworkQualityEstimator::RequestProvidesRTTObservation(
 void NetworkQualityEstimator::OnConnectionTypeChanged(
     NetworkChangeNotifier::ConnectionType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_COUNT,
+            base::size(rtt_ms_observations_));
 
   // Write the estimates of the previous network to the cache.
   network_quality_store_->Add(
@@ -1232,6 +1247,8 @@ base::TimeDelta NetworkQualityEstimator::GetRTTEstimateInternal(
     int percentile,
     size_t* observations_count) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_COUNT,
+            base::size(rtt_ms_observations_));
 
   // RTT observations are sorted by duration from shortest to longest, thus
   // a higher percentile RTT will have a longer RTT than a lower percentile.
@@ -1480,6 +1497,8 @@ void NetworkQualityEstimator::OnNewThroughputObservationAvailable(
 
 bool NetworkQualityEstimator::ShouldComputeEffectiveConnectionType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_COUNT,
+            base::size(rtt_ms_observations_));
 
   const base::TimeTicks now = tick_clock_->NowTicks();
   // Recompute effective connection type only if
