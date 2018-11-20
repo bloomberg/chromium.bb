@@ -301,9 +301,6 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
   // When metrics reporting is enabled, register the notification_helper metrics
   // files; otherwise delete any existing files in order to preserve user
   // privacy.
-  // TODO(chengx): Investigate if there is a need to update
-  // RegisterOrRemovePreviousRunMetricsFile and apply it here to remove
-  // potential duplicate code.
   if (!user_data_dir.empty()) {
     base::FilePath notification_helper_metrics_upload_dir =
         user_data_dir.AppendASCII(
