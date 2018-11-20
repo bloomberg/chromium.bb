@@ -191,7 +191,7 @@ void WinWebAuthnApiAuthenticator::MakeCredentialBlocking(
       WEBAUTHN_CREDENTIALS{
           0, nullptr},  // Ignored because pExcludeCredentialList is set.
       WEBAUTHN_EXTENSIONS{extensions.size(), extensions.data()},
-      use_u2f_only_
+      request.is_u2f_only()
           ? WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2
           : ToWinAuthenticatorAttachment(request.authenticator_attachment()),
       request.resident_key_required(),
@@ -279,6 +279,15 @@ void WinWebAuthnApiAuthenticator::GetAssertionBlocking(
   static BOOL kUseAppIdTrue = TRUE;  // const
 
   base::string16 rp_id16 = base::UTF8ToUTF16(request.rp_id());
+  base::Optional<base::string16> opt_app_id16 = base::nullopt;
+  // TODO(martinkr): alternative_application_parameter() is already hashed,
+  // so this doesn't work. We need to make it store the full AppID.
+  if (request.alternative_application_parameter()) {
+    opt_app_id16 = base::UTF8ToUTF16(base::StringPiece(
+        reinterpret_cast<const char*>(
+            request.alternative_application_parameter()->data()),
+        request.alternative_application_parameter()->size()));
+  }
 
   WEBAUTHN_CLIENT_DATA client_data{
       WEBAUTHN_CLIENT_DATA_CURRENT_VERSION, request.client_data_json().size(),
@@ -299,12 +308,11 @@ void WinWebAuthnApiAuthenticator::GetAssertionBlocking(
           0, nullptr},  // Ignored because pAllowCredentialList is set.
       WEBAUTHN_EXTENSIONS{0, nullptr},
       // Note that attachment is effectively restricted via |allow_list|.
-      use_u2f_only_ ? WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2
-                    : WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY,
+      WEBAUTHN_AUTHENTICATOR_ATTACHMENT_ANY,
       ToWinUserVerificationRequirement(request.user_verification()),
-      0,                                          // flags
-      use_u2f_only_ ? rp_id16.c_str() : nullptr,  // pwszU2fAppId
-      use_u2f_only_ ? &kUseAppIdTrue : nullptr,   // pbU2fAppId
+      0,                                               // flags
+      opt_app_id16 ? opt_app_id16->c_str() : nullptr,  // pwszU2fAppId
+      opt_app_id16 ? &kUseAppIdTrue : nullptr,         // pbU2fAppId
       &cancellation_id_, &allow_credential_list,
   };
 
