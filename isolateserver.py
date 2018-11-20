@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.8.5'
+__version__ = '0.8.6'
 
 import errno
 import functools
@@ -362,34 +362,18 @@ class Storage(object):
 
   def __init__(self, storage_api):
     self._storage_api = storage_api
-    self._use_zip = isolated_format.is_namespace_with_compression(
-        storage_api.namespace) and not storage_api.internal_compression
-    self._hash_algo = isolated_format.get_hash_algo(storage_api.namespace)
     self._cpu_thread_pool = None
     self._net_thread_pool = None
     self._aborted = False
     self._prev_sig_handlers = {}
 
   @property
-  def hash_algo(self):
-    """Hashing algorithm used to name files in storage based on their content.
+  def server_ref(self):
+    """Shortcut to get the server_ref from storage_api.
 
-    Defined by |namespace|. See also isolated_format.get_hash_algo().
+    This can be used to get the underlying hash_algo.
     """
-    return self._hash_algo
-
-  @property
-  def location(self):
-    """URL of the backing store that this class is using."""
-    return self._storage_api.location
-
-  @property
-  def namespace(self):
-    """Isolate namespace used by this storage.
-
-    Indirectly defines hashing scheme and compression method used.
-    """
-    return self._storage_api.namespace
+    return self._storage_api.server_ref
 
   @property
   def cpu_thread_pool(self):
@@ -463,7 +447,7 @@ class Storage(object):
 
     # Ensure all digests are calculated.
     for item in items:
-      item.prepare(self._hash_algo)
+      item.prepare(self.server_ref.hash_algo)
 
     # For each digest keep only first isolate_storage.Item that matches it. All
     # other items are just indistinguishable copies from the point of view of
@@ -549,13 +533,13 @@ class Storage(object):
       """Pushes an isolate_storage.Item and returns it to |channel|."""
       if self._aborted:
         raise Aborted()
-      item.prepare(self._hash_algo)
+      item.prepare(self.server_ref.hash_algo)
       self._storage_api.push(item, push_state, content)
       return item
 
     # If zipping is not required, just start a push task. Don't pass 'content'
     # so that it can create a new generator when it retries on failures.
-    if not self._use_zip:
+    if not self.server_ref.is_with_compression:
       self.net_thread_pool.add_task_with_channel(channel, priority, push, None)
       return
 
@@ -613,10 +597,11 @@ class Storage(object):
       try:
         # Prepare reading pipeline.
         stream = self._storage_api.fetch(digest, size, 0)
-        if self._use_zip:
+        if self.server_ref.is_with_compression:
           stream = zip_decompress(stream, isolated_format.DISK_FILE_CHUNK)
         # Run |stream| through verifier that will assert its size.
-        verifier = FetchStreamVerifier(stream, self._hash_algo, digest, size)
+        verifier = FetchStreamVerifier(
+            stream, self.server_ref.hash_algo, digest, size)
         # Verified stream goes to |sink|.
         sink(verifier.run())
       except Exception as err:
@@ -649,7 +634,7 @@ class Storage(object):
 
     # Ensure all digests are calculated.
     for item in items:
-      item.prepare(self._hash_algo)
+      item.prepare(self.server_ref.hash_algo)
 
     def contains(batch):
       if self._aborted:
@@ -1034,28 +1019,25 @@ class IsolatedBundle(object):
       self.relative_cwd = node.data['relative_cwd']
 
 
-def get_storage(url, namespace):
+def get_storage(server_ref):
   """Returns Storage class that can upload and download from |namespace|.
 
   Arguments:
-    url: URL of isolate service to use shared cloud based storage.
-    namespace: isolate namespace to operate in, also defines hashing and
-        compression scheme used, i.e. namespace names that end with '-gzip'
-        store compressed data.
+    server_ref: isolate_storage.ServerRef instance.
 
   Returns:
     Instance of Storage.
   """
-  return Storage(isolate_storage.get_storage_api(url, namespace))
+  assert isinstance(server_ref, isolate_storage.ServerRef), repr(server_ref)
+  return Storage(isolate_storage.get_storage_api(server_ref))
 
 
-def upload_tree(base_url, infiles, namespace):
+def upload_tree(server_ref, infiles):
   """Uploads the given tree to the given url.
 
   Arguments:
-    base_url:  The url of the isolate server to upload to.
+    server_ref: isolate_storage.ServerRef instance.
     infiles:   iterable of pairs (absolute path, metadata dict) of files.
-    namespace: The namespace to use on the server.
   """
   # Convert |infiles| into a list of FileItem objects, skip duplicates.
   # Filter out symlinks, since they are not represented by items on isolate
@@ -1064,7 +1046,6 @@ def upload_tree(base_url, infiles, namespace):
   seen = set()
   skipped = 0
   for filepath, metadata in infiles:
-    assert isinstance(filepath, unicode), filepath
     if 'l' not in metadata and filepath not in seen:
       seen.add(filepath)
       item = FileItem(
@@ -1077,7 +1058,7 @@ def upload_tree(base_url, infiles, namespace):
       skipped += 1
 
   logging.info('Skipped %d duplicated entries', skipped)
-  with get_storage(base_url, namespace) as storage:
+  with get_storage(server_ref) as storage:
     return storage.upload_items(items)
 
 
@@ -1101,7 +1082,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks,
       'fetch_isolated(%s, %s, %s, %s, %s)',
       isolated_hash, storage, cache, outdir, use_symlinks)
   # Hash algorithm to use, defined by namespace |storage| is using.
-  algo = storage.hash_algo
+  algo = storage.server_ref.hash_algo
   fetch_queue = FetchQueue(storage, cache)
   bundle = IsolatedBundle(filter_cb)
 
@@ -1268,27 +1249,29 @@ def archive_files_to_storage(storage, files, blacklist):
   try:
     # TODO(maruel): Yield the files to a worker thread.
     items_to_upload = []
+    hash_algo = storage.server_ref.hash_algo
+    hash_algo_name = storage.server_ref.hash_algo_name
     for f in files:
       try:
         filepath = os.path.abspath(f)
         if fs.isdir(filepath):
           # Uploading a whole directory.
           items, metadata = directory_to_metadata(
-              filepath, storage.hash_algo, blacklist)
+              filepath, hash_algo, blacklist)
 
           # Create the .isolated file.
           if not tempdir:
             tempdir = tempfile.mkdtemp(prefix=u'isolateserver')
-          handle, isolated = tempfile.mkstemp(dir=tempdir, suffix=u'.isolated')
+          handle, isolated = tempfile.mkstemp(
+              dir=tempdir, suffix=u'.isolated')
           os.close(handle)
           data = {
-              'algo':
-                  isolated_format.SUPPORTED_ALGOS_REVERSE[storage.hash_algo],
+              'algo': hash_algo_name,
               'files': metadata,
               'version': isolated_format.ISOLATED_FILE_VERSION,
           }
           isolated_format.save_isolated(isolated, data)
-          h = isolated_format.hash_file(isolated, storage.hash_algo)
+          h = isolated_format.hash_file(isolated, hash_algo)
           items_to_upload.extend(items)
           items_to_upload.append(
               FileItem(
@@ -1299,7 +1282,7 @@ def archive_files_to_storage(storage, files, blacklist):
           results.append((h, f))
 
         elif fs.isfile(filepath):
-          h = isolated_format.hash_file(filepath, storage.hash_algo)
+          h = isolated_format.hash_file(filepath, hash_algo)
           items_to_upload.append(
             FileItem(
                 path=filepath,
@@ -1311,6 +1294,8 @@ def archive_files_to_storage(storage, files, blacklist):
           raise Error('%s is neither a file or directory.' % f)
       except OSError:
         raise Error('Failed to process %s.' % f)
+
+    # Essentially upload_tree().
     uploaded = storage.upload_items(items_to_upload)
     cold = [i for i in items_to_upload if i in uploaded]
     hot = [i for i in items_to_upload if i not in uploaded]
@@ -1320,7 +1305,7 @@ def archive_files_to_storage(storage, files, blacklist):
       file_path.rmtree(tempdir)
 
 
-def archive(out, namespace, files, blacklist):
+def archive(server_ref, files, blacklist):
   if files == ['-']:
     files = sys.stdin.readlines()
 
@@ -1329,9 +1314,8 @@ def archive(out, namespace, files, blacklist):
 
   files = [f.decode('utf-8') for f in files]
   blacklist = tools.gen_blacklist(blacklist)
-  with get_storage(out, namespace) as storage:
-    # Ignore stats.
-    results = archive_files_to_storage(storage, files, blacklist)[0]
+  with get_storage(server_ref) as storage:
+    results, _cold, _hot = archive_files_to_storage(storage, files, blacklist)
   print('\n'.join('%s %s' % (r[0], r[1]) for r in results))
 
 
@@ -1351,8 +1335,10 @@ def CMDarchive(parser, args):
   add_archive_options(parser)
   options, files = parser.parse_args(args)
   process_isolate_server_options(parser, options, True, True)
+  server_ref = isolate_storage.ServerRef(
+      options.isolate_server, options.namespace)
   try:
-    archive(options.isolate_server, options.namespace, files, options.blacklist)
+    archive(server_ref, files, options.blacklist)
   except (Error, local_caching.NoMoreSpace) as e:
     parser.error(e.args[0])
   return 0
@@ -1399,7 +1385,9 @@ def CMDdownload(parser, args):
         (fs.isdir(options.target) and fs.listdir(options.target))):
       parser.error(
           '--target \'%s\' exists, please use another target' % options.target)
-  with get_storage(options.isolate_server, options.namespace) as storage:
+  server_ref = isolate_storage.ServerRef(
+      options.isolate_server, options.namespace)
+  with get_storage(server_ref) as storage:
     # Fetching individual files.
     if options.file:
       # TODO(maruel): Enable cache in this case too.
@@ -1527,10 +1515,12 @@ def process_cache_options(options, trim, **kwargs):
 
     # |options.cache| path may not exist until DiskContentAddressedCache()
     # instance is created.
+    server_ref = isolate_storage.ServerRef(
+        options.isolate_server, options.namespace)
     return local_caching.DiskContentAddressedCache(
         unicode(os.path.abspath(options.cache)),
         policies,
-        isolated_format.get_hash_algo(options.namespace),
+        server_ref.hash_algo(),  # pylint: disable=not-callable
         trim,
         **kwargs)
   else:

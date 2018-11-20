@@ -62,6 +62,7 @@ from libs import luci_context
 import auth
 import cipd
 import isolateserver
+import isolate_storage
 import local_caching
 
 
@@ -613,8 +614,8 @@ def delete_and_upload(storage, out_dir, leak_temp_dir):
             storage, [out_dir], None)
         outputs_ref = {
           'isolated': results[0][0],
-          'isolatedserver': storage.location,
-          'namespace': storage.namespace,
+          'isolatedserver': storage.server_ref.url,
+          'namespace': storage.server_ref.namespace,
         }
         cold = sorted(i.size for i in f_cold)
         hot = sorted(i.size for i in f_hot)
@@ -1412,12 +1413,13 @@ def main(args):
       env_prefix=options.env_prefix)
   try:
     if options.isolate_server:
-      storage = isolateserver.get_storage(
+      server_ref = isolate_storage.ServerRef(
           options.isolate_server, options.namespace)
+      storage = isolateserver.get_storage(server_ref)
       with storage:
         data = data._replace(storage=storage)
         # Hashing schemes used by |storage| and |isolate_cache| MUST match.
-        assert storage.hash_algo == isolate_cache.hash_algo
+        assert storage.server_ref.hash_algo == server_ref.hash_algo
         return run_tha_test(data, options.json)
     return run_tha_test(data, options.json)
   except (

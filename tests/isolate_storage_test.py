@@ -4,6 +4,7 @@
 # that can be found in the LICENSE file.
 
 import binascii
+import hashlib
 import os
 import re
 import sys
@@ -16,6 +17,7 @@ import net_utils
 from depot_tools import auto_stub
 import isolate_storage
 import test_utils
+
 
 class ByteStreamStubMock(object):
   """Replacement for real gRPC stub
@@ -57,11 +59,29 @@ def raiseError(code):
   raise isolate_storage.grpc.RpcError(
       'cannot turn this into a real code yet: %s' % code)
 
+
+class TestCase(net_utils.TestCase):
+  def test_get_hash_algo(self):
+    pairs = [
+      ('default', hashlib.sha1),
+      ('default-gzip', hashlib.sha1),
+      ('sha-1-flat', hashlib.sha1),
+      ('sha-1-deflate', hashlib.sha1),
+      ('sha-256-flat', hashlib.sha256),
+      ('sha-256-deflate', hashlib.sha256),
+      ('sha-512-flat', hashlib.sha512),
+      ('sha-512-deflate', hashlib.sha512),
+    ]
+    for namespace, expected in pairs:
+      server_ref = isolate_storage.ServerRef('http://localhost:0', namespace)
+      self.assertIs(expected, server_ref.hash_algo, namespace)
+
+
 class IsolateStorageTest(auto_stub.TestCase):
   def get_server(self):
-    return isolate_storage.IsolateServerGrpc('https://luci.appspot.com',
-                                             'default-gzip',
-                                             'https://luci.com/client/bob')
+    s = isolate_storage.ServerRef(
+        'https://luci.appspot.com', 'default-gzip')
+    return isolate_storage.IsolateServerGrpc(s, 'https://luci.com/client/bob')
 
   def testFetchHappySimple(self):
     """Fetch: if we get a few chunks with the right offset, everything works"""

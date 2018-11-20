@@ -26,6 +26,7 @@ import sys
 
 import auth
 import isolate_format
+import isolate_storage
 import isolated_format
 import isolateserver
 import run_isolated
@@ -313,7 +314,8 @@ class SavedState(Flattenable):
 
     # The default algorithm used.
     self.OS = sys.platform
-    self.algo = isolated_format.SUPPORTED_ALGOS['sha-1']
+    self.algo_name = 'sha-1'
+    self.algo = isolated_format.SUPPORTED_ALGOS[self.algo_name]
     self.child_isolated_files = []
     self.command = []
     self.config_variables = {}
@@ -376,7 +378,7 @@ class SavedState(Flattenable):
       return dict((k, data[k]) for k in ('h', 'l', 'm', 's') if k in data)
 
     out = {
-      'algo': isolated_format.SUPPORTED_ALGOS_REVERSE[self.algo],
+      'algo': self.algo_name,
       'files': dict(
           (filepath, strip(data)) for filepath, data in self.files.iteritems()),
       # The version of the .state file is different than the one of the
@@ -817,12 +819,11 @@ def isolate_and_archive(trees, isolate_server, namespace):
     return isolated_hashes
 
   # Now upload all necessary files at once.
+  server_ref = isolate_storage.ServerRef(isolate_server, namespace)
   with tools.Profiler('Upload'):
     try:
       isolateserver.upload_tree(
-          base_url=isolate_server,
-          infiles=itertools.chain(*files_generators),
-          namespace=namespace)
+          server_ref, infiles=itertools.chain(*files_generators))
     except Exception:
       logging.exception('Exception while uploading files')
       return None

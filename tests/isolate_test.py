@@ -1243,12 +1243,12 @@ class IsolateCommand(IsolateBase):
   def test_CMDarchive(self):
     actual = []
 
-    def mocked_upload_tree(base_url, infiles, namespace):
+    def mocked_upload_tree(server_ref, infiles):
       # |infiles| may be a generator of pair, materialize it into a list.
       actual.append({
-        'base_url': base_url,
+        'base_url': server_ref.url,
         'infiles': dict(infiles),
-        'namespace': namespace,
+        'namespace': server_ref.namespace,
       })
     self.mock(isolateserver, 'upload_tree', mocked_upload_tree)
 
@@ -1307,12 +1307,12 @@ class IsolateCommand(IsolateBase):
     # Same as test_CMDarchive but via code path that parses *.gen.json files.
     actual = []
 
-    def mocked_upload_tree(base_url, infiles, namespace):
+    def mocked_upload_tree(server_ref, infiles):
       # |infiles| may be a generator of pair, materialize it into a list.
       actual.append({
-        'base_url': base_url,
+        'base_url': server_ref.url,
         'infiles': dict(infiles),
-        'namespace': namespace,
+        'namespace': server_ref.namespace,
       })
     self.mock(isolateserver, 'upload_tree', mocked_upload_tree)
 
@@ -1609,7 +1609,15 @@ class IsolateCommand(IsolateBase):
       f.write('{"variables": {"command": ["python", "-c", "print(\'hi\')"]} }')
 
     def expect_call(cmd, cwd):
-      self.assertEqual([sys.executable, '-c', "print('hi')", 'run'], cmd)
+      if sys.platform == 'darwin':
+        # python path is generally a symlink, and sys.executable points to the
+        # resolved one but the path passed in is not the resolved one.
+        # But even with that, one can point on '.../2.7/bin/python2.7' while the
+        # other points to '.../Resources/Python.app/Contents/MacOS/Python'. So
+        # just give up for now.
+        self.assertEqual(['-c', "print('hi')", 'run'], cmd[1:])
+      else:
+        self.assertEqual([sys.executable, '-c', "print('hi')", 'run'], cmd)
       self.assertTrue(os.path.isdir(cwd))
       return 0
     self.mock(subprocess, 'call', expect_call)

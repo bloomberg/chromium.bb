@@ -295,9 +295,16 @@ class TestIsolated(auto_stub.TestCase, Common):
         # 'out' is the default value for --output-dir.
         outdir = os.path.join(self.tempdir, 'out')
         self.assertTrue(os.path.isdir(outdir))
-        self.assertEqual(
-            [sys.executable, u'main.py', u'foo', os.path.realpath(outdir),
-             '--bar'], cmd)
+        if sys.platform == 'darwin':
+          # On macOS, python executable's path is a symlink and it's hard to
+          # assess what will be passed to the command line. :/
+          self.assertEqual(
+              [u'main.py', u'foo', os.path.realpath(outdir), '--bar'], cmd[1:])
+        else:
+          self.assertEqual(
+              [sys.executable, u'main.py', u'foo', os.path.realpath(outdir),
+                '--bar'],
+              cmd)
         expected = os.environ.copy()
         expected['SWARMING_TASK_ID'] = 'reproduce'
         expected['SWARMING_BOT_ID'] = 'reproduce'
@@ -818,8 +825,8 @@ class TestSwarmingCollection(NetTestCase):
       self.assertIs(storage.__class__, isolateserver.Storage)
       self.assertIs(cache.__class__, local_caching.MemoryContentAddressedCache)
       # Ensure storage is pointing to required location.
-      self.assertEqual('https://localhost:2', storage.location)
-      self.assertEqual('default', storage.namespace)
+      self.assertEqual('https://localhost:2', storage.server_ref.url)
+      self.assertEqual('default', storage.server_ref.namespace)
       self.assertEqual(False, use_symlinks)
       self.assertEqual('.*', filepath_filter)
       actual_calls.append((isolated_hash, outdir))
@@ -906,7 +913,7 @@ class TestSwarmingCollection(NetTestCase):
     self.assertEqual(
         ('hash1', os.path.join(self.tempdir, '0')),
         (isolated_hash, outdir))
-    self.assertEqual('https://server1', storage.location)
+    self.assertEqual('https://server1', storage.server_ref.url)
 
 
 class TestMain(NetTestCase):

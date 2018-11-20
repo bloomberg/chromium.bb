@@ -37,6 +37,7 @@ from utils import tools
 import auth
 import cipd
 import isolateserver
+import isolate_storage
 import isolated_format
 import local_caching
 import run_isolated
@@ -391,9 +392,10 @@ class TaskOutputCollector(object):
 
     # Fetch output files if necessary.
     if self.task_output_dir and result.get('outputs_ref'):
-      storage = self._get_storage(
-          result['outputs_ref']['isolatedserver'],
-          result['outputs_ref']['namespace'])
+      server_ref = isolate_storage.ServerRef(
+            result['outputs_ref']['isolatedserver'],
+            result['outputs_ref']['namespace'])
+      storage = self._get_storage(server_ref)
       if storage:
         # Output files are supposed to be small and they are not reused across
         # tasks. So use MemoryContentAddressedCache for them instead of on-disk
@@ -436,23 +438,23 @@ class TaskOutputCollector(object):
         self._storage = None
       return summary
 
-  def _get_storage(self, isolate_server, namespace):
+  def _get_storage(self, server_ref):
     """Returns isolateserver.Storage to use to fetch files."""
     assert self.task_output_dir
     with self._lock:
       if not self._storage:
-        self._storage = isolateserver.get_storage(isolate_server, namespace)
+        self._storage = isolateserver.get_storage(server_ref)
       else:
         # Shards must all use exact same isolate server and namespace.
-        if self._storage.location != isolate_server:
+        if self._storage.server_ref.url != server_ref.url:
           logging.error(
               'Task shards are using multiple isolate servers: %s and %s',
-              self._storage.location, isolate_server)
+              self._storage.server_ref.url, server_ref.url)
           return None
-        if self._storage.namespace != namespace:
+        if self._storage.server_ref.namespace != server_ref.namespace:
           logging.error(
               'Task shards are using multiple namespaces: %s and %s',
-              self._storage.namespace, namespace)
+              self._storage.server_ref.namespace, server_ref.namespace)
           return None
       return self._storage
 
@@ -1769,17 +1771,17 @@ def CMDreproduce(parser, args):
   command = []
   if (properties.get('inputs_ref') or {}).get('isolated'):
     # Create the tree.
-    with isolateserver.get_storage(
+    server_ref = isolate_storage.ServerRef(
           properties['inputs_ref']['isolatedserver'],
-          properties['inputs_ref']['namespace']) as storage:
+          properties['inputs_ref']['namespace'])
+    with isolateserver.get_storage(server_ref) as storage:
       # Do not use MemoryContentAddressedCache here, as on 32-bits python,
       # inputs larger than ~1GiB will not fit in memory. This is effectively a
       # leak.
       policies = local_caching.CachePolicies(0, 0, 0, 0)
-      algo = isolated_format.get_hash_algo(
-          properties['inputs_ref']['namespace'])
       cache = local_caching.DiskContentAddressedCache(
-          unicode(os.path.abspath(options.cache)), policies, algo, False)
+          unicode(os.path.abspath(options.cache)), policies,
+          server_ref.hash_algo, False)
       bundle = isolateserver.fetch_isolated(
           properties['inputs_ref']['isolated'], storage, cache, workdir, False)
       command = bundle.command

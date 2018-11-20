@@ -57,36 +57,6 @@ def is_valid_hash(value, algo):
   return bool(re.match(r'^[a-fA-F0-9]{%d}$' % size, value))
 
 
-get_hash_algo_has_logged = False
-
-
-def get_hash_algo(namespace):
-  """Return hash algorithm class to use when uploading to given |namespace|."""
-  global get_hash_algo_has_logged
-  chosen = None
-  for name, algo in SUPPORTED_ALGOS.iteritems():
-    if namespace.startswith(name + '-'):
-      chosen = algo
-      break
-
-  if not get_hash_algo_has_logged:
-    get_hash_algo_has_logged = True
-    if chosen:
-      logging.info('Using hash algo %s for namespace %s', chosen, namespace)
-    else:
-      logging.warn('No hash algo found in \'%s\', assuming sha-1', namespace)
-
-  if not chosen:
-    return hashlib.sha1
-
-  return chosen
-
-
-def is_namespace_with_compression(namespace):
-  """Returns True if given |namespace| stores compressed objects."""
-  return namespace.endswith(('-gzip', '-deflate'))
-
-
 def hash_file(filepath, algo):
   """Calculates the hash of a file without reading it all in memory at once.
 

@@ -7,6 +7,7 @@
 
 import base64
 import collections
+import hashlib
 import logging
 import os
 import re
@@ -45,6 +46,59 @@ DOWNLOAD_READ_TIMEOUT = 60
 # Stores the gRPC proxy address. Must be set if the storage API class is
 # IsolateServerGrpc (call 'set_grpc_proxy').
 _grpc_proxy = None
+
+
+class ServerRef(object):
+  """ServerRef is a reference to the remote cache.
+
+  This is expected to be an isolate server.
+  """
+  def __init__(self, url, namespace):
+    """
+    Args:
+      url: URL of isolate service to use shared cloud based storage.
+      namespace: isolate namespace to operate in, also defines hashing and
+        compression scheme used, e.g. namespace names that end with '-gzip'
+        store compressed data.
+    """
+    assert file_path.is_url(url) or not url, url
+    self._url = url.rstrip('/')
+    self._namespace = namespace
+    self._hash_algo = hashlib.sha1
+    self._hash_algo_name = 'sha-1'
+    for name, algo in isolated_format.SUPPORTED_ALGOS.iteritems():
+      if self.namespace.startswith(name + '-'):
+        self._hash_algo_name = name
+        self._hash_algo = algo
+        break
+    self._is_with_compression = self.namespace.endswith(
+        ('-gzip', '-deflate', '-flate'))
+
+  @property
+  def url(self):
+    return self._url
+
+  @property
+  def namespace(self):
+    return self._namespace
+
+  @property
+  def hash_algo(self):
+    """Hashing algorithm class to use when uploading to given |namespace|."""
+    return self._hash_algo
+
+  @property
+  def hash_algo_name(self):
+    return self._hash_algo_name
+
+  @property
+  def is_with_compression(self):
+    """True if given |namespace| stores compressed objects.
+
+    This means that this is the responsibility of the client to compress the
+    data *before* uploading and decompress *after* downloading.
+    """
+    return self._is_with_compression
 
 
 class Item(object):
@@ -99,16 +153,8 @@ class StorageApi(object):
   """
 
   @property
-  def location(self):
-    """URL of the backing store that this class is using."""
-    raise NotImplementedError()
-
-  @property
-  def namespace(self):
-    """Isolate namespace used by this storage.
-
-    Indirectly defines hashing scheme and compression method used.
-    """
+  def server_ref(self):
+    """ServerRef instance."""
     raise NotImplementedError()
 
   @property
@@ -250,17 +296,15 @@ class IsolateServer(StorageApi):
   Works only within single namespace.
   """
 
-  def __init__(self, base_url, namespace):
+  def __init__(self, server_ref):
     super(IsolateServer, self).__init__()
-    assert file_path.is_url(base_url), base_url
-    self._base_url = base_url.rstrip('/')
-    self._namespace = namespace
-    algo = isolated_format.get_hash_algo(namespace)
+    assert isinstance(server_ref, ServerRef), repr(server_ref)
+    self._server_ref = server_ref
+    algo_name = server_ref.hash_algo_name
     self._namespace_dict = {
-        'compression': 'flate' if namespace.endswith(
-            ('-gzip', '-flate')) else '',
-        'digest_hash': isolated_format.SUPPORTED_ALGOS_REVERSE[algo],
-        'namespace': namespace,
+        'compression': 'flate' if server_ref.is_with_compression else '',
+        'digest_hash': algo_name,
+        'namespace': server_ref.namespace,
     }
     self._lock = threading.Lock()
     self._server_caps = None
@@ -281,30 +325,27 @@ class IsolateServer(StorageApi):
 
     with self._lock:
       if self._server_caps is None:
-        self._server_caps = net.url_read_json(
-            url='%s/_ah/api/isolateservice/v1/server_details' % self._base_url,
-            data={})
+        url = '%s/_ah/api/isolateservice/v1/server_details' % (
+            self.server_ref.url)
+        self._server_caps = net.url_read_json(url=url, data={})
       return self._server_caps
 
   @property
-  def location(self):
-    return self._base_url
-
-  @property
-  def namespace(self):
-    return self._namespace
+  def server_ref(self):
+    """Returns the ServerRef instance that represents the remote server."""
+    return self._server_ref
 
   def fetch(self, digest, _size, offset):
     assert offset >= 0
     source_url = '%s/_ah/api/isolateservice/v1/retrieve' % (
-        self._base_url)
+        self.server_ref.url)
     logging.debug('download_file(%s, %d)', source_url, offset)
     response = self._do_fetch(source_url, digest, offset)
 
     if not response:
       raise IOError(
           'Attempted to fetch from %s; no data exist: %s / %s.' % (
-            source_url, self._namespace, digest))
+            source_url, self.server_ref.namespace, digest))
 
     # for DB uploads
     content = response.get('content')
@@ -319,7 +360,8 @@ class IsolateServer(StorageApi):
     # for GS entities
     connection = net.url_open(response['url'])
     if not connection:
-      raise IOError('Failed to download %s / %s' % (self._namespace, digest))
+      raise IOError(
+          'Failed to download %s / %s' % (self.server_ref.namespace, digest))
 
     # If |offset|, verify server respects it by checking Content-Range.
     if offset:
@@ -388,7 +430,7 @@ class IsolateServer(StorageApi):
         # TODO(maruel): Fix the server to accept properly data={} so
         # url_read_json() can be used.
         response = net.url_read_json(
-            url='%s/%s' % (self._base_url, push_state.finalize_url),
+            url='%s/%s' % (self.server_ref.url, push_state.finalize_url),
             data={
                 'upload_ticket': push_state.preupload_status['upload_ticket'],
             })
@@ -417,7 +459,7 @@ class IsolateServer(StorageApi):
         'namespace': self._namespace_dict,
     }
 
-    query_url = '%s/_ah/api/isolateservice/v1/preupload' % self._base_url
+    query_url = '%s/_ah/api/isolateservice/v1/preupload' % self.server_ref.url
 
     # Response body is a list of push_urls (or null if file is already present).
     response = None
@@ -489,7 +531,7 @@ class IsolateServer(StorageApi):
 
     # DB upload
     if not push_state.finalize_url:
-      url = '%s/%s' % (self._base_url, push_state.upload_url)
+      url = '%s/%s' % (self.server_ref.url, push_state.upload_url)
       content = base64.b64encode(content)
       data = {
           'upload_ticket': push_state.preupload_status['upload_ticket'],
@@ -523,32 +565,27 @@ class IsolateServerGrpc(StorageApi):
   algo and compression), and only allows zero offsets while fetching.
   """
 
-  def __init__(self, server, namespace, proxy):
+  def __init__(self, server_ref, proxy):
     super(IsolateServerGrpc, self).__init__()
-    logging.info('Using gRPC for Isolate with server %s, '
-                 'namespace %s, proxy %s',
-                 server, namespace, proxy)
-    self._server = server
+    logging.info(
+        'Using gRPC for Isolate with server %s, proxy %s',
+        server_ref.url, proxy)
+    self._server_ref = server_ref
     self._lock = threading.Lock()
     self._memory_use = 0
     self._num_pushes = 0
     self._already_exists = 0
     self._proxy = grpc_proxy.Proxy(proxy, bytestream_pb2.ByteStreamStub)
-    self._namespace = namespace
-
-
-  @property
-  def location(self):
-    return self._server
-
-  @property
-  def namespace(self):
-    return self._namespace
 
   @property
   def internal_compression(self):
     # gRPC natively compresses all messages before transmission.
     return True
+
+  @property
+  def server_ref(self):
+    """Returns the ServerRef instance that represents the remote server."""
+    return self._server_ref
 
   def fetch(self, digest, size, offset):
     # The gRPC APIs only work with an offset of 0
@@ -659,7 +696,7 @@ def set_grpc_proxy(proxy):
   _grpc_proxy = proxy
 
 
-def get_storage_api(url, namespace):
+def get_storage_api(server_ref):
   """Returns an object that implements low-level StorageApi interface.
 
   It is used by Storage to work with single isolate |namespace|. It should
@@ -667,14 +704,12 @@ def get_storage_api(url, namespace):
   a better alternative.
 
   Arguments:
-    url: URL of isolate service to use shared cloud based storage.
-    namespace: isolate namespace to operate in, also defines hashing and
-        compression scheme used, i.e. namespace names that end with '-gzip'
-        store compressed data.
+    server_ref: ServerRef instance.
 
   Returns:
     Instance of StorageApi subclass.
   """
+  assert isinstance(server_ref, ServerRef), repr(server_ref)
   if _grpc_proxy is not None:
-    return IsolateServerGrpc(url, namespace, _grpc_proxy)
-  return IsolateServer(url, namespace)
+    return IsolateServerGrpc(server_ref.url, _grpc_proxy)
+  return IsolateServer(server_ref)

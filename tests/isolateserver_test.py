@@ -128,16 +128,16 @@ class FakeItem(isolate_storage.Item):
 
 class MockedStorageApi(isolate_storage.StorageApi):
   def __init__(
-      self, missing_hashes, push_side_effect=None, namespace='default'):
+      self, server_ref, missing_hashes, push_side_effect=None):
     self.missing_hashes = missing_hashes
     self.push_side_effect = push_side_effect
     self.push_calls = []
     self.contains_calls = []
-    self._namespace = namespace
+    self._server_ref = server_ref
 
   @property
-  def namespace(self):
-    return self._namespace
+  def server_ref(self):
+    return self._server_ref
 
   def push(self, item, push_state, content=None):
     content = ''.join(item.content() if content is None else content)
@@ -357,7 +357,9 @@ class StorageTest(TestCase):
       items[3]: 456,
     }
 
+    server_ref = isolate_storage.ServerRef('http://localhost:1', 'default')
     storage_api = MockedStorageApi(
+        server_ref,
         {item.digest: push_state for item, push_state in missing.iteritems()})
     storage = isolateserver.Storage(storage_api)
 
@@ -369,9 +371,9 @@ class StorageTest(TestCase):
   def test_async_push(self):
     for use_zip in (False, True):
       item = FakeItem('1234567')
-      storage_api = MockedStorageApi(
-          {item.digest: 'push_state'},
-          namespace='default-gzip' if use_zip else 'default')
+      server_ref = isolate_storage.ServerRef(
+          'http://localhost:1', 'default-gzip' if use_zip else 'default')
+      storage_api = MockedStorageApi(server_ref, {item.digest: 'push_state'})
       storage = isolateserver.Storage(storage_api)
       channel = threading_utils.TaskChannel()
       storage.async_push(channel, item, self.get_push_state(storage, item))
@@ -394,9 +396,9 @@ class StorageTest(TestCase):
     for use_zip in (False, True):
       item = FakeItem('')
       self.mock(item, 'content', faulty_generator)
-      storage_api = MockedStorageApi(
-          {item.digest: 'push_state'},
-          namespace='default-gzip' if use_zip else 'default')
+      server_ref = isolate_storage.ServerRef(
+          'http://localhost:1', 'default-gzip' if use_zip else 'default')
+      storage_api = MockedStorageApi(server_ref, {item.digest: 'push_state'})
       storage = isolateserver.Storage(storage_api)
       channel = threading_utils.TaskChannel()
       storage.async_push(channel, item, self.get_push_state(storage, item))
@@ -420,10 +422,10 @@ class StorageTest(TestCase):
       for source in content_sources:
         item = FakeItem(chunk)
         self.mock(item, 'content', source)
+        server_ref = isolate_storage.ServerRef(
+            'http://localhost:1', 'default-gzip' if use_zip else 'default')
         storage_api = MockedStorageApi(
-            {item.digest: 'push_state'},
-            push_side_effect,
-            namespace='default-gzip' if use_zip else 'default')
+            server_ref, {item.digest: 'push_state'}, push_side_effect)
         storage = isolateserver.Storage(storage_api)
         channel = threading_utils.TaskChannel()
         storage.async_push(channel, item, self.get_push_state(storage, item))
@@ -470,15 +472,17 @@ class StorageTest(TestCase):
       return files_data[filepath]
     self.mock(isolateserver, 'file_read', mocked_file_read)
 
-    storage_api = MockedStorageApi(missing_hashes)
+    server_ref = isolate_storage.ServerRef(
+        'http://localhost:1', 'some-namespace')
+    storage_api = MockedStorageApi(server_ref, missing_hashes)
     storage = isolateserver.Storage(storage_api)
-    def mock_get_storage(base_url, namespace):
-      self.assertEqual('base_url', base_url)
-      self.assertEqual('some-namespace', namespace)
+    def mock_get_storage(server_ref):
+      self.assertEqual('http://localhost:1', server_ref.url)
+      self.assertEqual('some-namespace', server_ref.namespace)
       return storage
     self.mock(isolateserver, 'get_storage', mock_get_storage)
 
-    isolateserver.upload_tree('base_url', files.iteritems(), 'some-namespace')
+    isolateserver.upload_tree(server_ref, files.iteritems())
 
     # Was reading only missing files.
     self.assertEqualIgnoringOrder(
@@ -508,21 +512,24 @@ class StorageTest(TestCase):
 
 class IsolateServerStorageApiTest(TestCase):
   @staticmethod
-  def mock_fetch_request(server, namespace, item, data=None, offset=0):
-    compression = 'flate' if namespace.endswith(('-gzip', '-flate')) else ''
+  def mock_fetch_request(server_ref, item, data=None, offset=0):
+    compression = 'flate' if server_ref.is_with_compression else ''
     if data is None:
-      response = {'url': server + '/some/gs/url/%s/%s' % (namespace, item)}
+      response = {
+        'url': '%s/some/gs/url/%s/%s' % (
+            server_ref.url, server_ref.namespace, item),
+      }
     else:
       response = {'content': base64.b64encode(data[offset:])}
     return (
-      server + '/_ah/api/isolateservice/v1/retrieve',
+      '%s/_ah/api/isolateservice/v1/retrieve' % server_ref.url,
       {
           'data': {
               'digest': item,
               'namespace': {
                   'compression': compression,
                   'digest_hash': 'sha-1',
-                  'namespace': namespace,
+                  'namespace': server_ref.namespace,
               },
               'offset': offset,
           },
@@ -532,73 +539,67 @@ class IsolateServerStorageApiTest(TestCase):
     )
 
   @staticmethod
-  def mock_server_details_request(server):
+  def mock_server_details_request(server_ref):
     return (
-        server + '/_ah/api/isolateservice/v1/server_details',
+        '%s/_ah/api/isolateservice/v1/server_details' % server_ref.url,
         {'data': {}},
         {'server_version': 'such a good version'}
     )
 
   @staticmethod
-  def mock_gs_request(server, namespace, item, data=None, offset=0,
+  def mock_gs_request(server_ref, item, data=None, offset=0,
                       request_headers=None, response_headers=None):
     response = data
     return (
-        server + '/some/gs/url/%s/%s' % (namespace, item),
+        '%s/some/gs/url/%s/%s' % (server_ref.url, server_ref.namespace, item),
         {},
         response,
         response_headers,
     )
 
   @staticmethod
-  def mock_contains_request(
-      server, namespace, request, response, compression=''):
-    url = server + '/_ah/api/isolateservice/v1/preupload'
+  def mock_contains_request(server_ref, request, response):
+    url = server_ref.url + '/_ah/api/isolateservice/v1/preupload'
     digest_collection = dict(request, namespace={
-        'compression': compression,
-        'digest_hash': 'sha-1',
-        'namespace': namespace,
+        'compression': 'flate' if server_ref.is_with_compression else '',
+        'digest_hash': server_ref.hash_algo_name,
+        'namespace': server_ref.namespace,
     })
     return (url, {'data': digest_collection}, response)
 
   @staticmethod
-  def mock_upload_request(server, content, ticket, response=None):
-    url = server + '/_ah/api/isolateservice/v1/store_inline'
+  def mock_upload_request(server_ref, content, ticket, response=None):
+    url = server_ref.url + '/_ah/api/isolateservice/v1/store_inline'
     request = {'content': content, 'upload_ticket': ticket}
     return (url, {'data': request}, response)
 
   def test_server_capabilities_success(self):
-    server = 'http://example.com'
-    namespace ='default'
-    self.expected_requests([self.mock_server_details_request(server)])
-    storage = isolate_storage.IsolateServer(server, namespace)
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default')
+    self.expected_requests([self.mock_server_details_request(server_ref)])
+    storage = isolate_storage.IsolateServer(server_ref)
     caps = storage._server_capabilities
     self.assertEqual({'server_version': 'such a good version'}, caps)
 
   def test_fetch_success(self):
-    server = 'http://example.com'
-    namespace = 'default'
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default')
     data = ''.join(str(x) for x in xrange(1000))
     item = isolateserver_mock.hash_content(data)
-    self.expected_requests(
-        [self.mock_fetch_request(server, namespace, item, data)])
-    storage = isolate_storage.IsolateServer(server, namespace)
+    self.expected_requests([self.mock_fetch_request(server_ref, item, data)])
+    storage = isolate_storage.IsolateServer(server_ref)
     fetched = ''.join(storage.fetch(item, 0, 0))
     self.assertEqual(data, fetched)
 
   def test_fetch_failure(self):
-    server = 'http://example.com'
-    namespace = 'default'
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default')
     item = isolateserver_mock.hash_content('something')
     self.expected_requests(
-        [self.mock_fetch_request(server, namespace, item)[:-1] + (None,)])
-    storage = isolate_storage.IsolateServer(server, namespace)
+        [self.mock_fetch_request(server_ref, item)[:-1] + (None,)])
+    storage = isolate_storage.IsolateServer(server_ref)
     with self.assertRaises(IOError):
       _ = ''.join(storage.fetch(item, 0, 0))
 
   def test_fetch_offset_success(self):
-    server = 'http://example.com'
-    namespace = 'default'
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default')
     data = ''.join(str(x) for x in xrange(1000))
     item = isolateserver_mock.hash_content(data)
     offset = 200
@@ -610,15 +611,14 @@ class IsolateServerStorageApiTest(TestCase):
     ]
 
     for _content_range_header in good_content_range_headers:
-      self.expected_requests([self.mock_fetch_request(
-          server, namespace, item, data, offset=offset)])
-      storage = isolate_storage.IsolateServer(server, namespace)
+      self.expected_requests(
+          [self.mock_fetch_request(server_ref, item, data, offset=offset)])
+      storage = isolate_storage.IsolateServer(server_ref)
       fetched = ''.join(storage.fetch(item, 0, offset))
       self.assertEqual(data[offset:], fetched)
 
   def test_fetch_offset_bad_header(self):
-    server = 'http://example.com'
-    namespace = 'default'
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default')
     data = ''.join(str(x) for x in xrange(1000))
     item = isolateserver_mock.hash_content(data)
     offset = 200
@@ -639,20 +639,18 @@ class IsolateServerStorageApiTest(TestCase):
 
     for content_range_header in bad_content_range_headers:
       self.expected_requests([
-          self.mock_fetch_request(
-              server, namespace, item, offset=offset),
+          self.mock_fetch_request(server_ref, item, offset=offset),
           self.mock_gs_request(
-              server, namespace, item, data, offset=offset,
+              server_ref, item, data, offset=offset,
               request_headers={'Range': 'bytes=%d-' % offset},
               response_headers={'Content-Range': content_range_header}),
       ])
-      storage = isolate_storage.IsolateServer(server, namespace)
+      storage = isolate_storage.IsolateServer(server_ref)
       with self.assertRaises(IOError):
         _ = ''.join(storage.fetch(item, 0, offset))
 
   def test_push_success(self):
-    server = 'http://example.com'
-    namespace = 'default'
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default')
     data = ''.join(str(x) for x in xrange(1000))
     item = FakeItem(data)
     contains_request = {'items': [
@@ -660,16 +658,16 @@ class IsolateServerStorageApiTest(TestCase):
     contains_response = {'items': [{'index': 0, 'upload_ticket': 'ticket!'}]}
     requests = [
       self.mock_contains_request(
-          server, namespace, contains_request, contains_response),
+          server_ref, contains_request, contains_response),
       self.mock_upload_request(
-          server,
+          server_ref,
           base64.b64encode(data),
           contains_response['items'][0]['upload_ticket'],
           {'ok': True},
       ),
     ]
     self.expected_requests(requests)
-    storage = isolate_storage.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server_ref)
     missing = storage.contains([item])
     self.assertEqual([item], missing.keys())
     push_state = missing[item]
@@ -678,8 +676,7 @@ class IsolateServerStorageApiTest(TestCase):
     self.assertTrue(push_state.finalized)
 
   def test_push_failure_upload(self):
-    server = 'http://example.com'
-    namespace = 'default'
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default')
     data = ''.join(str(x) for x in xrange(1000))
     item = FakeItem(data)
     contains_request = {'items': [
@@ -687,15 +684,15 @@ class IsolateServerStorageApiTest(TestCase):
     contains_response = {'items': [{'index': 0, 'upload_ticket': 'ticket!'}]}
     requests = [
       self.mock_contains_request(
-          server, namespace, contains_request, contains_response),
+          server_ref, contains_request, contains_response),
       self.mock_upload_request(
-          server,
+          server_ref,
           base64.b64encode(data),
           contains_response['items'][0]['upload_ticket'],
       ),
     ]
     self.expected_requests(requests)
-    storage = isolate_storage.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server_ref)
     missing = storage.contains([item])
     self.assertEqual([item], missing.keys())
     push_state = missing[item]
@@ -705,21 +702,20 @@ class IsolateServerStorageApiTest(TestCase):
     self.assertFalse(push_state.finalized)
 
   def test_push_failure_finalize(self):
-    server = 'http://example.com'
-    namespace = 'default'
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default')
     data = ''.join(str(x) for x in xrange(1000))
     item = FakeItem(data)
     contains_request = {'items': [
         {'digest': item.digest, 'size': item.size, 'is_isolated': 0}]}
     contains_response = {'items': [
         {'index': 0,
-         'gs_upload_url': server + '/FAKE_GCS/whatevs/1234',
+         'gs_upload_url': '%s/FAKE_GCS/whatevs/1234' % server_ref.url,
          'upload_ticket': 'ticket!'}]}
     requests = [
       self.mock_contains_request(
-          server, namespace, contains_request, contains_response),
+          server_ref, contains_request, contains_response),
       (
-        server + '/FAKE_GCS/whatevs/1234',
+        '%s/FAKE_GCS/whatevs/1234' % server_ref.url,
         {
           'data': data,
           'content_type': 'application/octet-stream',
@@ -730,13 +726,13 @@ class IsolateServerStorageApiTest(TestCase):
         None,
       ),
       (
-        server + '/_ah/api/isolateservice/v1/finalize_gs_upload',
+        '%s/_ah/api/isolateservice/v1/finalize_gs_upload' % server_ref.url,
         {'data': {'upload_ticket': 'ticket!'}},
         None,
       ),
     ]
     self.expected_requests(requests)
-    storage = isolate_storage.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server_ref)
     missing = storage.contains([item])
     self.assertEqual([item], missing.keys())
     push_state = missing[item]
@@ -746,8 +742,7 @@ class IsolateServerStorageApiTest(TestCase):
     self.assertFalse(push_state.finalized)
 
   def test_contains_success(self):
-    server = 'http://example.com'
-    namespace = 'default'
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default')
     files = [
       FakeItem('1', high_priority=True),
       FakeItem('2' * 100),
@@ -766,10 +761,10 @@ class IsolateServerStorageApiTest(TestCase):
         files[1],
         files[2],
     ]
-    self._requests = [
-      self.mock_contains_request(server, namespace, request, response),
-    ]
-    storage = isolate_storage.IsolateServer(server, namespace)
+    # Pylint is confused, self._requests is set in net_utils.TestCase.setUp().
+    # pylint: disable=attribute-defined-outside-init
+    self._requests = [self.mock_contains_request(server_ref, request, response)]
+    storage = isolate_storage.IsolateServer(server_ref)
     result = storage.contains(files)
     self.assertEqual(set(missing), set(result.keys()))
     for i, (_item, push_state) in enumerate(result.iteritems()):
@@ -778,20 +773,18 @@ class IsolateServerStorageApiTest(TestCase):
       self.assertEqual(push_state.finalize_url, None)
 
   def test_contains_network_failure(self):
-    server = 'http://example.com'
-    namespace = 'default'
-    self.expected_requests([self.mock_contains_request(
-        server, namespace, {'items': []}, None)])
-    storage = isolate_storage.IsolateServer(server, namespace)
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default')
+    self.expected_requests(
+        [self.mock_contains_request(server_ref, {'items': []}, None)])
+    storage = isolate_storage.IsolateServer(server_ref)
     with self.assertRaises(isolated_format.MappingError):
       storage.contains([])
 
   def test_contains_format_failure(self):
-    server = 'http://example.com'
-    namespace = 'default'
-    self.expected_requests([self.mock_contains_request(
-        server, namespace, {'items': []}, None)])
-    storage = isolate_storage.IsolateServer(server, namespace)
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default')
+    self.expected_requests(
+        [self.mock_contains_request(server_ref, {'items': []}, None)])
+    storage = isolate_storage.IsolateServer(server_ref)
     with self.assertRaises(isolated_format.MappingError):
       storage.contains([])
 
@@ -812,7 +805,8 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
       super(IsolateServerStorageSmokeTest, self).tearDown()
 
   def run_synchronous_push_test(self, namespace):
-    storage = isolateserver.get_storage(self.server.url, namespace)
+    storage = isolateserver.get_storage(
+        isolate_storage.ServerRef(self.server.url, namespace))
 
     # Items to upload.
     items = [isolateserver.BufferItem('item %d' % i) for i in xrange(10)]
@@ -835,7 +829,8 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
     self.run_synchronous_push_test('default-gzip')
 
   def run_upload_items_test(self, namespace):
-    storage = isolateserver.get_storage(self.server.url, namespace)
+    storage = isolateserver.get_storage(
+        isolate_storage.ServerRef(self.server.url, namespace))
 
     # Items to upload.
     items = [isolateserver.BufferItem('item %d' % i) for i in xrange(10)]
@@ -861,7 +856,8 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
     self.run_upload_items_test('default-gzip')
 
   def run_push_and_fetch_test(self, namespace):
-    storage = isolateserver.get_storage(self.server.url, namespace)
+    storage = isolateserver.get_storage(
+        isolate_storage.ServerRef(self.server.url, namespace))
 
     # Upload items.
     items = [isolateserver.BufferItem('item %d' % i) for i in xrange(10)]
@@ -983,12 +979,12 @@ class IsolateServerDownloadTest(TestCase):
     def out(key, generator):
       actual[key] = ''.join(generator)
     self.mock(local_caching, 'file_write', out)
-    server = 'http://example.com'
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default-gzip')
     coucou_sha1 = hashlib.sha1('Coucou').hexdigest()
     byebye_sha1 = hashlib.sha1('Bye Bye').hexdigest()
     requests = [
       (
-        server + '/_ah/api/isolateservice/v1/retrieve',
+        '%s/_ah/api/isolateservice/v1/retrieve' % server_ref.url,
         {
             'data': {
                 'digest': h.encode('utf-8'),
@@ -1007,7 +1003,8 @@ class IsolateServerDownloadTest(TestCase):
     self.expected_requests(requests)
     cmd = [
       'download',
-      '--isolate-server', server,
+      '--isolate-server', server_ref.url,
+      '--namespace', server_ref.namespace,
       '--target', net_utils.ROOT_DIR,
       '--file', coucou_sha1, 'path/to/a',
       '--file', byebye_sha1, 'path/to/b',
@@ -1021,7 +1018,7 @@ class IsolateServerDownloadTest(TestCase):
 
   def test_download_isolated_simple(self):
     # Test downloading an isolated tree.
-    server = 'http://example.com'
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default-gzip')
     files = {
       os.path.join('a', 'foo'): 'Content',
       'b': 'More content',
@@ -1056,7 +1053,7 @@ class IsolateServerDownloadTest(TestCase):
     requests.append((isolated_hash, isolated_data))
     requests = [
       (
-        server + '/_ah/api/isolateservice/v1/retrieve',
+        '%s/_ah/api/isolateservice/v1/retrieve' % server_ref.url,
         {
             'data': {
                 'digest': h.encode('utf-8'),
@@ -1074,7 +1071,8 @@ class IsolateServerDownloadTest(TestCase):
     ]
     cmd = [
       'download',
-      '--isolate-server', server,
+      '--isolate-server', server_ref.url,
+      '--namespace', server_ref.namespace,
       '--target', self.tempdir,
       '--isolated', isolated_hash,
     ]
@@ -1094,7 +1092,7 @@ class IsolateServerDownloadTest(TestCase):
 
   def test_download_isolated_tar_archive(self):
     # Test downloading an isolated tree.
-    server = 'http://example.com'
+    server_ref = isolate_storage.ServerRef('http://example.com', 'default-gzip')
 
     files = {
       os.path.join('a', 'foo'): ('Content', 0500),
@@ -1146,7 +1144,7 @@ class IsolateServerDownloadTest(TestCase):
     requests.append((isolated_hash, isolated_data))
     requests = [
       (
-        server + '/_ah/api/isolateservice/v1/retrieve',
+        '%s/_ah/api/isolateservice/v1/retrieve' % server_ref.url,
         {
             'data': {
                 'digest': h.encode('utf-8'),
@@ -1164,7 +1162,8 @@ class IsolateServerDownloadTest(TestCase):
     ]
     cmd = [
       'download',
-      '--isolate-server', server,
+      '--isolate-server', server_ref.url,
+      '--namespace', server_ref.namespace,
       '--target', self.tempdir,
       '--isolated', isolated_hash,
     ]
@@ -1180,7 +1179,7 @@ class IsolateServerDownloadTest(TestCase):
     self.checkOutput(expected_stdout, '')
 
 
-def get_storage(_isolate_server, namespace):
+def get_storage(server_ref):
   class StorageFake(object):
     def __enter__(self, *_):
       return self
@@ -1189,8 +1188,8 @@ def get_storage(_isolate_server, namespace):
       pass
 
     @property
-    def hash_algo(self):  # pylint: disable=R0201
-      return isolated_format.get_hash_algo(namespace)
+    def server_ref(self):
+      return server_ref
 
     @staticmethod
     def upload_items(items):
