@@ -47,7 +47,8 @@
       }
 
       cr-policy-network-indicator,
-      cr-policy-indicator {
+      cr-policy-indicator,
+      cr-policy-pref-indicator {
         margin-inline-start: var(--settings-controlled-by-spacing);
       }
 
@@ -176,6 +177,30 @@
               disabled="[[!enableAutoConnect_(networkProperties)]]"
               aria-labelledby="autoConnectToggleLabel">
           </cr-toggle>
+        </div>
+      </template>
+      <!-- Always-on VPN. -->
+      <template is="dom-if"
+          if="[[showAlwaysOnVpn_(networkProperties)]]">
+        <div class="settings-box">
+          <div id="AlwaysOnVpnToggleLabel" class="start">
+            $i18n{networkAlwaysOnVpn}
+          </div>
+          <cr-toggle checked="{{alwaysOnVpn_}}"
+              disabled="[[!enableAlwaysOnVpn_(networkProperties,
+                  prefs.vpn_config_allowed)]]"
+              aria-labelledby="AlwaysOnVpnToggleLabel"
+              on-change="onAlwaysOnVpnChange_">
+          </cr-toggle>
+          <template is="dom-if"
+              if="[[!enableAlwaysOnVpn_(networkProperties,
+              prefs.vpn_config_allowed)]]">
+            <cr-policy-pref-indicator
+                pref="[[getVpnConfigPrefFromValue_(networkProperties,
+                    prefs.vpn_config_allowed)]]" on-click="onIndicatorTap_"
+                icon-aria-label="AlwaysOnVpnToggleLabel">
+            </cr-policy-pref-indicator>
+          </template>
         </div>
       </template>
       <!-- Data roaming (Cellular only). -->
