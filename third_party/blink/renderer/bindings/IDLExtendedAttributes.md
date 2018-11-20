@@ -20,7 +20,7 @@ Blink IDL also does not support certain recent features of the Web IDL grammar:
 Semantically, only certain extended attributes allow lists. Similarly, only certain extended attributes allow string literals.
 
 Extended attributes either take no value, take a required value, or take an optional value.
-In the following explanations, _(i)_, _(m)_, _(s)_, _(a)_, _(p)_, _(c)_, _(d)_, and _(f)_ mean that a given extended attribute can be specified on interfaces, methods, special operations, attributes, parameters, constants, dictionaries, and callback functions respectively. For example, _(a,p)_ means that the IDL attribute can be specified on attributes and parameters.
+In the following explanations, _(i)_, _(m)_, _(s)_, _(a)_, _(p)_, _(c)_, _(d)_, _(f)_, and _(t)_ mean that a given extended attribute can be specified on interfaces, methods, special operations, attributes, parameters, constants, dictionaries, callback functions, and types respectively. For example, _(a,p)_ means that the IDL attribute can be specified on attributes and parameters.
 
 *** note
 These restrictions are not enforced by the parser: extended attributes used in unsupported contexts will simply be ignored.
@@ -155,23 +155,21 @@ Usage: `[CEReactions]` takes no arguments.
 
 Note that `blink::CEReactionsScope` must be constructed after `blink::ExceptionState`.
 
-### [Clamp] _(a, p)_
+### [Clamp] _(t)_
 
 Standard: [Clamp](https://heycam.github.io/webidl/#Clamp)
 
 Summary: `[Clamp]` indicates that when an ECMAScript Number is converted to the IDL type, out of range values will be clamped to the range of valid values, rather than using the operators that use a modulo operation (ToInt32, ToUint32, etc.).
 
-Usage: The `[Clamp]` extended attribute MUST NOT appear on a read only attribute, or an attribute, operation argument or dictionary member that is not of an integer type.
-
-`[Clamp]` can be specified on writable attributes:
+Usage: The `[Clamp]` extended attribute MUST appear on an integer type.
 
 ```webidl
 interface XXX {
-    [Clamp] attribute unsigned short attributeName;
+    attribute [Clamp] unsigned short attributeName;
 };
 ```
 
-`[Clamp]` can be specified on extended attributes or methods arguments:
+Annotated type with `[Clamp]` can be specified on extended attributes or methods arguments:
 
 ```webidl
 interface GraphicsContext {
@@ -198,7 +196,7 @@ Usage: `[Constructor]` can be specified on interfaces:
 
 ```webidl
 [
-    Constructor(float x, float y, DOMString str),
+    Constructor(float x, float y, DOMString str)
 ]
 interface XXX {
     ...
@@ -214,8 +212,7 @@ var x = new XXX(1.0, 2.0, "hello");
 The Blink implementation must have the following method as a constructor callback:
 
 ```c++
-scoped_refptr<XXX> XXX::create(float x, float y, String str)
-{
+XXX* XXX::Create(float x, float y, const String& str) {
     ...;
 }
 ```
@@ -228,23 +225,21 @@ Whether you should allow an interface to have constructor depends on the spec of
 Currently `[Constructor(...)]` does not yet support optional arguments w/o defaults. It just supports optional `[Default=Undefined]`.
 ***
 
-### [EnforceRange] _(a, p)_
+### [EnforceRange] _(t)_
 
 Standard: [EnforceRange](https://heycam.github.io/webidl/#EnforceRange)
 
 Summary: `[EnforceRange]` indicates that when an ECMAScript Number is converted to the IDL type, out of range values will result in a TypeError exception being thrown.
 
-Usage: The `[EnforceRange]` extended attribute MUST NOT appear on a read only attribute, or an attribute, operation argument or dictionary member that is not of an integer type.
-
-`[EnforceRange]` can be specified on writable attributes:
+Usage: The `[EnforceRange]` extended attribute MUST appear on an integer type.
 
 ```webidl
 interface XXX {
-    [EnforceRange] attribute unsigned short attributeName;
+    attribute [EnforceRange] unsigned short attributeName;
 };
 ```
 
-`[EnforceRange]` can be specified on extended attributes on methods arguments:
+Annotated type with `[EnforceRange]` can be specified on extended attributes on methods arguments:
 
 ```webidl
 interface GraphicsContext {
@@ -281,13 +276,13 @@ Usage: `[Exposed]` can be specified on interfaces that do not have the `[NoInter
 
 ```webidl
 [
-    Exposed=DedicatedWorker,
+    Exposed=DedicatedWorker
 ] interface XXX {
     ...
 };
 
 [
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface YYY {
     ...
 };
@@ -385,7 +380,7 @@ Usage: `[NoInterfaceObject]` can be specified on interfaces.
 
 ```webidl
 [
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface XXX {
     ...
 };
@@ -395,7 +390,7 @@ Note that `[NoInterfaceObject]` **MUST** be specified on testing interfaces, as 
 
 ```webidl
 [
-    NoInterfaceObject, // testing interfaces do not appear on global objects
+    NoInterfaceObject  // testing interfaces do not appear on global objects
 ] interface TestingInterfaceX {
     ...
 };
@@ -442,21 +437,21 @@ Intuitively, "replaceable" means that you can set a new value to the attribute w
 Specifically, a writable attribute, without `[Replaceable]`, behaves as follows:
 
 ```js
-window.screenX; // Evaluates to 0
+window.screenX;  // Evaluates to 0
 window.screenX = "foo";
-window.screenX; // Evaluates to "foo"
+window.screenX;  // Evaluates to "foo"
 delete window.screenX;
-window.screenX; // Evaluates to undefined. 0 is lost.
+window.screenX;  // Evaluates to undefined. 0 is lost.
 ```
 
 A read only attribute, with `[Replaceable]`, behaves as follows:
 
 ```js
-window.screenX; // Evaluates to 0
+window.screenX;  // Evaluates to 0
 window.screenX = "foo";
-window.screenX; // Evaluates to "foo"
+window.screenX;  // Evaluates to "foo"
 delete window.screenX;
-window.screenX; // Evaluates to 0. 0 remains.
+window.screenX;  // Evaluates to 0. 0 remains.
 ```
 
 Whether `[Replaceable]` should be specified or not depends on the spec of each attribute.
@@ -515,16 +510,16 @@ Summary: Transferable objects support being transferred across Realms with `post
 
 This attribute has no effect on code generation and should simply be used in Blink IDL files if the specification uses it. Code to perform the transfer steps must be added to `V8ScriptValueSerializer` for types in `core/` or `V8ScriptValueDeserializerForModules` for types in `modules/`.
 
-### [TreatNullAs] _(a,p)_
+### [TreatNullAs] _(t)_
 
 Standard: [TreatNullAs](https://heycam.github.io/webidl/#TreatNullAs)
 
 Summary: `[TreatNullAs=EmptyString]` indicates that a JavaScript null is converted to `""` instead of `"null"`.
 
-Usage: Can be specified on DOMString attributes or DOMString parameters only:
+Usage: `[TreatNullAs=EmptyString]` must be specified on a DOMString type.
 
 ```webidl
-[TreatNullAs=EmptyString] attribute DOMString str;
+attribute [TreatNullAs=EmptyString] DOMString str;
 void func([TreatNullAs=Emptytring] DOMString str);
 ```
 
@@ -567,7 +562,7 @@ Usage: `[ActiveScriptWrappable]` can be specified on interfaces, and **is inheri
 
 ```webidl
 [
-    ActiveScriptWrappable,
+    ActiveScriptWrappable
 ] interface Foo {
     ...
 };
@@ -577,7 +572,7 @@ If an interface X has `[ActiveScriptWrappable]` and an interface Y inherits the 
 
 ```webidl
 [
-    ActiveScriptWrappable,
+    ActiveScriptWrappable
 ] interface Foo {};
 
 interface Bar : Foo {};  // inherits [ActiveScriptWrappable] from Foo
@@ -588,10 +583,9 @@ If a given DOM object needs to be kept alive as long as the DOM object has pendi
 If you use `[ActiveScriptWrappable]`, the corresponding Blink class needs to inherit ActiveScriptWrappable and override hasPendingActivity(). For example, in case of XMLHttpRequest, core/xml/XMLHttpRequest.h would look like this:
 
 ```c++
-class XMLHttpRequest : public ActiveScriptWrappable<XMLHttpRequest>
-{
-    // Returns true if the object needs to be kept alive.
-    bool hasPendingActivity() const override { return ...; }
+class XMLHttpRequest : public ActiveScriptWrappable<XMLHttpRequest> {
+  // Returns true if the object needs to be kept alive.
+  bool HasPendingActivity() const override { return ...; }
 }
 ```
 
@@ -686,12 +680,12 @@ _(rare CallWith values)_
 
 #### [CallWith=ThisValue] _(m)_
 
-`[CallWith=ThisValue]` only applies to methods in callback interfaces, and is used in only one place (CSSVariablesMapForEachCallback.idl).
+`[CallWith=ThisValue]` is used in only one place (location.idl).
 
 IDL example:
 
 ```webidl
-callback interface Example {
+interface Example {
     [CallWith=ThisValue] boolean func(boolean a, boolean b);
 };
 ```
@@ -703,7 +697,7 @@ bool Example::func(ScriptValue thisValue, bool a, bool b);
 ```
 
 *** note
-`[CallWith=...]` arguments are added at the _head_ of `XXX::create(...)'s` arguments, and ` [RaisesException]`'s `ExceptionState` argument is added at the _tail_ of `XXX::create(...)`'s arguments.
+`[CallWith=...]` arguments are added at the _head_ of `XXX::Create(...)'s` arguments, and ` [RaisesException]`'s `ExceptionState` argument is added at the _tail_ of `XXX::Create(...)`'s arguments.
 ***
 
 #### [ConstructorCallWith] _(i)_
@@ -715,23 +709,18 @@ If `[Constructor]` is specified on an interface, `[ConstructorCallWith]` can be 
 ```webidl
 [
     Constructor(float x, float y, DOMString str),
-    ConstructorCallWith=ExecutionContext,
+    ConstructorCallWith=ExecutionContext
 ]
 interface XXX {
     ...
 };
 ```
 
-Then XXX::create(...) can have the following signature
-
-*** note
-**FIXME:** outdated
-***
+Then XXX::Create(...) can have the following signature
 
 ```c++
-scoped_refptr<XXX> XXX::create(ExecutionContext* context, float x, float y, String str)
-{
-    ...;
+XXX* XXX::Create(ExecutionContext* context, float x, float y, const String& str) {
+  ...;
 }
 ```
 
@@ -754,7 +743,7 @@ Usage: `[ContextEnabled=FeatureName]`. FeatureName is an arbitrary name used to 
 ] interface Mojo { ... };
 ```
 
-When applied to an interface, the generated code for the relevant global object will include a public `installFeatureName()` method which can be called to install the interface on the global object.
+When applied to an interface, the generated code for the relevant global object will include a public `InstallFeatureName()` method which can be called to install the interface on the global object.
 
 Note that `[ContextEnabled]` is not mututally exclusive to `[RuntimeEnabled]`, and a feature which may be enabled by either mechanism will be enabled if the appropriate `[RuntimeEnabled]` feature is enabled; _or_ if the appropriate `[ContextEnabled]` feature is enabled; _or_ if both are enabled.
 
@@ -790,22 +779,20 @@ Methods:
 
 ```webidl
 interface XXX {
-  [Custom] void func();
-  [Custom=CallEpilogue] void func2();
+    [Custom] void func();
+    [Custom=CallEpilogue] void func2();
 };
 ```
 
-You can write custom bindings in Source/bindings/v8/custom/V8XXXCustom.cpp:
+You can write custom bindings in third_party/blink/renderer/bindings/{core,modules}/v8/custom/v8_xxx_custom.cc:
 
 ```c++
-void V8XXX::funcMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ...;
+void V8XXX::FuncMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ...;
 }
 
-void V8XXX::func2MethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, V8XXX* impl)
-{
-    ...;
+void V8XXX::Func2MethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, V8XXX* impl) {
+  ...;
 }
 ```
 
@@ -820,9 +807,8 @@ interface XXX {
 You can write custom bindings in Source/bindings/v8/custom/V8XXXCustom.cpp:
 
 ```c++
-void V8XXX::strAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    ...;
+void V8XXX::StrAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info) {
+  ...;
 }
 ```
 
@@ -837,9 +823,8 @@ interface XXX {
 You can write custom bindings in Source/bindings/v8/custom/V8XXXCustom.cpp:
 
 ```c++
-void V8XXX::strAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    ...;
+void V8XXX::StrAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info) {
+  ...;
 }
 ```
 
@@ -897,18 +882,16 @@ interface XXX {
 You can write custom bindings as V8XXX::namedPropertyQuery(...) and V8XXX::namedPropertyEnumerator(...) in Source/bindings/v8/custom/V8XXXCustom.cpp:
 
 ```c++
-v8::Local<v8::Integer> V8XXX::namedPropertyQuery(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    ...;
+v8::Local<v8::Integer> V8XXX::NamedPropertyQuery(v8::Local<v8::String> name, const v8::AccessorInfo& info) {
+  ...;
 }
 
-v8::Local<v8::Array> V8XXX::namedPropertyEnumerator(const v8::AccessorInfo& info)
-{
-    ...;
+v8::Local<v8::Array> V8XXX::NamedPropertyEnumerator(const v8::AccessorInfo& info) {
+  ...;
 }
 ```
 
-#### [Custom=LegacyCallAsFunction] _(i) _deprecated_
+#### [Custom=LegacyCallAsFunction] _(i)_ _deprecated_
 
 Summary: `[Custom=LegacyCallAsFunction]` allows you to write custom bindings for call(...) of a given interface.
 
@@ -927,8 +910,7 @@ If you want to write custom bindings for XXX.call(...), you can use `[Custom=Leg
 You can write custom `V8XXX::callAsFunctionCallback(...)` in Source/bindings/v8/custom/V8XXXCustom.cpp:
 
 ```c++
-v8::Local<v8::Value> V8XXX::callAsFunctionCallback(const v8::Arguments& args)
-{
+v8::Local<v8::Value> V8XXX::CallAsFunctionCallback(const v8::Arguments& args) {
     ...;
 }
 ```
@@ -960,8 +942,8 @@ Usage: `[Default=Undefined]` can be specified on any optional parameter:
 
 ```webidl
 interface HTMLFoo {
-    void func1(int a, int b, optional int c, optional int d);
-    void func2(int a, int b, [Default=Undefined] optional int c);
+    void func1(long a, long b, optional long c, optional long d);
+    void func2(long a, long b, [Default=Undefined] optional long c);
 };
 ```
 
@@ -969,9 +951,9 @@ The parameters marked with the standard Web IDL `optional` qualifier are optiona
 
 The difference between `optional` and `[Default=Undefined]` optional is whether the Blink implementation requires overloaded methods or not: without a default value, the Blink implementation must have overloaded C++ functions, while with a default value, the Blink implementation only needs a single C++ function.
 
-In case of func1(...), if JavaScript calls func1(100, 200), then HTMLFoo::func1(int a, int b) is called in Blink. If JavaScript calls func1(100, 200, 300), then HTMLFoo::func1(int a, int b, int c) is called in Blink. If JavaScript calls func1(100, 200, 300, 400), then HTMLFoo::func1(int a, int b, int c, int d) is called in Blink. In other words, if the Blink implementation has overloaded methods, you can use `optional`.
+In case of func1(...), if JavaScript calls func1(100, 200), then `HTMLFoo::func1(int a, int b)` is called in Blink. If JavaScript calls `func1(100, 200, 300)`, then `HTMLFoo::func1(int a, int b, int c)` is called in Blink. If JavaScript calls `func1(100, 200, 300, 400)`, then `HTMLFoo::func1(int a, int b, int c, int d)` is called in Blink. In other words, if the Blink implementation has overloaded methods, you can use `optional`.
 
-In case of func2(...) which adds `[Default=Undefined]`, if JavaScript calls func2(100, 200), then it behaves as if JavaScript called func2(100, 200, undefined). Consequently, HTMLFoo::func2(int a, int b, int c) is called in Blink. 100 is passed to a, 200 is passed to b, and 0 is passed to c. (A JavaScript `undefined` is converted to 0, following the value conversion rule in the Web IDL spec; if it were a DOMString parameter, it would end up as the string `"undefined"`.) In this way, Blink needs to just implement func2(int a, int b, int c) and needs not to implement both func2(int a, int b) and func2(int a, int b, int c).
+In case of func2(...) which adds `[Default=Undefined]`, if JavaScript calls `func2(100, 200)`, then it behaves as if JavaScript called `func2(100, 200, undefined)`. Consequently, `HTMLFoo::func2(int a, int b, int c)` is called in Blink. 100 is passed to `a`, 200 is passed to `b`, and 0 is passed to `c`. (A JavaScript `undefined` is converted to 0, following the value conversion rule in the Web IDL spec; if it were a DOMString parameter, it would end up as the string `"undefined"`.) In this way, Blink needs to just implement `func2(int a, int b, int c)` and needs not to implement both `func2(int a, int b)` and `func2(int a, int b, int c)`.
 
 ### [DeprecateAs] _(m, a, c)_
 
@@ -1024,12 +1006,6 @@ Usage: `[MeasureAs]` can be specified on interfaces, methods, attributes, and co
 
 ### [NotEnumerable] _(m, a, s)_
 
-*** note
-**FIXME:** docs out of date!
-***
-
-Specification: [The spec of Writable, Enumerable and Configurable (Section 8.6.1)](http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf) - _not standard Web IDL extended attributes._
-
 Summary: Controls the enumerability of methods and attributes.
 
 Usage: `[NotEnumerable]` can be specified on methods and attributes
@@ -1059,15 +1035,11 @@ When there is an active origin trial for the current execution context, the feat
 
 For more information, see [RuntimeEnabledFeatures](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/platform/runtime_enabled_features.json5) and [OriginTrialContext](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/core/origin_trials/origin_trial_context.h).
 
-*** note
-**FIXME:** Currently, `[OriginTrialEnabled]` can only be applied to interfaces, attributes, and constants. Methods (including those generated by `iterable`, `setlike`, `maplike`, `serializer` and `stringifier`) are not supported. See [Bug 621641](https://crbug.com/621641).
-***
-
 ### [RaisesException] _(i, m, a)_
 
 Summary: Tells the code generator to append an `ExceptionState&` argument when calling the Blink implementation.
 
-Implementations may use the methods on this parameter (e.g. `ExceptionState::throwDOMException`) to throw exceptions.
+Implementations may use the methods on this parameter (e.g. `ExceptionState::ThrowDOMException`) to throw exceptions.
 
 Usage: `[RaisesException]` can be specified on methods and attributes, `[RaisesException=Getter]` and `[RaisesException=Setter]` can be specified on attributes, and `[RaisesException=Constructor]` can be specified on interfaces where `[Constructor]` is also specified. On methods and attributes, the IDL looks like:
 
@@ -1083,32 +1055,32 @@ interface XXX {
 And the Blink implementations would look like:
 
 ```c++
-long XXX::count(ExceptionState& exceptionState) {
-    if (...) {
-        exceptionState.throwDOMException(TypeMismatchError, ...);
-        return;
-    }
-    ...;
+long XXX::Count(ExceptionState& exception_state) {
+  if (...) {
+    exception_state.ThrowDOMException(TypeMismatchError, ...);
+    return;
+  }
+  ...;
 }
 
-void XXX::setCount(long value, ExceptionState& exceptionState) {
-    if (...) {
-        exceptionState.throwDOMException(TypeMismatchError, ...);
-        return;
-    }
-    ...;
+void XXX::SetCount(long value, ExceptionState& exception_state) {
+  if (...) {
+    exception_state.ThrowDOMException(TypeMismatchError, ...);
+    return;
+  }
+  ...;
 }
 
-void XXX::foo(ExceptionState& exceptionState) {
-    if (...) {
-        exceptionState.throwDOMException(TypeMismatchError, ...);
-        return;
-    }
-    ...;
+void XXX::foo(ExceptionState& exception_state) {
+  if (...) {
+    exception_state.ThrowDOMException(TypeMismatchError, ...);
+    return;
+  }
+  ...;
 };
 ```
 
-If `[RaisesException=Constructor]` is specified on an interface and `[Constructor]` is also specified then an `ExceptionState&` argument is added when calling the `XXX::create(...)` constructor callback.
+If `[RaisesException=Constructor]` is specified on an interface and `[Constructor]` is also specified then an `ExceptionState&` argument is added when calling the `XXX::Create(...)` constructor callback.
 
 ```webidl
 [
@@ -1123,14 +1095,13 @@ interface XXX {
 Blink needs to implement the following method as a constructor callback:
 
 ```c++
-scoped_refptr<XXX> XXX::create(float x, ExceptionState& exceptionState)
-{
-    ...;
-    if (...) {
-        exceptionState.throwDOMException(TypeMismatchError, ...);
-        return nullptr;
-    }
-    ...;
+XXX* XXX::Create(float x, ExceptionState& exception_state) {
+  ...;
+  if (...) {
+    exception_state.ThrowDOMException(TypeMismatchError, ...);
+    return nullptr;
+  }
+  ...;
 }
 ```
 
@@ -1248,14 +1219,6 @@ Usage: `[RuntimeEnabled=FeatureName]`. FeatureName must be included in [runtime\
 
 Only when the feature is enabled at runtime (using a command line flag, for example, or when it is enabled only in certain platforms), the binding would be exposed to the web.
 
-`[RuntimeEnabled]` _cannot_ be applied to arguments, as this changes signatures and method resolution and is both very confusing to reason about and implement. For example, what does it mean to mark a _required_ argument as `[RuntimeEnabled]`? You probably want to apply it only to optional arguments, which are equivalent to overloads. Thus instead apply `[RuntimeEnabled]` to the _method_, generally splitting a method in two. For example, instead of:
-
-```webidl
-foo(long x, `[RuntimeEnabled=FeatureName]` optional long y); // Don't do this!
-```
-
-do:
-
 ```webidl
 // Overload can be replaced with optional if `[RuntimeEnabled]` is removed
 foo(long x);
@@ -1278,7 +1241,7 @@ These extended attributes are rarely used, generally only in one or two places. 
 
 Summary: For performance optimization, `[CachedAttribute]` indicates that a wrapped object should be cached on a DOM object. Rarely used.
 
-Usage: `[CachedAttribute]` can be specified on attributes, and takes a required value, generally called is*Dirty (e.g. isValueDirty):
+Usage: `[CachedAttribute]` can be specified on attributes, and takes a required value, generally called isXXXDirty (e.g. isValueDirty):
 
 ```webidl
 interface HTMLFoo {
@@ -1325,23 +1288,20 @@ You should cache attributes if and only if it is really important for performanc
 
 ```c++
 // Called internally to update value
-void Object::setValue(Type data)
-{
-    m_data = data;
-    m_attributeDirty = true;
+void Object::SetValue(Type data) {
+  data_ = data;
+  attribute_dirty_ = true;
 }
 
 // Called by generated binding code
-bool Object::isAttributeDirty() const
-{
-    return m_attributeDirty;
+bool Object::IsAttributeDirty() const {
+  return attribute_dirty_;
 }
 
-// Called by generated binding code if no value cached or isAttributeDirty() returns true
-ScriptValue Object::attribute(ExecutionContext* context)
-{
-    m_attributeDirty = false;
-    return convertDataToScriptValue(m_data);
+// Called by generated binding code if no value cached or IsAttributeDirty() returns true
+ScriptValue Object::attribute(ExecutionContext* context) {
+  attribute_dirty_ = false;
+  return ConvertDataToScriptValue(data_);
 }
 ```
 
@@ -1363,7 +1323,7 @@ Location or Window interface.
 
 ```webidl
 [
-    CheckSecurity=Receiver,
+    CheckSecurity=Receiver
 ] interface DOMWindow {
     Selection? getSelection();
 };
@@ -1401,8 +1361,8 @@ allowed, but access to `window.parent.document` is not.
 ### [CrossOrigin] _(m, a)_
 
 Summary: Allows cross-origin access to an attribute or method. Used for
-implementing [CrossOriginProperties] from the spec in Location.idl and
-Window.idl.
+implementing [CrossOriginProperties] from the spec in location.idl and
+window.idl.
 
 Usage for methods:
 ```webidl
@@ -1459,16 +1419,15 @@ Consider the following example:
 };
 ```
 
-Then you can write custom bindings in Source/bindings/v8/custom/V8XXXConstructorCustom.cpp:
+Then you can write custom bindings in third_party/blink/renderer/bindings/{core,modules}/v8/custom/v8_xxx_constructor_custom.cc:
 
 ```c++
-v8::Local<v8::Value> V8XXX::constructorCallback(const v8::Arguments& args)
-{
-   ...;
+v8::Local<v8::Value> V8XXX::ConstructorCallback(const v8::Arguments& args) {
+  ...;
 }
 ```
 
-### [FlexibleArrayBufferView]
+### [FlexibleArrayBufferView] _(p)_
 
 Summary: `[FlexibleArrayBufferView]` wraps a parameter that is known to be an ArrayBufferView (or a subtype of, e.g. typed arrays) with a FlexibleArrayBufferView.
 
@@ -1574,7 +1533,7 @@ Register the required property in V8PrivateProperty.h.
 To update the cached value (e.g. for HTMLFoo.bar) proceed as follows:
 
 ```c++
-V8PrivateProperty::getHTMLFooBarCachedAccessor().set(context, object, newValue);
+V8PrivateProperty::GetHTMLFooBarCachedAccessor().Set(context, object, new_value);
 ```
 
 
@@ -1611,7 +1570,7 @@ Usage: `[DoNotCheckConstants]` can be specified on interfaces:
 
 ```webidl
 [
-    DoNotCheckConstants,
+    DoNotCheckConstants
 ] interface XXX {
     const unsigned short NOT_FOUND_ERR = 12345;
     const unsigned short SYNTAX_ERR = 12346;
@@ -1634,7 +1593,7 @@ Usage: The possible usage is `[ImplementedAs=XXX]`, where XXX is a method name i
 
 ```webidl
 [
-    ImplementedAs=DOMPath,
+    ImplementedAs=DOMPath
 ] interface Path {
     [ImplementedAs=classAttribute] attribute int class;
     [ImplementedAs=deleteFunction] void delete();
@@ -1664,7 +1623,6 @@ Added to members of a partial interface definition (and implemented interfaces w
 * `[ImmutablePrototype]`
 * `[LegacyInterfaceTypeChecking]`
 * `[LogAllWorlds]`
-* `[OverrideBuiltins]` :: used on named accessors
 * `[PerWorldBindings]` :: interacts with `[LogActivity]`
 * `[WebAgentAPI]`
 
