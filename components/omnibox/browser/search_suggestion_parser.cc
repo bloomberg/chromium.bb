@@ -262,13 +262,11 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
 
   bool match_in_scheme = false;
   bool match_in_subdomain = false;
-  bool match_after_host = false;
   AutocompleteMatch::GetMatchComponents(
       GURL(formatted_url_), {{match_start, match_start + input_text.length()}},
-      &match_in_scheme, &match_in_subdomain, &match_after_host);
+      &match_in_scheme, &match_in_subdomain);
   auto format_types = AutocompleteMatch::GetFormatTypes(
-      GURL(input_text).has_scheme() || match_in_scheme, match_in_subdomain,
-      match_after_host);
+      GURL(input_text).has_scheme() || match_in_scheme, match_in_subdomain);
 
   base::string16 match_contents =
       url_formatter::FormatUrl(url_, format_types, net::UnescapeRule::SPACES,

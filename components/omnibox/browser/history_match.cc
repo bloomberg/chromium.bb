@@ -13,7 +13,6 @@ HistoryMatch::HistoryMatch()
     : input_location(base::string16::npos),
       match_in_scheme(false),
       match_in_subdomain(false),
-      match_after_host(false),
       innermost_match(true) {}
 
 bool HistoryMatch::EqualsGURL(const HistoryMatch& h, const GURL& url) {

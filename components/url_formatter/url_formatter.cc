@@ -414,7 +414,6 @@ const FormatUrlType kFormatUrlOmitUsernamePassword = 1 << 0;
 const FormatUrlType kFormatUrlOmitHTTP = 1 << 1;
 const FormatUrlType kFormatUrlOmitTrailingSlashOnBareHostname = 1 << 2;
 const FormatUrlType kFormatUrlOmitHTTPS = 1 << 3;
-const FormatUrlType kFormatUrlExperimentalElideAfterHost = 1 << 4;
 const FormatUrlType kFormatUrlOmitTrivialSubdomains = 1 << 5;
 const FormatUrlType kFormatUrlTrimAfterHost = 1 << 6;
 const FormatUrlType kFormatUrlOmitFileScheme = 1 << 7;
@@ -554,19 +553,9 @@ base::string16 FormatUrlWithAdjustments(
   }
 
   // Path & query.  Both get the same general unescape & convert treatment.
-  if ((format_types & kFormatUrlTrimAfterHost) ||
-      ((format_types & kFormatUrlExperimentalElideAfterHost) &&
-       url.IsStandard() && !url.SchemeIsFile() && !url.SchemeIsFileSystem())) {
-    // Only elide when the eliding is required and when the host is followed by
-    // more than just one forward slash.
-    bool should_elide = (format_types & kFormatUrlExperimentalElideAfterHost) &&
-                        ((parsed.path.len > 1) || parsed.query.is_valid() ||
-                         parsed.ref.is_valid());
-
-    // Either remove the path completely, or, if eliding, keep the first slash.
-    const size_t new_path_len = should_elide ? 1 : 0;
-
-    size_t trimmed_length = parsed.path.len - new_path_len;
+  if ((format_types & kFormatUrlTrimAfterHost) && url.IsStandard() &&
+      !url.SchemeIsFile() && !url.SchemeIsFileSystem()) {
+    size_t trimmed_length = parsed.path.len;
     // Remove query and the '?' delimeter.
     if (parsed.query.is_valid())
       trimmed_length += parsed.query.len + 1;
@@ -575,15 +564,8 @@ base::string16 FormatUrlWithAdjustments(
     if (parsed.ref.is_valid())
       trimmed_length += parsed.ref.len + 1;
 
-    if (should_elide) {
-      // Replace everything after the host with a forward slash and ellipsis.
-      url_string.push_back('/');
-      constexpr base::char16 kEllipsisUTF16[] = {0x2026, 0};
-      url_string.append(kEllipsisUTF16);
-    }
-
-    adjustments->push_back(base::OffsetAdjuster::Adjustment(
-        parsed.path.begin + new_path_len, trimmed_length, new_path_len));
+    adjustments->push_back(
+        base::OffsetAdjuster::Adjustment(parsed.path.begin, trimmed_length, 0));
 
   } else if ((format_types & kFormatUrlOmitTrailingSlashOnBareHostname) &&
              CanStripTrailingSlash(url)) {

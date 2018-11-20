@@ -201,12 +201,6 @@ const base::Feature kUIExperimentMaxAutocompleteMatches{
 const base::Feature kQueryInOmnibox{"QueryInOmnibox",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used for eliding the suggestion URL after the host as a UI
-// experiment.
-const base::Feature kUIExperimentElideSuggestionUrlAfterHost{
-    "OmniboxUIExperimentElideSuggestionUrlAfterHost",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature used to jog the Omnibox textfield to align with the dropdown
 // suggestions text when the popup is opened. When this feature is disabled, the
 // textfield is always aligned with the suggestions text, and a separator fills

@@ -2635,11 +2635,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-ui-elide-suggestion-url-after-host",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "omnibox-ui-hide-steady-state-url-path-query-and-ref",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

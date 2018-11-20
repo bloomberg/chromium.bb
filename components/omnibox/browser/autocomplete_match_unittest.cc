@@ -10,8 +10,6 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -156,65 +154,48 @@ TEST(AutocompleteMatchTest, GetMatchComponents) {
     std::vector<std::string> input_terms;
     bool expected_match_in_scheme;
     bool expected_match_in_subdomain;
-    bool expected_match_after_host;
   };
 
   MatchComponentsTestData test_cases[] = {
       // Match in scheme.
-      {"http://www.google.com", {"ht"}, true, false, false},
+      {"http://www.google.com", {"ht"}, true, false},
       // Match within the scheme, but not starting at the beginning, i.e. "ttp".
-      {"http://www.google.com", {"tp"}, false, false, false},
+      {"http://www.google.com", {"tp"}, false, false},
       // Sanity check that HTTPS still works.
-      {"https://www.google.com", {"http"}, true, false, false},
+      {"https://www.google.com", {"http"}, true, false},
 
       // Match within the subdomain.
-      {"http://www.google.com", {"www"}, false, true, false},
-      {"http://www.google.com", {"www."}, false, true, false},
+      {"http://www.google.com", {"www"}, false, true},
+      {"http://www.google.com", {"www."}, false, true},
       // Don't consider matches on the '.' delimiter as a match_in_subdomain.
-      {"http://www.google.com", {"."}, false, false, false},
-      {"http://www.google.com", {".goo"}, false, false, false},
+      {"http://www.google.com", {"."}, false, false},
+      {"http://www.google.com", {".goo"}, false, false},
       // Matches within the domain.
-      {"http://www.google.com", {"goo"}, false, false, false},
+      {"http://www.google.com", {"goo"}, false, false},
       // Verify that in private registries, we detect matches in subdomains.
-      {"http://www.appspot.com", {"www"}, false, true, false},
+      {"http://www.appspot.com", {"www"}, false, true},
 
       // Matches spanning the scheme, subdomain, and domain.
-      {"http://www.google.com", {"http://www.goo"}, true, true, false},
-      {"http://www.google.com", {"ht", "www"}, true, true, false},
+      {"http://www.google.com", {"http://www.goo"}, true, true},
+      {"http://www.google.com", {"ht", "www"}, true, true},
       // But we should not flag match_in_subdomain if there is no subdomain.
-      {"http://google.com", {"http://goo"}, true, false, false},
-
-      // Matches in the path, query, and ref.
-      {"http://google.com/abc?def=ghi#jkl", {"abc"}, false, false, true},
-      {"http://google.com/abc?def=ghi#jkl", {"ghi"}, false, false, true},
-      {"http://google.com/abc?def=ghi#jkl", {"jkl"}, false, false, true},
-      // Match spanning an arbitrary portion of the URL after the host.
-      {"http://google.com/abc?def=ghi#jkl", {"bc?def=g"}, false, false, true},
-      // Don't consider the '/' delimiter as a match_in_path.
-      {"http://google.com/abc?def=ghi#jkl", {"com/"}, false, false, false},
-      // Match on the query and ref only
-      {"http://google.com?def", {"def"}, false, false, true},
-      {"http://google.com#jkl", {"jkl"}, false, false, true},
+      {"http://google.com", {"http://goo"}, true, false},
 
       // Matches spanning the subdomain and path.
-      {"http://www.google.com/abc", {"www.google.com/ab"}, false, true, true},
-      {"http://www.google.com/abc", {"www", "ab"}, false, true, true},
+      {"http://www.google.com/abc", {"www.google.com/ab"}, false, true},
+      {"http://www.google.com/abc", {"www", "ab"}, false, true},
 
       // Matches spanning the scheme, subdomain, and path.
-      {"http://www.google.com/abc",
-       {"http://www.google.com/ab"},
-       true,
-       true,
-       true},
-      {"http://www.google.com/abc", {"ht", "ww", "ab"}, true, true, true},
+      {"http://www.google.com/abc", {"http://www.google.com/ab"}, true, true},
+      {"http://www.google.com/abc", {"ht", "ww", "ab"}, true, true},
 
       // Intranet sites.
-      {"http://foobar/biz", {"foobar"}, false, false, false},
-      {"http://foobar/biz", {"biz"}, false, false, true},
+      {"http://foobar/biz", {"foobar"}, false, false},
+      {"http://foobar/biz", {"biz"}, false, false},
 
       // Ensure something sane happens when the URL input is invalid.
-      {"", {""}, false, false, false},
-      {"foobar", {"bar"}, false, false, false},
+      {"", {""}, false, false},
+      {"foobar", {"bar"}, false, false},
   };
   for (auto& test_case : test_cases) {
     SCOPED_TRACE(testing::Message()
@@ -222,12 +203,9 @@ TEST(AutocompleteMatchTest, GetMatchComponents) {
                  << test_case.input_terms[0] << " expected_match_in_scheme="
                  << test_case.expected_match_in_scheme
                  << " expected_match_in_subdomain="
-                 << test_case.expected_match_in_subdomain
-                 << " expected_match_after_host="
-                 << test_case.expected_match_after_host);
+                 << test_case.expected_match_in_subdomain);
     bool match_in_scheme = false;
     bool match_in_subdomain = false;
-    bool match_after_host = false;
     std::vector<AutocompleteMatch::MatchPosition> match_positions;
     for (auto& term : test_case.input_terms) {
       size_t start = test_case.url.find(term);
@@ -236,11 +214,10 @@ TEST(AutocompleteMatchTest, GetMatchComponents) {
       match_positions.push_back(std::make_pair(start, end));
     }
     AutocompleteMatch::GetMatchComponents(GURL(test_case.url), match_positions,
-                                          &match_in_scheme, &match_in_subdomain,
-                                          &match_after_host);
+                                          &match_in_scheme,
+                                          &match_in_subdomain);
     EXPECT_EQ(test_case.expected_match_in_scheme, match_in_scheme);
     EXPECT_EQ(test_case.expected_match_in_subdomain, match_in_subdomain);
-    EXPECT_EQ(test_case.expected_match_after_host, match_after_host);
   }
 }
 
@@ -253,17 +230,15 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
     const std::string url;
     bool preserve_scheme;
     bool preserve_subdomain;
-    bool preserve_after_host;
     const wchar_t* expected_result;
 
     void Validate() {
       SCOPED_TRACE(testing::Message()
                    << " url=" << url << " preserve_scheme=" << preserve_scheme
                    << " preserve_subdomain=" << preserve_subdomain
-                   << " preserve_after_host=" << preserve_after_host
                    << " expected_result=" << expected_result);
-      auto format_types = AutocompleteMatch::GetFormatTypes(
-          preserve_scheme, preserve_subdomain, preserve_after_host);
+      auto format_types = AutocompleteMatch::GetFormatTypes(preserve_scheme,
+                                                            preserve_subdomain);
       EXPECT_EQ(base::WideToUTF16(expected_result),
                 url_formatter::FormatUrl(GURL(url), format_types,
                                          net::UnescapeRule::SPACES, nullptr,
@@ -273,32 +248,19 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
 
   FormatUrlTestData normal_cases[] = {
       // Test the |preserve_scheme| parameter.
-      {"http://google.com", false, false, false, L"google.com"},
-      {"https://google.com", false, false, false, L"google.com"},
-      {"http://google.com", true, false, false, L"http://google.com"},
-      {"https://google.com", true, false, false, L"https://google.com"},
+      {"http://google.com", false, false, L"google.com"},
+      {"https://google.com", false, false, L"google.com"},
+      {"http://google.com", true, false, L"http://google.com"},
+      {"https://google.com", true, false, L"https://google.com"},
 
       // Test the |preserve_subdomain| parameter.
-      {"http://www.google.com", false, false, false, L"google.com"},
-      {"http://www.google.com", false, true, false, L"www.google.com"},
+      {"http://www.google.com", false, false, L"google.com"},
+      {"http://www.google.com", false, true, L"www.google.com"},
 
       // Test that paths are preserved in the default case.
-      {"http://google.com/foobar", false, false, false, L"google.com/foobar"},
+      {"http://google.com/foobar", false, false, L"google.com/foobar"},
   };
   for (FormatUrlTestData& test_case : normal_cases)
-    test_case.Validate();
-
-  // Test the elide-after-host feature flag.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      omnibox::kUIExperimentElideSuggestionUrlAfterHost);
-
-  FormatUrlTestData hide_path_cases[] = {
-      {"http://google.com/foobar", false, false, false,
-       L"google.com/\x2026\x0000"},
-      {"http://google.com/foobar", false, false, true, L"google.com/foobar"},
-  };
-  for (FormatUrlTestData& test_case : hide_path_cases)
     test_case.Validate();
 }
 

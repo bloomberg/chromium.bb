@@ -3308,12 +3308,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOOPHPStackModeDescription, kOsAll,
      MULTI_VALUE_TYPE(kOOPHPStackModeChoices)},
 
-    {"omnibox-ui-elide-suggestion-url-after-host",
-     flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostName,
-     flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentElideSuggestionUrlAfterHost)},
-
     {"omnibox-ui-hide-steady-state-url-scheme",
      flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeName,
      flag_descriptions::kOmniboxUIHideSteadyStateUrlSchemeDescription, kOsAll,

@@ -545,11 +545,9 @@ void AutocompleteMatch::GetMatchComponents(
     const GURL& url,
     const std::vector<MatchPosition>& match_positions,
     bool* match_in_scheme,
-    bool* match_in_subdomain,
-    bool* match_after_host) {
+    bool* match_in_subdomain) {
   DCHECK(match_in_scheme);
   DCHECK(match_in_subdomain);
-  DCHECK(match_after_host);
 
   size_t domain_length =
       net::registry_controlled_domains::GetDomainAndRegistry(
@@ -559,11 +557,6 @@ void AutocompleteMatch::GetMatchComponents(
   const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
 
   size_t host_pos = parsed.CountCharactersBefore(url::Parsed::HOST, false);
-
-  // We must add an extra character to exclude the '/' delimiter that prefixes
-  // every path. We have to do this because the |include_delimiter| parameter
-  // passed to url::Parsed::CountCharactersBefore has no effect for the PATH.
-  size_t path_pos = parsed.CountCharactersBefore(url::Parsed::PATH, false) + 1;
 
   bool has_subdomain =
       domain_length > 0 && domain_length < url.host_piece().length();
@@ -584,20 +577,13 @@ void AutocompleteMatch::GetMatchComponents(
         position.second > host_pos && parsed.host.is_nonempty()) {
       *match_in_subdomain = true;
     }
-
-    if (position.second > path_pos &&
-        (parsed.path.is_nonempty() || parsed.query.is_nonempty() ||
-         parsed.ref.is_nonempty())) {
-      *match_after_host = true;
-    }
   }
 }
 
 // static
 url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
     bool preserve_scheme,
-    bool preserve_subdomain,
-    bool preserve_after_host) {
+    bool preserve_subdomain) {
   auto format_types = url_formatter::kFormatUrlOmitDefaults;
   if (preserve_scheme) {
     format_types &= ~url_formatter::kFormatUrlOmitHTTP;
@@ -607,12 +593,6 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
 
   if (!preserve_subdomain) {
     format_types |= url_formatter::kFormatUrlOmitTrivialSubdomains;
-  }
-
-  if (!preserve_after_host &&
-      base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentElideSuggestionUrlAfterHost)) {
-    format_types |= url_formatter::kFormatUrlExperimentalElideAfterHost;
   }
 
   return format_types;
