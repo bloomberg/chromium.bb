@@ -12,6 +12,11 @@ found in the LICENSE file.
     <title>Autofill Assistant Test</title>
 
     <script>
+      var load = function() {
+        createShadowDom();
+        moveTouchArea();
+      }
+
       var createShadowDom = function() {
       var shadowSection = document.getElementById("shadowsection");
       var shadowRoot = shadowSection.attachShadow({mode: 'open'});
@@ -29,16 +34,30 @@ found in the LICENSE file.
         var touch_area = document.getElementById("touch_area");
         touch_area.parentNode.removeChild(touch_area);
       }
+
+      var moveTouchArea = function() {
+        var touch_area = document.getElementById("touch_area");
+        setTimeout(function(){touch_area.style.top += "100px";}, 100);
+        setTimeout(function(){touch_area.style.top += "200px";}, 200);
+        setTimeout(function(){touch_area.style.top += "300px";}, 300);
+        setTimeout(function(){touch_area.style.top += "400px";}, 400);
+        setTimeout(function(){touch_area.style.top += "500px";}, 500);
+        setTimeout(function(){touch_area.style.top += "600px";}, 600);
+      }
     </script>
 
     <style>
       #full_height_section {
         height: 100vh;
       }
+
+      #touch_area {
+        position: absolute;
+      }
     </style>
   </head>
 
-  <body onload="createShadowDom()">
+  <body onload="load()">
     <div>
       <form name="address" id="address_section">
         <div id='billing'>

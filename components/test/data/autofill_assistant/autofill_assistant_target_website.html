@@ -22,14 +22,22 @@ found in the LICENSE file.
         touch_area.parentNode.removeChild(touch_area);
       }
 
-      var moveTouchAreaTwo = function() {
-        var touch_area = document.getElementById("touch_area_two");
-        setTimeout(function(){touch_area.style.left = "100px";}, 100);
-        setTimeout(function(){touch_area.style.left = "200px";}, 200);
-        setTimeout(function(){touch_area.style.left = "300px";}, 300);
-        setTimeout(function(){touch_area.style.left = "100px";}, 400);
-        setTimeout(function(){touch_area.style.left = "200px";}, 500);
-        setTimeout(function(){touch_area.style.left = "300px";}, 600);
+      var moveTouchAreaTwoAndThree = function() {
+        var touch_area_two = document.getElementById("touch_area_two");
+        setTimeout(function(){touch_area_two.style.left = "100px";}, 100);
+        setTimeout(function(){touch_area_two.style.left = "200px";}, 200);
+        setTimeout(function(){touch_area_two.style.left = "300px";}, 300);
+        setTimeout(function(){touch_area_two.style.left = "100px";}, 400);
+        setTimeout(function(){touch_area_two.style.left = "200px";}, 500);
+        setTimeout(function(){touch_area_two.style.left = "300px";}, 600);
+
+        var touch_area_three = document.getElementById("touch_area_three");
+        setTimeout(function(){touch_area_three.style.top += "100px";}, 100);
+        setTimeout(function(){touch_area_three.style.top += "200px";}, 200);
+        setTimeout(function(){touch_area_three.style.top += "300px";}, 300);
+        setTimeout(function(){touch_area_three.style.top += "400px";}, 400);
+        setTimeout(function(){touch_area_three.style.top += "500px";}, 500);
+        setTimeout(function(){touch_area_three.style.top += "600px";}, 600);
       }
     </script>
 
@@ -37,10 +45,14 @@ found in the LICENSE file.
       #full_height_section {
         height: 100vh;
       }
+
+      #touch_area_three {
+        position: absolute;
+      }
     </style>
   </head>
 
-  <body onload="moveTouchAreaTwo()">
+  <body onload="moveTouchAreaTwoAndThree()">
     <!-- Touch area can be accessed without needing scroll.-->
     <div>
       <p id="touch_area_one" ontouchend="removeTouchArea('touch_area_one')">
@@ -60,6 +72,12 @@ found in the LICENSE file.
     <div>
       <p id="touch_area_two" ontouchend="removeTouchArea('touch_area_two')">
         Touchable Area Two</p>
+      <br>
+    </div>
+
+    <div>
+      <p id="touch_area_three" ontouchend="removeTouchArea('touch_area_three')">
+        Touchable Area Three</p>
       <br>
     </div>
 

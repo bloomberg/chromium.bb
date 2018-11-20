@@ -193,6 +193,13 @@ class WebController {
         int point_y,
         int remaining_rounds,
         std::unique_ptr<dom::GetBoxModelResult> result);
+    void OnScrollIntoView(
+        DevtoolsClient* devtools_client,
+        std::string object_id,
+        int point_x,
+        int point_y,
+        int remaining_rounds,
+        std::unique_ptr<runtime::CallFunctionOnResult> result);
     void OnResult(int x, int y);
 
     base::OnceCallback<void(int, int)> callback_;

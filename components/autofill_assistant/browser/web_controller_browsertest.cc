@@ -446,6 +446,13 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElement) {
   WaitForElementRemove(selectors);
 }
 
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementMovingOutOfView) {
+  std::vector<std::string> selectors;
+  selectors.emplace_back("#touch_area_three");
+  TapElement(selectors);
+  WaitForElementRemove(selectors);
+}
+
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementAfterPageIsIdle) {
   // Set a very long timeout to make sure either the page is idle or the test
   // timeout.
