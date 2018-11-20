@@ -129,6 +129,11 @@ blink_modules_sources("webgl") {
     "webgl_vertex_array_object_base.h",
     "webgl_vertex_array_object_oes.cc",
     "webgl_vertex_array_object_oes.h",
+    "webgl_video_frame_info.cc",
+    "webgl_video_frame_info.h",
+    "webgl_video_texture.cc",
+    "webgl_video_texture.h",
+    "webgl_video_texture_enum.h",
   ]
 
   if (support_webgl2_compute_context) {

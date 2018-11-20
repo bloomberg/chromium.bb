@@ -51,6 +51,7 @@ class WebGLColorBufferFloat;
 class WebGLDebugRendererInfo;
 class WebGLDepthTexture;
 class WebGLLoseContext;
+class WebGLVideoTexture;
 
 class WebGLRenderingContext final : public WebGLRenderingContextBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -119,6 +120,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<WebGLDepthTexture> webgl_depth_texture_;
   Member<WebGLDrawBuffers> webgl_draw_buffers_;
   Member<WebGLLoseContext> webgl_lose_context_;
+  Member<WebGLVideoTexture> webgl_video_texture_;
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContext,

@@ -587,6 +587,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     TraceWrapperMember<WebGLTexture> texture_cube_map_binding_;
     TraceWrapperMember<WebGLTexture> texture3d_binding_;
     TraceWrapperMember<WebGLTexture> texture2d_array_binding_;
+    TraceWrapperMember<WebGLTexture> texture_video_image_binding_;
 
     void Trace(blink::Visitor*);
     // Wrappers are traced by parent since TextureUnitState is not a heap
@@ -635,6 +636,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class WebGLMultiview;
   friend class WebGLRenderingContextErrorMessageCallback;
   friend class WebGLVertexArrayObjectBase;
+  friend class WebGLVideoTexture;
   friend class ScopedDrawingBufferBinder;
   friend class ScopedTexture2DRestorer;
   friend class ScopedFramebufferRestorer;
