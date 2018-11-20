@@ -429,9 +429,8 @@ void ChromePasswordManagerClient::PasswordWasAutofilled(
   if (!PasswordAccessoryController::AllowedForWebContents(web_contents())) {
     return;  // No need to even create the bridge if it's not going to be used.
   }
-  // If an accessory exists already, |CreateForWebContents| is a NoOp
-  PasswordAccessoryController::CreateForWebContents(web_contents());
-  PasswordAccessoryController::FromWebContents(web_contents())
+
+  PasswordAccessoryController::GetOrCreate(web_contents())
       ->SavePasswordsForOrigin(best_matches, url::Origin::Create(origin));
 #else  // !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
@@ -526,7 +525,7 @@ void ChromePasswordManagerClient::DidFinishNavigation(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
 #else   // defined(OS_ANDROID)
   PasswordAccessoryController* accessory =
-      PasswordAccessoryController::FromWebContents(web_contents());
+      PasswordAccessoryController::GetIfExisting(web_contents());
   if (accessory)
     accessory->DidNavigateMainFrame();
 #endif  // defined(OS_ANDROID)
@@ -672,7 +671,6 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
   // Either #passwords-keyboards-accessory or #experimental-ui must be enabled.
   if (PasswordAccessoryController::AllowedForWebContents(web_contents())) {
     if (available) {
-      PasswordAccessoryController::CreateForWebContents(web_contents());
       password_manager::PasswordManagerDriver* driver =
           driver_factory_->GetDriverForFrame(
               password_manager_client_bindings_.GetCurrentTargetFrame());
@@ -681,7 +679,7 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
           driver, ui_data.value().password_form,
           ui_data.value().generation_element,
           false /* is_manually_triggered */);
-      PasswordAccessoryController::FromWebContents(web_contents())
+      PasswordAccessoryController::GetOrCreate(web_contents())
           ->OnAutomaticGenerationStatusChanged(true, ui_data,
                                                driver->AsWeakPtr());
       gfx::RectF element_bounds_in_screen_space = TransformToRootCoordinates(
@@ -691,7 +689,7 @@ void ChromePasswordManagerClient::AutomaticGenerationStatusChanged(
           element_bounds_in_screen_space, ui_data.value().text_direction);
     } else {
       PasswordAccessoryController* accessory =
-          PasswordAccessoryController::FromWebContents(web_contents());
+          PasswordAccessoryController::GetIfExisting(web_contents());
       if (accessory) {
         accessory->OnAutomaticGenerationStatusChanged(false, base::nullopt,
                                                       nullptr);
@@ -1066,19 +1064,22 @@ void ChromePasswordManagerClient::FocusedInputChanged(bool is_fillable,
   }
   if (is_password_field) {
     DCHECK(is_fillable);
-    PasswordAccessoryController::CreateForWebContents(web_contents());
     PasswordAccessoryController* accessory =
-        PasswordAccessoryController::FromWebContents(web_contents());
+        PasswordAccessoryController::GetOrCreate(web_contents());
     accessory->RefreshSuggestionsForField(
         password_manager_driver_bindings_.GetCurrentTargetFrame()
             ->GetLastCommittedOrigin(),
         is_fillable, is_password_field);
+    // TODO(crbug.com/905669): Move all the logic to control accessory
+    // visibility to ManualFillingController.
     accessory->ShowWhenKeyboardIsVisible();
   } else {
     // If not a password field, only update the accessory if one exists.
     PasswordAccessoryController* accessory =
-        PasswordAccessoryController::FromWebContents(web_contents());
+        PasswordAccessoryController::GetIfExisting(web_contents());
     if (accessory) {
+      // TODO(crbug.com/905669): Move all the logic to control accessory
+      // visibility to ManualFillingController.
       accessory->Hide();
     }
   }

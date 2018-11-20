@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/password_accessory_controller_impl.h"
 
 #include <algorithm>
 #include <memory>
@@ -11,20 +11,15 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/strings/string_util.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
-#include "chrome/browser/password_manager/password_accessory_view_interface.h"
+#include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/autofill/core/browser/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
@@ -42,19 +37,12 @@ using autofill::FillingStatus;
 using autofill::FooterCommand;
 using autofill::PasswordForm;
 using autofill::UserInfo;
-using autofill::FillingStatus;
-using autofill::PasswordForm;
 using autofill::password_generation::PasswordGenerationUIData;
 using base::ASCIIToUTF16;
-using base::UTF16ToWide;
 using testing::_;
-using testing::AnyNumber;
 using testing::ByMove;
-using testing::ElementsAre;
 using testing::Mock;
 using testing::NiceMock;
-using testing::NotNull;
-using testing::PrintToString;
 using testing::Return;
 using testing::StrictMock;
 
@@ -62,25 +50,23 @@ constexpr char kExampleSite[] = "https://example.com";
 constexpr char kExampleDomain[] = "example.com";
 constexpr int kIconSize = 75;  // An example size for favicons (=> 3.5*20px).
 
-// The mock view mocks the platform-specific implementation. That also means
-// that we have to care about the lifespan of the Controller because that would
-// usually be responsibility of the view.
-class MockPasswordAccessoryView : public PasswordAccessoryViewInterface {
+class MockManualFillingController
+    : public ManualFillingController,
+      public base::SupportsWeakPtr<MockManualFillingController> {
  public:
-  MockPasswordAccessoryView() = default;
-
-  MOCK_METHOD1(OnItemsAvailable,
-               void(const AccessorySheetData& AccessorySheetData));
-  MOCK_METHOD1(OnFillingTriggered, void(const base::string16& textToFill));
-  MOCK_METHOD0(OnViewDestroyed, void());
   MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
-  MOCK_METHOD0(CloseAccessorySheet, void());
-  MOCK_METHOD0(SwapSheetWithKeyboard, void());
+  MOCK_METHOD1(OnFilledIntoFocusedField, void(FillingStatus));
+  MOCK_METHOD2(RefreshSuggestionsForField,
+               void(bool, const AccessorySheetData&));
   MOCK_METHOD0(ShowWhenKeyboardIsVisible, void());
   MOCK_METHOD0(Hide, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordAccessoryView);
+  MOCK_METHOD2(GetFavicon,
+               void(int, base::OnceCallback<void(const gfx::Image&)>));
+  MOCK_METHOD2(OnFillingTriggered,
+               void(bool is_password, const base::string16&));
+  MOCK_CONST_METHOD1(OnOptionSelected, void(const base::string16&));
+  MOCK_METHOD0(OnGenerationRequested, void());
+  MOCK_CONST_METHOD0(container_view, gfx::NativeView());
 };
 
 class MockPasswordManagerDriver
@@ -214,6 +200,7 @@ base::string16 passwords_title_str(const std::string& domain) {
 base::string16 no_user_str() {
   return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN);
 }
+
 base::string16 manage_passwords_str() {
   return l10n_util::GetStringUTF16(
       IDS_PASSWORD_MANAGER_ACCESSORY_ALL_PASSWORDS_LINK);
@@ -300,19 +287,15 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   PasswordAccessoryControllerTest()
       : mock_favicon_service_(
-            std::make_unique<
-                testing::StrictMock<favicon::MockFaviconService>>()) {}
+            std::make_unique<StrictMock<favicon::MockFaviconService>>()) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     NavigateAndCommit(GURL(kExampleSite));
-    PasswordAccessoryController::CreateForWebContentsForTesting(
-        web_contents(),
-        std::make_unique<StrictMock<MockPasswordAccessoryView>>(),
+    PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
+        web_contents(), mock_manual_filling_controller_.AsWeakPtr(),
         mock_dialog_factory_.Get(), favicon_service());
     NavigateAndCommit(GURL(kExampleSite));
-    EXPECT_CALL(*view(), CloseAccessorySheet()).Times(AnyNumber());
-    EXPECT_CALL(*view(), SwapSheetWithKeyboard()).Times(AnyNumber());
 
     // Mock objects needed by password generation
     mock_password_manager_driver_ =
@@ -325,14 +308,11 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
   }
 
   PasswordAccessoryController* controller() {
-    return PasswordAccessoryController::FromWebContents(web_contents());
+    return PasswordAccessoryControllerImpl::FromWebContents(web_contents());
   }
 
-  MockPasswordAccessoryView* view() {
-    return static_cast<MockPasswordAccessoryView*>(controller()->view());
-  }
-
-  const base::MockCallback<PasswordAccessoryController::CreateDialogFactory>&
+  const base::MockCallback<
+      PasswordAccessoryControllerImpl::CreateDialogFactory>&
   mock_dialog_factory() {
     return mock_dialog_factory_;
   }
@@ -343,8 +323,10 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   // Sets up mocks needed by the generation flow and signals the
-  // |PasswordAccessoryController| that generation is available.
+  // |PasswordAccessoryControllerImpl| that generation is available.
   void InitializeGeneration(const base::string16& password);
+
+  StrictMock<MockManualFillingController> mock_manual_filling_controller_;
 
   std::unique_ptr<NiceMock<MockPasswordManagerDriver>>
       mock_password_manager_driver_;
@@ -353,9 +335,10 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<NiceMock<MockPasswordGenerationDialogView>> mock_dialog_;
 
  private:
-  NiceMock<base::MockCallback<PasswordAccessoryController::CreateDialogFactory>>
+  NiceMock<
+      base::MockCallback<PasswordAccessoryControllerImpl::CreateDialogFactory>>
       mock_dialog_factory_;
-  std::unique_ptr<testing::StrictMock<favicon::MockFaviconService>>
+  std::unique_ptr<StrictMock<favicon::MockFaviconService>>
       mock_favicon_service_;
 };
 
@@ -365,7 +348,8 @@ void PasswordAccessoryControllerTest::InitializeGeneration(
           GetPasswordGenerationManager())
       .WillByDefault(Return(mock_generation_manager_.get()));
 
-  EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(true));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnAutomaticGenerationStatusChanged(true));
 
   controller()->OnAutomaticGenerationStatusChanged(
       true, GetTestGenerationUIData1(),
@@ -379,11 +363,11 @@ void PasswordAccessoryControllerTest::InitializeGeneration(
 }
 
 TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
-  PasswordAccessoryController* initial_controller =
-      PasswordAccessoryController::FromWebContents(web_contents());
+  PasswordAccessoryControllerImpl* initial_controller =
+      PasswordAccessoryControllerImpl::FromWebContents(web_contents());
   EXPECT_NE(nullptr, initial_controller);
-  PasswordAccessoryController::CreateForWebContents(web_contents());
-  EXPECT_EQ(PasswordAccessoryController::FromWebContents(web_contents()),
+  PasswordAccessoryControllerImpl::CreateForWebContents(web_contents());
+  EXPECT_EQ(PasswordAccessoryControllerImpl::FromWebContents(web_contents()),
             initial_controller);
 }
 
@@ -392,8 +376,9 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
                                        url::Origin::Create(GURL(kExampleSite)));
 
   EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(
+      mock_manual_filling_controller_,
+      RefreshSuggestionsForField(
+          /*is_fillable=*/true,
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
@@ -412,8 +397,9 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
                                        url::Origin::Create(GURL(kExampleSite)));
 
   EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(
+      mock_manual_filling_controller_,
+      RefreshSuggestionsForField(
+          /*is_fillable=*/true,
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(no_user_str(), no_user_str(), false, false)
@@ -433,8 +419,9 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
       url::Origin::Create(GURL(kExampleSite)));
 
   EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(
+      mock_manual_filling_controller_,
+      RefreshSuggestionsForField(
+          /*is_fillable=*/true,
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
@@ -469,8 +456,9 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
 
   // Pretend that any input in the same frame was focused.
   EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(
+      mock_manual_filling_controller_,
+      RefreshSuggestionsForField(
+          /*is_fillable=*/true,
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
@@ -488,7 +476,9 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
   controller()->SavePasswordsForOrigin({},
                                        url::Origin::Create(GURL(kExampleSite)));
 
-  EXPECT_CALL(*view(), OnItemsAvailable(PasswordAccessorySheetDataBuilder(
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestionsForField(
+                  /*is_fillable=*/true, PasswordAccessorySheetDataBuilder(
                                             passwords_empty_str(kExampleDomain))
                                             .Build()));
   controller()->RefreshSuggestionsForField(
@@ -497,41 +487,30 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
       /*is_password_field=*/false);
 }
 
-// TODO(fhorschig): Check for recorded metrics here or similar to this.
-TEST_F(PasswordAccessoryControllerTest, ClosesViewOnSuccessfullFillingOnly) {
-  // If the filling wasn't successful, no call is expected.
-  EXPECT_CALL(*view(), CloseAccessorySheet()).Times(0);
-  EXPECT_CALL(*view(), SwapSheetWithKeyboard()).Times(0);
+TEST_F(PasswordAccessoryControllerTest, OnFilledIntoFocusedField) {
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnFilledIntoFocusedField(FillingStatus::ERROR_NOT_ALLOWED));
   controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NOT_ALLOWED);
+
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnFilledIntoFocusedField(FillingStatus::ERROR_NO_VALID_FIELD));
   controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NO_VALID_FIELD);
 
-  // If the filling completed successfully, let the view know.
-  EXPECT_CALL(*view(), SwapSheetWithKeyboard());
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnFilledIntoFocusedField(FillingStatus::SUCCESS));
   controller()->OnFilledIntoFocusedField(FillingStatus::SUCCESS);
 }
 
-// TODO(fhorschig): Check for recorded metrics here or similar to this.
-TEST_F(PasswordAccessoryControllerTest, ClosesViewWhenRefreshingSuggestions) {
-  // Ignore Items - only the closing calls are interesting here.
-  EXPECT_CALL(*view(), OnItemsAvailable(_)).Times(AnyNumber());
-
-  EXPECT_CALL(*view(), CloseAccessorySheet());
-  EXPECT_CALL(*view(), SwapSheetWithKeyboard())
-      .Times(0);  // Don't touch the keyboard!
-  controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)),
-      /*is_fillable=*/false,
-      /*is_password_field=*/false);
-}
-
 TEST_F(PasswordAccessoryControllerTest, RelaysAutomaticGenerationAvailable) {
-  EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(true));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnAutomaticGenerationStatusChanged(true));
   controller()->OnAutomaticGenerationStatusChanged(
       true, GetTestGenerationUIData1(), nullptr);
 }
 
 TEST_F(PasswordAccessoryControllerTest, RelaysAutmaticGenerationUnavailable) {
-  EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(false));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnAutomaticGenerationStatusChanged(false));
   controller()->OnAutomaticGenerationStatusChanged(false, base::nullopt,
                                                    nullptr);
 }
@@ -542,7 +521,9 @@ TEST_F(PasswordAccessoryControllerTest, RelaysAutmaticGenerationUnavailable) {
 TEST_F(PasswordAccessoryControllerTest,
        UpdatesSignaturesForDifferentGenerationForms) {
   // Called twice for different forms.
-  EXPECT_CALL(*view(), OnAutomaticGenerationStatusChanged(true)).Times(2);
+  EXPECT_CALL(mock_manual_filling_controller_,
+              OnAutomaticGenerationStatusChanged(true))
+      .Times(2);
   controller()->OnAutomaticGenerationStatusChanged(
       true, GetTestGenerationUIData1(),
       mock_password_manager_driver_->AsWeakPtr());
@@ -578,8 +559,9 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
   // Pretend a username field was focused. This should result in non-interactive
   // suggestion.
   EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(
+      mock_manual_filling_controller_,
+      RefreshSuggestionsForField(
+          /*is_fillable=*/true,
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
@@ -595,8 +577,9 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
   // Pretend that we focus a password field now: By triggering a refresh with
   // |is_password_field| set to true, all suggestions should become interactive.
   EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(
+      mock_manual_filling_controller_,
+      RefreshSuggestionsForField(
+          /*is_fillable=*/true,
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
@@ -614,8 +597,9 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
   controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(
+      mock_manual_filling_controller_,
+      RefreshSuggestionsForField(
+          /*is_fillable=*/true,
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
@@ -631,8 +615,9 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
   controller()->SavePasswordsForOrigin({CreateEntry("Alf", "M3lm4k").first},
                                        url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(
+      mock_manual_filling_controller_,
+      RefreshSuggestionsForField(
+          /*is_fillable=*/true,
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Alf"), ASCIIToUTF16("Alf"), false,
@@ -652,8 +637,9 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
   // Pretend a username field was focused. This should result in non-emtpy
   // suggestions.
   EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(
+      mock_manual_filling_controller_,
+      RefreshSuggestionsForField(
+          /*is_fillable=*/true,
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
@@ -668,9 +654,12 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
 
   // Pretend that the focus was lost or moved to an unfillable field. Now, only
   // the empty state message should be sent.
-  EXPECT_CALL(*view(), OnItemsAvailable(PasswordAccessorySheetDataBuilder(
-                                            passwords_empty_str(kExampleDomain))
-                                            .Build()));
+  EXPECT_CALL(
+      mock_manual_filling_controller_,
+      RefreshSuggestionsForField(
+          /*is_fillable=*/false,
+          PasswordAccessorySheetDataBuilder(passwords_empty_str(kExampleDomain))
+              .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/false,
@@ -683,8 +672,9 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   controller()->SavePasswordsForOrigin({CreateEntry("Ben", "S3cur3").first},
                                        url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
-      *view(),
-      OnItemsAvailable(
+      mock_manual_filling_controller_,
+      RefreshSuggestionsForField(
+          /*is_fillable=*/true,
           PasswordAccessorySheetDataBuilder(passwords_title_str(kExampleDomain))
               .AddUserInfo()
               .AppendField(ASCIIToUTF16("Ben"), ASCIIToUTF16("Ben"), false,
@@ -702,10 +692,12 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   controller()->DidNavigateMainFrame();
 
   // Now, only the empty state message should be sent.
-  EXPECT_CALL(*view(),
-              OnItemsAvailable(PasswordAccessorySheetDataBuilder(
-                                   passwords_empty_str("random.other-site.org"))
-                                   .Build()));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestionsForField(
+                  /*is_fillable=*/true,
+                  PasswordAccessorySheetDataBuilder(
+                      passwords_empty_str("random.other-site.org"))
+                      .Build()));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL("https://random.other-site.org/")),
       /*is_fillable=*/true,
@@ -715,7 +707,8 @@ TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
 TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
   base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
 
-  EXPECT_CALL(*view(), OnItemsAvailable(_));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestionsForField(/*is_fillable=*/true, _));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -732,7 +725,8 @@ TEST_F(PasswordAccessoryControllerTest, FetchFaviconForCurrentUrl) {
 TEST_F(PasswordAccessoryControllerTest, RequestsFaviconsOnceForOneOrigin) {
   base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
 
-  EXPECT_CALL(*view(), OnItemsAvailable(_));
+  EXPECT_CALL(mock_manual_filling_controller_, RefreshSuggestionsForField(
+                                                   /*is_fillable=*/true, _));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -769,7 +763,8 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
   non_empty_result.icon_url = GURL(kExampleSite);
 
   // Populate the cache by requesting a favicon.
-  EXPECT_CALL(*view(), OnItemsAvailable(_));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestionsForField(/*is_fillable=*/true, _));
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/true,
@@ -795,9 +790,11 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
   controller()->DidNavigateMainFrame();
   NavigateAndCommit(GURL(kExampleSite));  // Same origin as intially.
   controller()->DidNavigateMainFrame();
-  EXPECT_CALL(*view(), OnItemsAvailable(_));
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestionsForField(/*is_fillable=*/true, _));
   controller()->RefreshSuggestionsForField(
-      url::Origin::Create(GURL(kExampleSite)), true, false);
+      url::Origin::Create(GURL(kExampleSite)), /*is_fillable=*/true,
+      /*is_password_field=*/false);
 
   // The cache was cleared, so now the service has to be queried again.
   EXPECT_CALL(*favicon_service(), GetRawFaviconForPageURL(GURL(kExampleSite), _,
@@ -811,7 +808,9 @@ TEST_F(PasswordAccessoryControllerTest, FaviconsAreCachedUntilNavigation) {
 TEST_F(PasswordAccessoryControllerTest, NoFaviconCallbacksWhenOriginChanges) {
   base::MockCallback<base::OnceCallback<void(const gfx::Image&)>> mock_callback;
 
-  EXPECT_CALL(*view(), OnItemsAvailable(_)).Times(2);
+  EXPECT_CALL(mock_manual_filling_controller_,
+              RefreshSuggestionsForField(/*is_fillable=*/true, _))
+      .Times(2);
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)), true, false);
 
@@ -857,9 +856,7 @@ TEST_F(PasswordAccessoryControllerTest, RecordsGeneratedPasswordAccepted) {
       "KeyboardAccessory.GeneratedPasswordDialog", true, 1);
 }
 
-TEST_F(PasswordAccessoryControllerTest, RelaysShowAndHideKeyboardAccessory) {
-  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
-  controller()->ShowWhenKeyboardIsVisible();
-  EXPECT_CALL(*view(), Hide());
+TEST_F(PasswordAccessoryControllerTest, Hide) {
+  EXPECT_CALL(mock_manual_filling_controller_, Hide());
   controller()->Hide();
 }

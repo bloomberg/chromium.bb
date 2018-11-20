@@ -13,7 +13,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/autofill/manual_filling_controller.h"
 #include "components/autofill/core/browser/accessory_sheet_data.h"
 #include "jni/PasswordAccessoryBridge_jni.h"
 #include "ui/android/view_android.h"
@@ -59,7 +59,7 @@ ScopedJavaLocalRef<jobject> ConvertAccessorySheetDataToJavaObject(
 }  // namespace
 
 PasswordAccessoryViewAndroid::PasswordAccessoryViewAndroid(
-    PasswordAccessoryController* controller)
+    ManualFillingController* controller)
     : controller_(controller) {
   ui::ViewAndroid* view_android = controller_->container_view();
 
@@ -161,8 +161,7 @@ void PasswordAccessoryViewAndroid::OnImageFetched(
 }
 
 // static
-std::unique_ptr<PasswordAccessoryViewInterface>
-PasswordAccessoryViewInterface::Create(
-    PasswordAccessoryController* controller) {
+std::unique_ptr<ManualFillingViewInterface> ManualFillingViewInterface::Create(
+    ManualFillingController* controller) {
   return std::make_unique<PasswordAccessoryViewAndroid>(controller);
 }

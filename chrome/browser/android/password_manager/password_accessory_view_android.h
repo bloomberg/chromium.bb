@@ -8,25 +8,27 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "chrome/browser/password_manager/password_accessory_view_interface.h"
+#include "chrome/browser/autofill/manual_filling_view_interface.h"
 
 namespace gfx {
 class Image;
 }
 
-class PasswordAccessoryController;
+class ManualFillingController;
 
-// This Android-specific implementation of the |PasswordAccessoryViewInterface|
+// This Android-specific implementation of the |ManualFillingViewInterface|
 // is the native counterpart of the |PasswordAccessoryViewBridge| java class.
-// It's owned by a PasswordAccessoryController which is bound to an activity.
-class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
+// It's owned by a ManualFillingController which is bound to an activity.
+//
+// TODO(crbug.com/905669): Rename this to ManualFillingViewAndroid and
+//                         PasswordAccessoryBridge to ManualFillingBridge.
+class PasswordAccessoryViewAndroid : public ManualFillingViewInterface {
  public:
   // Builds the UI for the |controller|.
-  explicit PasswordAccessoryViewAndroid(
-      PasswordAccessoryController* controller);
+  explicit PasswordAccessoryViewAndroid(ManualFillingController* controller);
   ~PasswordAccessoryViewAndroid() override;
 
-  // PasswordAccessoryViewInterface:
+  // ManualFillingViewInterface:
   void OnItemsAvailable(const autofill::AccessorySheetData& data) override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void CloseAccessorySheet() override;
@@ -58,7 +60,7 @@ class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
       const gfx::Image& image);
 
   // The controller provides data for this view and owns it.
-  PasswordAccessoryController* controller_;
+  ManualFillingController* controller_;
 
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
