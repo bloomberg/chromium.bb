@@ -83,9 +83,6 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
   void OnBondStateChanged(mojom::BluetoothStatus status,
                           mojom::BluetoothAddressPtr remote_addr,
                           mojom::BluetoothBondState state) override;
-  void OnAclStateChanged(mojom::BluetoothStatus status,
-                         mojom::BluetoothAddressPtr remote_addr,
-                         mojom::BluetoothAclState state) override;
   void OnLEDeviceFoundForN(
       mojom::BluetoothAddressPtr addr,
       int32_t rssi,

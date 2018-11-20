@@ -402,7 +402,7 @@ interface BluetoothHost {
 };
 
 // Next Method ID: 22
-// Deprecated Method ID: 2
+// Deprecated Method ID: 2, 6
 interface BluetoothInstance {
   // DEPRECATED: Please use Init@18 instead.
   InitDeprecated@0(BluetoothHost host_ptr);
@@ -417,9 +417,6 @@ interface BluetoothInstance {
   OnBondStateChanged@5(BluetoothStatus status,
                        BluetoothAddress remote_addr,
                        BluetoothBondState state);
-  OnAclStateChanged@6(BluetoothStatus status,
-                      BluetoothAddress remote_addr,
-                      BluetoothAclState state);
 
   // Bluetooth Gatt Client callbacks
   // TODO(b/111367421): Remove this when no active device running Android N.
