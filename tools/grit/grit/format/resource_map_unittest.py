@@ -42,6 +42,8 @@ class FormatResourceMapUnittest(unittest.TestCase):
               <include type="foo" file="jkl" name="IDS_LANGUAGESPECIFIC" />
             </if>
             <include type="foo" file="mno" name="IDS_THIRDPRESENT" />
+            <include type="foo" file="opq" name="IDS_FOURTHPRESENT"
+                                   skip_in_resource_map="true" />
          </includes>
        </release>''', run_gatherers=True)
     output = util.StripBlankLinesAndComments(''.join(
