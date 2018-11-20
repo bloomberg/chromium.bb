@@ -547,6 +547,15 @@
       'mac10.13_retina-blink-rel': 'release_bot_minimal_symbols',
       'win7-blink-rel': 'release_bot_x86_minimal_symbols',
       'win10-blink-rel': 'release_bot_x86_minimal_symbols',
+      # TODO(dpranke): Delete all the old names once things have been updated.
+      'linux_trusty_blink_rel': 'release_bot_minimal_symbols',
+      'mac10.10_blink_rel': 'release_bot_minimal_symbols',
+      'mac10.11_blink_rel': 'release_bot_minimal_symbols',
+      'mac10.12_blink_rel': 'release_bot_minimal_symbols',
+      'mac10.13_blink_rel': 'release_bot_minimal_symbols',
+      'mac10.13_retina_blink_rel': 'release_bot_minimal_symbols',
+      'win7_blink_rel': 'release_bot_x86_minimal_symbols',
+      'win10_blink_rel': 'release_bot_x86_minimal_symbols',
     },
 
     'tryserver.chromium.android': {
