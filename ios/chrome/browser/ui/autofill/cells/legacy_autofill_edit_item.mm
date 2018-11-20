@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
 
 #include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -27,14 +27,14 @@ const CGFloat kVerticalPadding = 16;
 const CGFloat kLabelAndFieldGap = 5;
 }  // namespace
 
-@interface AutofillEditCell ()
+@interface LegacyAutofillEditCell ()
 // Updates the cell's fonts and colors for the given |cellStyle| and uses
 // dynamic font types if they are available (iOS 11+).
 - (void)updateForStyle:(CollectionViewCellStyle)cellStyle
        withFontScaling:(BOOL)withFontScaling;
 @end
 
-@implementation AutofillEditItem
+@implementation LegacyAutofillEditItem
 
 @synthesize cellStyle = _cellStyle;
 @synthesize textFieldName = _textFieldName;
@@ -52,7 +52,7 @@ const CGFloat kLabelAndFieldGap = 5;
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [AutofillEditCell class];
+    self.cellClass = [LegacyAutofillEditCell class];
     _cellStyle = CollectionViewCellStyle::kMaterial;
     _returnKeyType = UIReturnKeyNext;
     _keyboardType = UIKeyboardTypeDefault;
@@ -63,7 +63,7 @@ const CGFloat kLabelAndFieldGap = 5;
 
 #pragma mark CollectionViewItem
 
-- (void)configureCell:(AutofillEditCell*)cell {
+- (void)configureCell:(LegacyAutofillEditCell*)cell {
   [super configureCell:cell];
 
   // Update fonts and colors before changing anything else.
@@ -99,7 +99,7 @@ const CGFloat kLabelAndFieldGap = 5;
 
 @end
 
-@implementation AutofillEditCell {
+@implementation LegacyAutofillEditCell {
   NSLayoutConstraint* _iconHeightConstraint;
   NSLayoutConstraint* _iconWidthConstraint;
   NSLayoutConstraint* _textFieldTrailingConstraint;

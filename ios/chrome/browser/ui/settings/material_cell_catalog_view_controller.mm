@@ -15,8 +15,8 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
-#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/cvc_item.h"
+#import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
@@ -721,8 +721,8 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 }
 
 - (CollectionViewItem*)autofillEditItem {
-  AutofillEditItem* item =
-      [[AutofillEditItem alloc] initWithType:ItemTypeAutofillDynamicHeight];
+  LegacyAutofillEditItem* item = [[LegacyAutofillEditItem alloc]
+      initWithType:ItemTypeAutofillDynamicHeight];
   item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.textFieldName = @"Required Card Number";
   item.textFieldValue = @"4111111111111111";
@@ -732,8 +732,8 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 }
 
 - (CollectionViewItem*)autofillEditItemWithIcon {
-  AutofillEditItem* item =
-      [[AutofillEditItem alloc] initWithType:ItemTypeAutofillDynamicHeight];
+  LegacyAutofillEditItem* item = [[LegacyAutofillEditItem alloc]
+      initWithType:ItemTypeAutofillDynamicHeight];
   item.cellStyle = CollectionViewCellStyle::kUIKit;
   item.textFieldName = @"Card Number";
   item.textFieldValue = @"4111111111111111";

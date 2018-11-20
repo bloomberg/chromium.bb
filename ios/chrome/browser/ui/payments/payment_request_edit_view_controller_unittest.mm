@@ -7,7 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
-#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
@@ -127,10 +127,10 @@ TEST_F(PaymentRequestEditViewControllerTest, TestModel) {
   id item = GetCollectionViewItem(0, 0);
   EXPECT_TRUE([item isMemberOfClass:[CollectionViewTextItem class]]);
 
-  // The next section has one item of the type AutofillEditItem.
+  // The next section has one item of the type LegacyAutofillEditItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(1)));
   item = GetCollectionViewItem(1, 0);
-  EXPECT_TRUE([item isMemberOfClass:[AutofillEditItem class]]);
+  EXPECT_TRUE([item isMemberOfClass:[LegacyAutofillEditItem class]]);
 
   // The next section has one item of the type PaymentsSelectorEditItem.
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(2)));

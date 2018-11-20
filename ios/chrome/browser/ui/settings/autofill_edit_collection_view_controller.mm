@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
-#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/autofill/cells/legacy_autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/autofill_edit_collection_view_controller+protected.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
@@ -17,10 +17,11 @@
 
 namespace {
 
-AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
-  AutofillEditCell* settingsCell = nil;
+LegacyAutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
+  LegacyAutofillEditCell* settingsCell = nil;
   for (UIView* view = textField; view; view = [view superview]) {
-    AutofillEditCell* cell = base::mac::ObjCCast<AutofillEditCell>(view);
+    LegacyAutofillEditCell* cell =
+        base::mac::ObjCCast<LegacyAutofillEditCell>(view);
     if (cell) {
       settingsCell = cell;
       break;
@@ -36,7 +37,7 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
 
 @interface AutofillEditCollectionViewController ()<
     AutofillEditAccessoryDelegate> {
-  AutofillEditCell* _currentEditingCell;
+  LegacyAutofillEditCell* _currentEditingCell;
   AutofillEditAccessoryView* _accessoryView;
 }
 @end
@@ -106,14 +107,14 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
 #pragma mark - UITextFieldDelegate
 
 - (void)textFieldDidBeginEditing:(UITextField*)textField {
-  AutofillEditCell* cell = AutofillEditCellForTextField(textField);
+  LegacyAutofillEditCell* cell = AutofillEditCellForTextField(textField);
   _currentEditingCell = cell;
   [textField setInputAccessoryView:_accessoryView];
   [self updateAccessoryViewButtonState];
 }
 
 - (void)textFieldDidEndEditing:(UITextField*)textField {
-  AutofillEditCell* cell = AutofillEditCellForTextField(textField);
+  LegacyAutofillEditCell* cell = AutofillEditCellForTextField(textField);
   DCHECK(_currentEditingCell == cell);
   [textField setInputAccessoryView:nil];
   _currentEditingCell = nil;
@@ -156,8 +157,9 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
   if (!nextCellPath) {
     [[_currentEditingCell textField] resignFirstResponder];
   } else {
-    AutofillEditCell* nextCell = base::mac::ObjCCastStrict<AutofillEditCell>(
-        [collectionView cellForItemAtIndexPath:nextCellPath]);
+    LegacyAutofillEditCell* nextCell =
+        base::mac::ObjCCastStrict<LegacyAutofillEditCell>(
+            [collectionView cellForItemAtIndexPath:nextCellPath]);
     [nextCell.textField becomeFirstResponder];
   }
 }
