@@ -17,7 +17,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/sync/driver/sync_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -32,6 +31,7 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "services/identity/public/cpp/identity_manager.h"
+#import "services/identity/public/cpp/primary_account_mutator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -71,14 +71,12 @@ AuthenticationService::AuthenticationService(
     SyncSetupService* sync_setup_service,
     AccountTrackerService* account_tracker,
     identity::IdentityManager* identity_manager,
-    SigninManager* signin_manager,
     browser_sync::ProfileSyncService* sync_service)
     : pref_service_(pref_service),
       token_service_(token_service),
       sync_setup_service_(sync_setup_service),
       account_tracker_(account_tracker),
       identity_manager_(identity_manager),
-      signin_manager_(signin_manager),
       sync_service_(sync_service),
       identity_service_observer_(this),
       weak_pointer_factory_(this) {
@@ -86,7 +84,6 @@ AuthenticationService::AuthenticationService(
   DCHECK(sync_setup_service_);
   DCHECK(account_tracker_);
   DCHECK(identity_manager_);
-  DCHECK(signin_manager_);
   DCHECK(sync_service_);
   token_service_->AddObserver(this);
 }
@@ -349,11 +346,9 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
   sync_setup_service_->PrepareForFirstSyncSetup();
 
   // Update the SigninManager with the new logged in identity.
-  std::string new_authenticated_username =
-      account_tracker_->GetAccountInfo(new_authenticated_account_id).email;
-  // TODO(crbug.com/889902): Remove the SigninManager usage once the
-  // alternative API for this call is available.
-  signin_manager_->OnExternalSigninCompleted(new_authenticated_username);
+  auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
+  DCHECK(account_mutator);
+  account_mutator->SetPrimaryAccount(new_authenticated_account_id);
 
   // Reload all credentials to match the desktop model. Exclude all the
   // accounts ids that are the primary account ids on other profiles.

@@ -11,7 +11,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
@@ -33,7 +32,6 @@
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -182,7 +180,6 @@ class AuthenticationServiceTest : public PlatformTest,
         ios::AccountTrackerServiceFactory::GetForBrowserState(
             browser_state_.get()),
         IdentityManagerFactory::GetForBrowserState(browser_state_.get()),
-        ios::SigninManagerFactory::GetForBrowserState(browser_state_.get()),
         ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
     authentication_service_->Initialize(
         std::make_unique<AuthenticationServiceDelegateFake>());

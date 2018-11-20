@@ -48,7 +48,6 @@ class AuthenticationServiceFake : public AuthenticationService {
                             SyncSetupService* sync_setup_service,
                             AccountTrackerService* account_tracker,
                             identity::IdentityManager* identity_manager,
-                            SigninManager* signin_manager,
                             browser_sync::ProfileSyncService* sync_service);
 
   __strong ChromeIdentity* authenticated_identity_;
