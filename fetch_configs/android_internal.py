@@ -17,7 +17,7 @@ class AndroidInternal(config_util.Config):
     return {
       'alias': {
         'config': 'chromium',
-        'props': ['--target_os=android', '--internal=True', '--flash=False'],
+        'props': ['--target_os=android', '--internal=1'],
       },
     }
 
