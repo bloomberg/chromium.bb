@@ -1503,7 +1503,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
     // flickering.
     if (actionsModel) {
       event.command.setHidden(actionsModel && !action);
-      event.command.checked = !!offlineNotNeededAction;
+      event.command.checked = !!offlineNotNeededAction && !saveForOfflineAction;
     }
   }
 });
