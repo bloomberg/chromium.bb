@@ -72,7 +72,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_utils.h"
@@ -632,20 +631,17 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
   UMA_HISTOGRAM_ENUMERATION("Apps.ContextMenuShowSource.Desktop", source_type,
                             ui::MENU_SOURCE_TYPE_LAST);
 
-  int run_types = views::MenuRunner::CONTEXT_MENU;
-  views::MenuAnchorPosition anchor_position = views::MENU_ANCHOR_TOPLEFT;
-  if (::features::IsTouchableAppContextMenuEnabled()) {
-    run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT |
-                 views::MenuRunner::FIXED_ANCHOR;
-    anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE;
-  }
   menu_runner_ = std::make_unique<views::MenuRunner>(
-      menu_model_.get(), run_types,
+      menu_model_.get(),
+      views::MenuRunner::CONTEXT_MENU |
+          views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+          views::MenuRunner::FIXED_ANCHOR,
       base::Bind(&RootWindowController::OnMenuClosed, base::Unretained(this),
                  base::TimeTicks::Now()));
   menu_runner_->RunMenuAt(wallpaper_widget_controller()->GetWidget(), nullptr,
                           gfx::Rect(location_in_screen, gfx::Size()),
-                          anchor_position, source_type);
+                          views::MENU_ANCHOR_BUBBLE_TOUCHABLE_ABOVE,
+                          source_type);
 }
 
 void RootWindowController::HideContextMenu() {
