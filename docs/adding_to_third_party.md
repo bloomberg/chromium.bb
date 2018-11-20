@@ -136,10 +136,13 @@ Non-Googlers can email one of the people in
   sure to highlight risk to security@chromium.org. You may be asked to add
   a README.security or, in dangerous cases, README.SECURITY.URGENTLY file.
 * Add chromium-third-party@google.com as a reviewer on your change. This
-  will trigger an automatic round-robin assignment of the review to an
-  appropriate reviewer. This list does not receive or deliver email, so only
-  use it as a reviewer, not for other communication. (Internally, see
-  b/119558132 for details about how this is configured.)
+  will trigger an automatic round-robin assignment to a reviewer who will check
+  licensing matters. These reviewers may not be able to +1 a change so look for
+  verbal approval in the comments. (This list does not receive or deliver
+  email, so only use it as a reviewer, not for other communication. Internally,
+  see cl/221704656 for details about how this is configured.)
+* Lastly, if all other steps are complete, get a positive code review from a
+  member of [//third_party/OWNERS](../third_party/OWNERS) to land the change.
 
 Please send separate emails to the eng review and security lists.
 
