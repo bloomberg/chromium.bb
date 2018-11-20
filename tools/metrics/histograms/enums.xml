@@ -33803,6 +33803,9 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Resumption button clicked"/>
   <int value="3" label="Resumption failed"/>
   <int value="4" label="Resumption auto started"/>
+  <int value="5" label="Resumption started while browser process is running"/>
+  <int value="6"
+      label="Resumption started while browser process is not running"/>
 </enum>
 
 <enum name="MobileDownloadStoragePermission">
