@@ -465,3 +465,37 @@ void aom_shift_img(unsigned int output_bit_depth, aom_image_t **img_ptr,
     *img_ptr = img_shifted;
   }
 }
+
+// Related to I420, NV12 format has one luma "luminance" plane Y and one plane
+// with U and V values interleaved.
+void aom_img_write_nv12(const aom_image_t *img, FILE *file) {
+  // Y plane
+  const unsigned char *buf = img->planes[0];
+  int stride = img->stride[0];
+  int w = aom_img_plane_width(img, 0) *
+          ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
+  int h = aom_img_plane_height(img, 0);
+  int x, y;
+
+  for (y = 0; y < h; ++y) {
+    fwrite(buf, 1, w, file);
+    buf += stride;
+  }
+
+  // Interleaved U and V plane
+  const unsigned char *ubuf = img->planes[1];
+  const unsigned char *vbuf = img->planes[2];
+  stride = img->stride[1];
+  w = aom_img_plane_width(img, 1) *
+      ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
+  h = aom_img_plane_height(img, 1);
+
+  for (y = 0; y < h; ++y) {
+    for (x = 0; x < w; ++x) {
+      fputc(ubuf[x], file);
+      fputc(vbuf[x], file);
+    }
+    ubuf += stride;
+    vbuf += stride;
+  }
+}

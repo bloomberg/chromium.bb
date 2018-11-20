@@ -15,11 +15,16 @@
 // This is an example of a simple lightfield decoder. It builds upon the
 // simple_decoder.c example.  It takes an input file containing the compressed
 // data (in ivf format), treating it as a lightfield instead of a video; and a
-// text file with a list of tiles to decode.
+// text file with a list of tiles to decode. There is an option allowing to
+// choose the output format, and the supported formats are i420(default) and
+// nv12.
 // After running the lightfield encoder, run lightfield decoder to decode a
 // batch of tiles:
 // examples/lightfield_decoder vase10x10.ivf vase_reference.yuv 4 tile_list.txt
-//
+// or
+// examples/lightfield_decoder vase10x10.ivf vase_reference.yuv 4 tile_list.txt
+// 1
+// if nv12 output format is preferred.
 // The tile_list.txt is expected to be of the form:
 // Frame <frame_index0>
 // <image_index0> <anchor_index0> <tile_col0> <tile_row0>
@@ -46,8 +51,13 @@
 
 static const char *exec_name;
 
+#define I420 0
+#define NV12 1
+
 void usage_exit(void) {
-  fprintf(stderr, "Usage: %s <infile> <outfile> <num_references> <tile_list>\n",
+  fprintf(stderr,
+          "Usage: %s <infile> <outfile> <num_references> <tile_list> <output "
+          "format(optional)>\n",
           exec_name);
   exit(EXIT_FAILURE);
 }
@@ -134,6 +144,14 @@ void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
   (*tile_idx)++;
 }
 
+static void img_write_to_file(const aom_image_t *img, FILE *file,
+                              int output_format) {
+  if (output_format == I420)
+    aom_img_write(img, file);
+  else  // NV12
+    aom_img_write_nv12(img, file);
+}
+
 int main(int argc, char **argv) {
   FILE *outfile = NULL;
   aom_codec_ctx_t codec;
@@ -149,9 +167,10 @@ int main(int argc, char **argv) {
   const unsigned char *frame = NULL;
   int i, j;
   const char *tile_list_file = NULL;
+  int output_format = I420;
   exec_name = argv[0];
 
-  if (argc != 5) die("Invalid number of arguments.");
+  if (argc < 5) die("Invalid number of arguments.");
 
   reader = aom_video_reader_open(argv[1]);
   if (!reader) die("Failed to open %s for reading.", argv[1]);
@@ -161,6 +180,8 @@ int main(int argc, char **argv) {
 
   num_references = (int)strtol(argv[3], NULL, 0);
   tile_list_file = argv[4];
+
+  if (argc > 5) output_format = (int)strtol(argv[5], NULL, 0);
 
   info = aom_video_reader_get_info(reader);
 
@@ -271,7 +292,7 @@ int main(int argc, char **argv) {
         // Shift up or down if necessary
         if (output_bit_depth != 0)
           aom_shift_img(output_bit_depth, &out, &output_shifted);
-        aom_img_write(out, outfile);
+        img_write_to_file(out, outfile, output_format);
         tile_list_writes++;
       }
 
@@ -304,7 +325,7 @@ int main(int argc, char **argv) {
     // Shift up or down if necessary
     if (output_bit_depth != 0)
       aom_shift_img(output_bit_depth, &out, &output_shifted);
-    aom_img_write(out, outfile);
+    img_write_to_file(out, outfile, output_format);
   }
 
   if (output_shifted) aom_img_free(output_shifted);
@@ -321,3 +342,5 @@ int main(int argc, char **argv) {
 
   return EXIT_SUCCESS;
 }
+#undef I420
+#undef NV12

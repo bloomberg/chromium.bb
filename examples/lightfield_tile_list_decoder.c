@@ -18,10 +18,16 @@
 // compressed tile data. This input file is reconstructed from the encoded
 // lightfield ivf file, and is decodable by AV1 decoder. num_references is
 // the number of anchor frames coded at the beginning of the light field file.
-// num_tile_lists is the number of tile lists need to be decoded.
+// num_tile_lists is the number of tile lists need to be decoded. There is an
+// option allowing to choose the output format, and the supported formats are
+// i420(default) and nv12.
 // Run lightfield tile list decoder to decode an AV1 tile list file:
 // examples/lightfield_tile_list_decoder vase_tile_list.ivf vase_tile_list.yuv
 // 4 2
+// or
+// examples/lightfield_tile_list_decoder vase_tile_list.ivf vase_tile_list.yuv
+// 4 2 1
+// if nv12 output format is preferred.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,11 +43,23 @@
 
 static const char *exec_name;
 
+#define I420 0
+#define NV12 1
+
 void usage_exit(void) {
   fprintf(stderr,
-          "Usage: %s <infile> <outfile> <num_references> <num_tile_lists>\n",
+          "Usage: %s <infile> <outfile> <num_references> <num_tile_lists> "
+          "<output format(optional)>\n",
           exec_name);
   exit(EXIT_FAILURE);
+}
+
+static void img_write_to_file(const aom_image_t *img, FILE *file,
+                              int output_format) {
+  if (output_format == I420)
+    aom_img_write(img, file);
+  else  // NV12
+    aom_img_write_nv12(img, file);
 }
 
 int main(int argc, char **argv) {
@@ -55,11 +73,12 @@ int main(int argc, char **argv) {
   aom_image_t reference_images[MAX_EXTERNAL_REFERENCES];
   size_t frame_size = 0;
   const unsigned char *frame = NULL;
+  int output_format = I420;
   int i, j, n;
 
   exec_name = argv[0];
 
-  if (argc != 5) die("Invalid number of arguments.");
+  if (argc < 5) die("Invalid number of arguments.");
 
   reader = aom_video_reader_open(argv[1]);
   if (!reader) die("Failed to open %s for reading.", argv[1]);
@@ -69,6 +88,8 @@ int main(int argc, char **argv) {
 
   num_references = (int)strtol(argv[3], NULL, 0);
   num_tile_lists = (int)strtol(argv[4], NULL, 0);
+
+  if (argc > 5) output_format = (int)strtol(argv[5], NULL, 0);
 
   info = aom_video_reader_get_info(reader);
 
@@ -148,7 +169,7 @@ int main(int argc, char **argv) {
       die_codec(&codec, "Failed to decode the tile list.");
     aom_codec_iter_t iter = NULL;
     aom_image_t *img = aom_codec_get_frame(&codec, &iter);
-    aom_img_write(img, outfile);
+    img_write_to_file(img, outfile, output_format);
   }
 
   for (i = 0; i < num_references; i++) aom_img_free(&reference_images[i]);
@@ -158,3 +179,5 @@ int main(int argc, char **argv) {
 
   return EXIT_SUCCESS;
 }
+#undef I420
+#undef NV12

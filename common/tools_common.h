@@ -159,6 +159,9 @@ void aom_shift_img(unsigned int output_bit_depth, aom_image_t **img_ptr,
                    aom_image_t **img_shifted_ptr);
 void aom_img_truncate_16_to_8(aom_image_t *dst, const aom_image_t *src);
 
+// Output in NV12 format.
+void aom_img_write_nv12(const aom_image_t *img, FILE *file);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
