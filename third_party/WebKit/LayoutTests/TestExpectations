@@ -161,6 +161,7 @@ crbug.com/822372 http/tests/printing/cross-site-frame.html [ Crash ]
 crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
 crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
 crbug.com/901502 http/tests/devtools/oopif/oopif-storage.js [ Pass Failure ]
+crbug.com/906879 http/tests/inspector-protocol/network/navigation-blocking-xorigin-iframe.js [ Pass Failure ]
 # ====== Site Isolation failures until here ======
 
 # ====== Oilpan-only failures from here ======
@@ -5358,4 +5359,3 @@ crbug.com/906591 virtual/threaded/printing/single-line-must-not-be-split-into-tw
 crbug.com/906952 editing/pasteboard/file-drag-to-editable.html [ Pass Crash ]
 crbug.com/906952 fast/events/before-unload-return-value-from-listener.html [ Pass Crash ]
 
-crbug.com/906879 http/tests/inspector-protocol/network/navigation-blocking-xorigin-iframe.js [ Pass Failure ]
