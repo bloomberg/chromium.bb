@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.media.router.caf.CastUtils.isSameOrigi
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.support.v7.media.MediaRouter;
 
 import com.google.android.gms.cast.framework.CastSession;
@@ -36,12 +37,14 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
 
     private CreateRouteRequestInfo mPendingCreateRouteRequestInfo;
 
-    private ClientRecord mLastRemovedRouteRecord;
+    @VisibleForTesting
+    ClientRecord mLastRemovedRouteRecord;
     // The records for clients, which must match mRoutes. This is used for the saving last record
     // for autojoin.
     private final Map<String, ClientRecord> mClientIdToRecords =
             new HashMap<String, ClientRecord>();
-    private CafMessageHandler mMessageHandler;
+    @VisibleForTesting
+    CafMessageHandler mMessageHandler;
     // The session controller which is always attached to the current CastSession.
     private final CastSessionController mSessionController;
 
@@ -75,7 +78,6 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
         MediaRoute route =
                 new MediaRoute(sessionController().getSink().getId(), sourceId, presentationId);
         addRoute(route, origin, tabId, nativeRequestId, /* wasLaunched= */ false);
-        mManager.onRouteCreated(route.id, route.sinkId, nativeRequestId, this, false);
     }
 
     // TODO(zqzhang): the clientRecord/route management is not clean and the logic seems to be
@@ -90,8 +92,7 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
 
         ClientRecord client = getClientRecordByRouteId(routeId);
         if (client != null) {
-            MediaSink sink = MediaSink.fromSinkId(
-                    sessionController().getSink().getId(), getAndroidMediaRouter());
+            MediaSink sink = sessionController().getSink();
             if (sink != null) {
                 mMessageHandler.sendReceiverActionToClient(routeId, sink, client.clientId, "stop");
             }
@@ -153,10 +154,8 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
 
         for (ClientRecord clientRecord : mClientIdToRecords.values()) {
             // Should be exactly one instance of MediaRoute/ClientRecord at this moment.
-            MediaRoute route = mRoutes.get(clientRecord.routeId);
-            MediaSink sink = MediaSink.fromSinkId(route.sinkId, getAndroidMediaRouter());
-            mMessageHandler.sendReceiverActionToClient(
-                    clientRecord.routeId, sink, clientRecord.clientId, "cast");
+            mMessageHandler.sendReceiverActionToClient(clientRecord.routeId,
+                    sessionController().getSink(), clientRecord.clientId, "cast");
         }
 
         mMessageHandler.onSessionStarted();
@@ -200,14 +199,15 @@ public class CafMediaRouteProvider extends CafBaseMediaRouteProvider {
         mMessageHandler = new CafMessageHandler(this, mSessionController);
     }
 
-    private boolean canJoinExistingSession(
+    @VisibleForTesting
+    boolean canJoinExistingSession(
             String presentationId, String origin, int tabId, CastMediaSource source) {
         if (AUTO_JOIN_PRESENTATION_ID.equals(presentationId)) {
             return canAutoJoin(source, origin, tabId);
         }
         if (presentationId.startsWith(PRESENTATION_ID_SESSION_ID_PREFIX)) {
             String sessionId = presentationId.substring(PRESENTATION_ID_SESSION_ID_PREFIX.length());
-            return sessionController().getSession().getSessionId().equals(sessionId);
+            return sessionId != null && sessionId.equals(sessionController().getSessionId());
         }
         for (MediaRoute route : mRoutes.values()) {
             if (route.presentationId.equals(presentationId)) return true;

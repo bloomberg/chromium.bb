@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.media.router.MediaSource;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Robolectric tests for CafBaseMediaRouteProvider.
@@ -394,9 +393,9 @@ public class CafBaseMediaRouteProviderTest {
 
         inOrder.verify(mSessionController).attachToCastSession(mCastSession);
         inOrder.verify(mSessionController).onSessionStarted();
-        assertEquals(mProvider.getRoutes().size(), 1);
+        assertEquals(mProvider.mRoutes.size(), 1);
 
-        MediaRoute route = (MediaRoute) (mProvider.getRoutes().values().toArray()[0]);
+        MediaRoute route = (MediaRoute) (mProvider.mRoutes.values().toArray()[0]);
         assertEquals(route.sinkId, "cast-route");
         assertEquals(route.sourceId, "source-id");
         assertEquals(route.presentationId, "presentation-id");
@@ -586,10 +585,10 @@ public class CafBaseMediaRouteProviderTest {
     }
 
     private void assertContainsRoutes(MediaRoute... routes) {
-        assertEquals(mProvider.getRoutes().size(), routes.length);
+        assertEquals(mProvider.mRoutes.size(), routes.length);
 
         for (MediaRoute route : routes) {
-            assertEquals(mProvider.getRoutes().get(route.id), route);
+            assertEquals(mProvider.mRoutes.get(route.id), route);
         }
     }
 
@@ -614,9 +613,5 @@ public class CafBaseMediaRouteProviderTest {
         @Override
         public void joinRoute(String routeId, String presentationId, String origin, int tabId,
                 int nativeRequestId) {}
-
-        public Map<String, MediaRoute> getRoutes() {
-            return mRoutes;
-        }
     }
 }

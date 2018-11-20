@@ -205,4 +205,12 @@ public class BaseSessionController {
     public FlingingController getFlingingController() {
         return null;
     }
+
+    /**
+     *  Helper message to get the session ID of the attached session. For stubbing in tests as
+     * {@link CastSession#getSessionId()} is final.
+     */
+    public String getSessionId() {
+        return isConnected() ? getSession().getSessionId() : null;
+    }
 }
