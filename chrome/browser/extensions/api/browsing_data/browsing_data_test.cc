@@ -426,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, Syncing) {
   // Sync is running.
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
-  sync_service->SetFirstSetupComplete();
+  sync_service->GetUserSettings()->SetFirstSetupComplete();
   sync_ui_util::MessageType sync_status =
       sync_ui_util::GetStatus(profile, sync_service, *signin_manager);
   ASSERT_EQ(sync_ui_util::SYNCED, sync_status);
