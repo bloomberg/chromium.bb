@@ -66,6 +66,7 @@
 #include "git-version.h"
 #include "version.h"
 #include "plugin-registry.h"
+#include "pixel-formats.h"
 
 #define DEFAULT_REPAINT_WINDOW 7 /* milliseconds */
 
@@ -6405,6 +6406,7 @@ debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
 	struct weston_buffer *buffer = view->surface->buffer_ref.buffer;
 	struct wl_shm_buffer *shm;
 	struct linux_dmabuf_buffer *dmabuf;
+	const struct pixel_format_info *pixel_info = NULL;
 
 	if (!buffer) {
 		fprintf(fp, "\t\t[buffer not available]\n");
@@ -6413,17 +6415,22 @@ debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
 
 	shm = wl_shm_buffer_get(buffer->resource);
 	if (shm) {
+		uint32_t _format = wl_shm_buffer_get_format(shm);
+		pixel_info = pixel_format_get_info_shm(_format);
 		fprintf(fp, "\t\tSHM buffer\n");
-		fprintf(fp, "\t\t\tformat: 0x%lx\n",
-			(unsigned long) wl_shm_buffer_get_format(shm));
+		fprintf(fp, "\t\t\tformat: 0x%lx %s\n",
+			(unsigned long) _format,
+			pixel_info ? pixel_info->drm_format_name : "UNKNOWN");
 		return;
 	}
 
 	dmabuf = linux_dmabuf_buffer_get(buffer->resource);
 	if (dmabuf) {
+		pixel_info = pixel_format_get_info(dmabuf->attributes.format);
 		fprintf(fp, "\t\tdmabuf buffer\n");
-		fprintf(fp, "\t\t\tformat: 0x%lx\n",
-			(unsigned long) dmabuf->attributes.format);
+		fprintf(fp, "\t\t\tformat: 0x%lx %s\n",
+			(unsigned long) dmabuf->attributes.format,
+			pixel_info ? pixel_info->drm_format_name : "UNKNOWN");
 		fprintf(fp, "\t\t\tmodifier: 0x%llx\n",
 			(unsigned long long) dmabuf->attributes.modifier[0]);
 		return;
