@@ -348,7 +348,9 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
 class CastV2PerformanceTest : public extensions::ExtensionApiTest,
                               public testing::WithParamInterface<int> {
  public:
-  CastV2PerformanceTest() {}
+  CastV2PerformanceTest() { LOG(ERROR) << __func__ << ": Hello!"; }
+
+  ~CastV2PerformanceTest() override { LOG(ERROR) << __func__ << ": Goodbye!"; }
 
   bool HasFlag(TestFlags flag) const {
     return (GetParam() & flag) == flag;
@@ -397,13 +399,23 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
   }
 
   void SetUp() override {
+    LOG(ERROR) << __func__ << ": Starting...";
     EnablePixelOutput();
     if (!HasFlag(kUseGpu))
       UseSoftwareCompositing();
+    LOG(ERROR) << __func__ << ": Doing normal SetUp()...";
     extensions::ExtensionApiTest::SetUp();
+    LOG(ERROR) << __func__ << ": Completed.";
+  }
+
+  void SetUpOnMainThread() override {
+    LOG(ERROR) << __func__ << ": Doing normal SetUpOnMainThread()...";
+    extensions::ExtensionApiTest::SetUpOnMainThread();
+    LOG(ERROR) << __func__ << ": Completed.";
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    LOG(ERROR) << __func__ << ": Starting...";
     // Some of the tests may launch http requests through JSON or AJAX
     // which causes a security error (cross domain request) when the page
     // is loaded from the local file system ( file:// ). The following switch
@@ -423,7 +435,9 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
         extensions::switches::kWhitelistedExtensionID,
         kExtensionId);
 
+    LOG(ERROR) << __func__ << ": Doing normal SetUpCommandLine()...";
     extensions::ExtensionApiTest::SetUpCommandLine(command_line);
+    LOG(ERROR) << __func__ << ": Completed.";
   }
 
   void GetTraceEvents(trace_analyzer::TraceAnalyzer* analyzer,
@@ -605,6 +619,8 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
   }
 
   void RunTest(const std::string& test_name) {
+    LOG(ERROR) << __func__ << ": Starting...";
+
     if (HasFlag(kUseGpu) && !IsGpuAvailable()) {
       LOG(WARNING) <<
           "Test skipped: requires gpu. Pass --enable-gpu on the command "
@@ -618,6 +634,8 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
               (HasFlag(k60fps) ? 1 : 0));
 
     net::IPEndPoint receiver_end_point = media::cast::test::GetFreeLocalPort();
+    LOG(ERROR) << __func__ << ": Got local UDP port for testing: "
+               << receiver_end_point.ToString();
 
     // Start the in-process receiver that examines audio/video for the expected
     // test patterns.
@@ -632,8 +650,10 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
         new SkewedCastEnvironment(delta));
     TestPatternReceiver* const receiver =
         new TestPatternReceiver(cast_environment, receiver_end_point);
+    LOG(ERROR) << __func__ << ": Starting receiver...";
     receiver->Start();
 
+    LOG(ERROR) << __func__ << ": Creating UDPProxy...";
     std::unique_ptr<media::cast::test::UDPProxy> udp_proxy;
     if (HasFlag(kProxyWifi) || HasFlag(kProxySlow) || HasFlag(kProxyBad)) {
       net::IPEndPoint proxy_end_point = media::cast::test::GetFreeLocalPort();
@@ -656,6 +676,7 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
       receiver_end_point = proxy_end_point;
     }
 
+    LOG(ERROR) << __func__ << ": Starting tracing...";
     std::string json_events;
     ASSERT_TRUE(tracing::BeginTracing("gpu.capture,cast_perf_test"));
     const std::string page_url = base::StringPrintf(
@@ -664,13 +685,18 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
         HasFlag(kAutoThrottling) ? "true" : "false",
         base::HexEncode(kAesKey, sizeof(kAesKey)).c_str(),
         base::HexEncode(kAesIvMask, sizeof(kAesIvMask)).c_str());
+    LOG(ERROR) << __func__ << ": Running extension subtest...";
     ASSERT_TRUE(RunExtensionSubtest("cast_streaming", page_url)) << message_;
+    LOG(ERROR) << __func__ << ": Extension subtest finished. Ending tracing...";
     ASSERT_TRUE(tracing::EndTracing(&json_events));
+    LOG(ERROR) << __func__ << ": Stopping receiver...";
     receiver->Stop();
 
     // Stop all threads, removes the need for synchronization when analyzing
     // the data.
+    LOG(ERROR) << __func__ << ": Shutting-down CastEnvironment...";
     cast_environment->Shutdown();
+    LOG(ERROR) << __func__ << ": Analyzing...";
     std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer;
     analyzer.reset(trace_analyzer::TraceAnalyzer::Create(json_events));
     analyzer->AssociateAsyncBeginEndEvents();
@@ -690,13 +716,16 @@ class CastV2PerformanceTest : public extensions::ExtensionApiTest,
     receiver->Analyze(test_name, GetSuffixForTestFlags());
 
     AnalyzeLatency(test_name, analyzer.get());
+    LOG(ERROR) << __func__ << ": Completed.";
   }
 };
 
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, Performance) {
+  LOG(ERROR) << __func__ << ": Test procedure started.";
   RunTest("CastV2Performance");
+  LOG(ERROR) << __func__ << ": Completed.";
 }
 
 // Note: First argument is optional and intentionally left blank.
