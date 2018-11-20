@@ -3,11 +3,16 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.media.router.cast.remoting;
 
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.support.v7.media.MediaRouteSelector;
 import android.util.Base64;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.MediaSource;
 
@@ -24,16 +29,18 @@ public class RemotingMediaSource implements MediaSource {
     // Need to be in sync with third_party/WebKit/Source/modules/remoteplayback/RemotePlayback.cpp.
     // TODO(avayvod): Find a way to share the constants somehow.
     private static final String SOURCE_PREFIX = "remote-playback://";
+    private static final String REMOTE_PLAYBACK_APP_ID_KEY =
+            "org.chromium.content.browser.REMOTE_PLAYBACK_APP_ID";
+
+    /**
+     * The Cast application id.
+     */
+    private static String sApplicationId;
 
     /**
      * The original source URL that the {@link MediaSource} object was created from.
      */
     private final String mSourceId;
-
-    /**
-     * The Cast application id.
-     */
-    private final String mApplicationId;
 
     /**
      * The URL to fling to the Cast device.
@@ -61,9 +68,7 @@ public class RemotingMediaSource implements MediaSource {
             return null;
         }
 
-        // TODO(avayvod): check the content URL and override the app id if needed.
-        String applicationId = CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID;
-        return new RemotingMediaSource(sourceId, applicationId, mediaUrl);
+        return new RemotingMediaSource(sourceId, mediaUrl);
     }
 
     /**
@@ -75,8 +80,38 @@ public class RemotingMediaSource implements MediaSource {
     @Override
     public MediaRouteSelector buildRouteSelector() {
         return new MediaRouteSelector.Builder()
-                .addControlCategory(CastMediaControlIntent.categoryForCast(mApplicationId))
+                .addControlCategory(CastMediaControlIntent.categoryForCast(getApplicationId()))
                 .build();
+    }
+
+    /**
+     * Lazily loads a custom App ID from the AndroidManifest, which can be overriden
+     * downstream. This app ID will never change, so we can store it in a static field.
+     * If there is no custom app ID defined, or if there is an error retreiving the app ID,
+     * we fallback to the default media receiver app ID.
+     *
+     * @return a custom app ID or the default media receiver app ID.
+     */
+    private static String applicationId() {
+        if (sApplicationId == null) {
+            String customAppId = null;
+
+            try {
+                Context context = ContextUtils.getApplicationContext();
+                ApplicationInfo ai = context.getPackageManager().getApplicationInfo(
+                        context.getPackageName(), PackageManager.GET_META_DATA);
+                Bundle bundle = ai.metaData;
+                customAppId = bundle.getString(REMOTE_PLAYBACK_APP_ID_KEY);
+            } catch (Exception e) {
+                // Should never happen, implies a corrupt AndroidManifest.
+            }
+
+            sApplicationId = (customAppId != null)
+                    ? customAppId
+                    : CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID;
+        }
+
+        return sApplicationId;
     }
 
     /**
@@ -84,7 +119,7 @@ public class RemotingMediaSource implements MediaSource {
      */
     @Override
     public String getApplicationId() {
-        return mApplicationId;
+        return applicationId();
     }
 
     /**
@@ -102,9 +137,8 @@ public class RemotingMediaSource implements MediaSource {
         return mMediaUrl;
     }
 
-    private RemotingMediaSource(String sourceId, String applicationId, String mediaUrl) {
+    private RemotingMediaSource(String sourceId, String mediaUrl) {
         mSourceId = sourceId;
-        mApplicationId = applicationId;
         mMediaUrl = mediaUrl;
     }
 }
