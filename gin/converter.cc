@@ -44,7 +44,9 @@ Local<Value> Converter<bool>::ToV8(Isolate* isolate, bool val) {
 }
 
 bool Converter<bool>::FromV8(Isolate* isolate, Local<Value> val, bool* out) {
-  return FromMaybe(val->BooleanValue(isolate->GetCurrentContext()), out);
+  *out = val->BooleanValue(isolate);
+  // BooleanValue cannot throw.
+  return true;
 }
 
 Local<Value> Converter<int32_t>::ToV8(Isolate* isolate, int32_t val) {
