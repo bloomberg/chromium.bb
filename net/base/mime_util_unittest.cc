@@ -231,6 +231,32 @@ TEST(MimeUtilTest, TestParseMimeTypeWithoutParameter) {
 
   EXPECT_FALSE(ParseMimeTypeWithoutParameter("application/a/b/c", NULL, NULL));
 
+  // Test leading and trailing whitespace
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter(" text/plain", NULL, NULL));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("text/plain ", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text /plain", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text/ plain ", NULL, NULL));
+
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("\ttext/plain", NULL, NULL));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("text/plain\t", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text\t/plain", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text/\tplain ", NULL, NULL));
+
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("\vtext/plain", NULL, NULL));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("text/plain\v", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text\v/plain", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text/\vplain ", NULL, NULL));
+
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("\rtext/plain", NULL, NULL));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("text/plain\r", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text\r/plain", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text/\rplain ", NULL, NULL));
+
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("\ntext/plain", NULL, NULL));
+  EXPECT_TRUE(ParseMimeTypeWithoutParameter("text/plain\n", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text\n/plain", NULL, NULL));
+  EXPECT_FALSE(ParseMimeTypeWithoutParameter("text/\nplain ", NULL, NULL));
+
   //EXPECT_TRUE(ParseMimeTypeWithoutParameter("video/mime;parameter"));
 }
 

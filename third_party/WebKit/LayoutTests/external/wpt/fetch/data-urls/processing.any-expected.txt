@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 71 tests; 44 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 71 tests; 45 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup.
 PASS "data://test/,X"
 FAIL "data://test:test/,X" assert_unreached: Should have rejected: undefined Reached unreachable code
@@ -31,7 +31,7 @@ PASS "data:%1F,%FF"
 PASS "data:\0,%FF"
 PASS "data:%00,%FF"
 PASS "data:text/html  ,X"
-FAIL "data:text / html,X" assert_equals: expected "text/plain;charset=US-ASCII" but got "text / html"
+PASS "data:text / html,X"
 PASS "data:†,X"
 PASS "data:†/†,X"
 PASS "data:X,X"
