@@ -1029,11 +1029,10 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_internal_format_storage.AddValue(GL_ETC1_RGB8_OES);
   }
 
-  // Expose GL_CHROMIUM_compressed_texture_etc when ANGLE exposes it directly or
-  // running on top of a non-ANGLE ES driver. We assume that this implies native
-  // support of these formats.
-  if (gfx::HasExtension(extensions, "GL_CHROMIUM_compressed_texture_etc") ||
-      (gl_version_info_->is_es3 && !gl_version_info_->is_angle)) {
+  // TODO(kainino): Once we have a way to query whether ANGLE is exposing
+  // native support for ETC2 textures, require that here.
+  // http://anglebug.com/1552
+  if (gl_version_info_->is_es3 && !gl_version_info_->is_angle) {
     AddExtensionString("GL_CHROMIUM_compressed_texture_etc");
     validators_.UpdateETCCompressedTextureFormats();
   }
