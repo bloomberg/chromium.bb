@@ -318,6 +318,7 @@ jumbo_source_set("unit_tests") {
     "peerconnection/adapters/p2p_quic_stream_unittest.cc",
     "peerconnection/adapters/p2p_quic_transport_test.cc",
     "peerconnection/byte_buffer_queue_test.cc",
+    "peerconnection/call_setup_state_tracker_unittest.cc",
     "peerconnection/rtc_data_channel_test.cc",
     "peerconnection/rtc_ice_transport_test.cc",
     "peerconnection/rtc_ice_transport_test.h",
