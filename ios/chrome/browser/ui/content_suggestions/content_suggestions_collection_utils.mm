@@ -11,10 +11,12 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/web/public/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -112,6 +114,12 @@ CGFloat doodleHeight(BOOL logoIsShowing) {
 CGFloat doodleTopMargin(BOOL toolbarPresent, CGFloat topInset) {
   if (!IsCompactWidth() && !IsCompactHeight())
     return kDoodleTopMarginRegularXRegular;
+  if (base::FeatureList::IsEnabled(
+          web::features::kBrowserContainerFullscreen) &&
+      base::FeatureList::IsEnabled(web::features::kOutOfWebFullscreen) &&
+      !base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
+    topInset = StatusBarHeight();
+  }
   return topInset + kDoodleTopMarginOther +
          AlignValueToPixel(kDoodleScaledTopMarginOther *
                            SystemSuggestedFontSizeMultiplier());
