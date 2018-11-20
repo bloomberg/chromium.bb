@@ -789,3 +789,48 @@ testcase.showSelectAllInCurrentFolder = function() {
     },
   ]);
 };
+
+/**
+ * Tests that new folder appears in the gear menu with Downloads focused in the
+ * directory tree.
+ */
+testcase.newFolderInDownloads = function() {
+  var appId;
+  StepsRunner.run([
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, null, [ENTRIES.hello], [
+      ]).then(this.next);
+    },
+    // Focus the directory tree.
+    function(results) {
+      appId = results.windowId;
+
+      remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree'])
+          .then(this.next);
+    },
+    // Open the gear menu.
+    function() {
+      remoteCall.waitForElement(appId, '#gear-button').then(this.next);
+    },
+    // Open the gear meny by a shortcut (Alt-E).
+    function() {
+      remoteCall.fakeKeyDown(appId, 'body', 'e', false, false, true)
+          .then(this.next);
+    },
+    // Wait for menu to appear.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, '#gear-menu').then(this.next);
+    },
+    // Wait for menu to appear, containing new folder.
+    function(result) {
+      remoteCall
+          .waitForElement(
+              appId, '#gear-menu-newfolder:not([disabled]):not([hidden])')
+          .then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};

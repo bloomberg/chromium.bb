@@ -727,8 +727,7 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
       var locationInfo = fileManager.volumeManager.getLocationInfo(entry);
       event.canExecute = locationInfo && !locationInfo.isReadOnly &&
           CommandUtil.hasCapability([entry], 'canAddChildren');
-      event.command.setHidden(
-          CommandUtil.isRootEntry(fileManager.volumeManager, entry));
+      event.command.setHidden(false);
     } else {
       var directoryModel = fileManager.directoryModel;
       var directoryEntry = fileManager.getCurrentDirectoryEntry();

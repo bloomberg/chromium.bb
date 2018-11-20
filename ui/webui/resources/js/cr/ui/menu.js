@@ -202,26 +202,18 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Returns whether the menu has any visible items.  Hides any separators
-     * where all items below it until the next separator are hidden.
+     * Returns whether the menu has any visible items.
      * @return {boolean} True if the menu has visible item. Otherwise, false.
      */
     hasVisibleItems: function() {
-      var menuItems = this.menuItems;  // Cache.
-      var result = false;
-      var separatorRequired = false;
       // Inspect items in reverse order to determine if the separator above each
       // set of items is required.
-      for (var i = menuItems.length - 1; i >= 0; i--) {
-        var menuItem = menuItems[i];
-        if (menuItem.isSeparator()) {
-          menuItem.hidden = !separatorRequired;
-          separatorRequired = false;
+      for (let menuItem of this.menuItems) {
+        if (this.isItemVisible_(menuItem)) {
+          return true;
         }
-        if (this.isItemVisible_(menuItem))
-          result = separatorRequired = true;
       }
-      return result;
+      return false;
     },
 
     /**
@@ -319,6 +311,27 @@ cr.define('cr.ui', function() {
       for (var i = 0, menuItem; menuItem = menuItems[i]; i++) {
         if (!menuItem.isSeparator())
           menuItem.updateCommand(node);
+      }
+
+      let separatorRequired = false;
+      let lastSeparator = null;
+      // Hide any separators without a visible item between them and the next
+      // separator or the end of the menu.
+      for (let menuItem of menuItems) {
+        if (menuItem.isSeparator()) {
+          if (separatorRequired) {
+            lastSeparator = menuItem;
+          }
+          menuItem.hidden = true;
+          separatorRequired = false;
+          continue;
+        }
+        if (this.isItemVisible_(menuItem)) {
+          if (lastSeparator) {
+            lastSeparator.hidden = false;
+          }
+          separatorRequired = true;
+        }
       }
     }
   };
