@@ -1168,6 +1168,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-fs-nosymfollow",
+    "owners": [ "mortonm@chromium.org" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-fullscreen-handwriting-virtual-keyboard",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

@@ -4376,7 +4376,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-shill-sandboxing", flag_descriptions::kShillSandboxingName,
      flag_descriptions::kShillSandboxingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kShillSandboxing)},
-
+    {"enable-fs-nosymfollow", flag_descriptions::kFsNosymfollowName,
+     flag_descriptions::kFsNosymfollowDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kFsNosymfollow)},
     {"enable-arc-unified-audio-focus",
      flag_descriptions::kEnableArcUnifiedAudioFocusName,
      flag_descriptions::kEnableArcUnifiedAudioFocusDescription, kOsCrOS,
