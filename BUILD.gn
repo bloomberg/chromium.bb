@@ -304,6 +304,10 @@ group("gn_all") {
       "//content/public/android:content_junit_tests",
       "//content/shell/android:content_shell_apk",
       "//device:device_junit_tests",
+      "//media/gpu:video_decode_accelerator_tests",
+
+      # TODO(https://crbug.com/879065): remove once tests have been migrated to
+      # the above target.
       "//media/gpu:video_decode_accelerator_unittest",
       "//net/android:net_junit_tests",
       "//services:service_junit_tests",
@@ -883,6 +887,10 @@ if (is_chromeos) {
 
     if (use_v4l2_codec || use_vaapi) {
       deps += [
+        "//media/gpu:video_decode_accelerator_tests",
+
+        # TODO(https://crbug.com/879065): remove once tests have been migrated
+        # to the above target.
         "//media/gpu:video_decode_accelerator_unittest",
         "//media/gpu:video_encode_accelerator_unittest",
       ]
