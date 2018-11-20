@@ -2004,4 +2004,9 @@ TEST_F(IdentityManagerTest,
             identity_manager_observer()->batch_change_records().at(0).at(0));
 }
 
+TEST_F(IdentityManagerTest, GetAccountsMutator) {
+  AccountsMutator* mutator = identity_manager()->GetAccountsMutator();
+  EXPECT_TRUE(mutator);
+}
+
 }  // namespace identity
