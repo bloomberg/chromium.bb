@@ -14,6 +14,7 @@
 #include <vulkan/vulkan.h>
 
 #include "base/native_library.h"
+#include "build/build_config.h"
 #include "gpu/vulkan/vulkan_export.h"
 
 namespace gpu {
@@ -98,6 +99,12 @@ struct VulkanFunctionPointers {
   PFN_vkResetFences vkResetFencesFn = nullptr;
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
   PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
+
+// Android only device functions.
+#if defined(OS_ANDROID)
+  PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHRFn = nullptr;
+  PFN_vkGetSemaphoreFdKHR vkGetSemaphoreFdKHRFn = nullptr;
+#endif
 
   // Queue functions
   PFN_vkQueueSubmit vkQueueSubmitFn = nullptr;
@@ -206,6 +213,13 @@ struct VulkanFunctionPointers {
 #define vkUpdateDescriptorSets \
   gpu::GetVulkanFunctionPointers()->vkUpdateDescriptorSetsFn
 #define vkWaitForFences gpu::GetVulkanFunctionPointers()->vkWaitForFencesFn
+
+#if defined(OS_ANDROID)
+#define vkImportSemaphoreFdKHR \
+  gpu::GetVulkanFunctionPointers()->vkImportSemaphoreFdKHRFn
+#define vkGetSemaphoreFdKHR \
+  gpu::GetVulkanFunctionPointers()->vkGetSemaphoreFdKHRFn
+#endif
 
 // Queue functions
 #define vkQueueSubmit gpu::GetVulkanFunctionPointers()->vkQueueSubmitFn

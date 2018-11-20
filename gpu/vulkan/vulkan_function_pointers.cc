@@ -263,6 +263,20 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkWaitForFencesFn)
     return false;
 
+#if defined(OS_ANDROID)
+
+  vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
+  if (!vkImportSemaphoreFdKHRFn)
+    return false;
+
+  vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkGetSemaphoreFdKHR"));
+  if (!vkGetSemaphoreFdKHRFn)
+    return false;
+
+#endif
+
   // Queue functions
   vkQueueSubmitFn = reinterpret_cast<PFN_vkQueueSubmit>(
       vkGetDeviceProcAddrFn(vk_device, "vkQueueSubmit"));
