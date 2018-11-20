@@ -46,7 +46,6 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
   parent_node_.BindAsRequest(&parent_export_token);
 
   // Setup entity node for the window.
-  parent_node_.AddChild(node_);
   node_.AddChild(shape_node_);
   shape_node_.SetMaterial(material_);
 
@@ -106,15 +105,16 @@ void ScenicWindow::SetTitle(const base::string16& title) {
 }
 
 void ScenicWindow::Show() {
-  NOTIMPLEMENTED();
+  parent_node_.AddChild(node_);
 }
 
 void ScenicWindow::Hide() {
-  NOTIMPLEMENTED();
+  node_.Detach();
 }
 
 void ScenicWindow::Close() {
-  NOTIMPLEMENTED();
+  Hide();
+  delegate_->OnClosed();
 }
 
 void ScenicWindow::PrepareForShutdown() {
