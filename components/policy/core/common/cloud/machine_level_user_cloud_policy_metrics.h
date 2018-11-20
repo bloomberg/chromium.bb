@@ -10,7 +10,7 @@ namespace policy {
 // This enum is used for recording the metrics. It must match the
 // MachineLevelUserCloudPolicyEnrollmentResult in enums.xml and should not be
 // reordered. |kMaxValue| must be assigned to the last entry of the enum.
-enum MachineLevelUserCloudPolicyEnrollmentResult {
+enum class MachineLevelUserCloudPolicyEnrollmentResult {
   kSuccess = 0,
   kFailedToFetch = 1,
   kFailedToStore = 2,
