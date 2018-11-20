@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/feature_list.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 
@@ -36,7 +40,30 @@ class InterstitialAccessibilityBrowserTest : public InProcessBrowserTest {
  protected:
   net::EmbeddedTestServer https_server_mismatched_;
 
+  bool IsShowingInterstitial(content::WebContents* tab) {
+    if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
+      security_interstitials::SecurityInterstitialTabHelper* helper =
+          security_interstitials::SecurityInterstitialTabHelper::
+              FromWebContents(tab);
+      if (!helper) {
+        return false;
+      }
+      return helper
+                 ->GetBlockingPageForCurrentlyCommittedNavigationForTesting() !=
+             nullptr;
+    }
+    return tab->ShowingInterstitialPage();
+  }
+
   void ProceedThroughInterstitial(content::WebContents* web_contents) {
+    if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
+      content::TestNavigationObserver nav_observer(web_contents, 1);
+      std::string javascript =
+          "window.certificateErrorPageController.proceed();";
+      ASSERT_TRUE(content::ExecuteScript(web_contents, javascript));
+      nav_observer.Wait();
+      return;
+    }
     content::InterstitialPage* interstitial_page =
         web_contents->GetInterstitialPage();
     ASSERT_TRUE(interstitial_page);
@@ -65,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(InterstitialAccessibilityBrowserTest,
 
   // Ensure that we got an interstitial page.
   ASSERT_FALSE(web_contents->IsCrashed());
-  EXPECT_TRUE(web_contents->ShowingInterstitialPage());
+  EXPECT_TRUE(IsShowingInterstitial(web_contents));
 
   // Now check from the perspective of accessibility - we should be focused
   // on a page with title "Privacy error". Keep waiting on accessibility
