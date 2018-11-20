@@ -61,12 +61,14 @@ void FakeAssistantManagerServiceImpl::StartCachedScreenContextInteraction() {}
 void FakeAssistantManagerServiceImpl::StartMetalayerInteraction(
     const gfx::Rect& region) {}
 
+void FakeAssistantManagerServiceImpl::StartTextInteraction(
+    const std::string& query,
+    bool allow_tts) {}
+
 void FakeAssistantManagerServiceImpl::StartVoiceInteraction() {}
 
 void FakeAssistantManagerServiceImpl::StopActiveInteraction(
     bool cancel_conversation) {}
-
-void FakeAssistantManagerServiceImpl::SendTextQuery(const std::string& query) {}
 
 void FakeAssistantManagerServiceImpl::AddAssistantInteractionSubscriber(
     mojom::AssistantInteractionSubscriberPtr subscriber) {}
