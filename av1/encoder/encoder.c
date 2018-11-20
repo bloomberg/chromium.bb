@@ -4149,6 +4149,17 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
   return new_denom;
 }
 
+static void get_superres_characteristics(const AV1_COMP *cpi,
+                                         uint8_t *max_denom, int *qthresh) {
+  const AV1EncoderConfig *oxcf = &cpi->oxcf;
+  const AV1_COMMON *cm = &cpi->common;
+  // TODO(debargha): Determine the parameters below automatically based on
+  // frequency analysis of the source
+  *max_denom = SCALE_NUMERATOR << 1;
+  *qthresh = (frame_is_intra_only(cm)) ? oxcf->superres_kf_qthresh
+                                       : oxcf->superres_qthresh;
+}
+
 static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
   // Choose an arbitrary random number
   static unsigned int seed = 34567;
@@ -4175,31 +4186,30 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
     case SUPERRES_QTHRESH: {
       // Do not use superres when screen content tools are used.
       if (cpi->common.allow_screen_content_tools) break;
-      const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-      const RATE_FACTOR_LEVEL rf_level = gf_group->rf_level[gf_group->index];
-      const double rate_factor_delta = rate_factor_deltas[rf_level];
-      const int qthresh = (rate_factor_delta <= 1.0)
-                              ? oxcf->superres_qthresh
-                              : oxcf->superres_kf_qthresh;
       if (oxcf->rc_mode == AOM_VBR || oxcf->rc_mode == AOM_CQ)
         av1_set_target_rate(cpi, cpi->oxcf.width, cpi->oxcf.height);
       int bottom_index, top_index;
       const int q = av1_rc_pick_q_and_bounds(
           cpi, cpi->oxcf.width, cpi->oxcf.height, &bottom_index, &top_index);
+
+      int qthresh;
+      uint8_t max_denom;
+      get_superres_characteristics(cpi, &max_denom, &qthresh);
       if (q < qthresh) {
         new_denom = SCALE_NUMERATOR;
       } else {
-        const uint8_t min_denom = SCALE_NUMERATOR + 1;
-        const uint8_t denom_step = (MAXQ - qthresh + 4) >> 3;
-
-        if (q == qthresh) {
-          new_denom = min_denom;
-        } else if (denom_step == 0) {
-          new_denom = SCALE_NUMERATOR << 1;
+        if (max_denom == SCALE_NUMERATOR) {
+          new_denom = max_denom;
+          break;
         } else {
-          const uint8_t additional_denom = (q - qthresh) / denom_step;
-          new_denom =
-              AOMMIN(min_denom + additional_denom, SCALE_NUMERATOR << 1);
+          const uint8_t q_denom_step =
+              max_denom - SCALE_NUMERATOR == 0
+                  ? 255
+                  : (MAXQ - qthresh + 1 + max_denom - SCALE_NUMERATOR - 1) /
+                        (max_denom - SCALE_NUMERATOR);
+          const uint8_t additional_denom =
+              (q - qthresh + 1 + q_denom_step - 1) / q_denom_step;
+          new_denom = AOMMIN(SCALE_NUMERATOR + additional_denom, max_denom);
         }
       }
       break;
@@ -4574,9 +4584,9 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       scale_references(cpi);
     }
     av1_set_quantizer(cm, q);
-    // printf("Frame %d/%d: q = %d, frame_type = %d\n",
-    // cm->current_frame.frame_number,
-    //        cm->show_frame, q, cm->current_frame.frame_type);
+    // printf("Frame %d/%d: q = %d, frame_type = %d superres_denom = %d\n",
+    //        cm->current_frame.frame_number, cm->show_frame, q,
+    //        cm->current_frame.frame_type, cm->superres_scale_denominator);
 
     if (loop_count == 0) setup_frame(cpi);
 
