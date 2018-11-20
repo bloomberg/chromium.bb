@@ -1,9 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20" viewBox="0 0 20 20">
-  <defs>
-    <path id="ic_sound_on_1x-a" d="M10.8333333,13 C12.2166667,13 13.3333333,11.8833333 13.3333333,10.5 L13.3333333,5.5 C13.3333333,4.11666667 12.2166667,3 10.8333333,3 C9.45,3 8.33333333,4.11666667 8.33333333,5.5 L8.33333333,10.5 C8.33333333,11.8833333 9.45,13 10.8333333,13 Z M15,10.5 C15,12.8 13.1333333,14.6666667 10.8333333,14.6666667 C8.53333333,14.6666667 6.66666667,12.8 6.66666667,10.5 L5,10.5 C5,13.4416667 7.175,15.8583333 10,16.2666667 L10,18.8333333 L11.6666667,18.8333333 L11.6666667,16.2666667 C14.4916667,15.8583333 16.6666667,13.4416667 16.6666667,10.5 L15,10.5 Z"/>
-  </defs>
-  <g fill="none" fill-rule="evenodd" transform="translate(-.833 -.5)">
-    <use fill="#FFF" fill-rule="nonzero" xlink:href="#ic_sound_on_1x-a"/>
-    <rect width="20" height="20" x=".833" y=".5"/>
-  </g>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <filter x="-54.2%" y="-40.6%" width="208.3%" height="181.2%" filterUnits="objectBoundingBox" id="filter-1">
+            <feOffset dx="0" dy="0" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.125490196   0 0 0 0 0.129411765   0 0 0 0 0.141176471  0 0 0 0.3 0" type="matrix" in="shadowBlurOuter1" result="shadowMatrixOuter1"></feColorMatrix>
+            <feMerge>
+                <feMergeNode in="shadowMatrixOuter1"></feMergeNode>
+                <feMergeNode in="SourceGraphic"></feMergeNode>
+            </feMerge>
+        </filter>
+        <path d="M5.83333333,10 C7.21666667,10 8.33333333,8.88333333 8.33333333,7.5 L8.33333333,2.5 C8.33333333,1.11666667 7.21666667,0 5.83333333,0 C4.45,0 3.33333333,1.11666667 3.33333333,2.5 L3.33333333,7.5 C3.33333333,8.88333333 4.45,10 5.83333333,10 Z M10,7.5 C10,9.8 8.13333333,11.6666667 5.83333333,11.6666667 C3.53333333,11.6666667 1.66666667,9.8 1.66666667,7.5 L0,7.5 C0,10.4416667 2.175,12.8583333 5,13.2666667 L5,15.8333333 L6.66666667,15.8333333 L6.66666667,13.2666667 C9.49166667,12.8583333 11.6666667,10.4416667 11.6666667,7.5 L10,7.5 Z" id="path-2"></path>
+    </defs>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" filter="url(#filter-1)" transform="translate(6.166667, 4.500000)">
+            <mask id="mask-3" fill="white">
+                <use xlink:href="#path-2"></use>
+            </mask>
+            <use id="ic_mic_24px" fill="#FFFFFF" fill-rule="nonzero" xlink:href="#path-2"></use>
+        </g>
+    </g>
 </svg>
