@@ -631,6 +631,16 @@ void ThreadState::ScheduleGCIfNeeded() {
   if (IsGCForbidden() || SweepForbidden())
     return;
 
+  // This method should not call out to V8 during unified heap garbage
+  // collections. Specifically, reporting memory to V8 may trigger a marking
+  // step which is not allowed during construction of an object. The reason is
+  // that a parent object's constructor is potentially being invoked which may
+  // have already published the object. In that case the object may be colored
+  // black in a v8 marking step which invalidates the assumption that write
+  // barriers may be avoided when constructing an object as it is white.
+  if (IsUnifiedGCMarkingInProgress())
+    return;
+
   ReportMemoryToV8();
 
   if (ShouldForceMemoryPressureGC()) {
