@@ -242,6 +242,12 @@ void GinPort::OnContextInvalidated() {
 }
 
 void GinPort::InvalidateEvents(v8::Local<v8::Context> context) {
+  // No need to invalidate the events if the context itself was already
+  // invalidated; the APIEventHandler will have already cleaned up the
+  // listeners.
+  if (state_ == kInvalidated)
+    return;
+
   // TODO(devlin): By calling GetEvent() here, we'll end up creating an event
   // if one didn't exist. It would be more efficient to only invalidate events
   // that the port has already created.

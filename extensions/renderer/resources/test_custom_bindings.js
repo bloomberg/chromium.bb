@@ -94,7 +94,7 @@ binding.registerCustomHook(function(api) {
     pendingCallbacks = 0;
 
     lastTest = currentTest;
-    currentTest = chromeTest.tests.shift();
+    currentTest = $Array.shift(chromeTest.tests);
 
     if (!currentTest) {
       allTestsDone();
@@ -107,7 +107,7 @@ binding.registerCustomHook(function(api) {
         if (e !== failureException)
           chromeTest.fail('uncaught exception: ' + message);
       });
-      currentTest.call();
+      $Function.call(currentTest);
     } catch (e) {
       handleException(e.message, e);
     }
