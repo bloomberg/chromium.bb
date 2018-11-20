@@ -594,6 +594,14 @@ NetworkContext::~NetworkContext() {
 
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->Shutdown();
+  // Because of the order of declaration in the class,
+  // domain_reliability_monitor_ will be destroyed before
+  // |url_loader_factories_| which could own URLLoader's whose destructor call
+  // back into this class and might use domain_reliability_monitor_. So we reset
+  // |domain_reliability_monitor_| here expliclity, instead of changing the
+  // order, because any work calling into |domain_reliability_monitor_| at
+  // shutdown would be unnecessary as the reports would be thrown out.
+  domain_reliability_monitor_.reset();
 
   if (url_request_context_ &&
       url_request_context_->transport_security_state()) {

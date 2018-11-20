@@ -21,6 +21,8 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace domain_reliability {
@@ -192,6 +194,33 @@ IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, UploadAtShutdown) {
   // test will finish, destroy the profile, and Domain Reliability will shut
   // down properly. If things go awry, it may crash as terminating the pending
   // upload calls into already-destroyed parts of the component.
+}
+
+// Ensures that there's no crash at NetworkContext shutdown if there are
+// outstanding URLLoaders.
+IN_PROC_BROWSER_TEST_F(DomainReliabilityBrowserTest, RequestAtShutdown) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL hung_url = embedded_test_server()->GetURL("/hung");
+  {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    GetNetworkContext()->AddDomainReliabilityContextForTesting(hung_url,
+                                                               hung_url);
+  }
+
+  // Use a SimpleURLLoader so we can leak the mojo pipe, ensuring that URLLoader
+  // doesn't see a connection error before NetworkContext does.
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = hung_url;
+  auto simple_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), TRAFFIC_ANNOTATION_FOR_TESTS);
+  auto* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      storage_partition->GetURLLoaderFactoryForBrowserProcess().get(),
+      base::BindOnce([](std::unique_ptr<std::string> body) {}));
+
+  simple_loader.release();
 }
 
 }  // namespace domain_reliability
