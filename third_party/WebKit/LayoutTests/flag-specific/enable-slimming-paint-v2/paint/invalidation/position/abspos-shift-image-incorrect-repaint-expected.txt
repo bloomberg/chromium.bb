@@ -19,7 +19,7 @@
         {
           "object": "LayoutImage IMG",
           "rect": [0, 0, 214, 232],
-          "reason": "disappeared"
+          "reason": "geometry"
         },
         {
           "object": "InlineTextBox '\n'",

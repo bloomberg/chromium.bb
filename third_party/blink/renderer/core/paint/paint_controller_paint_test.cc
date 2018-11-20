@@ -148,26 +148,29 @@ TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
     <div id='div4' style='top: 9000px; left: 9000px'></div>
   )HTML");
 
-  auto& div1 = *GetLayoutObjectByElementId("div1");
+  const auto& div1 = *GetLayoutObjectByElementId("div1");
+  const auto& div2 = *GetLayoutObjectByElementId("div2");
+  const auto& div3 = *GetLayoutObjectByElementId("div3");
+  const auto& div4 = *GetLayoutObjectByElementId("div4");
 
-  // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
-  // small?
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&GetLayoutView(), kScrollHitTestType),
-                          IsSameId(&ViewScrollingBackgroundClient(),
-                                   kDocumentBackgroundType),
-                          IsSameId(&div1, kBackgroundType)));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&GetLayoutView(), kScrollHitTestType),
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&div1, kBackgroundType), IsSameId(&div2, kBackgroundType)));
 
   GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(5000, 5000), kProgrammaticScroll);
   UpdateAllLifecyclePhasesForTest();
 
-  // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
-  // small?
-  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
-              ElementsAre(IsSameId(&GetLayoutView(), kScrollHitTestType),
-                          IsSameId(&ViewScrollingBackgroundClient(),
-                                   kDocumentBackgroundType)));
+  EXPECT_THAT(
+      RootPaintController().GetDisplayItemList(),
+      ElementsAre(
+          IsSameId(&GetLayoutView(), kScrollHitTestType),
+          IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
+          IsSameId(&div2, kBackgroundType), IsSameId(&div3, kBackgroundType),
+          IsSameId(&div4, kBackgroundType)));
 }
 
 TEST_P(PaintControllerPaintTestForSPv2, BlockScrollingNonLayeredContents) {

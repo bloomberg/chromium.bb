@@ -23,6 +23,13 @@
         }
       ],
       "transform": 1
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#FF0000",
+      "transform": 2
     }
   ],
   "transforms": [
@@ -33,6 +40,16 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [8, 8, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -400, 0, 1]
       ]
     }
   ]

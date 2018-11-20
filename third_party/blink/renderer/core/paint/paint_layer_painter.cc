@@ -204,20 +204,12 @@ static bool ShouldRepaintSubsequence(
     ShouldRespectOverflowClipType respect_overflow_clip) {
   bool needs_repaint = false;
 
-  // We should set shouldResetEmptyPaintPhaseFlags if some previously unpainted
-  // objects may begin to be painted, causing a previously empty paint phase to
-  // become non-empty.
-
   // Repaint subsequence if the layer is marked for needing repaint.
-  // We don't set needsResetEmptyPaintPhase here, but clear the empty paint
-  // phase flags in PaintLayer::setNeedsPaintPhaseXXX(), to ensure that we won't
-  // clear previousPaintPhaseXXXEmpty flags when unrelated things changed which
-  // won't cause the paint phases to become non-empty.
   if (paint_layer.NeedsRepaint())
     needs_repaint = true;
 
-  // Repaint if previously the layer might be clipped by paintDirtyRect and
-  // paintDirtyRect changes.
+  // Repaint if previously the layer may be clipped by cull rect, and cull rect
+  // changes.
   if ((paint_layer.PreviousPaintResult() == kMayBeClippedByCullRect ||
        // When PaintUnderInvalidationChecking is enabled, always repaint the
        // subsequence when the paint rect changes because we will strictly match
@@ -298,11 +290,28 @@ void PaintLayerPainter::AdjustForPaintProperties(
     // - The current layer's transform state escapes the root layers contents
     //   transform, e.g. a fixed-position layer;
     // - Scroll offsets.
-    // TODO(wangxianzhu): Use CullRect::ApplyTransform() which will support
-    // SPv2 interest rect expansion for composited scrolling.
-    auto rect = painting_info.cull_rect.Rect();
-    first_root_fragment.MapRectToFragment(first_fragment, rect);
-    painting_info.cull_rect = CullRect(rect);
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      auto& cull_rect = painting_info.cull_rect;
+      // CullRect::ApplyTransforms() requires the cull rect in the source
+      // transform space. Convert cull_rect from the root layer's local space.
+      cull_rect.MoveBy(RoundedIntPoint(first_root_fragment.PaintOffset()));
+      base::Optional<CullRect> old_cull_rect;
+      if (!paint_layer_.NeedsRepaint()) {
+        old_cull_rect = paint_layer_.PreviousCullRect();
+        // Convert old_cull_rect into the layer's transform space.
+        old_cull_rect->MoveBy(RoundedIntPoint(first_fragment.PaintOffset()));
+      }
+      cull_rect.ApplyTransforms(
+          first_root_fragment.LocalBorderBoxProperties().Transform(),
+          first_fragment.LocalBorderBoxProperties().Transform(), old_cull_rect);
+      // Convert cull_rect from the layer's transform space to the layer's local
+      // space.
+      cull_rect.MoveBy(-RoundedIntPoint(first_fragment.PaintOffset()));
+    } else {
+      auto rect = painting_info.cull_rect.Rect();
+      first_root_fragment.MapRectToFragment(first_fragment, rect);
+      painting_info.cull_rect = CullRect(rect);
+    }
   }
 
   // Make the current layer the new root layer.

@@ -582,7 +582,6 @@ Bug(none) css3/blending/svg-blend-multiply.html [ Failure ]
 crbug.com/702350 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
 crbug.com/702353 virtual/threaded/transitions/transition-end-event-destroy-iframe.html [ Timeout ]
 crbug.com/702365 virtual/threaded/animations/composited-filter-webkit-filter.html [ Failure ]
-crbug.com/702370 virtual/threaded/animations/compositor-independent-transform-cancel.html [ Failure ]
 
 # Eight of the frames in the test below paint no content. In SPv2 we will never
 # composite animations that paint nothing. For now we mark this test as failing,
@@ -824,6 +823,9 @@ Bug(none) compositing/overflow/overlap-testing-ancestor-scroller-high-dpi.html [
 Bug(none) virtual/outofblink-cors-ns/http/tests/navigation/same-document-scroll-position-restore.html [ Timeout ]
 Bug(none) virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Timeout ]
 Bug(none) synthetic_gestures/animated-wheel-tiny-delta.html [ Failure ]
+
+# Duplicated display item id of background of scrollable table cell.
+Bug(none) fast/table/overflowHidden.html [ Crash ]
 
 # These tests have failures that were introduced between enabling BGPT for the
 # first time and later disabling it. These are not real failures and can be

@@ -7,9 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "InlineTextBox 'Tests that invalidation of a div after scrolling invalidates just the div and no other area.'",
+          "rect": [8, 4908, 540, 19],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
           "rect": [8, 2408, 100, 100],
-          "reason": "chunk appeared"
+          "reason": "background"
         }
       ],
       "transform": 1

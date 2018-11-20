@@ -60,6 +60,7 @@ class CORE_EXPORT PaintLayerPainter {
 
  private:
   friend class PaintLayerPainterTest;
+  friend class PaintLayerPainterTestSPv2;
 
   PaintResult PaintChildren(unsigned children_to_visit,
                             GraphicsContext&,
