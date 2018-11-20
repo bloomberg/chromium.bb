@@ -43,7 +43,7 @@
   },
   {
     "name": "PasswordImport",
-    // "owners": [ "your-team" ],
+    "owners": [ "vasilii" ],
     "expiry_milestone": 76
   },
   {
@@ -2445,12 +2445,12 @@
   },
   {
     "name": "new-password-form-parsing",
-    // "owners": [ "your-team" ],
+    "owners": [ "dvadym" ],
     "expiry_milestone": 76
   },
   {
     "name": "new-password-form-parsing-for-saving",
-    // "owners": [ "your-team" ],
+    "owners": [ "dvadym" ],
     "expiry_milestone": 76
   },
   {
@@ -2745,7 +2745,7 @@
   },
   {
     "name": "passwords-migrate-linux-to-login-db",
-    // "owners": [ "your-team" ],
+    "owners": [ "cfroussios" ],
     "expiry_milestone": 76
   },
   {
