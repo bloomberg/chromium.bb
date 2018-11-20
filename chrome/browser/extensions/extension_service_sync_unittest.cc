@@ -346,7 +346,7 @@ TEST_F(ExtensionServiceSyncTest, DisableExtensionFromSync) {
   // The user has enabled sync.
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile());
-  sync_service->SetFirstSetupComplete();
+  sync_service->GetUserSettings()->SetFirstSetupComplete();
 
   service()->Init();
   ASSERT_TRUE(service()->is_ready());
@@ -382,7 +382,7 @@ TEST_F(ExtensionServiceSyncTest, ReenableDisabledExtensionFromSync) {
   // Enable sync.
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile());
-  sync_service->SetFirstSetupComplete();
+  sync_service->GetUserSettings()->SetFirstSetupComplete();
 
   service()->Init();
 
@@ -464,7 +464,7 @@ TEST_F(ExtensionServiceSyncTest,
   // Enable sync.
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile());
-  sync_service->SetFirstSetupComplete();
+  sync_service->GetUserSettings()->SetFirstSetupComplete();
 
   service()->Init();
 
@@ -530,7 +530,7 @@ TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
   // The user has enabled sync.
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile());
-  sync_service->SetFirstSetupComplete();
+  sync_service->GetUserSettings()->SetFirstSetupComplete();
   // Make sure ExtensionSyncService is created, so it'll be notified of changes.
   extension_sync_service();
 
@@ -589,7 +589,9 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   // The user has enabled sync.
-  ProfileSyncServiceFactory::GetForProfile(profile())->SetFirstSetupComplete();
+  ProfileSyncServiceFactory::GetForProfile(profile())
+      ->GetUserSettings()
+      ->SetFirstSetupComplete();
   // Make sure ExtensionSyncService is created, so it'll be notified of changes.
   extension_sync_service();
 
@@ -1706,7 +1708,9 @@ TEST_F(ExtensionServiceSyncTest, DontSyncThemes) {
   InitializeEmptyExtensionService();
 
   // The user has enabled sync.
-  ProfileSyncServiceFactory::GetForProfile(profile())->SetFirstSetupComplete();
+  ProfileSyncServiceFactory::GetForProfile(profile())
+      ->GetUserSettings()
+      ->SetFirstSetupComplete();
   // Make sure ExtensionSyncService is created, so it'll be notified of changes.
   extension_sync_service();
 
@@ -2629,7 +2633,7 @@ class BlacklistedExtensionSyncServiceTest : public ExtensionServiceSyncTest {
     // Enable sync.
     browser_sync::ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetForProfile(profile());
-    sync_service->SetFirstSetupComplete();
+    sync_service->GetUserSettings()->SetFirstSetupComplete();
 
     test_blacklist_.Attach(service()->blacklist_);
     service()->Init();
