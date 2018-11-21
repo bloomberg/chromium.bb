@@ -137,6 +137,12 @@ public class InstanceIDBridge {
             protected Boolean doBackgroundWork() {
                 try {
                     mInstanceID.deleteToken(authorizedEntity, scope);
+                    String subscriptionId = LazySubscriptionsManager.buildSubscriptionUniqueId(
+                            mSubtype, authorizedEntity);
+                    if (LazySubscriptionsManager.isSubscriptionLazy(subscriptionId)) {
+                        LazySubscriptionsManager.deletePersistedMessagesForSubscriptionId(
+                                subscriptionId);
+                    }
                     return true;
                 } catch (IOException ex) {
                     return false;
