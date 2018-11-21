@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <algorithm>
 
+#include "base/bits.h"
 #include "base/stl_util.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/paint/paint_cache.h"
@@ -100,7 +101,12 @@ template <typename T>
 void PaintOpReader::ReadSimple(T* val) {
   static_assert(base::is_trivially_copyable<T>::value,
                 "Not trivially copyable");
-  if (remaining_bytes_ < sizeof(T))
+
+  // Align everything to 4 bytes, as the writer does.
+  static constexpr size_t kAlign = 4;
+  size_t size = base::bits::Align(sizeof(T), kAlign);
+
+  if (remaining_bytes_ < size)
     SetInvalid();
   if (!valid_)
     return;
@@ -111,8 +117,8 @@ void PaintOpReader::ReadSimple(T* val) {
   // use assignment.
   *val = *reinterpret_cast<const T*>(const_cast<const char*>(memory_));
 
-  memory_ += sizeof(T);
-  remaining_bytes_ -= sizeof(T);
+  memory_ += size;
+  remaining_bytes_ -= size;
 }
 
 template <typename T>
