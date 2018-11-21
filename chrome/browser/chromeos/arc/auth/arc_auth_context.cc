@@ -11,11 +11,13 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "services/identity/public/cpp/access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace arc {
@@ -58,13 +60,13 @@ constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
 ArcAuthContext::ArcAuthContext(Profile* profile, const std::string& account_id)
     : profile_(profile),
       account_id_(account_id),
-      token_service_(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
+      identity_manager_(IdentityManagerFactory::GetForProfile(profile)),
       retry_backoff_(&kRetryBackoffPolicy) {
-  DCHECK(base::ContainsValue(token_service_->GetAccounts(), account_id_));
+  DCHECK(identity_manager_->HasAccountWithRefreshToken(account_id));
 }
 
 ArcAuthContext::~ArcAuthContext() {
-  token_service_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
 }
 
 void ArcAuthContext::Prepare(const PrepareCallback& callback) {
@@ -74,13 +76,14 @@ void ArcAuthContext::Prepare(const PrepareCallback& callback) {
   }
 
   callback_ = callback;
-  token_service_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
   refresh_token_timeout_.Stop();
   ResetFetchers();
   retry_backoff_.Reset();
 
-  if (!token_service_->RefreshTokenIsAvailable(account_id_)) {
-    token_service_->AddObserver(this);
+  if (!identity_manager_->HasAccountWithRefreshToken(account_id_)) {
+    identity_manager_->AddObserver(this);
+    VLOG(1) << "Waiting for refresh token for account " << account_id_;
     refresh_token_timeout_.Start(FROM_HERE, kRefreshTokenTimeout, this,
                                  &ArcAuthContext::OnRefreshTokenTimeout);
     return;
@@ -89,29 +92,38 @@ void ArcAuthContext::Prepare(const PrepareCallback& callback) {
   StartFetchers();
 }
 
-std::unique_ptr<OAuth2TokenService::Request>
-ArcAuthContext::StartAccessTokenRequest(
-    const OAuth2TokenService::ScopeSet& scopes,
-    OAuth2TokenService::Consumer* consumer) {
-  DCHECK(token_service_->RefreshTokenIsAvailable(account_id_));
-  return token_service_->StartRequest(account_id_, scopes, consumer);
+std::unique_ptr<identity::AccessTokenFetcher>
+ArcAuthContext::CreateAccessTokenFetcher(
+    const std::string& consumer_name,
+    const identity::ScopeSet& scopes,
+    identity::AccessTokenFetcher::TokenCallback callback) {
+  DCHECK(identity_manager_->HasAccountWithRefreshToken(account_id_));
+  return identity_manager_->CreateAccessTokenFetcherForAccount(
+      account_id_, consumer_name, scopes, std::move(callback),
+      identity::AccessTokenFetcher::Mode::kImmediate);
 }
 
-void ArcAuthContext::OnRefreshTokenAvailable(const std::string& account_id) {
-  if (account_id != account_id_)
+void ArcAuthContext::OnRefreshTokenUpdatedForAccount(
+    const AccountInfo& account_info,
+    bool is_valid) {
+  // There is no need to check |is_valid| here. It is intended to avoid
+  // adding the ability to query the persistent error state to the
+  // IdentityManager API, which is irrelevant for this case.
+  if (account_info.account_id != account_id_)
     return;
   OnRefreshTokensLoaded();
 }
 
 void ArcAuthContext::OnRefreshTokensLoaded() {
-  token_service_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
+  VLOG(1) << "Refresh token for account " << account_id_ << " loaded.";
   refresh_token_timeout_.Stop();
   StartFetchers();
 }
 
 void ArcAuthContext::OnRefreshTokenTimeout() {
   LOG(WARNING) << "Failed to wait for refresh token.";
-  token_service_->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
   std::move(callback_).Run(nullptr);
 }
 
@@ -124,9 +136,9 @@ void ArcAuthContext::StartFetchers() {
     return;
   }
 
-  ubertoken_fetcher_.reset(
-      new UbertokenFetcher(token_service_, this, gaia::GaiaSource::kChromeOS,
-                           profile_->GetURLLoaderFactory()));
+  ubertoken_fetcher_.reset(new UbertokenFetcher(
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_), this,
+      gaia::GaiaSource::kChromeOS, profile_->GetURLLoaderFactory()));
   ubertoken_fetcher_->StartFetchingToken(account_id_);
 }
 
