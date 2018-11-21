@@ -1459,6 +1459,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_TRACING_STOP" translateable="false" desc="Caption of a button that stops recording a trace.">
         Stop recording
       </message>
+      <message name="IDS_TRACING_SHARE" translateable="false" desc="Caption of a button that shares a recorded trace.">
+        Share trace
+      </message>
       <message name="IDS_TRACING_ERROR_TOAST" translateable="false" desc="Message of a toast shown when there was an error during tracing.">
         Error occurred while recording Chrome trace, see log for details.
       </message>

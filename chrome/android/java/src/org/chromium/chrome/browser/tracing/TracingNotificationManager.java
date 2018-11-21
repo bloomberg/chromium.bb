@@ -129,12 +129,15 @@ public class TracingNotificationManager {
         String message =
                 context.getResources().getString(R.string.tracing_complete_notification_message);
 
-        // TODO(eseckler): Show download / share trace buttons in this notification.
         ChromeNotificationBuilder builder =
                 createNotificationBuilder()
                         .setContentTitle(title)
                         .setContentText(message)
                         .setOngoing(false)
+                        .addAction(R.drawable.ic_share_white_24dp,
+                                ContextUtils.getApplicationContext().getResources().getString(
+                                        R.string.tracing_share),
+                                TracingNotificationService.getShareTraceIntent(context))
                         .setDeleteIntent(TracingNotificationService.getDiscardTraceIntent(context));
         showNotification(builder.build());
     }

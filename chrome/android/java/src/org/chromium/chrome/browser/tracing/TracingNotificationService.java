@@ -18,10 +18,13 @@ public class TracingNotificationService extends IntentService {
     private static final String TAG = "tracing_notification";
 
     private static final String ACTION_STOP_RECORDING =
-            "com.google.android.apps.chrome.tracing.STOP_RECORDING";
+            "org.chromium.chrome.browser.tracing.STOP_RECORDING";
 
     private static final String ACTION_DISCARD_TRACE =
-            "com.google.android.apps.chrome.tracing.DISCARD_TRACE";
+            "org.chromium.chrome.browser.tracing.DISCARD_TRACE";
+
+    private static final String ACTION_SHARE_TRACE =
+            "org.chromium.chrome.browser.tracing.SHARE_TRACE";
 
     /**
      * Get the intent to send to stop a trace recording.
@@ -48,6 +51,18 @@ public class TracingNotificationService extends IntentService {
     }
 
     /**
+     * Get the intent to share a recorded trace.
+     *
+     * @param context the application's context.
+     * @return the intent.
+     */
+    public static PendingIntent getShareTraceIntent(Context context) {
+        Intent intent = new Intent(context, TracingNotificationService.class);
+        intent.setAction(ACTION_SHARE_TRACE);
+        return PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    /**
      * Construct the service. Called by Android.
      */
     public TracingNotificationService() {
@@ -59,8 +74,10 @@ public class TracingNotificationService extends IntentService {
         if (ACTION_STOP_RECORDING.equals(intent.getAction())) {
             ThreadUtils.runOnUiThreadBlocking(
                     () -> { TracingController.getInstance().stopRecording(); });
-        } else {
-            assert ACTION_DISCARD_TRACE.equals(intent.getAction());
+        } else if (ACTION_SHARE_TRACE.equals(intent.getAction())) {
+            ThreadUtils.runOnUiThreadBlocking(
+                    () -> { TracingController.getInstance().shareTrace(); });
+        } else if (ACTION_DISCARD_TRACE.equals(intent.getAction())) {
             ThreadUtils.runOnUiThreadBlocking(
                     () -> { TracingController.getInstance().discardTrace(); });
         }

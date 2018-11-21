@@ -5,12 +5,16 @@
 package org.chromium.chrome.browser.tracing;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
 
+import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
@@ -65,6 +69,10 @@ public class TracingController {
     private static final String TEMP_FILE_DIR = "/traces";
     private static final String TEMP_FILE_PREFIX = "chrome-trace-";
     private static final String TEMP_FILE_EXT = ".json.gz";
+    private static final String TRACE_MIMETYPE = "application/gzip";
+
+    // Delete shared trace files after 1 hour.
+    private static final long DELETE_AFTER_SHARE_TIMEOUT_MILLIS = 60 * 60 * 1000;
 
     private static TracingController sInstance;
 
@@ -76,7 +84,10 @@ public class TracingController {
     private Set<String> mKnownCategories;
     private File mTracingTempFile;
 
-    private TracingController() {}
+    private TracingController() {
+        // Check for old chrome-trace temp files and delete them.
+        new DeleteOldTempFilesTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
 
     /**
      * @return the singleton instance of TracingController, creating and initializing it if needed.
@@ -229,8 +240,6 @@ public class TracingController {
         });
     }
 
-    // TODO(eseckler): Add a way to download and/or share the trace.
-
     /**
      * Discards a recorded trace and cleans up the temporary trace file.
      * Should only be called when in STOPPED state.
@@ -238,6 +247,36 @@ public class TracingController {
     public void discardTrace() {
         assert mState == State.STOPPED;
         // Setting the state also cleans up the temp file.
+        setState(State.IDLE);
+    }
+
+    /**
+     * Share a recorded trace via an Android share intent.
+     */
+    public void shareTrace() {
+        assert mState == State.STOPPED;
+
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+
+        Uri fileUri = ContentUriUtils.getContentUriFromFile(mTracingTempFile);
+
+        shareIntent.setType(TRACE_MIMETYPE);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        Context context = ContextUtils.getApplicationContext();
+        context.startActivity(Intent.createChooser(
+                shareIntent, context.getResources().getString(R.string.tracing_share)));
+
+        // Delete the file after an hour. This won't work if the app quits in the meantime, so we
+        // also check for old files when TraceController is created.
+        File tracingTempFile = mTracingTempFile;
+        ThreadUtils.postOnUiThreadDelayed(() -> {
+            new DeleteTempFileTask(tracingTempFile)
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }, DELETE_AFTER_SHARE_TIMEOUT_MILLIS);
+
+        mTracingTempFile = null;
         setState(State.IDLE);
     }
 
@@ -271,6 +310,24 @@ public class TracingController {
         @Override
         protected Void doInBackground() {
             mTracingTempFile.delete();
+            return null;
+        }
+    }
+
+    private class DeleteOldTempFilesTask extends AsyncTask<Void> {
+        @Override
+        protected Void doInBackground() {
+            File cacheDir =
+                    new File(ContextUtils.getApplicationContext().getCacheDir() + TEMP_FILE_DIR);
+            File[] files = cacheDir.listFiles();
+            if (files != null) {
+                long maxTime = System.currentTimeMillis() - DELETE_AFTER_SHARE_TIMEOUT_MILLIS;
+                for (File f : files) {
+                    if (f.lastModified() <= maxTime) {
+                        f.delete();
+                    }
+                }
+            }
             return null;
         }
     }
