@@ -340,11 +340,11 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
                                             bool cancelable) {
   DCHECK(origin_trials::EventTimingEnabled(GetExecutionContext()));
 
-  DCHECK(!start_time.is_null());
   DCHECK(!processing_start.is_null());
   DCHECK(!processing_end.is_null());
   DCHECK_GE(processing_end, processing_start);
-  if (!GetFrame())
+  // |start_time| could be null on some tests.
+  if (start_time.is_null() || !GetFrame())
     return;
 
   PerformanceEventTiming* entry = PerformanceEventTiming::Create(
