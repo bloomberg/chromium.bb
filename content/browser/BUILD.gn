@@ -559,6 +559,8 @@ jumbo_source_set("browser") {
     "cache_storage/cache_storage_blob_to_disk_cache.h",
     "cache_storage/cache_storage_cache.cc",
     "cache_storage/cache_storage_cache.h",
+    "cache_storage/cache_storage_cache_entry_handler.cc",
+    "cache_storage/cache_storage_cache_entry_handler.h",
     "cache_storage/cache_storage_cache_handle.h",
     "cache_storage/cache_storage_cache_observer.h",
     "cache_storage/cache_storage_context_impl.cc",
