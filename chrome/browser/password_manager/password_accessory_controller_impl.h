@@ -123,6 +123,10 @@ class PasswordAccessoryControllerImpl
       url::Origin origin,
       const favicon_base::FaviconRawBitmapResult& bitmap_results);
 
+  // Lazy-initializes and returns the ManualFillingController for the current
+  // |web_contents_|. The lazy initialization allows injecting mocks for tests.
+  base::WeakPtr<ManualFillingController> GetManualFillingController();
+
   // Contains the last set of credentials by origin.
   std::map<url::Origin, std::vector<SuggestionElementData>> origin_suggestions_;
 

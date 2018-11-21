@@ -156,8 +156,6 @@ void PasswordAccessoryControllerImpl::OnAutomaticGenerationStatusChanged(
     const base::Optional<
         autofill::password_generation::PasswordGenerationUIData>& ui_data,
     const base::WeakPtr<password_manager::PasswordManagerDriver>& driver) {
-  DCHECK(mf_controller_);
-
   target_frame_driver_ = driver;
   if (available) {
     DCHECK(ui_data.has_value());
@@ -172,14 +170,12 @@ void PasswordAccessoryControllerImpl::OnAutomaticGenerationStatusChanged(
     generation_element_data_.reset();
   }
 
-  mf_controller_->OnAutomaticGenerationStatusChanged(available);
+  GetManualFillingController()->OnAutomaticGenerationStatusChanged(available);
 }
 
 void PasswordAccessoryControllerImpl::OnFilledIntoFocusedField(
     autofill::FillingStatus status) {
-  DCHECK(mf_controller_);
-
-  mf_controller_->OnFilledIntoFocusedField(status);
+  GetManualFillingController()->OnFilledIntoFocusedField(status);
 }
 
 void PasswordAccessoryControllerImpl::OnOptionSelected(
@@ -200,10 +196,8 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
     const url::Origin& origin,
     bool is_fillable,
     bool is_password_field) {
-  DCHECK(mf_controller_);
-
   current_origin_ = is_fillable ? origin : url::Origin();
-  mf_controller_->RefreshSuggestionsForField(
+  GetManualFillingController()->RefreshSuggestionsForField(
       is_fillable, CreateAccessorySheetData(
                        origin,
                        is_fillable ? origin_suggestions_[origin]
@@ -219,15 +213,11 @@ void PasswordAccessoryControllerImpl::DidNavigateMainFrame() {
 }
 
 void PasswordAccessoryControllerImpl::ShowWhenKeyboardIsVisible() {
-  DCHECK(mf_controller_);
-
-  mf_controller_->ShowWhenKeyboardIsVisible();
+  GetManualFillingController()->ShowWhenKeyboardIsVisible();
 }
 
 void PasswordAccessoryControllerImpl::Hide() {
-  DCHECK(mf_controller_);
-
-  mf_controller_->Hide();
+  GetManualFillingController()->Hide();
 }
 
 void PasswordAccessoryControllerImpl::GetFavicon(
@@ -327,7 +317,6 @@ PasswordAccessoryControllerImpl::PasswordAccessoryControllerImpl(
       favicon_service_(FaviconServiceFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),
           ServiceAccessType::EXPLICIT_ACCESS)) {
-  mf_controller_ = ManualFillingController::GetOrCreate(web_contents);
 }
 
 // Additional creation functions in unit tests only:
@@ -398,4 +387,12 @@ void PasswordAccessoryControllerImpl::OnImageFetched(
     }
   }
   icon_request->pending_requests.clear();
+}
+
+base::WeakPtr<ManualFillingController>
+PasswordAccessoryControllerImpl::GetManualFillingController() {
+  if (!mf_controller_)
+    mf_controller_ = ManualFillingController::GetOrCreate(web_contents_);
+  DCHECK(mf_controller_);
+  return mf_controller_;
 }
