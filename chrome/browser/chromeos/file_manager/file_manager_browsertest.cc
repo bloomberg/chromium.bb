@@ -625,17 +625,37 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("openFileDialogUnload").WithBrowser(),
+        TestCase("openFileDialogUnload").WithBrowser().EnableMyFilesVolume(),
         TestCase("openFileDialogDownloads").WithBrowser(),
+        TestCase("openFileDialogDownloads").WithBrowser().EnableMyFilesVolume(),
         TestCase("openFileDialogDownloads").WithBrowser().InGuestMode(),
+        TestCase("openFileDialogDownloads")
+            .WithBrowser()
+            .InGuestMode()
+            .EnableMyFilesVolume(),
         TestCase("openFileDialogDownloads").WithBrowser().InIncognito(),
+        TestCase("openFileDialogDownloads")
+            .WithBrowser()
+            .InIncognito()
+            .EnableMyFilesVolume(),
         TestCase("openFileDialogCancelDownloads").WithBrowser(),
+        TestCase("openFileDialogCancelDownloads")
+            .WithBrowser()
+            .EnableMyFilesVolume(),
         TestCase("openFileDialogEscapeDownloads").WithBrowser(),
+        TestCase("openFileDialogEscapeDownloads")
+            .WithBrowser()
+            .EnableMyFilesVolume(),
         TestCase("openFileDialogDrive").WithBrowser().DisableDriveFs(),
         TestCase("openFileDialogDrive")
             .WithBrowser()
             .InIncognito()
             .DisableDriveFs(),
         TestCase("openFileDialogDrive").WithBrowser().EnableDriveFs(),
+        TestCase("openFileDialogDrive")
+            .WithBrowser()
+            .EnableDriveFs()
+            .EnableMyFilesVolume(),
         TestCase("openFileDialogDrive")
             .WithBrowser()
             .InIncognito()
