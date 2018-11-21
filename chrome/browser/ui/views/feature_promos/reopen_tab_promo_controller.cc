@@ -38,6 +38,7 @@ void ReopenTabPromoController::ShowPromo() {
   promo_bubble_ = FeaturePromoBubbleView::CreateOwned(
       app_menu_button, views::BubbleBorder::Arrow::TOP_RIGHT,
       IDS_REOPEN_TAB_PROMO, FeaturePromoBubbleView::ActivationAction::ACTIVATE);
+  promo_bubble_->set_close_on_deactivate(false);
   promo_bubble_->GetWidget()->AddObserver(this);
 }
 
