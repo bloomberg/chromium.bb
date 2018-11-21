@@ -39,9 +39,6 @@ struct OriginRequestSummary;
 struct PageRequestSummary;
 
 namespace internal {
-constexpr char kResourcePrefetchPredictorPrefetchingDurationHistogram[] =
-    "ResourcePrefetchPredictor.PrefetchingDuration";
-
 struct LastVisitTimeCompare {
   template <typename T>
   bool operator()(const T& lhs, const T& rhs) const {

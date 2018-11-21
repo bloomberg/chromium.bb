@@ -145,38 +145,6 @@ void LoadingPredictorPreconnectTest::SetPreference() {
       chrome_browser_net::NETWORK_PREDICTION_ALWAYS);
 }
 
-TEST_F(LoadingPredictorTest, TestPrefetchingDurationHistogram) {
-  base::HistogramTester histogram_tester;
-  const GURL url = GURL(kUrl);
-  const GURL url2 = GURL(kUrl2);
-  const GURL url3 = GURL(kUrl3);
-
-  predictor_->PrepareForPageLoad(url, HintOrigin::NAVIGATION);
-  predictor_->CancelPageLoadHint(url);
-  histogram_tester.ExpectTotalCount(
-      internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 1);
-
-  // Mismatched start / end.
-  predictor_->PrepareForPageLoad(url, HintOrigin::NAVIGATION);
-  predictor_->CancelPageLoadHint(url2);
-  // No increment.
-  histogram_tester.ExpectTotalCount(
-      internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 1);
-
-  // Can track a navigation (url2) while one is still in progress (url).
-  predictor_->PrepareForPageLoad(url2, HintOrigin::NAVIGATION);
-  predictor_->CancelPageLoadHint(url2);
-  histogram_tester.ExpectTotalCount(
-      internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 2);
-
-  // Do not track non-prefetchable URLs.
-  predictor_->PrepareForPageLoad(url3, HintOrigin::NAVIGATION);
-  predictor_->CancelPageLoadHint(url3);
-  // No increment.
-  histogram_tester.ExpectTotalCount(
-      internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 2);
-}
-
 TEST_F(LoadingPredictorTest, TestMainFrameResponseCancelsHint) {
   const GURL url = GURL(kUrl);
   predictor_->PrepareForPageLoad(url, HintOrigin::EXTERNAL);
