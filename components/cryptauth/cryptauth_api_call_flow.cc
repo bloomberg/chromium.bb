@@ -96,12 +96,11 @@ void CryptAuthApiCallFlow::ProcessApiCallFailure(
     error = NetworkRequestError::kOffline;
   }
 
-  if (body) {
-    PA_LOG(ERROR) << "API call failed:\n" << *body;
-  } else {
-    PA_LOG(ERROR) << "API call failed, no response body available, net_error:"
-                  << net_error;
-  }
+  PA_LOG(ERROR) << "API call failed, error code: "
+                << (error ? *error : NetworkRequestError::kUnknown);
+  if (body)
+    PA_LOG(VERBOSE) << "API failure response body:\n" << *body;
+
   error_callback_.Run(*error);
 }
 
