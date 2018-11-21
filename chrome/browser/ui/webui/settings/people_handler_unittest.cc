@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -32,7 +33,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/fake_auth_status_provider.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/unified_consent/scoped_unified_consent.h"
@@ -44,6 +46,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
 #include "content/public/test/web_contents_tester.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
@@ -827,9 +830,17 @@ TEST_F(PeopleHandlerTest, ShowSigninOnAuthError) {
   DCHECK_EQ(
       identity_test_env()->identity_manager()->GetPrimaryAccountInfo().email,
       kTestUser);
-  FakeAuthStatusProvider provider(
-      SigninErrorControllerFactory::GetForProfile(profile()));
-  provider.SetAuthError(kTestUser, error_);
+  const std::string& account_id = identity_test_env()
+                                      ->identity_manager()
+                                      ->GetPrimaryAccountInfo()
+                                      .account_id;
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile());
+  token_service->UpdateCredentials(account_id, "refresh_token");
+  // TODO(https://crbug.com/836212): Do not use the delegate directly, because
+  // it is internal API.
+  token_service->GetDelegate()->UpdateAuthError(account_id, error_);
+
   ON_CALL(*mock_pss_, GetDisableReasons())
       .WillByDefault(Return(syncer::SyncService::DISABLE_REASON_NONE));
   ON_CALL(*mock_pss_, IsPassphraseRequired()).WillByDefault(Return(false));

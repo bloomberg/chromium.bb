@@ -28,7 +28,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
@@ -43,8 +43,6 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_auth_status_provider.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -54,6 +52,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -688,9 +687,8 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_SetInvalidTokenStatus) {
                       /*is_under_advanced_protectionis_true=*/false);
 }
 
-// Tests that an auth error reported by SigninErrorController marks invalid auth
-// token status despite OAuth2LoginManager thinks merge session is done
-// successfully
+// Tests that an auth error marks invalid auth token status despite
+// OAuth2LoginManager thinks merge session is done successfully
 IN_PROC_BROWSER_TEST_F(OAuth2Test, SetInvalidTokenStatus) {
   RequestDeferrer list_accounts_request_deferer;
   AddRequestDeferer("/ListAccounts", &list_accounts_request_deferer);
@@ -724,12 +722,8 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, SetInvalidTokenStatus) {
   ASSERT_NE(OAuth2LoginManager::SESSION_RESTORE_DONE, login_manager->state());
 
   // Generate an auth error.
-  SigninErrorController* const error_controller =
-      SigninErrorControllerFactory::GetForProfile(profile());
-  FakeAuthStatusProvider auth_provider(error_controller);
-  auth_provider.SetAuthError(
-      kTestEmail, GoogleServiceAuthError(
-                      GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->UpdateCredentials(
+      kTestEmail, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
 
   // Let go /ListAccounts request.
   list_accounts_request_deferer.UnblockRequest();
