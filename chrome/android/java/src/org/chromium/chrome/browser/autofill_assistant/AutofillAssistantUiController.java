@@ -376,9 +376,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     /** Choose an account to authenticate as for making RPCs to the backend. */
     private void chooseAccountAsync(Bundle extras) {
         AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
-            if (accounts.length == 1) {
+            if (accounts.size() == 1) {
                 // If there's only one account, there aren't any doubts.
-                onAccountChosen(accounts[0]);
+                onAccountChosen(accounts.get(0));
                 return;
             }
             Account signedIn =
@@ -414,8 +414,9 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         }
     }
 
-    private static Account findAccountByName(Account[] accounts, String name) {
-        for (Account account : accounts) {
+    private static Account findAccountByName(List<Account> accounts, String name) {
+        for (int i = 0; i < accounts.size(); i++) {
+            Account account = accounts.get(i);
             if (account.name.equals(name)) {
                 return account;
             }

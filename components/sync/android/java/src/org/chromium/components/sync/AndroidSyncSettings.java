@@ -14,6 +14,7 @@ import android.os.StrictMode;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -242,41 +243,36 @@ public class AndroidSyncSettings {
 
         mIsSyncable = shouldBeSyncable;
 
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        // Make account syncable if there is one.
-        if (shouldBeSyncable) {
-            mSyncContentResolverDelegate.setIsSyncable(mAccount, mContractAuthority, 1);
-            // This reduces unnecessary resource usage. See http://crbug.com/480688 for details.
-            mSyncContentResolverDelegate.removePeriodicSync(
-                    mAccount, mContractAuthority, Bundle.EMPTY);
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            // Make account syncable if there is one.
+            if (shouldBeSyncable) {
+                mSyncContentResolverDelegate.setIsSyncable(mAccount, mContractAuthority, 1);
+                // This reduces unnecessary resource usage. See http://crbug.com/480688 for details.
+                mSyncContentResolverDelegate.removePeriodicSync(
+                        mAccount, mContractAuthority, Bundle.EMPTY);
+            }
         }
-        StrictMode.setThreadPolicy(oldPolicy);
 
         // Disable the syncability of Chrome for all other accounts.
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                AccountManagerFacade.get().tryGetGoogleAccounts(new Callback<Account[]>() {
-                    @Override
-                    public void onResult(Account[] accounts) {
-                        synchronized (mLock) {
-                            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-                            for (Account account : accounts) {
-                                if (!account.equals(mAccount)
-                                        && mSyncContentResolverDelegate.getIsSyncable(
-                                                   account, mContractAuthority)
-                                                > 0) {
-                                    mSyncContentResolverDelegate.setIsSyncable(
-                                            account, mContractAuthority, 0);
-                                }
+        ThreadUtils.postOnUiThread(() -> {
+            AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
+                synchronized (mLock) {
+                    try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+                        for (int i = 0; i < accounts.size(); i++) {
+                            Account account = accounts.get(i);
+                            if (!account.equals(mAccount)
+                                    && mSyncContentResolverDelegate.getIsSyncable(
+                                               account, mContractAuthority)
+                                            > 0) {
+                                mSyncContentResolverDelegate.setIsSyncable(
+                                        account, mContractAuthority, 0);
                             }
-                            StrictMode.setThreadPolicy(oldPolicy);
                         }
-
-                        if (callback != null) callback.onResult(true);
                     }
-                });
-            }
+                }
+
+                if (callback != null) callback.onResult(true);
+            });
         });
     }
 

@@ -233,8 +233,9 @@ public class SigninHelper {
     }
 
     private static boolean accountExists(Account account) {
-        Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
-        for (Account a : accounts) {
+        List<Account> accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+        for (int i = 0; i < accounts.size(); i++) {
+            Account a = accounts.get(i);
             if (a.equals(account)) {
                 return true;
             }

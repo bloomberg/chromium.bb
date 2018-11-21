@@ -57,6 +57,7 @@ import org.chromium.components.sync.StopSource;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -302,8 +303,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
         // We remove the the SyncedAccountPreference if there's only 1 account on the device, so
         // it's possible for accountList to be null
         if (accountList != null) {
-            Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
-            if (accounts.length <= 1) {
+            List<Account> accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
+            if (accounts.size() <= 1) {
                 getPreferenceScreen().removePreference(accountList);
             } else {
                 accountList.setEnabled(mSyncSwitchPreference.isChecked());
