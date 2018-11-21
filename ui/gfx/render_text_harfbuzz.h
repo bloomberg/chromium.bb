@@ -214,6 +214,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   SelectionModel FindCursorPosition(const Point& point) override;
   bool IsSelectionSupported() const override;
   std::vector<FontSpan> GetFontSpansForTesting() override;
+  std::vector<Rect> GetSubstringBounds(const Range& range) override;
   Range GetCursorSpan(const Range& text_range) override;
 
   // ICU grapheme iterator for the layout text. Can be null in case of an error.
@@ -228,7 +229,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   SelectionModel AdjacentWordSelectionModel(
       const SelectionModel& selection,
       VisualCursorDirection direction) override;
-  std::vector<Rect> GetSubstringBounds(const Range& range) override;
   size_t TextIndexToDisplayIndex(size_t index) override;
   size_t DisplayIndexToTextIndex(size_t index) override;
   bool IsValidCursorIndex(size_t index) override;
@@ -239,7 +239,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
  private:
   friend class test::RenderTextTestApi;
-  friend class RenderTextHarfBuzzTest;
+  friend class RenderTextTest;
 
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.

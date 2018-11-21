@@ -1306,6 +1306,53 @@ std::vector<RenderText::FontSpan> RenderTextHarfBuzz::GetFontSpansForTesting() {
   return spans;
 }
 
+std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
+  EnsureLayout();
+  DCHECK(!update_display_run_list_);
+  DCHECK(Range(0, text().length()).Contains(range));
+  const size_t start =
+      IsValidCursorIndex(range.GetMin())
+          ? range.GetMin()
+          : IndexOfAdjacentGrapheme(range.GetMin(), CURSOR_BACKWARD);
+  const size_t end =
+      IsValidCursorIndex(range.GetMax())
+          ? range.GetMax()
+          : IndexOfAdjacentGrapheme(range.GetMax(), CURSOR_FORWARD);
+  const Range display_range(TextIndexToDisplayIndex(start),
+                            TextIndexToDisplayIndex(end));
+  DCHECK(Range(0, GetDisplayText().length()).Contains(display_range));
+
+  std::vector<Rect> rects;
+  if (display_range.is_empty())
+    return rects;
+
+  internal::TextRunList* run_list = GetRunList();
+  for (size_t line_index = 0; line_index < lines().size(); ++line_index) {
+    const internal::Line& line = lines()[line_index];
+    // Only the last line can be empty.
+    DCHECK(!line.segments.empty() || (line_index == lines().size() - 1));
+    const float line_start_x =
+        line.segments.empty()
+            ? 0
+            : run_list->runs()[line.segments[0].run]->preceding_run_widths;
+
+    for (const internal::LineSegment& segment : line.segments) {
+      const Range intersection = segment.char_range.Intersect(display_range);
+      DCHECK(!intersection.is_reversed());
+      if (!intersection.is_empty()) {
+        const internal::TextRunHarfBuzz& run = *run_list->runs()[segment.run];
+        RangeF selected_span =
+            run.GetGraphemeSpanForCharRange(this, intersection);
+        int start_x = std::ceil(selected_span.start() - line_start_x);
+        int end_x = std::ceil(selected_span.end() - line_start_x);
+        Rect rect(start_x, 0, end_x - start_x, std::ceil(line.size.height()));
+        rects.push_back(rect + GetLineOffset(line_index));
+      }
+    }
+  }
+  return rects;
+}
+
 Range RenderTextHarfBuzz::GetCursorSpan(const Range& text_range) {
   DCHECK(!text_range.is_reversed());
   EnsureLayout();
@@ -1435,53 +1482,6 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
 #endif  // defined(OS_WIN)
   }
   return current;
-}
-
-std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
-  EnsureLayout();
-  DCHECK(!update_display_run_list_);
-  DCHECK(Range(0, text().length()).Contains(range));
-  const size_t start =
-      IsValidCursorIndex(range.GetMin())
-          ? range.GetMin()
-          : IndexOfAdjacentGrapheme(range.GetMin(), CURSOR_BACKWARD);
-  const size_t end =
-      IsValidCursorIndex(range.GetMax())
-          ? range.GetMax()
-          : IndexOfAdjacentGrapheme(range.GetMax(), CURSOR_FORWARD);
-  const Range display_range(TextIndexToDisplayIndex(start),
-                            TextIndexToDisplayIndex(end));
-  DCHECK(Range(0, GetDisplayText().length()).Contains(display_range));
-
-  std::vector<Rect> rects;
-  if (display_range.is_empty())
-    return rects;
-
-  internal::TextRunList* run_list = GetRunList();
-  for (size_t line_index = 0; line_index < lines().size(); ++line_index) {
-    const internal::Line& line = lines()[line_index];
-    // Only the last line can be empty.
-    DCHECK(!line.segments.empty() || (line_index == lines().size() - 1));
-    const float line_start_x =
-        line.segments.empty()
-            ? 0
-            : run_list->runs()[line.segments[0].run]->preceding_run_widths;
-
-    for (const internal::LineSegment& segment : line.segments) {
-      const Range intersection = segment.char_range.Intersect(display_range);
-      DCHECK(!intersection.is_reversed());
-      if (!intersection.is_empty()) {
-        const internal::TextRunHarfBuzz& run = *run_list->runs()[segment.run];
-        RangeF selected_span =
-            run.GetGraphemeSpanForCharRange(this, intersection);
-        int start_x = std::ceil(selected_span.start() - line_start_x);
-        int end_x = std::ceil(selected_span.end() - line_start_x);
-        Rect rect(start_x, 0, end_x - start_x, std::ceil(line.size.height()));
-        rects.push_back(rect + GetLineOffset(line_index));
-      }
-    }
-  }
-  return rects;
 }
 
 size_t RenderTextHarfBuzz::TextIndexToDisplayIndex(size_t index) {
