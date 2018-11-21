@@ -93,6 +93,9 @@ em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
     case EnrollmentConfig::MODE_ATTESTATION_INITIAL_MANUAL_FALLBACK:
       return em::DeviceRegisterRequest::
           FLAVOR_ENROLLMENT_ATTESTATION_INITIAL_MANUAL_FALLBACK;
+    case EnrollmentConfig::MODE_ATTESTATION_ENROLLMENT_TOKEN:
+      return em::DeviceRegisterRequest::
+          FLAVOR_ENROLLMENT_ATTESTATION_USB_ENROLLMENT;
   }
 
   NOTREACHED() << "Bad enrollment mode: " << mode;
@@ -187,9 +190,13 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
   dm_auth_ = std::move(dm_auth);
   CHECK(!client_->is_registered());
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
-  CHECK((enrollment_config_.is_mode_attestation() ||
-         enrollment_config.mode == EnrollmentConfig::MODE_OFFLINE_DEMO) ==
-        dm_auth_->empty());
+  if (enrollment_config_.is_mode_attestation()) {
+    CHECK(dm_auth_->empty() || dm_auth_->has_enrollment_token());
+  } else if (enrollment_config.mode == EnrollmentConfig::MODE_OFFLINE_DEMO) {
+    CHECK(dm_auth_->empty());
+  } else {
+    CHECK(!dm_auth_->empty());
+  }
   CHECK_NE(enrollment_config.mode == EnrollmentConfig::MODE_OFFLINE_DEMO,
            enrollment_config.offline_policy_path.empty());
   CHECK(enrollment_config_.auth_mechanism !=
@@ -455,7 +462,8 @@ void EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult(
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE, license_type_,
-        pem_certificate_chain, client_id_, requisition_, current_state_key_);
+        dm_auth_->Clone(), pem_certificate_chain, client_id_, requisition_,
+        current_state_key_);
   } else {
     ReportResult(EnrollmentStatus::ForStatus(
         EnrollmentStatus::REGISTRATION_CERT_FETCH_FAILED));

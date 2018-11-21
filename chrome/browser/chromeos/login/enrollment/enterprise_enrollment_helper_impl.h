@@ -42,6 +42,7 @@ class EnterpriseEnrollmentHelperImpl
   void EnrollUsingAuthCode(const std::string& auth_code,
                            bool fetch_additional_token) override;
   void EnrollUsingToken(const std::string& token) override;
+  void EnrollUsingEnrollmentToken(const std::string& token) override;
   void EnrollUsingAttestation() override;
   void EnrollForOfflineDemo() override;
   void RestoreAfterRollback() override;

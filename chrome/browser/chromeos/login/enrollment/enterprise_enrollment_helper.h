@@ -115,9 +115,16 @@ class EnterpriseEnrollmentHelper {
                                    bool fetch_additional_token) = 0;
 
   // Starts enterprise enrollment using |token|.
+  // This flow is used when enrollment is controlled by the paired device.
   // EnrollUsingToken can be called only once during this object's lifetime, and
   // only if none of the EnrollUsing* was called before.
   virtual void EnrollUsingToken(const std::string& token) = 0;
+
+  // Starts enterprise enrollment using enrollment |token| for authentication.
+  // This flow is used in OOBE configuration flow.
+  // EnrollUsingWorkflowToken can be called only once during this object's
+  // lifetime, and only if none of the EnrollUsing* was called before.
+  virtual void EnrollUsingEnrollmentToken(const std::string& token) = 0;
 
   // Starts enterprise enrollment using PCA attestation.
   // EnrollUsingAttestation can be called only once during the object's

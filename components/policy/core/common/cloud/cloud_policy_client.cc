@@ -254,6 +254,7 @@ void CloudPolicyClient::RegisterWithCertificate(
     em::DeviceRegisterRequest::Flavor flavor,
     em::DeviceRegisterRequest::Lifetime lifetime,
     em::LicenseType::LicenseTypeEnum license_type,
+    std::unique_ptr<DMAuth> auth,
     const std::string& pem_certificate_chain,
     const std::string& client_id,
     const std::string& requisition,
@@ -288,9 +289,10 @@ void CloudPolicyClient::RegisterWithCertificate(
     request->mutable_license_type()->set_license_type(license_type);
   request->set_lifetime(lifetime);
 
-  signing_service_->SignData(data.SerializeAsString(),
+  signing_service_->SignData(
+      data.SerializeAsString(),
       base::Bind(&CloudPolicyClient::OnRegisterWithCertificateRequestSigned,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&auth)));
 }
 
 void CloudPolicyClient::RegisterWithToken(const std::string& token,
@@ -323,7 +325,9 @@ void CloudPolicyClient::RegisterWithToken(const std::string& token,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void CloudPolicyClient::OnRegisterWithCertificateRequestSigned(bool success,
+void CloudPolicyClient::OnRegisterWithCertificateRequestSigned(
+    std::unique_ptr<DMAuth> auth,
+    bool success,
     em::SignedData signed_data) {
   if (!success) {
     const em::DeviceManagementResponse response;
@@ -335,7 +339,7 @@ void CloudPolicyClient::OnRegisterWithCertificateRequestSigned(bool success,
       DeviceManagementRequestJob::TYPE_CERT_BASED_REGISTRATION,
       GetURLLoaderFactory()));
   policy_fetch_request_job_->SetClientID(client_id_);
-  policy_fetch_request_job_->SetAuthData(DMAuth::NoAuth());
+  policy_fetch_request_job_->SetAuthData(std::move(auth));
   em::SignedData* signed_request = policy_fetch_request_job_->GetRequest()->
       mutable_certificate_based_register_request()->mutable_signed_request();
   signed_request->set_data(signed_data.data());
