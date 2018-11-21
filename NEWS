@@ -17,6 +17,8 @@ issues]].
   Davy Kager.
 - Improvements to the Polish grade 1 table, to make back-translations
   of diacritics working
+- Fixes to Latvian braille table thanks to Gatis Grintals and Artis
+  Raugulis.
 
 ** Other changes
 - Updated the ~lou_allround~ and ~lou_trace~ test tools to include all
