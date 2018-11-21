@@ -47,8 +47,16 @@ void JSEventListener::CallListenerFunction(EventTarget&,
                                            v8::Local<v8::Value> js_event) {
   // Step 10: Call a listener with event's currentTarget as receiver and event
   // and handle errors if thrown.
-  v8::Maybe<void> maybe_result =
-      event_listener_->handleEvent(event.currentTarget(), &event);
+  const bool is_beforeunload_event =
+      event.IsBeforeUnloadEvent() &&
+      event.type() == EventTypeNames::beforeunload;
+  if (!event_listener_->IsRunnableOrThrowException(
+          is_beforeunload_event ? V8EventListener::IgnorePause::kIgnore
+                                : V8EventListener::IgnorePause::kDontIgnore)) {
+    return;
+  }
+  v8::Maybe<void> maybe_result = event_listener_->InvokeWithoutRunnabilityCheck(
+      event.currentTarget(), &event);
   ALLOW_UNUSED_LOCAL(maybe_result);
 }
 

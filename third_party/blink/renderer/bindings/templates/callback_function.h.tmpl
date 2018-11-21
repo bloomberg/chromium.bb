@@ -49,6 +49,20 @@ class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
   void InvokeAndReportException({{argument_declarations | join(', ')}});
 {% endif %}
 
+{% if callback_function_name == 'EventHandlerNonNull' %}
+  // Returns true if the callback is runnable, otherwise returns false and
+  // throws an exception. 'beforeunload' event need to have priority over pause
+  // of execution contexts.
+  enum class IgnorePause { kDontIgnore, kIgnore };
+  bool IsRunnableOrThrowException(IgnorePause);
+
+  // Performs "invoke" without checking the runnability check, which must be
+  // done prior to this call by |IsRunnableOrThrowException|.
+  // https://heycam.github.io/webidl/#es-invoking-callback-functions
+  // This function may throw unlike InvokeAndReportException.
+  v8::Maybe<{{return_cpp_type}}> InvokeWithoutRunnabilityCheck({{argument_declarations | join(', ')}}) WARN_UNUSED_RESULT;
+{% endif %}
+
  private:
   explicit {{cpp_class}}(
       {%- if is_treat_non_object_as_null %}v8::Local<v8::Object>

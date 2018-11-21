@@ -36,7 +36,7 @@ CORE_EXPORT v8::Local<v8::Value> V8Deserialize(v8::Isolate*,
 // Promise-returning DOM operations are required to always return a promise
 // and to never throw an exception.
 // See also http://heycam.github.io/webidl/#es-operations
-class CORE_EXPORT ExceptionToRejectPromiseScope {
+class CORE_EXPORT ExceptionToRejectPromiseScope final {
   STACK_ALLOCATED();
 
  public:
@@ -62,7 +62,11 @@ class CORE_EXPORT ExceptionToRejectPromiseScope {
 
 CORE_EXPORT bool IsCallbackFunctionRunnable(
     const ScriptState* callback_relevant_script_state,
-    ScriptState* incumbent_script_state);
+    const ScriptState* incumbent_script_state);
+
+CORE_EXPORT bool IsCallbackFunctionRunnableIgnoringPause(
+    const ScriptState* callback_relevant_script_state,
+    const ScriptState* incumbent_script_state);
 
 using InstallTemplateFunction =
     void (*)(v8::Isolate* isolate,
