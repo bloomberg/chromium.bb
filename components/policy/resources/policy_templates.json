@@ -1626,7 +1626,7 @@
           'caption': '''Monochrome printing only''',
         },
       ],
-      'supported_on': ['chrome_os:70-'],
+      'supported_on': ['chrome_os:71-'],
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
@@ -1734,7 +1734,6 @@
         },
       ],
       'supported_on': ['chrome_os:72-'],
-      'future': True,
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
@@ -1775,7 +1774,6 @@
         },
       ],
       'supported_on': ['chrome_os:72-'],
-      'future': True,
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
