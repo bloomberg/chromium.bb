@@ -445,5 +445,84 @@ TEST_F(DemoSessionMetricsRecorderTest, IgnoreOnIdleSession) {
   histogram_tester_->ExpectTotalCount("DemoMode.ActiveApp", 0);
 }
 
+TEST_F(DemoSessionMetricsRecorderTest, UniqueAppsLaunchedOnIdle) {
+  // Activate each window twice.  Despite activating each twice,
+  // the count should only be incremented once per unique app.
+  auto chrome_app_window = CreateChromeAppWindow(extension_misc::kCameraAppId);
+  wm::ActivateWindow(chrome_app_window.get());
+  wm::DeactivateWindow(chrome_app_window.get());
+  wm::ActivateWindow(chrome_app_window.get());
+
+  auto chrome_browser_window =
+      CreateChromeAppWindow(extension_misc::kChromeAppId);
+  wm::ActivateWindow(chrome_browser_window.get());
+  wm::DeactivateWindow(chrome_browser_window.get());
+  wm::ActivateWindow(chrome_browser_window.get());
+
+  auto arc_window_1 = CreateArcWindow("com.google.Photos");
+  wm::ActivateWindow(arc_window_1.get());
+  wm::DeactivateWindow(arc_window_1.get());
+  wm::ActivateWindow(arc_window_1.get());
+
+  auto arc_window_2 = CreateArcWindow("com.google.Maps");
+  wm::ActivateWindow(arc_window_2.get());
+  wm::DeactivateWindow(arc_window_2.get());
+  wm::ActivateWindow(arc_window_2.get());
+
+  // Popup windows shouldn't be counted at all.
+  auto popup_window = CreatePopupWindow();
+  wm::ActivateWindow(popup_window.get());
+  wm::DeactivateWindow(popup_window.get());
+  wm::ActivateWindow(popup_window.get());
+
+  for (int i = 0; i < 20; i++)
+    FireTimer();
+
+  histogram_tester_->ExpectUniqueSample("DemoMode.UniqueAppsLaunched", 4, 1);
+}
+
+TEST_F(DemoSessionMetricsRecorderTest, UniqueAppsLaunchedOnDeletion) {
+  // Activate each window twice.  Despite activating each twice,
+  // the count should only be incremented once per unique app.
+  auto chrome_app_window = CreateChromeAppWindow(extension_misc::kCameraAppId);
+  wm::ActivateWindow(chrome_app_window.get());
+  wm::DeactivateWindow(chrome_app_window.get());
+  wm::ActivateWindow(chrome_app_window.get());
+
+  auto chrome_browser_window =
+      CreateChromeAppWindow(extension_misc::kChromeAppId);
+  wm::ActivateWindow(chrome_browser_window.get());
+  wm::DeactivateWindow(chrome_browser_window.get());
+  wm::ActivateWindow(chrome_browser_window.get());
+
+  auto arc_window_1 = CreateArcWindow("com.google.Photos");
+  wm::ActivateWindow(arc_window_1.get());
+  wm::DeactivateWindow(arc_window_1.get());
+  wm::ActivateWindow(arc_window_1.get());
+
+  auto arc_window_2 = CreateArcWindow("com.google.Maps");
+  wm::ActivateWindow(arc_window_2.get());
+  wm::DeactivateWindow(arc_window_2.get());
+  wm::ActivateWindow(arc_window_2.get());
+
+  // Popup windows shouldn't be counted at all.
+  auto popup_window = CreatePopupWindow();
+  wm::ActivateWindow(popup_window.get());
+  wm::DeactivateWindow(popup_window.get());
+  wm::ActivateWindow(popup_window.get());
+
+  DeleteMetricsRecorder();
+
+  histogram_tester_->ExpectUniqueSample("DemoMode.UniqueAppsLaunched", 4, 1);
+}
+
+TEST_F(DemoSessionMetricsRecorderTest, NoUniqueAppsLaunchedOnDeletion) {
+  DeleteMetricsRecorder();
+
+  // There should be no samples if the recorder is deleted with 0 unique apps
+  // launched.
+  histogram_tester_->ExpectTotalCount("DemoMode.ReportUniqueAppsLaunched", 0);
+}
+
 }  // namespace
 }  // namespace ash
