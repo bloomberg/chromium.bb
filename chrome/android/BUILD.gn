@@ -1558,9 +1558,6 @@ template("monochrome_public_apk_or_module_tmpl") {
     add_unwind_tables_in_apk =
         _add_unwind_tables_in_chrome_public_apk &&
         (!defined(use_trichrome_library) || !use_trichrome_library)
-    if (add_unwind_tables_in_apk && can_unwind_with_cfi_table) {
-      shared_library_for_unwind_asset = "monochrome"
-    }
 
     version_name = chrome_version_name
     if (experimental_r8_path == "") {
