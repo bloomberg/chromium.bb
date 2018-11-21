@@ -281,6 +281,14 @@ void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
   }
 }
 
+void IdentityManager::GoogleSigninSucceededWithPassword(
+    const AccountInfo& account_info,
+    const std::string& password) {
+  for (auto& observer : observer_list_) {
+    observer.OnPrimaryAccountSetWithPassword(account_info, password);
+  }
+}
+
 void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
   DCHECK(!HasPrimaryAccount());
   for (auto& observer : observer_list_) {

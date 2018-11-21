@@ -61,8 +61,7 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
     num_successful_signins_++;
   }
 
-  void GoogleSigninSucceededWithPassword(const std::string& account_id,
-                                         const std::string& username,
+  void GoogleSigninSucceededWithPassword(const AccountInfo& account_info,
                                          const std::string& password) override {
     num_successful_signins_with_password_++;
   }
