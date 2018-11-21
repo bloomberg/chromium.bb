@@ -107,10 +107,6 @@ bool SaveCardBubbleViews::Close() {
   return true;
 }
 
-int SaveCardBubbleViews::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
 gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_BUBBLE_PREFERRED_WIDTH) -

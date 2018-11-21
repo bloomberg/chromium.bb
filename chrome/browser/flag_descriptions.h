@@ -259,6 +259,9 @@ extern const char
 extern const char kEnableAutofillLocalCardMigrationShowFeedbackName[];
 extern const char kEnableAutofillLocalCardMigrationShowFeedbackDescription[];
 
+extern const char kEnableAutofillSaveCardImprovedUserConsentName[];
+extern const char kEnableAutofillSaveCardImprovedUserConsentDescription[];
+
 extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[];
 extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[];
 

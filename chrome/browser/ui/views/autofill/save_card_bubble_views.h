@@ -44,7 +44,6 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;
-  int GetDialogButtons() const override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;

@@ -83,6 +83,13 @@ bool SaveCardOfferBubbleViews::Accept() {
   return true;
 }
 
+int SaveCardOfferBubbleViews::GetDialogButtons() const {
+  return base::FeatureList::IsEnabled(
+             features::kAutofillSaveCardImprovedUserConsent)
+             ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+             : ui::DIALOG_BUTTON_OK;
+}
+
 base::string16 SaveCardOfferBubbleViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK

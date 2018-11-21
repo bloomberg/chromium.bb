@@ -215,7 +215,10 @@ base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
           IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
     case BubbleType::UPLOAD_SAVE:
       return l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3);
+          base::FeatureList::IsEnabled(
+              features::kAutofillSaveCardImprovedUserConsent)
+              ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V4
+              : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3);
     case BubbleType::SIGN_IN_PROMO:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       if (AccountConsistencyModeManager::IsDiceEnabledForProfile(

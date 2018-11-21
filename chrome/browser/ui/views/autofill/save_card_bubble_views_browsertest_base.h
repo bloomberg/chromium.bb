@@ -125,6 +125,10 @@ class SaveCardBubbleViewsBrowserTestBase
   views::View* FindViewInBubbleById(DialogViewId view_id);
 
   // Assert that there is a SaveCardBubbleViews bubble open, then click on the
+  // [No thanks] button.
+  void ClickOnCancelButton();
+
+  // Assert that there is a SaveCardBubbleViews bubble open, then click on the
   // [X] button.
   void ClickOnCloseButton();
 

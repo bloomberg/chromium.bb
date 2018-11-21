@@ -54,6 +54,7 @@ extern const base::Feature kAutofillRationalizeFieldTypePredictions;
 extern const base::Feature kAutofillRationalizeRepeatedServerPredictions;
 extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate;
+extern const base::Feature kAutofillSaveCardImprovedUserConsent;
 extern const base::Feature kAutofillSaveCardSignInAfterLocalSave;
 extern const base::Feature kAutofillSaveCreditCardUsesStrikeSystem;
 extern const base::Feature kAutofillSaveOnProbablySubmitted;

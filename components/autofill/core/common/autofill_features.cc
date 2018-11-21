@@ -173,6 +173,12 @@ const base::Feature kAutofillSaveCardDialogUnlabeledExpirationDate{
     "AutofillSaveCardDialogUnlabeledExpirationDate",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, local and upload credit card save dialogs will be updated to
+// new M72 guidelines, including a [No thanks] cancel button and an extended
+// title string.
+const base::Feature kAutofillSaveCardImprovedUserConsent{
+    "AutofillSaveCardImprovedUserConsent", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, a sign in promo will show up right after the user
 // saves a card locally. This also introduces a "Manage Cards" bubble.
 const base::Feature kAutofillSaveCardSignInAfterLocalSave{
