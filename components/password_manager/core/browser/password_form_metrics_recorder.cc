@@ -308,11 +308,6 @@ void PasswordFormMetricsRecorder::RecordParsingOnSavingDifference(
   ukm_entry_builder_.SetParsingOnSavingDifference(comparison_result);
 }
 
-void PasswordFormMetricsRecorder::RecordFillOnLoad(
-    FillOnLoad comparison_result) {
-  ukm_entry_builder_.SetFillOnLoad(static_cast<int64_t>(comparison_result));
-}
-
 void PasswordFormMetricsRecorder::RecordReadonlyWhenFilling(uint64_t value) {
   ukm_entry_builder_.SetReadonlyWhenFilling(value);
 }
