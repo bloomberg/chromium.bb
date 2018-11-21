@@ -1726,27 +1726,9 @@ void UserSessionManager::RestoreAuthSessionImpl(
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
   login_manager->AddObserver(this);
 
-  scoped_refptr<network::SharedURLLoaderFactory> auth_url_loader_factory =
-      GetAuthURLLoaderFactory();
-
-  // Authentication URLLoaderFactory may not be available if user was not
-  // signing in with GAIA webview (i.e. webview instance hasn't been
-  // initialized at all). Use fallback URLLoaderFactory if authenticator was
-  // provided.
-  // Authenticator instance may not be initialized for session
-  // restore case when Chrome is restarting after crash or to apply custom user
-  // flags. In that case auth_url_loader_factory will be nullptr which is
-  // accepted by RestoreSession() for session restore case.
-  if (!auth_url_loader_factory &&
-      (authenticator_.get() && authenticator_->authentication_context())) {
-    auth_url_loader_factory =
-        content::BrowserContext::GetDefaultStoragePartition(
-            authenticator_->authentication_context())
-            ->GetURLLoaderFactoryForBrowserProcess();
-  }
-  login_manager->RestoreSession(
-      auth_url_loader_factory, session_restore_strategy_,
-      user_context_.GetRefreshToken(), user_context_.GetAccessToken());
+  login_manager->RestoreSession(session_restore_strategy_,
+                                user_context_.GetRefreshToken(),
+                                user_context_.GetAccessToken());
 }
 
 void UserSessionManager::InitRlzImpl(Profile* profile,
@@ -1989,15 +1971,6 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
       user_context, *device_list,
       base::Bind(&UserSessionManager::OnEasyUnlockKeyOpsFinished, AsWeakPtr(),
                  user_context.GetAccountId().GetUserEmail()));
-}
-
-scoped_refptr<network::SharedURLLoaderFactory>
-UserSessionManager::GetAuthURLLoaderFactory() const {
-  content::StoragePartition* signin_partition = login::GetSigninPartition();
-  if (!signin_partition)
-    return nullptr;
-
-  return signin_partition->GetURLLoaderFactoryForBrowserProcess();
 }
 
 void UserSessionManager::OnEasyUnlockKeyOpsFinished(const std::string& user_id,

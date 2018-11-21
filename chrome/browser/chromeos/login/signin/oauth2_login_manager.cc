@@ -21,7 +21,6 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "services/identity/public/cpp/identity_manager.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
@@ -51,12 +50,10 @@ void OAuth2LoginManager::RemoveObserver(
 }
 
 void OAuth2LoginManager::RestoreSession(
-    scoped_refptr<network::SharedURLLoaderFactory> auth_url_loader_factory,
     SessionRestoreStrategy restore_strategy,
     const std::string& oauth2_refresh_token,
     const std::string& oauth2_access_token) {
   DCHECK(user_profile_);
-  auth_url_loader_factory_ = auth_url_loader_factory;
   restore_strategy_ = restore_strategy;
   refresh_token_ = oauth2_refresh_token;
   oauthlogin_access_token_ = oauth2_access_token;
@@ -112,7 +109,6 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
 }
 
 void OAuth2LoginManager::Stop() {
-  oauth2_token_fetcher_.reset();
   login_verifier_.reset();
 }
 
@@ -189,21 +185,6 @@ void OAuth2LoginManager::FireRefreshTokensLoaded() {
   GetTokenService()->LoadCredentials(std::string());
 }
 
-void OAuth2LoginManager::OnOAuth2TokensAvailable(
-    const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) {
-  VLOG(1) << "OAuth2 tokens fetched";
-  DCHECK(refresh_token_.empty());
-  refresh_token_.assign(oauth2_tokens.refresh_token);
-  oauthlogin_access_token_ = oauth2_tokens.access_token;
-  StoreOAuth2Token();
-}
-
-void OAuth2LoginManager::OnOAuth2TokensFetchFailed() {
-  LOG(ERROR) << "OAuth2 tokens fetch failed!";
-  RecordSessionRestoreOutcome(SESSION_RESTORE_TOKEN_FETCH_FAILED,
-                              SESSION_RESTORE_FAILED);
-}
-
 void OAuth2LoginManager::VerifySessionCookies() {
   DCHECK(!login_verifier_.get());
   login_verifier_.reset(new OAuth2LoginVerifier(
@@ -226,7 +207,6 @@ void OAuth2LoginManager::RestoreSessionCookies() {
 void OAuth2LoginManager::Shutdown() {
   GetTokenService()->RemoveObserver(this);
   login_verifier_.reset();
-  oauth2_token_fetcher_.reset();
 }
 
 void OAuth2LoginManager::OnSessionMergeSuccess() {
