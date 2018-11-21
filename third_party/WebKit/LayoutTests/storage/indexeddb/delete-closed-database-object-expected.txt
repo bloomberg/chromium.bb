@@ -2,7 +2,6 @@ Ensure that IDBDatabase objects are deleted when there are no retaining paths le
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "delete-closed-database-object.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

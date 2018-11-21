@@ -3,7 +3,6 @@ Test that the height of elements whose height depends on the viewport height is 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-
 PASS: number of pages is 1
 PASS: number of pages is 1
 PASS: number of pages is 1

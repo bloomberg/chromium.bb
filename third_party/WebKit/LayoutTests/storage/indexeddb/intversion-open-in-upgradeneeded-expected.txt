@@ -2,12 +2,12 @@ Test calling db.open in upgradeneeded.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "intversion-open-in-upgradeneeded.html"
 indexedDB.deleteDatabase(dbname)
 request = indexedDB.open(dbname, 1)
 request.onupgradeneeded = upgradeNeeded1
 request.onsuccess = openSuccess1
+
 
 upgradeNeeded1():
 db = event.target.result
@@ -19,8 +19,10 @@ request = indexedDB.open(dbname, 3)
 request.onupgradeneeded = upgradeNeeded2
 request.onsuccess = openSuccess2
 
+
 transactionOnComplete():
 sawTransactionComplete = true
+
 
 openSuccess1():
 PASS sawTransactionComplete is true
@@ -29,12 +31,15 @@ PASS db.version is 1
 Start a transaction to ensure the connection is still open.
 transaction = db.transaction('os')
 
+
 onVersionChange():
 db.close()
+
 
 upgradeNeeded2():
 db = event.target.result
 PASS event.newVersion is 3
+
 
 openSuccess2():
 db = event.target.result

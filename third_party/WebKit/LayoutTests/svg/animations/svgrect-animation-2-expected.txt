@@ -1,8 +1,8 @@
 SVG 1.1 dynamic animation tests
+
 Tests from-by SVGRect animation.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS rootSVGElement.viewBox.animVal.x is 0
 PASS rootSVGElement.viewBox.animVal.y is 0

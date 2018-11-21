@@ -2,15 +2,17 @@ Upgrade a database, open a second connection at the same version, ensure specify
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "intversion-upgrades.html"
 indexedDB.deleteDatabase(dbname)
 PASS String(request) is "[object IDBOpenDBRequest]"
 
+
 Call open with no version parameter:
 indexedDB.open(dbname)
 
+
 initialUpgradeNeeded():
+
 
 openSuccess():
 connection1 = event.target.result
@@ -18,8 +20,10 @@ PASS connection1.version is 1
 connection1.onversionchange = connection1VersionChangeCallback
 request = indexedDB.open(dbname, 2)
 
+
 connection1VersionChangeCallback():
 connection1.close()
+
 
 connection2UpgradeNeeded():
 connection2 = event.target.result
@@ -29,8 +33,10 @@ PASS event.oldVersion is 1
 PASS event.newVersion is 2
 request.transaction.oncomplete = transactionCompleted
 
+
 transactionCompleted():
 didTransactionComplete = true
+
 
 connection2Success():
 PASS didTransactionComplete is true
@@ -44,6 +50,7 @@ request = indexedDB.open(dbname, 2)
 request.onsuccess = connection3Success
 request.onblocked = unexpectedBlockedCallback
 
+
 connection3Success():
 event.target.result.close()
 connection2.close()
@@ -52,16 +59,19 @@ PASS connection3.version is 2
 request = indexedDB.open(dbname, 1)
 request.onerror = errorWhenTryingLowVersion
 
+
 errorWhenTryingLowVersion():
 request.error.message = The requested version (1) is less than the existing version (2).
 request = indexedDB.open(dbname, 4)
 request.onupgradeneeded = connection4UpgradeNeeded
 request.onsuccess = connection4Success
 
+
 connection4UpgradeNeeded():
 gotConnection4UpgradeNeeded = true
 PASS event.oldVersion is 2
 PASS event.newVersion is 4
+
 
 connection4Success():
 PASS gotConnection4UpgradeNeeded is true
@@ -70,6 +80,7 @@ PASS connection4.version is 4
 connection4.close()
 request = indexedDB.open(dbname)
 request.onsuccess = connection5Success
+
 
 connection5Success():
 db = event.target.result

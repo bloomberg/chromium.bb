@@ -2,7 +2,6 @@ Test mutating an IndexedDB's objectstore from a cursor.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "mutating-cursor.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

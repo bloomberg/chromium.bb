@@ -10,4 +10,3 @@ PASS: typeof embed.postMessage should be function and is.
 ----------
 [Embed is dynamically created element with only type specified]
 PASS: typeof embed.postMessage should be function and is.
- 

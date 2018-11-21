@@ -2,7 +2,6 @@ This tests that the SVGAnimatedNumberList returned by SVGTextPositioningElement.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS getRotate() is '10,20,30'
 PASS getAndSetRotate('40 50') is '40,50'
 PASS getAndSetRotate('6e1') is '60'

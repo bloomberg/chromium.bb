@@ -3,8 +3,10 @@ This test exercises the SVGMatrix interface
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+
 SVGMatrix constructors
 PASS default constructor
+
 
 Test attributes on default matrix
 PASS m.a is 1
@@ -14,6 +16,7 @@ PASS m.d is 1
 PASS m.e is 0
 PASS m.f is 0
 
+
 Test attributes on translate() and accumulation
 PASS m2.a is 1
 PASS m2.b is 0
@@ -21,6 +24,7 @@ PASS m2.c is 0
 PASS m2.d is 1
 PASS m2.e is 100
 PASS m2.f is 50
+
 
 Test immutability of translate()
 PASS parseFloat(m.a) is 1
@@ -30,6 +34,7 @@ PASS parseFloat(m.d) is 1
 PASS parseFloat(m.e) is 0
 PASS parseFloat(m.f) is 0
 
+
 Test attributes on scale()
 PASS m3.a is 5
 PASS m3.b is 0
@@ -37,6 +42,7 @@ PASS m3.c is 0
 PASS m3.d is 5
 PASS m3.e is 100
 PASS m3.f is 50
+
 
 Test immutability of scale()
 PASS parseFloat(m2.a) is 1
@@ -46,6 +52,7 @@ PASS parseFloat(m2.d) is 1
 PASS parseFloat(m2.e) is 100
 PASS parseFloat(m2.f) is 50
 
+
 Test attributes on scaleNonUniform()
 PASS m4.a is 10
 PASS m4.b is 0
@@ -53,6 +60,7 @@ PASS m4.c is 0
 PASS m4.d is 5
 PASS m4.e is 100
 PASS m4.f is 50
+
 
 Test immutability of scaleNonUniform()
 PASS parseFloat(m3.a) is 5
@@ -62,6 +70,7 @@ PASS parseFloat(m3.d) is 5
 PASS parseFloat(m3.e) is 100
 PASS parseFloat(m3.f) is 50
 
+
 Test rotate()
 PASS parseFloat(m2.a.toPrecision(6)) is 0.984808
 PASS parseFloat(m2.b.toPrecision(6)) is 0.173648
@@ -69,6 +78,7 @@ PASS parseFloat(m2.c.toPrecision(6)) is -0.173648
 PASS parseFloat(m2.d.toPrecision(6)) is 0.984808
 PASS m.e is 0
 PASS m.f is 0
+
 
 Test immutability of rotate()
 PASS parseFloat(m.a) is 1
@@ -78,6 +88,7 @@ PASS parseFloat(m.d) is 1
 PASS parseFloat(m.e) is 0
 PASS parseFloat(m.f) is 0
 
+
 Test flipX()
 PASS m4.a is -5
 PASS Math.abs(m4.b) is 0
@@ -85,6 +96,7 @@ PASS m4.c is 0
 PASS m4.d is 5
 PASS m4.e is 100
 PASS m4.f is 50
+
 
 Test immutability of flipX()
 PASS parseFloat(m3.a) is 5
@@ -94,6 +106,7 @@ PASS parseFloat(m3.d) is 5
 PASS parseFloat(m3.e) is 100
 PASS parseFloat(m3.f) is 50
 
+
 Test flipY()
 PASS m4.a is 5
 PASS m4.b is 0
@@ -101,6 +114,7 @@ PASS Math.abs(m4.c) is 0
 PASS m4.d is -5
 PASS m4.e is 100
 PASS m4.f is 50
+
 
 Test immutability of flipY()
 PASS parseFloat(m3.a) is 5
@@ -110,6 +124,7 @@ PASS parseFloat(m3.d) is 5
 PASS parseFloat(m3.e) is 100
 PASS parseFloat(m3.f) is 50
 
+
 Test skewX()
 PASS m2.a is 1
 PASS m2.b is 0
@@ -117,6 +132,7 @@ PASS parseFloat(m2.c.toPrecision(6)) is 0.577350
 PASS m2.d is 1
 PASS m2.e is 0
 PASS m2.f is 0
+
 
 Test immutability of skewX()
 PASS parseFloat(m.a) is 1
@@ -126,6 +142,7 @@ PASS parseFloat(m.d) is 1
 PASS parseFloat(m.e) is 0
 PASS parseFloat(m.f) is 0
 
+
 Test skewY()
 PASS m2.a is 1
 PASS parseFloat(m2.b.toPrecision(6)) is 0.577350
@@ -133,6 +150,7 @@ PASS m2.c is 0
 PASS m2.d is 1
 PASS m2.e is 0
 PASS m2.f is 0
+
 
 Test immutability of skewY()
 PASS parseFloat(m.a) is 1
@@ -142,6 +160,7 @@ PASS parseFloat(m.d) is 1
 PASS parseFloat(m.e) is 0
 PASS parseFloat(m.f) is 0
 
+
 Test multiply
 PASS parseFloat(m3.a) is 31
 PASS parseFloat(m3.b) is 46
@@ -150,6 +169,7 @@ PASS parseFloat(m3.d) is 58
 PASS parseFloat(m3.e) is 52
 PASS parseFloat(m3.f) is 76
 
+
 Test that multiply works in the right direction
 PASS m.a is 2
 PASS m.b is 0
@@ -157,6 +177,7 @@ PASS m.c is 0
 PASS m.d is 1
 PASS m.e is 100
 PASS m.f is 0
+
 
 Test immutability of multiply
 PASS tx.a is 1
@@ -172,8 +193,10 @@ PASS sx.d is 1
 PASS sx.e is 0
 PASS sx.f is 0
 
+
 Test multiply with missing argument
 PASS m is null
+
 
 Test inverse
 PASS parseFloat(m2.a) is 0.5
@@ -183,6 +206,7 @@ PASS parseFloat(m2.d) is 0.5
 PASS parseFloat(m2.e) is -5
 PASS parseFloat(m2.f) is -10
 
+
 Test immutability of inverse
 PASS parseFloat(m.a) is 2
 PASS parseFloat(m.b) is 0
@@ -191,8 +215,10 @@ PASS parseFloat(m.d) is 2
 PASS parseFloat(m.e) is 10
 PASS parseFloat(m.f) is 20
 
+
 Test throwing exception from inverse
 PASS m.inverse() threw exception InvalidStateError: Failed to execute 'inverse' on 'SVGMatrix': The matrix is not invertible..
+
 
 PASS successfullyParsed is true
 

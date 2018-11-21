@@ -2,7 +2,6 @@ Test that specifying a version when opening a non-existent db causes an upgraden
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "intversion-open-with-version.html"
 indexedDB.deleteDatabase(dbname)
 Should trigger:
@@ -12,6 +11,7 @@ Should trigger:
 4.1.9: Return connection.
 request = indexedDB.open(dbname, 7)
 PASS String(request) is "[object IDBOpenDBRequest]"
+
 
 PASS In the upgradeneeded event hander:
 Test 4.8.9.1:
@@ -29,6 +29,7 @@ transaction = event.target.transaction
 PASS String(transaction) is "[object IDBTransaction]"
 os = db.createObjectStore("someOS")
 sawTransactionComplete = true
+
 
 openSuccess():
 Test 4.1.7, that a versionchange transaction was run.

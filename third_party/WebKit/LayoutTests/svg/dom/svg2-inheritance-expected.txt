@@ -2,7 +2,6 @@ Validates the SVG2 inheritance model.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS SVGAElement inherits SVGGraphicsElement
 PASS SVGAngle inherits Object
 FAIL SVGAnimateColorElement is not defined

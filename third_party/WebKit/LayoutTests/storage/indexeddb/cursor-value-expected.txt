@@ -2,11 +2,11 @@ Test IndexedDB's cursor value property.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "cursor-value.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
 db.createObjectStore('store')
+
 
 testCursor():
 transaction = db.transaction('store', 'readwrite')
@@ -18,25 +18,30 @@ store.put({a: 4, b: 40}, 'key4')
 store.put({a: 5, b: 50}, 'key5')
 request = store.openCursor()
 
+
 ----------
 Value at index: 0
 cursor = request.result
 PASS cursor.key is expectedKey
+
 
 Check expected values:
 PASS cursor.value.a is expectedA
 PASS cursor.value.b is expectedB
 PASS cursor.value.foo is undefined
 
+
 Modify values:
 cursor.value.a = 3
 delete cursor.value.b
 cursor.value.foo = 'bar'
 
+
 Ensure modifications are retained:
 PASS cursor.value.a is 3
 PASS cursor.value.b is undefined
 PASS cursor.value.foo is 'bar'
+
 
 Check object value survives gc
 gc()
@@ -44,29 +49,35 @@ PASS cursor.value.a is 3
 PASS cursor.value.b is undefined
 PASS cursor.value.foo is 'bar'
 
+
 Check object identity
 localValueRef = cursor.value
 PASS localValueRef is cursor.value
+
 
 ----------
 Value at index: 1
 cursor = request.result
 PASS cursor.key is expectedKey
 
+
 Check expected values:
 PASS cursor.value.a is expectedA
 PASS cursor.value.b is expectedB
 PASS cursor.value.foo is undefined
+
 
 Modify values:
 cursor.value.a = 3
 delete cursor.value.b
 cursor.value.foo = 'bar'
 
+
 Ensure modifications are retained:
 PASS cursor.value.a is 3
 PASS cursor.value.b is undefined
 PASS cursor.value.foo is 'bar'
+
 
 Check object value survives gc
 gc()
@@ -74,29 +85,35 @@ PASS cursor.value.a is 3
 PASS cursor.value.b is undefined
 PASS cursor.value.foo is 'bar'
 
+
 Check object identity
 localValueRef = cursor.value
 PASS localValueRef is cursor.value
+
 
 ----------
 Value at index: 3
 cursor = request.result
 PASS cursor.key is expectedKey
 
+
 Check expected values:
 PASS cursor.value.a is expectedA
 PASS cursor.value.b is expectedB
 PASS cursor.value.foo is undefined
+
 
 Modify values:
 cursor.value.a = 3
 delete cursor.value.b
 cursor.value.foo = 'bar'
 
+
 Ensure modifications are retained:
 PASS cursor.value.a is 3
 PASS cursor.value.b is undefined
 PASS cursor.value.foo is 'bar'
+
 
 Check object value survives gc
 gc()
@@ -104,9 +121,11 @@ PASS cursor.value.a is 3
 PASS cursor.value.b is undefined
 PASS cursor.value.foo is 'bar'
 
+
 Check object identity
 localValueRef = cursor.value
 PASS localValueRef is cursor.value
+
 
 ensureModificationsNotPersisted():
 transaction = db.transaction('store', 'readonly')
@@ -114,6 +133,7 @@ store = transaction.objectStore('store')
 request = store.openCursor()
 cursor = request.result
 PASS cursor.key is 'key1'
+
 
 Check expected values:
 PASS cursor.value.a is 1

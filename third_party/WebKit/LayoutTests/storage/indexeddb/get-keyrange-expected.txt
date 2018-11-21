@@ -2,7 +2,6 @@ Test IndexedDB's IDBObjectStore.get(IDBKeyRange) method.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "get-keyrange.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

@@ -2,16 +2,17 @@ Test IndexedDB's objectStore.openCursor + the cursor it produces in depth.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "objectstore-cursor.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
 objectStore = db.createObjectStore('someObjectStore')
 
+
 Verify that specifying an invalid direction raises an exception:
 Expecting TypeError exception from objectStore.openCursor(0, 'invalid-direction')
 PASS Exception was thrown.
 PASS objectStore.openCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openCursor' on 'IDBObjectStore': The provided value 'invalid-direction' is not a valid enum value of type IDBCursorDirection.
+
 
 objectStore.add('', testData[nextToAdd])
 objectStore.add('', testData[nextToAdd])
@@ -23,6 +24,7 @@ objectStore.add('', testData[nextToAdd])
 Scheduling tests...
 Running tests...
 
+
 Next test: lower open bound is 0; sorted ascending.
 PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[2]
@@ -31,6 +33,7 @@ PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: lower bound is 0; sorted ascending.
 PASS event.target.result.key is testData[0]
@@ -42,12 +45,15 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: upper open bound is 0; sorted ascending.
 PASS event.target.result is null
+
 
 Next test: upper bound is 0; sorted ascending.
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 0; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -57,6 +63,7 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[1]
 PASS event.target.result is null
+
 
 Next test: lower bound is 0; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -68,12 +75,15 @@ PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
 
+
 Next test: upper open bound is 0; sorted descending.
 PASS event.target.result is null
+
 
 Next test: upper bound is 0; sorted descending.
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 0; upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[1]
@@ -82,6 +92,7 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 0; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[1]
@@ -92,6 +103,7 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower bound is 0; upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[0]
 PASS event.target.result.key is testData[1]
@@ -100,6 +112,7 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower bound is 0; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[0]
@@ -111,6 +124,7 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 0; upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
@@ -118,6 +132,7 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[1]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 0; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -128,6 +143,7 @@ PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[1]
 PASS event.target.result is null
 
+
 Next test: lower bound is 0; upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
@@ -136,6 +152,7 @@ PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
+
 
 Next test: lower bound is 0; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -147,6 +164,7 @@ PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 1; sorted ascending.
 PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[3]
@@ -154,6 +172,7 @@ PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: lower bound is 1; sorted ascending.
 PASS event.target.result.key is testData[1]
@@ -164,14 +183,17 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: upper open bound is 1; sorted ascending.
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
+
 
 Next test: upper bound is 1; sorted ascending.
 PASS event.target.result.key is testData[0]
 PASS event.target.result.key is testData[1]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 1; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -180,6 +202,7 @@ PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[2]
 PASS event.target.result is null
+
 
 Next test: lower bound is 1; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -190,14 +213,17 @@ PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[1]
 PASS event.target.result is null
 
+
 Next test: upper open bound is 1; sorted descending.
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
+
 
 Next test: upper bound is 1; sorted descending.
 PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 1; upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[2]
@@ -205,6 +231,7 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 1; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[2]
@@ -214,6 +241,7 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower bound is 1; upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[2]
@@ -221,6 +249,7 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower bound is 1; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[1]
@@ -231,12 +260,14 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 1; upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[2]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 1; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -246,6 +277,7 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[2]
 PASS event.target.result is null
 
+
 Next test: lower bound is 1; upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
@@ -253,6 +285,7 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[1]
 PASS event.target.result is null
+
 
 Next test: lower bound is 1; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -263,12 +296,14 @@ PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[1]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 2; sorted ascending.
 PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: lower bound is 2; sorted ascending.
 PASS event.target.result.key is testData[2]
@@ -278,10 +313,12 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: upper open bound is 2; sorted ascending.
 PASS event.target.result.key is testData[0]
 PASS event.target.result.key is testData[1]
 PASS event.target.result is null
+
 
 Next test: upper bound is 2; sorted ascending.
 PASS event.target.result.key is testData[0]
@@ -289,12 +326,14 @@ PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[2]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 2; sorted descending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[3]
 PASS event.target.result is null
+
 
 Next test: lower bound is 2; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -304,10 +343,12 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[2]
 PASS event.target.result is null
 
+
 Next test: upper open bound is 2; sorted descending.
 PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
+
 
 Next test: upper bound is 2; sorted descending.
 PASS event.target.result.key is testData[2]
@@ -315,11 +356,13 @@ PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 2; upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 2; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[3]
@@ -328,12 +371,14 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower bound is 2; upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower bound is 2; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[2]
@@ -343,11 +388,13 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 2; upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[3]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 2; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -356,12 +403,14 @@ PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[3]
 PASS event.target.result is null
 
+
 Next test: lower bound is 2; upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[2]
 PASS event.target.result is null
+
 
 Next test: lower bound is 2; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -371,11 +420,13 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[2]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 3; sorted ascending.
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: lower bound is 3; sorted ascending.
 PASS event.target.result.key is testData[3]
@@ -384,11 +435,13 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: upper open bound is 3; sorted ascending.
 PASS event.target.result.key is testData[0]
 PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[2]
 PASS event.target.result is null
+
 
 Next test: upper bound is 3; sorted ascending.
 PASS event.target.result.key is testData[0]
@@ -397,11 +450,13 @@ PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[3]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 3; sorted descending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
 PASS event.target.result is null
+
 
 Next test: lower bound is 3; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -410,11 +465,13 @@ PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[3]
 PASS event.target.result is null
 
+
 Next test: upper open bound is 3; sorted descending.
 PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
+
 
 Next test: upper bound is 3; sorted descending.
 PASS event.target.result.key is testData[3]
@@ -423,10 +480,12 @@ PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 3; upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 3; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[4]
@@ -434,11 +493,13 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower bound is 3; upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower bound is 3; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[3]
@@ -447,10 +508,12 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 3; upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 3; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -458,11 +521,13 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
 PASS event.target.result is null
 
+
 Next test: lower bound is 3; upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[3]
 PASS event.target.result is null
+
 
 Next test: lower bound is 3; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -471,10 +536,12 @@ PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[3]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 4; sorted ascending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: lower bound is 4; sorted ascending.
 PASS event.target.result.key is testData[4]
@@ -482,12 +549,14 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: upper open bound is 4; sorted ascending.
 PASS event.target.result.key is testData[0]
 PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[3]
 PASS event.target.result is null
+
 
 Next test: upper bound is 4; sorted ascending.
 PASS event.target.result.key is testData[0]
@@ -497,10 +566,12 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[4]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 4; sorted descending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower bound is 4; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -508,12 +579,14 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
 PASS event.target.result is null
 
+
 Next test: upper open bound is 4; sorted descending.
 PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
+
 
 Next test: upper bound is 4; sorted descending.
 PASS event.target.result.key is testData[4]
@@ -523,19 +596,23 @@ PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 4; upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 4; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower bound is 4; upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower bound is 4; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[4]
@@ -543,19 +620,23 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 4; upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower open bound is 4; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
 
+
 Next test: lower bound is 4; upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
 PASS event.target.result is null
+
 
 Next test: lower bound is 4; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -563,14 +644,17 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[4]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 5; sorted ascending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: lower bound is 5; sorted ascending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: upper open bound is 5; sorted ascending.
 PASS event.target.result.key is testData[0]
@@ -579,6 +663,7 @@ PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[4]
 PASS event.target.result is null
+
 
 Next test: upper bound is 5; sorted ascending.
 PASS event.target.result.key is testData[0]
@@ -589,14 +674,17 @@ PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 5; sorted descending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: lower bound is 5; sorted descending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: upper open bound is 5; sorted descending.
 PASS event.target.result.key is testData[4]
@@ -605,6 +693,7 @@ PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
+
 
 Next test: upper bound is 5; sorted descending.
 PASS event.target.result.key is testData[5]
@@ -615,44 +704,55 @@ PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 5; upper open bound is 6; sorted ascending.
 PASS event.target.result is null
+
 
 Next test: lower open bound is 5; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower bound is 5; upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower bound is 5; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 5; upper open bound is 6; sorted descending.
 PASS event.target.result is null
+
 
 Next test: lower open bound is 5; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower bound is 5; upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: lower bound is 5; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 6; sorted ascending.
 PASS event.target.result is null
+
 
 Next test: lower bound is 6; sorted ascending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: upper open bound is 6; sorted ascending.
 PASS event.target.result.key is testData[0]
@@ -662,6 +762,7 @@ PASS event.target.result.key is testData[3]
 PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result is null
+
 
 Next test: upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[0]
@@ -673,12 +774,15 @@ PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 6; sorted descending.
 PASS event.target.result is null
+
 
 Next test: lower bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: upper open bound is 6; sorted descending.
 PASS event.target.result.key is testData[5]
@@ -688,6 +792,7 @@ PASS event.target.result.key is testData[2]
 PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
+
 
 Next test: upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
@@ -699,31 +804,40 @@ PASS event.target.result.key is testData[1]
 PASS event.target.result.key is testData[0]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 6; upper open bound is 6; sorted ascending.
 Skipping illegal key range.
+
 
 Next test: lower open bound is 6; upper bound is 6; sorted ascending.
 Skipping illegal key range.
 
+
 Next test: lower bound is 6; upper open bound is 6; sorted ascending.
 Skipping illegal key range.
+
 
 Next test: lower bound is 6; upper bound is 6; sorted ascending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
 
+
 Next test: lower open bound is 6; upper open bound is 6; sorted descending.
 Skipping illegal key range.
+
 
 Next test: lower open bound is 6; upper bound is 6; sorted descending.
 Skipping illegal key range.
 
+
 Next test: lower bound is 6; upper open bound is 6; sorted descending.
 Skipping illegal key range.
+
 
 Next test: lower bound is 6; upper bound is 6; sorted descending.
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: null key path sorted ascending.
 PASS event.target.result.key is testData[0]
@@ -734,6 +848,7 @@ PASS event.target.result.key is testData[4]
 PASS event.target.result.key is testData[5]
 PASS event.target.result.key is testData[6]
 PASS event.target.result is null
+
 
 Next test: null key path sorted descending.
 PASS event.target.result.key is testData[6]

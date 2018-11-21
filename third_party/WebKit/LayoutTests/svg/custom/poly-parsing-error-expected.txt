@@ -6,7 +6,6 @@ Tests whether polygons render up to first parsing error.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS poly1.points.numberOfItems is 4
 PASS poly2.points.numberOfItems is 4
 PASS poly3.points.numberOfItems is 4

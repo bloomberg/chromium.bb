@@ -2,7 +2,6 @@ Test IndexedDB's cursor skips deleted entries.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "cursor-skip-deleted.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -13,6 +12,7 @@ objectStore = db.createObjectStore('store', {keyPath: 'id'})
 objectStore.createIndex('nameIndex', 'name')
 
 resetObjectStore():
+
 
 basicCursorTest()
 trans = db.transaction(['store'], 'readwrite')
@@ -52,7 +52,9 @@ request = trans.objectStore('store').delete(18)
 24: Yankee
 
 
+
 resetObjectStore():
+
 
 reverseCursorTest():
 
@@ -91,7 +93,9 @@ request = trans.objectStore('store').delete(8)
 1: Bravo
 
 
+
 resetObjectStore():
+
 
 indexCursorTest():
 
@@ -128,6 +132,7 @@ request = trans.objectStore('store').delete(18)
 22: Whiskey
 23: X-ray
 24: Yankee
+
 
 transactionComplete():
 PASS successfullyParsed is true

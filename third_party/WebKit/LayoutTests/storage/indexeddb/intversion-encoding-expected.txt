@@ -2,9 +2,9 @@ Test that integer versions are encoded/decoded consistently.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "intversion-encoding.html"
 indexedDB.deleteDatabase(dbname)
+
 
 openFirstTime():
 version = 1
@@ -18,11 +18,13 @@ db = request.result
 PASS db.version is version
 db.close()
 
+
 openSecondTime():
 request = indexedDB.open(dbname)
 db = request.result
 PASS db.version is version
 db.close()
+
 
 openFirstTime():
 version = 127
@@ -36,11 +38,13 @@ db = request.result
 PASS db.version is version
 db.close()
 
+
 openSecondTime():
 request = indexedDB.open(dbname)
 db = request.result
 PASS db.version is version
 db.close()
+
 
 openFirstTime():
 version = 128
@@ -54,11 +58,13 @@ db = request.result
 PASS db.version is version
 db.close()
 
+
 openSecondTime():
 request = indexedDB.open(dbname)
 db = request.result
 PASS db.version is version
 db.close()
+
 
 openFirstTime():
 version = 2147483648
@@ -72,11 +78,13 @@ db = request.result
 PASS db.version is version
 db.close()
 
+
 openSecondTime():
 request = indexedDB.open(dbname)
 db = request.result
 PASS db.version is version
 db.close()
+
 
 openFirstTime():
 version = 9007199254740991
@@ -90,11 +98,13 @@ db = request.result
 PASS db.version is version
 db.close()
 
+
 openSecondTime():
 request = indexedDB.open(dbname)
 db = request.result
 PASS db.version is version
 db.close()
+
 
 openFirstTime():
 PASS successfullyParsed is true

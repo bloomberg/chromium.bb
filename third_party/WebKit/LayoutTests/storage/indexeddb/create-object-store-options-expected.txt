@@ -2,7 +2,6 @@ Test IndexedDB's createObjectStore's various options
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "create-object-store-options.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

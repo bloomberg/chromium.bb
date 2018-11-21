@@ -2,7 +2,6 @@ Test for valid and invalid keypaths
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "keypath-basics.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -145,8 +144,10 @@ index = store.createIndex('name', '_\u200D')
 PASS index.keyPath is '_\u200D'
 Deleted all object stores.
 
+
 testInvalidKeyPaths():
 Deleted all object stores.
+
 
 Object store key path may not be empty or an array if autoIncrement is true
 Expecting exception from store = db.createObjectStore('storeName', {autoIncrement: true, keyPath: ''})
@@ -164,6 +165,7 @@ PASS Exception was thrown.
 PASS code is DOMException.INVALID_ACCESS_ERR
 Exception message: Failed to execute 'createObjectStore' on 'IDBDatabase': The autoIncrement option was set but the keyPath option was empty or an array.
 Deleted all object stores.
+
 
 Key paths which are never valid:
 Expecting exception from db.createObjectStore('name', {keyPath: ' '})

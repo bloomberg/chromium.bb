@@ -2,7 +2,6 @@ Test IndexedDB indexes against autoincrementing keys
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "autoincrement-indexes.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

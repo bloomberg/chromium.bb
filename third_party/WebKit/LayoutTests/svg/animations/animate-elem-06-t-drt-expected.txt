@@ -4,7 +4,6 @@ A copy of the corresponding W3C-SVG-1.1 test, which dumps the animation at certa
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS getTransformToElement(rootSVGElement, path).e is -15
 PASS getTransformToElement(rootSVGElement, path).f is -43
 FAIL getTransformToElement(rootSVGElement, path).e should be close to -38.5. Was -38.36632537841797.

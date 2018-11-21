@@ -2,7 +2,6 @@ Test IndexedDB's IDBCursor.continue() with a key parameter.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "cursor-continue.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -26,6 +25,7 @@ objectStore.add({'x': testData[nextToAdd]}, nextToAdd)
 objectStore.add({'x': testData[nextToAdd]}, nextToAdd)
 objectStore.add({'x': testData[nextToAdd]}, nextToAdd)
 objectStore.add({'x': testData[nextToAdd]}, nextToAdd)
+
 
 indexObject.openKeyCursor(null, 'next')
 PASS event.target.result.primaryKey is 0
@@ -52,6 +52,7 @@ PASS event.target.result.primaryKey is 17
 event.target.result.continue()
 PASS event.target.result is null
 
+
 indexObject.openKeyCursor(null, 'prev')
 PASS event.target.result.primaryKey is 17
 event.target.result.continue('A bit2')
@@ -70,6 +71,7 @@ event.target.result.continue()
 PASS event.target.result.primaryKey is 0
 event.target.result.continue()
 PASS event.target.result is null
+
 
 indexObject.openKeyCursor(null, 'prevunique')
 PASS event.target.result.primaryKey is 17
@@ -92,6 +94,7 @@ PASS event.target.result.primaryKey is 0
 event.target.result.continue()
 PASS event.target.result is null
 
+
 indexObject.openKeyCursor(null, 'next')
 PASS event.target.result.primaryKey is 0
 event.target.result.continue(3.14159)
@@ -101,6 +104,7 @@ PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'DataError'
 Exception message: Failed to execute 'continue' on 'IDBCursor': The parameter is less than or equal to this cursor's position.
+
 
 indexObject.openKeyCursor(null, 'next')
 PASS event.target.result.primaryKey is 0
@@ -112,6 +116,7 @@ PASS code is 0
 PASS ename is 'DataError'
 Exception message: Failed to execute 'continue' on 'IDBCursor': The parameter is less than or equal to this cursor's position.
 
+
 indexObject.openKeyCursor(null, 'prev')
 PASS event.target.result.primaryKey is 17
 event.target.result.continue('A bit2')
@@ -121,6 +126,7 @@ PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'DataError'
 Exception message: Failed to execute 'continue' on 'IDBCursor': The parameter is greater than or equal to this cursor's position.
+
 
 indexObject.openKeyCursor(null, 'prev')
 PASS event.target.result.primaryKey is 17

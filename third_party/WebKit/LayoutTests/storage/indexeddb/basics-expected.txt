@@ -2,7 +2,6 @@ Test IndexedDB's basics.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 indexedDB.open('basics')
 PASS 'result' in request is true
 Expecting exception from request.result

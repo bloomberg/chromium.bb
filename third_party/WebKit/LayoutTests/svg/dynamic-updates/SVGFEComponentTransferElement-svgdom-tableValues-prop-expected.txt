@@ -1,8 +1,8 @@
 SVG 1.1 dynamic update tests
+
 Tests dynamic updates of the 'tableValues' property of the SVGFEComponentTransferElement object
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS SVGNumberListToString(feRFunc.tableValues.baseVal) is "0 1 1 0 "
 PASS SVGNumberListToString(feGFunc.tableValues.baseVal) is "0 1 1 0.5 "

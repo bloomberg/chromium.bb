@@ -2,7 +2,6 @@ Verify that queuing up several commands works (and they all fire).
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "queued-commands.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

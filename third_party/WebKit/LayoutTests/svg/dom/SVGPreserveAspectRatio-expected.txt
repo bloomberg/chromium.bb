@@ -8,9 +8,11 @@ Check initial align/meetOrSlice values
 PASS preserveAspectRatio.align is SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_XMIDYMID
 PASS preserveAspectRatio.meetOrSlice is SVGPreserveAspectRatio.SVG_MEETORSLICE_MEET
 
+
 Check assigning align/meetOrSlice values
 PASS preserveAspectRatio.align = SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_XMIDYMIN is SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_XMIDYMIN
 PASS preserveAspectRatio.meetOrSlice = SVGPreserveAspectRatio.SVG_MEETORSLICE_SLICE is SVGPreserveAspectRatio.SVG_MEETORSLICE_SLICE
+
 
 Check assigning invalid align values
 PASS preserveAspectRatio.align = preserveAspectRatio threw exception NotSupportedError: Failed to set the 'align' property on 'SVGPreserveAspectRatio': The alignment provided is invalid..
@@ -21,6 +23,7 @@ PASS preserveAspectRatio.align = SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_
 PASS preserveAspectRatio.align = -1 threw exception NotSupportedError: Failed to set the 'align' property on 'SVGPreserveAspectRatio': The alignment provided is invalid..
 PASS preserveAspectRatio.align = 11 threw exception NotSupportedError: Failed to set the 'align' property on 'SVGPreserveAspectRatio': The alignment provided is invalid..
 
+
 Check assigning invalid meetOrSlice values
 PASS preserveAspectRatio.meetOrSlice = preserveAspectRatio threw exception NotSupportedError: Failed to set the 'meetOrSlice' property on 'SVGPreserveAspectRatio': The meetOrSlice provided is invalid..
 PASS preserveAspectRatio.meetOrSlice = null threw exception NotSupportedError: Failed to set the 'meetOrSlice' property on 'SVGPreserveAspectRatio': The meetOrSlice provided is invalid..
@@ -29,6 +32,7 @@ PASS preserveAspectRatio.meetOrSlice = svgElement threw exception NotSupportedEr
 PASS preserveAspectRatio.meetOrSlice = SVGPreserveAspectRatio.SVG_MEETORSLICE_UNKNOWN threw exception NotSupportedError: Failed to set the 'meetOrSlice' property on 'SVGPreserveAspectRatio': The meetOrSlice provided is invalid..
 PASS preserveAspectRatio.meetOrSlice = -1 threw exception NotSupportedError: Failed to set the 'meetOrSlice' property on 'SVGPreserveAspectRatio': The meetOrSlice provided is invalid..
 PASS preserveAspectRatio.meetOrSlice = 3 threw exception NotSupportedError: Failed to set the 'meetOrSlice' property on 'SVGPreserveAspectRatio': The meetOrSlice provided is invalid..
+
 
 Check that the preserveAspectRatio remained correct
 PASS preserveAspectRatio.align = SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_XMIDYMIN is SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_XMIDYMIN

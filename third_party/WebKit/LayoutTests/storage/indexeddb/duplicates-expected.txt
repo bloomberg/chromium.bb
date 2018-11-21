@@ -2,7 +2,6 @@ Verify that you can put the same data in 2 different databases without uniquenes
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "duplicates.html-1"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

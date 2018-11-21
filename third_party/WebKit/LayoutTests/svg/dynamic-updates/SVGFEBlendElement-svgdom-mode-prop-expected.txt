@@ -1,8 +1,8 @@
 SVG 1.1 dynamic update tests
+
 Tests dynamic updates of the 'mode' property of the SVGFEBlendElement object
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS normalBlend.mode.baseVal is SVGFEBlendElement.SVG_FEBLEND_MODE_LIGHTEN
 PASS multiplyBlend.mode.baseVal is SVGFEBlendElement.SVG_FEBLEND_MODE_NORMAL

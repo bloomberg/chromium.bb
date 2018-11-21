@@ -2,7 +2,6 @@ Test IndexedDB transaction does not crash on abort.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "transaction-crash-on-abort.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

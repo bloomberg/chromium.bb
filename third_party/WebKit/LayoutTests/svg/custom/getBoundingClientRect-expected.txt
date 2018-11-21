@@ -10,6 +10,7 @@ PASS r1.height is 50
 PASS r1.right is 60
 PASS r1.bottom is 80
 
+
 Checking a resized rectangle at relative coordinates:
 PASS r2.left is 180
 PASS r2.top is 15
@@ -17,6 +18,7 @@ PASS r2.width is 160
 PASS r2.height is 25
 PASS r2.right is 340
 PASS r2.bottom is 40
+
 
 Checking rectangles with overflow:
 PASS r3.left is 300
@@ -31,6 +33,7 @@ PASS r4.width is 210
 PASS r4.height is 60
 PASS r4.right is 510
 PASS r4.bottom is 110
+
 
 PASS successfullyParsed is true
 

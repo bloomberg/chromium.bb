@@ -1,8 +1,8 @@
 SVG 1.1 dynamic animation tests
+
 Tests SVGAngle animation from rad to deg.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS marker.orientAngle.animVal.value is 0
 PASS marker.orientAngle.baseVal.value is 0

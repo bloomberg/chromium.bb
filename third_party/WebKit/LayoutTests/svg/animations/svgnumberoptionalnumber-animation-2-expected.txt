@@ -1,8 +1,8 @@
 SVG 1.1 dynamic animation tests
+
 Test 'to' animation of SVGNumberOptionalNumber without optional number.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS feGaussianBlur.stdDeviationX.animVal is 5
 PASS feGaussianBlur.stdDeviationY.animVal is 5

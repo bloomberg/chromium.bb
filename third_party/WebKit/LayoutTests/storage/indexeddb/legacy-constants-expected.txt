@@ -1,4 +1,5 @@
 
+
 Verify that constants from previous version of the spec (beyond a grace period) have been removed:
 PASS IDBKeyRange.SINGLE is undefined
 PASS IDBKeyRange.LEFT_OPEN is undefined

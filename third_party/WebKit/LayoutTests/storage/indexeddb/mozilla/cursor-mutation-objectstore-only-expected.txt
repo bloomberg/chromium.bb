@@ -2,7 +2,6 @@ Test IndexedDB's cursor mutation during object store cursor iteration
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "cursor-mutation-objectstore-only.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

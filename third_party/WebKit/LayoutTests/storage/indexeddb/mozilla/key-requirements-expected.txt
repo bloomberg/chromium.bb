@@ -2,7 +2,6 @@ Test IndexedDB's event.target.result after add() and put()
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "key-requirements.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

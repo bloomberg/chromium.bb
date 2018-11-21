@@ -142,5 +142,3 @@ CONSOLE MESSAGE: line 32: PASS: error event fired for http://255.255.255.255:80/
 http://255.255.255.255/test.jpg - willSendRequest <NSURLRequest URL http://255.255.255.255/test.jpg, main document URL block-test.html, http method GET>
 CONSOLE MESSAGE: line 32: PASS: error event fired for http://255.255.255.255:/test.jpg
 This test attempts to change the src of an IMG tag to all black listed ports to confirm that each fires an error event. It also tries the FTP ports for exemptions.
-
-

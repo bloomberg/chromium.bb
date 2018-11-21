@@ -2,7 +2,6 @@ Confirm that blobs can be read back before their records are committed.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "blob-valid-before-commit.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
@@ -15,4 +14,5 @@ PASS document.getElementById('frame2').contentDocument.body.innerText is blobBCo
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
   

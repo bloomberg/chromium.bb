@@ -2,7 +2,6 @@ Tests whether removing the viewBox attribute propagates to the viewBox DOM value
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS svg.viewBox.baseVal.x is 20
 PASS svg.viewBox.baseVal.y is 10
 PASS svg.viewBox.baseVal.width is 200

@@ -1,9 +1,9 @@
 SVG 1.1 dynamic animation tests
 test
+
 Test SVGTextPathSpacingType/SVGTextPathMethodType enumeration animations
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
-
 
 PASS textPath.method.animVal is SVGTextPathElement.TEXTPATH_METHODTYPE_ALIGN
 PASS textPath.method.baseVal is SVGTextPathElement.TEXTPATH_METHODTYPE_ALIGN

@@ -2,9 +2,9 @@ Test that integer versions are retained when backing store is opened/closed/re-o
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "intversion-persistence.html"
 dbname = dbname + Date.now()
+
 
 openFirstTime():
 indexedDB.open(dbname, 1)
@@ -19,12 +19,14 @@ PASS db.version is 1
 PASS db.objectStoreNames.length is 1
 db.close()
 
+
 openSecondTime():
 indexedDB.open(dbname, 1)
 db = request.result
 PASS db.version is 1
 PASS db.objectStoreNames.length is 1
 db.close()
+
 
 PASS successfullyParsed is true
 

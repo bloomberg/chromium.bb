@@ -2,9 +2,9 @@ Test that bad version parameters cause TypeError
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "intversion-bad-parameters.html"
 indexedDB.deleteDatabase(dbname)
+
 
 deleteSuccess():
 Expecting TypeError exception from indexedDB.open(dbname, 'stringversion')

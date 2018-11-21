@@ -2,7 +2,6 @@ Test transaction aborts send the proper onabort messages..
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "transaction-abort.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

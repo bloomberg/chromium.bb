@@ -2,17 +2,18 @@ Confirm basic Blob/File/FileList functionality.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "blob-basics-metadata.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
 store = db.createObjectStore('storeName')
 store.put('value', 'key')
 
+
 testBlob():
 PASS FileReader != null is true
 test_content = 'This is a test. This is only a test.'
 blob = new Blob([test_content])
+
 
 validateResult(blob):
 PASS blob.size == test_content.length is true
@@ -24,8 +25,10 @@ store = transaction.objectStore('storeName')
 request = store.get('blobkey')
 PASS event.target.result.size == test_content.length is true
 
+
 testFile():
 file = fileInput.files[0]
+
 
 validateResult(file):
 PASS file.name == fileInput.files[0].name is true
@@ -37,8 +40,10 @@ store = transaction.objectStore('storeName')
 request = store.get('filekey')
 PASS event.target.result.name == fileInput.files[0].name is true
 
+
 testNewFile():
 newFile = new File([test_content], 'filename', {type:'text/plain'})
+
 
 validateResult(newFile):
 PASS newFile.name == newFile.name is true
@@ -50,8 +55,10 @@ store = transaction.objectStore('storeName')
 request = store.get('newFilekey')
 PASS event.target.result.name == newFile.name is true
 
+
 testFileList():
 filelist = fileInput.files
+
 
 validateResult(filelist):
 PASS filelist[1].name == fileInput.files[1].name is true
@@ -62,6 +69,7 @@ transaction = db.transaction('storeName', 'readwrite')
 store = transaction.objectStore('storeName')
 request = store.get('filelistkey')
 PASS event.target.result[1].name == fileInput.files[1].name is true
+
 
 testCursor():
 transaction = db.transaction('storeName', 'readonly')
@@ -81,4 +89,5 @@ PASS cursor is null
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

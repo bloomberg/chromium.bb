@@ -82,7 +82,6 @@ Test that 'length' presentation attribute values are parsed with CSS presentatio
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS computedStyle("mask", "x", "  100") is "100px"
 PASS computedStyle("mask", "x", "100   ") is "100px"
 PASS computedStyle("mask", "x", "100px") is "100px"
@@ -251,4 +250,5 @@ PASS computedStyle("circle", "r", "{ 100px }") is "0px"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 

@@ -1,10 +1,12 @@
 ABC
+
+
 This is a test of the simple SVGStringList API parts.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS text1.requiredExtensions.numberOfItems is 3
+
 
 Test uncommon arguments for initialize()
 PASS text1.requiredExtensions.initialize('30') is "30"
@@ -24,11 +26,13 @@ PASS text1.requiredExtensions.numberOfItems is 1
 PASS text1.requiredExtensions.getItem(0) is "aString"
 PASS text1.getAttribute('requiredExtensions') is "aString"
 
+
 Test uncommon arguments for getItem()
 PASS text1.requiredExtensions.getItem(30) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGStringList': The index provided (30) is greater than the maximum bound (1)..
 PASS text1.requiredExtensions.getItem('aString') is text1.requiredExtensions.getItem(0)
 PASS text1.requiredExtensions.getItem(text1) is text1.requiredExtensions.getItem(0)
 PASS text1.requiredExtensions.getItem(null) is text1.requiredExtensions.getItem(0)
+
 
 Test uncommon arguments for insertItemBefore()
 PASS text1.requiredExtensions.insertItemBefore(30) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGStringList': 2 arguments required, but only 1 present..
@@ -66,6 +70,7 @@ PASS text1.requiredExtensions.getItem(3) is "30"
 PASS text1.requiredExtensions.getItem(4) is "aString"
 PASS text1.getAttribute('requiredExtensions') is "null [object SVGTextElement] aString 30 aString"
 
+
 Set requiredExtensions='1 2 3 4' for text1
 PASS text1.setAttribute('requiredExtensions', '1 2 3 4') is undefined.
 PASS text1.requiredExtensions.numberOfItems is 4
@@ -74,6 +79,7 @@ PASS text1.requiredExtensions.getItem(1) is "2"
 PASS text1.requiredExtensions.getItem(2) is "3"
 PASS text1.requiredExtensions.getItem(3) is "4"
 PASS text1.getAttribute('requiredExtensions') is "1 2 3 4"
+
 
 Test uncommon arguments for replaceItem() - part 1
 PASS text1.requiredExtensions.replaceItem(30) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGStringList': 2 arguments required, but only 1 present..
@@ -108,6 +114,7 @@ PASS text1.requiredExtensions.getItem(2) is "[object SVGTextElement]"
 PASS text1.requiredExtensions.getItem(3) is "aString"
 PASS text1.getAttribute('requiredExtensions') is "null 1 [object SVGTextElement] aString"
 
+
 Set requiredExtensions='1 2 3 4' for text1
 PASS text1.setAttribute('requiredExtensions', '1 2 3 4') is undefined.
 PASS text1.requiredExtensions.numberOfItems is 4
@@ -116,6 +123,7 @@ PASS text1.requiredExtensions.getItem(1) is "2"
 PASS text1.requiredExtensions.getItem(2) is "3"
 PASS text1.requiredExtensions.getItem(3) is "4"
 PASS text1.getAttribute('requiredExtensions') is "1 2 3 4"
+
 
 Test uncommon arguments for replaceItem() - part 2
 PASS text1.requiredExtensions.replaceItem(text1.requiredExtensions.getItem(0), 0) is "1"
@@ -147,6 +155,7 @@ PASS text1.requiredExtensions.getItem(2) is "3"
 PASS text1.requiredExtensions.getItem(3) is "4"
 PASS text1.getAttribute('requiredExtensions') is "1 2 3 4"
 
+
 Test uncommon arguments for removeItem()
 PASS text1.requiredExtensions.removeItem(30) threw exception IndexSizeError: Failed to execute 'removeItem' on 'SVGStringList': The index provided (30) is greater than the maximum bound (4)..
 PASS text1.requiredExtensions.removeItem('aString') is "1"
@@ -161,6 +170,7 @@ PASS text1.requiredExtensions.removeItem(null) is "3"
 PASS text1.requiredExtensions.numberOfItems is 1
 PASS text1.getAttribute('requiredExtensions') is "4"
 PASS text1.requiredExtensions.getItem(0) is "4"
+
 
 Test uncommon arguments for appendItem()
 PASS text1.requiredExtensions.appendItem(30) is "30"
@@ -189,6 +199,7 @@ PASS text1.requiredExtensions.getItem(2) is "aString"
 PASS text1.requiredExtensions.getItem(3) is "[object SVGTextElement]"
 PASS text1.requiredExtensions.getItem(4) is "null"
 PASS text1.getAttribute('requiredExtensions') is "4 30 aString [object SVGTextElement] null"
+
 
 clear() requiredExtensions list so text on top shows up
 PASS text1.requiredExtensions.clear() is undefined.

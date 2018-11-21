@@ -2,10 +2,10 @@ Test IndexedDB's cursor mutation
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "cursor-mutation.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
+
 
 setupObjectStoreAndCreateIndex():
 objectStore = db.createObjectStore('foo', { keyPath: 'ss' })
@@ -24,11 +24,13 @@ objectStore.add(objectStoreData[2])
 objectStore.add(objectStoreData[3])
 objectStore.add(objectStoreData[4])
 
+
 setupCursor():
 count = 0
 sawAdded = false
 sawRemoved = false
 request = objectStore.openCursor()
+
 
 iterateCursor():
 cursor = event.target.result
@@ -37,11 +39,13 @@ sawRemoved = true
 count++
 cursor.continue()
 
+
 iterateCursor():
 cursor = event.target.result
 PASS cursor.value.name is "Ann"
 count++
 cursor.continue()
+
 
 iterateCursor():
 cursor = event.target.result
@@ -49,11 +53,13 @@ PASS cursor.value.name is "Ron"
 count++
 cursor.continue()
 
+
 iterateCursor():
 cursor = event.target.result
 PASS cursor.value.name is "Sue"
 count++
 cursor.continue()
+
 
 iterateCursor():
 cursor = event.target.result
@@ -61,13 +67,16 @@ PASS cursor.value.name is "Joe"
 count++
 cursor.continue()
 
+
 iterateCursor():
 cursor = event.target.result
+
 
 checkCursorResults():
 PASS count is objectStoreData.length - 1
 PASS sawAdded is false
 PASS sawRemoved is true
+
 
 setupMutatingCursor():
 count = 0
@@ -76,28 +85,34 @@ sawRemoved = false
 [objectStoreDataNameSort is an array of indexes into objectStoreData in alphabetical order by name]
 objectStoreDataNameSort = [ 1, 4, 5, 2, 3 ]
 
+
 trans = db.transaction('foo', 'readwrite')
 objectStore = trans.objectStore('foo')
 request = objectStore.index('name').openCursor()
 trans.oncomplete = checkMutatingCursorResults
+
 
 iterateMutatingCursor():
 cursor = event.target.result
 PASS cursor.value.name is "Ann"
 count++
 
+
 Mutating the object store:
 Removing Bob
 request = objectStore.delete(objectStoreData[0].ss)
+
 
 addFinalData():
 Adding Pat
 request = objectStore.add(objectStoreData[objectStoreData.length - 1])
 
+
 iterateMutatingCursor():
 cursor = event.target.result
 PASS cursor.value.name is "Joe"
 count++
+
 
 iterateMutatingCursor():
 cursor = event.target.result
@@ -105,18 +120,22 @@ PASS cursor.value.name is "Pat"
 sawAdded = true
 count++
 
+
 iterateMutatingCursor():
 cursor = event.target.result
 PASS cursor.value.name is "Ron"
 count++
+
 
 iterateMutatingCursor():
 cursor = event.target.result
 PASS cursor.value.name is "Sue"
 count++
 
+
 iterateMutatingCursor():
 cursor = event.target.result
+
 
 checkMutatingCursorResults():
 PASS count is objectStoreData.length - 1

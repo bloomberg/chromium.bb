@@ -2,7 +2,6 @@ Test mouse events are routed to lock target.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.onpointerlockchange event received.
 PASS document.pointerLockElement is targetdiv1
      With a lock in place send a click.

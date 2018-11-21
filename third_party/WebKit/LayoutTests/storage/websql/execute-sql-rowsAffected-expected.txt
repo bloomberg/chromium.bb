@@ -2,7 +2,6 @@ This test tests that SQLResultSet.rowsAffected attribute is correct in success c
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS rowsAffected is 1
 PASS rowsAffected is 1
 PASS rowsAffected is 2

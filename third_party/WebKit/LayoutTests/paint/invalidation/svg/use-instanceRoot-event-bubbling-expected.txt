@@ -2,10 +2,10 @@ Tests whether SVG event bubbling works across shadow trees.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 PASS msg is "[EventHandler 1] type: click phase: AT_TARGET target: [object SVGRectElement] (id: rect) currentTarget: [object SVGRectElement] (id: rect)"
 PASS msg is "[EventHandler 1] type: click phase: AT_TARGET target: [object SVGRectElement] (id: rect) currentTarget: [object SVGRectElement] (id: rect)"
 PASS msg is "[EventHandler 2] type: click phase: BUBBLING target: [object SVGRectElement] (id: rect) currentTarget: [object SVGGElement] (id: rectParent)"

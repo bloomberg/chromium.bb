@@ -2,7 +2,6 @@ Test IndexedDB odd value datatypes
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "values-odd-types.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

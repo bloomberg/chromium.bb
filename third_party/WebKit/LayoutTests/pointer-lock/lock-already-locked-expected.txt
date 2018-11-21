@@ -2,7 +2,6 @@ Test calling lock when already in a locked state.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS document.pointerLockElement is null
      Locking targetdiv1.
 PASS document.onpointerlockchange event received.

@@ -2,7 +2,6 @@ Test IndexedDB: adds, gets, deletes, and re-gets a record in a variety of differ
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 data = [
         { name: 'inline key; key generator',
           autoIncrement: true,
@@ -30,6 +29,7 @@ data = [
         }
     ];
 i = 0;
+
 
 dbname = "object-store-remove-values.html"
 indexedDB.deleteDatabase(dbname)

@@ -2,7 +2,6 @@ Test IndexedDB: mutating records with a r/w cursor updates indexes on those reco
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 firstValue = 'hi';
 secondValue = 'bye';
 objectStoreInfo = [
@@ -16,6 +15,7 @@ objectStoreInfo = [
           entry: { data: firstValue } },
     ];
 i = 0;
+
 
 dbname = "cursor-update-updates-indexes.html"
 indexedDB.deleteDatabase(dbname)

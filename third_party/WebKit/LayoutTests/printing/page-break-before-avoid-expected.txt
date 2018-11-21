@@ -3,7 +3,6 @@ Test for page-break-before:avoid
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-
 PASS: page number of "page1" is 1
 FAIL: expected page number of "page2-1" is 2. Was 1
 FAIL: expected page number of "page2-2" is 2. Was 1

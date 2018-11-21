@@ -18,4 +18,3 @@ xMax*
 *YMid
 *YMax
 $Revision: 1.6 $
-

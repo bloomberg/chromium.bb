@@ -2,7 +2,6 @@
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Starting worker: resources/transaction-complete-workers.js
 [Worker] dbname = "transaction-complete-workers.js"
 [Worker] indexedDB.deleteDatabase(dbname)

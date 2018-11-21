@@ -2,7 +2,6 @@
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Starting worker: resources/pending-activity.js
 [Worker] dbname = "pending-activity.js"
 [Worker] indexedDB.deleteDatabase(dbname)

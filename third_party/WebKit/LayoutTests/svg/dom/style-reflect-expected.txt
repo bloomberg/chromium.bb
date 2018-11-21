@@ -2,7 +2,6 @@ This test checks that the type, media and title properties on an SVGStyleElement
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS style.type is "text/css"
 PASS style.media is "all"
 PASS style.title is ""

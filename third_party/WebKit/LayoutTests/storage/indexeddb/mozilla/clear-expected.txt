@@ -2,7 +2,6 @@ Test IndexedDB's clearing an object store
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 dbname = "clear.html"
 indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)

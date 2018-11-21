@@ -2,7 +2,6 @@ Test IndexedDB's KeyRange.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS 'lower' in IDBKeyRange is false
 PASS 'upper' in IDBKeyRange is false
 PASS 'lowerOpen' in IDBKeyRange is false
@@ -11,6 +10,7 @@ PASS 'only' in IDBKeyRange is true
 PASS 'lowerBound' in IDBKeyRange is true
 PASS 'upperBound' in IDBKeyRange is true
 PASS 'bound' in IDBKeyRange is true
+
 
 instance = IDBKeyRange.only(1)
 PASS 'lower' in instance is true
@@ -21,6 +21,7 @@ PASS 'only' in instance is false
 PASS 'lowerBound' in instance is false
 PASS 'upperBound' in instance is false
 PASS 'bound' in instance is false
+
 
 IDBKeyRange.only(1)
 PASS keyRange.lower is 1
