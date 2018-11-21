@@ -79,6 +79,10 @@ void Frame::Detach(FrameDetachType type) {
   lifecycle_.AdvanceTo(FrameLifecycle::kDetaching);
 
   DetachImpl(type);
+
+  if (GetPage())
+    GetPage()->GetFocusController().FrameDetached(this);
+
   // Due to re-entrancy, |this| could have completed detaching already.
   // TODO(dcheng): This DCHECK is not always true. See https://crbug.com/838348.
   DCHECK(IsDetached() == !client_);

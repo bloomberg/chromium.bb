@@ -26,6 +26,8 @@
 
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 
+#include <limits>
+
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -57,8 +59,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/slot_scoped_traversal.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
-
-#include <limits>
 
 namespace blink {
 
@@ -843,10 +843,7 @@ void FocusController::FocusDocumentView(Frame* frame, bool notify_embedder) {
 }
 
 LocalFrame* FocusController::FocusedFrame() const {
-  // TODO(alexmos): Strengthen this to DCHECK that whoever called this really
-  // expected a LocalFrame. Refactor call sites so that the rare cases that
-  // need to know about focused RemoteFrames use a separate accessor (to be
-  // added).
+  // All callsites only care about *local* focused frames.
   if (focused_frame_ && focused_frame_->IsRemoteFrame())
     return nullptr;
   return ToLocalFrame(focused_frame_.Get());
@@ -856,9 +853,10 @@ Frame* FocusController::FocusedOrMainFrame() const {
   if (LocalFrame* frame = FocusedFrame())
     return frame;
 
-  // FIXME: This is a temporary hack to ensure that we return a LocalFrame, even
-  // when the mainFrame is remote.  FocusController needs to be refactored to
-  // deal with RemoteFrames cross-process focus transfers.
+  // TODO(dcheng, alexmos): https://crbug.com/820786: This is a temporary hack
+  // to ensure that we return a LocalFrame, even when the mainFrame is remote.
+  // FocusController needs to be refactored to deal with RemoteFrames
+  // cross-process focus transfers.
   for (Frame* frame = &page_->MainFrame()->Tree().Top(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (frame->IsLocalFrame() && ToLocalFrame(frame)->IsLocalRoot())
@@ -866,6 +864,11 @@ Frame* FocusController::FocusedOrMainFrame() const {
   }
 
   return page_->MainFrame();
+}
+
+void FocusController::FrameDetached(Frame* detached_frame) {
+  if (detached_frame == focused_frame_)
+    SetFocusedFrame(nullptr);
 }
 
 HTMLFrameOwnerElement* FocusController::FocusedFrameOwnerElement(
