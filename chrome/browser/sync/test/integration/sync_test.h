@@ -447,10 +447,9 @@ class SyncTest : public InProcessBrowserTest {
   // time.
   std::vector<std::unique_ptr<Profile::Delegate>> profile_delegates_;
 
-  // Collection of profile paths used by a test. Each profile has a unique path
-  // which should be cleaned up at test shutdown. Profile paths inside the
-  // default user data dir gets deleted at InProcessBrowserTest teardown.
-  std::vector<base::ScopedTempDir*> tmp_profile_paths_;
+  // List of temporary directories that need to be deleted when the test is
+  // completed, used for two-client tests with external server.
+  std::vector<std::unique_ptr<base::ScopedTempDir>> scoped_temp_dirs_;
 
   // Collection of pointers to the browser objects used by a test. One browser
   // instance is created for each sync profile. Browser object lifetime is

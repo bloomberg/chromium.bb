@@ -4,11 +4,15 @@
 
 #include "services/identity/public/cpp/identity_test_utils.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace identity {
@@ -124,6 +128,15 @@ void UpdateRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
   run_loop.Run();
 }
 
+std::string GetTestGaiaIdForEmail(const std::string& email) {
+  std::string gaia_id =
+      std::string("gaia_id_for_") + gaia::CanonicalizeEmail(email);
+  // Avoid character '@' in the gaia ID string as there is code in the codebase
+  // that asserts that a gaia ID does not contain a "@" character.
+  std::replace(gaia_id.begin(), gaia_id.end(), '@', '_');
+  return gaia_id;
+}
+
 }  // namespace
 
 AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
@@ -133,7 +146,7 @@ AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
   SigninManagerBase* signin_manager = identity_manager->GetSigninManager();
   DCHECK(!signin_manager->IsAuthenticated());
 
-  std::string gaia_id = "gaia_id_for_" + email;
+  std::string gaia_id = GetTestGaiaIdForEmail(email);
 
 #if defined(OS_CHROMEOS)
   // ChromeOS has no real notion of signin, so just plumb the information
@@ -253,7 +266,7 @@ AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
   DCHECK(account_tracker_service);
   DCHECK(account_tracker_service->FindAccountInfoByEmail(email).IsEmpty());
 
-  std::string gaia_id = "gaia_id_for_" + email;
+  std::string gaia_id = GetTestGaiaIdForEmail(email);
   account_tracker_service->SeedAccountInfo(gaia_id, email);
 
   AccountInfo account_info =

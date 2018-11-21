@@ -106,14 +106,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
 // Note, that there's a more realistic (and more complex) test for this in
 // two_client_polling_sync_test.cc too.
 IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
-                       ShouldPollWhenIntervalExpiredAcrossRestarts) {
+                       PRE_ShouldPollWhenIntervalExpiredAcrossRestarts) {
   base::Time start = base::Time::Now();
 
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   SyncPrefs remote_prefs(GetProfile(0)->GetPrefs());
-  remote_prefs.SetShortPollInterval(base::TimeDelta::FromMinutes(10));
-  remote_prefs.SetLongPollInterval(base::TimeDelta::FromMinutes(10));
+  // Set small polling intervals to make random delays introduced in
+  // SyncSchedulerImpl::ComputeLastPollOnStart() negligible, but big enough to
+  // avoid periodic polls during a test run.
+  remote_prefs.SetLongPollInterval(base::TimeDelta::FromSeconds(300));
+  remote_prefs.SetShortPollInterval(base::TimeDelta::FromSeconds(300));
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -130,15 +133,24 @@ IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
   EXPECT_THAT(remote_prefs.GetLastPollTime(), Ge(start));
   EXPECT_THAT(remote_prefs.GetLastPollTime(), Le(base::Time::Now()));
 
-  // Make sure no extra sync cycles get triggered by test infrastructure and
-  // stop sync.
-  StopConfigurationRefresher();
-  GetClient(0)->StopSyncService(syncer::SyncService::KEEP_DATA);
-
-  // Simulate elapsed time so that the poll interval expired.
+  // Simulate elapsed time so that the poll interval expired upon restart.
   remote_prefs.SetLastPollTime(base::Time::Now() -
-                               base::TimeDelta::FromMinutes(11));
-  ASSERT_TRUE(GetClient(0)->StartSyncService()) << "SetupSync() failed.";
+                               remote_prefs.GetLongPollInterval());
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientPollingSyncTest,
+                       ShouldPollWhenIntervalExpiredAcrossRestarts) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+#if defined(CHROMEOS)
+  // identity::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
+  // to get a non-empty refresh token on startup.
+  GetClient(0)->SignInPrimaryAccount();
+#endif  // defined(CHROMEOS)
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
+
+  SyncPrefs remote_prefs(GetProfile(0)->GetPrefs());
+  ASSERT_FALSE(remote_prefs.GetLastPollTime().is_null());
+
   // After the start, the last sync cycle snapshot should be empty.
   // Once a sync request happened (e.g. by a poll), that snapshot is populated.
   // We use the following checker to simply wait for an non-empty snapshot.
