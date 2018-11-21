@@ -10,8 +10,7 @@
 // the FIDO spec</a></p>
 namespace cryptotokenPrivate {
 
-  // Callback for appId check
-  callback AppIdCallback = void(boolean result);
+  callback BooleanCallback = void(boolean result);
 
   dictionary CanAppIdGetAttestationOptions {
     // The AppId (see definition, above) that was used in the registration
@@ -33,7 +32,7 @@ namespace cryptotokenPrivate {
     // is the appId being asserted by the origin.
     static void canOriginAssertAppId(DOMString securityOrigin,
                                      DOMString appIdUrl,
-                                     AppIdCallback callback);
+                                     BooleanCallback callback);
 
     // Checks whether the given appId is specified in the
     // SecurityKeyPermitAttestation policy. This causes a signal to be sent to
@@ -41,13 +40,16 @@ namespace cryptotokenPrivate {
     // certificate may be used. Without that signal, the token is required to
     // use its batch attestation certificate.
     static void isAppIdHashInEnterpriseContext(ArrayBuffer appIdHash,
-                                               AppIdCallback callback);
+                                               BooleanCallback callback);
 
     // Checks whether the given appId may receive attestation data that
     // identifies the token. If not, the attestation from the token must be
     // substituted with a randomly generated certificate since webauthn and U2F
     // require that some attestation be provided.
     static void canAppIdGetAttestation(CanAppIdGetAttestationOptions options,
-                                       AppIdCallback callback);
+                                       BooleanCallback callback);
+
+    // Checks whether Cryptotoken can proxy the request through to WebAuthn.
+    static void canProxyToWebAuthn(BooleanCallback callback);
   };
 };

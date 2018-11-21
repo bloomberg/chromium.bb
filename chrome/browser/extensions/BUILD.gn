@@ -846,6 +846,7 @@ jumbo_static_library("extensions") {
     "//content/public/common",
     "//crypto",
     "//device/bluetooth",
+    "//device/fido",
     "//extensions:extensions_resources",
     "//extensions/browser",
     "//extensions/browser:core_api_provider",

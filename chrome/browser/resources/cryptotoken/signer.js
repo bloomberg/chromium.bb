@@ -425,8 +425,9 @@ Signer.prototype.appIdChecked_ = function(result) {
  * @return {boolean} Whether the challenge could be added.
  * @private
  */
-Signer.prototype.doSign_ = function() {
+Signer.prototype.doSign_ = async function() {
   // Create the browser data for each challenge.
+  let challengeVal;
   for (var i = 0; i < this.signChallenges_.length; i++) {
     var challenge = this.signChallenges_[i];
     var serverChallenge;
@@ -435,6 +436,7 @@ Signer.prototype.doSign_ = function() {
     } else {
       serverChallenge = this.defaultChallenge_;
     }
+    challengeVal = serverChallenge;
     if (!serverChallenge) {
       console.warn(UTIL_fmt('challenge missing'));
       return false;
@@ -452,13 +454,161 @@ Signer.prototype.doSign_ = function() {
       this.getChallengeHash_.bind(this));
 
   var timeoutSeconds = this.timer_.millisecondsUntilExpired() / 1000.0;
-  var request =
-      makeSignHelperRequest(encodedChallenges, timeoutSeconds, this.logMsgUrl_);
-  this.handler_ = FACTORY_REGISTRY.getRequestHelper().getHandler(
-      /** @type {HelperRequest} */ (request));
-  if (!this.handler_)
+
+  // Check to see if WebAuthn or legacy U2F requests should be used.
+  await new Promise(resolve => {
+    if (!chrome.cryptotokenPrivate || !window.PublicKeyCredential) {
+      resolve(false);
+    } else {
+      chrome.cryptotokenPrivate.canProxyToWebAuthn(resolve);
+    }
+  }).then(shouldUseWebAuthn => {
+    if (shouldUseWebAuthn) {
+      // If we can proxy to WebAuthn, send the request via WebAuthn.
+      return this.doSignWebAuthn_(encodedChallenges, challengeVal);
+    }
+    var request = makeSignHelperRequest(
+        encodedChallenges, timeoutSeconds, this.logMsgUrl_);
+    this.handler_ = FACTORY_REGISTRY.getRequestHelper().getHandler(
+        /** @type {HelperRequest} */ (request));
+    if (!this.handler_)
+      return false;
+    return this.handler_.run(this.helperComplete_.bind(this));
+  });
+};
+
+/**
+ * Sends the sign request via the WebAuthn API.
+ * @param {!Array<SignHelperChallenge>} encodedChallenges Credential list
+ *     provided by the relying party to be signed.
+ * @param {string} challengeVal Base64 encoded challenge.
+ * @return {boolean} If the message was sent.
+ * @private
+ */
+Signer.prototype.doSignWebAuthn_ = function(encodedChallenges, challengeVal) {
+  // Only try to sign if challenges were provided.
+  if (encodedChallenges.length === 0) {
     return false;
-  return this.handler_.run(this.helperComplete_.bind(this));
+  }
+
+  const credentialList = [];
+  for (let i = 0; i < encodedChallenges.length; i++) {
+    credentialList.push({
+      type: 'public-key',
+      id: new Uint8Array(B64_decode(encodedChallenges[i].keyHandle)).buffer,
+    });
+  }
+  // App ID could be defined for each challenge or globally.
+  const appid = this.signChallenges_[0].hasOwnProperty('appId') ?
+      this.signChallenges_[0]['appId'] :
+      this.appId_;
+
+  const request = {
+    publicKey: {
+      challenge: new Uint8Array(B64_decode(challengeVal)).buffer,
+      timeout: this.timer_.millisecondsUntilExpired(),
+      rpId: this.sender_.origin,
+      allowCredentials: credentialList,
+      userVerification: 'discouraged',
+      extensions: {
+        appid: appid,
+      },
+    },
+  };
+  navigator.credentials.get(request)
+      .then(response => {
+        this.handleWebAuthnSuccess_(response);
+      })
+      .catch(exception => {
+        this.handleWebAuthnError_(exception);
+      });
+
+  return true;
+};
+
+/**
+ * Converts the WebAuthn error code to a U2F error code.
+ * @param {*} exception Exception returned from the WebAuthn request.
+ * @private
+ */
+Signer.prototype.handleWebAuthnError_ = function(exception) {
+  const domError = /** @type {!DOMException} */ (exception);
+  let errorCode = ErrorCodes.OTHER_ERROR;
+  let errorDetails;
+
+  if (domError && domError.name) {
+    switch (domError.name) {
+      case 'NotAllowedError':
+        errorCode = ErrorCodes.TIMEOUT;
+        break;
+      case 'InvalidStateError':
+        errorCode = ErrorCodes.DEVICE_INELIGIBLE;
+        break;
+      default:
+        // Fall through
+        break;
+    }
+  }
+
+  this.notifyError_({
+    errorCode: errorCode,
+    errorMessage: domError.toString(),
+  });
+};
+
+/**
+ * Converts the WebAuthn response to the response for cryptotoken.
+ * @param {?PublicKeyCredential} assertion Assertion object received from
+ *     credential request.
+ * @private
+ */
+Signer.prototype.handleWebAuthnSuccess_ = function(assertion) {
+  // Find the challenge to which this assertion corresponds.
+  const assertionKeyHandle = assertion['id'];
+  let signChallenge;
+  for (let i = 0; i < this.signChallenges_.length; i++) {
+    if (this.signChallenges_[i]['keyHandle'] === assertionKeyHandle) {
+      signChallenge = this.signChallenges_[i];
+      break;
+    }
+  }
+
+  if (signChallenge === undefined) {
+    console.warn('Response received from unknown key');
+    this.notifyError_({
+      errorCode: ErrorCodes.DEVICE_INELIGIBLE,
+      errorMessage: 'Response received from unknown key',
+    });
+    return;
+  }
+
+  // First 32 bytes of authenticator data is the rpIdHash.
+  let index = 32;
+  const authenticatorDataBytes =
+      new Uint8Array(assertion['response']['authenticatorData']);
+  if (authenticatorDataBytes.length < index + 4) {
+    // Invalid response length.
+    this.notifyError_({
+      errorCode: ErrorCodes.OTHER_ERROR,
+      errorMessage: 'Invalid response message',
+    });
+    return;
+  }
+
+  const flags = [authenticatorDataBytes[index++] & 0x3];
+  const counter = Array.from(authenticatorDataBytes.slice(index, index + 4));
+  const signature =
+      Array.from(new Uint8Array(assertion['response']['signature']));
+
+  // Combine the flags byte with the counter and signature to recreate the U2F
+  // authentication response message.
+  const signResponse = flags.concat(counter).concat(signature);
+
+  // Decode the ArrayBuffer view of the clientDataJSON into a string.
+  const clientDataJSON = new TextDecoder('utf-8').decode(
+      new Uint8Array(assertion['response']['clientDataJSON']));
+
+  this.notifySuccess_(signChallenge, B64_encode(signResponse), clientDataJSON);
 };
 
 /**

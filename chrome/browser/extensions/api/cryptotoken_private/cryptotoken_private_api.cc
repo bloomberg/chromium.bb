@@ -19,6 +19,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "crypto/sha2.h"
+#include "device/fido/features.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/origin.h"
@@ -239,6 +240,15 @@ void CryptotokenPrivateCanAppIdGetAttestationFunction::Complete(bool result) {
   RecordAttestationEvent(result ? U2FAttestationPromptResult::kAllowed
                                 : U2FAttestationPromptResult::kBlocked);
   Respond(OneArgument(std::make_unique<base::Value>(result)));
+}
+
+CryptotokenPrivateCanProxyToWebAuthnFunction::
+    CryptotokenPrivateCanProxyToWebAuthnFunction() {}
+
+ExtensionFunction::ResponseAction
+CryptotokenPrivateCanProxyToWebAuthnFunction::Run() {
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
+      base::FeatureList::IsEnabled(device::kWebAuthProxyCryptotoken))));
 }
 
 }  // namespace api
