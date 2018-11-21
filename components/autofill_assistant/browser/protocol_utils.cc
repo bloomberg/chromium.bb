@@ -14,6 +14,7 @@
 #include "components/autofill_assistant/browser/actions/get_payment_information_action.h"
 #include "components/autofill_assistant/browser/actions/highlight_element_action.h"
 #include "components/autofill_assistant/browser/actions/navigate_action.h"
+#include "components/autofill_assistant/browser/actions/prompt_action.h"
 #include "components/autofill_assistant/browser/actions/reset_action.h"
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
 #include "components/autofill_assistant/browser/actions/set_attribute_action.h"
@@ -197,6 +198,10 @@ bool ProtocolUtils::ParseActions(
       }
       case ActionProto::ActionInfoCase::kNavigate: {
         actions->emplace_back(std::make_unique<NavigateAction>(action));
+        break;
+      }
+      case ActionProto::ActionInfoCase::kPrompt: {
+        actions->emplace_back(std::make_unique<PromptAction>(action));
         break;
       }
       case ActionProto::ActionInfoCase::kStop: {

@@ -180,28 +180,40 @@ void UiControllerAndroid::OnScriptSelected(
   ui_delegate_->OnScriptSelected(script_path);
 }
 
+void UiControllerAndroid::OnSuggestionSelected(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jstring>& jsuggestion) {
+  if (!choice_callback_)  // possibly duplicate call
+    return;
+
+  std::string suggestion;
+  base::android::ConvertJavaStringToUTF8(env, jsuggestion, &suggestion);
+  std::move(choice_callback_).Run(suggestion);
+}
+
 void UiControllerAndroid::OnAddressSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& jaddress_guid) {
-  if (!address_or_card_callback_)  // possibly duplicate call
+  if (!choice_callback_)  // possibly duplicate call
     return;
 
   std::string guid;
   base::android::ConvertJavaStringToUTF8(env, jaddress_guid, &guid);
-  std::move(address_or_card_callback_).Run(guid);
+  std::move(choice_callback_).Run(guid);
 }
 
 void UiControllerAndroid::OnCardSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& jcard_guid) {
-  if (!address_or_card_callback_)  // possibly duplicate call
+  if (!choice_callback_)  // possibly duplicate call
     return;
 
   std::string guid;
   base::android::ConvertJavaStringToUTF8(env, jcard_guid, &guid);
-  std::move(address_or_card_callback_).Run(guid);
+  std::move(choice_callback_).Run(guid);
 }
 
 void UiControllerAndroid::OnGetPaymentInformation(
@@ -294,10 +306,32 @@ UiControllerAndroid::OnRequestDebugContext(
   return base::android::ConvertUTF8ToJavaString(env, GetDebugContext());
 }
 
+void UiControllerAndroid::Choose(
+    const std::vector<std::string>& suggestions,
+    base::OnceCallback<void(const std::string&)> callback) {
+  DCHECK(!choice_callback_);
+  choice_callback_ = std::move(callback);
+
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_onChoose(
+      env, java_autofill_assistant_ui_controller_,
+      base::android::ToJavaArrayOfStrings(env, suggestions));
+}
+
+void UiControllerAndroid::ForceChoose(const std::string& result) {
+  if (!choice_callback_)
+    return;
+
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantUiController_onForceChoose(
+      env, java_autofill_assistant_ui_controller_);
+  std::move(choice_callback_).Run(result);
+}
+
 void UiControllerAndroid::ChooseAddress(
     base::OnceCallback<void(const std::string&)> callback) {
-  DCHECK(!address_or_card_callback_);
-  address_or_card_callback_ = std::move(callback);
+  DCHECK(!choice_callback_);
+  choice_callback_ = std::move(callback);
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onChooseAddress(
       env, java_autofill_assistant_ui_controller_);
@@ -305,8 +339,8 @@ void UiControllerAndroid::ChooseAddress(
 
 void UiControllerAndroid::ChooseCard(
     base::OnceCallback<void(const std::string&)> callback) {
-  DCHECK(!address_or_card_callback_);
-  address_or_card_callback_ = std::move(callback);
+  DCHECK(!choice_callback_);
+  choice_callback_ = std::move(callback);
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantUiController_onChooseCard(
       env, java_autofill_assistant_ui_controller_);

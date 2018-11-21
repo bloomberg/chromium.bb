@@ -88,6 +88,11 @@ content::WebContents* Controller::GetWebContents() {
   return web_contents();
 }
 
+void Controller::SetTouchableElementArea(
+    const std::vector<std::vector<std::string>>& elements) {
+  touchable_element_area_.SetElements(elements);
+}
+
 Controller::Controller(
     content::WebContents* web_contents,
     std::unique_ptr<Client> client,
@@ -438,7 +443,8 @@ void Controller::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // The following types of navigations are allowed for the main frame:
   //  - first-time URL load
-  //  - script-directed navigation, while a script is running
+  //  - script-directed navigation, while a script is running unless
+  //    there's a touchable area.
   //  - server redirections, which might happen outside of a script, but
   //    because of a load triggered by a previously-running script.
   //  - same-document modifications, which might happen automatically
@@ -454,6 +460,15 @@ void Controller::DidStartNavigation(
       !script_tracker_->running() && !navigation_handle->WasServerRedirect() &&
       !navigation_handle->IsSameDocument() &&
       !navigation_handle->IsRendererInitiated()) {
+    GiveUp();
+    return;
+  }
+
+  // Special case: during a prompt, forbid render-initiated navigation. This is
+  // necessary as there won't be any script lookup to tell us whether the
+  // destination page is acceptable.
+  if (script_tracker_->running() && touchable_element_area_.HasElements() &&
+      navigation_handle->IsRendererInitiated()) {
     GiveUp();
     return;
   }

@@ -39,6 +39,14 @@ class ScriptExecutorDelegate {
 
   virtual content::WebContents* GetWebContents() = 0;
 
+  // Make the area of the screen that correspond to the given elements
+  // touchable.
+  virtual void SetTouchableElementArea(
+      const std::vector<std::vector<std::string>>& elements) = 0;
+
+  // Makes no area of the screen touchable.
+  void ClearTouchableElementArea() { SetTouchableElementArea({}); }
+
  protected:
   virtual ~ScriptExecutorDelegate() {}
 };

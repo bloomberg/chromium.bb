@@ -50,11 +50,15 @@ class BatchElementChecker {
   virtual ~BatchElementChecker();
 
   // Callback for AddElementCheck. Argument is true if the check passed.
+  //
+  // An ElementCheckCallback must not delete its calling BatchElementChecker.
   using ElementCheckCallback = base::OnceCallback<void(bool)>;
 
   // Callback for AddFieldValueCheck. Argument is true is the element exists.
   // The string contains the field value, or an empty string if accessing the
   // value failed.
+  //
+  // An ElementCheckCallback must not delete its calling BatchElementChecker.
   using GetFieldValueCallback =
       base::OnceCallback<void(bool, const std::string&)>;
 
@@ -84,6 +88,10 @@ class BatchElementChecker {
   //
   // |duration| can be 0. In this case the checks are run once, without waiting.
   // |try_done| is run at the end of each try.
+  //
+  // |try_done| or |all_done| can delete their calling BatchElementChecker to
+  // interrupt any future checks. If |try_done| deletes BatchElementChecker,
+  // |all_done| will never be called.
   void Run(const base::TimeDelta& duration,
            base::RepeatingCallback<void()> try_done,
            base::OnceCallback<void()> all_done);

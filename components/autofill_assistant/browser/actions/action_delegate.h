@@ -59,6 +59,20 @@ class ActionDelegate {
   virtual void ClickOrTapElement(const std::vector<std::string>& selectors,
                                  base::OnceCallback<void(bool)> callback) = 0;
 
+  // Ask user to select one of the given suggestions.
+  //
+  // While Choose is in progress, the UI looks the same as it does between
+  // scripts, even though we're in the middle of a script. This includes
+  // allowing access to the touchable elements set previously, in the same
+  // script.
+  virtual void Choose(
+      const std::vector<std::string>& suggestions,
+      base::OnceCallback<void(const std::string&)> callback) = 0;
+
+  // Cancels a choose action in progress and pass the given result to the
+  // callback.
+  virtual void ForceChoose(const std::string& result) = 0;
+
   // Ask user to choose an address in personal data manager. GUID of the chosen
   // address will be returned through callback, otherwise empty string if the
   // user chose to continue manually.
@@ -102,8 +116,10 @@ class ActionDelegate {
   virtual void FocusElement(const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback) = 0;
 
-  // Sets selector of elements that can be manipulated after the end of the
-  // script and before the beginning of the next script.
+  // Sets selector of elements that can be manipulated:
+  // - after the end of the script and before the beginning of the next script.
+  // - during the next call to Choose()
+  // whichever comes first.
   virtual void SetTouchableElements(
       const std::vector<std::vector<std::string>>& element_selectors) = 0;
 

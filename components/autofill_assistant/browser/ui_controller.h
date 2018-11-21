@@ -52,6 +52,16 @@ class UiController {
   // Update the list of scripts in the UI.
   virtual void UpdateScripts(const std::vector<ScriptHandle>& scripts) = 0;
 
+  // Show UI to ask user to select one of the suggestions. Sends the selected
+  // suggestion to the callback.
+  virtual void Choose(
+      const std::vector<std::string>& suggestions,
+      base::OnceCallback<void(const std::string&)> callback) = 0;
+
+  // Cancels a choose action in progress. Calls the registered callback, if any,
+  // with the given result.
+  virtual void ForceChoose(const std::string& choice) = 0;
+
   // Show UI to ask user to choose an address in personal data manager. GUID of
   // the chosen address will be returned through callback, otherwise empty
   // string if the user chose to continue manually.

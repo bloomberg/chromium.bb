@@ -132,6 +132,9 @@ class AutofillAssistantUiDelegate {
          */
         void onScriptSelected(String scriptPath);
 
+        /** Called when a suggestion has been selected. */
+        void onSuggestionSelected(String suggestion);
+
         /**
          * Called when an address has been selected.
          *
@@ -328,7 +331,7 @@ class AutofillAssistantUiDelegate {
         return false;
     }
 
-    private void clearCarousel() {
+    public void clearCarousel() {
         setCarouselChildViews(Collections.emptyList(), /* alignRight= */ false);
     }
 
@@ -659,6 +662,20 @@ class AutofillAssistantUiDelegate {
 
     public void updateTouchableArea(boolean enabled, List<RectF> boxes) {
         mTouchEventFilter.setPartialOverlay(enabled, boxes);
+    }
+
+    /** Shows chip with the given suggestions. */
+    public void showSuggestions(List<String> suggestions) {
+        List<View> childViews = new ArrayList<>();
+        for (String suggestion : suggestions) {
+            TextView chipView = createChipView(suggestion, ChipStyle.CHIP_ASSISTIVE);
+            chipView.setOnClickListener(unusedView -> {
+                clearCarousel();
+                mClient.onSuggestionSelected(suggestion);
+            });
+            childViews.add(chipView);
+        }
+        setCarouselChildViews(childViews, /* alignRight= */ false);
     }
 
     /**
