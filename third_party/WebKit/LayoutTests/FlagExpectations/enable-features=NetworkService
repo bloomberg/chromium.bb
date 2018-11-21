@@ -24,3 +24,6 @@ crbug.com/849670 http/tests/devtools/service-workers/service-worker-v8-cache.js 
 # because content_shell does not add the about: handler. With network service
 # enabled this fails in both content_shell and chrome.
 Bug(none) http/tests/misc/redirect-to-about-blank.html [ Timeout ]
+
+crbug.com/898306 http/tests/inspector-protocol/network/raw-headers-for-protected-document.js [ Failure ]
+crbug.com/898306 http/tests/inspector-protocol/network/security-info-on-response.js [ Failure ]
