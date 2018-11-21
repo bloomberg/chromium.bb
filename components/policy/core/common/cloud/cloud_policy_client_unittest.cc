@@ -663,8 +663,8 @@ TEST_F(CloudPolicyClientTest, RegistrationWithCertificateAndPolicyFetch) {
       em::DeviceRegisterRequest::DEVICE,
       em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION,
       em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-      em::LicenseType::UNDEFINED, kEnrollmentCertificate, std::string(),
-      std::string(), std::string());
+      em::LicenseType::UNDEFINED, DMAuth::NoAuth(), kEnrollmentCertificate,
+      std::string(), std::string(), std::string());
   EXPECT_TRUE(client_->is_registered());
   EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
@@ -683,8 +683,8 @@ TEST_F(CloudPolicyClientTest, RegistrationWithCertificateFailToSignRequest) {
       em::DeviceRegisterRequest::DEVICE,
       em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION,
       em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-      em::LicenseType::UNDEFINED, kEnrollmentCertificate, std::string(),
-      std::string(), std::string());
+      em::LicenseType::UNDEFINED, DMAuth::NoAuth(), kEnrollmentCertificate,
+      std::string(), std::string(), std::string());
   EXPECT_FALSE(client_->is_registered());
   EXPECT_EQ(DM_STATUS_CANNOT_SIGN_REQUEST, client_->status());
 }
