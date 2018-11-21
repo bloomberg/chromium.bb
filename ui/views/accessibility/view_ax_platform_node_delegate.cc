@@ -285,9 +285,8 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
   return nullptr;
 }
 
-gfx::NativeWindow ViewAXPlatformNodeDelegate::GetTopLevelWidget() {
-  if (view()->GetWidget())
-    return view()->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNSWindow() {
+  NOTREACHED();
   return nullptr;
 }
 

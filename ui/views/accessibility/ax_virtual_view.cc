@@ -191,9 +191,8 @@ gfx::NativeViewAccessible AXVirtualView::ChildAtIndex(int index) {
   return nullptr;
 }
 
-gfx::NativeWindow AXVirtualView::GetTopLevelWidget() {
-  if (GetOwnerView() && GetOwnerView()->GetWidget())
-    return GetOwnerView()->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+gfx::NativeViewAccessible AXVirtualView::GetNSWindow() {
+  NOTREACHED();
   return nullptr;
 }
 

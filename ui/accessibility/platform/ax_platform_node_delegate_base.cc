@@ -24,7 +24,7 @@ const AXTreeData& AXPlatformNodeDelegateBase::GetTreeData() const {
   return *empty_data;
 }
 
-gfx::NativeWindow AXPlatformNodeDelegateBase::GetTopLevelWidget() {
+gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetNSWindow() {
   return nullptr;
 }
 

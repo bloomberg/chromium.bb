@@ -127,15 +127,15 @@ NativeWidgetMacNSWindow* BridgedNativeWidgetHostImpl::GetLocalNSWindow() const {
   return local_window_.get();
 }
 
-gfx::NativeViewAccessible BridgedNativeWidgetHostImpl::GetParentViewAccessible()
-    const {
+gfx::NativeViewAccessible
+BridgedNativeWidgetHostImpl::GetNativeViewAccessibleForNSView() const {
   if (bridge_impl_)
     return bridge_impl_->ns_view();
   return remote_view_accessible_.get();
 }
 
-gfx::NativeViewAccessible BridgedNativeWidgetHostImpl::GetWindowAccessible()
-    const {
+gfx::NativeViewAccessible
+BridgedNativeWidgetHostImpl::GetNativeViewAccessibleForNSWindow() const {
   if (bridge_impl_)
     return bridge_impl_->ns_window();
   return remote_window_accessible_.get();

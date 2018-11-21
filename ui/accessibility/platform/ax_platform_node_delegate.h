@@ -50,8 +50,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the accessibility tree data for this node.
   virtual const AXTreeData& GetTreeData() const = 0;
 
-  // Get the window the node is contained in.
-  virtual gfx::NativeWindow GetTopLevelWidget() = 0;
+  // Get the accessibility node for the NSWindow the node is contained in. This
+  // method is only meaningful on macOS.
+  virtual gfx::NativeViewAccessible GetNSWindow() = 0;
 
   // Get the parent of the node, which may be an AXPlatformNode or it may
   // be a native accessible object implemented by another class.

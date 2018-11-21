@@ -805,10 +805,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (id)AXWindow {
-  // TODO(ccameron): This should return the NSAccessibilityRemoteUIElement for
-  // the NSWindow in the viewer process. This requires that Widget have a method
-  // to retrieve this object, which does not exist yet.
-  return node_->GetDelegate()->GetTopLevelWidget().GetNativeNSWindow();
+  return node_->GetDelegate()->GetNSWindow();
 }
 
 - (id)AXTopLevelUIElement {
