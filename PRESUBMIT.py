@@ -671,6 +671,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/emma_instr.pydeps',
     'build/android/gyp/filter_zip.pydeps',
     'build/android/gyp/gcc_preprocess.pydeps',
+    'build/android/gyp/generate_linker_version_script.pydeps',
     'build/android/gyp/generate_proguarded_module_jar.pydeps',
     'build/android/gyp/ijar.pydeps',
     'build/android/gyp/java_cpp_enum.pydeps',
