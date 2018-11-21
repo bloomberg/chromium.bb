@@ -12,9 +12,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
+#include "chrome/browser/ui/blocked_content/url_list_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/window_open_disposition.h"
@@ -52,18 +52,7 @@ class PopupBlockerTabHelper
     kMaxValue = kClickedThroughAbusive
   };
 
-  class Observer {
-   public:
-    virtual void BlockedPopupAdded(int32_t id, const GURL& url) {}
-
-   protected:
-    virtual ~Observer() = default;
-  };
-
   ~PopupBlockerTabHelper() override;
-
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
   // Returns the number of blocked popups.
   size_t GetBlockedPopupsCount() const;
@@ -87,6 +76,8 @@ class PopupBlockerTabHelper
   // Logs a histogram measuring popup blocker actions.
   static void LogAction(Action action);
 
+  UrlListManager* manager() { return &manager_; }
+
  private:
   struct BlockedRequest;
   friend class content::WebContentsUserData<PopupBlockerTabHelper>;
@@ -96,11 +87,11 @@ class PopupBlockerTabHelper
   // Called when the blocked popup notification is hidden.
   void HidePopupNotification();
 
+  UrlListManager manager_;
+
   // Note, this container should be sorted based on the position in the popup
   // list, so it is keyed by an id which is continually increased.
   std::map<int32_t, std::unique_ptr<BlockedRequest>> blocked_popups_;
-
-  base::ObserverList<Observer>::Unchecked observers_;
 
   int32_t next_id_ = 0;
 

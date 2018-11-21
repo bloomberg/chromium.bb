@@ -91,6 +91,8 @@ jumbo_split_static_library("ui") {
     "blocked_content/scoped_visibility_tracker.h",
     "blocked_content/tab_under_navigation_throttle.cc",
     "blocked_content/tab_under_navigation_throttle.h",
+    "blocked_content/url_list_manager.cc",
+    "blocked_content/url_list_manager.h",
     "bookmarks/bookmark_bar.h",
     "bookmarks/bookmark_bubble_observer.h",
     "bookmarks/bookmark_editor.cc",

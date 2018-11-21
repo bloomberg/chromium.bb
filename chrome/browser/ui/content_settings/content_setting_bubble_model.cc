@@ -955,7 +955,7 @@ void ContentSettingCookiesBubbleModel::OnCustomLinkClicked() {
 // ContentSettingPopupBubbleModel ----------------------------------------------
 
 class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup,
-                                       public PopupBlockerTabHelper::Observer {
+                                       public UrlListManager::Observer {
  public:
   ContentSettingPopupBubbleModel(Delegate* delegate,
                                  WebContents* web_contents,
@@ -966,7 +966,7 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup,
   void CommitChanges() override;
 
   // PopupBlockerTabHelper::Observer:
-  void BlockedPopupAdded(int32_t id, const GURL& url) override;
+  void BlockedUrlAdded(int32_t id, const GURL& url) override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -980,8 +980,7 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup,
     return bubble_content().list_items[index].item_id;
   }
 
-  ScopedObserver<PopupBlockerTabHelper, PopupBlockerTabHelper::Observer>
-      popup_blocker_observer_;
+  ScopedObserver<UrlListManager, UrlListManager::Observer> url_list_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingPopupBubbleModel);
 };
@@ -994,7 +993,7 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
                                      web_contents,
                                      profile,
                                      CONTENT_SETTINGS_TYPE_POPUPS),
-      popup_blocker_observer_(this) {
+      url_list_observer_(this) {
   if (!web_contents)
     return;
 
@@ -1006,13 +1005,13 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
   for (const auto& blocked_popup : blocked_popups)
     AddListItem(CreateUrlListItem(blocked_popup.first, blocked_popup.second));
 
-  popup_blocker_observer_.Add(helper);
+  url_list_observer_.Add(helper->manager());
   content_settings::RecordPopupsAction(
       content_settings::POPUPS_ACTION_DISPLAYED_BUBBLE);
 }
 
-void ContentSettingPopupBubbleModel::BlockedPopupAdded(int32_t id,
-                                                       const GURL& url) {
+void ContentSettingPopupBubbleModel::BlockedUrlAdded(int32_t id,
+                                                     const GURL& url) {
   AddListItem(CreateUrlListItem(id, url));
 }
 
@@ -1022,7 +1021,7 @@ void ContentSettingPopupBubbleModel::Observe(
     const content::NotificationDetails& details) {
   ContentSettingSingleRadioGroup::Observe(type, source, details);
   if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED)
-    popup_blocker_observer_.RemoveAll();
+    url_list_observer_.RemoveAll();
 }
 
 void ContentSettingPopupBubbleModel::OnListItemClicked(int index,
@@ -1047,12 +1046,7 @@ void ContentSettingPopupBubbleModel::CommitChanges() {
   ContentSettingSingleRadioGroup::CommitChanges();
 }
 
-ContentSettingPopupBubbleModel::~ContentSettingPopupBubbleModel() {
-  if (web_contents()) {
-    auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents());
-    helper->RemoveObserver(this);
-  }
-}
+ContentSettingPopupBubbleModel::~ContentSettingPopupBubbleModel() = default;
 
 // ContentSettingMediaStreamBubbleModel ----------------------------------------
 
@@ -1565,7 +1559,8 @@ ContentSettingFramebustBlockBubbleModel::
     : ContentSettingSingleRadioGroup(delegate,
                                      web_contents,
                                      profile,
-                                     CONTENT_SETTINGS_TYPE_POPUPS) {
+                                     CONTENT_SETTINGS_TYPE_POPUPS),
+      url_list_observer_(this) {
   if (!web_contents)
     return;
 
@@ -1576,27 +1571,18 @@ ContentSettingFramebustBlockBubbleModel::
   for (const auto& blocked_url : helper->blocked_urls())
     AddListItem(CreateUrlListItem(0 /* id */, blocked_url));
 
-  helper->AddObserver(this);
+  url_list_observer_.Add(helper->manager());
 }
 
 ContentSettingFramebustBlockBubbleModel::
-    ~ContentSettingFramebustBlockBubbleModel() {
-  if (web_contents()) {
-    FramebustBlockTabHelper::FromWebContents(web_contents())
-        ->RemoveObserver(this);
-  }
-}
+    ~ContentSettingFramebustBlockBubbleModel() = default;
 
 void ContentSettingFramebustBlockBubbleModel::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // The order is important because ContentSettingBubbleModel::Observer() clears
-  // the value of |web_contents()|.
-  if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
-    FramebustBlockTabHelper::FromWebContents(web_contents())
-        ->RemoveObserver(this);
-  }
+  if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED)
+    url_list_observer_.RemoveAll();
   ContentSettingSingleRadioGroup::Observe(type, source, details);
 }
 
@@ -1615,7 +1601,8 @@ ContentSettingFramebustBlockBubbleModel::AsFramebustBlockBubbleModel() {
   return this;
 }
 
-void ContentSettingFramebustBlockBubbleModel::OnBlockedUrlAdded(
+void ContentSettingFramebustBlockBubbleModel::BlockedUrlAdded(
+    int32_t id,
     const GURL& blocked_url) {
   AddListItem(CreateUrlListItem(0 /* id */, blocked_url));
 }
