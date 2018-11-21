@@ -185,14 +185,16 @@ static const CGFloat sideMargins = 16;
   base::RecordAction(
       base::UserMetricsAction("ManualFallback_Password_SelectUsername"));
   [self.delegate userDidPickContent:self.manualFillCredential.username
-                           isSecure:NO];
+                    isPasswordField:NO
+                      requiresHTTPS:NO];
 }
 
 - (void)userDidTapPasswordButton:(UIButton*)button {
   base::RecordAction(
       base::UserMetricsAction("ManualFallback_Password_SelectPassword"));
   [self.delegate userDidPickContent:self.manualFillCredential.password
-                           isSecure:YES];
+                    isPasswordField:YES
+                      requiresHTTPS:YES];
 }
 
 @end

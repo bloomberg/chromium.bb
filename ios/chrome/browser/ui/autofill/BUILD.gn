@@ -30,6 +30,7 @@ source_set("autofill") {
     "//components/prefs",
     "//components/strings",
     "//google_apis",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/autofill:autofill_shared",

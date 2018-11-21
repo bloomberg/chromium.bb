@@ -449,7 +449,9 @@ static const CGFloat InnerMarginWidth = 16.0;
 }
 
 - (void)userDidTapAddressInfo:(UIButton*)sender {
-  [self.delegate userDidPickContent:sender.titleLabel.text isSecure:NO];
+  [self.delegate userDidPickContent:sender.titleLabel.text
+                    isPasswordField:NO
+                      requiresHTTPS:NO];
 }
 
 @end

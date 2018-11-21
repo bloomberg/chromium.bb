@@ -20,11 +20,13 @@
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/form_observer_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/web_frame.h"
 #include "ios/web/public/web_state/web_frame_util.h"
 #include "ios/web/public/web_state/web_frames_manager.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -51,8 +53,13 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
 @property(nonatomic, assign) WebStateList* webStateList;
 
 // YES if the last focused element is secure within its web frame. To be secure
-// means it has a password type, the web is https and the URL can trusted.
-@property(nonatomic, assign) BOOL lastFocusedElementIsSecure;
+// means the web is HTTPS and the URL is trusted.
+@property(nonatomic, assign, getter=isLastFocusedElementSecure)
+    BOOL lastFocusedElementSecure;
+
+// YES if the last focused element is a password field.
+@property(nonatomic, assign, getter=isLastFocusedElementPasswordField)
+    BOOL lastFocusedElementPasswordField;
 
 // The last seen frame ID with focus activity.
 @property(nonatomic, assign) std::string lastFocusedElementFrameIdentifier;
@@ -60,24 +67,46 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
 // The last seen focused element identifier.
 @property(nonatomic, assign) std::string lastFocusedElementIdentifier;
 
+// The view controller this object was initialized with.
+@property(weak, nonatomic, nullable, readonly)
+    UIViewController* baseViewController;
+
+// Used to present alerts.
+@property(nonatomic, weak) id<AutofillSecurityAlertPresenter> alertPresenter;
+
 @end
 
 @implementation ManualFillInjectionHandler
 
-- (instancetype)initWithWebStateList:(WebStateList*)webStateList {
+- (instancetype)initWithWebStateList:(WebStateList*)webStateList
+              securityAlertPresenter:
+                  (id<AutofillSecurityAlertPresenter>)securityAlertPresenter {
   self = [super init];
   if (self) {
     _webStateList = webStateList;
+    _alertPresenter = securityAlertPresenter;
     _formHelper =
         [[FormObserverHelper alloc] initWithWebStateList:webStateList];
     _formHelper.delegate = self;
   }
   return self;
 }
-#pragma mark - ManualFillViewDelegate
 
-- (void)userDidPickContent:(NSString*)content isSecure:(BOOL)isSecure {
-  if (isSecure && !self.lastFocusedElementIsSecure) {
+#pragma mark - ManualFillContentDelegate
+
+- (void)userDidPickContent:(NSString*)content
+           isPasswordField:(BOOL)isPasswordField
+             requiresHTTPS:(BOOL)requiresHTTPS {
+  if (isPasswordField && ![self isLastFocusedElementPasswordField]) {
+    NSString* alertBody = l10n_util::GetNSString(
+        IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_PASSWORD_BODY);
+    [self.alertPresenter presentSecurityWarningAlertWithText:alertBody];
+    return;
+  }
+  if (requiresHTTPS && ![self isLastFocusedElementSecure]) {
+    NSString* alertBody =
+        l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_GENERIC_BODY);
+    [self.alertPresenter presentSecurityWarningAlertWithText:alertBody];
     return;
   }
   [self fillLastSelectedFieldWithString:content];
@@ -91,17 +120,16 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
   if (params.type != "focus") {
     return;
   }
-  BOOL isContextSecure = autofill::IsContextSecureForWebState(webState);
-  BOOL isPasswordField = params.field_type == "password";
-  self.lastFocusedElementIsSecure = isContextSecure && isPasswordField;
+  self.lastFocusedElementSecure =
+      autofill::IsContextSecureForWebState(webState);
+  self.lastFocusedElementPasswordField = params.field_type == "password";
   self.lastFocusedElementIdentifier = params.field_identifier;
-
   if (autofill::switches::IsAutofillIFrameMessagingEnabled()) {
     DCHECK(frame);
     self.lastFocusedElementFrameIdentifier = frame->GetFrameId();
     const GURL frameSecureOrigin = frame->GetSecurityOrigin();
     if (!frameSecureOrigin.SchemeIsCryptographic()) {
-      self.lastFocusedElementIsSecure = NO;
+      self.lastFocusedElementSecure = NO;
     }
   }
 }
@@ -126,7 +154,7 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
   return manager;
 }
 
-#pragma mark - Document Interaction
+#pragma mark - Private
 
 // Injects the passed string to the active field and jumps to the next field.
 - (void)fillLastSelectedFieldWithString:(NSString*)string {

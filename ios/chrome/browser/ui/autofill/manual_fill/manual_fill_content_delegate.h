@@ -15,9 +15,13 @@
 // current form field.
 //
 // @param content The selected string.
-// @param isSecure YES if the user selected a sensitive field, i.e. a password
-//                 or a credit card.
-- (void)userDidPickContent:(NSString*)content isSecure:(BOOL)isSecure;
+// @param isPasswordField YES if the user selected content that requires a
+// password field to be injected.
+// @param requiresHTTPS YES if the user selected a field, that requires an HTTPS
+// context to be injected.
+- (void)userDidPickContent:(NSString*)content
+           isPasswordField:(BOOL)isPasswordField
+             requiresHTTPS:(BOOL)requiresHTTPS;
 
 @end
 
