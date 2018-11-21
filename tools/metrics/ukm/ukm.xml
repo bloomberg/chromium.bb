@@ -2716,6 +2716,18 @@ be describing additional metrics about the same event.
       Measure of memory consumed by live objects in the main heap of V8.
     </summary>
   </metric>
+  <metric name="V8.Main.Heap.CodeLargeObjectSpace">
+    <summary>
+      Measure of memory consumed by the code large object space of the main heap
+      of V8.
+    </summary>
+  </metric>
+  <metric name="V8.Main.Heap.CodeLargeObjectSpace.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in the code large object space
+      of the main heap of V8.
+    </summary>
+  </metric>
   <metric name="V8.Main.Heap.CodeSpace">
     <summary>
       Measure of memory consumed by the code space of the main heap of V8.
