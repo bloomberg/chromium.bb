@@ -5,7 +5,7 @@ table:
   __assert-match: pl.tbl
 flags: {testmode: backward}
 tests:
-  - [⠏⠉⠓⠝⠡⠩ ⠺ ⠞⠱ ⠣⠬⠙⠮ ⠚⠑⠯⠁ ⠇⠥⠃ ⠕⠪⠍ ⠎⠅⠗⠵⠽⠹ ⠋⠊⠛⠄, pchnąć w tę łódź jeża lub ośm skrzyń fig.]
+  - [⠏⠉⠓⠝⠡⠩ ⠺ ⠞⠱ ⠣⠬⠙⠮ ⠚⠑⠯⠁ ⠇⠥⠃ ⠕⠪⠍ ⠎⠅⠗⠵⠽⠹ ⠋⠊⠛, pchnąć w tę łódź jeża lub ośm skrzyń fig]
   - [⠨⠡, Ą]
   - [⠨⠩, Ć]
   - [⠨⠱, Ę]
