@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 
-#include "base/i18n/rtl.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_page_control.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
