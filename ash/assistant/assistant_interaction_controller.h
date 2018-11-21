@@ -67,6 +67,7 @@ class AssistantInteractionController
   void OnInteractionStateChanged(InteractionState interaction_state) override;
   void OnInputModalityChanged(InputModality input_modality) override;
   void OnMicStateChanged(MicState mic_state) override;
+  void OnCommittedQueryChanged(const AssistantQuery& query) override;
   void OnResponseChanged(
       const std::shared_ptr<AssistantResponse>& response) override;
 
