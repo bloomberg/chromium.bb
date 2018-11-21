@@ -82,6 +82,7 @@ html[dir='rtl'] cr-menu.chrome-menu > .menuitem-button.right {
 
 cr-menu.chrome-menu > cr-menu-item[disabled] {
   color: rgba(51, 51, 51, 0.20);
+  pointer-events: none;
 }
 
 cr-menu.chrome-menu > cr-menu-item:not([disabled])[selected],
