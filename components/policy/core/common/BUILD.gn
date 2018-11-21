@@ -246,6 +246,8 @@ jumbo_static_library("test_support") {
     "cloud/mock_cloud_external_data_manager.h",
     "cloud/mock_cloud_policy_client.cc",
     "cloud/mock_cloud_policy_client.h",
+    "cloud/mock_cloud_policy_service.cc",
+    "cloud/mock_cloud_policy_service.h",
     "cloud/mock_cloud_policy_store.cc",
     "cloud/mock_cloud_policy_store.h",
     "cloud/mock_device_management_service.cc",

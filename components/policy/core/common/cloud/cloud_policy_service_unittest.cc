@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "components/policy/core/common/cloud/mock_cloud_policy_service.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,17 +21,6 @@ namespace em = enterprise_management;
 using testing::_;
 
 namespace policy {
-
-class MockCloudPolicyServiceObserver : public CloudPolicyService::Observer {
- public:
-  MockCloudPolicyServiceObserver() {}
-  ~MockCloudPolicyServiceObserver() override {}
-
-  MOCK_METHOD0(OnCloudPolicyServiceInitializationCompleted, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyServiceObserver);
-};
 
 class CloudPolicyServiceTest : public testing::Test {
  public:

@@ -82,9 +82,9 @@ void CloudPolicyCore::RefreshSoon() {
 
 void CloudPolicyCore::StartRefreshScheduler() {
   if (!refresh_scheduler_) {
-    refresh_scheduler_.reset(
-        new CloudPolicyRefreshScheduler(client_.get(), store_, task_runner_,
-                                        network_connection_tracker_getter_));
+    refresh_scheduler_ = std::make_unique<CloudPolicyRefreshScheduler>(
+        client_.get(), store_, service_.get(), task_runner_,
+        network_connection_tracker_getter_);
     UpdateRefreshDelayFromPref();
     for (auto& observer : observers_)
       observer.OnRefreshSchedulerStarted(this);
