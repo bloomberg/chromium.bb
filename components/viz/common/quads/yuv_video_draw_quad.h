@@ -71,7 +71,6 @@ class VIZ_COMMON_EXPORT YUVVideoDrawQuad : public DrawQuad {
               float offset,
               float multiplier,
               uint32_t bits_per_channel,
-              bool require_overlay,
               ui::ProtectedVideoType protected_video_type);
 
   gfx::RectF ya_tex_coord_rect;
@@ -83,7 +82,6 @@ class VIZ_COMMON_EXPORT YUVVideoDrawQuad : public DrawQuad {
   uint32_t bits_per_channel = 8;
   // TODO(hubbe): Move to ResourceProvider::ScopedSamplerGL.
   gfx::ColorSpace video_color_space;
-  bool require_overlay = false;
   ui::ProtectedVideoType protected_video_type = ui::ProtectedVideoType::kClear;
 
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);

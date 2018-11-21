@@ -45,6 +45,14 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
   bool IsProtectedVideo() const {
     return (protected_video_type != ui::ProtectedVideoType::kClear);
   }
+  // TODO(magchen): Once software protected video is enabled for all GPUs and
+  // all configurations, RequiresOverlay() will be equivalent to
+  // IsProtectedVideo. Currently, we only force the overlay swap chain path
+  // (RequiresOverlay) for hardware protected video and soon for Finch
+  // experiment on software protected video.
+  bool RequiresOverlay() const {
+    return (protected_video_type == ui::ProtectedVideoType::kHardwareProtected);
+  }
 
   // State that is frequently shared between consecutive DCLayerOverlays.
   scoped_refptr<DCLayerOverlaySharedState> shared_state;
@@ -71,7 +79,6 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
   // normally BT.709.
   gfx::ColorSpace color_space;
 
-  bool require_overlay = false;
   ui::ProtectedVideoType protected_video_type = ui::ProtectedVideoType::kClear;
 };
 

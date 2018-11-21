@@ -1124,7 +1124,6 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   const float resource_offset = 1337.5f;
   const float resource_multiplier = 1234.6f;
   const uint32_t bits_per_channel = 13;
-  const bool require_overlay = true;
   const ui::ProtectedVideoType protected_video_type =
       ui::ProtectedVideoType::kSoftwareProtected;
 
@@ -1135,7 +1134,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
                uv_tex_coord_rect, ya_tex_size, uv_tex_size, y_plane_resource_id,
                u_plane_resource_id, v_plane_resource_id, a_plane_resource_id,
                video_color_space, resource_offset, resource_multiplier,
-               bits_per_channel, require_overlay, protected_video_type);
+               bits_per_channel, protected_video_type);
 
   std::unique_ptr<RenderPass> output;
   mojo::test::SerializeAndDeserialize<mojom::RenderPass>(&render_pass, &output);
@@ -1159,7 +1158,6 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   EXPECT_EQ(resource_offset, out_quad->resource_offset);
   EXPECT_EQ(resource_multiplier, out_quad->resource_multiplier);
   EXPECT_EQ(bits_per_channel, out_quad->bits_per_channel);
-  EXPECT_EQ(require_overlay, out_quad->require_overlay);
   EXPECT_EQ(protected_video_type, out_quad->protected_video_type);
 }
 

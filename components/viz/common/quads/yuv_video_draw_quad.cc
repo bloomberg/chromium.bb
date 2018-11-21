@@ -66,7 +66,6 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               float offset,
                               float multiplier,
                               uint32_t bits_per_channel,
-                              bool require_overlay,
                               ui::ProtectedVideoType protected_video_type) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
                    visible_rect, needs_blending);
@@ -83,7 +82,6 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->resource_offset = offset;
   this->resource_multiplier = multiplier;
   this->bits_per_channel = bits_per_channel;
-  this->require_overlay = require_overlay;
   this->protected_video_type = protected_video_type;
 }
 
@@ -106,7 +104,6 @@ void YUVVideoDrawQuad::ExtendValue(
                     resources.ids[kVPlaneResourceIdIndex]);
   value->SetInteger("a_plane_resource_id",
                     resources.ids[kAPlaneResourceIdIndex]);
-  value->SetBoolean("require_overlay", require_overlay);
   value->SetInteger("protected_video_type",
                     static_cast<int>(protected_video_type));
 }
