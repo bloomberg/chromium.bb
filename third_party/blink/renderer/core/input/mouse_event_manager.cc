@@ -1100,8 +1100,29 @@ DragState& MouseEventManager::GetDragState() {
 }
 
 void MouseEventManager::ResetDragSource() {
+  // Check validity of drag source.
   if (!frame_->GetPage())
     return;
+
+  Node* drag_src = GetDragState().drag_src_;
+  if (!drag_src)
+    return;
+
+  Frame* drag_src_frame = drag_src->GetDocument().GetFrame();
+  if (!drag_src_frame) {
+    // The frame containing the drag_src has been navigated away, so the
+    // drag_src is no longer has an owning frame and is invalid.
+    // See https://crbug.com/903705 for more details.
+    GetDragState().drag_src_ = nullptr;
+    return;
+  }
+
+  // Only allow resetting drag_src_ if the frame requesting reset is above the
+  // drag_src_ node's frame in the frame hierarchy. This way, unrelated frames
+  // can't reset a drag state.
+  if (!drag_src_frame->Tree().IsDescendantOf(frame_))
+    return;
+
   GetDragState().drag_src_ = nullptr;
 }
 

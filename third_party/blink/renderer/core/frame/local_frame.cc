@@ -492,6 +492,10 @@ void LocalFrame::DidAttachDocument() {
   Document* document = GetDocument();
   DCHECK(document);
   GetEditor().Clear();
+  // Clearing the event handler clears many events, but notably can ensure that
+  // for a drag started on an element in a frame that was moved (likely via
+  // appendChild()), the drag source will detach and stop firing drag events
+  // even after the frame reattaches.
   GetEventHandler().Clear();
   Selection().DidAttachDocument(document);
   GetInputMethodController().DidAttachDocument(document);
