@@ -71,6 +71,15 @@ bool IsVividLoaded() {
   });
 }
 
+void NotifyVideoCaptureDevicesChanged() {
+  base::SystemMonitor* monitor = base::SystemMonitor::Get();
+  // |monitor| might be nullptr in unittest.
+  if (monitor) {
+    monitor->ProcessDevicesChanged(
+        base::SystemMonitor::DeviceType::DEVTYPE_VIDEO_CAPTURE);
+  }
+}
+
 }  // namespace
 
 CameraHalDelegate::CameraHalDelegate(
@@ -383,7 +392,6 @@ void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
   if (result) {
     LOG(ERROR) << "Failed to get camera info. Camera id: " << camera_id;
   }
-  // In case of error |camera_info| is empty.
   SortCameraMetadata(&camera_info->static_camera_characteristics);
 
   base::AutoLock lock(camera_info_lock_);
@@ -404,6 +412,9 @@ void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
     if (all_updated) {
       builtin_camera_info_updated_.Signal();
     }
+  } else {
+    // It's an external camera.
+    NotifyVideoCaptureDevicesChanged();
   }
 
   if (camera_info_.size() == 1) {
@@ -448,18 +459,13 @@ void CameraHalDelegate::CameraDeviceStatusChange(
         if (camera_info_.empty()) {
           has_camera_connected_.Reset();
         }
+        NotifyVideoCaptureDevicesChanged();
       } else {
         LOG(WARNING) << "Ignore nonexistent camera_id = " << camera_id;
       }
       break;
     default:
       NOTREACHED() << "Unexpected new status " << new_status;
-  }
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  // |monitor| might be nullptr in unittest.
-  if (monitor) {
-    monitor->ProcessDevicesChanged(
-        base::SystemMonitor::DeviceType::DEVTYPE_VIDEO_CAPTURE);
   }
 }
 
