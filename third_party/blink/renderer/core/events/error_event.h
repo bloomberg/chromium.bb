@@ -67,11 +67,9 @@ class ErrorEvent final : public Event {
                             const ErrorEventInit* initializer) {
     return MakeGarbageCollected<ErrorEvent>(script_state, type, initializer);
   }
-  static ErrorEvent* CreateSanitizedError(DOMWrapperWorld* world) {
-    return MakeGarbageCollected<ErrorEvent>(
-        "Script error.", SourceLocation::Create(String(), 0, 0, nullptr),
-        ScriptValue(), world);
-  }
+
+  // Creates an error for a script whose errors are muted.
+  static ErrorEvent* CreateSanitizedError(ScriptState* script_state);
 
   ErrorEvent();
   ErrorEvent(const String& message,

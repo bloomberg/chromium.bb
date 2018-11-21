@@ -27,18 +27,18 @@ Loaded resource 1
 PASS: Threw NetworkError: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'http://127.0.0.1:8000/workers/resources/nonexistant' failed to load. when load failed
 PASS: some resources were loaded despite the network error
 Loaded resource 1
-PASS: Threw Error: Uncaught SyntaxError: Unexpected identifier when encountering a syntax error in imported script
+PASS: Threw SyntaxError: Unexpected identifier when encountering a syntax error in imported script
 PASS: some resources were loaded despite the presence of a syntax error
 Testing multiple arguments, with first resource throwing an exception:
 Loaded resource 1
 First resource throwing an exception
-PASS: Propagated 'Error: Uncaught Thrown by first resource' from script
+PASS: Propagated 'Thrown by first resource' from script
 PASS: First resource was executed, and second resource was not
 Testing multiple arguments, with second resource throwing an exception:
 Loaded resource 1
 Loaded resource 2
 Second resource throwing an exception
-PASS: Propagated 'Error: Uncaught Thrown by second resource' from script
+PASS: Propagated 'Thrown by second resource' from script
 PASS: Both scripts were executed
 Testing multiple arguments, with second argument throwing in toString():
 PASS: User error recieved in toString

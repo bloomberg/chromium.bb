@@ -466,6 +466,7 @@ CORE_EXPORT v8::Local<v8::Context> ToV8ContextEvenIfDetached(LocalFrame*,
 
 // These methods can return nullptr if the context associated with the
 // ScriptState has already been detached.
+CORE_EXPORT ScriptState* ToScriptState(ExecutionContext*, DOMWrapperWorld&);
 CORE_EXPORT ScriptState* ToScriptState(LocalFrame*, DOMWrapperWorld&);
 // Do not use this method unless you are sure you should use the main world's
 // ScriptState
