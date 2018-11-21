@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
-#include "ash/assistant/model/assistant_query_history.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/dialog_plate/action_view.h"
 #include "base/macros.h"
@@ -88,7 +87,6 @@ class DialogPlate : public views::View,
 
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;
-  void OnCommittedQueryChanged(const AssistantQuery& committed_query) override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(AssistantVisibility new_visibility,
@@ -122,7 +120,6 @@ class DialogPlate : public views::View,
   views::Textfield* textfield_;                      // Owned by view hierarchy.
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
-  std::unique_ptr<AssistantQueryHistory::Iterator> query_history_iterator_;
 
   base::ObserverList<DialogPlateObserver>::Unchecked observers_;
 

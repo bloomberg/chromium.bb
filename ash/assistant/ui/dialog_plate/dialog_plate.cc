@@ -69,11 +69,7 @@ DialogPlate::DialogPlate(AssistantController* assistant_controller)
               base::Unretained(this)),
           /*end_animation_callback=*/base::BindRepeating(
               &DialogPlate::OnAnimationEnded,
-              base::Unretained(this)))),
-      query_history_iterator_(assistant_controller_->interaction_controller()
-                                  ->model()
-                                  ->query_history()
-                                  .GetIterator()) {
+              base::Unretained(this)))) {
   InitLayout();
 
   // The Assistant controller indirectly owns the view hierarchy to which
@@ -113,43 +109,30 @@ void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
 
 bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
                                  const ui::KeyEvent& key_event) {
+  if (key_event.key_code() != ui::KeyboardCode::VKEY_RETURN)
+    return false;
+
   if (key_event.type() != ui::EventType::ET_KEY_PRESSED)
     return false;
 
-  switch (key_event.key_code()) {
-    case ui::KeyboardCode::VKEY_RETURN: {
-      // In tablet mode the virtual keyboard should not be sticky, so we hide it
-      // when committing a query.
-      if (IsTabletMode())
-        textfield_->GetFocusManager()->ClearFocus();
+  // In tablet mode the virtual keyboard should not be sticky, so we hide it
+  // when committing a query.
+  if (IsTabletMode())
+    textfield_->GetFocusManager()->ClearFocus();
 
-      const base::StringPiece16& trimmed_text = base::TrimWhitespace(
-          textfield_->text(), base::TrimPositions::TRIM_ALL);
+  const base::StringPiece16& trimmed_text =
+      base::TrimWhitespace(textfield_->text(), base::TrimPositions::TRIM_ALL);
 
-      // Only non-empty trimmed text is consider a valid contents commit.
-      // Anything else will simply result in the DialogPlate being cleared.
-      if (!trimmed_text.empty()) {
-        for (DialogPlateObserver& observer : observers_)
-          observer.OnDialogPlateContentsCommitted(
-              base::UTF16ToUTF8(trimmed_text));
-      }
-
-      textfield_->SetText(base::string16());
-
-      return true;
-    }
-    case ui::KeyboardCode::VKEY_UP:
-    case ui::KeyboardCode::VKEY_DOWN: {
-      DCHECK(query_history_iterator_);
-      auto opt_query = key_event.key_code() == ui::KeyboardCode::VKEY_UP
-                           ? query_history_iterator_->Prev()
-                           : query_history_iterator_->Next();
-      textfield_->SetText(base::UTF8ToUTF16(opt_query.value_or("")));
-      return true;
-    }
-    default:
-      return false;
+  // Only non-empty trimmed text is consider a valid contents commit. Anything
+  // else will simply result in the DialogPlate being cleared.
+  if (!trimmed_text.empty()) {
+    for (DialogPlateObserver& observer : observers_)
+      observer.OnDialogPlateContentsCommitted(base::UTF16ToUTF8(trimmed_text));
   }
+
+  textfield_->SetText(base::string16());
+
+  return true;
 }
 
 void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
@@ -234,12 +217,6 @@ void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
       // No action necessary.
       break;
   }
-}
-
-void DialogPlate::OnCommittedQueryChanged(
-    const AssistantQuery& committed_query) {
-  DCHECK(query_history_iterator_);
-  query_history_iterator_->ResetToLast();
 }
 
 void DialogPlate::OnUiVisibilityChanged(AssistantVisibility new_visibility,

@@ -203,28 +203,6 @@ void AssistantInteractionController::OnHighlighterSelectionRecognized(
   StartMetalayerInteraction(/*region=*/rect);
 }
 
-void AssistantInteractionController::OnCommittedQueryChanged(
-    const AssistantQuery& assistant_query) {
-  std::string query;
-  switch (assistant_query.type()) {
-    case AssistantQueryType::kText: {
-      const auto* assistant_text_query =
-          static_cast<const AssistantTextQuery*>(&assistant_query);
-      query = assistant_text_query->text();
-      break;
-    }
-    case AssistantQueryType::kVoice: {
-      const auto* assistant_voice_query =
-          static_cast<const AssistantVoiceQuery*>(&assistant_query);
-      query = assistant_voice_query->high_confidence_speech();
-      break;
-    }
-    case AssistantQueryType::kNull:
-      break;
-  }
-  model_.query_history().Add(query);
-}
-
 void AssistantInteractionController::OnInteractionStateChanged(
     InteractionState interaction_state) {
   if (interaction_state != InteractionState::kActive)
