@@ -58,6 +58,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/util_constants.h"
+#include "chromeos/assistant/buildflags.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browser_watcher/stability_paths.h"
 #include "components/crash/core/common/crash_keys.h"
@@ -121,6 +122,10 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/metrics/plugin_metrics_provider.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+#include "chrome/browser/metrics/assistant_service_metrics_provider.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -721,6 +726,11 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<PowerMetricsProvider>());
 #endif
+
+#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<AssistantServiceMetricsProvider>());
+#endif  // BUILDFLAG(ENABLE_CROS_ASSISTANT)
 }
 
 void ChromeMetricsServiceClient::RegisterUKMProviders() {
