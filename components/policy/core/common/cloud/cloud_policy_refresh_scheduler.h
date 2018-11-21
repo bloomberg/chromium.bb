@@ -22,6 +22,8 @@ class SequencedTaskRunner;
 
 namespace policy {
 
+class CloudPolicyService;
+
 // Observes CloudPolicyClient and CloudPolicyStore to trigger periodic policy
 // fetches and issue retries on error conditions.
 class POLICY_EXPORT CloudPolicyRefreshScheduler
@@ -39,11 +41,12 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   static const int64_t kRefreshDelayMinMs;
   static const int64_t kRefreshDelayMaxMs;
 
-  // |client| and |store| pointers must stay valid throughout the
+  // |client|, |store| and |service| pointers must stay valid throughout the
   // lifetime of CloudPolicyRefreshScheduler.
   CloudPolicyRefreshScheduler(
       CloudPolicyClient* client,
       CloudPolicyStore* store,
+      CloudPolicyService* service,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       network::NetworkConnectionTrackerGetter
           network_connection_tracker_getter);
@@ -115,8 +118,15 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   // Sets the |last_refresh_| and |last_refresh_ticks_| to current time.
   void UpdateLastRefresh();
 
+  // Called when policy was refreshed after refresh request.
+  // It is different than OnPolicyFetched(), which will be called every time
+  // policy was fetched by the |client_|, does not matter where it was
+  // requested.
+  void OnPolicyRefreshed(bool success);
+
   CloudPolicyClient* client_;
   CloudPolicyStore* store_;
+  CloudPolicyService* service_;
 
   // For scheduling delayed tasks.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
