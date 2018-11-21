@@ -7,8 +7,13 @@ module media.mojom;
 import "mojo/public/mojom/base/unguessable_token.mojom";
 
 struct SessionData {
+  // see media::MediaDrmKeyType
+  [Native]
+  enum KeyType;
+
   array<uint8> key_set_id;
   string mime_type;
+  KeyType key_type;
 };
 
 // Allows MediaDrmBridge to store and retrieve persistent data. This is needed

@@ -12,6 +12,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/navigation_handle.h"
+#include "media/base/android/media_drm_key_type.h"
 
 // The storage will be managed by PrefService. All data will be stored in a
 // dictionary under the key "media.media_drm_storage". The dictionary is
@@ -25,7 +26,8 @@
 //             $session_id: {
 //                 "key_set_id": $key_set_id,
 //                 "mime_type": $mime_type,
-//                 "creation_time": $creation_time
+//                 "creation_time": $creation_time,
+//                 "key_type": $key_type (enum of MediaDrmKeyType)
 //             },
 //             # more session_id map...
 //         }
@@ -48,7 +50,29 @@ const char kCreationTime[] = "creation_time";
 const char kSessions[] = "sessions";
 const char kKeySetId[] = "key_set_id";
 const char kMimeType[] = "mime_type";
+const char kKeyType[] = "key_type";
 const char kOriginId[] = "origin_id";
+
+bool GetMediaDrmKeyTypeFromDict(const base::Value& dict,
+                                media::MediaDrmKeyType* value_out) {
+  DCHECK(dict.is_dict());
+  DCHECK(value_out);
+
+  const base::Value* value =
+      dict.FindKeyOfType(kKeyType, base::Value::Type::INTEGER);
+  if (!value)
+    return false;
+
+  int key_type = value->GetInt();
+  if (key_type < static_cast<int>(media::MediaDrmKeyType::UNKNOWN) ||
+      key_type > static_cast<int>(media::MediaDrmKeyType::MAX)) {
+    DVLOG(1) << "Corrupted key type.";
+    return false;
+  }
+
+  *value_out = static_cast<media::MediaDrmKeyType>(key_type);
+  return true;
+}
 
 bool GetStringFromDict(const base::Value& dict,
                        const std::string& key,
@@ -139,8 +163,9 @@ class OriginData {
 class SessionData {
  public:
   SessionData(const std::vector<uint8_t>& key_set_id,
-              const std::string& mime_type)
-      : SessionData(key_set_id, mime_type, base::Time::Now()) {}
+              const std::string& mime_type,
+              media::MediaDrmKeyType key_type)
+      : SessionData(key_set_id, mime_type, key_type, base::Time::Now()) {}
 
   base::Time creation_time() const { return creation_time_; }
 
@@ -152,13 +177,14 @@ class SessionData {
                     reinterpret_cast<const char*>(key_set_id_.data()),
                     key_set_id_.size())));
     dict.SetKey(kMimeType, base::Value(mime_type_));
+    dict.SetKey(kKeyType, base::Value(static_cast<int>(key_type_)));
     dict.SetKey(kCreationTime, base::Value(creation_time_.ToDoubleT()));
 
     return dict;
   }
 
   media::mojom::SessionDataPtr ToMojo() const {
-    return media::mojom::SessionData::New(key_set_id_, mime_type_);
+    return media::mojom::SessionData::New(key_set_id_, mime_type_, key_type_);
   }
 
   // Convert |session_dict| to SessionData. |session_dict| contains information
@@ -180,22 +206,31 @@ class SessionData {
     if (!GetCreationTimeFromDict(session_dict, &time))
       return nullptr;
 
+    media::MediaDrmKeyType key_type;
+    if (!GetMediaDrmKeyTypeFromDict(session_dict, &key_type)) {
+      DVLOG(1) << "Missing key type.";
+      key_type = media::MediaDrmKeyType::UNKNOWN;
+    }
+
     return base::WrapUnique(
         new SessionData(std::vector<uint8_t>(key_set_id_string.begin(),
                                              key_set_id_string.end()),
-                        std::move(mime_type), time));
+                        std::move(mime_type), key_type, time));
   }
 
  private:
   SessionData(std::vector<uint8_t> key_set_id,
               std::string mime_type,
+              media::MediaDrmKeyType key_type,
               base::Time time)
       : key_set_id_(std::move(key_set_id)),
         mime_type_(std::move(mime_type)),
+        key_type_(key_type),
         creation_time_(time) {}
 
   std::vector<uint8_t> key_set_id_;
   std::string mime_type_;
+  media::MediaDrmKeyType key_type_;
   base::Time creation_time_;
 };
 
@@ -504,8 +539,14 @@ void MediaDrmStorageImpl::SavePersistentSession(
   DVLOG_IF(1, sessions_dict->FindKey(session_id))
       << __func__ << ": Session ID already exists and will be replaced.";
 
+  // The key type of the session should be valid. MeidaDrmKeyType::MIN/UNKNOWN
+  // is an invalid type and caller should never pass it here.
+  DCHECK_GT(session_data->key_type, media::MediaDrmKeyType::MIN);
+  DCHECK_LE(session_data->key_type, media::MediaDrmKeyType::MAX);
+
   sessions_dict->SetKey(
-      session_id, SessionData(session_data->key_set_id, session_data->mime_type)
+      session_id, SessionData(session_data->key_set_id, session_data->mime_type,
+                              session_data->key_type)
                       .ToDictValue());
 
   std::move(callback).Run(true);

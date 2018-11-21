@@ -9,8 +9,11 @@
 namespace media {
 
 MediaDrmStorage::SessionData::SessionData(std::vector<uint8_t> key_set_id,
-                                          std::string mime_type)
-    : key_set_id(std::move(key_set_id)), mime_type(std::move(mime_type)) {}
+                                          std::string mime_type,
+                                          MediaDrmKeyType key_type)
+    : key_set_id(std::move(key_set_id)),
+      mime_type(std::move(mime_type)),
+      key_type(key_type) {}
 
 MediaDrmStorage::SessionData::SessionData(const SessionData& other) = default;
 

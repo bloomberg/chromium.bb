@@ -31,6 +31,7 @@
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_drm_bridge_client.h"
 #include "media/base/android/media_drm_bridge_delegate.h"
+#include "media/base/android/media_drm_key_type.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/media_switches.h"
 #include "media/base/provision_fetcher.h"
@@ -71,14 +72,6 @@ enum class KeyStatus : uint32_t {
   KEY_STATUS_INTERNAL_ERROR = 4,
 };
 
-// These must be in sync with Android MediaDrm KEY_TYPE_XXX constants:
-// https://developer.android.com/reference/android/media/MediaDrm.html#KEY_TYPE_OFFLINE
-// KEY_TYPE_RELEASE is handled internally in Java.
-enum class KeyType : uint32_t {
-  KEY_TYPE_STREAMING = 1,
-  KEY_TYPE_OFFLINE = 2,
-};
-
 const uint8_t kWidevineUuid[16] = {
     0xED, 0xEF, 0x8B, 0xA9, 0x79, 0xD6, 0x4A, 0xCE,  //
     0xA3, 0xC8, 0x27, 0xDC, 0xD5, 0x1D, 0x21, 0xED};
@@ -102,18 +95,18 @@ std::string ConvertInitDataType(media::EmeInitDataType init_data_type) {
   }
 }
 
-// Convert CdmSessionType to KeyType supported by MediaDrm.
-KeyType ConvertCdmSessionType(CdmSessionType session_type) {
+// Convert CdmSessionType to MediaDrmKeyType supported by MediaDrm.
+MediaDrmKeyType ConvertCdmSessionType(CdmSessionType session_type) {
   switch (session_type) {
     case CdmSessionType::kTemporary:
-      return KeyType::KEY_TYPE_STREAMING;
+      return MediaDrmKeyType::STREAMING;
     case CdmSessionType::kPersistentLicense:
-      return KeyType::KEY_TYPE_OFFLINE;
+      return MediaDrmKeyType::OFFLINE;
 
     default:
       LOG(WARNING) << "Unsupported session type "
                    << static_cast<int>(session_type);
-      return KeyType::KEY_TYPE_STREAMING;
+      return MediaDrmKeyType::STREAMING;
   }
 }
 
