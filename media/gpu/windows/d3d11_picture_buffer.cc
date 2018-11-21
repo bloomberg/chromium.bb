@@ -12,7 +12,6 @@
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "media/gpu/gles2_decoder_helper.h"
 #include "media/gpu/windows/return_on_failure.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -25,14 +24,6 @@
 
 namespace media {
 
-namespace {
-
-static bool MakeContextCurrent(gpu::CommandBufferStub* stub) {
-  return stub && stub->decoder_context()->MakeCurrent();
-}
-
-}  // namespace
-
 D3D11PictureBuffer::D3D11PictureBuffer(GLenum target,
                                        gfx::Size size,
                                        size_t level)
@@ -43,7 +34,7 @@ D3D11PictureBuffer::~D3D11PictureBuffer() {
 }
 
 bool D3D11PictureBuffer::Init(
-    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
+    base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()> get_helper_cb,
     Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
     const GUID& decoder_guid,
@@ -75,7 +66,7 @@ bool D3D11PictureBuffer::Init(
   // a handle that we get from |texture| as an IDXGIResource1.
   // TODO(liberato): this should happen on the gpu thread.
   gpu_resources_ = std::make_unique<GpuResources>();
-  if (!gpu_resources_->Init(std::move(get_stub_cb), level_,
+  if (!gpu_resources_->Init(std::move(get_helper_cb), level_,
                             std::move(mailboxes), target_, size_, texture,
                             textures_per_picture))
     return false;
@@ -85,39 +76,33 @@ bool D3D11PictureBuffer::Init(
 
 D3D11PictureBuffer::GpuResources::GpuResources() {}
 
-D3D11PictureBuffer::GpuResources::~GpuResources() {}
+D3D11PictureBuffer::GpuResources::~GpuResources() {
+  if (helper_ && helper_->MakeContextCurrent()) {
+    for (uint32_t service_id : service_ids_)
+      helper_->DestroyTexture(service_id);
+  }
+}
 
 bool D3D11PictureBuffer::GpuResources::Init(
-    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
+    base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()> get_helper_cb,
     int level,
     const std::vector<gpu::Mailbox> mailboxes,
     GLenum target,
     gfx::Size size,
     Microsoft::WRL::ComPtr<ID3D11Texture2D> angle_texture,
     int textures_per_picture) {
-  gpu::CommandBufferStub* stub = get_stub_cb.Run();
+  helper_ = get_helper_cb.Run();
 
-  if (!MakeContextCurrent(stub))
-    return false;
-
-  auto decoder_helper = GLES2DecoderHelper::Create(stub->decoder_context());
-  gpu::gles2::ContextGroup* group = stub->decoder_context()->GetContextGroup();
-  gpu::MailboxManager* mailbox_manager = group->mailbox_manager();
-  gpu::gles2::TextureManager* texture_manager = group->texture_manager();
-  RETURN_ON_FAILURE(!!texture_manager, "No texture manager", false);
-  if (!texture_manager)
+  if (!helper_ || !helper_->MakeContextCurrent())
     return false;
 
   // Create the textures and attach them to the mailboxes.
-  std::vector<uint32_t> service_ids;
   for (int texture_idx = 0; texture_idx < textures_per_picture; texture_idx++) {
-    textures_.push_back(decoder_helper->CreateTexture(
-        target, GL_RGBA, size.width(), size.height(), GL_RGBA,
-        GL_UNSIGNED_BYTE));
-    service_ids.push_back(textures_[texture_idx]->service_id());
-
-    mailbox_manager->ProduceTexture(mailboxes[texture_idx],
-                                    textures_[texture_idx]->GetTextureBase());
+    uint32_t service_id =
+        helper_->CreateTexture(target, GL_RGBA, size.width(), size.height(),
+                               GL_RGBA, GL_UNSIGNED_BYTE);
+    service_ids_.push_back(service_id);
+    helper_->ProduceTexture(mailboxes[texture_idx], service_id);
   }
 
   // Create the stream for zero-copy use by gl.
@@ -133,14 +118,17 @@ bool D3D11PictureBuffer::GpuResources::Init(
   RETURN_ON_FAILURE(!!stream, "Could not create stream", false);
 
   // |stream| will be destroyed when the GLImage is.
+  // TODO(liberato): for tests, it will be destroyed pretty much at the end of
+  // this function unless |helper_| retains it.  Also, this won't work if we
+  // have a FakeCommandBufferHelper since the service IDs aren't meaningful.
   scoped_refptr<gl::GLImage> gl_image =
       base::MakeRefCounted<gl::GLImageDXGI>(size, stream);
   gl::ScopedActiveTexture texture0(GL_TEXTURE0);
   gl::ScopedTextureBinder texture0_binder(GL_TEXTURE_EXTERNAL_OES,
-                                          service_ids[0]);
+                                          service_ids_[0]);
   gl::ScopedActiveTexture texture1(GL_TEXTURE1);
   gl::ScopedTextureBinder texture1_binder(GL_TEXTURE_EXTERNAL_OES,
-                                          service_ids[1]);
+                                          service_ids_[1]);
 
   EGLAttrib consumer_attributes[] = {
       EGL_COLOR_BUFFER_TYPE,
@@ -183,9 +171,10 @@ bool D3D11PictureBuffer::GpuResources::Init(
   gl_image_dxgi->SetTexture(angle_texture, level);
 
   // Bind the image to each texture.
-  for (size_t texture_idx = 0; texture_idx < textures_.size(); texture_idx++) {
-    textures_[texture_idx]->BindImage(gl_image.get(),
-                                      false /* client_managed */);
+  for (size_t texture_idx = 0; texture_idx < service_ids_.size();
+       texture_idx++) {
+    helper_->BindImage(service_ids_[texture_idx], gl_image.get(),
+                       false /* client_managed */);
   }
 
   return true;

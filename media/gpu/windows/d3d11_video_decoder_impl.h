@@ -17,12 +17,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "gpu/command_buffer/service/sequence_id.h"
-#include "gpu/ipc/service/command_buffer_stub.h"
+#include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace gpu {
-class CommandBufferStub;
 struct SyncToken;
 }  // namespace gpu
 
@@ -34,14 +32,14 @@ class D3D11PictureBuffer;
 // Does the gpu main thread work for D3D11VideoDecoder.  Except as noted, this
 // class lives on the GPU main thread.
 // TODO(liberato): Rename this class as a follow-on to this refactor.
-class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl
-    : public gpu::CommandBufferStub::DestructionObserver {
+class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl {
  public:
   // May be constructed on any thread.
   explicit D3D11VideoDecoderImpl(
       std::unique_ptr<MediaLog> media_log,
-      base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb);
-  ~D3D11VideoDecoderImpl() override;
+      base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>
+          get_helper_cb);
+  virtual ~D3D11VideoDecoderImpl();
 
   using InitCB = base::OnceCallback<void(bool success)>;
 
@@ -66,20 +64,13 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl
  private:
   void OnSyncTokenReleased(scoped_refptr<D3D11PictureBuffer> buffer);
 
-  void OnWillDestroyStub(bool have_context) override;
-
-  void DestroyStub();
-
   std::unique_ptr<MediaLog> media_log_;
-
-  base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb_;
-  gpu::CommandBufferStub* stub_ = nullptr;
-
-  // Wait sequence for sync points.
-  gpu::SequenceId wait_sequence_id_;
 
   // Called when we get a picture buffer back from the client.
   ReturnPictureBufferCB return_picture_buffer_cb_;
+
+  base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()> get_helper_cb_;
+  scoped_refptr<CommandBufferHelper> helper_;
 
   // Has thread affinity -- must be run on the gpu main thread.
   THREAD_CHECKER(thread_checker_);

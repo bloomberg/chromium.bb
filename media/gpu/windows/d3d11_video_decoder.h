@@ -17,6 +17,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/callback_registry.h"
 #include "media/base/video_decoder.h"
+#include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_create_device_cb.h"
 #include "media/gpu/windows/d3d11_h264_accelerator.h"
@@ -40,7 +41,7 @@ class MediaLog;
 class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
                                            public D3D11VideoDecoderClient {
  public:
-  // |get_stub_cb| must be called from |gpu_task_runner|.
+  // |helper| must be called from |gpu_task_runner|.
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       std::unique_ptr<MediaLog> media_log,
@@ -91,7 +92,8 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
       const gpu::GpuPreferences& gpu_preferences,
       const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
       std::unique_ptr<D3D11VideoDecoderImpl> impl,
-      base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb);
+      base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()>
+          get_helper_cb);
 
   // Receive |buffer|, that is now unused by the client.
   void ReceivePictureBufferFromClient(scoped_refptr<D3D11PictureBuffer> buffer);
@@ -223,6 +225,10 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   std::vector<scoped_refptr<D3D11PictureBuffer>> picture_buffers_;
 
   State state_ = State::kInitializing;
+
+  // Callback to get a command buffer helper.  Must be called from the gpu main
+  // thread only.
+  base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()> get_helper_cb_;
 
   // Entire class should be single-sequence.
   SEQUENCE_CHECKER(sequence_checker_);
