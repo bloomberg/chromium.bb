@@ -1,12 +1,8 @@
-# speech api not enabled in webview, crbug.com/487255
+# speech synthesis api not enabled in webview
+# but speech recognition is enabled, crbug.com/487255
 interface SpeechSynthesisErrorEvent : SpeechSynthesisEvent
 interface SpeechSynthesisEvent : Event
 interface SpeechSynthesisUtterance : EventTarget
-interface webkitSpeechGrammar
-interface webkitSpeechGrammarList
-interface webkitSpeechRecognition : EventTarget
-interface webkitSpeechRecognitionError : Event
-interface webkitSpeechRecognitionEvent : Event
 
 # permissions api not enabled in webview, crbug.com/490120
 interface PermissionStatus : EventTarget
