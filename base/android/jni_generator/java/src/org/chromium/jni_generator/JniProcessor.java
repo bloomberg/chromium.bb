@@ -65,10 +65,18 @@ public class JniProcessor extends AbstractProcessor {
 
     static final String NATIVE_CLASS_NAME_STR = "GEN_JNI";
     static final String NATIVE_CLASS_PACKAGE_NAME = "org.chromium.base.natives";
+
     static final ClassName NATIVE_CLASS_NAME =
             ClassName.get(NATIVE_CLASS_PACKAGE_NAME, NATIVE_CLASS_NAME_STR);
+
     static final String NATIVE_TEST_FIELD_NAME = "TESTING_ENABLED";
+    static final String NATIVE_REQUIRE_MOCK_FIELD_NAME = "REQUIRE_MOCK";
+
+    // Lets mocks of the Native impl to be set.
     static final boolean TESTING_ENABLED = false;
+
+    // If true, throw an exception if no mock is provided.
+    private static final boolean REQUIRE_MOCK = false;
 
     // Builder for NativeClass which will hold all our native method declarations.
     private TypeSpec.Builder mNativesBuilder;
@@ -107,15 +115,24 @@ public class JniProcessor extends AbstractProcessor {
         FieldSpec.Builder testingFlagBuilder =
                 FieldSpec.builder(TypeName.BOOLEAN, NATIVE_TEST_FIELD_NAME)
                         .addModifiers(Modifier.STATIC, Modifier.PUBLIC);
+        FieldSpec.Builder throwFlagBuilder =
+                FieldSpec.builder(TypeName.BOOLEAN, NATIVE_REQUIRE_MOCK_FIELD_NAME)
+                        .addModifiers(Modifier.STATIC, Modifier.PUBLIC);
+
+        // Initialize only if true to avoid NoRedundantFieldInit.
         if (TESTING_ENABLED) {
             testingFlagBuilder.initializer("true");
+        }
+        if (REQUIRE_MOCK) {
+            throwFlagBuilder.initializer("true");
         }
 
         // State of mNativesBuilder needs to be preserved between processing rounds.
         mNativesBuilder = TypeSpec.classBuilder(NATIVE_CLASS_NAME)
                                   .addAnnotation(createGeneratedAnnotation())
                                   .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                                  .addField(testingFlagBuilder.build());
+                                  .addField(testingFlagBuilder.build())
+                                  .addField(throwFlagBuilder.build());
 
         try {
             sNativeMethodHashFunction = MessageDigest.getInstance("MD5");
@@ -323,7 +340,6 @@ public class JniProcessor extends AbstractProcessor {
                                            .addSuperinterface(nativeInterfaceType)
                                            .addModifiers(Modifier.FINAL)
                                            .addAnnotation(createGeneratedAnnotation());
-
         if (isPublic) {
             builder.addModifiers(Modifier.PUBLIC);
         }
@@ -356,12 +372,37 @@ public class JniProcessor extends AbstractProcessor {
         builder.addField(testTarget);
 
         // Getter for target or testing instance if flag in GEN_JNI is set.
+        /*
+        {classname}.Natives get() {
+            if (GEN_JNI.TESTING_ENABLED) {
+                if (testInst != null) {
+                    return testInst;
+                }
+                if (GEN_JNI.REQUIRE_MOCK) {
+                    throw new UnsupportedOperationException($noMockExceptionString);
+                }
+            }
+            return new {classname}Jni();
+        }
+         */
+        String noMockExceptionString =
+                String.format("No mock found for the native implementation for %s. "
+                                + "The current configuration requires all native "
+                                + "implementations to have a mock instance.",
+                        nativeInterfaceType);
         MethodSpec instanceGetter =
                 MethodSpec.methodBuilder("get")
                         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                         .returns(nativeInterfaceType)
                         .beginControlFlow("if ($T.$N)", NATIVE_CLASS_NAME, NATIVE_TEST_FIELD_NAME)
+                        .beginControlFlow("if ($N != null)", testTarget)
                         .addStatement("return $N", testTarget)
+                        .endControlFlow()
+                        .beginControlFlow(
+                                "if ($T.$N)", NATIVE_CLASS_NAME, NATIVE_REQUIRE_MOCK_FIELD_NAME)
+                        .addStatement("throw new UnsupportedOperationException($S)",
+                                noMockExceptionString)
+                        .endControlFlow()
                         .endControlFlow()
                         .addStatement("return new $N()", name)
                         .build();

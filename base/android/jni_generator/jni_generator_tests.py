@@ -338,8 +338,9 @@ class TestGenerator(unittest.TestCase):
                                                     natives, jni_params, False)
     content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
+    proxy_opts = jni_registration_generator.ProxyOptions()
     self.assertGoldenTextEquals(
-        jni_registration_generator.CreateProxyJavaFromDict(content),
+        jni_registration_generator.CreateProxyJavaFromDict(content, proxy_opts),
         suffix='Java')
 
     self.assertGoldenTextEquals(
@@ -1115,8 +1116,10 @@ public class java.util.HashSet {
     reg_dict = jni_registration_generator._DictForPath(path)
     reg_dict = self._MergeRegistrationForTests([reg_dict])
 
+    proxy_opts = jni_registration_generator.ProxyOptions()
     self.assertGoldenTextEquals(
-        jni_registration_generator.CreateProxyJavaFromDict(reg_dict),
+        jni_registration_generator.CreateProxyJavaFromDict(reg_dict,
+                                                           proxy_opts),
         golden_file='HashedSampleForAnnotationProcessorGenJni.golden')
 
   def testJniProxyExample(self):

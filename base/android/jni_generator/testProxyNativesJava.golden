@@ -10,6 +10,7 @@ package org.chromium.base.natives;
 
 public class GEN_JNI {
   public static final boolean TESTING_ENABLED = false;
+  public static final boolean REQUIRE_MOCK = false;
 
   public static native void org_chromium_example_SampleProxyJni_foo();
 
