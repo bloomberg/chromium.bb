@@ -302,8 +302,11 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
                 CommonResources.makeHtmlPageWithSimpleLinkTo(anchorLinkUrl + "#anchor"));
 
         if (useLoadData) {
+            final String html =
+                    CommonResources.makeHtmlPageWithSimpleLinkTo("#anchor").replace("#", "%23");
+            // Loading the html via a data URI requires us to encode '#' symbols as '%23'.
             mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                    CommonResources.makeHtmlPageWithSimpleLinkTo("%23anchor"), "text/html", false);
+                    html, "text/html", false);
         } else {
             mActivityTestRule.loadUrlSync(
                     mAwContents, mContentsClient.getOnPageFinishedHelper(), anchorLinkUrl);
