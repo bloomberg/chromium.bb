@@ -379,7 +379,6 @@ typedef struct AV1Common {
 
   int show_frame;
   int showable_frame;  // frame can be used as show existing frame in future
-  int last_show_frame;
   int show_existing_frame;
   // Flag for a frame used as a reference - not written to the bitstream
   int is_reference_frame;
@@ -612,11 +611,6 @@ static INLINE YV12_BUFFER_CONFIG *get_ref_frame(AV1_COMMON *cm, int index) {
   if (cm->ref_frame_map[index] < 0) return NULL;
   assert(cm->ref_frame_map[index] < FRAME_BUFFERS);
   return &cm->buffer_pool->frame_bufs[cm->ref_frame_map[index]].buf;
-}
-
-static INLINE YV12_BUFFER_CONFIG *get_frame_new_buffer(
-    const AV1_COMMON *const cm) {
-  return &cm->buffer_pool->frame_bufs[cm->new_fb_idx].buf;
 }
 
 static INLINE int get_free_fb(AV1_COMMON *cm) {

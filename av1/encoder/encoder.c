@@ -3988,6 +3988,7 @@ static void init_ref_frame_bufs(AV1_COMP *cpi) {
   int i;
   BufferPool *const pool = cm->buffer_pool;
   cm->new_fb_idx = INVALID_IDX;
+  cm->cur_frame = NULL;
   for (i = 0; i < REF_FRAMES; ++i) {
     cm->ref_frame_map[i] = INVALID_IDX;
   }
@@ -4084,10 +4085,9 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
 
   // Reset the frame pointers to the current frame size.
   if (aom_realloc_frame_buffer(
-          get_frame_new_buffer(cm), cm->width, cm->height,
-          seq_params->subsampling_x, seq_params->subsampling_y,
-          seq_params->use_highbitdepth, AOM_BORDER_IN_PIXELS,
-          cm->byte_alignment, NULL, NULL, NULL))
+          &cm->cur_frame->buf, cm->width, cm->height, seq_params->subsampling_x,
+          seq_params->subsampling_y, seq_params->use_highbitdepth,
+          AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate frame buffer");
 
@@ -4654,9 +4654,9 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
         int64_t low_err_target = cpi->ambient_err >> 1;
 
         if (cm->seq_params.use_highbitdepth) {
-          kf_err = aom_highbd_get_y_sse(cpi->source, get_frame_new_buffer(cm));
+          kf_err = aom_highbd_get_y_sse(cpi->source, &cm->cur_frame->buf);
         } else {
-          kf_err = aom_get_y_sse(cpi->source, get_frame_new_buffer(cm));
+          kf_err = aom_get_y_sse(cpi->source, &cm->cur_frame->buf);
         }
         // Prevent possible divide by zero error below for perfect KF
         kf_err += !kf_err;
@@ -5082,11 +5082,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     cpi->seq_params_locked = 1;
 
     // Set up frame to show to get ready for stats collection.
-    cm->frame_to_show = get_frame_new_buffer(cm);
+    cm->frame_to_show = &cm->cur_frame->buf;
 
     // Update current frame offset.
-    current_frame->order_hint =
-        cm->buffer_pool->frame_bufs[cm->new_fb_idx].order_hint;
+    current_frame->order_hint = cm->cur_frame->order_hint;
 
 #if DUMP_RECON_FRAMES == 1
     // NOTE(zoeliu): For debug - Output the filtered reconstructed video.
@@ -5240,10 +5239,9 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   // the force key frame
   if (cpi->rc.next_key_frame_forced && cpi->rc.frames_to_key == 1) {
     if (seq_params->use_highbitdepth) {
-      cpi->ambient_err =
-          aom_highbd_get_y_sse(cpi->source, get_frame_new_buffer(cm));
+      cpi->ambient_err = aom_highbd_get_y_sse(cpi->source, &cm->cur_frame->buf);
     } else {
-      cpi->ambient_err = aom_get_y_sse(cpi->source, get_frame_new_buffer(cm));
+      cpi->ambient_err = aom_get_y_sse(cpi->source, &cm->cur_frame->buf);
     }
   }
 
@@ -5253,7 +5251,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     cpi->refresh_last_frame = 1;
   }
 
-  cm->frame_to_show = get_frame_new_buffer(cm);
+  cm->frame_to_show = &cm->cur_frame->buf;
   cm->frame_to_show->color_primaries = seq_params->color_primaries;
   cm->frame_to_show->transfer_characteristics =
       seq_params->transfer_characteristics;
@@ -5390,9 +5388,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     // keep track of the last coded dimensions
     cm->last_width = cm->width;
     cm->last_height = cm->height;
-
-    // reset to normal state now that we are done.
-    cm->last_show_frame = cm->show_frame;
   }
 
   return AOM_CODEC_OK;
@@ -6607,9 +6602,11 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     if (cm->new_fb_idx != INVALID_IDX) {
       --pool->frame_bufs[cm->new_fb_idx].ref_count;
     }
-    cm->new_fb_idx = get_free_fb(cm);
 
+    cm->cur_frame = NULL;
+    cm->new_fb_idx = get_free_fb(cm);
     if (cm->new_fb_idx == INVALID_IDX) return -1;
+    cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
 
     // Clear down mmx registers
     aom_clear_system_state();

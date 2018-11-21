@@ -318,6 +318,7 @@ static void init_buffer_callbacks(aom_codec_alg_priv_t *ctx) {
     BufferPool *const pool = cm->buffer_pool;
 
     cm->new_fb_idx = INVALID_IDX;
+    cm->cur_frame = NULL;
     cm->byte_alignment = ctx->byte_alignment;
     cm->skip_loop_filter = ctx->skip_loop_filter;
     cm->skip_film_grain = ctx->skip_film_grain;
@@ -356,7 +357,7 @@ static int frame_worker_hook(void *arg1, void *arg2) {
 
   if (result != 0) {
     // Check decode result in serial decode.
-    frame_worker_data->pbi->cur_buf->buf.corrupted = 1;
+    frame_worker_data->pbi->common.cur_frame->buf.corrupted = 1;
     frame_worker_data->pbi->need_resync = 1;
   }
   return !result;
@@ -693,6 +694,9 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
       AVxWorker *const worker = &ctx->frame_workers[ctx->next_output_worker_id];
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
+      AV1Decoder *const pbi = frame_worker_data->pbi;
+      AV1_COMMON *const cm = &pbi->common;
+      RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
       ctx->next_output_worker_id =
           (ctx->next_output_worker_id + 1) % ctx->num_frame_workers;
       // Wait for the frame from worker thread.
@@ -705,9 +709,6 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
         aom_film_grain_t *grain_params;
         if (av1_get_raw_frame(frame_worker_data->pbi, *index, &sd,
                               &grain_params) == 0) {
-          AV1Decoder *const pbi = frame_worker_data->pbi;
-          AV1_COMMON *const cm = &pbi->common;
-          RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
           const int buf_idx = pbi->output_frame_index[*index];
           ctx->last_show_frame = buf_idx;
           if (ctx->need_resync) return NULL;

@@ -1362,7 +1362,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
   YV12_BUFFER_CONFIG copy_buffer;
   memset(&copy_buffer, 0, sizeof(copy_buffer));
 
-  YV12_BUFFER_CONFIG *const frame_to_show = get_frame_new_buffer(cm);
+  YV12_BUFFER_CONFIG *const frame_to_show = &cm->cur_frame->buf;
 
   const int aligned_width = ALIGN_POWER_OF_TWO(cm->width, 3);
   if (aom_alloc_frame_buffer(
@@ -1382,8 +1382,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
   // Realloc the current frame buffer at a higher resolution in place.
   if (pool != NULL) {
     // Use callbacks if on the decoder.
-    aom_codec_frame_buffer_t *fb =
-        &pool->frame_bufs[cm->new_fb_idx].raw_frame_buffer;
+    aom_codec_frame_buffer_t *fb = &cm->cur_frame->raw_frame_buffer;
     aom_release_frame_buffer_cb_fn_t release_fb_cb = pool->release_fb_cb;
     aom_get_frame_buffer_cb_fn_t cb = pool->get_fb_cb;
     void *cb_priv = pool->cb_priv;

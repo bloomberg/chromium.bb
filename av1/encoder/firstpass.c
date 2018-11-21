@@ -525,7 +525,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
   YV12_BUFFER_CONFIG *const lst_yv12 = get_ref_frame_buffer(cpi, LAST_FRAME);
   YV12_BUFFER_CONFIG *gld_yv12 = get_ref_frame_buffer(cpi, GOLDEN_FRAME);
-  YV12_BUFFER_CONFIG *const new_yv12 = get_frame_new_buffer(cm);
+  YV12_BUFFER_CONFIG *const new_yv12 = &cm->cur_frame->buf;
   const YV12_BUFFER_CONFIG *first_ref_buf = lst_yv12;
   double intra_factor;
   double brightness_factor;

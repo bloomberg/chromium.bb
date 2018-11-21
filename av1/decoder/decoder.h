@@ -165,10 +165,6 @@ typedef struct AV1Decoder {
 
   int refresh_frame_flags;
 
-  // TODO(hkuang): Combine this with cur_buf in macroblockd as they are
-  // the same.
-  RefCntBuffer *cur_buf;  //  Current decoding frame buffer.
-
   AVxWorker lf_worker;
   AV1LfSync lf_row_sync;
   AV1LrSync lr_row_sync;

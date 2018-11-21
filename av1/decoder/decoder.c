@@ -400,13 +400,14 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
     }
 
     if (cm->show_existing_frame || cm->show_frame) {
-      YV12_BUFFER_CONFIG *cur_frame = get_frame_new_buffer(cm);
+      YV12_BUFFER_CONFIG *cur_frame = &cm->cur_frame->buf;
       if (pbi->output_all_layers) {
         // Append this frame to the output queue
         if (pbi->num_output_frames >= MAX_NUM_SPATIAL_LAYERS) {
           // We can't store the new frame anywhere, so drop it and return an
           // error
           decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
+          cm->cur_frame = NULL;
           cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
         } else {
           pbi->output_frames[pbi->num_output_frames] = cur_frame;
@@ -425,6 +426,7 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
       }
     } else {
       decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
+      cm->cur_frame = NULL;
     }
 
     unlock_buffer_pool(pool);
@@ -436,6 +438,7 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
     // Nothing was decoded, so just drop this frame buffer
     lock_buffer_pool(pool);
     decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
+    cm->cur_frame = NULL;
     unlock_buffer_pool(pool);
   }
 
@@ -453,7 +456,6 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
                                 const uint8_t **psource) {
   AV1_COMMON *volatile const cm = &pbi->common;
   BufferPool *volatile const pool = cm->buffer_pool;
-  RefCntBuffer *volatile const frame_bufs = cm->buffer_pool->frame_bufs;
   const uint8_t *source = *psource;
   cm->error.error_code = AOM_CODEC_OK;
   cm->error.has_detail = 0;
@@ -486,8 +488,6 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
 
   if (!pbi->camera_frame_header_ready) pbi->hold_ref_buf = 0;
-
-  pbi->cur_buf = &frame_bufs[cm->new_fb_idx];
 
   // The jmp_buf is valid only for the duration of the function that calls
   // setjmp(). Therefore, this function must reset the 'setjmp' field to 0
@@ -547,8 +547,6 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   aom_clear_system_state();
 
   if (!cm->show_existing_frame) {
-    cm->last_show_frame = cm->show_frame;
-
     if (cm->seg.enabled) {
       if (cm->prev_frame && (cm->mi_rows == cm->prev_frame->mi_rows) &&
           (cm->mi_cols == cm->prev_frame->mi_cols)) {

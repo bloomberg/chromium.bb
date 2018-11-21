@@ -421,7 +421,7 @@ static void copy_decoded_tile_to_tile_list_buffer(AV1Decoder *pbi,
   const int ssx = cm->seq_params.subsampling_x;
   const int num_planes = av1_num_planes(cm);
 
-  YV12_BUFFER_CONFIG *cur_frame = get_frame_new_buffer(cm);
+  YV12_BUFFER_CONFIG *cur_frame = &cm->cur_frame->buf;
   const int tr = tile_idx / (pbi->output_frame_width_in_tiles_minus_1 + 1);
   const int tc = tile_idx % (pbi->output_frame_width_in_tiles_minus_1 + 1);
   int plane;

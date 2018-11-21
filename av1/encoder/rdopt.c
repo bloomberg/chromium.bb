@@ -10711,8 +10711,8 @@ static void set_params_rd_pick_inter_mode(
     av1_build_prediction_by_left_preds(cm, xd, mi_row, mi_col,
                                        args->left_pred_buf, dst_width2,
                                        dst_height2, args->left_pred_stride);
-    av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
-                         mi_col, 0, num_planes);
+    av1_setup_dst_planes(xd->plane, bsize, &cm->cur_frame->buf, mi_row, mi_col,
+                         0, num_planes);
     calc_target_weighted_pred(
         cm, x, xd, mi_row, mi_col, args->above_pred_buf[0],
         args->above_pred_stride[0], args->left_pred_buf[0],
