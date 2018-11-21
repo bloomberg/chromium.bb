@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -53,35 +54,41 @@ void ChromePromptImpl::PromptUser(
   using ExtensionCollection = ChromeCleanerScannerResults::ExtensionCollection;
 
   if (on_prompt_user_) {
+    if (base::FeatureList::IsEnabled(kChromeCleanupExtensionsFeature) &&
+        extension_ids) {
+      extension_ids_ = extension_ids.value();
+    } else {
+      extension_ids_.clear();
+    }
+
     ChromeCleanerScannerResults scanner_results(
         FileCollection(files_to_delete.begin(), files_to_delete.end()),
         registry_keys ? RegistryKeyCollection(registry_keys->begin(),
                                               registry_keys->end())
                       : RegistryKeyCollection(),
-        extension_ids
-            ? ExtensionCollection(extension_ids->begin(), extension_ids->end())
-            : ExtensionCollection());
-    if (extension_ids.has_value()) {
-      extension_ids_ = extension_ids;
-    }
+        extension_ids_.empty() ? ExtensionCollection()
+                               : ExtensionCollection(extension_ids_.begin(),
+                                                     extension_ids_.end()));
+
     std::move(on_prompt_user_)
         .Run(std::move(scanner_results), std::move(callback));
   }
 }
 
+// The |extensions_ids| passed to this function are a subset of the
+// |extension_ids| passed to PromptUser because the extensions are not all
+// disabled at the same time.
 void ChromePromptImpl::DisableExtensions(
     const std::vector<base::string16>& extension_ids,
     ChromePrompt::DisableExtensionsCallback callback) {
-  if (extension_service_ == nullptr || !extension_ids_.has_value()) {
+  if (extension_service_ == nullptr || extension_ids_.empty()) {
     std::move(callback).Run(false);
     return;
   }
   // Clear the stored extension_ids by moving it onto this stack frame,
   // so subsequent calls will fail.
-  base::Optional<std::vector<base::string16>> optional_verified_extension_ids{};
-  extension_ids_.swap(optional_verified_extension_ids);
-  std::vector<base::string16> verified_extension_ids =
-      optional_verified_extension_ids.value();
+  std::vector<base::string16> verified_extension_ids{};
+  extension_ids_.swap(verified_extension_ids);
   bool ids_are_valid = std::all_of(
       extension_ids.begin(), extension_ids.end(),
       [this, &verified_extension_ids](const base::string16& id) {
