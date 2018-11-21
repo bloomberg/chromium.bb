@@ -1916,126 +1916,6 @@ class _ChangelistCodereviewBase(object):
     raise NotImplementedError()
 
 
-class _RietveldChangelistImpl(_ChangelistCodereviewBase):
-
-  def __init__(self, changelist, auth_config=None, codereview_host=None):
-    super(_RietveldChangelistImpl, self).__init__(changelist)
-    assert settings, 'must be initialized in _ChangelistCodereviewBase'
-    if not codereview_host:
-      settings.GetDefaultServerUrl()
-
-    self._rietveld_server = codereview_host
-    self._auth_config = auth_config or auth.make_auth_config()
-    self._props = None
-    self._rpc_server = None
-
-  def GetCodereviewServer(self):
-    if not self._rietveld_server:
-      # If we're on a branch then get the server potentially associated
-      # with that branch.
-      if self.GetIssue():
-        self._rietveld_server = gclient_utils.UpgradeToHttps(
-            self._GitGetBranchConfigValue(self.CodereviewServerConfigKey()))
-      if not self._rietveld_server:
-        self._rietveld_server = settings.GetDefaultServerUrl()
-    return self._rietveld_server
-
-  def EnsureAuthenticated(self, force, refresh=False):
-    # No checks for Rietveld because we are deprecating Rietveld.
-    pass
-
-  def EnsureCanUploadPatchset(self, force):
-    # No checks for Rietveld because we are deprecating Rietveld.
-    pass
-
-  def FetchDescription(self, force=False):
-    raise NotImplementedError()
-
-  def GetMostRecentPatchset(self):
-    raise NotImplementedError()
-
-  def GetIssueProperties(self):
-    raise NotImplementedError()
-
-  def CannotTriggerTryJobReason(self):
-    raise NotImplementedError()
-
-  def GetTryJobProperties(self, patchset=None):
-    raise NotImplementedError()
-
-  def GetIssueOwner(self):
-    raise NotImplementedError()
-
-  def GetReviewers(self):
-    raise NotImplementedError()
-
-  def AddComment(self, message, publish=None):
-    raise NotImplementedError()
-
-  def GetCommentsSummary(self, readable=True):
-    raise NotImplementedError()
-
-  def GetStatus(self):
-    print(
-      'WARNING! Rietveld is no longer supported.\n'
-      '\n'
-      'If you have old branches in your checkout, please archive/delete them.\n'
-      '  $ git cl archive --help\n'
-      '\n'
-      'See also PSA https://groups.google.com/a/chromium.org/'
-      'forum/#!topic/infra-dev/2DIVzM2wseo\n')
-    return 'rietveld-not-supported'
-
-  def UpdateDescriptionRemote(self, description, force=False):
-    raise NotImplementedError()
-
-  def CloseIssue(self):
-    raise NotImplementedError()
-
-  def SetFlag(self, flag, value):
-    return self.SetFlags({flag: value})
-
-  def SetFlags(self, flags):
-    """Sets flags on this CL/patchset in Rietveld.
-    """
-    raise NotImplementedError
-
-  def RpcServer(self):
-    """Returns an upload.RpcServer() to access this review's rietveld instance.
-    """
-    raise NotImplementedError
-
-  @classmethod
-  def IssueConfigKey(cls):
-    return 'rietveldissue'
-
-  @classmethod
-  def PatchsetConfigKey(cls):
-    return 'rietveldpatchset'
-
-  @classmethod
-  def CodereviewServerConfigKey(cls):
-    return 'rietveldserver'
-
-  def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
-    raise NotImplementedError
-
-  def SetCQState(self, new_state):
-    raise NotImplementedError
-
-  def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
-                              directory, force):
-    raise NotImplementedError
-
-  @staticmethod
-  def ParseIssueURL(parsed_url):
-    raise NotImplementedError
-
-  def CMDUploadChange(self, options, args, custom_cl_base, change):
-    """Upload the patch to Rietveld."""
-    raise NotImplementedError
-
-
 class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def __init__(self, changelist, auth_config=None, codereview_host=None):
     # auth_config is Rietveld thing, kept here to preserve interface only.
@@ -3067,7 +2947,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
 
 _CODEREVIEW_IMPLEMENTATIONS = {
-  'rietveld': _RietveldChangelistImpl,
   'gerrit': _GerritChangelistImpl,
 }
 

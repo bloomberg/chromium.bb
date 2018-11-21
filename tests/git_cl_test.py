@@ -824,7 +824,6 @@ class TestGitCl(TestCase):
     calls = cls._is_gerrit_calls(True)
     calls += [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
       ((['git', 'config', 'branch.master.gerritissue'],),
         CERR1 if issue is None else str(issue)),
     ]
@@ -1615,10 +1614,6 @@ class TestGitCl(TestCase):
                     actual_codereview=None,
                     codereview_in_url=False):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
-    self.mock(git_cl._RietveldChangelistImpl, 'GetMostRecentPatchset',
-              lambda x: '60001')
-    self.mock(git_cl._RietveldChangelistImpl, 'FetchDescription',
-              lambda *a, **kw: 'Description')
     self.mock(git_cl, 'IsGitVersionAtLeast', lambda *args: True)
 
     if new_branch:
@@ -1634,7 +1629,6 @@ class TestGitCl(TestCase):
       # These calls detect codereview to use.
       self.calls += [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-        ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
         ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
         ((['git', 'config', 'gerrit.host'],), 'true'),
@@ -1787,7 +1781,6 @@ class TestGitCl(TestCase):
 
     self.calls = [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
       ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
       ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
       ((['git', 'config', 'gerrit.host'],), 'true'),
@@ -1806,10 +1799,6 @@ class TestGitCl(TestCase):
   def _checkout_calls(self):
     return [
         ((['git', 'config', '--local', '--get-regexp',
-           'branch\\..*\\.rietveldissue'], ),
-           ('branch.retrying.rietveldissue 1111111111\n'
-            'branch.some-fix.rietveldissue 2222222222\n')),
-        ((['git', 'config', '--local', '--get-regexp',
            'branch\\..*\\.gerritissue'], ),
            ('branch.ger-branch.gerritissue 123456\n'
             'branch.gbranch654.gerritissue 654321\n')),
@@ -1821,12 +1810,6 @@ class TestGitCl(TestCase):
     self.calls += [((['git', 'checkout', 'ger-branch'], ), '')]
     self.assertEqual(0, git_cl.main(['checkout', '123456']))
 
-  def test_checkout_rietveld(self):
-    """Tests git cl checkout <issue>."""
-    self.calls = self._checkout_calls()
-    self.calls += [((['git', 'checkout', 'some-fix'], ), '')]
-    self.assertEqual(0, git_cl.main(['checkout', '2222222222']))
-
   def test_checkout_not_found(self):
     """Tests git cl checkout <issue>."""
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
@@ -1837,8 +1820,6 @@ class TestGitCl(TestCase):
     """Tests git cl checkout <issue>."""
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.calls = [
-        ((['git', 'config', '--local', '--get-regexp',
-           'branch\\..*\\.rietveldissue'], ), CERR1),
         ((['git', 'config', '--local', '--get-regexp',
            'branch\\..*\\.gerritissue'], ), CERR1),
     ]
@@ -1916,7 +1897,6 @@ class TestGitCl(TestCase):
 
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
         ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
         ((['git', 'config', 'branch.feature.gerritserver'],),
          'https://chromium-review.googlesource.com'),
@@ -2078,11 +2058,10 @@ class TestGitCl(TestCase):
     self.calls = \
         [((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
           'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
-         ((['git', 'config', 'branch.master.rietveldissue'],), '1'),
+         ((['git', 'config', 'branch.master.gerritissue'],), '456'),
+         ((['git', 'config', 'branch.foo.gerritissue'],), CERR1),
          ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-         ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
-         ((['git', 'config', 'branch.foo.rietveldissue'],), '456'),
-         ((['git', 'config', 'branch.bar.rietveldissue'],), CERR1),
+         ((['git', 'config', 'gerrit.host'],), 'true'),
          ((['git', 'config', 'branch.bar.gerritissue'],), '789'),
          ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
          ((['git', 'tag', 'git-cl-archived-456-foo', 'foo'],), ''),
@@ -2101,9 +2080,7 @@ class TestGitCl(TestCase):
     self.calls = \
         [((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
           'refs/heads/master'),
-         ((['git', 'config', 'branch.master.rietveldissue'],), '1'),
-         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-         ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
+         ((['git', 'config', 'branch.master.gerritissue'],), '1'),
          ((['git', 'symbolic-ref', 'HEAD'],), 'master')]
 
     self.mock(git_cl, 'get_cl_statuses',
@@ -2118,11 +2095,10 @@ class TestGitCl(TestCase):
     self.calls = \
         [((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
           'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
-         ((['git', 'config', 'branch.master.rietveldissue'],), '1'),
+         ((['git', 'config', 'branch.master.gerritissue'],), '456'),
+         ((['git', 'config', 'branch.foo.gerritissue'],), CERR1),
          ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-         ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
-         ((['git', 'config', 'branch.foo.rietveldissue'],), '456'),
-         ((['git', 'config', 'branch.bar.rietveldissue'],), CERR1),
+         ((['git', 'config', 'gerrit.host'],), 'true'),
          ((['git', 'config', 'branch.bar.gerritissue'],), '789'),
          ((['git', 'symbolic-ref', 'HEAD'],), 'master'),]
 
@@ -2140,12 +2116,11 @@ class TestGitCl(TestCase):
     self.calls = \
         [((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
           'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
-         ((['git', 'config', 'branch.master.rietveldissue'],), '1'),
+         ((['git', 'config', 'branch.master.gerritissue'],), '1'),
+         ((['git', 'config', 'branch.foo.gerritissue'],), '456'),
+         ((['git', 'config', 'branch.bar.gerritissue'],), CERR1),
          ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
-         ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
-         ((['git', 'config', 'branch.foo.rietveldissue'],), '456'),
-         ((['git', 'config', 'branch.bar.rietveldissue'],), CERR1),
-         ((['git', 'config', 'branch.bar.gerritissue'],), '789'),
+         ((['git', 'config', 'gerrit.host'],), 'true'),
          ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
          ((['git', 'branch', '-D', 'foo'],), '')]
 
@@ -2162,7 +2137,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl.sys, 'stdout', out)
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
         ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
         # Let this command raise exception (retcode=1) - it should be ignored.
         ((['git', 'config', '--unset', 'branch.feature.last-upload-hash'],),
@@ -2183,7 +2157,6 @@ class TestGitCl(TestCase):
               lambda _: 'This is a description\n\nChange-Id: Ideadbeef')
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
         ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
         # Let this command raise exception (retcode=1) - it should be ignored.
         ((['git', 'config', '--unset', 'branch.feature.last-upload-hash'],),
@@ -2204,13 +2177,12 @@ class TestGitCl(TestCase):
     self.mock(git_cl.sys, 'stdout', out)
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.rietveldissue'],), '123'),
-        ((['git', 'config', 'rietveld.autoupdate'],), ''),
-        ((['git', 'config', 'rietveld.server'],),
-         'https://codereview.chromium.org'),
-        ((['git', 'config', 'branch.feature.rietveldserver'],), ''),
+        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
+        ((['git', 'config', 'branch.feature.gerritserver'],),
+         'https://chromium-review.googlesource.com'),
         (('write_json', 'output.json',
-          {'issue': 123, 'issue_url': 'https://codereview.chromium.org/123'}),
+          {'issue': 123,
+           'issue_url': 'https://chromium-review.googlesource.com/123'}),
          ''),
     ]
     self.assertEqual(0, git_cl.main(['issue', '--json', 'output.json']))
@@ -2227,7 +2199,6 @@ class TestGitCl(TestCase):
 
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
         ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
         ((['git', 'config', 'branch.feature.gerritserver'],),
          'https://chromium-review.googlesource.com'),
@@ -2279,7 +2250,6 @@ class TestGitCl(TestCase):
 
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
         ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
         ((['git', 'config', 'branch.feature.gerritserver'],),
          'https://chromium-review.googlesource.com'),
@@ -2367,7 +2337,6 @@ class TestGitCl(TestCase):
 
     self.calls = [
       ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-      ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
       ((['git', 'config', 'branch.feature.gerritissue'],), '123456'),
       ((['git', 'config', 'branch.feature.gerritserver'],),
        'https://chromium-review.googlesource.com'),
@@ -2602,7 +2571,6 @@ class TestGitCl(TestCase):
     self._setup_fetch_try_jobs(most_recent_patchset=13)
     self.calls += [
       ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-      ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
       ((['git', 'config', 'branch.feature.gerritissue'],), '1'),
       # TODO(tandrii): Uncomment the below if we decide to support checking
       # patchsets for Gerrit.
