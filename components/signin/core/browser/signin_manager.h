@@ -31,6 +31,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/strings/string_piece.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
@@ -52,8 +53,13 @@ class SigninClient;
 class SigninErrorController;
 
 namespace identity {
+
 class IdentityManager;
-}
+
+// Returns true if the username is allowed based on the pattern string.
+bool IsUsernameAllowedByPattern(base::StringPiece username,
+                                base::StringPiece pattern);
+}  // namespace identity
 
 class SigninManager : public SigninManagerBase,
                       public AccountTrackerService::Observer,
@@ -89,10 +95,6 @@ class SigninManager : public SigninManagerBase,
                 SigninErrorController* signin_error_controller,
                 signin::AccountConsistencyMethod account_consistency);
   ~SigninManager() override;
-
-  // Returns true if the username is allowed based on the policy string.
-  static bool IsUsernameAllowedByPolicy(const std::string& username,
-                                        const std::string& policy);
 
   // Returns |manager| as a SigninManager instance. Relies on the fact that on
   // platforms where signin_manager.* is built, all SigninManagerBase instances
