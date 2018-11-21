@@ -903,7 +903,7 @@
   },
   {
     "name": "enable-bulk-printers",
-    // "owners": [ "your-team" ],
+    "owners": [ "skau" ],
     "expiry_milestone": 76
   },
   {
@@ -1493,7 +1493,7 @@
   },
   {
     "name": "enable-nup-printing",
-    // "owners": [ "your-team" ],
+    "owners": [ "skau" ],
     "expiry_milestone": 76
   },
   {
@@ -1608,7 +1608,7 @@
   },
   {
     "name": "enable-print-preview-register-promos",
-    // "owners": [ "your-team" ],
+    "owners": [ "skau" ],
     "expiry_milestone": 76
   },
   {
