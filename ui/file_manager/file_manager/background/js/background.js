@@ -33,7 +33,7 @@ function FileBrowserBackgroundImpl() {
    *
    * @type {!importer.HistoryLoader}
    */
-  this.historyLoader = new importer.RuntimeHistoryLoader(this.tracker);
+  this.historyLoader = new importer.RuntimeHistoryLoader();
 
   /**
    * Event handler for progress center.
