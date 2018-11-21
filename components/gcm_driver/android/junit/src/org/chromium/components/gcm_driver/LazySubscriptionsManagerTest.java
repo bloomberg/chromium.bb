@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -30,6 +31,8 @@ import java.util.Set;
 public class LazySubscriptionsManagerTest {
     @Before
     public void setUp() {
+        // This commits and clears any cached metrics.
+        CachedMetrics.commitCachedMetrics();
         ShadowRecordHistogram.reset();
     }
 
@@ -75,6 +78,40 @@ public class LazySubscriptionsManagerTest {
     public void testDefaultSubscriptionNotLazy() {
         final String subscriptionId = "subscription_id";
         assertFalse(LazySubscriptionsManager.isSubscriptionLazy(subscriptionId));
+    }
+
+    /**
+     * Tests that switching from lazy to unlazy should leave no queued messages behind.
+     */
+    @Test
+    public void testSwitchingFromLazyToUnlazy() {
+        final String subscriptionId = "subscription_id";
+        LazySubscriptionsManager.storeLazinessInformation(subscriptionId, true);
+
+        Bundle extras = new Bundle();
+        extras.putString("subtype", "MyAppId");
+        extras.putString("collapse_key", "CollapseKey");
+        GCMMessage message = new GCMMessage("MySenderId", extras);
+
+        LazySubscriptionsManager.persistMessage(subscriptionId, message);
+        assertEquals(1, LazySubscriptionsManager.readMessages(subscriptionId).length);
+
+        LazySubscriptionsManager.storeLazinessInformation(subscriptionId, false);
+        assertEquals(0, LazySubscriptionsManager.readMessages(subscriptionId).length);
+    }
+
+    /**
+     * Tests that switching from lazy to unlazy and back to lazy.
+     */
+    @Test
+    public void testSwitchingFromLazyToUnlazyAndBackToLazy() {
+        final String subscriptionId = "subscription_id";
+        LazySubscriptionsManager.storeLazinessInformation(subscriptionId, true);
+        assertTrue(LazySubscriptionsManager.isSubscriptionLazy(subscriptionId));
+        LazySubscriptionsManager.storeLazinessInformation(subscriptionId, false);
+        assertFalse(LazySubscriptionsManager.isSubscriptionLazy(subscriptionId));
+        LazySubscriptionsManager.storeLazinessInformation(subscriptionId, true);
+        assertTrue(LazySubscriptionsManager.isSubscriptionLazy(subscriptionId));
     }
 
     @Test
