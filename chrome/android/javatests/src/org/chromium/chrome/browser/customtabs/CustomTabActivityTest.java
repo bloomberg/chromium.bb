@@ -1274,8 +1274,8 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
-    public void testSetTopBarContentView_moduleManagedUrl_topBarVisible() throws Exception {
+    @EnableFeatures(ChromeFeatureList.CCT_MODULE)
+    public void testSetTopBarContentView_moduleNotProvided_topBarInvisible() throws Exception {
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(),
                 "https://www.google.com/search?q=london");
@@ -1290,7 +1290,141 @@ public class CustomTabActivityTest {
             ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
             Assert.assertNotNull(topBar);
             Assert.assertThat(anyView.getParent(), equalTo(topBar));
+            Assert.assertEquals(View.GONE, anyView.getVisibility());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures(ChromeFeatureList.CCT_MODULE)
+    public void testSetTopBarContentView_featureDisabled_topBarInvisible() throws Exception {
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(),
+                "https://www.google.com/search?q=london");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME,
+                "com.google.android.googlequicksearchbox");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME,
+                "com.google.android.googlequicksearchbox.SearchActivity");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
+                "^https://www.google.com/search.*");
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            View anyView = new View(cctActivity);
+            cctActivity.setTopBarContentView(anyView);
+            ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
+            Assert.assertNotNull(topBar);
+            Assert.assertThat(anyView.getParent(), equalTo(topBar));
+            Assert.assertEquals(View.GONE, anyView.getVisibility());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_MODULE)
+    public void testSetTopBarContentView_withModuleAndManagedUrls_topBarVisible() throws Exception {
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(),
+                "https://www.google.com/search?q=london");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME,
+                "com.google.android.googlequicksearchbox");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME,
+                "com.google.android.googlequicksearchbox.SearchActivity");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
+                "^https://www.google.com/search.*");
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            View anyView = new View(cctActivity);
+            cctActivity.setTopBarContentView(anyView);
+            ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
+            Assert.assertNotNull(topBar);
+            Assert.assertThat(anyView.getParent(), equalTo(topBar));
             Assert.assertEquals(View.VISIBLE, anyView.getVisibility());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+    public void testSetTopBarContentView_moduleNotProvided_cctHeaderVisible() throws Exception {
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(),
+                "https://www.google.com/search?q=london");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
+                "^https://www.google.com/search.*");
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            cctActivity.setTopBarContentView(new View(cctActivity));
+            View toolbarView = cctActivity.findViewById(R.id.toolbar);
+            Assert.assertTrue(
+                    "A custom tab toolbar is never shown", toolbarView instanceof CustomTabToolbar);
+            CustomTabToolbar toolbar = (CustomTabToolbar) toolbarView;
+            Assert.assertEquals(View.VISIBLE, toolbar.getVisibility());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
+    public void testSetTopBarContentView_featureDisabled_cctHeaderVisible() throws Exception {
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(),
+                "https://www.google.com/search?q=london");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME,
+                "com.google.android.googlequicksearchbox");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME,
+                "com.google.android.googlequicksearchbox.SearchActivity");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
+                "^https://www.google.com/search.*");
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            cctActivity.setTopBarContentView(new View(cctActivity));
+            View toolbarView = cctActivity.findViewById(R.id.toolbar);
+            Assert.assertTrue(
+                    "A custom tab toolbar is never shown", toolbarView instanceof CustomTabToolbar);
+            CustomTabToolbar toolbar = (CustomTabToolbar) toolbarView;
+            Assert.assertEquals(View.VISIBLE, toolbar.getVisibility());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+    public void testSetTopBarContentView_withModuleAndExtras_cctHeaderHidden() throws Exception {
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                InstrumentationRegistry.getTargetContext(),
+                "https://www.google.com/search?q=london");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME,
+                "com.google.android.googlequicksearchbox");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME,
+                "com.google.android.googlequicksearchbox.SearchActivity");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
+                "^https://www.google.com/search.*");
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            cctActivity.setTopBarContentView(new View(cctActivity));
+            ViewGroup toolbarContainerView = cctActivity.findViewById(R.id.toolbar_container);
+            for (int index = 0; index < toolbarContainerView.getChildCount(); index++) {
+                View childView = toolbarContainerView.getChildAt(index);
+                if (childView.getId() != R.id.topbar) {
+                    Assert.assertEquals(View.GONE, childView.getVisibility());
+                }
+            }
         });
     }
 

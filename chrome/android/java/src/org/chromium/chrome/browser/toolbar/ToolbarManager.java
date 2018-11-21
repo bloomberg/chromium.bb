@@ -113,7 +113,6 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.AsyncViewProvider;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.widget.ViewRectProvider;
@@ -217,6 +216,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
     private boolean mNativeLibraryReady;
     private boolean mTabRestoreCompleted;
+    private boolean mProgressBarEnabled;
 
     private AppMenuButtonHelper mAppMenuButtonHelper;
 
@@ -1473,11 +1473,37 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     /**
-     * Prevents the shadow from being rendered.
+     * Gets the visibility of the Toolbar shadow.
+     * @return One of View.VISIBLE, View.INVISIBLE, or View.GONE.
      */
-    public void disableShadow() {
+    public int getToolbarShadowVisibility() {
         View toolbarShadow = mControlContainer.findViewById(R.id.toolbar_shadow);
-        if (toolbarShadow != null) UiUtils.removeViewFromParent(toolbarShadow);
+        return (toolbarShadow != null) ? toolbarShadow.getVisibility() : View.GONE;
+    }
+
+    /**
+     * Sets the visibility of the Toolbar shadow.
+     */
+    public void setToolbarShadowVisibility(int visibility) {
+        View toolbarShadow = mControlContainer.findViewById(R.id.toolbar_shadow);
+        if (toolbarShadow != null) toolbarShadow.setVisibility(visibility);
+    }
+
+    /**
+     * Gets the visibility of the Toolbar.
+     * @return One of View.VISIBLE, View.INVISIBLE, or View.GONE.
+     */
+    public int getToolbarVisibility() {
+        View toolbar = mControlContainer.findViewById(R.id.toolbar);
+        return (toolbar != null) ? toolbar.getVisibility() : View.GONE;
+    }
+
+    /**
+     * Sets the visibility of the Toolbar.
+     */
+    public void setToolbarVisibility(int visibility) {
+        View toolbar = mControlContainer.findViewById(R.id.toolbar);
+        if (toolbar != null) toolbar.setVisibility(visibility);
     }
 
     /**
@@ -1754,9 +1780,17 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     /**
+     * @return Whether the progress bar is enabled.
+     */
+    public boolean isProgressBarEnabled() {
+        return mProgressBarEnabled;
+    }
+
+    /**
      * @param enabled Whether the progress bar is enabled.
      */
     public void setProgressBarEnabled(boolean enabled) {
+        mProgressBarEnabled = enabled;
         mToolbar.setProgressBarEnabled(enabled);
     }
 

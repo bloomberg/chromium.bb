@@ -206,6 +206,15 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     private ActivityTabTaskDescriptionHelper mTaskDescriptionHelper;
 
+    // Default visibility of the Toolbar prior to any header customization.
+    // The value is either View.VISIBLE, View.INVISIBLE, or View.GONE.
+    private int mDefaultToolbarVisibility;
+    // Default visibility of the Toolbar shadow prior to any header customization.
+    // The value is either View.VISIBLE, View.INVISIBLE, or View.GONE.
+    private int mDefaultToolbarShadowVisibility;
+    // Whether the progress bar is enabled prior to any header customization.
+    private boolean mDefaultIsProgressBarEnabled;
+
     /**
      * Return true when the activity has been launched in a separate task. The default behavior is
      * to reuse the same task and put the activity on top of the previous one (i.e hiding it). A
@@ -451,8 +460,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     public void setTopBarContentView(View view) {
         mTopBarDelegate.setTopBarContentView(view);
-        mTopBarDelegate.showTopBarIfNecessary(
-                isModuleManagedUrl(mIntentDataProvider.getUrlToLoad()));
+        maybeUpdateCctHeaderVisibility(mIntentDataProvider.getUrlToLoad());
     }
 
     /**
@@ -530,6 +538,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                 getFullscreenManager());
         mBottomBarDelegate.showBottomBarIfNecessary();
         mTopBarDelegate = new CustomTabTopBarDelegate(this);
+        mDefaultToolbarVisibility = getToolbarManager().getToolbarVisibility();
+        mDefaultToolbarShadowVisibility = getToolbarManager().getToolbarShadowVisibility();
+        mDefaultIsProgressBarEnabled = getToolbarManager().isProgressBarEnabled();
     }
 
     @Override
@@ -887,7 +898,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             public void onUrlUpdated(Tab tab) {
                 // Update the color on every new URL.
                 updateColor(tab);
-                mTopBarDelegate.showTopBarIfNecessary(isModuleManagedUrl(tab.getUrl()));
+                maybeUpdateCctHeaderVisibility(tab.getUrl());
             }
 
             /**
@@ -1512,7 +1523,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     protected void initializeToolbar() {
         super.initializeToolbar();
         if (mIntentDataProvider.isMediaViewer()) {
-            getToolbarManager().disableShadow();
+            getToolbarManager().setToolbarShadowVisibility(View.GONE);
 
             // The media viewer has no default menu items, so if there are also no custom items, we
             // should hide the menu button altogether.
@@ -1638,7 +1649,27 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     private boolean isModuleManagedUrl(String url) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
+            return false;
+        }
         Pattern urlsPattern = mIntentDataProvider.getExtraModuleManagedUrlsPattern();
         return !TextUtils.isEmpty(url) && urlsPattern != null && urlsPattern.matcher(url).matches();
+    }
+
+    private void maybeUpdateCctHeaderVisibility(String url) {
+        // TODO(crbug.com/882404) Show CCT top bar if module fails to load.
+        boolean isModuleManagedUrl = isModuleManagedUrl(url);
+        mTopBarDelegate.showTopBarIfNecessary(isModuleManagedUrl);
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
+                && mIntentDataProvider.shouldHideCctHeaderOnModuleManagedUrls()) {
+            getToolbarManager().setToolbarVisibility(
+                    isModuleManagedUrl ? View.GONE : mDefaultToolbarVisibility);
+            getToolbarManager().setToolbarShadowVisibility(
+                    isModuleManagedUrl ? View.GONE : mDefaultToolbarShadowVisibility);
+            getToolbarManager().setProgressBarEnabled(
+                    isModuleManagedUrl ? false : mDefaultIsProgressBarEnabled);
+        }
     }
 }
