@@ -24,8 +24,6 @@ namespace gpu {
 
 namespace {
 
-constexpr gfx::BufferFormat kBufferFormat = gfx::BufferFormat::RGBA_8888;
-constexpr gfx::BufferUsage kBufferUsage = gfx::BufferUsage::SCANOUT;
 constexpr viz::ResourceFormat kResourceFormat = viz::RGBA_8888;
 constexpr gfx::Size kBufferSize(100, 100);
 
@@ -88,99 +86,6 @@ class RasterInProcessCommandBufferTest : public ::testing::Test {
 
 }  // namespace
 
-TEST_F(RasterInProcessCommandBufferTest, CreateImage) {
-  if (!RasterInProcessContext::SupportedInTest())
-    return;
-
-  // Calling CreateImageCHROMIUM() should allocate an image id.
-  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer1 =
-      gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-          kBufferSize, kBufferFormat, kBufferUsage, kNullSurfaceHandle);
-  GLuint image_id1 = ri_->CreateImageCHROMIUM(
-      gpu_memory_buffer1->AsClientBuffer(), kBufferSize.width(),
-      kBufferSize.height(), GL_RGBA);
-
-  EXPECT_GT(image_id1, 0u);
-
-  // Create a second GLInProcessContext that is backed by a different
-  // InProcessCommandBuffer. Calling CreateImageCHROMIUM() should return a
-  // different id than the first call.
-  std::unique_ptr<RasterInProcessContext> context2 =
-      CreateRasterInProcessContext();
-  std::unique_ptr<gfx::GpuMemoryBuffer> buffer2 =
-      gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-          kBufferSize, kBufferFormat, kBufferUsage, kNullSurfaceHandle);
-  GLuint image_id2 = context2->GetImplementation()->CreateImageCHROMIUM(
-      buffer2->AsClientBuffer(), kBufferSize.width(), kBufferSize.height(),
-      GL_RGBA);
-
-  EXPECT_GT(image_id2, 0u);
-  EXPECT_NE(image_id1, image_id2);
-}
-
-TEST_F(RasterInProcessCommandBufferTest, SetColorSpaceMetadata) {
-  if (!RasterInProcessContext::SupportedInTest())
-    return;
-
-  GLuint texture_id =
-      ri_->CreateTexture(/*use_buffer=*/true, kBufferUsage, kResourceFormat);
-
-  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer1 =
-      gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-          kBufferSize, kBufferFormat, kBufferUsage, kNullSurfaceHandle);
-  GLuint image_id = ri_->CreateImageCHROMIUM(
-      gpu_memory_buffer1->AsClientBuffer(), kBufferSize.width(),
-      kBufferSize.height(), GL_RGBA);
-
-  ri_->BindTexImage2DCHROMIUM(texture_id, image_id);
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
-
-  gfx::ColorSpace color_space;
-  ri_->SetColorSpaceMetadata(texture_id,
-                             reinterpret_cast<GLColorSpace>(&color_space));
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
-}
-
-TEST_F(RasterInProcessCommandBufferTest, TexStorage2DImage) {
-  if (!RasterInProcessContext::SupportedInTest())
-    return;
-
-  // Check for GPU and driver support
-  if (!context_->GetCapabilities().texture_storage_image) {
-    return;
-  }
-  std::vector<gfx::BufferUsageAndFormat> supported_formats =
-      CreateBufferUsageAndFormatExceptionList();
-  if (supported_formats.empty()) {
-    return;
-  }
-
-  // Find a supported_format with a matching resource_format.
-  bool found = false;
-  gfx::BufferUsageAndFormat supported_format = supported_formats[0];
-  viz::ResourceFormat resource_format = static_cast<viz::ResourceFormat>(0);
-  for (size_t i = 0; !found && i < supported_formats.size(); ++i) {
-    supported_format = supported_formats[i];
-    for (size_t j = 0; !found && j <= viz::RESOURCE_FORMAT_MAX; ++j) {
-      resource_format = static_cast<viz::ResourceFormat>(j);
-      if (supported_format.format == viz::BufferFormat(resource_format)) {
-        found = true;
-      }
-    }
-  }
-
-  if (!found) {
-    return;
-  }
-
-  // Create a buffer backed texture and allocate storage.
-  GLuint texture_id = ri_->CreateTexture(
-      /*use_buffer=*/true, supported_format.usage, resource_format);
-  ri_->TexStorage2D(texture_id, kBufferSize.width(), kBufferSize.height());
-
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
-}
-
 TEST_F(RasterInProcessCommandBufferTest,
        WhitelistBetweenBeginEndRasterCHROMIUM) {
   if (!RasterInProcessContext::SupportedInTest())
@@ -211,7 +116,8 @@ TEST_F(RasterInProcessCommandBufferTest,
 
   // Should flag an error this command is not allowed between a Begin and
   // EndRasterCHROMIUM.
-  ri_->CreateTexture(/*use_buffer=*/false, kBufferUsage, kResourceFormat);
+  SyncToken sync_token;
+  ri_->GenSyncTokenCHROMIUM(sync_token.GetData());
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), ri_->GetError());
 
   // Confirm that we skip over without error.

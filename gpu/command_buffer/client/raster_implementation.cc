@@ -658,22 +658,6 @@ void RasterImplementation::SetGLErrorInvalidEnum(const char* function_name,
       (std::string(label) + " was " + GLES2Util::GetStringEnum(value)).c_str());
 }
 
-bool RasterImplementation::GetIntegervHelper(GLenum pname, GLint* params) {
-  switch (pname) {
-    case GL_ACTIVE_TEXTURE:
-      *params = active_texture_unit_ + GL_TEXTURE0;
-      return true;
-    case GL_MAX_TEXTURE_SIZE:
-      *params = capabilities_.max_texture_size;
-      return true;
-    case GL_TEXTURE_BINDING_2D:
-      *params = texture_units_[active_texture_unit_].bound_texture_2d;
-      return true;
-    default:
-      return false;
-  }
-}
-
 bool RasterImplementation::GetQueryObjectValueHelper(const char* function_name,
                                                      GLuint id,
                                                      GLenum pname,
@@ -980,92 +964,6 @@ void RasterImplementation::WaitSyncTokenCHROMIUM(
   gpu_control_->WaitSyncTokenHint(verified_sync_token);
 }
 
-namespace {
-
-bool CreateImageValidInternalFormat(GLenum internalformat,
-                                    const Capabilities& capabilities) {
-  switch (internalformat) {
-    case GL_R16_EXT:
-      return capabilities.texture_norm16;
-    case GL_RGB10_A2_EXT:
-      return capabilities.image_xr30;
-    case GL_RED:
-    case GL_RG_EXT:
-    case GL_RGB:
-    case GL_RGBA:
-    case GL_RGB_YCBCR_422_CHROMIUM:
-    case GL_RGB_YCBCR_420V_CHROMIUM:
-    case GL_RGB_YCRCB_420_CHROMIUM:
-    case GL_BGRA_EXT:
-      return true;
-    default:
-      return false;
-  }
-}
-
-}  // namespace
-
-GLuint RasterImplementation::CreateImageCHROMIUMHelper(ClientBuffer buffer,
-                                                       GLsizei width,
-                                                       GLsizei height,
-                                                       GLenum internalformat) {
-  if (width <= 0) {
-    SetGLError(GL_INVALID_VALUE, "glCreateImageCHROMIUM", "width <= 0");
-    return 0;
-  }
-
-  if (height <= 0) {
-    SetGLError(GL_INVALID_VALUE, "glCreateImageCHROMIUM", "height <= 0");
-    return 0;
-  }
-
-  if (!CreateImageValidInternalFormat(internalformat, capabilities_)) {
-    SetGLError(GL_INVALID_VALUE, "glCreateImageCHROMIUM", "invalid format");
-    return 0;
-  }
-
-  // CreateImage creates a fence sync so we must flush first to ensure all
-  // previously created fence syncs are flushed first.
-  FlushHelper();
-
-  int32_t image_id = gpu_control_->CreateImage(buffer, width, height);
-  if (image_id < 0) {
-    SetGLError(GL_OUT_OF_MEMORY, "glCreateImageCHROMIUM", "image_id < 0");
-    return 0;
-  }
-  return image_id;
-}
-
-GLuint RasterImplementation::CreateImageCHROMIUM(ClientBuffer buffer,
-                                                 GLsizei width,
-                                                 GLsizei height,
-                                                 GLenum internalformat) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glCreateImageCHROMIUM(" << width
-                     << ", " << height << ", "
-                     << GLES2Util::GetStringImageInternalFormat(internalformat)
-                     << ")");
-  GLuint image_id =
-      CreateImageCHROMIUMHelper(buffer, width, height, internalformat);
-  CheckGLError();
-  return image_id;
-}
-
-void RasterImplementation::DestroyImageCHROMIUMHelper(GLuint image_id) {
-  // Flush the command stream to make sure all pending commands
-  // that may refer to the image_id are executed on the service side.
-  helper_->CommandBufferHelper::Flush();
-  gpu_control_->DestroyImage(image_id);
-}
-
-void RasterImplementation::DestroyImageCHROMIUM(GLuint image_id) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDestroyImageCHROMIUM("
-                     << image_id << ")");
-  DestroyImageCHROMIUMHelper(image_id);
-  CheckGLError();
-}
-
 void* RasterImplementation::MapRasterCHROMIUM(GLsizeiptr size) {
   if (size < 0) {
     SetGLError(GL_INVALID_VALUE, "glMapRasterCHROMIUM", "negative size");
@@ -1158,44 +1056,6 @@ void RasterImplementation::UnmapRasterCHROMIUM(GLsizeiptr raster_written_size,
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.
 #include "gpu/command_buffer/client/raster_implementation_impl_autogen.h"
-
-void RasterImplementation::SetColorSpaceMetadata(GLuint texture_id,
-                                                 GLColorSpace color_space) {
-#if defined(__native_client__)
-  // Including gfx::ColorSpace would bring Skia and a lot of other code into
-  // NaCl's IRT.
-  SetGLError(GL_INVALID_VALUE, "RasterImplementation::SetColorSpaceMetadata",
-             "not supported");
-#else
-  gfx::ColorSpace* gfx_color_space =
-      reinterpret_cast<gfx::ColorSpace*>(color_space);
-  base::Pickle color_space_data;
-  IPC::ParamTraits<gfx::ColorSpace>::Write(&color_space_data, *gfx_color_space);
-
-  ScopedTransferBufferPtr buffer(color_space_data.size(), helper_,
-                                 transfer_buffer_);
-  if (!buffer.valid() || buffer.size() < color_space_data.size()) {
-    SetGLError(GL_OUT_OF_MEMORY, "RasterImplementation::SetColorSpaceMetadata",
-               "out of memory");
-    return;
-  }
-  memcpy(buffer.address(), color_space_data.data(), color_space_data.size());
-  helper_->SetColorSpaceMetadata(texture_id, buffer.shm_id(), buffer.offset(),
-                                 color_space_data.size());
-#endif
-}
-
-void RasterImplementation::ProduceTextureDirect(GLuint texture, GLbyte* data) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glProduceTextureDirectCHROMIUM("
-                     << static_cast<const void*>(data) << ")");
-  static_assert(std::is_trivially_copyable<Mailbox>::value,
-                "gpu::Mailbox is not trivially copyable");
-  Mailbox result = Mailbox::Generate();
-  memcpy(data, result.name, sizeof(result.name));
-  helper_->ProduceTextureDirectImmediate(texture, data);
-  CheckGLError();
-}
 
 GLuint RasterImplementation::CreateAndConsumeTexture(
     bool use_buffer,

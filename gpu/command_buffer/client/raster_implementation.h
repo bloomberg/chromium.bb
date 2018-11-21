@@ -239,16 +239,6 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
   void UnbindTexturesHelper(GLsizei n, const GLuint* textures);
   void DeleteQueriesEXTHelper(GLsizei n, const GLuint* queries);
 
-  GLuint CreateImageCHROMIUMHelper(ClientBuffer buffer,
-                                   GLsizei width,
-                                   GLsizei height,
-                                   GLenum internalformat);
-  void DestroyImageCHROMIUMHelper(GLuint image_id);
-
-  // Helpers for query functions.
-  bool GetIntegervHelper(GLenum pname, GLint* params);
-  bool GetTexParameterivHelper(GLenum target, GLenum pname, GLint* params);
-
   // IdAllocators for objects that can't be shared among contexts.
   IdAllocator* GetIdAllocator(IdNamespaces id_namespace);
 

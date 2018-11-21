@@ -42,15 +42,6 @@ void GetError(uint32_t result_shm_id, uint32_t result_shm_offset) {
   }
 }
 
-void GetIntegerv(GLenum pname,
-                 uint32_t params_shm_id,
-                 uint32_t params_shm_offset) {
-  raster::cmds::GetIntegerv* c = GetCmdSpace<raster::cmds::GetIntegerv>();
-  if (c) {
-    c->Init(pname, params_shm_id, params_shm_offset);
-  }
-}
-
 void GenQueriesEXTImmediate(GLsizei n, GLuint* queries) {
   const uint32_t size = raster::cmds::GenQueriesEXTImmediate::ComputeSize(n);
   raster::cmds::GenQueriesEXTImmediate* c =
@@ -110,19 +101,6 @@ void WaitSyncTokenCHROMIUM(GLint namespace_id,
       GetCmdSpace<raster::cmds::WaitSyncTokenCHROMIUM>();
   if (c) {
     c->Init(namespace_id, command_buffer_id, release_count);
-  }
-}
-
-void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
-                                        GLuint dest_id,
-                                        GLint x,
-                                        GLint y,
-                                        GLsizei width,
-                                        GLsizei height) {
-  raster::cmds::UnpremultiplyAndDitherCopyCHROMIUM* c =
-      GetCmdSpace<raster::cmds::UnpremultiplyAndDitherCopyCHROMIUM>();
-  if (c) {
-    c->Init(source_id, dest_id, x, y, width, height);
   }
 }
 
@@ -225,38 +203,6 @@ void ClearPaintCacheINTERNAL() {
   }
 }
 
-void CreateTexture(bool use_buffer,
-                   gfx::BufferUsage buffer_usage,
-                   viz::ResourceFormat format,
-                   uint32_t client_id) {
-  raster::cmds::CreateTexture* c = GetCmdSpace<raster::cmds::CreateTexture>();
-  if (c) {
-    c->Init(use_buffer, buffer_usage, format, client_id);
-  }
-}
-
-void SetColorSpaceMetadata(GLuint texture_id,
-                           GLuint shm_id,
-                           GLuint shm_offset,
-                           GLsizei color_space_size) {
-  raster::cmds::SetColorSpaceMetadata* c =
-      GetCmdSpace<raster::cmds::SetColorSpaceMetadata>();
-  if (c) {
-    c->Init(texture_id, shm_id, shm_offset, color_space_size);
-  }
-}
-
-void ProduceTextureDirectImmediate(GLuint texture, GLbyte* mailbox) {
-  const uint32_t size =
-      raster::cmds::ProduceTextureDirectImmediate::ComputeSize();
-  raster::cmds::ProduceTextureDirectImmediate* c =
-      GetImmediateCmdSpaceTotalSize<
-          raster::cmds::ProduceTextureDirectImmediate>(size);
-  if (c) {
-    c->Init(texture, mailbox);
-  }
-}
-
 void CreateAndConsumeTextureINTERNALImmediate(GLuint texture_id,
                                               bool use_buffer,
                                               gfx::BufferUsage buffer_usage,
@@ -269,36 +215,6 @@ void CreateAndConsumeTextureINTERNALImmediate(GLuint texture_id,
           raster::cmds::CreateAndConsumeTextureINTERNALImmediate>(size);
   if (c) {
     c->Init(texture_id, use_buffer, buffer_usage, format, mailbox);
-  }
-}
-
-void TexParameteri(GLuint texture_id, GLenum pname, GLint param) {
-  raster::cmds::TexParameteri* c = GetCmdSpace<raster::cmds::TexParameteri>();
-  if (c) {
-    c->Init(texture_id, pname, param);
-  }
-}
-
-void BindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
-  raster::cmds::BindTexImage2DCHROMIUM* c =
-      GetCmdSpace<raster::cmds::BindTexImage2DCHROMIUM>();
-  if (c) {
-    c->Init(texture_id, image_id);
-  }
-}
-
-void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
-  raster::cmds::ReleaseTexImage2DCHROMIUM* c =
-      GetCmdSpace<raster::cmds::ReleaseTexImage2DCHROMIUM>();
-  if (c) {
-    c->Init(texture_id, image_id);
-  }
-}
-
-void TexStorage2D(GLuint texture_id, GLsizei width, GLsizei height) {
-  raster::cmds::TexStorage2D* c = GetCmdSpace<raster::cmds::TexStorage2D>();
-  if (c) {
-    c->Init(texture_id, width, height);
   }
 }
 

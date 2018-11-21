@@ -394,36 +394,6 @@ TEST_F(RasterImplementationTest, GetBucketContents) {
   EXPECT_EQ(0, memcmp(expected_data, &data[0], data.size()));
 }
 
-// Test that things are cached
-TEST_F(RasterImplementationTest, GetIntegerCacheRead) {
-  struct PNameValue {
-    GLenum pname;
-    GLint expected;
-  };
-  const PNameValue pairs[] = {{
-                                  GL_ACTIVE_TEXTURE, GL_TEXTURE0,
-                              },
-                              {
-                                  GL_TEXTURE_BINDING_2D, 0,
-                              }};
-  size_t num_pairs = sizeof(pairs) / sizeof(pairs[0]);
-  for (size_t ii = 0; ii < num_pairs; ++ii) {
-    const PNameValue& pv = pairs[ii];
-    GLint v = -1;
-    gl_->GetIntegerv(pv.pname, &v);
-    EXPECT_TRUE(NoCommandsWritten());
-    EXPECT_EQ(pv.expected, v);
-  }
-
-  ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(sizeof(cmds::GetError::Result));
-
-  EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, GLuint(GL_NO_ERROR)))
-      .RetiresOnSaturation();
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
-}
-
 TEST_F(RasterImplementationTest, BeginEndQueryEXT) {
   //  GL_COMMANDS_COMPLETED_CHROMIUM,
   //  GL_CURRENT_QUERY_EXT
