@@ -1578,13 +1578,16 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     // The only device that supports the ideal aspect ratio is the high-res
     // device.
     EXPECT_EQ(high_res_device_->device_id, result.device_id());
-    EXPECT_EQ(1920, result.Width());
-    EXPECT_EQ(1080, result.Height());
+    EXPECT_EQ(1280, result.Width());
+    EXPECT_EQ(720, result.Height());
     // The most exact way to support the ideal aspect ratio would be to crop to
-    // 1500x1. However, the algorithm tries to crop to 1920x1.28 and rounds.
+    // 1920x1080 to 1500x1. However, with 1920x1080 the algorithm tries to crop
+    // to 1920x1.28 and rounds to 1920x1. Since the aspect ratio of 1280x1 is
+    // closer to ideal than 1920x1, 1280x1 is selected instead.
     // In this case, the effect of rounding is noticeable because of the
-    // resulting low value for height. For more typical resolution values,
-    // the at-most 1-pixel error caused by rounding is not an issue.
+    // resulting low value for height. For more typical aspect-ratio values,
+    // the 1-pixel error caused by rounding one dimension does not translate to
+    // a absolute error on the other dimension.
     EXPECT_EQ(std::round(result.Width() / kIdealAspectRatio),
               result.track_adapter_settings().target_height());
     EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
@@ -1600,10 +1603,14 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
     constraint_factory_.basic().aspect_ratio.SetIdeal(kIdealAspectRatio);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
-    // The only device that supports the ideal aspect ratio is the high-res
-    // device with its highest resolution.
+    // The best way to support this ideal aspect ratio would be to rescale
+    // 2304x1536 to 2000x1, but the algorithm would try to rescale to 2304x1.15
+    // and then round. Since 1920x1 has an aspect ratio closer to 2000, it is
+    // selected over 2304x1. The only device that supports this resolution is
+    // the high-res device open at 1920x1080.
     EXPECT_EQ(high_res_device_->device_id, result.device_id());
-    EXPECT_EQ(*high_res_highest_format_, result.Format());
+    EXPECT_EQ(1920, result.Width());
+    EXPECT_EQ(1080, result.Height());
     EXPECT_EQ(std::round(result.Width() / kIdealAspectRatio),
               result.track_adapter_settings().target_height());
     EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
