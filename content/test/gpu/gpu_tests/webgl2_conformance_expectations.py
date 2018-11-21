@@ -170,6 +170,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'd3d11'], bug=679639)
     self.Flaky('deqp/functional/gles3/textureshadow/*.html',
         ['win', 'nvidia', 'd3d11'], bug=735464)
+    self.Flaky('conformance/uniforms/uniform-default-values.html',
+        ['win', 'nvidia', 'vulkan', 'passthrough'], bug=907544)
 
     # Win / NVIDIA Quadro P400 / D3D11 flaky failures
     self.Fail('deqp/data/gles3/shaders/functions.html',
