@@ -7,6 +7,8 @@
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -14,6 +16,7 @@
 namespace blink {
 
 using namespace css_test_helpers;
+using VariableMode = CSSParserLocalContext::VariableMode;
 
 namespace {
 
@@ -30,6 +33,16 @@ class CustomPropertyTest : public PageTestBase {
     return property.CSSValueFromComputedStyle(node->ComputedStyleRef(),
                                               nullptr /* layout_object*/, node,
                                               false /* allow_visisted_style */);
+  }
+
+  const CSSValue* ParseValue(const Longhand& property,
+                             const String& value,
+                             const CSSParserLocalContext& local_context) {
+    CSSTokenizer tokenizer(value);
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
+    CSSParserContext* context = CSSParserContext::Create(GetDocument());
+    return property.ParseSingleValue(range, *context, local_context);
   }
 };
 
@@ -122,6 +135,63 @@ TEST_F(CustomPropertyTest, ComputedCSSValueLateRegistration) {
   const CSSValue* value = GetComputedValue(property);
   EXPECT_TRUE(value->IsCustomPropertyDeclaration());
   EXPECT_EQ("100px", value->CssText());
+}
+
+TEST_F(CustomPropertyTest, ParseSingleValueUnregistered) {
+  CustomProperty property("--x", GetDocument());
+  const CSSValue* value =
+      ParseValue(property, "100px", CSSParserLocalContext());
+  ASSERT_TRUE(value->IsCustomPropertyDeclaration());
+  EXPECT_EQ("100px", value->CssText());
+}
+
+TEST_F(CustomPropertyTest, ParseSingleValueAnimationTainted) {
+  CustomProperty property("--x", GetDocument());
+  const CSSValue* value1 = ParseValue(
+      property, "100px", CSSParserLocalContext().WithAnimationTainted(true));
+  const CSSValue* value2 = ParseValue(
+      property, "100px", CSSParserLocalContext().WithAnimationTainted(false));
+
+  EXPECT_TRUE(
+      ToCSSCustomPropertyDeclaration(value1)->Value()->IsAnimationTainted());
+  EXPECT_FALSE(
+      ToCSSCustomPropertyDeclaration(value2)->Value()->IsAnimationTainted());
+}
+
+TEST_F(CustomPropertyTest, ParseSingleValueTyped) {
+  RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
+  CustomProperty property("--x", GetDocument());
+  const CSSValue* value1 =
+      ParseValue(property, "100px", CSSParserLocalContext());
+  EXPECT_TRUE(value1->IsPrimitiveValue());
+  EXPECT_EQ(100, ToCSSPrimitiveValue(value1)->GetIntValue());
+
+  const CSSValue* value2 =
+      ParseValue(property, "maroon", CSSParserLocalContext());
+  EXPECT_FALSE(value2);
+}
+
+TEST_F(CustomPropertyTest, ParseSingleValueUntyped) {
+  RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
+  CustomProperty property("--x", GetDocument());
+  const CSSValue* value = ParseValue(
+      property, "maroon",
+      CSSParserLocalContext().WithVariableMode(VariableMode::kUntyped));
+  ASSERT_TRUE(value->IsCustomPropertyDeclaration());
+  EXPECT_EQ("maroon", value->CssText());
+}
+
+TEST_F(CustomPropertyTest, ParseSingleValueValidatedUntyped) {
+  RegisterProperty(GetDocument(), "--x", "<length>", "0px", false);
+  CustomProperty property("--x", GetDocument());
+  auto local_context =
+      CSSParserLocalContext().WithVariableMode(VariableMode::kValidatedUntyped);
+  const CSSValue* value1 = ParseValue(property, "100px", local_context);
+  ASSERT_TRUE(value1->IsCustomPropertyDeclaration());
+  EXPECT_EQ("100px", value1->CssText());
+
+  const CSSValue* value2 = ParseValue(property, "maroon", local_context);
+  EXPECT_FALSE(value2);
 }
 
 }  // namespace blink

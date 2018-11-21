@@ -8,15 +8,25 @@
 
 namespace blink {
 
+using VariableMode = CSSParserLocalContext::VariableMode;
+
 TEST(CSSParserLocalContextTest, Constructor) {
   EXPECT_FALSE(CSSParserLocalContext().UseAliasParsing());
+  EXPECT_FALSE(CSSParserLocalContext().IsAnimationTainted());
   EXPECT_EQ(CSSPropertyInvalid, CSSParserLocalContext().CurrentShorthand());
+  EXPECT_EQ(VariableMode::kTyped, CSSParserLocalContext().GetVariableMode());
 }
 
 TEST(CSSParserLocalContextTest, WithAliasParsing) {
   const CSSParserLocalContext context;
   EXPECT_FALSE(context.WithAliasParsing(false).UseAliasParsing());
   EXPECT_TRUE(context.WithAliasParsing(true).UseAliasParsing());
+}
+
+TEST(CSSParserLocalContextTest, WithAnimationTainted) {
+  const CSSParserLocalContext context;
+  EXPECT_FALSE(context.WithAnimationTainted(false).IsAnimationTainted());
+  EXPECT_TRUE(context.WithAnimationTainted(true).IsAnimationTainted());
 }
 
 TEST(CSSParserLocalContextTest, WithCurrentShorthand) {
@@ -26,18 +36,54 @@ TEST(CSSParserLocalContextTest, WithCurrentShorthand) {
             context.WithCurrentShorthand(shorthand).CurrentShorthand());
 }
 
+TEST(CSSParserLocalContextTest, WithVariableMode) {
+  auto mode = VariableMode::kUntyped;
+  auto context = CSSParserLocalContext().WithVariableMode(mode);
+  EXPECT_EQ(mode, context.GetVariableMode());
+}
+
 TEST(CSSParserLocalContextTest, LocalMutation) {
   CSSParserLocalContext context;
   context = context.WithAliasParsing(true);
+  context = context.WithAnimationTainted(true);
   context = context.WithCurrentShorthand(CSSPropertyBackground);
+  context = context.WithVariableMode(VariableMode::kUntyped);
 
   // WithAliasParsing only changes that member.
-  EXPECT_EQ(CSSPropertyBackground,
-            context.WithAliasParsing(false).CurrentShorthand());
+  {
+    auto local_context = context.WithAliasParsing(false);
+    EXPECT_FALSE(local_context.UseAliasParsing());
+    EXPECT_EQ(CSSPropertyBackground, local_context.CurrentShorthand());
+    EXPECT_TRUE(local_context.IsAnimationTainted());
+    EXPECT_EQ(VariableMode::kUntyped, local_context.GetVariableMode());
+  }
+
+  // WithAnimationTainted only changes that member.
+  {
+    auto local_context = context.WithAnimationTainted(false);
+    EXPECT_TRUE(local_context.UseAliasParsing());
+    EXPECT_EQ(CSSPropertyBackground, local_context.CurrentShorthand());
+    EXPECT_FALSE(local_context.IsAnimationTainted());
+    EXPECT_EQ(VariableMode::kUntyped, local_context.GetVariableMode());
+  }
 
   // WithCurrentShorthand only changes that member.
-  EXPECT_TRUE(
-      context.WithCurrentShorthand(CSSPropertyInvalid).UseAliasParsing());
+  {
+    auto local_context = context.WithCurrentShorthand(CSSPropertyPadding);
+    EXPECT_TRUE(local_context.UseAliasParsing());
+    EXPECT_EQ(CSSPropertyPadding, local_context.CurrentShorthand());
+    EXPECT_TRUE(local_context.IsAnimationTainted());
+    EXPECT_EQ(VariableMode::kUntyped, local_context.GetVariableMode());
+  }
+
+  // WithVariableMode only changes that member.
+  {
+    auto local_context = context.WithVariableMode(VariableMode::kTyped);
+    EXPECT_TRUE(local_context.UseAliasParsing());
+    EXPECT_EQ(CSSPropertyBackground, local_context.CurrentShorthand());
+    EXPECT_TRUE(local_context.IsAnimationTainted());
+    EXPECT_EQ(VariableMode::kTyped, local_context.GetVariableMode());
+  }
 }
 
 }  // namespace blink
