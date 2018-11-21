@@ -485,7 +485,6 @@ bool DisplayScheduler::AttemptDrawAndSwap() {
     if (pending_swaps_ < max_pending_swaps_)
       return DrawAndSwap();
   } else {
-    ReportNotDrawReason();
     // We are going idle, so reset expectations.
     // TODO(eseckler): Should we avoid going idle if
     // |expecting_root_surface_damage_because_of_resize_| is true?
@@ -527,17 +526,6 @@ void DisplayScheduler::DidReceiveSwapBuffersAck() {
   pending_swaps_--;
   TRACE_EVENT_ASYNC_END0("viz", "DisplayScheduler:pending_swaps", swap_id);
   ScheduleBeginFrameDeadline();
-}
-
-void DisplayScheduler::ReportNotDrawReason() {
-  DCHECK(!ShouldDraw());
-  UMA_HISTOGRAM_BOOLEAN("DisplayScheduler.ShouldNotDraw.DrawNotNeeded",
-                        !needs_draw_);
-  UMA_HISTOGRAM_BOOLEAN("DisplayScheduler.ShouldNotDraw.OutputSurfaceLost",
-                        output_surface_lost_);
-  UMA_HISTOGRAM_BOOLEAN("DisplayScheduler.ShouldNotDraw.NotVisible", !visible_);
-  UMA_HISTOGRAM_BOOLEAN("DisplayScheduler.ShouldNotDraw.RootFrameMissing",
-                        root_frame_missing_);
 }
 
 }  // namespace viz
