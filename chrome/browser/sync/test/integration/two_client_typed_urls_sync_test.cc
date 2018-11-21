@@ -186,6 +186,47 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpiredThenUpdate) {
   EXPECT_TRUE(CheckSyncHasURLMetadata(1, new_url));
 }
 
+IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
+                       AddThenExpireOnSecondClient) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  base::Time now = base::Time::Now();
+
+  // Populate one client with a URL, should sync to the other.
+  GURL url("http://www.add-one-history.google.com/");
+  base::Time insertion_time = now - base::TimeDelta::FromDays(1);
+  AddUrlToHistoryWithTimestamp(0, url, ui::PAGE_TRANSITION_TYPED,
+                               history::SOURCE_BROWSED, insertion_time);
+  std::vector<history::URLRow> urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(1U, urls.size());
+  ASSERT_EQ(url, urls[0].url());
+  history::URLID url_id_on_first_client = urls[0].id();
+
+  // Wait for sync to finish.
+  ASSERT_TRUE(TypedURLChecker(1, url.spec()).Wait());
+
+  // Second client should have the url.
+  ASSERT_EQ(1U, GetTypedUrlsFromClient(1).size());
+  EXPECT_TRUE(CheckSyncHasURLMetadata(1, url));
+
+  // Expire the url on the second client.
+  ExpireHistoryBefore(1, insertion_time + base::TimeDelta::FromSeconds(1));
+
+  // The data and the metadata should be gone on the second client.
+  ASSERT_EQ(0U, GetTypedUrlsFromClient(1).size());
+  EXPECT_FALSE(CheckSyncHasURLMetadata(1, url));
+
+  // Let sync finish; Add a dummy url to the second client and sync it.
+  AddUrlToHistory(1, GURL(kDummyUrl));
+  ASSERT_EQ(1U, GetTypedUrlsFromClient(1).size());
+  ASSERT_TRUE(TypedURLChecker(0, kDummyUrl).Wait());
+
+  // The expiration should not get synced up, the first client still has the
+  // URL (and also the dummy URL)
+  ASSERT_EQ(2U, GetTypedUrlsFromClient(0).size());
+  EXPECT_TRUE(CheckSyncHasMetadataForURLID(0, url_id_on_first_client));
+}
+
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddThenExpireThenAddAgain) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
