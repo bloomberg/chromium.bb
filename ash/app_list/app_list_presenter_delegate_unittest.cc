@@ -6,11 +6,18 @@
 #include <memory>
 
 #include "ash/app_list/model/app_list_view_state.h"
+#include "ash/app_list/pagination_model.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/test/app_list_test_model.h"
+#include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/app_list/views/apps_container_view.h"
+#include "ash/app_list/views/apps_grid_view.h"
+#include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -134,6 +141,65 @@ class AppListPresenterDelegateTest : public AshTestBase,
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateTest);
 };
 
+// Used to test app_list behavior with a populated apps_grid
+class PopulatedAppListTest : public AshTestBase,
+                             public testing::WithParamInterface<bool> {
+ public:
+  PopulatedAppListTest() = default;
+  ~PopulatedAppListTest() override = default;
+
+  void SetUp() override {
+    app_list::AppListView::SetShortAnimationForTesting(true);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
+    AshTestBase::SetUp();
+
+    // Make the display big enough to hold the app list.
+    UpdateDisplay("1024x768");
+
+    app_list_test_delegate_ =
+        std::make_unique<app_list::test::AppListTestViewDelegate>();
+
+    app_list_test_model_ = app_list_test_delegate_->GetTestModel();
+  }
+
+  void TearDown() override {
+    AshTestBase::TearDown();
+    app_list::AppListView::SetShortAnimationForTesting(false);
+  }
+
+ protected:
+  void CreateAndOpenAppList() {
+    app_list_view_ = new app_list::AppListView(app_list_test_delegate_.get());
+    app_list::AppListView::InitParams params;
+    params.parent = CurrentContext();
+    app_list_view_->Initialize(params);
+  }
+
+  void InitializeAppsGrid() {
+    if (!app_list_view_)
+      CreateAndOpenAppList();
+    apps_grid_view_ = app_list_view_->app_list_main_view()
+                          ->contents_view()
+                          ->GetAppsContainerView()
+                          ->apps_grid_view();
+    apps_grid_test_api_ =
+        std::make_unique<app_list::test::AppsGridViewTestApi>(apps_grid_view_);
+  }
+  gfx::Rect GetItemRectOnCurrentPageAt(int row, int col) const {
+    DCHECK_GT(app_list_test_model_->top_level_item_list()->item_count(), 0u);
+    return apps_grid_test_api_->GetItemTileRectOnCurrentPageAt(row, col);
+  }
+
+  app_list::test::AppListTestModel* app_list_test_model_ = nullptr;
+  std::unique_ptr<app_list::test::AppsGridViewTestApi> apps_grid_test_api_;
+  std::unique_ptr<app_list::test::AppListTestViewDelegate>
+      app_list_test_delegate_;
+  app_list::AppListView* app_list_view_ = nullptr;  // Owned by native widget.
+  app_list::AppsGridView* apps_grid_view_ =
+      nullptr;  // Owned by |app_list_view_|.
+};
+
 // Instantiate the Boolean which is used to toggle mouse and touch events in
 // the parameterized tests.
 INSTANTIATE_TEST_CASE_P(, AppListPresenterDelegateTest, testing::Bool());
@@ -157,6 +223,45 @@ class AppListPresenterDelegateNonHomeLauncherTest
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateNonHomeLauncherTest);
 };
+
+TEST_F(PopulatedAppListTest, TappingAppsGridClosesVirtualKeyboard) {
+  InitializeAppsGrid();
+  app_list_test_model_->PopulateApps(2);
+  gfx::Point between_apps = GetItemRectOnCurrentPageAt(0, 0).right_center();
+  gfx::Point empty_space = GetItemRectOnCurrentPageAt(0, 2).CenterPoint();
+
+  ui::GestureEvent tap_between(between_apps.x(), between_apps.y(), 0,
+                               base::TimeTicks(),
+                               ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  ui::GestureEvent tap_outside(empty_space.x(), empty_space.y(), 0,
+                               base::TimeTicks(),
+                               ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+
+  // Manually show the virtual keyboard.
+  auto* const keyboard_controller = keyboard::KeyboardController::Get();
+  keyboard_controller->ShowKeyboard(true /* locked */);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  // Touch the apps_grid outside of any apps
+  apps_grid_view_->OnGestureEvent(&tap_outside);
+  // Expect that the event is ignored here and allowed to propogate to app_list
+  EXPECT_FALSE(tap_outside.handled());
+  // Hit the app_list with the same event
+  app_list_view_->OnGestureEvent(&tap_outside);
+  // Expect that the event is handled and the keyboard is closed.
+  EXPECT_TRUE(tap_outside.handled());
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+
+  // Reshow the VKeyboard
+  keyboard_controller->ShowKeyboard(true);
+  ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  // Touch the apps_grid between two apps
+  apps_grid_view_->OnGestureEvent(&tap_between);
+  // Expect the event to be handled in the grid, and the keyboard to be closed.
+  EXPECT_TRUE(tap_between.handled());
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+}
 
 // Tests that app list hides when focus moves to a normal window.
 TEST_F(AppListPresenterDelegateTest, HideOnFocusOut) {
