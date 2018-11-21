@@ -35,6 +35,10 @@ class CORE_EXPORT CustomProperty : public Variable {
   void ApplyInherit(StyleResolverState&) const override;
   void ApplyValue(StyleResolverState&, const CSSValue&) const override;
 
+  const CSSValue* ParseSingleValue(CSSParserTokenRange&,
+                                   const CSSParserContext&,
+                                   const CSSParserLocalContext&) const override;
+
   const CSSValue* CSSValueFromComputedStyleInternal(
       const ComputedStyle&,
       const SVGComputedStyle&,
@@ -45,6 +49,13 @@ class CORE_EXPORT CustomProperty : public Variable {
   void Trace(blink::Visitor* visitor) { visitor->Trace(registration_); }
 
  private:
+  const CSSValue* ParseUntyped(CSSParserTokenRange,
+                               const CSSParserContext&,
+                               const CSSParserLocalContext&) const;
+  const CSSValue* ParseTyped(CSSParserTokenRange,
+                             const CSSParserContext&,
+                             const CSSParserLocalContext&) const;
+
   AtomicString name_;
   Member<const PropertyRegistration> registration_;
 };

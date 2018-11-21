@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/css/properties/longhands/custom_property.h"
 
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -80,6 +82,24 @@ void CustomProperty::ApplyValue(StyleResolverState& state,
   }
 }
 
+const CSSValue* CustomProperty::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  using VariableMode = CSSParserLocalContext::VariableMode;
+
+  switch (local_context.GetVariableMode()) {
+    case VariableMode::kTyped:
+      return ParseTyped(range, context, local_context);
+    case VariableMode::kUntyped:
+      return ParseUntyped(range, context, local_context);
+    case VariableMode::kValidatedUntyped:
+      if (registration_ && !ParseTyped(range, context, local_context))
+        return nullptr;
+      return ParseUntyped(range, context, local_context);
+  }
+}
+
 const CSSValue* CustomProperty::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
@@ -101,6 +121,24 @@ const CSSValue* CustomProperty::CSSValueFromComputedStyleInternal(
     return nullptr;
 
   return CSSCustomPropertyDeclaration::Create(name_, data);
+}
+
+const CSSValue* CustomProperty::ParseUntyped(
+    CSSParserTokenRange range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return CSSVariableParser::ParseDeclarationValue(
+      name_, range, local_context.IsAnimationTainted(), context);
+}
+
+const CSSValue* CustomProperty::ParseTyped(
+    CSSParserTokenRange range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  if (!registration_)
+    return ParseUntyped(range, context, local_context);
+  return registration_->Syntax().Parse(range, &context,
+                                       local_context.IsAnimationTainted());
 }
 
 }  // namespace blink

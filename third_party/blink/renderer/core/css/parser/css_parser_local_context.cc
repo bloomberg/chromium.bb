@@ -7,12 +7,22 @@
 namespace blink {
 
 CSSParserLocalContext::CSSParserLocalContext()
-    : use_alias_parsing_(false), current_shorthand_(CSSPropertyInvalid) {}
+    : use_alias_parsing_(false),
+      is_animation_tainted_(false),
+      current_shorthand_(CSSPropertyInvalid),
+      variable_mode_(VariableMode::kTyped) {}
 
 CSSParserLocalContext CSSParserLocalContext::WithAliasParsing(
     bool use_alias_parsing) const {
   CSSParserLocalContext context = *this;
   context.use_alias_parsing_ = use_alias_parsing;
+  return context;
+}
+
+CSSParserLocalContext CSSParserLocalContext::WithAnimationTainted(
+    bool is_animation_tainted) const {
+  CSSParserLocalContext context = *this;
+  context.is_animation_tainted_ = is_animation_tainted;
   return context;
 }
 
@@ -23,12 +33,28 @@ CSSParserLocalContext CSSParserLocalContext::WithCurrentShorthand(
   return context;
 }
 
+CSSParserLocalContext CSSParserLocalContext::WithVariableMode(
+    VariableMode variable_mode) const {
+  CSSParserLocalContext context = *this;
+  context.variable_mode_ = variable_mode;
+  return context;
+}
+
 bool CSSParserLocalContext::UseAliasParsing() const {
   return use_alias_parsing_;
 }
 
+bool CSSParserLocalContext::IsAnimationTainted() const {
+  return is_animation_tainted_;
+}
+
 CSSPropertyID CSSParserLocalContext::CurrentShorthand() const {
   return current_shorthand_;
+}
+
+CSSParserLocalContext::VariableMode CSSParserLocalContext::GetVariableMode()
+    const {
+  return variable_mode_;
 }
 
 }  // namespace blink
