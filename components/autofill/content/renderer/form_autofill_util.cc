@@ -882,6 +882,8 @@ void ForEachMatchingFormFieldCommon(
   // are appended to the end of the form and are not visible.
   for (size_t i = 0; i < control_elements->size(); ++i) {
     WebFormControlElement* element = &(*control_elements)[i];
+    element->SetAutofillSection(WebString::FromUTF8(data.fields[i].section));
+
     bool is_initiating_element = (*element == initiating_element);
 
     // Only autofill empty fields (or those with the field's default value
@@ -1000,7 +1002,6 @@ void FillFormField(const FormFieldData& data,
     return;
 
   field->SetAutofillState(WebAutofillState::kAutofilled);
-  field->SetAutofillSection(WebString::FromUTF8(data.section));
 
   if (is_initiating_node &&
       ((IsTextInput(input_element) || IsMonthInput(input_element)) ||

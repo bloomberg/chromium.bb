@@ -2231,6 +2231,84 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   EXPECT_EQ("red.swingline@initech.com", value) << "for second field";
 }
 
+// The following three tests verify that we can autofill forms with multiple
+// nameless forms, and repetitive field names and make sure that the dynamic
+// refill would not trigger a wrong refill, regardless of the form.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       Dynamic_MultipleNoNameForms_BadNames_LastForm) {
+  CreateTestProfile();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/multiple_noname_forms_badnames.html");
+
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname_3");
+  DoNothingAndWait(2);  // Wait to make sure possible refills have happened.
+  // Make sure the correct form was filled.
+  ExpectFieldValue("firstname_1", "");
+  ExpectFieldValue("lastname_1", "");
+  ExpectFieldValue("email_1", "");
+  ExpectFieldValue("firstname_2", "");
+  ExpectFieldValue("lastname_2", "");
+  ExpectFieldValue("email_2", "");
+  ExpectFieldValue("firstname_3", "Milton");
+  ExpectFieldValue("lastname_3", "Waddams");
+  ExpectFieldValue("email_3", "red.swingline@initech.com");
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       Dynamic_MultipleNoNameForms_BadNames_SecondForm) {
+  CreateTestProfile();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/multiple_noname_forms_badnames.html");
+
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname_2");
+  DoNothingAndWait(2);  // Wait to make sure possible refills have happened.
+  // Make sure the correct form was filled.
+  ExpectFieldValue("firstname_1", "");
+  ExpectFieldValue("lastname_1", "");
+  ExpectFieldValue("email_1", "");
+  ExpectFieldValue("firstname_2", "Milton");
+  ExpectFieldValue("lastname_2", "Waddams");
+  ExpectFieldValue("email_2", "red.swingline@initech.com");
+  ExpectFieldValue("firstname_3", "");
+  ExpectFieldValue("lastname_3", "");
+  ExpectFieldValue("email_3", "");
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       Dynamic_MultipleNoNameForms_BadNames_FirstForm) {
+  CreateTestProfile();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kAutofillDynamicForms);
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/multiple_noname_forms_badnames.html");
+
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname_1");
+  DoNothingAndWait(2);  // Wait to make sure possible refills have happened.
+  // Make sure the correct form was filled.
+  ExpectFieldValue("firstname_1", "Milton");
+  ExpectFieldValue("lastname_1", "Waddams");
+  ExpectFieldValue("email_1", "red.swingline@initech.com");
+  ExpectFieldValue("firstname_2", "");
+  ExpectFieldValue("lastname_2", "");
+  ExpectFieldValue("email_2", "");
+  ExpectFieldValue("firstname_3", "");
+  ExpectFieldValue("lastname_3", "");
+  ExpectFieldValue("email_3", "");
+}
+
 // Test that we can Autofill forms where some fields name change during the
 // fill.
 IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest, FieldsChangeName) {
@@ -3002,6 +3080,38 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid_unowned_badnames.html");
+
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname_5");
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetWebContents(), "hasRefilled()", &has_refilled));
+
+  ASSERT_TRUE(has_refilled);
+  // Make sure the second form was filled correctly, and the first form was left
+  // unfilled.
+  ExpectFieldValue("firstname_1", "");
+  ExpectFieldValue("firstname_2", "");
+  ExpectFieldValue("address1_3", "");
+  ExpectFieldValue("country_4", "CA");  // default
+  ExpectFieldValue("firstname_6", "Milton");
+  ExpectFieldValue("address1_7", "4120 Freidrich Lane");
+  ExpectFieldValue("country_8", "US");
+}
+
+// Test that we can autofill forms that dynamically change the element that
+// has been clicked on, even though there are multiple forms with no name.
+IN_PROC_BROWSER_TEST_P(
+    AutofillDynamicFormInteractiveTest,
+    DynamicFormFill_FirstElementDisappearsMultipleNoNameForms) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com",
+      "/autofill/dynamic_form_element_invalid_multiple_noname_forms.html");
 
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
