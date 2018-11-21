@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/shared_image_backing_factory_gl_texture.h"
 
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -342,6 +343,53 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, EstimatedSize) {
   EXPECT_EQ(backing_estimated_size, memory_type_tracker_->GetMemRepresented());
 
   shared_image.reset();
+}
+
+// Ensures that the various conversion functions used w/ TexStorage2D match
+// their TexImage2D equivalents, allowing us to minimize the amount of parallel
+// data tracked in the SharedImageFactoryGLTexture.
+TEST_P(SharedImageBackingFactoryGLTextureTest, TexImageTexStorageEquivalence) {
+  scoped_refptr<gles2::FeatureInfo> feature_info =
+      new gles2::FeatureInfo(GpuDriverBugWorkarounds(), GpuFeatureInfo());
+  feature_info->Initialize(ContextType::CONTEXT_TYPE_OPENGLES2,
+                           use_passthrough(), gles2::DisallowedFeatures());
+  const gles2::Validators* validators = feature_info->validators();
+
+  for (int i = 0; i <= viz::RESOURCE_FORMAT_MAX; ++i) {
+    auto format = static_cast<viz::ResourceFormat>(i);
+    if (!viz::GLSupportsFormat(format) ||
+        viz::IsResourceFormatCompressed(format))
+      continue;
+    int storage_format = viz::TextureStorageFormat(format);
+
+    int image_gl_format = viz::GLDataFormat(format);
+    int storage_gl_format =
+        gles2::TextureManager::ExtractFormatFromStorageFormat(storage_format);
+    EXPECT_EQ(image_gl_format, storage_gl_format);
+
+    int image_gl_type = viz::GLDataType(format);
+    int storage_gl_type =
+        gles2::TextureManager::ExtractTypeFromStorageFormat(storage_format);
+
+    // Ignore the HALF_FLOAT / HALF_FLOAT_OES discrepancy for now.
+    // TODO(ericrk): Figure out if we need additional action to support
+    // HALF_FLOAT.
+    if (!(image_gl_type == GL_HALF_FLOAT_OES &&
+          storage_gl_type == GL_HALF_FLOAT)) {
+      EXPECT_EQ(image_gl_type, storage_gl_type);
+    }
+
+    // confirm that we support TexStorage2D only if we support TexImage2D:
+    int image_internal_format = viz::GLInternalFormat(format);
+    bool supports_tex_image =
+        validators->texture_internal_format.IsValid(image_internal_format) &&
+        validators->texture_format.IsValid(image_gl_format) &&
+        validators->pixel_type.IsValid(image_gl_type);
+    bool supports_tex_storage =
+        validators->texture_internal_format_storage.IsValid(storage_format);
+    if (supports_tex_storage)
+      EXPECT_TRUE(supports_tex_image);
+  }
 }
 
 class StubImage : public gl::GLImageStub {

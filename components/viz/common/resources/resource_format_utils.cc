@@ -93,26 +93,26 @@ int BitsPerPixel(ResourceFormat format) {
 unsigned int GLDataType(ResourceFormat format) {
   DCHECK_LE(format, RESOURCE_FORMAT_MAX);
   static const GLenum format_gl_data_type[] = {
-      GL_UNSIGNED_BYTE,           // RGBA_8888
-      GL_UNSIGNED_SHORT_4_4_4_4,  // RGBA_4444
-      GL_UNSIGNED_BYTE,           // BGRA_8888
-      GL_UNSIGNED_BYTE,           // ALPHA_8
-      GL_UNSIGNED_BYTE,           // LUMINANCE_8
-      GL_UNSIGNED_SHORT_5_6_5,    // RGB_565,
-      GL_ZERO,                    // BGR_565
-      GL_UNSIGNED_BYTE,           // ETC1
-      GL_UNSIGNED_BYTE,           // RED_8
-      GL_UNSIGNED_BYTE,           // RG_88
-      GL_HALF_FLOAT_OES,          // LUMINANCE_F16
-      GL_HALF_FLOAT_OES,          // RGBA_F16
-      GL_UNSIGNED_SHORT,          // R16_EXT
-      GL_UNSIGNED_BYTE,           // RGBX_8888
-      GL_ZERO,                    // BGRX_8888
-      GL_UNSIGNED_INT,            // RGBX_1010102
-      GL_ZERO,                    // BGRX_1010102
-      GL_ZERO,                    // YVU_420
-      GL_ZERO,                    // YUV_420_BIPLANAR
-      GL_ZERO,                    // UYVY_422
+      GL_UNSIGNED_BYTE,                    // RGBA_8888
+      GL_UNSIGNED_SHORT_4_4_4_4,           // RGBA_4444
+      GL_UNSIGNED_BYTE,                    // BGRA_8888
+      GL_UNSIGNED_BYTE,                    // ALPHA_8
+      GL_UNSIGNED_BYTE,                    // LUMINANCE_8
+      GL_UNSIGNED_SHORT_5_6_5,             // RGB_565,
+      GL_ZERO,                             // BGR_565
+      GL_UNSIGNED_BYTE,                    // ETC1
+      GL_UNSIGNED_BYTE,                    // RED_8
+      GL_UNSIGNED_BYTE,                    // RG_88
+      GL_HALF_FLOAT_OES,                   // LUMINANCE_F16
+      GL_HALF_FLOAT_OES,                   // RGBA_F16
+      GL_UNSIGNED_SHORT,                   // R16_EXT
+      GL_UNSIGNED_BYTE,                    // RGBX_8888
+      GL_ZERO,                             // BGRX_8888
+      GL_UNSIGNED_INT_2_10_10_10_REV_EXT,  // RGBX_1010102
+      GL_ZERO,                             // BGRX_1010102
+      GL_ZERO,                             // YVU_420
+      GL_ZERO,                             // YUV_420_BIPLANAR
+      GL_ZERO,                             // UYVY_422
   };
   static_assert(arraysize(format_gl_data_type) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_type does not handle all cases.");
@@ -138,7 +138,7 @@ unsigned int GLDataFormat(ResourceFormat format) {
       GL_RED_EXT,        // R16_EXT
       GL_RGB,            // RGBX_8888
       GL_ZERO,           // BGRX_8888
-      GL_RGB10_A2_EXT,   // RGBX_1010102
+      GL_RGBA,           // RGBX_1010102
       GL_ZERO,           // BGRX_1010102
       GL_ZERO,           // YVU_420
       GL_ZERO,           // YUV_420_BIPLANAR
