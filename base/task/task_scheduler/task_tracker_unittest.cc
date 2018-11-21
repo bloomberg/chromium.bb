@@ -896,12 +896,15 @@ TEST_F(TaskSchedulerTaskTrackerTest, CurrentSequenceToken) {
   Task task(FROM_HERE, Bind(&ExpectSequenceToken, sequence_token), TimeDelta());
   tracker_.WillPostTask(&task, sequence->shutdown_behavior());
 
-  auto sequence_transaction = sequence->BeginTransaction();
-  sequence_transaction->PushTask(std::move(task));
+  {
+    Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
+    sequence_transaction.PushTask(std::move(task));
 
-  EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
-  ASSERT_TRUE(tracker_.WillScheduleSequence(std::move(sequence_transaction),
-                                            &never_notified_observer_));
+    EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
+    ASSERT_TRUE(tracker_.WillScheduleSequence(sequence_transaction,
+                                              &never_notified_observer_));
+  }
+
   tracker_.RunAndPopNextTask(std::move(sequence), &never_notified_observer_);
   EXPECT_FALSE(SequenceToken::GetForCurrentThread().IsValid());
 }
@@ -1077,10 +1080,11 @@ TEST_F(TaskSchedulerTaskTrackerTest,
 
   scoped_refptr<Sequence> sequence =
       test::CreateSequenceWithTask(std::move(task_1), default_traits);
-  auto sequence_transaction = sequence->BeginTransaction();
-  sequence_transaction->PushTask(std::move(task_2));
-  EXPECT_TRUE(
-      tracker_.WillScheduleSequence(std::move(sequence_transaction), nullptr));
+  {
+    Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
+    sequence_transaction.PushTask(std::move(task_2));
+    EXPECT_TRUE(tracker_.WillScheduleSequence(sequence_transaction, nullptr));
+  }
 
   EXPECT_EQ(sequence, tracker_.RunAndPopNextTask(sequence, nullptr));
 }
@@ -1101,7 +1105,7 @@ void TestWillScheduleBestEffortSequenceWithMaxBestEffortSequences(
         tracker.WillPostTask(&task, best_effort_traits.shutdown_behavior()));
     scoped_refptr<Sequence> sequence =
         test::CreateSequenceWithTask(std::move(task), best_effort_traits);
-    EXPECT_TRUE(tracker.WillScheduleSequence(sequence->BeginTransaction(),
+    ASSERT_TRUE(tracker.WillScheduleSequence(sequence->BeginTransaction(),
                                              &never_notified_observer));
     scheduled_sequences.push_back(std::move(sequence));
   }
@@ -1128,9 +1132,9 @@ void TestWillScheduleBestEffortSequenceWithMaxBestEffortSequences(
     extra_observers.push_back(
         std::make_unique<
             testing::StrictMock<MockCanScheduleSequenceObserver>>());
-    EXPECT_EQ(nullptr, tracker.WillScheduleSequence(
-                           extra_sequences.back()->BeginTransaction(),
-                           extra_observers.back().get()));
+    EXPECT_FALSE(
+        tracker.WillScheduleSequence(extra_sequences.back()->BeginTransaction(),
+                                     extra_observers.back().get()));
   }
 
   // Run the sequences scheduled at the beginning of the test. Expect an
@@ -1228,10 +1232,10 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   TaskTraits best_effort_traits = TaskTraits(TaskPriority::BEST_EFFORT);
   EXPECT_TRUE(
       tracker_.WillPostTask(&task_b_2, best_effort_traits.shutdown_behavior()));
-  sequence_b->BeginTransaction()->PushTask(std::move(task_b_2));
+  sequence_b->BeginTransaction().PushTask(std::move(task_b_2));
   testing::StrictMock<MockCanScheduleSequenceObserver> observer_b_2;
-  EXPECT_EQ(nullptr, tracker_.WillScheduleSequence(
-                         sequence_b->BeginTransaction(), &observer_b_2));
+  EXPECT_FALSE(tracker_.WillScheduleSequence(sequence_b->BeginTransaction(),
+                                             &observer_b_2));
   // The TaskPriority of the Sequence is unchanged by posting new tasks to it.
   EXPECT_EQ(2, tracker_.GetPreemptedSequenceCountForTesting(
                    TaskPriority::USER_VISIBLE));
@@ -1246,8 +1250,8 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   scoped_refptr<Sequence> sequence_c =
       test::CreateSequenceWithTask(std::move(task_c), best_effort_traits);
   testing::StrictMock<MockCanScheduleSequenceObserver> observer_c;
-  EXPECT_EQ(nullptr, tracker_.WillScheduleSequence(
-                         sequence_c->BeginTransaction(), &observer_c));
+  EXPECT_FALSE(tracker_.WillScheduleSequence(sequence_c->BeginTransaction(),
+                                             &observer_c));
   EXPECT_EQ(1, tracker_.GetPreemptedSequenceCountForTesting(
                    TaskPriority::BEST_EFFORT));
 
@@ -1339,7 +1343,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
                 TimeDelta());
   EXPECT_TRUE(
       tracker.WillPostTask(&task_a_2, best_effort_traits.shutdown_behavior()));
-  sequence_a->BeginTransaction()->PushTask(std::move(task_a_2));
+  sequence_a->BeginTransaction().PushTask(std::move(task_a_2));
 
   // Run the first task in |sequence_a|. RunAndPopNextTask() should return
   // nullptr since |sequence_a| can't be rescheduled immediately.

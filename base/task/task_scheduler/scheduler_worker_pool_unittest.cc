@@ -165,8 +165,8 @@ class TaskSchedulerWorkerPoolTest
  private:
   // SchedulerWorkerPool::Delegate:
   void ReEnqueueSequence(
-      std::unique_ptr<Sequence::Transaction> sequence_transaction) override {
-    worker_pool_->ReEnqueueSequence(std::move(sequence_transaction));
+      SequenceAndTransaction sequence_and_transaction) override {
+    worker_pool_->ReEnqueueSequence(std::move(sequence_and_transaction));
   }
 
   TrackedRefFactory<SchedulerWorkerPool::Delegate> tracked_ref_factory_;

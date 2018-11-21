@@ -14,14 +14,32 @@
 namespace base {
 namespace internal {
 
+SequenceAndTransaction::SequenceAndTransaction(
+    scoped_refptr<Sequence> sequence_in,
+    Sequence::Transaction transaction_in)
+    : sequence(std::move(sequence_in)),
+      transaction(std::move(transaction_in)) {}
+
+SequenceAndTransaction::SequenceAndTransaction(SequenceAndTransaction&& other) =
+    default;
+
+SequenceAndTransaction::~SequenceAndTransaction() = default;
+
 Sequence::Transaction::Transaction(scoped_refptr<Sequence> sequence)
-    : sequence_(sequence) {
+    : sequence_(sequence.get()) {
   sequence_->lock_.Acquire();
 }
 
+Sequence::Transaction::Transaction(Sequence::Transaction&& other)
+    : sequence_(other.sequence()) {
+  other.sequence_ = nullptr;
+}
+
 Sequence::Transaction::~Transaction() {
-  sequence_->lock_.AssertAcquired();
-  sequence_->lock_.Release();
+  if (sequence_) {
+    sequence_->lock_.AssertAcquired();
+    sequence_->lock_.Release();
+  }
 }
 
 bool Sequence::Transaction::PushTask(Task task) {
@@ -91,8 +109,16 @@ Sequence::~Sequence() {
   }
 }
 
-std::unique_ptr<Sequence::Transaction> Sequence::BeginTransaction() {
-  return WrapUnique(new Transaction(this));
+Sequence::Transaction Sequence::BeginTransaction() {
+  return Transaction(this);
+}
+
+// static
+SequenceAndTransaction SequenceAndTransaction::FromSequence(
+    scoped_refptr<Sequence> sequence) {
+  DCHECK(sequence);
+  Sequence::Transaction transaction(sequence->BeginTransaction());
+  return SequenceAndTransaction(std::move(sequence), std::move(transaction));
 }
 
 }  // namespace internal

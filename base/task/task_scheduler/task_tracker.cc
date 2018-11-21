@@ -453,11 +453,10 @@ bool TaskTracker::WillPostTask(Task* task,
   return true;
 }
 
-std::unique_ptr<Sequence::Transaction> TaskTracker::WillScheduleSequence(
-    std::unique_ptr<Sequence::Transaction> sequence_transaction,
+bool TaskTracker::WillScheduleSequence(
+    const Sequence::Transaction& sequence_transaction,
     CanScheduleSequenceObserver* observer) {
-  DCHECK(sequence_transaction);
-  const SequenceSortKey sort_key = sequence_transaction->GetSortKey();
+  const SequenceSortKey sort_key = sequence_transaction.GetSortKey();
   const int priority_index = static_cast<int>(sort_key.priority());
 
   AutoSchedulerLock auto_lock(preemption_state_[priority_index].lock);
@@ -465,7 +464,7 @@ std::unique_ptr<Sequence::Transaction> TaskTracker::WillScheduleSequence(
   if (preemption_state_[priority_index].current_scheduled_sequences <
       preemption_state_[priority_index].max_scheduled_sequences) {
     ++preemption_state_[priority_index].current_scheduled_sequences;
-    return sequence_transaction;
+    return true;
   }
 
   // It is convenient not to have to specify an observer when scheduling
@@ -473,9 +472,9 @@ std::unique_ptr<Sequence::Transaction> TaskTracker::WillScheduleSequence(
   DCHECK(observer);
 
   preemption_state_[priority_index].preempted_sequences.emplace(
-      sequence_transaction->sequence(), sort_key.next_task_sequenced_time(),
-      observer);
-  return nullptr;
+      WrapRefCounted(sequence_transaction.sequence()),
+      sort_key.next_task_sequenced_time(), observer);
+  return false;
 }
 
 scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
@@ -487,13 +486,12 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   Optional<Task> task;
   TaskTraits traits;
   {
-    std::unique_ptr<Sequence::Transaction> sequence_transaction =
-        sequence->BeginTransaction();
-    task = sequence_transaction->TakeTask();
+    Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
+    task = sequence_transaction.TakeTask();
     // TODO(fdoray): Support TakeTask() returning null. https://crbug.com/783309
     DCHECK(task);
 
-    traits = sequence_transaction->traits();
+    traits = sequence_transaction.traits();
   }
 
   const TaskShutdownBehavior effective_shutdown_behavior =
@@ -511,7 +509,7 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   if (task->delayed_run_time.is_null())
     DecrementNumIncompleteUndelayedTasks();
 
-  const bool sequence_is_empty_after_pop = sequence->BeginTransaction()->Pop();
+  const bool sequence_is_empty_after_pop = sequence->BeginTransaction().Pop();
 
   // Never reschedule a Sequence emptied by Pop(). The contract is such that
   // next poster to make it non-empty is responsible to schedule it.
@@ -879,7 +877,7 @@ scoped_refptr<Sequence> TaskTracker::ManageSequencesAfterRunningTask(
     TaskPriority task_priority) {
   const TimeTicks next_task_sequenced_time =
       just_ran_sequence ? just_ran_sequence->BeginTransaction()
-                              ->GetSortKey()
+                              .GetSortKey()
                               .next_task_sequenced_time()
                         : TimeTicks();
   PreemptedSequence sequence_to_schedule;

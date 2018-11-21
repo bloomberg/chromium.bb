@@ -56,7 +56,7 @@ class ThreadBeginningTransaction : public SimpleThread {
 scoped_refptr<Sequence> MakeSequenceWithTraitsAndTask(
     const TaskTraits& traits) {
   scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>(traits);
-  sequence->BeginTransaction()->PushTask(
+  sequence->BeginTransaction().PushTask(
       Task(FROM_HERE, DoNothing(), TimeDelta()));
   return sequence;
 }
@@ -65,19 +65,19 @@ class TaskSchedulerPriorityQueueWithSequencesTest : public testing::Test {
  protected:
   scoped_refptr<Sequence> sequence_a =
       MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::USER_VISIBLE));
-  SequenceSortKey sort_key_a = sequence_a->BeginTransaction()->GetSortKey();
+  SequenceSortKey sort_key_a = sequence_a->BeginTransaction().GetSortKey();
 
   scoped_refptr<Sequence> sequence_b =
       MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::USER_BLOCKING));
-  SequenceSortKey sort_key_b = sequence_b->BeginTransaction()->GetSortKey();
+  SequenceSortKey sort_key_b = sequence_b->BeginTransaction().GetSortKey();
 
   scoped_refptr<Sequence> sequence_c =
       MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::USER_BLOCKING));
-  SequenceSortKey sort_key_c = sequence_c->BeginTransaction()->GetSortKey();
+  SequenceSortKey sort_key_c = sequence_c->BeginTransaction().GetSortKey();
 
   scoped_refptr<Sequence> sequence_d =
       MakeSequenceWithTraitsAndTask(TaskTraits(TaskPriority::BEST_EFFORT));
-  SequenceSortKey sort_key_d = sequence_d->BeginTransaction()->GetSortKey();
+  SequenceSortKey sort_key_d = sequence_d->BeginTransaction().GetSortKey();
 
  private:
   PriorityQueue pq;

@@ -96,7 +96,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // SchedulerWorkerPool:
   void JoinForTesting() override;
   void ReEnqueueSequence(
-      std::unique_ptr<Sequence::Transaction> sequence_transaction) override;
+      SequenceAndTransaction sequence_and_transaction) override;
 
   const HistogramBase* num_tasks_before_detach_histogram() const {
     return num_tasks_before_detach_histogram_;
@@ -159,12 +159,12 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // SchedulerWorkerPool:
   void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
   void OnCanScheduleSequence(
-      std::unique_ptr<Sequence::Transaction> sequence_transaction) override;
+      SequenceAndTransaction sequence_and_transaction) override;
 
-  // Pushes the Sequence locked by |sequence_transaction| to
+  // Pushes the Sequence in |sequence_and_transaction| to
   // |shared_priority_queue_|.
   void PushSequenceToPriorityQueue(
-      std::unique_ptr<Sequence::Transaction> sequence_transaction);
+      SequenceAndTransaction sequence_and_transaction);
 
   // Waits until at least |n| workers are idle. |lock_| must be held to call
   // this function.
