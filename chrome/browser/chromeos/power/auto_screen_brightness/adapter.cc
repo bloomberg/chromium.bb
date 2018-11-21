@@ -50,6 +50,11 @@ Adapter::Adapter(const Profile* profile,
       base::BindOnce(&Adapter::OnPowerManagerServiceAvailable,
                      weak_ptr_factory_.GetWeakPtr()));
 
+  if (!base::FeatureList::IsEnabled(features::kAutoScreenBrightness)) {
+    adapter_status_ = Status::kDisabled;
+    return;
+  }
+
   InitParams();
 }
 

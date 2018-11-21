@@ -181,8 +181,10 @@ class AdapterTest : public testing::Test {
     profile_ = profile_builder.Build();
 
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        features::kAutoScreenBrightness, params);
+    if (!params.empty()) {
+      scoped_feature_list.InitAndEnableFeatureWithParameters(
+          features::kAutoScreenBrightness, params);
+    }
 
     adapter_ = std::make_unique<Adapter>(
         profile_.get(), &fake_als_reader_, &fake_brightness_monitor_,
@@ -647,6 +649,27 @@ TEST_F(AdapterTest, BrightnessSetByPolicy) {
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
 
   scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  fake_als_reader_.ReportAmbientLightUpdate(10);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+}
+
+TEST_F(AdapterTest, FeatureDisabled) {
+  // An empty param map will not enable the experiment.
+  std::map<std::string, std::string> empty_params;
+
+  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
+       global_curve_, personal_curve_, empty_params);
+
+  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kDisabled);
+  // Global and personal curves are received, but they won't be used to change
+  // brightness.
+  EXPECT_TRUE(adapter_->GetGlobalCurveForTesting());
+  EXPECT_TRUE(adapter_->GetPersonalCurveForTesting());
+
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // Brightness not changed after the 1st ALS reading comes in.
   fake_als_reader_.ReportAmbientLightUpdate(10);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(test_observer_.num_changes(), 0);
