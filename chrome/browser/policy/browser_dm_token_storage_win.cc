@@ -191,8 +191,7 @@ std::string BrowserDMTokenStorageWin::InitDMToken() {
 }
 
 bool BrowserDMTokenStorageWin::InitEnrollmentErrorOption() {
-  // TODO(crbug/904983): Load the policy value for this option.
-  return true;
+  return InstallUtil::ShouldCloudManagementBlockOnFailure();
 }
 
 void BrowserDMTokenStorageWin::SaveDMToken(const std::string& token) {

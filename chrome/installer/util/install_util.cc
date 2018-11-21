@@ -120,6 +120,24 @@ HWND CreateUACForegroundWindow() {
   return foreground_window;
 }
 
+// Returns Regstiry key path of Chrome policies. This is used by the policies
+// that are shared between Chrome and installer.
+base::string16 GetChromePoliciesRegistryPath() {
+  base::string16 key_path = L"SOFTWARE\\Policies\\";
+  install_static::AppendChromeInstallSubDirectory(
+      install_static::InstallDetails::Get().mode(), false /* !include_suffix */,
+      &key_path);
+  return key_path;
+}
+
+// Retruns the registry key path and value name where the cloud management
+// enrollment option is stored.
+void GetCloudManagementBlockOnFailureRegistryPath(base::string16* key_path,
+                                                  base::string16* value_name) {
+  *key_path = GetChromePoliciesRegistryPath();
+  *value_name = L"CloudManagementEnrollmentMandatory";
+}
+
 }  // namespace
 
 void InstallUtil::TriggerActiveSetupCommand() {
@@ -627,22 +645,19 @@ void InstallUtil::AddUpdateDowngradeVersionItem(
 
 // static
 void InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentTokenRegistryPath(
-    std::wstring* key_path,
-    std::wstring* value_name) {
+    base::string16* key_path,
+    base::string16* value_name) {
   // This token applies to all installs on the machine, even though only a
   // system install can set it.  This is to prevent users from doing a user
   // install of chrome to get around policies.
-  *key_path = L"SOFTWARE\\Policies\\";
-  install_static::AppendChromeInstallSubDirectory(
-      install_static::InstallDetails::Get().mode(), false /* !include_suffix */,
-      key_path);
+  *key_path = GetChromePoliciesRegistryPath();
   *value_name = L"MachineLevelUserCloudPolicyEnrollmentToken";
 }
 
 // static
 void InstallUtil::GetMachineLevelUserCloudPolicyDMTokenRegistryPath(
-    std::wstring* key_path,
-    std::wstring* value_name) {
+    base::string16* key_path,
+    base::string16* value_name) {
   // This token applies to all installs on the machine, even though only a
   // system install can set it.  This is to prevent users from doing a user
   // install of chrome to get around policies.
@@ -655,7 +670,7 @@ void InstallUtil::GetMachineLevelUserCloudPolicyDMTokenRegistryPath(
 }
 
 // static
-std::wstring InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentToken() {
+base::string16 InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentToken() {
   // Because chrome needs to know if machine level user cloud policies must be
   // initialized even before the entire policy service is brought up, this
   // helper function exists to directly read the token from the system policies.
@@ -665,29 +680,29 @@ std::wstring InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentToken() {
   // this token via SCCM.
   // TODO(rogerta): This may not be the best place for the helpers dealing with
   // the enrollment and/or DM tokens.  See crbug.com/823852 for details.
-  std::wstring key_path;
-  std::wstring value_name;
+  base::string16 key_path;
+  base::string16 value_name;
   GetMachineLevelUserCloudPolicyEnrollmentTokenRegistryPath(&key_path,
                                                             &value_name);
 
-  RegKey key;
-  LONG result = key.Open(HKEY_LOCAL_MACHINE, key_path.c_str(), KEY_QUERY_VALUE);
-  if (result != ERROR_SUCCESS) {
-    if (result != ERROR_FILE_NOT_FOUND) {
-      ::SetLastError(result);
-      PLOG(ERROR) << "Failed to open HKLM\\" << key_path;
-    }
-    return std::wstring();
-  }
-
-  std::wstring value;
-  result = key.ReadValue(value_name.c_str(), &value);
-  if (result != ERROR_SUCCESS) {
-    ::SetLastError(result);
-    PLOG(ERROR) << "Failed to read HKLM\\" << key_path << "\\" << value_name;
-  }
+  base::string16 value;
+  RegKey key(HKEY_LOCAL_MACHINE, key_path.c_str(), KEY_QUERY_VALUE);
+  key.ReadValue(value_name.c_str(), &value);
 
   return value;
+}
+
+// static
+bool InstallUtil::ShouldCloudManagementBlockOnFailure() {
+  base::string16 key_path;
+  base::string16 value_name;
+  GetCloudManagementBlockOnFailureRegistryPath(&key_path, &value_name);
+
+  DWORD value = 0;
+  RegKey(HKEY_LOCAL_MACHINE, key_path.c_str(), KEY_QUERY_VALUE)
+      .ReadValueDW(value_name.c_str(), &value);
+
+  return value != 0;
 }
 
 // static

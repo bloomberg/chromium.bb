@@ -181,19 +181,22 @@ class InstallUtil {
   // Returns the registry key path and value name where the enrollment token is
   // stored for machine level user cloud policies.
   static void GetMachineLevelUserCloudPolicyEnrollmentTokenRegistryPath(
-      std::wstring* key_path,
-      std::wstring* value_name);
+      base::string16* key_path,
+      base::string16* value_name);
 
   // Returns the registry key path and value name where the enrollment token is
   // stored for machine level user cloud policies.
   static void GetMachineLevelUserCloudPolicyDMTokenRegistryPath(
-      std::wstring* key_path,
-      std::wstring* value_name);
+      base::string16* key_path,
+      base::string16* value_name);
 
   // Returns the token used to enroll this chrome instance for machine level
   // user cloud policies.  Returns an empty string if this machine should not
   // be enrolled.
-  static std::wstring GetMachineLevelUserCloudPolicyEnrollmentToken();
+  static base::string16 GetMachineLevelUserCloudPolicyEnrollmentToken();
+
+  // Returns true if cloud management enrollment is mandatory.
+  static bool ShouldCloudManagementBlockOnFailure();
 
   // Returns the localized name of the browser.
   static base::string16 GetDisplayName();
