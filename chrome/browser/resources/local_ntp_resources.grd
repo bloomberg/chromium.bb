@@ -20,9 +20,6 @@
       <include name="IDR_MOST_VISITED_TITLE_HTML" file="local_ntp\most_visited_title.html" type="BINDATA" />
       <include name="IDR_MOST_VISITED_TITLE_CSS" file="local_ntp\most_visited_title.css" type="BINDATA" />
       <include name="IDR_MOST_VISITED_TITLE_JS" file="local_ntp\most_visited_title.js" type="BINDATA" />
-      <include name="IDR_MOST_VISITED_THUMBNAIL_HTML" file="local_ntp\most_visited_thumbnail.html" type="BINDATA" />
-      <include name="IDR_MOST_VISITED_THUMBNAIL_CSS" file="local_ntp\most_visited_thumbnail.css" type="BINDATA" />
-      <include name="IDR_MOST_VISITED_THUMBNAIL_JS" file="local_ntp\most_visited_thumbnail.js" type="BINDATA" />
       <include name="IDR_MOST_VISITED_SINGLE_HTML" file="local_ntp\most_visited_single.html" type="BINDATA" />
       <include name="IDR_MOST_VISITED_SINGLE_CSS" file="local_ntp\most_visited_single.css" type="BINDATA" />
       <include name="IDR_MOST_VISITED_SINGLE_JS" file="local_ntp\most_visited_single.js" type="BINDATA" />

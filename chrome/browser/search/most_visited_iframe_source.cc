@@ -24,9 +24,6 @@ const char kSingleJSPath[] = "/single.js";
 const char kTitleHTMLPath[] = "/title.html";
 const char kTitleCSSPath[] = "/title.css";
 const char kTitleJSPath[] = "/title.js";
-const char kThumbnailHTMLPath[] = "/thumbnail.html";
-const char kThumbnailCSSPath[] = "/thumbnail.css";
-const char kThumbnailJSPath[] = "/thumbnail.js";
 const char kUtilJSPath[] = "/util.js";
 const char kCommonCSSPath[] = "/common.css";
 
@@ -85,12 +82,6 @@ void MostVisitedIframeSource::StartDataRequest(
     SendResource(IDR_MOST_VISITED_TITLE_CSS, callback);
   } else if (path == kTitleJSPath) {
     SendResource(IDR_MOST_VISITED_TITLE_JS, callback);
-  } else if (path == kThumbnailHTMLPath) {
-    SendResource(IDR_MOST_VISITED_THUMBNAIL_HTML, callback);
-  } else if (path == kThumbnailCSSPath) {
-    SendResource(IDR_MOST_VISITED_THUMBNAIL_CSS, callback);
-  } else if (path == kThumbnailJSPath) {
-    SendJSWithOrigin(IDR_MOST_VISITED_THUMBNAIL_JS, wc_getter, callback);
   } else if (path == kUtilJSPath) {
     SendJSWithOrigin(IDR_MOST_VISITED_UTIL_JS, wc_getter, callback);
   } else if (path == kCommonCSSPath) {
@@ -113,9 +104,7 @@ void MostVisitedIframeSource::StartDataRequest(
 bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
   return path == kSingleHTMLPath || path == kSingleCSSPath ||
          path == kSingleJSPath || path == kTitleHTMLPath ||
-         path == kTitleCSSPath || path == kTitleJSPath ||
-         path == kThumbnailHTMLPath || path == kThumbnailCSSPath ||
-         path == kThumbnailJSPath || path == kUtilJSPath ||
+         path == kTitleCSSPath || path == kTitleJSPath || path == kUtilJSPath ||
          path == kCommonCSSPath || path == kEditHTMLPath ||
          path == kEditCSSPath || path == kEditJSPath || path == kAddSvgPath ||
          path == kEditMenuSvgPath;
