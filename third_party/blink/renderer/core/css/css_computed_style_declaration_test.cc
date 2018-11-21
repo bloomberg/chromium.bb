@@ -63,4 +63,46 @@ TEST_F(CSSComputedStyleDeclarationTest, CleanShadowAncestorsNoRecalc) {
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
 }
 
+TEST_F(CSSComputedStyleDeclarationTest, NeedsAdjacentStyleRecalc) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      #a + #b { color: green }
+    </style>
+    <div id="container" style="display:none">
+      <span id="a"></span>
+      <span id="b">
+        <span id="c"></span>
+        <span id="d"></span>
+      </span>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
+
+  Element* container = GetDocument().getElementById("container");
+  Element* c_span = GetDocument().getElementById("c");
+  Element* d_span = GetDocument().getElementById("d");
+  d_span->setAttribute("style", "color:pink");
+
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdateForNode(*d_span));
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdateForNode(*c_span));
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdateForNode(*c_span, true));
+  EXPECT_FALSE(container->NeedsAdjacentStyleRecalc());
+
+  CSSComputedStyleDeclaration* computed =
+      CSSComputedStyleDeclaration::Create(c_span);
+
+  EXPECT_STREQ("rgb(0, 128, 0)",
+               computed->GetPropertyValue(CSSPropertyColor).Utf8().data());
+
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdateForNode(*d_span));
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdateForNode(*c_span));
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdateForNode(*c_span, true));
+  EXPECT_TRUE(container->NeedsAdjacentStyleRecalc());
+}
+
 }  // namespace blink

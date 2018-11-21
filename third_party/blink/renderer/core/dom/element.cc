@@ -3779,7 +3779,14 @@ const ComputedStyle* Element::EnsureComputedStyle(
   // EnsureComputedStyle. In some cases you might be fine using GetComputedStyle
   // without updating the style, but in most cases you want a clean tree for
   // that as well.
-  DCHECK(!GetDocument().NeedsLayoutTreeUpdateForNode(*this));
+  //
+  // Adjacent styling bits may be set and affect NeedsLayoutTreeUpdateForNode as
+  // part of EnsureComputedStyle in an ancestor chain.
+  // (see CSSComputedStyleDeclarationTest::NeedsAdjacentStyleRecalc). It is OK
+  // that it happens, but we need to ignore the effect on
+  // NeedsLayoutTreeUpdateForNode here.
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdateForNode(
+      *this, true /* ignore_adjacent_style */));
 
   // FIXME: Find and use the layoutObject from the pseudo element instead of the
   // actual element so that the 'length' properties, which are only known by the
