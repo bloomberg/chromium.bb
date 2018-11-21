@@ -2469,26 +2469,15 @@ TEST_F(RenderTextTest, StringSizeEmptyString) {
   EXPECT_EQ(font_list.GetBaseline(), render_text->GetBaseline());
 }
 
-// TODO(865540): Find two system fonts on Android with different baseline and
-// different height.
-// See also: FontListTest::Fonts_GetHeight_GetBaseline.
-#if defined(OS_ANDROID)
-#define MAYBE_StringSizeRespectsFontListMetrics \
-  DISABLED_StringSizeRespectsFontListMetrics
-#else
-#define MAYBE_StringSizeRespectsFontListMetrics \
-  StringSizeRespectsFontListMetrics
-#endif
-TEST_F(RenderTextTest, MAYBE_StringSizeRespectsFontListMetrics) {
-  // Check that the test font and the CJK font have different font metrics.
+TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
+  // NOTE: On most platforms, kCJKFontName has different metrics than
+  // kTestFontName, but on Android it does not.
   Font test_font(kTestFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kTestFontName),
             base::ToLowerASCII(test_font.GetActualFontNameForTesting()));
   Font cjk_font(kCJKFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kCJKFontName),
             base::ToLowerASCII(cjk_font.GetActualFontNameForTesting()));
-  EXPECT_NE(test_font.GetHeight(), cjk_font.GetHeight());
-  EXPECT_NE(test_font.GetBaseline(), cjk_font.GetBaseline());
   // "a" should be rendered with the test font, not with the CJK font.
   const char* test_font_text = "a";
   // "円" (U+5168 Han character YEN) should render with the CJK font, not
@@ -2503,8 +2492,8 @@ TEST_F(RenderTextTest, MAYBE_StringSizeRespectsFontListMetrics) {
     std::swap(smaller_font, larger_font);
     std::swap(smaller_font_text, larger_font_text);
   }
-  ASSERT_LT(smaller_font.GetHeight(), larger_font.GetHeight());
-  ASSERT_LT(smaller_font.GetBaseline(), larger_font.GetBaseline());
+  ASSERT_LE(smaller_font.GetHeight(), larger_font.GetHeight());
+  ASSERT_LE(smaller_font.GetBaseline(), larger_font.GetBaseline());
 
   // Check |smaller_font_text| is rendered with the smaller font.
   RenderText* render_text = GetRenderText();
@@ -2531,8 +2520,8 @@ TEST_F(RenderTextTest, MAYBE_StringSizeRespectsFontListMetrics) {
   EXPECT_STRCASEEQ(
       render_text->GetFontSpansForTesting()[0].first.GetFontName().c_str(),
       smaller_font.GetFontName().c_str());
-  EXPECT_LT(smaller_font.GetHeight(), render_text->GetStringSize().height());
-  EXPECT_LT(smaller_font.GetBaseline(), render_text->GetBaseline());
+  EXPECT_LE(smaller_font.GetHeight(), render_text->GetStringSize().height());
+  EXPECT_LE(smaller_font.GetBaseline(), render_text->GetBaseline());
   EXPECT_EQ(font_list.GetHeight(), render_text->GetStringSize().height());
   EXPECT_EQ(font_list.GetBaseline(), render_text->GetBaseline());
 }
