@@ -24,14 +24,23 @@ def compare_builders(name, main_builders, sub_builders):
   # are consistent with the builders on that subwaterfall's main page.
   # For example, checks that the builders on the "chromium.win" section
   # are the same as on the dedicated standalone chromium.win waterfall.
-  def to_list(builders):
+  def to_list(builders, category_prefix=''):
     desc_list = []
     for builder in builders:
       desc_list.append('name: ' + ', '.join(builder.name))
+      # A bot with "chromium.win|foo|bar" on the main waterfall should have
+      # a category of "foo|bar" on the "chromium.win" subwaterfall.
+      category = builder.category
+      if category_prefix:
+        if category:
+          category = category_prefix + '|' + category
+        else:
+          category = category_prefix
+      desc_list.append('category: ' + category)
       desc_list.append('short_name: ' + builder.short_name)
     return desc_list
   main_desc = to_list(main_builders)
-  sub_desc = to_list(sub_builders)
+  sub_desc = to_list(sub_builders, name)
 
   if main_desc != sub_desc:
     print ('bot lists different between main waterfall ' +
@@ -59,6 +68,17 @@ def main():
         subwaterfall = builder.category.split('|', 1)[0]
         subwaterfalls[subwaterfall].append(builder)
 
+  # subwaterfalls contains the waterfalls referenced by the main console
+  # Check that every referenced subwaterfall has its own console.
+  all_console_names = set([console.id for console in project.consoles])
+  referenced_names = set(subwaterfalls.keys())
+  missing_names = referenced_names - all_console_names
+  if missing_names:
+    print 'Missing subwaterfall console for', missing_names
+    return 1
+
+  # Check that the bots on a subwaterfall match the corresponding bots on the
+  # main waterfall
   all_good = True
   for console in project.consoles:
     if console.id in subwaterfalls:
