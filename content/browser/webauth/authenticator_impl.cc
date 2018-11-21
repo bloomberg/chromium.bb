@@ -598,10 +598,10 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
-  url::Origin caller_origin = render_frame_host_->GetLastCommittedOrigin();
+  caller_origin_ = render_frame_host_->GetLastCommittedOrigin();
   relying_party_id_ = options->relying_party->id;
 
-  if (!HasValidEffectiveDomain(caller_origin)) {
+  if (!HasValidEffectiveDomain(caller_origin_)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
     InvokeCallbackAndCleanup(std::move(callback),
@@ -610,7 +610,7 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
-  if (!IsRelyingPartyIdValid(relying_party_id_, caller_origin)) {
+  if (!IsRelyingPartyIdValid(relying_party_id_, caller_origin_)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_RELYING_PARTY);
     InvokeCallbackAndCleanup(std::move(callback),
@@ -641,7 +641,7 @@ void AuthenticatorImpl::MakeCredential(
   // Save client data to return with the authenticator response.
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
   // used to communicate with the origin.
-  if (OriginIsCryptoTokenExtension(caller_origin)) {
+  if (OriginIsCryptoTokenExtension(caller_origin_)) {
     // As Cryptotoken validates the origin, accept the relying party id as the
     // origin from requests originating from Cryptotoken.
     client_data_json_ = SerializeCollectedClientDataToJson(
@@ -649,7 +649,7 @@ void AuthenticatorImpl::MakeCredential(
         std::move(options->challenge), true /* use_legacy_u2f_type_key */);
   } else {
     client_data_json_ = SerializeCollectedClientDataToJson(
-        client_data::kCreateType, caller_origin.Serialize(),
+        client_data::kCreateType, caller_origin_.Serialize(),
         std::move(options->challenge));
   }
 
@@ -668,7 +668,7 @@ void AuthenticatorImpl::MakeCredential(
 
   auto ctap_request = CreateCtapMakeCredentialRequest(
       client_data_json_, options, individual_attestation);
-  ctap_request.set_is_u2f_only(OriginIsCryptoTokenExtension(caller_origin));
+  ctap_request.set_is_u2f_only(OriginIsCryptoTokenExtension(caller_origin_));
 
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
       connector_, transports_, std::move(ctap_request),
@@ -712,12 +712,12 @@ void AuthenticatorImpl::GetAssertion(
     return;
   }
 
-  url::Origin caller_origin = render_frame_host_->GetLastCommittedOrigin();
+  caller_origin_ = render_frame_host_->GetLastCommittedOrigin();
 
   // Save client data to return with the authenticator response.
   // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
   // used to communicate with the origin.
-  if (OriginIsCryptoTokenExtension(caller_origin)) {
+  if (OriginIsCryptoTokenExtension(caller_origin_)) {
     // As Cryptotoken validates the origin, accept the relying party id as the
     // origin from requests originating from Cryptotoken.
     client_data_json_ = SerializeCollectedClientDataToJson(
@@ -725,11 +725,11 @@ void AuthenticatorImpl::GetAssertion(
         std::move(options->challenge), true /* use_legacy_u2f_type_key */);
   } else {
     client_data_json_ = SerializeCollectedClientDataToJson(
-        client_data::kGetType, caller_origin.Serialize(),
+        client_data::kGetType, caller_origin_.Serialize(),
         std::move(options->challenge));
   }
 
-  if (!HasValidEffectiveDomain(caller_origin)) {
+  if (!HasValidEffectiveDomain(caller_origin_)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_EFFECTIVE_DOMAIN);
     InvokeCallbackAndCleanup(std::move(callback),
@@ -738,7 +738,7 @@ void AuthenticatorImpl::GetAssertion(
     return;
   }
 
-  if (!IsRelyingPartyIdValid(options->relying_party_id, caller_origin)) {
+  if (!IsRelyingPartyIdValid(options->relying_party_id, caller_origin_)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_RELYING_PARTY);
     InvokeCallbackAndCleanup(std::move(callback),
@@ -758,7 +758,7 @@ void AuthenticatorImpl::GetAssertion(
 
   if (options->appid) {
     alternative_application_parameter_ =
-        ProcessAppIdExtension(*options->appid, caller_origin);
+        ProcessAppIdExtension(*options->appid, caller_origin_);
     if (!alternative_application_parameter_) {
       std::move(callback).Run(blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
                               nullptr);
@@ -892,12 +892,32 @@ void AuthenticatorImpl::OnRegisterResponse(
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
+
       if (transport_used) {
         request_delegate_->UpdateLastTransportUsed(*transport_used);
       }
 
       if (attestation_preference_ !=
           blink::mojom::AttestationConveyancePreference::NONE) {
+        // Cryptotoken requests may bypass the attestation prompt because the
+        // extension implements its own. Invoking the attestation prompt code
+        // here would not work anyway, because the WebContents associated with
+        // the extension is not associated with any tab and therefore cannot
+        // draw modal dialogs for the UI.
+        //
+        // Note that for AttestationConveyancePreference::NONE, attestation
+        // erasure is still performed as usual.
+        if (OriginIsCryptoTokenExtension(caller_origin_)) {
+          InvokeCallbackAndCleanup(
+              std::move(make_credential_response_callback_),
+              blink::mojom::AuthenticatorStatus::SUCCESS,
+              CreateMakeCredentialResponse(
+                  std::move(client_data_json_), std::move(*response_data),
+                  AttestationErasureOption::kIncludeAttestation),
+              Focus::kDoCheck);
+          return;
+        }
+
         UMA_HISTOGRAM_ENUMERATION("WebAuthentication.AttestationPromptResult",
                                   AttestationPromptResult::kQueried);
         awaiting_attestation_response_ = true;
