@@ -3287,6 +3287,7 @@ test("unit_tests") {
     deps += [
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/services/app_service:unit_tests",
+      "//chrome/services/app_service/public/cpp/:unit_tests",
       "//components/signin/core/browser:signin_buildflags",
       "//services/metrics/public/cpp:ukm_builders",
       "//third_party/libaddressinput",
