@@ -521,6 +521,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableNoHoverDuringScroll(
       base::FeatureList::IsEnabled(features::kNoHoverDuringScroll));
+
+  WebRuntimeFeatures::EnableGetDisplayMedia(
+      base::FeatureList::IsEnabled(blink::features::kRTCGetDisplayMedia));
 }
 
 }  // namespace content
