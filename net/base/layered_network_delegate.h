@@ -89,8 +89,8 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const final;
-  bool OnCanEnablePrivacyMode(const GURL& url,
-                              const GURL& site_for_cookies) const final;
+  bool OnForcePrivacyMode(const GURL& url,
+                          const GURL& site_for_cookies) const final;
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
       const GURL& target_url,
@@ -170,9 +170,8 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
 
   // If this returns false, it short circuits the corresponding call in any
   // nested NetworkDelegates.
-  virtual bool OnCanEnablePrivacyModeInternal(
-      const GURL& url,
-      const GURL& site_for_cookies) const;
+  virtual bool OnForcePrivacyModeInternal(const GURL& url,
+                                          const GURL& site_for_cookies) const;
 
   // If this returns false, it short circuits the corresponding call in any
   // nested NetworkDelegates.

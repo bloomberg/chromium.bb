@@ -27,6 +27,7 @@
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
@@ -81,9 +82,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // The factory may return NULL to indicate an error, which will cause other
   // factories to be queried.  If no factory handles the request, then the
   // default job will be used.
-  typedef URLRequestJob* (ProtocolFactory)(URLRequest* request,
-                                           NetworkDelegate* network_delegate,
-                                           const std::string& scheme);
+  typedef URLRequestJob*(ProtocolFactory)(URLRequest* request,
+                                          NetworkDelegate* network_delegate,
+                                          const std::string& scheme);
 
   // A ReferrerPolicy for the request can be set with
   // set_referrer_policy() and controls the contents of the Referer
@@ -195,9 +196,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     // selected and its private key, or request->ContinueWithCertificate(NULL,
     // NULL)
     // to continue the SSL handshake without a client certificate.
-    virtual void OnCertificateRequested(
-        URLRequest* request,
-        SSLCertRequestInfo* cert_request_info);
+    virtual void OnCertificateRequested(URLRequest* request,
+                                        SSLCertRequestInfo* cert_request_info);
 
     // Called when using SSL and the server responds with a certificate with
     // an error, for example, whose common name does not match the common name
@@ -391,7 +391,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // before Start() is called, or between receiving a redirect and trying to
   // follow it.
   void SetExtraRequestHeaderByName(const std::string& name,
-                                   const std::string& value, bool overwrite);
+                                   const std::string& value,
+                                   bool overwrite);
   void RemoveRequestHeaderByName(const std::string& name);
 
   // Sets all extra request headers.  Any extra request headers set by other
@@ -479,9 +480,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // The time at which the returned response was requested.  For cached
   // responses, this is the last time the cache entry was validated.
-  const base::Time& request_time() const {
-    return response_info_.request_time;
-  }
+  const base::Time& request_time() const { return response_info_.request_time; }
 
   // The time at which the returned response was generated.  For cached
   // responses, this is the last time the cache entry was validated.
@@ -511,9 +510,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   HttpResponseHeaders* response_headers() const;
 
   // Get the SSL connection info.
-  const SSLInfo& ssl_info() const {
-    return response_info_.ssl_info;
-  }
+  const SSLInfo& ssl_info() const { return response_info_.ssl_info; }
 
   // Gets timing information related to the request.  Events that have not yet
   // occurred are left uninitialized.  After a second request starts, due to
@@ -557,6 +554,10 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // Access the LOAD_* flags modifying this request (see load_flags.h).
   int load_flags() const { return load_flags_; }
+
+  // Returns PrivacyMode that should be used for the request. Updated every time
+  // the request is redirected.
+  PrivacyMode privacy_mode() { return privacy_mode_; }
 
   // The new flags may change the IGNORE_LIMITS flag only when called
   // before Start() is called, it must only set the flag, and if set,
@@ -829,7 +830,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   bool CanGetCookies(const CookieList& cookie_list) const;
   bool CanSetCookie(const net::CanonicalCookie& cookie,
                     CookieOptions* options) const;
-  bool CanEnablePrivacyMode() const;
+  PrivacyMode DeterminePrivacyMode() const;
 
   // Called just before calling a delegate that may block a request. |type|
   // should be the delegate's event type,
@@ -864,6 +865,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   HttpRequestHeaders extra_request_headers_;
   int load_flags_;  // Flags indicating the request type for the load;
                     // expected values are LOAD_* enums above.
+  PrivacyMode privacy_mode_;
 
 #if BUILDFLAG(ENABLE_REPORTING)
   int reporting_upload_depth_;

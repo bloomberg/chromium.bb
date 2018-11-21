@@ -11,6 +11,7 @@
 #include <string>
 
 #include "net/base/net_export.h"
+#include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
 
 class GURL;
@@ -34,6 +35,7 @@ NET_EXPORT std::unique_ptr<base::Value> NetLogURLRequestStartCallback(
     const GURL* url,
     const std::string* method,
     int load_flags,
+    PrivacyMode privacy_mode,
     int64_t upload_id,
     NetLogCaptureMode /* capture_mode */);
 

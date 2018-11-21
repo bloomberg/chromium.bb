@@ -413,16 +413,9 @@ void URLRequestHttpJob::Start() {
   request_info_.reporting_upload_depth = request_->reporting_upload_depth();
 #endif
 
-  // Enable privacy mode if cookie settings or flags tell us not send or
-  // save cookies.
-  bool enable_privacy_mode =
-      (request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES) ||
-      (request_info_.load_flags & LOAD_DO_NOT_SAVE_COOKIES) ||
-      CanEnablePrivacyMode();
   // Privacy mode could still be disabled in SetCookieHeaderAndStart if we are
   // going to send previously saved cookies.
-  request_info_.privacy_mode = enable_privacy_mode ?
-      PRIVACY_MODE_ENABLED : PRIVACY_MODE_DISABLED;
+  request_info_.privacy_mode = privacy_mode();
 
   // Strip Referer from request_info_.extra_headers to prevent, e.g., plugins
   // from overriding headers that are controlled using other means. Otherwise a

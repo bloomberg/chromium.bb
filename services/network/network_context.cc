@@ -440,9 +440,8 @@ class NetworkContext::ContextNetworkDelegate
                                       request.site_for_cookies());
   }
 
-  bool OnCanEnablePrivacyModeInternal(
-      const GURL& url,
-      const GURL& site_for_cookies) const override {
+  bool OnForcePrivacyModeInternal(const GURL& url,
+                                  const GURL& site_for_cookies) const override {
     return !network_context_->cookie_manager()
                 ->cookie_settings()
                 .IsCookieAccessAllowed(url, site_for_cookies);
