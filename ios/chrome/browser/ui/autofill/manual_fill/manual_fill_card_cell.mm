@@ -210,8 +210,8 @@ static const CGFloat ExpirationMarginWidth = 16.0;
 
   VerticalConstraintsSpacingForViewsInContainer(
       @[
-        self.cardLabel, self.cardNumberButton, self.cardholderButton,
-        self.expirationMonthButton
+        self.cardLabel, self.cardNumberButton, self.expirationMonthButton,
+        self.cardholderButton
       ],
       self.contentView);
 
