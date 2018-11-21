@@ -5360,3 +5360,4 @@ crbug.com/906952 fast/events/before-unload-return-value-from-listener.html [ Pas
 
 # See also crbug.com/907150
 crbug.com/667560 http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Failure Timeout ]
+crbug.com/907412 [ Mac10.13 ] external/wpt/domxpath/xml_xpath_runner.html [ Pass Timeout ]
