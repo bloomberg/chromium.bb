@@ -185,14 +185,9 @@ public class VrInstallUpdateInfoBarTest {
         // what's causing a UI change other than the prompt). Instead, explicitly wait for the
         // prompt to become visible before waiting for quiescence.
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
-            try {
-                NativeUiUtils.performActionAndWaitForVisibilityStatus(
-                        UserFriendlyElementName.EXIT_PROMPT, true /* visible */,
-                        () -> { NativeUiUtils.clickElement(uiElementToClick, new PointF()); });
-            } catch (InterruptedException e) {
-                Assert.fail("Interrupted while waiting for UI visibility change");
-            }
-
+            NativeUiUtils.performActionAndWaitForVisibilityStatus(
+                    UserFriendlyElementName.EXIT_PROMPT, true /* visible */,
+                    () -> { NativeUiUtils.clickElement(uiElementToClick, new PointF()); });
         });
     }
 }

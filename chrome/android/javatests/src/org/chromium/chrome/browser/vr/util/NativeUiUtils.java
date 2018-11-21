@@ -257,12 +257,13 @@ public class NativeUiUtils {
     }
 
     /**
-     * Runs the given Runnable and waits until the native UI reports that it is quiescent.
+     * Runs the given Runnable and waits until the native UI reports that it is quiescent. The
+     * provided Runnable is expected to cause a UI change of some sort, so the quiescence wait will
+     * fail if no change is detected within the allotted time.
      *
      * @param action A Runnable containing the action to perform.
      */
-    public static void performActionAndWaitForUiQuiescence(Runnable action)
-            throws InterruptedException {
+    public static void performActionAndWaitForUiQuiescence(Runnable action) {
         final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
         final CountDownLatch resultLatch = new CountDownLatch(1);
         final VrShell.UiOperationData operationData = new VrShell.UiOperationData();
@@ -277,13 +278,51 @@ public class NativeUiUtils {
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
-        // Wait for any outstanding animations to finish.
-        resultLatch.await();
+        // Wait for any outstanding animations to finish. Catch the interrupted exception so we
+        // don't have to try/catch anytime we chain multiple actions.
+        try {
+            resultLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail("Interrupted while waiting for UI quiescence: " + e.toString());
+        }
         int uiResult =
                 instance.getLastUiOperationResultForTesting(UiTestOperationType.UI_ACTIVITY_RESULT);
         Assert.assertEquals("UI reported non-quiescent result '"
                         + uiTestOperationResultToString(uiResult) + "'",
                 UiTestOperationResult.QUIESCENT, uiResult);
+    }
+
+    /**
+     * Waits until either the UI reports quiescence or a timeout is reached. Unlike
+     * performActionAndWaitForUiQuiescence, this does not fail if no UI change is detected within
+     * the allotted time, so it can be used when it is unsure whether the UI is already quiescent
+     * or not, e.g. when initally entering the VR browser.
+     */
+    public static void waitForUiQuiescence() {
+        final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
+        final CountDownLatch resultLatch = new CountDownLatch(1);
+        final VrShell.UiOperationData operationData = new VrShell.UiOperationData();
+        operationData.actionType = UiTestOperationType.UI_ACTIVITY_RESULT;
+        operationData.resultCallback = () -> {
+            resultLatch.countDown();
+        };
+        operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { instance.registerUiOperationCallbackForTesting(operationData); });
+        // Catch the interrupted exception so we don't have to try/catch anytime we chain multiple
+        // actions.
+        try {
+            resultLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail("Interrupted while waiting for UI quiescence: " + e.toString());
+        }
+
+        int uiResult =
+                instance.getLastUiOperationResultForTesting(UiTestOperationType.UI_ACTIVITY_RESULT);
+        Assert.assertTrue("UI reported non-quiescent result '"
+                        + uiTestOperationResultToString(uiResult) + "'",
+                uiResult == UiTestOperationResult.QUIESCENT
+                        || uiResult == UiTestOperationResult.TIMEOUT_NO_START);
     }
 
     /**
@@ -294,8 +333,8 @@ public class NativeUiUtils {
      * @param status The visibility status to wait for.
      * @param action A Runnable containing the action to perform.
      */
-    public static void performActionAndWaitForVisibilityStatus(final int elementName,
-            final boolean visible, Runnable action) throws InterruptedException {
+    public static void performActionAndWaitForVisibilityStatus(
+            final int elementName, final boolean visible, Runnable action) {
         final TestVrShellDelegate instance = TestVrShellDelegate.getInstance();
         final CountDownLatch resultLatch = new CountDownLatch(1);
         final VrShell.UiOperationData operationData = new VrShell.UiOperationData();
@@ -312,8 +351,14 @@ public class NativeUiUtils {
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
-        // Wait for the result to be reported.
-        resultLatch.await();
+        // Wait for the result to be reported. Catch the interrupted exception so we don't have to
+        // try/catch anytime we chain multiple actions.
+        try {
+            resultLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail("Interrupted while waiting for visibility status: " + e.toString());
+        }
+
         int result = instance.getLastUiOperationResultForTesting(
                 UiTestOperationType.ELEMENT_VISIBILITY_STATUS);
         Assert.assertEquals("UI reported non-visibility-changed result '"
