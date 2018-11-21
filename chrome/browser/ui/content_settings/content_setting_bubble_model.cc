@@ -77,6 +77,37 @@ using content_settings::SETTING_SOURCE_NONE;
 
 namespace {
 
+// Returns a boolean indicating whether the setting should be managed by the
+// user (i.e. it is not controlled by policy). Also takes a (nullable) out-param
+// which is populated by the actual setting for the given URL.
+bool GetSettingManagedByUser(const GURL& url,
+                             ContentSettingsType type,
+                             Profile* profile,
+                             ContentSetting* out_setting) {
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  SettingSource source;
+  ContentSetting setting;
+  if (type == CONTENT_SETTINGS_TYPE_COOKIES) {
+    CookieSettingsFactory::GetForProfile(profile)->GetCookieSetting(
+        url, url, &source, &setting);
+  } else {
+    SettingInfo info;
+    std::unique_ptr<base::Value> value =
+        map->GetWebsiteSetting(url, url, type, std::string(), &info);
+    setting = content_settings::ValueToContentSetting(value.get());
+    source = info.source;
+  }
+
+  if (out_setting)
+    *out_setting = setting;
+
+  // Prevent creation of content settings for illegal urls like about:blank by
+  // disallowing user management.
+  return source == SETTING_SOURCE_USER &&
+         map->CanSetNarrowestContentSetting(url, url, type);
+}
+
 ContentSettingBubbleModel::ListItem CreateUrlListItem(int32_t id,
                                                       const GURL& url) {
   // Empty URLs should get a placeholder.
@@ -665,26 +696,25 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
                                       web_contents,
                                       profile,
                                       CONTENT_SETTINGS_TYPE_PLUGINS) {
-  SettingInfo info;
+  const GURL& url = web_contents->GetURL();
+  bool managed_by_user =
+      GetSettingManagedByUser(url, content_type(), profile, nullptr);
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  GURL url = web_contents->GetURL();
-  std::unique_ptr<base::Value> value =
-      map->GetWebsiteSetting(url, url, content_type(), std::string(), &info);
   ContentSetting setting = PluginUtils::GetFlashPluginContentSetting(
       map, url::Origin::Create(url), url, nullptr);
 
   // If the setting is not managed by the user, hide the "Manage" button.
-  if (info.source != SETTING_SOURCE_USER)
+  if (!managed_by_user)
     set_manage_text_style(ContentSettingBubbleModel::ManageTextStyle::kNone);
 
   // The user cannot manually run Flash on the BLOCK setting when either holds:
   //  - The setting is from Policy. User cannot override admin intent.
   //  - HTML By Default is on - Flash has been hidden from the plugin list, so
   //    it's impossible to dynamically run the nonexistent plugin.
-  bool run_blocked = setting == CONTENT_SETTING_BLOCK &&
-                     (info.source != SETTING_SOURCE_USER ||
-                      PluginUtils::ShouldPreferHtmlOverPlugins(map));
+  bool run_blocked =
+      setting == CONTENT_SETTING_BLOCK &&
+      (!managed_by_user || PluginUtils::ShouldPreferHtmlOverPlugins(map));
 
   if (!run_blocked) {
     set_custom_link(l10n_util::GetStringUTF16(IDS_BLOCKED_PLUGINS_LOAD_ALL));
@@ -844,23 +874,10 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
 
   radio_group.radio_items.push_back(radio_allow_label);
   radio_group.radio_items.push_back(radio_block_label);
+
   ContentSetting setting;
-  SettingSource setting_source = SETTING_SOURCE_NONE;
-
-  if (content_type() == CONTENT_SETTINGS_TYPE_COOKIES) {
-    content_settings::CookieSettings* cookie_settings =
-        CookieSettingsFactory::GetForProfile(profile()).get();
-    cookie_settings->GetCookieSetting(url, url, &setting_source, &setting);
-  } else {
-    SettingInfo info;
-    HostContentSettingsMap* map =
-        HostContentSettingsMapFactory::GetForProfile(profile());
-    std::unique_ptr<base::Value> value =
-        map->GetWebsiteSetting(url, url, content_type(), std::string(), &info);
-    setting = content_settings::ValueToContentSetting(value.get());
-    setting_source = info.source;
-  }
-
+  bool managed_by_user =
+      GetSettingManagedByUser(url, content_type(), profile(), &setting);
   if (setting == CONTENT_SETTING_ALLOW) {
     radio_group.default_item = kAllowButtonIndex;
     // |block_setting_| is already set to |CONTENT_SETTING_BLOCK|.
@@ -868,13 +885,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     radio_group.default_item = 1;
     block_setting_ = setting;
   }
-
-  const auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
-  // Prevent creation of content settings for illegal urls like about:blank
-  bool is_valid = map->CanSetNarrowestContentSetting(url, url, content_type());
-
-  set_radio_group_enabled(is_valid && setting_source == SETTING_SOURCE_USER);
-
+  set_radio_group_enabled(managed_by_user);
   set_radio_group(radio_group);
 }
 
@@ -1511,18 +1522,8 @@ void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
       return;
   }
   set_radio_group(radio_group);
-
-  SettingInfo info;
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
-  map->GetWebsiteSetting(url, url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-                         std::string(), &info);
-
-  // Prevent creation of content settings for illegal urls like about:blank
-  bool is_valid = map->CanSetNarrowestContentSetting(
-      url, url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS);
-
-  set_radio_group_enabled(is_valid && info.source == SETTING_SOURCE_USER);
+  set_radio_group_enabled(GetSettingManagedByUser(
+      url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, profile(), nullptr));
 }
 
 void ContentSettingDownloadsBubbleModel::SetTitle() {
