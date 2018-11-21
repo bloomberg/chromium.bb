@@ -11,6 +11,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
+#include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkFontTypes.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMaskFilter.h"
@@ -18,8 +19,6 @@
 #include "third_party/skia/include/core/SkPathEffect.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-
-class SkPaint;
 
 namespace cc {
 class PaintFilter;
@@ -210,6 +209,7 @@ class CC_PAINT_EXPORT PaintFlags {
   bool SupportsFoldingAlpha() const;
 
   SkPaint ToSkPaint() const;
+  SkFont ToSkFont() const;
 
   bool IsValid() const;
   bool operator==(const PaintFlags& other) const;
