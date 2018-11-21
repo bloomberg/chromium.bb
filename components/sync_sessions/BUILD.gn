@@ -25,6 +25,8 @@ static_library("sync_sessions") {
     "session_sync_prefs.h",
     "session_sync_service.cc",
     "session_sync_service.h",
+    "session_sync_service_impl.cc",
+    "session_sync_service_impl.h",
     "sessions_global_id_mapper.cc",
     "sessions_global_id_mapper.h",
     "sync_sessions_client.cc",
