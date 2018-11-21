@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
@@ -82,10 +83,17 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
     }
 
     if (!get_payment_information.shipping_address_name().empty()) {
-      DCHECK(payment_information->address);
+      DCHECK(payment_information->shipping_address);
       delegate->GetClientMemory()->set_selected_address(
           get_payment_information.shipping_address_name(),
-          std::move(payment_information->address));
+          std::move(payment_information->shipping_address));
+    }
+
+    if (!get_payment_information.billing_address_name().empty()) {
+      DCHECK(payment_information->billing_address);
+      delegate->GetClientMemory()->set_selected_address(
+          get_payment_information.billing_address_name(),
+          std::move(payment_information->billing_address));
     }
 
     if (get_payment_information.has_contact_details()) {
