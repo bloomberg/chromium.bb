@@ -4,6 +4,7 @@
 
 import("//build/config/android/chrome_version.gni")
 import("//build/config/android/config.gni")
+import("//build/config/android/linker_version_script.gni")
 import("//build/config/android/rules.gni")
 import("//build/util/process_version.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
@@ -976,31 +977,53 @@ jinja_template_resources("chrome_test_apk_template_resources") {
 # Variables:
 #    export_java_symbols: Optional. If true, export Java_* native library
 #      symbols required for lazy JNI registration.
+#    export_symbol_whitelist: Optional. If set, a pre-determined list of additional
+#      methods are exposed by the resulting library.
 #    enable_compressed_relocations: Optional. If true, enable compressed
 #      ELF relocations to reduce native library size.
 #    use_gnu_hash_style: If true, the final library will include only GNU hash
 #      tables, rather than both SysV and GNU types (the default).
 template("chrome_common_shared_library") {
+  _export_java_symbols =
+      defined(invoker.export_java_symbols) && invoker.export_java_symbols
+  _linker_script = "$target_gen_dir/${target_name}_linker_script.txt"
+  _linker_script_target = "${target_name}_linker_script"
+
+  # Create a custom linker script based on JNI and feature module requirements.
+  generate_linker_version_script(_linker_script_target) {
+    linker_script = _linker_script
+    export_java_symbols = _export_java_symbols
+    if (defined(invoker.export_symbol_whitelist)) {
+      export_symbol_whitelist_file =
+          "//chrome/android/feature_module_exports.lst"
+    }
+  }
+
   shared_library(target_name) {
     forward_variables_from(invoker,
                            "*",
                            [
                              "enable_compressed_relocations",
                              "export_java_symbols",
+                             "export_symbol_whitelist",
                              "use_gnu_hash_style",
                            ])
-    _export_java_symbols =
-        defined(invoker.export_java_symbols) && invoker.export_java_symbols
-
     deps += [ "//chrome:chrome_android_core" ]
 
     public_configs = extra_chrome_shared_library_configs
     deps += extra_chrome_shared_library_deps
 
-    if (_export_java_symbols) {
-      configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-      configs += [ "//build/config/android:hide_all_but_jni" ]
+    # Use a dynamically-generated linker script.
+    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    deps += [ ":$_linker_script_target" ]
+    inputs = [
+      "$_linker_script",
+    ]
+    if (!defined(ldflags)) {
+      ldflags = []
     }
+    ldflags += [ "-Wl,--version-script=" +
+                 rebase_path(_linker_script, root_build_dir) ]
 
     # Handle VR JNI regisration and dependencies.
     if (enable_vr) {
@@ -1030,9 +1053,6 @@ template("chrome_common_shared_library") {
       # never compiled in the final library (http://crbug.com/742525#c28). GNU
       # hash support was added in Android M. Also not supported on MIPS
       # architecture (http://crbug.com/811306).
-      if (!defined(ldflags)) {
-        ldflags = []
-      }
       ldflags += [ "-Wl,--hash-style=gnu" ]
     }
   }
