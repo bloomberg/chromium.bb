@@ -45,6 +45,9 @@ void FieldTrialsProvider::OnDidCreateMetricsLog() {
 void FieldTrialsProvider::ProvideSystemProfileMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
   std::vector<ActiveGroupId> field_trial_ids;
+  const std::string& version = variations::GetSeedVersion();
+  if (!version.empty())
+    system_profile_proto->set_variations_seed_version(version);
   GetFieldTrialIds(&field_trial_ids);
   WriteFieldTrials(field_trial_ids, system_profile_proto);
 

@@ -297,13 +297,16 @@ message OmniboxEventProto {
     // matched an open tab.
     optional bool has_tab_match = 8;
 
-    // The Omnibox search provider generates 2 fundamental types of
-    // suggestions: Traditional search suggestions, which throw the terms
-    // against the default search engine (DSE), and keyword search suggestions,
-    // which throw the terms against the search engine selected when the user
-    // initiates keyword mode (which may also be the DSE). When
-    // |is_keyword_suggestion| is true, this suggestion originated from the
-    // latter.
+    // Whether this suggestion came associated with a keyword.  Does not include
+    // suggestions that came from the default search engine unless the search
+    // engine was explicitly invoked.  As two common examples,
+    // |is_keyword_suggestion| will be true for suggestions from explicitly-
+    // invoked suggestions (whether from a search engine or an extension).  It
+    // will also be true for suggestions from a keyword that wasn't explicitly
+    // requested.  For example, if a user has Google as their default search
+    // engine, the input "bing testing" will often show a suggestion to "Search
+    // Bing for testing" in the dropdown.  This suggestion will be marked as
+    // |is_keyword_suggestion|.
     optional bool is_keyword_suggestion = 9;
   }
   repeated Suggestion suggestion = 9;
