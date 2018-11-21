@@ -30216,6 +30216,7 @@ from previous Chrome versions.
   <int value="-147283486" label="enable-network-portal-notification"/>
   <int value="-146552997" label="enable-affiliation-based-matching"/>
   <int value="-144134779" label="AndroidPayIntegrationV2:disabled"/>
+  <int value="-143819280" label="google-password-manager:disabled"/>
   <int value="-143382681" label="InstantTethering:enabled"/>
   <int value="-141516902" label="UseModernMediaControls:enabled"/>
   <int value="-138983372" label="DesktopPWAWindowing:disabled"/>
@@ -30803,6 +30804,7 @@ from previous Chrome versions.
   <int value="973601997" label="SafeBrowsingUseLocalBlacklistsV2:disabled"/>
   <int value="975104092" label="show-taps"/>
   <int value="976079108" label="TouchpadOverscrollHistoryNavigation:disabled"/>
+  <int value="976278412" label="google-password-manager:enabled"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
   <int value="981818901" label="AppBanners:enabled"/>
