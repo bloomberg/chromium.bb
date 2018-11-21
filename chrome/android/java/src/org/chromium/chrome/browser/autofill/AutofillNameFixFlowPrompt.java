@@ -13,7 +13,6 @@ import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.BufferType;
@@ -190,8 +189,6 @@ public class AutofillNameFixFlowPrompt implements ModalDialogView.Controller {
         mModalDialogManager = activity.getModalDialogManager();
 
         mModalDialogManager.showDialog(mDialog, ModalDialogManager.ModalDialogType.APP);
-
-        Button saveButton = mDialog.getButton(ModalDialogView.ButtonType.POSITIVE);
     }
 
     protected void dismiss() {

@@ -11,7 +11,11 @@ import android.view.View;
 
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
 /**
  * This class implements a VrAlertDialog which is similar to Android AlertDialog in VR.
@@ -117,18 +121,23 @@ public class VrAlertDialog extends AlertDialog {
             @Override
             public void onDismiss(@DialogDismissalCause int dialogDismissal) {}
         };
-        final ModalDialogView.Params params = new ModalDialogView.Params();
-
         assert(mView == null || mMessage == null);
-        if (mView != null) {
-            params.customView = mView;
-        } else if (mMessage != null) {
-            params.message = mMessage.toString();
-        }
 
-        if (mButtonPositive != null) params.positiveButtonText = mButtonPositive.getText();
-        if (mButtonNegative != null) params.negativeButtonText = mButtonNegative.getText();
+        String message = mMessage != null ? mMessage.toString() : null;
+        String positiveButtonText = mButtonPositive != null ? mButtonPositive.getText() : null;
+        String negativeButtonText = mButtonNegative != null ? mButtonNegative.getText() : null;
 
-        return new ModalDialogView(controller, params);
+        final PropertyModel model =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CONTROLLER, controller)
+                        .with(ModalDialogProperties.MESSAGE, message)
+                        .with(ModalDialogProperties.CUSTOM_VIEW, mView)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, positiveButtonText)
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, negativeButtonText)
+                        .build();
+
+        ModalDialogView dialogView = new ModalDialogView(getContext());
+        PropertyModelChangeProcessor.create(model, dialogView, new ModalDialogViewBinder());
+        return dialogView;
     }
 }

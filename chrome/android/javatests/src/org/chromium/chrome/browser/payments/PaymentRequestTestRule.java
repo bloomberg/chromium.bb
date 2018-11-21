@@ -336,9 +336,10 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
     protected void clickCardUnmaskButtonAndWait(final int dialogButtonId, CallbackHelper helper)
             throws InterruptedException, TimeoutException {
         int callCount = helper.getCallCount();
-        ThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> mCardUnmaskPrompt.getDialogForTest().getButton(
-                        dialogButtonId).performClick());
+        ThreadUtils.runOnUiThreadBlocking((Runnable) ()
+                                                  -> mCardUnmaskPrompt.getDialogForTest()
+                                                             .getButtonForTesting(dialogButtonId)
+                                                             .performClick());
         helper.waitForCallback(callCount);
     }
 

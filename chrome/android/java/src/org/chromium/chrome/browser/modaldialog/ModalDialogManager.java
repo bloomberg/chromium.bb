@@ -199,7 +199,6 @@ public class ModalDialogManager {
         if (isShowing()) suspendCurrentDialog();
 
         assert !isShowing();
-        dialog.prepareBeforeShow();
         mCurrentType = dialogType;
         mCurrentPresenter = mPresenters.get(dialogType, mDefaultPresenter);
         mCurrentPresenter.setModalDialog(

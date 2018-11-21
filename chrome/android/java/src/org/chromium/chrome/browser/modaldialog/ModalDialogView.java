@@ -5,12 +5,8 @@
 package org.chromium.chrome.browser.modaldialog;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -21,7 +17,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
-import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.ui.UiUtils;
@@ -56,53 +52,6 @@ public class ModalDialogView implements View.OnClickListener {
         void onDismiss(@DialogDismissalCause int dismissalCause);
     }
 
-    /**
-     * Parameters that can be used to create a new ModalDialogView.
-     * Deprecated. Use {@link ModalDialogProperties} instead.
-     */
-    public static class Params {
-        /** Optional: The String to show as the dialog title. */
-        public String title;
-
-        /** Optional: The String to show as descriptive text. */
-        public String message;
-
-        /**
-         * Optional: The customized View to show in the dialog. Note that the message and the
-         * custom view cannot be set together.
-         */
-        public View customView;
-
-        /** Optional: Resource ID of the String to show on the positive button. */
-        public @StringRes int positiveButtonTextId;
-
-        /** Optional: Resource ID of the String to show on the negative button. */
-        public @StringRes int negativeButtonTextId;
-
-        /**
-         * Optional: The String to show on the positive button. Note that String
-         * must be null if positiveButtonTextId is not zero.
-         */
-        public String positiveButtonText;
-
-        /**
-         * Optional: The String to show on the negative button.  Note that String
-         * must be null if negativeButtonTextId is not zero
-         */
-        public String negativeButtonText;
-
-        /**
-         * Optional: If true the dialog gets cancelled when the user touches outside of the dialog.
-         */
-        public boolean cancelOnTouchOutside;
-
-        /**
-         * Optional: If true, the dialog title is scrollable with the message. Note that the
-         * {@link #customView} will have height WRAP_CONTENT if this is set to true.
-         */
-        public boolean titleScrollable;
-    }
-
     @IntDef({ButtonType.POSITIVE, ButtonType.NEGATIVE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ButtonType {
@@ -111,7 +60,6 @@ public class ModalDialogView implements View.OnClickListener {
     }
 
     private Controller mController;
-    private @Nullable Params mParams;
 
     private final View mDialogView;
 
@@ -124,19 +72,11 @@ public class ModalDialogView implements View.OnClickListener {
     private View mButtonBar;
     private Button mPositiveButton;
     private Button mNegativeButton;
+    private String mContentDescription;
     private boolean mTitleScrollable;
 
     // TODO(huayinz): Remove this temporary variable once ModalDialogManager takes a model.
     private boolean mCancelOnTouchOutside;
-
-    /**
-     * @return The {@link Context} with the modal dialog theme set.
-     * Deprecated.
-     */
-    public static Context getContext() {
-        return new ContextThemeWrapper(
-                ContextUtils.getApplicationContext(), R.style.ModalDialogTheme);
-    }
 
     /**
      * Temporary constructor before ModalDialogManager takes a model.
@@ -147,18 +87,6 @@ public class ModalDialogView implements View.OnClickListener {
         mDialogView =
                 LayoutInflater.from(new ContextThemeWrapper(context, R.style.ModalDialogTheme))
                         .inflate(R.layout.modal_dialog_view, null);
-        initialize();
-    }
-
-    /**
-     * Constructor for initializing controller and views.
-     * Deprecated. Use {@link ModalDialogView(Context)} instead.
-     * @param controller The controller for this dialog.
-     */
-    public ModalDialogView(@NonNull Controller controller, @NonNull Params params) {
-        mController = controller;
-        mParams = params;
-        mDialogView = LayoutInflater.from(getContext()).inflate(R.layout.modal_dialog_view, null);
         initialize();
     }
 
@@ -198,54 +126,10 @@ public class ModalDialogView implements View.OnClickListener {
     }
 
     /**
-     * Prepare the contents before showing the dialog.
-     * Deprecated.
-     */
-    protected void prepareBeforeShow() {
-        if (mParams == null) return;
-
-        setTitle(mParams.title);
-        setTitleScrollable(mParams.titleScrollable);
-        setMessage(mParams.message);
-        setCustomView(mParams.customView);
-        setCancelOnTouchOutside(mParams.cancelOnTouchOutside);
-
-        Resources resources = mDialogView.getResources();
-        assert(mParams.positiveButtonTextId == 0 || mParams.positiveButtonText == null);
-        if (mParams.positiveButtonTextId != 0) {
-            setButtonText(ButtonType.POSITIVE, resources.getString(mParams.positiveButtonTextId));
-        } else if (mParams.positiveButtonText != null) {
-            setButtonText(ButtonType.POSITIVE, mParams.positiveButtonText);
-        }
-
-        assert(mParams.negativeButtonTextId == 0 || mParams.negativeButtonText == null);
-        if (mParams.negativeButtonTextId != 0) {
-            setButtonText(ButtonType.NEGATIVE, resources.getString(mParams.negativeButtonTextId));
-            mNegativeButton.setOnClickListener(this);
-        } else if (mParams.negativeButtonText != null) {
-            setButtonText(ButtonType.NEGATIVE, mParams.negativeButtonText);
-        }
-    }
-
-    /**
      * @return The content view of this dialog.
      */
     public View getView() {
         return mDialogView;
-    }
-
-    /**
-     * @return The button that was added to the dialog using {@link Params}.
-     * @param button indicates which button should be returned.
-     */
-    public Button getButton(@ButtonType int button) {
-        if (button == ButtonType.POSITIVE) {
-            return mPositiveButton;
-        } else if (button == ButtonType.NEGATIVE) {
-            return mNegativeButton;
-        }
-        assert false;
-        return null;
     }
 
     /**
@@ -263,10 +147,17 @@ public class ModalDialogView implements View.OnClickListener {
     }
 
     /**
+     * @param contentDescription The content description of the dialog view for accessibility.
+     */
+    void setContentDescription(String contentDescription) {
+        mContentDescription = contentDescription;
+    }
+
+    /**
      * @return The content description of the dialog view.
      */
     public CharSequence getContentDescription() {
-        return mTitleView.getText();
+        return mContentDescription != null ? mContentDescription : mTitleView.getText();
     }
 
     /** @param title The title of the dialog. */
@@ -337,6 +228,21 @@ public class ModalDialogView implements View.OnClickListener {
     }
 
     /**
+     * @param buttonType Indicates which button should be returned.
+     */
+    private Button getButton(@ButtonType int buttonType) {
+        switch (buttonType) {
+            case ButtonType.POSITIVE:
+                return mPositiveButton;
+            case ButtonType.NEGATIVE:
+                return mNegativeButton;
+            default:
+                assert false;
+                return null;
+        }
+    }
+
+    /**
      * Sets button text for the specified button. If {@code buttonText} is empty or null, the
      * specified button will not be visible.
      * @param buttonType The {@link ButtonType} of the button.
@@ -392,5 +298,10 @@ public class ModalDialogView implements View.OnClickListener {
         mPositiveButton.setVisibility(positiveButtonVisible ? View.VISIBLE : View.GONE);
         mNegativeButton.setVisibility(negativeButtonVisible ? View.VISIBLE : View.GONE);
         mButtonBar.setVisibility(buttonBarVisible ? View.VISIBLE : View.GONE);
+    }
+
+    @VisibleForTesting
+    public Button getButtonForTesting(@ButtonType int buttonType) {
+        return getButton(buttonType);
     }
 }

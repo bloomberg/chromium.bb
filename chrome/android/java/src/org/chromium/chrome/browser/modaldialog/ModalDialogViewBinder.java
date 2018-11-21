@@ -39,6 +39,8 @@ public class ModalDialogViewBinder
                     !model.get(ModalDialogProperties.NEGATIVE_BUTTON_DISABLED));
         } else if (ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE == propertyKey) {
             view.setCancelOnTouchOutside(model.get(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE));
+        } else if (ModalDialogProperties.CONTENT_DESCRIPTION == propertyKey) {
+            view.setContentDescription(model.get(ModalDialogProperties.CONTENT_DESCRIPTION));
         } else if (ModalDialogProperties.TITLE_SCROLLABLE == propertyKey) {
             view.setTitleScrollable(model.get(ModalDialogProperties.TITLE_SCROLLABLE));
         } else if (ModalDialogProperties.CONTROLLER == propertyKey) {

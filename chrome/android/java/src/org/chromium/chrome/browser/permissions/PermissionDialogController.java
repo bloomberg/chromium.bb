@@ -262,9 +262,9 @@ public class PermissionDialogController
 
         if (useAppModalDialogView()) {
             mModalDialogManager = mDialogDelegate.getTab().getActivity().getModalDialogManager();
-            mAppModalDialogView = PermissionAppModalDialogView.create(this, mDialogDelegate);
+            mAppModalDialogView = new PermissionAppModalDialogView(this, mDialogDelegate);
             mModalDialogManager.showDialog(
-                    mAppModalDialogView, ModalDialogManager.ModalDialogType.APP);
+                    mAppModalDialogView.getDialogView(), ModalDialogManager.ModalDialogType.APP);
         } else {
             mDialogView = new PermissionDialogView(mDialogDelegate);
             mDialogView.createView(
@@ -282,7 +282,7 @@ public class PermissionDialogController
             mDialogDelegate = null;
             if (mState == State.PROMPT_OPEN) {
                 if (useAppModalDialogView()) {
-                    mModalDialogManager.dismissDialog(mAppModalDialogView);
+                    mModalDialogManager.dismissDialog(mAppModalDialogView.getDialogView());
                 } else {
                     mDialogView.dismiss();
                 }
@@ -315,7 +315,7 @@ public class PermissionDialogController
             default:
                 assert false : "Unexpected button pressed in dialog: " + buttonType;
         }
-        mModalDialogManager.dismissDialog(mAppModalDialogView);
+        mModalDialogManager.dismissDialog(mAppModalDialogView.getDialogView());
     }
 
     private void destroyDelegate() {

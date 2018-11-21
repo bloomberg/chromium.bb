@@ -5,12 +5,18 @@
 package org.chromium.chrome.browser.password_manager;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
 /** Class holding a {@link ModalDialogView} that is lazily created after all the data is made
  * available.
@@ -42,19 +48,28 @@ public class PasswordGenerationDialogViewHolder {
     }
 
     public void initializeView() {
-        ModalDialogView.Params params = new ModalDialogView.Params();
-        params.title = mContext.getString(R.string.password_generation_dialog_title);
-        params.positiveButtonTextId = R.string.password_generation_dialog_use_password_button;
-        params.negativeButtonTextId = R.string.password_generation_dialog_cancel_button;
-        params.customView =
+        View customView =
                 LayoutInflater.from(mContext).inflate(R.layout.password_generation_dialog, null);
-        mGeneratedPasswordTextView = params.customView.findViewById(R.id.generated_password);
+        mGeneratedPasswordTextView = customView.findViewById(R.id.generated_password);
         mGeneratedPasswordTextView.setText(mGeneratedPassword);
-
-        mSaveExplantaionTextView = params.customView.findViewById(R.id.generation_save_explanation);
+        mSaveExplantaionTextView = customView.findViewById(R.id.generation_save_explanation);
         mSaveExplantaionTextView.setText(mSaveExplanationText);
 
-        mView = new ModalDialogView(mController, params);
+        Resources resources = mContext.getResources();
+        PropertyModel model =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CONTROLLER, mController)
+                        .with(ModalDialogProperties.TITLE, resources,
+                                R.string.password_generation_dialog_title)
+                        .with(ModalDialogProperties.CUSTOM_VIEW, customView)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
+                                R.string.password_generation_dialog_use_password_button)
+                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                R.string.password_generation_dialog_cancel_button)
+                        .build();
+
+        mView = new ModalDialogView(mContext);
+        PropertyModelChangeProcessor.create(model, mView, new ModalDialogViewBinder());
     }
 
     @Nullable

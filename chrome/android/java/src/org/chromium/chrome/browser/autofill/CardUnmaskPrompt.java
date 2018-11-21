@@ -25,7 +25,6 @@ import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -41,7 +40,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -54,6 +57,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
     private static CardUnmaskObserverForTest sObserverForTest;
 
     private final CardUnmaskPromptDelegate mDelegate;
+    private final PropertyModel mDialogModel;
     private final ModalDialogView mDialog;
     private boolean mShouldRequestExpirationDate;
 
@@ -194,13 +198,19 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         mSuccessMessageDurationMilliseconds = successMessageDurationMilliseconds;
         ((ImageView) v.findViewById(R.id.cvc_hint_image)).setImageResource(drawableId);
 
-        ModalDialogView.Params params = new ModalDialogView.Params();
-        params.title = title;
-        params.customView = v;
-        params.negativeButtonTextId = R.string.cancel;
-        params.positiveButtonText = confirmButtonLabel;
-        params.cancelOnTouchOutside = false;
-        mDialog = new ModalDialogView(this, params);
+        Resources resources = context.getResources();
+        mDialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                               .with(ModalDialogProperties.CONTROLLER, this)
+                               .with(ModalDialogProperties.TITLE, title)
+                               .with(ModalDialogProperties.CUSTOM_VIEW, v)
+                               .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, confirmButtonLabel)
+                               .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                       R.string.cancel)
+                               .build();
+
+        mDialog = new ModalDialogView(context);
+        PropertyModelChangeProcessor.create(mDialogModel, mDialog, new ModalDialogViewBinder());
+
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
         mThisYear = -1;
         mThisMonth = -1;
@@ -214,8 +224,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         // Hitting the "submit" button on the software keyboard should submit the form if valid.
         mCardUnmaskInput.setOnEditorActionListener((v14, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                Button positiveButton = mDialog.getButton(ModalDialogView.ButtonType.POSITIVE);
-                if (positiveButton.isEnabled()) positiveButton.performClick();
+                onClick(ModalDialogView.ButtonType.POSITIVE);
                 return true;
             }
             return false;
@@ -236,7 +245,6 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         });
 
         // Load the error messages to show to the user.
-        Resources resources = context.getResources();
         mCvcErrorMessage =
                 resources.getString(R.string.autofill_card_unmask_prompt_error_try_again_cvc);
         mExpirationMonthErrorMessage = resources.getString(
@@ -281,8 +289,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
 
         // Override the View.OnClickListener so that pressing the positive button doesn't dismiss
         // the dialog.
-        Button verifyButton = mDialog.getButton(ModalDialogView.ButtonType.POSITIVE);
-        verifyButton.setEnabled(false);
+        mDialogModel.set(ModalDialogProperties.POSITIVE_BUTTON_DISABLED, true);
         mCardUnmaskInput.addTextChangedListener(this);
         mCardUnmaskInput.post(() -> setInitialFocus());
     }
@@ -348,17 +355,16 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
      * is wrong. Finally checks whether the focuse should move to the next field.
      */
     private void validate() {
-        Button positiveButton = mDialog.getButton(ModalDialogView.ButtonType.POSITIVE);
-
         @ErrorType int errorType = getExpirationAndCvcErrorType();
-        positiveButton.setEnabled(errorType == ErrorType.NONE);
+        mDialogModel.set(
+                ModalDialogProperties.POSITIVE_BUTTON_DISABLED, errorType != ErrorType.NONE);
         showDetailedErrorMessage(errorType);
         moveFocus(errorType);
 
         if (sObserverForTest != null) {
             sObserverForTest.onCardUnmaskPromptValidationDone(this);
 
-            if (positiveButton.isEnabled()) {
+            if (!mDialogModel.get(ModalDialogProperties.POSITIVE_BUTTON_DISABLED)) {
                 sObserverForTest.onCardUnmaskPromptReadyToUnmask(this);
             }
         }
@@ -636,7 +642,7 @@ public class CardUnmaskPrompt implements TextWatcher, OnClickListener, ModalDial
         mMonthInput.setEnabled(enabled);
         mYearInput.setEnabled(enabled);
         mStoreLocallyCheckbox.setEnabled(enabled);
-        mDialog.getButton(ModalDialogView.ButtonType.POSITIVE).setEnabled(enabled);
+        mDialogModel.set(ModalDialogProperties.POSITIVE_BUTTON_DISABLED, !enabled);
     }
 
     /**
