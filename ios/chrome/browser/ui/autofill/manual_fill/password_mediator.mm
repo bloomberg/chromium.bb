@@ -219,9 +219,13 @@ NSString* const OtherPasswordsAccessibilityIdentifier =
 
 #pragma mark - ManualFillContentDelegate
 
-- (void)userDidPickContent:(NSString*)content isSecure:(BOOL)isSecure {
+- (void)userDidPickContent:(NSString*)content
+           isPasswordField:(BOOL)isPasswordField
+             requiresHTTPS:(BOOL)requiresHTTPS {
   [self.navigationDelegate dismissPresentedViewController];
-  [self.contentDelegate userDidPickContent:content isSecure:isSecure];
+  [self.contentDelegate userDidPickContent:content
+                           isPasswordField:isPasswordField
+                             requiresHTTPS:requiresHTTPS];
 }
 
 @end

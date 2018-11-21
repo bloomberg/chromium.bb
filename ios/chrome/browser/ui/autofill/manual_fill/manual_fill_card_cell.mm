@@ -236,12 +236,16 @@ static const CGFloat ExpirationMarginWidth = 16.0;
   if (!number.length) {
     [self.navigationDelegate requestFullCreditCard:self.card];
   } else {
-    [self.contentDelegate userDidPickContent:number isSecure:NO];
+    [self.contentDelegate userDidPickContent:number
+                             isPasswordField:NO
+                               requiresHTTPS:YES];
   }
 }
 
 - (void)userDidTapCardInfo:(UIButton*)sender {
-  [self.contentDelegate userDidPickContent:sender.titleLabel.text isSecure:NO];
+  [self.contentDelegate userDidPickContent:sender.titleLabel.text
+                           isPasswordField:NO
+                             requiresHTTPS:NO];
 }
 
 @end

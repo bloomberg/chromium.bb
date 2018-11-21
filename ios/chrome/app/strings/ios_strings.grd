@@ -879,6 +879,18 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_MANUAL_FALLBACK_NO_USERNAME" desc="The title for disabled buttons on the manual fallback passwords UI when a credential doesn't contains a username. [30em]">
         No Username
       </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_OK_BUTTON" desc="The title of the OK button of the 'Not Secure' alert in manual fallback." meaning="The user will dismiss the alert [20em]">
+        OK
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE" desc="The title of the alert informing a user the content they selected won't be filled on the form." meaning="The form is not secure [20em]">
+        Not secure
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_PASSWORD_BODY" desc="The body of the alert informing a user the password they selected won't be filled on the form." meaning="The field the user is trying to fill is not of password type  [80em]">
+        To protect your privacy, Chrome will not autofill your password in this field.
+      </message>
+      <message name="IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_GENERIC_BODY" desc="The body of the alert informing a user the content they selected won't be filled on the form." meaning="The form is not secure [80em]">
+        To protect your privacy, Chrome will not autofill this field.
+      </message>
       <message name="IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD" desc="The title for the manual fallback UI with all passwords without filter." meaning="The title for a list where the user is about to select a password or username to be filled in a form [Length: 10em]">
         Passwords
       </message>

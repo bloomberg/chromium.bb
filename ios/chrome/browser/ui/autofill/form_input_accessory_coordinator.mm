@@ -24,15 +24,18 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_coordinator.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface FormInputAccessoryCoordinator ()<
-    ManualFillAccessoryViewControllerDelegate,
+    AutofillSecurityAlertPresenter,
     AddressCoordinatorDelegate,
     CardCoordinatorDelegate,
+    ManualFillAccessoryViewControllerDelegate,
     PasswordCoordinatorDelegate,
     PasswordFetcherDelegate,
     PersonalDataManagerObserver> {
@@ -84,7 +87,8 @@
     _webStateList = webStateList;
 
     _manualFillInjectionHandler =
-        [[ManualFillInjectionHandler alloc] initWithWebStateList:webStateList];
+        [[ManualFillInjectionHandler alloc] initWithWebStateList:webStateList
+                                          securityAlertPresenter:self];
 
     _formInputAccessoryViewController =
         [[FormInputAccessoryViewController alloc] init];
@@ -277,6 +281,29 @@
 
   self.manualFillAccessoryViewController.addressButtonHidden =
       personalDataManager->GetProfilesToSuggest().empty();
+}
+
+#pragma mark - AutofillSecurityAlertPresenter
+
+- (void)presentSecurityWarningAlertWithText:(NSString*)body {
+  NSString* alertTitle =
+      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
+  NSString* defaltActionTitle =
+      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_OK_BUTTON);
+
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:alertTitle
+                                          message:body
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction* defaultAction =
+      [UIAlertAction actionWithTitle:defaltActionTitle
+                               style:UIAlertActionStyleDefault
+                             handler:^(UIAlertAction* action){
+                             }];
+  [alert addAction:defaultAction];
+  [self.baseViewController presentViewController:alert
+                                        animated:YES
+                                      completion:nil];
 }
 
 @end

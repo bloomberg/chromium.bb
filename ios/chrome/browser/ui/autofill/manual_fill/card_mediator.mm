@@ -128,10 +128,9 @@ NSString* const ManageCardsAccessibilityIdentifier =
       [[ManualFillCreditCard alloc] initWithCreditCard:card];
   // Don't replace the locked card with the unlocked one, so the user will
   // have to unlock it again, if needed.
-  // TODO(crbug.com/845472): update userDidPickContent to have an isHttps
-  // parameter.
   [self.contentDelegate userDidPickContent:manualFillCreditCard.number
-                                  isSecure:NO];
+                           isPasswordField:NO
+                             requiresHTTPS:YES];
 }
 
 - (void)onFullCardRequestFailed {
