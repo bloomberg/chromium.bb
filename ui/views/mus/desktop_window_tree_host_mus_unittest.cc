@@ -38,6 +38,7 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/transient_window_manager.h"
 
 namespace views {
 
@@ -775,6 +776,103 @@ TEST_F(DesktopWindowTreeHostMusTest, ShowWindowFromServerDoesntActivate) {
   // The window should not be active yet.
   EXPECT_FALSE(widget->GetNativeWindow()->HasFocus());
   EXPECT_FALSE(widget->IsActive());
+}
+
+// Used to track the number of times OnWidgetVisibilityChanged() is called.
+class WidgetVisibilityObserver : public WidgetObserver {
+ public:
+  WidgetVisibilityObserver() = default;
+  ~WidgetVisibilityObserver() override = default;
+
+  int get_and_clear_change_count() {
+    int result = change_count_;
+    change_count_ = 0;
+    return result;
+  }
+
+  // WidgetObserver:
+  void OnWidgetVisibilityChanged(Widget* widget, bool visible) override {
+    change_count_++;
+  }
+
+ private:
+  int change_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetVisibilityObserver);
+};
+
+TEST_F(DesktopWindowTreeHostMusTest,
+       TogglingVisibilityOfWindowTreeWindowTriggersWidgetNotification) {
+  std::unique_ptr<Widget> widget(CreateWidget());
+  widget->Show();
+
+  WidgetVisibilityObserver observer;
+  widget->AddObserver(&observer);
+
+  widget->Show();
+  EXPECT_EQ(0, observer.get_and_clear_change_count());
+  EXPECT_TRUE(widget->IsVisible());
+  EXPECT_TRUE(widget->GetNativeWindow()->GetHost()->compositor()->IsVisible());
+  EXPECT_TRUE(widget->GetNativeWindow()->GetRootWindow()->IsVisible());
+
+  widget->Hide();
+  EXPECT_EQ(1, observer.get_and_clear_change_count());
+  EXPECT_FALSE(widget->IsVisible());
+  EXPECT_FALSE(widget->GetNativeWindow()->GetHost()->compositor()->IsVisible());
+  EXPECT_FALSE(widget->GetNativeWindow()->GetRootWindow()->IsVisible());
+
+  // Changing the visibility of the WindowTreeHost Window should notify the
+  // observer.
+  widget->GetNativeWindow()->GetHost()->window()->Show();
+  EXPECT_EQ(1, observer.get_and_clear_change_count());
+  EXPECT_TRUE(widget->IsVisible());
+  EXPECT_TRUE(widget->GetNativeWindow()->GetHost()->compositor()->IsVisible());
+  EXPECT_TRUE(widget->GetNativeWindow()->GetRootWindow()->IsVisible());
+
+  widget->GetNativeWindow()->GetHost()->window()->Hide();
+  EXPECT_EQ(1, observer.get_and_clear_change_count());
+  EXPECT_FALSE(widget->IsVisible());
+  EXPECT_FALSE(widget->GetNativeWindow()->GetHost()->compositor()->IsVisible());
+  EXPECT_FALSE(widget->GetNativeWindow()->GetRootWindow()->IsVisible());
+
+  widget->RemoveObserver(&observer);
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, TransientChildMatchesParentVisibility) {
+  std::unique_ptr<Widget> widget(CreateWidget());
+  widget->Show();
+
+  std::unique_ptr<Widget> transient_child =
+      CreateWidget(nullptr, widget->GetNativeWindow());
+  transient_child->Show();
+
+  WidgetVisibilityObserver observer;
+  transient_child->AddObserver(&observer);
+
+  // Hiding the parent should also hide the transient child.
+  widget->Hide();
+  EXPECT_FALSE(transient_child->IsVisible());
+  EXPECT_EQ(1, observer.get_and_clear_change_count());
+  EXPECT_FALSE(
+      transient_child->GetNativeWindow()->GetHost()->compositor()->IsVisible());
+  EXPECT_FALSE(
+      transient_child->GetNativeWindow()->GetRootWindow()->IsVisible());
+
+  // set_parent_controls_visibility(true) makes it so showing the parent also
+  // shows the child.
+  wm::TransientWindowManager::GetOrCreate(
+      transient_child->GetNativeWindow()->GetRootWindow())
+      ->set_parent_controls_visibility(true);
+  // With set_parent_controls_visibility() true, showing the parent should also
+  // show the transient child.
+  widget->Show();
+  EXPECT_TRUE(transient_child->IsVisible());
+  EXPECT_EQ(1, observer.get_and_clear_change_count());
+  EXPECT_TRUE(
+      transient_child->GetNativeWindow()->GetHost()->compositor()->IsVisible());
+  EXPECT_TRUE(transient_child->GetNativeWindow()->GetRootWindow()->IsVisible());
+
+  transient_child->RemoveObserver(&observer);
 }
 
 }  // namespace views
