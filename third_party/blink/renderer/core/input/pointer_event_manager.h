@@ -107,6 +107,8 @@ class CORE_EXPORT PointerEventManager
 
   void ProcessPendingPointerCaptureForPointerLock(const WebMouseEvent&);
 
+  void RemoveLastMousePosition();
+
   // Sends any outstanding events. For example it notifies TouchEventManager
   // to group any changes to touch since last FlushEvents and send the touch
   // event out to js. Since after this function any outstanding event is sent,

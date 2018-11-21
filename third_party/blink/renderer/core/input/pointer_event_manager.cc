@@ -610,12 +610,18 @@ WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
     const Vector<WebMouseEvent>& coalesced_events,
     const Vector<WebMouseEvent>& predicted_events,
     const String& canvas_region_id) {
+  // Fetch the last_mouse_position for creating MouseEvent before
+  // pointer_event_factory updates it.
+  FloatPoint last_mouse_position =
+      pointer_event_factory_.GetLastPointerPosition(
+          PointerEventFactory::kMouseId, event);
   WebInputEventResult result = CreateAndDispatchPointerEvent(
       target, mouse_event_type, event, coalesced_events, predicted_events);
 
   result = event_handling_util::MergeEventResult(
       result, mouse_event_manager_->DispatchMouseEvent(
-                  target, mouse_event_type, event, canvas_region_id, nullptr));
+                  target, mouse_event_type, event, canvas_region_id,
+                  &last_mouse_position, nullptr));
 
   return result;
 }
@@ -638,6 +644,12 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   Vector<WebPointerEvent> pointer_predicted_events;
   for (const WebMouseEvent& e : predicted_events)
     pointer_predicted_events.push_back(WebPointerEvent(event_type, e));
+
+  // Fetch the last_mouse_position for creating MouseEvent before
+  // pointer_event_factory updates it.
+  FloatPoint last_mouse_position =
+      pointer_event_factory_.GetLastPointerPosition(
+          PointerEventFactory::kMouseId, mouse_event);
 
   PointerEvent* pointer_event = pointer_event_factory_.Create(
       web_pointer_event, pointer_coalesced_events, pointer_predicted_events,
@@ -714,7 +726,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
         result,
         mouse_event_manager_->DispatchMouseEvent(
             mouse_target, MouseEventNameForPointerEventInputType(event_type),
-            mouse_event, canvas_region_id, nullptr));
+            mouse_event, canvas_region_id, &last_mouse_position, nullptr));
   }
 
   if (pointer_event->type() == event_type_names::kPointerup ||
@@ -956,6 +968,10 @@ bool PointerEventManager::PrimaryPointerdownCanceled(
       return true;
   }
   return false;
+}
+
+void PointerEventManager::RemoveLastMousePosition() {
+  pointer_event_factory_.RemoveLastPosition(PointerEventFactory::kMouseId);
 }
 
 }  // namespace blink

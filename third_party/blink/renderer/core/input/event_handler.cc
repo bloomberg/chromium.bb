@@ -807,6 +807,7 @@ void EventHandler::HandleMouseLeaveEvent(const WebMouseEvent& event) {
   HandleMouseMoveOrLeaveEvent(event, Vector<WebMouseEvent>(),
                               Vector<WebMouseEvent>(), nullptr, nullptr, false,
                               true);
+  pointer_event_manager_->RemoveLastMousePosition();
 }
 
 WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
@@ -1899,7 +1900,7 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
   return mouse_event_manager_->DispatchMouseEvent(
       EffectiveMouseEventTargetNode(target_node),
       event_type_names::kContextmenu, event,
-      mev.GetHitTestResult().CanvasRegionId(), nullptr);
+      mev.GetHitTestResult().CanvasRegionId(), nullptr, nullptr);
 }
 
 static bool ShouldShowContextMenuAtSelection(const FrameSelection& selection) {
