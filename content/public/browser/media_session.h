@@ -32,12 +32,6 @@ class MediaSession : public media_session::mojom::MediaSession {
   // |type| represents the origin of the request.
   virtual void Stop(SuspendType suspend_type) = 0;
 
-  // Seek the media session forward.
-  virtual void SeekForward(base::TimeDelta seek_time) = 0;
-
-  // Seek the media session backward.
-  virtual void SeekBackward(base::TimeDelta seek_time) = 0;
-
   // Return if the session can be controlled by Resume() and Suspend() calls
   // above.
   virtual bool IsControllable() const = 0;
@@ -87,6 +81,11 @@ class MediaSession : public media_session::mojom::MediaSession {
   // Skip to the next track. If there is no next track then this will be a
   // no-op.
   void NextTrack() override = 0;
+
+  // Seek the media session. If the media cannot seek then this will be a no-op.
+  // The |seek_time| is the time delta that the media will seek by and supports
+  // both positive and negative values.
+  void Seek(base::TimeDelta seek_time) override = 0;
 
  protected:
   MediaSession() = default;

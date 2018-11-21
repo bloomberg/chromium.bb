@@ -30,8 +30,7 @@ class MockMediaSession : public content::MediaSession {
   MOCK_METHOD1(Resume, void(content::MediaSession::SuspendType));
   MOCK_METHOD1(Suspend, void(content::MediaSession::SuspendType));
   MOCK_METHOD1(Stop, void(content::MediaSession::SuspendType));
-  MOCK_METHOD1(SeekForward, void(base::TimeDelta));
-  MOCK_METHOD1(SeekBackward, void(base::TimeDelta));
+  MOCK_METHOD1(Seek, void(base::TimeDelta));
   MOCK_CONST_METHOD0(IsControllable, bool());
   MOCK_CONST_METHOD0(IsActuallyPaused, bool());
   MOCK_METHOD0(StartDucking, void());

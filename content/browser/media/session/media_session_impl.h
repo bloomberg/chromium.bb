@@ -177,11 +177,8 @@ class MediaSessionImpl : public MediaSession,
   // |type| represents the origin of the request.
   CONTENT_EXPORT void Stop(MediaSession::SuspendType suspend_type) override;
 
-  // Seek the media session forward.
-  CONTENT_EXPORT void SeekForward(base::TimeDelta seek_time) override;
-
-  // Seek the media session backward.
-  CONTENT_EXPORT void SeekBackward(base::TimeDelta seek_time) override;
+  // Seek the media session.
+  CONTENT_EXPORT void Seek(base::TimeDelta seek_time) override;
 
   // Returns if the session can be controlled by Resume() and Suspend() calls
   // above.
@@ -333,6 +330,9 @@ class MediaSessionImpl : public MediaSession,
   // Compute the MediaSessionService that should be routed, which will be used
   // to update |routed_service_|.
   CONTENT_EXPORT MediaSessionServiceImpl* ComputeServiceForRouting();
+
+  // Returns whether the action is supported by the media session.
+  bool IsActionSupported(media_session::mojom::MediaSessionAction action) const;
 
   std::unique_ptr<AudioFocusDelegate> delegate_;
   std::map<PlayerIdentifier, media_session::mojom::AudioFocusType>

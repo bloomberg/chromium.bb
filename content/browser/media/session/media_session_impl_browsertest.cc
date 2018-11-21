@@ -184,11 +184,11 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   }
 
   void UISeekForward() {
-    media_session_->SeekForward(base::TimeDelta::FromSeconds(1));
+    media_session_->Seek(base::TimeDelta::FromSeconds(1));
   }
 
   void UISeekBackward() {
-    media_session_->SeekBackward(base::TimeDelta::FromSeconds(1));
+    media_session_->Seek(base::TimeDelta::FromSeconds(-1));
   }
 
   void SystemStartDucking() { media_session_->StartDucking(); }

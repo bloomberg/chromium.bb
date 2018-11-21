@@ -10,8 +10,10 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/time.h"
 #include "services/media_session/media_session_service.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -437,6 +439,24 @@ TEST_F(MediaControllerTest, ActiveController_NextTrack) {
   controller().FlushForTesting();
 
   EXPECT_EQ(1, media_session.next_track_count());
+}
+
+TEST_F(MediaControllerTest, ActiveController_Seek) {
+  test::MockMediaSession media_session;
+  EXPECT_EQ(0, media_session.seek_count());
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+    EXPECT_EQ(0, media_session.seek_count());
+  }
+
+  controller()->Seek(
+      base::TimeDelta::FromSeconds(mojom::kDefaultSeekTimeSeconds));
+  controller().FlushForTesting();
+
+  EXPECT_EQ(1, media_session.seek_count());
 }
 
 }  // namespace media_session

@@ -136,24 +136,14 @@ void MediaSessionAndroid::Stop(
   media_session()->Stop(MediaSession::SuspendType::kUI);
 }
 
-void MediaSessionAndroid::SeekForward(
+void MediaSessionAndroid::Seek(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj,
     const jlong millis) {
   DCHECK(media_session());
-  DCHECK_GE(millis, 0)
-      << "Attempted to seek by a negative number of milliseconds";
-  media_session()->SeekForward(base::TimeDelta::FromMilliseconds(millis));
-}
-
-void MediaSessionAndroid::SeekBackward(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_obj,
-    const jlong millis) {
-  DCHECK(media_session());
-  DCHECK_GE(millis, 0)
-      << "Attempted to seek by a negative number of milliseconds";
-  media_session()->SeekBackward(base::TimeDelta::FromMilliseconds(millis));
+  DCHECK_NE(millis, 0)
+      << "Attempted to seek by a missing number of milliseconds";
+  media_session()->Seek(base::TimeDelta::FromMilliseconds(millis));
 }
 
 void MediaSessionAndroid::DidReceiveAction(JNIEnv* env,
