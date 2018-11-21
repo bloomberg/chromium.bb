@@ -8,7 +8,6 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "build/build_config.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/variations/variations_associated_data.h"
@@ -34,8 +33,6 @@ DataUseTracker::~DataUseTracker() {}
 std::unique_ptr<DataUseTracker> DataUseTracker::Create(
     PrefService* local_state) {
   std::unique_ptr<DataUseTracker> data_use_tracker;
-// Instantiate DataUseTracker only on Android. UpdateMetricsUsagePrefs() honors
-// this rule too.
 #if defined(OS_ANDROID)
   data_use_tracker.reset(new DataUseTracker(local_state));
 #endif
@@ -48,23 +45,9 @@ void DataUseTracker::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(metrics::prefs::kUmaCellDataUse);
 }
 
-// static
 void DataUseTracker::UpdateMetricsUsagePrefs(int message_size,
                                              bool is_cellular,
-                                             bool is_metrics_service_usage,
-                                             PrefService* local_state) {
-// Instantiate DataUseTracker only on Android. Create() honors this rule too.
-#if defined(OS_ANDROID)
-  metrics::DataUseTracker tracker(local_state);
-  tracker.UpdateMetricsUsagePrefsInternal(message_size, is_cellular,
-                                          is_metrics_service_usage);
-#endif  // defined(OS_ANDROID)
-}
-
-void DataUseTracker::UpdateMetricsUsagePrefsInternal(
-    int message_size,
-    bool is_cellular,
-    bool is_metrics_service_usage) {
+                                             bool is_metrics_service_usage) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!is_cellular)
