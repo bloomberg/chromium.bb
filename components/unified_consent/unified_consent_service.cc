@@ -217,8 +217,7 @@ void UnifiedConsentService::OnPrimaryAccountCleared(
 }
 
 void UnifiedConsentService::OnStateChanged(syncer::SyncService* sync) {
-  if (sync_service_->GetDisableReasons() !=
-          syncer::SyncService::DISABLE_REASON_NONE ||
+  if (!sync_service_->CanSyncFeatureStart() ||
       !sync_service_->IsEngineInitialized()) {
     return;
   }
@@ -339,6 +338,7 @@ void UnifiedConsentService::UpdateSettingsForMigration() {
   // Set URL-keyed anonymized metrics to the state it had before unified
   // consent.
   bool url_keyed_metrics_enabled =
+      sync_service_->IsSyncFeatureEnabled() &&
       sync_service_->GetUserSettings()->GetChosenDataTypes().Has(
           syncer::TYPED_URLS) &&
       !sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase();
