@@ -153,7 +153,6 @@ int RendererMain(const MainFunctionParams& parameters) {
       blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
           initial_virtual_time));
 
-  // PlatformInitialize uses FieldTrials, so this must happen later.
   platform.PlatformInitialize();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
