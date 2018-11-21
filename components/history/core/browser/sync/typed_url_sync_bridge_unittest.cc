@@ -291,7 +291,8 @@ class TypedURLSyncBridgeTest : public testing::Test {
         changed_urls.push_back(rows->back());
       }
 
-      bridge()->OnURLsModified(fake_history_backend_.get(), changed_urls);
+      bridge()->OnURLsModified(fake_history_backend_.get(), changed_urls,
+                               /*is_from_expiration=*/false);
     }
 
     // Check that communication with sync was successful.
@@ -843,7 +844,8 @@ TEST_F(TypedURLSyncBridgeTest, UpdateLocalTypedUrl) {
   // Notify typed url sync service of the update.
   const auto& changes_multimap = processor().put_multimap();
   ASSERT_EQ(0U, changes_multimap.size());
-  bridge()->OnURLsModified(fake_history_backend_.get(), changed_urls);
+  bridge()->OnURLsModified(fake_history_backend_.get(), changed_urls,
+                           /*is_from_expiration=*/false);
   ASSERT_EQ(1U, changes_multimap.size());
 
   sync_pb::TypedUrlSpecifics url_specifics = GetLastUpdateForURL(kURL);
@@ -1633,7 +1635,8 @@ TEST_F(TypedURLSyncBridgeTest, LocalExpiredTypedUrlDoNotSync) {
 
   changed_urls.push_back(row);
   // Notify typed url sync service of the update.
-  bridge()->OnURLsModified(fake_history_backend_.get(), changed_urls);
+  bridge()->OnURLsModified(fake_history_backend_.get(), changed_urls,
+                           /*is_from_expiration=*/false);
 
   // Check change processor did not receive expired typed URL.
   ASSERT_EQ(1U, changes_multimap.size());
