@@ -49,7 +49,7 @@ import javax.tools.Diagnostic;
 
 /**
  * Annotation processor that finds inner interfaces annotated with
- * @JniStaticNatives and generates a class with native bindings
+ * {@link JniStaticNatives} and generates a class with native bindings
  * (GEN_JNI) and a class specific wrapper class with name (classnameJni)
  *
  * NativeClass - refers to the class that contains all native declarations.
@@ -183,7 +183,7 @@ public class JniProcessor extends AbstractProcessor {
 
             // Queue this file for writing.
             // Can't write right now because the wrapper class depends on NativeClass
-            // to be written and we can't write NativeClass until all @JNINatives
+            // to be written and we can't write NativeClass until all @JniStaticNatives
             // interfaces are processed because each will add new native methods.
             JavaFile file = JavaFile.builder(packageName, nativeWrapperClassSpec).build();
             writeQueue.add(file);
@@ -249,8 +249,9 @@ public class JniProcessor extends AbstractProcessor {
 
     /**
      * Creates method specs for the native methods of NativeClass given
-     * the method declarations from a JNINative annotated interface
-     * @param interfaceMethods method declarations from a JNINative annotated interface
+     * the method declarations from a {@link JniStaticNatives} annotated interface
+     * @param interfaceMethods method declarations from a {@link JniStaticNatives} annotated
+     * interface
      * @param outerType ClassName of class that contains the annotated interface
      * @return map from old method name to new native method specification
      */
@@ -296,20 +297,21 @@ public class JniProcessor extends AbstractProcessor {
     }
 
     /**
-     * Creates a class spec for an implementation of an @JNINatives annotated interface that will
-     * wrap calls to the NativesClass which contains the actual native method declarations.
+     * Creates a class spec for an implementation of an {@link JniStaticNatives} annotated interface
+     * that will wrap calls to the NativesClass which contains the actual native method
+     * declarations.
      *
      * This class should contain:
      * 1. Wrappers for all GEN_JNI static native methods
      * 2. A getter that when testing is disabled, will return the native implementation and
      * when testing is enabled, will call the mock of the native implementation.
      * 3. A field that holds the testNatives instance for when testing is enabled
-     * 4. A TEST_HOOKS field that implements an anonymous instance of JniStaticTestMocker
+     * 4. A TEST_HOOKS field that implements an anonymous instance of {@link JniStaticTestMocker}
      * which will set the testNatives implementation when called in tests
      *
      * @param name name of the wrapper class.
      * @param isPublic if true, a public modifier will be added to this native wrapper.
-     * @param nativeInterface the @JNINatives annotated type that this native wrapper
+     * @param nativeInterface the {@link JniStaticNatives} annotated type that this native wrapper
      *                        will implement.
      * @param methodMap a map from the old method name to the new method spec in NativeClass.
      * */
@@ -329,8 +331,8 @@ public class JniProcessor extends AbstractProcessor {
         // Start by adding all the native method wrappers.
         for (Element enclosed : nativeInterface.getEnclosedElements()) {
             if (enclosed.getKind() != ElementKind.METHOD) {
-                printError(
-                        "Cannot have a non-method in a @JNINatives annotated interface", enclosed);
+                printError("Cannot have a non-method in a @JniStaticNatives annotated interface",
+                        enclosed);
             }
 
             // ElementKind.Method is ExecutableElement so this cast is safe.
@@ -401,7 +403,8 @@ public class JniProcessor extends AbstractProcessor {
 
     /**
      * Creates a wrapper method that overrides interfaceMethod and calls staticNativeMethod.
-     * @param interfaceMethod method that will be overridden in a @JNINatives annotated interface.
+     * @param interfaceMethod method that will be overridden in a {@link JniStaticNatives} annotated
+     * interface.
      * @param staticNativeMethod method that will be called in NativeClass.
      */
     MethodSpec createNativeWrapperMethod(

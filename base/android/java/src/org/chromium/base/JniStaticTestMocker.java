@@ -7,7 +7,7 @@ package org.chromium.base;
 /**
  * Implemented by the TEST_HOOKS field in JNI wrapper classes that are generated
  * by the JNI annotation processor. Used in tests for setting the mock
- * implementation of a @JniStaticNatives interface.
- * @param <T> The @JniStaticNatives annotated interface
+ * implementation of a {@link org.chromium.base.annotations.JniStaticNatives} interface.
+ * @param <T> The interface annotated with {@link org.chromium.base.annotations.JniStaticNatives}
  */
 public interface JniStaticTestMocker<T> { void setInstanceForTesting(T instance); }
