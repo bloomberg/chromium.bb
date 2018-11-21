@@ -127,6 +127,37 @@ check_constraints_fail(
   'Using both mandatory and height should give TypeError',
   {'mandatory': {'height': '270'}, 'height': '270'}, 'TypeError');
 
+promise_test(async t => {
+  let stream = await navigator.mediaDevices.getUserMedia(
+    {video: {width: 639, height: 479}});
+  let track = stream.getVideoTracks()[0];
+  let settings = track.getSettings();
+  assert_equals(settings.width, 639);
+  assert_equals(settings.height, 479);
+  assert_equals(settings.resizeMode, "crop-and-scale");
+  track.stop();
+
+  stream = await navigator.mediaDevices.getUserMedia(
+    {video: {width: 639, height: 479, resizeMode: {exact: "none"}}});
+  track = stream.getVideoTracks()[0];
+  settings = track.getSettings();
+  // With rescaling disabled, a native resolution is used.
+  assert_equals(settings.width, 640);
+  assert_equals(settings.height, 480);
+  assert_equals(settings.resizeMode, "none");
+  track.stop();
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia(
+      {video: {width: {exact: 639}, resizeMode: {exact: "none"}}});
+    t.add_cleanup(()=>stream.getVideoTracks()[0].stop());
+    t.step(() => assert_unreached('applyConstraints should have failed'));
+  } catch(e) {
+    assert_equals(e.name, 'OverconstrainedError');
+    assert_equals(e.constraint, 'width');
+  }
+}, 'getUserMedia() resizeMode constraint');
+
 </script>
 </body>
 </html>

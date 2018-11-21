@@ -405,11 +405,14 @@ void MediaStreamVideoSource::UpdateTrackSettings(
   // Calculate resulting frame size if the source delivers frames
   // according to the current format. Note: Format may change later.
   gfx::Size desired_size;
-  VideoTrackAdapter::CalculateDesiredSize(false /* is_rotated */,
-                                          GetCurrentFormat()->frame_size,
-                                          adapter_settings, &desired_size);
-  track->SetTargetSizeAndFrameRate(desired_size.width(), desired_size.height(),
-                                   adapter_settings.max_frame_rate());
+  if (VideoTrackAdapter::CalculateDesiredSize(
+          false /* is_rotated */, GetCurrentFormat()->frame_size,
+          adapter_settings, &desired_size)) {
+    track->SetTargetSizeAndFrameRate(desired_size.width(),
+                                     desired_size.height(),
+                                     adapter_settings.max_frame_rate());
+  }
+  track->SetTrackAdapterSettings(adapter_settings);
 }
 
 MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(

@@ -889,10 +889,7 @@ TEST_F(UserMediaClientImplTest, DefaultConstraintsPropagate) {
 
   const VideoTrackAdapterSettings& track_settings =
       video_capture_settings.track_adapter_settings();
-  EXPECT_EQ(track_settings.target_width(),
-            MediaStreamVideoSource::kDefaultWidth);
-  EXPECT_EQ(track_settings.target_height(),
-            MediaStreamVideoSource::kDefaultHeight);
+  EXPECT_FALSE(track_settings.target_size().has_value());
   EXPECT_EQ(track_settings.min_aspect_ratio(),
             1.0 / MediaStreamVideoSource::kDefaultHeight);
   EXPECT_EQ(track_settings.max_aspect_ratio(),

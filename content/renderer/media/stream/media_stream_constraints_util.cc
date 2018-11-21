@@ -126,12 +126,10 @@ VideoCaptureSettings::VideoCaptureSettings(
       max_frame_rate_(max_frame_rate) {
   DCHECK(!min_frame_rate ||
          *min_frame_rate_ <= capture_params.requested_format.frame_rate);
-  // TODO(crbug.com/854980): Update these DCHECKS to allow for unspecified
-  // target size.
-  DCHECK(track_adapter_settings.target_size() &&
+  DCHECK(!track_adapter_settings.target_size() ||
          track_adapter_settings.target_size()->width() <=
              capture_params.requested_format.frame_size.width());
-  DCHECK(track_adapter_settings_.target_size() &&
+  DCHECK(!track_adapter_settings_.target_size() ||
          track_adapter_settings_.target_size()->height() <=
              capture_params.requested_format.frame_size.height());
 }
