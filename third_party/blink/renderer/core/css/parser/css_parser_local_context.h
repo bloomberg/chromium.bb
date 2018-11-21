@@ -12,13 +12,15 @@ namespace blink {
 
 // A wrapper class containing all local context when parsing a property.
 
-class CSSParserLocalContext {
+class CORE_EXPORT CSSParserLocalContext {
   STACK_ALLOCATED();
 
  public:
   CSSParserLocalContext();
-  CSSParserLocalContext(bool use_alias_parsing,
-                        CSSPropertyID current_shorthand);
+
+  CSSParserLocalContext WithAliasParsing(bool) const;
+  CSSParserLocalContext WithCurrentShorthand(CSSPropertyID) const;
+
   bool UseAliasParsing() const;
   CSSPropertyID CurrentShorthand() const;
 

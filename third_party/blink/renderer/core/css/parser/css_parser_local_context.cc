@@ -9,10 +9,19 @@ namespace blink {
 CSSParserLocalContext::CSSParserLocalContext()
     : use_alias_parsing_(false), current_shorthand_(CSSPropertyInvalid) {}
 
-CSSParserLocalContext::CSSParserLocalContext(bool use_alias_parsing,
-                                             CSSPropertyID current_shorthand)
-    : use_alias_parsing_(use_alias_parsing),
-      current_shorthand_(current_shorthand) {}
+CSSParserLocalContext CSSParserLocalContext::WithAliasParsing(
+    bool use_alias_parsing) const {
+  CSSParserLocalContext context = *this;
+  context.use_alias_parsing_ = use_alias_parsing;
+  return context;
+}
+
+CSSParserLocalContext CSSParserLocalContext::WithCurrentShorthand(
+    CSSPropertyID current_shorthand) const {
+  CSSParserLocalContext context = *this;
+  context.current_shorthand_ = current_shorthand;
+  return context;
+}
 
 bool CSSParserLocalContext::UseAliasParsing() const {
   return use_alias_parsing_;
