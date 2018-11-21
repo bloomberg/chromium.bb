@@ -257,7 +257,7 @@ as required builders.
 
   https://crbug.com/855319
 
-  * Experimental percentage: 20
+  * Experimental percentage: 50
 
 * [win-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win-libfuzzer-asan-rel) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+win-libfuzzer-asan-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+win-libfuzzer-asan-rel))
 
