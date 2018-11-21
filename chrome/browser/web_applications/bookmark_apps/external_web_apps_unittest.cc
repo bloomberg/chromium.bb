@@ -112,6 +112,15 @@ TEST_F(ScanDirForExternalWebAppsTest, MissingAppUrl) {
   EXPECT_EQ(0u, app_infos.size());
 }
 
+TEST_F(ScanDirForExternalWebAppsTest, EmptyAppUrl) {
+  auto app_infos =
+      web_app::ScanDirForExternalWebAppsForTesting(test_dir("empty_app_url"));
+
+  // The empty_app_url directory contains one JSON file which is correct
+  // except for an empty "app_url" field.
+  EXPECT_EQ(0u, app_infos.size());
+}
+
 TEST_F(ScanDirForExternalWebAppsTest, InvalidAppUrl) {
   auto app_infos =
       web_app::ScanDirForExternalWebAppsForTesting(test_dir("invalid_app_url"));
