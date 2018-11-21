@@ -90,6 +90,7 @@ ac.ke, 0
 ac.kr, 0
 ac.leg.br, 4
 ac.lk, 0
+ac.ls, 0
 ac.ma, 0
 ac.me, 0
 ac.mu, 0
@@ -707,6 +708,7 @@ biz.dk, 4
 biz.et, 0
 biz.id, 0
 biz.ki, 0
+biz.ls, 0
 biz.mv, 0
 biz.mw, 0
 biz.ni, 0
@@ -1699,6 +1701,7 @@ devices.resinstaging.io, 4
 df.gov.br, 0
 df.leg.br, 4
 dgca.aero, 0
+dh.bytemark.co.uk, 4
 dhl, 0
 diamonds, 0
 dielddanuorri.no, 0
@@ -1932,6 +1935,7 @@ edu.lb, 0
 edu.lc, 0
 edu.lk, 0
 edu.lr, 0
+edu.ls, 0
 edu.lv, 0
 edu.ly, 0
 edu.me, 0
@@ -2580,6 +2584,7 @@ gmo, 0
 gmx, 0
 gn, 0
 gniezno.pl, 0
+go-vip.co, 4
 go.ci, 0
 go.cr, 0
 go.dyndns.org, 4
@@ -2720,6 +2725,7 @@ gov.lb, 0
 gov.lc, 0
 gov.lk, 0
 gov.lr, 0
+gov.ls, 0
 gov.lt, 0
 gov.lv, 0
 gov.ly, 0
@@ -3322,6 +3328,7 @@ info.hu, 0
 info.ke, 0
 info.ki, 0
 info.la, 0
+info.ls, 0
 info.mv, 0
 info.na, 0
 info.nf, 0
@@ -3344,6 +3351,7 @@ ing.pa, 0
 ingatlan.hu, 0
 ink, 0
 ino.kochi.jp, 0
+instantcloud.cn, 4
 institute, 0
 insurance, 0
 insurance.aero, 0
@@ -4001,6 +4009,7 @@ kr.ua, 0
 kraanghke.no, 0
 kragero.no, 0
 krakow.pl, 4
+krasnik.pl, 4
 krasnodar.su, 4
 krd, 0
 kred, 0
@@ -4153,6 +4162,7 @@ lebtimnetz.de, 4
 lecce.it, 0
 lecco.it, 0
 leclerc, 0
+leczna.pl, 4
 lefrak, 0
 leg.br, 0
 legal, 0
@@ -4332,7 +4342,9 @@ ltda, 0
 lu, 0
 lu.eu.org, 4
 lu.it, 0
+lubartow.pl, 4
 lubin.pl, 0
+lublin.pl, 4
 lucania.it, 0
 lucca.it, 0
 lucerne.museum, 0
@@ -4888,6 +4900,7 @@ mydatto.com, 4
 mydatto.net, 4
 myddns.rocks, 4
 mydissent.net, 4
+mydobiss.com, 4
 mydrobo.com, 4
 myds.me, 4
 myeffect.net, 4
@@ -5151,6 +5164,7 @@ net.lb, 0
 net.lc, 0
 net.lk, 0
 net.lr, 0
+net.ls, 0
 net.lv, 0
 net.ly, 0
 net.ma, 0
@@ -5611,6 +5625,7 @@ onjuku.chiba.jp, 0
 onl, 0
 online, 0
 online.museum, 0
+online.th, 4
 onna.okinawa.jp, 0
 ono.fukui.jp, 0
 ono.fukushima.jp, 0
@@ -6047,6 +6062,7 @@ polkowice.pl, 0
 poltava.ua, 0
 pomorskie.pl, 0
 pomorze.pl, 0
+poniatowa.pl, 4
 ponpes.id, 0
 pordenone.it, 0
 porn, 0
@@ -6217,6 +6233,7 @@ re.kr, 0
 read, 0
 read-books.org, 4
 readmyblog.org, 4
+readthedocs.io, 4
 realestate, 0
 realestate.pl, 0
 realm.cz, 4
@@ -6565,6 +6582,7 @@ sc.gov.br, 0
 sc.ke, 0
 sc.kr, 0
 sc.leg.br, 4
+sc.ls, 0
 sc.tz, 0
 sc.ug, 0
 sc.us, 0
@@ -6814,6 +6832,7 @@ shop.ht, 0
 shop.hu, 0
 shop.pl, 0
 shop.ro, 4
+shop.th, 4
 shopping, 0
 shouji, 0
 show, 0
@@ -6844,6 +6863,7 @@ singles, 0
 siracusa.it, 0
 sirdal.no, 0
 site, 0
+siteleaf.net, 4
 sites.static.land, 4
 sj, 0
 sjc.br, 0
@@ -7004,7 +7024,6 @@ static-access.net, 4
 static.land, 4
 statics.cloud, 6
 station.museum, 0
-statoil, 0
 stavanger.no, 0
 stavern.no, 0
 stc, 0
@@ -7095,6 +7114,7 @@ swatch, 0
 sweden.museum, 0
 sweetpepper.org, 4
 swidnica.pl, 0
+swidnik.pl, 4
 swiebodzin.pl, 0
 swiftcover, 0
 swinoujscie.pl, 0
@@ -7835,6 +7855,7 @@ vladikavkaz.su, 4
 vladimir.ru, 4
 vladimir.su, 4
 vlog.br, 0
+vm.bytemark.co.uk, 4
 vn, 0
 vn.ua, 0
 voagat.no, 0
@@ -7983,6 +8004,7 @@ workshop.museum, 0
 world, 0
 worse-than.tv, 4
 wow, 0
+wpcomstaging.com, 4
 wpdevcloud.com, 4
 writesthisblog.com, 4
 wroc.pl, 4
