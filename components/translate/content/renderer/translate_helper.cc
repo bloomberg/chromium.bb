@@ -134,7 +134,9 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
   // captured, it should be treated as a new page to do translation.
   ResetPage();
   mojom::PagePtr page;
-  binding_.Bind(mojo::MakeRequest(&page));
+  binding_.Bind(
+      mojo::MakeRequest(&page),
+      main_frame->GetTaskRunner(blink::TaskType::kInternalTranslation));
   GetTranslateHandler()->RegisterPage(
       std::move(page), details, !details.has_notranslate && !language.empty());
 }
