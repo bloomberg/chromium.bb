@@ -5,37 +5,37 @@
 /** @const {string} */
 var FILE_LAST_MODIFIED = new Date("Dec 4 1968").toString();
 
-/** @const {string} */
+/** @const {number} */
 var FILE_SIZE = 1234;
 
 /** @const {string} */
 var FILE_PATH = 'test/data';
 
-/** @const {string} */
-var DEVICE = importer.Destination.DEVICE;
+/** @const {number} */
+var TEMPORARY = window.TEMPORARY || 0;
 
-/** @const {string} */
+/** @const {!importer.Destination<string>} */
 var GOOGLE_DRIVE = importer.Destination.GOOGLE_DRIVE;
 
 /**
  * Space Cloud: Your source for interstellar cloud storage.
- * @const {string}
+ * @const {!importer.Destination<string>}
  */
-var SPACE_CAMP = 'Space Camp';
+var SPACE_CAMP = /** @type !importer.Destination<string> */ ('Space Camp');
 
-/** @type {!MockFileSystem|undefined} */
+/** @type {!MockFileSystem} */
 var testFileSystem;
 
-/** @type {!MockFileEntry|undefined} */
+/** @type {!MockFileEntry} */
 var testFileEntry;
 
 /** @type {!importer.TestLogger} */
 var testLogger;
 
-/** @type {!importer.RecordStorage|undefined} */
+/** @type {!importer.RecordStorage} */
 var storage;
 
-/** @type {!Promise<!importer.PersistentImportHistory>|undefined} */
+/** @type {!Promise<!importer.ImportHistory>} */
 var historyProvider;
 
 /** @type {Promise} */
@@ -47,12 +47,14 @@ function setUp() {
   installTestLogger();
 
   testFileSystem = new MockFileSystem('abc-123', 'filesystem:abc-123');
+
   testFileEntry = new MockFileEntry(
-      testFileSystem,
-      FILE_PATH, {
+      testFileSystem, FILE_PATH,
+      /** @type Metadata */ ({
         size: FILE_SIZE,
         modificationTime: FILE_LAST_MODIFIED
-      });
+      }));
+
   testFileSystem.entries[FILE_PATH] = testFileEntry;
 
   storage = new TestRecordStorage();
@@ -406,9 +408,8 @@ function createFileEntry(fileName) {
  * @struct
  */
 var TestRecordStorage = function() {
+  var timeStamp = importer.toSecondsFromEpoch(FILE_LAST_MODIFIED);
 
-  var timeStamp = importer.toSecondsFromEpoch(
-        FILE_LAST_MODIFIED);
   // Pre-populate the store with some "previously written" data <wink>.
   /** @private {!Array<!Array<string>>} */
   this.records_ = [
@@ -444,12 +445,10 @@ var TestRecordStorage = function() {
 /**
  * Test implementation of SyncFileEntryProvider.
  *
+ * @param {!FileEntry} fileEntry
  * @constructor
- * @implements {importer.SyncFileEntryProvider}
  * @final
  * @struct
- *
- * @param {!FileEntry} fileEntry
  */
 var TestSyncFileEntryProvider = function(fileEntry) {
   /** @private {!FileEntry} */
