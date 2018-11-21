@@ -6600,9 +6600,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     // previously held.
     if (cm->new_fb_idx != INVALID_IDX) {
       --pool->frame_bufs[cm->new_fb_idx].ref_count;
+      cm->cur_frame = NULL;
     }
 
-    cm->cur_frame = NULL;
     cm->new_fb_idx = get_free_fb(cm);
     if (cm->new_fb_idx == INVALID_IDX) return -1;
     cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
@@ -6788,6 +6788,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   // held.
   if (cm->new_fb_idx != INVALID_IDX) {
     --pool->frame_bufs[cm->new_fb_idx].ref_count;
+    cm->cur_frame = NULL;
   }
   cm->new_fb_idx = get_free_fb(cm);
 

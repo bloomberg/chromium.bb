@@ -322,20 +322,24 @@ static void release_frame_buffers(AV1Decoder *pbi) {
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
 
+  cm->cur_frame->buf.corrupted = 1;
   lock_buffer_pool(pool);
   // Release all the reference buffers in cm->next_ref_frame_map if the worker
   // thread is holding them.
   if (pbi->hold_ref_buf) {
     int ref_index;
     for (ref_index = 0; ref_index < REF_FRAMES; ++ref_index) {
-      const int new_idx = cm->next_ref_frame_map[ref_index];
-      decrease_ref_count(new_idx, frame_bufs, pool);
+      const int idx = cm->next_ref_frame_map[ref_index];
+      decrease_ref_count(idx, frame_bufs, pool);
     }
+    memset(&cm->next_ref_frame_map, -1, sizeof(cm->next_ref_frame_map));
     pbi->hold_ref_buf = 0;
   }
   // Release current frame.
   decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
   unlock_buffer_pool(pool);
+  cm->new_fb_idx = INVALID_IDX;
+  cm->cur_frame = NULL;
 }
 
 // If any buffer updating is signaled it should be done here.
@@ -368,6 +372,7 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
         const int old_idx = cm->ref_frame_map[ref_index];
         decrease_ref_count(old_idx, frame_bufs, pool);
         cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
+        cm->next_ref_frame_map[ref_index] = INVALID_IDX;
         ++ref_index;
       }
 
@@ -378,6 +383,7 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
         const int old_idx = cm->ref_frame_map[ref_index];
         decrease_ref_count(old_idx, frame_bufs, pool);
         cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
+        cm->next_ref_frame_map[ref_index] = INVALID_IDX;
       }
     }
 
@@ -388,8 +394,8 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
         if (pbi->num_output_frames >= MAX_NUM_SPATIAL_LAYERS) {
           // We can't store the new frame anywhere, so drop it and return an
           // error
+          cm->cur_frame->buf.corrupted = 1;
           decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
-          cm->cur_frame = NULL;
           cm->error.error_code = AOM_CODEC_UNSUP_BITSTREAM;
         } else {
           pbi->output_frames[pbi->num_output_frames] = cur_frame;
@@ -408,7 +414,6 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
       }
     } else {
       decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
-      cm->cur_frame = NULL;
     }
 
     unlock_buffer_pool(pool);
@@ -420,9 +425,10 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
     // Nothing was decoded, so just drop this frame buffer
     lock_buffer_pool(pool);
     decrease_ref_count(cm->new_fb_idx, frame_bufs, pool);
-    cm->cur_frame = NULL;
     unlock_buffer_pool(pool);
   }
+  cm->new_fb_idx = INVALID_IDX;
+  cm->cur_frame = NULL;
 
   if (!pbi->camera_frame_header_ready) {
     pbi->hold_ref_buf = 0;
