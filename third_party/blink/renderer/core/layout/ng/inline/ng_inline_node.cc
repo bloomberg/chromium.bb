@@ -922,20 +922,8 @@ static LayoutUnit ComputeContentSize(
       const ComputedStyle& float_style = float_node.Style();
 
       MinMaxSizeInput zero_input;  // Floats don't intrude into floats.
-      // We'll need extrinsic sizing data when computing min/max for orthogonal
-      // flow roots.
-      NGConstraintSpace extrinsic_constraint_space;
-      const NGConstraintSpace* optional_constraint_space = nullptr;
-      if (!IsParallelWritingMode(container_writing_mode,
-                                 float_node.Style().GetWritingMode())) {
-        DCHECK(constraint_space);
-        extrinsic_constraint_space = CreateExtrinsicConstraintSpaceForChild(
-            *constraint_space, style, input.extrinsic_block_size, float_node);
-        optional_constraint_space = &extrinsic_constraint_space;
-      }
-
-      MinMaxSize child_sizes = ComputeMinAndMaxContentContribution(
-          writing_mode, float_node, zero_input, optional_constraint_space);
+      MinMaxSize child_sizes =
+          ComputeMinAndMaxContentContribution(style, float_node, zero_input);
       LayoutUnit child_inline_margins =
           ComputeMinMaxMargins(style, float_node).InlineSum();
 

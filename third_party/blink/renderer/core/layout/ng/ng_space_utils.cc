@@ -23,22 +23,25 @@ bool AdjustToClearance(LayoutUnit clearance_offset, NGBfcOffset* offset) {
   return false;
 }
 
-NGConstraintSpace CreateExtrinsicConstraintSpaceForChild(
-    const NGConstraintSpace& container_constraint_space,
+NGConstraintSpace CreateIndefiniteConstraintSpaceForChild(
     const ComputedStyle& container_style,
-    LayoutUnit container_extrinsic_block_size,
     NGLayoutInputNode child) {
-  NGLogicalSize extrinsic_size(NGSizeIndefinite,
-                               container_extrinsic_block_size);
-  LayoutUnit fallback_inline_size = CalculateOrthogonalFallbackInlineSize(
-      container_style, container_constraint_space.InitialContainingBlockSize());
+  NGLogicalSize indefinite_size(NGSizeIndefinite, NGSizeIndefinite);
+  LayoutUnit fallback_inline_size = NGSizeIndefinite;
+  WritingMode parent_writing_mode = container_style.GetWritingMode();
+  WritingMode child_writing_mode = child.Style().GetWritingMode();
+  if (!IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
+    fallback_inline_size = CalculateOrthogonalFallbackInlineSize(
+        container_style, child.InitialContainingBlockSize());
+  }
 
-  return NGConstraintSpaceBuilder(container_constraint_space,
-                                  child.Style().GetWritingMode(),
+  return NGConstraintSpaceBuilder(parent_writing_mode, child_writing_mode,
+                                  child.InitialContainingBlockSize(),
                                   child.CreatesNewFormattingContext())
       .SetOrthogonalFallbackInlineSize(fallback_inline_size)
-      .SetAvailableSize(extrinsic_size)
-      .SetPercentageResolutionSize(extrinsic_size)
+      .SetAvailableSize(indefinite_size)
+      .SetPercentageResolutionSize(indefinite_size)
+      .SetReplacedPercentageResolutionSize(indefinite_size)
       .SetIsIntermediateLayout(true)
       .SetFloatsBfcBlockOffset(LayoutUnit())
       .ToConstraintSpace();
