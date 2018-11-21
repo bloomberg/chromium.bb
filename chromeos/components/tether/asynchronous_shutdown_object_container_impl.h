@@ -11,16 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromeos/components/tether/asynchronous_shutdown_object_container.h"
-#include "chromeos/components/tether/ble_advertiser.h"
-#include "chromeos/components/tether/ble_scanner.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 
 class PrefService;
-
-namespace cryptauth {
-class CryptAuthService;
-class LocalDeviceDataProvider;
-}  // namespace cryptauth
 
 namespace chromeos {
 
@@ -50,7 +43,6 @@ class AsynchronousShutdownObjectContainerImpl
   class Factory {
    public:
     static std::unique_ptr<AsynchronousShutdownObjectContainer> NewInstance(
-        cryptauth::CryptAuthService* cryptauth_service,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher,
@@ -63,7 +55,6 @@ class AsynchronousShutdownObjectContainerImpl
 
    protected:
     virtual std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
-        cryptauth::CryptAuthService* cryptauth_service,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher,
@@ -90,7 +81,6 @@ class AsynchronousShutdownObjectContainerImpl
 
  protected:
   AsynchronousShutdownObjectContainerImpl(
-      cryptauth::CryptAuthService* cryptauth_service,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       TetherHostFetcher* tether_host_fetcher,
@@ -113,8 +103,6 @@ class AsynchronousShutdownObjectContainerImpl
 
 
   TetherHostFetcher* tether_host_fetcher_;
-  std::unique_ptr<cryptauth::LocalDeviceDataProvider>
-      local_device_data_provider_;
   std::unique_ptr<DisconnectTetheringRequestSender>
       disconnect_tethering_request_sender_;
   std::unique_ptr<NetworkConfigurationRemover> network_configuration_remover_;

@@ -10,8 +10,6 @@
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
-#include "components/cryptauth/cryptauth_service.h"
-#include "components/cryptauth/local_device_data_provider.h"
 
 namespace chromeos {
 
@@ -25,7 +23,6 @@ AsynchronousShutdownObjectContainerImpl::Factory*
 // static
 std::unique_ptr<AsynchronousShutdownObjectContainer>
 AsynchronousShutdownObjectContainerImpl::Factory::NewInstance(
-    cryptauth::CryptAuthService* cryptauth_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostFetcher* tether_host_fetcher,
@@ -37,10 +34,9 @@ AsynchronousShutdownObjectContainerImpl::Factory::NewInstance(
     factory_instance_ = new Factory();
 
   return factory_instance_->BuildInstance(
-      cryptauth_service, device_sync_client, secure_channel_client,
-      tether_host_fetcher, network_state_handler,
-      managed_network_configuration_handler, network_connection_handler,
-      pref_service);
+      device_sync_client, secure_channel_client, tether_host_fetcher,
+      network_state_handler, managed_network_configuration_handler,
+      network_connection_handler, pref_service);
 }
 
 // static
@@ -53,7 +49,6 @@ AsynchronousShutdownObjectContainerImpl::Factory::~Factory() = default;
 
 std::unique_ptr<AsynchronousShutdownObjectContainer>
 AsynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
-    cryptauth::CryptAuthService* cryptauth_service,
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostFetcher* tether_host_fetcher,
@@ -62,15 +57,13 @@ AsynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
     NetworkConnectionHandler* network_connection_handler,
     PrefService* pref_service) {
   return base::WrapUnique(new AsynchronousShutdownObjectContainerImpl(
-      cryptauth_service, device_sync_client, secure_channel_client,
-      tether_host_fetcher, network_state_handler,
-      managed_network_configuration_handler, network_connection_handler,
-      pref_service));
+      device_sync_client, secure_channel_client, tether_host_fetcher,
+      network_state_handler, managed_network_configuration_handler,
+      network_connection_handler, pref_service));
 }
 
 AsynchronousShutdownObjectContainerImpl::
     AsynchronousShutdownObjectContainerImpl(
-        cryptauth::CryptAuthService* cryptauth_service,
         device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher,
@@ -80,9 +73,6 @@ AsynchronousShutdownObjectContainerImpl::
         NetworkConnectionHandler* network_connection_handler,
         PrefService* pref_service)
     : tether_host_fetcher_(tether_host_fetcher),
-      local_device_data_provider_(
-          std::make_unique<cryptauth::LocalDeviceDataProvider>(
-              cryptauth_service)),
       disconnect_tethering_request_sender_(
           DisconnectTetheringRequestSenderImpl::Factory::NewInstance(
               device_sync_client,
