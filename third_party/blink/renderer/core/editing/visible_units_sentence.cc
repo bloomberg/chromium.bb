@@ -40,16 +40,36 @@ namespace blink {
 
 namespace {
 
-unsigned PreviousSentencePositionBoundary(const UChar* characters,
-                                          unsigned length,
-                                          unsigned,
-                                          BoundarySearchContextAvailability,
-                                          bool&) {
-  // FIXME: This is identical to startSentenceBoundary. I'm pretty sure that's
-  // not right.
-  TextBreakIterator* iterator = SentenceBreakIterator(characters, length);
-  // FIXME: The following function can return -1; we don't handle that.
-  return iterator->preceding(length);
+PositionInFlatTree PreviousSentencePositionInternal(
+    const PositionInFlatTree& position) {
+  class Finder final : public TextSegments::Finder {
+    STACK_ALLOCATED();
+
+   public:
+    Position Find(const String text, unsigned passed_offset) final {
+      DCHECK_LE(passed_offset, text.length());
+      // "move_by_sentence_boundary.html" requires to skip a space characters
+      // between sentences.
+      const unsigned offset = FindLastNonSpaceCharacter(text, passed_offset);
+      TextBreakIterator* iterator =
+          SentenceBreakIterator(text.Characters16(), text.length());
+      const int result = iterator->preceding(offset);
+      if (result == kTextBreakDone)
+        return Position();
+      return Position::Before(result);
+    }
+
+   private:
+    static unsigned FindLastNonSpaceCharacter(const String text,
+                                              unsigned passed_offset) {
+      for (unsigned offset = passed_offset; offset; --offset) {
+        if (text[offset - 1] != ' ')
+          return offset;
+      }
+      return 0;
+    }
+  } finder;
+  return TextSegments::FindBoundaryBackward(position, &finder);
 }
 
 PositionInFlatTree StartOfSentenceInternal(const PositionInFlatTree& position) {
@@ -247,12 +267,21 @@ VisiblePositionInFlatTree NextSentencePosition(
 
 // ----
 
-VisiblePosition PreviousSentencePosition(const VisiblePosition& c) {
-  DCHECK(c.IsValid()) << c;
-  VisiblePosition prev = CreateVisiblePosition(
-      PreviousBoundary(c, PreviousSentencePositionBoundary));
+PositionInFlatTree PreviousSentencePosition(
+    const PositionInFlatTree& position) {
+  const PositionInFlatTree result = PreviousSentencePositionInternal(position);
   return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
-      prev, c.DeepEquivalent());
+             PositionInFlatTreeWithAffinity(result), position)
+      .GetPosition();
+}
+
+Position PreviousSentencePosition(const Position& position) {
+  return ToPositionInDOMTree(
+      PreviousSentencePosition(ToPositionInFlatTree(position)));
+}
+
+VisiblePosition PreviousSentencePosition(const VisiblePosition& c) {
+  return CreateVisiblePosition(PreviousSentencePosition(c.DeepEquivalent()));
 }
 
 // ----
