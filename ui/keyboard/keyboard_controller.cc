@@ -486,7 +486,7 @@ bool KeyboardController::IsKeyboardEnableRequested() const {
 }
 
 bool KeyboardController::IsKeyboardOverscrollEnabled() const {
-  if (!keyboard::IsKeyboardEnabled())
+  if (!IsKeyboardEnableRequested())
     return false;
 
   // Users of the sticky accessibility on-screen keyboard are likely to be using
@@ -674,12 +674,14 @@ void KeyboardController::SetContainerBehaviorInternal(
 }
 
 void KeyboardController::ShowKeyboard(bool lock) {
+  DVLOG(1) << "ShowKeyboard";
   set_keyboard_locked(lock);
   ShowKeyboardInternal(display::Display());
 }
 
 void KeyboardController::ShowKeyboardInDisplay(
     const display::Display& display) {
+  DVLOG(1) << "ShowKeyboardInDisplay: " << display.id();
   set_keyboard_locked(true);
   ShowKeyboardInternal(display);
 }
@@ -811,8 +813,9 @@ void KeyboardController::ShowKeyboardIfWithinTransientBlurThreshold() {
 }
 
 void KeyboardController::OnShowVirtualKeyboardIfEnabled() {
+  DVLOG(1) << "OnShowVirtualKeyboardIfEnabled: " << IsKeyboardEnableRequested();
   // Calling |ShowKeyboardInternal| may move the keyboard to another display.
-  if (keyboard::IsKeyboardEnabled() && !keyboard_locked_)
+  if (IsKeyboardEnableRequested() && !keyboard_locked_)
     ShowKeyboardInternal(display::Display());
 }
 
@@ -827,6 +830,7 @@ void KeyboardController::PopulateKeyboardContent(
     bool show_keyboard) {
   DCHECK(show_keyboard || state_ == KeyboardControllerState::INITIAL);
 
+  DVLOG(1) << "PopulateKeyboardContent: " << StateToStr(state_);
   TRACE_EVENT0("vk", "PopulateKeyboardContent");
 
   if (parent_container_->children().empty()) {
@@ -835,6 +839,7 @@ void KeyboardController::PopulateKeyboardContent(
     // |this| and the callback does not outlive |ui_|.
     // TODO(https://crbug.com/845780): Use a weak ptr here in case this
     // assumption changes.
+    DVLOG(1) << "LoadKeyboardWindow";
     aura::Window* keyboard_window = ui_->LoadKeyboardWindow(
         base::BindOnce(&KeyboardController::NotifyKeyboardWindowLoaded,
                        base::Unretained(this)));

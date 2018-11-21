@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/window.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_bounds_observer.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_bounds_observer.h"
+#include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/view.h"
 
 ChromeKeyboardBoundsObserver::ChromeKeyboardBoundsObserver(
     aura::Window* keyboard_window)
@@ -38,6 +41,7 @@ void ChromeKeyboardBoundsObserver::OnKeyboardOccludedBoundsChanged(
 
 void ChromeKeyboardBoundsObserver::UpdateOccludedBounds(
     const gfx::Rect& occluded_bounds) {
+  DVLOG(1) << "UpdateOccludedBounds: " << occluded_bounds.ToString();
   occluded_bounds_ = occluded_bounds;
 
   // Adjust the height of the viewport for visible windows on the primary
@@ -67,13 +71,7 @@ void ChromeKeyboardBoundsObserver::UpdateOccludedBounds(
     if (!ShouldWindowOverscroll(window))
       continue;
 
-    gfx::Rect view_bounds = view->GetViewBounds();
-    gfx::Rect intersect = gfx::IntersectRects(view_bounds, occluded_bounds);
-    int overlap = intersect.height();
-    if (overlap > 0 && overlap < view_bounds.height())
-      view->SetInsets(gfx::Insets(0, 0, overlap, 0));
-    else
-      view->SetInsets(gfx::Insets());
+    UpdateInsetsForHostView(view);
     AddObservedWindow(window);
   }
 
@@ -101,6 +99,7 @@ void ChromeKeyboardBoundsObserver::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {
+  DVLOG(1) << "OnWindowBoundsChanged: " << new_bounds.ToString();
   UpdateInsetsForWindow(window);
 }
 
@@ -119,39 +118,41 @@ void ChromeKeyboardBoundsObserver::UpdateInsetsForWindow(aura::Window* window) {
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     content::RenderWidgetHostView* view = widget->GetView();
     if (view && window->Contains(view->GetNativeView())) {
-      gfx::Rect view_bounds = view->GetViewBounds();
-      gfx::Rect intersect = gfx::IntersectRects(view_bounds, occluded_bounds_);
-      int overlap = ShouldEnableInsets(window) ? intersect.height() : 0;
-      if (overlap > 0 && overlap < view_bounds.height())
-        view->SetInsets(gfx::Insets(0, 0, overlap, 0));
+      if (ShouldEnableInsets(window))
+        UpdateInsetsForHostView(view);
       else
         view->SetInsets(gfx::Insets());
     }
   }
 }
 
+void ChromeKeyboardBoundsObserver::UpdateInsetsForHostView(
+    content::RenderWidgetHostView* view) {
+  gfx::Rect view_bounds = view->GetViewBounds();
+  gfx::Rect intersect = gfx::IntersectRects(view_bounds, occluded_bounds_);
+  int overlap = intersect.height();
+  if (overlap > 0 && overlap < view_bounds.height()) {
+    DVLOG(2) << "SetInsets for: " << view << " Overlap: " << overlap;
+    view->SetInsets(gfx::Insets(0, 0, overlap, 0));
+  } else {
+    view->SetInsets(gfx::Insets());
+  }
+}
+
 bool ChromeKeyboardBoundsObserver::ShouldWindowOverscroll(
     aura::Window* window) {
-  // When the WS is running, all available windows are Chrome windows and
-  // should overscroll.
-  if (::features::IsUsingWindowService())
-    return true;
-
-  aura::Window* root_window = window->GetRootWindow();
-  if (!root_window)
-    return true;
-
-  if (root_window != keyboard_window_->GetRootWindow())
+  // The virtual keyboard should not overscroll.
+  if (window->GetToplevelWindow() == keyboard_window_->GetToplevelWindow())
     return false;
 
-  // Shell IME window container contains virtual keyboard windows and IME
-  // windows (IME windows are created by the chrome.app.window.create API).
-  // They should never be overscrolled.
-  ash::RootWindowController* root_window_controller =
-      ash::RootWindowController::ForWindow(root_window);
-  return !root_window_controller
-              ->GetContainer(ash::kShellWindowId_ImeWindowParentContainer)
-              ->Contains(window);
+  // IME windows should not overscroll.
+  extensions::AppWindow* app_window =
+      AppWindowRegistryUtil::GetAppWindowForNativeWindowAnyProfile(
+          window->GetToplevelWindow());
+  if (app_window && app_window->is_ime_window())
+    return false;
+
+  return true;
 }
 
 bool ChromeKeyboardBoundsObserver::ShouldEnableInsets(aura::Window* window) {
