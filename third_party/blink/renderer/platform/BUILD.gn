@@ -1211,7 +1211,6 @@ jumbo_component("platform") {
     "mojo/bluetooth_struct_traits.h",
     "mojo/canonical_cookie_mojom_traits.cc",
     "mojo/canonical_cookie_mojom_traits.h",
-    "mojo/fetch_api_request_struct_traits.cc",
     "mojo/interface_invalidator.cc",
     "mojo/interface_invalidator.h",
     "mojo/mojo_helper.h",

@@ -164,9 +164,6 @@ ScriptPromise CacheStorage::match(ScriptState* script_state,
 ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                                       const Request* request,
                                       const CacheQueryOptions* options) {
-  WebServiceWorkerRequest web_request;
-  request->PopulateWebServiceWorkerRequest(web_request);
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
 
@@ -176,7 +173,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
   }
 
   cache_storage_ptr_->Match(
-      web_request, Cache::ToQueryParams(options),
+      request->CreateFetchAPIRequest(), Cache::ToQueryParams(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
              const CacheQueryOptions* options,

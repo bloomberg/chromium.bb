@@ -619,9 +619,16 @@ Request* Request::Create(ScriptState* script_state, FetchRequestData* request) {
 
 Request* Request::Create(ScriptState* script_state,
                          const WebServiceWorkerRequest& web_request) {
-  FetchRequestData* request =
-      FetchRequestData::Create(script_state, web_request);
-  return new Request(script_state, request);
+  FetchRequestData* data = FetchRequestData::Create(script_state, web_request);
+  return new Request(script_state, data);
+}
+
+Request* Request::Create(
+    ScriptState* script_state,
+    const mojom::blink::FetchAPIRequest& fetch_api_request) {
+  FetchRequestData* data =
+      FetchRequestData::Create(script_state, fetch_api_request);
+  return new Request(script_state, data);
 }
 
 bool Request::ParseCredentialsMode(
@@ -883,35 +890,50 @@ bool Request::HasBody() const {
   return BodyBuffer();
 }
 
-void Request::PopulateWebServiceWorkerRequest(
-    WebServiceWorkerRequest& web_request) const {
-  web_request.SetMethod(method());
-  web_request.SetMode(request_->Mode());
-  web_request.SetCredentialsMode(request_->Credentials());
-  web_request.SetCacheMode(request_->CacheMode());
-  web_request.SetRedirectMode(request_->Redirect());
-  web_request.SetIntegrity(request_->Integrity());
-  web_request.SetIsHistoryNavigation(request_->IsHistoryNavigation());
-  web_request.SetRequestContext(request_->Context());
+mojom::blink::FetchAPIRequestPtr Request::CreateFetchAPIRequest() const {
+  auto fetch_api_request = mojom::blink::FetchAPIRequest::New();
+  fetch_api_request->method = method();
+  fetch_api_request->mode = request_->Mode();
+  fetch_api_request->credentials_mode = request_->Credentials();
+  fetch_api_request->cache_mode = request_->CacheMode();
+  fetch_api_request->redirect_mode = request_->Redirect();
+  fetch_api_request->integrity = request_->Integrity();
+  fetch_api_request->is_history_navigation = request_->IsHistoryNavigation();
+  fetch_api_request->request_context_type = request_->Context();
 
-  // Strip off the fragment part of URL. So far, all users of
-  // WebServiceWorkerRequest expect the fragment to be excluded.
+  // Strip off the fragment part of URL. So far, all callers expect the fragment
+  // to be excluded.
   KURL url(request_->Url());
   if (request_->Url().HasFragmentIdentifier())
     url.RemoveFragmentIdentifier();
-  web_request.SetURL(url);
+  fetch_api_request->url = url;
 
-  const FetchHeaderList* header_list = headers_->HeaderList();
-  for (const auto& header : header_list->List()) {
-    web_request.AppendHeader(header.first, header.second);
+  HTTPHeaderMap headers;
+  for (const auto& header : headers_->HeaderList()->List()) {
+    if (DeprecatedEqualIgnoringCase(header.first, "referer"))
+      continue;
+    AtomicString key(header.first);
+    AtomicString value(header.second);
+    HTTPHeaderMap::AddResult result = headers.Add(key, value);
+    if (!result.is_new_entry) {
+      result.stored_value->value =
+          result.stored_value->value + ", " + String(value);
+    }
   }
+  for (const auto& pair : headers)
+    fetch_api_request->headers.insert(pair.key, pair.value);
 
-  web_request.SetReferrer(request_->ReferrerString(),
-                          static_cast<network::mojom::ReferrerPolicy>(
-                              request_->GetReferrerPolicy()));
+  if (!request_->ReferrerString().IsEmpty()) {
+    fetch_api_request->referrer =
+        mojom::blink::Referrer::New(KURL(NullURL(), request_->ReferrerString()),
+                                    static_cast<network::mojom::ReferrerPolicy>(
+                                        request_->GetReferrerPolicy()));
+    DCHECK(fetch_api_request->referrer->url.IsValid());
+  }
   // FIXME: How can we set isReload properly? What is the correct place to load
   // it in to the Request object? We should investigate the right way to plumb
   // this information in to here.
+  return fetch_api_request;
 }
 
 String Request::MimeType() const {

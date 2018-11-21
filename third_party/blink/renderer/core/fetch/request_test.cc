@@ -46,9 +46,9 @@ TEST(ServiceWorkerRequestTest, FromRequest) {
   EXPECT_EQ(url, request2->url());
 }
 
-TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
+TEST(ServiceWorkerRequestTest, FromAndToFetchAPIRequest) {
   V8TestingScope scope;
-  WebServiceWorkerRequest web_request;
+  auto fetch_api_request = mojom::blink::FetchAPIRequest::New();
 
   const KURL url("http://www.example.com/");
   const String method = "GET";
@@ -68,20 +68,20 @@ TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
   const network::mojom::FetchRedirectMode kRedirectMode =
       network::mojom::FetchRedirectMode::kError;
 
-  web_request.SetURL(url);
-  web_request.SetMethod(method);
-  web_request.SetMode(kMode);
-  web_request.SetCredentialsMode(kCredentialsMode);
-  web_request.SetCacheMode(kCacheMode);
-  web_request.SetRedirectMode(kRedirectMode);
-  web_request.SetRequestContext(kContext);
-  for (int i = 0; headers[i].key; ++i) {
-    web_request.SetHeader(WebString::FromUTF8(headers[i].key),
-                          WebString::FromUTF8(headers[i].value));
-  }
-  web_request.SetReferrer(referrer, kReferrerPolicy);
+  fetch_api_request->url = url;
+  fetch_api_request->method = method;
+  fetch_api_request->mode = kMode;
+  fetch_api_request->credentials_mode = kCredentialsMode;
+  fetch_api_request->cache_mode = kCacheMode;
+  fetch_api_request->redirect_mode = kRedirectMode;
+  fetch_api_request->request_context_type = kContext;
+  for (int i = 0; headers[i].key; ++i)
+    fetch_api_request->headers.insert(headers[i].key, headers[i].value);
+  fetch_api_request->referrer =
+      mojom::blink::Referrer::New(KURL(NullURL(), referrer), kReferrerPolicy);
 
-  Request* request = Request::Create(scope.GetScriptState(), web_request);
+  Request* request =
+      Request::Create(scope.GetScriptState(), *fetch_api_request);
   DCHECK(request);
   EXPECT_EQ(url, request->url());
   EXPECT_EQ(method, request->method());
@@ -102,22 +102,22 @@ TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
     EXPECT_FALSE(exception_state.HadException());
   }
 
-  WebServiceWorkerRequest second_web_request;
-  request->PopulateWebServiceWorkerRequest(second_web_request);
-  EXPECT_EQ(url, KURL(second_web_request.Url()));
-  EXPECT_EQ(method, String(second_web_request.Method()));
-  EXPECT_EQ(kMode, second_web_request.Mode());
-  EXPECT_EQ(kCredentialsMode, second_web_request.CredentialsMode());
-  EXPECT_EQ(kCacheMode, second_web_request.CacheMode());
-  EXPECT_EQ(kRedirectMode, second_web_request.RedirectMode());
-  EXPECT_EQ(kContext, second_web_request.GetRequestContext());
-  EXPECT_EQ(referrer, KURL(second_web_request.ReferrerUrl()));
+  mojom::blink::FetchAPIRequestPtr second_fetch_api_request =
+      request->CreateFetchAPIRequest();
+  EXPECT_EQ(url, second_fetch_api_request->url);
+  EXPECT_EQ(method, second_fetch_api_request->method);
+  EXPECT_EQ(kMode, second_fetch_api_request->mode);
+  EXPECT_EQ(kCredentialsMode, second_fetch_api_request->credentials_mode);
+  EXPECT_EQ(kCacheMode, second_fetch_api_request->cache_mode);
+  EXPECT_EQ(kRedirectMode, second_fetch_api_request->redirect_mode);
+  EXPECT_EQ(kContext, second_fetch_api_request->request_context_type);
+  EXPECT_EQ(referrer, second_fetch_api_request->referrer->url);
   EXPECT_EQ(network::mojom::ReferrerPolicy::kAlways,
-            second_web_request.GetReferrerPolicy());
-  EXPECT_EQ(web_request.Headers(), second_web_request.Headers());
+            second_fetch_api_request->referrer->policy);
+  EXPECT_EQ(fetch_api_request->headers, second_fetch_api_request->headers);
 }
 
-TEST(ServiceWorkerRequestTest, ToWebRequestStripsURLFragment) {
+TEST(ServiceWorkerRequestTest, ToFetchAPIRequestStripsURLFragment) {
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
   String url_without_fragment = "http://www.example.com/";
@@ -126,9 +126,9 @@ TEST(ServiceWorkerRequestTest, ToWebRequestStripsURLFragment) {
       Request::Create(scope.GetScriptState(), url, exception_state);
   DCHECK(request);
 
-  WebServiceWorkerRequest web_request;
-  request->PopulateWebServiceWorkerRequest(web_request);
-  EXPECT_EQ(url_without_fragment, KURL(web_request.Url()));
+  mojom::blink::FetchAPIRequestPtr fetch_api_request =
+      request->CreateFetchAPIRequest();
+  EXPECT_EQ(url_without_fragment, fetch_api_request->url);
 }
 
 }  // namespace

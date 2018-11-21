@@ -103,18 +103,17 @@ enum FetchImportanceMode {
 struct FetchAPIRequest {
   network.mojom.FetchRequestMode mode = network.mojom.FetchRequestMode.kNoCors;
   bool is_main_resource_load = false;
-  RequestContextType request_context_type =
-    RequestContextType.UNSPECIFIED;
+  RequestContextType request_context_type = RequestContextType.UNSPECIFIED;
   network.mojom.RequestContextFrameType frame_type =
     network.mojom.RequestContextFrameType.kNone;
   url.mojom.Url url;
   string method;
   map<string, string> headers;
   SerializedBlob? blob;
-  Referrer referrer;
+  Referrer? referrer;
   network.mojom.FetchCredentialsMode credentials_mode =
     network.mojom.FetchCredentialsMode.kOmit;
-  FetchCacheMode cache_mode = blink.mojom.FetchCacheMode.kDefault;
+  FetchCacheMode cache_mode = FetchCacheMode.kDefault;
   network.mojom.FetchRedirectMode redirect_mode =
     network.mojom.FetchRedirectMode.kFollow;
   string? integrity;

@@ -203,28 +203,25 @@ ScriptPromise BackgroundFetchRegistration::MatchImpl(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // Convert |request| to WebServiceWorkerRequest.
-  base::Optional<WebServiceWorkerRequest> optional_request;
+  // Convert |request| to mojom::blink::FetchAPIRequestPtr.
+  mojom::blink::FetchAPIRequestPtr request_to_match;
   if (request.has_value()) {
-    WebServiceWorkerRequest request_to_match;
     if (request->IsRequest()) {
-      request->GetAsRequest()->PopulateWebServiceWorkerRequest(
-          request_to_match);
+      request_to_match = request->GetAsRequest()->CreateFetchAPIRequest();
     } else {
       Request* new_request = Request::Create(
           script_state, request->GetAsUSVString(), exception_state);
       if (exception_state.HadException())
         return ScriptPromise();
-      new_request->PopulateWebServiceWorkerRequest(request_to_match);
+      request_to_match = new_request->CreateFetchAPIRequest();
     }
-    optional_request = request_to_match;
   }
 
   DCHECK(registration_);
 
   BackgroundFetchBridge::From(registration_)
       ->MatchRequests(
-          developer_id_, unique_id_, optional_request,
+          developer_id_, unique_id_, std::move(request_to_match),
           std::move(cache_query_params), match_all,
           WTF::Bind(&BackgroundFetchRegistration::DidGetMatchingRequests,
                     WrapPersistent(this), WrapPersistent(resolver), match_all));
@@ -241,7 +238,7 @@ void BackgroundFetchRegistration::DidGetMatchingRequests(
   HeapVector<Member<BackgroundFetchRecord>> to_return;
   to_return.ReserveInitialCapacity(settled_fetches.size());
   for (const auto& fetch : settled_fetches) {
-    Request* request = Request::Create(script_state, fetch->request);
+    Request* request = Request::Create(script_state, *(fetch->request));
 
     Response* response = fetch->response
                              ? Response::Create(script_state, *fetch->response)

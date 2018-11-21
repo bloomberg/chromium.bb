@@ -6,7 +6,6 @@
 
 #include <utility>
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_options.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_type_converters.h"
@@ -48,7 +47,7 @@ void BackgroundFetchBridge::GetIconDisplaySize(
 void BackgroundFetchBridge::MatchRequests(
     const String& developer_id,
     const String& unique_id,
-    base::Optional<WebServiceWorkerRequest> request_to_match,
+    mojom::blink::FetchAPIRequestPtr request_to_match,
     mojom::blink::QueryParamsPtr cache_query_params,
     bool match_all,
     mojom::blink::BackgroundFetchService::MatchRequestsCallback callback) {
@@ -60,7 +59,7 @@ void BackgroundFetchBridge::MatchRequests(
 
 void BackgroundFetchBridge::Fetch(
     const String& developer_id,
-    Vector<WebServiceWorkerRequest> requests,
+    Vector<mojom::blink::FetchAPIRequestPtr> requests,
     mojom::blink::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     mojom::blink::BackgroundFetchUkmDataPtr ukm_data,
