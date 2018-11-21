@@ -25,6 +25,7 @@ extern const base::Feature kCCTBackgroundTab;
 extern const base::Feature kCCTExternalLinkHandling;
 extern const base::Feature kCCTModule;
 extern const base::Feature kCCTModuleCache;
+extern const base::Feature kCCTModuleCustomHeader;
 extern const base::Feature kCCTModulePostMessage;
 extern const base::Feature kCCTParallelRequest;
 extern const base::Feature kCCTPostMessageAPI;

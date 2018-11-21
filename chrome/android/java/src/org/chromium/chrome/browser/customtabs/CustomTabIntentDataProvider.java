@@ -143,6 +143,10 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     /* package */ static final String EXTRA_MODULE_CLASS_NAME =
             "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_CLASS_NAME";
 
+    /** Extra that indicates whether to hide the CCT header on module managed URLs. */
+    /* package */ static final String EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS =
+            "org.chromium.chrome.browser.customtabs.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS";
+
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
 
     private static final int MAX_CUSTOM_TOOLBAR_ITEMS = 2;
@@ -166,6 +170,9 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private final boolean mIsTrustedWebActivity;
     @Nullable
     private final ComponentName mModuleComponentName;
+    @Nullable
+    private final Pattern mModuleManagedUrlsPattern;
+    private final boolean mHideCctHeaderOnModuleManagedUrls;
     private final boolean mIsIncognito;
     @Nullable
     private String mUrlToLoad;
@@ -184,8 +191,6 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private PendingIntent mRemoteViewsPendingIntent;
     // OnFinished listener for PendingIntents. Used for testing only.
     private PendingIntent.OnFinished mOnFinished;
-    @Nullable
-    private Pattern mModuleManagedUrlsPattern;
 
     /** Whether this CustomTabActivity was explicitly started by another Chrome Activity. */
     private final boolean mIsOpenedByChrome;
@@ -295,15 +300,17 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         String moduleClassName = IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_CLASS_NAME);
         if (modulePackageName != null && moduleClassName != null) {
             mModuleComponentName = new ComponentName(modulePackageName, moduleClassName);
+            String moduleManagedUrlsRegex =
+                    IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_MANAGED_URLS_REGEX);
+            mModuleManagedUrlsPattern = (moduleManagedUrlsRegex != null)
+                    ? Pattern.compile(moduleManagedUrlsRegex)
+                    : null;
+            mHideCctHeaderOnModuleManagedUrls = IntentUtils.safeGetBooleanExtra(
+                    intent, EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, false);
         } else {
             mModuleComponentName = null;
-        }
-        String moduleManagedUrlsRegex =
-                IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_MANAGED_URLS_REGEX);
-        if (moduleManagedUrlsRegex != null) {
-            mModuleManagedUrlsPattern = Pattern.compile(moduleManagedUrlsRegex);
-        } else {
             mModuleManagedUrlsPattern = null;
+            mHideCctHeaderOnModuleManagedUrls = false;
         }
     }
 
@@ -794,5 +801,12 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      */
     public Intent getIntent() {
         return mIntent;
+    }
+
+    /**
+     * @return Whether to hide CCT header on module managed URLs.
+     */
+    boolean shouldHideCctHeaderOnModuleManagedUrls() {
+        return mHideCctHeaderOnModuleManagedUrls;
     }
 }

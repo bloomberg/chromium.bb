@@ -2243,6 +2243,12 @@ const char kCCTModuleCacheDescription[] =
     "Enables a cache for dynamically loaded modules in Chrome Custom Tabs. "
     "Under mild memory pressure the cache may be retained for some time";
 
+const char kCCTModuleCustomHeaderName[] =
+    "Chrome Custom Tabs Module Custom Header";
+const char kCCTModuleCustomHeaderDescription[] =
+    "Enables header customization by dynamically loaded modules in "
+    "Chrome Custom Tabs.";
+
 const char kCCTModulePostMessageName[] =
     "Chrome Custom Tabs Module postMessage API";
 const char kCCTModulePostMessageDescription[] =

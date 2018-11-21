@@ -347,6 +347,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "cct-module-custom-header",
+    "owners": [ "mvanouwerkerk" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "cct-module-post-message",
     "owners": [ "mvanouwerkerk" ],
     "expiry_milestone": 76
