@@ -73,6 +73,7 @@ public class TracingController {
 
     // Delete shared trace files after 1 hour.
     private static final long DELETE_AFTER_SHARE_TIMEOUT_MILLIS = 60 * 60 * 1000;
+    private static final long UPDATE_BUFFER_USAGE_INTERVAL_MILLIS = 1000;
 
     private static TracingController sInstance;
 
@@ -220,6 +221,20 @@ public class TracingController {
         }
 
         setState(State.RECORDING);
+        updateBufferUsage();
+    }
+
+    private void updateBufferUsage() {
+        if (mState != State.RECORDING) return;
+
+        mNativeController.getTraceBufferUsage(pair -> {
+            if (mState != State.RECORDING) return;
+
+            TracingNotificationManager.updateTracingActiveNotification(pair.first);
+
+            ThreadUtils.postOnUiThreadDelayed(
+                    () -> { updateBufferUsage(); }, UPDATE_BUFFER_USAGE_INTERVAL_MILLIS);
+        });
     }
 
     /**

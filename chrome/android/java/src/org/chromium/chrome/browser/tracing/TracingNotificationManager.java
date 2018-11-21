@@ -28,6 +28,7 @@ public class TracingNotificationManager {
     private static final int TRACING_NOTIFICATION_ID = 100;
 
     private static NotificationManagerProxy sNotificationManagerOverride;
+    private static ChromeNotificationBuilder sTracingActiveNotificationBuilder;
 
     // TODO(eseckler): Consider recording UMAs, see e.g. IncognitoNotificationManager.
 
@@ -85,12 +86,11 @@ public class TracingNotificationManager {
     public static void showTracingActiveNotification() {
         Context context = ContextUtils.getApplicationContext();
         String title = context.getResources().getString(R.string.tracing_active_notification_title);
-        // TODO(eseckler): Update the buffer usage in the notification periodically.
         int bufferUsagePercentage = 0;
         String message = context.getResources().getString(
                 R.string.tracing_active_notification_message, bufferUsagePercentage);
 
-        ChromeNotificationBuilder builder =
+        sTracingActiveNotificationBuilder =
                 createNotificationBuilder()
                         .setContentTitle(title)
                         .setContentText(message)
@@ -99,7 +99,25 @@ public class TracingNotificationManager {
                                 ContextUtils.getApplicationContext().getResources().getString(
                                         R.string.tracing_stop),
                                 TracingNotificationService.getStopRecordingIntent(context));
-        showNotification(builder.build());
+        showNotification(sTracingActiveNotificationBuilder.build());
+    }
+
+    /**
+     * Update the tracing notification that is shown while a trace is being recorded with the
+     * current buffer utilization. Should only be called while the "tracing active" notification is
+     * shown.
+     *
+     * @param bufferUsagePercentage buffer utilization as float between 0 and 1.
+     */
+    public static void updateTracingActiveNotification(float bufferUsagePercentage) {
+        assert (sTracingActiveNotificationBuilder != null);
+        Context context = ContextUtils.getApplicationContext();
+        String message =
+                context.getResources().getString(R.string.tracing_active_notification_message,
+                        Math.round(bufferUsagePercentage * 100));
+
+        sTracingActiveNotificationBuilder.setContentText(message);
+        showNotification(sTracingActiveNotificationBuilder.build());
     }
 
     /**
@@ -149,6 +167,7 @@ public class TracingNotificationManager {
         NotificationManagerProxy manager =
                 getNotificationManager(ContextUtils.getApplicationContext());
         manager.cancel(TRACING_NOTIFICATION_TAG, TRACING_NOTIFICATION_ID);
+        sTracingActiveNotificationBuilder = null;
     }
 
     private static ChromeNotificationBuilder createNotificationBuilder() {
