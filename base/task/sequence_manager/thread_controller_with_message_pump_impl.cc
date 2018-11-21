@@ -4,7 +4,6 @@
 
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 
-#include "base/auto_reset.h"
 #include "base/message_loop/message_pump.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -46,6 +45,7 @@ ThreadControllerWithMessagePumpImpl::ThreadControllerWithMessagePumpImpl(
 }
 
 ThreadControllerWithMessagePumpImpl::~ThreadControllerWithMessagePumpImpl() {
+  operations_controller_.ShutdownAndWaitForZeroOperations();
   // Destructors of MessagePump::Delegate and ThreadTaskRunnerHandle
   // will do all the clean-up.
   // ScopedSetSequenceLocalStorageMapForCurrentThread destructor will
@@ -80,7 +80,6 @@ void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
 void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
     std::unique_ptr<MessagePump> message_pump) {
   associated_thread_->BindToCurrentThread();
-  AutoLock lock(pump_lock_);
   pump_ = std::move(message_pump);
   RunLoop::RegisterDelegateForCurrentThread(this);
   scoped_set_sequence_local_storage_map_for_current_thread_ = std::make_unique<
@@ -91,7 +90,7 @@ void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
     if (task_runner_)
       InitializeThreadTaskRunnerHandle();
   }
-  if (should_schedule_work_after_bind_)
+  if (operations_controller_.StartAcceptingOperations())
     ScheduleWork();
 }
 
@@ -113,12 +112,9 @@ void ThreadControllerWithMessagePumpImpl::WillQueueTask(
 }
 
 void ThreadControllerWithMessagePumpImpl::ScheduleWork() {
-  auto lock = AcquirePumpReadLockIfNeeded();
-
-  if (!pump_) {
-    should_schedule_work_after_bind_ = true;
+  auto operation_token = operations_controller_.TryBeginOperation();
+  if (!operation_token)
     return;
-  }
 
   // This assumes that cross thread ScheduleWork isn't frequent enough to
   // warrant ScheduleWork deduplication.
@@ -379,13 +375,6 @@ void ThreadControllerWithMessagePumpImpl::SetTaskExecutionAllowed(
 
 bool ThreadControllerWithMessagePumpImpl::IsTaskExecutionAllowed() const {
   return main_thread_only().task_execution_allowed;
-}
-
-Optional<MoveableAutoLock>
-ThreadControllerWithMessagePumpImpl::AcquirePumpReadLockIfNeeded() {
-  if (RunsTasksInCurrentSequence())
-    return nullopt;
-  return MoveableAutoLock(pump_lock_);
 }
 
 MessagePump* ThreadControllerWithMessagePumpImpl::GetBoundMessagePump() const {
