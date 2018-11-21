@@ -47,11 +47,6 @@ class WebTestWithWebState : public WebTest,
   void LoadHtml(NSString* html);
   // Loads the specified HTML content into the WebState, using test url name.
   bool LoadHtml(const std::string& html) WARN_UNUSED_RESULT;
-  // Loads the specified HTML content with URL into the WebState. None of the
-  // subresources will be fetched.
-  // This function is only supported on iOS11+. On iOS10, this function simply
-  // calls |LoadHtml|.
-  bool LoadHtmlWithoutSubresources(const std::string& html);
   // Blocks until both known NSRunLoop-based and known message-loop-based
   // background tasks have completed
   void WaitForBackgroundTasks();
