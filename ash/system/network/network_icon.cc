@@ -376,18 +376,6 @@ gfx::ImageSkia GetConnectingVpnImage(IconType icon_type) {
   return CreateNetworkIconImage(icon, badges);
 }
 
-gfx::ImageSkia GetConnectingImage(IconType icon_type,
-                                  const std::string& network_type) {
-  if (network_type == shill::kTypeVPN)
-    return GetConnectingVpnImage(icon_type);
-
-  ImageType image_type = ImageTypeForNetworkType(network_type);
-  double animation = NetworkIconAnimation::GetInstance()->GetAnimation();
-
-  return CreateNetworkIconImage(
-      *ConnectingWirelessImage(image_type, icon_type, animation), Badges());
-}
-
 }  // namespace
 
 //------------------------------------------------------------------------------
@@ -561,17 +549,26 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkState* network,
 // Public interface
 
 gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
-                                  IconType icon_type) {
+                                  IconType icon_type,
+                                  bool* animating) {
   DCHECK(network);
   const std::string network_type = GetEffectiveNetworkType(network, icon_type);
 
-  if (!network->visible())
+  if (!network->visible()) {
+    if (animating)
+      *animating = false;
     return GetBasicImage(false /* is_connected */, icon_type, network_type);
+  }
 
-  if (network->IsConnectingState())
-    return GetConnectingImage(icon_type, network_type);
+  if (network->IsConnectingState()) {
+    if (animating)
+      *animating = true;
+    return GetConnectingImageForNetworkType(network_type, icon_type);
+  }
 
   NetworkIconImpl* icon = FindAndUpdateImageImpl(network, icon_type);
+  if (animating)
+    *animating = false;
   return icon->image();
 }
 
@@ -592,9 +589,21 @@ gfx::ImageSkia GetImageForWiFiEnabledState(bool enabled, IconType icon_type) {
   return CreateNetworkIconImage(image, badges);
 }
 
-gfx::ImageSkia GetImageForDisconnectedCellNetwork() {
-  return GetBasicImage(false /* not connected */, ICON_TYPE_LIST,
-                       shill::kTypeCellular);
+gfx::ImageSkia GetConnectingImageForNetworkType(const std::string& network_type,
+                                                IconType icon_type) {
+  if (network_type == shill::kTypeVPN)
+    return GetConnectingVpnImage(icon_type);
+
+  ImageType image_type = ImageTypeForNetworkType(network_type);
+  double animation = NetworkIconAnimation::GetInstance()->GetAnimation();
+
+  return CreateNetworkIconImage(
+      *ConnectingWirelessImage(image_type, icon_type, animation), Badges());
+}
+
+gfx::ImageSkia GetDisconnectedImageForNetworkType(
+    const std::string& network_type) {
+  return GetBasicImage(false /* not connected */, ICON_TYPE_LIST, network_type);
 }
 
 gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
@@ -749,7 +758,8 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
     // the message about enabling Bluetooth for Tether.
     int uninitialized_msg = GetCellularUninitializedMsg();
     if (uninitialized_msg != 0) {
-      *image = GetConnectingImage(icon_type, shill::kTypeCellular);
+      *image =
+          GetConnectingImageForNetworkType(shill::kTypeCellular, icon_type);
       if (label)
         *label = l10n_util::GetStringUTF16(uninitialized_msg);
       *animating = true;
@@ -772,9 +782,8 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
     }
     return;
   }
-  *animating = network->IsConnectingState();
   // Get icon and label for connected or connecting network.
-  *image = GetImageForNetwork(network, icon_type);
+  *image = GetImageForNetwork(network, icon_type, animating);
   if (label)
     *label = GetLabelForNetwork(network, icon_type);
 }
