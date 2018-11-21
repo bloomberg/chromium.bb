@@ -303,6 +303,10 @@ int BoundedLabel::GetLineLimit() const {
   return line_limit_;
 }
 
+const gfx::FontList& BoundedLabel::font_list() const {
+  return label_->font_list();
+}
+
 int BoundedLabel::GetLinesForWidthAndLimit(int width, int limit) {
   return visible() ? label_->GetLinesForWidthAndLimit(width, limit) : 0;
 }

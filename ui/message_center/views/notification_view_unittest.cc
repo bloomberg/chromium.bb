@@ -22,6 +22,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification_list.h"
@@ -35,6 +36,7 @@
 #include "ui/message_center/views/padded_button.h"
 #include "ui/message_center/views/proportional_image_view.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
@@ -165,6 +167,49 @@ class NotificationViewTest : public views::ViewsTestBase {
         ->transform()
         .To2dTranslation()
         .x();
+  }
+
+  int GetTitleWidth() {
+    return notification_view()->title_view_->GetContentsBounds().width();
+  }
+
+  int GetTitleHeight() {
+    return notification_view()->title_view_->GetContentsBounds().height();
+  }
+
+  int GetTitleCharactersPerLine(base::char16 character) {
+    int available_width = GetTitleWidth();
+#if !defined(OS_CHROMEOS)
+    // On non-ChromeOS systems, we expect the available width to be reduced by
+    // the width of the control buttons view.
+    available_width -=
+        notification_view()->control_buttons_view_->GetPreferredSize().width();
+#endif
+    const gfx::FontList& font_list =
+        notification_view()->title_view_->font_list();
+
+    // To get the number of characters that fit into one line of text with a
+    // given width, we first get the width of one character.
+    int char_width =
+        gfx::GetStringWidth(base::string16(1, character), font_list);
+
+    // We then assume that multiple of these characters next to each other have
+    // a total width of N * char_width. This is usually a very good estimation,
+    // but based on the platform, it may vary due to font shaping.
+    int characters_per_line = available_width / char_width;
+
+    // These while loops account for any unexpected font shaping and are not
+    // expected to be expensive.
+    while (gfx::GetStringWidth(base::string16(characters_per_line, character),
+                               font_list) <= available_width) {
+      characters_per_line++;
+    }
+    while (gfx::GetStringWidth(base::string16(characters_per_line, character),
+                               font_list) > available_width) {
+      characters_per_line--;
+    }
+
+    return characters_per_line;
   }
 
   bool IsRemovedAfterIdle(const std::string& notification_id) const {
@@ -568,6 +613,50 @@ TEST_F(NotificationViewTest, ViewOrderingTest) {
   // Tests that views remain in that order even after an update.
   UpdateNotificationViews();
   CheckVerticalOrderInNotification();
+}
+
+TEST_F(NotificationViewTest, TitleWrappingTest) {
+  data()->settings_button_handler = SettingsButtonHandler::INLINE;
+  Notification notf(
+      NOTIFICATION_TYPE_BASE_FORMAT, std::string("notification id"),
+      base::UTF8ToUTF16(""), base::UTF8ToUTF16("message"),
+      CreateTestImage(80, 80), base::UTF8ToUTF16("display source"),
+      GURL("https://hello.com"),
+      NotifierId(NotifierType::APPLICATION, "extension_id"), *data(), nullptr);
+
+  const base::char16 character = '1';
+  const int characters_per_line = GetTitleCharactersPerLine(character);
+
+  // Test a very short title
+  notf.set_title(base::string16(1, character));
+  notification_view()->UpdateWithNotification(notf);
+  int one_line_height = GetTitleHeight();
+
+  // Test a title that exactly fits into one line
+  notf.set_title(base::string16(characters_per_line, character));
+  notification_view()->UpdateWithNotification(notf);
+  EXPECT_EQ(one_line_height, GetTitleHeight());
+
+  // Test a title that breaks into 2 lines with only 1 char in the second line
+  notf.set_title(base::string16(characters_per_line + 1, character));
+  notification_view()->UpdateWithNotification(notf);
+  int two_line_height = GetTitleHeight();
+  EXPECT_GT(two_line_height, one_line_height);
+
+  // Test a title that clearly breaks into 2 lines
+  notf.set_title(base::string16(characters_per_line + 10, character));
+  notification_view()->UpdateWithNotification(notf);
+  EXPECT_EQ(two_line_height, GetTitleHeight());
+
+  // Test a title that fits exactly into 2 lines
+  notf.set_title(base::string16(characters_per_line * 2, character));
+  notification_view()->UpdateWithNotification(notf);
+  EXPECT_EQ(two_line_height, GetTitleHeight());
+
+  // Test a title that would break into 3 lines but has ellipsis in the 2nd line
+  notf.set_title(base::string16(characters_per_line * 2 + 1, character));
+  notification_view()->UpdateWithNotification(notf);
+  EXPECT_EQ(two_line_height, GetTitleHeight());
 }
 
 TEST_F(NotificationViewTest, FormatContextMessageTest) {
