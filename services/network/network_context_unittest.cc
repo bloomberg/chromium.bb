@@ -3598,7 +3598,8 @@ TEST_F(NetworkContextTest, CloseAllConnections) {
   EXPECT_EQ(num_sockets, 0);
 }
 
-TEST_F(NetworkContextTest, CloseIdleConnections) {
+// Flaky; see http://crbug.com/905423
+TEST_F(NetworkContextTest, DISABLED_CloseIdleConnections) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
