@@ -289,13 +289,10 @@ void av1_quantize_b_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                        sc->iscan);
         break;
       case 1:
-        // TODO(any): there is a bug in current ssse3 and avx optimizations
-        // (refer to libaom issue 2240), which needs to be fixed. Use c version
-        // for now.
-        aom_quantize_b_32x32_c(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX,
-                               p->quant_QTX, p->quant_shift_QTX, qcoeff_ptr,
-                               dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
-                               sc->iscan);
+        aom_quantize_b_32x32(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX,
+                             p->quant_QTX, p->quant_shift_QTX, qcoeff_ptr,
+                             dqcoeff_ptr, p->dequant_QTX, eob_ptr, sc->scan,
+                             sc->iscan);
         break;
       case 2:
         aom_quantize_b_64x64(coeff_ptr, n_coeffs, p->zbin_QTX, p->round_QTX,
