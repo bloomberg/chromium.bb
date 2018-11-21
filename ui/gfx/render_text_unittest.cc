@@ -2106,31 +2106,37 @@ TEST_F(RenderTextTest, CenteredDisplayOffset) {
 }
 
 void MoveLeftRightByWordVerifier(RenderText* render_text, const char* str) {
-  render_text->SetText(UTF8ToUTF16(str));
+  SCOPED_TRACE(str);
+  const base::string16 str16(UTF8ToUTF16(str));
+  render_text->SetText(str16);
 
   // Test moving by word from left to right.
   render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, SELECTION_NONE);
-  bool first_word = true;
-  while (true) {
+  const size_t num_words = (str16.length() + 1) / 4;
+  for (size_t i = 0; i < num_words; ++i) {
     // First, test moving by word from a word break position, such as from
     // "|abc def" to "abc| def".
     const SelectionModel start = render_text->selection_model();
     render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
     const SelectionModel end = render_text->selection_model();
-    if (end == start)  // reach the end.
-      break;
 
     // For testing simplicity, each word is a 3-character word.
-    int num_of_character_moves = first_word ? 3 : 4;
-    first_word = false;
+#if defined(OS_WIN)
+    // Windows moves from "|abc def" to "abc |def" instead of "abc| def", so
+    // traverse 4 characters on all but the last word instead of all but the
+    // first.
+    const int num_character_moves = (i == num_words - 1) ? 3 : 4;
+#else
+    const int num_character_moves = (i == 0) ? 3 : 4;
+#endif
     render_text->SetSelection(start);
-    for (int j = 0; j < num_of_character_moves; ++j)
+    for (int j = 0; j < num_character_moves; ++j)
       render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
     EXPECT_EQ(end, render_text->selection_model());
 
     // Then, test moving by word from positions inside the word, such as from
     // "a|bc def" to "abc| def", and from "ab|c def" to "abc| def".
-    for (int j = 1; j < num_of_character_moves; ++j) {
+    for (int j = 1; j < num_character_moves; ++j) {
       render_text->SetSelection(start);
       for (int k = 0; k < j; ++k)
         render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
@@ -2141,22 +2147,18 @@ void MoveLeftRightByWordVerifier(RenderText* render_text, const char* str) {
 
   // Test moving by word from right to left.
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, SELECTION_NONE);
-  first_word = true;
-  while (true) {
+  for (size_t i = 0; i < num_words; ++i) {
     const SelectionModel start = render_text->selection_model();
     render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
     const SelectionModel end = render_text->selection_model();
-    if (end == start)  // reach the end.
-      break;
 
-    int num_of_character_moves = first_word ? 3 : 4;
-    first_word = false;
+    const int num_character_moves = (i == 0) ? 3 : 4;
     render_text->SetSelection(start);
-    for (int j = 0; j < num_of_character_moves; ++j)
+    for (int j = 0; j < num_character_moves; ++j)
       render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
     EXPECT_EQ(end, render_text->selection_model());
 
-    for (int j = 1; j < num_of_character_moves; ++j) {
+    for (int j = 1; j < num_character_moves; ++j) {
       render_text->SetSelection(start);
       for (int k = 0; k < j; ++k)
         render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
@@ -2166,9 +2168,15 @@ void MoveLeftRightByWordVerifier(RenderText* render_text, const char* str) {
   }
 }
 
-// TODO(msw): Make these work on Windows. http://crbug.com/196326
-#if !defined(OS_WIN)
-TEST_F(RenderTextTest, MoveLeftRightByWordInBidiText) {
+#if defined(OS_WIN)
+// TODO(aleventhal): https://crbug.com/906308 Fix bugs, update verifier code
+// above, and enable for Windows.
+#define MAYBE_MoveLeftRightByWordInBidiText \
+  DISABLED_MoveLeftRightByWordInBidiText
+#else
+#define MAYBE_MoveLeftRightByWordInBidiText MoveLeftRightByWordInBidiText
+#endif
+TEST_F(RenderTextTest, MAYBE_MoveLeftRightByWordInBidiText) {
   RenderText* render_text = GetRenderText();
   // For testing simplicity, each word is a 3-character word.
   std::vector<const char*> test;
@@ -2245,13 +2253,16 @@ TEST_F(RenderTextTest, MoveLeftRightByWordInTextWithMultiSpaces) {
   render_text->SetText(UTF8ToUTF16("abc     def"));
   render_text->SetCursorPosition(5);
   render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+#if defined(OS_WIN)
+  EXPECT_EQ(8U, render_text->cursor_position());
+#else
   EXPECT_EQ(11U, render_text->cursor_position());
+#endif
 
   render_text->SetCursorPosition(5);
   render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
   EXPECT_EQ(0U, render_text->cursor_position());
 }
-#endif  // !defined(OS_WIN)
 
 TEST_F(RenderTextTest, MoveLeftRightByWordInThaiText) {
   RenderText* render_text = GetRenderText();
