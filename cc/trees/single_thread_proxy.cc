@@ -786,7 +786,6 @@ void SingleThreadProxy::BeginMainFrame(
 
 void SingleThreadProxy::DoBeginMainFrame(
     const viz::BeginFrameArgs& begin_frame_args) {
-  base::TimeTicks begin_main_frame_start_time = base::TimeTicks::Now();
   // The impl-side scroll deltas may be manipulated directly via the
   // InputHandler on the UI thread and the scale deltas may change when they are
   // clamped on the impl thread.
@@ -797,8 +796,8 @@ void SingleThreadProxy::DoBeginMainFrame(
   layer_tree_host_->WillBeginMainFrame();
   layer_tree_host_->BeginMainFrame(begin_frame_args);
   layer_tree_host_->AnimateLayers(begin_frame_args.frame_time);
-  layer_tree_host_->RequestMainFrameUpdate();
-  layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
+  layer_tree_host_->RequestMainFrameUpdate(
+      false /* record_main_frame_metrics */);
 }
 
 void SingleThreadProxy::DoPainting() {

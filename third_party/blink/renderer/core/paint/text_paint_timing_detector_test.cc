@@ -31,7 +31,8 @@ class TextPaintTimingDetectorTest
   }
 
   void UpdateAllLifecyclePhasesAndSimulateSwapTime() {
-    GetFrameView().UpdateAllLifecyclePhases();
+    GetFrameView().UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
     TextPaintTimingDetector& detector =
         GetPaintTracker().GetTextPaintTimingDetector();
     if (detector.texts_to_record_swap_time_.size() > 0) {

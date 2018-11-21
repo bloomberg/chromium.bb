@@ -37,7 +37,8 @@ TEST_F(ProgressShadowElementTest, LayoutObjectIsNeeded) {
   Element* shadow_element = ToElement(progress->GetShadowRoot()->firstChild());
   ASSERT_TRUE(shadow_element);
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   progress->LazyReattachIfAttached();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);

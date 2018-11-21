@@ -104,15 +104,23 @@ class WebWidget {
 
   // Called to run through the entire set of document lifecycle phases needed
   // to render a frame of the web widget. This MUST be called before Paint,
-  // and it may result in calls to WebWidgetClient::didInvalidateRect.
-  virtual void UpdateAllLifecyclePhases() { UpdateLifecycle(); }
-
-  // By default, all phases are updated by |UpdateLifecycle| (e.g., style,
-  // layout, prepaint, paint, etc. See: document_lifecycle.h). |LifecycleUpdate|
-  // can be used to only update to a specific lifecycle phase.
+  // and it may result in calls to WebWidgetClient::DidInvalidateRect.
+  // |LifecycleUpdateReason| must be used to indicate the source of the
+  // update for the purposes of metrics gathering.
   enum class LifecycleUpdate { kLayout, kPrePaint, kAll };
-  virtual void UpdateLifecycle(
-      LifecycleUpdate requested_update = LifecycleUpdate::kAll) {}
+  // This must be kept coordinated with DocumentLifecycle::LifecycleUpdateReason
+  enum class LifecycleUpdateReason { kBeginMainFrame, kTest, kOther };
+  virtual void UpdateAllLifecyclePhases(LifecycleUpdateReason reason) {
+    UpdateLifecycle(LifecycleUpdate::kAll, reason);
+  }
+
+  // UpdateLifecycle is used to update to a specific lifestyle phase, as given
+  // by |LifecycleUpdate|. To update all lifecycle phases, use
+  // UpdateAllLifecyclePhases.
+  // |LifecycleUpdateReason| must be used to indicate the source of the
+  // update for the purposes of metrics gathering.
+  virtual void UpdateLifecycle(LifecycleUpdate requested_update,
+                               LifecycleUpdateReason reason) {}
 
   // Synchronously performs the complete set of document lifecycle phases,
   // including updates to the compositor state, optionally including

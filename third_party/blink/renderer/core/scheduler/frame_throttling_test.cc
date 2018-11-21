@@ -77,7 +77,8 @@ class FrameThrottlingTest : public PaintTestConfigurations, public SimTest {
   }
 
   void UpdateAllLifecyclePhases() {
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    GetDocument().View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
   }
 };
 

@@ -25,7 +25,10 @@ class JankTrackerTest : public RenderingTest {
         WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks()));
   }
 
-  void UpdateAllLifecyclePhases() { GetFrameView().UpdateAllLifecyclePhases(); }
+  void UpdateAllLifecyclePhases() {
+    GetFrameView().UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
+  }
 };
 
 TEST_F(JankTrackerTest, SimpleBlockMovement) {

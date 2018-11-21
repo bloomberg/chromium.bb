@@ -142,7 +142,8 @@ class BrowserControlsTest : public testing::Test {
   }
 
   void UpdateAllLifecyclePhases() {
-    GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+    GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
   }
 
  private:

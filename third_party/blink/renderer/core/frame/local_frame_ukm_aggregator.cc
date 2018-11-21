@@ -127,6 +127,11 @@ LocalFrameUkmAggregator::GetScopedTimer(size_t metric_index) {
   return ScopedUkmHierarchicalTimer(this, metric_index);
 }
 
+void LocalFrameUkmAggregator::BeginMainFrame() {
+  DCHECK(!in_main_frame_update_);
+  in_main_frame_update_ = true;
+}
+
 void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
                                            TimeTicks start,
                                            TimeTicks end) {
@@ -143,13 +148,23 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
   // Record the UMA
   record.uma_counter->CountMicroseconds(duration);
 
-  // Just record the duration for ratios. We compute the ratio later
-  // when we know the frame time.
-  main_frame_percentage_records_[metric_index].interval_duration += duration;
+  // Only record ratios when inside a main frame.
+  if (in_main_frame_update_) {
+    // Just record the duration for ratios. We compute the ratio later
+    // when we know the frame time.
+    main_frame_percentage_records_[metric_index].interval_duration += duration;
+  }
 }
 
-void LocalFrameUkmAggregator::RecordPrimarySample(TimeTicks start,
-                                                  TimeTicks end) {
+void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(TimeTicks start,
+                                                      TimeTicks end) {
+  // Any of the early out's in LocalFrameView::UpdateLifecyclePhases
+  // will mean we are not in a main frame update. Recording is triggered
+  // higher in the stack, so we cannot know to avoid calling this method.
+  if (!in_main_frame_update_)
+    return;
+  in_main_frame_update_ = false;
+
   TimeDelta duration = end - start;
 
   // Record UMA

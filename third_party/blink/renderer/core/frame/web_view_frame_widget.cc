@@ -61,8 +61,9 @@ void WebViewFrameWidget::RecordEndOfFrameMetrics(
   web_view_->RecordEndOfFrameMetrics(frame_begin_time);
 }
 
-void WebViewFrameWidget::UpdateLifecycle(LifecycleUpdate requested_update) {
-  web_view_->UpdateLifecycle(requested_update);
+void WebViewFrameWidget::UpdateLifecycle(LifecycleUpdate requested_update,
+                                         LifecycleUpdateReason reason) {
+  web_view_->UpdateLifecycle(requested_update, reason);
 }
 
 void WebViewFrameWidget::PaintContent(cc::PaintCanvas* canvas,

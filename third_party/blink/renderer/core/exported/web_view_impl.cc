@@ -1088,7 +1088,7 @@ void WebViewImpl::EnableTapHighlightAtPoint(
 void WebViewImpl::EnableTapHighlights(
     HeapVector<Member<Node>>& highlight_nodes) {
   GetPage()->GetLinkHighlights().SetTapHighlights(highlight_nodes);
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(LifecycleUpdateReason::kOther);
 }
 
 void WebViewImpl::AnimateDoubleTapZoom(const IntPoint& point_in_root_frame,
@@ -1429,7 +1429,7 @@ void WebViewImpl::ResizeViewWhileAnchored(float top_controls_height,
   // Update lifecyle phases immediately to recalculate the minimum scale limit
   // for rotation anchoring, and to make sure that no lifecycle states are
   // stale if this WebView is embedded in another one.
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(LifecycleUpdateReason::kOther);
 }
 
 void WebViewImpl::ResizeWithBrowserControls(
@@ -1538,7 +1538,8 @@ void WebViewImpl::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
       frame_begin_time);
 }
 
-void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
+void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update,
+                                  LifecycleUpdateReason reason) {
   TRACE_EVENT0("blink", "WebViewImpl::updateAllLifecyclePhases");
   if (!MainFrameImpl())
     return;
@@ -1547,7 +1548,7 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
 
   PageWidgetDelegate::UpdateLifecycle(*page_, *MainFrameImpl()->GetFrame(),
-                                      requested_update);
+                                      requested_update, reason);
   if (requested_update == LifecycleUpdate::kLayout)
     return;
 

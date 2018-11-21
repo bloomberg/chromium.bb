@@ -64,7 +64,8 @@ class UseCounterTest : public testing::Test {
   HistogramTester histogram_tester_;
 
   void UpdateAllLifecyclePhases(Document& document) {
-    document.View()->UpdateAllLifecyclePhases();
+    document.View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
   }
 };
 
@@ -433,11 +434,11 @@ TEST_F(UseCounterTest, CSSUnknownNamespacePrefixInSelector) {
       a {}
     </style>
   )HTML");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_FALSE(UseCounter::IsCounted(document, feature));
 
   document.documentElement()->SetInnerHTMLFromString("<style>foo|a {}</style>");
-  document.View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
 }
 

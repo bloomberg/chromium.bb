@@ -77,7 +77,8 @@ TEST_F(ChromeRenderFrameObserverTest, SkipCapturingSubFrames) {
       "This is a main document"
       "<iframe srcdoc=\"This a document in an iframe.\">"
       "</body>");
-  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(fake_translate_driver_.called_new_page_);

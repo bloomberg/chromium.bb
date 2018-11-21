@@ -319,8 +319,10 @@ class CORE_EXPORT LocalFrameView final
   // be in the lifecycle state PaintClean.  If lifecycle throttling is allowed
   // (see DocumentLifecycle::AllowThrottlingScope), some frames may skip the
   // lifecycle update (e.g., based on visibility) and will not end up being
-  // PaintClean.
-  void UpdateAllLifecyclePhases();
+  // PaintClean. Set |reason| to indicate the reason for this update,
+  // for metrics purposes.
+  void UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason reason);
 
   // Computes the style, layout, compositing and pre-paint lifecycle stages
   // if needed.
@@ -733,7 +735,8 @@ class CORE_EXPORT LocalFrameView final
 
   // Returns whether the lifecycle was succesfully updated to the
   // target state.
-  bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state);
+  bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state,
+                             DocumentLifecycle::LifecycleUpdateReason reason);
   // The internal version that does the work after the proper context and checks
   // have passed in the above function call.
   void UpdateLifecyclePhasesInternal(

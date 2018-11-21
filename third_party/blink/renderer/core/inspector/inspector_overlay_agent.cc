@@ -504,7 +504,8 @@ void InspectorOverlayAgent::UpdateAllOverlayLifecyclePhases() {
       needs_update_ = false;
       RebuildOverlayPage();
     }
-    OverlayMainFrame()->View()->UpdateAllLifecyclePhases();
+    OverlayMainFrame()->View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kOther);
   }
 
   if (page_overlay_ && page_overlay_->GetGraphicsLayer())

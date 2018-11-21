@@ -82,7 +82,8 @@ class CORE_EXPORT PageWidgetDelegate {
   // See comment of WebWidget::UpdateLifecycle.
   static void UpdateLifecycle(Page&,
                               LocalFrame& root,
-                              WebWidget::LifecycleUpdate requested_update);
+                              WebWidget::LifecycleUpdate requested_update,
+                              WebWidget::LifecycleUpdateReason reason);
 
   // See documents of methods with the same names in FrameView class.
   static void PaintContent(Page&,

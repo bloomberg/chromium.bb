@@ -220,7 +220,8 @@ void ProxyMain::BeginMainFrame(
 
   // See LayerTreeHostClient::MainFrameUpdate for more documentation on
   // what this does.
-  layer_tree_host_->RequestMainFrameUpdate();
+  layer_tree_host_->RequestMainFrameUpdate(
+      true /* record_main_frame_metrics */);
 
   // TODO(schenney) This will be changed to defer_commits_ when we introduce
   // the separation between deferring of main frame updates and deferring of

@@ -113,7 +113,8 @@ class RootScrollerTest : public testing::Test,
 
   void ExecuteScript(const WebString& code, WebLocalFrame& frame) {
     frame.ExecuteScript(WebScriptSource(code));
-    frame.View()->MainFrameWidget()->UpdateAllLifecyclePhases();
+    frame.View()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
     RunPendingTasks();
   }
 
@@ -191,7 +192,8 @@ class RootScrollerTest : public testing::Test,
   }
 
   void UpdateAllLifecyclePhases(LocalFrameView* view) {
-    view->UpdateAllLifecyclePhases();
+    view->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
   }
 
   std::string base_url_;

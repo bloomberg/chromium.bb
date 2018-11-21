@@ -725,7 +725,8 @@ TEST_F(MapCoordinatesTest, IFrameTransformed) {
 
   ChildDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0.0, 1000), kProgrammaticScroll);
-  ChildDocument().View()->UpdateAllLifecyclePhases();
+  ChildDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   Element* target = ChildDocument().getElementById("target");
   ASSERT_TRUE(target);

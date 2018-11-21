@@ -53,7 +53,7 @@ class FakeWebPlugin : public WebPlugin {
   bool Initialize(WebPluginContainer*) override;
   void Destroy() override;
   bool CanProcessDrag() const override { return false; }
-  void UpdateAllLifecyclePhases() override {}
+  void UpdateAllLifecyclePhases(WebWidget::LifecycleUpdateReason) override {}
   void Paint(cc::PaintCanvas*, const WebRect&) override {}
   void UpdateGeometry(const WebRect& client_rect,
                       const WebRect& clip_rect,

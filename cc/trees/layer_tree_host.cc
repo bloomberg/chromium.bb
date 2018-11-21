@@ -277,8 +277,8 @@ const LayerTreeDebugState& LayerTreeHost::GetDebugState() const {
   return debug_state_;
 }
 
-void LayerTreeHost::RequestMainFrameUpdate() {
-  client_->UpdateLayerTreeHost();
+void LayerTreeHost::RequestMainFrameUpdate(bool record_main_frame_metrics) {
+  client_->UpdateLayerTreeHost(record_main_frame_metrics);
 }
 
 // This function commits the LayerTreeHost to an impl tree. When modifying
@@ -650,7 +650,7 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
-  RequestMainFrameUpdate();
+  RequestMainFrameUpdate(false /* record_main_frame_metrics */);
   UpdateLayers();
 }
 

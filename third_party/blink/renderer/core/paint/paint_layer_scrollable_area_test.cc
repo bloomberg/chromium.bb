@@ -866,7 +866,7 @@ TEST_P(PaintLayerScrollableAreaTest,
     EXPECT_TRUE(scroller->BackgroundNeedsFullPaintInvalidation());
   }
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(FloatSize(0, 1), scrollable_area->GetScrollOffset());
   const auto* properties = scroller->FirstFragment().PaintProperties();
   EXPECT_NE(nullptr, properties->ScrollTranslation());
@@ -947,7 +947,7 @@ TEST_P(PaintLayerScrollableAreaTest, ViewScrollWithFixedAttachmentBackground) {
     EXPECT_TRUE(GetLayoutView().BackgroundNeedsFullPaintInvalidation());
   }
   EXPECT_TRUE(GetLayoutView().NeedsPaintPropertyUpdate());
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhasesForTest();
 
   // Programmatically changing the div's scroll offset. Should invalidate the
   // scrolled div with fixed attachment background.

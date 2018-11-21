@@ -121,7 +121,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
   void BeginFrame(base::TimeTicks last_frame_time) override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
-  void UpdateLifecycle(LifecycleUpdate requested_update) override;
+  void UpdateLifecycle(LifecycleUpdate requested_update,
+                       LifecycleUpdateReason reason) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
   void RequestPresentationCallbackForTesting(
       base::OnceClosure callback) override;

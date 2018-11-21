@@ -104,7 +104,8 @@ class WebPluginContainerTest : public testing::Test {
   }
 
   void UpdateAllLifecyclePhases(WebViewImpl* web_view) {
-    web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+    web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
   }
 
  protected:
@@ -242,7 +243,8 @@ void EnablePlugins(WebView* web_view, const WebSize& size) {
   DCHECK(web_view);
   web_view->GetSettings()->SetPluginsEnabled(true);
   web_view->MainFrameWidget()->Resize(size);
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
   RunPendingTasks();
 }
 

@@ -103,12 +103,13 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedPerSecond) {
   unsigned millisecond_per_step =
       (unsigned)ceil(3000.0 / (double)LocalFrameUkmAggregator::kCount);
   for (int i = 0; i < num_runs; ++i) {
+    aggregator().BeginMainFrame();
     {
       auto timer =
           aggregator().GetScopedTimer(i % LocalFrameUkmAggregator::kCount);
       clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
     }
-    aggregator().RecordPrimarySample(start_time, Now());
+    aggregator().RecordEndOfFrameMetrics(start_time, Now());
     start_time = Now();
   }
 
@@ -159,6 +160,8 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsAveragedCorrectly) {
   if (!base::TimeTicks::IsHighResolution())
     return;
 
+  aggregator().BeginMainFrame();
+
   // 1, 2, and 3 seconds.
   for (int i = 1; i <= 3; ++i) {
     {
@@ -177,7 +180,7 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsAveragedCorrectly) {
     clock().Advance(TimeDelta::FromSeconds(1));
   }
 
-  aggregator().RecordPrimarySample(
+  aggregator().RecordEndOfFrameMetrics(
       base::TimeTicks(), base::TimeTicks() + base::TimeDelta::FromSecondsD(20));
 
   ResetAggregator();
@@ -238,6 +241,7 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsAveragedCorrectly) {
       entry, GetWorstCaseRatioMetricName(1)));
   const int64_t* metric2_worst_ratio = ukm::TestUkmRecorder::GetEntryMetric(
       entry, GetWorstCaseRatioMetricName(1));
+
   // Only one main frame sample, so worst is same as average
   EXPECT_NEAR(*metric2_worst_ratio, floor(10.0 * 100.0 / 20.0), 0.0001);
 }
