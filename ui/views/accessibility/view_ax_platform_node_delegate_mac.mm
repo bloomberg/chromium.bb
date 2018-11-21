@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -21,18 +22,37 @@ ViewAXPlatformNodeDelegateMac::ViewAXPlatformNodeDelegateMac(View* view)
 
 ViewAXPlatformNodeDelegateMac::~ViewAXPlatformNodeDelegateMac() = default;
 
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegateMac::GetNSWindow() {
+  auto* widget = view()->GetWidget();
+  if (!widget)
+    return nil;
+
+  auto* top_level_widget = widget->GetTopLevelWidget();
+  if (!top_level_widget)
+    return nil;
+
+  auto* bridge_host = BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+      top_level_widget->GetNativeWindow());
+  if (!bridge_host)
+    return nil;
+
+  return bridge_host->GetNativeViewAccessibleForNSWindow();
+}
+
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegateMac::GetParent() {
   if (view()->parent())
     return view()->parent()->GetNativeViewAccessible();
 
-  // TODO(ccameron): This should return the NSAccessibilityRemoteUIElement for
-  // the NSView in the viewer process. This requires that Widget have a
-  // method to retrieve this object, which will not necessarily coincide with
-  // GetNativeView.
-  if (view()->GetWidget())
-    return view()->GetWidget()->GetNativeView().GetNativeNSView();
+  auto* widget = view()->GetWidget();
+  if (!widget)
+    return nil;
 
-  return nullptr;
+  auto* bridge_host = BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+      view()->GetWidget()->GetNativeWindow());
+  if (!bridge_host)
+    return nil;
+
+  return bridge_host->GetNativeViewAccessibleForNSView();
 }
 
 }  // namespace views

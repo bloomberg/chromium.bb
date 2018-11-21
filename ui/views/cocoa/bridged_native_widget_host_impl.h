@@ -90,12 +90,11 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   // NSWindow. Otherwise, it mirrors the id and bounds of the child window.
   NativeWidgetMacNSWindow* GetLocalNSWindow() const;
 
-  // Return the accessibility object for the parent NSView of the widget's root
-  // views::View.
-  gfx::NativeViewAccessible GetParentViewAccessible() const;
+  // Return the accessibility object for the content NSView.
+  gfx::NativeViewAccessible GetNativeViewAccessibleForNSView() const;
 
-  // Return the accessibility object for this widget's window.
-  gfx::NativeViewAccessible GetWindowAccessible() const;
+  // Return the accessibility object for the NSWindow.
+  gfx::NativeViewAccessible GetNativeViewAccessibleForNSWindow() const;
 
   // The mojo interface through which to communicate with the underlying
   // NSWindow and NSView.

@@ -27,8 +27,8 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Get the accessibility tree data for this node.
   const AXTreeData& GetTreeData() const override;
 
-  // Get the window the node is contained in.
-  gfx::NativeWindow GetTopLevelWidget() override;
+  // See comments in AXPlatformNodeDelegate.
+  gfx::NativeViewAccessible GetNSWindow() override;
 
   // Get the parent of the node, which may be an AXPlatformNode or it may
   // be a native accessible object implemented by another class.

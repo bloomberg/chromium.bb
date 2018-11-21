@@ -50,7 +50,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   const ui::AXNodeData& GetData() const override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
-  gfx::NativeWindow GetTopLevelWidget() override;
+  gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetParent() override;
   gfx::Rect GetClippedScreenBoundsRect() const override;
   gfx::Rect GetUnclippedScreenBoundsRect() const override;

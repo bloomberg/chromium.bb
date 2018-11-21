@@ -952,7 +952,7 @@ const ui::AXTreeData& BrowserAccessibility::GetTreeData() const {
     return *empty_data;
 }
 
-gfx::NativeWindow BrowserAccessibility::GetTopLevelWidget() {
+gfx::NativeViewAccessible BrowserAccessibility::GetNSWindow() {
   NOTREACHED();
   return nullptr;
 }

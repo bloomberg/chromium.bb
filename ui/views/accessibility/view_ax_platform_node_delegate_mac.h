@@ -17,6 +17,7 @@ class ViewAXPlatformNodeDelegateMac : public ViewAXPlatformNodeDelegate {
   ~ViewAXPlatformNodeDelegateMac() override;
 
   // |ViewAXPlatformNodeDelegate| overrides:
+  gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetParent() override;
 
  private:
