@@ -151,6 +151,23 @@ SkPaint PaintFlags::ToSkPaint() const {
   return paint;
 }
 
+SkFont PaintFlags::ToSkFont() const {
+  SkFont font;
+  font.setTypeface(typeface_);
+  font.setSize(text_size_);
+  font.setHinting(static_cast<SkFontHinting>(getHinting()));
+  font.setForceAutoHinting(isAutohinted());
+  font.setSubpixel(isSubpixelText());
+  if (isAntiAlias()) {
+    if (isLCDRenderText()) {
+      font.setEdging(SkFont::Edging::kSubpixelAntiAlias);
+    } else {
+      font.setEdging(SkFont::Edging::kAntiAlias);
+    }
+  }
+  return font;
+}
+
 bool PaintFlags::IsValid() const {
   return PaintOp::IsValidPaintFlagsSkBlendMode(getBlendMode());
 }

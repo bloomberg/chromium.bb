@@ -65,16 +65,15 @@ void GetGlyphWidthAndExtents(cc::PaintFlags* flags,
                              hb_codepoint_t codepoint,
                              hb_position_t* width,
                              hb_glyph_extents_t* extents) {
-  SkPaint paint = flags->ToSkPaint();
+  SkFont font = flags->ToSkFont();
 
   DCHECK_LE(codepoint, std::numeric_limits<uint16_t>::max());
-  paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
   SkScalar sk_width;
   SkRect sk_bounds;
   uint16_t glyph = static_cast<uint16_t>(codepoint);
 
-  paint.getTextWidths(&glyph, sizeof(glyph), &sk_width, &sk_bounds);
+  font.getWidths(&glyph, 1, &sk_width, &sk_bounds);
   if (width)
     *width = SkiaScalarToHarfBuzzUnits(sk_width);
   if (extents) {
@@ -100,9 +99,8 @@ hb_bool_t GetGlyph(hb_font_t* font,
 
   bool exists = cache->count(unicode) != 0;
   if (!exists) {
-    font_data->flags_.setTextEncoding(cc::PaintFlags::kUTF32_TextEncoding);
-    SkPaint paint = font_data->flags_.ToSkPaint();
-    paint.textToGlyphs(&unicode, sizeof(hb_codepoint_t), &(*cache)[unicode]);
+    (*cache)[unicode] =
+        font_data->flags_.getTypeface()->unicharToGlyph(unicode);
   }
   *glyph = (*cache)[unicode];
   return !!*glyph;
