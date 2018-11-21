@@ -2547,6 +2547,52 @@ TEST_F(ShelfLayoutManagerTest, HomeLauncherGestureHandler) {
   EXPECT_FALSE(gesture_handler->window());
 }
 
+// Tests that tap outside of the AUTO_HIDE_SHOWN shelf should hide it.
+TEST_F(ShelfLayoutManagerTest, TapOutsideOfAutoHideShownShelf) {
+  views::Widget* widget = CreateTestWidget();
+  Shelf* shelf = GetPrimaryShelf();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  layout_manager->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  aura::Window* window = widget->GetNativeWindow();
+  gfx::Rect window_bounds = window->GetBoundsInScreen();
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  const gfx::Point start(display_bounds.bottom_center());
+  const gfx::Point end(start + gfx::Vector2d(0, -80));
+  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
+  const int kNumScrollSteps = 4;
+  // Swipe up to show the auto-hide shelf.
+  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Tap outside the window and AUTO_HIDE_SHOWN shelf should hide the shelf.
+  gfx::Point tap_location =
+      window_bounds.bottom_right() + gfx::Vector2d(10, 10);
+  generator->GestureTapAt(tap_location);
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Swipe up to show the auto-hide shelf again.
+  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Tap inside the AUTO_HIDE_SHOWN shelf should not hide the shelf.
+  gfx::Rect shelf_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+  tap_location = gfx::Point(shelf_bounds.CenterPoint());
+  generator->GestureTapAt(tap_location);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Tap inside the window should still hide the shelf.
+  tap_location = window_bounds.origin() + gfx::Vector2d(10, 10);
+  generator->GestureTapAt(tap_location);
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+}
+
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
  public:
   ShelfLayoutManagerKeyboardTest() = default;
