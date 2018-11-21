@@ -159,7 +159,7 @@ TEST_F(GcpCredentialProviderTest, SetUserArray_NeedsReauth) {
 }
 
 TEST_F(GcpCredentialProviderTest, SetUserArray_PasswordChanged) {
-  // Create two GCPW users that are not marked as needing reauth.
+  // Create one GCPW user that is not marked as needing reauth.
   CComBSTR sid1;
   CreateGCPWUser(L"u1", L"p1", L"n1", L"c1", &sid1);
 
@@ -201,6 +201,59 @@ TEST_F(GcpCredentialProviderTest, SetUserArray_PasswordChanged) {
   reauth_check_done_event.Wait();
   DWORD needs_reauth;
   ASSERT_EQ(S_OK, GetUserProperty(OLE2CW(sid1), L"nr", &needs_reauth));
+  ASSERT_EQ(1u, needs_reauth);
+}
+
+TEST_F(GcpCredentialProviderTest, SetUserArray_NoInternet) {
+  // Create two GCPW users: the first not marked as needing reauth and the
+  // second marked as needing reauth.
+  CComBSTR sid1;
+  CComBSTR sid2;
+  CreateGCPWUser(L"u1", L"p1", L"n1", L"c1", &sid1);
+  CreateGCPWUser(L"u2", L"p2", L"n2", L"c2", &sid2);
+  ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid2), L"nr", 1));
+
+  CComPtr<ICredentialProviderSetUserArray> user_array;
+  ASSERT_EQ(
+      S_OK,
+      CComCreator<CComObject<CGaiaCredentialProvider>>::CreateInstance(
+          nullptr, IID_ICredentialProviderSetUserArray, (void**)&user_array));
+
+  base::WaitableEvent reauth_check_done_event;
+  CComPtr<IGaiaCredentialProviderForTesting> for_testing;
+  ASSERT_EQ(S_OK, user_array.QueryInterface(&for_testing));
+  ASSERT_EQ(S_OK,
+            for_testing->SetReauthCheckDoneEvent(
+                reinterpret_cast<INT_PTR>(reauth_check_done_event.handle())));
+  ASSERT_EQ(S_OK, for_testing->SetHasInternetConnection(kHicForceNo));
+
+  FakeCredentialProviderUserArray array;
+  array.AddUser(OLE2CW(sid1), L"u1");
+  array.AddUser(OLE2CW(sid2), L"u2");
+  ASSERT_EQ(S_OK, user_array->SetUserArray(&array));
+
+  CComPtr<ICredentialProvider> provider;
+  ASSERT_EQ(S_OK, user_array.QueryInterface(&provider));
+
+  // There should be 1 credential since only one account is marked above.
+  DWORD count;
+  DWORD default_index;
+  BOOL autologon;
+  ASSERT_EQ(S_OK,
+            provider->GetCredentialCount(&count, &default_index, &autologon));
+  ASSERT_EQ(1u, count);
+  EXPECT_EQ(CREDENTIAL_PROVIDER_NO_DEFAULT, default_index);
+  EXPECT_FALSE(autologon);
+
+  // There is no internet connection, so no network check can be performed.
+  // Account reauth status should remain the same.
+  reauth_check_done_event.Wait();
+  DWORD needs_reauth;
+
+  ASSERT_EQ(S_OK, GetUserProperty(OLE2CW(sid1), L"nr", &needs_reauth));
+  ASSERT_EQ(0u, needs_reauth);
+
+  ASSERT_EQ(S_OK, GetUserProperty(OLE2CW(sid2), L"nr", &needs_reauth));
   ASSERT_EQ(1u, needs_reauth);
 }
 

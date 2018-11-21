@@ -4,6 +4,8 @@
 
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 
+#include <netlistmgr.h>
+
 #include <iomanip>
 #include <map>
 
@@ -150,11 +152,45 @@ HRESULT CGaiaCredentialProvider::OnUserAuthenticated(IUnknown* credential,
   return hr;
 }
 
+HRESULT CGaiaCredentialProvider::HasInternetConnection() {
+  if (has_internet_connection_ != kHicCheckAlways)
+    return has_internet_connection_ == kHicForceYes ? S_OK : S_FALSE;
+
+  // If any errors occur, return that internet connection is available.  At
+  // worst the credential provider will try to connect and fail.
+
+  CComPtr<INetworkListManager> manager;
+  HRESULT hr = manager.CoCreateInstance(CLSID_NetworkListManager);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "CoCreateInstance(NetworkListManager) hr=" << putHR(hr);
+    return S_OK;
+  }
+
+  VARIANT_BOOL is_connected;
+  hr = manager->get_IsConnectedToInternet(&is_connected);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "manager->get_IsConnectedToInternet hr=" << putHR(hr);
+    return S_OK;
+  }
+
+  // Normally VARIANT_TRUE/VARIANT_FALSE are used with the type VARIANT_BOOL
+  // but in this case the docs explicitly say to use FALSE.
+  // https://docs.microsoft.com/en-us/windows/desktop/api/Netlistmgr/
+  //     nf-netlistmgr-inetworklistmanager-get_isconnectedtointernet
+  return is_connected != FALSE ? S_OK : S_FALSE;
+}
+
 // IGaiaCredentialProviderForTesting //////////////////////////////////////////
 
 HRESULT CGaiaCredentialProvider::SetReauthCheckDoneEvent(INT_PTR event) {
   DCHECK(event);
   reauth_check_done_event_ = reinterpret_cast<HANDLE>(event);
+  return S_OK;
+}
+
+HRESULT CGaiaCredentialProvider::SetHasInternetConnection(
+    HasInternetConnectionCheckType has_internet_connection) {
+  has_internet_connection_ = has_internet_connection;
   return S_OK;
 }
 
@@ -269,17 +305,26 @@ HRESULT CGaiaCredentialProvider::SetUserArray(
   }
 
   // Fire off a thread to check with Gaia if a re-auth is required.  This
-  // sets the kUserNeedsReauth bit if needed.
-  unsigned wait_thread_id;
-  uintptr_t wait_thread = _beginthreadex(
-      nullptr, 0, CheckReauthStatus,
-      reinterpret_cast<void*>(reauth_check_done_event_), 0, &wait_thread_id);
-  if (wait_thread != 0) {
-    LOGFN(INFO) << "Started check re-auth thread id=" << wait_thread_id;
-    ::CloseHandle(reinterpret_cast<HANDLE>(wait_thread));
+  // sets the kUserNeedsReauth bit if needed.  If there is no internet
+  // connection, don't bother.
+  if (HasInternetConnection() == S_OK) {
+    unsigned wait_thread_id;
+    uintptr_t wait_thread = _beginthreadex(
+        nullptr, 0, CheckReauthStatus,
+        reinterpret_cast<void*>(reauth_check_done_event_), 0, &wait_thread_id);
+    if (wait_thread != 0) {
+      LOGFN(INFO) << "Started check re-auth thread id=" << wait_thread_id;
+      ::CloseHandle(reinterpret_cast<HANDLE>(wait_thread));
+    } else {
+      HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+      LOGFN(ERROR) << "Unable to start check re-auth thread hr=" << putHR(hr);
+      if (reauth_check_done_event_ != INVALID_HANDLE_VALUE)
+        ::SetEvent(reauth_check_done_event_);
+    }
   } else {
-    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-    LOGFN(ERROR) << "Unable to start check re-auth thread hr=" << putHR(hr);
+    LOGFN(INFO) << "No internet connection, not checking re-auth";
+    if (reauth_check_done_event_ != INVALID_HANDLE_VALUE)
+      ::SetEvent(reauth_check_done_event_);
   }
 
   return S_OK;

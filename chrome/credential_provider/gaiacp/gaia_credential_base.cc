@@ -754,6 +754,7 @@ HRESULT CGaiaCredentialBase::GetSerialization(
     CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* cpcs,
     wchar_t** status_text,
     CREDENTIAL_PROVIDER_STATUS_ICON* status_icon) {
+  USES_CONVERSION;
   LOGFN(INFO);
   DCHECK(status_text);
   DCHECK(status_icon);
@@ -784,6 +785,18 @@ HRESULT CGaiaCredentialBase::GetSerialization(
 
     LOGFN(INFO) << "HandleAutologon hr=" << putHR(hr);
     TellOmahaDidRun();
+
+    // If there is no internet connection, just abort right away.
+    if (provider_->HasInternetConnection() != S_OK) {
+      BSTR error_message = AllocErrorString(IDS_NO_NETWORK);
+      ::SHStrDupW(OLE2CW(error_message), status_text);
+      ::SysFreeString(error_message);
+
+      *status_icon = CPSI_NONE;
+      *cpgsr = CPGSR_NO_CREDENTIAL_FINISHED;
+      LOGFN(INFO) << "No internet connection";
+      return S_OK;
+    }
 
     // The account creation is async so we are not done yet.
     *cpgsr = CPGSR_NO_CREDENTIAL_NOT_FINISHED;
