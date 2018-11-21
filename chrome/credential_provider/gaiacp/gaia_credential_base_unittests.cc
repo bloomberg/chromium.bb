@@ -289,7 +289,7 @@ class GcpGaiaCredentialBaseTest : public ::testing::Test {
  public:
   GcpGaiaCredentialBaseTest();
 
-  HRESULT StartLogonProcess(ICredentialProviderCredential* cred);
+  HRESULT StartLogonProcess(ICredentialProviderCredential* cred, bool succeeds);
   HRESULT WaitForLogonProcess(ICredentialProviderCredential* cred);
   HRESULT StartLogonProcessAndWait(ICredentialProviderCredential* cred);
 
@@ -315,7 +315,8 @@ GcpGaiaCredentialBaseTest::GcpGaiaCredentialBaseTest() {
 }
 
 HRESULT GcpGaiaCredentialBaseTest::StartLogonProcess(
-    ICredentialProviderCredential* cred) {
+    ICredentialProviderCredential* cred,
+    bool succeeds) {
   BOOL auto_login;
   EXPECT_EQ(S_OK, cred->SetSelected(&auto_login));
 
@@ -327,9 +328,14 @@ HRESULT GcpGaiaCredentialBaseTest::StartLogonProcess(
   CREDENTIAL_PROVIDER_STATUS_ICON status_icon;
   EXPECT_EQ(S_OK,
             cred->GetSerialization(&cpgsr, &cpcs, &status_text, &status_icon));
-  EXPECT_EQ(nullptr, status_text);
   EXPECT_EQ(CPSI_NONE, status_icon);
-  EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+  if (succeeds) {
+    EXPECT_EQ(nullptr, status_text);
+    EXPECT_EQ(CPGSR_NO_CREDENTIAL_NOT_FINISHED, cpgsr);
+  } else {
+    EXPECT_NE(nullptr, status_text);
+    EXPECT_EQ(CPGSR_NO_CREDENTIAL_FINISHED, cpgsr);
+  }
   return S_OK;
 }
 
@@ -345,7 +351,7 @@ HRESULT GcpGaiaCredentialBaseTest::WaitForLogonProcess(
 
 HRESULT GcpGaiaCredentialBaseTest::StartLogonProcessAndWait(
     ICredentialProviderCredential* cred) {
-  EXPECT_EQ(S_OK, StartLogonProcess(cred));
+  EXPECT_EQ(S_OK, StartLogonProcess(cred, /*succeeds=*/true));
   EXPECT_EQ(S_OK, WaitForLogonProcess(cred));
   return S_OK;
 }
@@ -367,6 +373,22 @@ TEST_F(GcpGaiaCredentialBaseTest, SetSelected) {
   BOOL auto_login;
   ASSERT_EQ(S_OK, cred->SetSelected(&auto_login));
   ASSERT_FALSE(auto_login);
+}
+
+TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_NoInternet) {
+  FakeGaiaCredentialProvider provider;
+  ASSERT_EQ(S_OK, provider.SetHasInternetConnection(kHicForceNo));
+
+  CComPtr<IGaiaCredential> gaia_cred;
+  CComPtr<ICredentialProviderCredential> cred;
+  ASSERT_EQ(S_OK, CreateCredentialWithProvider(&provider, &gaia_cred, &cred));
+
+  CComPtr<testing::ITestCredential> test;
+  ASSERT_EQ(S_OK, cred.QueryInterface(&test));
+
+  ASSERT_EQ(S_OK, StartLogonProcess(cred, /*succeeds=*/false));
+
+  ASSERT_EQ(S_OK, gaia_cred->Terminate());
 }
 
 TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Start) {
@@ -440,7 +462,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_MultipleCalls) {
   ASSERT_EQ(S_OK, test->SetStartGlsEventName(kStartGlsEventName));
   base::WaitableEvent start_event(std::move(start_event_handle));
 
-  ASSERT_EQ(S_OK, StartLogonProcess(cred));
+  ASSERT_EQ(S_OK, StartLogonProcess(cred, /*succeeds=*/true));
 
   // Calling GetSerialization again while the credential is waiting for the
   // logon process should yield CPGSR_NO_CREDENTIAL_NOT_FINISHED as a
@@ -481,7 +503,7 @@ TEST_F(GcpGaiaCredentialBaseTest, GetSerialization_Cancel) {
   ASSERT_EQ(S_OK, test->SetStartGlsEventName(kStartGlsEventName));
   base::WaitableEvent start_event(std::move(start_event_handle));
 
-  ASSERT_EQ(S_OK, StartLogonProcess(cred));
+  ASSERT_EQ(S_OK, StartLogonProcess(cred, /*succeeds=*/true));
 
   // Deselect the credential provider so that it cancels the GLS process and
   // returns.

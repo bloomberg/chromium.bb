@@ -58,9 +58,12 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
                                      BSTR username,
                                      BSTR password,
                                      BSTR sid) override;
+  IFACEMETHODIMP HasInternetConnection() override;
 
   // IGaiaCredentialProviderForTesting
-  IFACEMETHODIMP SetReauthCheckDoneEvent([in] INT_PTR event) override;
+  IFACEMETHODIMP SetReauthCheckDoneEvent(INT_PTR event) override;
+  IFACEMETHODIMP SetHasInternetConnection(
+      HasInternetConnectionCheckType has_internet_connection) override;
 
   // ICredentialProviderSetUserArray
   IFACEMETHODIMP SetUserArray(ICredentialProviderUserArray* users) override;
@@ -100,7 +103,15 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   // authentication.
   size_t index_ = std::numeric_limits<size_t>::max();
 
+  // Handle to an event that is signaled once the background reauth checks
+  // are done.  This is used only in unit tests to keep from polling or using
+  // a hardcoded wait.
   HANDLE reauth_check_done_event_ = INVALID_HANDLE_VALUE;
+
+  // Used during tests to force the credential provider to believe if an
+  // internet connection is possible or not.  In production the value is
+  // always set to HIC_CHECK_ALWAYS to perform a real check at runtime.
+  HasInternetConnectionCheckType has_internet_connection_ = kHicCheckAlways;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(GaiaCredentialProvider), CGaiaCredentialProvider)

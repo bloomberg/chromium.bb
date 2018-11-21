@@ -115,6 +115,8 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
             /* [in] */ BSTR password,
             /* [in] */ BSTR sid) = 0;
         
+        virtual HRESULT STDMETHODCALLTYPE HasInternetConnection( void) = 0;
+        
     };
     
     
@@ -143,6 +145,9 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
             /* [in] */ BSTR password,
             /* [in] */ BSTR sid);
         
+        HRESULT ( STDMETHODCALLTYPE *HasInternetConnection )( 
+            IGaiaCredentialProvider * This);
+        
         END_INTERFACE
     } IGaiaCredentialProviderVtbl;
 
@@ -169,6 +174,9 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
 #define IGaiaCredentialProvider_OnUserAuthenticated(This,credential,username,password,sid)	\
     ( (This)->lpVtbl -> OnUserAuthenticated(This,credential,username,password,sid) ) 
 
+#define IGaiaCredentialProvider_HasInternetConnection(This)	\
+    ( (This)->lpVtbl -> HasInternetConnection(This) ) 
+
 #endif /* COBJMACROS */
 
 
@@ -179,6 +187,22 @@ EXTERN_C const IID IID_IGaiaCredentialProvider;
 
 #endif 	/* __IGaiaCredentialProvider_INTERFACE_DEFINED__ */
 
+
+/* interface __MIDL_itf_gaia_credential_provider_0000_0001 */
+/* [local] */ 
+
+typedef /* [public][public] */ 
+enum __MIDL___MIDL_itf_gaia_credential_provider_0000_0001_0001
+    {
+        kHicForceYes	= 0,
+        kHicForceNo	= ( kHicForceYes + 1 ) ,
+        kHicCheckAlways	= ( kHicForceNo + 1 ) 
+    } 	HasInternetConnectionCheckType;
+
+
+
+extern RPC_IF_HANDLE __MIDL_itf_gaia_credential_provider_0000_0001_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_gaia_credential_provider_0000_0001_v0_0_s_ifspec;
 
 #ifndef __IGaiaCredentialProviderForTesting_INTERFACE_DEFINED__
 #define __IGaiaCredentialProviderForTesting_INTERFACE_DEFINED__
@@ -197,6 +221,9 @@ EXTERN_C const IID IID_IGaiaCredentialProviderForTesting;
     public:
         virtual HRESULT STDMETHODCALLTYPE SetReauthCheckDoneEvent( 
             /* [in] */ INT_PTR event) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE SetHasInternetConnection( 
+            /* [in] */ HasInternetConnectionCheckType hic) = 0;
         
     };
     
@@ -223,6 +250,10 @@ EXTERN_C const IID IID_IGaiaCredentialProviderForTesting;
             IGaiaCredentialProviderForTesting * This,
             /* [in] */ INT_PTR event);
         
+        HRESULT ( STDMETHODCALLTYPE *SetHasInternetConnection )( 
+            IGaiaCredentialProviderForTesting * This,
+            /* [in] */ HasInternetConnectionCheckType hic);
+        
         END_INTERFACE
     } IGaiaCredentialProviderForTestingVtbl;
 
@@ -248,6 +279,9 @@ EXTERN_C const IID IID_IGaiaCredentialProviderForTesting;
 
 #define IGaiaCredentialProviderForTesting_SetReauthCheckDoneEvent(This,event)	\
     ( (This)->lpVtbl -> SetReauthCheckDoneEvent(This,event) ) 
+
+#define IGaiaCredentialProviderForTesting_SetHasInternetConnection(This,hic)	\
+    ( (This)->lpVtbl -> SetHasInternetConnection(This,hic) ) 
 
 #endif /* COBJMACROS */
 
@@ -490,7 +524,7 @@ EXTERN_C const CLSID CLSID_GaiaCredentialProvider;
 
 #ifdef __cplusplus
 
-class DECLSPEC_UUID("89adae71-aee5-4ee2-bffb-e8424e06f519")
+class DECLSPEC_UUID("0b5bfdf0-4594-47ac-940a-cfc69abc561c")
 GaiaCredentialProvider;
 #endif
 #endif /* __GaiaCredentialProviderLib_LIBRARY_DEFINED__ */
