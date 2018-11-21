@@ -680,7 +680,7 @@ StackSamplingProfiler::~StackSamplingProfiler() {
   //
   // The wait time should, at most, be only as long as it takes to collect one
   // sample (~200us) or none at all if sampling has already completed.
-  ScopedAllowBaseSyncPrimitives allow_wait;
+  ThreadRestrictions::ScopedAllowWait allow_wait;
   profiling_inactive_.Wait();
 }
 
