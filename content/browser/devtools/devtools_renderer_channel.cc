@@ -59,6 +59,11 @@ void DevToolsRendererChannel::SetRendererInternal(
     blink::mojom::DevToolsAgent* agent,
     int process_id,
     RenderFrameHostImpl* frame_host) {
+  // Child workers will eventually disconnect, but timing depends on the
+  // renderer process. To ensure consistent view over protocol, disconnect them
+  // right now.
+  for (WorkerDevToolsAgentHost* host : child_workers_)
+    host->ForceDetachAllSessions();
   process_id_ = process_id;
   frame_host_ = frame_host;
   if (agent && !report_attachers_.empty()) {
