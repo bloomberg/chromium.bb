@@ -105,14 +105,8 @@ cr.define('cr.ui', function() {
      * @private
      */
     getNearestSelectedIndex_: function(index) {
-      if (index == -1) {
-        // If no index is provided, pick the first selected index if there is
-        // one.
-        if (this.selectedIndexes.length) {
-          return this.selectedIndexes[0];
-        }
+      if (index == -1)
         return -1;
-      }
 
       var result = Infinity;
       for (var i in this.selectedIndexes_) {
@@ -354,15 +348,8 @@ cr.define('cr.ui', function() {
       if (oldSelectedItemsCount && !this.selectedIndexes.length &&
           this.length_ && oldLeadIndex != -1) {
         // All selected items are deleted. We move selection to next item of
-        // last selected item, following it to its new position.
-        let newSelectedIndex = Math.min(oldLeadIndex, this.length_ - 1);
-        for (let i = oldLeadIndex + 1; i < permutation.length; ++i) {
-          if (permutation[i] != -1) {
-            newSelectedIndex = permutation[i];
-            break;
-          }
-        }
-        this.selectedIndexes = [newSelectedIndex];
+        // last selected item.
+        this.selectedIndexes = [Math.min(oldLeadIndex, this.length_ - 1)];
       }
 
       this.endChange();
