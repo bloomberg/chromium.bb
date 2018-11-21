@@ -38,6 +38,16 @@
 
 namespace blink {
 
+ErrorEvent* ErrorEvent::CreateSanitizedError(ScriptState* script_state) {
+  // "6. If script's muted errors is true, then set message to "Script error.",
+  // urlString to the empty string, line and col to 0, and errorValue to null."
+  // https://html.spec.whatwg.org/multipage/webappapis.html#runtime-script-errors:muted-errors
+  DCHECK(script_state);
+  return MakeGarbageCollected<ErrorEvent>(
+      "Script error.", SourceLocation::Create(String(), 0, 0, nullptr),
+      ScriptValue::CreateNull(script_state), &script_state->World());
+}
+
 ErrorEvent::ErrorEvent()
     : sanitized_message_(),
       location_(SourceLocation::Create(String(), 0, 0, nullptr)),

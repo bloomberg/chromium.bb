@@ -137,8 +137,10 @@ bool ExecutionContext::DispatchErrorEventInternal(
   if (!target)
     return false;
 
-  if (sanitize_script_errors == SanitizeScriptErrors::kSanitize)
-    error_event = ErrorEvent::CreateSanitizedError(error_event->World());
+  if (sanitize_script_errors == SanitizeScriptErrors::kSanitize) {
+    error_event = ErrorEvent::CreateSanitizedError(
+        ToScriptState(this, *error_event->World()));
+  }
 
   DCHECK(!in_dispatch_error_event_);
   in_dispatch_error_event_ = true;
