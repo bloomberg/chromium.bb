@@ -22,7 +22,7 @@ class BASE_EXPORT RealTimeDomain : public TimeDomain {
   LazyNow CreateLazyNow() const override;
   TimeTicks Now() const override;
   Optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
-  bool MaybeFastForwardToNextTask() override;
+  bool MaybeFastForwardToNextTask(bool quit_when_idle_requested) override;
 
  protected:
   const char* GetName() const override;

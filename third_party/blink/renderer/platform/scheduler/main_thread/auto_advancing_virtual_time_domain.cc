@@ -88,7 +88,8 @@ AutoAdvancingVirtualTimeDomain::DelayTillNextTask(
   return base::nullopt;
 }
 
-bool AutoAdvancingVirtualTimeDomain::MaybeFastForwardToNextTask() {
+bool AutoAdvancingVirtualTimeDomain::MaybeFastForwardToNextTask(
+    bool quit_when_idle_requested) {
   if (!can_advance_virtual_time_)
     return false;
 

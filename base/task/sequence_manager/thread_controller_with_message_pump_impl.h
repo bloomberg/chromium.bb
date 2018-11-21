@@ -65,6 +65,8 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 #if defined(OS_IOS) || defined(OS_ANDROID)
   void AttachToMessagePump() override;
 #endif
+  bool ShouldQuitRunLoopWhenIdle() override;
+
   // RunLoop::NestingObserver:
   void OnBeginNestedRunLoop() override;
   void OnExitNestedRunLoop() override;
@@ -118,6 +120,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 
     // Number of nested RunLoops on the stack.
     int nesting_depth = 0;
+
+    // Should always be < |nesting_depth|.
+    int runloop_count = 0;
 
     // When the next scheduled delayed work should run, if any.
     TimeTicks next_delayed_do_work = TimeTicks::Max();

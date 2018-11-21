@@ -330,6 +330,7 @@ void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed) {
   // true here. We can't use InTopLevelDoWork() in Quit() as this call may be
   // outside top-level DoWork but still in Run().
   main_thread_only().quit_pending = false;
+  main_thread_only().runloop_count++;
   if (application_tasks_allowed && !main_thread_only().task_execution_allowed) {
     // Allow nested task execution as explicitly requested.
     DCHECK(RunLoop::IsNestedOnCurrentThread());
@@ -339,6 +340,7 @@ void ThreadControllerWithMessagePumpImpl::Run(bool application_tasks_allowed) {
   } else {
     pump_->Run(this);
   }
+  main_thread_only().runloop_count--;
   main_thread_only().quit_pending = false;
 }
 
@@ -399,6 +401,13 @@ void ThreadControllerWithMessagePumpImpl::AttachToMessagePump() {
   static_cast<MessagePumpForUI*>(pump_.get())->Attach(this);
 }
 #endif
+
+bool ThreadControllerWithMessagePumpImpl::ShouldQuitRunLoopWhenIdle() {
+  if (main_thread_only().runloop_count == 0)
+    return false;
+  // It's only safe to call ShouldQuitWhenIdle() when in a RunLoop.
+  return ShouldQuitWhenIdle();
+}
 
 }  // namespace internal
 }  // namespace sequence_manager

@@ -326,6 +326,11 @@ bool ThreadControllerImpl::IsTaskExecutionAllowed() const {
   return true;
 }
 
+bool ThreadControllerImpl::ShouldQuitRunLoopWhenIdle() {
+  // The MessageLoop does not expose the API needed to support this query.
+  return false;
+}
+
 MessagePump* ThreadControllerImpl::GetBoundMessagePump() const {
   return nullptr;
 }

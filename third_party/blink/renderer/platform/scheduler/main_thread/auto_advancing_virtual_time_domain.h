@@ -77,7 +77,7 @@ class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
   base::TimeTicks Now() const override;
   base::Optional<base::TimeDelta> DelayTillNextTask(
       base::sequence_manager::LazyNow* lazy_now) override;
-  bool MaybeFastForwardToNextTask() override;
+  bool MaybeFastForwardToNextTask(bool quit_when_idle_requested) override;
 
  protected:
   const char* GetName() const override;
