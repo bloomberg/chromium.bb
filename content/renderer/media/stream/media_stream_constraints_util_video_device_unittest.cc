@@ -33,10 +33,7 @@ const char kGroupID5[] = "fake_group_5";
 
 void CheckTrackAdapterSettingsEqualsResolution(
     const VideoCaptureSettings& settings) {
-  EXPECT_EQ(settings.Format().frame_size.width(),
-            settings.track_adapter_settings().target_width());
-  EXPECT_EQ(settings.Format().frame_size.height(),
-            settings.track_adapter_settings().target_height());
+  EXPECT_FALSE(settings.track_adapter_settings().target_size());
   EXPECT_EQ(1.0 / settings.Format().frame_size.height(),
             settings.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(settings.Format().frame_size.width(),
@@ -261,6 +258,28 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   auto result = SelectSettings();
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().facing_mode.GetName(),
+            result.failed_constraint_name());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       OverconstrainedOnInvalidResizeMode) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII("invalid"));
+  auto result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+  EXPECT_EQ(constraint_factory_.basic().resize_mode.GetName(),
+            result.failed_constraint_name());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       OverconstrainedOnEmptyResizeMode) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII(""));
+  auto result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+  EXPECT_EQ(constraint_factory_.basic().resize_mode.GetName(),
             result.failed_constraint_name());
 }
 
@@ -519,7 +538,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactHeight) {
   // which is the low-res device.
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(kHeight, result.Height());
-  EXPECT_EQ(kHeight, result.track_adapter_settings().target_height());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
 
   const int kLargeHeight = 1500;
   constraint_factory_.basic().height.SetExact(kLargeHeight);
@@ -544,8 +563,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinHeight) {
   // algorithm should prefer the default device.
   EXPECT_EQ(default_device_->device_id, result.device_id());
   EXPECT_LE(kHeight, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(static_cast<double>(result.Width()) / kHeight,
             result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(1.0 / result.Height(),
@@ -561,8 +579,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinHeight) {
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
   EXPECT_LE(kHeight, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(static_cast<double>(result.Width()) / kLargeHeight,
             result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(1.0 / result.Height(),
@@ -608,8 +625,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryHeightRange) {
     // range.
     EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(*default_closest_format_, result.Format());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
     EXPECT_EQ(static_cast<double>(result.Width()) / kMinHeight,
               result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
@@ -632,8 +648,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryHeightRange) {
     EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(800, result.Width());
     EXPECT_EQ(600, result.Height());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
     EXPECT_EQ(static_cast<double>(result.Width()) / kMinHeight,
               result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
@@ -656,8 +671,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryHeightRange) {
     EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1280, result.Width());
     EXPECT_EQ(720, result.Height());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
     EXPECT_EQ(static_cast<double>(result.Width()) / kMinHeight,
               result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
@@ -755,9 +769,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactWidth) {
   // which is the low-res device.
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(kWidth, result.Width());
-  EXPECT_EQ(std::round(kWidth / AspectRatio(result.Format())),
-            result.track_adapter_settings().target_height());
-  EXPECT_EQ(kWidth, result.track_adapter_settings().target_width());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(kWidth, result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kWidth) / result.Height(),
             result.track_adapter_settings().min_aspect_ratio());
@@ -794,8 +806,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinWidth) {
   EXPECT_LE(kWidth, result.Width());
   EXPECT_EQ(1000, result.Width());
   EXPECT_EQ(1000, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kWidth) / result.Height(),
             result.track_adapter_settings().min_aspect_ratio());
@@ -810,8 +821,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinWidth) {
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_LE(kLargeWidth, result.Width());
   EXPECT_EQ(*high_res_highest_format_, result.Format());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio());
   EXPECT_EQ(static_cast<double>(kLargeWidth) / result.Height(),
             result.track_adapter_settings().min_aspect_ratio());
@@ -857,8 +867,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryWidthRange) {
     EXPECT_EQ(default_device_->device_id, result.device_id());
     EXPECT_EQ(1000, result.Width());
     EXPECT_EQ(1000, result.Height());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
     EXPECT_EQ(result.Width(),
               result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMinWidth) / result.Height(),
@@ -881,8 +890,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryWidthRange) {
     EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(800, result.Width());
     EXPECT_EQ(600, result.Height());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
     EXPECT_EQ(result.Width(),
               result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMinWidth) / result.Height(),
@@ -905,8 +913,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryWidthRange) {
     EXPECT_EQ(high_res_device_->device_id, result.device_id());
     EXPECT_EQ(1920, result.Width());
     EXPECT_EQ(1080, result.Height());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
     EXPECT_EQ(result.Width(),
               result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(static_cast<double>(kMinWidth) / result.Height(),
@@ -926,9 +933,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealWidth) {
     // width natively, which is the low-res device at 320x240.
     EXPECT_EQ(low_res_device_->device_id, result.device_id());
     EXPECT_EQ(kIdealWidth, result.Width());
-    EXPECT_EQ(std::round(kIdealWidth / AspectRatio(result.Format())),
-              result.track_adapter_settings().target_height());
-    EXPECT_EQ(kIdealWidth, result.track_adapter_settings().target_width());
+    // The ideal value is satisfied with a native resolution, so no rescaling.
+    EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
     EXPECT_EQ(kIdealWidth, result.track_adapter_settings().max_aspect_ratio());
     EXPECT_EQ(1.0 / result.Height(),
               result.track_adapter_settings().min_aspect_ratio());
@@ -1335,9 +1341,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactAspectRatio) {
   // low-res device.
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
-  EXPECT_EQ(std::round(result.Width() / kAspectRatio),
-            result.track_adapter_settings().target_height());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  // Native resolution, so no rescaling.
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(kAspectRatio, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
@@ -1394,9 +1399,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinAspectRatio) {
   // constraints than the default native resolution of the low-res device.
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(*low_res_closest_format_, result.Format());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   // The source's native aspect ratio equals the minimum aspect ratio.
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
   EXPECT_EQ(kAspectRatio, result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(max_aspect_ratio,
             result.track_adapter_settings().max_aspect_ratio());
@@ -1492,8 +1496,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryAspectRatioRange) {
     EXPECT_EQ(*default_closest_format_, result.Format());
     // The source's aspect ratio matches the maximum aspect ratio. No adjustment
     // is required.
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+    EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
     EXPECT_EQ(kMinAspectRatio,
               result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(kMaxAspectRatio,
@@ -1687,6 +1690,178 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealAspectRatio) {
   }
 }
 
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryResizeMode) {
+  const int kIdealWidth = 641;
+  const int kIdealHeight = 480;
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetIdeal(kIdealWidth);
+  constraint_factory_.basic().height.SetIdeal(kIdealHeight);
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII("none"));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // A native mode of 640x480 should be selected since it is closest native mode
+  // to the ideal values.
+  EXPECT_EQ(result.Width(), 640);
+  EXPECT_EQ(result.Height(), 480);
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
+
+  constraint_factory_.basic().resize_mode.SetExact(
+      blink::WebString::FromASCII("crop-and-scale"));
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  EXPECT_GE(result.Width(), kIdealWidth);
+  EXPECT_GE(result.Height(), kIdealHeight);
+  EXPECT_EQ(result.track_adapter_settings().target_width(), kIdealWidth);
+  EXPECT_EQ(result.track_adapter_settings().target_height(), kIdealHeight);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealResizeMode) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().resize_mode.SetIdeal(
+      blink::WebString::FromASCII("crop-and-scale"));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // Since no constraints are given, the default device with resolution closest
+  // to default is selected. However, rescaling is enabled due to the ideal
+  // resize mode.
+  EXPECT_EQ(result.device_id(), default_device_->device_id);
+  EXPECT_EQ(result.Width(), 500);
+  EXPECT_EQ(result.Height(), 500);
+  EXPECT_TRUE(result.track_adapter_settings().target_size().has_value());
+  EXPECT_EQ(result.track_adapter_settings().target_width(), 500);
+  EXPECT_EQ(result.track_adapter_settings().target_height(), 500);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       IdealResizeModeResolutionGreaterThanNative) {
+  // Ideal resolution is slightly greater than the closest native resolution.
+  const int kIdealWidth = 641;
+  const int kIdealHeight = 480;
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetIdeal(kIdealWidth);
+  constraint_factory_.basic().height.SetIdeal(kIdealHeight);
+  constraint_factory_.basic().resize_mode.SetIdeal(
+      blink::WebString::FromASCII("none"));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // A native mode of 640x480 should be selected since it is the closest native
+  // mode to the ideal resolution values.
+  EXPECT_EQ(result.Width(), 640);
+  EXPECT_EQ(result.Height(), 480);
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
+
+  constraint_factory_.basic().resize_mode.SetIdeal(
+      blink::WebString::FromASCII("crop-and-scale"));
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  EXPECT_GE(result.Width(), kIdealWidth);
+  EXPECT_GE(result.Height(), kIdealHeight);
+  EXPECT_EQ(result.track_adapter_settings().target_width(), kIdealWidth);
+  EXPECT_EQ(result.track_adapter_settings().target_height(), kIdealHeight);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       IdealResizeModeResolutionLessThanNative) {
+  // Ideal resolution is slightly less than the closest native resolution.
+  const int kIdealWidth = 639;
+  const int kIdealHeight = 479;
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetIdeal(kIdealWidth);
+  constraint_factory_.basic().height.SetIdeal(kIdealHeight);
+  constraint_factory_.basic().resize_mode.SetIdeal(
+      blink::WebString::FromASCII("none"));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // A native mode of 640x480 should be selected since it is the closest native
+  // mode to the ideal values.
+  EXPECT_EQ(result.Width(), 640);
+  EXPECT_EQ(result.Height(), 480);
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
+
+  constraint_factory_.basic().resize_mode.SetIdeal(
+      blink::WebString::FromASCII("crop-and-scale"));
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // Rescaling is preferred, therefore a native mode greater than the ideal
+  // resolution is chosen.
+  EXPECT_GE(result.Width(), kIdealWidth);
+  EXPECT_GE(result.Height(), kIdealHeight);
+  EXPECT_EQ(result.track_adapter_settings().target_width(), kIdealWidth);
+  EXPECT_EQ(result.track_adapter_settings().target_height(), kIdealHeight);
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealResizeFarFromNative) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetIdeal(1);
+  constraint_factory_.basic().height.SetIdeal(1);
+  constraint_factory_.basic().resize_mode.SetIdeal(
+      blink::WebString::FromASCII("none"));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The native mode closest to 1x1 is 40x30 with the low-res device.
+  EXPECT_EQ(result.device_id(), low_res_device_->device_id);
+  EXPECT_EQ(result.Width(), 40);
+  EXPECT_EQ(result.Height(), 30);
+  // Despite resize_mode being ideal "none", SelectSettings opts for rescaling
+  // since the fitness distance of 40x30 with respect to the ideal 1x1 is larger
+  // than the fitness distance for resize_mode not being "none"
+  // (29/30 + 39/40 > 1.0)
+  EXPECT_TRUE(result.track_adapter_settings().target_size().has_value());
+  EXPECT_EQ(result.track_adapter_settings().target_width(), 1);
+  EXPECT_EQ(result.track_adapter_settings().target_height(), 1);
+
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetIdeal(1);
+  constraint_factory_.basic().resize_mode.SetIdeal(
+      blink::WebString::FromASCII("none"));
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The native mode closest to 1x1 is 40x30 with the low-res device.
+  EXPECT_EQ(result.device_id(), low_res_device_->device_id);
+  EXPECT_EQ(result.Width(), 40);
+  EXPECT_EQ(result.Height(), 30);
+  // In this case, SelectSettings opts for not rescaling since the fitness
+  // distance of width 40 with respect to the ideal 1 is larger than the
+  // fitness distance for resize_mode not being "none" (39/40 < 1.0)
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, TwoIdealResizeValues) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetIdeal(641);
+  constraint_factory_.basic().height.SetIdeal(481);
+  constraint_factory_.basic().resize_mode.SetIdeal(
+      blink::WebVector<blink::WebString>(
+          {blink::WebString::FromASCII("none"),
+           blink::WebString::FromASCII("crop-and-scale")}));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // 800x600 rescaled to 641x481 is closest to the specified ideal values.
+  EXPECT_EQ(result.device_id(), low_res_device_->device_id);
+  EXPECT_EQ(result.Width(), 800);
+  EXPECT_EQ(result.Height(), 600);
+  // Since both resize modes are considered ideal, rescaling is preferred
+  // because of the penalty due to deviating from the ideal reo
+  EXPECT_TRUE(result.track_adapter_settings().target_size().has_value());
+  EXPECT_EQ(result.track_adapter_settings().target_width(), 641);
+  EXPECT_EQ(result.track_adapter_settings().target_height(), 481);
+
+  constraint_factory_.Reset();
+  constraint_factory_.basic().resize_mode.SetIdeal(
+      blink::WebVector<blink::WebString>(
+          {blink::WebString::FromASCII("none"),
+           blink::WebString::FromASCII("crop-and-scale")}));
+  result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // Given that both resize modes are ideal, the default device with the
+  // resolution closest to the default without rescaling is selected.
+  EXPECT_EQ(result.device_id(), default_device_->device_id);
+  EXPECT_EQ(result.Width(), 500);
+  EXPECT_EQ(result.Height(), 500);
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
+}
+
 // The "Advanced" tests check selection criteria involving advanced constraint
 // sets.
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
@@ -1716,8 +1891,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
@@ -1732,8 +1906,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result, 10.0);
@@ -1749,8 +1922,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result, 10.0);
@@ -1772,8 +1944,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(320, result.Width());
   EXPECT_EQ(240, result.Height());
-  EXPECT_EQ(320, result.track_adapter_settings().target_width());
-  EXPECT_EQ(240, result.track_adapter_settings().target_height());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(320.0 / 240.0, result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(320.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result, 10.0);
@@ -1787,8 +1958,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(high_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
-  EXPECT_EQ(640, result.track_adapter_settings().target_width());
-  EXPECT_EQ(480, result.track_adapter_settings().target_height());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(320.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(640.0 / 240.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result, 10.0);
@@ -1818,8 +1988,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(1920, result.Width());
   EXPECT_EQ(1080, result.Height());
   EXPECT_EQ(60.0, result.FrameRate());
-  EXPECT_EQ(1920, result.track_adapter_settings().target_width());
-  EXPECT_EQ(1080, result.track_adapter_settings().target_height());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(1920.0 / 1080.0,
             result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(1920.0 / 1080.0,
@@ -1844,8 +2013,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedNoiseReduction) {
   EXPECT_LE(1920, result.Width());
   EXPECT_LE(1080, result.Height());
   EXPECT_TRUE(result.noise_reduction() && !*result.noise_reduction());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(1920.0 / result.Height(),
             result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(result.Width() / 1080.0,
@@ -1876,8 +2044,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
     EXPECT_LE(640, result.Width());
     EXPECT_LE(480, result.Height());
     EXPECT_TRUE(result.noise_reduction() && *result.noise_reduction());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+    EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
     EXPECT_EQ(640.0 / result.Height(),
               result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(result.Width() / 480.0,
@@ -1904,8 +2071,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
     EXPECT_LE(1080, result.Height());
     // Should select default noise reduction setting.
     EXPECT_TRUE(!result.noise_reduction());
-    EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
-    EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+    EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
     EXPECT_EQ(1920.0 / result.Height(),
               result.track_adapter_settings().min_aspect_ratio());
     EXPECT_EQ(result.Width() / 1080.0,
@@ -1933,8 +2099,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(low_res_device_->device_id, result.device_id());
   EXPECT_EQ(640, result.Width());
   EXPECT_EQ(480, result.Height());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(640.0 / 480.0, result.track_adapter_settings().max_aspect_ratio());
   CheckTrackAdapterSettingsEqualsFrameRate(result);
@@ -1962,8 +2127,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(200, result.Width());
   EXPECT_EQ(200, result.Height());
   EXPECT_EQ(40, result.FrameRate());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(1.0 / result.Height(),
             result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio());
@@ -1992,8 +2156,7 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(1000, result.Width());
   EXPECT_EQ(1000, result.Height());
   EXPECT_EQ(20, result.FrameRate());
-  EXPECT_EQ(result.Width(), result.track_adapter_settings().target_width());
-  EXPECT_EQ(result.Height(), result.track_adapter_settings().target_height());
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
   EXPECT_EQ(800.0 / result.Height(),
             result.track_adapter_settings().min_aspect_ratio());
   EXPECT_EQ(result.Width() / 600.0,
@@ -2229,9 +2392,8 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // set, but the third set must be applied.
   EXPECT_EQ(result.device_id(), low_res_device_->device_id);
   EXPECT_EQ(result.Width(), 800);
-  EXPECT_EQ(result.track_adapter_settings().target_width(), 800);
   EXPECT_EQ(result.Height(), 600);
-  EXPECT_EQ(result.track_adapter_settings().target_height(), 600);
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
@@ -2282,6 +2444,54 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
               result.track_adapter_settings().max_aspect_ratio());
     CheckTrackAdapterSettingsEqualsFrameRate(result);
   }
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedResize) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetIdeal(1);
+  constraint_factory_.basic().height.SetIdeal(1);
+  blink::WebMediaTrackConstraintSet& advanced =
+      constraint_factory_.AddAdvanced();
+
+  advanced.resize_mode.SetExact(blink::WebString::FromASCII("none"));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // The native mode closest to 1x1 is 40x30 with the low-res device.
+  EXPECT_EQ(result.device_id(), low_res_device_->device_id);
+  EXPECT_EQ(result.Width(), 40);
+  EXPECT_EQ(result.Height(), 30);
+  // No rescaling occurs due to the advanced constraint specifying resizeMode
+  // equal to "none".
+  EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedResolutionResizeFrameRate) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.SetExact(639);
+
+  // This advanced set must be ignored because there are no native resolutions
+  // with width equal to 639.
+  blink::WebMediaTrackConstraintSet& advanced =
+      constraint_factory_.AddAdvanced();
+  advanced.resize_mode.SetExact(blink::WebString::FromASCII("none"));
+  advanced.frame_rate.SetExact(19.0);
+
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  // Rescaling is enabled to satisfy the required resolution.
+  EXPECT_TRUE(result.track_adapter_settings().target_size().has_value());
+  EXPECT_EQ(result.track_adapter_settings().target_width(), 639);
+  // Height gets adjusted as well to maintain the aspect ratio.
+  EXPECT_EQ(result.track_adapter_settings().target_height(), 479);
+  // Using native frame rate because the advanced set is ignored.
+  EXPECT_EQ(result.track_adapter_settings().max_frame_rate(), 0.0);
+
+  // The low-res device at 640x480@30Hz is the
+  EXPECT_EQ(result.device_id(), low_res_device_->device_id);
+  EXPECT_EQ(result.Width(), 640);
+  EXPECT_EQ(result.Height(), 480);
+  EXPECT_EQ(result.FrameRate(), 30.0);
 }
 
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, BasicContradictoryWidth) {

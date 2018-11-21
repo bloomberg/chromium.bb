@@ -410,4 +410,9 @@ void MediaStreamVideoTrack::OnReadyStateChanged(
     sink->OnReadyStateChanged(state);
 }
 
+void MediaStreamVideoTrack::SetTrackAdapterSettings(
+    const VideoTrackAdapterSettings& settings) {
+  adapter_settings_ = std::make_unique<VideoTrackAdapterSettings>(settings);
+}
+
 }  // namespace content

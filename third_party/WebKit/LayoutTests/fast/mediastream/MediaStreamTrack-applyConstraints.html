@@ -191,6 +191,32 @@ constraintSyntaxTest('noiseSuppression with ideal boolean value', { noiseSuppres
 constraintSyntaxTestWithChange('noiseSuppression with exact unwrapped boolean value',
     { noiseSuppression: { exact: true } }, { noiseSuppression: true });
 
+promise_test(async t => {
+  let stream = await navigator.mediaDevices.getUserMedia(
+    {video: {width: 639, height: 479}});
+  let track = stream.getVideoTracks()[0];
+  t.add_cleanup(()=>track.stop());
+  let settings = track.getSettings();
+  assert_equals(settings.width, 639);
+  assert_equals(settings.height, 479);
+  assert_equals(settings.resizeMode, "crop-and-scale");
+
+  await track.applyConstraints({resizeMode: {exact: "none"}});
+  settings = track.getSettings();
+  assert_equals(settings.width, 640);
+  assert_equals(settings.height, 480);
+  assert_equals(settings.resizeMode, "none");
+
+  try {
+    await track.applyConstraints(
+      {width: {exact: 639}, resizeMode: {exact: 'none'}});
+    t.step(()=>assert_unreached('applyConstraints should not have succeeded'));
+  } catch(e) {
+    assert_equals(e.name, 'OverconstrainedError');
+    assert_equals(e.constraint, 'width');
+  }
+}, "applyConstraints() supports resizeMode in getUserMedia() tracks");
+
 </script>
 </body>
 </html>

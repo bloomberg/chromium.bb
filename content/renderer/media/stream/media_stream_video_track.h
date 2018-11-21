@@ -106,6 +106,8 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
     frame_rate_ = frame_rate;
   }
 
+  void SetTrackAdapterSettings(const VideoTrackAdapterSettings& settings);
+
   MediaStreamVideoSource* source() const { return source_.get(); }
 
  private:

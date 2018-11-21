@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
@@ -24,6 +25,8 @@ namespace {
 
 using ResolutionSet = media_constraints::ResolutionSet;
 using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
+using IntRangeSet = media_constraints::NumericRangeSet<int32_t>;
+using BoolSet = media_constraints::DiscreteSet<bool>;
 using DeviceInfo = mojo::StructPtr<blink::mojom::VideoInputDeviceCapabilities>;
 using DistanceVector = std::vector<double>;
 
@@ -130,6 +133,10 @@ class CandidateFormat {
   // Convenience accessors for format() fields.
   int NativeHeight() const { return format_.frame_size.height(); }
   int NativeWidth() const { return format_.frame_size.width(); }
+  double NativeAspectRatio() const {
+    DCHECK(NativeWidth() > 0 || NativeHeight() > 0);
+    return static_cast<double>(NativeWidth()) / NativeHeight();
+  }
   double NativeFrameRate() const { return format_.frame_rate; }
 
   // Convenience accessors for accessors for resolution_set() fields. They
@@ -180,8 +187,22 @@ class CandidateFormat {
   bool ApplyConstraintSet(
       const blink::WebMediaTrackConstraintSet& constraint_set,
       const char** failed_constraint_name = nullptr) {
+    auto rescale_intersection =
+        rescale_set_.Intersection(media_constraints::RescaleSetFromConstraint(
+            constraint_set.resize_mode));
+    if (rescale_intersection.IsEmpty()) {
+      UpdateFailedConstraintName(constraint_set.resize_mode,
+                                 failed_constraint_name);
+      return false;
+    }
+
     auto resolution_intersection = resolution_set_.Intersection(
         ResolutionSet::FromConstraintSet(constraint_set));
+    if (!rescale_intersection.Contains(true)) {
+      // If rescaling is not allowed, only the native resolution is allowed.
+      resolution_intersection = resolution_intersection.Intersection(
+          ResolutionSet::FromExactResolution(NativeWidth(), NativeHeight()));
+    }
     if (resolution_intersection.IsWidthEmpty()) {
       UpdateFailedConstraintName(constraint_set.width, failed_constraint_name);
       return false;
@@ -209,9 +230,19 @@ class CandidateFormat {
     }
 
     resolution_set_ = resolution_intersection;
+    rescale_set_ = rescale_intersection;
     constrained_frame_rate_ = constrained_frame_rate_.Intersection(
         DoubleRangeSet::FromConstraint(constraint_set.frame_rate, 0.0,
                                        media::limits::kMaxFramesPerSecond));
+    constrained_width_ =
+        constrained_width_.Intersection(IntRangeSet::FromConstraint(
+            constraint_set.width, 1L, ResolutionSet::kMaxDimension));
+    constrained_height_ =
+        constrained_height_.Intersection(IntRangeSet::FromConstraint(
+            constraint_set.height, 1L, ResolutionSet::kMaxDimension));
+    constrained_aspect_ratio_ =
+        constrained_aspect_ratio_.Intersection(DoubleRangeSet::FromConstraint(
+            constraint_set.aspect_ratio, 0.0, HUGE_VAL));
 
     return true;
   }
@@ -223,27 +254,83 @@ class CandidateFormat {
   // https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
   double Fitness(const blink::WebMediaTrackConstraintSet& basic_constraint_set,
                  VideoTrackAdapterSettings* track_settings) const {
-    *track_settings = SelectVideoTrackAdapterSettings(
-        basic_constraint_set, resolution_set(), constrained_frame_rate(),
-        format(), true /* enable_rescale */);
+    DCHECK(!rescale_set_.IsEmpty());
+    double track_fitness_with_rescale = HUGE_VAL;
+    VideoTrackAdapterSettings track_settings_with_rescale;
+    if (rescale_set_.Contains(true)) {
+      track_settings_with_rescale = SelectVideoTrackAdapterSettings(
+          basic_constraint_set, resolution_set(), constrained_frame_rate(),
+          format(), true /* enable_rescale */);
+      DCHECK(track_settings_with_rescale.target_size().has_value());
+      double target_aspect_ratio =
+          static_cast<double>(track_settings_with_rescale.target_width()) /
+          track_settings_with_rescale.target_height();
+      DCHECK(!std::isnan(target_aspect_ratio));
+      double target_frame_rate = track_settings_with_rescale.max_frame_rate();
+      if (target_frame_rate == 0.0)
+        target_frame_rate = NativeFrameRate();
 
-    double target_aspect_ratio =
-        static_cast<double>(track_settings->target_width()) /
-        track_settings->target_height();
-    double target_frame_rate = track_settings->max_frame_rate();
-    if (target_frame_rate == 0.0)
-      target_frame_rate = NativeFrameRate();
-    DCHECK(!std::isnan(target_aspect_ratio));
-    return NumericValueFitness(basic_constraint_set.aspect_ratio,
-                               target_aspect_ratio) +
-           NumericValueFitness(basic_constraint_set.height,
-                               track_settings->target_height()) +
-           NumericValueFitness(basic_constraint_set.width,
-                               track_settings->target_width()) +
-           NumericValueFitness(basic_constraint_set.frame_rate,
-                               target_frame_rate) +
-           StringConstraintFitnessDistance(VideoKind(),
-                                           basic_constraint_set.video_kind);
+      track_fitness_with_rescale =
+          NumericValueFitness(basic_constraint_set.aspect_ratio,
+                              target_aspect_ratio) +
+          NumericValueFitness(basic_constraint_set.height,
+                              track_settings_with_rescale.target_height()) +
+          NumericValueFitness(basic_constraint_set.width,
+                              track_settings_with_rescale.target_width()) +
+          NumericValueFitness(basic_constraint_set.frame_rate,
+                              target_frame_rate);
+    }
+
+    double track_fitness_without_rescale = HUGE_VAL;
+    VideoTrackAdapterSettings track_settings_without_rescale;
+    if (rescale_set_.Contains(false)) {
+      bool can_use_native_resolution =
+          constrained_width_.Contains(NativeWidth()) &&
+          constrained_height_.Contains(NativeHeight()) &&
+          constrained_aspect_ratio_.Contains(NativeAspectRatio());
+      if (can_use_native_resolution) {
+        track_settings_without_rescale = SelectVideoTrackAdapterSettings(
+            basic_constraint_set, resolution_set(), constrained_frame_rate(),
+            format(), false /* enable_rescale */);
+        DCHECK(!track_settings_without_rescale.target_size().has_value());
+        double target_frame_rate =
+            track_settings_without_rescale.max_frame_rate();
+        if (target_frame_rate == 0.0)
+          target_frame_rate = NativeFrameRate();
+        track_fitness_without_rescale =
+            NumericValueFitness(basic_constraint_set.aspect_ratio,
+                                NativeAspectRatio()) +
+            NumericValueFitness(basic_constraint_set.height, NativeHeight()) +
+            NumericValueFitness(basic_constraint_set.width, NativeWidth()) +
+            NumericValueFitness(basic_constraint_set.frame_rate,
+                                target_frame_rate);
+      }
+    }
+
+    if (basic_constraint_set.resize_mode.HasIdeal()) {
+      if (!base::ContainsValue(basic_constraint_set.resize_mode.Ideal(),
+                               blink::WebMediaStreamTrack::kResizeModeNone)) {
+        track_fitness_without_rescale += 1.0;
+      }
+      if (!base::ContainsValue(
+              basic_constraint_set.resize_mode.Ideal(),
+              blink::WebMediaStreamTrack::kResizeModeRescale)) {
+        track_fitness_with_rescale += 1.0;
+      }
+    }
+    double fitness = StringConstraintFitnessDistance(
+        VideoKind(), basic_constraint_set.video_kind);
+    // If rescaling and not rescaling have the same fitness, prefer not
+    // rescaling.
+    if (track_fitness_without_rescale <= track_fitness_with_rescale) {
+      fitness += track_fitness_without_rescale;
+      *track_settings = track_settings_without_rescale;
+    } else {
+      fitness += track_fitness_with_rescale;
+      *track_settings = track_settings_with_rescale;
+    }
+
+    return fitness;
   }
 
   // Returns a custom "native" fitness distance that expresses how close the
@@ -295,6 +382,12 @@ class CandidateFormat {
   // range [kMinDeviceCaptureFrameRate, NativeframeRate()] is the set of
   // frame rates supported by this candidate.
   DoubleRangeSet constrained_frame_rate_;
+  IntRangeSet constrained_width_;
+  IntRangeSet constrained_height_;
+  DoubleRangeSet constrained_aspect_ratio_;
+
+  // Contains the set of allowed rescale modes subject to applied constraints.
+  BoolSet rescale_set_;
 };
 
 // Returns true if the facing mode |value| satisfies |constraints|, false
