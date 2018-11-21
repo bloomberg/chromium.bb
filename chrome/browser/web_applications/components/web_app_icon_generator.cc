@@ -108,6 +108,10 @@ void GenerateIcons(std::set<int> generate_sizes,
       net::registry_controlled_domains::GetDomainAndRegistry(
           app_url,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+
+  // TODO(crbug.com/867311): Decode the app URL or the domain before retrieving
+  // the first character, otherwise we generate an icon with "x" if the domain
+  // or app URL starts with a UTF-8 character.
   if (!domain_and_registry.empty()) {
     icon_letter = domain_and_registry[0];
   } else if (app_url.has_host()) {

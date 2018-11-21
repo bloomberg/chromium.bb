@@ -16,10 +16,13 @@
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
+#include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/browser/web_applications/test/test_web_app_database.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/test/base/testing_profile.h"
@@ -36,8 +39,11 @@ class WebAppInstallManagerTest : public WebAppTest {
 
     database_ = std::make_unique<TestWebAppDatabase>();
     registrar_ = std::make_unique<WebAppRegistrar>(database_.get());
-    install_manager_ =
-        std::make_unique<WebAppInstallManager>(profile(), registrar_.get());
+
+    auto install_finalizer =
+        std::make_unique<WebAppInstallFinalizer>(registrar_.get());
+    install_manager_ = std::make_unique<WebAppInstallManager>(
+        profile(), std::move(install_finalizer));
   }
 
   void CreateRendererAppInfo(const GURL& url,
@@ -53,8 +59,10 @@ class WebAppInstallManagerTest : public WebAppTest {
     web_app_info->scope = scope;
     web_app_info->theme_color = theme_color;
 
-    install_manager_->SetDataRetrieverForTesting(
-        std::make_unique<TestDataRetriever>(std::move(web_app_info)));
+    auto data_retriever =
+        std::make_unique<TestDataRetriever>(std::move(web_app_info));
+    data_retriever_ = data_retriever.get();
+    install_manager_->SetDataRetrieverForTesting(std::move(data_retriever));
   }
 
   void CreateRendererAppInfo(const GURL& url,
@@ -74,10 +82,42 @@ class WebAppInstallManagerTest : public WebAppTest {
     return base::NullableString16(base::UTF8ToUTF16(str), false);
   }
 
+  void SetInstallFinalizerForTesting() {
+    auto install_finalizer = std::make_unique<TestInstallFinalizer>();
+    install_finalizer_ = install_finalizer.get();
+    install_manager_->SetInstallFinalizerForTesting(
+        std::move(install_finalizer));
+  }
+
+  void SetIconsMapToRetrieve(IconsMap icons_map) {
+    CHECK(data_retriever_);
+    data_retriever_->SetIcons(std::move(icons_map));
+  }
+
+  AppId InstallWebApp() {
+    AppId app_id;
+    base::RunLoop run_loop;
+    const bool force_shortcut_app = false;
+    install_manager_->InstallWebApp(
+        web_contents(), force_shortcut_app,
+        base::BindLambdaForTesting(
+            [&](const AppId& installed_app_id, InstallResultCode code) {
+              EXPECT_EQ(InstallResultCode::kSuccess, code);
+              app_id = installed_app_id;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return app_id;
+  }
+
  protected:
   std::unique_ptr<TestWebAppDatabase> database_;
   std::unique_ptr<WebAppRegistrar> registrar_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
+
+  // Owned by install_manager_:
+  TestDataRetriever* data_retriever_ = nullptr;
+  TestInstallFinalizer* install_finalizer_ = nullptr;
 };
 
 TEST_F(WebAppInstallManagerTest, InstallFromWebContents) {
@@ -175,7 +215,6 @@ TEST_F(WebAppInstallManagerTest, WebContentsDestroyed) {
   EXPECT_TRUE(callback_called);
 }
 
-// TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc
 TEST_F(WebAppInstallManagerTest, InstallableCheck) {
   const std::string renderer_description = "RendererDescription";
   CreateRendererAppInfo(GURL("https://renderer.com/path"), "RendererName",
@@ -188,16 +227,18 @@ TEST_F(WebAppInstallManagerTest, InstallableCheck) {
   const GURL manifest_scope = GURL("https://example.com/scope");
   const base::Optional<SkColor> manifest_theme_color = 0xAABBCCDD;
 
-  auto manifest = std::make_unique<blink::Manifest>();
-  manifest->short_name = ToNullableUTF16("Short Name from Manifest");
-  manifest->name = ToNullableUTF16(manifest_name);
-  manifest->start_url = manifest_start_url;
-  manifest->scope = manifest_scope;
-  manifest->theme_color = manifest_theme_color;
+  {
+    auto manifest = std::make_unique<blink::Manifest>();
+    manifest->short_name = ToNullableUTF16("Short Name from Manifest");
+    manifest->name = ToNullableUTF16(manifest_name);
+    manifest->start_url = manifest_start_url;
+    manifest->scope = manifest_scope;
+    manifest->theme_color = manifest_theme_color;
 
-  FakeInstallableManager::CreateForWebContentsWithManifest(
-      web_contents(), NO_ERROR_DETECTED, GURL("https://example.com/manifest"),
-      std::move(manifest));
+    FakeInstallableManager::CreateForWebContentsWithManifest(
+        web_contents(), NO_ERROR_DETECTED, GURL("https://example.com/manifest"),
+        std::move(manifest));
+  }
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -227,5 +268,43 @@ TEST_F(WebAppInstallManagerTest, InstallableCheck) {
   EXPECT_EQ(manifest_scope, web_app->scope());
   EXPECT_EQ(manifest_theme_color, web_app->theme_color());
 }
+
+TEST_F(WebAppInstallManagerTest, GetIcons_NoIconsProvided) {
+  CreateRendererAppInfo(GURL("https://example.com/path"), "Name",
+                        "Description");
+  CreateDefaultInstallableManager();
+
+  SetInstallFinalizerForTesting();
+
+  IconsMap icons_map;
+  SetIconsMapToRetrieve(std::move(icons_map));
+
+  InstallWebApp();
+
+  std::unique_ptr<WebApplicationInfo> info = install_finalizer_->web_app_info();
+
+  constexpr int kIconSizesToGenerate[] = {
+      icon_size::k32, icon_size::k64,  icon_size::k48,
+      icon_size::k96, icon_size::k128, icon_size::k256,
+  };
+
+  // Make sure that icons have been generated for all sizes.
+  for (int size : kIconSizesToGenerate) {
+    int generated_icons_for_size =
+        std::count_if(info->icons.begin(), info->icons.end(),
+                      [&size](const WebApplicationInfo::IconInfo& icon) {
+                        return icon.width == size && icon.height == size;
+                      });
+    EXPECT_EQ(1, generated_icons_for_size);
+  }
+
+  for (const auto& icon : info->icons) {
+    EXPECT_FALSE(icon.data.drawsNothing());
+    // Since all icons are generated, they should have an empty url.
+    EXPECT_TRUE(icon.url.is_empty());
+  }
+}
+
+// TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc
 
 }  // namespace web_app

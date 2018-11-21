@@ -15,7 +15,6 @@
 #include "chrome/browser/installable/fake_installable_manager.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_manager.h"
-#include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_entry.h"
@@ -35,11 +34,6 @@ const char kFooUrl[] = "https://foo.example";
 const char kFooUrl2[] = "https://foo.example/bar";
 const char kFooTitle[] = "Foo Title";
 const char kBarUrl[] = "https://bar.example";
-
-constexpr int kIconSizesToGenerate[] = {
-    icon_size::k32, icon_size::k64,  icon_size::k48,
-    icon_size::k96, icon_size::k128, icon_size::k256,
-};
 
 }  // namespace
 
@@ -277,32 +271,6 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
   run_loop.Run();
 
   EXPECT_EQ(nullptr, web_app_info());
-}
-
-TEST_F(WebAppDataRetrieverTest, GetIcons_NoIconsProvided) {
-  base::RunLoop run_loop;
-  WebAppDataRetriever retriever;
-  retriever.GetIcons(
-      GURL(kFooUrl), std::vector<GURL>(),
-      base::BindOnce(&WebAppDataRetrieverTest::GetIconsCallback,
-                     base::Unretained(this), run_loop.QuitClosure()));
-  run_loop.Run();
-
-  // Make sure that icons have been generated for all sizes.
-  for (int size : kIconSizesToGenerate) {
-    int generated_icons_for_size =
-        std::count_if(icons().begin(), icons().end(),
-                      [&size](const WebApplicationInfo::IconInfo& icon) {
-                        return icon.width == size && icon.height == size;
-                      });
-    EXPECT_EQ(1, generated_icons_for_size);
-  }
-
-  for (const auto& icon : icons()) {
-    EXPECT_FALSE(icon.data.drawsNothing());
-    // Since all icons are generated, they should have an empty url.
-    EXPECT_TRUE(icon.url.is_empty());
-  }
 }
 
 TEST_F(WebAppDataRetrieverTest, CheckInstallabilityAndRetrieveManifest) {

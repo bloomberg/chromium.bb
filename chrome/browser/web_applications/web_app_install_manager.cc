@@ -8,26 +8,24 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 
 namespace web_app {
 
-WebAppInstallManager::WebAppInstallManager(Profile* profile,
-                                           WebAppRegistrar* registrar)
-    : profile_(profile),
-      registrar_(registrar),
-      data_retriever_(std::make_unique<WebAppDataRetriever>()) {
-  DCHECK(AllowWebAppInstallation(profile_));
+WebAppInstallManager::WebAppInstallManager(
+    Profile* profile,
+    std::unique_ptr<InstallFinalizer> install_finalizer)
+    : data_retriever_(std::make_unique<WebAppDataRetriever>()),
+      install_finalizer_(std::move(install_finalizer)) {
+  DCHECK(AllowWebAppInstallation(profile));
 }
 
 WebAppInstallManager::~WebAppInstallManager() = default;
@@ -62,6 +60,11 @@ void WebAppInstallManager::WebContentsDestroyed() {
 void WebAppInstallManager::SetDataRetrieverForTesting(
     std::unique_ptr<WebAppDataRetriever> data_retriever) {
   data_retriever_ = std::move(data_retriever);
+}
+
+void WebAppInstallManager::SetInstallFinalizerForTesting(
+    std::unique_ptr<InstallFinalizer> install_finalizer) {
+  install_finalizer_ = std::move(install_finalizer);
 }
 
 void WebAppInstallManager::CallInstallCallback(const AppId& app_id,
@@ -119,26 +122,49 @@ void WebAppInstallManager::OnDidPerformInstallableCheck(
       is_installable && !force_shortcut_app ? ForInstallableSite::kYes
                                             : ForInstallableSite::kNo;
 
-  // TODO(loyso): Implement installation logic from BookmarkAppHelper:
-  // - UpdateShareTargetInPrefs.
-  // - WebAppIconDownloader.
-  // etc
+  // TODO(loyso): Implement UpdateShareTargetInPrefs installation logic.
 
   UpdateWebAppInfoFromManifest(manifest, web_app_info.get(),
                                for_installable_site);
 
-  const AppId app_id = GenerateAppIdFromURL(web_app_info->app_url);
-  auto web_app = std::make_unique<WebApp>(app_id);
+  std::vector<GURL> icon_urls;
+  for (auto& icon_info : web_app_info->icons) {
+    if (icon_info.url.is_valid())
+      icon_urls.push_back(icon_info.url);
+  }
 
-  web_app->SetName(base::UTF16ToUTF8(web_app_info->title));
-  web_app->SetDescription(base::UTF16ToUTF8(web_app_info->description));
-  web_app->SetLaunchUrl(web_app_info->app_url);
-  web_app->SetScope(web_app_info->scope);
-  web_app->SetThemeColor(web_app_info->theme_color);
+  // If the manifest specified icons, don't use the page icons.
+  const bool skip_page_fav_icons = !manifest.icons.empty();
 
-  registrar_->RegisterApp(std::move(web_app));
+  data_retriever_->GetIcons(
+      web_contents(), icon_urls, skip_page_fav_icons,
+      base::BindOnce(&WebAppInstallManager::OnIconsRetrieved,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(web_app_info)));
+}
 
-  CallInstallCallback(app_id, InstallResultCode::kSuccess);
+void WebAppInstallManager::OnIconsRetrieved(
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    IconsMap icons_map) {
+  // If interrupted, install_callback_ is already invoked or may invoke later.
+  if (InstallInterrupted())
+    return;
+
+  DCHECK(web_app_info);
+
+  std::vector<BitmapAndSource> downloaded_icons =
+      FilterSquareIcons(icons_map, *web_app_info);
+  ResizeDownloadedIconsGenerateMissing(std::move(downloaded_icons),
+                                       web_app_info.get());
+
+  install_finalizer_->FinalizeInstall(
+      std::move(web_app_info),
+      base::BindOnce(&WebAppInstallManager::OnInstallFinalized,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebAppInstallManager::OnInstallFinalized(const AppId& app_id,
+                                              InstallResultCode code) {
+  CallInstallCallback(app_id, code);
 }
 
 }  // namespace web_app

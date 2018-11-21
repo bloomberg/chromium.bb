@@ -14,7 +14,7 @@ namespace web_app {
 
 namespace {
 
-void ReplaceWebAppIcons(std::map<int, web_app::BitmapAndSource> bitmap_map,
+void ReplaceWebAppIcons(std::map<int, BitmapAndSource> bitmap_map,
                         WebApplicationInfo* web_app_info) {
   web_app_info->icons.clear();
 
@@ -113,10 +113,10 @@ void MergeInstallableDataIcon(const InstallableData& data,
 }
 
 std::vector<BitmapAndSource> FilterSquareIcons(
-    const std::map<GURL, std::vector<SkBitmap>>& bitmaps,
+    const IconsMap& icons_map,
     const WebApplicationInfo& web_app_info) {
   std::vector<BitmapAndSource> downloaded_icons;
-  for (const std::pair<GURL, std::vector<SkBitmap>>& url_bitmap : bitmaps) {
+  for (const std::pair<GURL, std::vector<SkBitmap>>& url_bitmap : icons_map) {
     for (const SkBitmap& bitmap : url_bitmap.second) {
       if (bitmap.empty() || bitmap.width() != bitmap.height())
         continue;
