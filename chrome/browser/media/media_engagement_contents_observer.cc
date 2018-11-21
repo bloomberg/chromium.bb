@@ -428,7 +428,7 @@ void MediaEngagementContentsObserver::MaybeInsertRemoveSignificantPlayer(
   if (state.muted == false && state.playing == true &&
       state.has_audio == true &&
       audible_players_.find(id) == audible_players_.end()) {
-    audible_players_[id] = std::make_pair(false, nullptr);
+    audible_players_.emplace(id, std::make_pair(false, nullptr));
   }
 
   bool is_currently_significant =
