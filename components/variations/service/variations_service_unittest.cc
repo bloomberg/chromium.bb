@@ -129,8 +129,8 @@ class TestVariationsService : public VariationsService {
         delta_compressed_seed_(false),
         gzip_compressed_seed_(false),
         insecurely_fetched_seed_(false) {
-    interception_url_ = GetVariationsServerURL(
-        local_state, std::string(), use_secure_url ? USE_HTTPS : USE_HTTP);
+    interception_url_ =
+        GetVariationsServerURL(use_secure_url ? USE_HTTPS : USE_HTTP);
     set_variations_server_url(interception_url_);
   }
 
@@ -324,37 +324,46 @@ TEST_F(VariationsServiceTest, GetVariationsServerURL) {
       std::make_unique<web_resource::TestRequestAllowedNotifier>(
           &prefs_, network_tracker_),
       &prefs_, GetMetricsStateManager(), UIStringOverrider());
-  GURL url = service.GetVariationsServerURL(&prefs_, std::string(),
-                                            TestVariationsService::USE_HTTPS);
+  GURL url = service.GetVariationsServerURL(TestVariationsService::USE_HTTPS);
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_FALSE(net::GetValueForKeyInQuery(url, "restrict", &value));
+  // There should be a fallback URL since restrict mode is not set.
+  EXPECT_NE(GURL(),
+            service.GetVariationsServerURL(TestVariationsService::USE_HTTP));
 
   prefs_.SetString(prefs::kVariationsRestrictParameter, "restricted");
-  url = service.GetVariationsServerURL(&prefs_, std::string(),
-                                       TestVariationsService::USE_HTTPS);
+  url = service.GetVariationsServerURL(TestVariationsService::USE_HTTPS);
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("restricted", value);
+  // No fallback URL because restrict mode is set.
+  EXPECT_EQ(GURL(),
+            service.GetVariationsServerURL(TestVariationsService::USE_HTTP));
 
   // A client override should take precedence over what's in prefs_.
   raw_client->set_restrict_parameter("client");
-  url = service.GetVariationsServerURL(&prefs_, std::string(),
-                                       TestVariationsService::USE_HTTPS);
+  url = service.GetVariationsServerURL(TestVariationsService::USE_HTTPS);
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("client", value);
+  // No fallback URL because restrict mode is set.
+  EXPECT_EQ(GURL(),
+            service.GetVariationsServerURL(TestVariationsService::USE_HTTP));
 
-  // The override value passed to the method should take precedence over
-  // what's in prefs_ and a client override.
-  url = service.GetVariationsServerURL(&prefs_, "override",
-                                       TestVariationsService::USE_HTTPS);
+  // The value set via SetRestrictMode() should take precedence over what's
+  // in prefs_ and a client override.
+  service.SetRestrictMode("override");
+  url = service.GetVariationsServerURL(TestVariationsService::USE_HTTPS);
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("override", value);
+  // No fallback URL because restrict mode is set.
+  EXPECT_EQ(GURL(),
+            service.GetVariationsServerURL(TestVariationsService::USE_HTTP));
 }
 
 TEST_F(VariationsServiceTest, VariationsURLHasParams) {
@@ -367,8 +376,7 @@ TEST_F(VariationsServiceTest, VariationsURLHasParams) {
           &prefs_, network_tracker_),
       &prefs_, GetMetricsStateManager(), UIStringOverrider());
   raw_client->set_channel(version_info::Channel::UNKNOWN);
-  GURL url = service.GetVariationsServerURL(&prefs_, std::string(),
-                                            TestVariationsService::USE_HTTPS);
+  GURL url = service.GetVariationsServerURL(TestVariationsService::USE_HTTPS);
 
   std::string value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "osname", &value));
@@ -384,8 +392,7 @@ TEST_F(VariationsServiceTest, VariationsURLHasParams) {
   EXPECT_TRUE(channel.empty());
 
   raw_client->set_channel(version_info::Channel::STABLE);
-  url = service.GetVariationsServerURL(&prefs_, std::string(),
-                                       TestVariationsService::USE_HTTPS);
+  url = service.GetVariationsServerURL(TestVariationsService::USE_HTTPS);
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "channel", &channel));
   EXPECT_FALSE(channel.empty());
 }

@@ -108,13 +108,11 @@ class VariationsService
   // to |StartRepeatedVariationsSeedFetch|.
   void SetRestrictMode(const std::string& restrict_mode);
 
-  // Returns the variations server URL, which can vary if a command-line flag is
-  // set and/or the variations restrict pref is set in |local_prefs|. Declared
-  // static for test purposes. |http_options| determines whether to use the http
-  // or https URL.
-  GURL GetVariationsServerURL(PrefService* local_prefs,
-                              const std::string& restrict_mode_overrided,
-                              HttpOptions http_options);
+  // Returns the variations server URL. |http_options| determines whether to
+  // use the http or https URL. This function will return an empty GURL when
+  // the restrict param exists for USE_HTTP, to indicate that no HTTP fallback
+  // should happen in that case.
+  GURL GetVariationsServerURL(HttpOptions http_options);
 
   // Returns the permanent country code stored for this client. Country code is
   // in the format of lowercase ISO 3166-1 alpha-2. Example: us, br, in
