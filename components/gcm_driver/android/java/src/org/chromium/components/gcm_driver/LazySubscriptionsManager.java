@@ -85,18 +85,26 @@ public class LazySubscriptionsManager {
      * Stores the information about lazy subscriptions in SharedPreferences.
      */
     public static void storeLazinessInformation(final String subscriptionId, boolean isLazy) {
-        if (isLazy) {
-            Context context = ContextUtils.getApplicationContext();
-            SharedPreferences sharedPrefs =
-                    context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
-            Set<String> lazyIds = new HashSet<>(
-                    sharedPrefs.getStringSet(FCM_LAZY_SUBSCRIPTIONS, Collections.emptySet()));
-            lazyIds.add(subscriptionId);
-            sharedPrefs.edit().putStringSet(FCM_LAZY_SUBSCRIPTIONS, lazyIds).apply();
+        boolean isAlreadyLazy = isSubscriptionLazy(subscriptionId);
+        if (isAlreadyLazy == isLazy) {
+            return;
         }
-        // TODO(https://crbug.com/882887): Check if that
-        // subscription was marked lazy before and handle the change
-        // accordingly.
+        if (isAlreadyLazy) {
+            // Switching from lazy to unlazy.
+            // Delete any queued messages.
+            deletePersistedMessagesForSubscriptionId(subscriptionId);
+        }
+        Context context = ContextUtils.getApplicationContext();
+        SharedPreferences sharedPrefs =
+                context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
+        Set<String> lazyIds = new HashSet<>(
+                sharedPrefs.getStringSet(FCM_LAZY_SUBSCRIPTIONS, Collections.emptySet()));
+        if (isAlreadyLazy) {
+            lazyIds.remove(subscriptionId);
+        } else { // Switching from unlazy to lazy.
+            lazyIds.add(subscriptionId);
+        }
+        sharedPrefs.edit().putStringSet(FCM_LAZY_SUBSCRIPTIONS, lazyIds).apply();
     }
 
     /**
