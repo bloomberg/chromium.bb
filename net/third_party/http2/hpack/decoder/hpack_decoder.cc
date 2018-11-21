@@ -5,8 +5,8 @@
 #include "net/third_party/http2/hpack/decoder/hpack_decoder.h"
 
 #include "base/logging.h"
-#include "base/trace_event/memory_usage_estimator.h"
 #include "net/third_party/http2/decoder/decode_status.h"
+#include "net/third_party/http2/platform/api/http2_estimate_memory_usage.h"
 
 namespace http2 {
 
@@ -106,7 +106,7 @@ bool HpackDecoder::error_detected() {
 }
 
 size_t HpackDecoder::EstimateMemoryUsage() const {
-  return base::trace_event::EstimateMemoryUsage(entry_buffer_);
+  return Http2EstimateMemoryUsage(entry_buffer_);
 }
 
 void HpackDecoder::ReportError(Http2StringPiece error_message) {

@@ -12,6 +12,7 @@
 #include "net/third_party/http2/decoder/http2_frame_decoder_listener.h"
 #include "net/third_party/http2/http2_constants.h"
 #include "net/third_party/http2/http2_structures.h"
+#include "net/third_party/http2/platform/api/http2_macros.h"
 #include "net/third_party/http2/tools/http2_bug_tracker.h"
 
 namespace http2 {
@@ -94,7 +95,7 @@ DecodeStatus PushPromisePayloadDecoder::ResumeDecodingPayload(
           payload_state_ = PayloadState::kReadPadLength;
           return status;
         }
-        FALLTHROUGH;
+        HTTP2_FALLTHROUGH;
 
       case PayloadState::kStartDecodingPushPromiseFields:
         status =
@@ -106,7 +107,7 @@ DecodeStatus PushPromisePayloadDecoder::ResumeDecodingPayload(
         // Finished decoding the Promised Stream ID. Can now tell the listener
         // that we're starting to decode a PUSH_PROMISE frame.
         ReportPushPromise(state);
-        FALLTHROUGH;
+        HTTP2_FALLTHROUGH;
 
       case PayloadState::kReadPayload:
         DCHECK_LT(state->remaining_payload(), frame_header.payload_length);
@@ -129,7 +130,7 @@ DecodeStatus PushPromisePayloadDecoder::ResumeDecodingPayload(
           payload_state_ = PayloadState::kReadPayload;
           return DecodeStatus::kDecodeInProgress;
         }
-        FALLTHROUGH;
+        HTTP2_FALLTHROUGH;
 
       case PayloadState::kSkipPadding:
         // SkipPadding handles the OnPadding callback.

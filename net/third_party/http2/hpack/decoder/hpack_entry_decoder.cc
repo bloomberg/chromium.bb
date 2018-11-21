@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "net/third_party/http2/platform/api/http2_macros.h"
 #include "net/third_party/http2/tools/http2_bug_tracker.h"
 
 namespace http2 {
@@ -103,7 +104,7 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
           return status;
         }
         state_ = EntryDecoderState::kDecodedType;
-        FALLTHROUGH;
+        HTTP2_FALLTHROUGH;
 
       case EntryDecoderState::kDecodedType:
         // entry_type_decoder_ returned kDecodeDone, now need to decide how
@@ -130,7 +131,7 @@ DecodeStatus HpackEntryDecoder::Resume(DecodeBuffer* db,
           return status;
         }
         state_ = EntryDecoderState::kStartDecodingValue;
-        FALLTHROUGH;
+        HTTP2_FALLTHROUGH;
 
       case EntryDecoderState::kStartDecodingValue:
         DVLOG(1) << "kStartDecodingValue: db->Remaining=" << db->Remaining();

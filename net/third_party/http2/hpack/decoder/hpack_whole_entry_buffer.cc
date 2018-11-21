@@ -5,7 +5,7 @@
 #include "net/third_party/http2/hpack/decoder/hpack_whole_entry_buffer.h"
 
 #include "base/logging.h"
-#include "base/trace_event/memory_usage_estimator.h"
+#include "net/third_party/http2/platform/api/http2_estimate_memory_usage.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
 namespace http2 {
@@ -33,8 +33,7 @@ void HpackWholeEntryBuffer::BufferStringsIfUnbuffered() {
 }
 
 size_t HpackWholeEntryBuffer::EstimateMemoryUsage() const {
-  return base::trace_event::EstimateMemoryUsage(name_) +
-         base::trace_event::EstimateMemoryUsage(value_);
+  return Http2EstimateMemoryUsage(name_) + Http2EstimateMemoryUsage(value_);
 }
 
 void HpackWholeEntryBuffer::OnIndexedHeader(size_t index) {

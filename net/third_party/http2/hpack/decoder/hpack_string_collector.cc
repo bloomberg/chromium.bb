@@ -9,12 +9,9 @@
 #include <iosfwd>
 #include <ostream>
 
-#include "net/base/escape.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 #include "net/third_party/http2/tools/failure.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using net::EscapeQueryParamValue;
 
 namespace http2 {
 namespace test {
@@ -119,7 +116,7 @@ std::ostream& operator<<(std::ostream& out, const HpackStringCollector& v) {
   if (!v.s.empty() && v.len != v.s.size()) {
     out << " (" << v.s.size() << ")";
   }
-  return out << ", String=\"" << EscapeQueryParamValue(v.s, false) << "\")";
+  return out << ", String=\"" << Http2HexEscape(v.s) << "\")";
 }
 
 }  // namespace test

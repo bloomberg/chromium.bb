@@ -4,6 +4,7 @@
 
 #include "net/third_party/http2/hpack/varint/hpack_varint_encoder.h"
 
+#include "net/third_party/http2/platform/api/http2_arraysize.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +38,7 @@ struct {
 TEST(HpackVarintEncoderTest, Short) {
   HpackVarintEncoder varint_encoder;
 
-  for (size_t i = 0; i < arraysize(kShortTestData); ++i) {
+  for (size_t i = 0; i < HTTP2_ARRAYSIZE(kShortTestData); ++i) {
     EXPECT_EQ(kShortTestData[i].expected_encoding,
               varint_encoder.StartEncoding(kShortTestData[i].high_bits,
                                            kShortTestData[i].prefix_length,
@@ -111,7 +112,7 @@ TEST(HpackVarintEncoderTest, Long) {
   // Test encoding byte by byte, also test encoding in
   // a single ResumeEncoding() call.
   for (bool byte_by_byte : {true, false}) {
-    for (size_t i = 0; i < arraysize(kLongTestData); ++i) {
+    for (size_t i = 0; i < HTTP2_ARRAYSIZE(kLongTestData); ++i) {
       Http2String expected_encoding =
           Http2HexDecode(kLongTestData[i].expected_encoding);
       ASSERT_FALSE(expected_encoding.empty());
@@ -156,7 +157,7 @@ struct {
 TEST(HpackVarintEncoderTest, LastByteIsZero) {
   HpackVarintEncoder varint_encoder;
 
-  for (size_t i = 0; i < arraysize(kLastByteIsZeroTestData); ++i) {
+  for (size_t i = 0; i < HTTP2_ARRAYSIZE(kLastByteIsZeroTestData); ++i) {
     EXPECT_EQ(
         kLastByteIsZeroTestData[i].expected_encoding_first_byte,
         varint_encoder.StartEncoding(kLastByteIsZeroTestData[i].high_bits,

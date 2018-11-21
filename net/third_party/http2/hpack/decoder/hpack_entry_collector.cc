@@ -4,8 +4,6 @@
 
 #include "net/third_party/http2/hpack/decoder/hpack_entry_collector.h"
 
-#include <sstream>
-
 #include "base/logging.h"
 #include "net/third_party/http2/hpack/decoder/hpack_string_collector.h"
 #include "net/third_party/http2/hpack/http2_hpack_constants.h"

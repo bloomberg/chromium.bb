@@ -4,7 +4,10 @@
 
 #include "net/third_party/http2/decoder/http2_frame_decoder.h"
 
+#include "net/third_party/http2/decoder/decode_status.h"
+#include "net/third_party/http2/hpack/varint/hpack_varint_decoder.h"
 #include "net/third_party/http2/http2_constants.h"
+#include "net/third_party/http2/platform/api/http2_macros.h"
 #include "net/third_party/http2/tools/http2_bug_tracker.h"
 
 namespace http2 {
@@ -67,7 +70,7 @@ DecodeStatus Http2FrameDecoder::DecodeFrame(DecodeBuffer* db) {
       return DiscardPayload(db);
   }
 
-  NOTREACHED();
+  HTTP2_UNREACHABLE();
   return DecodeStatus::kDecodeError;
 }
 

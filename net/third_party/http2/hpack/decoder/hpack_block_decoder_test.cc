@@ -7,7 +7,6 @@
 // Tests of HpackBlockDecoder.
 
 #include <cstdint>
-#include <sstream>
 
 #include "net/third_party/http2/decoder/decode_buffer.h"
 #include "net/third_party/http2/hpack/decoder/hpack_block_collector.h"

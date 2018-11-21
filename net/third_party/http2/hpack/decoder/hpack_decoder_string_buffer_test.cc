@@ -7,9 +7,9 @@
 // Tests of HpackDecoderStringBuffer.
 
 #include <initializer_list>
-#include <sstream>
 
 #include "base/logging.h"
+#include "net/third_party/http2/platform/api/http2_string.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
 #include "net/third_party/http2/tools/failure.h"
 #include "testing/gmock/include/gmock/gmock.h"
