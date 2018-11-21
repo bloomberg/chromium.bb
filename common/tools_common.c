@@ -485,17 +485,19 @@ void aom_img_write_nv12(const aom_image_t *img, FILE *file) {
   // Interleaved U and V plane
   const unsigned char *ubuf = img->planes[1];
   const unsigned char *vbuf = img->planes[2];
+  const size_t size = (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1;
   stride = img->stride[1];
-  w = aom_img_plane_width(img, 1) *
-      ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
+  w = aom_img_plane_width(img, 1);
   h = aom_img_plane_height(img, 1);
 
   for (y = 0; y < h; ++y) {
     for (x = 0; x < w; ++x) {
-      fputc(ubuf[x], file);
-      fputc(vbuf[x], file);
+      fwrite(ubuf, size, 1, file);
+      fwrite(vbuf, size, 1, file);
+      ubuf += size;
+      vbuf += size;
     }
-    ubuf += stride;
-    vbuf += stride;
+    ubuf += (stride - w * size);
+    vbuf += (stride - w * size);
   }
 }

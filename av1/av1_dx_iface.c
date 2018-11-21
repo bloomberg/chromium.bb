@@ -1133,6 +1133,24 @@ static aom_codec_err_t ctrl_get_tile_size(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_INVALID_PARAM;
 }
 
+static aom_codec_err_t ctrl_get_tile_count(aom_codec_alg_priv_t *ctx,
+                                           va_list args) {
+  unsigned int *const tile_count = va_arg(args, unsigned int *);
+
+  if (tile_count) {
+    AVxWorker *const worker = &ctx->frame_workers[ctx->next_output_worker_id];
+    if (worker) {
+      FrameWorkerData *const frame_worker_data =
+          (FrameWorkerData *)worker->data1;
+      *tile_count = frame_worker_data->pbi->tile_count_minus_1 + 1;
+      return AOM_CODEC_OK;
+    } else {
+      return AOM_CODEC_ERROR;
+    }
+  }
+  return AOM_CODEC_INVALID_PARAM;
+}
+
 static aom_codec_err_t ctrl_set_invert_tile_order(aom_codec_alg_priv_t *ctx,
                                                   va_list args) {
   ctx->invert_tile_order = va_arg(args, int);
@@ -1299,6 +1317,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1D_GET_BIT_DEPTH, ctrl_get_bit_depth },
   { AV1D_GET_IMG_FORMAT, ctrl_get_img_format },
   { AV1D_GET_TILE_SIZE, ctrl_get_tile_size },
+  { AV1D_GET_TILE_COUNT, ctrl_get_tile_count },
   { AV1D_GET_DISPLAY_SIZE, ctrl_get_render_size },
   { AV1D_GET_FRAME_SIZE, ctrl_get_frame_size },
   { AV1_GET_ACCOUNTING, ctrl_get_accounting },

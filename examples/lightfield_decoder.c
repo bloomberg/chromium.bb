@@ -15,16 +15,13 @@
 // This is an example of a simple lightfield decoder. It builds upon the
 // simple_decoder.c example.  It takes an input file containing the compressed
 // data (in ivf format), treating it as a lightfield instead of a video; and a
-// text file with a list of tiles to decode. There is an option allowing to
-// choose the output format, and the supported formats are i420(default) and
-// nv12.
+// text file with a list of tiles to decode. There is an optional parameter
+// allowing to choose the output format, and the supported formats are
+// YUV1D(default), YUV, and NV12.
 // After running the lightfield encoder, run lightfield decoder to decode a
 // batch of tiles:
 // examples/lightfield_decoder vase10x10.ivf vase_reference.yuv 4 tile_list.txt
-// or
-// examples/lightfield_decoder vase10x10.ivf vase_reference.yuv 4 tile_list.txt
-// 1
-// if nv12 output format is preferred.
+// 0(optional)
 // The tile_list.txt is expected to be of the form:
 // Frame <frame_index0>
 // <image_index0> <anchor_index0> <tile_col0> <tile_row0>
@@ -50,9 +47,6 @@
 #include "common/video_reader.h"
 
 static const char *exec_name;
-
-#define I420 0
-#define NV12 1
 
 void usage_exit(void) {
   fprintf(stderr,
@@ -99,7 +93,8 @@ static void aom_img_copy_tile(const aom_image_t *src, const aom_image_t *dst,
 void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
                  size_t frame_size, int tr, int tc, int ref_idx,
                  aom_image_t *reference_images, aom_image_t *output,
-                 int *tile_idx, unsigned int *output_bit_depth) {
+                 int *tile_idx, unsigned int *output_bit_depth,
+                 aom_image_t **img_ptr, int output_format) {
   aom_codec_control_(codec, AV1_SET_TILE_MODE, 1);
   aom_codec_control_(codec, AV1D_EXT_TILE_DEBUG, 1);
   aom_codec_control_(codec, AV1_SET_DECODE_TILE_ROW, tr);
@@ -119,6 +114,7 @@ void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
   aom_codec_iter_t iter = NULL;
   aom_image_t *img = aom_codec_get_frame(codec, &iter);
   if (!img) die_codec(codec, "Failed to get frame.");
+  *img_ptr = img;
 
   // aom_img_alloc() sets bit_depth as follows:
   // output->bit_depth = (fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 16 : 8;
@@ -127,29 +123,34 @@ void decode_tile(aom_codec_ctx_t *codec, const unsigned char *frame,
   output->bit_depth = img->bit_depth;
   *output_bit_depth = img->bit_depth;
 
-  // read out the tile size.
-  unsigned int tile_size = 0;
-  if (aom_codec_control(codec, AV1D_GET_TILE_SIZE, &tile_size))
-    die_codec(codec, "Failed to get the tile size");
-  const unsigned int tile_width = tile_size >> 16;
-  const unsigned int tile_height = tile_size & 65535;
-  const uint8_t output_frame_width_in_tiles = output_frame_width / tile_width;
+  if (output_format != YUV1D) {
+    // read out the tile size.
+    unsigned int tile_size = 0;
+    if (aom_codec_control(codec, AV1D_GET_TILE_SIZE, &tile_size))
+      die_codec(codec, "Failed to get the tile size");
+    const unsigned int tile_width = tile_size >> 16;
+    const unsigned int tile_height = tile_size & 65535;
+    const uint8_t output_frame_width_in_tiles = output_frame_width / tile_width;
 
-  // Copy the tile to the output frame.
-  const int row_offset =
-      (*tile_idx / output_frame_width_in_tiles) * tile_height;
-  const int col_offset = (*tile_idx % output_frame_width_in_tiles) * tile_width;
+    // Copy the tile to the output frame.
+    const int row_offset =
+        (*tile_idx / output_frame_width_in_tiles) * tile_height;
+    const int col_offset =
+        (*tile_idx % output_frame_width_in_tiles) * tile_width;
 
-  aom_img_copy_tile(img, output, row_offset, col_offset);
-  (*tile_idx)++;
+    aom_img_copy_tile(img, output, row_offset, col_offset);
+    (*tile_idx)++;
+  }
 }
 
 static void img_write_to_file(const aom_image_t *img, FILE *file,
                               int output_format) {
-  if (output_format == I420)
+  if (output_format == YUV)
     aom_img_write(img, file);
-  else  // NV12
+  else if (output_format == NV12)
     aom_img_write_nv12(img, file);
+  else
+    die("Invalid output format");
 }
 
 int main(int argc, char **argv) {
@@ -167,7 +168,7 @@ int main(int argc, char **argv) {
   const unsigned char *frame = NULL;
   int i, j;
   const char *tile_list_file = NULL;
-  int output_format = I420;
+  int output_format = YUV1D;
   exec_name = argv[0];
 
   if (argc < 5) die("Invalid number of arguments.");
@@ -182,6 +183,8 @@ int main(int argc, char **argv) {
   tile_list_file = argv[4];
 
   if (argc > 5) output_format = (int)strtol(argv[5], NULL, 0);
+  if (output_format < YUV1D || output_format > NV12)
+    die("Output format out of range [0, 2]");
 
   info = aom_video_reader_get_info(reader);
 
@@ -268,12 +271,14 @@ int main(int argc, char **argv) {
   }
   printf("Read %d frames.\n", num_frames);
 
-  // Allocate the output frame.
-  aom_img_fmt_t out_fmt = ref_fmt;
-  if (!CONFIG_LOWBITDEPTH) out_fmt |= AOM_IMG_FMT_HIGHBITDEPTH;
-  if (!aom_img_alloc(&output, out_fmt, output_frame_width, output_frame_height,
-                     32))
-    die("Failed to allocate output image.");
+  if (output_format != YUV1D) {
+    // Allocate the output frame.
+    aom_img_fmt_t out_fmt = ref_fmt;
+    if (!CONFIG_LOWBITDEPTH) out_fmt |= AOM_IMG_FMT_HIGHBITDEPTH;
+    if (!aom_img_alloc(&output, out_fmt, output_frame_width,
+                       output_frame_height, 32))
+      die("Failed to allocate output image.");
+  }
 
   printf("Decoding tile list from file.\n");
   char line[1024];
@@ -286,20 +291,21 @@ int main(int argc, char **argv) {
 
   while ((fgets(line, 1024, tile_list_fptr)) != NULL) {
     if (line[0] == 'F') {
-      // Write out the tile list.
-      if (tile_list_cnt) {
-        out = &output;
-        // Shift up or down if necessary
-        if (output_bit_depth != 0)
-          aom_shift_img(output_bit_depth, &out, &output_shifted);
-        img_write_to_file(out, outfile, output_format);
-        tile_list_writes++;
-      }
+      if (output_format != YUV1D) {
+        // Write out the tile list.
+        if (tile_list_cnt) {
+          out = &output;
+          if (output_bit_depth != 0)
+            aom_shift_img(output_bit_depth, &out, &output_shifted);
+          img_write_to_file(out, outfile, output_format);
+          tile_list_writes++;
+        }
 
-      tile_list_cnt++;
-      tile_idx = 0;
-      // Then memset the frame.
-      memset(output.img_data, 0, output.sz);
+        tile_list_cnt++;
+        tile_idx = 0;
+        // Then memset the frame.
+        memset(output.img_data, 0, output.sz);
+      }
       continue;
     }
 
@@ -315,21 +321,30 @@ int main(int argc, char **argv) {
     }
     frame = frames[image_idx];
     frame_size = frame_sizes[image_idx];
+
+    aom_image_t *img = NULL;
     decode_tile(&codec, frame, frame_size, tr, tc, ref_idx, reference_images,
-                &output, &tile_idx, &output_bit_depth);
+                &output, &tile_idx, &output_bit_depth, &img, output_format);
+    if (output_format == YUV1D) {
+      out = img;
+      if (output_bit_depth != 0)
+        aom_shift_img(output_bit_depth, &out, &output_shifted);
+      aom_img_write(out, outfile);
+    }
   }
 
-  // Write out the last tile list.
-  if (tile_list_writes < tile_list_cnt) {
-    out = &output;
-    // Shift up or down if necessary
-    if (output_bit_depth != 0)
-      aom_shift_img(output_bit_depth, &out, &output_shifted);
-    img_write_to_file(out, outfile, output_format);
+  if (output_format != YUV1D) {
+    // Write out the last tile list.
+    if (tile_list_writes < tile_list_cnt) {
+      out = &output;
+      if (output_bit_depth != 0)
+        aom_shift_img(output_bit_depth, &out, &output_shifted);
+      img_write_to_file(out, outfile, output_format);
+    }
   }
 
   if (output_shifted) aom_img_free(output_shifted);
-  aom_img_free(&output);
+  if (output_format != YUV1D) aom_img_free(&output);
   for (i = 0; i < num_references; i++) aom_img_free(&reference_images[i]);
   for (int f = 0; f < num_frames; ++f) {
     free(frames[f]);
@@ -342,5 +357,3 @@ int main(int argc, char **argv) {
 
   return EXIT_SUCCESS;
 }
-#undef I420
-#undef NV12
