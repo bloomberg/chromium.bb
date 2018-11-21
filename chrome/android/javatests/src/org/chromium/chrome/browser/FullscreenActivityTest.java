@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -181,6 +182,7 @@ public class FullscreenActivityTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/906831")
     public void testNoIntentWhenInBackground() throws Throwable {
         final Boolean[] isTabFullscreen = new Boolean[1];
         Tab tab = mActivity.getActivityTab();
