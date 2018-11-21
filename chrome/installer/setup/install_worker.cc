@@ -430,6 +430,7 @@ void AddMigrateUsageStatsWorkItems(const InstallerState& installer_state,
       static_cast<DWORD>(consent), true);
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
 // Adds work items to register the Elevation Service with Windows. Only for
 // system level installs.
 void AddElevationServiceWorkItems(const base::FilePath& elevation_service_path,
@@ -502,6 +503,7 @@ void AddElevationServiceWorkItems(const base::FilePath& elevation_service_path,
                                WorkItem::kWow64Default, L"",
                                elevation_service_path.value(), true);
 }
+#endif  // defined(GOOGLE_CHROME_BUILD
 
 }  // namespace
 
@@ -911,7 +913,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
 #if defined(GOOGLE_CHROME_BUILD)
   AddEnterpriseEnrollmentWorkItems(installer_state, setup_path, new_version,
                                    install_list);
-#endif
+#endif  // defined(GOOGLE_CHROME_BUILD
   AddFirewallRulesWorkItems(installer_state, current_version == nullptr,
                             install_list);
 
@@ -921,10 +923,12 @@ void AddInstallWorkItems(const InstallationState& original_state,
       installer_state.root_key(),
       GetNotificationHelperPath(target_path, new_version), install_list);
 
+#if defined(GOOGLE_CHROME_BUILD)
   if (installer_state.system_install()) {
     AddElevationServiceWorkItems(
         GetElevationServicePath(target_path, new_version), install_list);
   }
+#endif  // defined(GOOGLE_CHROME_BUILD
 
   InstallUtil::AddUpdateDowngradeVersionItem(
       installer_state.root_key(), current_version, new_version, install_list);
@@ -1147,6 +1151,6 @@ void AddEnterpriseEnrollmentWorkItems(const InstallerState& installer_state,
     cmd.AddWorkItems(root_key, cmd_key, install_list);
   }
 }
-#endif
+#endif  // defined(GOOGLE_CHROME_BUILD
 
 }  // namespace installer
