@@ -24,8 +24,7 @@
         const observedEntries = entryList.getEntries();
         assert_equals(observedEntries.length, 1);
         assert_equals(observedEntries[0].entryType, 'firstInput');
-        assert_true(observedEntries[0].name === 'mousedown',
-            'Event type should be mousedown.');
+        assert_equals(observedEntries[0].name, 'click');
     })).observe({ entryTypes: ['firstInput'] });
     on_event(window, 'load', () => {
       clickAndBlockMain('button').then(wait).then(() => {

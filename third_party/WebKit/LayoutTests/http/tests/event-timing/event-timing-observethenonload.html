@@ -67,7 +67,7 @@
   async_test(function(t) {
     const observerPromise = new Promise((resolve, reject) => {
       new PerformanceObserver(function(entryList) {
-        observedEntries = observedEntries.concat(entryList.getEntries().filter(entry => entry.name === 'mousedown'));
+        observedEntries = observedEntries.concat(entryList.getEntries());
         if (observedEntries.length < 2) return;
         resolve(observedEntries);
       }).observe({ entryTypes: ['event'] });
@@ -79,7 +79,7 @@
       const bufferPromise = clickAndBlockMain('button').then(wait);
       Promise.all([observerPromise, bufferPromise]).then((results) => {
         t.step(verifyObserverEntries.bind(null, results[0]));
-        t.step(verifyBuffer.bind(null, performance.getEntriesByName('mousedown', 'event')));
+        t.step(verifyBuffer.bind(null, performance.getEntriesByName('click', 'event')));
         t.done();
       });
     });
