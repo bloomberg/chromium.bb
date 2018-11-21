@@ -283,6 +283,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         if (mCurrentDetails.isEmpty() && newDetails.isEmpty()) {
             // No update on UI needed.
             nativeOnShowDetails(mUiControllerAndroid, /* canContinue= */ true);
+            return;
         }
 
         Details mergedDetails = Details.merge(mCurrentDetails, newDetails);
