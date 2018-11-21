@@ -33,10 +33,10 @@ class CastWebContentsScopes {
         return onLayoutInternal(activity, layout, window, backgroundColor);
     }
 
-    private static Observer<WebContents> onLayoutInternal(Activity activity, FrameLayout layout,
+    private static Observer<WebContents> onLayoutInternal(Context context, FrameLayout layout,
             WindowAndroid window, @ColorInt int backgroundColor) {
         return (WebContents webContents) -> {
-            ContentViewRenderView contentViewRenderView = new ContentViewRenderView(activity) {
+            ContentViewRenderView contentViewRenderView = new ContentViewRenderView(context) {
                 @Override
                 protected void onReadyToRender() {
                     setOverlayVideoMode(true);
@@ -48,7 +48,7 @@ class CastWebContentsScopes {
                     FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
             layout.addView(contentViewRenderView, matchParent);
 
-            ContentView contentView = ContentView.createContentView(activity, webContents);
+            ContentView contentView = ContentView.createContentView(context, webContents);
             // TODO(derekjchow): productVersion
             webContents.initialize("", ViewAndroidDelegate.createBasicDelegate(contentView),
                     contentView, window, WebContents.createDefaultInternalsHolder());
