@@ -868,5 +868,14 @@ void WindowState::OnWindowDestroying(aura::Window* window) {
   delegate_.reset();
 }
 
+void WindowState::OnWindowLayerRecreated(aura::Window* window) {
+  DCHECK_EQ(window_, window);
+  // THe mask layer will be moved with old layer.
+  DCHECK(!window_->layer()->layer_mask_layer());
+  pip_mask_.reset();
+  if (IsPip())
+    UpdatePipRoundedCorners();
+}
+
 }  // namespace wm
 }  // namespace ash
