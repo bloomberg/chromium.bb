@@ -1214,7 +1214,7 @@ util.getRootTypeLabel = function(locationInfo) {
  * Returns the localized name of the entry.
  *
  * @param {EntryLocation} locationInfo
- * @param {!Entry} entry The entry to be retrieve the name of.
+ * @param {!Entry|!FakeEntry} entry The entry to be retrieve the name of.
  * @return {?string} The localized name.
  */
 util.getEntryLabel = function(locationInfo, entry) {
