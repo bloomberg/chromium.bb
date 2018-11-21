@@ -35,9 +35,8 @@ using chrome_test_util::SettingsMenuPrivacyButton;
 
   NSString* clearBrowsingDataDialogLabel =
       l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
-                                          clearBrowsingDataDialogLabel)]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI tapPrivacyMenuButton:ButtonWithAccessibilityLabel(
+                                             clearBrowsingDataDialogLabel)];
 }
 
 // Test that opening the clear browsing data dialog does not cause a crash
