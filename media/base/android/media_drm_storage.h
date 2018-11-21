@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/android/media_drm_key_type.h"
 #include "media/base/media_export.h"
 #include "url/origin.h"
 
@@ -29,12 +30,15 @@ class MEDIA_EXPORT MediaDrmStorage
     : public base::SupportsWeakPtr<MediaDrmStorage> {
  public:
   struct SessionData {
-    SessionData(std::vector<uint8_t> key_set_id, std::string mime_type);
+    SessionData(std::vector<uint8_t> key_set_id,
+                std::string mime_type,
+                MediaDrmKeyType key_type);
     SessionData(const SessionData& other);
     ~SessionData();
 
     std::vector<uint8_t> key_set_id;
     std::string mime_type;
+    MediaDrmKeyType key_type;
   };
 
   MediaDrmStorage();

@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_MACROS_H_
 #define MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_MACROS_H_
 
+#include "build/build_config.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/audio_codecs.h"
 #include "media/base/audio_parameters.h"
@@ -38,6 +39,10 @@
 #include "media/cdm/cdm_proxy.h"
 #include "media/media_buildflags.h"
 #include "ui/gfx/ipc/color/gfx_param_traits_macros.h"
+
+#if defined(OS_ANDROID)
+#include "media/base/android/media_drm_key_type.h"
+#endif  // defined(OS_ANDROID)
 
 // Enum traits.
 
@@ -130,6 +135,12 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::VideoRotation, media::VIDEO_ROTATION_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::container_names::MediaContainerName,
                           media::container_names::CONTAINER_MAX);
+
+#if defined(OS_ANDROID)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::MediaDrmKeyType,
+                              media::MediaDrmKeyType::MIN,
+                              media::MediaDrmKeyType::MAX);
+#endif  // defined(OS_ANDROID)
 
 IPC_ENUM_TRAITS_VALIDATE(
     media::VideoColorSpace::PrimaryID,

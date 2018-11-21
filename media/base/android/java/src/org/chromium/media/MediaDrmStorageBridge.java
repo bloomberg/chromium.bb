@@ -38,15 +38,20 @@ class MediaDrmStorageBridge {
         // Mime type for the license.
         private final String mMimeType;
 
+        // Key type of session. It can be any value. Caller should check it before actual using it.
+        private final int mKeyType;
+
         @CalledByNative("PersistentInfo")
-        private static PersistentInfo create(byte[] emeId, byte[] keySetId, String mime) {
-            return new PersistentInfo(emeId, keySetId, mime);
+        private static PersistentInfo create(
+                byte[] emeId, byte[] keySetId, String mime, int keyType) {
+            return new PersistentInfo(emeId, keySetId, mime, keyType);
         }
 
-        PersistentInfo(byte[] emeId, byte[] keySetId, String mime) {
+        PersistentInfo(byte[] emeId, byte[] keySetId, String mime, int keyType) {
             mEmeId = emeId;
             mKeySetId = keySetId;
             mMimeType = mime;
+            mKeyType = keyType;
         }
 
         @CalledByNative("PersistentInfo")
@@ -62,6 +67,11 @@ class MediaDrmStorageBridge {
         @CalledByNative("PersistentInfo")
         String mimeType() {
             return mMimeType;
+        }
+
+        @CalledByNative("PersistentInfo")
+        int keyType() {
+            return mKeyType;
         }
     }
 
