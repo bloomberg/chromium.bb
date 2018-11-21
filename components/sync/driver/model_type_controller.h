@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/storage_option.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/model/model_error.h"
@@ -72,8 +73,7 @@ class ModelTypeController : public DataTypeController {
   void OnProcessorStarted(
       std::unique_ptr<DataTypeActivationResponse> activation_response);
 
-  base::flat_map<ConfigureContext::StorageOption,
-                 std::unique_ptr<ModelTypeControllerDelegate>>
+  base::flat_map<StorageOption, std::unique_ptr<ModelTypeControllerDelegate>>
       delegate_map_;
 
   // State of this datatype controller.

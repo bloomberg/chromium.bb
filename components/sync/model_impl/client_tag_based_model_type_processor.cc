@@ -9,7 +9,9 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/data_type_histogram.h"
@@ -703,8 +705,8 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
   // always clear all data. We do this to allow the server to replace all data
   // on the client, without having to know exactly which entities the client
   // has.
-  if (!model_type_state_.initial_sync_done() ||
-      HasClearAllDirective(model_type_state)) {
+  bool is_initial_sync = !model_type_state_.initial_sync_done();
+  if (is_initial_sync || HasClearAllDirective(model_type_state)) {
     error = OnFullUpdateReceived(model_type_state, *updates_to_process);
   } else {
     error = OnIncrementalUpdateReceived(model_type_state, *updates_to_process);
@@ -714,6 +716,19 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
   if (error) {
     ReportError(*error);
     return;
+  }
+
+  if (is_initial_sync &&
+      activation_request_.storage_option == STORAGE_IN_MEMORY) {
+    base::TimeDelta configuration_duration =
+        base::Time::Now() - activation_request_.configuration_start_time;
+    base::UmaHistogramCustomTimes(
+        base::StringPrintf("Sync.ModelTypeConfigurationTime.Ephemeral.%s",
+                           ModelTypeToHistogramSuffix(type_)),
+        configuration_duration,
+        /*min=*/base::TimeDelta::FromMilliseconds(1),
+        /*min=*/base::TimeDelta::FromSeconds(60),
+        /*buckets=*/50);
   }
 
   // If there were trackers with empty storage keys, they should have been

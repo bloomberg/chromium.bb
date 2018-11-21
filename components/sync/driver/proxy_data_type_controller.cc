@@ -43,8 +43,7 @@ void ProxyDataTypeController::LoadModels(
     const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(configure_context.storage_option,
-            ConfigureContext::STORAGE_ON_DISK);
+  DCHECK_EQ(configure_context.storage_option, STORAGE_ON_DISK);
   state_ = MODEL_LOADED;
   state_changed_cb_.Run(state_);
   model_load_callback.Run(type(), SyncError());

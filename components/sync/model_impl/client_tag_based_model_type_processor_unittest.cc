@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/storage_option.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -208,8 +209,8 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
         IsCommitOnly(), GetModelType(), SupportsIncrementalUpdates());
   }
 
-  void InitializeToMetadataLoaded() {
-    bridge()->SetInitialSyncDone(true);
+  void InitializeToMetadataLoaded(bool initial_sync_done = true) {
+    bridge()->SetInitialSyncDone(initial_sync_done);
     ModelReadyToSync();
   }
 
@@ -226,13 +227,16 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   void OnCommitDataLoaded() { bridge()->OnCommitDataLoaded(); }
 
   void OnSyncStarting(
-      const std::string& authenticated_account_id = "SomeAccountId") {
+      const std::string& authenticated_account_id = "SomeAccountId",
+      StorageOption storage_option = STORAGE_ON_DISK) {
     DataTypeActivationRequest request;
     request.error_handler = base::BindRepeating(
         &ClientTagBasedModelTypeProcessorTest::ErrorReceived,
         base::Unretained(this));
     request.cache_guid = "TestCacheGuid";
     request.authenticated_account_id = authenticated_account_id;
+    request.storage_option = storage_option;
+    request.configuration_start_time = base::Time::Now();
     type_processor()->OnSyncStarting(
         request,
         base::BindOnce(&ClientTagBasedModelTypeProcessorTest::OnReadyToConnect,
@@ -1605,8 +1609,167 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(0U, db().data_count());
 }
 
-class WalletDataClientTagBasedModelTypeProcessorTest
+// Tests that initial updates for ephemeral storage result in reporting setup
+// duration.
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldReportEphemeralConfigurationTime) {
+  InitializeToMetadataLoaded(/*initial_sync_done=*/false);
+  OnSyncStarting("SomeAccountId", STORAGE_IN_MEMORY);
+
+  UpdateResponseDataList updates;
+  updates.push_back(worker()->GenerateUpdateData(
+      /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
+
+  base::HistogramTester histogram_tester;
+  worker()->UpdateFromServer(updates);
+
+  // The duration should get recorded.
+  histogram_tester.ExpectTotalCount(
+      "Sync.ModelTypeConfigurationTime.Ephemeral.PREFERENCE",
+      /*count=*/1);
+}
+
+// Tests that initial updates for persistent storage do not result in reporting
+// setup duration.
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldNotReportEphemeralConfigurationTimeForPersistentStorage) {
+  InitializeToMetadataLoaded(/*initial_sync_done=*/false);
+  OnSyncStarting("SomeAccountId", STORAGE_ON_DISK);
+
+  base::HistogramTester histogram_tester;
+
+  UpdateResponseDataList updates;
+  updates.push_back(worker()->GenerateUpdateData(
+      /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
+  worker()->UpdateFromServer(updates);
+
+  ASSERT_EQ(1, bridge()->merge_call_count());
+  histogram_tester.ExpectTotalCount(
+      "Sync.ModelTypeConfigurationTime.Ephemeral.PREFERENCE",
+      /*count=*/0);
+}
+
+class FullUpdateClientTagBasedModelTypeProcessorTest
     : public ClientTagBasedModelTypeProcessorTest {
+ protected:
+  bool SupportsIncrementalUpdates() override { return false; }
+};
+
+// Tests that ClientTagBasedModelTypeProcessor can do garbage collection by
+// version.
+// Garbage collection by version is used by the server to replace all data on
+// the client, and is implemented by calling MergeSyncData on the bridge.
+TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
+       ShouldApplyGarbageCollectionByVersionFullUpdate) {
+  InitializeToReadyState();
+  UpdateResponseDataList updates;
+  updates.push_back(worker()->GenerateUpdateData(
+      /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
+  updates.push_back(worker()->GenerateUpdateData(
+      /*tag_hash=*/"", GenerateSpecifics(kKey2, kValue2), 2, "k2"));
+
+  // Create 2 entries, one is version 3, another is version 1.
+  sync_pb::GarbageCollectionDirective garbage_collection_directive;
+  garbage_collection_directive.set_version_watermark(1);
+  worker()->UpdateWithGarbageCollection(updates, garbage_collection_directive);
+  WriteItemAndAck(kKey1, kValue1);
+  WriteItemAndAck(kKey2, kValue2);
+
+  // Verify entries are created correctly.
+  ASSERT_EQ(2U, ProcessorEntityCount());
+  ASSERT_EQ(2U, db().metadata_count());
+  ASSERT_EQ(2U, db().data_count());
+  ASSERT_EQ(0U, worker()->GetNumPendingCommits());
+  ASSERT_EQ(1, bridge()->merge_call_count());
+
+  // Tell the client to delete all data.
+  sync_pb::GarbageCollectionDirective new_directive;
+  new_directive.set_version_watermark(2);
+  worker()->UpdateWithGarbageCollection(new_directive);
+
+  // Verify that merge is called on the bridge to replace the current sync data.
+  EXPECT_EQ(2, bridge()->merge_call_count());
+  // Verify that the processor cleared all metadata.
+  EXPECT_EQ(0U, db().metadata_count());
+  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
+}
+
+// Tests that full updates for ephemeral storage result in reporting setup
+// duration.
+TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
+       ShouldReportEphemeralConfigurationTimeOnlyForFirstFullUpdate) {
+  InitializeToMetadataLoaded(/*initial_sync_done=*/false);
+  OnSyncStarting("SomeAccountId", STORAGE_IN_MEMORY);
+
+  UpdateResponseDataList updates;
+  updates.push_back(worker()->GenerateUpdateData(
+      /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
+  sync_pb::GarbageCollectionDirective garbage_collection_directive;
+  garbage_collection_directive.set_version_watermark(1);
+
+  {
+    base::HistogramTester histogram_tester;
+    worker()->UpdateWithGarbageCollection(updates,
+                                          garbage_collection_directive);
+    ASSERT_EQ(1, bridge()->merge_call_count());
+
+    // The duration should get recorded.
+    histogram_tester.ExpectTotalCount(
+        "Sync.ModelTypeConfigurationTime.Ephemeral.PREFERENCE",
+        /*count=*/1);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    // Send one more update with the same data.
+    worker()->UpdateWithGarbageCollection(updates,
+                                          garbage_collection_directive);
+    ASSERT_EQ(2, bridge()->merge_call_count());
+
+    // The duration should not get recorded again.
+    histogram_tester.ExpectTotalCount(
+        "Sync.ModelTypeConfigurationTime.Ephemeral.PREFERENCE",
+        /*count=*/0);
+  }
+}
+
+// Tests that the processor reports an error for updates without a version GC
+// directive that are received for types that don't support incremental updates.
+TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
+       ShouldReportErrorForUnsupportedIncrementalUpdate) {
+  InitializeToReadyState();
+
+  ExpectError();
+  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue1));
+}
+
+// Tests that empty updates without a version GC are ignored for types that
+// don't support incremental updates.
+TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
+       ShouldIgnoreEmptyUpdate) {
+  InitializeToReadyState();
+
+  worker()->UpdateFromServer(UpdateResponseDataList());
+
+  // Verify that the empty update was ignored in the processor.
+  EXPECT_EQ(0, bridge()->merge_call_count());
+  EXPECT_EQ(0, bridge()->apply_call_count());
+}
+
+// Tests that the processor correctly handles an initial (non-empty) update
+// without any gc directives (as it happens in the migration to USS).
+TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
+       ShouldProcessInitialUpdate) {
+  // Do not set any model type state to emulate that initial sync has not been
+  // done yet.
+  ModelReadyToSync();
+  OnSyncStarting();
+
+  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue1));
+}
+
+class WalletDataClientTagBasedModelTypeProcessorTest
+    : public FullUpdateClientTagBasedModelTypeProcessorTest {
  protected:
   ModelType GetModelType() override { return AUTOFILL_WALLET_DATA; }
 };
@@ -1623,7 +1786,9 @@ TEST_F(WalletDataClientTagBasedModelTypeProcessorTest,
   UpdateResponseDataList updates;
   updates.push_back(worker()->GenerateUpdateData(
       /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
-  worker()->UpdateFromServer(updates);
+  sync_pb::GarbageCollectionDirective garbage_collection_directive;
+  garbage_collection_directive.set_version_watermark(1);
+  worker()->UpdateWithGarbageCollection(updates, garbage_collection_directive);
 
   // Verify that the data was stored.
   EXPECT_EQ(1U, db().metadata_count());
@@ -1797,86 +1962,6 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
       base::BindOnce(&CaptureStatusCounters, &status_counters));
   EXPECT_EQ(status_counters.num_entries, 0U);
   EXPECT_EQ(nullptr, GetEntityForStorageKey(kKey1));
-}
-
-class FullUpdateClientTagBasedModelTypeProcessorTest
-    : public ClientTagBasedModelTypeProcessorTest {
- protected:
-  bool SupportsIncrementalUpdates() override { return false; }
-};
-
-// Tests that ClientTagBasedModelTypeProcessor can do garbage collection by
-// version.
-// Garbage collection by version is used by the server to replace all data on
-// the client, and is implemented by calling MergeSyncData on the bridge.
-TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
-       ShouldApplyGarbageCollectionByVersionFullUpdate) {
-  InitializeToReadyState();
-  UpdateResponseDataList updates;
-  updates.push_back(worker()->GenerateUpdateData(
-      /*tag_hash=*/"", GenerateSpecifics(kKey1, kValue1), 1, "k1"));
-  updates.push_back(worker()->GenerateUpdateData(
-      /*tag_hash=*/"", GenerateSpecifics(kKey2, kValue2), 2, "k2"));
-
-  // Create 2 entries, one is version 3, another is version 1.
-  sync_pb::GarbageCollectionDirective garbage_collection_directive;
-  garbage_collection_directive.set_version_watermark(1);
-  worker()->UpdateWithGarbageCollection(updates, garbage_collection_directive);
-  WriteItemAndAck(kKey1, kValue1);
-  WriteItemAndAck(kKey2, kValue2);
-
-  // Verify entries are created correctly.
-  ASSERT_EQ(2U, ProcessorEntityCount());
-  ASSERT_EQ(2U, db().metadata_count());
-  ASSERT_EQ(2U, db().data_count());
-  ASSERT_EQ(0U, worker()->GetNumPendingCommits());
-  ASSERT_EQ(1, bridge()->merge_call_count());
-
-  // Tell the client to delete all data.
-  sync_pb::GarbageCollectionDirective new_directive;
-  new_directive.set_version_watermark(2);
-  worker()->UpdateWithGarbageCollection(new_directive);
-
-  // Verify that merge is called on the bridge to replace the current sync data.
-  EXPECT_EQ(2, bridge()->merge_call_count());
-  // Verify that the processor cleared all metadata.
-  EXPECT_EQ(0U, db().metadata_count());
-  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
-}
-
-// Tests that the processor reports an error for updates without a version GC
-// directive that are received for types that don't support incremental updates.
-TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
-       ShouldReportErrorForUnsupportedIncrementalUpdate) {
-  InitializeToReadyState();
-
-  ExpectError();
-  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue1));
-}
-
-// Tests that empty updates without a version GC are ignored for types that
-// don't support incremental updates.
-TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
-       ShouldIgnoreEmptyUpdate) {
-  InitializeToReadyState();
-
-  worker()->UpdateFromServer(UpdateResponseDataList());
-
-  // Verify that the empty update was ignored in the processor.
-  EXPECT_EQ(0, bridge()->merge_call_count());
-  EXPECT_EQ(0, bridge()->apply_call_count());
-}
-
-// Tests that the processor correctly handles an initial (non-empty) update
-// without any gc directives (as it happens in the migration to USS).
-TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
-       ShouldProcessInitialUpdate) {
-  // Do not set any model type state to emulate that initial sync has not been
-  // done yet.
-  ModelReadyToSync();
-  OnSyncStarting();
-
-  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue1));
 }
 
 // Tests that the processor reports an error for updates with a version GC
