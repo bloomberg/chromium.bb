@@ -216,8 +216,8 @@ struct BASE_EXPORT LaunchOptions {
   std::vector<FilePath> paths_to_clone;
 
   // Specifies handles which will be installed as files or directories in the
-  // child process' namespace. Paths installed by |paths_to_clone| will be
-  // overridden by these entries.
+  // child process' namespace. Paths installed by |paths_to_clone| or
+  // FDIO_SPAWN_CLONE_NAMESPACE flag will be overridden by these entries.
   std::vector<PathToTransfer> paths_to_transfer;
 #endif  // defined(OS_FUCHSIA)
 
