@@ -97,24 +97,23 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
       continue;
     }
 
-    // TODO(benwells): Remove deprecated use of base::DictionaryValue API.
     JSONFileValueDeserializer deserializer(file);
     std::string error_msg;
-    std::unique_ptr<base::Value> value =
+    std::unique_ptr<base::Value> dict =
         deserializer.Deserialize(nullptr, &error_msg);
-    if (!value) {
+    if (!dict) {
       LOG(ERROR) << file.value() << " was not valid JSON: " << error_msg;
       continue;
     }
-    if (value->type() != base::Value::Type::DICTIONARY) {
+    if (dict->type() != base::Value::Type::DICTIONARY) {
       LOG(ERROR) << file.value() << " was not a dictionary as the top level";
       continue;
     }
-    std::unique_ptr<base::DictionaryValue> dict_value =
-        base::DictionaryValue::From(std::move(value));
 
-    std::string feature_name;
-    if (dict_value->GetString(kFeatureName, &feature_name)) {
+    base::Value* value =
+        dict->FindKeyOfType(kFeatureName, base::Value::Type::STRING);
+    if (value) {
+      std::string feature_name = value->GetString();
       VLOG(1) << file.value() << " checking feature " << feature_name;
       if (!IsFeatureEnabled(feature_name)) {
         VLOG(1) << file.value() << " feature not enabled";
@@ -122,30 +121,34 @@ std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
       }
     }
 
-    std::string app_url_str;
-    if (!dict_value->GetString(kAppUrl, &app_url_str) || app_url_str.empty()) {
-      LOG(ERROR) << file.value() << " had an invalid " << kAppUrl;
+    value = dict->FindKeyOfType(kAppUrl, base::Value::Type::STRING);
+    if (!value) {
+      LOG(ERROR) << file.value() << " had a missing " << kAppUrl;
       continue;
     }
-    GURL app_url(app_url_str);
+    GURL app_url(value->GetString());
     if (!app_url.is_valid()) {
       LOG(ERROR) << file.value() << " had an invalid " << kAppUrl;
       continue;
     }
 
     bool create_shortcuts = false;
-    if (dict_value->HasKey(kCreateShortcuts) &&
-        !dict_value->GetBoolean(kCreateShortcuts, &create_shortcuts)) {
-      LOG(ERROR) << file.value() << " had an invalid " << kCreateShortcuts;
-      continue;
+    value = dict->FindKey(kCreateShortcuts);
+    if (value) {
+      if (!value->is_bool()) {
+        LOG(ERROR) << file.value() << " had an invalid " << kCreateShortcuts;
+        continue;
+      }
+      create_shortcuts = value->GetBool();
     }
 
-    auto launch_container = web_app::LaunchContainer::kTab;
-    std::string launch_container_str;
-    if (!dict_value->GetString(kLaunchContainer, &launch_container_str)) {
+    value = dict->FindKeyOfType(kLaunchContainer, base::Value::Type::STRING);
+    if (!value) {
       LOG(ERROR) << file.value() << " had an invalid " << kLaunchContainer;
       continue;
     }
+    std::string launch_container_str = value->GetString();
+    auto launch_container = web_app::LaunchContainer::kTab;
     if (launch_container_str == kLaunchContainerTab) {
       launch_container = web_app::LaunchContainer::kTab;
     } else if (launch_container_str == kLaunchContainerWindow) {
