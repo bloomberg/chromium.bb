@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 13
+// Next MinVersion: 14
 
 module arc.mojom;
 
@@ -81,6 +81,7 @@ enum AccessibilityActionType {
   SET_PROGRESS,
   SHOW_ON_SCREEN,
   CUSTOM_ACTION,  // Not a standard action.
+  GET_TEXT_LOCATION,  // Not a standard action.
 };
 
 // Possible boolean properties set on an AccessibilityNodeInfo.
@@ -109,7 +110,8 @@ enum AccessibilityBooleanProperty {
   IMPORTANCE,
   SCREEN_READER_FOCUSABLE,
   SHOWING_HINT_TEXT,
-  HEADING
+  HEADING,
+  SUPPORTS_TEXT_LOCATION,
 };
 
 // These fields are taken from string instance members of
@@ -358,8 +360,14 @@ struct AccessibilityActionData {
 
   // window_id where the action is performed on.
   [MinVersion=6] int32 window_id;
+
+  // Parameters specifying indicies to get text location of node
+  // in Android.
+  [MinVersion=13] int32 start_index;
+  [MinVersion=13] int32 end_index;
 };
 
+// Interface for Android communicating to Chrome.
 // Next method ID: 3
 interface AccessibilityHelperHost {
   OnAccessibilityEventDeprecated@0(AccessibilityEventType event_type,
@@ -375,7 +383,8 @@ interface AccessibilityHelperHost {
       string notification_key, AccessibilityNotificationStateType state);
 };
 
-// Next method ID: 9
+// Interface for communicating to Android.
+// Next method ID: 10
 interface AccessibilityHelperInstance {
   // DEPRECATED: Please use Init@7 instead.
   InitDeprecated@0(AccessibilityHelperHost host);
@@ -406,4 +415,9 @@ interface AccessibilityHelperInstance {
 
   // Requests the service to enable or disable Explore By Touch.
   [MinVersion=11] SetExploreByTouchEnabled@8(bool enabled);
+
+  // Refresh the current node with extra data.
+  // Returns Rect specifying location, or null if textLocation is not available.
+  [MinVersion=13] RefreshWithExtraData@9(AccessibilityActionData refresh_data)
+      => (Rect? text_location);
 };

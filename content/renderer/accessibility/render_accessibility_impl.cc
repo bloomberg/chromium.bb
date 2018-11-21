@@ -685,6 +685,8 @@ void RenderAccessibilityImpl::OnPerformAction(
     case ax::mojom::Action::kNone:
       NOTREACHED();
       break;
+    case ax::mojom::Action::kGetTextLocation:
+      break;
   }
 }
 

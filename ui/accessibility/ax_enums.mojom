@@ -381,6 +381,7 @@ enum Action {
   kSetValue,
 
   kShowContextMenu,
+  kGetTextLocation,
 };
 
 enum ActionFlags {
@@ -615,6 +616,9 @@ enum BoolAttribute {
 
   // Indicates whether this node is selected or unselected.
   kSelected,
+
+  // Indicates whether this node supports text location.
+  kSupportsTextLocation,
 };
 
 enum IntListAttribute {

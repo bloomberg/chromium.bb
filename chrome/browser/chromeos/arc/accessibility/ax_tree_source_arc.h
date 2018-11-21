@@ -52,6 +52,10 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   // Notify automation of a result to an action.
   void NotifyActionResult(const ui::AXActionData& data, bool result);
 
+  // Notify automation of result to getTextLocation.
+  void NotifyGetTextLocationDataResult(const ui::AXActionData& data,
+                                       const base::Optional<gfx::Rect>& rect);
+
   // Attaches tree to an aura window and gives it system focus.
   void Focus(aura::Window* window);
 

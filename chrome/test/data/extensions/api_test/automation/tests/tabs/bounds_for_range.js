@@ -19,81 +19,95 @@ var allTests = [
 
     // Left-to-right.
     var ltr = getNthListItemInlineTextBox(0);
-    var bounds = ltr.location;
-    var firstHalf = ltr.boundsForRange(0, 4);
-    var secondHalf = ltr.boundsForRange(4, ltr.name.length);
-    assertEq(bounds.top, firstHalf.top);
-    assertEq(bounds.left, firstHalf.left);
-    assertEq(bounds.height, firstHalf.height);
-    assertEq(bounds.top, secondHalf.top);
-    assertEq(bounds.height, secondHalf.height);
-    assertTrue(secondHalf.left > bounds.left);
-    assertTrue(firstHalf.width < bounds.width);
-    assertTrue(secondHalf.width < bounds.width);
-    assertTrue(Math.abs(bounds.width - firstHalf.width - secondHalf.width) < 3);
+    ltr.boundsForRange(
+        0, 4,
+        (firstHalf) => {ltr.boundsForRange(4, ltr.name.length, (secondHalf) => {
+          var bounds = ltr.location;
+          assertEq(bounds.top, firstHalf.top);
+          assertEq(bounds.left, firstHalf.left);
+          assertEq(bounds.height, firstHalf.height);
+          assertEq(bounds.top, secondHalf.top);
+          assertEq(bounds.height, secondHalf.height);
+          assertTrue(secondHalf.left > bounds.left);
+          assertTrue(firstHalf.width < bounds.width);
+          assertTrue(secondHalf.width < bounds.width);
+          assertTrue(
+              Math.abs(bounds.width - firstHalf.width - secondHalf.width) < 3);
+        })});
 
     // Right-to-left.
     var rtl = getNthListItemInlineTextBox(1);
     bounds = rtl.location;
-    firstHalf = rtl.boundsForRange(0, 4);
-    secondHalf = rtl.boundsForRange(4, rtl.name.length);
-    assertEq(bounds.top, secondHalf.top);
-    assertTrue(Math.abs(bounds.left - secondHalf.left) < 3);
-    assertEq(bounds.height, secondHalf.height);
-    assertEq(bounds.top, firstHalf.top);
-    assertEq(bounds.height, firstHalf.height);
-    assertTrue(firstHalf.left > bounds.left);
-    assertTrue(secondHalf.width < bounds.width);
-    assertTrue(firstHalf.width < bounds.width);
-    assertTrue(Math.abs(bounds.width - secondHalf.width - firstHalf.width) < 3);
+    rtl.boundsForRange(0, 4, (firstHalf) => {
+      rtl.boundsForRange(4, rtl.name.length, (secondHalf) => {
+        assertEq(bounds.top, secondHalf.top);
+        assertTrue(Math.abs(bounds.left - secondHalf.left) < 3);
+        assertEq(bounds.height, secondHalf.height);
+        assertEq(bounds.top, firstHalf.top);
+        assertEq(bounds.height, firstHalf.height);
+        assertTrue(firstHalf.left > bounds.left);
+        assertTrue(secondHalf.width < bounds.width);
+        assertTrue(firstHalf.width < bounds.width);
+        assertTrue(
+            Math.abs(bounds.width - secondHalf.width - firstHalf.width) < 3);
+      });
+    });
 
     // Top-to-bottom.
     var ttb = getNthListItemInlineTextBox(2);
     var bounds = ttb.location;
-    var firstHalf = ttb.boundsForRange(0, 4);
-    var secondHalf = ttb.boundsForRange(4, ttb.name.length);
-    assertEq(bounds.left, firstHalf.left);
-    assertEq(bounds.top, firstHalf.top);
-    assertEq(bounds.width, firstHalf.width);
-    assertEq(bounds.left, secondHalf.left);
-    assertEq(bounds.width, secondHalf.width);
-    assertTrue(secondHalf.top > bounds.top);
-    assertTrue(firstHalf.height < bounds.height);
-    assertTrue(secondHalf.height < bounds.height);
-    assertTrue(Math.abs(bounds.height - firstHalf.height - secondHalf.height)
-        < 3);
+    ttb.boundsForRange(0, 4, (firstHalf) => {
+      ttb.boundsForRange(4, ttb.name.length, (secondHalf) => {
+        assertEq(bounds.left, firstHalf.left);
+        assertEq(bounds.top, firstHalf.top);
+        assertEq(bounds.width, firstHalf.width);
+        assertEq(bounds.left, secondHalf.left);
+        assertEq(bounds.width, secondHalf.width);
+        assertTrue(secondHalf.top > bounds.top);
+        assertTrue(firstHalf.height < bounds.height);
+        assertTrue(secondHalf.height < bounds.height);
+        assertTrue(
+            Math.abs(bounds.height - firstHalf.height - secondHalf.height) < 3);
+      });
+    });
 
     // Bottom-to-top.
     var btt = getNthListItemInlineTextBox(3);
     bounds = btt.location;
-    firstHalf = btt.boundsForRange(0, 4);
-    secondHalf = btt.boundsForRange(4, btt.name.length);
-    assertEq(bounds.left, secondHalf.left);
-    assertTrue(Math.abs(bounds.top - secondHalf.top) < 3);
-    assertEq(bounds.width, secondHalf.width);
-    assertEq(bounds.left, firstHalf.left);
-    assertEq(bounds.width, firstHalf.width);
-    assertTrue(firstHalf.top > bounds.top);
-    assertTrue(secondHalf.height < bounds.height);
-    assertTrue(firstHalf.height < bounds.height);
-    assertTrue(Math.abs(bounds.height - secondHalf.height - firstHalf.height)
-        < 3);
-    chrome.test.succeed();
+    btt.boundsForRange(0, 4, (firstHalf) => {
+      btt.boundsForRange(4, btt.name.length, (secondHalf) => {
+        assertEq(bounds.left, secondHalf.left);
+        assertTrue(Math.abs(bounds.top - secondHalf.top) < 3);
+        assertEq(bounds.width, secondHalf.width);
+        assertEq(bounds.left, firstHalf.left);
+        assertEq(bounds.width, firstHalf.width);
+        assertTrue(firstHalf.top > bounds.top);
+        assertTrue(secondHalf.height < bounds.height);
+        assertTrue(firstHalf.height < bounds.height);
+        assertTrue(
+            Math.abs(bounds.height - secondHalf.height - firstHalf.height) < 3);
+        chrome.test.succeed();
+      });
+    });
 
   },
 
   function boundsForRangeClips() {
     let clipped = rootNode.find({attributes: {name: "This text overflows"}});
-    let clippedBounds = clipped.boundsForRange(0, clipped.name.length);
-    assertTrue(clipped.parent.location.width < clipped.unclippedLocation.width);
-    assertEq(clipped.parent.location.width, clippedBounds.width);
+    clipped.boundsForRange(0, clipped.name.length, (clippedBounds) => {
+      assertTrue(
+          clipped.parent.location.width < clipped.unclippedLocation.width);
+      assertEq(clipped.parent.location.width, clippedBounds.width);
+    });
 
     let hidden = rootNode.find({attributes: {name: "This text is hidden"}});
-    let hiddenBounds = hidden.boundsForRange(0, hidden.name.length);
-    assertTrue(hidden.parent.location.width < hidden.unclippedLocation.width);
-    assertTrue(hidden.parent.location.height < hidden.unclippedLocation.height);
-    assertEq(hidden.parent.location.width, hiddenBounds.width);
-    assertEq(hidden.parent.location.height, hiddenBounds.height);
+    hidden.boundsForRange(0, hidden.name.length, (hiddenBounds) => {
+      assertTrue(hidden.parent.location.width < hidden.unclippedLocation.width);
+      assertTrue(
+          hidden.parent.location.height < hidden.unclippedLocation.height);
+      assertEq(hidden.parent.location.width, hiddenBounds.width);
+      assertEq(hidden.parent.location.height, hiddenBounds.height);
+    });
 
     chrome.test.succeed();
   }

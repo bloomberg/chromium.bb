@@ -997,6 +997,8 @@ const char* ToString(ax::mojom::Action action) {
       return "setValue";
     case ax::mojom::Action::kShowContextMenu:
       return "showContextMenu";
+    case ax::mojom::Action::kGetTextLocation:
+      return "getTextLocation";
   }
 
   return "";
@@ -1549,6 +1551,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "clipsChildren";
     case ax::mojom::BoolAttribute::kSelected:
       return "selected";
+    case ax::mojom::BoolAttribute::kSupportsTextLocation:
+      return "supportsTextLocation";
   }
 
   return "";
@@ -1581,6 +1585,8 @@ ax::mojom::BoolAttribute ParseBoolAttribute(const char* bool_attribute) {
     return ax::mojom::BoolAttribute::kClipsChildren;
   if (0 == strcmp(bool_attribute, "selected"))
     return ax::mojom::BoolAttribute::kSelected;
+  if (0 == strcmp(bool_attribute, "supportsTextLocation"))
+    return ax::mojom::BoolAttribute::kSupportsTextLocation;
   return ax::mojom::BoolAttribute::kNone;
 }
 

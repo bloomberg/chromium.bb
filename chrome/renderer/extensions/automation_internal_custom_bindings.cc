@@ -369,6 +369,61 @@ class NodeIDPlusStringBoolWrapper
   NodeIDPlusStringBoolFunction function_;
 };
 
+using NodeIDPlusDimensionsFunction =
+    void (*)(v8::Isolate* isolate,
+             v8::ReturnValue<v8::Value> result,
+             AutomationAXTreeWrapper* tree_wrapper,
+             ui::AXNode* node,
+             int x,
+             int y,
+             int width,
+             int height);
+
+class NodeIDPlusDimensionsWrapper
+    : public base::RefCountedThreadSafe<NodeIDPlusDimensionsWrapper> {
+ public:
+  NodeIDPlusDimensionsWrapper(
+      AutomationInternalCustomBindings* automation_bindings,
+      NodeIDPlusDimensionsFunction function)
+      : automation_bindings_(automation_bindings), function_(function) {}
+
+  void Run(const v8::FunctionCallbackInfo<v8::Value>& args) {
+    v8::Isolate* isolate = automation_bindings_->GetIsolate();
+    if (args.Length() < 6 || !args[0]->IsString() || !args[1]->IsInt32() ||
+        !args[2]->IsInt32() || !args[3]->IsInt32() || !args[4]->IsInt32() ||
+        !args[5]->IsInt32()) {
+      ThrowInvalidArgumentsException(automation_bindings_);
+    }
+
+    ui::AXTreeID tree_id =
+        ui::AXTreeID::FromString(*v8::String::Utf8Value(isolate, args[0]));
+    int node_id = args[1].As<v8::Int32>()->Value();
+    int x = args[2].As<v8::Int32>()->Value();
+    int y = args[3].As<v8::Int32>()->Value();
+    int width = args[4].As<v8::Int32>()->Value();
+    int height = args[5].As<v8::Int32>()->Value();
+
+    AutomationAXTreeWrapper* tree_wrapper =
+        automation_bindings_->GetAutomationAXTreeWrapperFromTreeID(tree_id);
+    if (!tree_wrapper)
+      return;
+
+    ui::AXNode* node = tree_wrapper->tree()->GetFromId(node_id);
+    if (!node)
+      return;
+
+    function_(isolate, args.GetReturnValue(), tree_wrapper, node, x, y, width,
+              height);
+  }
+
+ private:
+  virtual ~NodeIDPlusDimensionsWrapper() {}
+
+  friend class base::RefCountedThreadSafe<NodeIDPlusDimensionsWrapper>;
+
+  AutomationInternalCustomBindings* automation_bindings_;
+  NodeIDPlusDimensionsFunction function_;
+};
 }  // namespace
 
 class AutomationMessageFilter : public IPC::MessageFilter {
@@ -690,6 +745,20 @@ void AutomationInternalCustomBindings::AddRoutes() {
         // transformations.
         gfx::Rect global_bounds = ComputeGlobalNodeBounds(
             tree_wrapper, node, local_bounds, nullptr, true /* clip_bounds */);
+        result.Set(RectToV8Object(isolate, global_bounds));
+      });
+
+  RouteNodeIDPlusDimensionsFunction(
+      "ComputeGlobalBounds",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node, int x, int y,
+         int width, int height) {
+        gfx::RectF local_bounds(x, y, width, height);
+
+        // Convert from local coordinates in Android window, to global
+        // coordinates spanning entire screen.
+        gfx::Rect global_bounds = ComputeGlobalNodeBounds(
+            tree_wrapper, node, local_bounds, nullptr, false /* clip_bounds */);
         result.Set(RectToV8Object(isolate, global_bounds));
       });
 
@@ -1525,6 +1594,15 @@ void AutomationInternalCustomBindings::RouteNodeIDPlusStringBoolFunction(
       new NodeIDPlusStringBoolWrapper(this, callback);
   RouteHandlerFunction(
       name, base::BindRepeating(&NodeIDPlusStringBoolWrapper::Run, wrapper));
+}
+
+void AutomationInternalCustomBindings::RouteNodeIDPlusDimensionsFunction(
+    const std::string& name,
+    NodeIDPlusDimensionsFunction callback) {
+  scoped_refptr<NodeIDPlusDimensionsWrapper> wrapper =
+      new NodeIDPlusDimensionsWrapper(this, callback);
+  RouteHandlerFunction(
+      name, base::BindRepeating(&NodeIDPlusDimensionsWrapper::Run, wrapper));
 }
 
 void AutomationInternalCustomBindings::GetChildIDAtIndex(

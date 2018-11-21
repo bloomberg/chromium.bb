@@ -184,6 +184,13 @@ void AXTreeSourceArc::NotifyActionResult(const ui::AXActionData& data,
       data, result);
 }
 
+void AXTreeSourceArc::NotifyGetTextLocationDataResult(
+    const ui::AXActionData& data,
+    const base::Optional<gfx::Rect>& rect) {
+  extensions::AutomationEventRouter::GetInstance()
+      ->DispatchGetTextLocationDataResult(data, rect);
+}
+
 bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
   data->tree_id = tree_id();
   if (focused_id_ >= 0) {

@@ -2052,9 +2052,10 @@ Output.prototype = {
     if (!this.outputContextFirst_)
       this.ancestry_(node, prevNode, type, buff, ruleStr);
 
-    var loc = range.start.node.boundsForRange(rangeStart, rangeEnd);
-    if (loc)
-      this.locations_.push(loc);
+    range.start.node.boundsForRange(rangeStart, rangeEnd, (loc) => {
+      if (loc)
+        this.locations_.push(loc);
+    });
   },
 
   /**
