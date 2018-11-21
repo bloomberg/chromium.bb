@@ -161,7 +161,6 @@ crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-poli
 crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
 crbug.com/901502 http/tests/devtools/oopif/oopif-storage.js [ Pass Failure ]
 crbug.com/906879 http/tests/inspector-protocol/network/navigation-blocking-xorigin-iframe.js [ Pass Failure ]
-crbug.com/907402 virtual/not-site-per-process/http/tests/devtools/isolated-code-cache/same-origin-test.js [ Pass Timeout ]
 # ====== Site Isolation failures until here ======
 
 # ====== Oilpan-only failures from here ======
