@@ -7,32 +7,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/init_screen"
-    android:clickable="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="100dp"
-    android:background="@drawable/autofill_assistant_bottombar_bg"
     android:orientation="vertical">
 
+    <!-- Prevent interaction with the website while onboarding is shown. -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <android.support.v7.widget.AppCompatImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            app:srcCompat="@drawable/ic_autofill_assistant_24dp" />
-
-        <Space
-            android:layout_height="match_parent"
-            android:layout_width="0dp"
-            android:layout_weight="1"/>
-    </LinearLayout>
+        android:layout_height="match_parent"
+        android:gravity="bottom"
+        android:clickable="true"
+        android:focusable="false"
+        android:orientation="vertical"
+        android:layout_marginTop="@dimen/control_container_height"
+        android:background="@color/black_alpha_65"/>
 
     <LinearLayout
         android:id="@+id/init"
@@ -43,7 +31,9 @@
         android:paddingStart="50dp"
         android:paddingEnd="50dp"
         android:paddingBottom="15dp"
-        android:paddingTop="100dp">
+        android:layout_marginTop="100dp"
+        android:paddingTop="100dp"
+        android:background="@drawable/autofill_assistant_bottombar_bg">
 
         <ImageView
             tools:ignore="contentDescription"
@@ -120,4 +110,25 @@
                 style="FilledButton" />
         </LinearLayout>
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="116dp">
+
+        <android.support.v7.widget.AppCompatImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            app:srcCompat="@drawable/ic_autofill_assistant_24dp" />
+
+        <Space
+            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
 </FrameLayout>
