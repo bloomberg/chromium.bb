@@ -392,8 +392,10 @@ void ModelTypeWorker::EncryptionAcceptedMaybeApplyUpdates() {
 }
 
 void ModelTypeWorker::ApplyPendingUpdates() {
-  if (!entries_pending_decryption_.empty())
+  if (BlockForEncryption())
     return;
+
+  DCHECK(entries_pending_decryption_.empty());
 
   DVLOG(1) << ModelTypeToString(type_) << ": "
            << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
@@ -538,6 +540,9 @@ bool ModelTypeWorker::CanCommitItems() const {
 }
 
 bool ModelTypeWorker::BlockForEncryption() const {
+  if (!entries_pending_decryption_.empty())
+    return true;
+
   // Should be using encryption, but we do not have the keys.
   return cryptographer_ && !cryptographer_->is_ready();
 }
