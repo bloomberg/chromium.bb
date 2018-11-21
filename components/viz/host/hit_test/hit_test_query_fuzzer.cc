@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/test/fuzzed_data_provider.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
@@ -37,8 +39,9 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
       depth < kMaxDepthAllowed ? fuzz->ConsumeUint32InRange(0, 10) : 0;
   gfx::Transform transform;
   if (fuzz->ConsumeBool() && fuzz->remaining_bytes() >= sizeof(transform)) {
-    std::string matrix_bytes = fuzz->ConsumeBytes(sizeof(gfx::Transform));
-    memcpy(&transform, matrix_bytes.data(), sizeof(gfx::Transform));
+    std::vector<uint8_t> matrix_bytes =
+        fuzz->ConsumeBytes(sizeof(gfx::Transform));
+    memcpy(&transform, matrix_bytes.data(), matrix_bytes.size());
   }
   regions->emplace_back(frame_sink_id, flags, rect, transform, child_count,
                         reasons);

@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/test/fuzzed_data_provider.h"
 #include "net/third_party/quic/core/crypto/transport_parameters.h"
 
@@ -14,9 +16,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   auto perspective = data_provider.ConsumeBool() ? quic::Perspective::IS_CLIENT
                                                  : quic::Perspective::IS_SERVER;
   quic::TransportParameters transport_parameters;
-  std::string remaining_bytes = data_provider.ConsumeRemainingBytes();
-  quic::ParseTransportParameters(
-      reinterpret_cast<const uint8_t*>(remaining_bytes.data()),
-      remaining_bytes.size(), perspective, &transport_parameters);
+  std::vector<uint8_t> remaining_bytes = data_provider.ConsumeRemainingBytes();
+  quic::ParseTransportParameters(remaining_bytes.data(), remaining_bytes.size(),
+                                 perspective, &transport_parameters);
   return 0;
 }

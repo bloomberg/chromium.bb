@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include <memory.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
-#include <string>
+
+#include <vector>
 
 #include "base/scoped_generic.h"
 #include "base/test/fuzzed_data_provider.h"
@@ -75,7 +78,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
-  std::string remaining_data = data_provider.ConsumeRemainingBytes();
+  std::vector<uint8_t> remaining_data = data_provider.ConsumeRemainingBytes();
   result = mz_zip_entry_write(zip_file.get(), remaining_data.data(),
                               remaining_data.size());
   if (result != MZ_OK) {

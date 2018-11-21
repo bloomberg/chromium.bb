@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/test/fuzzed_data_provider.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -29,8 +31,9 @@ uint32_t GetNextUInt32NonZero(base::FuzzedDataProvider* fuzz) {
 gfx::Transform GetNextTransform(base::FuzzedDataProvider* fuzz) {
   gfx::Transform transform;
   if (fuzz->ConsumeBool() && fuzz->remaining_bytes() >= sizeof(transform)) {
-    std::string matrix_bytes = fuzz->ConsumeBytes(sizeof(gfx::Transform));
-    memcpy(&transform, matrix_bytes.data(), sizeof(gfx::Transform));
+    std::vector<uint8_t> matrix_bytes =
+        fuzz->ConsumeBytes(sizeof(gfx::Transform));
+    memcpy(&transform, matrix_bytes.data(), matrix_bytes.size());
   }
   return transform;
 }

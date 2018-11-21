@@ -4,7 +4,11 @@
 
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <string>
+#include <vector>
 
 #include "base/at_exit.h"
 #include "base/i18n/icu_util.h"
@@ -37,7 +41,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (!url_to_check.is_valid())
     return 0;
 
-  const std::string remaining_bytes = fuzzed_data.ConsumeRemainingBytes();
+  std::vector<uint8_t> remaining_bytes = fuzzed_data.ConsumeRemainingBytes();
 
   // First, interpret the remaining fuzzed data as an unindexed ruleset.
   google::protobuf::io::ArrayInputStream input_stream(remaining_bytes.data(),
