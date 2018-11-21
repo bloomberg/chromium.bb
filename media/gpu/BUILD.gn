@@ -74,6 +74,7 @@ component("gpu") {
     "//content/renderer:*",
     "//media/gpu/ipc/*",
     "//media/gpu/vaapi/*",
+    "//media/gpu/test/*",
     "//media/mojo/*",
     "//remoting/codec:encoder",
     ":*",
@@ -391,23 +392,10 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
     configs += [ "//third_party/khronos:khronos_headers" ]
 
     if (is_win || is_chromeos || use_v4l2_codec) {
-      sources += [
-        "test/rendering_helper.cc",
-        "test/rendering_helper.h",
-        "test/texture_ref.cc",
-        "test/texture_ref.h",
-        "test/video_decode_accelerator_unittest_helpers.cc",
-        "test/video_decode_accelerator_unittest_helpers.h",
-        "test/video_frame_mapper.h",
-        "test/video_frame_mapper_factory.cc",
-        "test/video_frame_mapper_factory.h",
-        "test/video_frame_validator.cc",
-        "test/video_frame_validator.h",
-        "video_decode_accelerator_unittest.cc",
-      ]
+      sources += [ "video_decode_accelerator_unittest.cc" ]
       deps += [
+        "test:helpers",
         "//mojo/core/embedder",
-        "//third_party/libyuv",
         "//ui/display",
         "//ui/display/types",
         "//ui/platform_window",
@@ -430,19 +418,6 @@ if (is_win || is_android || use_v4l2_codec || use_vaapi) {
         "//third_party/angle:libEGL",
         "//third_party/angle:libGLESv2",
       ]
-    }
-
-    if (is_chromeos) {
-      sources += [
-        "test/generic_dmabuf_video_frame_mapper.cc",
-        "test/generic_dmabuf_video_frame_mapper.h",
-      ]
-      if (use_vaapi) {
-        sources += [
-          "test/vaapi_dmabuf_video_frame_mapper.cc",
-          "test/vaapi_dmabuf_video_frame_mapper.h",
-        ]
-      }
     }
 
     if (use_x11) {
@@ -502,6 +477,7 @@ source_set("android_video_decode_accelerator_unittests") {
 if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
   test("video_encode_accelerator_unittest") {
     deps = [
+      "test:helpers",
       "//base",
       "//base/test:test_support",
       "//media:test_support",
@@ -517,14 +493,6 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
     ]
     configs += [ "//third_party/libyuv:libyuv_config" ]
     sources = [
-      "test/texture_ref.cc",
-      "test/texture_ref.h",
-      "test/video_accelerator_unittest_helpers.h",
-      "test/video_encode_accelerator_unittest_helpers.cc",
-      "test/video_encode_accelerator_unittest_helpers.h",
-      "test/video_frame_mapper.h",
-      "test/video_frame_mapper_factory.cc",
-      "test/video_frame_mapper_factory.h",
       "video_encode_accelerator_unittest.cc",
     ]
     if (use_x11) {
@@ -532,18 +500,6 @@ if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
     }
     if (use_ozone) {
       deps += [ "//ui/ozone" ]
-    }
-    if (is_chromeos) {
-      sources += [
-        "test/generic_dmabuf_video_frame_mapper.cc",
-        "test/generic_dmabuf_video_frame_mapper.h",
-      ]
-      if (use_vaapi) {
-        sources += [
-          "test/vaapi_dmabuf_video_frame_mapper.cc",
-          "test/vaapi_dmabuf_video_frame_mapper.h",
-        ]
-      }
     }
   }
 }
@@ -671,5 +627,27 @@ source_set("unit_tests") {
       "windows/d3d11_video_decoder_unittest.cc",
     ]
     libs = [ "dxguid.lib" ]
+  }
+}
+
+# TODO(dstaessens@) Make this work on other platforms too.
+if (is_chromeos) {
+  test("video_decode_accelerator_tests") {
+    sources = [
+      "video_decode_accelerator_tests.cc",
+    ]
+    data = [
+      "//media/test/data/",
+    ]
+    deps = [
+      ":buildflags",
+      "test:video_player",
+      "//base/test:test_support",
+      "//media:test_support",
+      "//testing/gtest",
+    ]
+    if (use_vaapi) {
+      deps += [ "//media/gpu/vaapi" ]
+    }
   }
 }
