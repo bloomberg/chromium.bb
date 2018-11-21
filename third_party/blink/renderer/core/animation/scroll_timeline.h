@@ -53,8 +53,7 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   // Returns the Node that should actually have the ScrollableArea (if one
   // exists). This can differ from |scrollSource| when |scroll_source_| is the
   // Document's scrollingElement.
-  Node* ResolvedScrollSource() const;
-
+  Node* ResolvedScrollSource() const { return resolved_scroll_source_; }
   ScrollDirection GetOrientation() const { return orientation_; }
 
   void GetCurrentAndMaxOffset(const LayoutBox*,
@@ -86,7 +85,11 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
                  CSSPrimitiveValue*,
                  double);
 
+  // Use |scroll_source_| only to implement the web-exposed API but use
+  // resolved_scroll_source_ to actually access the scroll related properties.
   Member<Element> scroll_source_;
+  Member<Node> resolved_scroll_source_;
+
   ScrollDirection orientation_;
   Member<CSSPrimitiveValue> start_scroll_offset_;
   Member<CSSPrimitiveValue> end_scroll_offset_;

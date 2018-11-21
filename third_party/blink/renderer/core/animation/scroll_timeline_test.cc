@@ -159,4 +159,65 @@ TEST_F(ScrollTimelineTest,
   scroll_timeline->currentTime(current_time_is_null);
   EXPECT_TRUE(current_time_is_null);
 }
+
+TEST_F(ScrollTimelineTest,
+       UsingDocumentScrollingElementShouldCorrectlyResolveToDocument) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #content { width: 10000px; height: 10000px; }
+    </style>
+    <div id='content'></div>
+  )HTML");
+
+  EXPECT_EQ(GetDocument().documentElement(), GetDocument().scrollingElement());
+  // Create the ScrollTimeline with Document.scrollingElement() as source. The
+  // resolved scroll source should be the Document.
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(GetDocument().scrollingElement());
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(&GetDocument(), scroll_timeline->ResolvedScrollSource());
+}
+
+TEST_F(ScrollTimelineTest,
+       ChangingDocumentScrollingElementShouldNotImpactScrollTimeline) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #body { overflow: scroll; width: 100px; height: 100px; }
+      #content { width: 10000px; height: 10000px; }
+    </style>
+    <div id='content'></div>
+  )HTML");
+
+  // In QuirksMode, the body is the scrolling element
+  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
+  EXPECT_EQ(GetDocument().body(), GetDocument().scrollingElement());
+
+  // Create the ScrollTimeline with Document.scrollingElement() as source. The
+  // resolved scroll source should be the Document.
+  ScrollTimelineOptions* options = ScrollTimelineOptions::Create();
+  DoubleOrScrollTimelineAutoKeyword time_range =
+      DoubleOrScrollTimelineAutoKeyword::FromDouble(100);
+  options->setTimeRange(time_range);
+  options->setScrollSource(GetDocument().scrollingElement());
+  ScrollTimeline* scroll_timeline =
+      ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(&GetDocument(), scroll_timeline->ResolvedScrollSource());
+
+  // Now change the Document.scrollingElement(). In NoQuirksMode, the
+  // documentElement is the scrolling element and not the body.
+  GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
+  EXPECT_NE(GetDocument().documentElement(), GetDocument().body());
+  EXPECT_EQ(GetDocument().documentElement(), GetDocument().scrollingElement());
+
+  // Changing the scrollingElement should not impact the previously resolved
+  // scroll source. Note that at this point the scroll timeline's scroll source
+  // is still body element which is no longer the scrolling element. So if we
+  // were to re-resolve the scroll source, it would not map to Document.
+  EXPECT_EQ(&GetDocument(), scroll_timeline->ResolvedScrollSource());
+}
+
 }  //  namespace blink
