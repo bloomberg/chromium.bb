@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.feed;
 import com.google.android.libraries.feed.host.logging.ActionType;
 import com.google.android.libraries.feed.host.logging.BasicLoggingApi;
 import com.google.android.libraries.feed.host.logging.ContentLoggingData;
+import com.google.android.libraries.feed.host.logging.SpinnerType;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -54,6 +55,9 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         nativeOnContentDismissed(
                 mNativeFeedLoggingBridge, data.getPositionInStream(), data.getRepresentationUri());
     }
+
+    @Override
+    public void onContentSwiped(ContentLoggingData data) {}
 
     @Override
     public void onContentClicked(ContentLoggingData data) {
@@ -106,6 +110,9 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         assert mNativeFeedLoggingBridge != 0;
         nativeOnOpenedWithNoContent(mNativeFeedLoggingBridge);
     }
+
+    @Override
+    public void onSpinnerShown(int timeShownMs, @SpinnerType int spinnerType) {}
 
     /**
      * Reports how long a user spends on the page.
