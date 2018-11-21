@@ -4,6 +4,7 @@
 
 #include "cc/paint/paint_op_writer.h"
 
+#include "base/bits.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_provider.h"
 #include "cc/paint/image_transfer_cache_entry.h"
@@ -92,16 +93,22 @@ PaintOpWriter::~PaintOpWriter() = default;
 template <typename T>
 void PaintOpWriter::WriteSimple(const T& val) {
   static_assert(base::is_trivially_copyable<T>::value, "");
-  EnsureBytes(sizeof(T));
+
+  // Round up each write to 4 bytes.  This is not technically perfect alignment,
+  // but it is about 30% faster to post-align each write to 4 bytes than it is
+  // to pre-align memory to the correct alignment.
+  // TODO(enne): maybe we should do this correctly and DCHECK alignment.
+  static constexpr size_t kAlign = 4;
+  size_t size = base::bits::Align(sizeof(T), kAlign);
+  EnsureBytes(size);
   if (!valid_)
     return;
 
   reinterpret_cast<T*>(memory_)[0] = val;
 
-  memory_ += sizeof(T);
-  remaining_bytes_ -= sizeof(T);
+  memory_ += size;
+  remaining_bytes_ -= size;
 }
-
 void PaintOpWriter::WriteFlattenable(const SkFlattenable* val) {
   if (!val) {
     WriteSize(static_cast<size_t>(0u));
