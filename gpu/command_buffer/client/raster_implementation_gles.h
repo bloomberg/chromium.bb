@@ -45,7 +45,6 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   // Command buffer state.
   GLenum GetError() override;
   GLenum GetGraphicsResetStatusKHR() override;
-  void GetIntegerv(GLenum pname, GLint* params) override;
   void LoseContextCHROMIUM(GLenum current, GLenum other) override;
 
   // Queries: GL_COMMANDS_ISSUED_CHROMIUM / GL_COMMANDS_COMPLETED_CHROMIUM.
@@ -56,35 +55,15 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) override;
 
   // Texture objects.
-  GLuint CreateTexture(bool use_buffer,
-                       gfx::BufferUsage buffer_usage,
-                       viz::ResourceFormat format) override;
   void DeleteTextures(GLsizei n, const GLuint* textures) override;
-  void SetColorSpaceMetadata(GLuint texture_id,
-                             GLColorSpace color_space) override;
-  void TexParameteri(GLuint texture_id, GLenum pname, GLint param) override;
 
   // Mailboxes.
-  void ProduceTextureDirect(GLuint texture, GLbyte* mailbox) override;
   GLuint CreateAndConsumeTexture(bool use_buffer,
                                  gfx::BufferUsage buffer_usage,
                                  viz::ResourceFormat format,
                                  const GLbyte* mailbox) override;
 
-  // Image objects.
-  GLuint CreateImageCHROMIUM(ClientBuffer buffer,
-                             GLsizei width,
-                             GLsizei height,
-                             GLenum internalformat) override;
-  void BindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
-  void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
-  void DestroyImageCHROMIUM(GLuint image_id) override;
-
-  // Texture allocation and copying.
-  void TexStorage2D(GLuint texture_id,
-                    GLsizei width,
-                    GLsizei height) override;
-
+  // Texture copying.
   void CopySubTexture(GLuint source_id,
                       GLuint dest_id,
                       GLint xoffset,
@@ -93,12 +72,6 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                       GLint y,
                       GLsizei width,
                       GLsizei height) override;
-  void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
-                                          GLuint dest_id,
-                                          GLint x,
-                                          GLint y,
-                                          GLsizei width,
-                                          GLsizei height) override;
 
   // OOP-Raster
   void BeginRasterCHROMIUM(GLuint sk_color,
@@ -142,12 +115,9 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   };
 
   Texture* GetTexture(GLuint texture_id);
-  Texture* EnsureTextureBound(Texture* texture);
 
   gles2::GLES2Interface* gl_;
   gpu::Capabilities caps_;
-  bool use_texture_storage_;
-  bool use_texture_storage_image_;
 
   std::unordered_map<GLuint, Texture> texture_info_;
 

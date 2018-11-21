@@ -21,8 +21,6 @@ void Flush() override;
 
 GLenum GetError() override;
 
-void GetIntegerv(GLenum pname, GLint* params) override;
-
 void ShallowFlushCHROMIUM() override;
 
 void OrderingBarrierCHROMIUM() override;
@@ -37,13 +35,6 @@ void EndQueryEXT(GLenum target) override;
 
 void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) override;
 
-GLuint CreateImageCHROMIUM(ClientBuffer buffer,
-                           GLsizei width,
-                           GLsizei height,
-                           GLenum internalformat) override;
-
-void DestroyImageCHROMIUM(GLuint image_id) override;
-
 void LoseContextCHROMIUM(GLenum current, GLenum other) override;
 
 void GenSyncTokenCHROMIUM(GLbyte* sync_token) override;
@@ -54,38 +45,14 @@ void VerifySyncTokensCHROMIUM(GLbyte** sync_tokens, GLsizei count) override;
 
 void WaitSyncTokenCHROMIUM(const GLbyte* sync_token) override;
 
-void UnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
-                                        GLuint dest_id,
-                                        GLint x,
-                                        GLint y,
-                                        GLsizei width,
-                                        GLsizei height) override;
-
 GLenum GetGraphicsResetStatusKHR() override;
 
 void EndRasterCHROMIUM() override;
-
-GLuint CreateTexture(bool use_buffer,
-                     gfx::BufferUsage buffer_usage,
-                     viz::ResourceFormat format) override;
-
-void SetColorSpaceMetadata(GLuint texture_id,
-                           GLColorSpace color_space) override;
-
-void ProduceTextureDirect(GLuint texture, GLbyte* mailbox) override;
 
 GLuint CreateAndConsumeTexture(bool use_buffer,
                                gfx::BufferUsage buffer_usage,
                                viz::ResourceFormat format,
                                const GLbyte* mailbox) override;
-
-void TexParameteri(GLuint texture_id, GLenum pname, GLint param) override;
-
-void BindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
-
-void ReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) override;
-
-void TexStorage2D(GLuint texture_id, GLsizei width, GLsizei height) override;
 
 void CopySubTexture(GLuint source_id,
                     GLuint dest_id,

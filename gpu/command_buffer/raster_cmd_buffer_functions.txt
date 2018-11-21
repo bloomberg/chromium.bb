@@ -8,7 +8,6 @@ GL_APICALL void         GL_APIENTRY glDeleteTextures (GLsizeiNotNegative n, cons
 GL_APICALL void         GL_APIENTRY glFinish (void);
 GL_APICALL void         GL_APIENTRY glFlush (void);
 GL_APICALL GLenum       GL_APIENTRY glGetError (void);
-GL_APICALL void         GL_APIENTRY glGetIntegerv (GLenumGLState pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glShallowFlushCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glOrderingBarrierCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glGenQueriesEXT (GLsizeiNotNegative n, GLuint* queries);
@@ -18,15 +17,12 @@ GL_APICALL void         GL_APIENTRY glEndQueryEXT (GLenumQueryTarget target);
 GL_APICALL void         GL_APIENTRY glGetQueryObjectuivEXT (GLidQuery id, GLenumQueryObjectParameter pname, GLuint* params);
 
 // Non-GL commands.
-GL_APICALL GLuint       GL_APIENTRY glCreateImageCHROMIUM (ClientBuffer buffer, GLsizei width, GLsizei height, GLenum internalformat);
-GL_APICALL void         GL_APIENTRY glDestroyImageCHROMIUM (GLuint image_id);
 GL_APICALL void         GL_APIENTRY glLoseContextCHROMIUM (GLenumResetStatus current, GLenumResetStatus other);
 GL_APICALL GLuint64     GL_APIENTRY glInsertFenceSyncCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glGenSyncTokenCHROMIUM (GLbyte* sync_token);
 GL_APICALL void         GL_APIENTRY glGenUnverifiedSyncTokenCHROMIUM (GLbyte* sync_token);
 GL_APICALL void         GL_APIENTRY glVerifySyncTokensCHROMIUM (GLbyte** sync_tokens, GLsizei count);
 GL_APICALL void         GL_APIENTRY glWaitSyncTokenCHROMIUM (const GLbyte* sync_token);
-GL_APICALL void         GL_APIENTRY glUnpremultiplyAndDitherCopyCHROMIUM (GLuint source_id, GLuint dest_id, GLint x, GLint y, GLsizei width, GLsizei height);
 
 // Extension KHR_robustness
 GL_APICALL GLenum	GL_APIENTRY glGetGraphicsResetStatusKHR (void);
@@ -43,15 +39,8 @@ GL_APICALL void         GL_APIENTRY glDeletePaintCachePathsINTERNAL (GLsizeiNotN
 GL_APICALL void         GL_APIENTRY glClearPaintCacheINTERNAL (void);
 
 // TOOD(backer): Remove GL encoding. These are not GL functions.
-GL_APICALL GLuint       GL_APIENTRY glCreateTexture (bool use_buffer, EnumClassgfx::BufferUsage buffer_usage, EnumClassviz::ResourceFormat format);
-GL_APICALL void         GL_APIENTRY glSetColorSpaceMetadata (GLuint texture_id, GLColorSpace color_space);
-GL_APICALL void         GL_APIENTRY glProduceTextureDirect (GLuint texture, GLbyte* mailbox);
 GL_APICALL GLuint       GL_APIENTRY glCreateAndConsumeTexture (bool use_buffer, EnumClassgfx::BufferUsage buffer_usage, EnumClassviz::ResourceFormat format, const GLbyte* mailbox);
 GL_APICALL GLuint       GL_APIENTRY glCreateAndConsumeTextureINTERNAL (GLuint texture_id, bool use_buffer, EnumClassgfx::BufferUsage buffer_usage, EnumClassviz::ResourceFormat format, const GLbyte* mailbox);
-GL_APICALL void         GL_APIENTRY glTexParameteri (GLuint texture_id, GLenumTextureParameter pname, GLint param);
-GL_APICALL void         GL_APIENTRY glBindTexImage2DCHROMIUM (GLuint texture_id, GLint image_id);
-GL_APICALL void         GL_APIENTRY glReleaseTexImage2DCHROMIUM (GLuint texture_id, GLint image_id);
-GL_APICALL void         GL_APIENTRY glTexStorage2D (GLuint texture_id, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glCopySubTexture (GLuint source_id, GLuint dest_id, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glTraceBeginCHROMIUM (const char* category_name, const char* trace_name);
 GL_APICALL void         GL_APIENTRY glTraceEndCHROMIUM (void);

@@ -21,9 +21,6 @@ struct Capabilities;
 namespace gles2 {
 class GLES2Interface;
 }
-namespace raster {
-class RasterInterface;
-}
 }  // namespace gpu
 
 namespace viz {
@@ -47,12 +44,6 @@ class VIZ_COMMON_EXPORT TextureAllocation {
   // another context with a mailbox. The |format| should match the one given to
   // MakeTextureId().
   static void AllocateStorage(gpu::gles2::GLES2Interface* gl,
-                              const gpu::Capabilities& caps,
-                              ResourceFormat format,
-                              const gfx::Size& size,
-                              const TextureAllocation& alloc,
-                              const gfx::ColorSpace& color_space);
-  static void AllocateStorage(gpu::raster::RasterInterface* ri,
                               const gpu::Capabilities& caps,
                               ResourceFormat format,
                               const gfx::Size& size,
