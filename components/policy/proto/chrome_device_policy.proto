@@ -848,7 +848,7 @@ message LoginScreenInputMethodsProto {
   repeated string login_screen_input_methods = 1;
 }
 
-// The url and hash that specified in JSON format that can be used to set the
+// The url and hash specified in JSON format that can be used to set the
 // device-level wallpaper on the login screen before any user logs in.
 message DeviceWallpaperImageProto {
   optional string device_wallpaper_image = 1;
@@ -936,7 +936,7 @@ message DeviceOffHoursProto {
   repeated int32 ignored_policy_proto_tags = 3;
 }
 
-// The url and hash that specified in JSON format that can be used to retrieve
+// The url and hash specified in JSON format that can be used to retrieve
 // the device-level printers configuration file.
 message DeviceNativePrintersProto {
   // External policy blob encoded as JSON.
@@ -1091,6 +1091,17 @@ message DeviceUnaffiliatedCrostiniAllowedProto {
   optional bool device_unaffiliated_crostini_allowed = 1;
 }
 
+// Setting that controls whether PluginVm is allowed to run on this device.
+message PluginVmAllowedProto {
+  optional bool plugin_vm_allowed = 1;
+}
+
+// The url and hash specified in JSON format that can be used to set the
+// device-level PluginVm image.
+message PluginVmImageProto {
+  optional string plugin_vm_image = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1186,4 +1197,6 @@ message ChromeDeviceSettingsProto {
   optional DeviceWiFiFastTransitionEnabledProto
       device_wifi_fast_transition_enabled = 73;
   optional DeviceDisplayResolutionProto device_display_resolution = 74;
+  optional PluginVmAllowedProto plugin_vm_allowed = 75;
+  optional PluginVmImageProto plugin_vm_image = 76;
 }

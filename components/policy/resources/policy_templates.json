@@ -13886,7 +13886,68 @@
       their settings will be overriden by the policy value at the next reboot.
       If "recommended" flag is set to false or not set, users can't change the
       display settings.''',
-    }
+    },
+    {
+      'name': 'PluginVm',
+      'type': 'group',
+      'caption': '''PluginVm''',
+      'policies': [
+        'PluginVmAllowed',
+        'PluginVmImage',
+      ],
+      'desc': '''This is a group policy for PluginVm related policies.''',
+    },
+    {
+      'name': 'PluginVmAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:72-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 503,
+      'caption': '''Device is enabled to run PluginVm''',
+      'tags': [],
+      'desc': '''Enable this device to run PluginVm.
+
+      If the policy is set to false or left unset, PluginVm is not enabled for the device.
+      If set to true, PluginVm is enabled for the device as long as other settings also allow it.
+      PluginVmAllowed needs to be true and PluginVmImage needs to be set for PluginVm to be allowed to run.''',
+    },
+    {
+      'name': 'PluginVmImage',
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': {
+            'description': 'The URL from which the PluginVm image can be downloaded.',
+            'type': 'string'
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the PluginVm image.',
+            'type': 'string'
+          }
+        },
+      },
+      'supported_on': ['chrome_os:72-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': {
+        "url": "https://example.com/plugin_vm_image",
+        "hash": "842841a4c75a55ad050d686f4ea5f77e83ae059877fe9b6946aa63d3d057ed32"
+      },
+      'id': 504,
+      'caption': '''PluginVm image''',
+      'tags': [],
+      'desc': '''Configure device-level PluginVm image. The policy is set by specifying the URL from which the Chrome OS device can download the image and a SHA-256 hash used to verify the integrity of the download.
+
+      The policy should be specified as a string that expresses the URL and hash in the JSON format.''',
+    },
   ],
 
   'messages': {
@@ -14028,5 +14089,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used':  502
+  'highest_id_currently_used': 504
 }
