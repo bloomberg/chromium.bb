@@ -1040,10 +1040,10 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
          other {Google Chrome will restart in # seconds}}
       </message>
       <message name="IDS_CRITICAL_NOTIFICATION_TITLE_ALTERNATE" desc="The title for a bubble that appears when there is a critical update and Chrome must restart to install it. The title was previously countng down to an automatic restart and now it has finished. Will only be seen if a web page stops the shutdown process.">
-        You should restart Google Chrome now.
+        You should restart Google Chrome now
       </message>
       <message name="IDS_CRITICAL_NOTIFICATION_TEXT" desc="Explanation text for the bubble that appears when there is a critical update and Chrome must restart to install it.">
-        A special security update for Google Chrome was just applied; you should restart now for it to take effect (we'll restore your tabs).
+        A special security update for Google Chrome was just applied. Restart now and we'll restore your tabs.
       </message>
 
       <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->
