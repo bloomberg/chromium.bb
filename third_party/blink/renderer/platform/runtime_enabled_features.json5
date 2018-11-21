@@ -648,7 +648,7 @@
     },
     {
       name: "KeyboardFocusableScrollers",
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "LangAttributeAwareFormControlUI",
