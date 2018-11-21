@@ -30,12 +30,7 @@ DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
   dc_layer_overlay->contents_rect = quad->ya_tex_coord_rect;
   dc_layer_overlay->filter = GL_LINEAR;
   dc_layer_overlay->color_space = quad->video_color_space;
-  dc_layer_overlay->require_overlay = quad->require_overlay;
   dc_layer_overlay->protected_video_type = quad->protected_video_type;
-  // HW Protected Videos have to go through the overlay swapchain path,
-  // so they can be protected by Windows OS and hardware
-  if (quad->protected_video_type == ui::ProtectedVideoType::kHardwareProtected)
-    dc_layer_overlay->require_overlay = true;
 
   return DCLayerOverlayProcessor::DC_LAYER_SUCCESS;
 }
@@ -280,7 +275,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
 
     if (!it->shared_quad_state->quad_to_target_transform
              .Preserves2dAxisAlignment() &&
-        !dc_layer.require_overlay &&
+        !dc_layer.RequiresOverlay() &&
         !base::FeatureList::IsEnabled(
             features::kDirectCompositionComplexOverlays)) {
       RecordDCLayerResult(DC_LAYER_FAILED_COMPLEX_TRANSFORM);
@@ -311,7 +306,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     // TODO(magchen): Collect all overlay candidates, and filter the list at the
     // end to find the best candidates (largest size?).
     if (is_root &&
-        (!processed_overlay_in_frame_ || dc_layer.IsProtectedVideo()) &&
+        (!processed_overlay_in_frame_ || dc_layer.RequiresOverlay()) &&
         ProcessForOverlay(display_rect, quad_list, quad_rectangle,
                           occlusion_bounding_box, &it, damage_rect)) {
       // ProcessForOverlay makes the iterator point to the next value on
@@ -380,7 +375,7 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
     gfx::Rect* this_frame_underlay_rect,
     gfx::Rect* this_frame_underlay_occlusion,
     DCLayerOverlay* dc_layer) {
-  if (!dc_layer->require_overlay) {
+  if (!dc_layer->RequiresOverlay()) {
     if (!base::FeatureList::IsEnabled(features::kDirectCompositionUnderlays)) {
       RecordDCLayerResult(DC_LAYER_FAILED_OCCLUDED);
       return false;

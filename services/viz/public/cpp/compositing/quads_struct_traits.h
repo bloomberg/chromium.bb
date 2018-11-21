@@ -477,11 +477,6 @@ struct StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad> {
         viz::YUVVideoDrawQuad::MaterialCast(&input);
     return quad->video_color_space;
   }
-  static bool require_overlay(const viz::DrawQuad& input) {
-    const viz::YUVVideoDrawQuad* quad =
-        viz::YUVVideoDrawQuad::MaterialCast(&input);
-    return quad->require_overlay;
-  }
   static ui::ProtectedVideoType protected_video_type(
       const viz::DrawQuad& input) {
     const viz::YUVVideoDrawQuad* quad =

@@ -399,7 +399,6 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   float resource_offset = 0.5f;
   float resource_multiplier = 2.001f;
   uint32_t bits_per_channel = 5;
-  bool require_overlay = true;
   ui::ProtectedVideoType protected_video_type =
       ui::ProtectedVideoType::kHardwareProtected;
   gfx::ColorSpace video_color_space = gfx::ColorSpace::CreateJpeg();
@@ -424,14 +423,13 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   EXPECT_EQ(resource_offset, copy_quad->resource_offset);
   EXPECT_EQ(resource_multiplier, copy_quad->resource_multiplier);
   EXPECT_EQ(bits_per_channel, copy_quad->bits_per_channel);
-  EXPECT_FALSE(copy_quad->require_overlay);
   EXPECT_EQ(ui::ProtectedVideoType::kClear, copy_quad->protected_video_type);
 
   CREATE_QUAD_ALL(YUVVideoDrawQuad, ya_tex_coord_rect, uv_tex_coord_rect,
                   ya_tex_size, uv_tex_size, y_plane_resource_id,
                   u_plane_resource_id, v_plane_resource_id, a_plane_resource_id,
                   video_color_space, resource_offset, resource_multiplier,
-                  bits_per_channel, require_overlay, protected_video_type);
+                  bits_per_channel, protected_video_type);
   EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copy_quad->material);
   EXPECT_EQ(ya_tex_coord_rect, copy_quad->ya_tex_coord_rect);
   EXPECT_EQ(uv_tex_coord_rect, copy_quad->uv_tex_coord_rect);
@@ -444,7 +442,6 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   EXPECT_EQ(resource_offset, copy_quad->resource_offset);
   EXPECT_EQ(resource_multiplier, copy_quad->resource_multiplier);
   EXPECT_EQ(bits_per_channel, copy_quad->bits_per_channel);
-  EXPECT_EQ(require_overlay, copy_quad->require_overlay);
   EXPECT_EQ(protected_video_type, copy_quad->protected_video_type);
 }
 

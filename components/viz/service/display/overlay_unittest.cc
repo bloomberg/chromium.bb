@@ -2409,7 +2409,8 @@ TEST_F(DCLayerOverlayTest, AllowRequiredNonAxisAlignedTransform) {
   YUVVideoDrawQuad* yuv_quad = CreateFullscreenCandidateYUVVideoQuad(
       resource_provider_.get(), child_resource_provider_.get(),
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
-  yuv_quad->require_overlay = true;
+  // Set the protected video flag will force DCLayerOverlay to use hw overlay
+  yuv_quad->protected_video_type = ui::ProtectedVideoType::kHardwareProtected;
   pass->shared_quad_state_list.back()
       ->quad_to_target_transform.RotateAboutZAxis(45.f);
 
@@ -2448,7 +2449,9 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     auto* second_video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
-    second_video_quad->require_overlay = true;
+    // Set the protected video flag will force DCLayerOverlay to use hw overlay
+    second_video_quad->protected_video_type =
+        ui::ProtectedVideoType::kHardwareProtected;
     second_video_quad->rect.set_origin(gfx::Point(2, 2));
     second_video_quad->visible_rect.set_origin(gfx::Point(2, 2));
 
@@ -2482,7 +2485,8 @@ TEST_F(DCLayerOverlayTest, Occluded) {
     auto* second_video_quad = CreateFullscreenCandidateYUVVideoQuad(
         resource_provider_.get(), child_resource_provider_.get(),
         child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
-    second_video_quad->require_overlay = true;
+    second_video_quad->protected_video_type =
+        ui::ProtectedVideoType::kHardwareProtected;
     second_video_quad->rect.set_origin(gfx::Point(2, 2));
     second_video_quad->visible_rect.set_origin(gfx::Point(2, 2));
 
@@ -2560,7 +2564,9 @@ TEST_F(DCLayerOverlayTest, MultiplePassDamageRect) {
       resource_provider_.get(), child_resource_provider_.get(),
       child_provider_.get(), child_pass1->shared_quad_state_list.back(),
       child_pass1.get());
-  yuv_quad_required->require_overlay = true;
+  // Set the protected video flag will force DCLayerOverlay to use hw overlay
+  yuv_quad_required->protected_video_type =
+      ui::ProtectedVideoType::kHardwareProtected;
 
   RenderPassId child_pass2_id(6);
   std::unique_ptr<RenderPass> child_pass2 = CreateRenderPass();
@@ -2575,7 +2581,6 @@ TEST_F(DCLayerOverlayTest, MultiplePassDamageRect) {
           resource_provider_.get(), child_resource_provider_.get(),
           child_provider_.get(), child_pass2->shared_quad_state_list.back(),
           child_pass2.get());
-  yuv_quad_not_required->require_overlay = false;
 
   std::unique_ptr<RenderPass> root_pass = CreateRenderPass();
   root_pass->CreateAndAppendSharedQuadState();
@@ -2626,7 +2631,7 @@ TEST_F(DCLayerOverlayTest, MultiplePassDamageRect) {
   EXPECT_EQ(0U, overlay_list.size());
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 
-  // Only the |require_overlay| video quad produces damage.
+  // Only the kHardwareProtectedVideo video quad produces damage.
   ASSERT_EQ(1U, dc_layer_list.size());
   EXPECT_EQ(-1, dc_layer_list[0].shared_state->z_order);
   EXPECT_EQ(gfx::Rect(0, 0, 256, 256), pass_list[0]->damage_rect);
@@ -2639,8 +2644,8 @@ TEST_F(DCLayerOverlayTest, MultiplePassDamageRect) {
   EXPECT_EQ(DrawQuad::SOLID_COLOR,
             pass_list[0]->quad_list.ElementAt(0)->material);
 
-  // The |require_overlay| video quad is put into an underlay, and replaced by a
-  // solid color quad.
+  // The kHardwareProtectedVideo video quad is put into an underlay, and
+  // replaced by a solid color quad.
   auto* yuv_solid_color_quad =
       static_cast<SolidColorDrawQuad*>(pass_list[0]->quad_list.ElementAt(0));
   EXPECT_EQ(SK_ColorBLACK, yuv_solid_color_quad->color);

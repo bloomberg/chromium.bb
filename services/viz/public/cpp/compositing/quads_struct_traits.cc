@@ -199,7 +199,6 @@ bool StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad>::Read(
       quad->bits_per_channel > viz::YUVVideoDrawQuad::kMaxBitsPerChannel) {
     return false;
   }
-  quad->require_overlay = data.require_overlay();
   return true;
 }
 
