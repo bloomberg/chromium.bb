@@ -21,7 +21,7 @@ import org.chromium.ui.base.WindowAndroid;
 import java.util.ArrayList;
 import java.util.List;
 
-class PasswordAccessoryBridge {
+class ManualFillingBridge {
     private final KeyboardAccessoryData.PropertyProvider<Item[]> mItemProvider =
             new KeyboardAccessoryData.PropertyProvider<>();
     private final KeyboardAccessoryData.PropertyProvider<Action[]> mActionProvider =
@@ -31,7 +31,7 @@ class PasswordAccessoryBridge {
     private final ChromeActivity mActivity;
     private long mNativeView;
 
-    private PasswordAccessoryBridge(long nativeView, WindowAndroid windowAndroid) {
+    private ManualFillingBridge(long nativeView, WindowAndroid windowAndroid) {
         mNativeView = nativeView;
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
         mManualFillingCoordinator = mActivity.getManualFillingController();
@@ -40,8 +40,8 @@ class PasswordAccessoryBridge {
     }
 
     @CalledByNative
-    private static PasswordAccessoryBridge create(long nativeView, WindowAndroid windowAndroid) {
-        return new PasswordAccessoryBridge(nativeView, windowAndroid);
+    private static ManualFillingBridge create(long nativeView, WindowAndroid windowAndroid) {
+        return new ManualFillingBridge(nativeView, windowAndroid);
     }
 
     @CalledByNative
@@ -152,8 +152,10 @@ class PasswordAccessoryBridge {
                                 mNativeView, item.isObfuscated(), item.getCaption());
                     };
                 }
+                // clang-format off
                 items.add(Item.createSuggestion(field.getDisplayText(), field.getA11yDescription(),
                         field.isObfuscated(), itemSelectedCallback, this::fetchFavicon));
+                // clang-format on
             }
         }
 
@@ -177,11 +179,11 @@ class PasswordAccessoryBridge {
         nativeOnFaviconRequested(mNativeView, desiredSize, faviconCallback);
     }
 
-    private native void nativeOnFaviconRequested(long nativePasswordAccessoryViewAndroid,
+    private native void nativeOnFaviconRequested(long nativeManualFillingViewAndroid,
             int desiredSizeInPx, Callback<Bitmap> faviconCallback);
     private native void nativeOnFillingTriggered(
-            long nativePasswordAccessoryViewAndroid, boolean isObfuscated, String textToFill);
+            long nativeManualFillingViewAndroid, boolean isObfuscated, String textToFill);
     private native void nativeOnOptionSelected(
-            long nativePasswordAccessoryViewAndroid, String selectedOption);
-    private native void nativeOnGenerationRequested(long nativePasswordAccessoryViewAndroid);
+            long nativeManualFillingViewAndroid, String selectedOption);
+    private native void nativeOnGenerationRequested(long nativeManualFillingViewAndroid);
 }

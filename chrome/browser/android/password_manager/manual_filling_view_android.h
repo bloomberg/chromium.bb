@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_PASSWORD_MANAGER_PASSWORD_ACCESSORY_VIEW_ANDROID_H_
-#define CHROME_BROWSER_ANDROID_PASSWORD_MANAGER_PASSWORD_ACCESSORY_VIEW_ANDROID_H_
+#ifndef CHROME_BROWSER_ANDROID_PASSWORD_MANAGER_MANUAL_FILLING_VIEW_ANDROID_H_
+#define CHROME_BROWSER_ANDROID_PASSWORD_MANAGER_MANUAL_FILLING_VIEW_ANDROID_H_
 
 #include <vector>
 
@@ -19,14 +19,11 @@ class ManualFillingController;
 // This Android-specific implementation of the |ManualFillingViewInterface|
 // is the native counterpart of the |PasswordAccessoryViewBridge| java class.
 // It's owned by a ManualFillingController which is bound to an activity.
-//
-// TODO(crbug.com/905669): Rename this to ManualFillingViewAndroid and
-//                         PasswordAccessoryBridge to ManualFillingBridge.
-class PasswordAccessoryViewAndroid : public ManualFillingViewInterface {
+class ManualFillingViewAndroid : public ManualFillingViewInterface {
  public:
   // Builds the UI for the |controller|.
-  explicit PasswordAccessoryViewAndroid(ManualFillingController* controller);
-  ~PasswordAccessoryViewAndroid() override;
+  explicit ManualFillingViewAndroid(ManualFillingController* controller);
+  ~ManualFillingViewAndroid() override;
 
   // ManualFillingViewInterface:
   void OnItemsAvailable(const autofill::AccessorySheetData& data) override;
@@ -65,7 +62,7 @@ class PasswordAccessoryViewAndroid : public ManualFillingViewInterface {
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordAccessoryViewAndroid);
+  DISALLOW_COPY_AND_ASSIGN(ManualFillingViewAndroid);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_PASSWORD_MANAGER_PASSWORD_ACCESSORY_VIEW_ANDROID_H_
+#endif  // CHROME_BROWSER_ANDROID_PASSWORD_MANAGER_MANUAL_FILLING_VIEW_ANDROID_H_
