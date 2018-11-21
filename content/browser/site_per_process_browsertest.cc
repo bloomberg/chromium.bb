@@ -9715,15 +9715,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossProcessInertSubframe) {
   filter->Wait();
   EXPECT_TRUE(filter->is_inert());
 
-  // This yields the UI thread to ensure that the real SetIsInert message
+  // Yield the UI thread to ensure that the real SetIsInert message
   // handler runs, in order to guarantee that the update arrives at the
   // renderer process before the script below.
-  {
-    base::RunLoop loop;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  loop.QuitClosure());
-    loop.Run();
-  }
+  base::RunLoop().RunUntilIdle();
 
   std::string focused_element;
 
@@ -9741,6 +9736,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossProcessInertSubframe) {
   // process.
   GURL site_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
   NavigateFrameToURL(iframe_node, site_url);
+
+  // NavigateFrameToURL returns when the navigation commits, at which point
+  // frame state has to be re-sent to the new frame.
+  // Yield the thread to prevent races with the inertness update.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(ExecuteScript(
       iframe_node,
