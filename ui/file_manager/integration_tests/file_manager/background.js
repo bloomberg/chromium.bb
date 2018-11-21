@@ -318,15 +318,14 @@ function openAndWaitForClosingDialog(
   return remoteCall.waitForWindow('dialog#').then(function(windowId) {
     return remoteCall.waitForElement(windowId, '#file-list').
         then(function() {
-          // Wait for initialization of the Files app.
-          return remoteCall.waitForFiles(
-              windowId, TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET));
+          return remoteCall.waitFor('isFileManagerLoaded', windowId, true);
         }).
         then(function() {
           return remoteCall.callRemoteTestUtil(
               'selectVolume', windowId, [volumeName]);
         }).
-        then(function() {
+        then(function(result) {
+          chrome.test.assertTrue(result, 'selectVolume failed');
           var expectedRows = TestEntryInfo.getExpectedRows(expectedSet);
           return remoteCall.waitForFiles(windowId, expectedRows);
         }).
