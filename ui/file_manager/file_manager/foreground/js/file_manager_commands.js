@@ -624,7 +624,14 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
    * @constructor
    * @struct
    */
-  var NewFolderCommand = function() {};
+  var NewFolderCommand = function() {
+    /**
+     * Whether a new-folder is in progress.
+     * @type {boolean}
+     * @private
+     */
+    this.busy_ = false;
+  };
 
   /**
    * @param {!Event} event Command event.
@@ -648,14 +655,15 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
     var directoryModel = fileManager.directoryModel;
     var directoryTree = fileManager.ui.directoryTree;
     var listContainer = fileManager.ui.listContainer;
+    this.busy_ = true;
 
-    this.generateNewDirectoryName_(targetDirectory).then(function(newName) {
+    this.generateNewDirectoryName_(targetDirectory).then((newName) => {
       if (!executedFromDirectoryTree)
         listContainer.startBatchUpdates();
 
       return new Promise(targetDirectory.getDirectory.bind(targetDirectory,
           newName,
-          {create: true, exclusive: true})).then(function(newDirectory) {
+          {create: true, exclusive: true})).then((newDirectory) => {
             metrics.recordUserAction('CreateNewFolder');
 
             // Select new directory and start rename operation.
@@ -665,18 +673,23 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
               fileManager.directoryTreeNamingController.attachAndStart(
                   assert(fileManager.ui.directoryTree.selectedItem), false,
                   null);
+              this.busy_ = false;
             } else {
               directoryModel.updateAndSelectNewDirectory(
-                  newDirectory).then(function() {
+                  newDirectory).then(() => {
                 listContainer.endBatchUpdates();
                 fileManager.namingController.initiateRename();
-              }, function() {
+                this.busy_ = false;
+              }, () => {
                 listContainer.endBatchUpdates();
+                this.busy_ = false;
               });
             }
-          }, function(error) {
+          }, (error) => {
             if (!executedFromDirectoryTree)
               listContainer.endBatchUpdates();
+
+            this.busy_ = false;
 
             fileManager.ui.alertDialog.show(
                 strf('ERROR_CREATING_FOLDER',
@@ -736,6 +749,9 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
           !directoryModel.isSearching() && !directoryModel.isScanning() &&
           CommandUtil.hasCapability([directoryEntry], 'canAddChildren');
       event.command.setHidden(false);
+    }
+    if (this.busy_) {
+      event.canExecute = false;
     }
   };
 
