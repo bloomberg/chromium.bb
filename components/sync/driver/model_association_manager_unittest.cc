@@ -732,7 +732,7 @@ TEST_F(SyncModelAssociationManagerTest,
   ModelTypeSet desired_types = preferred_types;
 
   ConfigureContext configure_context;
-  configure_context.storage_option = ConfigureContext::STORAGE_ON_DISK;
+  configure_context.storage_option = STORAGE_ON_DISK;
 
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
@@ -756,7 +756,7 @@ TEST_F(SyncModelAssociationManagerTest,
   testing::Mock::VerifyAndClearExpectations(&delegate_);
 
   // Switch to in-memory storage.
-  configure_context.storage_option = ConfigureContext::STORAGE_IN_MEMORY;
+  configure_context.storage_option = STORAGE_IN_MEMORY;
   desired_types.Remove(APPS);
   preferred_types.Remove(APPS);
 
@@ -794,7 +794,7 @@ TEST_F(SyncModelAssociationManagerTest,
   ModelTypeSet desired_types = preferred_types;
 
   ConfigureContext configure_context;
-  configure_context.storage_option = ConfigureContext::STORAGE_IN_MEMORY;
+  configure_context.storage_option = STORAGE_IN_MEMORY;
 
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(BOOKMARKS));
   EXPECT_CALL(delegate_, OnSingleDataTypeWillStart(APPS));
@@ -818,7 +818,7 @@ TEST_F(SyncModelAssociationManagerTest,
   testing::Mock::VerifyAndClearExpectations(&delegate_);
 
   // Switch to on-disk storage.
-  configure_context.storage_option = ConfigureContext::STORAGE_ON_DISK;
+  configure_context.storage_option = STORAGE_ON_DISK;
   desired_types.Remove(APPS);
   preferred_types.Remove(APPS);
 

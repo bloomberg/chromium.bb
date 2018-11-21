@@ -61,6 +61,7 @@ jumbo_static_library("sync") {
     "base/report_unrecoverable_error.cc",
     "base/report_unrecoverable_error.h",
     "base/stop_source.h",
+    "base/storage_option.h",
     "base/sync_base_switches.cc",
     "base/sync_base_switches.h",
     "base/sync_prefs.cc",

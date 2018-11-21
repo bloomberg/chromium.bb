@@ -501,7 +501,7 @@ TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
                     ModelTypeControllerDelegate::StartCallback callback) {
         start_callback = std::move(callback);
       });
-  context.storage_option = ConfigureContext::STORAGE_IN_MEMORY;
+  context.storage_option = STORAGE_IN_MEMORY;
   controller.LoadModels(context, base::DoNothing());
 
   ASSERT_EQ(DataTypeController::MODEL_STARTING, controller.state());
@@ -524,7 +524,7 @@ TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
                     ModelTypeControllerDelegate::StartCallback callback) {
         start_callback = std::move(callback);
       });
-  context.storage_option = ConfigureContext::STORAGE_ON_DISK;
+  context.storage_option = STORAGE_ON_DISK;
   controller.LoadModels(context, base::DoNothing());
 
   ASSERT_EQ(DataTypeController::MODEL_STARTING, controller.state());

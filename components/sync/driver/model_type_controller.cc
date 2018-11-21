@@ -47,8 +47,7 @@ ModelTypeController::ModelTypeController(
     ModelType type,
     std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk)
     : DataTypeController(type) {
-  delegate_map_.emplace(ConfigureContext::STORAGE_ON_DISK,
-                        std::move(delegate_on_disk));
+  delegate_map_.emplace(STORAGE_ON_DISK, std::move(delegate_on_disk));
 }
 
 ModelTypeController::ModelTypeController(
@@ -56,8 +55,7 @@ ModelTypeController::ModelTypeController(
     std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk,
     std::unique_ptr<ModelTypeControllerDelegate> delegate_in_memory)
     : ModelTypeController(type, std::move(delegate_on_disk)) {
-  delegate_map_.emplace(ConfigureContext::STORAGE_IN_MEMORY,
-                        std::move(delegate_in_memory));
+  delegate_map_.emplace(STORAGE_IN_MEMORY, std::move(delegate_in_memory));
 }
 
 ModelTypeController::~ModelTypeController() {}
@@ -91,6 +89,8 @@ void ModelTypeController::LoadModels(
                           base::AsWeakPtr(this), SyncError::DATATYPE_ERROR));
   request.authenticated_account_id = configure_context.authenticated_account_id;
   request.cache_guid = configure_context.cache_guid;
+  request.storage_option = configure_context.storage_option;
+  request.configuration_start_time = configure_context.configuration_start_time;
 
   // Note that |request.authenticated_account_id| may be empty for local sync.
   DCHECK(!request.cache_guid.empty());

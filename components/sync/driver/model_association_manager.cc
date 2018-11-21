@@ -150,8 +150,8 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types,
       // reason is that if a user temporarily disables Sync, we don't want to
       // wipe (and later redownload) all their data, just because Sync restarted
       // in transport-only mode.
-      if (storage_option_changed && configure_context_.storage_option ==
-                                        ConfigureContext::STORAGE_IN_MEMORY) {
+      if (storage_option_changed &&
+          configure_context_.storage_option == STORAGE_IN_MEMORY) {
         reason = STOP_SYNC;
       }
       types_to_stop[dtc] = reason;

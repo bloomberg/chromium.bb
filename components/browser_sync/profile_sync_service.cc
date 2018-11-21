@@ -1476,8 +1476,9 @@ void ProfileSyncService::ConfigureDataTypeManager(
   configure_context.authenticated_account_id =
       GetAuthenticatedAccountInfo().account_id;
   configure_context.cache_guid = local_device_->GetLocalSyncCacheGUID();
-  configure_context.storage_option = syncer::ConfigureContext::STORAGE_ON_DISK;
+  configure_context.storage_option = syncer::STORAGE_ON_DISK;
   configure_context.reason = reason;
+  configure_context.configuration_start_time = base::Time::Now();
 
   if (!migrator_) {
     // We create the migrator at the same time.
@@ -1524,8 +1525,7 @@ void ProfileSyncService::ConfigureDataTypeManager(
     }
 
     types = Intersection(types, allowed_types);
-    configure_context.storage_option =
-        syncer::ConfigureContext::STORAGE_IN_MEMORY;
+    configure_context.storage_option = syncer::STORAGE_IN_MEMORY;
   }
   data_type_manager_->Configure(types, configure_context);
 
