@@ -10,7 +10,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class CWVAutofillController;
-@class CWVAutofillForm;
 @class CWVAutofillFormSuggestion;
 @class CWVCreditCard;
 @class CWVCreditCardVerifier;
@@ -44,13 +43,6 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision) {
 
 @optional
 
-// Called to notify of all autofillable forms in the document after page load.
-// Autofillable forms are any form that has the potential to be autofilled
-// using a CWVAutofillSuggestion, regardless if any such suggestions exist yet.
-// Note that |forms| may be empty, indicating no forms were found.
-- (void)autofillController:(CWVAutofillController*)autofillController
-    didScanForAutofillableForms:(NSArray<CWVAutofillForm*>*)forms;
-
 // Called when a form field element receives a "focus" event.
 - (void)autofillController:(CWVAutofillController*)autofillController
     didFocusOnFieldWithIdentifier:(NSString*)fieldIdentifier
@@ -81,6 +73,13 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision) {
      didSubmitFormWithName:(NSString*)formName
              userInitiated:(BOOL)userInitiated
                isMainFrame:(BOOL)isMainFrame;
+
+// Called when a form related element is inserted into the DOM.
+// A form related element includes forms, inputs, selects, and options.
+// This callback is throttled and will group together multiple inserts that are
+// close together in time into one invocation.
+- (void)autofillControllerDidInsertFormElements:
+    (CWVAutofillController*)autofillController;
 
 // Called when user needs to decide on whether or not to save the card locally.
 // This can happen if user is signed out or sync is disabled.
