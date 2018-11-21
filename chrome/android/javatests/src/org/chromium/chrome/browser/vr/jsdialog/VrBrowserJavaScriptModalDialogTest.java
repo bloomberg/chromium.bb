@@ -21,7 +21,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.jsdialog.JavascriptTabModalDialog;
+import org.chromium.chrome.browser.jsdialog.JavascriptAppModalDialog;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
@@ -90,7 +90,7 @@ public class VrBrowserJavaScriptModalDialogTest {
 
         executeJavaScriptAndWaitForDialog(js);
 
-        JavascriptTabModalDialog jsDialog = getCurrentDialog();
+        JavascriptAppModalDialog jsDialog = getCurrentDialog();
         Assert.assertNotNull("No dialog showing.", jsDialog);
 
         Assert.assertEquals(NativeUiUtils.getVrViewContainer().getChildCount(), 1);
@@ -110,8 +110,8 @@ public class VrBrowserJavaScriptModalDialogTest {
      * Returns the current JavaScript modal dialog showing or null if no such dialog is currently
      * showing.
      */
-    private JavascriptTabModalDialog getCurrentDialog() throws ExecutionException {
-        return (JavascriptTabModalDialog) ThreadUtils.runOnUiThreadBlocking(
+    private JavascriptAppModalDialog getCurrentDialog() throws ExecutionException {
+        return (JavascriptAppModalDialog) ThreadUtils.runOnUiThreadBlocking(
                 () -> mActivity.getModalDialogManager().getCurrentDialogForTest().getController());
     }
 }
