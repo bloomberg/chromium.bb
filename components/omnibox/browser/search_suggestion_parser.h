@@ -42,7 +42,7 @@ class SearchSuggestionParser {
   //           highly fragmented SearchProvider logic for each Result type.
   class Result {
    public:
-    Result(bool from_keyword,
+    Result(bool from_keyword_provider,
            int relevance,
            bool relevance_from_server,
            AutocompleteMatchType::Type type,
@@ -51,7 +51,7 @@ class SearchSuggestionParser {
     Result(const Result& other);
     virtual ~Result();
 
-    bool from_keyword() const { return from_keyword_; }
+    bool from_keyword_provider() const { return from_keyword_provider_; }
 
     const base::string16& match_contents() const { return match_contents_; }
     const ACMatchClassifications& match_contents_class() const {
@@ -89,8 +89,8 @@ class SearchSuggestionParser {
     base::string16 match_contents_;
     ACMatchClassifications match_contents_class_;
 
-    // True if the result came from a keyword suggestion.
-    bool from_keyword_;
+    // True if the result came from the keyword provider.
+    bool from_keyword_provider_;
 
     AutocompleteMatchType::Type type_;
 
@@ -127,7 +127,7 @@ class SearchSuggestionParser {
     SuggestResult(const base::string16& suggestion,
                   AutocompleteMatchType::Type type,
                   int subtype_identifier,
-                  bool from_keyword,
+                  bool from_keyword_provider,
                   int relevance,
                   bool relevance_from_server,
                   const base::string16& input_text);
@@ -141,7 +141,7 @@ class SearchSuggestionParser {
                   const std::string& deletion_url,
                   const std::string& image_dominant_color,
                   const std::string& image_url,
-                  bool from_keyword,
+                  bool from_keyword_provider,
                   int relevance,
                   bool relevance_from_server,
                   bool should_prefetch,
@@ -232,7 +232,7 @@ class SearchSuggestionParser {
                      int subtype_identifier,
                      const base::string16& description,
                      const std::string& deletion_url,
-                     bool from_keyword,
+                     bool from_keyword_provider,
                      int relevance,
                      bool relevance_from_server,
                      const base::string16& input_text);

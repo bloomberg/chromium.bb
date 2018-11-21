@@ -151,7 +151,7 @@ bool BaseSearchProvider::ShouldPrefetch(const AutocompleteMatch& match) {
 AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
-    bool from_keyword,
+    bool from_keyword_provider,
     const TemplateURL* template_url,
     const SearchTermsData& search_terms_data) {
   // These calls use a number of default values.  For instance, they assume
@@ -159,12 +159,12 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   // mode.  They also assume the caller knows what it's doing and we set
   // this match to look as if it was received/created synchronously.
   SearchSuggestionParser::SuggestResult suggest_result(
-      suggestion, type, /*subtype_identifier=*/0, from_keyword,
+      suggestion, type, /*subtype_identifier=*/0, from_keyword_provider,
       /*relevance=*/0, /*relevance_from_server=*/false,
       /*input_text=*/base::string16());
   suggest_result.set_received_after_last_keystroke(false);
   return CreateSearchSuggestion(nullptr, AutocompleteInput(),
-                                from_keyword, suggest_result,
+                                from_keyword_provider, suggest_result,
                                 template_url, search_terms_data, 0, false);
 }
 
@@ -291,19 +291,17 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   const base::string16 input_lower = base::i18n::ToLower(input.text());
   // suggestion.match_contents() should have already been collapsed.
   match.allowed_to_be_default_match =
-      (!in_keyword_mode || suggestion.from_keyword()) &&
+      (!in_keyword_mode || suggestion.from_keyword_provider()) &&
       (base::CollapseWhitespace(input_lower, false) ==
        base::i18n::ToLower(suggestion.match_contents()));
 
-  if (suggestion.from_keyword()) {
-    match.from_keyword = true;
+  if (suggestion.from_keyword_provider())
     match.fill_into_edit.append(match.keyword + base::char16(' '));
-  }
   // We only allow inlinable navsuggestions that were received before the
   // last keystroke because we don't want asynchronous inline autocompletions.
   if (!input.prevent_inline_autocomplete() &&
       !suggestion.received_after_last_keystroke() &&
-      (!in_keyword_mode || suggestion.from_keyword()) &&
+      (!in_keyword_mode || suggestion.from_keyword_provider()) &&
       base::StartsWith(
           base::i18n::ToLower(suggestion.suggestion()), input_lower,
           base::CompareCase::SENSITIVE)) {
@@ -337,7 +335,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       *match.search_terms_args, search_terms_data));
 
   // Search results don't look like URLs.
-  match.transition = suggestion.from_keyword() ?
+  match.transition = suggestion.from_keyword_provider() ?
       ui::PAGE_TRANSITION_KEYWORD : ui::PAGE_TRANSITION_GENERATED;
 
   return match;
@@ -420,8 +418,8 @@ void BaseSearchProvider::AddMatchToMap(
     bool in_keyword_mode,
     MatchMap* map) {
   AutocompleteMatch match = CreateSearchSuggestion(
-      this, GetInput(result.from_keyword()), in_keyword_mode, result,
-      GetTemplateURL(result.from_keyword()),
+      this, GetInput(result.from_keyword_provider()), in_keyword_mode, result,
+      GetTemplateURL(result.from_keyword_provider()),
       client_->GetTemplateURLService()->search_terms_data(),
       accepted_suggestion, ShouldAppendExtraParams(result));
   if (!match.destination_url.is_valid())
