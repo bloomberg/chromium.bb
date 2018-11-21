@@ -30426,6 +30426,7 @@ from previous Chrome versions.
       label="enable-manual-fallback-for-password-saving:disabled"/>
   <int value="241187301" label="BrowserTouchBar:disabled"/>
   <int value="244697230" label="enable-theme-color-in-tabbed-mode"/>
+  <int value="245896533" label="SearchSuggestionsOnLocalNtp:enabled"/>
   <int value="250855010" label="WebAssemblyBaseline:disabled"/>
   <int value="255375615" label="stop-non-timers-in-background:enabled"/>
   <int value="259021228" label="OffMainThreadFetch:disabled"/>
@@ -30691,6 +30692,7 @@ from previous Chrome versions.
   <int value="724208771" label="TabsInCBD:enabled"/>
   <int value="725270017" label="ScrollAnchorSerialization:disabled"/>
   <int value="726764779" label="WebXRGamepadSupport:enabled"/>
+  <int value="727270087" label="PromosOnLocalNtp:enabled"/>
   <int value="727571565" label="PasswordForceSaving"/>
   <int value="728656094" label="PasswordForceSaving:disabled"/>
   <int value="730024226" label="enable-out-of-process-pdf"/>
@@ -31114,6 +31116,7 @@ from previous Chrome versions.
   <int value="1474861626" label="disable-multi-mirroring"/>
   <int value="1479248574" label="disable-voice-input"/>
   <int value="1481562816" label="disable-password-link"/>
+  <int value="1482039233" label="SearchSuggestionsOnLocalNtp:disabled"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
   <int value="1487341558" label="MacViewsAutofillPopup:enabled"/>
   <int value="1488193175" label="ChromeOSAssistant:enabled"/>
@@ -31362,6 +31365,7 @@ from previous Chrome versions.
   <int value="1932204471" label="SyncPseudoUSSThemes:disabled"/>
   <int value="1932732886" label="OpenVR:enabled"/>
   <int value="1936810062" label="WebVrVsyncAlign:enabled"/>
+  <int value="1938279796" label="PromosOnLocalNtp:disabled"/>
   <int value="1939413645" label="enable-invalid-cert-collection"/>
   <int value="1940625534" label="NewOverviewUi:disabled"/>
   <int value="1942911276" label="enable-grouped-history"/>

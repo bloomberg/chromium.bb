@@ -3464,6 +3464,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"doodles-on-local-ntp", flag_descriptions::kDoodlesOnLocalNtpName,
      flag_descriptions::kDoodlesOnLocalNtpDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDoodlesOnLocalNtp)},
+
+    {"search-suggestions-on-local-ntp",
+     flag_descriptions::kSearchSuggestionsOnLocalNtpName,
+     flag_descriptions::kSearchSuggestionsOnLocalNtpDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSearchSuggestionsOnLocalNtp)},
+
+    {"promos-on-local-ntp", flag_descriptions::kPromosOnLocalNtpName,
+     flag_descriptions::kPromosOnLocalNtpDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPromosOnLocalNtp)},
 #endif  // !defined(OS_ANDROID)
 
     {"sound-content-setting", flag_descriptions::kSoundContentSettingName,

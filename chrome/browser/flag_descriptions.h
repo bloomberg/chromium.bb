@@ -1659,6 +1659,12 @@ extern const char kAutofillPrimaryInfoStyleExperimentDescription[];
 extern const char kDoodlesOnLocalNtpName[];
 extern const char kDoodlesOnLocalNtpDescription[];
 
+extern const char kSearchSuggestionsOnLocalNtpName[];
+extern const char kSearchSuggestionsOnLocalNtpDescription[];
+
+extern const char kPromosOnLocalNtpName[];
+extern const char kPromosOnLocalNtpDescription[];
+
 extern const char kEnableAudioFocusName[];
 extern const char kEnableAudioFocusDescription[];
 extern const char kEnableAudioFocusDisabled[];
