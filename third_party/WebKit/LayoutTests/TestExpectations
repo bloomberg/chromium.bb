@@ -2707,7 +2707,7 @@ crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 crbug.com/613659 external/wpt/quirks/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 external/wpt/quirks/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 external/wpt/quirks/table-cell-width-calculation.html [ Failure ]
-
+crbug.com/845902 external/wpt/quirks/line-height-trailing-collapsable-whitespace.html [ Failure ]
 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
