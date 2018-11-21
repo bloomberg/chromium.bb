@@ -312,7 +312,8 @@ void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
       frame_begin_time);
 }
 
-void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
+void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update,
+                                         LifecycleUpdateReason reason) {
   TRACE_EVENT0("blink", "WebFrameWidgetImpl::updateAllLifecyclePhases");
   if (!LocalRootImpl())
     return;
@@ -320,7 +321,7 @@ void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
   PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
-                                      requested_update);
+                                      requested_update, reason);
   UpdateLayerTreeBackgroundColor();
 }
 

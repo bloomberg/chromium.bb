@@ -226,7 +226,8 @@ void RenderViewTest::LoadHTML(const char* html) {
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
-  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 }
 
 void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
@@ -236,7 +237,8 @@ void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
-  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 }
 
 PageState RenderViewTest::GetCurrentPageState() {
@@ -573,7 +575,8 @@ void RenderViewTest::Reload(const GURL& url) {
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
   frame->Navigate(common_params, RequestNavigationParams());
   FrameLoadWaiter(frame).Wait();
-  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 }
 
 void RenderViewTest::Resize(gfx::Size new_size,
@@ -725,7 +728,8 @@ void RenderViewTest::GoToOffset(int offset,
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(frame).Wait();
-  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 }
 
 }  // namespace content

@@ -126,7 +126,8 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   transformed_scroll->setScrollTop(5);
 
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->UpdateAllLifecyclePhases();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   // target1 is a fixed-position element inside an absolute-position scrolling
   // element.  It should be attached under the viewport to skip scrolling and
@@ -212,7 +213,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   Element* scroller = GetDocument().getElementById("scroller");
   scroller->scrollTo(0, 100);
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->UpdateAllLifecyclePhases();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   const ObjectPaintProperties* scroller_properties =
       scroller->GetLayoutObject()->FirstFragment().PaintProperties();
   EXPECT_EQ(TransformationMatrix().Translate(0, -100),
@@ -488,7 +490,8 @@ TEST_P(PaintPropertyTreeBuilderTest, DocScrollingTraditional) {
   GetDocument().domWindow()->scrollTo(0, 100);
 
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->UpdateAllLifecyclePhases();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   EXPECT_EQ(TransformationMatrix(), DocPreTranslation()->Matrix());
   EXPECT_EQ(
       GetDocument().GetPage()->GetVisualViewport().GetScrollTranslationNode(),
@@ -1752,7 +1755,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
   )HTML");
 
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->UpdateAllLifecyclePhases();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   LayoutObject* div_with_transform =
       GetLayoutObjectByElementId("divWithTransform");
@@ -1846,7 +1850,8 @@ TEST_P(PaintPropertyTreeBuilderTest, FramesEstablishIsolation) {
   )HTML");
 
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->UpdateAllLifecyclePhases();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   LayoutObject* frame = ChildFrame().View()->GetLayoutView();
   const auto& frame_contents_properties =
@@ -1905,7 +1910,8 @@ TEST_P(PaintPropertyTreeBuilderTest, FramesEstablishIsolation) {
   // However, isolation stops this recursion.
   GetDocument().getElementById("parent")->setAttribute(html_names::kClassAttr,
                                                        "transformed");
-  frame_view->UpdateAllLifecyclePhases();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   // Verify that our clobbered state is still clobbered.
   EXPECT_EQ(TransformationMatrix().Translate(123, 321),
@@ -1942,7 +1948,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
     <div id='transform'></div>
   )HTML");
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->UpdateAllLifecyclePhases();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   // Assert that we have the following tree structure:
   // ...

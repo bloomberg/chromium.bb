@@ -45,7 +45,8 @@ void ViewPainterTest::RunFixedBackgroundTest(
 
   ScrollOffset scroll_offset(200, 150);
   layout_viewport->SetScrollOffset(scroll_offset, kUserScroll);
-  frame_view->UpdateAllLifecyclePhases();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   const DisplayItem* background_display_item = nullptr;
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {

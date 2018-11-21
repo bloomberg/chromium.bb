@@ -53,7 +53,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
   web_view->Resize(WebSize(1000, 1000));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   FrameLoader& loader = web_view->MainFrameImpl()->GetFrame()->Loader();
   loader.GetDocumentLoader()->SetLoadType(WebFrameLoadType::kBackForward);
@@ -85,7 +86,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
   web_view->Resize(WebSize(1000, 1000));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   FrameLoader& loader = web_view->MainFrameImpl()->GetFrame()->Loader();
   loader.GetDocumentLoader()->SetLoadType(WebFrameLoadType::kBackForward);
@@ -114,7 +116,8 @@ TEST_F(ProgrammaticScrollTest, SaveScrollStateClearsAnchor) {
   WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
   web_view->Resize(WebSize(1000, 1000));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   FrameLoader& loader = web_view->MainFrameImpl()->GetFrame()->Loader();
   loader.GetDocumentLoader()->SetLoadType(WebFrameLoadType::kBackForward);

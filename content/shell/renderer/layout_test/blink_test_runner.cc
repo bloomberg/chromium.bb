@@ -444,7 +444,8 @@ void BlinkTestRunner::TestFinished() {
   // Clean out the lifecycle if needed before capturing the layout tree
   // dump and pixels from the compositor.
   auto* web_frame = render_view()->GetWebView()->MainFrame()->ToWebLocalFrame();
-  web_frame->FrameWidget()->UpdateAllLifecyclePhases();
+  web_frame->FrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kTest);
 
   // Initialize a new dump results object which we will populate in the calls
   // below.

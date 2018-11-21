@@ -24,7 +24,8 @@ TEST_F(ElementTest, SupportsFocus) {
   Document& document = GetDocument();
   DCHECK(IsHTMLHtmlElement(document.documentElement()));
   document.setDesignMode("on");
-  document.View()->UpdateAllLifecyclePhases();
+  document.View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   EXPECT_TRUE(document.documentElement()->SupportsFocus())
       << "<html> with designMode=on should be focusable.";
 }
@@ -217,7 +218,8 @@ TEST_F(ElementTest, StickySubtreesAreTrackedCorrectly) {
   // ensure that the sticky subtree update behavior survives forking.
   document.getElementById("child")->SetInlineStyleProperty(
       CSSPropertyWebkitRubyPosition, CSSValueAfter);
-  document.View()->UpdateAllLifecyclePhases();
+  document.View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kPaintClean, document.Lifecycle().GetState());
 
   EXPECT_EQ(RubyPosition::kBefore, outer_sticky->StyleRef().GetRubyPosition());
@@ -239,7 +241,8 @@ TEST_F(ElementTest, StickySubtreesAreTrackedCorrectly) {
   // fork it's StyleRareInheritedData to maintain the sticky subtree bit.
   document.getElementById("outerSticky")
       ->SetInlineStyleProperty(CSSPropertyPosition, CSSValueStatic);
-  document.View()->UpdateAllLifecyclePhases();
+  document.View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   EXPECT_EQ(DocumentLifecycle::kPaintClean, document.Lifecycle().GetState());
 
   EXPECT_FALSE(outer_sticky->StyleRef().SubtreeIsSticky());

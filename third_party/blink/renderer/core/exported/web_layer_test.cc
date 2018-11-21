@@ -47,7 +47,8 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
   // Both sets the inner html and runs the document lifecycle.
   void InitializeWithHTML(LocalFrame& frame, const String& html_content) {
     frame.GetDocument()->body()->SetInnerHTMLFromString(html_content);
-    frame.GetDocument()->View()->UpdateAllLifecyclePhases();
+    frame.GetDocument()->View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
   }
 
   WebLocalFrame* LocalMainFrame() { return web_view_helper_->LocalMainFrame(); }
@@ -92,10 +93,16 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
     return frame->GetFrame()->GetDocument()->getElementById(id);
   }
 
+  void UpdateAllLifecyclePhases() {
+    WebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
+  }
+
  private:
   PaintArtifactCompositor* paint_artifact_compositor() {
     return GetLocalFrameView()->GetPaintArtifactCompositorForTesting();
   }
+
   frame_test_helpers::TestWebViewClient web_view_client_;
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
 };
@@ -117,7 +124,7 @@ TEST_P(WebLayerListTest, DidScrollCallbackAfterScrollableAreaChanges) {
                      "  <div id='forceScroll'></div>"
                      "</div>");
 
-  WebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   Document* document = WebView()->MainFrameImpl()->GetFrame()->GetDocument();
   Element* scrollable = document->getElementById("scrollable");
@@ -143,7 +150,7 @@ TEST_P(WebLayerListTest, DidScrollCallbackAfterScrollableAreaChanges) {
   // area using the DidScroll callback.
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
   overflow_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 1));
-  WebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 
   // Make the scrollable area non-scrollable.
@@ -164,7 +171,7 @@ TEST_P(WebLayerListTest, DidScrollCallbackAfterScrollableAreaChanges) {
     EXPECT_EQ(ScrollHitTestLayerCount(), initial_scroll_hit_test_layer_count);
   overflow_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
 
-  WebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_LT(ContentLayerCount(), initial_content_layer_count);
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     EXPECT_LT(ScrollHitTestLayerCount(), initial_scroll_hit_test_layer_count);
@@ -180,7 +187,7 @@ TEST_P(WebLayerListTest, FrameViewScroll) {
                      "</style>"
                      "<div id='forceScroll'></div>");
 
-  WebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
   EXPECT_NE(nullptr, scrollable_area);
@@ -204,7 +211,7 @@ TEST_P(WebLayerListTest, FrameViewScroll) {
   // area using the DidScroll callback.
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
   scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 1));
-  WebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 }
 
@@ -218,10 +225,11 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
     request.Complete(html);
 
     // Enable the paint artifact compositor extra testing data.
-    WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases();
     DCHECK(paint_artifact_compositor());
     paint_artifact_compositor()->EnableExtraDataForTesting();
-    WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases();
+
     DCHECK(paint_artifact_compositor()->GetExtraDataForTesting());
   }
 
@@ -240,6 +248,11 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
 
   Element* GetElementById(const AtomicString& id) {
     return MainFrame().GetFrame()->GetDocument()->getElementById(id);
+  }
+
+  void UpdateAllLifecyclePhases() {
+    WebView().MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
   }
 
  private:
@@ -291,7 +304,7 @@ TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
 
   // Modifying b should only cause the b layer to need to push properties.
   b_element->setAttribute(html_names::kStyleAttr, "opacity: 0.2");
-  WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
   EXPECT_TRUE(host->LayersThatShouldPushProperties().count(b_layer));
 
@@ -351,7 +364,7 @@ TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
   // not cause the c layer to push properties.
   a_element->setAttribute(html_names::kStyleAttr, "opacity: 0.3");
   b_element->setAttribute(html_names::kStyleAttr, "");
-  WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_TRUE(host->LayersThatShouldPushProperties().count(a_layer));
   EXPECT_TRUE(host->LayersThatShouldPushProperties().count(b_layer));
   EXPECT_FALSE(host->LayersThatShouldPushProperties().count(c_layer));
@@ -383,7 +396,7 @@ TEST_P(WebLayerListSimTest, NoopChangeDoesNotCauseFullTreeSync) {
   EXPECT_FALSE(layer_tree_host->needs_full_tree_sync());
 
   // A no-op update should not cause the host to need a full tree sync.
-  WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_FALSE(layer_tree_host->needs_full_tree_sync());
 }
 
@@ -445,7 +458,7 @@ TEST_P(WebLayerListSimTest, LayerSubtreeTransformPropertyChanged) {
   // both layers.
   outer_element->setAttribute(html_names::kStyleAttr,
                               "transform: translate(20px, 20px)");
-  WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_TRUE(outer_element_layer->subtree_property_changed());
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
 
@@ -508,7 +521,7 @@ TEST_P(WebLayerListSimTest, LayerSubtreeEffectPropertyChanged) {
   // Modifying the filter style should set |subtree_property_changed| on
   // both layers.
   outer_element->setAttribute(html_names::kStyleAttr, "filter: blur(20px)");
-  WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_TRUE(outer_element_layer->subtree_property_changed());
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
 
@@ -569,7 +582,7 @@ TEST_P(WebLayerListSimTest, LayerSubtreeClipPropertyChanged) {
   // both layers.
   outer_element->setAttribute(html_names::kStyleAttr,
                               "clip: rect(1px, 8px, 7px, 4px);");
-  WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_TRUE(outer_element_layer->subtree_property_changed());
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
 
@@ -627,7 +640,7 @@ TEST_P(WebLayerListSimTest, LayerSubtreeOverflowClipPropertyChanged) {
   // Modifying the clip width should set |subtree_property_changed| on
   // both layers.
   outer_element->setAttribute(html_names::kStyleAttr, "width: 200px;");
-  WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_TRUE(outer_element_layer->subtree_property_changed());
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
 

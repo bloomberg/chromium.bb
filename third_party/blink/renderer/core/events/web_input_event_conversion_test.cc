@@ -124,7 +124,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
   int page_width = 640;
   int page_height = 480;
   web_view->Resize(WebSize(page_width, page_height));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   web_view->SetPageScaleFactor(3);
 
@@ -337,7 +338,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
   int page_width = 640;
   int page_height = 480;
   web_view->Resize(WebSize(page_width, page_height));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   web_view->SetPageScaleFactor(2);
   web_view->MainFrameImpl()->SetInputEventsScaleForEmulation(1.5);
@@ -593,7 +595,8 @@ TEST(WebInputEventConversionTest, InputEventsConversions) {
   int page_width = 640;
   int page_height = 480;
   web_view->Resize(WebSize(page_width, page_height));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
   {
@@ -630,7 +633,8 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
   int page_width = 640;
   int page_height = 480;
   web_view->Resize(WebSize(page_width, page_height));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   web_view->SetPageScaleFactor(2);
 
@@ -728,7 +732,8 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
   int page_width = 640;
   int page_height = 480;
   web_view->Resize(WebSize(page_width, page_height));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
@@ -803,7 +808,8 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
   int page_width = 640;
   int page_height = 480;
   web_view->Resize(WebSize(page_width, page_height));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   gfx::Vector2dF elastic_overscroll(10, -20);
   web_view->ApplyViewportChanges(

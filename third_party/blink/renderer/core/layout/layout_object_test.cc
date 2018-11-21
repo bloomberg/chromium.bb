@@ -812,7 +812,8 @@ TEST_F(LayoutObjectTest, DistortingVisualEffectsUnaliases) {
 class LayoutObjectSimTest : public SimTest {
  public:
   bool DocumentHasTouchActionRegion(const EventHandlerRegistry& registry) {
-    GetDocument().View()->UpdateAllLifecyclePhases();
+    GetDocument().View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
     return registry.HasEventHandlers(
         EventHandlerRegistry::EventHandlerClass::kTouchAction);
   }
@@ -886,7 +887,8 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
     <div id='target'>target</div>
   )HTML");
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   Element* iframe_element = GetDocument().QuerySelector("iframe");
   HTMLFrameOwnerElement* frame_owner_element =
       ToHTMLFrameOwnerElement(iframe_element);
@@ -897,7 +899,8 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
 
   Element* occluder = GetDocument().getElementById("occluder");
   occluder->SetInlineStyleProperty(CSSPropertyMarginTop, "-150px");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   result = target->GetLayoutObject()->HitTestForOcclusion();
   EXPECT_EQ(result.InnerNode(), occluder);
 }

@@ -68,8 +68,9 @@ class LayerTreeViewDelegate {
   virtual void RequestScheduleAnimation() = 0;
 
   // Requests a visual frame-based update to the state of the delegate if there
-  // an update available.
-  virtual void UpdateVisualState() = 0;
+  // is an update available. |record_main_frame_metrics| will be true if
+  // this is a main frame for which we want metrics.
+  virtual void UpdateVisualState(bool record_main_frame_metrics) = 0;
 
   // Indicates that the compositor is about to begin a frame. This is primarily
   // to signal to flow control mechanisms that a frame is beginning, not to

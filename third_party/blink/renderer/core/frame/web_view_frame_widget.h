@@ -50,7 +50,8 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(base::TimeTicks last_frame_time) override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
-  void UpdateLifecycle(LifecycleUpdate requested_update) override;
+  void UpdateLifecycle(LifecycleUpdate requested_update,
+                       LifecycleUpdateReason reason) override;
   void PaintContent(cc::PaintCanvas*, const WebRect& view_port) override;
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(

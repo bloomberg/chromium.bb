@@ -191,7 +191,7 @@ class CONTENT_EXPORT LayerTreeView
   void BeginMainFrame(const viz::BeginFrameArgs& args) override;
   void BeginMainFrameNotExpectedSoon() override;
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
-  void UpdateLayerTreeHost() override;
+  void UpdateLayerTreeHost(bool record_main_frame_metrics) override;
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override;
   void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
                                          bool has_scrolled_by_touch) override;

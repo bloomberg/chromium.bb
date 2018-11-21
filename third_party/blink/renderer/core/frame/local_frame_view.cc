@@ -2165,38 +2165,46 @@ void LocalFrameView::UpdateGeometriesIfNeeded() {
   }
 }
 
-void LocalFrameView::UpdateAllLifecyclePhases() {
+void LocalFrameView::UpdateAllLifecyclePhases(
+    DocumentLifecycle::LifecycleUpdateReason reason) {
   GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
-      DocumentLifecycle::kPaintClean);
+      DocumentLifecycle::kPaintClean, reason);
 }
 
-// TODO(chrishtr): add a scrolling update lifecycle phase.
+// TODO(schenney): add a scrolling update lifecycle phase.
+// TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling() {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     return UpdateAllLifecyclePhasesExceptPaint();
   } else {
     return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
-        DocumentLifecycle::kCompositingClean);
+        DocumentLifecycle::kCompositingClean,
+        DocumentLifecycle::LifecycleUpdateReason::kOther);
   }
 }
 
+// TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateLifecycleToCompositingInputsClean() {
   // When SPv2 is enabled, the standard compositing lifecycle steps do not
   // exist; compositing is done after paint instead.
   DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
-      DocumentLifecycle::kCompositingInputsClean);
+      DocumentLifecycle::kCompositingInputsClean,
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
+// TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateAllLifecyclePhasesExceptPaint() {
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
-      DocumentLifecycle::kPrePaintClean);
+      DocumentLifecycle::kPrePaintClean,
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
 void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
   auto* local_frame_view_root = GetFrame().LocalFrameRoot().View();
   local_frame_view_root->UpdateLifecyclePhases(
-      DocumentLifecycle::kPrePaintClean);
+      DocumentLifecycle::kPrePaintClean,
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
 
   auto* detached_frame_view = this;
   while (detached_frame_view->is_attached_ &&
@@ -2211,17 +2219,21 @@ void LocalFrameView::UpdateLifecyclePhasesForPrinting() {
   // was not reached in some phases during during |local_frame_view_root->
   // UpdateLifecyclePhasesnormal()|. We need the subtree to be ready for
   // painting.
-  detached_frame_view->UpdateLifecyclePhases(DocumentLifecycle::kPrePaintClean);
+  detached_frame_view->UpdateLifecyclePhases(
+      DocumentLifecycle::kPrePaintClean,
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
+// TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateLifecycleToLayoutClean() {
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
-      DocumentLifecycle::kLayoutClean);
+      DocumentLifecycle::kLayoutClean,
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
 void LocalFrameView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
   LocalFrameUkmAggregator& ukm_aggregator = EnsureUkmAggregator();
-  ukm_aggregator.RecordPrimarySample(frame_begin_time, CurrentTimeTicks());
+  ukm_aggregator.RecordEndOfFrameMetrics(frame_begin_time, CurrentTimeTicks());
 }
 
 void LocalFrameView::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
@@ -2307,7 +2319,8 @@ void LocalFrameView::ClearPrintContext() {
 // TODO(leviw): We don't assert lifecycle information from documents in child
 // WebPluginContainerImpls.
 bool LocalFrameView::UpdateLifecyclePhases(
-    DocumentLifecycle::LifecycleState target_state) {
+    DocumentLifecycle::LifecycleState target_state,
+    DocumentLifecycle::LifecycleUpdateReason reason) {
   // If the lifecycle is postponed, which can happen if the inspector requests
   // it, then we shouldn't update any lifecycle phases.
   if (UNLIKELY(frame_->GetDocument() &&
@@ -2364,6 +2377,9 @@ bool LocalFrameView::UpdateLifecyclePhases(
     UpdateThrottlingStatusForSubtree();
     return Lifecycle().GetState() == target_state;
   }
+
+  if (reason == DocumentLifecycle::LifecycleUpdateReason::kBeginMainFrame)
+    EnsureUkmAggregator().BeginMainFrame();
 
   // If we're in PrintBrowser mode, setup a print context.
   // TODO(vmpstr): It doesn't seem like we need to do this every lifecycle
@@ -2595,7 +2611,7 @@ void LocalFrameView::RunPaintLifecyclePhase() {
       base::Optional<CompositorElementIdSet> composited_element_ids =
           CompositorElementIdSet();
       PushPaintArtifactToCompositor(composited_element_ids.value());
-      // TODO(wkorman): Add call to UpdateCompositorScrollAnimations here.
+      // TODO(pdr): Add call to UpdateCompositorScrollAnimations here.
       ForAllNonThrottledLocalFrameViews(
           [&composited_element_ids](LocalFrameView& frame_view) {
             DocumentAnimations::UpdateAnimations(
@@ -2985,9 +3001,9 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
 
   // WebView plugins need to update regardless of whether the
   // LayoutEmbeddedObject that owns them needed layout.
-  // TODO(leviw): This currently runs the entire lifecycle on plugin WebViews.
-  // We should have a way to only run these other Documents to the same
-  // lifecycle stage as this frame.
+  // TODO(schenney): This currently runs the entire lifecycle on plugin
+  // WebViews. We should have a way to only run these other Documents to the
+  // same lifecycle stage as this frame.
   for (const auto& plugin : plugins_) {
     plugin->UpdateAllLifecyclePhases();
   }
@@ -3390,7 +3406,7 @@ void LocalFrameView::SetTracksPaintInvalidations(
     return;
 
   // Ensure the document is up-to-date before tracking invalidations.
-  UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   for (Frame* frame = &frame_->Tree().Top(); frame;
        frame = frame->Tree().TraverseNext()) {

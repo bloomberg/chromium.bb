@@ -120,7 +120,8 @@ void ValidationMessageOverlayDelegate::UpdateFrameViewState(
   // FindVisualRectNeedingUpdateScopeBase::CheckVisualRect().
   FrameView().GetLayoutView()->SetSubtreeShouldCheckForPaintInvalidation();
 
-  FrameView().UpdateAllLifecyclePhases();
+  FrameView().UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
 void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
@@ -169,7 +170,9 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
         .SetInlineStyleProperty(CSSPropertyTransition, "none");
   }
   // Get the size to decide position later.
-  FrameView().UpdateAllLifecyclePhases();
+  // TODO(schenney): This says get size, so we only need to update to layout.
+  FrameView().UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
   bubble_size_ = container.VisibleBoundsInVisualViewport().Size();
   // Add one because the content sometimes exceeds the exact width due to
   // rounding errors.
@@ -178,7 +181,8 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
                                    bubble_size_.Width() / zoom_factor,
                                    CSSPrimitiveValue::UnitType::kPixels);
   container.setAttribute(html_names::kClassAttr, "shown-initially");
-  FrameView().UpdateAllLifecyclePhases();
+  FrameView().UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
 void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {

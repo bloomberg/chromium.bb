@@ -115,7 +115,8 @@ void PageTestBase::SetHtmlInnerHTML(const std::string& html_content) {
 }
 
 void PageTestBase::UpdateAllLifecyclePhasesForTest() {
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 }
 
 StyleEngine& PageTestBase::GetStyleEngine() {

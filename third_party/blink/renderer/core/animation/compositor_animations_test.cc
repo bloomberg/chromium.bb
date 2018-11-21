@@ -458,7 +458,8 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
   }
 
   void ForceFullCompositingUpdate() {
-    helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+    helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
   }
 
  private:

@@ -401,10 +401,14 @@ void WebPagePopupImpl::WillCloseLayerTreeView() {
   animation_host_ = nullptr;
 }
 
-void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
+void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update,
+                                       LifecycleUpdateReason reason) {
   if (!page_)
     return;
-  PageWidgetDelegate::UpdateLifecycle(*page_, MainFrame(), requested_update);
+  // Popups always update their lifecycle in the context of the containing
+  // document's lifecycle, so explicitly override the reason.
+  PageWidgetDelegate::UpdateLifecycle(*page_, MainFrame(), requested_update,
+                                      WebWidget::LifecycleUpdateReason::kOther);
 }
 
 void WebPagePopupImpl::UpdateAllLifecyclePhasesAndCompositeForTesting(

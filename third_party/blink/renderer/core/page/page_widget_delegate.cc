@@ -61,13 +61,15 @@ void PageWidgetDelegate::Animate(Page& page,
 void PageWidgetDelegate::UpdateLifecycle(
     Page& page,
     LocalFrame& root,
-    WebWidget::LifecycleUpdate requested_update) {
+    WebWidget::LifecycleUpdate requested_update,
+    WebWidget::LifecycleUpdateReason reason) {
   if (requested_update == WebWidget::LifecycleUpdate::kLayout) {
     page.Animator().UpdateLifecycleToLayoutClean(root);
   } else if (requested_update == WebWidget::LifecycleUpdate::kPrePaint) {
     page.Animator().UpdateAllLifecyclePhasesExceptPaint(root);
   } else {
-    page.Animator().UpdateAllLifecyclePhases(root);
+    page.Animator().UpdateAllLifecyclePhases(
+        root, static_cast<DocumentLifecycle::LifecycleUpdateReason>(reason));
   }
 }
 

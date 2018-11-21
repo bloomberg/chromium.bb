@@ -1412,7 +1412,6 @@ void EventSender::PointerDown(int button_number,
                               int tiltY) {
   if (force_layout_on_events_)
     UpdateLifecycleToPrePaint();
-
   DCHECK_NE(-1, button_number);
 
   WebMouseEvent::Button button_type =
@@ -2894,7 +2893,8 @@ std::unique_ptr<WebInputEvent> EventSender::TransformScreenToWidgetCoordinates(
 }
 
 void EventSender::UpdateLifecycleToPrePaint() {
-  widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint);
+  widget()->UpdateLifecycle(blink::WebWidget::LifecycleUpdate::kPrePaint,
+                            blink::WebWidget::LifecycleUpdateReason::kTest);
 }
 
 }  // namespace test_runner

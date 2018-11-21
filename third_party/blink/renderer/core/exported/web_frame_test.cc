@@ -285,7 +285,8 @@ class WebFrameTest : public testing::Test {
   // Both sets the inner html and runs the document lifecycle.
   void InitializeWithHTML(LocalFrame& frame, const String& html_content) {
     frame.GetDocument()->body()->SetInnerHTMLFromString(html_content);
-    frame.GetDocument()->View()->UpdateAllLifecyclePhases();
+    frame.GetDocument()->View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
   }
 
   WebFrame* LastChild(WebFrame* frame) { return frame->last_child_; }
@@ -333,6 +334,11 @@ class WebFrameTest : public testing::Test {
     }
 
     return node_count;
+  }
+
+  void UpdateAllLifecyclePhases(WebViewImpl* web_view) {
+    web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
   }
 
   static void GetElementAndCaretBoundsForFocusedEditableElement(
@@ -919,7 +925,8 @@ class WebFrameCSSCallbackTest : public testing::Test {
 
   void ExecuteScript(const WebString& code) {
     frame_->ExecuteScript(WebScriptSource(code));
-    frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases();
+    frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
     RunPendingTasks();
   }
 
@@ -942,7 +949,8 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet) {
   Vector<WebString> selectors;
   selectors.push_back(WebString::FromUTF8("div.initial_on"));
   frame_->GetDocument().WatchCSSSelectors(WebVector<WebString>(selectors));
-  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
   RunPendingTasks();
   EXPECT_EQ(1, UpdateCount());
   EXPECT_THAT(MatchedSelectors(), ElementsAre("div.initial_on"));
@@ -950,7 +958,8 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet) {
   // Check that adding a watched selector calls back for already-present nodes.
   selectors.push_back(WebString::FromUTF8("div.initial_off"));
   Doc().WatchCSSSelectors(WebVector<WebString>(selectors));
-  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
   RunPendingTasks();
   EXPECT_EQ(2, UpdateCount());
   EXPECT_THAT(MatchedSelectors(),
@@ -958,7 +967,8 @@ TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet) {
 
   // Check that we can turn off callbacks for certain selectors.
   Doc().WatchCSSSelectors(WebVector<WebString>());
-  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
   RunPendingTasks();
   EXPECT_EQ(3, UpdateCount());
   EXPECT_THAT(MatchedSelectors(), ElementsAre());
@@ -1075,7 +1085,8 @@ TEST_F(WebFrameCSSCallbackTest, DisplayContents) {
 
   Vector<WebString> selectors(1u, WebString::FromUTF8("span"));
   Doc().WatchCSSSelectors(WebVector<WebString>(selectors));
-  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
   RunPendingTasks();
 
   EXPECT_EQ(1, UpdateCount()) << "Match elements in display:contents trees.";
@@ -1110,7 +1121,8 @@ TEST_F(WebFrameCSSCallbackTest, Reparenting) {
   Vector<WebString> selectors;
   selectors.push_back(WebString::FromUTF8("span"));
   Doc().WatchCSSSelectors(WebVector<WebString>(selectors));
-  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
   RunPendingTasks();
 
   EXPECT_EQ(1, UpdateCount());
@@ -1134,7 +1146,8 @@ TEST_F(WebFrameCSSCallbackTest, MultiSelector) {
   selectors.push_back(WebString::FromUTF8("span"));
   selectors.push_back(WebString::FromUTF8("span,p"));
   Doc().WatchCSSSelectors(WebVector<WebString>(selectors));
-  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
   RunPendingTasks();
 
   EXPECT_EQ(1, UpdateCount());
@@ -1150,7 +1163,8 @@ TEST_F(WebFrameCSSCallbackTest, InvalidSelector) {
   selectors.push_back(WebString::FromUTF8("["));       // Invalid.
   selectors.push_back(WebString::FromUTF8("p span"));  // Not compound.
   Doc().WatchCSSSelectors(WebVector<WebString>(selectors));
-  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  frame_->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
   RunPendingTasks();
 
   EXPECT_EQ(1, UpdateCount());
@@ -1420,11 +1434,11 @@ TEST_F(WebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag) {
   // Device scale factor should be independent of page scale.
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(1, 2);
   web_view_helper.GetWebView()->SetPageScaleFactor(0.5);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   EXPECT_EQ(1, web_view_helper.GetWebView()->PageScaleFactor());
 
   // Force the layout to happen before leaving the test.
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 }
 
 TEST_F(WebFrameTest, FixedLayoutInitializeAtMinimumScale) {
@@ -1456,7 +1470,7 @@ TEST_F(WebFrameTest, FixedLayoutInitializeAtMinimumScale) {
   float user_pinch_page_scale_factor = 2;
   web_view_helper.GetWebView()->SetPageScaleFactor(
       user_pinch_page_scale_factor);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   // Make sure we don't reset to initial scale if the page continues to load.
   web_view_helper.GetWebView()->DidCommitLoad(false, false);
@@ -1498,7 +1512,7 @@ TEST_F(WebFrameTest, WideDocumentInitializeAtMinimumScale) {
   float user_pinch_page_scale_factor = 2;
   web_view_helper.GetWebView()->SetPageScaleFactor(
       user_pinch_page_scale_factor);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   // Make sure we don't reset to initial scale if the page continues to load.
   web_view_helper.GetWebView()->DidCommitLoad(false, false);
@@ -1535,7 +1549,7 @@ TEST_F(WebFrameTest, DelayedViewportInitialScale) {
   ViewportDescription description = viewport.GetViewportDescription();
   description.zoom = 2;
   viewport.SetViewportDescription(description);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   EXPECT_EQ(2, web_view_helper.GetWebView()->PageScaleFactor());
 }
 
@@ -1795,7 +1809,7 @@ TEST_F(WebFrameTest, setInitialPageScaleFactorPermanently) {
   web_view_helper.GetWebView()->GetSettings()->SetLoadWithOverviewMode(false);
   web_view_helper.GetWebView()->SetInitialPageScaleOverride(
       enforced_page_scale_factor);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   EXPECT_EQ(enforced_page_scale_factor,
             web_view_helper.GetWebView()->PageScaleFactor());
@@ -1808,7 +1822,7 @@ TEST_F(WebFrameTest, setInitialPageScaleFactorPermanently) {
             web_view_helper.GetWebView()->PageScaleFactor());
 
   web_view_helper.GetWebView()->SetInitialPageScaleOverride(-1);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   EXPECT_EQ(1.0, web_view_helper.GetWebView()->PageScaleFactor());
 }
 
@@ -1960,7 +1974,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
   web_view_helper.InitializeAndLoad(base_url_ + "0-by-0.html", nullptr, &client,
                                     nullptr, ConfigureAndroid);
   web_view_helper.GetWebView()->GetSettings()->SetForceZeroLayoutHeight(true);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   PaintLayerCompositor* compositor = web_view_helper.GetWebView()->Compositor();
   GraphicsLayer* scroll_container = compositor->RootGraphicsLayer();
@@ -2186,7 +2200,8 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesMargin) {
   LocalFrameView* frame_view = local_frame->GetFrameView();
   frame_view->Resize(800, 600);
   frame_view->SetNeedsLayout();
-  frame_view->UpdateAllLifecyclePhases();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   // Expect scrollbars to be enabled by default.
   EXPECT_NE(nullptr, frame_view->LayoutViewport()->HorizontalScrollbar());
   EXPECT_NE(nullptr, frame_view->LayoutViewport()->VerticalScrollbar());
@@ -2237,7 +2252,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations) {
 
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
                                 base_url_ + "large-div.html");
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   EXPECT_EQ(0, web_view_helper.GetWebView()
                    ->MainFrameImpl()
@@ -2377,7 +2392,7 @@ TEST_F(WebFrameTest, LayoutSize320Quirk) {
   description.min_width = Length(321, blink::kFixed);
   description.max_width = Length(321, blink::kFixed);
   viewport.SetViewportDescription(description);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   EXPECT_EQ(321, web_view_helper.GetWebView()
                      ->MainFrameImpl()
                      ->GetFrameView()
@@ -2387,7 +2402,7 @@ TEST_F(WebFrameTest, LayoutSize320Quirk) {
   description.min_width = Length(320, blink::kFixed);
   description.max_width = Length(320, blink::kFixed);
   viewport.SetViewportDescription(description);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   EXPECT_EQ(600, web_view_helper.GetWebView()
                      ->MainFrameImpl()
                      ->GetFrameView()
@@ -2397,7 +2412,7 @@ TEST_F(WebFrameTest, LayoutSize320Quirk) {
   description = viewport.GetViewportDescription();
   description.max_height = Length(1000, blink::kFixed);
   viewport.SetViewportDescription(description);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   EXPECT_EQ(1000, web_view_helper.GetWebView()
                       ->MainFrameImpl()
                       ->GetFrameView()
@@ -2406,7 +2421,7 @@ TEST_F(WebFrameTest, LayoutSize320Quirk) {
 
   description.max_height = Length(320, blink::kFixed);
   viewport.SetViewportDescription(description);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   EXPECT_EQ(800, web_view_helper.GetWebView()
                      ->MainFrameImpl()
                      ->GetFrameView()
@@ -2442,7 +2457,7 @@ TEST_F(WebFrameTest, ZeroValuesQuirk) {
   EXPECT_EQ(1.0f, web_view_helper.GetWebView()->PageScaleFactor());
 
   web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
                                 ->MainFrameImpl()
                                 ->GetFrameView()
@@ -2546,7 +2561,7 @@ TEST_F(WebFrameTest, NonZeroValuesNoQuirk) {
             web_view_helper.GetWebView()->PageScaleFactor());
 
   web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   EXPECT_EQ(viewport_width / expected_page_scale_factor,
             web_view_helper.GetWebView()
                 ->MainFrameImpl()
@@ -3240,9 +3255,7 @@ class WebFrameResizeTest : public WebFrameTest {
       web_view_helper.GetWebView()->SetPageScaleFactor(
           initial_page_scale_factor);
       web_view_helper.LocalMainFrame()->SetScrollOffset(scroll_offset);
-      web_view_helper.GetWebView()
-          ->MainFrameWidget()
-          ->UpdateAllLifecyclePhases();
+      UpdateAllLifecyclePhases(web_view_helper.GetWebView());
       const WebSize expected_scroll_offset =
           web_view_helper.LocalMainFrame()->GetScrollOffset();
       web_view_helper.Resize(
@@ -3367,13 +3380,13 @@ TEST_F(WebFrameTest, CanOverrideScaleLimits) {
   EXPECT_EQ(2.0f, web_view_helper.GetWebView()->MaximumPageScaleFactor());
 
   web_view_helper.GetWebView()->SetIgnoreViewportTagScaleLimits(true);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   EXPECT_EQ(1.0f, web_view_helper.GetWebView()->MinimumPageScaleFactor());
   EXPECT_EQ(5.0f, web_view_helper.GetWebView()->MaximumPageScaleFactor());
 
   web_view_helper.GetWebView()->SetIgnoreViewportTagScaleLimits(false);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   EXPECT_EQ(2.0f, web_view_helper.GetWebView()->MinimumPageScaleFactor());
   EXPECT_EQ(2.0f, web_view_helper.GetWebView()->MaximumPageScaleFactor());
@@ -3402,7 +3415,7 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
                                 base_url_ + "large-div.html");
 
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   LocalFrameView* view = web_view_helper.LocalMainFrame()->GetFrameView();
   EXPECT_TRUE(view->LayoutViewport()->LayerForHorizontalScrollbar());
   EXPECT_TRUE(view->LayoutViewport()->LayerForVerticalScrollbar());
@@ -3417,7 +3430,8 @@ void SetScaleAndScrollAndLayout(WebViewImpl* web_view,
                                 float scale) {
   web_view->SetPageScaleFactor(scale);
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(scroll.x, scroll.y));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 }
 
 void SimulatePageScale(WebViewImpl* web_view_impl, float& scale) {
@@ -3528,7 +3542,7 @@ TEST_F(WebFrameTest, DivAutoZoomWideDivTest) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.GetWebView()->SetDeviceScaleFactor(kDeviceScaleFactor);
   web_view_helper.GetWebView()->SetPageScaleFactor(1.0f);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   web_view_helper.GetWebView()->EnableFakePageScaleAnimationForTesting(true);
 
@@ -3566,7 +3580,7 @@ TEST_F(WebFrameTest, DivAutoZoomVeryTallTest) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.GetWebView()->SetDeviceScaleFactor(kDeviceScaleFactor);
   web_view_helper.GetWebView()->SetPageScaleFactor(1.0f);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   WebRect div(200, 300, 400, 5000);
   gfx::Point point(div.x + 50, div.y + 3000);
@@ -3597,7 +3611,7 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest) {
   web_view_helper.GetWebView()->SetDeviceScaleFactor(kDeviceScaleFactor);
   web_view_helper.GetWebView()->SetPageScaleFactor(0.5f);
   web_view_helper.GetWebView()->SetMaximumLegibleScale(1.f);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   web_view_helper.GetWebView()->EnableFakePageScaleAnimationForTesting(true);
 
@@ -3662,7 +3676,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.GetWebView()->SetDeviceScaleFactor(1.5f);
   web_view_helper.GetWebView()->SetMaximumLegibleScale(1.f);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   web_view_helper.GetWebView()->EnableFakePageScaleAnimationForTesting(true);
 
@@ -3673,7 +3687,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
   // Test double tap scale bounds.
   // minimumPageScale < doubleTapZoomAlreadyLegibleScale < 1
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.5f, 4);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   float double_tap_zoom_already_legible_scale =
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
@@ -3695,7 +3709,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
        cc::BrowserControlsState::kBoth});
   // 1 < minimumPageScale < doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(1.1f, 4);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   double_tap_zoom_already_legible_scale =
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
@@ -3717,7 +3731,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
        cc::BrowserControlsState::kBoth});
   // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.95f, 4);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   double_tap_zoom_already_legible_scale =
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
@@ -3748,7 +3762,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.GetWebView()->SetMaximumLegibleScale(
       maximum_legible_scale_factor);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   web_view_helper.GetWebView()->EnableFakePageScaleAnimationForTesting(true);
   web_view_helper.GetWebView()
@@ -3772,7 +3786,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.5f, 4);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
   EXPECT_FLOAT_EQ(legible_scale, scale);
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
@@ -3788,7 +3802,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
   // 1 < maximumLegibleScaleFactor < minimumPageScale <
   //     doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(1.0f, 4);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   double_tap_zoom_already_legible_scale =
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
@@ -3811,7 +3825,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
   // minimumPageScale < 1 < maximumLegibleScaleFactor <
   //     doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.95f, 4);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   double_tap_zoom_already_legible_scale =
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
@@ -3834,7 +3848,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
   // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale <
   //     maximumLegibleScaleFactor
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.9f, 4);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   double_tap_zoom_already_legible_scale =
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
@@ -3864,7 +3878,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
       nullptr, nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_helper.GetWebView()->SetMaximumLegibleScale(1.f);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   web_view_helper.GetWebView()->EnableFakePageScaleAnimationForTesting(true);
   web_view_helper.GetWebView()
@@ -3892,7 +3906,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.5f, 4);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
   EXPECT_FLOAT_EQ(legible_scale, scale);
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
@@ -3908,7 +3922,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
   // 1 < accessibilityFontScaleFactor < minimumPageScale <
   //     doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(1.0f, 4);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   double_tap_zoom_already_legible_scale =
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
@@ -3931,7 +3945,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
   // minimumPageScale < 1 < accessibilityFontScaleFactor <
   //     doubleTapZoomAlreadyLegibleScale
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.95f, 4);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   double_tap_zoom_already_legible_scale =
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
@@ -3954,7 +3968,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
   // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale <
   //     accessibilityFontScaleFactor
   web_view_helper.GetWebView()->SetDefaultPageScaleLimits(0.9f, 4);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   double_tap_zoom_already_legible_scale =
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
@@ -5108,7 +5122,7 @@ TEST_F(WebFrameTest, FindInPageMatchRects) {
                                     &frame_client);
   web_view_helper.Resize(WebSize(640, 480));
   web_view_helper.GetWebView()->SetMaximumLegibleScale(1.f);
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   RunPendingTasks();
 
   // Note that the 'result 19' in the <select> element is not expected to
@@ -6157,7 +6171,7 @@ TEST_F(WebFrameTest, SmartClipData) {
   web_view_helper.InitializeAndLoad(base_url_ + "smartclip.html");
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
   web_view_helper.Resize(WebSize(500, 500));
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   WebRect crop_rect(300, 125, 152, 50);
   frame->ExtractSmartClipData(crop_rect, clip_text, clip_html, clip_rect);
   EXPECT_STREQ(kExpectedClipText, clip_text.Utf8().c_str());
@@ -6194,7 +6208,7 @@ TEST_F(WebFrameTest, SmartClipDataWithPinchZoom) {
   web_view_helper.InitializeAndLoad(base_url_ + "smartclip.html");
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
   web_view_helper.Resize(WebSize(500, 500));
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   web_view_helper.GetWebView()->SetPageScaleFactor(1.5);
   web_view_helper.GetWebView()->SetVisualViewportOffset(
       WebFloatPoint(167, 100));
@@ -6215,7 +6229,7 @@ TEST_F(WebFrameTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone) {
                                     "smartclip_user_select_none.html");
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
   web_view_helper.Resize(WebSize(500, 500));
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   WebRect crop_rect(0, 0, 100, 100);
   frame->ExtractSmartClipData(crop_rect, clip_text, clip_html, clip_rect);
   EXPECT_STREQ("", clip_text.Utf8().c_str());
@@ -6233,7 +6247,7 @@ TEST_F(WebFrameTest, SmartClipDoesNotCrashPositionReversed) {
                                     "smartclip_reversed_positions.html");
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
   web_view_helper.Resize(WebSize(500, 500));
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   // Left upper corner of the rect will be end position in the DOM hierarchy.
   WebRect crop_rect(30, 110, 400, 250);
   // This should not still crash. See crbug.com/589082 for more details.
@@ -6373,9 +6387,7 @@ class CompositedSelectionBoundsTest
     web_view_helper_.GetWebView()->SetFocus(true);
     frame_test_helpers::LoadFrame(
         web_view_helper_.GetWebView()->MainFrameImpl(), base_url_ + test_file);
-    web_view_helper_.GetWebView()
-        ->MainFrameWidget()
-        ->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(web_view_helper_.GetWebView());
 
     cc::LayerTreeHost* layer_tree_host =
         web_view_client_.layer_tree_view()->layer_tree_host();
@@ -6391,9 +6403,7 @@ class CompositedSelectionBoundsTest
     web_view_helper_.GetWebView()->SetFocus(true);
     frame_test_helpers::LoadFrame(
         web_view_helper_.GetWebView()->MainFrameImpl(), base_url_ + test_file);
-    web_view_helper_.GetWebView()
-        ->MainFrameWidget()
-        ->UpdateAllLifecyclePhases();
+    UpdateAllLifecyclePhases(web_view_helper_.GetWebView());
 
     v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
     v8::Local<v8::Value> result =
@@ -7971,7 +7981,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
                                 base_url_ + "non-scrollable.html");
 
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   PaintLayerCompositor* compositor = web_view_helper.GetWebView()->Compositor();
   GraphicsLayer* scroll_layer = compositor->ScrollLayer();
   ASSERT_TRUE(scroll_layer);
@@ -7984,7 +7994,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   // Call javascript to make the layer scrollable, and verify it.
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
   frame->ExecuteScript(WebScriptSource("allowScroll();"));
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   scroll_layer = compositor->ScrollLayer();
   cc_scroll_layer = scroll_layer->CcLayer();
@@ -8087,7 +8097,7 @@ TEST_F(WebFrameTest, FrameViewMoveWithSetFrameRect) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad("about:blank");
   web_view_helper.Resize(WebSize(200, 200));
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
   EXPECT_EQ(IntRect(0, 0, 200, 200), frame_view->FrameRect());
@@ -8109,7 +8119,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   web_view->ResizeWithBrowserControls(WebSize(100, 100),
                                       browser_controls_height, 0, false);
   web_view->SetPageScaleFactor(2.0f);
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
   EXPECT_EQ(ScrollOffset(0, 1900),
@@ -8145,7 +8155,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
                                   30.0f / browser_controls_height,
                                   cc::BrowserControlsState::kBoth});
   web_view->ResizeWithBrowserControls(WebSize(100, 60), 40.0f, 0, true);
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   EXPECT_EQ(ScrollOffset(0, 1940),
             frame_view->LayoutViewport()->MaximumScrollOffset());
 
@@ -8163,7 +8173,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
                                   cc::BrowserControlsState::kBoth});
   web_view->ResizeWithBrowserControls(WebSize(100, 100),
                                       browser_controls_height, 0, false);
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   EXPECT_EQ(ScrollOffset(0, 1900),
             frame_view->LayoutViewport()->MaximumScrollOffset());
 
@@ -8202,7 +8212,7 @@ TEST_F(WebFrameTest, MaximumScrollPositionCanBeNegative) {
   web_view_helper.GetWebView()->GetSettings()->SetLoadWithOverviewMode(true);
   web_view_helper.GetWebView()->GetSettings()->SetUseWideViewport(true);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
   ScrollableArea* layout_viewport = frame_view->LayoutViewport();
@@ -8221,7 +8231,7 @@ TEST_F(WebFrameTest, FullscreenLayerSize) {
       base_url_ + "fullscreen_div.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Document* document = frame->GetDocument();
@@ -8232,7 +8242,7 @@ TEST_F(WebFrameTest, FullscreenLayerSize) {
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->DidEnterFullscreen();
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
 
   // Verify that the element is sized to the viewport.
@@ -8245,7 +8255,7 @@ TEST_F(WebFrameTest, FullscreenLayerSize) {
   client.screen_info_.rect.width = viewport_height;
   client.screen_info_.rect.height = viewport_width;
   web_view_helper.Resize(WebSize(viewport_height, viewport_width));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(viewport_height, fullscreen_layout_object->LogicalWidth().ToInt());
   EXPECT_EQ(viewport_width, fullscreen_layout_object->LogicalHeight().ToInt());
 }
@@ -8260,7 +8270,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
       base_url_ + "fullscreen_div.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Document* document = frame->GetDocument();
@@ -8271,7 +8281,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->DidEnterFullscreen();
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
 
   // Verify that the viewports are nonscrollable.
@@ -8294,7 +8304,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   EXPECT_EQ(div_fullscreen, Fullscreen::FullscreenElementFrom(*document));
   web_view_impl->DidExitFullscreen();
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*document));
   layout_viewport_scroll_layer = web_view_impl->Compositor()->ScrollLayer();
   visual_viewport_scroll_layer =
@@ -8319,7 +8329,7 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
       base_url_ + "fullscreen_div.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   cc::Layer* cc_scroll_layer = web_view_impl->MainFrameImpl()
                                    ->GetFrame()
@@ -8341,7 +8351,7 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
   EXPECT_EQ(document->documentElement(),
             Fullscreen::FullscreenElementFrom(*document));
 
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(document->documentElement(),
             Fullscreen::FullscreenElementFrom(*document));
 
@@ -8376,7 +8386,7 @@ TEST_F(WebFrameTest, FullscreenSubframe) {
   client.screen_info_.rect.width = viewport_width;
   client.screen_info_.rect.height = viewport_height;
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   LocalFrame* frame =
       ToWebLocalFrameImpl(
@@ -8388,7 +8398,7 @@ TEST_F(WebFrameTest, FullscreenSubframe) {
   Element* div_fullscreen = document->getElementById("div1");
   Fullscreen::RequestFullscreen(*div_fullscreen);
   web_view_impl->DidEnterFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   // Verify that the element is sized to the viewport.
   LayoutBox* fullscreen_layout_object =
@@ -8400,7 +8410,7 @@ TEST_F(WebFrameTest, FullscreenSubframe) {
   client.screen_info_.rect.width = viewport_height;
   client.screen_info_.rect.height = viewport_width;
   web_view_helper.Resize(WebSize(viewport_height, viewport_width));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(viewport_height, fullscreen_layout_object->LogicalWidth().ToInt());
   EXPECT_EQ(viewport_width, fullscreen_layout_object->LogicalHeight().ToInt());
 }
@@ -8414,7 +8424,7 @@ TEST_F(WebFrameTest, FullscreenNestedExit) {
   WebViewImpl* web_view_impl =
       web_view_helper.InitializeAndLoad(base_url_ + "fullscreen_iframe.html");
 
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   Document* top_doc = web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
   Element* top_body = top_doc->body();
@@ -8430,7 +8440,7 @@ TEST_F(WebFrameTest, FullscreenNestedExit) {
     Fullscreen::RequestFullscreen(*top_body);
   }
   web_view_impl->DidEnterFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   {
     std::unique_ptr<UserGestureIndicator> gesture =
@@ -8439,7 +8449,7 @@ TEST_F(WebFrameTest, FullscreenNestedExit) {
   }
   web_view_impl->DidEnterFullscreen();
   Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   // We are now in nested fullscreen, with both documents having a non-empty
   // fullscreen element stack.
@@ -8447,7 +8457,7 @@ TEST_F(WebFrameTest, FullscreenNestedExit) {
   EXPECT_EQ(iframe_body, Fullscreen::FullscreenElementFrom(*iframe_doc));
 
   web_view_impl->DidExitFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   // We should now have fully exited fullscreen.
   EXPECT_EQ(nullptr, Fullscreen::FullscreenElementFrom(*top_doc));
@@ -8466,7 +8476,7 @@ TEST_F(WebFrameTest, FullscreenWithTinyViewport) {
   client.screen_info_.rect.width = viewport_width;
   client.screen_info_.rect.height = viewport_height;
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   auto* layout_view = web_view_helper.GetWebView()
                           ->MainFrameImpl()
@@ -8483,7 +8493,7 @@ TEST_F(WebFrameTest, FullscreenWithTinyViewport) {
       LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->DidEnterFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(384, layout_view->LogicalWidth().Floor());
   EXPECT_EQ(640, layout_view->LogicalHeight().Floor());
   EXPECT_FLOAT_EQ(1.0, web_view_impl->PageScaleFactor());
@@ -8491,7 +8501,7 @@ TEST_F(WebFrameTest, FullscreenWithTinyViewport) {
   EXPECT_FLOAT_EQ(1.0, web_view_impl->MaximumPageScaleFactor());
 
   web_view_impl->DidExitFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(320, layout_view->LogicalWidth().Floor());
   EXPECT_EQ(533, layout_view->LogicalHeight().Floor());
   EXPECT_FLOAT_EQ(1.2, web_view_impl->PageScaleFactor());
@@ -8511,7 +8521,7 @@ TEST_F(WebFrameTest, FullscreenResizeWithTinyViewport) {
   client.screen_info_.rect.width = viewport_width;
   client.screen_info_.rect.height = viewport_height;
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   auto* layout_view = web_view_helper.GetWebView()
                           ->MainFrameImpl()
@@ -8522,7 +8532,7 @@ TEST_F(WebFrameTest, FullscreenResizeWithTinyViewport) {
       LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->DidEnterFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(384, layout_view->LogicalWidth().Floor());
   EXPECT_EQ(640, layout_view->LogicalHeight().Floor());
   EXPECT_FLOAT_EQ(1.0, web_view_impl->PageScaleFactor());
@@ -8534,7 +8544,7 @@ TEST_F(WebFrameTest, FullscreenResizeWithTinyViewport) {
   client.screen_info_.rect.width = viewport_width;
   client.screen_info_.rect.height = viewport_height;
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(640, layout_view->LogicalWidth().Floor());
   EXPECT_EQ(384, layout_view->LogicalHeight().Floor());
   EXPECT_FLOAT_EQ(1.0, web_view_impl->PageScaleFactor());
@@ -8542,7 +8552,7 @@ TEST_F(WebFrameTest, FullscreenResizeWithTinyViewport) {
   EXPECT_FLOAT_EQ(1.0, web_view_impl->MaximumPageScaleFactor());
 
   web_view_impl->DidExitFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(320, layout_view->LogicalWidth().Floor());
   EXPECT_EQ(192, layout_view->LogicalHeight().Floor());
   EXPECT_FLOAT_EQ(2, web_view_impl->PageScaleFactor());
@@ -8590,7 +8600,7 @@ TEST_F(WebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
   }
 
   web_view_impl->DidEnterFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   client.screen_info_.rect.width = screen_size_minus_status_bars.width;
   client.screen_info_.rect.height = screen_size_minus_status_bars.height;
   web_view_helper.Resize(screen_size_minus_status_bars);
@@ -8604,7 +8614,7 @@ TEST_F(WebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
   EXPECT_FLOAT_EQ(1.0, web_view_impl->MaximumPageScaleFactor());
 
   web_view_impl->DidExitFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   client.screen_info_.rect.width = screen_size_minus_status_bars.width;
   client.screen_info_.rect.height = screen_size_minus_status_bars.height;
   web_view_helper.Resize(screen_size_minus_status_bars);
@@ -8635,7 +8645,7 @@ TEST_F(WebFrameTest, ClearFullscreenConstraintsOnNavigation) {
       ConfigureAndroid);
 
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   // viewport-tiny.html specifies a 320px layout width.
   auto* layout_view =
@@ -8651,7 +8661,7 @@ TEST_F(WebFrameTest, ClearFullscreenConstraintsOnNavigation) {
       LocalFrame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
   Fullscreen::RequestFullscreen(*frame->GetDocument()->documentElement());
   web_view_impl->DidEnterFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   // Entering fullscreen causes layout size and page scale limits to be
   // overridden.
@@ -8668,7 +8678,7 @@ TEST_F(WebFrameTest, ClearFullscreenConstraintsOnNavigation) {
   WebLocalFrame* web_frame = web_view_helper.LocalMainFrame();
   frame_test_helpers::LoadHTMLString(web_frame, kSource, test_url);
   web_view_impl->DidExitFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
 
   // Make sure the new page's layout size and scale factor limits aren't
   // overridden.
@@ -8701,12 +8711,12 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
 
   video->webkitEnterFullscreen();
   web_view_impl->DidEnterFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_TRUE(video->IsFullscreen());
   EXPECT_LT(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
 
   web_view_impl->DidExitFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_FALSE(video->IsFullscreen());
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
 }
@@ -8719,7 +8729,7 @@ TEST_F(WebFrameTest, LayoutBlockPercentHeightDescendants) {
 
   WebViewImpl* web_view = web_view_helper.GetWebView();
   web_view_helper.Resize(WebSize(800, 800));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
 
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
   LayoutBlock* container =
@@ -9307,7 +9317,8 @@ TEST_F(WebFrameSwapTest, EventsOnDisconnectedSubDocumentSkipped) {
   event_registry.DidAddEventHandler(
       *child_document, EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
   // Passes if this does not crash or DCHECK.
-  main_frame->View()->UpdateAllLifecyclePhases();
+  main_frame->View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 }
 
 TEST_F(WebFrameSwapTest, EventsOnDisconnectedElementSkipped) {
@@ -9334,7 +9345,8 @@ TEST_F(WebFrameSwapTest, EventsOnDisconnectedElementSkipped) {
       *child_document->body(),
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
   // Passes if this does not crash or DCHECK.
-  main_frame->View()->UpdateAllLifecyclePhases();
+  main_frame->View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 }
 
 TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren) {
@@ -10745,7 +10757,8 @@ class WebFrameVisibilityChangeTest : public WebFrameTest {
 
   void ExecuteScriptOnMainFrame(const WebScriptSource& script) {
     MainFrame()->ExecuteScript(script);
-    MainFrame()->View()->MainFrameWidget()->UpdateAllLifecyclePhases();
+    MainFrame()->View()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
     RunPendingTasks();
   }
 
@@ -10895,7 +10908,7 @@ TEST_F(WebFrameTest, SaveImageAt) {
   SaveImageFromDataURLWebFrameClient client;
   WebViewImpl* web_view = helper.InitializeAndLoad(url, &client);
   web_view->Resize(WebSize(400, 400));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
 
   WebLocalFrame* local_frame = web_view->MainFrameImpl();
 
@@ -11180,7 +11193,7 @@ TEST_F(WebFrameTest, RootLayerMinimumHeight) {
       "  }"
       "</style>"
       "<div id='elem'></div>");
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
 
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
   LocalFrameView* frame_view = web_view->MainFrameImpl()->GetFrameView();
@@ -11281,8 +11294,7 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
       "  <div id='div2' title='Title Attribute Value'>Then HERE</div>"
       "  <br><br><br>"
       "</body>");
-
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
 
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
   Element* div1_tag = document->getElementById("div1");
@@ -11628,7 +11640,8 @@ TEST_F(WebFrameSimTest, DisambiguationPopupPixelTest) {
   canvas.scale(scale, scale);
   canvas.translate(-zoom_rect.x, -zoom_rect.y);
 
-  WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+  WebView().MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
   WebView().PaintContentIgnoringCompositing(&canvas, zoom_rect);
 
   // All the pixels in the canvas should be the <div> color.
@@ -12341,7 +12354,8 @@ bool TestSelectAll(const std::string& html) {
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(), html,
                                      ToKURL("about:blank"));
   web_view->Resize(WebSize(500, 300));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
   RunPendingTasks();
   web_view->SetInitialFocus(false);
   RunPendingTasks();
@@ -12377,7 +12391,7 @@ TEST_F(WebFrameTest, ContextMenuDataSelectedText) {
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(), html,
                                      ToKURL("about:blank"));
   web_view->Resize(WebSize(500, 300));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
   web_view->SetInitialFocus(false);
   RunPendingTasks();
@@ -12405,7 +12419,7 @@ TEST_F(WebFrameTest, ContextMenuDataPasswordSelectedText) {
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(), html,
                                      ToKURL("about:blank"));
   web_view->Resize(WebSize(500, 300));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
   web_view->SetInitialFocus(false);
   RunPendingTasks();
@@ -12438,7 +12452,7 @@ TEST_F(WebFrameTest, ContextMenuDataNonLocatedMenu) {
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(), html,
                                      ToKURL("about:blank"));
   web_view->Resize(WebSize(500, 300));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
   web_view->SetInitialFocus(false);
   RunPendingTasks();
@@ -12551,7 +12565,7 @@ TEST_F(WebFrameTest, AltTextOnAboutBlankPage) {
   const char kSource[] =
       "<img id='foo' src='foo' alt='foo alt' width='200' height='200'>";
   frame_test_helpers::LoadHTMLString(frame, kSource, ToKURL("about:blank"));
-  web_view_helper.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   RunPendingTasks();
 
   // Check LayoutText with alt text "foo alt"
@@ -12650,7 +12664,7 @@ TEST_F(WebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
                      "  <div id='forceScroll'></div>"
                      "</div>");
 
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
 
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
   Element* scrollable = document->getElementById("scrollable");
@@ -12667,7 +12681,7 @@ TEST_F(WebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
   // area using the DidScroll callback.
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
   cc_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 1));
-  web_view->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases(web_view);
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 
   // Make the scrollable area non-scrollable.
@@ -12818,7 +12832,8 @@ TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {
 
   // Confirm that exiting fullscreen restores back to default values.
   WebView().DidExitFullscreen();
-  WebView().MainFrameWidget()->UpdateAllLifecyclePhases();
+  WebView().MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   EXPECT_EQ(0.5f, WebView().PageScaleFactor());
   EXPECT_EQ(94, WebView().MainFrameImpl()->GetScrollOffset().width);

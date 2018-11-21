@@ -295,9 +295,8 @@ class WebViewTest : public testing::Test {
   IntSize PrintICBSizeFromPageSize(const FloatSize& page_size);
 
   void UpdateAllLifecyclePhases() {
-    web_view_helper_.GetWebView()
-        ->MainFrameWidget()
-        ->UpdateAllLifecyclePhases();
+    web_view_helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
   }
 
   std::string base_url_;
@@ -2256,7 +2255,7 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState) {
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 
@@ -2301,7 +2300,8 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(
       base_url_ + "back_forward_restore_scroll.html");
   web_view_impl->Resize(WebSize(640, 480));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kTest);
 
   // Emulate a user scroll
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 900));
@@ -2354,7 +2354,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
   web_view_impl->Resize(WebSize(800, 600));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Scroll the page down.
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
@@ -2367,7 +2367,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
       LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   // Assert the scroll position on the document element doesn't change.
   ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
@@ -2375,7 +2375,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2100));
 
   web_view_impl->DidExitFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   EXPECT_EQ(2100, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
 }
@@ -2386,7 +2386,7 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
   web_view_impl->Resize(WebSize(800, 600));
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(SK_ColorWHITE, web_view_impl->BackgroundColor());
 
   // Enter fullscreen.
@@ -2397,7 +2397,7 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
       LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
   web_view_impl->DidEnterFullscreen();
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
+  UpdateAllLifecyclePhases();
 
   EXPECT_EQ(SK_ColorYELLOW, web_view_impl->BackgroundColor());
 }
@@ -4255,7 +4255,8 @@ class ShowUnhandledTapTest : public WebViewTest {
 
     web_view_ = mojo_test_helper_->WebView();
     web_view_->Resize(WebSize(500, 300));
-    web_view_->MainFrameWidget()->UpdateAllLifecyclePhases();
+    web_view_->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
     RunPendingTasks();
 
     mojo_test_helper_->BindTestApi(

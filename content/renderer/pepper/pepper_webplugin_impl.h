@@ -43,7 +43,8 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   bool Initialize(blink::WebPluginContainer* container) override;
   void Destroy() override;
   v8::Local<v8::Object> V8ScriptableObject(v8::Isolate* isolate) override;
-  void UpdateAllLifecyclePhases() override {}
+  void UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason) override {}
   void Paint(cc::PaintCanvas* canvas, const blink::WebRect& rect) override;
   void UpdateGeometry(const blink::WebRect& window_rect,
                       const blink::WebRect& clip_rect,

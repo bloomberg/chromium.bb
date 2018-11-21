@@ -68,7 +68,7 @@ class CustomCountHistogram;
 //   // At this point an sample for kMetric2 is recorded.
 //   ...
 //   // When the primary time completes
-//   aggregator->RecordPrimaryMetric(time_delta);
+//   aggregator->RecordEndOfFrameMetrics(time_delta);
 //   // This records a primary sample and the sub-metrics that depend on it.
 //   // It may generate an event.
 //   ...
@@ -82,9 +82,9 @@ class CustomCountHistogram;
 //   "sub_metric1.Average", "sub_metric1.WorstCase",
 //   "sub_metric2.Average", "sub_metric2.WorstCase",
 //   "sub_metric3.Average", "sub_metric3.WorstCase"
-//   "sub_metric1.AveragePercentage", "sub_metric1.WorstCasePercentage",
-//   "sub_metric2.AveragePercentage", "sub_metric2.WorstCasePercentage",
-//   "sub_metric3.AveragePercentage", "sub_metric3.WorstCasePercentage"
+//   "sub_metric1.AverageRatio", "sub_metric1.WorstCaseRatio",
+//   "sub_metric2.AverageRatio", "sub_metric2.WorstCaseRatio",
+//   "sub_metric3.AverageRatio", "sub_metric3.WorstCaseRatio"
 //
 // It will report 13 UMA values:
 //   "primary_uma_counter",
@@ -167,14 +167,16 @@ class CORE_EXPORT LocalFrameUkmAggregator {
   // correspond to the matching index in metric_names.
   ScopedUkmHierarchicalTimer GetScopedTimer(size_t metric_index);
 
-  // Record a primary sample, that also computes the ratios for the
+  // Record a main frame time metric, that also computes the ratios for the
   // sub-metrics and may generate an event.
-  void RecordPrimarySample(TimeTicks start, TimeTicks end);
+  void RecordEndOfFrameMetrics(TimeTicks start, TimeTicks end);
 
   // Record a sample for a sub-metric. This should only be used when
   // a ScopedUkmHierarchicalTimer cannot be used (such as when the timed
   // interval does not fall inside a single calling function).
   void RecordSample(size_t metric_index, TimeTicks start, TimeTicks end);
+
+  void BeginMainFrame();
 
  private:
   struct AbsoluteMetricRecord {
@@ -220,6 +222,10 @@ class CORE_EXPORT LocalFrameUkmAggregator {
   Vector<AbsoluteMetricRecord> absolute_metric_records_;
   Vector<MainFramePercentageRecord> main_frame_percentage_records_;
   TimeTicks last_flushed_time_;
+
+  // Set by BeginMainFrame() and cleared in RecordMEndOfFrameMetrics.
+  // Main frame metrics are only recorded if this is true.
+  bool in_main_frame_update_ = false;
 
   bool has_data_ = false;
 

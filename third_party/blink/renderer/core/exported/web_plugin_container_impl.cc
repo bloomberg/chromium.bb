@@ -136,7 +136,8 @@ void WebPluginContainerImpl::UpdateAllLifecyclePhases() {
   if (!web_plugin_)
     return;
 
-  web_plugin_->UpdateAllLifecyclePhases();
+  web_plugin_->UpdateAllLifecyclePhases(
+      WebWidget::LifecycleUpdateReason::kOther);
 }
 
 void WebPluginContainerImpl::SetFrameRect(const IntRect& frame_rect) {

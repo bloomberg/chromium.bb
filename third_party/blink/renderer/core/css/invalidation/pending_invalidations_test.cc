@@ -33,7 +33,8 @@ void PendingInvalidationsTest::SetUp() {
 TEST_F(PendingInvalidationsTest, ScheduleOnDocumentNode) {
   GetDocument().body()->SetInnerHTMLFromString(
       "<div id='d'></div><i id='i'></i><span></span>");
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   unsigned before_count = GetStyleEngine().StyleForElementCount();
 
@@ -57,7 +58,8 @@ TEST_F(PendingInvalidationsTest, ScheduleOnDocumentNode) {
   EXPECT_FALSE(GetDocument().NeedsStyleRecalc());
   EXPECT_TRUE(GetDocument().ChildNeedsStyleRecalc());
 
-  GetDocument().View()->UpdateAllLifecyclePhases();
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   unsigned after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(2u, after_count - before_count);
 }

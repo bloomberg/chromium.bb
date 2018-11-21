@@ -1051,11 +1051,20 @@ void RenderWidget::RequestScheduleAnimation() {
   ScheduleAnimation();
 }
 
-void RenderWidget::UpdateVisualState() {
+void RenderWidget::UpdateVisualState(bool record_main_frame_metrics) {
   if (!GetWebWidget())
     return;
 
-  GetWebWidget()->UpdateLifecycle(WebWidget::LifecycleUpdate::kAll);
+  // When recording main frame metrics set the lifecycle reason to
+  // kBeginMainFrame, because this is the calller of UpdateLifecycle
+  // for the main frame. Otherwise, set the reason to kTests, which is
+  // the oinly other reason this method is called.
+  WebWidget::LifecycleUpdateReason lifecycle_reason =
+      record_main_frame_metrics
+          ? WebWidget::LifecycleUpdateReason::kBeginMainFrame
+          : WebWidget::LifecycleUpdateReason::kTest;
+  GetWebWidget()->UpdateLifecycle(WebWidget::LifecycleUpdate::kAll,
+                                  lifecycle_reason);
   GetWebWidget()->SetSuppressFrameRequestsWorkaroundFor704763Only(false);
 
   if (first_update_visual_state_after_hidden_) {

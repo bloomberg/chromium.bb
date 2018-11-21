@@ -69,7 +69,8 @@ class PaintWorkletTest : public PageTestBase {
                                int paint_cnt_to_switch,
                                size_t expected_num_paints_before_switch,
                                TestPaintWorklet* paint_worklet_to_test) {
-    paint_worklet_to_test->GetFrame()->View()->UpdateAllLifecyclePhases();
+    paint_worklet_to_test->GetFrame()->View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
     paint_worklet_to_test->SetPaintsToSwitch(paint_cnt_to_switch);
     size_t previously_selected_global_scope =
         paint_worklet_to_test->GetActiveGlobalScope();

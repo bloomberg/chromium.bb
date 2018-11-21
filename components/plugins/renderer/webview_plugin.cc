@@ -139,8 +139,9 @@ v8::Local<v8::Object> WebViewPlugin::V8ScriptableObject(v8::Isolate* isolate) {
   return delegate_->GetV8ScriptableObject(isolate);
 }
 
-void WebViewPlugin::UpdateAllLifecyclePhases() {
-  web_view()->MainFrameWidget()->UpdateAllLifecyclePhases();
+void WebViewPlugin::UpdateAllLifecyclePhases(
+    blink::WebWidget::LifecycleUpdateReason reason) {
+  web_view()->MainFrameWidget()->UpdateAllLifecyclePhases(reason);
 }
 
 bool WebViewPlugin::IsErrorPlaceholder() {
@@ -402,5 +403,6 @@ void WebViewPlugin::UpdatePluginForNewGeometry(
   // The delegate may have dirtied style and layout of the WebView.
   // See for example the resizePoster function in plugin_poster.html.
   // Run the lifecycle now so that it is clean.
-  web_view()->MainFrameWidget()->UpdateAllLifecyclePhases();
+  web_view()->MainFrameWidget()->UpdateAllLifecyclePhases(
+      blink::WebWidget::LifecycleUpdateReason::kOther);
 }

@@ -113,7 +113,8 @@ class VisualViewportTest : public testing::Test,
   }
 
   void UpdateAllLifecyclePhases() {
-    WebView()->MainFrameWidget()->UpdateAllLifecyclePhases();
+    WebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
+        WebWidget::LifecycleUpdateReason::kTest);
   }
 
   void ForceFullCompositingUpdate() { UpdateAllLifecyclePhases(); }
@@ -208,8 +209,6 @@ class VisualViewportTest : public testing::Test,
  protected:
   std::string base_url_;
   frame_test_helpers::TestWebViewClient mock_web_view_client_;
-
- private:
   frame_test_helpers::WebViewHelper helper_;
 };
 
@@ -1664,7 +1663,8 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
       WebScriptSource("var content = document.getElementById(\"content\");"
                       "content.style.width = \"1500px\";"
                       "content.style.height = \"2400px\";"));
-  frame_view.UpdateAllLifecyclePhases();
+  frame_view.UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
   cc::Layer* scroll_layer =
       frame_view.LayoutViewport()->LayerForScrolling()->CcLayer();
 
@@ -1748,9 +1748,8 @@ TEST_P(VisualViewportTest, ElementVisibleBoundsInVisualViewport) {
 // Test that the various window.scroll and document.body.scroll properties and
 // methods don't change with the visual viewport.
 TEST_P(VisualViewportTest, visualViewportIsInert) {
-  frame_test_helpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.Initialize(
-      nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
+  WebViewImpl* web_view_impl = helper_.Initialize(nullptr, nullptr, nullptr,
+                                                  &ConfigureAndroidCompositing);
 
   web_view_impl->MainFrameWidget()->Resize(IntSize(200, 300));
 
@@ -1767,8 +1766,7 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
       "  }"
       "</style>",
       base_url);
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
-
+  UpdateAllLifecyclePhases();
   LocalDOMWindow* window =
       web_view_impl->MainFrameImpl()->GetFrame()->DomWindow();
   HTMLElement* html = ToHTMLHtmlElement(window->document()->documentElement());
@@ -2103,9 +2101,8 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  frame_test_helpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.Initialize(
-      nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
+  WebViewImpl* web_view_impl = helper_.Initialize(nullptr, nullptr, nullptr,
+                                                  &ConfigureAndroidCompositing);
 
   int page_width = 640;
   int page_height = 480;
@@ -2130,8 +2127,8 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
                                      "</style>"
                                      "<div></div>",
                                      base_url);
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
 
+  UpdateAllLifecyclePhases();
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
   GraphicsLayer* backgroundLayer = document->GetLayoutView()
@@ -2178,8 +2175,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  frame_test_helpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.Initialize(
+  WebViewImpl* web_view_impl = helper_.Initialize(
       nullptr, nullptr, nullptr, &ConfigureAndroidNonCompositing);
 
   int page_width = 640;
@@ -2206,8 +2202,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
                                      "</style>"
                                      "<div></div>",
                                      base_url);
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
-
+  UpdateAllLifecyclePhases();
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
   document->View()->SetTracksPaintInvalidations(true);
@@ -2250,9 +2245,8 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
 // Make sure a browser control resize with background-attachment:not-fixed
 // background doesn't cause invalidation or layout.
 TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
-  frame_test_helpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.Initialize(
-      nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
+  WebViewImpl* web_view_impl = helper_.Initialize(nullptr, nullptr, nullptr,
+                                                  &ConfigureAndroidCompositing);
 
   int page_width = 640;
   int page_height = 480;
@@ -2278,8 +2272,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
                                      "</style>"
                                      "<div></div>",
                                      base_url);
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
-
+  UpdateAllLifecyclePhases();
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
 
@@ -2294,8 +2287,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
                                               total_objects, is_subtree);
   EXPECT_EQ(0u, needs_layout_objects);
 
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
-
+  UpdateAllLifecyclePhases();
   // Do a real resize to check for invalidations.
   document->View()->SetTracksPaintInvalidations(true);
   web_view_impl->ResizeWithBrowserControls(WebSize(page_width, smallest_height),
@@ -2316,9 +2308,8 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
 }
 
 TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
-  frame_test_helpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.Initialize(
-      nullptr, nullptr, nullptr, &ConfigureAndroidCompositing);
+  WebViewImpl* web_view_impl = helper_.Initialize(nullptr, nullptr, nullptr,
+                                                  &ConfigureAndroidCompositing);
 
   int page_width = 320;
   int page_height = 590;
@@ -2329,8 +2320,7 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
                                            browser_controls_height, 0, true);
 
   frame_test_helpers::LoadFrame(web_view_impl->MainFrameImpl(), "about:blank");
-  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases();
-
+  UpdateAllLifecyclePhases();
   Document* document =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
 
