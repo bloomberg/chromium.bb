@@ -226,11 +226,21 @@ void UiControllerAndroid::OnGetPaymentInformation(
       payment_info->card = std::make_unique<autofill::CreditCard>();
       autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
           jcard, env, payment_info->card.get());
+
+      auto guid = payment_info->card->billing_address_id();
+      if (!guid.empty()) {
+        autofill::AutofillProfile* profile =
+            GetPersonalDataManager()->GetProfileByGUID(guid);
+        if (profile != nullptr)
+          payment_info->billing_address =
+              std::make_unique<autofill::AutofillProfile>(*profile);
+      }
     }
     if (jaddress != nullptr) {
-      payment_info->address = std::make_unique<autofill::AutofillProfile>();
+      payment_info->shipping_address =
+          std::make_unique<autofill::AutofillProfile>();
       autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
-          jaddress, env, payment_info->address.get());
+          jaddress, env, payment_info->shipping_address.get());
     }
     if (jpayer_name != nullptr) {
       base::android::ConvertJavaStringToUTF8(env, jpayer_name,
