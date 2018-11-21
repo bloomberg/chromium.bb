@@ -39,8 +39,8 @@ void HpackExampleToStringOrDie(Http2StringPiece example, Http2String* output) {
       example.remove_prefix(pos + 1);
       continue;
     }
-    HTTP2_BUG << "Can't parse byte " << static_cast<int>(c0) << " (0x"
-              << std::hex << c0 << ")"
+    HTTP2_BUG << "Can't parse byte " << static_cast<int>(c0)
+              << Http2StrCat(" (0x", Http2Hex(c0), ")")
               << "\nExample: " << example;
   }
   CHECK_LT(0u, output->size()) << "Example is empty.";

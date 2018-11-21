@@ -5,7 +5,6 @@
 #include "net/third_party/http2/hpack/decoder/hpack_block_decoder.h"
 
 #include <cstdint>
-#include <sstream>
 
 #include "base/logging.h"
 #include "net/third_party/http2/platform/api/http2_string_utils.h"
@@ -51,8 +50,8 @@ DecodeStatus HpackBlockDecoder::Decode(DecodeBuffer* db) {
 
 Http2String HpackBlockDecoder::DebugString() const {
   return Http2StrCat("HpackBlockDecoder(", entry_decoder_.DebugString(),
-                     ", listener@", std::hex,
-                     reinterpret_cast<intptr_t>(listener_),
+                     ", listener@",
+                     Http2Hex(reinterpret_cast<intptr_t>(listener_)),
                      (before_entry_ ? ", between entries)" : ", in an entry)"));
 }
 

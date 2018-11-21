@@ -182,12 +182,10 @@ class HpackVarintRoundTripTest : public RandomDecoderTest,
     for (const uint64_t value : values) {
       Encode(value, prefix_length);  // Sets buffer_.
 
-      std::stringstream ss;
-      ss << "value=" << value << " (0x" << std::hex << value
-         << "), prefix_length=" << prefix_length
-         << ", expected_bytes=" << expected_bytes << "\n"
-         << Http2HexDump(buffer_);
-      Http2String msg(ss.str());
+      Http2String msg = Http2StrCat("value=", value, " (0x", Http2Hex(value),
+                                    "), prefix_length=", prefix_length,
+                                    ", expected_bytes=", expected_bytes, "\n",
+                                    Http2HexDump(buffer_));
 
       if (value == minimum) {
         LOG(INFO) << "Checking minimum; " << msg;
@@ -336,7 +334,7 @@ TEST_P(HpackVarintRoundTripTest, FromSpec1337) {
   EncodeNoRandom(1337, prefix_length);
   EXPECT_EQ(3u, buffer_.size());
   EXPECT_EQ('\x1f', buffer_[0]);
-  EXPECT_EQ('\x9A', buffer_[1]);
+  EXPECT_EQ('\x9a', buffer_[1]);
   EXPECT_EQ('\x0a', buffer_[2]);
 }
 

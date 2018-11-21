@@ -5,6 +5,7 @@
 #ifndef NET_THIRD_PARTY_HTTP2_PLATFORM_API_HTTP2_STRING_UTILS_H_
 #define NET_THIRD_PARTY_HTTP2_PLATFORM_API_HTTP2_STRING_UTILS_H_
 
+#include <type_traits>
 #include <utility>
 
 #include "net/third_party/http2/platform/api/http2_string.h"
@@ -38,6 +39,16 @@ inline Http2String Http2HexDecode(Http2StringPiece data) {
 
 inline Http2String Http2HexDump(Http2StringPiece data) {
   return Http2HexDumpImpl(data);
+}
+
+inline Http2String Http2HexEscape(Http2StringPiece data) {
+  return Http2HexEscapeImpl(data);
+}
+
+template <typename Number>
+inline Http2String Http2Hex(Number number) {
+  static_assert(std::is_integral<Number>::value, "Number has to be an int");
+  return Http2HexImpl(number);
 }
 
 }  // namespace http2

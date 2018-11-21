@@ -12,6 +12,7 @@
 #include "net/third_party/http2/decoder/http2_frame_decoder_listener.h"
 #include "net/third_party/http2/http2_constants.h"
 #include "net/third_party/http2/http2_structures.h"
+#include "net/third_party/http2/platform/api/http2_macros.h"
 #include "net/third_party/http2/tools/http2_bug_tracker.h"
 
 namespace http2 {
@@ -69,7 +70,7 @@ DecodeStatus AltSvcPayloadDecoder::ResumeDecodingPayload(
     switch (payload_state_) {
       case PayloadState::kStartDecodingStruct:
         status = state->StartDecodingStructureInPayload(&altsvc_fields_, db);
-        FALLTHROUGH;
+        HTTP2_FALLTHROUGH;
 
       case PayloadState::kMaybeDecodedStruct:
         if (status == DecodeStatus::kDecodeDone &&
@@ -91,7 +92,7 @@ DecodeStatus AltSvcPayloadDecoder::ResumeDecodingPayload(
           DCHECK_GT(altsvc_fields_.origin_length, state->remaining_payload());
           return state->ReportFrameSizeError();
         }
-        FALLTHROUGH;
+        HTTP2_FALLTHROUGH;
 
       case PayloadState::kDecodingStrings:
         return DecodeStrings(state, db);

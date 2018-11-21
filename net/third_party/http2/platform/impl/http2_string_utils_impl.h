@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/escape.h"
 #include "net/base/hex_utils.h"
 #include "net/third_party/http2/platform/api/http2_export.h"
 #include "net/third_party/http2/platform/api/http2_string.h"
@@ -46,6 +47,17 @@ inline Http2String Http2HexDecodeImpl(Http2StringPiece data) {
 
 inline Http2String Http2HexDumpImpl(Http2StringPiece data) {
   return net::HexDump(data);
+}
+
+inline Http2String Http2HexEscapeImpl(Http2StringPiece data) {
+  return net::EscapeQueryParamValue(data, false);
+}
+
+template <typename Number>
+inline Http2String Http2HexImpl(Number number) {
+  std::stringstream str;
+  str << std::hex << number;
+  return str.str();
 }
 
 }  // namespace http2
