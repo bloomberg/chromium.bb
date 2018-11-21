@@ -3445,9 +3445,10 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="FillOnLoad">
     <summary>
-      Records the comparison of the old and new decision about filling a form on
-      load. Should only be logged for fillig with non-PSL matched credentials,
-      in non-Incognito mode. Values are from
+      Deprecated in November 2018, because the decision this metric supported
+      was made. Records the comparison of the old and new decision about filling
+      a form on load. Should only be logged for fillig with non-PSL matched
+      credentials, in non-Incognito mode. Values are from
       password_manager::PasswordFormMetricsRecorder::FillOnLoad.
     </summary>
   </metric>

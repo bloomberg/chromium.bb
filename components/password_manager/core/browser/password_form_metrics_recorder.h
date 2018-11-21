@@ -183,25 +183,6 @@ class PasswordFormMetricsRecorder
     kGenerated = 1 << 3,
   };
 
-  // In addition to Incognito mode and PSL credentials, Chrome also does not
-  // fill a form on load when it contains a 'new-password' field. In the
-  // password manager team, we consider replacing this old condition with "no
-  // fill on load if there is no 'current-password' field". This enum is used in
-  // the UKM PasswordForm.FillOnLoad to report which changes in behaviour this
-  // causes.
-  enum class FillOnLoad {
-    // No change in fill-on-load behaviour, either because the old and the new
-    // condition evaluate to the same result, or because the new condition being
-    // false breaks fill-on-load even in the case when only the old condition is
-    // checked.
-    kSame,
-    // The old condition prevented fill on load, the new allows it. This happens
-    // for forms with both 'current-password' and 'new-password' fields.
-    kStartsFillingOnLoad,
-    // Obsolete, cannot happen.
-    kObsoleteStopsFillingOnLoad
-  };
-
   // Indicator whether the user has seen a password generation popup and why.
   enum class PasswordGenerationPopupShown {
     kNotShown = 0,
@@ -332,11 +313,6 @@ class PasswordFormMetricsRecorder
   // Records the comparison of the old and new password form parsing for saving.
   // |comparison_result| is a bitmask of values from ParsingOnSavingDifference.
   void RecordParsingOnSavingDifference(uint64_t comparison_result);
-
-  // Records the comparison of the old and new decision about filling a form on
-  // load. Should only be logged for fillig with non-PSL matched credentials, in
-  // non-Incognito mode.
-  void RecordFillOnLoad(FillOnLoad comparison_result);
 
   // Records the readonly status encoded with parsing success after parsing for
   // filling. The |value| is constructed as follows: The least significant bit
