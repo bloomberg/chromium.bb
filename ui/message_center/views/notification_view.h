@@ -60,6 +60,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestLineLimits);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestIconSizing);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestImageSizing);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TitleWrappingTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, UpdateButtonsStateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, UpdateButtonCountTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, UpdateViewsOrderingTest);
