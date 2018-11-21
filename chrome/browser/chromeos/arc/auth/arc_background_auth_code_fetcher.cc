@@ -21,6 +21,8 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/access_token_fetcher.h"
+#include "services/identity/public/cpp/access_token_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -53,8 +55,7 @@ ArcBackgroundAuthCodeFetcher::ArcBackgroundAuthCodeFetcher(
     const std::string& account_id,
     bool initial_signin,
     bool is_primary_account)
-    : OAuth2TokenService::Consumer(kConsumerName),
-      url_loader_factory_(std::move(url_loader_factory)),
+    : url_loader_factory_(std::move(url_loader_factory)),
       profile_(profile),
       context_(profile_, account_id),
       initial_signin_(initial_signin),
@@ -77,22 +78,31 @@ void ArcBackgroundAuthCodeFetcher::OnPrepared(
     return;
   }
 
-  OAuth2TokenService::ScopeSet scopes;
+  identity::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
-  login_token_request_ = context_.StartAccessTokenRequest(scopes, this);
+  access_token_fetcher_ = context_.CreateAccessTokenFetcher(
+      kConsumerName, scopes,
+      base::BindOnce(&ArcBackgroundAuthCodeFetcher::OnAccessTokenFetchComplete,
+                     base::Unretained(this)));
 }
 
-void ArcBackgroundAuthCodeFetcher::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+void ArcBackgroundAuthCodeFetcher::OnAccessTokenFetchComplete(
+    GoogleServiceAuthError error,
+    identity::AccessTokenInfo token_info) {
   ResetFetchers();
+
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    LOG(WARNING) << "Failed to get LST " << error.ToString() << ".";
+    ReportResult(std::string(), OptInSilentAuthCode::NO_LST_TOKEN);
+    return;
+  }
 
   const std::string device_id = user_manager::known_user::GetDeviceId(
       multi_user_util::GetAccountIdFromProfile(profile_));
   DCHECK(!device_id.empty());
 
   base::DictionaryValue request_data;
-  request_data.SetString(kLoginScopedToken, token_response.access_token);
+  request_data.SetString(kLoginScopedToken, token_info.token);
   request_data.SetString(kDeviceType, kDeviceTypeArc);
   request_data.SetString(kDeviceId, device_id);
   std::string request_string;
@@ -140,14 +150,6 @@ void ArcBackgroundAuthCodeFetcher::OnGetTokenSuccess(
       url_loader_factory_.get(),
       base::BindOnce(&ArcBackgroundAuthCodeFetcher::OnSimpleLoaderComplete,
                      base::Unretained(this)));
-}
-
-void ArcBackgroundAuthCodeFetcher::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  LOG(WARNING) << "Failed to get LST " << error.ToString() << ".";
-  ResetFetchers();
-  ReportResult(std::string(), OptInSilentAuthCode::NO_LST_TOKEN);
 }
 
 void ArcBackgroundAuthCodeFetcher::OnSimpleLoaderComplete(
@@ -218,7 +220,7 @@ void ArcBackgroundAuthCodeFetcher::OnSimpleLoaderComplete(
 }
 
 void ArcBackgroundAuthCodeFetcher::ResetFetchers() {
-  login_token_request_.reset();
+  access_token_fetcher_.reset();
   simple_url_loader_.reset();
 }
 
