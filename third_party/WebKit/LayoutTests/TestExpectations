@@ -59,6 +59,24 @@ crbug.com/891427 tables/mozilla_expected_failures/marvin/table_overflow_dirty_re
 # Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win10-blink-rel/1510
 crbug.com/891427 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.js [ Pass Failure Timeout Crash ]
 
+# The following tests need to remove the assumption that user activation is
+# available in child/sibling frames.  This assumption doesn't hold with User
+# Activation v2 (UAv2).
+crbug.com/860713 bluetooth/characteristic/notifications/notification-after-disconnection.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/requestDevice/request-from-iframe.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/requestDevice/request-from-sandboxed-iframe.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/server/disconnect/detach-gc.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/server/disconnect/gc-detach.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/server/getPrimaryService/gen-discovery-complete-no-permission-absent-service.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/server/getPrimaryService/gen-discovery-complete-service-not-found.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/server/getPrimaryService/two-iframes-from-same-origin.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/server/getPrimaryServices/gen-discovery-complete-no-permission-absent-service-with-uuid.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/server/getPrimaryServices/gen-discovery-complete-service-not-found-with-uuid.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/service/getCharacteristic/gen-reconnect-during.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/service/getCharacteristics/gen-reconnect-during-with-uuid.https.html [ Failure ]
+crbug.com/860713 external/wpt/bluetooth/service/getCharacteristics/gen-reconnect-during.https.html [ Failure ]
+
 # The following fail only on Mac.
 crbug.com/891427 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
