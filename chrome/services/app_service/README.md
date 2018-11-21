@@ -97,7 +97,7 @@ code to cache and update the set of known apps (as in, the `App` Mojo type).
 Specifically, the `AppServiceProxy` code is split into two locations, one under
 `//chrome/browser` and one not:
 
-  - `//chrome/browser/apps/foundation/app_service`
+  - `//chrome/browser/apps/app_service`
   - `//chrome/services/app_service`
 
 On the Provider side, code specific to extension-backed applications or web
@@ -143,7 +143,7 @@ part of the `AppService` Mojo interface is:
     };
 
     interface Subscriber {
-      OnApps(array<App> apps);
+      OnApps(array<App> deltas);
     };
 
     enum AppType {
@@ -368,4 +368,4 @@ TBD: details.
 
 ---
 
-Updated on 2018-11-15.
+Updated on 2018-11-16.

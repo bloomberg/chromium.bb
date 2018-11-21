@@ -11,6 +11,8 @@ source_set("lib") {
     "app_registry/app_registry.h",
     "app_service.cc",
     "app_service.h",
+    "app_service_impl.cc",
+    "app_service_impl.h",
   ]
 
   deps = [
@@ -32,6 +34,7 @@ source_set("unit_tests") {
 
   sources = [
     "app_registry/app_registry_unittest.cc",
+    "app_service_impl_unittest.cc",
   ]
 
   deps = [

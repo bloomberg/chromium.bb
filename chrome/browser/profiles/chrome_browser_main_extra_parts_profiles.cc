@@ -96,6 +96,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #else
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -209,6 +210,11 @@ void ChromeBrowserMainExtraPartsProfiles::
   app_list::AppListSyncableServiceFactory::GetInstance();
 #endif
 
+#if !defined(OS_ANDROID)
+  if (apps::AppServiceProxyFactory::IsEnabled()) {
+    apps::AppServiceProxyFactory::GetInstance();
+  }
+#endif
   AboutSigninInternalsFactory::GetInstance();
   AccountFetcherServiceFactory::GetInstance();
   AccountInvestigatorFactory::GetInstance();

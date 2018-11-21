@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/mojom/app_registry.mojom.h"
+#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 
@@ -19,11 +21,11 @@ namespace apps {
 
 class AppRegistry;
 
-// The App Service is an intermediary between M customers (e.g. app launching
-// UI, or sync) and N providers (also known as app platforms, e.g. PWAs, ARC++,
-// and Crostini). Its motivation is to abstract over platform-specific
-// implementations and allow customers to work with generic actions (e.g.
-// querying for app data) that are forwarded to the appropriate provider.
+// The service (in the service_manager::Service sense) aspect of the App
+// Service. For the implementation of the apps::mojom::AppService Mojo
+// interface, see the AppServiceImpl class.
+//
+// See chrome/services/app_service/README.md.
 class AppService : public service_manager::Service {
  public:
   AppService();
@@ -43,6 +45,8 @@ class AppService : public service_manager::Service {
   void OnPrefServiceConnected(std::unique_ptr<PrefService> pref_service);
 
   service_manager::BinderRegistry binder_registry_;
+
+  AppServiceImpl impl_;
 
   std::unique_ptr<AppRegistry> app_registry_;
 

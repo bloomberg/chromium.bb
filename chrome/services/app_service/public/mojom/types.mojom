@@ -25,6 +25,7 @@ struct App {
 enum AppType {
   kUnknown = 0,
   kArc,       // Android app.
+  kBuiltIn,   // Built-in app.
   kCrostini,  // Linux app.
   kWeb,       // Web app.
 };
