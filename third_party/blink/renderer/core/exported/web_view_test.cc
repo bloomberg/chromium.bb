@@ -5324,12 +5324,6 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
                                      "<html><body></body></html>", base_url);
 
-  // Add an event listener for pointerdown to ensure it is not optimized out
-  // before reaching the EventDispatcher.
-  WebLocalFrame* frame = web_view_helper_.LocalMainFrame();
-  frame->ExecuteScript(
-      WebScriptSource("addEventListener('pointerdown', function() {});"));
-
   LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
   ASSERT_NE(nullptr, main_frame);
 
@@ -5347,9 +5341,6 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
       WebInputEvent::kPointerDown,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   pointer_down.SetTimeStamp(CurrentTimeTicks());
-  // Set this to the left button, needed for testing to behave properly.
-  pointer_down.SetModifiers(WebInputEvent::kLeftButtonDown);
-  pointer_down.button = WebPointerProperties::Button::kLeft;
   clock.Advance(TimeDelta::FromMilliseconds(50));
   web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_down));
 
@@ -5380,12 +5371,6 @@ TEST_F(WebViewTest, PointerDownCancelFirstInputDelay) {
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
                                      "<html><body></body></html>", base_url);
 
-  // Add an event listener for pointerdown to ensure it is not optimized out
-  // before reaching the EventDispatcher.
-  WebLocalFrame* frame = web_view_helper_.LocalMainFrame();
-  frame->ExecuteScript(
-      WebScriptSource("addEventListener('pointerdown', function() {});"));
-
   LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
   ASSERT_NE(nullptr, main_frame);
 
@@ -5402,9 +5387,6 @@ TEST_F(WebViewTest, PointerDownCancelFirstInputDelay) {
       WebInputEvent::kPointerDown,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   pointer_down.SetTimeStamp(CurrentTimeTicks());
-  // Set this to the left button, needed for testing to behave properly.
-  pointer_down.SetModifiers(WebInputEvent::kLeftButtonDown);
-  pointer_down.button = WebPointerProperties::Button::kLeft;
   clock.Advance(TimeDelta::FromMilliseconds(50));
   web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_down));
 
