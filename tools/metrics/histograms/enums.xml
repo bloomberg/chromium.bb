@@ -17293,6 +17293,7 @@ Called by update_net_error_codes.py.-->
       label="BRAILLEDISPLAYPRIVATE_UPDATEBLUETOOTHBRAILLEDISPLAYADDRESS"/>
   <int value="1292" label="AUTOTESTPRIVATE_SETASSISTANTENABLED"/>
   <int value="1293" label="AUTOTESTPRIVATE_ISARCPROVISIONED"/>
+  <int value="1294" label="CRYPTOTOKENPRIVATE_CANPROXYTOWEBAUTHN"/>
 </enum>
 
 <enum name="ExtensionIconState">
