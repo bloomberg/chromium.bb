@@ -43,8 +43,9 @@
 // having to handle a sentinel no-op value.
 //
 // Sample usage:
-//   // These values are persisted to logs. Entries should not be renumbered and
-//   // numeric values should never be reused.
+//   // These values are logged to UMA. Entries should not be renumbered and
+//   // numeric values should never be reused. Please keep in sync with "MyEnum"
+//   // in src/tools/metrics/histograms/enums.xml.
 //   enum class MyEnum {
 //     kFirstValue = 0,
 //     kSecondValue = 1,
@@ -59,8 +60,9 @@
 // greater than any other enumerator that will be sampled.
 //
 // Sample usage:
-//   // These values are persisted to logs. Entries should not be renumbered and
-//   // numeric values should never be reused.
+//   // These values are logged to UMA. Entries should not be renumbered and
+//   // numeric values should never be reused. Please keep in sync with "MyEnum"
+//   // in src/tools/metrics/histograms/enums.xml.
 //   enum class MyEnum {
 //     FIRST_VALUE = 0,
 //     SECOND_VALUE = 1,
