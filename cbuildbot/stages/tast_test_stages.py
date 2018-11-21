@@ -23,7 +23,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import osutils
-from chromite.lib import path_util
 from chromite.lib import timeout_util
 
 
@@ -132,7 +131,7 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
       String containing chroot suffixed by path.
     """
     # When os.path.join encounters an absolute path, it throws away everything
-    # it's alredy seen.
+    # it's already seen.
     return os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR,
                         path.lstrip('/'))
 
@@ -172,15 +171,16 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
     Raises:
       failures_lib.TestFailure if an internal error is encountered.
     """
-    image_path = path_util.ToChrootPath(os.path.join(self.GetImageDirSymlink(),
-                                                     constants.TEST_IMAGE_BIN))
-    cmd = [os.path.join(self._build_root, 'chromite/bin/cros_sdk'),
-           '--', 'cros_run_vm_test', '--no-display',
-           '--board=' + self._current_board, '--image-path=' + image_path,
-           '--copy-on-write', '--results-dir=' + suite_chroot_results_dir,
-           '--host-cmd', '--', 'tast', '-verbose', 'run', '-build=false',
-           '-resultsdir=' + suite_chroot_results_dir, '-extrauseflags=tast_vm',
-           '127.0.0.1:9222'
+    image_path = os.path.join(self.GetImageDirSymlink(),
+                              constants.TEST_IMAGE_BIN)
+    chromite_bin = os.path.join(self._build_root, 'chromite/bin')
+    cros_run_vm_test = os.path.join(chromite_bin, 'cros_run_vm_test')
+    cros_sdk = os.path.join(chromite_bin, 'cros_sdk')
+    cmd = [cros_run_vm_test, '--no-display', '--board=' + self._current_board,
+           '--image-path=' + image_path, '--copy-on-write',
+           '--host-cmd', '--', cros_sdk, '--',
+           'tast', '-verbose', 'run', '-build=false', '-extrauseflags=tast_vm',
+           '-resultsdir=' + suite_chroot_results_dir, '127.0.0.1:9222'
           ] + test_exprs
 
     result = cros_build_lib.RunCommand(
