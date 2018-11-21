@@ -467,16 +467,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "default-tile-height",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "default-tile-width",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "device-discovery-notifications",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

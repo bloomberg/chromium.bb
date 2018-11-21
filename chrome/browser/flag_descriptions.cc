@@ -274,20 +274,6 @@ const char kDebugPackedAppDescription[] =
     "Enables debugging context menu options such as Inspect Element for packed "
     "applications.";
 
-const char kDefaultTileHeightName[] = "Default tile height";
-const char kDefaultTileHeightDescription[] = "Specify the default tile height.";
-const char kDefaultTileHeightShort[] = "128";
-const char kDefaultTileHeightTall[] = "256";
-const char kDefaultTileHeightGrande[] = "512";
-const char kDefaultTileHeightVenti[] = "1024";
-
-const char kDefaultTileWidthName[] = "Default tile width";
-const char kDefaultTileWidthDescription[] = "Specify the default tile width.";
-const char kDefaultTileWidthShort[] = "128";
-const char kDefaultTileWidthTall[] = "256";
-const char kDefaultTileWidthGrande[] = "512";
-const char kDefaultTileWidthVenti[] = "1024";
-
 const char kDebugShortcutsName[] = "Debugging keyboard shortcuts";
 const char kDebugShortcutsDescription[] =
     "Enables additional keyboard shortcuts that are useful for debugging Ash.";

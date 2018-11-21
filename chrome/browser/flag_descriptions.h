@@ -195,20 +195,6 @@ extern const char kDatasaverPromptDemoMode[];
 extern const char kDebugPackedAppName[];
 extern const char kDebugPackedAppDescription[];
 
-extern const char kDefaultTileHeightName[];
-extern const char kDefaultTileHeightDescription[];
-extern const char kDefaultTileHeightShort[];
-extern const char kDefaultTileHeightTall[];
-extern const char kDefaultTileHeightGrande[];
-extern const char kDefaultTileHeightVenti[];
-
-extern const char kDefaultTileWidthName[];
-extern const char kDefaultTileWidthDescription[];
-extern const char kDefaultTileWidthShort[];
-extern const char kDefaultTileWidthTall[];
-extern const char kDefaultTileWidthGrande[];
-extern const char kDefaultTileWidthVenti[];
-
 extern const char kDebugShortcutsName[];
 extern const char kDebugShortcutsDescription[];
 
