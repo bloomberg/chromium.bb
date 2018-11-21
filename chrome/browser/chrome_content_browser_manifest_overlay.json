@@ -30,7 +30,7 @@
         ]
       },
       "requires": {
-        "apps": [ "app_registry" ],
+        "apps": [ "app_service" ],
         "ash": [ "system_ui", "test", "display" ],
         // Only used in classic ash case.
         "ash_pref_connector": [ "pref_connector" ],

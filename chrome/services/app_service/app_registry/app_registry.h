@@ -18,6 +18,8 @@ class PrefService;
 namespace apps {
 
 // The app registry maintains metadata on installed apps.
+//
+// TODO: rename this class? See the TODO in app_registry.mojom.
 class AppRegistry : public apps::mojom::AppRegistry {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);

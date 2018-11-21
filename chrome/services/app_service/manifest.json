@@ -5,8 +5,9 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "app_registry": [
-          "apps.mojom.AppRegistry"
+        "app_service": [
+          "apps.mojom.AppRegistry",
+          "apps.mojom.AppService"
         ]
       },
       "requires": {

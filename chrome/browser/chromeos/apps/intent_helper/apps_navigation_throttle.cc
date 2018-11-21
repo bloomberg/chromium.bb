@@ -225,6 +225,7 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
           ui_auto_display_service->IncrementCounter(url);
       }
       break;
+    case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kCrostini:
       NOTREACHED();
   }
@@ -360,6 +361,7 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
                                 : PickerAction::ARC_APP_PRESSED;
         case apps::mojom::AppType::kWeb:
           return PickerAction::PWA_APP_PRESSED;
+        case apps::mojom::AppType::kBuiltIn:
         case apps::mojom::AppType::kCrostini:
           NOTREACHED();
       }

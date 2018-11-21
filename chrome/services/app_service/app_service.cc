@@ -22,6 +22,8 @@ AppService::~AppService() = default;
 void AppService::OnStart() {
   binder_registry_.AddInterface<apps::mojom::AppRegistry>(base::BindRepeating(
       &AppService::BindAppRegistryRequest, base::Unretained(this)));
+  binder_registry_.AddInterface<apps::mojom::AppService>(base::BindRepeating(
+      &AppServiceImpl::BindRequest, base::Unretained(&impl_)));
 
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
   AppRegistry::RegisterPrefs(pref_registry.get());
@@ -50,7 +52,8 @@ void AppService::BindAppRegistryRequest(
 
 void AppService::OnPrefServiceConnected(
     std::unique_ptr<::PrefService> pref_service) {
-  // Connecting to the pref service is required for this class to function.
+  // Connecting to the pref service is required for the app_registry_ to
+  // function.
   DCHECK(pref_service);
   app_registry_ = std::make_unique<AppRegistry>(std::move(pref_service));
 

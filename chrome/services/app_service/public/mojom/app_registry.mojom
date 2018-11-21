@@ -8,6 +8,13 @@ import "chrome/services/app_service/public/mojom/types.mojom";
 
 // The interface through which clients of the App Service can query for data on
 // installed apps.
+//
+// TODO: rename this interface to AppCoordinator? Or merge these methods into
+// the App Service interface (note that this method depends on a prefs service;
+// other App Service methods might not)? Or deprecate this method? Or delete
+// this interface entirely, and add AppCoordinator features independently at a
+// later date? See
+// chrome/services/app_service/README.md.
 interface AppRegistry {
   // Sets the preferred value for the app represented by |app_id| to |state|.
   // TODO(crbug.com/826982): mandate that |app_id| must exist in the registry,
