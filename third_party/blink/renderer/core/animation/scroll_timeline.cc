@@ -28,7 +28,6 @@ ActiveScrollTimelineSet& GetActiveScrollTimelineSet() {
 
 bool StringToScrollDirection(String scroll_direction,
                              ScrollTimeline::ScrollDirection& result) {
-  // TODO(smcgruer): Support 'auto' value.
   if (scroll_direction == "block") {
     result = ScrollTimeline::Block;
     return true;
