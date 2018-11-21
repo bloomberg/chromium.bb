@@ -765,13 +765,6 @@
       default_value: "false",
     },
     {
-      name: "HasTransformAnimationWithForwardsOrBothFillMode",
-      field_template: "primitive",
-      type_name: "bool",
-      field_group: "*",
-      default_value: "false",
-    },
-    {
       name: "HasCurrentFilterAnimation",
       field_template: "primitive",
       type_name: "bool",
