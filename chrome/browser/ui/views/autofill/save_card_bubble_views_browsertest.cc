@@ -124,6 +124,39 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                    "Signin_Impression_FromSaveCardBubble"));
 }
 
+// Tests the local save bubble. Ensures that clicking the [No thanks] button
+// successfully causes the bubble to go away.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Local_ClickingNoThanksClosesBubble) {
+  // Enable the updated UI.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardImprovedUserConsent);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form and having Payments decline offering to save should
+  // show the local save bubble.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
+       DialogEvent::OFFERED_LOCAL_SAVE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+
+  // Clicking [No thanks] should cancel and close it.
+  base::HistogramTester histogram_tester;
+  ClickOnCancelButton();
+
+  // UMA should have recorded bubble rejection.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Local.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
+}
+
 // Tests the sign in promo bubble. Ensures that clicking the [Save] button
 // on the local save bubble successfully causes the sign in promo to show.
 #if !defined(OS_CHROMEOS)
@@ -579,10 +612,14 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 }
 #endif
 
-// Tests the local save bubble. Ensures that the Harmony version of the bubble
-// does not have a [No thanks] button (it has an [X] Close button instead.)
+// Tests the local save bubble. Ensures that the bubble does not have a
+// [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ShouldNotHaveNoThanksButton) {
+  // Disable the updated UI.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillSaveCardImprovedUserConsent);
+
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
 
@@ -671,10 +708,46 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
 }
 
-// Tests the upload save bubble. Ensures that the Harmony version of the bubble
-// does not have a [No thanks] button (it has an [X] Close button instead.)
+// Tests the upload save bubble. Ensures that clicking the [No thanks] button
+// successfully causes the bubble to go away.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Upload_ClickingNoThanksClosesBubble) {
+  // Enable the updated UI.
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardImprovedUserConsent);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should show the upload save bubble and legal footer.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+
+  // Clicking [No thanks] should cancel and close it.
+  base::HistogramTester histogram_tester;
+  ClickOnCancelButton();
+
+  // UMA should have recorded bubble rejection.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
+      AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
+}
+
+// Tests the upload save bubble. Ensures that the bubble does not have a
+// [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ShouldNotHaveNoThanksButton) {
+  // Disable the updated UI.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillSaveCardImprovedUserConsent);
+
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
 

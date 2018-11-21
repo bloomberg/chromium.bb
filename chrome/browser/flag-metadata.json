@@ -842,6 +842,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-autofill-save-card-improved-user-consent",
+    "owners": [ "chrome-autofill@google.com" ],
+    "expiry_milestone": 73
+  },
+  {
     "name": "enable-autofill-save-card-sign-in-after-local-save",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

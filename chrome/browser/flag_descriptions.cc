@@ -400,6 +400,12 @@ const char kEnableAutofillSaveCardDialogUnlabeledExpirationDateDescription[] =
     "If enabled, expiration dates on the save card dialog (both local and "
     "upstream) are shown without an 'Exp:' label.";
 
+const char kEnableAutofillSaveCardImprovedUserConsentName[] =
+    "Use updated UI for credit card save bubbles";
+const char kEnableAutofillSaveCardImprovedUserConsentDescription[] =
+    "If enabled, adds a [No thanks] button to credit card save bubbles and "
+    "updates their title headers.";
+
 const char kEnableAutofillSaveCardSignInAfterLocalSaveName[] =
     "Show Sign-In/Sync promo after saving a card locally";
 const char kEnableAutofillSaveCardSignInAfterLocalSaveDescription[] =

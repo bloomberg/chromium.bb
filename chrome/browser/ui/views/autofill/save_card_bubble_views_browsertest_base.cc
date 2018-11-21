@@ -489,6 +489,14 @@ views::View* SaveCardBubbleViewsBrowserTestBase::FindViewInBubbleById(
   return specified_view;
 }
 
+void SaveCardBubbleViewsBrowserTestBase::ClickOnCancelButton() {
+  SaveCardBubbleViews* save_card_bubble_views = GetSaveCardBubbleViews();
+  DCHECK(save_card_bubble_views);
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_CLOSED});
+  ClickOnDialogViewWithIdAndWait(DialogViewId::CANCEL_BUTTON);
+  DCHECK(!GetSaveCardBubbleViews());
+}
+
 void SaveCardBubbleViewsBrowserTestBase::ClickOnCloseButton() {
   SaveCardBubbleViews* save_card_bubble_views = GetSaveCardBubbleViews();
   DCHECK(save_card_bubble_views);

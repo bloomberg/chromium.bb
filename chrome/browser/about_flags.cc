@@ -3020,6 +3020,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSaveCardDialogUnlabeledExpirationDate)},
+    {"enable-autofill-save-card-improved-user-consent",
+     flag_descriptions::kEnableAutofillSaveCardImprovedUserConsentName,
+     flag_descriptions::kEnableAutofillSaveCardImprovedUserConsentDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillSaveCardImprovedUserConsent)},
     {"enable-autofill-save-card-sign-in-after-local-save",
      flag_descriptions::kEnableAutofillSaveCardSignInAfterLocalSaveName,
      flag_descriptions::kEnableAutofillSaveCardSignInAfterLocalSaveDescription,
