@@ -980,16 +980,12 @@ jinja_template_resources("chrome_test_apk_template_resources") {
 #      ELF relocations to reduce native library size.
 #    use_gnu_hash_style: If true, the final library will include only GNU hash
 #      tables, rather than both SysV and GNU types (the default).
-#    enable_relr_relocations: Optional flag. If true, and if |enable_compressed_relocations|
-#      is true, then reduce the size of the native library by enabling RELR relocations.
-#      Note that these are only supported by the Chromium linker, and Android P+.
 template("chrome_common_shared_library") {
   shared_library(target_name) {
     forward_variables_from(invoker,
                            "*",
                            [
                              "enable_compressed_relocations",
-                             "enable_relr_relocations",
                              "export_java_symbols",
                              "use_gnu_hash_style",
                            ])
@@ -1023,12 +1019,7 @@ template("chrome_common_shared_library") {
     # Compress relocations if needed.
     if (defined(invoker.enable_compressed_relocations) &&
         invoker.enable_compressed_relocations) {
-      if (defined(invoker.enable_relr_relocations) &&
-          invoker.enable_relr_relocations) {
-        configs += [ "//build/config/android:lld_pack_relocations_with_relr" ]
-      } else {
-        configs += [ "//build/config/android:lld_pack_relocations" ]
-      }
+      configs += [ "//build/config/android:lld_pack_relocations" ]
     }
 
     if (invoker.use_gnu_hash_style && target_cpu != "mipsel" &&
@@ -1061,7 +1052,6 @@ template("chrome_shared_library") {
     }
 
     enable_compressed_relocations = chromium_linker_supported && use_lld
-    enable_relr_relocations = enable_compressed_relocations
     use_gnu_hash_style = chromium_linker_supported
   }
 }
