@@ -173,6 +173,31 @@ TEST_F(WindowStateTest, PipWindowCannotSnap) {
   EXPECT_FALSE(window_state->CanSnap());
 }
 
+// Test that a mask layer is created correctly.
+TEST_F(WindowStateTest, PipWindowMaskRecreated) {
+  // Prepare a PIP window.
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+  WindowState* window_state = GetWindowState(window.get());
+  window_state->SetStateObject(std::unique_ptr<WindowState::State>(
+      new InitialStateTestState(mojom::WindowStateType::PIP)));
+  window_state->UpdatePipRoundedCorners();
+
+  // Mask layer exists.
+  EXPECT_TRUE(window->layer());
+  EXPECT_TRUE(window->layer()->layer_mask_layer());
+
+  // Close the PIP window.
+  window->Hide();
+
+  // Reshow the PIP window.
+  window->Show();
+
+  // Confirms a mask layer exists.
+  EXPECT_TRUE(window->layer());
+  EXPECT_TRUE(window->layer()->layer_mask_layer());
+}
+
 // Test that a PIP window cannot be snapped.
 TEST_F(WindowStateTest, PipWindowHasMaskLayer) {
   // Prepare a PIP window.

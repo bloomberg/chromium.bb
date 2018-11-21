@@ -361,6 +361,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest,
                            CrossFadeToBoundsFromTransform);
+  FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowMaskRecreated);
   FRIEND_TEST_ALL_PREFIXES(WindowStateTest, PipWindowHasMaskLayer);
 
   // Class to host the rounded mask for PIP windows.
@@ -435,6 +436,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
                                intptr_t old) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
   void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowLayerRecreated(aura::Window* window) override;
 
   // The owner of this window settings.
   aura::Window* window_;
