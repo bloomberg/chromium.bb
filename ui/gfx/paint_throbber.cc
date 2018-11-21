@@ -193,10 +193,16 @@ GFX_EXPORT void PaintNewThrobberWaiting(Canvas* canvas,
   float time = 2.0f * (elapsed_time.InMilliseconds() % kAnimationCycleMs) /
                kAnimationCycleMs;
   // 1 -> 2 values mirror back to 1 -> 0 values to represent right-to-left.
-  if (time > 1.0f)
+  const bool going_back = time > 1.0f;
+  if (going_back)
     time = 2.0f - time;
+  // This animation should be fast in the middle and slow at the edges.
+  time = Tween::CalculateValue(Tween::EASE_IN_OUT, time);
   const float min_width = throbber_container_bounds.height();
-  const float throbber_width = min_width * 2.5;
+  // The throbber animation stretches longer when moving in (left to right) than
+  // when going back.
+  const float throbber_width =
+      (going_back ? 0.75f : 1.0f) * throbber_container_bounds.width();
 
   // These bounds keep at least |min_width| of the throbber visible (inside the
   // throbber bounds).
@@ -219,7 +225,7 @@ GFX_EXPORT void PaintNewThrobberWaiting(Canvas* canvas,
   flags.setAntiAlias(true);
 
   // Draw with circular end caps.
-  canvas->DrawRoundRect(bounds, bounds.height() / 2, flags);
+  canvas->DrawRect(bounds, flags);
 }
 
 }  // namespace gfx

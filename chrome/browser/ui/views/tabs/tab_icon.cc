@@ -276,7 +276,7 @@ void TabIcon::PaintLoadingProgressIndicator(gfx::Canvas* canvas,
                               (kProgressIndicatorAnimationDuration - 1.0)));
   }
 
-  canvas->DrawRoundRect(bounds, bounds.height() / 2, flags);
+  canvas->DrawRect(bounds, flags);
 }
 
 void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas,
