@@ -6,8 +6,10 @@
 #define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_USER_DATA_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/previews/core/previews_experiments.h"
 #include "content/public/common/previews_state.h"
 
@@ -18,9 +20,16 @@ namespace previews {
 class PreviewsUserData {
  public:
   explicit PreviewsUserData(uint64_t page_id);
+
+  struct ServerLitePageInfo {
+    // The start time of the original navigation, that is, the one started by
+    // the user.
+    base::TimeTicks original_navigation_start = base::TimeTicks();
+  };
+
   ~PreviewsUserData();
 
-  PreviewsUserData(const PreviewsUserData& previews_user_data);
+  PreviewsUserData(const PreviewsUserData& other);
 
   // A session unique ID related to this navigation.
   uint64_t page_id() const { return page_id_; }
@@ -109,6 +118,14 @@ class PreviewsUserData {
     committed_previews_state_ = committed_previews_state;
   }
 
+  // Metadata for an attempted or committed Lite Page Redirect preview.
+  ServerLitePageInfo* server_lite_page_info() {
+    return server_lite_page_info_.get();
+  }
+  void set_server_lite_page_info(std::unique_ptr<ServerLitePageInfo> info) {
+    server_lite_page_info_ = std::move(info);
+  }
+
  private:
   // A session unique ID related to this navigation.
   const uint64_t page_id_;
@@ -143,6 +160,10 @@ class PreviewsUserData {
 
   // The PreviewsState that was committed for the navigation.
   content::PreviewsState committed_previews_state_ = content::PREVIEWS_OFF;
+
+  // Metadata for an attempted or committed Lite Page Redirect preview. See
+  // struct comments for more detail.
+  std::unique_ptr<ServerLitePageInfo> server_lite_page_info_;
 
   DISALLOW_ASSIGN(PreviewsUserData);
 };

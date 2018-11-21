@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_NAVIGATION_THROTTLE_H_
 
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
+#include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 
@@ -104,10 +105,12 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
 
   // Starts a new navigation with |params| page in the given |web_contents|,
   // adding the params' url as a single bypass to |manager|.
-  static void LoadAndBypass(content::WebContents* web_contents,
-                            PreviewsLitePageNavigationThrottleManager* manager,
-                            const content::OpenURLParams& params,
-                            bool use_post_task);
+  static void LoadAndBypass(
+      content::WebContents* web_contents,
+      PreviewsLitePageNavigationThrottleManager* manager,
+      const content::OpenURLParams& params,
+      std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info,
+      bool use_post_task);
 
  private:
   // The current effective connection type;

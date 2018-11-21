@@ -22,6 +22,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/previews/previews_ui_tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/base32/base32.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/previews/core/previews_experiments.h"
@@ -82,6 +88,78 @@ content::OpenURLParams MakeOpenURLParams(content::NavigationHandle* handle,
   return url_params;
 }
 
+// This is called on |WillStartRequest| to check whether the given |handle| is
+// for a navigation that was started by this preview. If it was, the penalty
+// (time between the original navigation start and the navigation start of
+// |handle|) is reported to PLM.
+void MaybeReportNavigationRestartPenalty(content::NavigationHandle* handle) {
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(handle->GetWebContents());
+  if (!ui_tab_helper)
+    return;
+
+  previews::PreviewsUserData* previews_data =
+      ui_tab_helper->GetPreviewsUserData(handle);
+  if (!previews_data)
+    return;
+
+  previews::PreviewsUserData::ServerLitePageInfo* info =
+      previews_data->server_lite_page_info();
+  if (!info)
+    return;
+
+  DCHECK_GT(info->original_navigation_start, base::TimeTicks());
+  base::TimeDelta penalty =
+      handle->NavigationStart() - info->original_navigation_start;
+
+  bool updated = page_load_metrics::MetricsWebContentsObserver::FromWebContents(
+                     handle->GetWebContents())
+                     ->ReportNavigationRestartPenalty(handle, penalty);
+  DCHECK(updated);
+  if (updated) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Previews.ServerLitePage.ReportedNavigationRestartPenalty", penalty);
+  } else {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Previews.ServerLitePage.NotReportedNavigationRestartPenalty", penalty);
+  }
+}
+
+// Gets the ServerLitePageInfo struct from an existing attempted lite page
+// navigation, if there is one. If not, returns nullptr.
+std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo>
+GetServerLitePageInfo(content::NavigationHandle* handle) {
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(handle->GetWebContents());
+  if (!ui_tab_helper)
+    return nullptr;
+
+  previews::PreviewsUserData* previews_data =
+      ui_tab_helper->GetPreviewsUserData(handle);
+  if (!previews_data)
+    return nullptr;
+
+  if (!previews_data->server_lite_page_info())
+    return nullptr;
+
+  return std::make_unique<previews::PreviewsUserData::ServerLitePageInfo>(
+      *previews_data->server_lite_page_info());
+}
+
+// Gets the ServerLitePageInfo struct from an existing attempted lite page
+// navigation, if there is one. If not, returns a new ServerLitePageInfo
+// initialized with |handle| that is not associated with a PreviewsUserData.
+std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo>
+GetOrCreateServerLitePageInfo(content::NavigationHandle* handle) {
+  std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info =
+      GetServerLitePageInfo(handle);
+  if (!info) {
+    info.reset(new previews::PreviewsUserData::ServerLitePageInfo());
+    info->original_navigation_start = handle->NavigationStart();
+  }
+  return info;
+}
+
 }  // namespace
 
 class WebContentsLifetimeHelper
@@ -100,6 +178,36 @@ class WebContentsLifetimeHelper
       return;
 
     navigations_.insert(handle);
+
+    // Check if the starting navigation was reported as being caused by a
+    // restart. Note: This could be a navigation to the litepages server, or to
+    // the original URL.
+    if (restarted_navigation_url_ == handle->GetURL()) {
+      // Get a new page id.
+      PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+      PreviewsLitePageNavigationThrottleManager* manager =
+          previews_service->previews_lite_page_decider();
+      uint64_t page_id = manager->GeneratePageID();
+
+      // Create a new PreviewsUserData if needed.
+      PreviewsUITabHelper* ui_tab_helper =
+          PreviewsUITabHelper::FromWebContents(web_contents());
+      previews::PreviewsUserData* previews_data =
+          ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(handle,
+                                                                   page_id);
+
+      // Set the lite page state on the user data.
+      if (!info_) {
+        info_ =
+            std::make_unique<previews::PreviewsUserData::ServerLitePageInfo>();
+        info_->original_navigation_start = handle->NavigationStart();
+      }
+      previews_data->set_server_lite_page_info(std::move(info_));
+
+      // Reset member state.
+      restarted_navigation_url_ = GURL();
+    }
   }
 
   // Keep track of all ongoing navigations in this WebContents.
@@ -137,14 +245,29 @@ class WebContentsLifetimeHelper
     return weak_factory_.GetWeakPtr();
   }
 
-  void PostNewNavigation(const content::OpenURLParams& url_params) {
+  void PostNewNavigation(
+      const content::OpenURLParams& url_params,
+      std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(url_params.url.is_valid());
     DCHECK(url_params.url.SchemeIs(url::kHttpsScheme));
+    // Setting these members should always happen before |OpenURL| which can be
+    // synchronous.
+    restarted_navigation_url_ = url_params.url;
+    info_ = std::move(info);
+
     web_contents_->OpenURL(url_params);
   }
 
  private:
+  // The url to monitor for. When it is seen, |info_| will be attached to that
+  // navigation.
+  GURL restarted_navigation_url_;
+
+  // The ServerLitePageInfo to attach to the next navigation that matches
+  // |restarted_navigation_url_|.
+  std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info_;
+
   content::WebContents* web_contents_;
   std::unordered_set<content::NavigationHandle*> navigations_;
   base::WeakPtrFactory<WebContentsLifetimeHelper> weak_factory_;
@@ -295,6 +418,7 @@ void PreviewsLitePageNavigationThrottle::LoadAndBypass(
     content::WebContents* web_contents,
     PreviewsLitePageNavigationThrottleManager* manager,
     const content::OpenURLParams& params,
+    std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info,
     bool use_post_task) {
   DCHECK(web_contents);
   DCHECK(manager);
@@ -306,14 +430,14 @@ void PreviewsLitePageNavigationThrottle::LoadAndBypass(
       WebContentsLifetimeHelper::FromWebContents(web_contents);
 
   if (!use_post_task) {
-    helper->PostNewNavigation(params);
+    helper->PostNewNavigation(params, std::move(info));
     return;
   }
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&WebContentsLifetimeHelper::PostNewNavigation,
-                     helper->GetWeakPtr(), params));
+                     helper->GetWeakPtr(), params, std::move(info)));
 }
 
 content::NavigationThrottle::ThrottleCheckResult
@@ -371,7 +495,7 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
                 base::Unretained(web_contents), manager_,
                 MakeOpenURLParams(navigation_handle(),
                                   navigation_handle()->GetURL(), std::string()),
-                false)),
+                GetOrCreateServerLitePageInfo(navigation_handle()), false)),
         timeout);
   }
 
@@ -384,7 +508,8 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
       base::BindOnce(&WebContentsLifetimeHelper::PostNewNavigation,
                      helper->GetWeakPtr(),
                      MakeOpenURLParams(navigation_handle(), GetPreviewsURL(),
-                                       request_headers.ToString())));
+                                       request_headers.ToString()),
+                     GetOrCreateServerLitePageInfo(navigation_handle())));
 
   return content::NavigationThrottle::CANCEL;
 }
@@ -402,6 +527,7 @@ PreviewsLitePageNavigationThrottle::MaybeNavigateToPreview() const {
 
 content::NavigationThrottle::ThrottleCheckResult
 PreviewsLitePageNavigationThrottle::WillStartRequest() {
+  MaybeReportNavigationRestartPenalty(navigation_handle());
   return MaybeNavigateToPreview();
 }
 
@@ -477,10 +603,13 @@ PreviewsLitePageNavigationThrottle::WillFailRequest() {
   // The Preview was triggered but there was some irrecoverable issue (like
   // there is no network connection). Load the original page and let it go
   // through the normal process for whatever error it is.
+  std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info =
+      GetServerLitePageInfo(navigation_handle());
+  DCHECK(info);
   LoadAndBypass(
       navigation_handle()->GetWebContents(), manager_,
       MakeOpenURLParams(navigation_handle(), GURL(original_url), std::string()),
-      true);
+      std::move(info), true);
   return content::NavigationThrottle::CANCEL;
 }
 
@@ -545,10 +674,13 @@ PreviewsLitePageNavigationThrottle::WillProcessResponse() {
                               ServerResponse::kOther);
   }
 
+  std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info =
+      GetServerLitePageInfo(navigation_handle());
+  DCHECK(info);
   LoadAndBypass(
       navigation_handle()->GetWebContents(), manager_,
       MakeOpenURLParams(navigation_handle(), GURL(original_url), std::string()),
-      true);
+      std::move(info), true);
   return content::NavigationThrottle::CANCEL;
 }
 

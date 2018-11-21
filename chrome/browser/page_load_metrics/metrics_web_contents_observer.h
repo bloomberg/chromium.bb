@@ -154,6 +154,18 @@ class MetricsWebContentsObserver
       const std::vector<mojom::ResourceDataUpdatePtr>& resources,
       mojom::PageRenderDataPtr render_data);
 
+  // Used to report that a NavigationThrottle or other browser intervention
+  // canceled a navigation and replaced it with a new navigation.
+  // |mainframe_navigation_restart_penalty| will be applied across all relevant
+  // timing deltas within the page for the page load tracker corresponding to
+  // |navigation_handle|. Returns whether or not there was an applicable
+  // navigation to update. This must be called before commit. Note: This method
+  // should not be called from a WebContentsObserver's DidFinishNavigation or
+  // DidStartNavigation since this would cause a race condition.
+  bool ReportNavigationRestartPenalty(
+      content::NavigationHandle* navigation_handle,
+      const base::TimeDelta mainframe_navigation_restart_penalty);
+
   // Informs the observers of the currently committed load that the event
   // corresponding to |event_key| has occurred. This should not be called within
   // WebContentsObserver::DidFinishNavigation methods.

@@ -685,6 +685,20 @@ void MetricsWebContentsObserver::OnTimingUpdated(
   }
 }
 
+bool MetricsWebContentsObserver::ReportNavigationRestartPenalty(
+    content::NavigationHandle* navigation_handle,
+    const base::TimeDelta mainframe_navigation_restart_penalty) {
+  DCHECK(!navigation_handle->HasCommitted());
+  auto it = provisional_loads_.find(navigation_handle);
+  if (it == provisional_loads_.end())
+    return false;
+
+  it->second->metrics_update_dispatcher()
+      ->ReportMainFrameNavigationRestartPenalty(
+          mainframe_navigation_restart_penalty);
+  return true;
+}
+
 void MetricsWebContentsObserver::UpdateTiming(
     mojom::PageLoadTimingPtr timing,
     mojom::PageLoadMetadataPtr metadata,

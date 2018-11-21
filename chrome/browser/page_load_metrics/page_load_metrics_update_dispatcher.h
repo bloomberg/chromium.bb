@@ -136,6 +136,11 @@ class PageLoadMetricsUpdateDispatcher {
   void DidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle);
 
+  // Increases |total_main_frame_navigation_restart_penalty_| by the given
+  // delta. This should be fully updated before commit. See the comment on
+  // |total_main_frame_navigation_restart_penalty_|.
+  void ReportMainFrameNavigationRestartPenalty(base::TimeDelta penalty);
+
   void ShutDown();
 
   const mojom::PageLoadTiming& timing() const {
@@ -199,6 +204,13 @@ class PageLoadMetricsUpdateDispatcher {
   mojom::PageLoadMetadataPtr subframe_metadata_;
 
   mojom::PageRenderDataPtr main_frame_render_data_;
+  // This time delta is an otherwise unknown penalty where the final navigation
+  // to a page was not the original (i.e.: user started) navigation. This can be
+  // caused by client redirects or other browser-based interventions like
+  // previews. Applying this delta will reconcile this page load metric with the
+  // time when the original navigation started. This will be applied to all
+  // metrics just before they are sent to the client.
+  base::TimeDelta total_main_frame_navigation_restart_penalty_;
 
   // Navigation start offsets for the most recently committed document in each
   // frame.

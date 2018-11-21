@@ -5042,10 +5042,11 @@ content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
   // Certain PreviewsStates are used within URLLoaders (Offline, server
   // previews) and cannot re-evaluate PreviewsState during a redirect, so they
   // should not change. Assume this is a redirect when PreviewsUserData already
-  // exists.
+  // exists and a Lite Page Redirect preview is not being attempted, since it
+  // may also create a previews_data before this point.
   bool is_redirect = false;
   if (previews_data) {
-    is_redirect = true;
+    is_redirect = !previews_data->server_lite_page_info();
   } else {
     previews_data = ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
         navigation_handle, previews_decider_impl->GeneratePageId());
