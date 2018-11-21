@@ -554,7 +554,8 @@ TEST_F(MenuControllerTest, Dynamic) {
   base::string16 second = ASCIIToUTF16("second");
   delegate.SetDynamicLabel(second);
   const gfx::Image& icon =
-      ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_THROBBER);
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_EMOJI_FAVICON);
   delegate.SetDynamicIcon(icon);
   // Simulate opening the menu and validate that the item label + icon changes.
   Validate(menu.get(), [menu menu]);

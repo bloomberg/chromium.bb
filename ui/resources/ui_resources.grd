@@ -111,13 +111,6 @@
       <structure type="chrome_scaled_image" name="IDR_EMOJI_FAVICON" file="common/emoji_menu_item.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="common/folder_closed.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_RTL" file="common/folder_closed_rtl.png" />
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_MENU_OVERFLOW_UP" file="common/menu_overflow_up.png" />
-        <structure type="chrome_scaled_image" name="IDR_MENU_OVERFLOW_DOWN" file="common/menu_overflow_down.png" />
-      </if>
-      <if expr="is_macosx or is_ios">
-        <structure type="chrome_scaled_image" name="IDR_MENU_HIERARCHY_ARROW" file="mac/menu_hierarchy_arrow.png" />
-      </if>
       <if expr="toolkit_views and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS" file="common/notification_settings.png"/>
       </if>
@@ -145,9 +138,6 @@
         <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_CENTER" file="common/text_selection_handle_center.png" />
         <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_LEFT" file="common/text_selection_handle_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_RIGHT" file="common/text_selection_handle_right.png" />
-      </if>
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_THROBBER" file="legacy/throbber.png" />
       </if>
       <if expr="toolkit_views">
         <structure type="chrome_scaled_image" name="IDR_TOUCH_DRAG_TIP_COPY" file="common/drag_tip_copy.png" />
