@@ -1482,6 +1482,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Indicates whether the current load is to a different document. Only valid
   // if |is_loading_| is true and only tracks loads in the main frame.
+  // TODO(pbos): Check navigation requests and handles instead of caching this.
   bool is_load_to_different_document_;
 
   // Indicates if the tab is considered crashed.

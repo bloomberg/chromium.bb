@@ -1391,7 +1391,11 @@ bool WebContentsImpl::IsLoadingToDifferentDocument() const {
 }
 
 bool WebContentsImpl::IsWaitingForResponse() const {
-  return waiting_for_response_ && is_load_to_different_document_;
+  NavigationRequest* ongoing_navigation_request =
+      frame_tree_.root()->navigation_request();
+
+  // An ongoing navigation request means we're waiting for a response.
+  return ongoing_navigation_request != nullptr;
 }
 
 const net::LoadStateWithParam& WebContentsImpl::GetLoadState() const {
