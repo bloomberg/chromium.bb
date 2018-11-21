@@ -708,7 +708,8 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           AV1Decoder *const pbi = frame_worker_data->pbi;
           AV1_COMMON *const cm = &pbi->common;
           RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
-          ctx->last_show_frame = cm->new_fb_idx;
+          const int buf_idx = pbi->output_frame_index[*index];
+          ctx->last_show_frame = buf_idx;
           if (ctx->need_resync) return NULL;
           yuvconfig2image(&ctx->img, sd, frame_worker_data->user_priv);
 
@@ -757,7 +758,7 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                 AOMMIN(cm->tile_width, cm->mi_cols - mi_col) * MI_SIZE;
           }
 
-          ctx->img.fb_priv = frame_bufs[cm->new_fb_idx].raw_frame_buffer.priv;
+          ctx->img.fb_priv = frame_bufs[buf_idx].raw_frame_buffer.priv;
           img = &ctx->img;
           img->temporal_id = cm->temporal_layer_id;
           img->spatial_id = cm->spatial_layer_id;
