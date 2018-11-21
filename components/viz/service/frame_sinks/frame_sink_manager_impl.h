@@ -187,8 +187,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void AddObserver(FrameSinkObserver* obs);
   void RemoveObserver(FrameSinkObserver* obs);
 
-  // Returns ids of all FrameSinks that were created.
-  std::vector<FrameSinkId> GetCreatedFrameSinkIds() const;
   // Returns ids of all FrameSinks that were registered.
   std::vector<FrameSinkId> GetRegisteredFrameSinkIds() const;
 

@@ -20,14 +20,12 @@ FrameSinkElement::FrameSinkElement(
     UIElementDelegate* ui_element_delegate,
     UIElement* parent,
     bool is_root,
-    bool is_registered,
-    bool is_client_connected)
+    bool has_created_frame_sink)
     : UIElement(UIElementType::FRAMESINK, ui_element_delegate, parent),
       frame_sink_id_(frame_sink_id),
       frame_sink_manager_(frame_sink_manager),
       is_root_(is_root),
-      is_registered_(is_registered),
-      is_client_connected_(is_client_connected) {}
+      has_created_frame_sink_(has_created_frame_sink) {}
 
 FrameSinkElement::~FrameSinkElement() {}
 
@@ -37,10 +35,8 @@ FrameSinkElement::GetCustomProperties() const {
 
   // Hierarchical information about the FrameSink.
   v.push_back(std::make_pair("Is root", is_root_ ? "true" : "false"));
-  v.push_back(
-      std::make_pair("Is registered", is_registered_ ? "true" : "false"));
-  v.push_back(std::make_pair("Is connected by client",
-                             is_client_connected_ ? "true" : "false"));
+  v.push_back(std::make_pair("Has created frame sink",
+                             has_created_frame_sink_ ? "true" : "false"));
 
   // LastUsedBeingFrameArgs information.
   const viz::CompositorFrameSinkSupport* support =
