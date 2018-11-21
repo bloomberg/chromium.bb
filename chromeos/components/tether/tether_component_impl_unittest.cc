@@ -50,7 +50,6 @@ class FakeAsynchronousShutdownObjectContainerFactory
 
   // AsynchronousShutdownObjectContainerImpl::Factory:
   std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
-      cryptauth::CryptAuthService* cryptauth_service,
       device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       TetherHostFetcher* tether_host_fetcher,
