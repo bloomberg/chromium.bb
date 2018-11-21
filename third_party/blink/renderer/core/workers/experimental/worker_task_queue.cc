@@ -49,7 +49,7 @@ ScriptPromise WorkerTaskQueue::postFunction(
                         arguments, task_type_);
   if (signal)
     signal->AddAlgorithm(WTF::Bind(&Task::cancel, WrapWeakPersistent(task)));
-  return task->result();
+  return task->result(script_state);
 }
 
 Task* WorkerTaskQueue::postTask(ScriptState* script_state,

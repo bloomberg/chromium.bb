@@ -6,6 +6,6 @@
     Exposed=Window,
     RuntimeEnabled=WorkerTaskQueue
 ] interface Task {
-    readonly attribute Promise<any> result;
+    [CallWith=ScriptState] readonly attribute Promise<any> result;
     void cancel();
 };
