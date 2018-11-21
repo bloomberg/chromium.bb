@@ -33,5 +33,15 @@ void TestMediaController::NextTrack() {
   ++next_track_count_;
 }
 
+void TestMediaController::Seek(base::TimeDelta seek_time) {
+  DCHECK(!seek_time.is_zero());
+
+  if (seek_time > base::TimeDelta()) {
+    ++seek_forward_count_;
+  } else if (seek_time < base::TimeDelta()) {
+    ++seek_backward_count_;
+  }
+}
+
 }  // namespace test
 }  // namespace media_session

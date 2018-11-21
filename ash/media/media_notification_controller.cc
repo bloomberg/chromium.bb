@@ -8,6 +8,7 @@
 #include "ash/media/media_notification_view.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -21,6 +22,9 @@
 namespace ash {
 
 namespace {
+
+constexpr base::TimeDelta kDefaultSeekTime =
+    base::TimeDelta::FromSeconds(media_session::mojom::kDefaultSeekTimeSeconds);
 
 std::unique_ptr<message_center::MessageView> CreateCustomMediaNotificationView(
     const message_center::Notification& notification) {
@@ -140,9 +144,15 @@ void MediaNotificationController::OnNotificationClicked(
       media_controller_ptr_->PreviousTrack();
       break;
     case 1:
-      media_controller_ptr_->ToggleSuspendResume();
+      media_controller_ptr_->Seek(kDefaultSeekTime * -1);
       break;
     case 2:
+      media_controller_ptr_->ToggleSuspendResume();
+      break;
+    case 3:
+      media_controller_ptr_->Seek(kDefaultSeekTime);
+      break;
+    case 4:
       media_controller_ptr_->NextTrack();
       break;
     default:
