@@ -44,6 +44,10 @@ class UI_DEVTOOLS_EXPORT UIElement {
   // is inserted at the end. Parent takes ownership of the added child.
   void AddChild(UIElement* child, UIElement* before = nullptr);
 
+  // Removes all elements from |children_|. Caller is responsible for destroying
+  // children.
+  void ClearChildren();
+
   // Remove |child| out of vector |children_| but |child| is not destroyed.
   // The caller is responsible for destroying |child|.
   void RemoveChild(UIElement* child);

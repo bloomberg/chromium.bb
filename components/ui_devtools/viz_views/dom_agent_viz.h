@@ -59,25 +59,29 @@ class DOMAgentViz : public viz::FrameSinkObserver, public DOMAgent {
   // FrameSinks, registered FrameSinkIds and those that have corresponding
   // FrameSinkElements created.
   void Clear();
-  // Initializes the sets of FrameSinkIds that correspond to registered
-  // FrameSinkIds and created FrameSinks.
-  void InitFrameSinkSets();
 
-  // Mark a FrameSink that has |frame_sink_id| and all its subtree as attached.
-  void SetAttachedFrameSink(const viz::FrameSinkId& frame_sink_id);
+  // Destroy |element| and attach all its children to the root_element().
+  void DestroyElementAndRemoveSubtree(UIElement* element);
 
-  // We remove |root| from its parents and attach all its children to the
-  // root_element().
-  void RemoveFrameSinkSubtree(UIElement* root);
+  // Destroy all children and move to |new_parent|. This also rebuilds the
+  // subtree via BuildTreeForUIElement.
+  // TODO(sgilhuly): Improve the way reparenting is handled. Currently, after
+  // the node is removed, you have to remove all of its children, and add the
+  // element back to the tree. Then, the list of children is repopulated.
+  void Reparent(UIElement* new_parent, UIElement* child);
+
+  // Removes an element from |frame_sink_elements_|.
+  void DestroyElement(UIElement* element);
+
+  // Remove all subtree elements from |frame_sink_elements_|. |element| itself
+  // is preserved.
+  void DestroySubtree(UIElement* element);
 
   // This is used to track created FrameSinkElements in a FrameSink tree. Every
   // time we register/invalidate a FrameSinkId, create/destroy a FrameSink,
   // register/unregister hierarchy we change this set, because these actions
   // involve deleting and adding elements.
   base::flat_map<viz::FrameSinkId, FrameSinkElement*> frame_sink_elements_;
-
-  // This is used to denote attached FrameSinks.
-  base::flat_set<viz::FrameSinkId> attached_frame_sinks_;
 
   viz::FrameSinkManagerImpl* frame_sink_manager_;
 

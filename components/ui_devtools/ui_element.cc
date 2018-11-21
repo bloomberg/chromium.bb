@@ -52,6 +52,10 @@ void UIElement::AddChild(UIElement* child, UIElement* before) {
   delegate_->OnUIElementAdded(this, child);
 }
 
+void UIElement::ClearChildren() {
+  children_.clear();
+}
+
 void UIElement::RemoveChild(UIElement* child) {
   delegate()->OnUIElementRemoved(child);
   auto iter = std::find(children_.begin(), children_.end(), child);
