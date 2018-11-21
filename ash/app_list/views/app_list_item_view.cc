@@ -494,6 +494,8 @@ void AppListItemView::OnContextMenuModelReceived(
 void AppListItemView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point,
                                              ui::MenuSourceType source_type) {
+  if (context_menu_ && context_menu_->IsShowingMenu())
+    return;
   // Prevent multiple requests for context menus before the current request
   // completes. If a second request is sent before the first one can respond,
   // the Chrome side delegate will become unresponsive
