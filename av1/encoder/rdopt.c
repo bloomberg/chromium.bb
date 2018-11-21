@@ -7038,7 +7038,8 @@ static void setup_buffer_ref_mvs_inter(
   const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref_frame);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  const struct scale_factors *const sf = &cm->frame_refs[ref_frame - 1].sf;
+  const struct scale_factors *const sf =
+      &cm->current_frame.frame_refs[ref_frame - 1].sf;
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
 
   assert(yv12 != NULL);
@@ -8549,7 +8550,8 @@ static int64_t interpolation_filter_search(
   const int is_compound = has_second_ref(mbmi);
   assert(is_intrabc_block(mbmi) == 0);
   for (int j = 0; j < 1 + is_compound; ++j) {
-    const RefBuffer *ref_buf = &cm->frame_refs[mbmi->ref_frame[j] - LAST_FRAME];
+    const RefBuffer *ref_buf =
+        &cm->current_frame.frame_refs[mbmi->ref_frame[j] - LAST_FRAME];
     const struct scale_factors *const sf = &ref_buf->sf;
     // TODO(any): Refine skip flag calculation considering scaling
     if (av1_is_scaled(sf)) {
@@ -11200,7 +11202,7 @@ static int inter_mode_search_order_independent_skip(
     unsigned int ref_offsets[2];
     for (int i = 0; i < 2; ++i) {
       const RefCntBuffer *const buf =
-          cm->frame_refs[ref_frame[i] - LAST_FRAME].buf;
+          cm->current_frame.frame_refs[ref_frame[i] - LAST_FRAME].buf;
       assert(buf != NULL);
       ref_offsets[i] = buf->order_hint;
     }

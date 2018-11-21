@@ -3420,7 +3420,8 @@ static void get_res_var_features(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
                          num_planes);
   } else {
     av1_setup_pre_planes(xd, ref_idx, yv12, mi_row, mi_col,
-                         &cm->frame_refs[ref - LAST_FRAME].sf, num_planes);
+                         &cm->current_frame.frame_refs[ref - LAST_FRAME].sf,
+                         num_planes);
   }
 
   mbmi->ref_frame[0] = ref;
@@ -5442,7 +5443,7 @@ static void enforce_max_ref_frames(AV1_COMP *cpi) {
       if (ref_frame == GOLDEN_FRAME || ref_frame == ALTREF_FRAME) continue;
 
       const RefCntBuffer *const buf =
-          cm->frame_refs[ref_frame - LAST_FRAME].buf;
+          cm->current_frame.frame_refs[ref_frame - LAST_FRAME].buf;
       if (buf != NULL) {
         const unsigned int ref_order_hint = buf->order_hint;
 
@@ -5511,7 +5512,7 @@ static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
 
   int one_sided_refs = 1;
   for (int ref = 0; ref < INTER_REFS_PER_FRAME; ++ref) {
-    const RefCntBuffer *const buf = cm->frame_refs[ref].buf;
+    const RefCntBuffer *const buf = cm->current_frame.frame_refs[ref].buf;
     if (buf == NULL) continue;
 
     const int ref_order_hint = buf->order_hint;
@@ -5531,9 +5532,9 @@ static INLINE void get_skip_mode_ref_offsets(const AV1_COMMON *cm,
   if (!skip_mode_info->skip_mode_allowed) return;
 
   const RefCntBuffer *const buf_0 =
-      cm->frame_refs[skip_mode_info->ref_frame_idx_0].buf;
+      cm->current_frame.frame_refs[skip_mode_info->ref_frame_idx_0].buf;
   const RefCntBuffer *const buf_1 =
-      cm->frame_refs[skip_mode_info->ref_frame_idx_1].buf;
+      cm->current_frame.frame_refs[skip_mode_info->ref_frame_idx_1].buf;
   assert(buf_0 != NULL && buf_1 != NULL);
 
   ref_order_hint[0] = buf_0->order_hint;

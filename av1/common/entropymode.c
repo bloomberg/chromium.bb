@@ -1073,8 +1073,8 @@ void av1_setup_frame_contexts(AV1_COMMON *cm) {
   // but could do with fuller testing
   if (cm->large_scale_tile) {
     for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-      if (cm->frame_refs[i].buf != NULL)
-        cm->frame_refs[i].buf->frame_context = *cm->fc;
+      if (cm->current_frame.frame_refs[i].buf != NULL)
+        cm->current_frame.frame_refs[i].buf->frame_context = *cm->fc;
     }
     for (int i = 0; i < FRAME_BUFFERS; ++i)
       cm->buffer_pool->frame_bufs[i].frame_context = *cm->fc;

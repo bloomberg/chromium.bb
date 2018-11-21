@@ -410,12 +410,13 @@ static void setup_frame(AV1_COMP *cpi) {
     set_sb_size(&cm->seq_params, select_sb_size(cpi));
   } else {
     if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
-        cm->frame_refs[cm->primary_ref_frame].buf == NULL) {
+        cm->current_frame.frame_refs[cm->primary_ref_frame].buf == NULL) {
       av1_setup_past_independence(cm);
       cm->seg.update_map = 1;
       cm->seg.update_data = 1;
     } else {
-      *cm->fc = cm->frame_refs[cm->primary_ref_frame].buf->frame_context;
+      *cm->fc = cm->current_frame.frame_refs[cm->primary_ref_frame]
+                    .buf->frame_context;
     }
     av1_zero(cpi->interp_filter_selected[0]);
   }
@@ -4103,7 +4104,8 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
   init_motion_estimation(cpi);
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    RefBuffer *const ref_buf = &cm->frame_refs[ref_frame - LAST_FRAME];
+    RefBuffer *const ref_buf =
+        &cm->current_frame.frame_refs[ref_frame - LAST_FRAME];
     const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
 
     if (buf_idx != INVALID_IDX) {
@@ -4581,7 +4583,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     // Base q-index may have changed, so we need to assign proper default coef
     // probs before every iteration.
     if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
-        cm->frame_refs[cm->primary_ref_frame].buf == NULL) {
+        cm->current_frame.frame_refs[cm->primary_ref_frame].buf == NULL) {
       av1_default_coef_probs(cm);
       av1_setup_frame_contexts(cm);
     }
@@ -4924,7 +4926,7 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
       current_frame->frame_number, current_frame->order_hint, cm->show_frame,
       cm->show_existing_frame);
   for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    RefBuffer *buf = &cm->frame_refs[ref_frame - LAST_FRAME];
+    RefBuffer *buf = &cm->current_frame.frame_refs[ref_frame - LAST_FRAME];
     const int ref_offset = (buf->buf) ? (int)buf->buf->order_hint : -1;
     printf(" %d(%c-%d-%4.2f)", ref_offset,
            (cpi->ref_frame_flags & flag_list[ref_frame]) ? 'Y' : 'N',

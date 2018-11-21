@@ -144,7 +144,8 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
         ref = 0;
         const RefBuffer *ref_buf =
-            &cm->frame_refs[this_mbmi->ref_frame[ref] - LAST_FRAME];
+            &cm->current_frame
+                 .frame_refs[this_mbmi->ref_frame[ref] - LAST_FRAME];
 
         pd->pre[ref].buf0 = (plane == 1) ? ref_buf->buf->buf.u_buffer
                                          : ref_buf->buf->buf.v_buffer;

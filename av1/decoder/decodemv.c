@@ -1390,7 +1390,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   for (int ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
     const MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
-    RefBuffer *ref_buf = &cm->frame_refs[frame - LAST_FRAME];
+    RefBuffer *ref_buf = &cm->current_frame.frame_refs[frame - LAST_FRAME];
 
     xd->block_refs[ref] = ref_buf;
   }

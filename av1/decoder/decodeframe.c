@@ -702,7 +702,8 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
 
         ref = 0;
         const RefBuffer *ref_buf =
-            &cm->frame_refs[this_mbmi->ref_frame[ref] - LAST_FRAME];
+            &cm->current_frame
+                 .frame_refs[this_mbmi->ref_frame[ref] - LAST_FRAME];
 
         pd->pre[ref].buf0 = (plane == 1) ? ref_buf->buf->buf.u_buffer
                                          : ref_buf->buf->buf.v_buffer;
@@ -1062,7 +1063,7 @@ static void predict_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       assert(frame == INTRA_FRAME);
       assert(ref == 0);
     } else {
-      RefBuffer *ref_buf = &cm->frame_refs[frame - LAST_FRAME];
+      RefBuffer *ref_buf = &cm->current_frame.frame_refs[frame - LAST_FRAME];
 
       xd->block_refs[ref] = ref_buf;
       av1_setup_pre_planes(xd, ref, &ref_buf->buf->buf, mi_row, mi_col,
@@ -2444,7 +2445,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   int has_valid_ref_frame = 0;
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
     if (aom_rb_read_bit(rb)) {
-      YV12_BUFFER_CONFIG *const buf = &cm->frame_refs[i].buf->buf;
+      YV12_BUFFER_CONFIG *const buf = &cm->current_frame.frame_refs[i].buf->buf;
       width = buf->y_crop_width;
       height = buf->y_crop_height;
       cm->render_width = buf->render_width;
@@ -2474,7 +2475,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   // Check to make sure at least one of frames that this frame references
   // has valid dimensions.
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-    RefBuffer *const ref_frame = &cm->frame_refs[i];
+    RefBuffer *const ref_frame = &cm->current_frame.frame_refs[i];
     has_valid_ref_frame |=
         valid_ref_frame_size(ref_frame->buf->buf.y_crop_width,
                              ref_frame->buf->buf.y_crop_height, width, height);
@@ -2483,7 +2484,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Referenced frame has invalid size");
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-    RefBuffer *const ref_frame = &cm->frame_refs[i];
+    RefBuffer *const ref_frame = &cm->current_frame.frame_refs[i];
     if (!valid_ref_frame_img_fmt(
             ref_frame->buf->buf.bit_depth, ref_frame->buf->buf.subsampling_x,
             ref_frame->buf->buf.subsampling_y, seq_params->bit_depth,
@@ -4721,7 +4722,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-    cm->frame_refs[i].buf = NULL;
+    cm->current_frame.frame_refs[i].buf = NULL;
   }
 
   if (pbi->need_resync) {
@@ -4752,7 +4753,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   generate_next_ref_frame_map(pbi);
 
   // Reload the adapted CDFs from when we originally coded this keyframe
-  *cm->fc = cm->frame_refs[existing_frame_idx].buf->frame_context;
+  *cm->fc = cm->current_frame.frame_refs[existing_frame_idx].buf->frame_context;
 }
 
 static INLINE void reset_frame_buffers(AV1_COMMON *cm) {
@@ -5026,7 +5027,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
     for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-      cm->frame_refs[i].buf = NULL;
+      cm->current_frame.frame_refs[i].buf = NULL;
     }
     if (pbi->need_resync) {
       reset_ref_frame_map(cm);
@@ -5165,11 +5166,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
             aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                                "Inter frame requests nonexistent reference");
 
-          RefBuffer *const ref_frame = &cm->frame_refs[i];
+          RefBuffer *const ref_frame = &cm->current_frame.frame_refs[i];
           ref_frame->buf = &frame_bufs[idx];
           ref_frame->map_idx = ref;
         } else {
-          ref = cm->frame_refs[i].map_idx;
+          ref = cm->current_frame.frame_refs[i].map_idx;
         }
 
         cm->ref_frame_sign_bias[LAST_FRAME + i] = 0;
@@ -5208,7 +5209,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
     cm->prev_frame = get_prev_frame(cm);
     if (cm->primary_ref_frame != PRIMARY_REF_NONE &&
-        cm->frame_refs[cm->primary_ref_frame].buf == NULL) {
+        cm->current_frame.frame_refs[cm->primary_ref_frame].buf == NULL) {
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Reference frame containing this frame's initial "
                          "frame context is unavailable.");
@@ -5221,7 +5222,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         cm->allow_ref_frame_mvs = 0;
 
       for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-        RefBuffer *const ref_buf = &cm->frame_refs[i];
+        RefBuffer *const ref_buf = &cm->current_frame.frame_refs[i];
         av1_setup_scale_factors_for_frame(
             &ref_buf->sf, ref_buf->buf->buf.y_crop_width,
             ref_buf->buf->buf.y_crop_height, cm->width, cm->height);
@@ -5509,7 +5510,8 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
     // use the default frame context values
     *cm->fc = *cm->default_frame_context;
   } else {
-    *cm->fc = cm->frame_refs[cm->primary_ref_frame].buf->frame_context;
+    *cm->fc =
+        cm->current_frame.frame_refs[cm->primary_ref_frame].buf->frame_context;
   }
   if (!cm->fc->initialized)
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,

@@ -1943,7 +1943,9 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
     if (lf->mode_ref_delta_update) {
       const int prime_idx = cm->primary_ref_frame;
       const RefCntBuffer *const buf =
-          prime_idx == PRIMARY_REF_NONE ? NULL : cm->frame_refs[prime_idx].buf;
+          prime_idx == PRIMARY_REF_NONE
+              ? NULL
+              : cm->current_frame.frame_refs[prime_idx].buf;
       int8_t last_ref_deltas[REF_FRAMES];
       if (prime_idx == PRIMARY_REF_NONE || buf == NULL) {
         av1_set_default_ref_deltas(last_ref_deltas);
@@ -2875,7 +2877,7 @@ static void check_frame_refs_short_signaling(AV1_COMP *const cpi) {
   RefBuffer frame_refs_copy[INTER_REFS_PER_FRAME];
 
   // Backup the frame refs info
-  memcpy(frame_refs_copy, cm->frame_refs,
+  memcpy(frame_refs_copy, cm->current_frame.frame_refs,
          INTER_REFS_PER_FRAME * sizeof(RefBuffer));
 
   const int lst_map_idx = get_ref_frame_map_idx(cpi, LAST_FRAME);
@@ -2890,7 +2892,8 @@ static void check_frame_refs_short_signaling(AV1_COMP *const cpi) {
   for (int ref_idx = 0; ref_idx < INTER_REFS_PER_FRAME; ++ref_idx) {
     // Compare the buffer index between two reference frames indexed
     // respectively by the encoder and the decoder side decisions.
-    if (cm->frame_refs[ref_idx].buf != frame_refs_copy[ref_idx].buf) {
+    if (cm->current_frame.frame_refs[ref_idx].buf !=
+        frame_refs_copy[ref_idx].buf) {
       cm->frame_refs_short_signaling = 0;
       break;
     }
@@ -2904,13 +2907,14 @@ static void check_frame_refs_short_signaling(AV1_COMP *const cpi) {
         "dec_ref(map_idx=%d)=%d\n",
         get_ref_frame_map_idx(cpi, ref_frame),
         get_ref_frame_buf_idx(cpi, ref_frame), ref_frame,
-        cm->frame_refs[ref_frame - LAST_FRAME].map_idx, ref_frame);
+        cm->current_frame.frame_refs[ref_frame - LAST_FRAME].map_idx,
+        ref_frame);
   }
 #endif  // 0
 
   // Restore the frame refs info if frame_refs_short_signaling is off.
   if (!cm->frame_refs_short_signaling)
-    memcpy(cm->frame_refs, frame_refs_copy,
+    memcpy(cm->current_frame.frame_refs, frame_refs_copy,
            INTER_REFS_PER_FRAME * sizeof(RefBuffer));
 }
 

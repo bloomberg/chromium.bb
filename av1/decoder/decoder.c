@@ -444,7 +444,7 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
 
     // Invalidate these references until the next frame starts.
     for (ref_index = 0; ref_index < INTER_REFS_PER_FRAME; ref_index++) {
-      cm->frame_refs[ref_index].buf = NULL;
+      cm->current_frame.frame_refs[ref_index].buf = NULL;
     }
   }
 }
@@ -467,8 +467,8 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
     // TODO(jkoleszar): Error concealment is undefined and non-normative
     // at this point, but if it becomes so, [0] may not always be the correct
     // thing to do here.
-    if (cm->frame_refs[0].buf != NULL) {
-      cm->frame_refs[0].buf->buf.corrupted = 1;
+    if (cm->current_frame.frame_refs[0].buf != NULL) {
+      cm->current_frame.frame_refs[0].buf->buf.corrupted = 1;
     }
   }
 

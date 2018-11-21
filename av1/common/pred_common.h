@@ -91,9 +91,9 @@ static INLINE int get_comp_index_context(const AV1_COMMON *cm,
                                          const MACROBLOCKD *xd) {
   MB_MODE_INFO *mbmi = xd->mi[0];
   const RefCntBuffer *const bck_buf =
-      cm->frame_refs[mbmi->ref_frame[0] - LAST_FRAME].buf;
+      cm->current_frame.frame_refs[mbmi->ref_frame[0] - LAST_FRAME].buf;
   const RefCntBuffer *const fwd_buf =
-      cm->frame_refs[mbmi->ref_frame[1] - LAST_FRAME].buf;
+      cm->current_frame.frame_refs[mbmi->ref_frame[1] - LAST_FRAME].buf;
   int bck_frame_index = 0, fwd_frame_index = 0;
   int cur_frame_index = cm->cur_frame->order_hint;
 

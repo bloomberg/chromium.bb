@@ -325,6 +325,9 @@ typedef struct {
   unsigned int order_hint;
   unsigned int frame_number;
   SkipModeInfo skip_mode_info;
+  // Each Inter frame can reference INTER_REFS_PER_FRAME buffers. This maps each
+  // (inter) reference frame type to the corresponding reference buffer.
+  RefBuffer frame_refs[INTER_REFS_PER_FRAME];
 } CurrentFrame;
 
 typedef struct AV1Common {
@@ -367,10 +370,6 @@ typedef struct AV1Common {
   // Prepare ref_frame_map for the next frame.
   // Only used in frame parallel decode.
   int next_ref_frame_map[REF_FRAMES];
-
-  // Each Inter frame can reference INTER_REFS_PER_FRAME buffers. This maps each
-  // (inter) reference frame type to the corresponding reference buffer.
-  RefBuffer frame_refs[INTER_REFS_PER_FRAME];
 
   // Index to the 'new' frame (i.e. the frame currently being encoded or
   // decoded) in the buffer pool 'cm->buffer_pool'.
@@ -680,10 +679,10 @@ static INLINE int frame_is_sframe(const AV1_COMMON *cm) {
 
 static INLINE RefCntBuffer *get_prev_frame(const AV1_COMMON *const cm) {
   if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
-      cm->frame_refs[cm->primary_ref_frame].buf == NULL) {
+      cm->current_frame.frame_refs[cm->primary_ref_frame].buf == NULL) {
     return NULL;
   } else {
-    return cm->frame_refs[cm->primary_ref_frame].buf;
+    return cm->current_frame.frame_refs[cm->primary_ref_frame].buf;
   }
 }
 
