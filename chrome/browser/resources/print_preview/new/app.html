@@ -66,7 +66,6 @@
       #container {
         color: var(--google-grey-900);
         flex: 1;
-        outline: none;
         overflow: overlay;
         padding-bottom: 16px;
       }
@@ -95,7 +94,7 @@
           on-print-requested="onPrintRequested_"
           on-cancel-requested="onCancelRequested_">
       </print-preview-header>
-      <div id="container" tabindex="-1">
+      <div id="container">
         <print-preview-destination-settings id="destinationSettings"
             destination="[[destination_]]"
             destination-store="[[destinationStore_]]"
