@@ -53,6 +53,7 @@ class UserMediaController final
   void CancelUserMediaRequest(UserMediaRequest*);
   void ApplyConstraints(ApplyConstraintsRequest*);
   void StopTrack(MediaStreamComponent*);
+  bool HasRequestedUserMedia();
 
   static UserMediaController* From(LocalFrame* frame) {
     return Supplement<LocalFrame>::From<UserMediaController>(frame);
@@ -60,10 +61,12 @@ class UserMediaController final
 
  private:
   std::unique_ptr<UserMediaClient> client_;
+  bool has_requested_user_media_ = false;
 };
 
 inline void UserMediaController::RequestUserMedia(UserMediaRequest* request) {
   client_->RequestUserMedia(request);
+  has_requested_user_media_ = true;
 }
 
 inline void UserMediaController::CancelUserMediaRequest(
@@ -78,6 +81,10 @@ inline void UserMediaController::ApplyConstraints(
 
 inline void UserMediaController::StopTrack(MediaStreamComponent* track) {
   client_->StopTrack(track);
+}
+
+inline bool UserMediaController::HasRequestedUserMedia() {
+  return has_requested_user_media_;
 }
 
 }  // namespace blink
