@@ -62,6 +62,13 @@ public class CastWebContentsActivityTest {
     }
 
     @Test
+    public void testSetsVolumeControlStream() {
+        mActivityLifecycle.create();
+
+        assertEquals(AudioManager.STREAM_MUSIC, mActivity.getVolumeControlStream());
+    }
+
+    @Test
     public void testNewIntentAfterFinishLaunchesNewActivity() {
         mActivityLifecycle.create();
         mActivity.finishForTesting();

@@ -88,7 +88,7 @@ public class CastWebContentsActivity extends Activity {
 
             setContentView(R.layout.cast_web_contents_activity);
 
-            mSurfaceHelperState.set(new CastWebContentsSurfaceHelper(this /* hostActivity */,
+            mSurfaceHelperState.set(new CastWebContentsSurfaceHelper(
                     CastWebContentsScopes.onLayoutActivity(this,
                             (FrameLayout) findViewById(R.id.web_contents_container),
                             CastSwitches.getSwitchValueColor(
@@ -168,6 +168,11 @@ public class CastWebContentsActivity extends Activity {
         super.onCreate(savedInstanceState);
         mCreatedState.set(Unit.unit());
         mGotIntentState.set(getIntent());
+
+        // Whenever our app is visible, volume controls should modify the music stream.
+        // For more information read:
+        // http://developer.android.com/training/managing-audio/volume-playback.html
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Override

@@ -14,10 +14,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.PatternMatcher;
 
@@ -47,7 +45,6 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class CastWebContentsSurfaceHelperTest {
-    private @Mock Activity mActivity;
     private @Mock Observer<WebContents> mWebContentsView;
     private @Mock Consumer<Uri> mFinishCallback;
     private CastWebContentsSurfaceHelper mSurfaceHelper;
@@ -120,8 +117,7 @@ public class CastWebContentsSurfaceHelperTest {
         MockitoAnnotations.initMocks(this);
         when(mMediaSessionGetter.get(any())).thenReturn(mMediaSessionImpl);
         when(mWebContentsView.open(any())).thenReturn(mock(Scope.class));
-        mSurfaceHelper =
-                new CastWebContentsSurfaceHelper(mActivity, mWebContentsView, mFinishCallback);
+        mSurfaceHelper = new CastWebContentsSurfaceHelper(mWebContentsView, mFinishCallback);
         mSurfaceHelper.setMediaSessionGetterForTesting(mMediaSessionGetter);
     }
 
@@ -263,13 +259,6 @@ public class CastWebContentsSurfaceHelperTest {
         // Send broadcast to enable touch input.
         sendBroadcastSync(CastWebContentsIntentUtils.enableTouchInput("1", false));
         assertFalse(mSurfaceHelper.isTouchInputEnabled());
-    }
-
-    @Test
-    public void testSetsVolumeControlStreamOfHostActivity() {
-        StartParams params = new StartParamsBuilder().build();
-        mSurfaceHelper.onNewStartParams(params);
-        verify(mActivity).setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Test
