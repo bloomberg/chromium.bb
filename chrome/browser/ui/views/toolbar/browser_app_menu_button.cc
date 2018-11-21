@@ -45,10 +45,7 @@
 bool BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
 
 BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
-    : AppMenuButton(toolbar_view),
-      type_and_severity_{AppMenuIconController::IconType::NONE,
-                         AppMenuIconController::Severity::NONE},
-      toolbar_view_(toolbar_view) {
+    : AppMenuButton(toolbar_view), toolbar_view_(toolbar_view) {
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);

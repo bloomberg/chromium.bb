@@ -78,7 +78,9 @@ class BrowserAppMenuButton : public AppMenuButton,
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
 
-  AppMenuIconController::TypeAndSeverity type_and_severity_;
+  AppMenuIconController::TypeAndSeverity type_and_severity_{
+      AppMenuIconController::IconType::NONE,
+      AppMenuIconController::Severity::NONE};
 
   // Our owning toolbar view.
   ToolbarView* const toolbar_view_;
