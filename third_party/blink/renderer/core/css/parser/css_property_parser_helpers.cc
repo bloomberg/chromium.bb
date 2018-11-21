@@ -1802,12 +1802,13 @@ const CSSValue* ParseLonghand(CSSPropertyID unresolved_property,
       return nullptr;
   }
 
-  const CSSValue* result =
-      ToLonghand(CSSProperty::Get(property_id))
-          .ParseSingleValue(
-              range, context,
-              CSSParserLocalContext(isPropertyAlias(unresolved_property),
-                                    current_shorthand));
+  const auto local_context =
+      CSSParserLocalContext()
+          .WithAliasParsing(isPropertyAlias(unresolved_property))
+          .WithCurrentShorthand(current_shorthand);
+
+  const CSSValue* result = ToLonghand(CSSProperty::Get(property_id))
+                               .ParseSingleValue(range, context, local_context);
   return result;
 }
 
