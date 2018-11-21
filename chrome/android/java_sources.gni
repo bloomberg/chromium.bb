@@ -119,7 +119,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/ManualFillingCoordinator.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/KeyboardExtensionSizeManager.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/ManualFillingMediator.java",
-  "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessoryBridge.java",
+  "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/ManualFillingBridge.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessorySheetCoordinator.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessorySheetMediator.java",
   "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/PasswordAccessorySheetProperties.java",

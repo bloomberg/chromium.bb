@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/password_manager/password_accessory_view_android.h"
+#include "chrome/browser/android/password_manager/manual_filling_view_android.h"
 
 #include <jni.h>
 
@@ -15,7 +15,7 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "components/autofill/core/browser/accessory_sheet_data.h"
-#include "jni/PasswordAccessoryBridge_jni.h"
+#include "jni/ManualFillingBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -33,15 +33,14 @@ ScopedJavaLocalRef<jobject> ConvertAccessorySheetDataToJavaObject(
     JNIEnv* env,
     const AccessorySheetData& data) {
   ScopedJavaLocalRef<jobject> j_data =
-      Java_PasswordAccessoryBridge_createAccessorySheetData(
+      Java_ManualFillingBridge_createAccessorySheetData(
           env, ConvertUTF16ToJavaString(env, data.title()));
 
   for (const UserInfo& user_info : data.user_info_list()) {
     ScopedJavaLocalRef<jobject> j_user_info =
-        Java_PasswordAccessoryBridge_addUserInfoToAccessorySheetData(env,
-                                                                     j_data);
+        Java_ManualFillingBridge_addUserInfoToAccessorySheetData(env, j_data);
     for (const UserInfo::Field& field : user_info.fields()) {
-      Java_PasswordAccessoryBridge_addFieldToUserInfo(
+      Java_ManualFillingBridge_addFieldToUserInfo(
           env, j_user_info, ConvertUTF16ToJavaString(env, field.display_text()),
           ConvertUTF16ToJavaString(env, field.a11y_description()),
           field.is_obfuscated(), field.selectable());
@@ -49,7 +48,7 @@ ScopedJavaLocalRef<jobject> ConvertAccessorySheetDataToJavaObject(
   }
 
   for (const FooterCommand& footer_command : data.footer_commands()) {
-    Java_PasswordAccessoryBridge_addFooterCommandToAccessorySheetData(
+    Java_ManualFillingBridge_addFooterCommandToAccessorySheetData(
         env, j_data,
         ConvertUTF16ToJavaString(env, footer_command.display_text()));
   }
@@ -58,76 +57,76 @@ ScopedJavaLocalRef<jobject> ConvertAccessorySheetDataToJavaObject(
 
 }  // namespace
 
-PasswordAccessoryViewAndroid::PasswordAccessoryViewAndroid(
+ManualFillingViewAndroid::ManualFillingViewAndroid(
     ManualFillingController* controller)
     : controller_(controller) {
   ui::ViewAndroid* view_android = controller_->container_view();
 
   DCHECK(view_android);
-  java_object_.Reset(Java_PasswordAccessoryBridge_create(
+  java_object_.Reset(Java_ManualFillingBridge_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
       view_android->GetWindowAndroid()->GetJavaObject()));
 }
 
-PasswordAccessoryViewAndroid::~PasswordAccessoryViewAndroid() {
+ManualFillingViewAndroid::~ManualFillingViewAndroid() {
   DCHECK(!java_object_.is_null());
-  Java_PasswordAccessoryBridge_destroy(base::android::AttachCurrentThread(),
-                                       java_object_);
+  Java_ManualFillingBridge_destroy(base::android::AttachCurrentThread(),
+                                   java_object_);
   java_object_.Reset(nullptr);
 }
 
-void PasswordAccessoryViewAndroid::OnItemsAvailable(
+void ManualFillingViewAndroid::OnItemsAvailable(
     const AccessorySheetData& data) {
   DCHECK(!java_object_.is_null());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_PasswordAccessoryBridge_onItemsAvailable(
+  Java_ManualFillingBridge_onItemsAvailable(
       env, java_object_, ConvertAccessorySheetDataToJavaObject(env, data));
 }
 
-void PasswordAccessoryViewAndroid::CloseAccessorySheet() {
-  Java_PasswordAccessoryBridge_closeAccessorySheet(
+void ManualFillingViewAndroid::CloseAccessorySheet() {
+  Java_ManualFillingBridge_closeAccessorySheet(
       base::android::AttachCurrentThread(), java_object_);
 }
 
-void PasswordAccessoryViewAndroid::SwapSheetWithKeyboard() {
-  Java_PasswordAccessoryBridge_swapSheetWithKeyboard(
+void ManualFillingViewAndroid::SwapSheetWithKeyboard() {
+  Java_ManualFillingBridge_swapSheetWithKeyboard(
       base::android::AttachCurrentThread(), java_object_);
 }
 
-void PasswordAccessoryViewAndroid::ShowWhenKeyboardIsVisible() {
-  Java_PasswordAccessoryBridge_showWhenKeyboardIsVisible(
+void ManualFillingViewAndroid::ShowWhenKeyboardIsVisible() {
+  Java_ManualFillingBridge_showWhenKeyboardIsVisible(
       base::android::AttachCurrentThread(), java_object_);
 }
 
-void PasswordAccessoryViewAndroid::Hide() {
-  Java_PasswordAccessoryBridge_hide(base::android::AttachCurrentThread(),
-                                    java_object_);
+void ManualFillingViewAndroid::Hide() {
+  Java_ManualFillingBridge_hide(base::android::AttachCurrentThread(),
+                                java_object_);
 }
 
-void PasswordAccessoryViewAndroid::OnAutomaticGenerationStatusChanged(
+void ManualFillingViewAndroid::OnAutomaticGenerationStatusChanged(
     bool available) {
   if (!available && java_object_.is_null())
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_PasswordAccessoryBridge_onAutomaticGenerationStatusChanged(
-      env, java_object_, available);
+  Java_ManualFillingBridge_onAutomaticGenerationStatusChanged(env, java_object_,
+                                                              available);
 }
 
-void PasswordAccessoryViewAndroid::OnFaviconRequested(
+void ManualFillingViewAndroid::OnFaviconRequested(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jint desiredSizeInPx,
     const base::android::JavaParamRef<jobject>& j_callback) {
   controller_->GetFavicon(
       desiredSizeInPx,
-      base::BindOnce(&PasswordAccessoryViewAndroid::OnImageFetched,
+      base::BindOnce(&ManualFillingViewAndroid::OnImageFetched,
                      base::Unretained(this),  // Outlives or cancels request.
                      base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 
-void PasswordAccessoryViewAndroid::OnFillingTriggered(
+void ManualFillingViewAndroid::OnFillingTriggered(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jboolean isPassword,
@@ -136,7 +135,7 @@ void PasswordAccessoryViewAndroid::OnFillingTriggered(
       isPassword, base::android::ConvertJavaStringToUTF16(textToFill));
 }
 
-void PasswordAccessoryViewAndroid::OnOptionSelected(
+void ManualFillingViewAndroid::OnOptionSelected(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<_jstring*>& selectedOption) {
@@ -144,13 +143,13 @@ void PasswordAccessoryViewAndroid::OnOptionSelected(
       base::android::ConvertJavaStringToUTF16(selectedOption));
 }
 
-void PasswordAccessoryViewAndroid::OnGenerationRequested(
+void ManualFillingViewAndroid::OnGenerationRequested(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   controller_->OnGenerationRequested();
 }
 
-void PasswordAccessoryViewAndroid::OnImageFetched(
+void ManualFillingViewAndroid::OnImageFetched(
     const base::android::ScopedJavaGlobalRef<jobject>& j_callback,
     const gfx::Image& image) {
   base::android::ScopedJavaLocalRef<jobject> j_bitmap;
@@ -163,5 +162,5 @@ void PasswordAccessoryViewAndroid::OnImageFetched(
 // static
 std::unique_ptr<ManualFillingViewInterface> ManualFillingViewInterface::Create(
     ManualFillingController* controller) {
-  return std::make_unique<PasswordAccessoryViewAndroid>(controller);
+  return std::make_unique<ManualFillingViewAndroid>(controller);
 }
