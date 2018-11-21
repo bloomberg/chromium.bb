@@ -71,10 +71,6 @@ class SigninManagerBase : public KeyedService {
         const AccountInfo& account_info,
         const std::string& password) {}
 
-    // DEPRECATED: Use the above method instead.
-    virtual void GoogleSigninSucceeded(const std::string& account_id,
-                                       const std::string& username) {}
-
     // Called when the currently signed-in user for a user has been signed out.
     virtual void GoogleSignedOut(const AccountInfo& account_info) {}
 

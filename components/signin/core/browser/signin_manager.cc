@@ -475,7 +475,6 @@ void SigninManager::OnSignedIn() {
 void SigninManager::FireGoogleSigninSucceeded() {
   const AccountInfo account_info = GetAuthenticatedAccountInfo();
   for (auto& observer : observer_list_) {
-    observer.GoogleSigninSucceeded(account_info.account_id, account_info.email);
     observer.GoogleSigninSucceeded(account_info);
     observer.GoogleSigninSucceededWithPassword(account_info, password_);
   }

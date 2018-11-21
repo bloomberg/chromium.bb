@@ -165,9 +165,9 @@ void IdentityManagerImpl::OnRefreshTokenAvailable(
   OnAccountStateChange(account_id);
 }
 
-void IdentityManagerImpl::GoogleSigninSucceeded(const std::string& account_id,
-                                                const std::string& username) {
-  OnAccountStateChange(account_id);
+void IdentityManagerImpl::GoogleSigninSucceeded(
+    const AccountInfo& account_info) {
+  OnAccountStateChange(account_info.account_id);
 }
 
 void IdentityManagerImpl::OnAccountStateChange(const std::string& account_id) {

@@ -491,8 +491,7 @@ void AccountConsistencyService::OnGaiaAccountsInCookieUpdated(
 }
 
 void AccountConsistencyService::GoogleSigninSucceeded(
-    const std::string& account_id,
-    const std::string& username) {
+    const AccountInfo& account_info) {
   AddChromeConnectedCookies();
 }
 
