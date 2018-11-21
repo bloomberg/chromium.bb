@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory_handle.h"
@@ -32,14 +33,6 @@
 // First include of all message files to provide basic types.
 #include "tools/ipc_fuzzer/message_lib/all_messages.h"
 #include "tools/ipc_fuzzer/message_lib/all_message_null_macros.h"
-
-#if defined(COMPILER_GCC)
-#define PRETTY_FUNCTION __PRETTY_FUNCTION__
-#elif defined(COMPILER_MSVC)
-#define PRETTY_FUNCTION __FUNCSIG__
-#else
-#define PRETTY_FUNCTION __FUNCTION__
-#endif
 
 namespace IPC {
 class Message;

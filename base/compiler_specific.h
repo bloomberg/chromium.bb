@@ -217,4 +217,13 @@
 #define FALLTHROUGH
 #endif
 
+#if defined(COMPILER_GCC)
+#define PRETTY_FUNCTION __PRETTY_FUNCTION__
+#elif defined(COMPILER_MSVC)
+#define PRETTY_FUNCTION __FUNCSIG__
+#else
+// See https://en.cppreference.com/w/c/language/function_definition#func
+#define PRETTY_FUNCTION __func__
+#endif
+
 #endif  // BASE_COMPILER_SPECIFIC_H_

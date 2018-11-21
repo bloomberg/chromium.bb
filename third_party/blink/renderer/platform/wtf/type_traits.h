@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <type_traits>
 #include <utility>
+#include "base/compiler_specific.h"
 #include "base/template_util.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
@@ -34,7 +35,7 @@ namespace WTF {
 // Returns a string that contains the type name of |T| as a substring.
 template <typename T>
 inline const char* GetStringWithTypeName() {
-  return WTF_PRETTY_FUNCTION;
+  return PRETTY_FUNCTION;
 }
 
 template <typename T>

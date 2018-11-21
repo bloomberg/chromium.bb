@@ -41,16 +41,6 @@
 #endif
 #endif
 
-/* WTF_PRETTY_FUNCTION */
-
-#if defined(COMPILER_GCC)
-#define WTF_PRETTY_FUNCTION __PRETTY_FUNCTION__
-#elif defined(COMPILER_MSVC)
-#define WTF_PRETTY_FUNCTION __FUNCSIG__
-#else
-#define WTF_PRETTY_FUNCTION __func__
-#endif
-
 /* NO_SANITIZE_UNRELATED_CAST - Disable runtime checks related to casts between
  * unrelated objects (-fsanitize=cfi-unrelated-cast or -fsanitize=vptr). */
 
