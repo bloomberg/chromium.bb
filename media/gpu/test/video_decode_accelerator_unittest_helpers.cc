@@ -4,6 +4,9 @@
 
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 
+#include <utility>
+
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/strings/string_split.h"
@@ -72,6 +75,13 @@ VideoDecodeAcceleratorTestEnvironment::GetRenderingTaskRunner() const {
 EncodedDataHelper::EncodedDataHelper(const std::string& data,
                                      VideoCodecProfile profile)
     : data_(data), profile_(profile) {}
+
+EncodedDataHelper::EncodedDataHelper(const std::vector<uint8_t>& stream,
+                                     VideoCodecProfile profile)
+    : EncodedDataHelper(
+          std::string(reinterpret_cast<const char*>(stream.data()),
+                      stream.size()),
+          profile) {}
 
 EncodedDataHelper::~EncodedDataHelper() {
   base::STLClearObject(&data_);
