@@ -303,12 +303,7 @@ bool RLZTracker::Init(bool first_run,
       delegate_->IsBrandOrganic(reactivation_brand_)) {
     SYSLOG(INFO) << "RLZ is disabled";
   } else {
-    background_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(
-                       [](const std::string& brand) {
-                         rlz_lib::UpdateExistingAccessPointRlz(brand);
-                       },
-                       brand_));
+    rlz_lib::UpdateExistingAccessPointRlz(brand_);
   }
 #endif
 
