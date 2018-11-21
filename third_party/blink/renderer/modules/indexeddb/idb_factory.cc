@@ -202,6 +202,16 @@ WebIDBFactory* IDBFactory::GetFactory() {
 ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
                                           ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+
+  if (!ExecutionContext::From(script_state)
+           ->GetSecurityOrigin()
+           ->CanAccessDatabase()) {
+    exception_state.ThrowSecurityError(
+        "Access to the IndexedDB API is denied in this context.");
+    resolver->Reject();
+    return resolver->Promise();
+  }
+
   GetFactory()->GetDatabaseInfo(
       WebIDBGetDBNamesCallbacksImpl::Create(resolver).release(),
       WebSecurityOrigin(

@@ -58,8 +58,10 @@ ACTION_TEMPLATE(SaveUniquePointer,
   *unique_pointer = base::WrapUnique(std::get<k>(args));
 }
 
-TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksResolvesPromise) {
+TEST_F(IDBFactoryTest, WebIDBGetDBInfoCallbacksResolvesPromise) {
   V8TestingScope scope;
+  scope.GetDocument().SetSecurityOrigin(
+      SecurityOrigin::Create(KURL("https://example.com")));
   std::unique_ptr<MockWebIDBFactory> web_factory = MockWebIDBFactory::Create();
   std::unique_ptr<WebIDBCallbacks> wc;
   EXPECT_CALL(*web_factory, GetDatabaseInfo(testing::_, testing::_, testing::_))
@@ -93,6 +95,8 @@ TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksResolvesPromise) {
 
 TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksRejectsPromise) {
   V8TestingScope scope;
+  scope.GetDocument().SetSecurityOrigin(
+      SecurityOrigin::Create(KURL("https://example.com")));
   std::unique_ptr<MockWebIDBFactory> web_factory = MockWebIDBFactory::Create();
   std::unique_ptr<WebIDBCallbacks> wc;
   EXPECT_CALL(*web_factory, GetDatabaseInfo(testing::_, testing::_, testing::_))
