@@ -64,12 +64,42 @@ enum class AnswererState {
   kMaxValue = kSetLocalAnswerResolved,
 };
 
+// A metric reflecting the most successful attempt towards reaching a connected
+// state. It's a simplified view based on a CallSetupStateTracker's OffererState
+// and AnswererState. Transition graph:
+//
+//   kNotStarted
+//      v
+//   kStarted ----+
+//      v         |
+//   kFailed      |
+//      v         |
+//   kSucceded <--+
+//
+enum class CallSetupState {
+  // OffererState and AnswererState are both in kNotStarted.
+  kNotStarted = 0,
+  // OffererState or AnswererState have had a value other than kNotStarted, but
+  // the conditions for any of the other states have not been reached.
+  kStarted = 1,
+  // OffererState or AnswererState have or have had one of the "rejected"
+  // states, and the condition for kSucceeded has not been reached.
+  kFailed = 2,
+  // OffererState or AnswererState is in the final "resolved" state -
+  // OffererState::kSetRemoteAnswerResolved or
+  // AnswererState::kSetLocalAnswerResolved.
+  kSucceeded = 3,
+
+  kMaxValue = kSucceeded,
+};
+
 class MODULES_EXPORT CallSetupStateTracker {
  public:
   CallSetupStateTracker();
 
   OffererState offerer_state() const;
   AnswererState answerer_state() const;
+  CallSetupState CallSetupState() const;
 
   bool NoteOffererStateEvent(OffererState event);
   bool NoteAnswererStateEvent(AnswererState event);
@@ -82,6 +112,9 @@ class MODULES_EXPORT CallSetupStateTracker {
 
   OffererState offerer_state_;
   AnswererState answerer_state_;
+  // If the tracker has ever been in any of the "rejected" states. This remains
+  // true even if the peer connection recovers to a non-"rejected" state.
+  bool has_ever_failed_;
 };
 
 }  // namespace blink
