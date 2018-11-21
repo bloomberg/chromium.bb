@@ -2942,10 +2942,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflinePagesSvelteConcurrentLoadingFeature)},
 #endif  // !defined(OS_ANDROID)
-    {"cross-process-guests",
-     flag_descriptions::kCrossProcessGuestViewIsolationName,
-     flag_descriptions::kCrossProcessGuestViewIsolationDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kGuestViewCrossProcessFrames)},
 #if defined(OS_ANDROID)
     {"video-fullscreen-orientation-lock",
      flag_descriptions::kVideoFullscreenOrientationLockName,
