@@ -30,7 +30,9 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 
+#include <limits>
 #include <memory>
+#include <utility>
 
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -425,9 +427,6 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   GetEventHandlerRegistry().DidRemoveAllEventHandlers(*DomWindow());
 
   DomWindow()->FrameDestroyed();
-
-  if (GetPage() && GetPage()->GetFocusController().FocusedFrame() == this)
-    GetPage()->GetFocusController().SetFocusedFrame(nullptr);
 
   probe::frameDetachedFromParent(this);
 

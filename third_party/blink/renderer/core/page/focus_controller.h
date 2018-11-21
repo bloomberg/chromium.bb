@@ -62,6 +62,9 @@ class CORE_EXPORT FocusController final
   LocalFrame* FocusedFrame() const;
   Frame* FocusedOrMainFrame() const;
 
+  // Clears |focused_frame_| if it's been detached.
+  void FrameDetached(Frame* detached_frame);
+
   // Finds the focused HTMLFrameOwnerElement, if any, in the provided frame.
   // An HTMLFrameOwnerElement is considered focused if the frame it owns, or
   // one of its descendant frames, is currently focused.
