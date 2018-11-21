@@ -62,7 +62,7 @@ template <typename T>
 scoped_refptr<T> AdoptRef(T* obj) {
   using Tag = std::decay_t<decltype(T::kRefCountPreference)>;
   static_assert(std::is_same<subtle::StartRefCountFromOneTag, Tag>::value,
-                "Use AdoptRef only for the reference count starts from one.");
+                "Use AdoptRef only if the reference count starts from one.");
 
   DCHECK(obj);
   DCHECK(obj->HasOneRef());
