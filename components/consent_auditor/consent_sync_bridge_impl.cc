@@ -248,8 +248,6 @@ void ConsentSyncBridgeImpl::OnStoreCreated(
     return;
   }
 
-  // TODO(vitaliii): Garbage collect old consents if sync is disabled.
-
   store_ = std::move(store);
   store_->ReadAllMetadata(
       base::BindOnce(&ConsentSyncBridgeImpl::OnReadAllMetadata,
