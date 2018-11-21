@@ -157,8 +157,8 @@ function testAdjust12() {
 
   adjust(sm, 5, 20, 10);
 
-  assertEquals(0, sm.leadIndex, 'lead');
-  assertEquals(0, sm.anchorIndex, 'anchor');
+  assertEquals(-1, sm.leadIndex, 'lead');
+  assertEquals(-1, sm.anchorIndex, 'anchor');
   assertArrayEquals(range(0, 4), sm.selectedIndexes);
 }
 
@@ -173,64 +173,6 @@ function testAdjust13() {
   assertEquals(10, sm.leadIndex, 'lead');
   assertEquals(10, sm.anchorIndex, 'anchor');
   assertArrayEquals(range(0, 14), sm.selectedIndexes);
-}
-
-function testAdjust14() {
-  var sm = createSelectionModel(5, true);
-
-  sm.selectedIndexes = [2, 3];
-  sm.leadIndex = sm.anchorIndex = 3;
-
-  adjust(sm, 2, 2, 0);
-
-  assertEquals(2, sm.leadIndex, 'lead');
-  assertEquals(2, sm.anchorIndex, 'anchor');
-  assertArrayEquals(range(2, 2), sm.selectedIndexes);
-}
-
-function testAdjust15() {
-  var sm = createSelectionModel(7, true);
-
-  sm.selectedIndexes = [1, 3, 5];
-  sm.leadIndex = sm.anchorIndex = 1;
-
-  adjust(sm, 1, 1, 0);
-  adjust(sm, 2, 1, 0);
-  adjust(sm, 3, 1, 0);
-
-  assertEquals(3, sm.leadIndex, 'lead');
-  assertEquals(3, sm.anchorIndex, 'anchor');
-  assertArrayEquals(range(3, 3), sm.selectedIndexes);
-}
-
-function testAdjust16() {
-  var sm = createSelectionModel(7, true);
-
-  sm.selectedIndexes = [1, 3, 5];
-  sm.leadIndex = sm.anchorIndex = 3;
-
-  adjust(sm, 1, 1, 0);
-  adjust(sm, 2, 1, 0);
-  adjust(sm, 3, 1, 0);
-
-  assertEquals(3, sm.leadIndex, 'lead');
-  assertEquals(3, sm.anchorIndex, 'anchor');
-  assertArrayEquals(range(3, 3), sm.selectedIndexes);
-}
-
-function testAdjust17() {
-  var sm = createSelectionModel(7, true);
-
-  sm.selectedIndexes = [1, 3, 5];
-  sm.leadIndex = sm.anchorIndex = 5;
-
-  adjust(sm, 1, 1, 0);
-  adjust(sm, 2, 1, 0);
-  adjust(sm, 3, 1, 0);
-
-  assertEquals(3, sm.leadIndex, 'lead');
-  assertEquals(3, sm.anchorIndex, 'anchor');
-  assertArrayEquals(range(3, 3), sm.selectedIndexes);
 }
 
 function testLeadAndAnchor1() {
@@ -249,8 +191,8 @@ function testLeadAndAnchor2() {
   sm.leadIndex = sm.anchorIndex = 10;
   sm.selectAll();
 
-  assertEquals(0, sm.leadIndex, 'lead');
-  assertEquals(0, sm.anchorIndex, 'anchor');
+  assertEquals(-1, sm.leadIndex, 'lead');
+  assertEquals(-1, sm.anchorIndex, 'anchor');
 }
 
 function testSelectAll() {
