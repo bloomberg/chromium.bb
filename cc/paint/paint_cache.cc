@@ -48,6 +48,7 @@ void ClientPaintCache::Purge(PurgedData* purged_data) {
     (*purged_data)[static_cast<uint32_t>(type)].push_back(id);
     DCHECK_GE(bytes_used_, it->second);
     bytes_used_ -= it->second;
+    cache_map_.Erase(it);
   }
 }
 

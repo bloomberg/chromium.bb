@@ -47,14 +47,20 @@ TEST_P(PaintCacheTest, ClientBasic) {
 
 TEST_P(PaintCacheTest, ClientPurgeForBudgeting) {
   ClientPaintCache client_cache(kDefaultBudget);
-  client_cache.Put(GetType(), 1u, kDefaultBudget);
+  client_cache.Put(GetType(), 1u, kDefaultBudget - 100);
   client_cache.Put(GetType(), 2u, kDefaultBudget);
+  client_cache.Put(GetType(), 3u, kDefaultBudget);
 
   ClientPaintCache::PurgedData purged_data;
   client_cache.Purge(&purged_data);
   const auto& ids = purged_data[static_cast<uint32_t>(GetType())];
-  ASSERT_EQ(ids.size(), 1u);
+  ASSERT_EQ(ids.size(), 2u);
   EXPECT_EQ(ids[0], 1u);
+  EXPECT_EQ(ids[1], 2u);
+
+  EXPECT_FALSE(client_cache.Get(GetType(), 1u));
+  EXPECT_FALSE(client_cache.Get(GetType(), 2u));
+  EXPECT_TRUE(client_cache.Get(GetType(), 3u));
 }
 
 TEST_P(PaintCacheTest, ClientPurgeAll) {
