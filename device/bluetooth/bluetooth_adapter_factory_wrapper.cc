@@ -16,7 +16,7 @@
 namespace {
 
 static base::LazyInstance<device::BluetoothAdapterFactoryWrapper>::Leaky
-    g_singleton = LAZY_INSTANCE_INITIALIZER;
+    g_bluetooth_adapter_factory_wrapper_singleton = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -32,7 +32,7 @@ BluetoothAdapterFactoryWrapper::~BluetoothAdapterFactoryWrapper() {
 
 // static
 BluetoothAdapterFactoryWrapper& BluetoothAdapterFactoryWrapper::Get() {
-  return g_singleton.Get();
+  return g_bluetooth_adapter_factory_wrapper_singleton.Get();
 }
 
 bool BluetoothAdapterFactoryWrapper::IsLowEnergySupported() {
