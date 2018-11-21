@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_PERMISSIONS_TEST_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_PERMISSIONS_TEST_UTIL_H_
 
+#include <string>
+#include <vector>
+
 #include "chrome/browser/extensions/permissions_updater.h"
 
 namespace content {
@@ -15,8 +18,14 @@ namespace extensions {
 
 class Extension;
 class PermissionSet;
+class URLPatternSet;
 
 namespace permissions_test_util {
+
+// Returns a list of |patterns| as strings, making it easy to compare for
+// equality with readable errors. This will omit the chrome://favicon host, if
+// present, from the result.
+std::vector<std::string> GetPatternsAsStrings(const URLPatternSet& patterns);
 
 // Calls corresponding PermissionsUpdater method respectively and wait for its
 // asynchronous completion.

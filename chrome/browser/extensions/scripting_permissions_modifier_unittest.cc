@@ -35,25 +35,7 @@ namespace extensions {
 
 namespace {
 
-// Returns a list of |patterns| as strings, making it easy to compare for
-// equality with readable errors.
-std::vector<std::string> GetPatternsAsStrings(const URLPatternSet& patterns) {
-  std::vector<std::string> pattern_strings;
-  pattern_strings.reserve(patterns.size());
-  for (const auto& pattern : patterns) {
-    // chrome://favicon/ is automatically added as a pattern when the extension
-    // requests access to <all_urls>, but isn't really a host pattern (it allows
-    // the extension to retrieve a favicon for a given URL). Since it's not
-    // really a host permission and doesn't appear in the requested permissions
-    // of the extension, it's not withheld. Just ignore it when generating host
-    // sets.
-    std::string pattern_string = pattern.GetAsString();
-    if (pattern_string != "chrome://favicon/*")
-      pattern_strings.push_back(pattern_string);
-  }
-
-  return pattern_strings;
-}
+using permissions_test_util::GetPatternsAsStrings;
 
 std::vector<std::string> GetEffectivePatternsAsStrings(
     const Extension& extension) {
