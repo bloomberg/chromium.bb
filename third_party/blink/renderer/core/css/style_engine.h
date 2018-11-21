@@ -272,8 +272,10 @@ class CORE_EXPORT StyleEngine final
     CollectUserStyleFeaturesTo(features);
     CollectScopedStyleFeaturesTo(features);
     for (CSSStyleSheet* sheet : custom_element_default_style_sheets_) {
-      if (sheet)
-        features.Add(RuleSetForSheet(*sheet)->Features());
+      if (!sheet)
+        continue;
+      if (RuleSet* rule_set = RuleSetForSheet(*sheet))
+        features.Add(rule_set->Features());
     }
   }
 

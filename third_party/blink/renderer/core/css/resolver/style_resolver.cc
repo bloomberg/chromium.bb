@@ -215,8 +215,12 @@ static void MatchCustomElementRules(const Element& element,
           element.GetCustomElementDefinition()) {
     if (definition->HasDefaultStyleSheets()) {
       for (CSSStyleSheet* style : definition->DefaultStyleSheets()) {
-        collector.CollectMatchingRules(MatchRequest(
-            element.GetDocument().GetStyleEngine().RuleSetForSheet(*style)));
+        if (!style)
+          continue;
+        RuleSet* rule_set =
+            element.GetDocument().GetStyleEngine().RuleSetForSheet(*style);
+        if (rule_set)
+          collector.CollectMatchingRules(MatchRequest(rule_set));
       }
     }
   }
@@ -448,7 +452,6 @@ void StyleResolver::MatchAuthorRules(const Element& element,
     MatchAuthorRulesV0(element, collector);
     return;
   }
-
   MatchHostAndCustomElementRules(element, collector);
 
   ScopedStyleResolver* element_scope_resolver = ScopedResolverFor(element);
