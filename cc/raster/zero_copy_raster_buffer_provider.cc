@@ -180,7 +180,7 @@ ZeroCopyRasterBufferProvider::AcquireBufferForRaster(
     const gpu::Capabilities& caps =
         compositor_context_provider_->ContextCapabilities();
     backing->texture_target = gpu::GetBufferTextureTarget(
-        gfx::BufferUsage::SCANOUT, BufferFormat(resource.format()), caps);
+        kBufferUsage, BufferFormat(resource.format()), caps);
     backing->overlay_candidate = true;
     // This RasterBufferProvider will modify the resource outside of the
     // GL command stream. So resources should not become available for reuse
