@@ -93,6 +93,8 @@ void FormatValidatedNumber(const ::i18n::phonenumbers::PhoneNumber& number,
 
 namespace i18n {
 
+const size_t kMaxPhoneNumberSize = 1000u;
+
 // Returns true if |phone_number| is a possible number.
 bool IsPossiblePhoneNumber(
     const ::i18n::phonenumbers::PhoneNumber& phone_number) {
@@ -136,6 +138,9 @@ bool ParsePhoneNumber(const base::string16& value,
   city_code->clear();
   number->clear();
   *i18n_number = ::i18n::phonenumbers::PhoneNumber();
+
+  if (value.size() > kMaxPhoneNumberSize)
+    return false;
 
   std::string number_text(base::UTF16ToUTF8(value));
 
