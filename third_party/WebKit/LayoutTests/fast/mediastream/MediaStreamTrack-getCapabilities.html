@@ -22,6 +22,9 @@ promise_test(function() {
     assert_true(capabilities.hasOwnProperty('groupId'));
     assert_true(capabilities.hasOwnProperty('facingMode'));
     verifyVideoRangeProperties(capabilities);
+    assert_true(capabilities.hasOwnProperty('resizeMode'));
+    assert_in_array('none', capabilities.resizeMode);
+    assert_in_array('crop-and-scale', capabilities.resizeMode);
   });
 }, 'getCapabilities() support for getUserMedia() video track.');
 
@@ -42,6 +45,9 @@ test(function() {
   assert_true(capabilities.hasOwnProperty('facingMode'));
   assert_equals(Object.keys(capabilities.facingMode).length, 0);
   verifyVideoRangeProperties(capabilities);
+  assert_true(capabilities.hasOwnProperty('resizeMode'));
+  assert_in_array('none', capabilities.resizeMode);
+  assert_in_array('crop-and-scale', capabilities.resizeMode);
 }, 'getCapabilities() support for video track associated with a canvas element.');
 
 test(function() {
@@ -60,6 +66,9 @@ test(function() {
     assert_true(videoCapabilities.hasOwnProperty('facingMode'));
     assert_equals(Object.keys(videoCapabilities.facingMode).length, 0);
     verifyVideoRangeProperties(videoCapabilities);
+    assert_true(videoCapabilities.hasOwnProperty('resizeMode'));
+    assert_in_array('none', videoCapabilities.resizeMode);
+    assert_in_array('crop-and-scale', videoCapabilities.resizeMode);
   };
 }, 'getCapabilities() support for audio and video tracks associated with a video element.');
 
@@ -81,6 +90,9 @@ promise_test(function() {
     assert_true(videoCapabilities.hasOwnProperty('deviceId'));
     assert_true(videoCapabilities.hasOwnProperty('facingMode'));
     assert_equals(Object.keys(videoCapabilities.facingMode).length, 0);
+    assert_true(videoCapabilities.hasOwnProperty('resizeMode'));
+    assert_in_array('none', videoCapabilities.resizeMode);
+    assert_in_array('crop-and-scale', videoCapabilities.resizeMode);
   });
 }, 'getCapabilities() support for audio and video tracks associated with a RTCPeerConnection.');
 

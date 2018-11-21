@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/modules/mediastream/input_device_info.h"
 
 #include <algorithm>
+
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_track_capabilities.h"
 
 namespace blink {
@@ -131,6 +133,8 @@ MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
         break;
     }
     capabilities->setFacingMode(facing_mode);
+    capabilities->setResizeMode({WebMediaStreamTrack::kResizeModeNone,
+                                 WebMediaStreamTrack::kResizeModeRescale});
   }
   return capabilities;
 }
