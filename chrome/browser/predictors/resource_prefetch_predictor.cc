@@ -34,13 +34,6 @@ namespace {
 const float kMinOriginConfidenceToTriggerPreconnect = 0.75f;
 const float kMinOriginConfidenceToTriggerPreresolve = 0.2f;
 
-// For reporting events of interest that are not tied to any navigation.
-enum ReportingEvent {
-  REPORTING_EVENT_ALL_HISTORY_CLEARED = 0,
-  REPORTING_EVENT_PARTIAL_HISTORY_CLEARED = 1,
-  REPORTING_EVENT_COUNT = 2
-};
-
 float ComputeRedirectConfidence(const predictors::RedirectStat& redirect) {
   return (redirect.number_of_hits() + 0.0) /
          (redirect.number_of_hits() + redirect.number_of_misses());
@@ -438,17 +431,10 @@ void ResourcePrefetchPredictor::OnURLsDeleted(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(initialization_state_ == INITIALIZED);
 
-  if (deletion_info.IsAllHistory()) {
+  if (deletion_info.IsAllHistory())
     DeleteAllUrls();
-    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.ReportingEvent",
-                              REPORTING_EVENT_ALL_HISTORY_CLEARED,
-                              REPORTING_EVENT_COUNT);
-  } else {
+  else
     DeleteUrls(deletion_info.deleted_rows());
-    UMA_HISTOGRAM_ENUMERATION("ResourcePrefetchPredictor.ReportingEvent",
-                              REPORTING_EVENT_PARTIAL_HISTORY_CLEARED,
-                              REPORTING_EVENT_COUNT);
-  }
 }
 
 void ResourcePrefetchPredictor::OnHistoryServiceLoaded(
