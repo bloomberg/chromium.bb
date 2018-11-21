@@ -932,7 +932,6 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
 
 
 class IsolateServerDownloadTest(TestCase):
-
   def _url_read_json(self, url, **kwargs):
     """Current _url_read_json mock doesn't respect identical URLs."""
     logging.warn('url_read_json(%s, %s)', url[:500], str(kwargs)[:500])
@@ -950,8 +949,9 @@ class IsolateServerDownloadTest(TestCase):
     self.fail('Unknown request %s' % url)
 
   def _get_actual(self):
+    """Returns the files in '<self.tempdir>/target'."""
     actual = {}
-    for root, _dirs, files in os.walk(self.tempdir):
+    for root, _dirs, files in os.walk(os.path.join(self.tempdir, 'target')):
       for item in files:
         p = os.path.join(root, item)
         with open(p, 'rb') as f:
@@ -975,6 +975,8 @@ class IsolateServerDownloadTest(TestCase):
 
   def test_download_two_files(self):
     # Test downloading two files.
+    # It doesn't touch disk, 'file_write' is mocked.
+    # It doesn't touch network, url_open() is mocked.
     actual = {}
     def out(key, generator):
       actual[key] = ''.join(generator)
@@ -1008,6 +1010,8 @@ class IsolateServerDownloadTest(TestCase):
       '--target', net_utils.ROOT_DIR,
       '--file', coucou_sha1, 'path/to/a',
       '--file', byebye_sha1, 'path/to/b',
+      # Even if everything is mocked, the cache directory will still be created.
+      '--cache', self.tempdir,
     ]
     self.assertEqual(0, isolateserver.main(cmd))
     expected = {
@@ -1018,6 +1022,7 @@ class IsolateServerDownloadTest(TestCase):
 
   def test_download_isolated_simple(self):
     # Test downloading an isolated tree.
+    # It writes files to disk for real.
     server_ref = isolate_storage.ServerRef('http://example.com', 'default-gzip')
     files = {
       os.path.join('a', 'foo'): 'Content',
@@ -1073,21 +1078,22 @@ class IsolateServerDownloadTest(TestCase):
       'download',
       '--isolate-server', server_ref.url,
       '--namespace', server_ref.namespace,
-      '--target', self.tempdir,
+      '--target', os.path.join(self.tempdir, 'target'),
       '--isolated', isolated_hash,
+      '--cache', os.path.join(self.tempdir, 'cache'),
     ]
     self.expected_requests(requests)
     self.assertEqual(0, isolateserver.main(cmd))
     expected = {
-      os.path.join(self.tempdir, 'a', 'foo'): ('Content', 0500),
-      os.path.join(self.tempdir, 'b'): ('More content', 0400),
-      os.path.join(self.tempdir, 'c'): (u'a/foo', 0),
+      os.path.join(self.tempdir, 'target', 'a', 'foo'): ('Content', 0500),
+      os.path.join(self.tempdir, 'target', 'b'): ('More content', 0400),
+      os.path.join(self.tempdir, 'target', 'c'): (u'a/foo', 0),
     }
     actual = self._get_actual()
     self.assertEqual(expected, actual)
     expected_stdout = (
         'To run this test please run from the directory %s:\n  Absurb command\n'
-        % os.path.join(self.tempdir, 'a'))
+        % os.path.join(self.tempdir, 'target', 'a'))
     self.checkOutput(expected_stdout, '')
 
   def test_download_isolated_tar_archive(self):
@@ -1164,18 +1170,20 @@ class IsolateServerDownloadTest(TestCase):
       'download',
       '--isolate-server', server_ref.url,
       '--namespace', server_ref.namespace,
-      '--target', self.tempdir,
+      '--target', os.path.join(self.tempdir, 'target'),
       '--isolated', isolated_hash,
+      '--cache', os.path.join(self.tempdir, 'cache'),
     ]
     self.expected_requests(requests)
     self.assertEqual(0, isolateserver.main(cmd))
-    expected = dict(
-        (os.path.join(self.tempdir, k), v) for k, v in files.iteritems())
+    expected = {
+      os.path.join(self.tempdir, 'target', k): v for k, v in files.iteritems()
+    }
     actual = self._get_actual()
     self.assertEqual(expected, actual)
     expected_stdout = (
         'To run this test please run from the directory %s:\n  Absurb command\n'
-        % os.path.join(self.tempdir, 'a'))
+        % os.path.join(self.tempdir, 'target', 'a'))
     self.checkOutput(expected_stdout, '')
 
 
@@ -1199,6 +1207,11 @@ def get_storage(server_ref):
 
 
 class TestArchive(TestCase):
+  def setUp(self):
+    super(TestArchive, self).setUp()
+    self.mock(logging_utils, 'prepare_logging', lambda *_: None)
+    self.mock(logging_utils, 'set_console_level', lambda *_: None)
+
   @staticmethod
   def get_isolateserver_prog():
     """Returns 'isolateserver.py' or 'isolateserver.pyc'."""
@@ -1245,9 +1258,6 @@ class TestArchive(TestCase):
     self.mock(isolateserver, 'get_storage', get_storage)
     self.make_tree(CONTENTS)
     isolateserver.main(cmd_line_prefix + [self.tempdir])
-    # If you modify isolated_format.ISOLATED_FILE_VERSION, you'll have to update
-    # the hash below. Sorry about that but this ensures the .isolated format is
-    # stable.
     isolated = {
       'algo': 'sha-1',
       'files': {},
