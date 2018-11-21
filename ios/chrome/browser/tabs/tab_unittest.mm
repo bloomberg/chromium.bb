@@ -48,6 +48,7 @@
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
+#import "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "net/base/mac/url_conversions.h"
@@ -237,9 +238,13 @@ class TabTest : public BlockCleanupTest,
                 NSString* title) {
     DCHECK_EQ(tab_.webState, web_state_impl_.get());
 
-    web::FakeNavigationContext context1;
-    context1.SetUrl(user_url);
-    web_state_impl_->OnNavigationStarted(&context1);
+    std::unique_ptr<web::NavigationContextImpl> context1 =
+        web::NavigationContextImpl::CreateNavigationContext(
+            web_state_impl_.get(), user_url,
+            /*has_user_gesture=*/true,
+            ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK,
+            /*is_renderer_initiated=*/true);
+    web_state_impl_->OnNavigationStarted(context1.get());
 
     web::Referrer empty_referrer;
     web_state_impl_->GetNavigationManagerImpl().AddPendingItem(
@@ -247,9 +252,13 @@ class TabTest : public BlockCleanupTest,
         web::NavigationInitiationType::RENDERER_INITIATED,
         web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-    web::FakeNavigationContext context2;
-    context2.SetUrl(redirect_url);
-    web_state_impl_->OnNavigationStarted(&context2);
+    std::unique_ptr<web::NavigationContextImpl> context2 =
+        web::NavigationContextImpl::CreateNavigationContext(
+            web_state_impl_.get(), redirect_url,
+            /*has_user_gesture=*/true,
+            ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK,
+            /*is_renderer_initiated=*/true);
+    web_state_impl_->OnNavigationStarted(context2.get());
 
     if (GetParam() == NavigationManagerChoice::WK_BASED) {
       [fake_wk_list_
@@ -257,9 +266,9 @@ class TabTest : public BlockCleanupTest,
     }
     web_state_impl_->GetNavigationManagerImpl().CommitPendingItem();
 
-    context2.SetHasCommitted(true);
+    context2->SetHasCommitted(true);
     web_state_impl_->UpdateHttpResponseHeaders(redirect_url);
-    web_state_impl_->OnNavigationFinished(&context2);
+    web_state_impl_->OnNavigationFinished(context2.get());
     web_state_impl_->SetIsLoading(true);
 
     base::string16 new_title = base::SysNSStringToUTF16(title);
