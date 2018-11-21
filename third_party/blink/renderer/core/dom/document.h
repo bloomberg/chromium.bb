@@ -531,7 +531,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetupFontBuilder(ComputedStyle& document_style);
 
   bool NeedsLayoutTreeUpdate() const;
-  bool NeedsLayoutTreeUpdateForNode(const Node&) const;
+  bool NeedsLayoutTreeUpdateForNode(const Node&,
+                                    bool ignore_adjacent_style = false) const;
+
   // Update ComputedStyles and attach LayoutObjects if necessary, but don't
   // lay out.
   void UpdateStyleAndLayoutTree();

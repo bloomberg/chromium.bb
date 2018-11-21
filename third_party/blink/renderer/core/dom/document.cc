@@ -2413,7 +2413,8 @@ void Document::NotifyLayoutTreeOfSubtreeChanges() {
   lifecycle_.AdvanceTo(DocumentLifecycle::kLayoutSubtreeChangeClean);
 }
 
-bool Document::NeedsLayoutTreeUpdateForNode(const Node& node) const {
+bool Document::NeedsLayoutTreeUpdateForNode(const Node& node,
+                                            bool ignore_adjacent_style) const {
   if (!node.CanParticipateInFlatTree())
     return false;
   if (!NeedsLayoutTreeUpdate())
@@ -2433,7 +2434,7 @@ bool Document::NeedsLayoutTreeUpdateForNode(const Node& node) const {
       }
     }
     if (ancestor->NeedsStyleRecalc() || ancestor->NeedsStyleInvalidation() ||
-        ancestor->NeedsAdjacentStyleRecalc()) {
+        (ancestor->NeedsAdjacentStyleRecalc() && !ignore_adjacent_style)) {
       return true;
     }
   }
