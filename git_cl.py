@@ -60,7 +60,6 @@ import metrics_utils
 import owners
 import owners_finder
 import presubmit_support
-import rietveld
 import scm
 import split_cl
 import subcommand
@@ -1067,18 +1066,7 @@ def ParseIssueNumberArgument(arg, codereview=None):
     parsed = _CODEREVIEW_IMPLEMENTATIONS[codereview].ParseIssueURL(parsed_url)
     return parsed or fail_result
 
-  results = {}
-  for name, cls in _CODEREVIEW_IMPLEMENTATIONS.iteritems():
-    parsed = cls.ParseIssueURL(parsed_url)
-    if parsed is not None:
-      results[name] = parsed
-
-  if not results:
-    return fail_result
-  if len(results) == 1:
-    return results.values()[0]
-
-  return results['gerrit']
+  return _GerritChangelistImpl.ParseIssueURL(parsed_url) or fail_result
 
 
 def _create_description_from_log(args):
@@ -2010,27 +1998,12 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
   def SetFlags(self, flags):
     """Sets flags on this CL/patchset in Rietveld.
     """
-    patchset = self.GetPatchset() or self.GetMostRecentPatchset()
-    try:
-      return self.RpcServer().set_flags(
-          self.GetIssue(), patchset, flags)
-    except urllib2.HTTPError as e:
-      if e.code == 404:
-        DieWithError('The issue %s doesn\'t exist.' % self.GetIssue())
-      if e.code == 403:
-        DieWithError(
-            ('Access denied to issue %s. Maybe the patchset %s doesn\'t '
-             'match?') % (self.GetIssue(), patchset))
-      raise
+    raise NotImplementedError
 
   def RpcServer(self):
     """Returns an upload.RpcServer() to access this review's rietveld instance.
     """
-    if not self._rpc_server:
-      self._rpc_server = rietveld.CachingRietveld(
-          self.GetCodereviewServer(),
-          self._auth_config)
-    return self._rpc_server
+    raise NotImplementedError
 
   @classmethod
   def IssueConfigKey(cls):
@@ -2045,83 +2018,18 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     return 'rietveldserver'
 
   def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
-    raise NotImplementedError()
+    raise NotImplementedError
 
   def SetCQState(self, new_state):
-    props = self.GetIssueProperties()
-    if props.get('private'):
-      DieWithError('Cannot set-commit on private issue')
-
-    if new_state == _CQState.COMMIT:
-      self.SetFlags({'commit': '1', 'cq_dry_run': '0'})
-    elif new_state == _CQState.NONE:
-      self.SetFlags({'commit': '0', 'cq_dry_run': '0'})
-    else:
-      assert new_state == _CQState.DRY_RUN
-      self.SetFlags({'commit': '1', 'cq_dry_run': '1'})
+    raise NotImplementedError
 
   def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
                               directory, force):
-    # PatchIssue should never be called with a dirty tree.  It is up to the
-    # caller to check this, but just in case we assert here since the
-    # consequences of the caller not checking this could be dire.
-    assert(not git_common.is_dirty_git_tree('apply'))
-    assert(parsed_issue_arg.valid)
-    self._changelist.issue = parsed_issue_arg.issue
-    if parsed_issue_arg.hostname:
-      self._rietveld_server = 'https://%s' % parsed_issue_arg.hostname
-
-    patchset = parsed_issue_arg.patchset or self.GetMostRecentPatchset()
-    patchset_object = self.RpcServer().get_patch(self.GetIssue(), patchset)
-    scm_obj = checkout.GitCheckout(settings.GetRoot(), None, None, None, None)
-    try:
-      scm_obj.apply_patch(patchset_object)
-    except Exception as e:
-      print(str(e))
-      return 1
-
-    # If we had an issue, commit the current state and register the issue.
-    if not nocommit:
-      self.SetIssue(self.GetIssue())
-      self.SetPatchset(patchset)
-      RunGit(['commit', '-m', (self.GetDescription() + '\n\n' +
-                               'patch from issue %(i)s at patchset '
-                               '%(p)s (http://crrev.com/%(i)s#ps%(p)s)'
-                               % {'i': self.GetIssue(), 'p': patchset})])
-      print('Committed patch locally.')
-    else:
-      print('Patch applied to index.')
-    return 0
+    raise NotImplementedError
 
   @staticmethod
   def ParseIssueURL(parsed_url):
-    if not parsed_url.scheme or not parsed_url.scheme.startswith('http'):
-      return None
-    # Rietveld patch: https://domain/<number>/#ps<patchset>
-    match = re.match(r'/(\d+)/$', parsed_url.path)
-    match2 = re.match(r'ps(\d+)$', parsed_url.fragment)
-    if match and match2:
-      return _ParsedIssueNumberArgument(
-          issue=int(match.group(1)),
-          patchset=int(match2.group(1)),
-          hostname=parsed_url.netloc,
-          codereview='rietveld')
-    # Typical url: https://domain/<issue_number>[/[other]]
-    match = re.match('/(\d+)(/.*)?$', parsed_url.path)
-    if match:
-      return _ParsedIssueNumberArgument(
-          issue=int(match.group(1)),
-          hostname=parsed_url.netloc,
-          codereview='rietveld')
-    # Rietveld patch: https://domain/download/issue<number>_<patchset>.diff
-    match = re.match(r'/download/issue(\d+)_(\d+).diff$', parsed_url.path)
-    if match:
-      return _ParsedIssueNumberArgument(
-          issue=int(match.group(1)),
-          patchset=int(match.group(2)),
-          hostname=parsed_url.netloc,
-          codereview='rietveld')
-    return None
+    raise NotImplementedError
 
   def CMDUploadChange(self, options, args, custom_cl_base, change):
     """Upload the patch to Rietveld."""
