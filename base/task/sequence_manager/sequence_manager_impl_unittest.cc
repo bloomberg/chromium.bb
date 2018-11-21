@@ -4044,6 +4044,33 @@ TEST_P(SequenceManagerTest, GetPendingTaskCountForTesting) {
   EXPECT_EQ(0u, manager_->GetPendingTaskCountForTesting());
 }
 
+TEST_P(SequenceManagerTest, PostDelayedTaskFromOtherThread) {
+  scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
+  scoped_refptr<TaskRunner> task_runner =
+      main_tq->CreateTaskRunner(kTaskTypeNone);
+  manager_->SetAddQueueTimeToTasks(true);
+
+  Thread thread("test thread");
+  thread.StartAndWaitForTesting();
+
+  WaitableEvent task_posted(WaitableEvent::ResetPolicy::MANUAL,
+                            WaitableEvent::InitialState::NOT_SIGNALED);
+  thread.task_runner()->PostTask(
+      FROM_HERE, BindOnce(
+                     [](scoped_refptr<TaskRunner> task_runner,
+                        WaitableEvent* task_posted) {
+                       task_runner->PostDelayedTask(
+                           FROM_HERE, BindOnce(&NopTask),
+                           base::TimeDelta::FromMilliseconds(10));
+                       task_posted->Signal();
+                     },
+                     std::move(task_runner), &task_posted));
+  task_posted.Wait();
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+  RunLoop().RunUntilIdle();
+  thread.Stop();
+}
+
 }  // namespace sequence_manager_impl_unittest
 }  // namespace internal
 }  // namespace sequence_manager

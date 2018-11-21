@@ -339,7 +339,7 @@ class BASE_EXPORT TaskQueueImpl {
 
   // Push the task onto the |delayed_incoming_queue|.  Slow path from other
   // threads.
-  void PushOntoDelayedIncomingQueueLocked(Task pending_task);
+  void PushOntoDelayedIncomingQueue(Task pending_task);
 
   void ScheduleDelayedWorkTask(Task pending_task);
 
