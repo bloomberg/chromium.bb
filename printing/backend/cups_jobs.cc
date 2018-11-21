@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/version.h"
 #include "printing/backend/cups_deleters.h"
 #include "printing/backend/cups_ipp_util.h"
@@ -380,7 +380,6 @@ ScopedIppPtr GetPrinterAttributes(http_t* http,
                                   int num_attributes,
                                   const char* const* attributes,
                                   ipp_status_t* status) {
-  base::AssertBlockingAllowedDeprecated();
   DCHECK(http);
 
   // CUPS expects a leading slash for resource names.  Add one if it's missing.
@@ -400,6 +399,7 @@ ScopedIppPtr GetPrinterAttributes(http_t* http,
 
   DCHECK_EQ(ippValidateAttributes(request.get()), 1);
 
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
   auto response = WrapIpp(cupsDoRequest(http, request.release(), rp.c_str()));
   *status = ippGetStatusCode(response.get());
 
@@ -434,7 +434,6 @@ bool GetPrinterInfo(const std::string& address,
                     const std::string& resource,
                     bool encrypted,
                     PrinterInfo* printer_info) {
-  base::AssertBlockingAllowedDeprecated();
 
   ScopedHttpPtr http = ScopedHttpPtr(httpConnect2(
       address.c_str(), port, nullptr, AF_INET,
@@ -470,7 +469,6 @@ bool GetPrinterInfo(const std::string& address,
 bool GetPrinterStatus(http_t* http,
                       const std::string& printer_id,
                       PrinterStatus* printer_status) {
-  base::AssertBlockingAllowedDeprecated();
 
   ipp_status_t status;
   const std::string printer_uri = PrinterUriFromName(printer_id);
@@ -492,7 +490,6 @@ bool GetCupsJobs(http_t* http,
                  int limit,
                  JobCompletionState which,
                  std::vector<CupsJob>* jobs) {
-  base::AssertBlockingAllowedDeprecated();
   DCHECK(http);
 
   auto request = WrapIpp(ippNewRequest(IPP_OP_GET_JOBS));
@@ -519,6 +516,7 @@ bool GetCupsJobs(http_t* http,
     return false;
   }
 
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   // cupsDoRequest will delete the request.
   auto response = WrapIpp(cupsDoRequest(http, request.release(), "/"));
 
