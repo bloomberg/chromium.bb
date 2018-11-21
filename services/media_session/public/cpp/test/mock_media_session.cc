@@ -112,6 +112,10 @@ void MockMediaSession::NextTrack() {
   next_track_count_++;
 }
 
+void MockMediaSession::Seek(base::TimeDelta seek_time) {
+  seek_count_++;
+}
+
 void MockMediaSession::Stop() {
   SetState(mojom::MediaSessionInfo::SessionState::kInactive);
 }

@@ -77,6 +77,13 @@ void MediaController::NextTrack() {
     session_->NextTrack();
 }
 
+void MediaController::Seek(base::TimeDelta seek_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (session_)
+    session_->Seek(seek_time);
+}
+
 bool MediaController::SetMediaSession(mojom::MediaSession* session) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

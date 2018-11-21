@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/numerics/ranges.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_controller.h"
@@ -436,14 +437,32 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
   AbandonSystemAudioFocusIfNeeded();
 }
 
-void MediaSessionImpl::SeekForward(base::TimeDelta seek_time) {
-  for (const auto& it : normal_players_)
-    it.first.observer->OnSeekForward(it.first.player_id, seek_time);
-}
+void MediaSessionImpl::Seek(base::TimeDelta seek_time) {
+  DCHECK(!seek_time.is_zero());
 
-void MediaSessionImpl::SeekBackward(base::TimeDelta seek_time) {
-  for (const auto& it : normal_players_)
-    it.first.observer->OnSeekBackward(it.first.player_id, seek_time);
+  if (seek_time > base::TimeDelta()) {
+    // If the site has registered an action handler for seek forward then we
+    // should pass it to the site and let them handle it.
+    if (IsActionSupported(
+            media_session::mojom::MediaSessionAction::kSeekForward)) {
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kSeekForward);
+      return;
+    }
+
+    for (const auto& it : normal_players_)
+      it.first.observer->OnSeekForward(it.first.player_id, seek_time);
+  } else if (seek_time < base::TimeDelta()) {
+    // If the site has registered an action handler for seek backward then we
+    // should pass it to the site and let them handle it.
+    if (IsActionSupported(
+            media_session::mojom::MediaSessionAction::kSeekBackward)) {
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kSeekBackward);
+      return;
+    }
+
+    for (const auto& it : normal_players_)
+      it.first.observer->OnSeekBackward(it.first.player_id, seek_time * -1);
+  }
 }
 
 bool MediaSessionImpl::IsControllable() const {
@@ -986,6 +1005,12 @@ MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {
   }
 
   return best_frame ? services_[best_frame] : nullptr;
+}
+
+bool MediaSessionImpl::IsActionSupported(
+    media_session::mojom::MediaSessionAction action) const {
+  return routed_service_ &&
+         base::ContainsKey(routed_service_->actions(), action);
 }
 
 }  // namespace content

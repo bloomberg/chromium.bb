@@ -33,6 +33,7 @@ class MediaController : public mojom::MediaController,
   void AddObserver(mojom::MediaSessionObserverPtr observer) override;
   void PreviousTrack() override;
   void NextTrack() override;
+  void Seek(base::TimeDelta seek_time) override;
 
   // mojom::MediaSessionObserver overrides.
   void MediaSessionInfoChanged(

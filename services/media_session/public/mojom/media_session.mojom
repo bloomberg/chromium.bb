@@ -4,6 +4,8 @@
 
 module media_session.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
+
 // Next MinVersion: 2
 
 [Extensible]
@@ -76,7 +78,7 @@ interface MediaSessionObserver {
 // WebContents or ARC app.
 // TODO(https://crbug.com/875004): migrate media session from content/public
 // to mojo.
-// Next Method ID: 9
+// Next Method ID: 10
 interface MediaSession {
   [Extensible]
   enum SuspendType {
@@ -112,9 +114,18 @@ interface MediaSession {
 
   AddObserver@6(MediaSessionObserver observer);
 
-  // Skip to the previous track.
+  // Skip to the previous track. If there is no previous track then this will
+  // be a no-op.
   PreviousTrack@7();
 
-  // Skip to the next track.
+  // Skip to the next track. If there is no next track then this will be a
+  // no-op.
   NextTrack@8();
+
+  // Seek the media session. If the media cannot seek then this will be a
+  // no-op. The |seek_time| is the time delta that the media will seek by and
+  // supports both positive and negative values. This value cannot be zero.
+  // The |kDefaultSeekTimeSeconds| provides a default value for seeking by a
+  // few seconds.
+  Seek@9(mojo_base.mojom.TimeDelta seek_time);
 };

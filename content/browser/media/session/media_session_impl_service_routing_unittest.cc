@@ -9,12 +9,14 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/media/session/mock_media_session_observer.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
 #include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
 
 using ::testing::_;
@@ -26,6 +28,9 @@ using ::testing::NiceMock;
 namespace content {
 
 namespace {
+
+constexpr base::TimeDelta kDefaultSeekTime =
+    base::TimeDelta::FromSeconds(media_session::mojom::kDefaultSeekTimeSeconds);
 
 static const int kPlayerId = 0;
 
@@ -461,6 +466,82 @@ TEST_F(MediaSessionImplServiceRoutingTest,
       media_session::mojom::MediaSessionAction::kNextTrack);
 
   MediaSessionImpl::Get(contents())->NextTrack();
+  run_loop.Run();
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest, TestSeekBackwardBehaviourDefault) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  CreateServiceForFrame(main_frame_);
+
+  EXPECT_CALL(*GetPlayerForFrame(main_frame_),
+              OnSeekBackward(_, kDefaultSeekTime))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  EXPECT_CALL(
+      *GetClientForFrame(main_frame_),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kSeekBackward))
+      .Times(0);
+
+  MediaSessionImpl::Get(contents())->Seek(kDefaultSeekTime * -1);
+  run_loop.Run();
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       TestSeekBackwardBehaviourWhenActionEnabled) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  CreateServiceForFrame(main_frame_);
+
+  EXPECT_CALL(*GetPlayerForFrame(main_frame_), OnSeekBackward(_, _)).Times(0);
+  EXPECT_CALL(
+      *GetClientForFrame(main_frame_),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kSeekBackward))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  services_[main_frame_]->EnableAction(
+      media_session::mojom::MediaSessionAction::kSeekBackward);
+
+  MediaSessionImpl::Get(contents())->Seek(kDefaultSeekTime * -1);
+  run_loop.Run();
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest, TestSeekForwardBehaviourDefault) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  CreateServiceForFrame(main_frame_);
+
+  EXPECT_CALL(*GetPlayerForFrame(main_frame_),
+              OnSeekForward(_, kDefaultSeekTime))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  EXPECT_CALL(
+      *GetClientForFrame(main_frame_),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kSeekForward))
+      .Times(0);
+
+  MediaSessionImpl::Get(contents())->Seek(kDefaultSeekTime);
+  run_loop.Run();
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       TestSeekForwardBehaviourWhenActionEnabled) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  CreateServiceForFrame(main_frame_);
+
+  EXPECT_CALL(*GetPlayerForFrame(main_frame_), OnSeekForward(_, _)).Times(0);
+  EXPECT_CALL(
+      *GetClientForFrame(main_frame_),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kSeekForward))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  services_[main_frame_]->EnableAction(
+      media_session::mojom::MediaSessionAction::kSeekForward);
+
+  MediaSessionImpl::Get(contents())->Seek(kDefaultSeekTime);
   run_loop.Run();
 }
 
